@@ -14,7 +14,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.13 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
+### 0.8.14 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
 
 The city's curve no longer sits on the dial in parallel (spec-city-debt §3, D9). The market expects the dial to drift
 back to what the city's rule would set at the inflation it expects, over six months (DRIFT_MONTHS, D15); each month's
@@ -26,6 +26,18 @@ the term loan's face on its factors), at home and abroad, and no round trip make
 Your rate shows the thirty-year rate in its new parts and where the market expects the dial. No save-format bump.
 The traces move (default 619,699 people against 677,355; Rotterdam 834,678 against 711,024); the ensemble scores
 22/26, H1 red for the cheap long money gone (Jerus's call, CD1-C). Harness: CurveCheck.
+
+### 0.8.13 — CL2, streets not a grid inside the blocks — 2026-10-20, shipped, see docs/queue/CL2-notes.md
+
+The map's alone. Each homes cell, long blocks or squared (a boulevard's interior too), takes one of three street
+layouts by a hash of the world's seed and its place: the comb as before, dropped crossings (T junctions, bends,
+merged blocks, now and then a small green hole), or brick (the cross streets at alternating lines), a third each
+(Jerus, the CL1 study's star 1). A cell a highway, railway, yard or reserve crosses keeps the comb: varied pieces
+joined along a 45-degree highway drew a staircase. A merge in a varied cell takes up the stubs it leaves or is not
+made. On his 1.7M city: dead ends 155 and buildings placed 17,987, both as before; a squared cell's streets 27.5%
+of its ground against 30.6%. At the city's scale it still reads as a grid (CL4 changes that). PlanCheck 10 is
+new; the trace is byte-identical to 0.8.12's, so no ensemble (EN1).
+
 
 ### 0.8.12 — EG1, deposits where the geology says — 2026-10-20, shipped, see docs/queue/EG1-notes.md
 

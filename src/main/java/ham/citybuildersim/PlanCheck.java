@@ -58,7 +58,19 @@ import java.util.List;
  *      box where it was - every check holding;
  *   9. any save named on the command line, every district: the checks, how
  *      full (its districts, and its own mix at 2.10's fills), its seams, and
- *      the time, each within PLAN_MS.
+ *      the time, each within PLAN_MS;
+ *  10. homes cells' streets by a hash of their place (batch CL2;
+ *      DistrictPlan's LAYOUT): on flat ground whose homes cells are all long
+ *      blocks, on flat ground whose homes cells are squared and with
+ *      boulevards, and on the test district cut by water, Input.combOnly is
+ *      0.8.11's plan box for box and street for street, and with the variety
+ *      on every check holds, each of the three layouts (the comb, dropped
+ *      crossings, brick) appears in long-block and in squared cells and over
+ *      many cells in its share, a cell's layout is a function of the world's
+ *      seed and its place and not of what its district holds, two districts
+ *      agree along their seam no worse than with the comb, no cell of a
+ *      varied layout has a dead end and no plan has more than the comb's -
+ *      and a city played as the playtest plays it shows the variety firing.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -246,6 +258,7 @@ public class PlanCheck {
         played();
         estateLines(types);
         sharedEstates(types);
+        streetLayouts(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -771,6 +784,9 @@ public class PlanCheck {
         String worstWhere = "", firstFail = "";
         final long[] cellStreets = new long[4], cellGround = new long[4];
         final int[] cellCount = new int[4];
+        /** The open homes cells by kind (0 long blocks, 1 squared) and layout (CL2), and the merges undone in them. */
+        final int[][] homes = new int[2][3];
+        long mergesUndone;
         final List<Double> planMs = new ArrayList<>(), inputMs = new ArrayList<>();
         boolean timed;
 
@@ -840,6 +856,21 @@ public class PlanCheck {
             double fill = dry > 0 ? (need + in.gravel + in.paved + in.highway) / dry : 0;
             if (fill > worstFill) { worstFill = fill; worstLost = need > 0 ? lost / (double) need : 0; worstWhere = where; }
             for (int k = 0; k < 4; k++) { cellStreets[k] += f.cellStreets[k]; cellGround[k] += f.cellGround[k]; cellCount[k] += f.cellCount[k]; }
+            int[][] h = homesByLayout(p);
+            for (int k = 0; k < 2; k++) for (int l = 0; l < 3; l++) homes[k][l] += h[k][l];
+            mergesUndone += p.mergesUndone;
+        }
+
+        /** The open homes cells that took a layout other than the comb or the whole square. */
+        int varied() {
+            int n = 0;
+            for (int k = 0; k < 2; k++) for (int l = 1; l < 3; l++) n += homes[k][l];
+            return n;
+        }
+
+        /** All the open homes cells. */
+        int homesCells() {
+            return homes[0][0] + homes[0][1] + homes[0][2] + homes[1][0] + homes[1][1] + homes[1][2];
         }
 
         static double median(List<Double> v) {
@@ -867,6 +898,7 @@ public class PlanCheck {
             out.printf("      ...street share of a cell's ground: homes cells %.1f%% (%d), squared %.1f%% (%d), estate cells %.1f%% (%d); boulevard cells %.1f%% (%d)%n",
                     pct(cellStreets[0], cellGround[0]), cellCount[0], pct(cellStreets[1], cellGround[1]), cellCount[1],
                     pct(cellStreets[2], cellGround[2]), cellCount[2], pct(cellStreets[3], cellGround[3]), cellCount[3]);
+            out.printf("      ...homes cells by layout over the samples: %s; merges undone %,d%n", layoutLine(homes), mergesUndone);
             if (timed) out.printf("      ...a plan's time: median %.2f ms a district, the most %.2f ms (the median of %d after one untimed); its inputs %.2f ms%n",
                     median(planMs), max(planMs), TIMED, median(inputMs));
             if (!firstFail.isEmpty()) out.printf("      ...first to fail: %s%n", firstFail);
@@ -992,7 +1024,16 @@ public class PlanCheck {
         }
         t.report("month " + g.getMonth() + ", " + samples + " samples");
         check("at every " + MapCheck.DRAWN_EVERY + "th month every district's plan keeps every check", t.allHold() && samples == MapCheck.MONTHS / MapCheck.DRAWN_EVERY);
+        // CL2: how often the variety fired in this run. A city of a few homes cells says little, so the assertion waits for enough of them.
+        if (t.homesCells() >= HOMES_ENOUGH) {
+            check("...the layouts fired: of " + t.homesCells() + " homes cells in the samples " + t.varied() + " took dropped crossings or brick", t.varied() > 0);
+        } else {
+            out.printf("      ...only %d homes cells in the samples, fewer than the %d a layout's share needs to show: no assertion that the variety fired%n", t.homesCells(), HOMES_ENOUGH);
+        }
     }
+
+    /** The homes cells a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all keeping the comb by the hash alone has a chance of 1 in 59,049. */
+    static final int HOMES_ENOUGH = 10;
 
     /* =====================================================================
        7. ESTATE CELLS LAID TO FIT WHAT THEY HOLD (0.7.90, batch RD5)
@@ -1174,6 +1215,361 @@ public class PlanCheck {
     }
 
     /* =====================================================================
+       10. HOMES CELLS' STREETS BY A HASH OF THEIR PLACE (CL2)
+       ===================================================================== */
+
+    /** LONG's roads, a factor of his (section 4's 75% fill): 0.5 - too little road for the ladder to square a homes cell, so all of them keep long blocks. */
+    static final double LONG_ROADS = 0.5;
+
+    /** SQUARED's: 0.7 - road enough to square most of the homes cells and not to make boulevards of them. */
+    static final double SQUARED_ROADS = 0.7;
+
+    /** BOULEVARD's: 1, his own - road enough for boulevards, squared cells among them. */
+    static final double BOULEVARD_ROADS = 1;
+
+    /** Section 10's fixtures: flat ground at his fill with his roads times a factor (the first three), and the test district's ground, a river and the sea cutting cells, on its first two budgets. */
+    static final String[] LAYOUT_FIXTURES = { "LONG", "SQUARED", "BOULEVARD", "CUT0", "CUT1" };
+
+    /** Each fixture's plan with Input.combOnly, its buildings' and its streets' digests (placedDigest(), streetDigest()) as 0.8.11 drew them: the switch off is that plan, box for box and street for street. */
+    static final long[][] COMB_DIGESTS = {
+            { -8123742265030361694L, -580478996347052330L },
+            { 6065673935051394403L, 4482261714529494111L },
+            { 5888432815123760610L, 2938454372846433564L },
+            { -6965839022495023265L, 6467073671628129364L },
+            { -244617492940599626L, -3549788141600851655L } };
+
+    /** The cells on a side of the square of the lattice layoutOf() is asked about to measure its shares: 200, 40,000 cells. */
+    static final int SHARE_SIDE = 200;
+
+    /** How far a layout's share of those cells may stand from its dial: 0.01. */
+    static final double SHARE_TOLERANCE = 0.01;
+
+    /** The part more of the homes band's largest type LONG is given, to see a cell keep its layout as its district grows: a tenth. */
+    static final double MORE_HOMES = 0.1;
+
+    /** Another world's seed, to see the layouts read it. */
+    static final long OTHER_SEED = Founding.DEFAULT_WORLD_SEED + 1;
+
+    /** Section 10's fixture k (LAYOUT_FIXTURES): the flat district with his roads times a factor, or the test district's ground and budget k - 3; with combOnly when asked. */
+    static DistrictPlan.Input layoutInput(BuildingVisual.Type[] types, int k, boolean combOnly) {
+        DistrictPlan.Input in;
+        if (k < 3) {
+            in = flatMix(types, FILLS[0], true, false);
+            double roads = k == 0 ? LONG_ROADS : k == 1 ? SQUARED_ROADS : BOULEVARD_ROADS;
+            in.gravel *= roads;
+            in.paved *= roads;
+        } else {
+            in = testDistrict(types, k - 3, false);
+        }
+        in.combOnly = combOnly;
+        return in;
+    }
+
+    /** A plan's open homes cells counted by kind (0 long blocks, 1 squared; a boulevard's interior by whether it is squared) and layout. */
+    static int[][] homesByLayout(DistrictPlan p) {
+        int[][] n = new int[2][3];
+        for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellKind[c] == DistrictPlan.HOMES) n[p.cellSquare[c] ? 1 : 0][p.cellLayout[c]]++;
+        return n;
+    }
+
+    /** Homes cells by kind and layout as a line. */
+    static String layoutLine(int[][] n) {
+        return String.format("long blocks today %d, dropped %d, brick %d; squared today %d, dropped %d, brick %d", n[0][0], n[0][1], n[0][2], n[1][0], n[1][1], n[1][2]);
+    }
+
+    /** A plan's open homes cells: how many, how many squared, how many boulevards, how many of those squared, and how many squared and not boulevards. */
+    static int[] homesKinds(DistrictPlan p) {
+        int[] k = new int[5];
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (p.cellKind[c] != DistrictPlan.HOMES) continue;
+            k[0]++;
+            if (p.cellSquare[c]) k[1]++;
+            if (p.cellBoulevard[c]) { k[2]++; if (p.cellSquare[c]) k[3]++; }
+            if (p.cellSquare[c] && !p.cellBoulevard[c]) k[4]++;
+        }
+        return k;
+    }
+
+    /** The dead ends of a plan: street plots (any kind but none) of the frame's interior, not its first or last row or column, with at most one street among their four neighbours - only those inside the interior of a homes cell whose layout is not LAYOUT_TODAY when `variedOnly`. */
+    static int deadEnds(DistrictPlan p, boolean variedOnly) {
+        int f = DistrictPlan.FRAME, dead = 0;
+        for (int y = 1; y < f - 1; y++) {
+            for (int x = 1; x < f - 1; x++) {
+                int q = y * f + x;
+                if (p.kindAt(q) == DistrictPlan.NONE) continue;
+                int around = 0;
+                if (p.kindAt(q - 1) != DistrictPlan.NONE) around++;
+                if (p.kindAt(q + 1) != DistrictPlan.NONE) around++;
+                if (p.kindAt(q - f) != DistrictPlan.NONE) around++;
+                if (p.kindAt(q + f) != DistrictPlan.NONE) around++;
+                if (around > 1) continue;
+                if (variedOnly) {
+                    if (x % DistrictPlan.CELL == 0 || y % DistrictPlan.CELL == 0) continue;
+                    int c = x / DistrictPlan.CELL + (y / DistrictPlan.CELL) * DistrictPlan.CELLS_A_SIDE;
+                    if (p.cellKind[c] != DistrictPlan.HOMES || p.cellLayout[c] == DistrictPlan.LAYOUT_TODAY) continue;
+                }
+                dead++;
+            }
+        }
+        return dead;
+    }
+
+    /** Street plots and dry ground in the open homes cells' tiles (a cell's interior and its own west and north arterials, as Figures.cellStreets has them), by kind and layout: row kind x 3 + layout, {street plots, dry ground}. */
+    static long[][] homesStreetShare(DistrictPlan p, DistrictPlan.Input in) {
+        long[][] s = new long[6][2];
+        int n = DistrictPlan.FRAME;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (p.cellKind[c] != DistrictPlan.HOMES) continue;
+            long[] row = s[(p.cellSquare[c] ? 3 : 0) + p.cellLayout[c]];
+            int x0 = DistrictPlan.CELL * (c % DistrictPlan.CELLS_A_SIDE), y0 = DistrictPlan.CELL * (c / DistrictPlan.CELLS_A_SIDE);
+            for (int y = y0; y < y0 + DistrictPlan.CELL; y++) {
+                for (int x = x0; x < x0 + DistrictPlan.CELL; x++) {
+                    int q = y * n + x;
+                    byte t = in.terrain[q];
+                    if (in.owned[q] && (t == World.GRASS || t == World.FOREST || t == World.SAND)) row[1]++;
+                    int k = p.kindAt(q);
+                    if (k != DistrictPlan.NONE && k != DistrictPlan.UNDER) row[0]++;
+                }
+            }
+        }
+        return s;
+    }
+
+    /** The street share of homesStreetShare() as a line, a layout of a kind at a time. */
+    static String shareLine(long[][] s) {
+        return String.format("long blocks today %.1f%%, dropped %.1f%%, brick %.1f%%; squared today %.1f%%, dropped %.1f%%, brick %.1f%%",
+                pct(s[0][0], s[0][1]), pct(s[1][0], s[1][1]), pct(s[2][0], s[2][1]), pct(s[3][0], s[3][1]), pct(s[4][0], s[4][1]), pct(s[5][0], s[5][1]));
+    }
+
+    /** Whether every cell of a plan keeps LAYOUT_TODAY: the comb, the whole square, an estate. */
+    static boolean allComb(DistrictPlan p) {
+        for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellLayout[c] != DistrictPlan.LAYOUT_TODAY) return false;
+        return true;
+    }
+
+    /** Whether a highway, railway, yard or reserve (Input.fixed) has a plot in the box of the cell (ci, cj), its interior and its ring: DistrictPlan's crossed(), such a homes cell keeping the comb. */
+    static boolean crossedCell(DistrictPlan.Input in, int ci, int cj) {
+        int x0 = DistrictPlan.CELL * ci + 1, y0 = DistrictPlan.CELL * cj + 1;
+        for (int y = Math.max(0, y0 - 1); y <= Math.min(DistrictPlan.FRAME - 1, y0 + DistrictPlan.INTERIOR); y++) {
+            for (int x = Math.max(0, x0 - 1); x <= Math.min(DistrictPlan.FRAME - 1, x0 + DistrictPlan.INTERIOR); x++) if (in.fixed[y * DistrictPlan.FRAME + x] != 0) return true;
+        }
+        return false;
+    }
+
+    /** The layout cell c of a plan has to have: its place's (layoutOf of the seed and the cell's north-west plot in the world) for a homes cell no highway, railway, yard or reserve crosses, else LAYOUT_TODAY. */
+    static byte expectedLayout(DistrictPlan p, DistrictPlan.Input in, int c) {
+        int ci = c % DistrictPlan.CELLS_A_SIDE, cj = c / DistrictPlan.CELLS_A_SIDE;
+        if (p.cellKind[c] != DistrictPlan.HOMES || crossedCell(in, ci, cj)) return DistrictPlan.LAYOUT_TODAY;
+        return DistrictPlan.layoutOf(in.seed, in.x0 + (long) DistrictPlan.CELL * ci, in.y0 + (long) DistrictPlan.CELL * cj, p.cellSquare[c]);
+    }
+
+    static void streetLayouts(BuildingVisual.Type[] types) {
+        out.println("\n--- 10. homes cells' streets by a hash of their place (CL2): the comb, dropped crossings, brick ---");
+        int n = LAYOUT_FIXTURES.length;
+        long seed = Founding.DEFAULT_WORLD_SEED;
+        DistrictPlan.Input[] in = new DistrictPlan.Input[n];
+        DistrictPlan[] on = new DistrictPlan[n], off = new DistrictPlan[n];
+        Figures[] fig = new Figures[n];
+        int[] dead = new int[n], deadOff = new int[n], deadVaried = new int[n];
+        int[][] total = new int[2][3];
+        long[][] share = new long[6][2];
+        for (int k = 0; k < n; k++) {
+            in[k] = layoutInput(types, k, false);
+            on[k] = DistrictPlan.make(in[k]);
+            off[k] = DistrictPlan.make(layoutInput(types, k, true));
+            fig[k] = figures(on[k], in[k]);
+            dead[k] = deadEnds(on[k], false);
+            deadOff[k] = deadEnds(off[k], false);
+            deadVaried[k] = deadEnds(on[k], true);
+            int[][] h = homesByLayout(on[k]);
+            long[][] s = homesStreetShare(on[k], in[k]);
+            for (int a = 0; a < 2; a++) for (int l = 0; l < 3; l++) total[a][l] += h[a][l];
+            for (int i = 0; i < 6; i++) { share[i][0] += s[i][0]; share[i][1] += s[i][1]; }
+            out.printf("      %s: %s%n", LAYOUT_FIXTURES[k], line(on[k], fig[k]));
+            out.printf("      ...homes cells by layout: %s; merges undone %d (with combOnly %d)%n", layoutLine(h), on[k].mergesUndone, off[k].mergesUndone);
+            out.printf("      ...dead ends: %d (%d inside a cell of another layout) against %d with combOnly; street share of the homes cells' ground: %s%n",
+                    dead[k], deadVaried[k], deadOff[k], shareLine(s));
+        }
+        out.printf("      all five: homes cells by layout %s; street share of their ground %s%n", layoutLine(total), shareLine(share));
+        // a. The premise: each fixture causes its condition with the switch off.
+        for (int k = 0; k < n; k++) {
+            int[] kinds = homesKinds(off[k]);
+            boolean ok;
+            String what;
+            if (k == 0) {
+                ok = kinds[0] > 0 && kinds[1] == 0 && kinds[2] == 0;
+                what = String.format("its %d homes cells are all long blocks, none squared and none a boulevard", kinds[0]);
+            } else if (k == 1) {
+                ok = kinds[4] > 0;
+                what = String.format("%d of its %d homes cells are squared and not boulevards", kinds[4], kinds[0]);
+            } else if (k == 2) {
+                ok = kinds[2] > 0;
+                what = String.format("%d of its %d homes cells are boulevards (%d of them squared)", kinds[2], kinds[0], kinds[3]);
+            } else {
+                ok = kinds[0] > 0 && (off[k].shoreJoins > 0 || off[k].strays > 0);
+                what = String.format("the ground cuts its %d homes cells: %d dead ends joined along a cut, %d street plots taken up as strays", kinds[0], off[k].shoreJoins, off[k].strays);
+            }
+            check(LAYOUT_FIXTURES[k] + " with combOnly: " + what, ok);
+        }
+        // b. The switch off is 0.8.11's plan; c. with the variety on every check holds.
+        StringBuilder bad = new StringBuilder(), broken = new StringBuilder();
+        for (int k = 0; k < n; k++) {
+            long placed = placedDigest(off[k]), streets = streetDigest(off[k]);
+            if (placed != COMB_DIGESTS[k][0] || streets != COMB_DIGESTS[k][1] || !allComb(off[k])) {
+                bad.append(' ').append(LAYOUT_FIXTURES[k]);
+                out.printf("      ...%s with combOnly: placed %dL streets %dL, every cell LAYOUT_TODAY %s%n", LAYOUT_FIXTURES[k], placed, streets, allComb(off[k]));
+            }
+            if (!fig[k].holds(on[k], in[k])) broken.append(' ').append(LAYOUT_FIXTURES[k]);
+        }
+        check("with combOnly each fixture's plan is 0.8.11's, box for box and street for street, every cell LAYOUT_TODAY" + (bad.length() > 0 ? " - not:" + bad : ""), bad.length() == 0);
+        check("with the variety on every check holds, each of the five fixtures" + (broken.length() > 0 ? " - not:" + broken : ""), broken.length() == 0);
+        // d. Each layout appears, in long-block and in squared cells.
+        for (int a = 0; a < 2; a++) {
+            check(String.format("over the five fixtures %s cells take each layout: %d today, %d dropped, %d brick", a == 0 ? "long-block" : "squared", total[a][0], total[a][1], total[a][2]),
+                    total[a][0] > 0 && total[a][1] > 0 && total[a][2] > 0);
+        }
+        // e. The shares: layoutOf over a square of the lattice at a world place.
+        long[] place = MapCheck.dryPlace(World.of(seed));
+        long i0 = Math.floorDiv(place[0], DistrictPlan.CELL), j0 = Math.floorDiv(place[1], DistrictPlan.CELL);
+        double[] dial = { DistrictPlan.TODAY_SHARE, DistrictPlan.DROPPED_SHARE, 1 - DistrictPlan.TODAY_SHARE - DistrictPlan.DROPPED_SHARE };
+        for (int a = 0; a < 2; a++) {
+            int[] drawn = new int[3];
+            for (int j = 0; j < SHARE_SIDE; j++) {
+                for (int i = 0; i < SHARE_SIDE; i++) drawn[DistrictPlan.layoutOf(seed, (i0 + i) * DistrictPlan.CELL, (j0 + j) * DistrictPlan.CELL, a == 1)]++;
+            }
+            double cells = (double) SHARE_SIDE * SHARE_SIDE;
+            boolean ok = true;
+            for (int l = 0; l < 3; l++) ok &= Math.abs(drawn[l] / cells - dial[l]) <= SHARE_TOLERANCE;
+            out.printf("      layoutOf over %,d cells of the lattice from the dry place, asked as %s cells: today %.4f, dropped %.4f, brick %.4f (the dials %.4f, %.4f, %.4f)%n",
+                    SHARE_SIDE * SHARE_SIDE, a == 0 ? "long-block" : "squared", drawn[0] / cells, drawn[1] / cells, drawn[2] / cells, dial[0], dial[1], dial[2]);
+            check(String.format("each layout's share of %,d %s cells is within %.2f of its dial", SHARE_SIDE * SHARE_SIDE, a == 0 ? "long-block" : "squared", SHARE_TOLERANCE), ok);
+        }
+        // f. A layout is a function of its place (and of a crossing: a homes cell a highway, railway, yard or reserve crosses keeps the comb).
+        int cells = 0;
+        boolean ofPlace = true, twice = true;
+        for (int k = 0; k < n; k++) {
+            for (int c = 0; c < DistrictPlan.CELLS; c++) {
+                if (on[k].cellKind[c] == DistrictPlan.HOMES) cells++;
+                ofPlace &= on[k].cellLayout[c] == expectedLayout(on[k], in[k], c);
+            }
+            DistrictPlan again = DistrictPlan.make(in[k]);
+            twice &= placedDigest(again) == placedDigest(on[k]) && streetDigest(again) == streetDigest(on[k]) && Arrays.equals(again.cellLayout, on[k].cellLayout);
+        }
+        check("in every fixture each open homes cell's layout is layoutOf of the seed and its place in the world (" + cells + " cells), every other cell's LAYOUT_TODAY", ofPlace && cells > 0);
+        check("...and the same Input planned twice gives the same buildings, streets and layouts", twice);
+        DistrictPlan.Input more = layoutInput(types, 0, false);
+        int big = -1;
+        for (int t = 0; t < types.length; t++) {
+            if (types[t] != null && more.counts[t] > 0 && band(types[t]) == 0 && (big < 0 || more.counts[t] > more.counts[big])) big = t;
+        }
+        String bigName = "type " + big;
+        for (BuildingsTemplate bt : new BuildingCatalog().load()) if (bt.getId() == big) bigName = bt.getName();
+        int added = (int) Math.round(MORE_HOMES * more.counts[big]);
+        more.counts[big] += added;
+        DistrictPlan grown = DistrictPlan.make(more);
+        int both = 0, kept = 0, reshaped = 0;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (on[0].cellKind[c] != DistrictPlan.HOMES || grown.cellKind[c] != DistrictPlan.HOMES) continue;
+            if (on[0].cellSquare[c] != grown.cellSquare[c]) { reshaped++; continue; }
+            both++;
+            if (on[0].cellLayout[c] == grown.cellLayout[c]) kept++;
+        }
+        out.printf("      LONG with %,d more %s (the largest count in the homes band, %,d to %,d): %d homes cells against %d; %d open in both with the same squared flag, %d changed it%n",
+                added, bigName, more.counts[big] - added, more.counts[big], homesKinds(grown)[0], homesKinds(on[0])[0], both, reshaped);
+        check("...LONG with a tenth more " + bigName + " keeps each of the " + both + " cells that open in both, with the same squared flag, at the same layout", both > 0 && kept == both);
+        DistrictPlan.Input elsewhere = layoutInput(types, 0, false);
+        elsewhere.seed = OTHER_SEED;
+        DistrictPlan other = DistrictPlan.make(elsewhere);
+        int shared = 0, changed = 0;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (on[0].cellKind[c] != DistrictPlan.HOMES || other.cellKind[c] != DistrictPlan.HOMES) continue;
+            shared++;
+            if (on[0].cellLayout[c] != other.cellLayout[c]) changed++;
+        }
+        check("...and another seed gives another layout to " + changed + " of the " + shared + " homes cells LONG opens with either: the hash reads the seed", changed > 0);
+        // g. Two districts agree along their seam, no less than with the comb.
+        CityMap m = squareCity(types, seed, place, 1);
+        int f = DistrictPlan.FRAME, side = DistrictPlan.SIDE, pairs = 0;
+        long[] apart = new long[2];
+        for (int pass = 0; pass < 2; pass++) {
+            java.util.Map<CityMap.District, DistrictPlan> plans = new java.util.HashMap<>();
+            for (CityMap.District d : m.districts()) {
+                DistrictPlan.Input di = m.planInput(d);
+                di.combOnly = pass == 1;
+                plans.put(d, DistrictPlan.make(di));
+            }
+            pairs = 0;
+            for (CityMap.District d : m.districts()) {
+                for (int east = 0; east < 2; east++) {
+                    CityMap.District o = east == 0 ? m.district(d.dx + 1, d.dy) : m.district(d.dx, d.dy + 1);
+                    if (o == null) continue;
+                    pairs++;
+                    for (int t = 0; t <= side; t++) {
+                        int a = east == 0 ? t * f + side : side * f + t, b = east == 0 ? t * f : t;
+                        if ((plans.get(d).kindAt(a) != DistrictPlan.NONE) != (plans.get(o).kindAt(b) != DistrictPlan.NONE)) apart[pass]++;
+                    }
+                }
+            }
+        }
+        out.printf("      his city x 1 (%d districts, %d neighbouring pairs): plots of a shared edge one district lays a street on and the other does not: %d with the layouts, %d with combOnly%n",
+                m.districts().size(), pairs, apart[0], apart[1]);
+        check("two neighbouring districts disagree along their seam on no more plots than with the comb (" + apart[0] + " against " + apart[1] + ")", pairs > 0 && apart[0] <= apart[1]);
+        // h. Dead ends.
+        boolean noMore = true, noneVaried = true;
+        for (int k = 0; k < n; k++) {
+            noMore &= dead[k] <= deadOff[k];
+            if (k < 3) noneVaried &= deadVaried[k] == 0;
+        }
+        check("each fixture has no more dead ends than with the comb (" + Arrays.toString(dead) + " against " + Arrays.toString(deadOff) + ")", noMore);
+        check("...and in LONG, SQUARED and BOULEVARD, where the ground cuts nothing, no cell of a varied layout has a dead end inside it ("
+                + deadVaried[0] + ", " + deadVaried[1] + ", " + deadVaried[2] + ")", noneVaried);
+        // ...and the counter itself sees one: a street plot hung off a varied cell's street (which has two streets beside it already) is one dead end more.
+        DistrictPlan stubbed = DistrictPlan.make(in[0]);
+        int before = deadEnds(stubbed, true), hung = -1;
+        for (int c = 0; c < DistrictPlan.CELLS && hung < 0; c++) {
+            if (stubbed.cellKind[c] != DistrictPlan.HOMES || stubbed.cellLayout[c] == DistrictPlan.LAYOUT_TODAY) continue;
+            int x0 = DistrictPlan.CELL * (c % DistrictPlan.CELLS_A_SIDE) + 1, y0 = DistrictPlan.CELL * (c / DistrictPlan.CELLS_A_SIDE) + 1;
+            for (int y = y0; y < y0 + DistrictPlan.INTERIOR && hung < 0; y++) {
+                for (int x = x0; x < x0 + DistrictPlan.INTERIOR && hung < 0; x++) {
+                    int q = y * f + x;
+                    if (stubbed.kindAt(q) != DistrictPlan.NONE) continue;
+                    int[] around = { q - 1, q + 1, q - f, q + f };
+                    int streets = 0, from = -1;
+                    for (int u : around) if (stubbed.kindAt(u) != DistrictPlan.NONE) { streets++; from = u; }
+                    if (streets != 1) continue;
+                    int beside = 0;
+                    for (int u : new int[] { from - 1, from + 1, from - f, from + f }) if (stubbed.kindAt(u) != DistrictPlan.NONE) beside++;
+                    if (beside < 2) continue;
+                    stubbed.street[q] = stubbed.street[from];
+                    hung = q;
+                }
+            }
+        }
+        check("...the counter sees a stub: one hung off a varied cell's street takes its dead ends from " + before + " to " + (hung >= 0 ? deadEnds(stubbed, true) : -1),
+                hung >= 0 && deadEnds(stubbed, true) == before + 1);
+        // The crossing: section 3's highway row. Its crossed homes cells keep the comb, the others their place's layout.
+        DistrictPlan.Input hw = testDistrict(types, 1, false);
+        int hy = (int) TEST_HUB_Y / DistrictPlan.CELL * DistrictPlan.CELL + DistrictPlan.CELL / 2;
+        for (int x = 0; x < DistrictPlan.FRAME; x++) {
+            int q = hy * DistrictPlan.FRAME + x;
+            if (!hw.owned[q] || hw.terrain[q] == World.SALT) continue;
+            hw.fixed[q] = DistrictPlan.FIXED_HIGHWAY;
+        }
+        DistrictPlan ph = DistrictPlan.make(hw);
+        int crossed = 0, free = 0, freeVaried = 0;
+        boolean ruled = true;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            ruled &= ph.cellLayout[c] == expectedLayout(ph, hw, c);
+            if (ph.cellKind[c] != DistrictPlan.HOMES) continue;
+            if (crossedCell(hw, c % DistrictPlan.CELLS_A_SIDE, c / DistrictPlan.CELLS_A_SIDE)) crossed++;
+            else { free++; if (ph.cellLayout[c] != DistrictPlan.LAYOUT_TODAY) freeVaried++; }
+        }
+        out.printf("      the test district with section 3's highway row: %d homes cells crossed by it, %d not (%d of them of another layout than the comb), %d dead ends%n",
+                crossed, free, freeVaried, deadEnds(ph, false));
+        check("...a homes cell the highway crosses keeps the comb, the others their place's layout, every check holding", crossed > 0 && ruled && figures(ph, hw).holds(ph, hw));
+    }
+
+    /* =====================================================================
        9. A SAVE NAMED ON THE COMMAND LINE: EVERY DISTRICT
        ===================================================================== */
 
@@ -1227,6 +1623,22 @@ public class PlanCheck {
             }
         }
         out.printf("      ...seams: %,d street plots on districts' edges laid with the neighbour's surface, %,d of them laid by the neighbour too%n", seams, covered);
+        // CL2: the layouts on and off - a second plan of every district with combOnly (0.8.11's comb) - so a save names its own figures.
+        long deadOn = 0, deadOff = 0, placedOn = 0, placedOff = 0, lostOn = 0, lostOff = 0;
+        for (CityMap.District d : m.districts()) {
+            DistrictPlan on = plans.get(d);
+            DistrictPlan.Input comb = m.planInput(d);
+            comb.combOnly = true;
+            DistrictPlan off = DistrictPlan.make(comb);
+            deadOn += deadEnds(on, false);
+            deadOff += deadEnds(off, false);
+            placedOn += on.buildings;
+            placedOff += off.buildings;
+            lostOn += on.overflowCount();
+            lostOff += off.overflowCount();
+        }
+        out.printf("      ...with the layouts on and with combOnly (0.8.11's comb): %,d against %,d dead ends; %,d against %,d buildings placed (%,d against %,d without a place)%n",
+                deadOn, deadOff, placedOn, placedOff, lostOn, lostOff);
         // How full (spec 2.10) with this city's own mix: its buildings and roads at 2.10's fills of a flat district.
         long[] mix = new long[m.types().length];
         for (CityMap.District d : m.districts()) for (int k = 0; k < mix.length; k++) mix[k] += d.count(k);

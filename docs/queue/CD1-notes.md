@@ -1,10 +1,10 @@
 # CD1 - notes
 
-*0.8.13, 2026-10-20 and 21, overnight (Jerus's chain: CL2, then CD1 after EG1,
+*0.8.14, 2026-10-20 and 21, overnight (Jerus's chain: CL2, then CD1 after EG1,
 then CL3, CD2, FX5). The spec is `docs/studies/spec-city-debt.md` §3 (the
 curve; Jerus on §3.2, 2026-10-18: "if it is realistic then yes"), §8's CD1
 row, §8.1 (the current-code handoff) and §9 (D9, D15, D31). Planned while EG1
-shipped, built from main 0f6e1b6 (0.8.12).*
+shipped, built from main 0f6e1b6 (0.8.12) and merged with CL2's 0.8.13 (9f1b328).*
 
 **Ready.** See the last section.
 
@@ -97,6 +97,34 @@ how they measured):
 
 ## 3. What moved in the trace, and why
 
+**For Jerus: two ensemble checks went red. CD1 ships when you say which way.**
+
+| check | what it asks | main 0.8.12 | CD1 | your call |
+|---|---|---|---|---|
+| H1 | a city whose dial is held at 0% by hand gets at least a point more inflation than its autopilot twin in its first ten years | +2.37 points | +0.27 points | **keep D9 (recommended)**, or let the market believe a hand on the dial more the longer it stays |
+| A2 | on the autopilot, no stretch of 12 months or more with prices rising over 10% a year, in any of the 16 cities | longest 11 months (middle 8) | longest 12 months, one city (middle 7) | **ship it as noise at the threshold (recommended)**, or look into that one city first |
+
+- **H1 is the design doing its job.** You decided (D9) that the market expects
+  the dial to go back to what the rule would set, whoever holds it. So holding
+  it at 0% by hand now only makes short money cheap: long money stays priced
+  on where the rule will take the dial, which is the study's "behind" city
+  (§3.3: its 10-year at 5.35%, not 1.62%). The extra inflation comes later
+  instead (+3.02 points in the second decade, against +3.63). Keeping D9 means
+  retiring H1's first-decade test or rewriting it for a market that does not
+  believe a hand on the dial. The other way is a new dial: the six-month drift
+  slowing the longer the dial has been held off the rule, so a market learns
+  that the hand stays (a batch of its own).
+- **A2 looks like chance.** One city out of 16 had one 12-month stretch where
+  the limit is under 12; the middle city's longest stretch got shorter (7
+  months against 8). CD1 moves every city's path, and a moved path lands
+  differently at a threshold. Nothing in CD1 pushes inflation up on the
+  autopilot: the inflation from month 240 on is 2.23% in the middle city, as
+  on main.
+
+**After CL2:** CL2 (0.8.13, merged into this branch) moves only the map, and
+its own trace is byte-identical to 0.8.12's, so the playtests and the
+ensemble below, run before the merge, stand for the merged tree.
+
 Both playtests move from before their first checkpoint (month 266 on the
 default run, 262 on Rotterdam), as soon as the city's inflation is off where
 it is expected to settle: the corporate benchmark (`BondMarket` reads
@@ -122,7 +150,7 @@ the rule expected to fall, by more than the half-point term premium at ten
 years. A curve that never changed shape would be a curve nobody tested.
 
 **The ensemble** (label cd1, against `docs/ensemble/0.8.12.md`): 80 of 80 runs, 11 minutes, **22/26**
-(one vacuous) against 0.8.12's 25/27; stored as `docs/ensemble/0.8.13.md`.
+(one vacuous) against 0.8.12's 25/27; stored as `docs/ensemble/0.8.14.md`.
 S1 and R3 stay red, both nearer their lines (S1's longest spell 12 months
 against 21; R3 4 seeds over a point against 5). **H1 is red by the design**:
 a dial held at 0% by hand no longer buys cheap long money, because the market
@@ -177,9 +205,4 @@ curve's rate at its months.
 
 ## 7. State
 
-**Ready** at the tip of `batch/CD1`: built to the plan, every slice reviewed
-and committed, the suite 125/125, `--timing` 8/8 hard, the maps regenerated,
-the ensemble stored as `docs/ensemble/0.8.13.md`, the row out of `QUEUE.md`
-and CD1-C under Pending. Version 0.8.13 (main is 0.8.12; if CL2 ships first,
-the version after its). Left to the orchestrator: the gate, the ship, the
-docs pass.
+STATE_LINE
