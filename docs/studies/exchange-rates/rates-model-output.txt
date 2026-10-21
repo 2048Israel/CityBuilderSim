@@ -98,7 +98,7 @@ inflation  5.0 points over the US: the peg lasts 4.5 years (median; 10%-90%: 2.0
 inflation 10.0 points over the US: the peg lasts 2.9 years (median; 10%-90%: 1.5-4.4); 21% end with the vault spent; the break 47% (median, 90th 73%)
 
 === 6. What a month costs: 196 moneys and the city's D$ ===
-one month, all 196 and the city: 10.3 microseconds (best of 20 runs of 1,000 years; checksum 663.9)
+one month, all 196 and the city: 9.0 microseconds (best of 20 runs of 1,000 years; checksum 663.9)
 (board 1's single path is seed 1105, the median of 200 by its distance from the fair level)
 
 (the boards' data written: board-1-path.csv, board-3-world.csv)
