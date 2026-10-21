@@ -1108,6 +1108,27 @@ public class DebtManager {
     public double getAdvances()          { return advances; }
 
     /**
+     * THE CITY'S AUCTIONS, COUNTED (CD2, D33): every domestic sale that booked,
+     * its tail and its cover, and the last one's figures. Game.bookProceeds()
+     * adds to it; the harness and the Borrow screen read it. Saved beside the
+     * market's strike (DataSave.getAuctionTally()). See AuctionTally.
+     */
+    private final AuctionTally auctionTally = new AuctionTally();
+
+    public AuctionTally getAuctionTally()      { return auctionTally; }
+
+    /** Sales the treasury has booked at auction. */
+    public int auctionSales()                  { return auctionTally.auctionSales(); }
+    /** ...of them, the ones that cleared more than a point over fair (Auction.MAX_TAIL). */
+    public int auctionTailsOverPoint()         { return auctionTally.auctionTailsOverPoint(); }
+    /** ...and the ones whose bids did not reach the issue at the city's cap. */
+    public int auctionShortSales()             { return auctionTally.auctionShortSales(); }
+    /** The largest tail any of them cleared at, in yield. */
+    public double largestTail()                { return auctionTally.largestTail(); }
+    /** The sale last booked, or null before the first. */
+    public AuctionTally.Last lastAuction()     { return auctionTally.lastAuction(); }
+
+    /**
      * THE MARKET'S LAST STRIKE, for the save (0.7.14): the four inputs it was
      * last handed - a month's output, a month's tax, the overdraft, the
      * advances - and the rate it struck on them. The month hands them in

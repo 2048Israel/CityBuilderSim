@@ -191,6 +191,9 @@ public class ReadPathCheck {
         into.put("bank.repaymentRaised", b.getRepaymentRaisedLifetime());
         double[] market = g.getDebtManager().marketToSave();
         for (int i = 0; i < market.length; i++) into.put("debtMarket" + i, market[i]);
+        // ...and the auctions counted (CD2, D33): only a booking counts, so a quote read a dozen times adds nothing.
+        double[] tally = g.getDebtManager().getAuctionTally().toSave();
+        for (int i = 0; i < tally.length; i++) into.put("auctionTally" + i, tally[i]);
         into.put("budget.fundTransfer", g.getEconomyManager().getNationalAccounts().getFundTransfer());
         // ...and 0.7.12's: every bond and who holds it, every book and what
         // rests on it, the market's month and life, the cells' own bonds,

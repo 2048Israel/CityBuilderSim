@@ -8077,6 +8077,32 @@ public class Game {
         return Auction.run(ask, auctionBidders(months, face), cap == null ? Auction.Cap.DEFAULT : cap);
     }
 
+    /**
+     * A sale that is no sale (CD2): the bids fell short of the issue at the
+     * city's cap and what they did buy is under the smallest deal worth
+     * arranging (minimumIssueSize()), or the fixed fee eats all it raises. At
+     * a full bank the auction can sell 2.4k of a 10M ask; booked, that is a
+     * piece, an allotment and a fee of several times what it brought, negative
+     * cash for a debt the city then owes in full. The same rule the Finances
+     * tab holds an ask to, applied to what the auction sold. A sale that sold
+     * all it asked is the ask's to refuse (the tab, the rollover's minimum),
+     * not this: the build screen borrows what an order needs, large or small.
+     */
+    private boolean isTinySale(Auction.Result r) {
+        return r.sold() > 0 && (!(r.proceeds() > 0) || (r.shortSale() && r.sold() < minimumIssueSize()));
+    }
+
+    /**
+     * The quote of a tiny sale: empty - no face, no cash, nothing to book, which
+     * every caller already reads as nothing to be had - and carrying the
+     * auction's result, so its summary can say what the bids would have bought
+     * and why it is not done (DebtQuote.summary()), and isShort() still tells
+     * the screens the issue came up short.
+     */
+    private static DebtQuote tinySaleQuote(String instrument, int duration, double requested, double before, Auction.Result r) {
+        return new DebtQuote(instrument, duration, requested, r.stop(), before, 0, 0, 0, 0, r, 0);
+    }
+
     /** A quote of nothing: the standing rate before and after, no face. */
     private static DebtQuote emptyQuote(String instrument, int duration, double before) {
         return new DebtQuote(instrument, duration, 0, before, before, 0, 0, 0, 0, null, 0);
@@ -8168,6 +8194,7 @@ public class Game {
     /** The bill's quote at a face: the auction run on it, what it sold and raised. */
     private DebtQuote billQuote(double requested, int months, double face, double before, Auction.Cap cap) {
         Auction.Result r = runAuction(Auction.Kind.BILL, months, face, Double.NaN, cap);
+        if (isTinySale(r)) return tinySaleQuote("Note", months, requested, before, r);
         double received = cents(r.proceeds());
         // A bill pays no coupon; the discount IS the whole cost of the credit.
         return new DebtQuote("Note", months, requested, r.stop(), before,
@@ -8208,8 +8235,14 @@ public class Game {
         return "Note issued.\n" + quote.summary();
     }
 
-    /** The treasury is paid what a sale at home raised, and the market owes it until the settle: the counters the settle and the audit read. */
+    /**
+     * The treasury is paid what a sale at home raised, and the market owes it
+     * until the settle: the counters the settle and the audit read. The one
+     * place a domestic auction reaches the treasury, so the one place it is
+     * counted (AuctionTally): a quote that is only previewed is not a sale.
+     */
     private void bookProceeds(DebtQuote quote) {
+        debtManager.getAuctionTally().record(quote.auction());
         this.cash += quote.cashReceived();
         cityDebtRaisedThisMonth += quote.cashReceived();
         cityDiscountThisMonth += quote.faceValue() - quote.cashReceived();
@@ -8249,6 +8282,7 @@ public class Game {
     /** The amortizing bond's quote at a face: the auction run on it, the coupon its stop sets, the cost of the credit over the schedule. */
     private DebtQuote mediumQuote(double requested, double face, int years, double before, Auction.Cap cap) {
         Auction.Result r = runAuction(Auction.Kind.AMORTIZING, years * 12, face, Double.NaN, cap);
+        if (isTinySale(r)) return tinySaleQuote("Serial", years, requested, before, r);
         double sold = r.sold();
         double received = cents(r.proceeds());
         double coupons = 0;
@@ -8320,6 +8354,7 @@ public class Game {
         int months = line != null ? line.getRemainingMonths() : years * 12;
         double lineCoupon = line instanceof LongTermBond bond ? bond.couponRate() : Double.NaN;
         Auction.Result r = runAuction(Auction.Kind.BOND, months, face, lineCoupon, cap);
+        if (isTinySale(r)) return tinySaleQuote("Term", years, requested, before, r);
         double sold = r.sold();
         double received = cents(r.proceeds());
         double monthly = sold * (r.coupon() / 12.0);
@@ -12509,6 +12544,7 @@ public class Game {
         // Its shares ride the register, its bonds the bonds.
         dataSave.setFund(fund.toState());
         dataSave.setDebtMarket(debtManager.marketToSave());
+        dataSave.setAuctionTally(debtManager.getAuctionTally().toSave());
         dataSave.setHousingOccupancy(new double[]{
                 getSectors().realEstate().getOccupiedHomes() });
         dataSave.setForeignAccounts(foreign.toSaveArray());
@@ -16200,6 +16236,8 @@ public class Game {
          * the live city's, exactly. An older save keeps the re-strike.
          */
         if (restoredFlows != null) debtManager.restoreMarket(restoredFlows.getDebtMarket());
+        // ...and the auctions counted so far (CD2, D33); a save from before the tally loads an empty one.
+        debtManager.getAuctionTally().restore(restoredFlows != null ? restoredFlows.getAuctionTally() : null);
         // ...the month's trade in units for a save from before them (0.7.63): every price is back now.
         // See Sector.deriveCarriedTrade().
         for (Sector s : getSectors().all()) s.deriveCarriedTrade();

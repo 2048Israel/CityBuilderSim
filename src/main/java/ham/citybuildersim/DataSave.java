@@ -1430,6 +1430,12 @@ public class DataSave {
     public void setDebtMarket(double[] market) { this.debtMarket = market; }
     public double[] getDebtMarket()            { return debtMarket; }
 
+    /** The city's auctions counted (CD2, D33): AuctionTally.toSave(), fourteen slots. Null on a save from before the tally, which loads an empty one. */
+    private double[] auctionTally;
+
+    public void setAuctionTally(double[] tally) { this.auctionTally = tally; }
+    public double[] getAuctionTally()           { return auctionTally; }
+
     /**
      * The price basket, its weights, and a year of readings.
      *

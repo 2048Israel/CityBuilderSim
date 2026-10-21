@@ -4760,6 +4760,12 @@ public class LongPlaytest {
         // debt market's last strike, carried whole (DebtManager.marketToSave()). In millionths of a point.
         same(month, "the city's rate across a save", back.getDebtManager().getRate() * 1e6, g.getDebtManager().getRate() * 1e6);
         same(month, "...and its ten-year rate", back.getDebtManager().curveRate(120) * 1e6, g.getDebtManager().curveRate(120) * 1e6);
+        // ...and the auctions it has booked (CD2, D33): a reloaded city keeps the count, or the run's would depend on its saves.
+        same(month, "the auctions counted across a save", back.getDebtManager().auctionSales(), g.getDebtManager().auctionSales());
+        same(month, "...the tails over a point among them", back.getDebtManager().auctionTailsOverPoint(), g.getDebtManager().auctionTailsOverPoint());
+        same(month, "...the short sales", back.getDebtManager().auctionShortSales(), g.getDebtManager().auctionShortSales());
+        same(month, "...the face they sold", back.getDebtManager().getAuctionTally().faceSold(), g.getDebtManager().getAuctionTally().faceSold());
+        same(month, "...and the largest tail, in millionths of a point", back.getDebtManager().largestTail() * 1e6, g.getDebtManager().largestTail() * 1e6);
         // The long sick (2026-09-11): the ring is a stock, and so is who it killed last month.
         double[] ringNow = back.getSickness().getState(), ringWas = g.getSickness().getState();
         for (int i = 0; i < ringWas.length; i++) {
@@ -6337,6 +6343,14 @@ public class LongPlaytest {
                         : String.format("m%d: $%,.0fk fell due, $%,.0fk netted, $%,.0fk raised",
                                 roll.getLastMonth(), roll.getLastDue(), roll.getLastNetted(), roll.getLastRaised()),
                 roll.getIssuedLifetime());
+        // The city's auctions (CD2, D33): how often the stop sat more than a point over fair, which is what
+        // the default cap of one point (Auction.MAX_TAIL) is a judgement about. A count, never a rate to hold to.
+        AuctionTally auctions = g.getDebtManager().getAuctionTally();
+        out.printf("  Auctions: %,d sale(s), $%,.0fk of $%,.0fk asked; %,d tail(s) over a point (%.1f%%), %,d short;"
+                + " the largest tail %.1f bp%n",
+                auctions.auctionSales(), auctions.faceSold(), auctions.faceAsked(),
+                auctions.auctionTailsOverPoint(), pct(auctions.auctionTailsOverPoint(), auctions.auctionSales()),
+                auctions.auctionShortSales(), auctions.largestTail() * 10_000);
         /*
          * WHO HOLDS IT, AND WHAT IT COSTS BY MATURITY (0.7.1): the four holders
          * at the end at face, what the households bought and sold over the run,

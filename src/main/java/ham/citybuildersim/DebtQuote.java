@@ -101,6 +101,13 @@ public record DebtQuote(
      * since they differ mainly in where they sit against par and why.
      */
     public String summary() {
+        // A tiny sale (Game.isTinySale()): no face, but the auction's result, which says why it is not done.
+        if (isEmpty() && auction != null && auction.sold() > 0) {
+            return String.format("Nothing sold: the bids reached only $%s of the $%s asked, at the highest yield the city took"
+                    + " (%.3f%%), and a sale of $%s raising $%s is under the smallest deal worth arranging.",
+                    f(auction.sold()), f(auction.ask().face()), auction.ceiling() * 100,
+                    f(auction.sold()), f(Math.max(0, auction.proceeds())));
+        }
         String sale = saleLines();
         return switch (instrument) {
             case "Note" -> String.format(
