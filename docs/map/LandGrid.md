@@ -1,4 +1,4 @@
-# LandGrid.java - 369 lines · 28 methods · 12 constants · model
+# LandGrid.java - 392 lines · 30 methods · 12 constants · model
 
 `ham/citybuildersim/LandGrid.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -36,7 +36,7 @@
 > beside it and GridCheck holding both; since batch M3 CityLand holds the
 > city's ground on it (spec-grid 3).
 
-**Uses:** [World](World.md) (7)
+**Uses:** [World](World.md) (12)
 
 **Used by (14):** [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [GlobeFrame](GlobeFrame.md), [GridCheck](GridCheck.md), [GridConversion](GridConversion.md), [GridOffers](GridOffers.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMapFrame](MiniMapFrame.md)
 
@@ -47,8 +47,8 @@
 | 79 | THE STATE |
 | 138 | OWNING |
 | 199 | WHAT IS OWNED |
-| 308 | THE CITY'S LEVEL (spec-grid star 2) |
-| 328 | THE TREE ITSELF: what GridCheck reads |
+| 331 | THE CITY'S LEVEL (spec-grid star 2) |
+| 351 | THE TREE ITSELF: what GridCheck reads |
 
 ## Constants
 
@@ -84,7 +84,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 329 | **type** `public final class LandGrid` | The ground a city owns, as a region quadtree over the world's plots: which holding owns each plot, and how much of any block or rectangle of plots is owned. |
+| 41 | 352 | **type** `public final class LandGrid` | The ground a city owns, as a region quadtree over the world's plots: which holding owns each plot, and how much of any block or rectangle of plots is owned. |
 
 ### THE STATE (lines 79-137)
 
@@ -104,7 +104,7 @@
 | 164 | 32 | `private long fillRec(int node, int level, long bx, long by, long x0, long y0, long x1, long y1, int h)` |  |
 | 197 | 1 | `private static boolean whole(byte s)` |  |
 
-### WHAT IS OWNED (lines 199-307)
+### WHAT IS OWNED (lines 199-330)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -115,29 +115,31 @@
 | 243 | 12 | `private long ownedRec(int node, int level, long bx, long by, long x0, long y0, long x1, long y1)` |  |
 | 257 | 4 | `public void tileFlags(long tx, long ty, boolean[] out)` | Fills a tile's (a level-5 block's) World.TILE x World.TILE ownership flags, row by row, from the leaves under it: a FULL leaf sets its square at once. |
 | 262 | 16 | `private void flagsRec(int node, int level, long bx, long by, long x0, long y0, boolean[] out)` |  |
-| 280 | 1 | **type** `public interface Leaf` | Called back for every FULL leaf: its level, its first plot and its holding. |
-| 280 | 1 | `void at(int level, long x, long y, int holding)` _(in LandGrid.Leaf)_ |  |
-| 283 | 1 | `public void leaves(Leaf f)` | Calls f back for every FULL leaf, north-west quarter first, down the tree. |
-| 285 | 7 | `private void leavesRec(int node, int level, long bx, long by, Leaf f)` |  |
-| 294 | 1 | `public long ownedPlots()` | Plots owned, by every holding. |
-| 297 | 1 | `public long minX()` | The owned ground's bounding box, in plots, half-open: its west edge... |
-| 300 | 1 | `public long minY()` | ...its north edge... |
-| 303 | 1 | `public long maxX()` | ...one past its east edge... |
-| 306 | 1 | `public long maxY()` | ...and one past its south edge. |
+| 280 | 4 | `public void tileHoldings(long tx, long ty, int[] out)` | Fills a tile's World.TILE x World.TILE holding per plot, row by row, -1 where none owns it: tileFlags()'s twin, a FULL leaf filling its square with its holding. |
+| 285 | 16 | `private void holdingsRec(int node, int level, long bx, long by, long x0, long y0, int[] out)` |  |
+| 303 | 1 | **type** `public interface Leaf` | Called back for every FULL leaf: its level, its first plot and its holding. |
+| 303 | 1 | `void at(int level, long x, long y, int holding)` _(in LandGrid.Leaf)_ |  |
+| 306 | 1 | `public void leaves(Leaf f)` | Calls f back for every FULL leaf, north-west quarter first, down the tree. |
+| 308 | 7 | `private void leavesRec(int node, int level, long bx, long by, Leaf f)` |  |
+| 317 | 1 | `public long ownedPlots()` | Plots owned, by every holding. |
+| 320 | 1 | `public long minX()` | The owned ground's bounding box, in plots, half-open: its west edge... |
+| 323 | 1 | `public long minY()` | ...its north edge... |
+| 326 | 1 | `public long maxX()` | ...one past its east edge... |
+| 329 | 1 | `public long maxY()` | ...and one past its south edge. |
 
-### THE CITY'S LEVEL (spec-grid star 2) (lines 308-327)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 318 | 6 | `public static int levelFor(double plots)` | The block level of a city owning `plots` plots of every kind: the largest k at which FACE_BLOCKS blocks fit across a square of that area (2^k at most sqrt(plots) / FACE_BLOCKS), never under MIN_LEVEL or over MAX_LEVEL. |
-| 326 | 1 | `public int level()` | This grid's level: levelFor() of the plots it owns. |
-
-### THE TREE ITSELF: what GridCheck reads (lines 328-369)
+### THE CITY'S LEVEL (spec-grid star 2) (lines 331-350)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 337 | 5 | `public long[] census()` | A walk of the tree: {live nodes, FULL leaves, OWNED nodes, nodes whose four children are FULL by one holding} - the last is what a merge leaves none of. |
-| 343 | 11 | `private void censusRec(int node, long[] c)` |  |
-| 356 | 3 | `public boolean sameAs(LandGrid o)` | Whether another grid is this one node for node: the same state everywhere, the same holding in every FULL leaf, the same plots owned. |
-| 360 | 9 | `private boolean sameRec(int node, LandGrid o, int other)` |  |
+| 341 | 6 | `public static int levelFor(double plots)` | The block level of a city owning `plots` plots of every kind: the largest k at which FACE_BLOCKS blocks fit across a square of that area (2^k at most sqrt(plots) / FACE_BLOCKS), never under MIN_LEVEL or over MAX_LEVEL. |
+| 349 | 1 | `public int level()` | This grid's level: levelFor() of the plots it owns. |
+
+### THE TREE ITSELF: what GridCheck reads (lines 351-392)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 360 | 5 | `public long[] census()` | A walk of the tree: {live nodes, FULL leaves, OWNED nodes, nodes whose four children are FULL by one holding} - the last is what a merge leaves none of. |
+| 366 | 11 | `private void censusRec(int node, long[] c)` |  |
+| 379 | 3 | `public boolean sameAs(LandGrid o)` | Whether another grid is this one node for node: the same state everywhere, the same holding in every FULL leaf, the same plots owned. |
+| 383 | 9 | `private boolean sameRec(int node, LandGrid o, int other)` |  |
 

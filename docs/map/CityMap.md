@@ -1,4 +1,4 @@
-# CityMap.java - 5,814 lines · 313 methods · 46 constants · model
+# CityMap.java - 5,828 lines · 313 methods · 46 constants · model
 
 `ham/citybuildersim/CityMap.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > changes: batch J4's for the far view, which since 0.7.128 draws from the
 > ... (58 more lines in the source)
 
-**Uses:** [World](World.md) (209), [DistrictPlan](DistrictPlan.md) (82), [BuildingVisual](BuildingVisual.md) (81), [TilePainter](TilePainter.md) (49), [Resource](Resource.md) (43), [CityRuns](CityRuns.md) (35), [CityShore](CityShore.md) (26), [Deposit](Deposit.md) (19), [CityLand](CityLand.md) (14), [TrainSchedule](TrainSchedule.md) (13), [DistrictPicture](DistrictPicture.md) (12), [TileRaster](TileRaster.md) (10), [TruckSchedule](TruckSchedule.md) (10), [BoatSchedule](BoatSchedule.md) (7), [LandGrid](LandGrid.md) (5), [SeaRoutes](SeaRoutes.md) (5), [InterchangeGround](InterchangeGround.md) (2), [Gateways](Gateways.md) (2), [LandParcel](LandParcel.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [World](World.md) (216), [DistrictPlan](DistrictPlan.md) (82), [BuildingVisual](BuildingVisual.md) (81), [TilePainter](TilePainter.md) (50), [Resource](Resource.md) (43), [CityRuns](CityRuns.md) (35), [CityShore](CityShore.md) (26), [Deposit](Deposit.md) (19), [CityLand](CityLand.md) (15), [TrainSchedule](TrainSchedule.md) (13), [DistrictPicture](DistrictPicture.md) (12), [TileRaster](TileRaster.md) (10), [TruckSchedule](TruckSchedule.md) (10), [BoatSchedule](BoatSchedule.md) (7), [LandGrid](LandGrid.md) (6), [SeaRoutes](SeaRoutes.md) (5), [InterchangeGround](InterchangeGround.md) (2), [Gateways](Gateways.md) (2), [LandParcel](LandParcel.md) (1), [BuildingType](BuildingType.md) (1)
 
 **Used by (20):** [CityRuns](CityRuns.md), [DistrictPicture](DistrictPicture.md), [DistrictPlan](DistrictPlan.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [TilePainter](TilePainter.md), [TruckRouteCheck](TruckRouteCheck.md)
 
@@ -92,9 +92,9 @@
 | 4714 | THE SEA ROUTES (0.7.97, batch O13; spec-roads-and-ports.md 4.1) |
 | 4799 | A TILE'S INPUTS FOR THE PAINTER |
 | 5146 | THE DISTRICT PLAN'S INPUTS (0.7.87, batch RD1; the project's |
-| 5287 | ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4: |
-| 5358 | THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2 |
-| 5490 | THE SIDECAR (spec-land 2.5) |
+| 5301 | ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4: |
+| 5372 | THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2 |
+| 5504 | THE SIDECAR (spec-land 2.5) |
 
 ## Constants
 
@@ -143,9 +143,9 @@
 | 3924 | `CityMap.RUN_TILES_KEPT` | `256` | ...whole tiles, for a 45-degree way: 256. |
 | 4038 | `CityMap.WAYS_WORKS_DISTRICTS` | `1000` | Up to this many districts the map weighs its mined sites each month for the railway's sidings and further yards: 1,000 (Jerus's city has 93). |
 | 4671 | `CityMap.AtSea.NONE` | `new AtSea(List.of(), List.of())` | None. |
-| 5363 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned dry plots. |
-| 5366 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
-| 5369 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned dry plots. |
+| 5377 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned dry plots. |
+| 5380 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
+| 5383 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned dry plots. |
 
 ## Fields (state)
 
@@ -340,18 +340,18 @@
 | 4764 | `private volatile List<BoatSchedule.Route> found` |  |
 | 5060 | `private final Map<Long, List<DrawnSite>> siteLists` |  |
 | 5063 | `private final Map<Long, Long> siteListVersion` |  |
-| 5378 | `private final CityMap map` |  |
-| 5379 | `private final int minX, minY` |  |
-| 5381 | `private final int[] widths, heights` | Each level's grid: its width, height and nodes (NODE_WIDTH numbers each, row by row). |
-| 5382 | `private final long[][] nodes` |  |
-| 5383 | `private final int count` |  |
-| 5595 | `private long lastStamp` |  |
+| 5392 | `private final CityMap map` |  |
+| 5393 | `private final int minX, minY` |  |
+| 5395 | `private final int[] widths, heights` | Each level's grid: its width, height and nodes (NODE_WIDTH numbers each, row by row). |
+| 5396 | `private final long[][] nodes` |  |
+| 5397 | `private final int count` |  |
+| 5609 | `private long lastStamp` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 140 | 5675 | **type** `public final class CityMap` | The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot ... |
+| 140 | 5689 | **type** `public final class CityMap` | The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot ... |
 
 ### THE GEOMETRY (lines 142-211)
 
@@ -757,52 +757,52 @@
 | 5074 | 57 | `List<DrawnSite> siteList(int dx, int dy)` | The sites whose centres lie in district (dx, dy) - every resource's, owned or not - each with its holding's state (its field's holding, the one holding the field's centre, since 0.7.64) and, for the SITED resources, t... |
 | 5133 | 12 | `public void forgetPainted()` | Forgets the painted state of every district - the plans, their links, the packing and the site lists - after the ground's states moved (what is worked out). |
 
-### THE DISTRICT PLAN'S INPUTS (0.7.87, batch RD1; the project's (lines 5146-5286)
+### THE DISTRICT PLAN'S INPUTS (0.7.87, batch RD1; the project's (lines 5146-5300)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 5165 | 3 | `DistrictPlan plan(District d)` | District d's own plan, drawn now from planInput(d) - its own buildings alone, none carried to it (R7): not kept (THE DRAWN PLANS keep the painter's). |
 | 5170 | 5 | `DistrictPlan.Input planInput(District d)` | The inputs of district d's plan (DistrictPlan.Input), its ground read from the world. |
 | 5177 | 15 | `static void readGround(DistrictPlan.Input in, World.Key world)` | The ground over a plan's frame, a World class a plot, read from the world the key names (0.7.115; the input's seed's until then): any thread (World is safe), so a plan's job reads it away from the screen's (0.7.88). |
-| 5194 | 92 | `DistrictPlan.Input planInputHere(District d)` | ...everything but the ground: what the map's own thread reads (the land, the counts, the sites, the runs). |
+| 5194 | 106 | `DistrictPlan.Input planInputHere(District d)` | ...everything but the ground: what the map's own thread reads (the land, the counts, the sites, the runs). |
 
-### ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4: (lines 5287-5357)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5305 | 1 | **type** `public record ZoneArea(String sector, double sqFt)` | A zone as the map tints it: its sector and the ground it covers, in square feet - what it holds free and what its sector has built in it (LandManager.heldBy() and usedBy()). |
-| 5308 | 1 | **type** `public record Tinted(long x0, long y0, int zone)` | A district a zone's tint covers: its box's first plot, {x, y} in the world, a district (DISTRICT plots) a side, and the zone's index in the list given. |
-| 5311 | 46 | `public List<Tinted> zoneTint(List<ZoneArea> zones)` | Each zone's districts (ZONES BY DISTRICT), in the map's order: none with no zone. |
-
-### THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2 (lines 5358-5489)
+### ZONES BY DISTRICT (0.8.0, batch I14; docs/studies/spec-zoning.md 4: (lines 5301-5371)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5377 | 112 | **type** `public static final class Pyramid` | The districts summed two by two, level by level, to one node - level 0 is the districts themselves, each level above a grid of nodes over the districts' box, a node NODE_WIDTH numbers. |
-| 5385 | 45 | `Pyramid(CityMap map)` _(in CityMap.Pyramid)_ |  |
-| 5432 | 11 | `long[] vector(District d)` _(in CityMap.Pyramid)_ | A district's numbers: its buildings by class, its ground used (half square feet) and its owned dry plots. |
-| 5445 | 15 | `void add(District d, int t, long k)` _(in CityMap.Pyramid)_ | k more (or fewer) of type t in a district: its ancestors take them. |
-| 5462 | 1 | `public int levels()` _(in CityMap.Pyramid)_ | How many levels above the districts. |
-| 5465 | 1 | `public int nodes()` _(in CityMap.Pyramid)_ | How many nodes above the districts hold anything (and the top). |
-| 5468 | 11 | `public long[] root()` _(in CityMap.Pyramid)_ | The top node: the whole city's numbers. |
-| 5481 | 7 | `public long[] node(int level, int dx, int dy)` _(in CityMap.Pyramid)_ | The node at a level (1 up) covering district (dx, dy), or null. |
+| 5319 | 1 | **type** `public record ZoneArea(String sector, double sqFt)` | A zone as the map tints it: its sector and the ground it covers, in square feet - what it holds free and what its sector has built in it (LandManager.heldBy() and usedBy()). |
+| 5322 | 1 | **type** `public record Tinted(long x0, long y0, int zone)` | A district a zone's tint covers: its box's first plot, {x, y} in the world, a district (DISTRICT plots) a side, and the zone's index in the list given. |
+| 5325 | 46 | `public List<Tinted> zoneTint(List<ZoneArea> zones)` | Each zone's districts (ZONES BY DISTRICT), in the map's order: none with no zone. |
 
-### THE SIDECAR (spec-land 2.5) (lines 5490-5814)
+### THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2 (lines 5372-5503)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5515 | 3 | `public byte[] writeSidecar(int month)` | The map as its sidecar's bytes, deflated: the header (magic, format, the world - its seed, or since 0.7.121 an Earth world's key folded, worldId() - month, stamp, the founding site, the stamp of the land's rectangles ... |
-| 5520 | 3 | `byte[] writeSidecar(int month, int format)` | ...in a given format, FORMAT or OLDEST_READ (a harness writes the older one to read it back). |
-| 5525 | 69 | `byte[] writeSidecar(int month, int format, boolean withRuns)` | ...and with its runs or (a harness's, as 0.7.88 wrote FORMAT 5) a count of none. |
-| 5598 | 7 | `static void writeVarint(DataOutputStream out, int v) throws IOException` | An unsigned varint (CL3): seven bits a byte, the low first, the high bit set where more follow. |
-| 5607 | 9 | `static int readVarint(DataInputStream in) throws IOException` | ...read back; an IOException for one more than five bytes long. |
-| 5625 | 7 | `static long worldId(World.Key key)` | The world a sidecar names in its header (0.7.121, batch E4): a generated world's seed, as every sidecar has carried it, so theirs are the bytes they were; an Earth world's whole key - its seed, spot and data - folded ... |
-| 5634 | 1 | `public long lastStamp()` | The stamp of the sidecar last written: what the save carries as mapStamp. |
-| 5637 | 13 | `static long stampOf(byte[] raw)` | The stamp of a sidecar's raw bytes: SplitMix64 folded over them, the stamp's own eight bytes read as zero. |
-| 5652 | 7 | `public static long stampIn(byte[] deflated)` | The stamp a sidecar carries, or 0 when it is not one. |
-| 5660 | 7 | `private static byte[] inflate(byte[] deflated)` |  |
-| 5678 | 115 | `public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining, BuildingVisual.Type[]...` | A map read back from its sidecar, or null when it is not one, is not this city's (another seed, month or stamp, or land drawn otherwise), or does not add up. |
-| 5795 | 3 | `public boolean same(CityMap o)` | Whether two maps hold the same districts with the same figures, in the same order, and (0.7.89) the same runs, and (0.7.97) the same works on the shore. |
-| 5800 | 3 | `public boolean sameDistricts(CityMap o)` | Whether two maps hold the same districts with the same figures, in the same order, and (CL3) the same logs: the count of records, the first batch and every record. |
-| 5805 | 9 | `public boolean sameDistricts(CityMap o, boolean withLogs)` | ...with or without their logs: the districts of a map read from a sidecar of FORMAT 8 or older, whose logs begin at its month, are the same as the map's own without them. |
+| 5391 | 112 | **type** `public static final class Pyramid` | The districts summed two by two, level by level, to one node - level 0 is the districts themselves, each level above a grid of nodes over the districts' box, a node NODE_WIDTH numbers. |
+| 5399 | 45 | `Pyramid(CityMap map)` _(in CityMap.Pyramid)_ |  |
+| 5446 | 11 | `long[] vector(District d)` _(in CityMap.Pyramid)_ | A district's numbers: its buildings by class, its ground used (half square feet) and its owned dry plots. |
+| 5459 | 15 | `void add(District d, int t, long k)` _(in CityMap.Pyramid)_ | k more (or fewer) of type t in a district: its ancestors take them. |
+| 5476 | 1 | `public int levels()` _(in CityMap.Pyramid)_ | How many levels above the districts. |
+| 5479 | 1 | `public int nodes()` _(in CityMap.Pyramid)_ | How many nodes above the districts hold anything (and the top). |
+| 5482 | 11 | `public long[] root()` _(in CityMap.Pyramid)_ | The top node: the whole city's numbers. |
+| 5495 | 7 | `public long[] node(int level, int dx, int dy)` _(in CityMap.Pyramid)_ | The node at a level (1 up) covering district (dx, dy), or null. |
+
+### THE SIDECAR (spec-land 2.5) (lines 5504-5828)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5529 | 3 | `public byte[] writeSidecar(int month)` | The map as its sidecar's bytes, deflated: the header (magic, format, the world - its seed, or since 0.7.121 an Earth world's key folded, worldId() - month, stamp, the founding site, the stamp of the land's rectangles ... |
+| 5534 | 3 | `byte[] writeSidecar(int month, int format)` | ...in a given format, FORMAT or OLDEST_READ (a harness writes the older one to read it back). |
+| 5539 | 69 | `byte[] writeSidecar(int month, int format, boolean withRuns)` | ...and with its runs or (a harness's, as 0.7.88 wrote FORMAT 5) a count of none. |
+| 5612 | 7 | `static void writeVarint(DataOutputStream out, int v) throws IOException` | An unsigned varint (CL3): seven bits a byte, the low first, the high bit set where more follow. |
+| 5621 | 9 | `static int readVarint(DataInputStream in) throws IOException` | ...read back; an IOException for one more than five bytes long. |
+| 5639 | 7 | `static long worldId(World.Key key)` | The world a sidecar names in its header (0.7.121, batch E4): a generated world's seed, as every sidecar has carried it, so theirs are the bytes they were; an Earth world's whole key - its seed, spot and data - folded ... |
+| 5648 | 1 | `public long lastStamp()` | The stamp of the sidecar last written: what the save carries as mapStamp. |
+| 5651 | 13 | `static long stampOf(byte[] raw)` | The stamp of a sidecar's raw bytes: SplitMix64 folded over them, the stamp's own eight bytes read as zero. |
+| 5666 | 7 | `public static long stampIn(byte[] deflated)` | The stamp a sidecar carries, or 0 when it is not one. |
+| 5674 | 7 | `private static byte[] inflate(byte[] deflated)` |  |
+| 5692 | 115 | `public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining, BuildingVisual.Type[]...` | A map read back from its sidecar, or null when it is not one, is not this city's (another seed, month or stamp, or land drawn otherwise), or does not add up. |
+| 5809 | 3 | `public boolean same(CityMap o)` | Whether two maps hold the same districts with the same figures, in the same order, and (0.7.89) the same runs, and (0.7.97) the same works on the shore. |
+| 5814 | 3 | `public boolean sameDistricts(CityMap o)` | Whether two maps hold the same districts with the same figures, in the same order, and (CL3) the same logs: the count of records, the first batch and every record. |
+| 5819 | 9 | `public boolean sameDistricts(CityMap o, boolean withLogs)` | ...with or without their logs: the districts of a map read from a sidecar of FORMAT 8 or older, whose logs begin at its month, are the same as the map's own without them. |
 

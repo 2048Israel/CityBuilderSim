@@ -14,6 +14,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.16 — FX6, a district that buys land inside itself keeps its buildings where they stand — 2026-10-21, ready, see docs/queue/FX6-notes.md
+
+Land bought inside a district no longer deals its buildings out again. A district's plan read its owned ground as
+of today, so a purchase replayed every arrival on the larger ground; on the playtest's city at month 3,998, 2,069
+of district (-2,-2)'s 2,946 buildings moved. The plan's ground is now dated, each plot the month the city bought
+it, from the land's own records (`Input.boughtAt`). The plan starts on the ground its first batch stands on and
+adds the land bought before each arrival's month: what stands never moves, and new arrivals take the new ground.
+LongPlaytest is green again (its layout watch: 0 moves in 48 month pairs). The map's alone: the trace is
+byte-identical to 0.8.15's, so no ensemble; no save change. ★1 for Jerus: ground bought inside a cell already
+open gets no new streets, so less of it is built on (FX6-C). Harness: MapCheck 2c, PlanCheck 12.
+
 ### 0.8.15 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
 
 The city's curve no longer sits on the dial in parallel (spec-city-debt §3, D9). The market expects the dial to drift
