@@ -4271,9 +4271,6 @@ public class MapCheck {
     /** ...and on a yard's ladder, the tightest curve the railway has: 45 degrees (FX5: an S of up to a few plots across over YARD_LADDER, 3 plots, turns a depot's neighbours 40; the long yards slice Y lays will lengthen the ladder and tighten this). */
     static final double LADDER_TURN_DEG = 45;
 
-    /** The last plots of a route that are a yard's ladder and siding, for what trainsOnTheCurves() prints: 12 (the ladder's S is 3 to 6 plots long, the siding's last leg a few). A report's cut, not an assertion's. */
-    static final double LADDER_PLOTS = 12;
-
     /**
      * Section 9's trains on the curves (FX5, 0.8.15; Jerus, 2026-10-20: "do
      * trains make 90 degree turns?"): on the yard city's routes, at every
@@ -4308,7 +4305,7 @@ public class MapCheck {
                     d -= cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS;
                     pairs++;
                     if (apart > worst) { worst = apart; where = c.route(); }
-                    if (at > LADDER_PLOTS && apart > awayFromEnd) awayFromEnd = apart;
+                    if (!onLadder(rt, at) && apart > awayFromEnd) awayFromEnd = apart;
                 }
             }
         }
@@ -4325,12 +4322,12 @@ public class MapCheck {
                     d -= cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS;
                     pairs++;
                     if (apart > worst) { worst = apart; where = r; }
-                    if (at > LADDER_PLOTS && apart > awayFromEnd) awayFromEnd = apart;
+                    if (!onLadder(rt, at) && apart > awayFromEnd) awayFromEnd = apart;
                 }
             }
         }
-        out.printf("      %,d neighbouring pairs of vehicles on %d routes: the sharpest turn between two is %.1f degrees (route %d), %.1f degrees more than %.0f plots from a route's end (its ladder's)%n",
-                pairs, routes.size(), worst, where, awayFromEnd, LADDER_PLOTS);
+        out.printf("      %,d neighbouring pairs of vehicles on %d routes: the sharpest turn between two is %.1f degrees (route %d), %.1f degrees off the yards' ladders (onLadder())%n",
+                pairs, routes.size(), worst, where, awayFromEnd);
         check("(a) no two neighbouring vehicles of a train differ in heading by more than " + (int) MOST_TURN_DEG + " degrees, at any sampled moment"
                 + " and along every route, off its yard's ladder (on 0.8.14, 35 at the world line's join and 90 at a corner)", pairs > 0 && awayFromEnd <= MOST_TURN_DEG);
         check("...and on a yard's ladder no more than " + (int) LADDER_TURN_DEG + " (an S over YARD_LADDER plots, until the yards are as long as their trains)",
@@ -4369,6 +4366,18 @@ public class MapCheck {
         out.printf("      %,d vehicles shown whole on the railway, %,d of them off the drawn rail%s%n", checked, off, examples.isEmpty() ? "" : ": " + examples);
         check("(b) every vehicle shown whole has its middle on the track the tiles draw: its pixel or one of its eight neighbours is BALLAST, a SLEEPER or STEEL",
                 checked > 0 && off == 0);
+    }
+
+    /**
+     * Whether a point `fromEnd` plots before a route's end lies on its yard's ladder (FX5): the S between the fan's apex and the
+     * siding's start, the siding being the route's last leg - within a locomotive's length either side. A route with no siding
+     * has none. Since the long yards (slice Y1) the siding is most of a unit train long, so the ladder lies that far from the end.
+     */
+    static boolean onLadder(TrainSchedule.Route rt, double fromEnd) {
+        if (rt.siding() < 0 || rt.xs().length < 2) return false;
+        double[] al = rt.along();
+        double siding = al[al.length - 1] - al[al.length - 2];
+        return fromEnd >= siding - TrainSchedule.LOCO_PLOTS && fromEnd <= siding + TileRaster.YARD_LADDER + TrainSchedule.LOCO_PLOTS;
     }
 
     /** How far apart two headings are, in degrees, 0 to 180. */

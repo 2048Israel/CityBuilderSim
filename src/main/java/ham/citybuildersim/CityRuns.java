@@ -70,7 +70,10 @@ import java.util.PriorityQueue;
  *             at a ramp; before that its plots are counted undrawn, the
  *             legend's;
  *   YARDS     each Rail Terminal on the track, in the cell along it nearest a
- *             mine, its box across the line (spec 2.8);
+ *             mine, its box across the line (spec 2.8); (FX5 Y1) laid YARD_LONG
+ *             plots along its line, a unit train and its two ladders, across
+ *             its type's footprint, running on into the next cell across the
+ *             ring street where the track runs straight through both;
  *   GATEWAY   (0.8.1, batch FR0; spec-freight 4.1, D13) the bearing toward
  *             the world (Gateways), found once by the map and kept here: each
  *             net's spine is the row or column nearer it, its arm toward the
@@ -95,7 +98,9 @@ import java.util.PriorityQueue;
  *             WAYS; the spurs left over, a siding the district plans lay to the
  *             works they place, are not - slice 5, FR7 2026-10-19, CityMap
  *             sidingsOf()). Each Rail Terminal and Rail Depot keeps a yard of its own
- *             size, a depot's smaller. The highways are grown as before.
+ *             size, a depot's smaller across; (FX5 Y1) along its line, YARD_LONG
+ *             where the ground allows, else the cell's interior, else its
+ *             footprint's own length. The highways are grown as before.
  *
  * A net is kept as its arms' straight STRETCHES, not its plots: a city of ten
  * billion has some fifteen million plots of track on a few hundred arms.
@@ -320,7 +325,7 @@ public final class CityRuns {
     /** The gateway's bearing, city-wide (the highway's and the railway's share it): GATEWAY_UNKNOWN until the map looks, NO_GATEWAY where it finds none. */
     int gateway = GATEWAY_UNKNOWN;
 
-    /** The railway's yards: each {x0, y0, w, h} in world plots, in the order laid. */
+    /** The railway's yards: each {x0, y0, w, h} in world plots, in the order laid (FX5 Y1: up to YARD_LONG plots along its line, so its box is not always its type's footprint: yardAsked()). */
     final List<long[]> yards = new ArrayList<>();
 
     /**
@@ -1114,11 +1119,77 @@ public final class CityRuns {
 
     /* =====================================================================
        THE RAILWAY'S YARDS
+
+       A yard's size is its type's footprint across its line and a unit train's
+       length along it (FX5 Y1; Jerus, 2026-10-20: "a long train will be out
+       of the depot"): a Rail Terminal YARD_LONG x 24, a Rail Depot YARD_LONG
+       x 7 with its three sidings and its shed, 48 plots, 1.44 km, where the
+       ground allows. That is longer than a cell's interior (31), so the box
+       starts at a cell's first interior plot and runs on across the ring
+       plot into the next cell, or ends at its last and runs back, and is a
+       spot only where the track runs the whole length. A district's plan
+       takes the ground as FIXED_YARD, so the ring street stops at the yard
+       on both sides (its CUTS rule joins the dead ends); a yard across a
+       district's edge is one district's work (CityMap.workIn()). Where no
+       box of that length fits (water, ground not owned, a highway or its
+       verge, a mine, a siding, another yard), the next shorter along
+       length: the cell's interior, then the footprint's own - the first
+       that fits wins, over the nearest-a-mine order, the branches' and the
+       further yards' alike. Each yard keeps the footprint it was asked for
+       (yardAsked(), in the sidecar from CityMap FORMAT 10), so a yard laid
+       long or short by the ground is not laid again every month.
        ===================================================================== */
 
     /**
-     * Takes the yards back to the longest run, from the first, whose boxes
-     * are the sizes the model now has (FR7 slice 3, 2026-10-18): a Rail
+     * How long a yard is laid along its line (FX5 Y1; Jerus, 2026-10-20: "a long train will be out of the depot", "the rail depots would have to be redesigned to accomdoate such large trains"): a unit train's length rounded up, its two locomotives and 80 wagons of UNIT_TONNES at WAGON_TONNES, 41.4 plots, and the two ladders that close a yard's sidings to its line, 3 each: 48 plots, 1.44 km. A yard is laid so long where the ground allows, else at the cell's interior, else at the length of its type's footprint.
+     */
+    public static final int YARD_LONG = (int) Math.ceil(2 * TrainSchedule.LOCO_PLOTS + Math.ceil(TrainSchedule.UNIT_TONNES / TrainSchedule.WAGON_TONNES) * TrainSchedule.CAR_PLOTS)
+            + 2 * TileRaster.YARD_LADDER;
+
+    /** The lengths, longest first, a yard of footprint {w, h} is laid at along a row (w along) or a column (h along): YARD_LONG, the cell's interior, the footprint's own (FX5 Y1). Three tiers; tierAlong() repeats a length two tiers share. */
+    static final int TIERS = 3;
+
+    /** The footprint's own length along the line, `own`, at tier t: YARD_LONG (never less than the footprint's), the cell's interior, the footprint's own. */
+    static int tierAlong(int own, int t) {
+        return t == 0 ? Math.max(own, YARD_LONG) : t == 1 ? Math.max(own, DistrictPlan.INTERIOR) : own;
+    }
+
+    /** Whether tier t is a length the tier before it already is (so it adds no boxes): a yard whose footprint is already as long as the interior has two tiers. */
+    static boolean sameTier(int own, int t) {
+        return t > 0 && tierAlong(own, t) == tierAlong(own, t - 1);
+    }
+
+    /**
+     * A yard's box on a row (its line along x) or a column, `along` plots long, as {w, h}: across the footprint's own across where the
+     * length is the footprint's own (a Rail Depot is 8 x 7 whichever way its line runs, as it was), else min(w, h) of the footprint
+     * (a Rail Terminal 24, a Rail Depot 7: its sidings and its shed).
+     */
+    static int[] boxSize(boolean row, int w, int h, int along) {
+        int own = row ? w : h;
+        int across = along == own ? (row ? h : w) : Math.min(w, h);
+        return row ? new int[] { along, across } : new int[] { across, along };
+    }
+
+    /** The footprint yard i was laid for, {w, h}: the size it was asked for, which it keeps whatever length the ground gave it (a yard added to `yards` by hand, as a harness does, was asked for its box's own). */
+    public int[] yardAsked(int i) {
+        if (i < yardAsked.size()) return yardAsked.get(i);
+        long[] y = yards.get(i);
+        return new int[] { (int) y[2], (int) y[3] };
+    }
+
+    /** The footprints the yards were laid for, in the order of `yards` (the first yardAsked.size() of them; the rest were added by hand and were asked for their boxes' own). */
+    private final List<int[]> yardAsked = new ArrayList<>();
+
+    /** Lays a yard: its box, and the footprint it was asked for. */
+    private void addYard(long[] box, int[] asked) {
+        while (yardAsked.size() < yards.size()) yardAsked.add(yardAsked(yardAsked.size()));
+        yards.add(box);
+        yardAsked.add(new int[] { asked[0], asked[1] });
+    }
+
+    /**
+     * Takes the yards back to the longest run, from the first, that were
+     * laid for the sizes the model now asks (FR7 slice 3, 2026-10-18): a Rail
      * Terminal's box and a Rail Depot's are not one size, and until now every
      * yard was laid at the size of whichever type came last. `sizes` is the
      * map's, {w, h} a yard, Rail Terminals first and Rail Depots after them,
@@ -1126,37 +1197,51 @@ public final class CityRuns {
      * is taken first (as the single-size yards were before). Those the model has
      * and the ground has no place for are counted once the rest are laid
      * (yardsShort, zeroed here), and their districts' plans draw them.
+     * (FX5 Y1) A yard is compared by the footprint it was asked for, not by its
+     * box: laid YARD_LONG along its line, or short by the ground, its box is not
+     * the footprint, and comparing the boxes would lay it again every month.
      */
     private void keepYards(List<int[]> sizes) {
         int keep = 0;
-        while (keep < yards.size() && keep < sizes.size() && yards.get(keep)[2] == sizes.get(keep)[0] && yards.get(keep)[3] == sizes.get(keep)[1]) keep++;
+        while (keep < yards.size() && keep < sizes.size()) {
+            int[] asked = yardAsked(keep), now = sizes.get(keep);
+            if (asked[0] != now[0] || asked[1] != now[1]) break;
+            keep++;
+        }
         while (yards.size() > keep) yards.remove(yards.size() - 1);
+        while (yardAsked.size() > keep) yardAsked.remove(yardAsked.size() - 1);
         yardsShort = 0;
     }
 
-    /** Every box a yard could take, the nearest a mine first: two a cell the track runs straight through on its line, one at either end of it. */
+    /** Every box a yard could take, the nearest a mine first: the YARD_LONG boxes, then (where none fits, in the order of the tiers) the cell's interior's, then the footprint's own; two a cell the track runs straight through on its line, one at either end of it. */
     List<long[]> yardSpots(int w, int h, List<long[]> mines) {
-        List<long[]> out = spotsOnTrack(w, h);
-        double[] key = new double[out.size()];
-        for (int i = 0; i < out.size(); i++) {
-            long[] b = out.get(i);
-            double bx = b[0] + b[2] / 2.0, by = b[1] + b[3] / 2.0, best = Double.MAX_VALUE;
-            for (long[] m : mines) best = Math.min(best, Math.hypot(bx - (m[0] + m[2] + 1) / 2.0, by - (m[1] + m[3] + 1) / 2.0));
-            if (mines.isEmpty()) best = Math.hypot(bx - rail.hubX, by - rail.hubY);
-            key[i] = best;
+        List<long[]> all = new ArrayList<>();
+        for (List<long[]> tier : spotsOnTrack(w, h)) {
+            double[] key = new double[tier.size()];
+            for (int i = 0; i < tier.size(); i++) {
+                long[] b = tier.get(i);
+                double bx = b[0] + b[2] / 2.0, by = b[1] + b[3] / 2.0, best = Double.MAX_VALUE;
+                for (long[] m : mines) best = Math.min(best, Math.hypot(bx - (m[0] + m[2] + 1) / 2.0, by - (m[1] + m[3] + 1) / 2.0));
+                if (mines.isEmpty()) best = Math.hypot(bx - rail.hubX, by - rail.hubY);
+                key[i] = best;
+            }
+            all.addAll(sortedBy(tier, key));
         }
-        return sortedBy(out, key);
+        return all;
     }
 
-    /** ...the nearest the point (gx, gy) first (FR7 slice 3: a further yard goes beside a group of works, not beside the mine nearest the hub). */
+    /** ...the nearest the point (gx, gy) first (FR7 slice 3: a further yard goes beside a group of works, not beside the mine nearest the hub), the tiers in order as above. */
     List<long[]> yardSpotsNear(int w, int h, double gx, double gy) {
-        List<long[]> out = spotsOnTrack(w, h);
-        double[] key = new double[out.size()];
-        for (int i = 0; i < out.size(); i++) {
-            long[] b = out.get(i);
-            key[i] = Math.hypot(b[0] + b[2] / 2.0 - gx, b[1] + b[3] / 2.0 - gy);
+        List<long[]> all = new ArrayList<>();
+        for (List<long[]> tier : spotsOnTrack(w, h)) {
+            double[] key = new double[tier.size()];
+            for (int i = 0; i < tier.size(); i++) {
+                long[] b = tier.get(i);
+                key[i] = Math.hypot(b[0] + b[2] / 2.0 - gx, b[1] + b[3] / 2.0 - gy);
+            }
+            all.addAll(sortedBy(tier, key));
         }
-        return sortedBy(out, key);
+        return all;
     }
 
     /** The boxes by key, the least first; on a tie the northern, then the western. */
@@ -1170,11 +1255,18 @@ public final class CityRuns {
         return sorted;
     }
 
-    /** Every box a yard of w x h could take on the track, unsorted: two a cell the track runs straight through on its line, one at either end of it; a siding is no line for a yard. */
-    private List<long[]> spotsOnTrack(int w, int h) {
-        List<long[]> whole = new ArrayList<>(), part = new ArrayList<>();
+    /**
+     * Every box a yard of footprint w x h could take on the track, unsorted, by tier (TIERS lists, the longest first): two a cell the track
+     * runs straight through on its line, one at either end of it; a siding is no line for a yard. A tier's boxes are those the track runs
+     * the whole length of; where no tier has one (a track just begun) the last tier is the boxes it runs partly through, as before FX5.
+     */
+    private List<List<long[]>> spotsOnTrack(int w, int h) {
+        List<List<long[]>> whole = new ArrayList<>(TIERS);
+        List<long[]> part = new ArrayList<>();
+        for (int t = 0; t < TIERS; t++) whole.add(new ArrayList<>());
         if (!rail.started) return whole;
         java.util.Set<Long> seen = new java.util.HashSet<>();
+        List<long[]> cell = new ArrayList<>(2);
         for (Arm a : rail.arms) {
             if (a.corridor >= SIDING) continue;
             for (int s = 0; s < a.segs; s++) {
@@ -1183,39 +1275,79 @@ public final class CityRuns {
                 boolean row = dy == 0;
                 long line = row ? a.segY[s] : a.segX[s];
                 if (Math.floorMod(line, CELL) != RAIL_AT) continue;
+                int own = row ? w : h, last = TIERS - 1;
+                while (last > 0 && sameTier(own, last)) last--;
                 for (int k = 1; k <= a.segSteps[s]; k += 1) {
                     long px = a.segX[s] + (long) dx * k, py = a.segY[s] + (long) dy * k;
                     long cx = Math.floorDiv(px, CELL), cy = Math.floorDiv(py, CELL);
                     if (!seen.add((cx << 33) ^ (cy << 1) ^ (row ? 1 : 0))) continue;
-                    List<long[]> cell = new ArrayList<>(2);
-                    spotsIn(cell, cx, cy, row, w, h);
-                    // A cell's two ends: only a box the track runs through is a spot (FR7 slice 3). With the opposite arm gone,
-                    // the cell the hub stands in has an end beyond the hub where no track runs.
-                    for (long[] b : cell) {
-                        int on = 0, len = row ? w : h;
-                        for (int i = 0; i < len; i++) if (row ? covered(rail, b[0] + i, cy * CELL + RAIL_AT) : covered(rail, cx * CELL + RAIL_AT, b[1] + i)) on++;
-                        if (on == len) whole.add(b);
-                        else if (on > 0) part.add(b);
+                    for (int t = 0; t < TIERS; t++) {
+                        if (sameTier(own, t)) continue;
+                        cell.clear();
+                        spotsIn(cell, cx, cy, row, w, h, tierAlong(own, t));
+                        // A cell's two ends: only a box the track runs through is a spot (FR7 slice 3). With the opposite arm gone,
+                        // the cell the hub stands in has an end beyond the hub where no track runs.
+                        for (long[] b : cell) {
+                            int on = 0, len = row ? (int) b[2] : (int) b[3];
+                            for (int i = 0; i < len; i++) if (row ? covered(rail, b[0] + i, cy * CELL + RAIL_AT) : covered(rail, cx * CELL + RAIL_AT, b[1] + i)) on++;
+                            if (on == len) whole.get(t).add(b);
+                            else if (on > 0 && t == last) part.add(b);
+                        }
                     }
                 }
             }
         }
-        List<long[]> out = !whole.isEmpty() ? whole : part;
-        if (out.isEmpty()) spotsIn(out, Math.floorDiv(rail.hubX, CELL), Math.floorDiv(rail.hubY, CELL), true, w, h);
-        return out;
+        // ...and (FX5) a box from the hub itself along each spine arm that leaves it on a yard's line: the cell-aligned boxes start a plot
+        // inside a cell and the hub stands RAIL_AT in, so a long yard laid nearest the hub would leave the main line from the hub to its
+        // box as a stub no train runs on (FR7's rule: no track on no train's way).
+        if (rail.hubLaid) {
+            for (Arm a : rail.arms) {
+                if (a.corridor >= BRANCH || a.segs == 0 || a.sx != rail.hubX || a.sy != rail.hubY) continue;
+                int hd = a.segHead[0], dx = DX[hd], dy = DY[hd];
+                if (dx != 0 && dy != 0) continue;
+                boolean row = dy == 0;
+                if (Math.floorMod(row ? rail.hubY : rail.hubX, CELL) != RAIL_AT) continue;
+                int own = row ? w : h;
+                for (int t = 0; t < TIERS; t++) {
+                    if (sameTier(own, t)) continue;
+                    int along = tierAlong(own, t);
+                    int[] size = boxSize(row, w, h, along);
+                    int across = row ? size[1] : size[0];
+                    if (across > DistrictPlan.INTERIOR) continue;
+                    int a0 = across >= RAIL_AT ? 1 : RAIL_AT - across + 1;
+                    long first = (row ? rail.hubX : rail.hubY) - ((row ? dx : dy) > 0 ? 0 : along - 1);
+                    long x0 = row ? first : Math.floorDiv(rail.hubX, CELL) * CELL + a0, y0 = row ? Math.floorDiv(rail.hubY, CELL) * CELL + a0 : first;
+                    int on = 0;
+                    for (int i = 0; i < along; i++) if (row ? covered(rail, x0 + i, rail.hubY) : covered(rail, rail.hubX, y0 + i)) on++;
+                    if (on == along) whole.get(t).add(new long[] { x0, y0, size[0], size[1] });
+                }
+            }
+        }
+        boolean any = false;
+        for (List<long[]> tier : whole) any |= !tier.isEmpty();
+        if (!any) {
+            whole.get(TIERS - 1).addAll(part);
+            if (part.isEmpty()) spotsIn(whole.get(TIERS - 1), Math.floorDiv(rail.hubX, CELL), Math.floorDiv(rail.hubY, CELL), true, w, h, w);
+        }
+        return whole;
     }
 
-    /** A cell's yard boxes across its quarter line (a row's, or a column's): inside the cell's interior, covering the line, at either end of the cell. */
-    static void spotsIn(List<long[]> out, long cx, long cy, boolean row, int w, int h) {
-        int across = row ? h : w, along = row ? w : h;
-        if (across > DistrictPlan.INTERIOR || along > DistrictPlan.INTERIOR) return;
+    /**
+     * A cell's yard boxes across its quarter line (a row's, or a column's), `along` plots long (boxSize()): covering the line across,
+     * inside the interior across, at either end of the cell along - from the interior's first plot, or ending on its last. A box
+     * longer than the interior (YARD_LONG) runs on over the ring plot into the next cell, or back into the one before.
+     */
+    static void spotsIn(List<long[]> out, long cx, long cy, boolean row, int w, int h, int along) {
+        int[] size = boxSize(row, w, h, along);
+        int across = row ? size[1] : size[0];
+        if (across > DistrictPlan.INTERIOR) return;
         // Across the line: from the interior's first plot where the box reaches the line from there, else ending on it.
         int a0 = across >= RAIL_AT ? 1 : RAIL_AT - across + 1;
         for (int end = 0; end < 2; end++) {
             int b0 = end == 0 ? 1 : CELL - along;
             if (end == 1 && b0 == 1) break;
             long x0 = cx * CELL + (row ? b0 : a0), y0 = cy * CELL + (row ? a0 : b0);
-            out.add(new long[] { x0, y0, w, h });
+            out.add(new long[] { x0, y0, size[0], size[1] });
         }
     }
 
@@ -1395,7 +1527,8 @@ public final class CityRuns {
 
     /**
      * Lays the railway to the model's track plots, yards and spurs (layTo()'s
-     * rail half): the derived arms off, the main line grown or taken back (to
+     * rail half; each yard YARD_LONG along its line, or as short as the ground
+     * allows, THE RAILWAY'S YARDS): the derived arms off, the main line grown or taken back (to
      * the model's track plots, or - with a station standing - to the city's
      * edge whatever the track, FX5), the first yard, the sidings, then the
      * branches and the further yards, each out of what the track plots leave.
@@ -1419,7 +1552,7 @@ public final class CityRuns {
             Ctx ctx = new Ctx(mines, works);
             if (!sizes.isEmpty() && yards.isEmpty()) {
                 long[] first = ctx.nearestMineSpot(sizes.get(0)[0], sizes.get(0)[1], g);
-                if (first != null) yards.add(first);
+                if (first != null) addYard(first, sizes.get(0));
             }
             laySidings(spurs, ctx, g, budget);
             // A yard laid beside a group of works has a branch to be laid with the rest; with no works there is no such yard
@@ -1956,19 +2089,19 @@ public final class CityRuns {
                     long before = rail.plots;
                     layWay(BRANCH, b.px(), b.py(), new int[][] { { b.heading(), b.steps() } });
                     budget[0] -= rail.plots - before;
-                    yards.add(b.box());
+                    addYard(b.box(), size);
                     ctx.yardLaid(b.box());
                     return true;
                 }
             }
             for (long[] s : yardSpotsNear(w, h, grp[0], grp[1])) {
-                if (yardFree(s, g, ctx)) { yards.add(s); ctx.yardLaid(s); return true; }
+                if (yardFree(s, g, ctx)) { addYard(s, size); ctx.yardLaid(s); return true; }
             }
             return false;
         }
         long[] s = ctx.nearestMineSpot(w, h, g);
         if (s == null) return false;
-        yards.add(s);
+        addYard(s, size);
         ctx.yardLaid(s);
         return true;
     }
@@ -2014,6 +2147,16 @@ public final class CityRuns {
      * shorter branch. Null where none is free and within `budget`.
      */
     private Branch bestBranch(int w, int h, double gx, double gy, Ground g, Ctx ctx, long budget) {
+        // (FX5 Y1) The longest yard the ground allows: YARD_LONG along the branch's line, else the cell's interior, else the footprint's own.
+        for (int t = 0; t < TIERS; t++) {
+            Branch b = bestBranchAt(w, h, t, gx, gy, g, ctx, budget);
+            if (b != null) return b;
+        }
+        return null;
+    }
+
+    /** ...at one tier (tierAlong()): the yard boxes of that length only; null where none is free, within `budget` and reached by a branch. */
+    private Branch bestBranchAt(int w, int h, int tier, double gx, double gy, Ground g, Ctx ctx, long budget) {
         Branch best = null;
         double bestD = Double.MAX_VALUE;
         for (long[] p : ctx.line()) {
@@ -2022,9 +2165,11 @@ public final class CityRuns {
             if (Math.floorMod(across, CELL) != RAIL_AT) continue;
             int heading = ew ? (gy >= py ? 2 : 6) : (gx >= px ? 0 : 4);
             long cg = Math.floorDiv((long) Math.floor(ew ? gy : gx), CELL);
+            int own = ew ? h : w;
+            if (sameTier(own, tier)) continue;
             for (long c = cg - 1; c <= cg + 1; c++) {
                 List<long[]> boxes = new ArrayList<>(2);
-                spotsIn(boxes, ew ? Math.floorDiv(px, CELL) : c, ew ? c : Math.floorDiv(py, CELL), !ew, w, h);
+                spotsIn(boxes, ew ? Math.floorDiv(px, CELL) : c, ew ? c : Math.floorDiv(py, CELL), !ew, w, h, tierAlong(own, tier));
                 for (long[] box : boxes) {
                     double d = Math.hypot(box[0] + box[2] / 2.0 - gx, box[1] + box[3] / 2.0 - gy);
                     if (d > bestD) continue;
@@ -2509,7 +2654,7 @@ public final class CityRuns {
             for (Arm a : n.arms) h = World.mix(h ^ a.steps ^ ((long) a.head << 40) ^ (a.x << 20) ^ a.y);
             h = World.mix(h ^ n.corridors.size());
         }
-        for (long[] y : yards) h = World.mix(h ^ y[0] * 0x9E3779B97F4A7C15L ^ y[1]);
+        for (long[] y : yards) h = World.mix(h ^ y[0] * 0x9E3779B97F4A7C15L ^ y[1] ^ (y[2] << 24) ^ (y[3] << 44));
         h = World.mix(h ^ (doubleMain ? 1L : 0L));
         return h;
     }
@@ -2722,8 +2867,16 @@ public final class CityRuns {
         return highways.arms.size() + rail.arms.size() + (yards.isEmpty() ? 0 : 1);
     }
 
-    /** Writes the runs after their count (CityMap's FORMAT 5): each net's hub, corridors, arms stretch by stretch and interchanges; the yards; what was short. */
+    /** Writes the runs after their count (CityMap's FORMAT 5): each net's hub, corridors, arms stretch by stretch and interchanges; the yards (and since FORMAT 10 the footprints they were laid for); what was short. */
     void write(DataOutputStream out) throws IOException {
+        write(out, CityMap.FORMAT);
+    }
+
+    /**
+     * ...in the sidecar format given: from FORMAT 10 (FX5 Y1) each yard's box is followed, after all the boxes, by the footprint it was laid
+     * for, two ints (w, h) each - the size it was asked for, which a box laid long or short by the ground is not. An older format has none.
+     */
+    void write(DataOutputStream out, int format) throws IOException {
         for (Net n : new Net[] { highways, rail }) {
             out.writeBoolean(n.started);
             out.writeBoolean(n.hubLaid);
@@ -2750,6 +2903,13 @@ public final class CityRuns {
         }
         out.writeInt(yards.size());
         for (long[] y : yards) for (int k = 0; k < 4; k++) out.writeLong(y[k]);
+        if (format >= 10) {
+            for (int i = 0; i < yards.size(); i++) {
+                int[] asked = yardAsked(i);
+                out.writeInt(asked[0]);
+                out.writeInt(asked[1]);
+            }
+        }
         out.writeLong(highwayShort);
         out.writeLong(trackSurplus);
         out.writeInt(yardsShort);
@@ -2757,6 +2917,11 @@ public final class CityRuns {
 
     /** The runs write() wrote, read back; null when they do not add up. */
     static CityRuns read(DataInputStream in) throws IOException {
+        return read(in, CityMap.FORMAT);
+    }
+
+    /** ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then. */
+    static CityRuns read(DataInputStream in, int format) throws IOException {
         CityRuns r = new CityRuns();
         for (Net n : new Net[] { r.highways, r.rail }) {
             n.started = in.readBoolean();
@@ -2800,6 +2965,13 @@ public final class CityRuns {
         int ny = in.readInt();
         if (ny < 0 || ny > 1 << 20) return null;
         for (int i = 0; i < ny; i++) r.yards.add(new long[] { in.readLong(), in.readLong(), in.readLong(), in.readLong() });
+        if (format >= 10) {
+            for (int i = 0; i < ny; i++) {
+                int w = in.readInt(), h = in.readInt();
+                if (w < 1 || h < 1 || w > 1 << 20 || h > 1 << 20) return null;
+                r.yardAsked.add(new int[] { w, h });
+            }
+        }
         r.highwayShort = in.readLong();
         r.trackSurplus = in.readLong();
         r.yardsShort = in.readInt();
@@ -2825,7 +2997,7 @@ public final class CityRuns {
             }
         }
         if (yards.size() != o.yards.size()) return false;
-        for (int i = 0; i < yards.size(); i++) if (!Arrays.equals(yards.get(i), o.yards.get(i))) return false;
+        for (int i = 0; i < yards.size(); i++) if (!Arrays.equals(yards.get(i), o.yards.get(i)) || !Arrays.equals(yardAsked(i), o.yardAsked(i))) return false;
         return highwayShort == o.highwayShort && trackSurplus == o.trackSurplus;
     }
 }

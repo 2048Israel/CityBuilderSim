@@ -117,7 +117,10 @@ import java.util.zip.InflaterInputStream;
  * runs, laid from its counts when a FORMAT 5 sidecar is read; FORMAT 7
  * since 0.8.0, a district's sites by slot; FORMAT 8 since 0.8.1, the
  * gateway's bearing after the shore, a FORMAT 7 sidecar's found again at the
- * next month's runs).
+ * next month's runs; FORMAT 10 since FX5, each railway yard's footprint beside
+ * its box in the runs - a yard is laid up to a unit train's length along its
+ * line, so its box is not the size it was asked for - an older sidecar reading
+ * each as its box's own width and height).
  *
  * AT SEA AND ON THE SHORE (0.7.97, batch O13; docs/studies/spec-oil.md 2.12,
  * spec-roads-and-ports.md 2.8 and 4): THE CAMPUS deals the refinery's units
@@ -200,8 +203,8 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 9 since CL3 (batch CL3), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
-    static final int FORMAT = 9;
+    /** The sidecar's format: 10 since FX5 (batch Y1), each railway yard's box in the runs followed by the footprint it was laid for (CityRuns.yardAsked(): a yard is laid YARD_LONG along its line or shorter where the ground allows, so its box is no longer the size it was asked for; a sidecar of FORMAT 9 or older reads each yard's footprint as its box's own width and height, as it was laid then); 9 since CL3 (batch CL3), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 10;
 
     /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
     static final int OLDEST_READ = 4;
@@ -4144,8 +4147,9 @@ public final class CityMap {
     /**
      * Lays the runs to the model's counts (CityRuns.layTo()): its Elevated
      * Highways' plots, its track's, its Rail Terminals and Rail Depots as
-     * yards, each at its own size (FR7 slice 3: Terminals first, then Depots,
-     * so a depot added never moves a terminal's yard), its Rail Spurs as
+     * yards, each asked for its type's footprint (FR7 slice 3: Terminals first, then Depots,
+     * so a depot added never moves a terminal's yard) and laid as long as a unit
+     * train along its line where the ground allows (FX5 Y1, CityRuns.YARD_LONG), its Rail Spurs as
      * sidings into the bulk mined sites - the highways from the founding
      * site, the railway from the city's mine nearest it (the founding site
      * with none). True, and the map's changes bumped, when they moved.
@@ -4208,8 +4212,8 @@ public final class CityMap {
     /**
      * The type of each yard the model has, in the order the runs lay them
      * (FR7 slice 3): every Rail Terminal (by type index), then every Rail
-     * Depot - each yard's size is its type's footprint and the painter draws
-     * it as that type. `counts` are the model's.
+     * Depot - each yard is asked for its type's footprint (laid YARD_LONG along its line where the ground
+     * allows, FX5 Y1) and the painter draws it as that type. `counts` are the model's.
      */
     private int[] yardSequence(long[] counts) {
         long total = 0;
@@ -4243,7 +4247,7 @@ public final class CityMap {
         return yardSequenceOf(have);
     }
 
-    /** A type's footprint, {across, down} in whole plots (BuildingVisual.footprint()), kept: a yard's size, asked for every yard every month. */
+    /** A type's footprint, {across, down} in whole plots (BuildingVisual.footprint()), kept: the size a yard is asked for, every yard every month (FX5 Y1: laid so long along its line as the ground allows, CityRuns.YARD_LONG, it keeps this size as its ask). */
     private int[] footprintOf(int t) {
         if (footprints == null || footprints.length != types.length) footprints = new int[types.length][];
         if (footprints[t] == null) footprints[t] = BuildingVisual.footprint(types[t]);
@@ -4467,14 +4471,42 @@ public final class CityMap {
      * The works of the city that need an access road and stand in district d's
      * frame (batch FR7, D17): each Rail Terminal and Rail Depot the runs draw as a yard, each
      * sea terminal on the shore (a tank farm has no berth and none), as {x, y,
-     * w, h} in the frame's plots - those whose box lies wholly inside it, off
-     * the edge row and column the districts share, which is every one: a
-     * work stands inside one cell's interior.
+     * w, h} in the frame's plots, off the edge row and column the districts
+     * share. A sea terminal stands inside one cell's interior. (FX5 Y1) A yard
+     * is laid up to YARD_LONG plots along its line and may run across a district's
+     * edge: it is the work of the one district that holds more of its plots
+     * (workIn()), cut at its frame, so it is given one access road, not two.
      */
     void worksInto(District d, DistrictPlan.Input in) {
         long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
-        for (long[] yd : runs.yards()) addWork(in, yd[0] - x0, yd[1] - y0, yd[2], yd[3]);
+        for (long[] yd : runs.yards()) {
+            int[] w = workIn(yd, x0, y0);
+            if (w != null) in.works.add(w);
+        }
         for (CityShore.Work wk : shore.works()) if (wk.berthed()) addWork(in, wk.x0() - x0, wk.y0() - y0, wk.w(), wk.h());
+    }
+
+    /**
+     * A yard's box as the district frame whose first plot is (x0, y0) holds it, {x, y, w, h} in the frame's plots, or null when another
+     * frame holds more of it. A frame's own plots are its first plot + 1 to + DISTRICT - 1 (the first and the last are the edge row and
+     * column two frames share); the box is cut at them, so a yard across an edge is one frame's work, whole to its plan (the other
+     * frame has it only as FIXED_YARD ground, from CityRuns.fill()). A yard inside one frame is that frame's, as it was.
+     */
+    static int[] workIn(long[] yard, long x0, long y0) {
+        if (!holdsMost(yard[0], yard[2], x0) || !holdsMost(yard[1], yard[3], y0)) return null;
+        long fx = Math.max(yard[0], x0 + 1), fy = Math.max(yard[1], y0 + 1);
+        long lx = Math.min(yard[0] + yard[2], x0 + DISTRICT), ly = Math.min(yard[1] + yard[3], y0 + DISTRICT);
+        return new int[] { (int) (fx - x0), (int) (fy - y0), (int) (lx - fx), (int) (ly - fy) };
+    }
+
+    /** Whether the frame whose first plot is f holds more of the n plots from p than any other frame does; a tie to the first. */
+    private static boolean holdsMost(long p, long n, long f) {
+        long best = 0, bestFrame = Long.MIN_VALUE;
+        for (long k = Math.floorDiv(p, DISTRICT); k <= Math.floorDiv(p + n - 1, DISTRICT); k++) {
+            long held = Math.min(p + n, k * DISTRICT + DISTRICT) - Math.max(p, k * DISTRICT + 1);
+            if (held > best) { best = held; bestFrame = k * DISTRICT; }
+        }
+        return best > 0 && f == bestFrame;
     }
 
     private static void addWork(DistrictPlan.Input in, long x, long y, long w, long h) {
@@ -5700,7 +5732,7 @@ public final class CityMap {
             if (format >= 5) {
                 int n = withRuns ? runs.runs() : 0;
                 out.writeInt(n);
-                if (n > 0) runs.write(out);
+                if (n > 0) runs.write(out, format);
             }
             // The works on the shore (FORMAT 6, 0.7.97): their count, then each one's box, type, side and quay.
             if (format >= 6) shore.write(out);
@@ -5870,7 +5902,7 @@ public final class CityMap {
             int nRuns = format >= 5 ? in.readInt() : 0;
             if (nRuns < 0) return null;
             if (nRuns > 0) {
-                CityRuns r = CityRuns.read(in);
+                CityRuns r = CityRuns.read(in, format);
                 if (r == null) return null;
                 m.runs = m.guarded(r);
             }
