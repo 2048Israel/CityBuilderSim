@@ -43,7 +43,7 @@ His 1.7M city, every district planned (the probes `CL2/CL2Probe.java` and `CL2/C
 | merges undone | - | 2 |
 
 - **More squared cells:** the lighter layouts leave road over, and the ladder squares more cells with it.
-- **The dense screen's slowest district:** 13.8 ms in the suite, soft beside other batches' JVMs (the screen's median 10.6 ms) (`PLAN_MS` 40). Sonnet measured it alone, before the crossed rule, at 8.7 ms against 7.6 on main.
+- **The dense screen's slowest district:** 8.6 ms hard, alone (`--timing`; the study measured 8.2 on main); 13.8 in the suite beside other batches' JVMs (`PLAN_MS` 40). Sonnet measured it alone, before the crossed rule, at 8.7 ms against 7.6 on main.
 - **The trace:** the playtest with CL2's plan is byte-identical in all eight CSVs to main's.
 - **The city's scale** still reads as a grid (`CL2/core.png`), as the study said: the rings every 960 m and the long streets stay where they were. CL4's avenues and curves are what change it.
 
@@ -66,7 +66,7 @@ His 1.7M city, every district planned (the probes `CL2/CL2Probe.java` and `CL2/C
 **The counts in a real run:** sections 5, 6 and 9 print the homes cells by kind and layout and the merges undone. Section 6's played city has only 7 homes cells in its samples (3 / 0 / 4), under `HOMES_ENOUGH` (10), so it prints why it makes no assertion; section 5's city x 1 shows 30. Section 9 prints dead ends and buildings placed with the layouts and with `combOnly`.
 
 **The suite:** `Batch check.bat --maps` on the merged branch (0.8.12 and CL2), soft beside other batches: 124 harnesses, 123 passed; the one red is ScaleCheck's "...and it builds", SC1, red on main before. Stale 0 firm findings; the maps regenerated.
-**`--timing`, last and alone:** [TIMING]
+**`--timing`, last and alone:** `Batch check.bat --timing`, hard: 8 timing harnesses, 7 passed; the red is ScaleCheck's SC1 again, not a timing figure. PlanCheck's dense screen: its slowest district 8.6 ms (the study measured 8.2 on main and 9.9 with the prototype; `PLAN_MS` 40).
 
 ## 5. Calls taken where the brief left room (★)
 
