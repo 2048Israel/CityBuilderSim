@@ -22,14 +22,17 @@ stopped.
 | B | one junction a crossing, mostly signals | 5, 6 | TileRaster (junctions), TilePainter.Input, CityMap.fillInput, JunctionCheck, spec-freight 4.6 and D19 | A |
 | C | curved rail, and trains on the curves | 1 | new TrackCurves, TileRaster (track, blocks' track), TilePainter.Input, CityMap (bends, routes rounded), RailDrawCheck, MapCheck 9 | D |
 | D | tidy diagonal ends | 7 | TileRaster (highway's 45-degree band, ends), JunctionCheck | C |
-| Y | yards and depots that hold a unit train | 3 | CityRuns (yards), CityMap (sizes, yard input, trainRoutesInto), TileRaster (drawYard), RailDrawCheck 12-24, MapCheck 8 | - |
-| T | real-length trains, clear sidings, the pace | 2, 4 | TrainSchedule, CityMap.trainRoutes, MapCheck 9 | after Y |
+| Y1 | the yards laid as long as a unit train | 3 | CityRuns (yards, sidecar), CityMap.layRuns (sizes), MainLineCheck, MapCheck 8 | Y2, T |
+| Y2 | a yard drawn whole across tiles | 3 | TilePainter.Input (yards), CityMap.fillInput, TileRaster.drawYard, MapTiles.stamp, RailDrawCheck 12-24 | Y1, T |
+| T | real-length trains, clear sidings, the pace | 2, 4 | TrainSchedule, CityMap.trainRoutes(Into), TileRaster's wagon cap, MapCheck 9, RailDrawCheck 14 | Y1, Y2 |
 
-A and B first (small and sure; A holds the one fault in his city). C and D
-next (C's arcs are the geometry D's highway joins reuse, so D starts from C's
-`TrackCurves`). Y and T last and together: "no train longer than its siding"
-needs both. Every slice begins with its harness sections, run red on main's
-classes, as FX3 did.
+Wave 1: A, B and C at once (A holds the one fault in his city; C's arcs are
+the geometry D and the ladders reuse). Wave 2: D, Y1, Y2 and T once C is in
+(Y1 and Y2 land together: a long yard is drawn wrongly without Y2; T's
+`Route.holds` follows Y's geometry by itself). Every slice begins with its
+harness sections, run red on main's classes, as FX3 did. The briefs are
+written ahead, in the session's scratchpad (`briefs/brief-*.md`), and copied
+to `target/sonnet/` at the GO.
 
 ## 1. The faults, read in the code, and the fixes
 
@@ -203,10 +206,11 @@ line; a Rail Depot's yard is 8 plots long, and holds no train at all.
 41.4 plots with their two locomotives, about 1.24 km; intermodal 50, 26.4
 plots (790 m, [R46]'s 750 m train); mixed 15, 8.9 plots. `MOST_WAGONS` goes,
 sources in the dials' sentences (a North American unit coal train of 100 to
-135 cars runs 1.8 to 2.3 km; Europe's limit is 740 m). Twice as long, the
-trains would fill the line twice as much, so `MOST_A_MONTH` halves to 15
-(★2): past it, fewer real-length trains stand for the month, not more short
-ones, as the brief says.
+135 cars runs 1.8 to 2.3 km; Europe's limit is 740 m). `MOST_A_MONTH` stays
+30, the spec's worked example (25 a month "reads as a busy line, not a
+blur"): past it, as now, each real-length train drawn stands for several,
+never more short ones (★2). The line's look at 1x is Jerus's to judge
+(FX5-C).
 
 **The fix, the yards** (★3). A yard's box is laid along its line as long as a
 unit train and its two ladders need, `YARD_LONG` = ceil(41.4) + 2 x
@@ -251,12 +255,14 @@ stops dead, whatever its length or its route's.
 - `build()` assigns the trains in arrival order to a siding that no other
   train is on during its time there; one with none free arrives later, to the
   first free moment that keeps its visit inside the month, or is not drawn.
-- The pace: a train runs at `TRAIN_PLOTS_A_SECOND` over its route, its leg
-  between `LEG_MIN` and `LEG_MAX` seconds by the route's length, easing to a
-  stop on its siding and away from it (the front at len x (1 - (1 - u)^2) in,
-  len x (1 - u^2) out); it stands `DWELL_SECONDS` plus a share by its wagons
-  (a unit train longer than a mixed one). A train enters and leaves its
-  siding whole, since its siding holds it.
+- The pace: a train runs at `TRAIN_PLOTS_A_SECOND` (50) over its route, its
+  leg between `LEG_SECONDS` (6, today's) and `LEG_MOST` (10) seconds by the
+  route's length, easing to a stop on its siding and away from it (the front
+  at len x (1 - (1 - u)^2) in, len x (1 - u^2) out, so it is slowest where
+  the view looks closest); it stands `DWELL_SECONDS` (3) plus
+  `DWELL_A_WAGON` (0.025 s) a wagon, a unit train 5 s. A train enters and
+  leaves its siding whole, since its siding holds it. Its visit stays about
+  today's 15 s, so the line holds about as many trains at once as now.
 - MapCheck 9 moves with the decision ("one route a yard and siding" becomes
   "one a yard and clear siding"), saying why.
 
@@ -269,7 +275,8 @@ yard's wagons stand on; no two trains on one siding at once; the frame's
 1. **★1 The curve's radius is 3 plots (90 m)**, a dial (`TrackCurves.RADIUS`),
    less where the legs are short; real freight curves are 150 to 300 m, too
    wide for a corridor's corner on this map.
-2. **★2 `MOST_A_MONTH` 30 to 15**: trains twice as long, half as many drawn.
+2. **★2 `MOST_A_MONTH` stays 30**: the trains are twice as long, the cap the
+   spec's; a lower cap, if the line reads as a ribbon at 1x, is his call.
 3. **★3 A yard is as long as a unit train along its line**, its width its
    footprint's, and may cross a cell's ring street, which ends at it; no
    bridge is drawn over a yard.
