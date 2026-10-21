@@ -126,7 +126,65 @@ Nothing else moves it. There is no noise, nothing from the world but its price l
 
 ## 2. What real currencies do
 
-*(written from the sources; see §2 below once filled)*
+*Each point with its figure and its source; the research notes beside the study (`exchange-rates/research-notes.md`) have the longer form.*
+
+### 2.1 The long run: parity, and how slowly
+
+- **Relative purchasing-power parity holds in the long run and almost not at all in a year.** Rogoff's survey put the consensus half-life of real exchange rates' gaps from parity at **3 to 5 years** {ROGOFF}. Later work finds shorter half-lives once goods are not lumped together {IMBS}, and that large gaps close faster than small ones {TPS}.
+- **The gaps are large.** Price levels of rich countries differ by tens of percent at market rates, as the Big Mac index shows every year {BIGMAC}; a gap of 20-30% that takes a decade to close is ordinary.
+- **What holds best is traded goods.** Non-traded goods (rent, haircuts) are dearer in richer places, so a rich place's prices are high without its money being dear: the Balassa-Samuelson effect {BALASSA}.
+
+### 2.2 The month: noise
+
+- **Floating rates move about 8-12% a year** for the big moneys and more for emerging ones {VOL}.
+- **Nominal and real rates move together** under floating: prices are sticky and the rate is not, so a float's real rate is as volatile as its nominal one {MUSSA}.
+- **At a month's horizon nothing beats a coin.** Meese and Rogoff showed a random walk forecasts rates better than the models, out of sample, from one month to a year {MEESE}; the "disconnect" of rates from the fundamentals is one of the field's standing puzzles {OBSTFELD-ROGOFF-6}.
+
+### 2.3 Interest rates: parity that fails, the carry and its crashes
+
+- **Uncovered interest parity** says a money paying more should be expected to fall by the difference. Over months and years it fails, and the wrong way: high-yield moneys tend to rise, the forward premium puzzle {FAMA}. It holds better over five to ten years {CHINN}.
+- **So the carry trade pays** on average: borrow the low-yield money, hold the high-yield one. Over decades a spread of carry trades earned several percent a year {BURNSIDE}.
+- **And then it crashes.** "Up the stairs, down the elevator": its returns are skewed to the left, and the crashes come when risk appetite falls and carry traders unwind together {BNP}. October 1998 (the yen against the dollar), 2008 (the Australian dollar against the yen), August 2024 (the yen again) {CRASHES}.
+
+### 2.4 Overshooting
+
+- **Dornbusch:** with sticky prices, a money tightening jumps up at once, further than it will end, and then falls back as the rate gap is expected to close {DORNBUSCH}.
+- **In the data the peak comes later**, a year or more after the shock: "delayed overshooting" {EICHENBAUM}. A point of surprise tightening moves a major money a few percent {SURPRISE}.
+
+### 2.5 Trade, capital and the terms of trade
+
+- **Commodity currencies** move with their export prices: the Australian, New Zealand and Canadian dollars' real rates follow world commodity prices {CHEN-ROGOFF}. In 2014-16, as oil fell by about three quarters, the ruble, the Norwegian krone and the Canadian dollar fell with it {OIL1416}.
+- **Deficits can run for decades** while capital flows in to finance them (the US, Australia); a currency falls when the financing stops, a "sudden stop", and then by a third or more {CALVO}.
+
+### 2.6 Risk and safe havens; the dollar cycle
+
+- **In a panic money runs to the Swiss franc, the yen and the US dollar** {RANALDO}; in late 2008 and March 2020 the broad dollar rose sharply against nearly everything {DOLLAR}.
+- **The dollar moves in long swings**, up by a third and down by a third over a decade at a time: 1980-85 up, 1985-95 down, 2002-11 down, 2011-22 up {DOLLAR}.
+
+### 2.7 Regimes, and how pegs break
+
+- **Most of the world does not float freely.** The IMF's classification puts about a third of its members' moneys in floating regimes and most of the rest in pegs, hard or soft {AREAER}. Even declared floaters lean on their rate: "fear of floating" {CALVO-REINHART}.
+- **A currency board** backs its whole money with reserves and lends to nobody: Hong Kong's since 1983, its dollar held within 7.75-7.85 a US$ {HKMA}. Argentina's ended in 2002 and the peso lost about three quarters of its value {ARGENTINA}.
+- **Pegs end in two ways.** The vault runs down until speculators finish it, Krugman's first-generation crisis {KRUGMAN}; or doubt itself makes defending it too costly, Obstfeld's second generation {OBSTFELD-94}. Sterling left the ERM in September 1992 and fell about 15%; the baht in 1997 lost about half; the ruble in 1998, more {PEGS}. The Swiss National Bank held a floor of 1.20 francs a euro from 2011 and dropped it on 15 January 2015: the franc rose about 20% in a day {SNB}.
+- **Pegs rarely last.** By 1995 almost no sizeable economy had held a peg five years {MIRAGE}; pegs that break often re-peg {KLEIN}.
+- **The impossible trinity:** a fixed rate, an open border for capital and a monetary policy of one's own cannot all be had at once {TRINITY}.
+
+### 2.8 Reserves and intervention
+
+- **How much is enough:** three months of imports is the old rule; reserves covering short-term debt abroad, Greenspan-Guidotti's; the IMF's own metric weighs both {RESERVES}.
+- **Intervention works, a little and for a while.** In 33 countries' data it moved the rate the intended way most of the time, mostly when it leaned against a move already under way {FRATZSCHER}. A purchase of foreign money worth 1% of GDP cheapens the home money by about 1.7-2% in emerging markets {ADLER}.
+- **The big ones:** Japan sold about ¥9.2 trillion of dollars in 2022 and about ¥15 trillion in 2024 to hold the yen up {JAPAN}; the Swiss National Bank bought hundreds of billions of francs' worth of foreign money to hold the franc down {SNB}; China spent about a trillion dollars of its reserves in 2014-16 {CHINA}.
+- **Singapore runs its money by its rate:** the Monetary Authority sets a band for the trade-weighted Singapore dollar, its slope, width and centre, and intervenes at its edges; its interest rate follows {MAS}.
+
+### 2.9 What a city would feel
+
+- **Small, very open economies manage or peg their moneys far more than large ones** {AREAER}. The city-states show it: Singapore's band, Hong Kong's board, Macau's pataca on the Hong Kong dollar, Brunei's dollar at par with Singapore's, and Monaco, Luxembourg, Liechtenstein and Panama on others' moneys {CITYSTATES}.
+- So a city-sized money would feel **the world's swings far more than its own policy**: the dollar cycle, risk-offs, the price of what it sells. Its own levers are the real rate, its vault, and its regime.
+
+### 2.10 The measures
+
+- **The real effective exchange rate** is a trade-weighted geometric average of the bilateral rates, each deflated by the two price levels; the BIS publishes it for 64 economies with weights from trade {BIS-EER}.
+- **Constant 2015 US$:** the World Bank values GDP at a base year's prices and converts it at that year's exchange rate {WB}.
 
 ---
 
@@ -159,6 +217,7 @@ Where the city's own figures put the money, as a log gap from parity's trend, re
 - The money's own swing (★1): AR(1), MARKET_SIGMA = 2.2% a month, MARKET_HALF_LIFE = 42 months. Its spread around the fair level is about 13% either way (one standard deviation). Most of a real float's month is this: no model beats a random walk at a month's horizon [R#].
 - **Seeded** from the city's seed (WN1's, once it exists; until then a seed drawn at founding and saved), so one seed is one path, as the nations study's D9 asks.
 - **Gated by trade.** Below MIN_TRADE a month (today's floor) the rate is not a real price and holds; the market's swing is scaled by the city's openness until it trades a tenth of its GDP.
+- **What it does to prices.** Imports reprice through the rate one for one in the game, so a city whose basket is a third imported takes about a third of the swing into its prices: about 3% a year of noise in its inflation at ★1's (a), half at (b). Real economies pass far less through in the short run [R#]. XR1 measures the ensemble's inflation spread before and after; if it bites, a pass-through dial on import prices is the fix, not a calmer currency.
 
 ### 3.5 The world reaches the D$ (XR3)
 

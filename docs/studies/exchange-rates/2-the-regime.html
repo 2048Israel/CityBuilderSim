@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exchange rates: float, lean, band or peg</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--stage:#0b1118;--panel:#101924;--raised:#152130;--pinned:#1a2839;--hover:#22334a;--edge:#24354a;--control-edge:#33475f;--text:#e6edf3;--text2:#a9b8c9;--text3:#8496ab;--spent:#5f7189;--good:#3fb950;--warn:#e3b341;--bad:#f85149;--accent:#5aa9ff;--accent-light:#8cc4ff;--people:#2ec4b6;--money:#5aa9ff;--business:#a78bfa;--building:#f17cb0;--ore:#c9b68f;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--stage);color:var(--text);font-family:var(--sans);font-size:12.5px;line-height:1.45}
+.board{max-width:1240px;margin:0 auto;padding:22px 16px 40px}
+.bd-kicker{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.bd-title{font-size:23px;font-weight:600;margin:2px 0 4px}
+.bd-lead{font-size:14.5px;color:var(--text2);max-width:920px;margin:0 0 6px}
+.bd-est{font-size:11px;color:var(--text3);max-width:920px;margin:0 0 14px}
+.scroll{overflow-x:auto}
+.frame{display:flex;width:1200px;background:var(--panel);border:1px solid var(--edge);border-radius:6px;overflow:hidden}
+.rail{width:44px;background:var(--stage);display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:14px;color:var(--text3);font-size:14px}
+.rail i{font-style:normal;width:30px;height:30px;display:grid;place-items:center;border-radius:6px}
+.rail i.on{background:var(--pinned);color:var(--business);box-shadow:inset 3px 0 0 var(--building)}
+.page{flex:1;padding:16px 20px 22px}
+.head{display:flex;align-items:center;gap:10px}
+.swatch{width:12px;height:12px;border-radius:3px;background:var(--business)}
+.name{font-size:22px;font-weight:600}
+.info{width:16px;height:16px;border-radius:50%;border:1px solid var(--control-edge);color:var(--text3);font-size:10px;display:grid;place-items:center}
+.pages{display:flex;gap:6px;margin:12px 0}
+.pg{padding:5px 11px;border-radius:6px;background:var(--raised);border:1px solid var(--edge);color:var(--text2);font-size:11px}
+.pg.on{background:var(--pinned);border-color:var(--business);color:var(--text)}
+.row{display:grid;gap:12px;margin-bottom:12px}
+.r1{grid-template-columns:600px 1fr}.r2{grid-template-columns:1fr 1fr}
+.card{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:12px 14px}
+.ch{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ch .ic{width:22px;height:22px;border-radius:5px;background:rgba(201,182,143,.16);color:var(--ore);display:grid;place-items:center;font-size:12px}
+.ch h4{margin:0;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.ch .sub{font-size:10.5px;color:var(--text3);margin-left:4px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{font-weight:500;color:var(--text3);text-align:right;padding:3px 6px;border-bottom:1px solid var(--edge);font-size:10px}
+th:first-child,td:first-child{text-align:left}
+td{padding:4px 6px;text-align:right;border-bottom:1px solid #1c2a3b;font-family:var(--mono);white-space:nowrap}
+td:first-child{font-family:var(--sans);color:var(--text2)}
+td .b{display:inline-block;height:7px;border-radius:2px;vertical-align:0;background:var(--ore)}
+.dn{color:var(--bad)}.up{color:var(--good)}
+.tot td{border-bottom:0;color:var(--text);font-weight:600}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 8px}
+.chip{background:var(--panel);border:1px solid var(--edge);border-radius:4px;padding:4px 10px;font-size:10.5px;color:var(--text2)}
+.chip.lit{background:var(--pinned);border-color:var(--money);color:var(--text)}
+.para{font-size:11px;color:var(--text2);margin:6px 0 0}.para b{color:var(--text)}
+.cmp{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;font-size:10.5px;align-items:center;margin-top:6px}
+.cmp .t{display:flex;height:12px;border-radius:3px;overflow:hidden}
+.cmp .t i{display:block;height:100%}
+.leg{display:flex;gap:10px;flex-wrap:wrap;font-size:9.5px;color:var(--text3);margin-top:6px}
+.leg span{display:flex;align-items:center;gap:4px}.leg i{width:9px;height:9px;border-radius:2px;display:block}
+.fx{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+.fx div{background:var(--panel);border:1px solid var(--edge);border-radius:6px;padding:5px 8px;font-family:var(--mono);font-size:11px}
+.fx div span{display:block;font-family:var(--sans);font-size:9.5px;color:var(--text3)}
+.ex{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;color:var(--text2)}
+.ex input{font-family:var(--mono);background:var(--stage);border:1px solid var(--control-edge);border-radius:4px;color:var(--text);padding:4px 8px;width:110px}
+.btn{background:var(--panel);border:1px solid var(--control-edge);border-radius:4px;padding:4px 12px;font-size:11px;color:var(--text)}
+.btn.go{background:var(--accent-fill,#2f6fa8);border-color:var(--accent)}
+.offer{display:grid;grid-template-columns:330px 1fr;gap:14px}
+.mini{position:relative;height:220px;border-radius:6px;overflow:hidden;background:#2f5d88}
+.note2{font-size:10px;color:var(--text3);margin-top:4px}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;max-width:1200px}
+.note{background:var(--raised);border:1px solid var(--edge);border-radius:8px;padding:10px 13px;font-size:11.5px;color:var(--text2)}
+.note b{color:var(--text)}
+/* exchange-rate study: what the boards add to the look */
+.big{font-family:var(--mono);font-size:34px;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+.big span{font-family:var(--sans);font-size:12px;font-weight:400;color:var(--text3);letter-spacing:0;margin-left:6px}
+.mv{font-family:var(--mono);font-size:12px;color:var(--text2);margin:6px 0 2px}
+.mv b{color:var(--text);font-weight:600}
+.mut{font-size:10.5px;color:var(--text3);margin:3px 0 0}
+.para.mut{color:var(--text3)}
+td.l,th.l{text-align:left}td.l{font-family:var(--sans);color:var(--text2)}
+.sv{display:block;width:100%;height:auto}
+.sv text{fill:var(--text3);font-family:var(--sans);font-size:10px}
+.sv .gl{stroke:var(--edge);stroke-width:1}
+.sv .ax{stroke:var(--control-edge);stroke-width:1}
+.sv .band{fill:var(--money);fill-opacity:.16;stroke:none}
+.sv .ln{fill:none;stroke-linejoin:round;stroke-linecap:round}
+.sv .c-money{stroke:var(--money)}.sv .c-ore{stroke:var(--ore)}.sv .c-al{stroke:var(--accent-light)}.sv .c-t3{stroke:var(--text3)}.sv .c-spent{stroke:var(--spent)}.sv .c-warn{stroke:var(--warn)}.sv .c-people{stroke:var(--people)}.sv .c-biz{stroke:var(--business)}
+.sv .f-money{fill:var(--money)}.sv .f-ore{fill:var(--ore)}.sv .f-al{fill:var(--accent-light)}.sv .f-t2{fill:var(--text2)}.sv .f-spent{fill:var(--spent)}.sv .f-warn{fill:var(--warn)}.sv .f-people{fill:var(--people)}.sv .f-biz{fill:var(--business)}.sv .f-t3{fill:var(--text3)}
+.leg i.lnk{width:16px;height:0;background:none;border-radius:0}
+.leg{margin-top:8px}
+.card.notice{border-left:3px solid var(--warn)}
+.fx div b{display:block;font-weight:600;color:var(--text)}
+.fx div em{display:block;font-family:var(--sans);font-style:normal;font-size:9.5px;color:var(--text3);margin-top:2px}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.cap{font-size:10.5px;color:var(--text2);margin:0 0 4px}.cap b{color:var(--text);font-weight:500}
+
+.chips.four{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:2px 0 6px}
+.chips.four .chip{text-align:center;padding:7px 10px;font-size:11px}
+.regs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.regs div{font-size:10.5px;line-height:1.4;color:var(--text3);padding:0 6px;text-align:center}
+.regs div.lit{color:var(--text2)}
+.lbl{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin:14px 0 5px}
+.split{display:grid;grid-template-columns:430px 1fr;gap:18px;margin-top:14px;align-items:start}
+.mc{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.col .card:last-child{flex:1}
+.ex input{font-size:11px}
+</style></head>
+<body><div class="board">
+<div class="bd-kicker">Exchange-rate study · board 2 of 3 · Policy &rsaquo; The currency</div>
+<div class="bd-title">Float, lean, band or peg</div>
+<p class="bd-lead">How the D$ is set is a Policy choice. What each way costs is shown before it is chosen: the vault's dollars, the months it would last, and what happens when the peg gives way.</p>
+<p class="bd-est">The city and its figures are invented for the board; the arithmetic is the proposal's (spec-exchange-rates 3.5-3.6).</p>
+<div class="scroll"><div class="frame">
+ <div class="rail"><i>&#9776;</i><i class="on">&#9881;</i><i>&#8644;</i><i>&#9733;</i><i>&#9638;</i></div>
+ <div class="page">
+  <div class="head"><span class="swatch"></span><span class="name">Policy</span><span class="info">i</span></div>
+  <div class="pages"><span class="pg">Rates</span><span class="pg">Taxes</span><span class="pg">Spending</span><span class="pg on">The currency</span><span class="pg">Borrowing</span></div>
+
+  <div class="row">
+   <div class="card">
+    <div class="ch"><span class="ic" style="background:rgba(90,169,255,.16);color:var(--money)">&#9878;</span><h4>How the D$ is set</h4><span class="sub">what each way costs, before it is chosen</span><span class="info" style="margin-left:auto">i</span></div>
+    <div class="chips four"><span class="chip">Float</span><span class="chip">Lean against falls (as today)</span><span class="chip">Band</span><span class="chip lit">Peg</span></div>
+    <div class="regs">
+     <div>The market sets it. The vault does nothing.</div>
+     <div>The vault sells dollars against a fall, as today.</div>
+     <div>Free inside a band you set. The vault holds its edges.</div>
+     <div class="lit">Held at one rate. The vault meets every flow at it.</div>
+    </div>
+
+    <div class="lbl">Peg to</div>
+    <div class="chips"><span class="chip lit">US$</span><span class="chip">&euro;</span><span class="chip">&yen;</span><span class="chip">&pound;</span><span class="chip">CN&yen;</span><span class="chip">C$</span><span class="chip">A$</span><span class="chip">CHF</span><span class="mut" style="align-self:center;margin-left:6px">the eight, as the vault holds them</span></div>
+    <div class="ex" style="margin-top:2px">Peg at <input value="D$1.300" style="width:84px"> a US$ <span class="btn">&minus;</span><span class="btn">&plus;</span></div>
+
+    <div class="fx" style="margin-top:12px">
+     <div><span>the shadow rate</span><b>D$1.411</b><em>where the float would be, 8.5% weaker</em></div>
+     <div><span>this month the vault paid</span><b>US$4.1M</b><em>to hold D$1.300</em></div>
+     <div><span>the vault</span><b>5.1 months</b><em>of imports (US$41.0M)</em></div>
+     <div><span>at this pace</span><b>the floor in 8 months</b><em>one month of imports, US$8.0M</em></div>
+    </div>
+
+    <div class="split">
+     <div>
+      <div class="lbl" style="margin-top:0">This month at the peg</div>
+      <table>
+       <tr><th>where the vault's dollars went</th><th>US$</th></tr>
+       <tr><td>The deficit at the peg</td><td>US$2.6M</td></tr>
+       <tr><td>Money leaving on doubt</td><td>US$1.5M</td></tr>
+       <tr class="tot"><td>The vault paid</td><td>US$4.1M</td></tr>
+      </table>
+      <p class="para">A peg breaks when the vault falls under <b>one month of imports</b>, or sooner by chance as the gap passes <b>10%</b>. If it broke today the D$ would fall to about <b>D$1.44</b>: the shadow rate, and a quarter of the gap again.</p>
+     </div>
+     <div class="mc">
+      <div>
+       <div class="cap"><b>The vault's cover</b> &middot; months of imports</div>
+       <svg id="c2a" class="sv" viewBox="0 0 300 200" role="img" aria-label="The vault's cover falling from 9.0 to 5.1 months of imports over 36 months, then on to the floor of one month in 8 more"></svg>
+      </div>
+      <div>
+       <div class="cap"><b>The peg and the shadow rate</b> &middot; D$ per US$</div>
+       <svg id="c2b" class="sv" viewBox="0 0 300 200" role="img" aria-label="The peg flat at 1.300 and the shadow rate rising from 1.33 to 1.41 over 36 months"></svg>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <div class="row r2">
+   <div class="card">
+    <div class="ch"><span class="ic" style="background:rgba(90,169,255,.16);color:var(--money)">&#8776;</span><h4>The band</h4><span class="sub">if chosen &middot; not in force</span></div>
+    <div class="fx" style="grid-template-columns:repeat(3,1fr)"><div><span>centre</span><b>D$1.300</b></div><div><span>slope</span><b>+1.5% a year</b></div><div><span>width</span><b>&plusmn;3%</b></div></div>
+    <div class="cap" style="margin-top:10px"><b>The band and the rate</b> &middot; 24 months, D$ per US$</div>
+    <svg id="c2c" class="sv" viewBox="0 0 540 240" role="img" aria-label="The band's two edges crawling up 1.5% a year, with the rate inside it touching the weak edge in the last two months"></svg>
+    <p class="para">This month the rate touched the weak edge: the vault sold <b>US$1.2M</b> to hold it. Singapore runs its money this way.</p>
+   </div>
+   <div class="col">
+    <div class="card">
+     <div class="ch"><span class="ic" style="background:rgba(201,182,143,.16);color:var(--ore)">&#8644;</span><h4>Buy or sell the D$</h4></div>
+     <div class="chips"><span class="chip lit">Sell US$</span><span class="chip">Buy US$</span></div>
+     <div class="ex">Sell <input value="US$10,000,000" style="width:124px"><span class="btn go">Sell US$</span></div>
+     <p class="para">Under the peg it moves nothing: the rate is held, and the sale is US$10.0M more of the vault spent holding it. Floating or in a band, the same sale would make the D$ about <b>1.5% dearer</b> this month, half of that gone in 6 months.</p>
+     <p class="para mut">Buying US$ makes the D$ cheaper. Until this batch the treasury's own purchases moved nothing: measured, buying US$205M of dollars left the D$ 7.7% DEARER after two years, because the bigger vault defended it more.</p>
+    </div>
+    <div class="card">
+     <div class="ch"><span class="ic" style="background:rgba(227,179,65,.16);color:var(--warn)">%</span><h4>The dial under a peg</h4></div>
+     <div class="fx" style="grid-template-columns:repeat(3,1fr)"><div><span>the dial</span><b>3.25%</b></div><div><span>the US's</span><b>4.50%</b></div><div><span>the vault pays</span><b>US$1.5M</b></div></div>
+     <p class="para">The dial is still yours. It is 3.25% against the US's 4.50%: money leaves for the US, and the vault pays for it: <b>US$1.5M this month</b>. Match the US's rate to hold the peg for free. A free dial, an open border and a fixed rate cannot all hold at once.</p>
+    </div>
+   </div>
+  </div>
+ </div>
+</div></div>
+<div class="notes">
+ <div class="note"><b>The regimes.</b> <b>Float:</b> the market sets it. <b>Lean</b> is the default, today's behaviour: "a reserve defends a currency; it does not hold one down" (Jerus, 2026-09-21). <b>Band</b> is the Monetary Authority of Singapore's way: a centre, a slope and a width, the vault at the edges. <b>Peg:</b> to the US$; to the euro or the eight once the nations' moneys exist.</div>
+ <div class="note"><b>How a peg ends.</b> The vault's floor, and a chance that rises with the gap. The break is the shadow rate plus a quarter of the gap again. The prototype's pegs at 2, 5 and 10 points of inflation over the US last a median 7.4, 4.5 and 2.9 years and break by 31%, 37% and 47% (median). History: sterling 1992 about 15%, the baht 1997 about half, Argentina 2002 about 70%.</div>
+</div>
+</div>
+<script>
+var D={"cover":[9.0,8.995,8.989,8.983,8.975,8.967,8.957,8.946,8.934,8.919,8.903,8.884,8.863,8.839,8.812,8.781,8.745,8.705,8.658,8.606,8.546,8.478,8.4,8.312,8.211,8.096,7.966,7.817,7.647,7.454,7.234,6.983,6.698,6.373,6.002,5.581,5.1],"ahead":[4.587,4.075,3.562,3.05,2.537,2.025,1.513,1.0],"peg":[1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3],"shadow":[1.33,1.3338,1.3352,1.3339,1.332,1.3322,1.3354,1.34,1.3436,1.3448,1.3442,1.344,1.3459,1.3499,1.3543,1.3572,1.3582,1.3585,1.3598,1.3628,1.3669,1.3706,1.373,1.3744,1.3759,1.3783,1.3817,1.3854,1.3886,1.391,1.3932,1.3957,1.3987,1.402,1.4052,1.4081,1.411],"band":{"up":[1.339,1.3407,1.3423,1.344,1.3457,1.3473,1.349,1.3507,1.3524,1.354,1.3557,1.3574,1.3591,1.3608,1.3625,1.3642,1.3658,1.3675,1.3692,1.3709,1.3726,1.3743,1.3761,1.3778,1.3795],"dn":[1.261,1.2626,1.2641,1.2657,1.2673,1.2688,1.2704,1.272,1.2736,1.2752,1.2767,1.2783,1.2799,1.2815,1.2831,1.2847,1.2863,1.2879,1.2895,1.2911,1.2927,1.2943,1.2959,1.2975,1.2991],"mid":[1.3,1.3016,1.3032,1.3048,1.3065,1.3081,1.3097,1.3113,1.313,1.3146,1.3162,1.3179,1.3195,1.3211,1.3228,1.3244,1.3261,1.3277,1.3294,1.331,1.3327,1.3343,1.336,1.3376,1.3393],"rate":[1.3,1.3068,1.3163,1.3127,1.3025,1.2937,1.2888,1.2956,1.3077,1.3212,1.332,1.3297,1.3221,1.3132,1.3056,1.3138,1.33,1.341,1.3506,1.359,1.366,1.3717,1.3761,1.3778,1.3795]}};
+
+var NS='http://www.w3.org/2000/svg';
+function E(p,n,a,t){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;p.appendChild(e);return e}
+function path(a,X,Y,o){o=o||0;var s='';for(var i=0;i<a.length;i++)s+=(i?'L':'M')+X(i+o).toFixed(1)+' '+Y(a[i]).toFixed(1);return s}
+function dodge(items,gap){items.sort(function(a,b){return a.y-b.y});for(var i=1;i<items.length;i++)if(items[i].y<items[i-1].y+gap)items[i].y=items[i-1].y+gap;return items}
+
+function axes(s,mL,mT,pw,ph,Y,ticks,fmt){ticks.forEach(function(v){E(s,'line',{x1:mL,x2:mL+pw,y1:Y(v).toFixed(1),y2:Y(v).toFixed(1),class:'gl'});E(s,'text',{x:mL-5,y:(Y(v)+3).toFixed(1),'text-anchor':'end'},fmt(v))});E(s,'line',{x1:mL,x2:mL+pw,y1:mT+ph,y2:mT+ph,class:'ax'})}
+// the vault's cover
+(function(){
+var s=document.getElementById('c2a'),W=300,H=200,mL=26,mR=44,mT=10,mB=32,pw=W-mL-mR,ph=H-mT-mB,pts=D.cover.concat(D.ahead),n=pts.length;
+function X(i){return mL+i/(n-1)*pw}
+function Y(v){return mT+(10-v)/10*ph}
+axes(s,mL,mT,pw,ph,Y,[0,2,4,6,8,10],function(v){return v});
+[[0,'−36'],[12,'−24'],[24,'−12'],[36,'now'],[44,'+8']].forEach(function(t){var x=X(t[0]);E(s,'line',{x1:x.toFixed(1),x2:x.toFixed(1),y1:mT+ph,y2:mT+ph+4,class:'ax'});E(s,'text',{x:x.toFixed(1),y:mT+ph+15,'text-anchor':'middle'},t[1])});
+E(s,'text',{x:mL+pw,y:H-1,'text-anchor':'end'},'months');
+E(s,'line',{x1:mL,x2:mL+pw,y1:Y(1).toFixed(1),y2:Y(1).toFixed(1),class:'ln c-warn','stroke-width':1,'stroke-dasharray':'4 3'});
+E(s,'text',{x:mL+4,y:(Y(1)-4).toFixed(1),class:'f-warn'},'the floor: one month');
+E(s,'path',{d:path(D.cover,X,Y),class:'ln c-money','stroke-width':1.8});
+var d='M'+X(36).toFixed(1)+' '+Y(5.1).toFixed(1);D.ahead.forEach(function(v,j){d+='L'+X(37+j).toFixed(1)+' '+Y(v).toFixed(1)});
+E(s,'path',{d:d,class:'ln c-money','stroke-width':1.6,'stroke-dasharray':'2 3'});
+E(s,'circle',{cx:X(0).toFixed(1),cy:Y(9).toFixed(1),r:2.6,class:'f-money'});E(s,'text',{x:(X(0)+6).toFixed(1),y:(Y(9)-6).toFixed(1),class:'f-t2'},'9.0');
+E(s,'circle',{cx:X(36).toFixed(1),cy:Y(5.1).toFixed(1),r:3,class:'f-money'});E(s,'text',{x:(X(36)+7).toFixed(1),y:(Y(5.1)-5).toFixed(1),class:'f-t2'},'5.1 now');
+E(s,'circle',{cx:X(44).toFixed(1),cy:Y(1).toFixed(1),r:3,class:'f-warn'});E(s,'text',{x:(X(44)+6).toFixed(1),y:(Y(1)+3).toFixed(1),class:'f-warn'},'1.0');
+})();
+// the peg and the shadow rate
+(function(){
+var s=document.getElementById('c2b'),W=300,H=200,mL=34,mR=52,mT=10,mB=32,pw=W-mL-mR,ph=H-mT-mB,n=D.peg.length,lo=1.26,hi=1.44;
+function X(i){return mL+i/(n-1)*pw}
+function Y(v){return mT+(hi-v)/(hi-lo)*ph}
+axes(s,mL,mT,pw,ph,Y,[1.28,1.32,1.36,1.40],function(v){return v.toFixed(2)});
+[[0,'−36'],[12,'−24'],[24,'−12'],[36,'now']].forEach(function(t){var x=X(t[0]);E(s,'line',{x1:x.toFixed(1),x2:x.toFixed(1),y1:mT+ph,y2:mT+ph+4,class:'ax'});E(s,'text',{x:x.toFixed(1),y:mT+ph+15,'text-anchor':'middle'},t[1])});
+E(s,'text',{x:mL+pw,y:H-1,'text-anchor':'end'},'months');
+var pts=[];for(var i=0;i<n;i++)pts.push(X(i).toFixed(1)+','+Y(D.shadow[i]).toFixed(1));for(i=n-1;i>=0;i--)pts.push(X(i).toFixed(1)+','+Y(D.peg[i]).toFixed(1));
+E(s,'polygon',{points:pts.join(' '),class:'band'});
+E(s,'path',{d:path(D.shadow,X,Y),class:'ln c-al','stroke-width':1.6,'stroke-dasharray':'5 3'});
+E(s,'path',{d:path(D.peg,X,Y),class:'ln c-money','stroke-width':1.8});
+E(s,'text',{x:(X(n-1)+6).toFixed(1),y:(Y(1.411)+3).toFixed(1),class:'f-al'},'shadow');E(s,'text',{x:(X(n-1)+6).toFixed(1),y:(Y(1.411)+14).toFixed(1),class:'f-al'},'1.411');
+E(s,'text',{x:(X(n-1)+6).toFixed(1),y:(Y(1.3)+3).toFixed(1),class:'f-money'},'peg');E(s,'text',{x:(X(n-1)+6).toFixed(1),y:(Y(1.3)+14).toFixed(1),class:'f-money'},'1.300');
+})();
+// the band
+(function(){
+var B=D.band,s=document.getElementById('c2c'),W=540,H=240,mL=42,mR=130,mT=22,mB=32,pw=W-mL-mR,ph=H-mT-mB,n=B.up.length,lo=1.24,hi=1.40,i;
+function X(i){return mL+i/(n-1)*pw}
+function Y(v){return mT+(hi-v)/(hi-lo)*ph}
+axes(s,mL,mT,pw,ph,Y,[1.26,1.30,1.34,1.38],function(v){return v.toFixed(2)});
+[0,6,12,18,24].forEach(function(m){var x=X(m);E(s,'line',{x1:x.toFixed(1),x2:x.toFixed(1),y1:mT+ph,y2:mT+ph+4,class:'ax'});E(s,'text',{x:x.toFixed(1),y:mT+ph+15,'text-anchor':'middle'},m)});
+E(s,'text',{x:mL+pw,y:H-1,'text-anchor':'end'},'months');
+var pts=[];for(i=0;i<n;i++)pts.push(X(i).toFixed(1)+','+Y(B.up[i]).toFixed(1));for(i=n-1;i>=0;i--)pts.push(X(i).toFixed(1)+','+Y(B.dn[i]).toFixed(1));
+E(s,'polygon',{points:pts.join(' '),class:'band'});
+E(s,'path',{d:path(B.up,X,Y),class:'ln c-al','stroke-width':1.2});
+E(s,'path',{d:path(B.dn,X,Y),class:'ln c-al','stroke-width':1.2});
+E(s,'path',{d:path(B.mid,X,Y),class:'ln c-t3','stroke-width':1,'stroke-dasharray':'3 3'});
+E(s,'path',{d:path(B.rate,X,Y),class:'ln c-money','stroke-width':1.8});
+[n-2,n-1].forEach(function(j){E(s,'circle',{cx:X(j).toFixed(1),cy:Y(B.rate[j]).toFixed(1),r:3.4,class:'f-warn'})});
+var x1=X(n-1)+8;
+E(s,'text',{x:x1,y:(Y(B.up[n-1])+3).toFixed(1),class:'f-al'},'weak edge');E(s,'text',{x:x1,y:(Y(B.up[n-1])+14).toFixed(1),class:'f-t3'},'the vault sells US$');
+E(s,'text',{x:x1,y:(Y(B.mid[n-1])+3).toFixed(1),class:'f-t2'},'centre');
+E(s,'text',{x:x1,y:(Y(B.dn[n-1])+3).toFixed(1),class:'f-al'},'strong edge');E(s,'text',{x:x1,y:(Y(B.dn[n-1])+14).toFixed(1),class:'f-t3'},'the vault buys US$');
+E(s,'text',{x:X(n-1).toFixed(1),y:(Y(B.up[n-1])-9).toFixed(1),'text-anchor':'end',class:'f-warn'},'the rate touched the weak edge');E(s,'text',{x:X(6).toFixed(1),y:(Y(B.rate[6])+16).toFixed(1),'text-anchor':'middle',class:'f-money'},'the rate');
+})();
+</script>
+</body></html>
