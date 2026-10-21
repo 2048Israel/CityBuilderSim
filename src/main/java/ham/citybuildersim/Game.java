@@ -8098,7 +8098,20 @@ public class Game {
      * What a medium-term bond of this size would cost. Books nothing.
      *
      * Face value is the request here, so there is no fixed point to walk - but
-     * the loan still has to be priced with itself on the books.
+     * the loan still has to be priced with itself on the books
+     * (DebtManager.quoteCurve()).
+     *
+     * THE COUPON IS THE ONE THAT PRICES THE SCHEDULE AT PAR ON THAT CURVE
+     * (CD1, spec-city-debt section 1.1). Until CD1 it was the curve's rate at
+     * the FINAL maturity (0.7.1: the last slice is the longest money in it),
+     * charged on every slice - 7 to 24 basis points too dear on a rising
+     * curve, and on an inverted one a coupon under what the early slices are
+     * worth, so a new serial priced under par, the wrong side for a round
+     * trip. The buyback values every remaining payment at its own month's
+     * factor (DebtManager.marketValue()); the issue now sells the schedule at
+     * the same sum, so a serial bought straight back costs its face, which is
+     * more than it raised by the fees and never less. At par the yield is the
+     * coupon, so the quote's rate is the coupon.
      */
     public DebtQuote quoteMediumBond(double requestedAmount, int duration, double rounding) {
 
@@ -8110,9 +8123,7 @@ public class Game {
         }
 
         double faceValue = Math.ceil(requestedAmount / rounding) * rounding;
-        // Priced at its FINAL maturity on the curve (0.7.1): a serial bond's
-        // last slice is the longest money in it.
-        double annualRate = debtManager.quoteRate(faceValue, duration * 12);
+        double annualRate = serialParCoupon(debtManager.quoteCurve(faceValue), faceValue, duration * 12);
         double monthlyInterest = faceValue * (annualRate / 12.0);
         double received = Math.round((faceValue - costOfIssuance(faceValue)) * 100) / 100.0;
 
@@ -8135,6 +8146,26 @@ public class Game {
         return new DebtQuote("Serial", duration, requestedAmount, annualRate, before,
                 faceValue, received, monthlyInterest,
                 (faceValue - received) + coupons);
+    }
+
+    /**
+     * The coupon at which a serial bond of this face and term is worth
+     * exactly its face on this curve: every payment of its schedule at its
+     * own month's factor. The schedule is linear in the coupon (a month's
+     * interest is the balance times coupon / 12, and the principal slices do
+     * not depend on it), so two evaluations give the line: P at a coupon of
+     * nothing is the principal alone, Q at a coupon of 1.0 adds a year's
+     * interest on every balance, and the coupon that prices it at par is
+     * (face - P) / (Q - P). Face and flows are in the same money, so it
+     * prices a dollar serial on the world's curve just as well. The curve's
+     * own rate at the term if the line is flat (it cannot be, bar a
+     * fixture's zero face).
+     */
+    private double serialParCoupon(YieldCurve curve, double face, int months) {
+        double p = curve.pv(new MediumTermBond(face, months, month, 0).remainingCashFlows());
+        double q = curve.pv(new MediumTermBond(face, months, month, 1.0).remainingCashFlows());
+        if (!(q - p > 1e-12 * face)) return curve.zero(months);
+        return (face - p) / (q - p);
     }
 
     /** Books a medium-term bond on exactly the terms quoted. */
@@ -8203,38 +8234,39 @@ public class Game {
     }
 
     /**
-     * The present value of one dollar of long-bond face, at a given rate.
+     * The present value of one dollar of long-bond face, on a curve (CD1):
+     * the coupon a month, for every month of the term, each at its own
+     * month's factor, and the face at the last.
      *
      * Shared by the face solver and the quote so they cannot drift, and it is
-     * deliberately the SAME shape as Debt.getMarketValue() - coupon annuity plus
-     * discounted principal - because it has to be: that method is what will
-     * price this bond back.
+     * deliberately the SAME sum as DebtManager.marketValue() - every payment
+     * of the schedule at its own month's factor - because it has to be: that
+     * method is what will price this bond back. The coupon is
+     * longBondCouponYield() on the curve's zero rate at the term, the figure a
+     * calm city has always been quoted. Until CD1 the whole schedule was
+     * priced at that one rate, flat.
      */
-    private double longBondPvPerFace(double marketRate, int duration) {
+    private double longBondPvPerFace(YieldCurve curve, int duration) {
 
         int n = duration * 12;
-        double r = marketRate / 12.0;
-        double monthlyCoupon = longBondCouponYield(marketRate, duration) / 12.0;
+        double monthlyCoupon = longBondCouponYield(curve.zero(n), duration) / 12.0;
 
-        if (r <= 1e-9) {
-            return monthlyCoupon * n + 1;
-        }
-
-        double d = Math.pow(1 + r, -n);
-        return monthlyCoupon * (1 - d) / r + d;
+        double annuity = 0;
+        for (int t = 1; t <= n; t++) annuity += curve.factor(t);
+        return monthlyCoupon * annuity + curve.factor(n);
     }
 
     /**
-     * What a long bond of this size would put on the books at a given rate.
+     * What a long bond of this size would put on the books on a curve.
      *
-     * Extracted so quoteRate() and the issuance below run the SAME arithmetic.
+     * Extracted so quoteCurve() and the issuance below run the SAME arithmetic.
      * A quote that is computed differently from the deal it quotes is just a
      * second definition waiting to drift from the first.
      */
     private double faceValueOfLongBond(double amount, int duration,
-                                       double rounding, double marketRate) {
+                                       double rounding, YieldCurve curve) {
 
-        double pvPerFace = longBondPvPerFace(marketRate, duration);
+        double pvPerFace = longBondPvPerFace(curve, duration);
 
         // A coupon at or above the market rate would price at or over par and
         // the instrument would stop being a discount bond. The curve puts the
@@ -8272,53 +8304,71 @@ public class Game {
         }
 
         /*
-         * ON THE CURVE AT ITS DURATION (0.7.1). The rate the face is solved at
-         * - and so the one longBondPvPerFace() and faceValueOfLongBond() are
-         * handed, here and in the fixed point - is curveRate(duration * 12)
-         * with the loan priced in: the dial, the credit spread, and the term
-         * premium for those years less what the central bank's holdings
-         * compress of it. The buyback prices the same paper at the same
-         * curve for the months it has left (DebtManager.marketValue()), which
-         * is what keeps RestructureCheck's round trip neutral by construction.
+         * ON THE CURVE THE LOAN WILL STAND ON (0.7.1, CD1). The face is
+         * solved on the whole curve with the loan priced in
+         * (DebtManager.quoteCurve(): the dial the market expects, the credit
+         * spread, the term premium less what the central bank's holdings
+         * compress of it), every payment of the schedule at its own month's
+         * factor (longBondPvPerFace()) - the sum the buyback values the same
+         * paper at for the months it has left (DebtManager.marketValue()),
+         * which is what keeps RestructureCheck's round trip neutral by
+         * construction. The coupon is the figure a calm city has always been
+         * quoted, longBondCouponYield() on the zero rate at the term; the
+         * quote's rate is the yield that price makes of it (longBondQuote()).
          */
         final double requested = amount;
-        double marketRate = debtManager.quoteRate(requested,
-                r -> faceValueOfLongBond(requested, duration, rounding, r), duration * 12);
+        YieldCurve curve = debtManager.quoteCurve(requested,
+                c -> faceValueOfLongBond(requested, duration, rounding, c));
 
-        double faceValue = faceValueOfLongBond(requested, duration, rounding, marketRate);
+        double faceValue = faceValueOfLongBond(requested, duration, rounding, curve);
 
         // What that face is actually worth today, less the underwriter and
         // bond counsel. The worth is the request before rounding; a little
         // above it after, because the face rounds UP to the instrument's
         // granularity and the proceeds follow the face.
-        double received = longBondNetProceeds(faceValue, marketRate, duration);
+        double received = longBondNetProceeds(faceValue, curve, duration);
 
-        return longBondQuote(requested, duration, marketRate, before, faceValue, received);
+        return longBondQuote(requested, duration, curve, before, faceValue, received);
     }
 
     /**
-     * What the city actually banks for a long bond of this face: its worth at
-     * the rate struck, less the fees, to the cent. The long bond's
-     * netProceeds(), shared by both quotes so they cannot drift.
+     * What the city actually banks for a long bond of this face: its worth on
+     * the curve, less the fees, to the cent. The long bond's netProceeds(),
+     * shared by both quotes so they cannot drift.
      */
-    private double longBondNetProceeds(double faceValue, double marketRate, int duration) {
+    private double longBondNetProceeds(double faceValue, YieldCurve curve, int duration) {
         return Math.round(
-                (faceValue * longBondPvPerFace(marketRate, duration)
+                (faceValue * longBondPvPerFace(curve, duration)
                         - costOfIssuance(faceValue)) * 100) / 100.0;
     }
 
-    /** A long bond's quote, once its face and proceeds are known: the coupon, the monthly bill and the cost of the credit, for both quotes. */
-    private DebtQuote longBondQuote(double requested, int duration, double marketRate,
+    /**
+     * A long bond's quote, once its face and proceeds are known: the coupon,
+     * the monthly bill and the cost of the credit, for both quotes.
+     *
+     * The coupon and the quote's rate are two numbers since CD1. The coupon
+     * is longBondCouponYield() on the curve's zero rate at the term, and the
+     * monthly bill is face x coupon / 12, so the booking's couponRate() is
+     * exactly the quoted coupon. The rate on the quote is the YIELD the price
+     * makes of that schedule - the face's worth on the curve (before the
+     * fees) solved on the schedule, as a buyer reads it - because a rate
+     * handed in and a rate read back are the same thing on a flat curve and
+     * not otherwise (the book prints the second, YieldCurve's WHY).
+     */
+    private DebtQuote longBondQuote(double requested, int duration, YieldCurve curve,
                                     double before, double faceValue, double received) {
 
+        int n = duration * 12;
         // Yield curve: long money carries a lower coupon than the medium-term
         // market rate. Small monthly payments are the point of the instrument.
-        double couponYield = longBondCouponYield(marketRate, duration);
+        double couponYield = longBondCouponYield(curve.zero(n), duration);
 
         double monthlyInterest = (faceValue * couponYield) / 12;
-        double totalCost = (faceValue - received) + (monthlyInterest * duration * 12);
+        double totalCost = (faceValue - received) + (monthlyInterest * n);
+        double yield = new LongTermBond(faceValue, n, month, couponYield)
+                .getYieldToMaturity(faceValue * longBondPvPerFace(curve, duration));
 
-        return new DebtQuote("Term", duration, requested, marketRate, before,
+        return new DebtQuote("Term", duration, requested, yield, before,
                 faceValue, received, monthlyInterest, totalCost);
     }
 
@@ -8370,7 +8420,7 @@ public class Game {
 
            face x pvPerFace - FIXED - face x SPREAD  >=  cashNeeded
 
-       pvPerFace is longBondPvPerFace(), the one the quote and the rate's
+       pvPerFace is longBondPvPerFace(), the one the quote and the curve's
        fixed point price with. It is never below a third, because the coupon
        is never below a third of the market rate (longBondCouponYield()), so
        the denominator cannot reach zero in play; the guards are for
@@ -8379,12 +8429,12 @@ public class Game {
        helpers.
        ----------------------------------------------------------------------- */
 
-    /** Face value whose net proceeds cover cashNeeded at this rate, fees included, rounded up to the granule. */
+    /** Face value whose net proceeds cover cashNeeded on this curve, fees included, rounded up to the granule. */
     private double longBondFaceForProceeds(double cashNeeded, int duration,
-                                           double rounding, double marketRate) {
-        double perFace = longBondPvPerFace(marketRate, duration) - UNDERWRITING_SPREAD;
+                                           double rounding, YieldCurve curve) {
+        double perFace = longBondPvPerFace(curve, duration) - UNDERWRITING_SPREAD;
         if (perFace <= 1e-9) {
-            return faceValueOfLongBond(cashNeeded + issuanceFee(), duration, rounding, marketRate);
+            return faceValueOfLongBond(cashNeeded + issuanceFee(), duration, rounding, curve);
         }
         return Math.ceil(((cashNeeded + issuanceFee()) / perFace) / rounding) * rounding;
     }
@@ -8407,24 +8457,24 @@ public class Game {
         }
 
         final double needed = cashNeeded;
-        double marketRate = debtManager.quoteRate(needed,
-                r -> longBondFaceForProceeds(needed, duration, rounding, r), duration * 12);
+        YieldCurve curve = debtManager.quoteCurve(needed,
+                c -> longBondFaceForProceeds(needed, duration, rounding, c));
 
-        double faceValue = longBondFaceForProceeds(needed, duration, rounding, marketRate);
-        double received = longBondNetProceeds(faceValue, marketRate, duration);
+        double faceValue = longBondFaceForProceeds(needed, duration, rounding, curve);
+        double received = longBondNetProceeds(faceValue, curve, duration);
 
         // The proceeds are rounded to the cent, so a face that lands exactly on
         // its solution can bank a fraction under the ask - the note's case,
         // met the note's way (quoteTBill()): as many granules as the shortfall
         // needs at what a granule of this face banks, and hard bounded.
-        double perFace = longBondPvPerFace(marketRate, duration) - UNDERWRITING_SPREAD;
+        double perFace = longBondPvPerFace(curve, duration) - UNDERWRITING_SPREAD;
         for (int guard = 0; received < needed && perFace > 1e-9 && guard < 64; guard++) {
             faceValue += rounding * Math.max(1,
                     Math.ceil((needed - received) / (rounding * perFace)));
-            received = longBondNetProceeds(faceValue, marketRate, duration);
+            received = longBondNetProceeds(faceValue, curve, duration);
         }
 
-        return longBondQuote(needed, duration, marketRate, before, faceValue, received);
+        return longBondQuote(needed, duration, curve, before, faceValue, received);
     }
 
     /** Books a term bond sized to the cash, on exactly the terms quoted - the build screen's bond. */
@@ -8610,10 +8660,13 @@ public class Game {
             }
             case "Serial" -> {
                 double face = Math.ceil(requestedUsd / rounding) * rounding;
-                // On the world's curve at its final maturity (0.7.2), as the
-                // domestic serial is on the city's.
-                double rate = selfPricedForeignRate(face, duration * 12, r ->
-                        new MediumTermBond(face, duration * 12, month, r, true));
+                // On the world's curve (0.7.2, CD1), as the domestic serial is
+                // on the city's: the coupon that prices its schedule at par,
+                // payment by payment, which is also its yield.
+                int n = duration * 12;
+                YieldCurve world = selfPricedWorldCurve(face, n, c ->
+                        new MediumTermBond(face, n, month, serialParCoupon(c, face, n), true));
+                double rate = serialParCoupon(world, face, n);
                 double received = Math.round((face - costOfIssuance(face)) * 100) / 100.0;
                 double coupons = 0;
                 MediumTermBond shape = new MediumTermBond(face, duration * 12, month, rate);
@@ -8625,16 +8678,18 @@ public class Game {
             }
             case "Term" -> {
                 double face = Math.ceil(requestedUsd / rounding) * rounding;
-                // On the world's curve at its duration (0.7.2) - the rate the
-                // buyback reads back for the months it has left
-                // (DebtManager.marketValue()), so a round trip is neutral by
-                // construction. It was the flat foreign rate at every term.
-                double rate = selfPricedForeignRate(face, duration * 12, r ->
-                        new LongTermBond(face, duration * 12, month, longBondCouponYield(r, duration), true));
-                double coupon = longBondCouponYield(rate, duration);
-                double received = Math.round(
-                        (face * longBondPvPerFace(rate, duration)
-                                - costOfIssuance(face)) * 100) / 100.0;
+                // On the world's curve, every payment at its own month's factor
+                // (0.7.2, CD1) - what the buyback reads back for the months it
+                // has left (DebtManager.marketValue()), so a round trip is
+                // neutral by construction. The quote's rate is the yield the
+                // price makes of the schedule, as at home (longBondQuote()).
+                int n = duration * 12;
+                YieldCurve world = selfPricedWorldCurve(face, n, c ->
+                        new LongTermBond(face, n, month, longBondCouponYield(c.zero(n), duration), true));
+                double coupon = longBondCouponYield(world.zero(n), duration);
+                double gross = face * longBondPvPerFace(world, duration);
+                double rate = new LongTermBond(face, n, month, coupon).getYieldToMaturity(gross);
+                double received = Math.round((gross - costOfIssuance(face)) * 100) / 100.0;
                 double monthly = (face * coupon) / 12;
                 yield new DebtQuote("Term", duration, requestedUsd, rate, before,
                         face, received, monthly,
@@ -8664,6 +8719,34 @@ public class Game {
             rate = next;
         }
         return rate;
+    }
+
+    /**
+     * THE DOLLAR QUOTE'S FIXED POINT ON THE WORLD'S CURVE (CD1): the
+     * selfPricedForeignRate() walk, for the paper that is priced payment
+     * by payment. The unknown is the world's SHORT rate, because the curve
+     * the paper will be valued on once it is booked is worldCurveAt(
+     * foreignRate()) and the term premium is a table that does not move:
+     * start from the principal-only quote's short rate, build the world's
+     * curve on it, strike the paper's coupon on that curve (the shape), and
+     * read the short rate the world will charge with that paper on the
+     * books (DebtManager.quoteForeignRate(Debt, months) less the premium
+     * for its months), until it stops moving. Returns the curve at the
+     * rate it settled to.
+     *
+     * @param shape the paper as it would be booked, given the curve it is struck on
+     */
+    private YieldCurve selfPricedWorldCurve(double face, int months,
+                                            java.util.function.Function<YieldCurve, Debt> shape) {
+        double premium = DebtManager.termPremium(months);
+        double level = debtManager.quoteForeignRate(face, months) - premium;
+        for (int i = 0; i < FOREIGN_QUOTE_ITERATIONS; i++) {
+            double next = debtManager.quoteForeignRate(
+                    shape.apply(debtManager.worldCurveAt(level)), months) - premium;
+            if (Math.abs(next - level) < 1e-13) return debtManager.worldCurveAt(next);
+            level = next;
+        }
+        return debtManager.worldCurveAt(level);
     }
 
     /** The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. */
@@ -8813,11 +8896,15 @@ public class Game {
     public DebtQuote quoteForeignForCash(String type, double cashNeededUsd, int duration, double rounding) {
         if (!(cashNeededUsd > 0) || !(rounding > 0)) return quoteForeign(type, 0, duration, rounding);
         int months = "Note".equals(type) ? duration : duration * 12;
-        double perFace = foreignProceedsPerFace(type, debtManager.foreignCurveRate(months), duration);
+        double perFace = foreignProceedsPerFace(type, debtManager.worldCurveAt(debtManager.foreignRate()), duration);
         double face = Math.ceil(((cashNeededUsd + issuanceFee()) / perFace) / rounding) * rounding;
         DebtQuote quote = quoteForeign(type, face, duration, rounding);
         for (int guard = 0; !quote.isEmpty() && quote.cashReceived() < cashNeededUsd && guard < 64; guard++) {
-            double atQuote = foreignProceedsPerFace(type, quote.marketRate(), duration);
+            // What a unit of this quote's face banked, net of the spread: the fee
+            // is the only fixed part of what it cost, and the curve it was struck
+            // on is not the quote's to hand back (its rate is a yield).
+            double atQuote = Math.max(MIN_PROCEEDS_PER_FACE,
+                    (quote.cashReceived() + issuanceFee()) / quote.faceValue());
             face += rounding * Math.max(1,
                     Math.ceil((cashNeededUsd - quote.cashReceived()) / (rounding * atQuote)));
             quote = quoteForeign(type, face, duration, rounding);
@@ -8825,11 +8912,11 @@ public class Game {
         return quote;
     }
 
-    /** What a unit of a dollar instrument's face banks at this rate, net of the spread - never under MIN_PROCEEDS_PER_FACE, so the search above always moves. */
-    private double foreignProceedsPerFace(String type, double rate, int duration) {
+    /** What a unit of a dollar instrument's face banks on this world curve, net of the spread - never under MIN_PROCEEDS_PER_FACE, so the search above always moves. An estimate to start the search from; the quote's own figures decide. */
+    private double foreignProceedsPerFace(String type, YieldCurve world, int duration) {
         double perFace = switch (type) {
-            case "Note" -> 1 - ShortTermTBill.discountFraction(rate, duration);
-            case "Term" -> longBondPvPerFace(rate, duration);
+            case "Note" -> 1 - ShortTermTBill.discountFraction(world.zero(duration), duration);
+            case "Term" -> longBondPvPerFace(world, duration);
             default     -> 1;
         };
         return Math.max(MIN_PROCEEDS_PER_FACE, perFace - UNDERWRITING_SPREAD);

@@ -687,8 +687,10 @@ public class ForeignDebtCheck {
                 market.marketValue(twenty), onTheWorldsCurve, 1e-9);
         assertTrue("...not at the city's own rate, which is a different figure",
                 Math.abs(market.marketValue(twenty) - twenty.getMarketValue(market.getRate())) > 1);
+        // Since CD1 a quote's rate is the yield solved from its price on the world's curve, and a
+        // piece's yield is solved from its price on the same curve (yieldOf()): the two are one.
         close("...and it was issued at the rate it is valued at: the round trip is neutral by construction",
-                quote.marketRate(), market.foreignCurveRate(240), 1e-12);
+                quote.marketRate(), market.yieldOf(twenty), 1e-9);
 
         double value = market.marketValue(twenty);
         double dial = market.getPolicyRate();
