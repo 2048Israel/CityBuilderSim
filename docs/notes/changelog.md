@@ -14,7 +14,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.15 — CD2, the lineup and the auction — 2026-10-21, built on CD1, see docs/queue/CD2-notes.md
+### 0.8.16 — CD2, the lineup and the auction — 2026-10-21, built on CD1 (0.8.15), see docs/queue/CD2-notes.md
 
 The city sells bills (1-12 months), bonds (2-50 years, the coupon the clearing yield rounded down to an eighth, in
 lines that reopen) and the amortizing bond at auction (spec-city-debt §2, §4); the term loan and the 0.75% spread
@@ -26,9 +26,10 @@ sale keeps its ask open. Borrow is the auction's screen. The study's model, reru
 city's tail 28 bp, not 503. Save format 42. Traces move (default 573,349 people against 619,699, Rotterdam 761,080
 against 834,678; one domestic sale between them, at fair); ensemble 23/26 against 22/26, A2 green. AuctionCheck.
 
+
 ---
 
-### 0.8.14 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
+### 0.8.15 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
 
 The city's curve no longer sits on the dial in parallel (spec-city-debt §3, D9). The market expects the dial to drift
 back to what the city's rule would set at the inflation it expects, over six months (DRIFT_MONTHS, D15); each month's
@@ -39,7 +40,21 @@ piece's yield is solved from its price; every issue is priced the same way (the 
 the term loan's face on its factors), at home and abroad, and no round trip makes money. The short end is unchanged.
 Your rate shows the thirty-year rate in its new parts and where the market expects the dial. No save-format bump.
 The traces move (default 619,699 people against 677,355; Rotterdam 834,678 against 711,024); the ensemble scores
-22/26, H1 red for the cheap long money gone (Jerus's call, CD1-C). Harness: CurveCheck.
+22/25, H1 retired and A2 shipped as noise at its threshold, by Jerus's word (2026-10-21). Harness: CurveCheck.
+
+### 0.8.14 — CL3, buildings that stay where they were put — 2026-10-21, shipped, see docs/queue/CL3-notes.md
+
+The map's alone; the playtest's trace is byte-identical. Each district keeps a log of its count changes month by
+month, saved in the map's sidecar (FORMAT 9; an older one loads into today's plans, box for box), and its plan
+places the buildings in the order they came: the first batch as before, then each month's departures (the newest
+leave, their lots freed) and arrivals (a month's types dealt in turn), each at the first place it fits, a cell
+opened for the use of what opens it. Farms, power and water works, yards, car plants and truck depots open cells
+from the district's far side; homes keep off mines; a cell's squares and boulevard are decided as it opens. A
+district is full at PLAN_FILL (0.68) of its plots, and what spills keeps its month. His 1.7M city over a year:
+41 buildings moved against 5,080; the playtest's ring gone (industry 7.0 km from the founding site, homes 10.2,
+where they stood at 9.8 and 7.5). The playtest's city, out of ground, now turns away its newest houses at the edge
+rather than its works: 3,570 packed without a street against 450. PlanCheck 11, MapCheck's sidecar sections and
+LongPlaytest's layout watch are new.
 
 ### 0.8.13 — CL2, streets not a grid inside the blocks — 2026-10-20, shipped, see docs/queue/CL2-notes.md
 
@@ -51,6 +66,7 @@ joined along a 45-degree highway drew a staircase. A merge in a varied cell take
 made. On his 1.7M city: dead ends 155 and buildings placed 17,987, both as before; a squared cell's streets 27.5%
 of its ground against 30.6%. At the city's scale it still reads as a grid (CL4 changes that). PlanCheck 10 is
 new; the trace is byte-identical to 0.8.12's, so no ensemble (EN1).
+
 
 ### 0.8.12 — EG1, deposits where the geology says — 2026-10-20, shipped, see docs/queue/EG1-notes.md
 

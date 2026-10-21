@@ -1,16 +1,13 @@
 # CD2 - the lineup and the auction: notes
 
-*0.8.15, 2026-10-21, overnight (Jerus's chain: CL2, CD1, CL3, CD2, FX5). The
+*0.8.16, 2026-10-21, overnight (Jerus's chain: CL2, CD1, CL3, CD2, FX5). The
 batch is `docs/studies/spec-city-debt.md` §8's CD2 row: §2.1-2.3 and 2.7
 (bills, bonds in reopened lines, the amortizing bond, dollar paper), §4 (the
 auction and the sales nobody presses), its screen, Borrow as an auction (§7
 board 4, D31), the households at the auction's yield (D32), and first the
 study's model run again with the firms (D33). Planned while CD1 was built;
 built on CD1's branch (unshipped, waiting for Jerus on H1 and A2) merged with
-main at 9f1b328 (CL2, 0.8.13), so it is the version after CD1's 0.8.14.
-CL3 shipped to main as 0.8.14 while CD2 was built: when CD1 rebases it
-becomes 0.8.15 and CD2 0.8.16, renumbered at that merge (GameVersion, the
-changelog's heading, `docs/ensemble/`, CD2-C's row).*
+main at 9f1b328 (CL2, 0.8.13); merged with main at 9ff6489 after CD1 shipped as 0.8.15 (CL3 took 0.8.14), so it is 0.8.16.*
 
 **Work in progress, not ready to ship**: it carries CD1's unshipped commits, and `--timing` was not run (07:45 came first). Built, checked and recorded otherwise: see §3.
 

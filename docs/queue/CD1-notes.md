@@ -1,12 +1,14 @@
 # CD1 - notes
 
-*0.8.13, 2026-10-20 and 21, overnight (Jerus's chain: CL2, then CD1 after EG1,
+*0.8.15, 2026-10-20 and 21, overnight (Jerus's chain: CL2, then CD1 after EG1,
 then CL3, CD2, FX5). The spec is `docs/studies/spec-city-debt.md` §3 (the
 curve; Jerus on §3.2, 2026-10-18: "if it is realistic then yes"), §8's CD1
 row, §8.1 (the current-code handoff) and §9 (D9, D15, D31). Planned while EG1
-shipped, built from main 0f6e1b6 (0.8.12).*
+shipped, built from main 0f6e1b6 (0.8.12) and merged with CL2's 0.8.13 (9f1b328)
+and CL3's 0.8.14 (ef3677c).*
 
-**Ready.** See the last section.
+**Jerus, 2026-10-21 morning:** "Keep D9 as decided: H1's premise is retired, A2 ships as noise at its threshold. Ship CD1." H1 is retired in
+the scorer and A2 ships red at its threshold (§3).
 
 ## 1. What it does
 
@@ -72,10 +74,23 @@ months; with the rule on the dial the gap was nothing and the curve inverted
 in 104. Mutation test: flat pricing gives 7 FAILs, a 12-month drift 19.
 
 The suite (`Batch check.bat --maps`, beside CL2's batch, timing soft): 125
-harnesses run in 745 s, **125 passed**; the maps regenerated; Stale 0 firm
+harnesses run in 745 s, **125 passed**; on the tree merged with CL2's 0.8.13, 125 in 968 s, **125 passed**; the maps regenerated; Stale 0 firm
 findings. Main's one red, ScaleCheck's "...and it builds" (SC1), passes here:
 the moved trajectory builds more homes by its end, which is not SC1's fix -
-SC1 stays queued. The timing harnesses, hard and alone (`--timing`): 8 run in 133 s, all green.
+SC1 stays queued. The timing harnesses, hard and alone (`--timing`): 8 run in 133 s, all green; on the merged tree 8 in 140 s, all green.
+
+**On the tree merged with CL3's 0.8.14** (2026-10-21, `--maps`): 125
+harnesses in 788 s, **124 passed**; the maps regenerated with nothing to
+change; Stale 0 firm findings. ScaleCheck's "...and it builds" stays green.
+The one red is **LongPlaytest**, on one finding of CL3's layout watch, which
+is the map's: at month 3,998 the city buys land inside district (-2,-2),
+already full (its owned plots 28,217 to 33,731), and its plan, replayed from
+its log with the larger room, moves 2,069 of its 2,946 boxes (1,727 of them
+houses); the watch excuses only a district whose carry-in changed, and this
+one's did not. The model's trace is CD1's to the byte (§3), and main's
+playtest, on its own path, raises no such finding. It is CL3's pending
+re-chaining by another door (CL3-C), and CD1 does not touch the map. The
+timing harnesses, hard and alone: 8 in 173 s, all green.
 
 Existing harnesses restated, each premise kept (the design D9 replaced only
 how they measured):
@@ -96,6 +111,40 @@ how they measured):
   unchanged: its bare manager is never struck (★7 not needed).
 
 ## 3. What moved in the trace, and why
+
+**Two ensemble checks went red, and Jerus decided both** (2026-10-21 morning):
+"Keep D9 as decided: H1's premise is retired, A2 ships as noise at its threshold. Ship CD1."
+
+| check | what it asks | main 0.8.12 | CD1 | his call |
+|---|---|---|---|---|
+| H1 | a city whose dial is held at 0% by hand gets at least a point more inflation than its autopilot twin in its first ten years | +2.37 points | +0.27 points | **keep D9: H1's premise retired** (`tools/ensemble/score.py`, THE PREMISES RETIRED: measured and printed, neither scored nor counted) |
+| A2 | on the autopilot, no stretch of 12 months or more with prices rising over 10% a year, in any of the 16 cities | longest 11 months (middle 8) | longest 12 months, one city (middle 7) | **ships as noise at its threshold**: still scored as written, red on 0.8.15's stored score |
+
+- **H1 is the design doing its job.** You decided (D9) that the market expects
+  the dial to go back to what the rule would set, whoever holds it. So holding
+  it at 0% by hand now only makes short money cheap: long money stays priced
+  on where the rule will take the dial, which is the study's "behind" city
+  (§3.3: its 10-year at 5.35%, not 1.62%). The extra inflation comes later
+  instead (+3.02 points in the second decade, against +3.63). Keeping D9 means
+  retiring H1's first-decade test or rewriting it for a market that does not
+  believe a hand on the dial. The other way is a new dial: the six-month drift
+  slowing the longer the dial has been held off the rule, so a market learns
+  that the hand stays (a batch of its own).
+- **A2 looks like chance.** One city out of 16 had one 12-month stretch where
+  the limit is under 12; the middle city's longest stretch got shorter (7
+  months against 8). CD1 moves every city's path, and a moved path lands
+  differently at a threshold. Nothing in CD1 pushes inflation up on the
+  autopilot: the inflation from month 240 on is 2.23% in the middle city, as
+  on main.
+
+**After CL2 and CL3:** CL2 (0.8.13) and CL3 (0.8.14), merged into this
+branch, move only the map, and each one's own trace is byte-identical to the
+version before it, so the playtests and the ensemble below, run before the
+merges, stand for the merged tree. Checked on the merge with CL3: the default
+playtest traced on CD1's tip (7820daf) and on the merged tree is the same to
+the byte in all eight CSVs (4,002 rows each; 619,699 people at the end). Its
+report differs in the run time, CL3's layout lines and one finding of CL3's
+watch (§2): the map's, not the model's.
 
 Both playtests move from before their first checkpoint (month 266 on the
 default run, 262 on Rotterdam), as soon as the city's inflation is off where
@@ -121,17 +170,20 @@ autopilot: inflation running over where credibility says it settles makes
 the rule expected to fall, by more than the half-point term premium at ten
 years. A curve that never changed shape would be a curve nobody tested.
 
-**The ensemble** (label cd1, against `docs/ensemble/0.8.12.md`): 80 of 80 runs, 11 minutes, **22/26**
-(one vacuous) against 0.8.12's 25/27; stored as `docs/ensemble/0.8.13.md`.
+**The ensemble** (label cd1, against `docs/ensemble/0.8.12.md`): 80 of 80 runs, 11 minutes, 22/26
+(one vacuous) against 0.8.12's 25/27 as first scored; rescored from the same
+runs by the scorer that retires H1, **22/25** (one vacuous, one retired),
+stored as `docs/ensemble/0.8.15.md`.
 S1 and R3 stay red, both nearer their lines (S1's longest spell 12 months
 against 21; R3 4 seeds over a point against 5). **H1 is red by the design**:
 a dial held at 0% by hand no longer buys cheap long money, because the market
 expects it back at the rule, so the first decade's inflation over the
 autopilot twin is 0.27 points against 2.37 (the second 3.02 against 3.63) -
-§3.3's "behind" city in the ensemble's words, and Jerus's call (★9). H2 goes
+§3.3's "behind" city in the ensemble's words; retired by Jerus's word (★9). H2 goes
 vacuous with it (no first-decade burst to stop). **A2** is red on one seed's
 12-month spell over 10% against "under 12" (median 7 months against 8):
-read as the chaos of a moved trace at the threshold, not a mechanism.
+read as the chaos of a moved trace at the threshold, not a mechanism, and
+shipped as noise at its threshold by his word.
 
 ## 4. Who wrote what, and what review changed
 
@@ -166,6 +218,7 @@ read as the chaos of a moved trace at the threshold, not a mechanism.
    decision, and the realistic reading of a market that does not believe a
    hand on the dial), or let the expected drift slow the longer a gap has stood
    (a market that learns the hand stays) - a new dial, a batch of its own.
+   **Answered, 2026-10-21: keep D9; H1's premise is retired.**
 
 ## 6. What Jerus checks by eye (CD1-C)
 
@@ -177,9 +230,13 @@ curve's rate at its months.
 
 ## 7. State
 
-**Ready** at the tip of `batch/CD1`: built to the plan, every slice reviewed
-and committed, the suite 125/125, `--timing` 8/8 hard, the maps regenerated,
-the ensemble stored as `docs/ensemble/0.8.13.md`, the row out of `QUEUE.md`
-and CD1-C under Pending. Version 0.8.13 (main is 0.8.12; if CL2 ships first,
-the version after its). Left to the orchestrator: the gate, the ship, the
-docs pass.
+**Ready but for one red, which is CL3's**, at the tip of `batch/CD1`: Jerus's
+word recorded (2026-10-21: "Keep D9 as decided: H1's premise is retired, A2
+ships as noise at its threshold. Ship CD1."), H1 retired in the scorer and A2
+shipped as noise; merged with CL2's 0.8.13 and CL3's 0.8.14, version 0.8.15;
+the merged playtest's trace CD1's to the byte, so its ensemble stands, stored
+rescored as `docs/ensemble/0.8.15.md` (22/25); on the merged tree the suite
+124/125, LongPlaytest red on CL3's layout watch (§2), and `--timing` 8/8
+hard; the maps regenerated; the row out of `QUEUE.md` and CD1-C under
+Pending. `ship.sh` stops at any red, so whether CD1 ships beside this one or
+waits for a fix to the plan is the orchestrator's call.
