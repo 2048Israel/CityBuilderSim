@@ -90,7 +90,7 @@ Within 300 km the harness's own count of fields on ground that holds none is 0 o
 
 ## 7. The suite
 
-(to come)
+`Batch check.bat --maps` on the branch with main merged in (ba7ed2c, the model of 128e032), earth-1.bin named: **123 harnesses run, 121 passed, 2 failed**. ScaleCheck's "...and it builds" was red on main already (122 run, 121 passed at 52f689e; queued as SC1). The second was StaleCheck: README's "121 harnesses", one short since EarthDepositsCheck. It was fixed and is green on its own. One timing line was soft beside the other sessions' JVMs: EarthTerrainCheck 9's cells pass at 1,046 ms against its 1,000 ms budget, where the slice measured 406 ms alone (the districts add about 3%). The maps were regenerated. Main's merge brought no source. **`Batch check.bat --timing`**, last and alone (it waited for two other batches' JVMs): 8 harnesses run, 7 passed, ScaleCheck's same line the one red; the cells pass 408 ms hard, against its 1,000 ms budget.
 
 ## 8. Not built, and what is left
 
