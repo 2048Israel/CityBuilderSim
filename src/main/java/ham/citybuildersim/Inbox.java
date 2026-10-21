@@ -89,6 +89,14 @@ public class Inbox {
                 "The bank asks the city to buy its preferred shares",
                 preferredBody(game));
 
+        // The rollover's sale that came up short at its cap (CD2): the maturity is
+        // paid in full all the same, from the cash and the central bank's advances.
+        List<String> rolloverShort = game.getRolloverShortNotes();
+        take(game, month, "rolloverShort",
+                !rolloverShort.isEmpty(),
+                "The rollover could not sell all it needed",
+                rolloverShort);
+
         List<String> defaults = defaultsBody(game);
         take(game, month, "defaults",
                 !defaults.isEmpty(),

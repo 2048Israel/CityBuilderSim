@@ -1540,7 +1540,7 @@ public class DebtManager {
     /** ...on fifty-year money, and on anything longer: the long end, a point and a half over the dial. */
     public static final double TERM_PREMIUM_50Y = .0150;
 
-    /** The table, at 10, 20, 30, 40 and 50 years - LongTermBond.MATURITIES. */
+    /** The table, at 10, 20, 30, 40 and 50 years: the curve's points (40 is no longer a term a bond is sold at, CD2, but it still shapes the line between 30 and 50). */
     private static final double[] TERM_PREMIUM = {
             TERM_PREMIUM_10Y, TERM_PREMIUM_20Y, TERM_PREMIUM_30Y, TERM_PREMIUM_40Y, TERM_PREMIUM_50Y };
 
@@ -1879,7 +1879,7 @@ public class DebtManager {
      */
     public double bankBook() {
         double total = 0;
-        for (Debt d : debts) if (d.getSettleDue() <= 0) total += d.bankPrincipal();
+        for (Debt d : debts) total += d.bankPrincipalPaid();
         return total;
     }
 
@@ -1930,8 +1930,8 @@ public class DebtManager {
     public double bankUnearnedDiscount() {
         double total = 0;
         for (Debt d : debts) {
-            if (d.isForeign() || d.getSettleDue() > 0) continue;   // not on its book yet: see bankBook()
-            total += d.unaccretedOn(d.bankPrincipal());
+            if (d.isForeign()) continue;
+            total += d.unaccretedOnPaid();   // only the part that has settled: see bankBook()
         }
         return total;
     }
@@ -2237,6 +2237,69 @@ public class DebtManager {
         double owedShort = Math.max(0, overdraft) + advances;
         double clears = Math.min(owedShort, Math.max(0, received));
         return getAllPrincipal() + owedShort - clears;
+    }
+
+    /* -----------------------------------------------------------------------
+       WHAT THE AUCTION STARTS FROM, AND WHERE A SALE GOES (CD2)
+       ----------------------------------------------------------------------- */
+
+    /**
+     * The yield an auction of this paper starts from - fair (spec-city-debt.md
+     * section 4): what the curve says the paper is worth with `extraFace` of
+     * new debt on the books (quoteCurve(): the issue is priced into the credit
+     * spread, as every quote has been since 0.7.0). The par yield for a bond
+     * (the coupon that prices a bullet of these months at 100), the one coupon
+     * that prices the amortizing schedule at 100, and for a bill the zero rate
+     * at its months as a monthly-compounded yield - the rate that discounts
+     * its face to the curve's price. Nobody bids under it (Auction).
+     *
+     * @param months a bill's or a bond's months; an amortizing bond's years times twelve
+     */
+    public double fairYield(Auction.Kind kind, int months, double extraFace) {
+        YieldCurve curve = quoteCurve(Math.max(0, extraFace));
+        return switch (kind) {
+            case BILL -> curve.zero(months);
+            case BOND -> curve.parYield(months);
+            case AMORTIZING -> amortizingParYield(curve, months / 12);
+        };
+    }
+
+    /**
+     * The one coupon that prices an amortizing bond of these years at 100 on a
+     * curve: every payment of its schedule at its own month's factor. The
+     * schedule is linear in the coupon (a month's interest is the balance times
+     * coupon / 12, and the principal slices do not depend on it), so two
+     * evaluations give the line: P at a coupon of nothing is the principal
+     * alone, Q at a coupon of 1.0 adds a year's interest on every balance, and
+     * the coupon that prices it at 100 is (100 - P) / (Q - P). CD1 solved this
+     * in Game for the serial bond; the auction's fair yield for the amortizing
+     * bond is the same figure, and it lives here now.
+     */
+    public static double amortizingParYield(YieldCurve curve, int years) {
+        double p = curve.pv(Auction.amortizingPer100(0, years));
+        double q = curve.pv(Auction.amortizingPer100(1.0, years));
+        if (!(q - p > 1e-12)) return curve.zero(years * 12);
+        return (100 - p) / (q - p);
+    }
+
+    /**
+     * The bond line a sale at this term goes into (spec-city-debt.md section
+     * 2.2, D6, D14): the city's own LongTermBond - not dollar paper - whose
+     * original term is these years and which still has at least nine tenths of
+     * it left (Auction.BENCHMARK_LIFE: 22 months of a 2-year, 54 of a 5-year,
+     * 108, 216, 324 and 540 of the rest); the one with the most months left if
+     * two qualify. Null when there is none, and the sale opens a new line.
+     */
+    public Debt benchmarkLine(int years) {
+        int term = years * 12;
+        int need = (int) Math.ceil(Auction.BENCHMARK_LIFE * term - 1e-9);
+        Debt best = null;
+        for (Debt d : debts) {
+            if (d.isForeign() || !(d instanceof LongTermBond) || d.getDuration() != term) continue;
+            if (d.getRemainingMonths() < need) continue;
+            if (best == null || d.getRemainingMonths() > best.getRemainingMonths()) best = d;
+        }
+        return best;
     }
 
     public void clearDebts() {

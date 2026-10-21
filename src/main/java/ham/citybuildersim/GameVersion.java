@@ -7680,8 +7680,26 @@ public final class GameVersion {
      *     ice did): a generated world reads no geology and draws its fields to
      *     the bit as before (the default playtest's trace), so its format-40
      *     save reads as it did. Only an Earth save below 41 is refused.
+     *
+     * 42 - THE LINEUP AND THE AUCTION (batch CD2, slice 3; docs/studies/
+     *     spec-city-debt.md 2 and 4): the city's bonds are sold at auction
+     *     now, a coupon the clearing yield rounded down to an eighth, and
+     *     the piece carries who the auction gave it to until the settle
+     *     (Debt.allot*, Debt.unsettledFace). A save's term loan has a coupon
+     *     of about a third of the market rate and a face grossed up to make
+     *     up for it, so under this build's pricing - the coupon is the price,
+     *     the buyback reads the schedule - it would load WRONGLY: a deep-
+     *     discount bond priced as a par bond is a free gain on the buyback
+     *     the first month. Its settle too would read no allotment and give
+     *     the bank the whole of an issue that was between its sale and its
+     *     settle. Gson leaves a missing key alone, so the new fields alone
+     *     would not have needed a bump.
+     *
+     *     THE FLOOR RISES TO 42 WITH IT (the rule): a save of format 41 or
+     *     older is refused, naming the build that still opens it. Jerus,
+     *     2026-10-18: "my saves never matter".
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 41;
+    public static final int SAVE_FORMAT = 42;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -7691,7 +7709,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 40 since 0.8.5 (batch FR2, THE FREIGHT SECTOR above: a format-39
+     * 42 since batch CD2 (THE LINEUP AND THE AUCTION above: a save's term
+     * loan would load wrongly), and 40 before it, from 0.8.5 (batch FR2,
+     * THE FREIGHT SECTOR above: a format-39
      * save's railway is keyed "Rail" and would load into nobody), and still
      * at format 41 (0.8.12, DEPOSITS WHERE THE GEOLOGY SAYS: a generated city
      * loads rightly, and an Earth city before 41 is refused on its own,
@@ -7714,7 +7734,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 40;
+    public static final int OLDEST_LOADABLE_FORMAT = 42;
 
     public static final String NAME = "CityBuilderSim";
 

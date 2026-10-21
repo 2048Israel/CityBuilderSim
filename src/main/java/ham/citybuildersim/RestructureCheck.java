@@ -342,27 +342,42 @@ public class RestructureCheck {
         assertTrue("...and the coupon fell with it",
                 live.getMonthlyInterestExpense() < couponAtIssue);
 
-        /* ============ 5c. the note knows its own term ============ */
-        System.out.println("\n--- a note is discounted on its term ---");
+        /* ============ 5c. the bill knows its own term ============ */
+        System.out.println("\n--- a bill is priced on its term ---");
 
-        check("three months discounts a quarter of the annual rate",
-                ShortTermTBill.discountFraction(.08, 3), .02, 1e-9);
-        check("twelve months discounts the whole of it",
-                ShortTermTBill.discountFraction(.08, 12), .08, 1e-9);
-        check("twenty-four months, twice",
-                ShortTermTBill.discountFraction(.08, 24), .16, 1e-9);
+        /*
+         * The simple discount this section asserted (rate x months / 12,
+         * capped at 95%) went with CD2: a bill is sold at auction at one flat
+         * yield, monthly compounding, the sum DebtManager.marketValue() reads
+         * it back at. The premise is the same - the price knows how long the
+         * bill runs - and it is asserted on the quote's own figures.
+         */
+        Game bills = founded(root, "billterm");
+        DebtQuote three, twelve, twoYears;
+        System.setOut(quiet);
+        try {
+            three = bills.quoteTBill(100_000, 3, 1000);
+            twelve = bills.quoteTBill(100_000, 12, 1000);
+            twoYears = bills.quoteTBill(100_000, 24, 1000);
+        } finally { System.setOut(out); }
 
-        assertTrue("a short note costs less than a long one for the same cash",
-                ShortTermTBill.faceFor(100_000, .08, 3)
-                        < ShortTermTBill.faceFor(100_000, .08, 24));
+        check("three months is sold at its yield compounded monthly over three months",
+                three.auction().pricePer100(), 100 / Math.pow(1 + three.marketRate() / 12, 3), 1e-9);
+        check("twelve months, over twelve",
+                twelve.auction().pricePer100(), 100 / Math.pow(1 + twelve.marketRate() / 12, 12), 1e-9);
+        check("twenty-four months, over twenty-four",
+                twoYears.auction().pricePer100(), 100 / Math.pow(1 + twoYears.marketRate() / 12, 24), 1e-9);
 
-        // The bug this replaced: every term produced the same face.
+        assertTrue("a short bill costs less than a long one for the same cash",
+                three.faceValue() < twelve.faceValue() && twelve.faceValue() < twoYears.faceValue());
+
+        // The bug the simple discount replaced: every term produced the same face.
         assertTrue("...which it did NOT before, when every term priced alike",
-                Math.abs(ShortTermTBill.faceFor(100_000, .08, 3)
-                        - ShortTermTBill.faceFor(100_000, .08, 24)) > 1_000);
+                Math.abs(three.faceValue() - twelve.faceValue()) > 1_000);
 
-        check("the discount is capped rather than going negative",
-                ShortTermTBill.discountFraction(.50, 120), .95, 1e-9);
+        check("however high the yield and long the term, a bill's price stays above nothing and under par",
+                Debt.presentValue(Auction.bulletPer100(0, 120), .50) > 0
+                        && Debt.presentValue(Auction.bulletPer100(0, 120), .50) < 100 ? 1 : 0, 1, 0);
 
         /* ============ 5d. yield to maturity ============ */
         System.out.println("\n--- yield, as opposed to coupon ---");

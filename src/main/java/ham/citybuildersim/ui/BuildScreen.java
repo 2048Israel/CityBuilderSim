@@ -5156,8 +5156,8 @@ final class BuildScreen {
         List<RunOffer> loans = runOffers(run, from);
         for (int i = 0; i < loans.size(); i++) {
             RunOffer o = loans.get(i);
-            offers.add(offerCard(o.name(), null, o.quote(), o.rate(), o.tone(), o.ending(), o.action(),
-                    Icons.BUILD, Palette.BUILDING, o.issue(), Money::money), i, 0);
+            offers.add(coverCash(offerCard(o.name(), null, o.quote(), o.rate(), o.tone(), o.ending(), o.action(),
+                    Icons.BUILD, Palette.BUILDING, o.issue(), Money::money), o.quote()), i, 0);
         }
         page.getChildren().add(offers);
 

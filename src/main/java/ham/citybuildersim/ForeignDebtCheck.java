@@ -557,7 +557,7 @@ public class ForeignDebtCheck {
             // A shut window refuses the issue, so it has to be both, in this
             // order, and neither half is decoration.
             city.getDebtManager().restoreForeignStanding(new double[] { .04, 200 });
-            city.handleForeignLogic("Serial", 8_000, 10, 100, true);
+            city.handleForeignLogic("Term", 8_000, 10, 100, true);   // a dollar bond; there is no dollar serial since CD2
             city.getDebtManager().restoreForeignStanding(new double[] { .04, 12 });
             city.simulateMonths(3);
             city.saveGame(4, "the indebted city");

@@ -4010,7 +4010,7 @@ public class LongPlaytest {
         if (q.total > g.getCash()) {
             double needed = Math.max(q.total - g.getCash(), 5000);
             if (canService(g, needed)) {
-                g.handleLongBondLogic(needed, 20, 100);
+                g.handleLongBondForCash(needed, 20, 100);
                 notePaper(g, n + " x paving");
             }
         }
@@ -4200,7 +4200,7 @@ public class LongPlaytest {
                     g.handleForeignLogic("Term", needed / Math.max(.01, fxRate(g)),
                             20, 100, false);
                 } else {
-                    g.handleLongBondLogic(needed, 20, 100);
+                    g.handleLongBondForCash(needed, 20, 100);
                 }
                 notePaper(g, quantity + " x " + name);   // the trace (0.7.10); nothing else reads it
                 result = g.buildStack(t, quantity, false);
@@ -5259,7 +5259,7 @@ public class LongPlaytest {
                         if (BORROW_AT_HOME) {
                             // The same money, at home - see THE CITY'S OWN PAPER.
                             double local = ask * Math.max(.01, fxRate(g));
-                            g.handleLongBondLogic(local, 20, 100);
+                            g.handleLongBondForCash(local, 20, 100);
                             log.add(String.format("  m%-5d borrowed $%,.0fk at home at %.2f%%",
                                     g.getMonth(), local, m.getRate() * 100));
                         } else {

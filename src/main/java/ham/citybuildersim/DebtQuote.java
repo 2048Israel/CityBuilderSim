@@ -25,20 +25,35 @@ import java.util.Locale;
  * computes nothing of its own. There is no path by which the screen can promise
  * one thing and the ledger record another.
  *
+ * AND SINCE CD2 THE DEAL IS AN AUCTION. The city's own paper is sold at
+ * auction (Auction): the quote carries the auction's result - the stop, the
+ * tail over fair, the cover, who took it - and a sale whose bids did not reach
+ * the issue at the highest yield the city took quotes what it SOLD, not what
+ * it asked (isShort()). Dollar paper is not sold at auction, so its quote
+ * carries none.
+ *
  * Everything here is a term of the loan, not a description of it - the wording
  * lives in summary(), so the console and the JavaFX screens say the same thing.
  *
- * @param instrument      "Note", "Serial" or "Term"
- * @param duration        months for a T-Bill, years for either bond
- * @param requested       what the player asked to receive
- * @param marketRate      the rate struck, WITH this loan priced in
+ * @param instrument      "Note" (a bill), "Serial" (the amortizing bond) or "Term" (a bond)
+ * @param duration        months for a bill, years for either bond
+ * @param requested       what the player asked for: the cash for a bill and
+ *                        for the ForCash quotes, the face for a bond sold by face
+ * @param marketRate      the yield struck, WITH this loan priced in: the
+ *                        auction's stop, or the world's rate for dollar paper
  * @param rateBefore      the standing rate before it - the two differ by
  *                        exactly what this borrowing costs the city's credit
- * @param faceValue       what goes on the books; what must be repaid
+ * @param faceValue       what goes on the books; what must be repaid. A sale
+ *                        that came up short quotes what it sold
  * @param cashReceived    what actually reaches the treasury
  * @param monthlyInterest the recurring bill
  * @param totalCost       every dollar of credit cost over the full term:
  *                        discount or premium, plus all the coupons
+ * @param auction         the auction this was sold at; null for dollar paper
+ * @param coupon          the annual coupon the sale sets: the auction's (a
+ *                        bond's, rounded down to an eighth of a point; the
+ *                        stop itself for an amortizing bond) or the world's
+ *                        for a dollar bond; 0 for a bill
  */
 public record DebtQuote(
         String instrument,
@@ -49,7 +64,9 @@ public record DebtQuote(
         double faceValue,
         double cashReceived,
         double monthlyInterest,
-        double totalCost) {
+        double totalCost,
+        Auction.Result auction,
+        double coupon) {
 
     /** Years for a bond, months for a bill - the unit the duration is in. */
     public String timeUnit() {
@@ -70,7 +87,7 @@ public record DebtQuote(
         }
         // An arrow, not "->" (0.7.32, the Finances spec's B11): the line is
         // printed on the offer cards of the land office, Build and Finances.
-        return String.format("Market rate: %.2f%% \u2192 %.2f%%  (+%.2f pts for asking this much)",
+        return String.format("Market rate: %.2f%% → %.2f%%  (+%.2f pts for asking this much)",
                 rateBefore * 100, marketRate * 100, moved);
     }
 
@@ -84,37 +101,61 @@ public record DebtQuote(
      * since they differ mainly in where they sit against par and why.
      */
     public String summary() {
+        String sale = saleLines();
         return switch (instrument) {
             case "Note" -> String.format(
                     "Par value (repay):    $%s%n"
                     + "Cash received:        $%s%n"
-                    + "Issued at:            %.2f of par  (a discount - the note pays no coupon)%n"
+                    + "Issued at:            %.2f of par  (a discount - the bill pays no coupon)%n"
                     + "Cost of the credit:   $%s%n"
-                    + "Term:                 %d months, discounted at %.2f%%/yr",
+                    + "Term:                 %d months, sold at a yield of %.2f%%/yr%s",
                     f(faceValue), f(cashReceived), pricePerPar(),
-                    f(totalCost), duration, marketRate * 100);
+                    f(totalCost), duration, marketRate * 100, sale);
 
             case "Serial" -> String.format(
                     "Par value:            $%s%n"
                     + "Cash received:        $%s   (issued at %.2f of par)%n"
-                    + "Coupon:               %.2f%%, paid monthly on the balance outstanding%n"
+                    + "Coupon:               %.3f%%, paid monthly on the balance outstanding%n"
                     + "First payment:        $%s   (it falls as principal amortises)%n"
                     + "Principal:            repaid in %d annual slices - no lump at the end%n"
-                    + "Total cost of credit: $%s over %d years",
+                    + "Total cost of credit: $%s over %d years%s",
                     f(faceValue), f(cashReceived), pricePerPar(),
-                    marketRate * 100, f(monthlyInterest),
-                    Math.max(1, duration), f(totalCost), duration);
+                    couponRate() * 100, f(monthlyInterest),
+                    Math.max(1, duration), f(totalCost), duration, sale);
 
             default -> String.format(
                     "Par value (repay):    $%s%n"
-                    + "Cash received:        $%s   (issued at %.2f of par - a deep discount)%n"
-                    + "Coupon:               %.2f%%, paid monthly on the full par value%n"
+                    + "Cash received:        $%s   (issued at %.2f of par)%n"
+                    + "Coupon:               %.3f%%, paid monthly on the full par value%n"
                     + "Monthly payment:      $%s%n"
                     + "Principal:            the WHOLE par value falls due in %d years%n"
-                    + "Total cost of credit: $%s",
+                    + "Total cost of credit: $%s%s",
                     f(faceValue), f(cashReceived), pricePerPar(),
-                    couponRate() * 100, f(monthlyInterest), duration, f(totalCost));
+                    couponRate() * 100, f(monthlyInterest), duration, f(totalCost), sale);
         };
+    }
+
+    /**
+     * What the auction did, for a sale at home: the stop and the tail over
+     * fair, the cover, the coupon and the price per 100, and "sold X of Y" when
+     * the bids did not reach the issue at the highest yield the city took.
+     * Nothing for dollar paper, which is not sold at auction.
+     */
+    private String saleLines() {
+        if (auction == null || auction.isEmpty()) return "";
+        StringBuilder out = new StringBuilder();
+        out.append(String.format("%nSold at auction:       stop %.3f%%, %.0f bp over fair, covered %.2fx",
+                auction.stop() * 100, auction.tail() * 10_000, auction.cover()));
+        if (auction.coupon() > 0) {
+            out.append(String.format("%nCoupon and price:     %.3f%%, %.3f per 100", auction.coupon() * 100, auction.pricePer100()));
+        } else {
+            out.append(String.format("%nPrice:                %.3f per 100", auction.pricePer100()));
+        }
+        if (auction.shortSale()) {
+            out.append(String.format("%nSOLD SHORT:           sold $%s of $%s - the bids did not reach the issue at %.3f%%, the highest yield the city took",
+                    f(auction.sold()), f(auction.ask().face()), auction.ceiling() * 100));
+        }
+        return out.toString();
     }
 
     /** Where it was issued against par, the way bonds are quoted. */
@@ -128,14 +169,18 @@ public record DebtQuote(
     }
 
     /**
-     * The coupon actually charged monthly, backed out of the monthly bill.
-     *
-     * A long bond's headline market rate is NOT what it pays monthly - the whole
-     * instrument is a low coupon bought with a redemption premium, and printing
-     * the market rate next to "monthly interest" would misdescribe it.
+     * The annual coupon the paper carries: the one the sale set, no longer
+     * backed out of the monthly bill (CD2). Backed out only for a quote that
+     * set none - a bill's is nothing either way.
      */
     public double couponRate() {
+        if (coupon > 0) return coupon;
         return faceValue > 0 ? (monthlyInterest * 12) / faceValue : 0;
+    }
+
+    /** True when this was sold at auction and the bids did not reach the issue at the highest yield the city took: the quote is what it sold. */
+    public boolean isShort() {
+        return auction != null && auction.shortSale();
     }
 
     /** True if the city is receiving nothing worth booking. */
@@ -147,16 +192,19 @@ public record DebtQuote(
      * Every payment this paper would ask, month by month, index i paid i + 1
      * months after it is issued, times `toLocal` (1 for the city's own paper;
      * the exchange rate, for a dollar quote's figures into local money):
-     * a note's face at its end; a serial's coupon on what is still out and a
-     * slice of the face each anniversary; a term loan's coupon every month and
-     * its face at the end. The Finances tab's own (its proposedSchedule) until 0.7.32,
-     * moved here so the ladder it draws with the issue in it is the model's:
-     * built from the quote rather than from an instrument, because the
-     * instrument does not exist yet and constructing one to draw a picture is
-     * how a reporting layer ends up changing the thing it reports.
+     * a bill's face at its end; an amortizing bond's coupon on what is still
+     * out and a slice of the face each anniversary; a bond's coupon every
+     * month and its face at the end - for the months its line has left when
+     * it reopens one. The Finances tab's own (its proposedSchedule) until
+     * 0.7.32, moved here so the ladder it draws with the issue in it is the
+     * model's: built from the quote rather than from an instrument, because
+     * the instrument does not exist yet and constructing one to draw a
+     * picture is how a reporting layer ends up changing the thing it
+     * reports.
      */
     public double[] schedule(double toLocal) {
-        int months = "Note".equals(instrument) ? duration : duration * 12;
+        int months = auction != null && !auction.isEmpty() ? auction.ask().months()
+                : "Note".equals(instrument) ? duration : duration * 12;
         if (months <= 0 || isEmpty()) return new double[0];
         double[] flows = new double[months];
         switch (instrument) {
@@ -168,7 +216,7 @@ public record DebtQuote(
                 int slices = Math.max(1, duration);
                 double perSlice = faceValue / slices;
                 double outstanding = faceValue;
-                double monthlyRate = marketRate / 12;
+                double monthlyRate = couponRate() / 12;
                 for (int m = 0; m < months; m++) {
                     flows[m] = outstanding * monthlyRate;
                     if ((m + 1) % 12 == 0) {

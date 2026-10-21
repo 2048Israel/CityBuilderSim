@@ -168,10 +168,148 @@ public abstract class Debt {
         issueYield = yield;
         issueDiscount = Math.max(0, getOustandingPrincipal() - received);
         discountLeft = issueDiscount;
+        unsettledFace = getOustandingPrincipal();
     }
 
-    /** The settle has taken place: nothing is owed for this paper any more. */
-    void settled() { settleDue = 0; }
+    /**
+     * A SALE INTO A LINE THAT IS ALREADY ON THE BOOKS (CD2, spec-city-debt.md
+     * section 2.2): this much more face of the same paper, at its coupon and
+     * its date, for `proceeds`. The face joins the piece's face and principal;
+     * what the buyers owe for it joins settleDue (the line's older part was
+     * settled when it was sold); the discount it carries - the face less what
+     * it raised - joins the discount still to accrete; and the issue yield
+     * blends by face, until CD3 replaces it with the effective interest.
+     *
+     * A PREMIUM (proceeds over face, a line sold at a coupon over today's
+     * yield) is not accreted: accrete() and Bank.takeDiscount() both ignore
+     * a negative discount, and the bank's unearned discount is held at
+     * nothing or more, exactly as markIssued() has always held a new piece's.
+     * So the discount stays at nothing or more here too: the premium first
+     * eats what the line has left to accrete, and the rest is the buyers'
+     * loss when they pay it, never carried. Domestic paper only.
+     */
+    void reopen(double face, double proceeds, double yield) {
+        if (foreign || !(face > 0)) return;
+        double was = Math.max(0, outstandingPrincipal);
+        faceValue += face;
+        outstandingPrincipal += face;
+        settleDue += Math.max(0, proceeds);
+        unsettledFace += face;
+        double discount = face - Math.max(0, proceeds);
+        issueDiscount = Math.max(0, issueDiscount + discount);
+        discountLeft = Math.max(0, discountLeft + discount);
+        issueYield = was + face > 0 ? (issueYield * was + yield * face) / (was + face) : yield;
+    }
+
+    /**
+     * The central bank's own par, rolled into a line that is already on the
+     * books (CD2): reopen() for this much face at this price, but paid for at
+     * once by the central bank (Game, THE CENTRAL BANK ROLLS ITS OWN, AT
+     * ISSUE) - so nothing is owed for it at the settle, none of it is
+     * unsettled, and the face is the central bank's.
+     */
+    void reopenForCentralBank(double face, double price, double yield) {
+        if (foreign || !(face > 0)) return;
+        double dueBefore = settleDue, unsettledBefore = unsettledFace;
+        reopen(face, price, yield);
+        settleDue = dueBefore;
+        unsettledFace = unsettledBefore;
+        centralBankPrincipal += face;
+    }
+
+    /** The settle has taken place: nothing is owed for this paper any more, and the allotment is paid. */
+    void settled() {
+        settleDue = 0;
+        unsettledFace = 0;
+        allotHouseholdsCash = allotHouseholdsFace = 0;
+        allotFirmsCash = allotFirmsFace = 0;
+        allotWorldCash = allotWorldFace = 0;
+    }
+
+    /* -----------------------------------------------------------------------
+       THE ALLOTMENT (CD2, spec-city-debt.md section 4)
+
+       Who the auction gave the paper to, kept on the paper until the settle:
+       each bidder's face and the cash it will pay for it. Set at the sale
+       (and added to at a reopening), read by the settle, cleared by it. Plain
+       fields, so Gson saves them with the piece and a city saved between the
+       sale and the settle settles the same. The firms' and the world's pairs
+       are written by the sale from the auction's fills, and read by slices
+       that make them holders; until then the auction has no firms or world in
+       it and they stay at nothing.
+       ----------------------------------------------------------------------- */
+
+    /** The face the sale still to be settled gave the households, and the cash they pay for it at the settle. */
+    protected double allotHouseholdsFace, allotHouseholdsCash;
+
+    /** ...the businesses' (nothing until they hold city paper). */
+    protected double allotFirmsFace, allotFirmsCash;
+
+    /** ...and the world's (nothing until it holds city paper). */
+    protected double allotWorldFace, allotWorldCash;
+
+    /**
+     * The face the market has bought since the last settle and not yet paid
+     * for: the whole piece for a new one, the reopening's own face for a line
+     * reopened. The central bank's add-on is not in it - it pays at issue.
+     * What the bank's book, the weighted book and the unearned discount leave
+     * out until the settle (bankPrincipalPaid()).
+     */
+    protected double unsettledFace;
+
+    public double allotHouseholdsFace() { return allotHouseholdsFace; }
+    public double allotHouseholdsCash() { return allotHouseholdsCash; }
+    public double allotFirmsFace()      { return allotFirmsFace; }
+    public double allotFirmsCash()      { return allotFirmsCash; }
+    public double allotWorldFace()      { return allotWorldFace; }
+    public double allotWorldCash()      { return allotWorldCash; }
+    public double unsettledFace()       { return foreign ? 0 : unsettledFace; }
+
+    /**
+     * Adds a sale's allotment: each bidder's face from the auction's fills,
+     * and the cash it pays - its share of what the sale raised, since the
+     * buyers pay together what the treasury was paid (settleDue), the fee
+     * and the rest of the price riding in the discount as they always have.
+     *
+     * @param sold   the face the sale sold
+     * @param cash   what it raised
+     */
+    void allot(Auction.Fill fills, double sold, double cash) {
+        if (foreign || !(sold > 0) || fills == null) return;
+        double per = Math.max(0, cash) / sold;
+        allotHouseholdsFace += fills.households();
+        allotHouseholdsCash += fills.households() * per;
+        allotFirmsFace += fills.firms();
+        allotFirmsCash += fills.firms() * per;
+        allotWorldFace += fills.world();
+        allotWorldCash += fills.world() * per;
+    }
+
+    /**
+     * What the commercial bank holds of this paper that it has PAID for: its
+     * principal less the face sold since the last settle and not yet paid
+     * for. A new piece sold between the presses is on nobody's book until the
+     * settle; a line reopened has its older part on the bank's book all the
+     * while and only the reopening off it (DebtManager.bankBook()).
+     */
+    public double bankPrincipalPaid() {
+        return foreign ? 0 : Math.max(0, bankPrincipal() - unsettledFace);
+    }
+
+    /**
+     * The discount the bank has not yet earned on what it has paid for: what
+     * is left to accrete on the part of the piece that has settled - the
+     * whole of it less the unsettled sale's own - pro rata to the face the
+     * bank holds of that part.
+     */
+    public double unaccretedOnPaid() {
+        if (foreign) return 0;
+        double settledOut = getOustandingPrincipal() - unsettledFace;
+        double paid = bankPrincipalPaid();
+        if (!(settledOut > 0) || !(paid > 0)) return 0;
+        double settledDiscount = Math.max(0, discountLeft - Math.max(0, unsettledFace - settleDue));
+        return settledDiscount * Math.min(1, paid / settledOut);
+    }
 
     /** Moves face between the holders: positive to the households or the central bank from the bank, negative back to it. */
     void moveToHouseholds(double face)  { householdPrincipal = Math.max(0, householdPrincipal + face); }
@@ -183,21 +321,26 @@ public abstract class Debt {
      * from issue - its non-competitive bid, which the Federal Reserve Bank of
      * New York's "FAQs: Treasury Rollovers" says is "treated as add-ons to
      * announced auction sizes" (Game, THE CENTRAL BANK ROLLS ITS OWN, AT
-     * ISSUE). The piece grows in proportion, as a change of unit scales it
-     * (redenominate()): its face, its principal, its schedule and its
-     * discount, because the add-on is sold at the issue's price and so
-     * carries the same discount on each unit of face. What the market still
-     * owes for its own part (settleDue) and the households' holding do not
-     * move. Domestic paper only.
+     * ISSUE). The piece grows by that face, its schedule in proportion as a
+     * change of unit scales it (redenominate()), and the add-on is sold at the
+     * price of the sale it rides on, so it carries the same discount on each
+     * unit of face: the face less what the market's part of that sale raised
+     * (settleDue) over the face of that sale (unsettledFace - a line
+     * reopened the same month has older face that is not in the sale). What
+     * the market still owes for its own part (settleDue) and the households'
+     * holding do not move. Domestic paper only.
      */
     void addOnForCentralBank(double face) {
         double out = outstandingPrincipal;
         if (foreign || !(face > 0) || !(out > 0)) return;
+        double sale = unsettledFace > 0 ? unsettledFace : out;
+        double price = settleDue > 0 ? settleDue / sale : 1;
+        double discount = Math.max(0, face * (1 - price));
         double k = (out + face) / out;
-        faceValue *= k;
+        faceValue += face;
         outstandingPrincipal = out + face;
-        issueDiscount *= k;
-        discountLeft *= k;
+        issueDiscount += discount;
+        discountLeft += discount;
         redenominateSchedule(k);
         centralBankPrincipal += face;
     }
@@ -501,6 +644,13 @@ public abstract class Debt {
             householdPrincipal *= scale;
             centralBankPrincipal *= scale;
             settleDue *= scale;
+            unsettledFace *= scale;
+            allotHouseholdsFace *= scale;
+            allotHouseholdsCash *= scale;
+            allotFirmsFace *= scale;
+            allotFirmsCash *= scale;
+            allotWorldFace *= scale;
+            allotWorldCash *= scale;
             issueDiscount *= scale;
             discountLeft *= scale;
         }

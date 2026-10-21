@@ -559,11 +559,20 @@ public final class AutoBuilder {
         while (paidMonths.size() > PAID_MONTHS) paidMonths.remove(0);
     }
 
-    /** The funding page's bond for `gap` of cash: its quote, or null for none to be had. */
+    /**
+     * The funding page's bond for `gap` of cash: its quote, or null for none
+     * to be had. A bond sold at auction can come up short (CD2): the bids do
+     * not reach the issue at the highest yield the city takes, and it sells
+     * what was bid. That raises less than the order needs, and an order the
+     * money does not cover is not placed - the old bug of a debt issued and
+     * nothing built - so a short quote is none to be had. The open ask that
+     * keeps trying is D30's (slice 6).
+     */
     static DebtQuote bondFor(Game game, double gap) {
         if (!(gap > 0)) return null;
         DebtQuote q = game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-        return q == null || q.isEmpty() ? null : q;
+        if (q == null || q.isEmpty()) return null;
+        return q.cashReceived() + 1e-6 * Math.max(1, gap) < gap ? null : q;
     }
 
     /**
@@ -1136,6 +1145,13 @@ public final class AutoBuilder {
         double overdraft = Math.max(0, -game.getCash());
         double raised = 0;
         if (gap > 0) {
+            // The bond as the pass will book it: one that would come up short
+            // (CD2) is not sold, since the order it was for could not be paid.
+            if (bondFor(game, gap) == null) {
+                hold(m, s, Cut.NONE, wanted, m.label() + ": the bond for " + n + " " + name
+                        + " would not raise the cash at the highest yield the city takes.", weighed);
+                return;
+            }
             double cashBefore = game.getCash();
             game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
             raised = game.getCash() - cashBefore;

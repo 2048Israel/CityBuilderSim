@@ -1946,14 +1946,17 @@ public class CreditCheck {
         }
         assertTrue("...while each of the five maturities is quoted", five);
 
-        // Issued at twenty and bought straight back: the same curve both ways.
-        DebtQuote quote = city.quoteLongBond(5_000, 20, 1000);
-        quietly(() -> city.handleLongBondLogic(5_000, 20, 1000));
+        // Issued at twenty and bought straight back: the same curve both ways. (A bond sold while a line of
+        // its term is the benchmark goes into that line, CD2, and the buyback would take the whole line: so
+        // the thirty-year, a line of its own, when the twenty-year one stands.)
+        final int term = city.getDebtManager().benchmarkLine(20) == null ? 20 : 30;
+        DebtQuote quote = city.quoteLongBond(5_000, term, 1000);
+        quietly(() -> city.handleLongBondLogic(5_000, term, 1000));
         Debt twenty = city.getDebtManager().getDebt().get(city.getDebtManager().getDebt().size() - 1);
         double price = city.quoteRepurchase(twenty);
-        System.out.printf("   20-year: raised $%,.2fk on $%,.0fk of face at %.3f%%; bought back for $%,.2fk%n",
-                quote.cashReceived(), quote.faceValue(), quote.marketRate() * 100, price);
-        assertTrue("a bond issued at 20 years is bought back the same month for what it raised,"
+        System.out.printf("   %d-year: raised $%,.2fk on $%,.0fk of face at %.3f%%; bought back for $%,.2fk%n",
+                term, quote.cashReceived(), quote.faceValue(), quote.marketRate() * 100, price);
+        assertTrue("a bond issued at " + term + " years is bought back the same month for what it raised,"
                 + " bar the issuance cost",
                 Math.abs(price - (quote.cashReceived() + city.costOfIssuance(quote.faceValue()))) <= .01);
         double paid = city.repurchaseDebt(twenty);
@@ -2017,6 +2020,12 @@ public class CreditCheck {
         double principalBefore = g.getDebtManager().getAllPrincipal();
         double cashBefore = g.getCash();
         int debtsBefore = g.getDebtManager().getDebt().size();
+        // A bond sold while a line of its term is the benchmark goes INTO that
+        // line (CD2): no new instrument, and the line's monthly interest rises
+        // by the quoted bill.
+        Debt line = "Term".equals(type) ? g.getDebtManager().benchmarkLine(duration) : null;
+        boolean reopens = line != null && quote.auction() != null && !quote.auction().ask().isNewLine();
+        double lineMonthlyBefore = reopens ? line.getMonthlyInterestExpense() : 0;
 
         switch (type) {
             case "Note"      -> g.handleTBillLogic(amount, duration, rounding);
@@ -2031,13 +2040,13 @@ public class CreditCheck {
                 g.getDebtManager().getAllPrincipal() - principalBefore, quote.faceValue());
         check(type + ": cash rose by the quoted proceeds",
                 g.getCash() - cashBefore, quote.cashReceived());
-        assertTrue(type + ": exactly one instrument was booked",
-                g.getDebtManager().getDebt().size() == debtsBefore + 1);
+        assertTrue(type + ": exactly one instrument was booked" + (reopens ? ", or the face went into the line it reopens" : ""),
+                g.getDebtManager().getDebt().size() == debtsBefore + (reopens ? 0 : 1));
 
         // The rate the paper was actually written at.
-        Debt booked = g.getDebtManager().getDebt().get(g.getDebtManager().getDebt().size() - 1);
+        Debt booked = reopens ? line : g.getDebtManager().getDebt().get(g.getDebtManager().getDebt().size() - 1);
         check(type + ": booked at the quoted monthly interest",
-                booked.getMonthlyInterestExpense(), quote.monthlyInterest());
+                booked.getMonthlyInterestExpense() - lineMonthlyBefore, quote.monthlyInterest());
 
         assertTrue(type + ": the city never receives more than it owes",
                 quote.cashReceived() <= quote.faceValue() + 1e-6);

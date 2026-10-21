@@ -176,20 +176,43 @@ final class FinancesScreen {
 
     /** The three kinds of paper, short to long, in the ladder's order: the note, the serial bond and the term loan. */
     static final Instrument[] INSTRUMENTS = {
-        new Instrument("Note", "Notes", "NOTE", 3, 12, 1, 1000, "months",
+        new Instrument("Note", "Notes", "NOTE", 1, 12, 1, 1000, "months",
                 "No coupon at all. The lender pays less than the face and collects the "
                 + "whole face at the end, so it costs nothing monthly and everything at "
-                + "once.", Palette.LADDER[0], "3–12 months", "No coupon: the discount is the price."),
-        new Instrument("Serial", "Serial bonds", "SERIAL", 1, 10, 1, 10000, "years",
+                + "once. Sold at auction at 1, 3, 6 or 12 months.", Palette.LADDER[0], "1–12 months", "No coupon: the discount is the price."),
+        new Instrument("Serial", "Serial bonds", "SERIAL", 5, 30, 5, 10000, "years",
                 "A coupon every month on what is still out, and a slice of principal "
                 + "every year. It pays itself off: both the debt and the coupon shrink "
-                + "without you doing anything.", Palette.LADDER[1], "1–10 years", "Pays itself off, a slice a year."),
-        new Instrument("Term", "Term loans", "TERM", 10, 50, 10, 100000, "years",
+                + "without you doing anything. Sold at auction at 5 to 30 years in fives, "
+                + "one coupon that prices it at par.", Palette.LADDER[1], "5–30 years", "Pays itself off, a slice a year."),
+        new Instrument("Term", "Term loans", "TERM", 2, 50, 1, 100000, "years",
                 "A coupon every month on the whole face, and the entire face at the end. "
-                + "The smallest monthly payment there is, and the only one with a cliff "
-                + "behind it. Issued at 10, 20, 30, 40 or 50 years.", Palette.LADDER[2], "10–50 years",
+                + "The coupon is the auction's yield rounded down to an eighth of a point, "
+                + "and a sale at a term reopens the line while it has nine tenths of it left. "
+                + "Issued at 2, 5, 10, 20, 30 or 50 years.", Palette.LADDER[2], "2–50 years",
                 "The smallest monthly cost; the whole face at the end."),
     };
+
+    /**
+     * The terms an instrument is sold at, in the unit it counts in (CD2): the
+     * bill's four, the amortizing bond's six lots of five years, the bond's
+     * six maturities. The Borrow page's columns and chips are these; its
+     * rebuilt version (slice 8) reads the model's own tables the same way.
+     */
+    static int[] terms(Instrument kit) {
+        return switch (kit.key()) {
+            case "Note"   -> ShortTermTBill.TERMS;
+            case "Serial" -> MediumTermBond.YEARS;
+            default       -> LongTermBond.MATURITIES;
+        };
+    }
+
+    /** The one of an instrument's terms nearest this. */
+    static int nearestTerm(Instrument kit, int term) {
+        int best = terms(kit)[0];
+        for (int t : terms(kit)) if (Math.abs(t - term) < Math.abs(best - term)) best = t;
+        return best;
+    }
 
     static Instrument instrument(String key) {
         for (Instrument i : INSTRUMENTS) if (i.key().equals(key)) return i;
@@ -2350,11 +2373,12 @@ final class FinancesScreen {
             + "arranging can be more than a lot.";
 
     /** Who buys it: the spec's T61, its first half. */
-    static final String BUYERS_INFO = "The households first, when it pays them more than the bank does: up to %s of "
-            + "an issue, out of what they have saved past a cushion, at the settle next month. Then your own bank, for "
-            + "the rest. Treasury paper is risk-weighted at %s, so it ties up far less of the bank's room than a "
-            + "business loan of the same size. Borrow enough and that changes - for every borrower in the city, not "
-            + "only for the treasury.";
+    static final String BUYERS_INFO = "The households first, by their own rule at the yield that clears the sale: a "
+            + "fifth of the issue for each point over the deposit rate (never more than the issue), out of what they "
+            + "have saved past a cushion, at the settle next month. Then your own bank, up to its room, which is what "
+            + "is left of its capital: treasury paper is risk-weighted at %s, so it ties up far less of it than a "
+            + "business loan of the same size. What they do not take at the highest yield the city allows is not sold. "
+            + "Borrow enough and that changes - for every borrower in the city, not only for the treasury.";
 
     /** Where the dollars go: the spec's T62. */
     static final String DOLLARS_INFO = "Spending it leaves a dollar debt with nothing behind it, and the next "
@@ -2376,10 +2400,14 @@ final class FinancesScreen {
             return;
         }
 
+        // There is no dollar serial since CD2 (spec-city-debt.md 2.7): abroad, a bond.
+        if (foreign && "Serial".equals(borrowType)) {
+            borrowType = "Term";
+            borrowTerm = LongTermBond.MATURITIES[2];
+        }
         Instrument kit = instrument(borrowType);
-        borrowTerm = Math.max(kit.min(), Math.min(kit.max(), borrowTerm));
-        // ...and onto the instrument's step: a term loan at 10, 20, 30, 40 or 50.
-        borrowTerm = kit.min() + Math.round((borrowTerm - kit.min()) / (float) kit.step()) * kit.step();
+        // ...onto one of the terms it is sold at: a bond at 2, 5, 10, 20, 30 or 50.
+        borrowTerm = nearestTerm(kit, borrowTerm);
 
         DebtQuote quote = borrowAsk > 0
                 ? (foreign ? g.quoteForeign(kit.key(), borrowAsk, borrowTerm, kit.rounding())
@@ -2402,10 +2430,13 @@ final class FinancesScreen {
         Game g = ui.game;
         VBox card = card(caption(foreign ? "THE ASK, ABROAD, IN " + Currency.FOREIGN_CODE : "THE ASK, AT HOME", null));
         GridPane tiles = equalColumns(INSTRUMENTS.length, TILE_GAP);
+        int column = 0;
         for (int i = 0; i < INSTRUMENTS.length; i++) {
+            // No dollar serial since CD2: abroad the amortizing bond is not on offer (spec-city-debt.md 2.7).
+            if (foreign && "Serial".equals(INSTRUMENTS[i].key())) continue;
             VBox t = instrumentTile(INSTRUMENTS[i], INSTRUMENTS[i] == kit);
             GridPane.setFillHeight(t, true);
-            tiles.add(t, i, 0);
+            tiles.add(t, column++, 0);
         }
         card.getChildren().add(tiles);
 
@@ -2644,7 +2675,7 @@ final class FinancesScreen {
         t.setOnMouseClicked(e -> {
             if (borrowType.equals(kit.key())) return;
             borrowType = kit.key();
-            borrowTerm = kit.min();
+            borrowTerm = terms(kit)[0];
             borrowAsk = 0;
             showFinanceMenu();
         });
@@ -2656,7 +2687,7 @@ final class FinancesScreen {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
         List<Column> cols = new ArrayList<>();
-        for (int t = kit.min(); t <= kit.max(); t += kit.step()) {
+        for (int t : terms(kit)) {
             final int chosen = t;
             int months = "Note".equals(kit.key()) ? t : t * 12;
             double rate = borrowAsk > 0 ? g.quoteDebt(kit.key(), borrowAsk, t, kit.rounding()).marketRate()
@@ -2675,7 +2706,7 @@ final class FinancesScreen {
     Node termChips(Instrument kit) {
         DebtManager ledger = ui.game.getDebtManager();
         List<String> names = new ArrayList<>();
-        for (int t = kit.min(); t <= kit.max(); t += kit.step()) names.add(String.valueOf(t));
+        for (int t : terms(kit)) names.add(String.valueOf(t));
         String[] all = names.toArray(new String[0]);
         javafx.scene.layout.FlowPane chips = chipStrip(all, String.valueOf(borrowTerm), Palette.SIZE_LABEL, pick -> {
             borrowTerm = Integer.parseInt(pick);
@@ -2742,7 +2773,7 @@ final class FinancesScreen {
     VBox whoBuysCard(DebtQuote quote) {
         Bank bank = ui.game.getBank();
         double room = bank.capacity();
-        String info = String.format(BUYERS_INFO, pc(HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE), pc(Bank.RISK_CITY));
+        String info = String.format(BUYERS_INFO, pc(Bank.RISK_CITY));
         VBox card = card(caption("WHO BUYS IT", info));
         if (bank.isInsolvent()) {
             card.setStyle(cardStyle(Palette.BAD));
@@ -2753,14 +2784,14 @@ final class FinancesScreen {
         }
         if (room <= 0) {
             card.setStyle(cardStyle(Palette.BAD));
-            card.getChildren().add(words("There is no bank to buy this. The households take what share of it pays them "
-                    + "better than a deposit would, and the rest is funded at the central bank's window, the money every "
-                    + "borrower in a city without a branch is already lent. One branch changes that.",
+            card.getChildren().add(words("There is no bank to buy this. The households bid for what pays them better "
+                    + "than a deposit would, and the auction sells what they bid at the highest yield the city allows; "
+                    + "the rest is not sold. One branch changes that.",
                     Palette.SIZE_BODY + 1, Palette.BAD_TEXT));
             return card;
         }
-        card.getChildren().add(line("The households first, up to " + pc(HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE)
-                + " of an issue; then your own bank, for the rest."));
+        card.getChildren().add(line("The households first, by their own rule at the yield that clears the sale; then"
+                + " your own bank, for the rest, up to its room."));
         double weighted = bank.getWeightedBook();
         double issue = quote == null || quote.isEmpty() ? 0 : quote.faceValue() * Bank.RISK_CITY;
         card.getChildren().add(segmentBar(List.of(seg(weighted, Palette.MONEY, "the bank's book, risk-weighted " + d(weighted)),

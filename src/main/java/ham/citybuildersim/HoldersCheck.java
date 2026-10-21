@@ -156,8 +156,9 @@ public class HoldersCheck {
                 city.getMonth(), spare, bank.depositRate() * 100);
         assertTrue("fixture: households with savings past the cushion", spare > 0);
 
-        // Sized so the dials bind, not the households' purse: at most half an
-        // issue is theirs, and this asks for a fifth of what they could pay.
+        // Sized so the rule binds, not the households' purse: they bid a fifth
+        // of the issue for each point over the deposit rate (never more than
+        // the issue), and this asks for a fifth of what they could pay.
         double ask = Math.max(100, spare * .2);
         quietly(() -> city.handleLongBondLogic(ask, 20, 100));
         Debt bond = null;
@@ -165,7 +166,13 @@ public class HoldersCheck {
         assertTrue("fixture: the treasury sold a twenty-year bond between the presses", bond != null);
         double received = bond.getSettleDue();
         double face = bond.getOustandingPrincipal();
-        double share = HouseholdBalance.paperShareAt(bond.getIssueYield(), bank.depositRate());
+        // What the auction allotted them (CD2, D32): their rule at the stop, the
+        // deposit rate as the sale found it, up to the issue. Read before the
+        // settle, which clears it.
+        double allotFace = bond.allotHouseholdsFace(), allotCash = bond.allotHouseholdsCash();
+        double share = allotCash / received;
+        double bid = Math.min(face, HouseholdBalance.HOUSEHOLD_PAPER_APPETITE
+                * Math.max(0, bond.getIssueYield() - bank.depositRate()) * face);
         out.printf("   it raised $%,.2fk on $%,.0fk of face at %.3f%%, %.3f points over the deposit rate%n",
                 received, face, bond.getIssueYield() * 100,
                 (bond.getIssueYield() - bank.depositRate()) * 100);
@@ -181,11 +188,10 @@ public class HoldersCheck {
         double paid = city.getHouseholdsBoughtPaper();
         out.printf("   the households paid $%,.2fk for $%,.2fk of face; the bank $%,.2fk%n",
                 paid, bond.householdPrincipal(), city.getCityPaperSettled());
-        close("the households took the share the dials give an issue this far over the deposit rate",
+        close("the households took what the auction allotted them, their rule at the clearing yield",
                 paid, share * received, 1e-6);
-        assertTrue("...which is the most they take, MAX_HOUSEHOLD_PAPER_SHARE, or the spread times"
-                + " HOUSEHOLD_PAPER_APPETITE", share == Math.min(HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE,
-                        (bond.getIssueYield() - bank.depositRate()) * HouseholdBalance.HOUSEHOLD_PAPER_APPETITE));
+        close("...which is HOUSEHOLD_PAPER_APPETITE of the issue for each unit of spread over the deposit rate, never"
+                + " more than the issue (D32: no half-of-the-issue cap)", allotFace, bid, 1e-6);
         close("their savings fell by exactly what they paid", around[0] - around[1], paid, 1e-6);
         close("...for the face the issue's price buys: face times cash over received",
                 bond.householdPrincipal(), face * paid / received, 1e-6);
@@ -510,7 +516,12 @@ public class HoldersCheck {
         DebtManager ledger = city.getDebtManager();
         Bank bank = city.getBank();
         CentralBank cb = city.getCentralBank();
-        double ask = Math.max(100, hb.spareForPaper() * .2);
+        // One and seven tenths of what the households can pay (CD2, D32): they bid a fifth
+        // of the issue for each point over the deposit rate and are limited by their purse,
+        // not by half the issue as they were, so they take their whole purse - about 59% of
+        // this issue - and the bank the rest. Both hold part, and the households hold more
+        // than the first step off them, so the middle this section saves in still comes.
+        double ask = Math.max(100, hb.spareForPaper() * 1.7);
         quietly(() -> city.handleLongBondLogic(ask, 20, 100));
         play(city);                                        // the settle: the households take their share
         Debt bond = termPiece(ledger);
