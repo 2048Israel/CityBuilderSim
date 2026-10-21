@@ -56,7 +56,7 @@ A probe on the playtest settled the cause. Month 3,998's input on month 3,997's 
   - the plan is a pure function.
 - **LongPlaytest**: green. On 0.8.15 its one red was the layout watch's finding at m3,998.
 - **The suite** (`Batch check.bat --maps`, beside another batch's JVM, timing soft): 125 harnesses in 1,164 s, all 125 passed; on main e6c8e74 the same run was 124 of 125, LongPlaytest red on the watch. ScaleCheck's "...and it builds" (SC1) is green, as on main since CD1. Stale: 0 firm findings. The maps regenerated.
-- **`--timing`, hard and alone**: {{TIMING}}
+- **`--timing`, hard and alone**: 8 harnesses in 151 s, all green. A first run gave 7 of 8: MapCheck's "at 10 billion a month's change takes no more than 5 ms" (the worst of 13 months on the wall clock) missed. MapCheck alone, on main's classes and then on FX6's, each failed the same single line (SIDECAR_MS's wall clock) and passed that one: the clock's, not the change's. FX6 does not touch a month's reconcile.
 
 ## 5. Renders
 
