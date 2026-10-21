@@ -4072,22 +4072,39 @@ public class MapCheck {
             if (rt.works()) { worksRoutes++; continue; }
             double[] xs = rt.xs(), ys = rt.ys();
             long[] yard = runs.yards().get(rt.yard());
+            // FX5: the routes are rounded at every turn (TrackCurves.RADIUS), the world line's join among them, so the route passes by
+            // the line's point within the radius and its faded part ends no more than a radius short of WORLD_PLOTS.
             starts &= Math.abs(xs[0] - (line.x() + Math.cos(r) * TrainSchedule.WORLD_PLOTS)) < 1e-9
                     && Math.abs(ys[0] - (line.y() + Math.sin(r) * TrainSchedule.WORLD_PLOTS)) < 1e-9
-                    && xs[1] == line.x() && ys[1] == line.y() && Math.abs(rt.fadeTo() - TrainSchedule.WORLD_PLOTS) < 1e-9;
-            // From the gate arm's end to where it enters its yard's box, every quarter step on a plot the railway carries.
-            int last = rt.siding() < 0 ? xs.length - 1 : xs.length - 3;
-            for (int i = 2; i < last; i++) {
+                    && GatewayCheck.nearestOnRoute(rt, line.x(), line.y()) <= TrackCurves.RADIUS
+                    && rt.fadeTo() <= TrainSchedule.WORLD_PLOTS + 1e-9 && rt.fadeTo() >= TrainSchedule.WORLD_PLOTS - TrackCurves.RADIUS;
+            // From past the world line's join to where it enters its yard's box, every quarter step on a plot the railway carries -
+            // or (FX5) beside one, where a curve cuts its corner: an arc strays at most RADIUS (1 - 1/sqrt 2) plots from its legs.
+            double[] al = rt.along();
+            int from = 0, last = xs.length - 1;
+            while (from < xs.length - 1 && al[from] < rt.fadeTo() + 2 * TrackCurves.RADIUS) from++;
+            if (rt.siding() >= 0) {
+                last = from;
+                while (last < xs.length - 1 && !(xs[last] >= yard[0] && xs[last] <= yard[0] + yard[2] && ys[last] >= yard[1] && ys[last] <= yard[1] + yard[3])) last++;
+            }
+            for (int i = from; i < last; i++) {
                 double len = Math.hypot(xs[i + 1] - xs[i], ys[i + 1] - ys[i]);
-                int n = (int) Math.ceil(len * 4);
+                int n = Math.max(1, (int) Math.ceil(len * 4));
                 for (int k = 0; k <= n; k++) {
                     double x = xs[i] + (xs[i + 1] - xs[i]) * k / n, y = ys[i] + (ys[i + 1] - ys[i]) * k / n;
-                    byte at = runs.at((long) Math.floor(x), (long) Math.floor(y));
-                    onTrack &= at == CityRuns.F_RAIL || at == CityRuns.F_RAIL_OVER || at == CityRuns.F_YARD;
+                    boolean near = false;
+                    for (int dy = -1; dy <= 1 && !near; dy++) {
+                        for (int dx = -1; dx <= 1 && !near; dx++) {
+                            if ((dx != 0 || dy != 0) && Math.hypot(x - (Math.floor(x) + dx + 0.5), y - (Math.floor(y) + dy + 0.5)) > 0.5 + TrackCurves.RADIUS * (1 - Math.sqrt(0.5)) + 1e-9) continue;
+                            byte at = runs.at((long) Math.floor(x) + dx, (long) Math.floor(y) + dy);
+                            near = at == CityRuns.F_RAIL || at == CityRuns.F_RAIL_OVER || at == CityRuns.F_YARD;
+                        }
+                    }
+                    onTrack &= near;
                 }
             }
-            // ...and its ladder and siding inside the box.
-            for (int i = last; i < xs.length; i++) {
+            // ...and its ladder and siding inside the box, from the first point in it.
+            for (int i = last; i < xs.length && rt.siding() >= 0; i++) {
                 intoYard &= xs[i] >= yard[0] && xs[i] <= yard[0] + yard[2] && ys[i] >= yard[1] && ys[i] <= yard[1] + yard[3];
             }
             sidingsOf.computeIfAbsent(rt.yard(), k -> new java.util.HashSet<>()).add(rt.siding());
@@ -4102,7 +4119,7 @@ public class MapCheck {
                 reached == runs.yards().size() && sidingsOf.size() == reached && routes.size() == expectedRoutes + worksRoutes && sidings);
         check("...each from WORLD_PLOTS out along the world line, faded in to where the line leaves the city's ground",
                 starts && !routes.isEmpty());
-        check("...then on track every quarter plot, from the gate arm's end to its yard's box (CityRuns.wayTo())", onTrack);
+        check("...then on track every quarter plot, or beside it where a curve cuts a corner (FX5), from the gate arm's end to its yard's box (CityRuns.wayTo())", onTrack);
         check("...and its ladder and siding inside the yard's box, the freight station's routes marked so", intoYard && stationOnes);
         check("...kept against the map's changes: asked again, the same list", m.trainRoutes() == routes);
 
@@ -4251,6 +4268,9 @@ public class MapCheck {
     /** The most two neighbouring vehicles of a train may differ in heading, in degrees: 30 (FX5; on 0.8.14 a corner turned them 90 and a ladder 60). */
     static final double MOST_TURN_DEG = 30;
 
+    /** ...and on a yard's ladder, the tightest curve the railway has: 45 degrees (FX5: an S of up to a few plots across over YARD_LADDER, 3 plots, turns a depot's neighbours 40; the long yards slice Y lays will lengthen the ladder and tighten this). */
+    static final double LADDER_TURN_DEG = 45;
+
     /** The last plots of a route that are a yard's ladder and siding, for what trainsOnTheCurves() prints: 12 (the ladder's S is 3 to 6 plots long, the siding's last leg a few). A report's cut, not an assertion's. */
     static final double LADDER_PLOTS = 12;
 
@@ -4311,8 +4331,10 @@ public class MapCheck {
         }
         out.printf("      %,d neighbouring pairs of vehicles on %d routes: the sharpest turn between two is %.1f degrees (route %d), %.1f degrees more than %.0f plots from a route's end (its ladder's)%n",
                 pairs, routes.size(), worst, where, awayFromEnd, LADDER_PLOTS);
-        check("(a) no two neighbouring vehicles of a train differ in heading by more than " + (int) MOST_TURN_DEG + " degrees, at any sampled moment and along every route",
-                pairs > 0 && worst <= MOST_TURN_DEG);
+        check("(a) no two neighbouring vehicles of a train differ in heading by more than " + (int) MOST_TURN_DEG + " degrees, at any sampled moment"
+                + " and along every route, off its yard's ladder (on 0.8.14, 35 at the world line's join and 90 at a corner)", pairs > 0 && awayFromEnd <= MOST_TURN_DEG);
+        check("...and on a yard's ladder no more than " + (int) LADDER_TURN_DEG + " (an S over YARD_LADDER plots, until the yards are as long as their trains)",
+                pairs > 0 && worst <= LADDER_TURN_DEG);
 
         // (b) on the rail as drawn: the tiles at 8 px a plot, kept as they are first wanted.
         java.util.Map<Long, int[]> tiles = new java.util.HashMap<>();

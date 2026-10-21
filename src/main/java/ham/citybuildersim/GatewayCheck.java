@@ -552,6 +552,18 @@ public class GatewayCheck {
     }
 
     /** How many of a route's points, read every WORLD_STEP along each leg, lie on neither dry ground nor a plot the railway carries (track, track over a highway, a yard); the points read are in samples[0]. */
+    /** The least distance in plots from (x, y) to the route's polyline (FX5: a rounded route passes by its turns' points). */
+    static double nearestOnRoute(TrainSchedule.Route r, double x, double y) {
+        double best = Double.MAX_VALUE;
+        double[] xs = r.xs(), ys = r.ys();
+        for (int i = 0; i + 1 < xs.length; i++) {
+            double dx = xs[i + 1] - xs[i], dy = ys[i + 1] - ys[i], l2 = dx * dx + dy * dy;
+            double t = l2 > 0 ? Math.max(0, Math.min(1, ((x - xs[i]) * dx + (y - ys[i]) * dy) / l2)) : 0;
+            best = Math.min(best, Math.hypot(xs[i] + t * dx - x, ys[i] + t * dy - y));
+        }
+        return best;
+    }
+
     static int offTrack(World w, CityRuns runs, TrainSchedule.Route r, int[] samples) {
         int bad = 0;
         for (int i = 1; i < r.xs().length; i++) {
@@ -655,14 +667,16 @@ public class GatewayCheck {
         for (TrainSchedule.Route r : routes) {
             if (r.xs().length < 3) { first = false; continue; }
             first &= Math.abs(r.xs()[0] - fx) < EPS && Math.abs(r.ys()[0] - fy) < EPS;
-            second &= Math.abs(r.xs()[1] - rail.x()) < EPS && Math.abs(r.ys()[1] - rail.y()) < EPS;
-            third &= Math.abs(r.xs()[2] - (mainArm.x + 0.5)) < EPS && Math.abs(r.ys()[2] - (mainArm.y + 0.5)) < EPS;
+            // FX5: the routes are rounded at their turns (TrackCurves.RADIUS), the line's join and the arm's end among them, so the
+            // route passes by those points within the radius rather than through them as points of its own.
+            second &= nearestOnRoute(r, rail.x(), rail.y()) <= TrackCurves.RADIUS;
+            third &= nearestOnRoute(r, mainArm.x + 0.5, mainArm.y + 0.5) <= TrackCurves.RADIUS;
             bad += offTrack(w, runs, r, samples);
         }
         System.out.printf("      %d route(s), %,d points read, %d on water off the track%n", routes.size(), samples[0], bad);
         check("...every route's first point is WORLD_PLOTS out along the line's way", first);
-        check("...its second point is the line's point", second);
-        check("...its third is the main arm's end plot's middle: the train meets the line where the track ends", third);
+        check("...it passes the line's point, within the curve's radius (FX5: its turns are rounded)", second);
+        check("...and the main arm's end plot's middle, within the radius: the train meets the line where the track ends", third);
         check("...no point of any leg on water off the track", bad == 0 && samples[0] > 0);
     }
 

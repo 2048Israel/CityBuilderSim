@@ -764,7 +764,11 @@ public class MainLineCheck {
                 int n = r.xs().length;
                 if (n < 4) { allNorthSouth = false; allOnColumn = false; continue; }
                 if (r.xs()[n - 1] != r.xs()[n - 2] || r.ys()[n - 1] == r.ys()[n - 2]) allNorthSouth = false;
-                if (Math.abs(r.xs()[n - 3] - (ix + 0.5)) > 1e-9) allOnColumn = false;
+                // FX5: the ladder is sampled (TrackCurves.ladder()), so the apex is the last point on the column before the siding's
+                // start, no more than YARD_LADDER plots along before it (the middle siding stays on the column to its end).
+                int k = n - 2;
+                while (k >= 0 && Math.abs(r.xs()[k] - (ix + 0.5)) > 1e-9) k--;
+                if (k < 0 || Math.abs(r.ys()[k] - r.ys()[n - 2]) > TileRaster.YARD_LADDER + 1e-9) allOnColumn = false;
             }
         }
         // The last three points of each yard's routes: the fan's apex, then the siding's two ends.
@@ -780,7 +784,8 @@ public class MainLineCheck {
             System.out.println(sb);
         }
         check("each yard's every route ends on a north-south siding: its last leg has the same x at both ends", allNorthSouth);
-        check("...and enters the fan at an apex on the corridor's column: the point before its last two has x = ix + 0.5", allOnColumn);
+        check("...and enters the fan at an apex on the corridor's column: its last point on x = ix + 0.5 is no more than YARD_LADDER"
+                + " plots before the siding (FX5: the ladder is an S of points)", allOnColumn);
 
         // The sidings are the routes' last legs; no leg of any route crosses one at a point strictly inside both.
         int crossings = 0;
