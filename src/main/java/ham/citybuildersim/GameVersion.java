@@ -6975,8 +6975,29 @@ public final class GameVersion {
      *     market expects the dial; The book's yield from the price.
      *   - Harness: CurveCheck (new); CentralBankCheck, HoldersCheck and
      *     ForeignDebtCheck restated on the new pricing, premises kept.
+     *
+     * 0.8.15 (2026-10-21) - CD2, THE LINEUP AND THE AUCTION
+     * (docs/queue/CD2-notes.md; docs/studies/spec-city-debt.md 2 and 4).
+     * Every trace that borrows moves.
+     *   - Lineup: bills 1-12 months, bonds 2-50 years with the stop's coupon
+     *     rounded down to an eighth in lines that reopen (D2, D6, D14), the
+     *     amortizing bond on one coupon, dollar bills and bonds; the term
+     *     loan, the dollar serial and the 0.75% spread on city paper gone.
+     *   - Auction (new, pure): households first at its yield out of savings
+     *     (D32), the firms (D33), the world (D7), the bank its risk capital;
+     *     one clearing yield, capped or Fill it (D20); priced on the curve
+     *     with the tail a spread, so no round trip makes money.
+     *   - Holders: the firms (OutwardInvestment) and the world (CapitalFlows)
+     *     hold what they buy; the settle pays each bidder's allotment.
+     *   - The rollover and automatic building each sell at their own cap; a
+     *     short rollover paid from cash then the advances (D29); automatic
+     *     building's open ask (D30); the time skip lists the sales.
+     *   - Screen: Borrow as an auction (D31). AuctionTally counts the sales.
+     *   - Save: SAVE_FORMAT 42, OLDEST_LOADABLE_FORMAT 42.
+     *   - Harness: AuctionCheck (new); NewGameCheck 11 and HoldersCheck
+     *     restated to the auction, premises kept.
      */
-    public static final String VERSION = "0.8.14";
+    public static final String VERSION = "0.8.15";
 
     /**
      * The save shape.
