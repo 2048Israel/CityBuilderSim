@@ -4149,9 +4149,13 @@ public class LongPlaytest {
                 if (!held) continue;
                 layoutOldHeldN += had[t];
                 layoutOldHeldStand += stand[t];
-                if (stand[t] < had[t]) {
-                    long key = e.getKey();
-                    int[][] model = layoutOldModel.get(key);
+                // A departure takes the newest of a type, so the oldest of the district's own stand while its own count never
+                // fell below them: of those standing then, no fewer than its own count then and its lowest since (the rest may
+                // have been carried here from the district before, or left and come again).
+                long key = e.getKey();
+                int[][] model = layoutOldModel.get(key);
+                int kept = model == null ? had[t] : Math.min(had[t], Math.min(model[0][t], model[1][t]));
+                if (stand[t] < kept) {
                     flag(month, "an old works moved", String.format("district (%d,%d), %s: %d of the %d standing at m%d are not where they stood at m%d,"
                             + " and the district holds %d of the type now against %d then (the model's count of it %d then, as low as %d in between)",
                             (int) (key >> 32), (int) key, layoutName(g, t), had[t] - stand[t], had[t], layoutOldMonth, month, s.byType[t], then[t],
