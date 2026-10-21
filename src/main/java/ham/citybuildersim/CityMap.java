@@ -1290,12 +1290,6 @@ public final class CityMap {
     District roomiest() {
         District best = districts.isEmpty() ? home() : districts.get(0);
         for (District d : districts) if (d.freeCells() > best.freeCells()) best = d;
-        if (best.freeCells() > 0) return best;
-        // Every district at PLAN_FILL (CL3): the city has run out of the ground its plans can draw, and what is left goes where
-        // the most ground is left, all its owned plots counted as before CL3 - not all of it to the founding district, whose plan
-        // would carry it down a chain of districts already full (the playtest's city at month 4,000: 3,665 buildings packed at
-        // its edge without a street that way, against 450 before CL3).
-        for (District d : districts) if (d.owned - d.usedCells > best.owned - best.usedCells) best = d;
         return best;
     }
 
