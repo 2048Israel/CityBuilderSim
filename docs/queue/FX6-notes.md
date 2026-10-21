@@ -29,13 +29,14 @@ A probe on the playtest settled the cause. Month 3,998's input on month 3,997's 
 | ...boxes compared | 154,577 | 229,365 |
 | district (-2,-2)'s own plan, m3,997 to m3,998 | 3,164 of 7,033 moved | 0 of 6,617 |
 | ...placed and without a place at m3,997 | 7,033 and 0 | 6,617 and 416 |
-| {{TOTALS}} |
+| the city's 11 districts at m3,996, boxes on their plans through the chain (none packed either way) | 8,575 | 14,717 |
 | the ring at m4000, mean km from the founding site: homes / industry / outer kinds | 12.84 / 5.86 / 12.64 | 13.74 / 5.99 / 11.93 |
 | MapCheck 2c, a district not full buying a block inside itself: its boxes moved | 217 of 441 | 0 of 441 |
 | ...full: its boxes moved | 709 of 3,346 | 0 of 2,931 |
 | ...the full district's plan holds | 3,346 of its 3,346 houses | 2,931; 415 go on to the next district |
 
 - **What Jerus saw move, by another door, has stopped.** No building on the playtest's map moves in any of the watch's 48 month pairs, inside a spill's reach or out of it.
+- **The city is out of ground, and the two lay out its history differently.** The playtest's city has passed buildings down the chain since about month 2,000: at m3,996 each district is carried thousands, and the last draws almost none, on both builds. FX6's plans hold more of it (14,717 boxes in the 11 districts against 8,575), because each district's history now runs on the ground of its months. Checked on all 11 districts' own plans at m3,996: no box overlaps another, stands on a street, or lies off owned dry ground.
 - **The plans differ from 0.8.15's all through the run.** Every arrival is now placed on the ground of its month, not today's, so a district's history is laid out differently from the first purchase it made. The renders show it (§5). The ring is kept: industry stands well inside the homes.
 - **What the fix costs (★1).** Ground bought inside a cell already open gets no new streets. It is built on only within reach of that cell's streets. In 2c's fixture, a 64-plot block of 8-plot land blocks cuts a cell open since before the purchase. Of that cell's 667 new dry plots, 56 are built on, against 568 on 0.8.15; the closed cells take 1,888 of their 2,500 against 1,777. The 415 houses the district no longer holds are drawn in the next district. A purchase of whole cells loses nothing, as in the playtest's city at month 3,998 and in any city at block level 5, whose blocks are the cells. District (-2,-2)'s 416 without a place at m3,997 were not traced; by the same rule they would be land it bought inside cells already open, when the city's blocks were smaller.
 
@@ -54,7 +55,7 @@ A probe on the playtest settled the cause. Month 3,998's input on month 3,997's 
   - a plan dated all at month 0, or dated at or before its first batch, is the plan with no dates;
   - the plan is a pure function.
 - **LongPlaytest**: green. On 0.8.15 its one red was the layout watch's finding at m3,998.
-- **The suite**: {{SUITE}}
+- **The suite** (`Batch check.bat --maps`, beside another batch's JVM, timing soft): 125 harnesses in 1,164 s, all 125 passed; on main e6c8e74 the same run was 124 of 125, LongPlaytest red on the watch. ScaleCheck's "...and it builds" (SC1) is green, as on main since CD1. Stale: 0 firm findings. The maps regenerated.
 - **`--timing`, hard and alone**: {{TIMING}}
 
 ## 5. Renders
