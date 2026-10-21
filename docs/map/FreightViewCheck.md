@@ -1,6 +1,6 @@
 # FreightViewCheck.java - 715 lines · 26 methods · 2 constants · harnesses
 
-`ham/citybuildersim/FreightViewCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FreightViewCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > FreightView, the model behind the Freight screens, held to the study's
 > board 2 (docs/studies/spec-freight-and-infrastructure.md 6): the city's

@@ -1,6 +1,6 @@
 # InfrastructureScreen.java - 1,982 lines · 73 methods · 32 constants · interface
 
-`ham/citybuildersim/ui/InfrastructureScreen.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/InfrastructureScreen.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > The infrastructure tab: the roads, the trams, the freight and the ports -
 > four pages under the five figures the whole tab is about, each page led by

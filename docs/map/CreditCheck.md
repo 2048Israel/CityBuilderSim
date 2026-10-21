@@ -1,6 +1,6 @@
 # CreditCheck.java - 2,045 lines · 18 methods · 1 constants · harnesses
 
-`ham/citybuildersim/CreditCheck.java` - generated 2026-10-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CreditCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
 > Verifies private-sector credit: pricing, origination, rollover, cash conservation.
 

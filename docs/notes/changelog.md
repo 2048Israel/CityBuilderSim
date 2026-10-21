@@ -25,7 +25,7 @@ from the district's far side; homes keep off mines; a cell's squares and bouleva
 district is full at PLAN_FILL (0.68) of its plots, and what spills keeps its month. His 1.7M city over a year:
 41 buildings moved against 5,080; the playtest's ring gone (industry 7.0 km from the founding site, homes 10.2,
 where they stood at 9.8 and 7.5). The playtest's city, out of ground, now turns away its newest houses at the edge
-rather than its works: 3,665 packed without a street against 450. PlanCheck 11, MapCheck's sidecar sections and
+rather than its works: 3,570 packed without a street against 450. PlanCheck 11, MapCheck's sidecar sections and
 LongPlaytest's layout watch are new.
 
 ### 0.8.13 — CL2, streets not a grid inside the blocks — 2026-10-20, shipped, see docs/queue/CL2-notes.md
