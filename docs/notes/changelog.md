@@ -14,7 +14,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.14 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
+### 0.8.15 — CD1, the curve from the dial the market expects — 2026-10-21, shipped, see docs/queue/CD1-notes.md
 
 The city's curve no longer sits on the dial in parallel (spec-city-debt §3, D9). The market expects the dial to drift
 back to what the city's rule would set at the inflation it expects, over six months (DRIFT_MONTHS, D15); each month's
@@ -26,6 +26,20 @@ the term loan's face on its factors), at home and abroad, and no round trip make
 Your rate shows the thirty-year rate in its new parts and where the market expects the dial. No save-format bump.
 The traces move (default 619,699 people against 677,355; Rotterdam 834,678 against 711,024); the ensemble scores
 22/26, H1 red for the cheap long money gone (Jerus's call, CD1-C). Harness: CurveCheck.
+
+### 0.8.14 — CL3, buildings that stay where they were put — 2026-10-21, shipped, see docs/queue/CL3-notes.md
+
+The map's alone; the playtest's trace is byte-identical. Each district keeps a log of its count changes month by
+month, saved in the map's sidecar (FORMAT 9; an older one loads into today's plans, box for box), and its plan
+places the buildings in the order they came: the first batch as before, then each month's departures (the newest
+leave, their lots freed) and arrivals (a month's types dealt in turn), each at the first place it fits, a cell
+opened for the use of what opens it. Farms, power and water works, yards, car plants and truck depots open cells
+from the district's far side; homes keep off mines; a cell's squares and boulevard are decided as it opens. A
+district is full at PLAN_FILL (0.68) of its plots, and what spills keeps its month. His 1.7M city over a year:
+41 buildings moved against 5,080; the playtest's ring gone (industry 7.0 km from the founding site, homes 10.2,
+where they stood at 9.8 and 7.5). The playtest's city, out of ground, now turns away its newest houses at the edge
+rather than its works: 3,570 packed without a street against 450. PlanCheck 11, MapCheck's sidecar sections and
+LongPlaytest's layout watch are new.
 
 ### 0.8.13 — CL2, streets not a grid inside the blocks — 2026-10-20, shipped, see docs/queue/CL2-notes.md
 

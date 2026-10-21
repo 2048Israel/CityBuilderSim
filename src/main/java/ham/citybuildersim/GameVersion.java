@@ -6953,7 +6953,23 @@ public final class GameVersion {
      *     Input.combOnly draws 0.8.12's plan, box for box.
      *   - Harness: PlanCheck 10 (new section). Save format unchanged.
      *
-     * 0.8.14 (2026-10-21) - CD1, THE CURVE FROM THE DIAL THE MARKET EXPECTS
+     * 0.8.14 (2026-10-21) - CL3, BUILDINGS THAT STAY WHERE THEY WERE PUT
+     * (docs/queue/CL3-notes.md; docs/studies/spec-city-layout.md 5.3-5.4).
+     * The map's alone; the trace is byte-identical to 0.8.13's.
+     *   - CityMap: each district's log of its count changes by month, saved
+     *     in the sidecar (CityMap.FORMAT 9; an older sidecar's log is its
+     *     counts as one batch); a district full at PLAN_FILL (0.68) of its
+     *     owned plots; R7's carry as {month, type} pairs.
+     *   - DistrictPlan: a district with a log is planned in the order its
+     *     buildings came (THE ORDER OF ARRIVAL): its first batch as before,
+     *     then each month's departures and arrivals, a cell for the use of
+     *     what opens it, the edge kinds from the far side, homes off mines,
+     *     a cell's ladder decided as it opens; the carry merged by month.
+     *   - Harness: PlanCheck 11 (new section); MapCheck's sidecar, fill and
+     *     spill fixtures; LongPlaytest's THE LAYOUT, WATCHED. Save format
+     *     unchanged.
+     *
+     * 0.8.15 (2026-10-21) - CD1, THE CURVE FROM THE DIAL THE MARKET EXPECTS
      * (docs/queue/CD1-notes.md; docs/studies/spec-city-debt.md 3). Every
      * trace that borrows moves.
      *   - Curve: the market expects the dial to drift to the city's rule at
@@ -6976,7 +6992,7 @@ public final class GameVersion {
      *   - Harness: CurveCheck (new); CentralBankCheck, HoldersCheck and
      *     ForeignDebtCheck restated on the new pricing, premises kept.
      */
-    public static final String VERSION = "0.8.14";
+    public static final String VERSION = "0.8.15";
 
     /**
      * The save shape.

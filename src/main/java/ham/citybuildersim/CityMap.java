@@ -92,7 +92,15 @@ import java.util.zip.InflaterInputStream;
  * the real Earth since 0.7.121 its whole key folded, worldId()), the
  * month, a stamp of the content (also the save's mapStamp), the land it was
  * drawn on and the type count. A map saved and read back writes the same
- * bytes.
+ * bytes. Since FORMAT 9 (batch CL3) it carries each district's LOG after the
+ * rest: the changes to its counts month by month, a record {month, type,
+ * change} for each type a month moved, kept in the order they came so its plan
+ * can place its buildings in that order and leave them where they stood. A
+ * flow cannot be got back from the counts a month ended in, so it is saved;
+ * a log that does not add up to the district's counts makes the sidecar
+ * unread (the map is drawn again canonically), and a sidecar of FORMAT 8 or
+ * older, which has none, starts each log as its counts, one batch at the
+ * save's month - drawn as before.
  *
  * ON THE BLOCK GRID SINCE 0.7.67 (batch M3; the project's spec-grid.md 2.4).
  * The land's ownership reads are the grid's: whether a district or a tile is
@@ -150,6 +158,12 @@ public final class CityMap {
     /** A district with less room than this many whole plots is passed by the cursors: one, the least a building is drawn on (0.7.64; half a plot of ground before). */
     static final int MIN_ROOM = 1;
 
+    /** The share of a district's owned plots its buildings' boxes may take: 0.68 (CL3), a full plan's boxes over its ground on Jerus's densest districts (the CL1 study, section 5.3) - so a district is full where its plan is, and what spills is rare. */
+    static final double PLAN_FILL = 0.68;
+
+    /** A district's empty log: the one array every district without records shares. */
+    private static final int[] NO_LOG = new int[0];
+
     /** The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5); since 0.8.0 (batch I14) coal, stone and copper after them, every resource a works on dry ground stands on. */
     static final Resource[] SITED = { Resource.IRON, Resource.OIL, Resource.COAL, Resource.STONE, Resource.COPPER };
 
@@ -186,8 +200,8 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
-    static final int FORMAT = 8;
+    /** The sidecar's format: 9 since CL3 (batch CL3), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 9;
 
     /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
     static final int OLDEST_READ = 4;
@@ -234,6 +248,24 @@ public final class CityMap {
         /** Its place in the map's order, nearest first. */
         int index;
 
+        /**
+         * ITS LOG (batch CL3): the changes to its counts, month by month, in the order they came - a record {month, type,
+         * change} (+ come, - gone) for each type a month moved, the types in id order, months never falling, one record
+         * to a type and month. What its plan places its buildings by, so a building stays where it was put; saved in the
+         * sidecar (FORMAT 9) because a flow cannot be got back from the counts a month ended in.
+         */
+        int[] logMonth = NO_LOG, logType = NO_LOG, logChange = NO_LOG;
+        /** How many records the log holds. */
+        int logN;
+        /** How many of its first records are one batch, placed in today's order (a canonical map's deal; a sidecar's from before FORMAT 9). */
+        int firstBatch;
+        /** Its counts as last logged; null before the first (the same as none). */
+        int[] logged;
+        /** Whether its counts may have moved since they were logged: set wherever they change (a new district is dirty), cleared by logChanges(). */
+        boolean logDirty = true;
+        /** A hash of its log, kept with it: what its plan's stamp folds, so a plan is drawn again when its log moved and its counts did not. */
+        long logHash;
+
         District(int dx, int dy, int types, double order) {
             this.dx = dx;
             this.dy = dy;
@@ -254,10 +286,70 @@ public final class CityMap {
             for (int k = 0; k < SLOTS; k++) if (SLOT_RESOURCE[k] == r) n += sites[k];
             return n;
         }
-        /** Its room in whole plots, never below nothing (0.7.64; in ground, half square feet, before). */
-        long freeCells()         { return Math.max(0, owned - usedCells); }
+        /** Its room in whole plots: PLAN_FILL of its owned plots, what its plan can draw (CL3; every owned plot before). */
+        long room()              { return (long) Math.floor(owned * PLAN_FILL); }
+        /** Its room left in whole plots, never below nothing (0.7.64; in ground, half square feet, before). */
+        long freeCells()         { return Math.max(0, room() - usedCells); }
         /** ...and for roads: its whole room, no more than its plots inside the edge rings less its road. */
         long freeRoad()          { return Math.min(freeCells(), Math.max(0, inner - usedRoad)); }
+
+        /** How many records its log holds. */
+        public int logSize()     { return logN; }
+
+        /**
+         * Adds a change of type t, made in a month, to its log: a record at the end, or - when the month's records after the
+         * first batch already hold the type - into that one (one record to a type and month; gone when the two cancel). The
+         * month never falls: one before the log's last is the last's.
+         */
+        void logAdd(int month, int t, int change) {
+            if (change == 0) return;
+            if (logN > 0 && month < logMonth[logN - 1]) month = logMonth[logN - 1];
+            for (int k = logN - 1; k >= firstBatch && k >= 0 && logMonth[k] == month; k--) {
+                if (logType[k] != t) continue;
+                logChange[k] += change;
+                if (logChange[k] == 0) {
+                    int tail = logN - k - 1;
+                    System.arraycopy(logMonth, k + 1, logMonth, k, tail);
+                    System.arraycopy(logType, k + 1, logType, k, tail);
+                    System.arraycopy(logChange, k + 1, logChange, k, tail);
+                    logN--;
+                }
+                rehash();
+                return;
+            }
+            if (logN == logMonth.length) {
+                int n = Math.max(8, logN * 2);
+                logMonth = Arrays.copyOf(logMonth, n);
+                logType = Arrays.copyOf(logType, n);
+                logChange = Arrays.copyOf(logChange, n);
+            }
+            logMonth[logN] = month;
+            logType[logN] = t;
+            logChange[logN] = change;
+            logN++;
+            logHash = fold(logHash, month, t, change);
+        }
+
+        /** Its log's hash worked out again from its records. */
+        void rehash() {
+            long h = 0;
+            for (int k = 0; k < logN; k++) h = fold(h, logMonth[k], logType[k], logChange[k]);
+            logHash = h;
+        }
+
+        private static long fold(long h, int month, int t, int change) {
+            h = World.mix(h + month * 0x9E3779B97F4A7C15L);
+            return World.mix(h ^ ((long) t << 32) ^ (change & 0xffffffffL));
+        }
+
+        /** Whether its log and b's are the same: the count of records, the first batch and every record. */
+        boolean sameLog(District b) {
+            if (logN != b.logN || firstBatch != b.firstBatch) return false;
+            for (int k = 0; k < logN; k++) {
+                if (logMonth[k] != b.logMonth[k] || logType[k] != b.logType[k] || logChange[k] != b.logChange[k]) return false;
+            }
+            return true;
+        }
     }
 
     static long key(int dx, int dy) { return ((long) dx << 32) | (dy & 0xffffffffL); }
@@ -286,6 +378,8 @@ public final class CityMap {
     private Pyramid pyramid;
     private SiteIndex siteIndex;
     private boolean sitedPlaced;
+    /** The month of its last change (CL3): what its districts' logs date their records by; 0 for a map drawn canonically with no month given, a harness's square city. */
+    private int month;
 
     private CityMap(World.Key worldKey, long siteX, long siteY, BuildingVisual.Type[] types) {
         this.seed = worldKey.seed();
@@ -302,6 +396,9 @@ public final class CityMap {
 
     /** The world's seed. */
     public long seed()                     { return seed; }
+
+    /** The month of its last change (CL3): the month its districts' newest log records are dated. */
+    public int month()                     { return month; }
 
     /** The world's key (0.7.115): World.of(worldKey()) is the ground it is drawn on. */
     public World.Key worldKey()            { return worldKey; }
@@ -353,13 +450,25 @@ public final class CityMap {
      */
     public static CityMap canonical(CityLand land, Function<Resource, double[]> remaining,
                                     BuildingVisual.Type[] types, long[] counts) {
+        return canonical(land, remaining, types, counts, 0);
+    }
+
+    /**
+     * ...in a given month (CL3): the month its districts' logs date the deal by, each log one batch (firstBatch) of
+     * its counts as the deal gave them.
+     */
+    public static CityMap canonical(CityLand land, Function<Resource, double[]> remaining,
+                                    BuildingVisual.Type[] types, long[] counts, int month) {
         CityMap m = new CityMap(land.key(), land.siteX(), land.siteY(), types);
+        m.month = month;
         m.land = land;
         m.remaining = remaining;
         m.measureAll();
         m.allocate(counts);
         m.layRuns(counts);
         m.layShore(counts);
+        m.logChanges();
+        m.batchLogs();
         return m;
     }
 
@@ -407,6 +516,8 @@ public final class CityMap {
         m.allocate(counts);
         m.layRuns(counts);
         m.layShore(counts);
+        m.logChanges();
+        m.batchLogs();
         return m;
     }
 
@@ -709,10 +820,18 @@ public final class CityMap {
      * car plants farthest first), removals in reverse - and the mines and
      * wells put on their sites. When the land was drawn again it answers
      * false and places nothing: the caller draws the map again canonically.
-     * (How many district-types it touched is lastTouched.)
+     * (How many district-types it touched is lastTouched.) Every district's
+     * change is logged in the month given (logChanges(), CL3); this form
+     * counts on from the last month, a harness's.
      */
     public boolean reconcile(long[] model) {
+        return reconcile(model, month + 1);
+    }
+
+    /** ...in a given month, the game's: what the districts' logs date the month's changes by. */
+    public boolean reconcile(long[] model, int month) {
         if (syncLand()) return false;
+        this.month = month;
         nPassed = 0;
         int touched = 0;
         // The buildings first, then the roads, which follow them (0.7.72, ROADS FOLLOW THEIR BUILDINGS).
@@ -737,6 +856,8 @@ public final class CityMap {
         lastRunsMs = (System.nanoTime() - r0) / 1e6;
         // ...and its works on the shore to the month's counts (0.7.97): laid at the water, or the newest taken.
         layShore(model);
+        // The month's changes to every district's counts, into their logs (CL3), now that everything that moves them has.
+        logChanges();
         lastTouched = touched;
         // What is worked out moved: the sites drawn are drawn again (their states), the deals stand.
         int[][] states = new int[Resource.values().length][];
@@ -748,6 +869,40 @@ public final class CityMap {
             changes++;
         }
         return true;
+    }
+
+    /**
+     * THE LOG (CL3): into the log of every district whose counts may have moved (logDirty), a record {month, type, change}
+     * for each type whose count is not what was last logged, the types in id order, at the map's month; then what was
+     * logged is its counts. A purchase's recount moves no count, so it logs none; the canonical deal, a placement or
+     * removal, the campus gathered, the mines and wells put on their sites and the runs' and the shore's all do, and are
+     * records here, in one place.
+     */
+    void logChanges() {
+        logChanges(false);
+    }
+
+    /** ...of every district, dirty or not (all): what a sidecar is written after, so a count moved by hand (a harness's) is a record too and what is written always adds up. */
+    void logChanges(boolean all) {
+        for (District d : districts) {
+            if (!all && !d.logDirty) continue;
+            d.logDirty = false;
+            int[] was = d.logged;
+            boolean any = false;
+            for (int t = 0; t < d.counts.length; t++) {
+                int c = d.counts[t];
+                if (c != 0) any = true;
+                int w = was == null ? 0 : was[t];
+                if (c != w) d.logAdd(month, t, c - w);
+            }
+            if (was != null) System.arraycopy(d.counts, 0, was, 0, d.counts.length);
+            else if (any) d.logged = d.counts.clone();
+        }
+    }
+
+    /** Every district's whole log so far one batch, placed in today's order: after a canonical deal, a square city's or a sidecar of FORMAT 8 or older read. */
+    private void batchLogs() {
+        for (District d : districts) d.firstBatch = d.logN;
     }
 
     /** How many changes the map has taken since it was drawn - a district's count, a purchase measured, a site's state: what the view stamps its tiles again on (MapTiles). Only grows. */
@@ -1175,6 +1330,7 @@ public final class CityMap {
         d.usedCells += k * BuildingVisual.cells(types[t]);
         if (types[t].road() != BuildingVisual.NOT_A_ROAD) d.usedRoad += k * BuildingVisual.cells(types[t]);
         d.version++;
+        d.logDirty = true;
         changes++;
         if (k > 0) {
             if (i < lo[t]) lo[t] = i;
@@ -1236,11 +1392,11 @@ public final class CityMap {
             for (int u : campusTypes(g)) if (u < counts.length && counts[u] > 0) campus += counts[u] * (long) BuildingVisual.cells(types[u]);
             if (campus <= 0 || n <= 0) continue;
             int at = -1;
-            for (int i = 0; i < n && at < 0; i++) if (districts.get(i).owned - used[i] >= campus) at = i;
+            for (int i = 0; i < n && at < 0; i++) if (districts.get(i).room() - used[i] >= campus) at = i;
             if (at < 0 && g != BuildingVisual.REFINERY) continue;
             if (at < 0) {
                 at = 0;
-                for (int i = 1; i < n; i++) if (districts.get(i).owned - used[i] > districts.get(at).owned - used[at]) at = i;
+                for (int i = 1; i < n; i++) if (districts.get(i).room() - used[i] > districts.get(at).room() - used[at]) at = i;
             }
             for (int u : campusTypes(g)) {
                 gathered[u] = true;
@@ -1258,7 +1414,7 @@ public final class CityMap {
         double[] share = new double[n];
         double left = total;
         for (int i = 0; i < n && left > 0; i++) {
-            double take = Math.min(Math.max(0, districts.get(i).owned - used[i]), left);
+            double take = Math.min(Math.max(0, districts.get(i).room() - used[i]), left);
             share[i] = total > 0 ? take / total : 0;
             left -= take;
         }
@@ -1297,14 +1453,14 @@ public final class CityMap {
                 Arrays.sort(keys, 0, m);
                 for (int k = 0; k < m && extra > 0; k++) {
                     int i = (int) (keys[k] & 0xffffffffL);
-                    if (used[i] + each > districts.get(i).owned) continue;
+                    if (used[i] + each > districts.get(i).room()) continue;
                     districts.get(i).counts[t]++;
                     used[i] += each;
                     extra--;
                 }
                 while (extra > 0) {
                     int best = 0;
-                    for (int i = 1; i < n; i++) if (districts.get(i).owned - used[i] > districts.get(best).owned - used[best]) best = i;
+                    for (int i = 1; i < n; i++) if (districts.get(i).room() - used[i] > districts.get(best).room() - used[best]) best = i;
                     districts.get(best).counts[t]++;
                     used[best] += each;
                     extra--;
@@ -1317,6 +1473,8 @@ public final class CityMap {
             d.usedCells = cellsOf(d);
             d.usedRoad = roadOf(d);
             d.version++;
+            // ...every district's counts were dealt here, directly: all are to be logged.
+            d.logDirty = true;
         }
         rangeTypes();
         innerCursor = 0;
@@ -2131,7 +2289,7 @@ public final class CityMap {
         return x | (y << 5) | ((w - 1) << 10) | ((h - 1) << 15) | (packed ? PACKED_BIT : 0);
     }
 
-    /** A district's link in the chain (R7): the stamp of its own inputs, what was carried to it and what it carried on (by type id, null for none); for an edge district, its plan's free ground (a bit a plot of the district), where the city's packed buildings may stand; its frame's edges' street codes (margins), which tell the districts after it which of their seams it leaves unlaid and where their streets join its; and the districts about it before it in the map's order, with the stamps of their links its plan read (readNeighbours()). Kept for every district planned, never dropped. */
+    /** A district's link in the chain (R7): the stamp of its own inputs, what was carried to it and what it carried on ({month, code} pairs in the order they came, since CL3 - the month each came in, so the spill keeps its time; code >= 0 an arrival of that type id, code < 0 a departure, ~k, of the building the k-th pair of the same list brought: the list only grows at its end; null for none); for an edge district, its plan's free ground (a bit a plot of the district), where the city's packed buildings may stand; its frame's edges' street codes (margins), which tell the districts after it which of their seams it leaves unlaid and where their streets join its; and the districts about it before it in the map's order, with the stamps of their links its plan read (readNeighbours()). Kept for every district planned, never dropped. */
     static final class Link {
         final long own, serial;
         final int[] in, out;
@@ -2152,11 +2310,41 @@ public final class CityMap {
         long stamp() { return stampOf(own, in); }
     }
 
-    /** A plan's stamp: its own inputs' and the carry in's. */
+    /** A plan's stamp: its own inputs' and the carry in's, {month, code} pairs (CL3): the list's length and every entry folded, zeros included, in order - so two different lists never stamp alike, a list of none and no list neither. */
     static long stampOf(long own, int[] in) {
         long h = World.mix(own ^ 0x4C494E4BL);
-        if (in != null) for (int t = 0; t < in.length; t++) if (in[t] != 0) h = World.mix(h ^ ((long) t << 32) ^ in[t]);
+        if (in != null) {
+            h = World.mix(h ^ 0x4C454E00L ^ ((long) in.length << 32));
+            for (int k = 0; k < in.length; k++) h = World.mix(h ^ ((long) k << 32) ^ (in[k] & 0xffffffffL));
+        }
         return h;
+    }
+
+    /**
+     * A carry's {month, code} pairs as counts by type (CL3): the arrivals (code >= 0, a type id) less the departures (code
+     * < 0, ~k: the building the k-th pair brought, so the type of that pair) - what the packing at the edge and the legend
+     * count by; null for none. A departure whose arrival is missing, comes later or has gone already is ignored.
+     */
+    static int[] countsOf(int[] pairs, int types) {
+        if (pairs == null) return null;
+        int[] out = new int[types];
+        boolean[] gone = null;
+        for (int k = 0; 2 * k + 1 < pairs.length; k++) {
+            int code = pairs[2 * k + 1];
+            if (code >= 0) {
+                if (code < types) out[code]++;
+                continue;
+            }
+            int a = ~code;
+            if (a >= k) continue;
+            int t = pairs[2 * a + 1];
+            if (t < 0 || t >= types) continue;
+            if (gone == null) gone = new boolean[pairs.length / 2];
+            if (gone[a]) continue;
+            gone[a] = true;
+            out[t]--;
+        }
+        return out;
     }
 
     /** A plan frame's edges' street codes (Link.margins): its west column (x 0) and north row (y 0), its east column (x 256, the next district's first) and south row (y 256), each 257 long; and M_PARTED, a byte along them with bit M_WEST to M_SOUTH set where that edge's street is parted from the network (DistrictPlan.parted). */
@@ -2347,7 +2535,7 @@ public final class CityMap {
     /**
      * A stamp of everything district d's own plan is drawn from but what is
      * carried to it: its buildings and road by type (its mines and wells on
-     * sites apart), the ground the city owns over its frame (ownership only
+     * sites apart) and the log they came in (CL3), the ground the city owns over its frame (ownership only
      * grows, and a restatement draws the map again, so the count of owned
      * plots tells), the sites and mines about it, the city's highway and
      * railway runs through its frame (0.7.89) and its terminals they draw as
@@ -2362,6 +2550,8 @@ public final class CityMap {
             int c = d.counts[t] - (d.sited == null ? 0 : d.sited[t]);
             if (c != 0) h = World.mix(h ^ ((long) t << 32) ^ c);
         }
+        // ...and its log (CL3): the order its buildings came in places them, so a log that moved moves its plan, its counts moved or not.
+        if (d.logN > 0) h = World.mix(h ^ d.logHash ^ ((long) d.firstBatch << 40) ^ d.logN);
         long fx1 = x0 + DistrictPlan.FRAME - 1, fy1 = y0 + DistrictPlan.FRAME - 1;
         for (int b = -1; b <= 1; b++) {
             for (int a = -1; a <= 1; a++) {
@@ -2526,6 +2716,7 @@ public final class CityMap {
         /** The districts about it before it in the map's order (earlierOf()), and each one's link or job: whose frames' edges it reads (readNeighbours()). */
         final District[] earlier;
         final Object[] sources;
+        /** What was carried to it and what it carries on: {month, code} pairs in the order they came (CL3; an arrival, or the departure ~k of the k-th pair's, DistrictPlan.Input.carry), null for none. */
         int[] carryIn, carryOut;
         Drawn result;
         long[] free, read;
@@ -2553,7 +2744,8 @@ public final class CityMap {
             if (after != null) after.run();
             int[] c = after != null ? after.carryOut : given;
             readGround(in, map.worldKey);
-            if (c != null) for (int t = 0; t < c.length && t < in.counts.length; t++) in.counts[t] += c[t];
+            // What the district before it could not place, as {month, code} pairs, arrivals and departures: the plan merges it into its own events by month (CL3; counts added into its own before).
+            in.carry = c;
             // What it reads of the districts before it about it (readNeighbours()), and the stamps of the plans it read.
             byte[][][] m = new byte[AROUND.length][][];
             read = new long[AROUND.length];
@@ -2571,7 +2763,7 @@ public final class CityMap {
             readNeighbours(d, earlier, m, in);
             DistrictPlan p = DistrictPlan.make(in);
             carryIn = c;
-            carryOut = p.overflowCount() > 0 ? p.overflow.clone() : null;
+            carryOut = p.overflowLog != null && p.overflowLog.length > 0 ? p.overflowLog.clone() : null;
             result = drawnOf(p, stampOf(own, c));
             margins = marginsOf(p);
             if (edge) free = freeGround(in, p);
@@ -2632,7 +2824,7 @@ public final class CityMap {
             long ps = World.mix(0x5041434BL);
             for (int i = edges.length - 1; i >= 0; i--) ps = World.mix(ps ^ stamps[i]);
             stamp = stampOf(ps, p);
-            result = packAtEdge(p, types, edges, free, tileOrder);
+            result = packAtEdge(countsOf(p, types.length), types, edges, free, tileOrder);
             result.stamp = stamp;
         }
     }
@@ -2861,11 +3053,11 @@ public final class CityMap {
     /** District d's plan as drawn (made now if need be): a harness's and a probe's. */
     public Drawn drawn(District d) { return drawnOf(d); }
 
-    /** What was carried to district d and what it carried on (R7), by type id, null for none - its link's, once planned. */
+    /** What was carried to district d and what it carried on (R7), counted by type id, null for none - its link's, once planned. (The link holds {month, code} pairs since CL3; countsOf() counts the arrivals less the departures.) */
     public int[][] carried(District d) {
         drawnOf(d);
         Link l = links.get(d);
-        return l == null ? new int[2][] : new int[][] { l.in, l.out };
+        return l == null ? new int[2][] : new int[][] { countsOf(l.in, types.length), countsOf(l.out, types.length) };
     }
 
     /** The links kept (0.7.89: a band's let go past BANDS_KEPT): a harness's. */
@@ -5022,6 +5214,11 @@ public final class CityMap {
                 }
             }
         }
+        // The log its buildings came in (CL3): its first logN records, copied, and how many of them are one batch.
+        in.logMonth = Arrays.copyOf(d.logMonth, d.logN);
+        in.logType = Arrays.copyOf(d.logType, d.logN);
+        in.logChange = Arrays.copyOf(d.logChange, d.logN);
+        in.firstBatch = d.firstBatch;
         // Its buildings, its mines and wells on sites apart; its road plots by kind.
         in.counts = new int[types.length];
         long[] kind = new long[4];
@@ -5306,7 +5503,12 @@ public final class CityMap {
      * city's highway and railway runs (int32 their count: 0 until batch RD3
      * lays them, which adds their records), and since FORMAT 6 (0.7.97) its
      * works on the shore (CityShore.write()), and since FORMAT 8 (0.8.1) the
-     * gateway's bearing (int32, CityRuns.gateway()).
+     * gateway's bearing (int32, CityRuns.gateway()), and since FORMAT 9
+     * (batch CL3) each district's log in the map's order: its record count
+     * and its first batch (int32 each), then each record as unsigned varints -
+     * the month as its step from the record before (the first from 0), the
+     * type, the change zig-zagged. A map's log is brought up to its counts
+     * before it is written (logChanges()), so what is written adds up.
      * The stamp is a hash of every other byte, so the same map always writes
      * the same file.
      */
@@ -5321,6 +5523,8 @@ public final class CityMap {
 
     /** ...and with its runs or (a harness's, as 0.7.88 wrote FORMAT 5) a count of none. */
     byte[] writeSidecar(int month, int format, boolean withRuns) {
+        // The logs up to the counts first (CL3), every district's: a works put on its site since the month's reconcile moved a count, and a log that does not add up is not read back.
+        if (format >= 9) logChanges(true);
         try {
             ByteArrayOutputStream raw = new ByteArrayOutputStream();
             DataOutputStream out = new DataOutputStream(raw);
@@ -5356,6 +5560,20 @@ public final class CityMap {
             if (format >= 6) shore.write(out);
             // The gateway's bearing (FORMAT 8, 0.8.1): after the shore, so an older reader stops at what it knows.
             if (format >= 8) out.writeInt(runs.gateway());
+            // Each district's log (FORMAT 9, CL3), in the map's order: its record count and first batch, then the records as varints.
+            if (format >= 9) {
+                for (District d : districts) {
+                    out.writeInt(d.logN);
+                    out.writeInt(d.firstBatch);
+                    int before = 0;
+                    for (int k = 0; k < d.logN; k++) {
+                        writeVarint(out, d.logMonth[k] - before);
+                        before = d.logMonth[k];
+                        writeVarint(out, d.logType[k]);
+                        writeVarint(out, (d.logChange[k] << 1) ^ (d.logChange[k] >> 31));
+                    }
+                }
+            }
             out.flush();
             byte[] bytes = raw.toByteArray();
             long stamp = stampOf(bytes);
@@ -5375,6 +5593,26 @@ public final class CityMap {
     }
 
     private long lastStamp;
+
+    /** An unsigned varint (CL3): seven bits a byte, the low first, the high bit set where more follow. */
+    static void writeVarint(DataOutputStream out, int v) throws IOException {
+        while ((v & ~0x7F) != 0) {
+            out.writeByte((v & 0x7F) | 0x80);
+            v >>>= 7;
+        }
+        out.writeByte(v);
+    }
+
+    /** ...read back; an IOException for one more than five bytes long. */
+    static int readVarint(DataInputStream in) throws IOException {
+        int v = 0;
+        for (int shift = 0; shift < 35; shift += 7) {
+            int b = in.readUnsignedByte();
+            v |= (b & 0x7F) << shift;
+            if ((b & 0x80) == 0) return v;
+        }
+        throw new IOException("a varint of more than five bytes");
+    }
 
     /**
      * The world a sidecar names in its header (0.7.121, batch E4): a generated
@@ -5432,7 +5670,10 @@ public final class CityMap {
      * this city's (another seed, month or stamp, or land drawn otherwise), or
      * does not add up. Its mines are put back on their sites, which gives the
      * counts the file holds when the ground's states are those it was saved
-     * with.
+     * with. Since FORMAT 9 (CL3) the districts' logs are read back, and a
+     * district's that does not add up to its counts, type by type, makes it
+     * null (the map is drawn again); an older sidecar's districts each start
+     * a log of their counts, one batch at the sidecar's month.
      */
     public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining,
                                       BuildingVisual.Type[] types, int month, long stamp) {
@@ -5454,6 +5695,7 @@ public final class CityMap {
             int nTypes = in.readInt(), n = in.readInt();
             if (nTypes > types.length || n < 0) return null;
             CityMap m = new CityMap(land.key(), sx, sy, types);
+            m.month = savedMonth;
             m.land = land;
             m.remaining = remaining;
             for (int i = 0; i < n; i++) {
@@ -5494,6 +5736,36 @@ public final class CityMap {
             }
             // The gateway's bearing (FORMAT 8, 0.8.1): into the runs, whether they were read or none; an older sidecar leaves it unknown.
             if (format >= 8) m.runs.setGateway(in.readInt());
+            // Each district's log (FORMAT 9, CL3), in the order it was written - the districts are not sorted yet: it must add up, type by type, to the district's counts, or the map is drawn again.
+            if (format >= 9) {
+                int[] sums = new int[types.length];
+                for (District d : m.districts) {
+                    int logN = in.readInt(), firstBatch = in.readInt();
+                    if (logN < 0 || firstBatch < 0 || firstBatch > logN || logN > raw.length) return null;
+                    d.logMonth = logN == 0 ? NO_LOG : new int[logN];
+                    d.logType = logN == 0 ? NO_LOG : new int[logN];
+                    d.logChange = logN == 0 ? NO_LOG : new int[logN];
+                    Arrays.fill(sums, 0);
+                    int at = 0;
+                    for (int k = 0; k < logN; k++) {
+                        int step = readVarint(in), t = readVarint(in), z = readVarint(in);
+                        if (step < 0 || t < 0 || t >= types.length) return null;
+                        at += step;
+                        d.logMonth[k] = at;
+                        d.logType[k] = t;
+                        d.logChange[k] = (z >>> 1) ^ -(z & 1);
+                        sums[t] += d.logChange[k];
+                    }
+                    if (!Arrays.equals(sums, d.counts)) return null;
+                    d.logN = logN;
+                    d.firstBatch = firstBatch;
+                    d.rehash();
+                    boolean any = false;
+                    for (int c : d.counts) if (c != 0) { any = true; break; }
+                    d.logged = any ? d.counts.clone() : null;
+                    d.logDirty = false;
+                }
+            }
             m.runs.setDoubleMain(m.hasFreightLine(m.have));
             m.purchasesSeen = bought;
             m.centreSeen = land.centreStamp();
@@ -5508,6 +5780,11 @@ public final class CityMap {
                 m.gatherCampus();
                 m.layShore(m.have);
             }
+            // A sidecar of FORMAT 8 or older has no logs (CL3): each district's starts as its counts, one batch at the save's month, once all the reader does is done.
+            if (format < 9) {
+                m.logChanges();
+                m.batchLogs();
+            }
             return m;
         } catch (IOException | RuntimeException e) {
             return null;
@@ -5519,12 +5796,18 @@ public final class CityMap {
         return sameDistricts(o) && runs.same(o.runs) && shore.same(o.shore);
     }
 
-    /** Whether two maps hold the same districts with the same figures, in the same order. */
+    /** Whether two maps hold the same districts with the same figures, in the same order, and (CL3) the same logs: the count of records, the first batch and every record. */
     public boolean sameDistricts(CityMap o) {
+        return sameDistricts(o, true);
+    }
+
+    /** ...with or without their logs: the districts of a map read from a sidecar of FORMAT 8 or older, whose logs begin at its month, are the same as the map's own without them. */
+    public boolean sameDistricts(CityMap o, boolean withLogs) {
         if (o == null || o.seed != seed || o.districts.size() != districts.size() || o.types.length != types.length) return false;
         for (int i = 0; i < districts.size(); i++) {
             District a = districts.get(i), b = o.districts.get(i);
             if (a.dx != b.dx || a.dy != b.dy || a.owned != b.owned || a.usedHalf != b.usedHalf || !Arrays.equals(a.counts, b.counts)) return false;
+            if (withLogs && !a.sameLog(b)) return false;
         }
         return true;
     }

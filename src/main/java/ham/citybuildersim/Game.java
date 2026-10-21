@@ -1197,10 +1197,13 @@ public class Game {
         private final java.util.Map<Resource, double[]> remaining = new java.util.EnumMap<>(Resource.class);
         private final BuildingVisual.Type[] types;
         private final long[] counts;
+        /** The game's month when the draft was made: what the map's logs date the deal by (CL3). */
+        private final int month;
         private volatile CityMap map;
 
         private MapDraft(Game game) {
             this.game = game;
+            this.month = game.month;
             this.generation = game.mapGeneration;
             this.land = game.landManager.getCityLand().copy();
             for (Resource r : Resource.values()) remaining.put(r, game.landManager.remainingByHolding(r).clone());
@@ -1210,7 +1213,7 @@ public class Game {
 
         /** Draws the map on the copy: any thread, once. */
         public void draw() {
-            if (map == null) map = CityMap.canonical(land, r -> remaining.get(r), types, counts);
+            if (map == null) map = CityMap.canonical(land, r -> remaining.get(r), types, counts, month);
         }
 
         /** Whether it has been drawn. */
@@ -1246,7 +1249,7 @@ public class Game {
         CityMap map = draft.map;
         map.rebind(live, landManager::remainingByHolding);
         try {
-            if (!map.reconcile(getMapCounts())) return false;
+            if (!map.reconcile(getMapCounts(), month)) return false;
         } catch (RuntimeException e) {
             mapFailures++;
             System.out.println("The city map drawn aside could not be kept up, and will be drawn again: " + e);
@@ -1275,7 +1278,7 @@ public class Game {
     /** The map drawn canonically from the city as it stands. */
     private CityMap drawMap() {
         mapAtSeaStale = true;
-        return CityMap.canonical(landManager.getCityLand(), landManager::remainingByHolding, getMapTypes(), getMapCounts());
+        return CityMap.canonical(landManager.getCityLand(), landManager::remainingByHolding, getMapTypes(), getMapCounts(), month);
     }
 
     /**
@@ -1291,7 +1294,7 @@ public class Game {
             // The oil at sea as it stands this month (0.7.97): none, read without touching the ground, in a city with none; then the railway's picture (0.8.1).
             cityMap.atSea(mapAtSea());
             cityMap.railPicture(mapRail());
-            if (!cityMap.reconcile(getMapCounts())) cityMap = drawMap();
+            if (!cityMap.reconcile(getMapCounts(), month)) cityMap = drawMap();
         } catch (RuntimeException e) {
             mapFailures++;
             cityMap = null;
