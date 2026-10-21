@@ -28,11 +28,11 @@ stuff".
 | FX5 | The map's rail and roads finished: curved rail corners and trains on them, real-length trains with yards and depots that hold them, trains only onto clear sidings, one roundabout a wide crossing, mostly signals, tidy diagonal ends, the legend's "Railway", the world lines' labels apart, a railway that is a depot alone drawn with its main line (Jerus, 2026-10-20, on FX3's and FR7's renders and his new city) | [FX5](docs/queue/FX5.md) |
 | CL4 | Slanted avenues from the founding site, the coast's streets as curves, crescents in the outer suburbs; on FX5's curves, so after it (Jerus, 2026-10-20, the CL1 study's ★3: FX5 and CL4 "Move both up") | [CL4](docs/queue/CL4.md) |
 | CD1 | The city's debt: the curve from the dial the market expects, every payment priced on its month | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
-| CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD2 | The city's debt: bills, bonds in reopened lines, the amortizing bond, sold at auction, with its screen, Borrow as an auction (Jerus, 2026-10-20: "each CD batch ships with its own screen") | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
-| CD4 | The city's debt: the buyback as a reverse auction, callable lines and the call | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
-| CD5 | The city's debt: floating-rate notes and inflation-linked bonds | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
-| CD6 | The city's debt: the screens - the book as a desk, a line's page, Close it now, Borrow as an auction, Your rate | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD4 | The city's debt: the buyback as a reverse auction, callable lines and the call, with its screen, Close it now and the call | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD5 | The city's debt: floating-rate notes and inflation-linked bonds, with their choices on Borrow | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
+| CD6 | The city's debt: the rest of the screens - the book as a desk, a line's page, Your rate - and the manual | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | R0 | Research: the 1900 economy and the calendar from 1900 | [research-1900](docs/studies/research-1900.md), [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R0b | Research: causes of death in Health - typhoid, summer diarrhoea, outbreaks, TB, home births, pneumonia, the 1918 influenza | [research-1900 §2.7](docs/studies/research-1900.md#27-health) |
 | R0c | Research: the 1900 mechanics - horses on farms and road freight, lamp oil and heat as goods, steam recipes | [research-1900 §4](docs/studies/research-1900.md#4-new-mechanics-a-1900-city-needs) |
