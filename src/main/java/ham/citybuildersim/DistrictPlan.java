@@ -1629,7 +1629,7 @@ public final class DistrictPlan {
             // Its streets. A homes cell takes the layout its place hashes to (CL2); LAYOUT_TODAY is the comb, or the whole square.
             byte st = (byte) ROLE_STREET;
             long cellX = in.x0 + (long) CELL * ci, cellY = in.y0 + (long) CELL * cj;
-            byte layout = kind == HOMES && !proto && !in.combOnly ? layoutOf(in.seed, cellX, cellY, square) : LAYOUT_TODAY;
+            byte layout = kind == HOMES && !proto && !in.combOnly && !crossed(x0, y0) ? layoutOf(in.seed, cellX, cellY, square) : LAYOUT_TODAY;
             out.cellLayout[c] = layout;
             if (layout != LAYOUT_TODAY) {
                 if (square) squareLayout(x0, y0, across, layout, cellX, cellY, st);
@@ -1671,10 +1671,7 @@ public final class DistrictPlan {
             // shorter than a block, touching no other street, not laid (no stray roads).
             if (!proto && refused) {
                 // Laid whole, a cell has no dead end and no piece apart: only a cut one is looked at.
-                shoreFixed = layout != LAYOUT_TODAY;
-                int joined = shore(x0 - 1, y0 - 1, x1, y1);
-                shoreFixed = false;
-                int taken = prune();
+                int joined = shore(x0 - 1, y0 - 1, x1, y1), taken = prune();
                 out.shoreJoins += joined;
                 out.strays += taken;
                 cellCut[c] = true;
@@ -1694,10 +1691,19 @@ public final class DistrictPlan {
          * is of the place, never of counts, ranks or order, so a plan stays a pure function of its inputs, two
          * districts agree along their seam, and a cell keeps its layout as its district grows. Estate cells, the
          * arterials and the seams are as they were: the planner builds only inside a cell's interior, so there are no
-         * superblocks (spec-city-layout 5.1). Where a highway, railway or yard refuses the plot a piece would end
-         * on, shore() joins the piece along its verge (shoreFixed), as it joins a dead end along a shore; a merge of
-         * blocks in a varied cell takes up the stubs it leaves, or is not made (mergeFor, stubsFree, mergeVaried).
+         * superblocks (spec-city-layout 5.1). A cell a highway, railway, yard or reserve crosses keeps the comb
+         * (crossed()): a varied layout's pieces end against them, and a piece joined along a 45-degree highway's
+         * verge is a staircase (the study's decision 5). A merge of blocks in a varied cell takes up the stubs it
+         * leaves, or is not made (mergeFor, stubsFree, mergeVaried).
          */
+
+        /** Whether a highway, railway, yard or reserve (in.fixed) has a plot in the cell whose interior starts at (x0, y0), its ring included: such a cell keeps the comb, which crosses them as it always has (CL2). */
+        boolean crossed(int x0, int y0) {
+            for (int y = Math.max(0, y0 - 1); y <= Math.min(FRAME - 1, y0 + INTERIOR); y++) {
+                for (int x = Math.max(0, x0 - 1); x <= Math.min(FRAME - 1, x0 + INTERIOR); x++) if (in.fixed[y * FRAME + x] != 0) return true;
+            }
+            return false;
+        }
 
         /** A hash for the homes cell whose north-west plot in the world is (cellX, cellY): layoutHash on this plan's seed. */
         double cellHash(long cellX, long cellY, int salt) {
@@ -2237,10 +2243,7 @@ public final class DistrictPlan {
          * along the cut to the nearest street that is not its own stub: the
          * shortest way over dry ground in the ring's box, every plot beside
          * the cut, touching no street but the one it ends on, which it meets
-         * in a T. The dead ends taken row by row. The joins laid. In a homes
-         * cell of a varied layout (shoreFixed, CL2) a highway, railway, yard or
-         * reserve is a cut too: a piece the layout left ending against one is
-         * joined along its verge, where no building may stand.
+         * in a T. The dead ends taken row by row. The joins laid.
          */
         int shore(int bx0, int by0, int bx1, int by1) {
             int joined = 0;
@@ -2297,12 +2300,7 @@ public final class DistrictPlan {
                             if (!dry[a] || in.fixed[a] != 0 || in.site[a] == SITE_MINED || occ[a] > 0) continue;
                             // Beside the cut, across corners.
                             boolean beside = false;
-                            for (int dy = -1; dy <= 1 && !beside; dy++) {
-                                for (int dx = -1; dx <= 1 && !beside; dx++) {
-                                    if (cutAt(ax + dx, ay + dy)) beside = true;
-                                    else if (shoreFixed && ax + dx >= 0 && ay + dy >= 0 && ax + dx < FRAME && ay + dy < FRAME && in.fixed[(ay + dy) * FRAME + ax + dx] != 0) beside = true;
-                                }
-                            }
+                            for (int dy = -1; dy <= 1 && !beside; dy++) for (int dx = -1; dx <= 1 && !beside; dx++) if (cutAt(ax + dx, ay + dy)) beside = true;
                             if (!beside) continue;
                             // Touching no street but where it comes from - or the one it ends on.
                             int hit = -1;
@@ -2336,9 +2334,6 @@ public final class DistrictPlan {
             nStub = 0;
             return joined;
         }
-
-        /** Whether shore() also runs along the plots beside a highway, railway, yard or reserve, as along a cut (a homes cell of a varied layout, CL2): the layouts' pieces end against a refused junction plot there, where the comb's cross street passes. */
-        boolean shoreFixed;
 
         /** shore()'s stub, its plots (stubAt, nStub), and its walk's stamp a plot (shoreSeen against shoreStamp). */
         int[] stubAt = new int[64], shoreSeen;
