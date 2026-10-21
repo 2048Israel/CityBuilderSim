@@ -1,3 +1,5 @@
+# Refreshed 2026-10-21: the pivot, display and identities stand; the unit (2025 dollars), the stationary W and the
+# real projections are overtaken by D1 (a founding dollar counts as a 2015 one), D29 and D27. See spec-leaderboards.md §12.
 """Leaderboard conversion model, worked on illustrative figures.
 
 Pivot unit: R = real US$ at 2025 prices (the "founding dollar": the game's
