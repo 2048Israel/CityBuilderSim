@@ -2377,16 +2377,24 @@ public class SaveFileCheck {
         assertTrue("fixture: the city bought the preferred", fundCity.acceptPreferredOffer());
         // ...and a share on the book from the world, so a lot has a value at the step to keep (0.7.39, FundLedger) - of the first
         // company in the register's order whose share the world sells and the fund's rule buys (since 0.7.120: Iron & Steel,
-        // the first the world holds, can have no share abroad to sell - its holders' emigrants' - nor room under the rule's cap).
+        // the first the world holds, can have no share abroad to sell - its holders' emigrants' - nor room under the rule's cap)
+        // and for which somebody stands bid at what the withdrawal below will ask of it, fair value less the rule's premium
+        // (TreasuryFund.RULE_PREMIUM, Exchange.postFund()): a fund made to sell to pay needs a buyer for the share it sells.
+        // XR1 moved this city's path (the currency is a float now): Real Estate, the first the world sells, had sellers on
+        // its book - the world, the emigrants, the bank's desk - and no bid at any step, so its share never sold and the
+        // withdrawal below never paid late; the fixture takes the first company with a bid standing, and says so.
+        int shareCo = -1;
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             if (c == Equity.BANK || !(fundCity.getEquity().getForeignShares(c) > 1) || !(fundCity.getExchange().fair(c) > 0)) continue;
             Exchange ex = fundCity.getExchange();
+            if (!(ex.bookOf(c).bestBid() >= ex.fair(c) * (1 - TreasuryFund.RULE_PREMIUM))) continue;
             double p = ex.price(c), q = Math.min(1, fundCity.getFund().getCash() / Math.max(1e-9, 2 * p));
             ex.bookOf(c).withdrawAll();
             ex.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.SELL, p, q);
-            if (!ex.tradeForCheck(c, Exchange.FUND, OrderBook.Side.BUY, p, q).isEmpty()) break;
+            if (!ex.tradeForCheck(c, Exchange.FUND, OrderBook.Side.BUY, p, q).isEmpty()) { shareCo = c; break; }
             ex.bookOf(c).withdrawAll();
         }
+        assertTrue("fixture: the fund holds a share of a company the world sells and somebody stands bid for", shareCo >= 0);
         fundCity.fundBuyShares(0, 1_000);
         assertTrue("saved it with the preferred bought and an order waiting", fundCity.saveGame(4, "preferred").ok);
         Game bought = new Game(fundCity.getGameFiles());

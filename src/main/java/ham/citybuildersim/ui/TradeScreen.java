@@ -209,12 +209,10 @@ final class TradeScreen {
         return sym() + "1 = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", usd * 100);
     }
 
-    /** How far from parity, in words: "26.2% stronger than parity", "at parity", "held fixed". */
+    /** How far from parity, in words: "26.2% stronger than parity", "at parity", "held fixed" - and "1.2M times parity" for a rate at its guard (farFrom()). */
     static String parityWords(ForeignAccounts fx) {
         if (fx.isPinned()) return "held fixed";
-        double dev = fx.deviationFromParity();
-        if (Math.abs(dev) < .0005) return "at parity";
-        return share1(Math.abs(dev)) + (dev > 0 ? " weaker" : " stronger") + " than parity";
+        return farFrom(fx.deviationFromParity(), "parity");
     }
 
     /** A parity level's colour: plain near, the watch amber, far red (ForeignAccounts.parityLevel()). */
@@ -357,10 +355,10 @@ final class TradeScreen {
                 + "holds abroad and what the world holds here. The statement is under \"details\".",
         "What the city sells abroad and what it buys, good by good or business by business, from the businesses' own "
                 + "books; the last ten years, the record since founding, and what the world pays and charges.",
-        "What a US dollar costs, and which way it is going: the rate against parity, its history with the city's "
-                + "decisions on it, and the forces on it next month - the trade term, the real rate, the vault's "
-                + "defence, the anchored drift and the pull back to parity. Then what the rate is doing to the dollar "
-                + "debt and the vault.",
+        "What a US dollar costs, and what put it there: the rate against parity and against the fair level, its "
+                + "history with the city's decisions on it, what moved it this month force by force - parity's trend, the "
+                + "real rate, the balance, the vault's cover, interventions and the market - and the steps from parity to "
+                + "the rate. Then what the rate is doing to the dollar debt and the vault.",
         "What the vault holds, whose it is and how long it would last; the money that can leave on no notice; what "
                 + "else moved the vault; and the exchange - cash into the vault, or the vault into cash.",
     };
@@ -1033,12 +1031,15 @@ final class TradeScreen {
     /** THE CURRENCY's (i): the unit, and parity (the spec's Q1, Q3). */
     static final String RATE_INFO = "How many of the city's dollars one US dollar costs. Higher is a weaker currency: "
             + "imports cost more at home and what the city sells abroad earns more. Parity is where a basket of goods "
-            + "costs the same here and abroad - the city's own price index against the world's - and a currency that has "
-            + "wandered a long way from it gets pulled back, slowly, whatever else is happening to it.";
+            + "costs the same here and abroad - the city's own basket, with rent held to a third of it, against the "
+            + "world's - and the currency follows its trend one for one. The real rate, the balance, the vault's cover and "
+            + "the market's own swing put it above or below.";
 
     /**
      * The rate and parity on a chart: History's fxRate in the money blue and
-     * fxParity (recorded since 0.7.35) in its light step. The big one -
+     * fxParity (recorded since 0.7.35; since XR1 the basket with rent held to a
+     * third) in its light step, and on the big one fxFair (recorded since XR1),
+     * the fair level, dashed in the same light step. The big one -
      * with its legend, its ranges, the currency's crises on the episode lane
      * and the CURRENCY decisions as flags, the founding month's on its
      * first month (ChartModel.onAxis(), 0.7.38) - on The currency; a small
@@ -1046,11 +1047,16 @@ final class TradeScreen {
      * episodes, and flags only when handed them), on the Overview.
      */
     TimeChart rateChart(HistorySave h, ChartModel window, boolean main, double width, double height) {
-        List<TimeChart.Line> lines = List.of(
+        List<TimeChart.Line> lines = new ArrayList<>(List.of(
                 new TimeChart.Line("fxRate", "the rate", Palette.MONEY, 0, h.aligned("fxRate"),
                         v -> HistoryScreen.plotScale("rate", v), v -> perUsd(v), ""),
-                new TimeChart.Line("fxParity", "parity", Palette.MONEY_LIGHT, 0, h.aligned("fxParity"),
-                        v -> HistoryScreen.plotScale("rate", v), v -> perUsd(v), ""));
+                new TimeChart.Line("fxParity", "parity (rent held to a third)", Palette.MONEY_LIGHT, 0, h.aligned("fxParity"),
+                        v -> HistoryScreen.plotScale("rate", v), v -> perUsd(v), "")));
+        // The fair level, dashed, on the big chart only: the Overview's small one keeps the rate and parity (XR1).
+        if (main) {
+            lines.add(new TimeChart.Line("fxFair", "the fair level", Palette.MONEY_LIGHT, 0, h.aligned("fxFair"),
+                    v -> HistoryScreen.plotScale("rate", v), v -> perUsd(v), "").asDashed());
+        }
         TimeChart chart = new TimeChart(window, main ? rateHidden : Set.of(), main);
         List<YearBook.Episode> crises = new ArrayList<>();
         if (main) for (YearBook.Episode e : ChartModel.episodes(h)) if ("currency".equals(e.kind())) crises.add(e);
@@ -1141,7 +1147,7 @@ final class TradeScreen {
                 g.muted() ? Palette.TEXT_SPENT : null, g.chip(), g.chipTone(), g.at(),
                 new double[] {ForeignAccounts.PARITY_WATCH / PARITY_SCALE, ForeignAccounts.PARITY_FAR / PARITY_SCALE, 1},
                 new String[] {Palette.TEXT_SPENT, Palette.WARN, Palette.BAD}, null,
-                "the basket pulls it back, slowly, however far it goes",
+                "the rate follows parity's trend; the rest is the fundamentals and a swing",
                 g.muted(), () -> open(CURRENCY));
     }
 
@@ -1158,7 +1164,8 @@ final class TradeScreen {
     /** ...and the parity gauge's: the one parity rule's two lines, and where else they are read. */
     static final String PARITY_INFO = String.format("How far the rate sits from parity - where a basket costs the same "
             + "here and abroad - either side. Past %.0f%% it reads amber, past %.0f%% red, here, in the drawer's THE "
-            + "CURRENCY row and on the header's rate line alike. The basket pulls it back, slowly, however far it goes.",
+            + "CURRENCY row and on the header's rate line alike. The rate follows parity's trend one for one, so a gap is the "
+            + "fundamentals and the market's swing, not a pull still to come.",
             ForeignAccounts.PARITY_WATCH * 100, ForeignAccounts.PARITY_FAR * 100);
 
     /* =====================================================================
@@ -2194,28 +2201,42 @@ final class TradeScreen {
     }
 
     /* =====================================================================
-       THE CURRENCY (0.7.35; "The rate" and "What is moving it" until then)
+       THE CURRENCY (0.7.35; "The rate" and "What is moving it, next month"
+       until then; redrawn for the float, XR1, 2026-10-21; board 1 of the
+       exchange-rate study)
 
-       What does a US dollar cost, and which way is it going? The rate at
-       28 px with its unit (B4: it had none), against parity on a gauge
-       either side of it in the one parity rule's bands (D8), beside the
-       rate's history on City History's own chart - parity beside it since
-       0.7.35, the currency's crises on the episode lane, the city's
-       decisions on the currency as flags. Then what is moving it next
-       month, as diverging bars - stronger to the left, weaker to the right,
-       in the money blues and never a verdict's colours (B19: a currency 26%
-       above parity and still rising is not good news by colour): the
-       pressure in its two terms, and what the month's push and the
-       basket's pull come to. Then what the rate is doing to the dollar debt
-       and to the vault.
+       What does a US dollar cost, and what put it there this month? The
+       rate at 28 px with its unit (B4: it had none), against parity - the
+       city's basket with rent held to a third - on a gauge either side of it
+       in the one parity rule's bands (D8), and against the fair level, where
+       the fundamentals alone put it, on a gauge of the same scale with no
+       bands at all (B19: the market's swing is not a verdict). Beside it the
+       rate's history on City History's own chart - parity and the fair level
+       beside it, the currency's crises on the episode lane, the city's
+       decisions on the currency as flags. Then WHAT MOVED IT THIS MONTH: the
+       month's move by force as diverging bars - the D$ stronger to the
+       left, weaker to the right, in the money blues and never a verdict's
+       colours - parity's trend, the real rate, the balance, the vault's
+       cover, interventions and the market, which add to the month's move
+       (ForeignAccounts.getMoveTrend() and the rest, struck by the model; the
+       screen computes none of them). Then WHERE THE FUNDAMENTALS HOLD IT,
+       the rate built up step by step from parity to the fair level and from
+       the fair level to the rate; what the rate is doing to the dollar debt
+       and to the vault; and THE RULE, folded at the page's foot.
 
-       SINCE XR1 the forces are what moved it this month, six plain lines
-       (parity's trend, the real rate, the balance, the vault's cover,
-       interventions, the market) and their sum; the next slice rewrites
-       the page around them.
+       WHAT IT REPLACED. "What is moving it, next month" forecast next
+       month's push and the basket's pull back to parity, and the float has
+       neither: it follows parity's trend one for one, with no lag, so what
+       the screen can truthfully say is what moved the rate, force by force.
+       Every sentence on the bars and in the steps is a pure String method of
+       this class (trendSentence() and the rest, fairSteps()) built from the
+       model's getters, so a probe can read them. Two figures of board 1 are
+       not here: D$ per 2015 US$ and the real effective rate wait for WN6,
+       and today's rule's path on the chart went with the rule.
        ===================================================================== */
 
     void currencyPage(VBox page) {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
         HistorySave h = ui.game.getHistorySave();
         VBox rate = rateCard();
         rate.setMinWidth(360);
@@ -2240,24 +2261,40 @@ final class TradeScreen {
                                 + "founding and parity only since 0.7.35, so an older city's parity line starts the "
                                 + "month it was first played in this build.", 790));
             }
+            int fair = h.monthsRecorded("fxFair");
+            if (fair < h.months()) {
+                right.getChildren().add(noteLine(fair == 0
+                                ? "The fair level is recorded from 0.8.19 on: none yet in this city's history - today's is "
+                                  + sym() + fxRate(fx.getFairLevel()) + "."
+                                : "The fair level is recorded from 0.8.19 on: " + fair + " month" + (fair == 1 ? "" : "s") + " so far.",
+                        "The fair level is where the fundamentals alone put the currency: parity's trend, the real rate, the "
+                                + "vault's cover and the balance, with nothing for the market's swing or any dealing. History "
+                                + "kept the rate from the founding and the fair level only from the float on, so an older city's "
+                                + "fair line starts the month it was first played in this build.", 790));
+            }
             hero.getChildren().add(right);
         }
         page.getChildren().add(hero);
         VBox forces = forcesCard();
         targets.put(FORCES, forces);
         page.getChildren().add(forces);
+        page.getChildren().add(fundamentalsCard());
         page.getChildren().add(sectionHead("WHAT THE RATE IS DOING TO THE CITY", null, null));
         VBox debt = dollarDebtCard();
         targets.put(DEBT, debt);
         page.getChildren().add(row(debt, vaultCard()));
+        page.getChildren().add(fold("currency:rule", "the rule the rate follows",
+                () -> words(RULE, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL)));
     }
 
     /**
      * THE RATE: what a US dollar costs at 28 px with its unit; one of ours in
-     * theirs; this month's move; parity with its line; the parity gauge
-     * either side of parity - its bands the one rule's (amber past
-     * PARITY_WATCH, red past PARITY_FAR), its mark where the rate is - or a
-     * "held fixed" chip when the rate is pinned.
+     * theirs; this month's move; the key to reading it (a rising figure is a
+     * cheaper currency); then two gauges of one scale either side of their
+     * centre - AGAINST PARITY (rent held to a third), in the one rule's bands
+     * (amber past PARITY_WATCH, red past PARITY_FAR), and AGAINST THE FAIR
+     * LEVEL, with no bands and one tone: the market's swing is not a verdict
+     * (B19) - or a "held fixed" chip when the rate is pinned.
      */
     VBox rateCard() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
@@ -2268,94 +2305,476 @@ final class TradeScreen {
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE RATE", RATE_INFO, null), big, muted(oneOfOurs()));
         String moved = rateMove();
         if (moved != null) c.getChildren().add(muted(moved));
-        c.getChildren().add(cardLine("parity " + sym() + fxRate(fx.getParity()) + " · where a basket costs the same", "",
-                null, parityLineInfo(fx)));
-        // ...where the real rate holds it against parity's trend (0.7.45, the UI spec's D18; XR1).
-        if (!fx.isPinned()) {
-            PolicyScreen.GapWords gap = ui.policyScreen.gapWords();
-            c.getChildren().add(muted("no gap".equals(gap.figure()) ? "the real rate leaves it at parity's trend"
-                    : "the real rate " + gap.figure() + " than parity's trend"));
-        }
+        c.getChildren().add(muted("A rising figure is a cheaper " + sym() + ": " + Currency.FOREIGN_SYMBOL + "1 costs more of it."));
         if (fx.isPinned()) {
             c.getChildren().add(chips(chip("held fixed", Palette.TEXT_LABEL)));
-        } else {
-            double dev = fx.deviationFromParity();
-            int level = ForeignAccounts.parityLevel(dev);
-            double s = PARITY_SCALE, w = ForeignAccounts.PARITY_WATCH, f = ForeignAccounts.PARITY_FAR;
-            double[] edges = {(s - f) / (2 * s), (s - w) / (2 * s), (s + w) / (2 * s), (s + f) / (2 * s), 1};
-            String[] tones = {Palette.BAD, Palette.WARN, Palette.TEXT_SPENT, Palette.WARN, Palette.BAD};
-            double at = .5 + Math.max(-s, Math.min(s, dev)) / (2 * s);
-            c.getChildren().add(bandTrack(at, edges, tones,
-                    List.of(new Tick(.5, Palette.TEXT_LABEL, 1, "parity", "parity " + perUsd(fx.getParity()))), 0, 12, false));
-            Label stronger = muted("‹ stronger"), weaker = muted("weaker ›");
-            Region gap = new Region();
-            HBox.setHgrow(gap, Priority.ALWAYS);
-            c.getChildren().add(new HBox(stronger, gap, weaker));
-            c.getChildren().add(chips(chip(parityWords(fx), level == 0 ? Palette.TEXT_MUTED : parityTone(level))));
+            return c;
         }
+        double dev = fx.deviationFromParity();
+        int level = ForeignAccounts.parityLevel(dev);
+        double s = PARITY_SCALE, w = ForeignAccounts.PARITY_WATCH, f = ForeignAccounts.PARITY_FAR;
+        double[] edges = {(s - f) / (2 * s), (s - w) / (2 * s), (s + w) / (2 * s), (s + f) / (2 * s), 1};
+        String[] tones = {Palette.BAD, Palette.WARN, Palette.TEXT_SPENT, Palette.WARN, Palette.BAD};
+        c.getChildren().add(cardLine("Against parity (rent held to a third)", "", null, parityLineInfo(fx)));
+        c.getChildren().add(bandTrack(gaugeAt(dev), edges, tones,
+                List.of(new Tick(.5, Palette.TEXT_LABEL, 1, "parity", "parity " + perUsd(fx.getParity()))), 0, 12, false));
+        c.getChildren().add(gaugeEnds());
+        c.getChildren().add(chips(chip(parityWords(fx), level == 0 ? Palette.TEXT_MUTED : parityTone(level))));
+        double off = fx.deviationFromFair();
+        c.getChildren().add(cardLine("Against the fair level", "", null, FAIR_INFO));
+        c.getChildren().add(bandTrack(gaugeAt(off), new double[] {1}, new String[] {Palette.TEXT_SPENT},
+                List.of(new Tick(.5, Palette.TEXT_LABEL, 1, "fair level", "the fair level " + perUsd(fx.getFairLevel()))),
+                0, 12, false));
+        c.getChildren().add(gaugeEnds());
+        c.getChildren().add(chips(chip(farFrom(off, "the fair level"), Palette.TEXT_MUTED)));
         return c;
     }
 
-    /** Where the rate sits against parity, and what that does (the spec's Q3 and the parity note). */
+    /** Where a deviation sits on the two gauges, 0 to 1 across: the centre at nothing, PARITY_SCALE either side at the ends. */
+    static double gaugeAt(double deviation) {
+        double dev = Double.isFinite(deviation) ? deviation : 0;
+        return .5 + Math.max(-PARITY_SCALE, Math.min(PARITY_SCALE, dev)) / (2 * PARITY_SCALE);
+    }
+
+    /** The two gauges' ends, named in the scale they share: "‹ 75% stronger" and "75% weaker ›". */
+    static HBox gaugeEnds() {
+        String scale = String.format("%.0f%%", PARITY_SCALE * 100);
+        Label stronger = muted("‹ " + scale + " stronger"), weaker = muted(scale + " weaker ›");
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        return new HBox(stronger, gap, weaker);
+    }
+
+    /** A number past a thousand written short, so a currency at its guard fits a card: "1,234.5", "12,346", "1.2M", "1.0B". */
+    static String compact(double v) {
+        if (!Double.isFinite(v)) return "—";
+        if (v >= 1e9) return String.format("%.1fB", v / 1e9);
+        if (v >= 1e6) return String.format("%.1fM", v / 1e6);
+        if (v >= 1e4) return String.format("%,.0f", v);
+        return String.format("%,.1f", v);
+    }
+
+    /** How far a rate sits from a level, in words: "8.3% weaker than the fair level", "at parity", and past a hundredfold "1.2M times parity" - the rate at its guard fits the card. */
+    static String farFrom(double deviation, String anchor) {
+        if (!Double.isFinite(deviation) || Math.abs(deviation) < .0005) return "at " + anchor;
+        if (deviation >= 100) return compact(1 + deviation) + " times " + anchor;
+        return share1(Math.abs(deviation)) + (deviation > 0 ? " weaker" : " stronger") + " than " + anchor;
+    }
+
+    /** The parity gauge's (i): which way the rate sits and what that does, then what parity is and what follows it (the spec's Q3). */
     static String parityLineInfo(ForeignAccounts fx) {
         double drift = fx.deviationFromParity();
         String where = fx.isPinned()
                 ? "The rate is pinned. A fixed rate is a promise the reserves have to keep, and the market will find out "
                   + "whether they can."
                 : drift > .005
-                ? "A rate ABOVE parity means it takes more of ours to buy one of theirs — the currency is weaker than the "
+                ? "A rate ABOVE parity means it takes more of ours to buy one of theirs - the currency is weaker than the "
                   + "same basket of goods says it should be. Imports cost more; what the city sells abroad earns more at home."
                 : drift < -.005
                 ? "A rate BELOW parity means the currency is stronger than the basket says. Imports are cheap and the "
                   + "exporters are being squeezed."
-                : "The rate is where the price of the same basket at home and abroad says it should be. That is not luck — "
-                  + "it is what the pull back to parity does over time.";
-        return where + " Parity here is relative purchasing power: the city's own price index against the world's. A "
-                + "currency that has wandered a long way from what the same basket costs abroad gets pulled back, slowly, "
-                + "whatever else is happening to it.";
+                : "The rate is within half a per cent of what the same basket at home and abroad says it should be: the real "
+                  + "rate, the balance, the vault and the market's swing net out to nothing just now.";
+        return where + " Parity here is relative purchasing power: the city's own basket - with rent held to a third of it, "
+                + "because rent is what no border arbitrages - priced against the world's. The currency follows parity's "
+                + "trend one for one, with no lag; the real rate, the balance, the vault's cover and the market's own swing "
+                + "put it above or below. That distance is the fundamentals and a swing, not a pull still to come.";
     }
+
+    /** The fair-level gauge's (i): what the level is and why its gauge has no verdict. */
+    static final String FAIR_INFO = String.format("The fair level is where the fundamentals alone put the currency: parity's "
+            + "trend, the real rate gap, the vault's cover and the balance, with nothing for the market's own swing or any "
+            + "dealing in dollars. The rate swings around it, and a swing fades by half in about %.1f years. The gauge has "
+            + "no bands and one tone because a swing is not a verdict: a currency well past its fair level is not good or "
+            + "bad news by colour.", ForeignAccounts.MARKET_HALF_LIFE / 12);
 
     /* ------------------------------ what moved it ------------------------------ */
 
     /**
-     * WHAT MOVED IT THIS MONTH (XR1): the month's move by force as the model
-     * struck it - parity's trend, the real rate, the balance, the vault's cover,
-     * interventions and the market (ForeignAccounts.getMoveTrend() and the
-     * rest) - and the month's move, which is their sum. A banner when the rate
-     * is pinned. The page is rewritten by the next slice; this tells the truth
-     * until then.
+     * WHAT MOVED IT THIS MONTH (XR1; board 1): the month's move by force as the
+     * model struck it - parity's trend, the real rate, the balance, the vault's
+     * cover, interventions and the market (ForeignAccounts.getMoveTrend() and
+     * the rest, log points, which add) - as diverging bars with their
+     * sentences, the total under them, and a chip saying how much of the
+     * market and the fundamentals the city's trade lets through. One line,
+     * and no bars, when the rate is pinned.
      */
     VBox forcesCard() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHAT MOVED IT THIS MONTH", FORCES_INFO, null));
+        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHAT MOVED IT THIS MONTH", FORCES_INFO,
+                quiet("percentage points of the rate")));
         if (fx.isPinned()) {
-            c.getChildren().add(line("The rate is pinned: none of this is moving it.", "None of this is moving it, because "
-                    + "the treasury has promised it will not move."));
+            c.getChildren().add(line("The rate is pinned: nothing moved it.", "Nothing moved it, because the treasury has "
+                    + "promised it will not move. While the pin holds there is no market, no dealing and no trend to feel."));
+            return c;
         }
-        VBox column = column();
-        forceLine(column, "Parity's trend", signedPct3(fx.getMoveTrend()));
-        forceLine(column, "The real rate", signedPct3(fx.getMoveGap()));
-        forceLine(column, "The balance", signedPct3(fx.getMoveBalance()));
-        forceLine(column, "The vault's cover", signedPct3(fx.getMoveCover()));
-        forceLine(column, "Interventions", signedPct3(fx.getMoveIntervention()));
-        forceLine(column, "The market", signedPct3(fx.getMoveMarket()));
-        column.getChildren().add(statementTotal("The month's move", signedPct3(fx.getLastMove()), Palette.TEXT_HEAD));
-        column.getChildren().add(statementNote("Up is weaker: a rate that rises is more of ours for one of theirs."));
-        c.getChildren().add(column);
+        List<Force> rows = moveForces();
+        double scale = .005;
+        for (Force f : rows) if (Double.isFinite(f.value())) scale = Math.max(scale, Math.abs(f.value()));
+        c.getChildren().add(divergingBars(rows, scale * 1.05, 420, 96, Palette.MONEY_LIGHT, Palette.MONEY,
+                "‹ the " + sym() + " stronger", "the " + sym() + " weaker ›", TradeScreen::pointsOfRate));
+        c.getChildren().add(chips(chipInfo(gateWords(fx), Palette.TEXT_LABEL, GATE_INFO)));
         return c;
     }
 
-    /** The forces card's (i): the six parts and what each is. */
-    static final String FORCES_INFO = "Six parts add to the month's move. Parity's trend: the city's prices against the "
-            + "world's, followed one for one. The real rate: a rate over the world's holds the currency dearer, building "
-            + "over a year or two. The balance: a deficit a year after year cheapens it. The vault's cover: an empty "
-            + "vault costs it a premium. Interventions: dollars the treasury or the central bank buys or sells. The "
-            + "market: the currency's own swing, which most of a real float's month is. Weaker is up.";
-
-    /** A reading on its statement line. */
-    static void forceLine(VBox column, String label, String value) {
-        column.getChildren().add(statementLine(label, value, Palette.TEXT_HEAD));
+    /** The six forces and their sum as the bars' rows (pure): each its sentence under its name, the (i) behind what the force is. */
+    List<Force> moveForces() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        return List.of(
+                new Force("Parity's trend", fx.getMoveTrend(), false, false, TREND_INFO, trendSentence()),
+                new Force("The real rate", fx.getMoveGap(), false, false, REAL_RATE_INFO, realRateSentence()),
+                new Force("The balance", fx.getMoveBalance(), false, false, BALANCE_INFO, balanceSentence()),
+                new Force("The vault's cover", fx.getMoveCover(), false, false, COVER_FORCE_INFO, coverSentence()),
+                new Force("Interventions", fx.getMoveIntervention(), false, false, INTERVENTION_INFO, interventionSentence()),
+                new Force("The market", fx.getMoveMarket(), false, false, MARKET_INFO, marketSentence()),
+                new Force("The month's move", fx.getLastMove(), true, false, null, totalSentence()));
     }
+
+    /** A log move as percentage points of the rate, signed with a true minus: "+0.440%", "−0.120%", and whole past a hundred points so a currency at its guard fits the figure column. */
+    static String pointsOfRate(double move) {
+        if (!Double.isFinite(move)) return "—";
+        double shown = move * 100;
+        if (Math.abs(shown) >= 100) return (shown > 0 ? "+" : "−") + String.format("%,.0f%%", Math.abs(shown));
+        return signedPct3(move);
+    }
+
+    /** How much of the market and the fundamentals the city's trade lets reach the rate, in words (pure). */
+    static String gateWords(ForeignAccounts fx) {
+        double g = fx.gate();
+        if (!(g > 0)) return "the city trades next to nothing: the market and the fundamentals do not reach the rate";
+        String trades = String.format("the city trades %.0f%% of its output", fx.getOpenness() * 100);
+        return g >= .9995 ? trades + ": the market and the fundamentals reach the rate in full"
+                : trades + ": the market and the fundamentals reach the rate in part, " + String.format("%.0f%%", g * 100);
+    }
+
+    /** What a log shift does to the rate, as a sentence's verb: "holds it about 2.4% dearer", "holds the D$ about 10.5% cheaper", "leaves it where it stands". Pure. */
+    static String heldWords(double log, String subject) {
+        double change = Math.expm1(log);
+        if (!(Math.abs(change) >= .0005)) return "leaves " + subject + " where it stands";
+        return "holds " + subject + " about " + share1(Math.abs(change)) + (change > 0 ? " cheaper" : " dearer");
+    }
+
+    /** A real rate gap in the sentence's words: "1.0 point over the world's real rate", "level with the world's real rate". Pure. */
+    static String overUnder(double gap) {
+        double points = Math.abs(gap) * 100;
+        if (!(points >= .05)) return "level with the world's real rate";
+        String shown = String.format("%.1f", points);
+        return shown + ("1.0".equals(shown) ? " point " : " points ") + (gap > 0 ? "over" : "under") + " the world's real rate";
+    }
+
+    /** The overall balance in words: "a deficit of 0.2% of GDP", "a surplus of 1.4% of GDP", "a balance within 0.05% of GDP", or that no year of output is known yet. Pure. */
+    static String balancePhrase(ForeignAccounts fx) {
+        double gdp = fx.getGdpTrailing();
+        if (!(gdp > 0)) return "no year of output yet to weigh it against";
+        double share = (fx.monthlyCurrentAccount() + fx.monthlyFinancialAccount()) / gdp;
+        if (!(Math.abs(share) >= .0005)) return "a balance within 0.05% of GDP";
+        return (share < 0 ? "a deficit" : "a surplus") + " of " + share1(Math.abs(share)) + " of GDP";
+    }
+
+    /** The vault in the sentence's words: "an empty vault", "a vault holding 6.2 months of imports", "a vault with no import bill to cover". Pure. */
+    static String coverPhrase(ForeignAccounts fx) {
+        if (!(fx.getReservesUsd() > 0)) return "an empty vault";
+        if (!(fx.monthlyImports() > 0)) return "a vault with no import bill to cover";
+        return "a vault holding " + coverMonths(fx.importCover()) + " of imports";
+    }
+
+    /** PARITY'S TREND (pure): which way the city's prices ran against the world's this month, and that the rate follows them one for one. */
+    String trendSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        String d = sym();
+        double move = fx.getMoveTrend();
+        String ran = Math.abs(move) < 5e-6 ? "kept pace with the world's, so the " + d + " buys the same"
+                : move > 0 ? "rose faster than the world's, so the " + d + " buys less"
+                : "rose slower than the world's, so the " + d + " buys more";
+        return "Prices here, with rent held to a third of the basket, " + ran + ". Followed one for one, with no lag: parity "
+                + "stands at " + d + fxRate(fx.getParity()) + ", its trend at " + d + fxRate(fx.getParityTrend()) + ".";
+    }
+
+    /** THE REAL RATE (pure): the dial, the inflation people expect, the gap to the world's real rate, where that holds the currency, and how fast. */
+    String realRateSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        double held = fx.gate() * fx.getGapReached();
+        return "The dial, " + ratePct(ui.game.getDebtManager().getPolicyRate()) + ", against expected inflation of "
+                + ratePct(ui.game.getExpectedInflation()) + ": " + overUnder(fx.getRealRateDifferential()) + ", a level that "
+                + heldWords(held, "the " + sym()) + ". " + String.format("%.0f%%", ForeignAccounts.GAP_IMPACT * 100)
+                + " of a change shows at once, the rest within a year or two.";
+    }
+
+    /** THE BALANCE (pure): trade and capital over twelve months against a year of output, and where that holds the currency. */
+    String balanceSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        if (!(fx.getGdpTrailing() > 0)) return "Trade and capital over twelve months: " + balancePhrase(fx) + ".";
+        return "Trade and capital over twelve months: " + balancePhrase(fx) + ", which "
+                + heldWords(fx.gate() * fx.getBalanceReached(), "the " + sym()) + ".";
+    }
+
+    /** THE VAULT'S COVER (pure): how many months of imports it holds, the market's discount for the shortfall from THIN_COVER, and whether it moved anything this month. */
+    String coverSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        String idle = Math.abs(fx.getMoveCover()) < 5e-6 ? " It moved nothing this month." : "";
+        String full = String.format("%.0f%%", ForeignAccounts.RISK_PREMIUM * 100);
+        if (!(fx.getReservesUsd() > 0)) return "The vault is empty: the market's discount holds at its full " + full + "." + idle;
+        if (!(fx.monthlyImports() > 0)) {
+            return "The vault holds " + usd(fx.getReservesUsd()) + " and the city buys nothing abroad to cover: the market "
+                    + "asks no discount." + idle;
+        }
+        String months = coverMonths(fx.importCover());
+        String thin = String.format("%.0f months", ForeignAccounts.THIN_COVER);
+        double discount = fx.coverTarget();
+        return discount > 0
+                ? "The vault holds " + months + " of imports, under the " + thin + " the market looks for: a discount of "
+                  + String.format("%.1f%%", discount * 100) + ", the full " + full + " only when it is empty." + idle
+                : "The vault holds " + months + " of imports, at least the " + thin + " the market looks for: no discount." + idle;
+    }
+
+    /** INTERVENTIONS (pure): what the treasury bought or sold this month, what the central bank sold defending the currency, and what is still felt - or that nothing was dealt. */
+    String interventionSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        List<String> did = new ArrayList<>();
+        if (fx.getBoughtThisMonth() >= .5) did.add("the treasury bought dollars with " + d(fx.getBoughtThisMonth()));
+        if (fx.getSoldThisMonth() >= .5) did.add("the treasury sold dollars for " + d(fx.getSoldThisMonth()));
+        if (fx.getDefenceUsd() >= .005) did.add("the central bank sold " + usd(fx.getDefenceUsd()) + " defending the " + sym());
+        double felt = Math.expm1(fx.getInterventionFelt());
+        boolean still = Math.abs(felt) >= .0005;
+        String fading = still ? "Still felt: the " + sym() + " " + share1(Math.abs(felt)) + (felt > 0 ? " cheaper" : " dearer")
+                + ", fading by half in " + String.format("%.0f", ForeignAccounts.INTERVENTION_HALF_LIFE) + " months." : "";
+        if (did.isEmpty()) return "Nothing dealt this month. " + (still ? fading : "Nothing earlier is still felt.");
+        String said = String.join(", and ", did);
+        return Character.toUpperCase(said.charAt(0)) + said.substring(1) + "." + (still ? " " + fading : "");
+    }
+
+    /** THE MARKET (pure): the currency's own swing, what is left of the month's move, where it stands and how fast it fades. */
+    String marketSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        double swing = Math.expm1(fx.gate() * fx.getMarket());
+        String stands = Math.abs(swing) < .0005 ? "stands at nothing now"
+                : "has the " + sym() + " " + share1(Math.abs(swing)) + (swing > 0 ? " cheaper" : " dearer")
+                  + " than the fundamentals put it";
+        return "The " + sym() + "'s own swing: what is left of the month's move once the other five are taken. It " + stands
+                + ", and fades by half in about " + String.format("%.1f", ForeignAccounts.MARKET_HALF_LIFE / 12) + " years.";
+    }
+
+    /** THE MONTH'S MOVE (pure): where US$1 stood and where it stands, which the six add up to. */
+    String totalSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        double now = fx.getRate(), move = fx.getLastMove(), before = now / Math.exp(move);
+        if (!Double.isFinite(before) || Math.abs(move) < 5e-6) {
+            return Currency.FOREIGN_SYMBOL + "1 stayed at " + sym() + fxRate(now) + ": nothing to add up.";
+        }
+        return Currency.FOREIGN_SYMBOL + "1 went from " + sym() + fxRate(before) + " to " + sym() + fxRate(now)
+                + ". The six add up to it.";
+    }
+
+    /** The forces card's (i): the six parts and what each is. */
+    static final String FORCES_INFO = "Six parts add to the month's move, in log points of the rate. Parity's trend: the "
+            + "city's prices against the world's, followed one for one. The real rate: a real rate over the world's holds the "
+            + "currency dearer, building over a year or two. The balance: a deficit year after year cheapens it. The "
+            + "vault's cover: an empty vault costs it a discount. Interventions: dollars the treasury or the central bank "
+            + "buys or sells. The market: the currency's own swing, which most of a real float's month is. Weaker is to "
+            + "the right.";
+
+    /** ...and each force's own (i): what it is, and the dials behind it. */
+    static final String TREND_INFO = "The city's price level against the world's, on the basket with rent held to a third "
+            + "(rent is what no border arbitrages), smoothed into a level and a slope and followed one for one: with no lag, "
+            + "a steady inflation gap passes into the rate in full.";
+    static final String REAL_RATE_INFO = String.format("A real rate over the world's brings money here and holds the "
+            + "currency dearer, as far as the market believes the gap will last (%.1f years, and never past %.0f%% either "
+            + "way). %.0f%% of a change in the level shows in its month and the rest builds over a year or two. Policy › "
+            + "Money's THE CURRENCY'S LEVEL shows it beside the dial.", ForeignAccounts.PERSISTENCE,
+            ForeignAccounts.GAP_CAP * 100, ForeignAccounts.GAP_IMPACT * 100);
+    static final String BALANCE_INFO = String.format("A year of the current and the financial account together, against a "
+            + "year of the city's output: a deficit cheapens the currency by %.0f%% of its share of output, a surplus makes it "
+            + "dearer, at most %.0f%% either way. Half of a change in it shows in a month. The vault's own dealing is not in "
+            + "it.", ForeignAccounts.BALANCE_WEIGHT * 100, ForeignAccounts.BALANCE_CAP * 100);
+    static final String COVER_FORCE_INFO = String.format("An empty vault costs the currency a %.0f%% discount, falling to "
+            + "nothing at %.0f months of imports: the oldest rule of thumb for a safe reserve.",
+            ForeignAccounts.RISK_PREMIUM * 100, ForeignAccounts.THIN_COVER);
+    static final String INTERVENTION_INFO = String.format("Dollars the treasury buys cheapen the currency and dollars it "
+            + "sells make it dearer, at the real size: %.0f%% for each 1%% of a year's output, fading by half in %.0f "
+            + "months. The central bank sells dollars into a fall, and that lifts the currency the same way.",
+            ForeignAccounts.INTERVENTION_IMPACT, ForeignAccounts.INTERVENTION_HALF_LIFE);
+    static final String MARKET_INFO = String.format("The currency's own swing, drawn from the city's seed so the same seed "
+            + "gives the same path: about %.1f%% of fresh news a month, fading by half in %.1f years.",
+            ForeignAccounts.MARKET_SIGMA * 100, ForeignAccounts.MARKET_HALF_LIFE / 12);
+
+    /** The gate's (i): what it lets through, and what it does not gate. */
+    static final String GATE_INFO = String.format("How much of the market's swing and of the fundamentals - the real rate, "
+            + "the balance and the vault's cover - reaches the rate. A city that hardly trades has no market price to move: "
+            + "they reach it in full once trade is %.0f%% of its output, in proportion below that, and not at all while it "
+            + "trades next to nothing. Parity's trend and any dealing in dollars are not gated: the prices are the city's "
+            + "own and a purchase is the treasury's.", ForeignAccounts.OPEN_ENOUGH * 100);
+
+    /* ------------------------------ where the fundamentals hold it ------------------------------ */
+
+    /** One step of the build-up: its name, what it does in words (null: the name spans), the rate after it, and whether it is a result (the fair level, the rate). */
+    record FairStep(String name, String what, double after, boolean total) { }
+
+    /**
+     * WHERE THE FUNDAMENTALS HOLD IT (XR1; board 1): US$1 in the city's money
+     * built up step by step - parity, the real rate, the vault's cover, the
+     * balance, parity's trend ahead of (or behind) the month's parity, which
+     * makes the fair level; then the market's swing, and any dealing still
+     * felt, which make the rate - each with what it does in words, a thin bar
+     * on a log scale, and the rate after it; and how fast a swing fades.
+     */
+    VBox fundamentalsCard() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHERE THE FUNDAMENTALS HOLD IT", FUNDAMENTALS_INFO,
+                quiet(Currency.FOREIGN_SYMBOL + "1 in " + sym() + ", built up step by step")));
+        if (fx.isPinned()) {
+            c.getChildren().add(line("The rate is pinned: these steps are not driving it. Left to the fundamentals the "
+                    + sym() + " would stand at " + sym() + fxRate(fx.getFairLevel()) + " per " + Currency.FOREIGN_SYMBOL + ".",
+                    null));
+            return c;
+        }
+        List<FairStep> steps = fairSteps();
+        double base = fairBase(steps);
+        c.getChildren().add(fairTable(steps, base));
+        c.getChildren().add(muted("Bars start at " + sym() + fxRate(base) + ", on a log scale: a cheaper " + sym()
+                + " is a longer bar."));
+        c.getChildren().add(line(fadeSentence(), null));
+        return c;
+    }
+
+    /**
+     * The steps from parity to the rate (pure): each computed from the model's
+     * getters, the fair level reached by them and set to getFairLevel() itself
+     * (they are equal but for rounding); the market's step is what the rate
+     * has over the fair level once any dealing still felt is taken, so the
+     * table closes on getRate() whatever the guards did. The market and the
+     * dealing rows have no "what" - their name says it.
+     */
+    List<FairStep> fairSteps() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        double g = fx.gate();
+        double trend = fx.getParityTrend();
+        double parity = fx.getParity() > 0 ? fx.getParity() : trend;
+        double gap = g * fx.getGapReached(), cover = g * fx.getCoverReached(), balance = g * fx.getBalanceReached();
+        double afterGap = parity * Math.exp(gap);
+        double afterCover = afterGap * Math.exp(cover);
+        double afterBalance = afterCover * Math.exp(balance);
+        double ahead = Math.log(trend / parity);
+        double fair = fx.getFairLevel(), rate = fx.getRate();
+        List<FairStep> out = new ArrayList<>();
+        out.add(new FairStep("Parity (rent held to a third)", "where the same basket costs the same here and abroad, this month",
+                parity, false));
+        out.add(new FairStep("+ the real rate", overUnder(fx.getRealRateDifferential()) + " " + heldWords(gap, "it"), afterGap, false));
+        out.add(new FairStep("+ the vault's cover", coverPhrase(fx) + " " + heldWords(cover, "it"), afterCover, false));
+        out.add(new FairStep("+ the balance", balancePhrase(fx) + " " + heldWords(balance, "it"), afterBalance, false));
+        double move = Math.expm1(ahead);
+        if (!(Math.abs(move) >= .0005)) {
+            out.add(new FairStep("+ parity's trend", "level with the month's parity: leaves it where it stands", fair, false));
+        } else {
+            out.add(new FairStep(ahead > 0 ? "+ parity's trend ahead" : "+ parity's trend behind",
+                    (ahead > 0 ? "ahead of" : "behind") + " the month's parity: " + share1(Math.abs(move))
+                            + (ahead > 0 ? " cheaper" : " dearer"), fair, false));
+        }
+        out.add(new FairStep("= the fair level", "where the fundamentals alone put it", fair, true));
+        double felt = fx.getInterventionFelt();
+        boolean dealt = Math.abs(Math.expm1(felt)) >= .0005;
+        double market = fair > 0 ? rate / (fair * (dealt ? Math.exp(felt) : 1)) : 1;
+        double past = market - 1;
+        String name = !(Math.abs(past) >= .0005) ? "The market has it at the fair level"
+                : "The market has it at " + share1(Math.abs(past)) + (past > 0 ? " past" : " short of") + " the fair level";
+        out.add(new FairStep(name, null, dealt ? fair * market : rate, !dealt));
+        if (dealt) {
+            double change = Math.expm1(felt);
+            out.add(new FairStep("Interventions still felt: " + share1(Math.abs(change)) + (change > 0 ? " cheaper" : " dearer"),
+                    null, rate, true));
+        }
+        return out;
+    }
+
+    /** Where the table's bars start: a rate of 1, or the lowest step when a step runs under it. Pure. */
+    static double fairBase(List<FairStep> steps) {
+        double lo = 1;
+        for (FairStep r : steps) if (r.after() > 0) lo = Math.min(lo, r.after());
+        return lo;
+    }
+
+    /** The steps as a table: step, what it does, a thin bar from `base` on a log scale, and the rate after it. */
+    Node fairTable(List<FairStep> steps, double base) {
+        GridPane g = new GridPane();
+        g.setHgap(14);
+        g.setVgap(8);
+        javafx.scene.layout.ColumnConstraints stepCol = new javafx.scene.layout.ColumnConstraints(190, 250, 320);
+        javafx.scene.layout.ColumnConstraints whatCol = new javafx.scene.layout.ColumnConstraints(120, 400, Double.MAX_VALUE);
+        whatCol.setHgrow(Priority.ALWAYS);
+        javafx.scene.layout.ColumnConstraints barCol = new javafx.scene.layout.ColumnConstraints(100, 220, 260);
+        javafx.scene.layout.ColumnConstraints rateCol = new javafx.scene.layout.ColumnConstraints(90, 110, 140);
+        g.getColumnConstraints().addAll(stepCol, whatCol, barCol, rateCol);
+        g.add(muted("step"), 0, 0);
+        g.add(muted("what it does"), 1, 0);
+        Label heading = muted(Currency.FOREIGN_SYMBOL + "1 is");
+        GridPane.setHalignment(heading, javafx.geometry.HPos.RIGHT);
+        g.add(heading, 3, 0);
+        double hi = base;
+        for (FairStep r : steps) if (r.after() > 0) hi = Math.max(hi, r.after());
+        double span = Math.log(hi / base);
+        int row = 1;
+        for (FairStep r : steps) {
+            String tone = r.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL;
+            Label step = words(r.name(), Palette.SIZE_LABEL + 1, tone);
+            if (r.total()) step.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+            if (r.what() == null) {
+                g.add(step, 0, row, 2, 1);
+            } else {
+                g.add(step, 0, row);
+                g.add(words(r.what(), Palette.SIZE_LABEL, Palette.TEXT_MUTED), 1, row);
+            }
+            double len = r.after() > 0 && span > 0 ? Math.max(0, Math.log(r.after() / base)) : 0;
+            Node bar = segmentBar(List.of(Segment.of(len, r.total() ? Palette.MONEY : Palette.MONEY_LIGHT)),
+                    span > 0 ? span : 1, null, 0, 8);
+            GridPane.setValignment(bar, javafx.geometry.VPos.CENTER);
+            g.add(bar, 2, row);
+            Label after = figure(sym() + fxRate(r.after()), Palette.SIZE_LABEL + 1, r.total() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL);
+            GridPane.setHalignment(after, javafx.geometry.HPos.RIGHT);
+            g.add(after, 3, row);
+            row++;
+        }
+        return g;
+    }
+
+    /** How fast a market swing fades, and where it would be halfway back (pure): the rate halfway to the fair level in logs, by the half-life's month. */
+    String fadeSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        double fair = fx.getFairLevel(), rate = fx.getRate();
+        String years = String.format("%.1f", ForeignAccounts.MARKET_HALF_LIFE / 12);
+        if (!(fair > 0) || !(rate > 0) || Math.abs(rate / fair - 1) < .0005) {
+            return "A market swing fades by half in about " + years + " years. The rate stands at the fair level: no swing "
+                    + "to fade just now.";
+        }
+        double half = fair * Math.exp(Math.log(rate / fair) / 2);
+        int by = ui.game.getMonth() + (int) ForeignAccounts.MARKET_HALF_LIFE;
+        return "A market swing fades by half in about " + years + " years. From here it is about halfway back (" + sym()
+                + fxRate(half) + ", if the fair level stood still) by month " + String.format("%,d", by) + ".";
+    }
+
+    /** The steps card's (i): how to read the table. */
+    static final String FUNDAMENTALS_INFO = "The rate built up from parity, one step at a time, each row the rate after "
+            + "its step. Parity is the city's basket with rent held to a third, against the world's. The real rate, the "
+            + "vault's cover and the balance each move it by the level the market has priced so far, as much of it as the "
+            + "city's trade lets through. Parity's trend - which the rate follows one for one - takes it from the month's "
+            + "parity to where its smoothed level and slope stand. That is the fair level. The market's swing, and any "
+            + "dealing still felt, put the rate where it is.";
+
+    /** THE RULE, folded at the page's foot: the board's paragraph in the model's words and dials. */
+    static final String RULE = String.format("The rate is parity's trend, times where the fundamentals put the currency, "
+            + "times the market's swing, times what dealing in dollars still adds. Parity's trend, on the basket with rent "
+            + "held to a third (rent is the part no border arbitrages), is followed one for one, with no lag: a level that "
+            + "takes %.0f%% of a month's jump in parity at once and a slope that learns over about %.0f months. The "
+            + "fundamentals are the real rate gap times how long the market expects it (%.1f years, capped at %.0f%%; %.0f%% "
+            + "of a change shows at once and the rest within a year or two), the balance (%.0f%% of a year's overall balance "
+            + "against a year's output, at most %.0f%% either way) and the vault's cover (a %.0f%% discount on an empty "
+            + "vault, falling to nothing at %.0f months of imports). The market is its own swing: seeded, fading by half in "
+            + "%.1f years, about %.1f%% of fresh news a month. Dealing in dollars moves the rate at the real size, %.0f%% for "
+            + "each 1%% of a year's output, fading by half in %.0f months. The market and the fundamentals reach the rate in "
+            + "full once the city trades %.0f%% of its output, and in proportion below that.",
+            ForeignAccounts.TREND_LEVEL * 100, 1 / ForeignAccounts.TREND_SLOPE, ForeignAccounts.PERSISTENCE,
+            ForeignAccounts.GAP_CAP * 100, ForeignAccounts.GAP_IMPACT * 100, ForeignAccounts.BALANCE_WEIGHT * 100,
+            ForeignAccounts.BALANCE_CAP * 100, ForeignAccounts.RISK_PREMIUM * 100, ForeignAccounts.THIN_COVER,
+            ForeignAccounts.MARKET_HALF_LIFE / 12, ForeignAccounts.MARKET_SIGMA * 100, ForeignAccounts.INTERVENTION_IMPACT,
+            ForeignAccounts.INTERVENTION_HALF_LIFE, ForeignAccounts.OPEN_ENOUGH * 100);
 
     /** A fraction as a signed per cent to three places, with a true minus: "−0.229%". */
     static String signedPct3(double v) {

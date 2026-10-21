@@ -3095,7 +3095,7 @@ final class PolicyScreen {
         Game g = ui.game;
         ForeignAccounts fx = g.getForeignAccounts();
         double gap = fx.getRealRateDifferential();
-        String parityLine = String.format("it is %s", parityWords(fx.deviationFromParity()));
+        String parityLine = String.format("it is %s (rent held to a third)", parityWords(fx.deviationFromParity()));
         if (fx.isPinned()) return new GapWords("Pinned: no gap", "the rate is held where it was pinned", parityLine);
         // gapLevelFor() is a log of the rate: below zero is a dearer D$, above a cheaper one.
         double level = Math.expm1(ForeignAccounts.gapLevelFor(gap));
