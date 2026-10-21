@@ -7768,7 +7768,8 @@ public final class GameVersion {
      *     FLOAT), and the save carries them: the trend's level and slope,
      *     the real gap's level reached, the balance's and the cover's, the
      *     market's swing with its seed and draws, the interventions still
-     *     felt, and the month's six moves (ForeignAccounts slots 45-69);
+     *     felt and what the treasury dealt since the last reprice, and the
+     *     month's six moves (ForeignAccounts slots 45-70);
      *     parity's basket with rent held to a third carries its own link
      *     (PriceIndex, one slot after the chained levels). A save from
      *     before has none of it, and would load WRONGLY, not merely

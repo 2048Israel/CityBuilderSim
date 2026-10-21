@@ -607,6 +607,8 @@ public class Game {
          * vault was chosen is bought the same way, an empty one not at all.
          */
         foreign.buyReserves(foreign.toLocal(founding.getReserveUsd()));
+        // ...an endowment, not a purchase the market saw: the rate forgets it (XR1; ForeignAccounts.forgetDealing()).
+        foreign.forgetDealing();
         // ...and the record of it, which nothing changes after this line.
         this.founding = founding;
         // ...and an Insane city's ground, owed abroad (0.7.14).

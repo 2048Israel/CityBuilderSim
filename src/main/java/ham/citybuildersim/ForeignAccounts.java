@@ -450,7 +450,7 @@ public class ForeignAccounts {
     public static final double INTERVENTION_HALF_LIFE = 6;
 
     /**
-     * The float's state, every figure a log and all of it saved (slots 45-69):
+     * The float's state, every figure a log and all of it saved (slots 45-70):
      * parity's trend (a level and a slope, from the first reprice), the real
      * gap's level and how much of it the rate shows, the balance's and the
      * cover's levels reached, the market's swing and the seed and draws that
@@ -473,7 +473,16 @@ public class ForeignAccounts {
     private final double[] lastContrib = new double[5];
     /** This month's move by force (trend, gap, balance, cover, intervention, market); they add to the month's log move. */
     private final double[] moves = new double[6];
+    /** The month's fall against parity's trend before the defence leaned on it (repriceCurrency(), step 7). */
     private double lastWouldBeMove;
+    /**
+     * What the treasury has dealt since the last reprice, local money, a
+     * purchase of dollars positive: the player deals between months, and the
+     * next month's startMonth() clears boughtThisMonth and soldThisMonth
+     * before any reprice reads them. Saved (slot 70): a purchase pressed
+     * before a save moves the rate after the load.
+     */
+    private double dealtSinceReprice;
 
     /** Where a real rate gap puts the D$ against parity's trend, in logs: negative is dearer (the rate is D$ per US$, so a lower rate is a dearer D$), the gap's sign the other way round, and never past GAP_CAP either way. Pure. */
     public static double gapLevelFor(double gap) {
@@ -565,7 +574,7 @@ public class ForeignAccounts {
         return sum;
     }
 
-    /** The month's log move before the defence leaned on it: positive is a fall of the D$ that the vault, if it holds dollars, sells against. */
+    /** The month's fall before the defence leaned on it: the move of the market and the fundamentals alone, parity's trend and the interventions left out - positive is a fall the vault, if it holds dollars, sells against (repriceCurrency(), step 7). */
     public double getLastWouldBeMove() { return lastWouldBeMove; }
 
     /** The seed the market's path is drawn from (52 bits, so it survives a double in the save). */
@@ -665,17 +674,10 @@ public class ForeignAccounts {
         return balance < 0 && rate > 0 ? -balance / rate : 0;
     }
 
-    /** What the central bank sells against a month's deficit when the D$ would fall: the vault's capacity times the deficit, at most the vault; nothing when it would not fall, nothing on a month with no deficit. */
-    private double dollarsFor(boolean wouldFall, double deficitUsd) {
-        if (!wouldFall || !(deficitUsd > 0) || !(reservesUsd > 0)) return 0;
+    /** The most the central bank sells against a month's deficit: the vault's capacity times the deficit, at most the vault; nothing on a month with no deficit. What it does sell is what takes back absorption() of the month's fall (repriceCurrency(), step 7). */
+    private double dollarsFor(double deficitUsd) {
+        if (!(deficitUsd > 0) || !(reservesUsd > 0)) return 0;
         return Math.min(absorption() * deficitUsd, reservesUsd);
-    }
-
-    /** ...and the share of the deficit it meets: the capacity when the vault covers the sale, less when it cannot. */
-    private double realisedFor(boolean wouldFall, double deficitUsd) {
-        double sold = dollarsFor(wouldFall, deficitUsd);
-        if (sold <= 0) return 0;
-        return sold < absorption() * deficitUsd ? sold / deficitUsd : absorption();
     }
 
     /**
@@ -749,6 +751,7 @@ public class ForeignAccounts {
             defenceUsd = defenceLocal = 0;
             java.util.Arrays.fill(moves, 0);
             lastWouldBeMove = 0;
+            dealtSinceReprice = 0;   // ...and a pinned month's dealing is the promise's, not the market's
             return;
         }
         double prevLog = Math.log(rate);
@@ -782,34 +785,59 @@ public class ForeignAccounts {
         // drawn while it is quiet, so a fixture's rate has nothing underneath it.
         market = Math.pow(.5, 1 / MARKET_HALF_LIFE) * market + (marketSeeded ? MARKET_SIGMA * draw() : 0);
 
-        // 5. WHAT INTERVENTIONS STILL FEEL, fading, plus this month's: the
-        // treasury's own purchases and sales (booked by buyReserves(),
-        // sellReserves()), a purchase of dollars cheapening the D$. The
-        // founders' dollars are cleared by startMonth() before month one, so
-        // they never count.
+        // 5. WHAT INTERVENTIONS STILL FEEL, fading, plus what the treasury has
+        // dealt since the last reprice (buyReserves(), sellReserves()): a
+        // purchase of dollars cheapens the D$. Since the last reprice and not
+        // this month, because the player deals BETWEEN months, before the
+        // next month's startMonth() clears the month's bookkeeping. The
+        // founders' dollars are an endowment, forgotten at founding
+        // (forgetDealing()), so they never count.
         interventionFelt *= Math.pow(.5, 1 / INTERVENTION_HALF_LIFE);
         double annual = 12 * gdpTrailing;
-        if (annual > 0) interventionFelt += INTERVENTION_IMPACT * (boughtThisMonth - soldThisMonth) / annual;
+        if (annual > 0) interventionFelt += INTERVENTION_IMPACT * dealtSinceReprice / annual;
+        dealtSinceReprice = 0;
 
-        // 6. THE MONTH'S LOG RATE, and the move it would be before the defence.
+        // 6. THE MONTH'S LOG RATE.
         double g = gate();
         double fundamentals = gapReached + balanceReached + coverReached + market;
         double x = trendLevel + g * fundamentals + interventionFelt;
-        lastWouldBeMove = x - prevLog;
 
-        // 7. LEAN AGAINST A FALL (A RESERVE DEFENDS A CURRENCY): in a month the
-        // D$ would fall the vault sells against the month's deficit, and the
-        // sale lifts it through the channel the treasury's purchases use. A
-        // rise is never defended: nothing is bought.
+        /*
+         * 7. LEAN AGAINST A FALL (A RESERVE DEFENDS A CURRENCY): the fall the
+         * market and the fundamentals would make this month - not parity's
+         * trend, and not the fading of what was sold before. A bank that
+         * leaned against parity would spend its vault holding up a currency
+         * its own prices are cheapening; one that leaned against its own
+         * support fading would sell again every month to hold where it had
+         * got to, which is a peg, and lose the vault.
+         *
+         * It takes back absorption() of that fall, the vault's capacity by its
+         * cover, as the old defence damped a push by it, and sells only the
+         * dollars that takes at INTERVENTION_IMPACT - at most absorption() x
+         * the month's deficit, the most anyone came to the window for, and at
+         * most the vault. The support then fades at INTERVENTION_HALF_LIFE: a
+         * fall is spread over months, and the fundamentals have the last word.
+         * Measured on MonetaryCheck's town at a held 3% (US$25M of founders'
+         * dollars against a town of 357): sized to the whole deficit (slice
+         * 1's first cut) the sales held the D$ 26% over its fair level by
+         * month 26 and emptied the vault by month 42, and the fall that
+         * followed fed it 45% a year; leaning against its own fading as well,
+         * 25% over by month 36 and the vault at 1.3 months by 60, the D$ then
+         * 80% weaker in two years. A rise is never defended: nothing is bought.
+         */
         double deficitUsd = monthDeficitUsd();
-        if (x > prevLog) {
-            lastAbsorption = realisedFor(true, deficitUsd);
-            sellToDefend(dollarsFor(true, deficitUsd));
-            if (annual > 0) interventionFelt -= INTERVENTION_IMPACT * defenceLocal / annual;
+        double fall = x - prevLog - (trendLevel - lastContrib[0]) - (interventionFelt - lastContrib[4]);
+        lastWouldBeMove = fall;
+        double sold = 0;
+        if (fall > 0 && annual > 0 && rate > 0) {
+            double need = absorption() * fall * annual / INTERVENTION_IMPACT / rate;
+            sold = Math.min(need, dollarsFor(deficitUsd));
+        }
+        sellToDefend(sold);
+        lastAbsorption = defenceUsd > 0 && deficitUsd > 0 ? defenceUsd / deficitUsd : 0;
+        if (defenceLocal > 0) {
+            interventionFelt -= INTERVENTION_IMPACT * defenceLocal / annual;
             x = trendLevel + g * fundamentals + interventionFelt;
-        } else {
-            lastAbsorption = 0;
-            sellToDefend(0);
         }
 
         // 8. THE RATE, inside the numerical guards.
@@ -1228,14 +1256,25 @@ public class ForeignAccounts {
     /**
      * Clears the month's intervention. Called at the top of the month - so
      * a purchase made between two presses, as the player makes one, is
-     * cleared here before any reprice has read it, and THE FLOAT (step 5)
-     * feels only the purchases made while a month runs. A known gap of XR1's
-     * first slice, reported in its notes.
+     * cleared here before any reprice has read it; the rate reads what was
+     * dealt since the last reprice instead (dealtSinceReprice), which this
+     * leaves alone.
      */
     public void startMonth() {
         boughtThisMonth = 0;
         soldThisMonth = 0;
     }
+
+    /**
+     * Forgets what has been dealt since the last reprice: the founders'
+     * dollars (Game.buildWorld()), an endowment the market never saw bought,
+     * and a fixture's vault, set up as a holding rather than a purchase under
+     * test. The vault and the books keep the purchase; only the rate forgets it.
+     */
+    public void forgetDealing() { dealtSinceReprice = 0; }
+
+    /** What the treasury has dealt since the last reprice, local money, a purchase of dollars positive: what the next reprice feels (THE FLOAT, step 5). */
+    public double getDealtSinceReprice() { return dealtSinceReprice; }
 
     /**
      * Local currency spent buying foreign money. Raises the stock.
@@ -1254,6 +1293,7 @@ public class ForeignAccounts {
         if (localAmount <= 0 || rate <= 0) return;
         reservesUsd += localAmount / rate;
         boughtThisMonth += localAmount;
+        dealtSinceReprice += localAmount;
         lifetimeIntervention += localAmount;
     }
 
@@ -1286,6 +1326,7 @@ public class ForeignAccounts {
         if (sold <= 0 || rate <= 0) return 0;
         reservesUsd = sold >= held ? 0 : Math.max(0, reservesUsd - sold / rate);
         soldThisMonth += sold;
+        dealtSinceReprice -= sold;
         lifetimeIntervention -= sold;
         return sold;
     }
@@ -1715,14 +1756,15 @@ public class ForeignAccounts {
                 exports, imports, foreignInterest, financialIn, financialOut, lastValuation,
                 boughtThisMonth, soldThisMonth,
                 /*
-                 * ...AND THE FLOAT, slots 45-69 (XR1; THE FLOAT): parity's
+                 * ...AND THE FLOAT, slots 45-70 (XR1; THE FLOAT): parity's
                  * trend (level, slope, started), the real gap's level and what
                  * the rate shows of it, the balance's and the cover's levels
                  * reached, the market's swing and the interventions still felt,
                  * the market's seed (52 bits, so it is exact as a double), whether
                  * it is seeded and how many draws it has taken, the last month's
-                 * five contributions and six moves, a year's GDP, and the move
-                 * the month would have been before the defence. Every one is a
+                 * five contributions and six moves, a year's GDP, the fall the
+                 * month would have made before the defence, and (slot 70) what
+                 * the treasury dealt since the last reprice. Every one is a
                  * level or a flow the month cannot restrike from the state it
                  * ended in: the trend and the market are paths, and a reload
                  * that dropped them would open the currency on a different one.
@@ -1732,7 +1774,8 @@ public class ForeignAccounts {
                 (double) marketSeed, marketSeeded ? 1 : 0, (double) marketDraws,
                 lastContrib[0], lastContrib[1], lastContrib[2], lastContrib[3], lastContrib[4],
                 moves[0], moves[1], moves[2], moves[3], moves[4], moves[5],
-                gdpTrailing, lastWouldBeMove };
+                gdpTrailing, lastWouldBeMove,
+                dealtSinceReprice };
     }
 
     public void restore(double[] saved) {
@@ -1821,7 +1864,7 @@ public class ForeignAccounts {
             soldThisMonth = saved[44];
             monthCounted = true;
         }
-        // The float (XR1, slots 45-69); a save from before it has none and its
+        // The float (XR1, slots 45-70); a save from before it has none and its
         // trend opens on the next reprice, its market unseeded until Game seeds it.
         if (saved.length > 69) {
             trendLevel = saved[45];
@@ -1841,6 +1884,7 @@ public class ForeignAccounts {
             gdpTrailing = Math.max(0, saved[68]);
             lastWouldBeMove = saved[69];
         }
+        if (saved.length > 70) dealtSinceReprice = saved[70];
     }
 
     public void reset() {
@@ -1899,6 +1943,7 @@ public class ForeignAccounts {
         java.util.Arrays.fill(lastContrib, 0);
         java.util.Arrays.fill(moves, 0);
         lastWouldBeMove = 0;
+        dealtSinceReprice = 0;
     }
 
     /**
@@ -1966,6 +2011,7 @@ public class ForeignAccounts {
         repudiated      *= scale;
         boughtThisMonth *= scale;
         soldThisMonth   *= scale;
+        dealtSinceReprice *= scale;
         defenceLocal    *= scale;   // the dollars do not move; what they fetched is local money
         landLocalOpen      *= scale;   // ...and the same for what the land cost here (0.7.6)
         landVaultLocalOpen *= scale;
