@@ -79,6 +79,19 @@ findings. Main's one red, ScaleCheck's "...and it builds" (SC1), passes here:
 the moved trajectory builds more homes by its end, which is not SC1's fix -
 SC1 stays queued. The timing harnesses, hard and alone (`--timing`): 8 run in 133 s, all green; on the merged tree 8 in 140 s, all green.
 
+**On the tree merged with CL3's 0.8.14** (2026-10-21, `--maps`): 125
+harnesses in 788 s, **124 passed**; the maps regenerated with nothing to
+change; Stale 0 firm findings. ScaleCheck's "...and it builds" stays green.
+The one red is **LongPlaytest**, on one finding of CL3's layout watch, which
+is the map's: at month 3,998 the city buys land inside district (-2,-2),
+already full (its owned plots 28,217 to 33,731), and its plan, replayed from
+its log with the larger room, moves 2,069 of its 2,946 boxes (1,727 of them
+houses); the watch excuses only a district whose carry-in changed, and this
+one's did not. The model's trace is CD1's to the byte (§3), and main's
+playtest, on its own path, raises no such finding. It is CL3's pending
+re-chaining by another door (CL3-C), and CD1 does not touch the map. The
+timing harnesses, hard and alone: 8 in 173 s, all green.
+
 Existing harnesses restated, each premise kept (the design D9 replaced only
 how they measured):
 - **CentralBankCheck** `shape20`: the term premium less the compression was
@@ -124,9 +137,14 @@ how they measured):
   autopilot: the inflation from month 240 on is 2.23% in the middle city, as
   on main.
 
-**After CL2:** CL2 (0.8.13, merged into this branch) moves only the map, and
-its own trace is byte-identical to 0.8.12's, so the playtests and the
-ensemble below, run before the merge, stand for the merged tree.
+**After CL2 and CL3:** CL2 (0.8.13) and CL3 (0.8.14), merged into this
+branch, move only the map, and each one's own trace is byte-identical to the
+version before it, so the playtests and the ensemble below, run before the
+merges, stand for the merged tree. Checked on the merge with CL3: the default
+playtest traced on CD1's tip (7820daf) and on the merged tree is the same to
+the byte in all eight CSVs (4,002 rows each; 619,699 people at the end). Its
+report differs in the run time, CL3's layout lines and one finding of CL3's
+watch (§2): the map's, not the model's.
 
 Both playtests move from before their first checkpoint (month 266 on the
 default run, 262 on Rotterdam), as soon as the city's inflation is off where
@@ -212,9 +230,13 @@ curve's rate at its months.
 
 ## 7. State
 
-**Ready but for Jerus's word** at the tip of `batch/CD1`: built to the plan,
-every slice reviewed and committed, merged with CL2's 0.8.13, version 0.8.14;
-on the merged tree the suite 125/125 and `--timing` 8/8 hard, the maps
-regenerated; the ensemble stored as `docs/ensemble/0.8.14.md`; the row out of
-`QUEUE.md` and CD1-C under Pending. It waits on the two calls at the top of
-§3 (H1 and A2): a premise is retired, and a new red shipped, only on his word.
+**Ready but for one red, which is CL3's**, at the tip of `batch/CD1`: Jerus's
+word recorded (2026-10-21: "Keep D9 as decided: H1's premise is retired, A2
+ships as noise at its threshold. Ship CD1."), H1 retired in the scorer and A2
+shipped as noise; merged with CL2's 0.8.13 and CL3's 0.8.14, version 0.8.15;
+the merged playtest's trace CD1's to the byte, so its ensemble stands, stored
+rescored as `docs/ensemble/0.8.15.md` (22/25); on the merged tree the suite
+124/125, LongPlaytest red on CL3's layout watch (§2), and `--timing` 8/8
+hard; the maps regenerated; the row out of `QUEUE.md` and CD1-C under
+Pending. `ship.sh` stops at any red, so whether CD1 ships beside this one or
+waits for a fix to the plan is the orchestrator's call.
