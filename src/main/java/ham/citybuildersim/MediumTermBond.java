@@ -53,6 +53,11 @@ public class MediumTermBond extends Debt {
 
     private double monthlyCouponRate;
 
+    /** The one coupon, a year, that the auction set at issue (the stop itself): the screen's name for the bond, "20-year amortizing bond at 4.21%". */
+    public double couponRate() {
+        return monthlyCouponRate * 12;
+    }
+
     /** Principal repaid on each anniversary. Not final: see repairAfterLoad(). */
     private double principalPerSlice;
 
