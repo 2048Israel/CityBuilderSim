@@ -38,6 +38,9 @@ public final class TrackCurves {
     /** A bend's net: the railway's 0 and (FX5 slice D) the highway's 1 - its own numbering, not CityRuns's (whose HIGHWAYS is 0 and RAILWAY 1). */
     public static final int RAILWAY = 0, HIGHWAY = 1;
 
+    /** A highway bend's radius, in plots: 4 - a carriageway is broader than a railway's bed, and a 45-degree joint's tangent is then 1.66 plots (FX5 slice D: "a plot and a half"), so the arc leaves the straight a plot before the corner and meets the staircase's first step. */
+    public static final double HIGHWAY_RADIUS = 4;
+
     /** The turns of a polyline smaller than this, in radians, are straight: a millionth. */
     private static final double STRAIGHT = 1e-6;
 
@@ -204,6 +207,50 @@ public final class TrackCurves {
             }
         }
         return out;
+    }
+
+    /** How far a plot's middle may lie from a leg's line, in plots, and still be a plot of the highway on it: three quarters - a staircase's corner plot lies 0.71 from its stretch's line. */
+    private static final double ON_PATH = 0.75;
+
+    /**
+     * The plots a highway bend replaces (FX5 slice D), each {x, y}: the plots
+     * of the highway (hw.at()) whose middles lie within the tangent length of
+     * the corner - a plot and a half out along each leg of a 45-degree joint
+     * - and on its legs' lines (the straight's row or column, the stretch's
+     * steps and their corners), so the arc is drawn in place of their
+     * cells. Unlike replaced() a leg may be a 45-degree one: its plots are a
+     * staircase, drawn as one band, and the corner plot, the step and the
+     * corner beside it all go to the arc. A plot with a third arm - a highway
+     * beside it that is on neither leg - keeps its cell, as a T or a crossing
+     * does.
+     */
+    public static List<int[]> replacedHighway(Bend b, Rail hw) {
+        List<int[]> out = new ArrayList<>();
+        int reach = (int) Math.ceil(b.t()) + 1, cx = (int) Math.floor(b.x()), cy = (int) Math.floor(b.y());
+        for (int y = cy - reach; y <= cy + reach; y++) {
+            for (int x = cx - reach; x <= cx + reach; x++) {
+                if (!hw.at(x, y) || !within(b, x, y) || !onPath(b, x + 0.5, y + 0.5)) continue;
+                boolean third = false;
+                for (int d = 0; d < 4 && !third; d++) {
+                    int nx = x + DX[d], ny = y + DY[d];
+                    third = hw.at(nx, ny) && !onPath(b, nx + 0.5, ny + 0.5);
+                }
+                if (!third) out.add(new int[] { x, y });
+            }
+        }
+        return out;
+    }
+
+    /** Whether plot (x, y)'s middle lies strictly within the bend's tangent length of its corner. */
+    private static boolean within(Bend b, int x, int y) {
+        return Math.hypot(x + 0.5 - b.x(), y + 0.5 - b.y()) < b.t() - 1e-9;
+    }
+
+    /** Whether the point (px, py), in plots, lies within ON_PATH of the line of the incoming leg (not far past the corner) or of the outgoing one. */
+    private static boolean onPath(Bend b, double px, double py) {
+        double qx = px - b.x(), qy = py - b.y();
+        if (-(qx * b.ux() + qy * b.uy()) >= -ON_PATH && Math.abs(qx * b.uy() - qy * b.ux()) <= ON_PATH + 1e-9) return true;
+        return qx * b.vx() + qy * b.vy() >= -ON_PATH && Math.abs(qx * b.vy() - qy * b.vx()) <= ON_PATH + 1e-9;
     }
 
     /** Whether the bend is on the plot grid: its corner on a plot's middle and both its legs along an axis - a corner of straight track, as replaced() reads. A 45-degree leg, or a corner off the plots' middles, is not. */

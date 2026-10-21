@@ -103,7 +103,20 @@ import java.util.Arrays;
  *      middle, no zebra; a crossing on a tile's corner, so it spans four tiles
  *      (each rastered alone from a ring of street codes, as the map fills it),
  *      draws the pixels of the same crossing whole inside one tile; an arterial
- *      crossing an arterial is still a box and four zebra arms.
+ *      crossing an arterial is still a box and four zebra arms;
+ *  18. (batch FX5 slice D, red until the fix; Jerus, 2026-10-20, "once it
+ *      finishes its still a tad wierd") A 45-DEGREE HIGHWAY JOINS THE GRID
+ *      CLEANLY: east into a stretch of twelve steps south-east and south out of
+ *      it, with the bends the map gives it (TrackCurves.bends() of the arm's
+ *      points, net HIGHWAY, HIGHWAY_RADIUS plots), drawn as the carriageway along
+ *      each arc: at each joint no ground pixel inside the carriageway's outline
+ *      (the surface's half-width less a pixel), no highway-coloured pixel
+ *      beyond the casing's half-width plus a pixel from it (no stub), and the
+ *      centre line's dashes on through it, one in every plot's length of path;
+ *      between the joints section 10's counts; section 10's stretch alone, with
+ *      no bend in the tile, keeps them (0, 0, 10 of 10); and an arm ending on its
+ *      diagonal ends squared across its heading at the last step's far edge: no
+ *      highway pixel past it, road at both edges just short of it.
  *
  * The ground and the access roads are held on the map's own cities by MapCheck
  * section 8 (its 8b), and the spurs dealt to the plans' sidings by its 8c.
@@ -226,6 +239,7 @@ public class JunctionCheck {
         kerbCorners();
         sidings();
         oneJunctionACrossing();
+        diagonalJoints();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -1539,6 +1553,208 @@ public class JunctionCheck {
                 surfaceIs(e, w, cx, cy, px, TileRaster.JUNCTION_BOX, true, true) && noneOf(e, TileRaster.ISLAND)
                         && hasColour(e, w, cx, cy - 1, px, TileRaster.ZEBRA) && hasColour(e, w, cx, cy + 1, px, TileRaster.ZEBRA)
                         && hasColour(e, w, cx - 1, cy, px, TileRaster.ZEBRA) && hasColour(e, w, cx + 1, cy, px, TileRaster.ZEBRA));
+    }
+
+    /* ================= 18. a 45-degree highway joins the grid cleanly (FX5) ================= */
+
+    /** The highway colours a pixel may have: the surface, the casing and the centre line. */
+    static boolean highwayColour(int c) {
+        return c == TileRaster.ROAD[BuildingVisual.HIGHWAY] || c == TileRaster.HIGHWAY_CASE || c == TileRaster.CENTRE_LINE;
+    }
+
+    /** The carriageway's centre line as the map's own rule rounds it (TrackCurves.round() at HIGHWAY_RADIUS), in pixels, with the length along it at each point. */
+    static final class JPath {
+        final double[] x, y, cum;
+
+        JPath(double[] xs, double[] ys, int px) {
+            double[][] r = TrackCurves.round(xs, ys, TrackCurves.HIGHWAY_RADIUS);
+            x = new double[r[0].length];
+            y = new double[x.length];
+            cum = new double[x.length];
+            for (int i = 0; i < x.length; i++) {
+                x[i] = r[0][i] * px;
+                y[i] = r[1][i] * px;
+                if (i > 0) cum[i] = cum[i - 1] + Math.hypot(x[i] - x[i - 1], y[i] - y[i - 1]);
+            }
+        }
+
+        /** The distance from pixel point (u, v) to the path; out[0] receives the length along the path to the nearest foot. */
+        double dist(double u, double v, double[] out) {
+            double best = Double.POSITIVE_INFINITY;
+            for (int i = 1; i < x.length; i++) {
+                double ax = x[i - 1], ay = y[i - 1], dx = x[i] - ax, dy = y[i] - ay, len2 = dx * dx + dy * dy;
+                double t = len2 < 1e-12 ? 0 : Math.max(0, Math.min(1, ((u - ax) * dx + (v - ay) * dy) / len2));
+                double d = Math.hypot(u - (ax + t * dx), v - (ay + t * dy));
+                if (d < best) {
+                    best = d;
+                    out[0] = cum[i - 1] + t * Math.sqrt(len2);
+                }
+            }
+            return best;
+        }
+    }
+
+    /**
+     * Section 10's stretch (a plot where x + y is odd, `steps` steps south-east at (x0 + k, y0 + k) with their corners) with straight highway
+     * east into it from x = 2 and out of it: south (southOut) from its last step, or east as section 10 has it. `ramp` marks the last step
+     * as the arm's end (CityRuns.fill() marks every arm's last plot M_RAMP), with no highway beyond it. `bent` gives the tile the
+     * bends the map would (TrackCurves.bends() of the arm's points, net HIGHWAY, as CityMap does) and the plots they replace.
+     */
+    static TilePainter.Input joinedStretch(int x0, int y0, int steps, boolean southOut, boolean ramp, boolean bent) {
+        TilePainter.Input in = owned();
+        for (int x = 2; x <= x0; x++) in.fixed[y0 * T + x] = BuildingVisual.HIGHWAY;
+        int diag = CityRuns.M_DIAG | (0 << CityRuns.M_DIAG_SHIFT);
+        for (int k = 1; k <= steps; k++) {
+            int step = (y0 + k) * T + x0 + k, corner = (y0 + k - 1) * T + x0 + k;
+            in.fixed[step] = BuildingVisual.HIGHWAY;
+            in.marks[step] = (byte) diag;
+            in.fixed[corner] = BuildingVisual.HIGHWAY;
+            in.marks[corner] = (byte) (diag | CityRuns.M_CORNER);
+        }
+        int ex = x0 + steps, ey = y0 + steps;
+        double[] xs, ys;
+        if (ramp) {
+            in.marks[ey * T + ex] |= CityRuns.M_RAMP;
+            xs = new double[] { 2.5, x0 + 0.5, ex + 0.5 };
+            ys = new double[] { y0 + 0.5, y0 + 0.5, ey + 0.5 };
+        } else if (southOut) {
+            for (int y = ey + 1; y < T; y++) in.fixed[y * T + ex] = BuildingVisual.HIGHWAY;
+            xs = new double[] { 2.5, x0 + 0.5, ex + 0.5, ex + 0.5 };
+            ys = new double[] { y0 + 0.5, y0 + 0.5, ey + 0.5, T - 0.5 };
+        } else {
+            for (int x = ex + 1; x < T - 2; x++) in.fixed[ey * T + x] = BuildingVisual.HIGHWAY;
+            xs = new double[] { 2.5, x0 + 0.5, ex + 0.5, T - 2.5 };
+            ys = new double[] { y0 + 0.5, y0 + 0.5, ey + 0.5, ey + 0.5 };
+        }
+        if (bent) {
+            for (TrackCurves.Bend b : TrackCurves.bends(xs, ys, TrackCurves.HIGHWAY_RADIUS, TrackCurves.HIGHWAY))
+                in.addBend(b.net(), b.x(), b.y(), b.ux(), b.uy(), b.vx(), b.vy(), b.r(), b.t(), false);
+            in.markCurved();
+        }
+        return in;
+    }
+
+    /**
+     * Section 10's three counts for the 45-degree band between plots x0 + plotLo .. x0 + plotHi on both axes, over the steps kLo..kHi:
+     * {highway-coloured pixels farther than half + 1.5 px from the line, pixels within half - 1.5 px of it (between the steps) that are
+     * neither road nor centre line, steps kLo..kHi whose plot holds a centre-line pixel}.
+     */
+    static int[] diagonalCounts(int[] img, int px, int x0, int y0, int plotLo, int plotHi, int kLo, int kHi) {
+        int w = T * px;
+        double half = TileRaster.crossSection(BuildingVisual.HIGHWAY, px)[0] / 2.0;
+        int road = TileRaster.ROAD[BuildingVisual.HIGHWAY];
+        double cx2 = (x0 + kLo + 0.5) * px, cy2 = (y0 + kLo + 0.5) * px, span = (kHi - kLo) * px;
+        int off = 0, broken = 0, centred = 0;
+        for (int plotY = y0 + plotLo; plotY <= y0 + plotHi; plotY++)
+            for (int plotX = x0 + plotLo; plotX <= x0 + plotHi; plotX++)
+                for (int dy = 0; dy < px; dy++)
+                    for (int dx = 0; dx < px; dx++) {
+                        int X = plotX * px + dx, Y = plotY * px + dy, c = img[Y * w + X];
+                        double u = X + 0.5, v = Y + 0.5, d = Math.abs((u - cx2) - (v - cy2)) / Math.sqrt(2), along = ((u - cx2) + (v - cy2)) / 2;
+                        if (d > half + 1.5 && (c == TileRaster.HIGHWAY_CASE || c == road)) off++;
+                        if (d <= half - 1.5 && along >= 0 && along <= span && c != road && c != TileRaster.CENTRE_LINE) broken++;
+                    }
+        for (int k = kLo; k <= kHi; k++) if (hasColour(img, w, x0 + k, y0 + k, px, TileRaster.CENTRE_LINE)) centred++;
+        return new int[] { off, broken, centred };
+    }
+
+    static void diagonalJoints() {
+        System.out.println("--- 18. (FX5) a 45-degree highway joins the grid cleanly: a bend's arc at each joint, no notch and no stub, the centre line unbroken; an end squared ---");
+        int px = 8, w = T * px, x0 = 8, y0 = 9, steps = 12, ex = x0 + steps, ey = y0 + steps;
+        int[] cs = TileRaster.crossSection(BuildingVisual.HIGHWAY, px);
+        double halfCase = cs[0] / 2.0, halfSurface = (cs[0] - 2 * cs[1]) / 2.0;
+
+        // The control first: section 10's stretch, east out of it and no bend in the tile, keeps its counts (0 off, 0 broken, 10 of 10 steps with a dash).
+        TilePainter.Input plainIn = joinedStretch(x0, y0, steps, false, false, false);
+        int[] plain = raster(plainIn, paint(plainIn), px);
+        int[] ctl = diagonalCounts(plain, px, x0, y0, 1, steps, 2, 11);
+        check("18-control. section 10's stretch alone, no bend in the tile: no highway pixel off the carriageway, none of it broken, a centre line on 10 of 10 steps",
+                ctl[0] == 0 && ctl[1] == 0 && ctl[2] == 10);
+        System.out.println("  the control's counts: " + ctl[0] + " off, " + ctl[1] + " broken, " + ctl[2] + " of 10 centre lines");
+
+        // The stretch with the bends the map gives it: east, 45 degrees south-east for twelve steps, south.
+        TilePainter.Input in = joinedStretch(x0, y0, steps, true, false, true);
+        check("18-fixture. the fixture's bends are the map's rule: two highway bends, and the plots they replace are marked",
+                in.bends == 2 && in.bendAt(0).net() == TrackCurves.HIGHWAY && in.bendAt(1).net() == TrackCurves.HIGHWAY
+                        && in.curved[y0 * T + x0] && !in.curved[(ey - 1) * T + ex - 3] && in.curved[(ey + 1) * T + ex]);
+        int[] img = raster(in, paint(in), px);
+        double[] xs = { 2.5, x0 + 0.5, ex + 0.5, ex + 0.5 }, ys = { y0 + 0.5, y0 + 0.5, ey + 0.5, T - 0.5 };
+        JPath path = new JPath(xs, ys, px);
+        double[] at = new double[1];
+        for (int joint = 0; joint < 2; joint++) {
+            TrackCurves.Bend b = in.bendAt(joint);
+            String name = "18" + (joint == 0 ? "a" : "b") + ". joint " + (joint + 1) + " (" + (joint == 0 ? "east onto the diagonal" : "the diagonal onto south") + ")";
+            double mx = b.x() * px, my = b.y() * px;
+            int ground = 0, stub = 0, groundX = -1, groundY = -1, stubX = -1, stubY = -1;
+            for (int Y = 0; Y < w; Y++)
+                for (int X = 0; X < w; X++) {
+                    if (Math.abs(X + 0.5 - mx) > 5 * px || Math.abs(Y + 0.5 - my) > 5 * px) continue;
+                    double d = path.dist(X + 0.5, Y + 0.5, at);
+                    int c = img[Y * w + X];
+                    if (d <= halfSurface - 1 && c != TileRaster.ROAD[BuildingVisual.HIGHWAY] && c != TileRaster.CENTRE_LINE) {
+                        if (ground++ == 0) { groundX = X; groundY = Y; }
+                    }
+                    if (d > halfCase + 1 && highwayColour(c)) {
+                        if (stub++ == 0) { stubX = X; stubY = Y; }
+                    }
+                }
+            check(name + ": no ground pixel inside the carriageway's outline (the surface's half-width less a pixel)", ground == 0);
+            System.out.println("  " + ground + " ground pixels within " + (halfSurface - 1) + " px of the centre line" + (ground == 0 ? "" : ", the first at pixel (" + groundX + ", " + groundY + ")"));
+            check(name + ": no highway-coloured pixel beyond the casing's half-width plus a pixel from it (no stub)", stub == 0);
+            System.out.println("  " + stub + " highway-coloured pixels beyond " + (halfCase + 1) + " px of the centre line" + (stub == 0 ? "" : ", the first at pixel (" + stubX + ", " + stubY + ")"));
+            // The dashes: every plot's length of the path, from a plot and a half before the arc to a plot and a half after it, holds a centre-line pixel on it.
+            double s0 = Double.NaN, s1 = Double.NaN;
+            for (int i = 0; i < path.x.length; i++) {
+                if (Math.hypot(path.x[i] - b.startX() * px, path.y[i] - b.startY() * px) < 1e-6) s0 = path.cum[i];
+                if (Math.hypot(path.x[i] - b.endX() * px, path.y[i] - b.endY() * px) < 1e-6) s1 = path.cum[i];
+            }
+            double lo = s0 - 1.5 * px, hi = s1 + 1.5 * px;
+            int windows = (int) Math.floor((hi - lo) / px + 1e-9);
+            boolean[] dashed = new boolean[Math.max(0, windows)];
+            for (int Y = 0; Y < w; Y++)
+                for (int X = 0; X < w; X++) {
+                    if (img[Y * w + X] != TileRaster.CENTRE_LINE || Math.abs(X + 0.5 - mx) > 6 * px || Math.abs(Y + 0.5 - my) > 6 * px) continue;
+                    if (path.dist(X + 0.5, Y + 0.5, at) > 1.5) continue;
+                    int k = (int) Math.floor((at[0] - lo) / px);
+                    if (k >= 0 && k < windows) dashed[k] = true;
+                }
+            int have = 0;
+            for (boolean d : dashed) if (d) have++;
+            check(name + ": the centre line's dashes go on through it, a dash on the path in each plot's length", windows >= 5 && have == windows);
+            System.out.println("  a dash in " + have + " of " + windows + " plot-lengths of path, from 1.5 plots before the arc (" + String.format("%.1f", s0 / px) + " plots along) to 1.5 after it");
+        }
+        // ...and between the joints the stretch is the one carriageway section 10 asks for (steps 4..9, away from the arcs).
+        int[] mid = diagonalCounts(img, px, x0, y0, 3, 10, 4, 9);
+        check("18-between. between the arcs the band keeps section 10's counts: none off the carriageway, none broken, a centre line on 6 of 6 steps", mid[0] == 0 && mid[1] == 0 && mid[2] == 6);
+        System.out.println("  between the joints: " + mid[0] + " off, " + mid[1] + " broken, " + mid[2] + " of 6 centre lines");
+
+        // (d) An arm ending on its diagonal: its band ends squared across its heading at the last step's far edge.
+        int lastSteps = 8, lx = x0 + lastSteps, ly = y0 + lastSteps;
+        TilePainter.Input endIn = joinedStretch(x0, y0, lastSteps, false, true, true);
+        int[] end = raster(endIn, paint(endIn), px);
+        double lu = (lx + 0.5) * px, lv = (ly + 0.5) * px, cut = 0.5 * Math.sqrt(2) * px, r2 = Math.sqrt(2);
+        int past = 0, pastX = -1, pastY = -1;
+        for (int Y = (ly - 2) * px; Y < Math.min(w, (ly + 3) * px); Y++)
+            for (int X = (lx - 2) * px; X < Math.min(w, (lx + 3) * px); X++) {
+                double along = ((X + 0.5 - lu) + (Y + 0.5 - lv)) / r2;
+                if (along > cut + 1 && highwayColour(end[Y * w + X])) {
+                    if (past++ == 0) { pastX = X; pastY = Y; }
+                }
+            }
+        check("18d. an arm ending on its diagonal: no highway pixel past the squared end (more than a pixel beyond the last step's far edge, across its heading)", past == 0);
+        System.out.println("  " + past + " highway-coloured pixels past " + String.format("%.1f", cut + 1) + " px along the heading" + (past == 0 ? "" : ", the first at pixel (" + pastX + ", " + pastY + ")"));
+        // ...and the band reaches the squared end at both its edges: a surface pixel a pixel inside each edge and short of the end, on the open plots either side of the last step.
+        boolean squared = true;
+        String missing = "";
+        for (int side = -1; side <= 1; side += 2) {
+            double along = cut - 1.5, lat = side * (halfSurface - 1);
+            int X = (int) Math.floor(lu + (along + lat) / r2), Y = (int) Math.floor(lv + (along - lat) / r2);
+            boolean ok = end[Y * w + X] == TileRaster.ROAD[BuildingVisual.HIGHWAY] || end[Y * w + X] == TileRaster.CENTRE_LINE;
+            if (!ok) missing += " (" + X + ", " + Y + ")";
+            squared &= ok;
+        }
+        check("18d. ...and it is squared: road at both of its edges, a pixel inside each and short of the end, across the open plots beside the last step", squared);
+        if (!squared) System.out.println("  no road at pixel" + missing);
     }
 
 }

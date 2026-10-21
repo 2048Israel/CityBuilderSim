@@ -313,7 +313,7 @@ public final class TilePainter {
         public int bends;
         public double[] bend = new double[4 * BEND_DOUBLES];
 
-        /** The plots of the tile the bends replace (FX5): the plot's middle on a bend's path strictly inside its tangent points, the corner's included, with the bend's two legs its only track. The raster draws such a plot as the arc, not as its cell. */
+        /** The plots of the tile the bends replace (FX5): the plot's middle on a bend's path strictly inside its tangent points, the corner's included, with the bend's two legs its only track (a highway bend's, FX5 slice D: the highway's plots within its tangent length of the corner on its legs' lines, a 45-degree stretch's steps and corners among them). The raster draws such a plot as the arc, not as its cell. */
         public final boolean[] curved = new boolean[PLOTS];
 
         /** Clears the bends and the plots they replace; the arrays are reused. */
@@ -322,7 +322,7 @@ public final class TilePainter {
             Arrays.fill(curved, false);
         }
 
-        /** Adds a bend: its net (TrackCurves.RAILWAY), its corner, the unit headings in and out of it, its radius and tangent length, all in the tile's plots, and whether it lies on double track. */
+        /** Adds a bend: its net (TrackCurves.RAILWAY or HIGHWAY), its corner, the unit headings in and out of it, its radius and tangent length, all in the tile's plots, and whether it lies on double track. */
         public void addBend(int net, double x, double y, double ux, double uy, double vx, double vy, double r, double t, boolean doubled) {
             if ((bends + 1) * BEND_DOUBLES > bend.length) bend = Arrays.copyOf(bend, bend.length * 2);
             int o = bends * BEND_DOUBLES;
@@ -351,7 +351,7 @@ public final class TilePainter {
         /**
          * Marks the plots the bends replace (curved), from the track the
          * input holds (fixed, fixedBeyond, and the plan's sidings): TrackCurves
-         * names the plots of each bend (TrackCurves.replaced()), and those
+         * names the plots of each bend (TrackCurves.replaced(); for a highway bend, FX5 slice D, TrackCurves.replacedHighway(), the highway's plots in fixed), and those
          * of the tile are kept, so a plot with a third arm - a T, a crossing -
          * keeps its straights, and the arc is drawn over it. Call it once the
          * bends and the track are in.
@@ -371,11 +371,24 @@ public final class TilePainter {
                 else return false;
                 return f == RAIL || f == RAIL_OVER;
             };
+            // The highway's, for a highway bend (FX5 slice D): a plot of the highway, as the raster reads them (highwayAt()).
+            TrackCurves.Rail highway = (x, y) -> {
+                if (x >= 0 && y >= 0 && x < TILE && y < TILE) return fixed[y * TILE + x] == BuildingVisual.HIGHWAY;
+                byte f;
+                if (y == -1 && x >= 0 && x < TILE) f = fixedBeyond[x];
+                else if (x == TILE && y >= 0 && y < TILE) f = fixedBeyond[TILE + y];
+                else if (y == TILE && x >= 0 && x < TILE) f = fixedBeyond[2 * TILE + x];
+                else if (x == -1 && y >= 0 && y < TILE) f = fixedBeyond[3 * TILE + y];
+                else return false;
+                return f == BuildingVisual.HIGHWAY || f == RAIL_OVER;
+            };
             for (int k = 0; k < bends; k++) {
-                for (int[] at : TrackCurves.replaced(bendAt(k), rail)) {
+                TrackCurves.Bend b = bendAt(k);
+                boolean hw = b.net() == TrackCurves.HIGHWAY;
+                for (int[] at : hw ? TrackCurves.replacedHighway(b, highway) : TrackCurves.replaced(b, rail)) {
                     if (at[0] < 0 || at[1] < 0 || at[0] >= TILE || at[1] >= TILE) continue;
                     int i = at[1] * TILE + at[0];
-                    if (fixed[i] == RAIL) curved[i] = true;
+                    if (fixed[i] == (hw ? BuildingVisual.HIGHWAY : RAIL)) curved[i] = true;
                 }
             }
         }

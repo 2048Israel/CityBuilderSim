@@ -3641,6 +3641,58 @@ public final class CityMap {
         return byTile;
     }
 
+    /** The highways' bends the tiles draw (FX5 slice D), by the tiles they reach (bendKey()), kept against changes() and whether the highways reach a street. */
+    private Map<Long, List<TrackCurves.Bend>> highwayBends = new HashMap<>();
+    private long highwayBendsAt = Long.MIN_VALUE;
+    private boolean highwayBendsReach;
+
+    /**
+     * The highways' bends that reach tile (tx, ty) (FX5 slice D): the turns of
+     * each arm's polyline (CityRuns.highwayPolylines()) rounded by
+     * TrackCurves.bends() at TrackCurves.HIGHWAY_RADIUS, of net HIGHWAY - a
+     * 45-degree stretch's joints at either end - those whose corner and both
+     * tangent points lie on plots the runs lay highway on, each once however
+     * many arms make it, held for each tile its path and its band may touch
+     * (a plot and a half beyond). The tiles draw each as the carriageway along
+     * the arc (TileRaster.highwayBends()), in place of the plots it replaces.
+     * None while the highways reach no street. The map's alone.
+     */
+    private List<TrackCurves.Bend> highwayBendsIn(long tx, long ty) {
+        boolean reach = runs.highwaysReach();
+        if (highwayBendsAt != changes || highwayBendsReach != reach) {
+            Map<Long, List<TrackCurves.Bend>> byTile = new HashMap<>();
+            java.util.Set<List<Long>> seen = new java.util.HashSet<>();
+            if (reach) {
+                for (double[][] arm : runs.highwayPolylines()) {
+                    for (TrackCurves.Bend b : TrackCurves.bends(arm[0], arm[1], TrackCurves.HIGHWAY_RADIUS, TrackCurves.HIGHWAY)) {
+                        if (!seen.add(java.util.Arrays.asList(Math.round(b.x() * 1e6), Math.round(b.y() * 1e6), Math.round(b.ux() * 1e6), Math.round(b.uy() * 1e6),
+                                Math.round(b.vx() * 1e6), Math.round(b.vy() * 1e6), Math.round(b.r() * 1e6)))) continue;
+                        if (!highwayPlot((long) Math.floor(b.x()), (long) Math.floor(b.y()))
+                                || !highwayPlot((long) Math.floor(b.startX()), (long) Math.floor(b.startY()))
+                                || !highwayPlot((long) Math.floor(b.endX()), (long) Math.floor(b.endY()))) continue;
+                        double x0 = Math.min(b.x(), Math.min(b.startX(), b.endX())) - 2, x1 = Math.max(b.x(), Math.max(b.startX(), b.endX())) + 2;
+                        double y0 = Math.min(b.y(), Math.min(b.startY(), b.endY())) - 2, y1 = Math.max(b.y(), Math.max(b.startY(), b.endY())) + 2;
+                        for (long ky = Math.floorDiv((long) Math.floor(y0), World.TILE); ky <= Math.floorDiv((long) Math.floor(y1), World.TILE); ky++) {
+                            for (long kx = Math.floorDiv((long) Math.floor(x0), World.TILE); kx <= Math.floorDiv((long) Math.floor(x1), World.TILE); kx++) {
+                                byTile.computeIfAbsent(bendKey(kx, ky), k -> new ArrayList<>()).add(b);
+                            }
+                        }
+                    }
+                }
+            }
+            highwayBends = byTile;
+            highwayBendsAt = changes;
+            highwayBendsReach = reach;
+        }
+        return highwayBends.get(bendKey(tx, ty));
+    }
+
+    /** Whether the runs lay highway on plot (x, y): a highway, or a highway under the railway's bridge. */
+    private boolean highwayPlot(long x, long y) {
+        byte f = runs.at(x, y);
+        return f == CityRuns.F_HIGHWAY || f == CityRuns.F_RAIL_OVER;
+    }
+
     /** Whether the runs lay track on plot (x, y): track, track bridging a highway, or the track in a yard's box (yardRails caches each yard's, by index). */
     private boolean railPlot(List<long[]> yards, boolean[][] yardRails, long x, long y) {
         byte f = runs.at(x, y);
@@ -5215,8 +5267,13 @@ public final class CityMap {
                 TrackCurves.Bend b = db.bend();
                 in.addBend(b.net(), b.x() - px0, b.y() - py0, b.ux(), b.uy(), b.vx(), b.vy(), b.r(), b.t(), db.doubled());
             }
-            in.markCurved();
         }
+        // ...and the highways' (FX5 slice D): a 45-degree stretch's joints, which the tile draws as the carriageway along the arc.
+        List<TrackCurves.Bend> highwayBendsHere = highwayBendsIn(tx, ty);
+        if (highwayBendsHere != null) {
+            for (TrackCurves.Bend b : highwayBendsHere) in.addBend(b.net(), b.x() - px0, b.y() - py0, b.ux(), b.uy(), b.vx(), b.vy(), b.r(), b.t(), false);
+        }
+        if (bendsHere != null || highwayBendsHere != null) in.markCurved();
         // The interchanges' reserves that reach it (batch FR7): the ground their loops are drawn on, once the highways are drawn at all.
         in.clearReserves();
         if (runs.highwaysReach()) {

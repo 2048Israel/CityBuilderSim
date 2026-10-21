@@ -2586,6 +2586,31 @@ public final class CityRuns {
     }
 
     /**
+     * The highways' arms as polylines (FX5 slice D), each {xs, ys} in plots:
+     * the points of the arm at its ends and at every turn (armPoints()) at
+     * the middles of their plots (x + 0.5, y + 0.5), the corners the map
+     * rounds with TrackCurves.bends() to draw a 45-degree stretch's joints as
+     * arcs. An arm with no turn (fewer than three points) has none; none while the highways reach no
+     * street (highwaysReach(): fill() lays none then).
+     */
+    public List<double[][]> highwayPolylines() {
+        List<double[][]> out = new ArrayList<>();
+        if (!highwaysReach()) return out;
+        for (Arm a : highways.arms) {
+            if (a.steps <= 0) continue;
+            List<long[]> pts = new ArrayList<>();
+            armPoints(a, 0, a.steps, pts);
+            List<long[]> kept = new ArrayList<>();
+            for (long[] q : pts) if (kept.isEmpty() || kept.get(kept.size() - 1)[0] != q[0] || kept.get(kept.size() - 1)[1] != q[1]) kept.add(q);
+            if (kept.size() < 3) continue;
+            double[] xs = new double[kept.size()], ys = new double[kept.size()];
+            for (int k = 0; k < xs.length; k++) { xs[k] = kept.get(k)[0] + 0.5; ys[k] = kept.get(k)[1] + 0.5; }
+            out.add(new double[][] { xs, ys });
+        }
+        return out;
+    }
+
+    /**
      * The highways' ramps at their arms' ends (fill() marks one at each arm
      * that has steps): {x, y, the arm's index} in plots, in the arms' order;
      * none while the highways reach no street (highwaysReach()). Where the

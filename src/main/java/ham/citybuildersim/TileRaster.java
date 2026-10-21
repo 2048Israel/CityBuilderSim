@@ -51,7 +51,12 @@ import java.util.Arrays;
  * (CityMap.trainRoutes()) are TrackCurves' bends, drawn by the arcs of
  * bends() over the plots they replace (Input.curved), and a yard's ladders
  * are the S curves the routes run along (ladderRails()), so the drawing and
- * the trains share one geometry.
+ * the trains share one geometry. The highways' joints are drawn so too (FX5
+ * slice D; Jerus: "once it finishes its still a tad wierd"): where a
+ * 45-degree stretch meets straight highway the carriageway turns along an arc
+ * (TrackCurves.HIGHWAY_RADIUS, highwayBends()) in place of the plots it
+ * replaces, and a stretch that ends on its diagonal ends squared across its
+ * heading (diagEndOpen()).
  *
  * YARDS AND JUNCTIONS (0.8.1, batch FR0; spec-freight 4.2, 4.3 and 4.6,
  * D15 and D19). From 4 px a plot a Rail Terminal (and since FR7 a Rail
@@ -1343,7 +1348,7 @@ public final class TileRaster {
      * ground (not a highway, not a building), has a step on one axis and the
      * next step of the same stretch on the other: the band of the stretch's
      * line, through the step's middle, over plot i's pixels, `half` out in
-     * colour c. A stretch's end adds nothing: there is no next step.
+     * colour c. A stretch's end adds nothing here: there is no next step (an arm's last step ends squared, diagEndOpen(); a joint with straight highway is an arc, highwayBends()).
      */
     private static void diagOpen(TilePainter.Input in, TilePainter.Painted p, int i, int px, double half, int c, int[] img) {
         if (p.use[i] == TilePainter.BUILDING || diagonal(in, i)) return;
@@ -1366,6 +1371,54 @@ public final class TileRaster {
         }
     }
 
+    /**
+     * Whether a highway bend draws plot i instead of its cell (FX5 slice D):
+     * the plot is one Input.curved names and no bridge's - a bridge's deck is
+     * straight and the arc is never drawn over water, so a curved plot over
+     * fresh water is left as the plain staircase or straight it was.
+     */
+    private static boolean bendReplaces(TilePainter.Input in, TilePainter.Painted p, int i) {
+        return in.curved[i] && !p.bridge[i];
+    }
+
+    /** Whether plot (x, y), in the tile or just across one of its edges on an axis, is a highway's own. */
+    private static boolean highwayPlot(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) return isHighway(p, y * tile + x);
+        if ((x < 0 || x >= tile) && (y < 0 || y >= tile)) return false;
+        int dir = y < 0 ? 0 : y >= tile ? 2 : x < 0 ? 3 : 1, along = dir == 0 || dir == 2 ? x : y;
+        byte f = in.fixedBeyond[dir * tile + along];
+        return f == BuildingVisual.HIGHWAY || f == TilePainter.RAIL_OVER;
+    }
+
+    /**
+     * An arm that ends on its diagonal (FX5 slice D) ends squared across its
+     * heading at its last step's far edge. The last step's band (diagBand())
+     * stops at its plot's edges, the staircase's, but the band's width runs on
+     * past them into the two plots beside the step on the side the stretch
+     * was heading: plot i, when it is open ground, is one, and the line's band
+     * - through the end step's middle, no farther along it than that plot's
+     * far corner (0.5 sqrt(2) plots) - is laid over it in colour c, `half` out
+     * as the passes lay every band. The step is the arm's last (the runs' M_RAMP
+     * on a step) with no highway beyond it, else the highway there draws the
+     * join as any other.
+     */
+    private static void diagEndOpen(TilePainter.Input in, TilePainter.Painted p, int i, int px, double half, int c, int[] img) {
+        if (p.use[i] == TilePainter.BUILDING || diagonal(in, i)) return;
+        int tile = TilePainter.TILE, x = i % tile, y = i / tile;
+        for (int d = 0; d < 4; d++) {
+            int sx = x + TilePainter.DX[d], sy = y + TilePainter.DY[d];
+            int mark = stepMarkAt(in, p, sx, sy);
+            if (mark < 0 || (mark & CityRuns.M_RAMP) == 0) continue;
+            int code = (mark >> CityRuns.M_DIAG_SHIFT) & 3;
+            int dx = code == 0 || code == 3 ? 1 : -1, dy = code == 0 || code == 1 ? 1 : -1;
+            // Plot i is one of the two beside the step on the heading's side: (sx + dx, sy) or (sx, sy + dy).
+            if (!((x == sx + dx && y == sy) || (x == sx && y == sy + dy))) continue;
+            if (highwayPlot(in, p, sx + dx, sy + dy) || highwayPlot(in, p, sx + dx, sy) || highwayPlot(in, p, sx, sy + dy)) continue;
+            diagLine(img, tile * px, i, px, code, (0.5 + sx - x) * px, (0.5 + sy - y) * px, half, 0.5 * Math.sqrt(2) * px, c);
+        }
+    }
+
     /* =====================================================================
        THE WAYS AS LINES (0.7.88, batch RD2; from LINES_FROM px a plot)
        ===================================================================== */
@@ -1384,7 +1437,20 @@ public final class TileRaster {
      * ramps below JUNCTIONS_FROM; and a dashed centre line from 6 px. A
      * 45-degree stretch is one carriageway along its line (FX3, Jerus's eye
      * check of 0.8.3): never a stack, its band filled in on the open plot
-     * between two steps, and a dash on every step.
+     * between two steps, and a dash on every step. Where it meets straight
+     * highway, at either end, the carriageway turns along an arc (FX5 slice D;
+     * Jerus, 2026-10-20: "once it finishes its still a tad wierd"): the
+     * highway's bends (Input.bends of net HIGHWAY, TrackCurves' arcs of
+     * HIGHWAY_RADIUS plots) are drawn by highwayBends() - casing and surface in
+     * the passes of the highways, the centre line's dashes along the arc - in
+     * place of the plots they replace (Input.curved: the corner's plot and the
+     * steps and corners round it, each skipped by the passes, the stacks and
+     * the centre line), so the straight's last plot no longer ends square on a
+     * band that leaves at 45 degrees, leaving a stub on one side and a notch
+     * on the other. A bridge's plot is never replaced (its deck is straight),
+     * and a stretch that ends on its diagonal (an arm's last step) ends
+     * squared across its heading at the step's far edge (diagEndOpen() fills
+     * the open plots beside it), with no ramp's narrowing across the stair.
      */
     private static void ways(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
@@ -1474,8 +1540,11 @@ public final class TileRaster {
                 if (!isHighway(p, i)) {
                     // Open ground between two steps of a 45-degree stretch: the band the corners leave out (FX3).
                     diagOpen(in, p, i, px, (width - 2 * in0) / 2.0, c, img);
+                    diagEndOpen(in, p, i, px, (width - 2 * in0) / 2.0, c, img);
                     continue;
                 }
+                // A plot a bend replaces is the arc's (FX5 slice D), drawn after the plots; a bridge's plot never is.
+                if (bendReplaces(in, p, i)) continue;
                 if (diagonal(in, i)) {
                     diagBand(img, w, i, px, in.marks[i], (width - 2 * in0) / 2.0, c);
                     continue;
@@ -1487,6 +1556,8 @@ public final class TileRaster {
                 if (highwayAt(in, p, i, 3)) fillRect(img, w, x0, y0 + a, x0 + a, y0 + z, c);
                 if (highwayAt(in, p, i, 1)) fillRect(img, w, x0 + z, y0 + a, x0 + px, y0 + z, c);
             }
+            // ...and the bends' arcs over them, the casing and then the surface (FX5 slice D).
+            highwayBends(in, p, px, img, (width - 2 * in0) / 2.0, pass == 0 ? HIGHWAY_CASE : ROAD[BuildingVisual.HIGHWAY]);
         }
         // A highway arm's end, from 4 px a plot as every way is (spec 2.7's ramp at an arm's end, which no street need pass
         // beneath), and a stack, drawn over the highways.
@@ -1515,7 +1586,7 @@ public final class TileRaster {
         if (px < 6) return;
         int dash = (int) Math.round(0.55 * px), mid = px / 2;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i) || p.run[i] == TilePainter.RAIL_OVER) continue;
+            if (!isHighway(p, i) || p.run[i] == TilePainter.RAIL_OVER || bendReplaces(in, p, i)) continue;
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             int c = in.owned[i] ? CENTRE_LINE : blend(CENTRE_LINE, VOID, UNOWNED_DIM);
             if (diagonal(in, i)) {
@@ -1530,6 +1601,8 @@ public final class TileRaster {
             if (ns) fillRect(img, w, x0 + mid, y0, x0 + mid + 1, y0 + dash, c);
             else fillRect(img, w, x0, y0 + mid, x0 + dash, y0 + mid + 1, c);
         }
+        // ...along the bends' arcs (FX5 slice D).
+        highwayBendDashes(in, p, px, img, dash);
     }
 
     /** A ramp's slip road's width, as a share of a plot: a gravel street's, 0.3 (ROAD_WIDTH). */
@@ -1990,7 +2063,8 @@ public final class TileRaster {
      * where the highway runs on exactly one of its four sides - the band narrows to a paved road's and a paved apron is
      * laid on the next plot. A ramp where the district plan laid no street beneath, in the middle of a straight highway
      * (the highway on two sides along it) or at a crossing, is not the highway's end and stays the plain highway (FX2,
-     * Jerus's eye check of 0.8.2).
+     * Jerus's eye check of 0.8.2). A 45-degree stretch's last step is not drawn so (FX5 slice D): the narrowing was across the
+     * staircase, a notch and a stub on its diagonal, and the band ends squared across its heading instead (diagEndOpen()).
      */
     private static void highwayEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, stride = tile * px;
@@ -1998,7 +2072,7 @@ public final class TileRaster {
         int full = fullCs[0], cas = fullCs[1];
         int paved = crossSection(BuildingVisual.PAVED, px)[0];
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i) || (in.marks[i] & CityRuns.M_RAMP) == 0 || p.beneath[i]) continue;
+            if (!isHighway(p, i) || (in.marks[i] & CityRuns.M_RAMP) == 0 || p.beneath[i] || diagonal(in, i)) continue;
             boolean n = runHighwayAt(in, p, i, 0), s = runHighwayAt(in, p, i, 2);
             boolean e = runHighwayAt(in, p, i, 1), west = runHighwayAt(in, p, i, 3);
             boolean ns = n || s;
@@ -2079,7 +2153,7 @@ public final class TileRaster {
         int[] cs = crossSection(BuildingVisual.HIGHWAY, px);
         int width = cs[0], cas = cs[1], o = (px - width) / 2;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i) || diagonal(in, i)) continue;
+            if (!isHighway(p, i) || diagonal(in, i) || in.curved[i]) continue;
             boolean ns = straightHighwayAt(in, p, i, 0) || straightHighwayAt(in, p, i, 2);
             boolean ew = straightHighwayAt(in, p, i, 1) || straightHighwayAt(in, p, i, 3);
             if (!ns || !ew) continue;
@@ -2683,6 +2757,83 @@ public final class TileRaster {
                     if (pathLateral(s, back, back, X + 0.5, Y + 0.5, at) >= half) continue;
                     int i = (Y / px) * tile + X / px;
                     img[Y * w + X] = in.owned[i] ? RAIL_DARK : blend(RAIL_DARK, VOID, UNOWNED_DIM);
+                }
+            }
+        }
+    }
+
+    /** How far the straight legs of a highway bend are drawn past its tangent points, in plots: two - past the last plot the bend replaces (a plot and a half out), where the plots' own bands take over. */
+    private static final double HIGHWAY_LEG = 2;
+
+    /**
+     * The highways' bends (Input.bends of net HIGHWAY, FX5 slice D), drawn as
+     * the carriageway along the arc: the pixels within `half` pixels of each
+     * bend's path in colour c, one pass of the highways' casing or surface
+     * (ways() calls it with the casing's half-width, then the surface's). The
+     * path is the arc between the tangent points and, on the plots the bend
+     * replaces (Input.curved), its two legs' straights on through them - the
+     * straight's row or column, the stretch's line - so nothing is left
+     * between the arc and the plots that run on, which draw their own bands to
+     * their edges, level with the legs'. The arc itself is drawn wherever it
+     * passes, over the open plot it cuts across the corner of, and is laid
+     * over a straight plot's band where it first leaves it; but never over a
+     * bridge's plot.
+     */
+    private static void highwayBends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, double half, int c) {
+        if (in.bends == 0) return;
+        int tile = TilePainter.TILE, w = tile * px;
+        double[] at = new double[2];
+        for (int k = 0; k < in.bends; k++) {
+            TrackCurves.Bend b = in.bendAt(k);
+            if (b.net() != TrackCurves.HIGHWAY) continue;
+            TrackCurves.Bend s = inPixels(b, px);
+            double back = HIGHWAY_LEG * px, reach = half + 2;
+            double ax = s.startX() - s.ux() * back, ay = s.startY() - s.uy() * back, bx = s.endX() + s.vx() * back, by = s.endY() + s.vy() * back;
+            int x0 = Math.max(0, (int) Math.floor(Math.min(Math.min(ax, bx), s.x()) - reach)), x1 = Math.min(w, (int) Math.ceil(Math.max(Math.max(ax, bx), s.x()) + reach));
+            int y0 = Math.max(0, (int) Math.floor(Math.min(Math.min(ay, by), s.y()) - reach)), y1 = Math.min(w, (int) Math.ceil(Math.max(Math.max(ay, by), s.y()) + reach));
+            for (int Y = y0; Y < y1; Y++) {
+                for (int X = x0; X < x1; X++) {
+                    int i = (Y / px) * tile + X / px;
+                    if (p.bridge[i]) continue;
+                    if (pathLateral(s, back, back, X + 0.5, Y + 0.5, at) >= half) continue;
+                    // The legs' straights only on the plots the bend replaces: the others draw their own.
+                    if (at[1] != 0 && !in.curved[i]) continue;
+                    img[Y * w + X] = in.owned[i] ? c : blend(c, VOID, UNOWNED_DIM);
+                }
+            }
+        }
+    }
+
+    /**
+     * The highways' bends' centre line (FX5 slice D): a dash over the first 55%
+     * of each plot's length of the path from the arc's start (`dash` pixels of
+     * every px), a pixel wide on the row or column the straight's own dash
+     * takes, along the arc and the legs' straights on the plots the bend
+     * replaces. A plot's length of path always holds a dash, so the line
+     * goes on through the joint.
+     */
+    private static void highwayBendDashes(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, int dash) {
+        if (in.bends == 0) return;
+        int tile = TilePainter.TILE, w = tile * px;
+        // The straight's dash is the pixel row or column px / 2: the pixel whose middle is half a pixel past the plot's middle where px is even.
+        double shift = (px & 1) == 0 ? 0 : 0.5;
+        double[] at = new double[2];
+        for (int k = 0; k < in.bends; k++) {
+            TrackCurves.Bend b = in.bendAt(k);
+            if (b.net() != TrackCurves.HIGHWAY) continue;
+            TrackCurves.Bend s = inPixels(b, px);
+            double back = HIGHWAY_LEG * px, reach = 3;
+            double ax = s.startX() - s.ux() * back, ay = s.startY() - s.uy() * back, bx = s.endX() + s.vx() * back, by = s.endY() + s.vy() * back;
+            int x0 = Math.max(0, (int) Math.floor(Math.min(Math.min(ax, bx), s.x()) - reach)), x1 = Math.min(w, (int) Math.ceil(Math.max(Math.max(ax, bx), s.x()) + reach));
+            int y0 = Math.max(0, (int) Math.floor(Math.min(Math.min(ay, by), s.y()) - reach)), y1 = Math.min(w, (int) Math.ceil(Math.max(Math.max(ay, by), s.y()) + reach));
+            for (int Y = y0; Y < y1; Y++) {
+                for (int X = x0; X < x1; X++) {
+                    int i = (Y / px) * tile + X / px;
+                    if (p.bridge[i] || p.run[i] == TilePainter.RAIL_OVER) continue;
+                    if (pathLateral(s, back, back, X + shift, Y + shift, at) >= 0.5) continue;
+                    if (at[1] != 0 && !in.curved[i]) continue;
+                    if (Math.floorMod((long) Math.floor(at[0]), px) >= dash) continue;
+                    img[Y * w + X] = in.owned[i] ? CENTRE_LINE : blend(CENTRE_LINE, VOID, UNOWNED_DIM);
                 }
             }
         }
