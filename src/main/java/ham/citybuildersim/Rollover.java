@@ -96,20 +96,21 @@ public final class Rollover {
         MANUAL,
         /** Each piece rolls into its own instrument, term and currency - dollar paper at home while the window abroad is shut. The default for a new game. */
         SAME_STRUCTURE,
-        /** Every piece rolls into a local note of BILL_MONTHS. */
+        /** Every piece rolls into a local bill of BILL_MONTHS. */
         TWELVE_MONTH_BILL
     }
 
     /** How far back the surplus that nets a maturity is read, in months: Jerus's "net of last year's surplus" - a year. */
     public static final int NETTING_MONTHS = 12;
 
-    /** The note TWELVE_MONTH_BILL rolls into, in months: twelve, the longest note the treasury sells (the Finances tab's notes run 3 to 12 months). */
+    /** The bill TWELVE_MONTH_BILL rolls into, in months: twelve, the longest bill the treasury sells (bills run 1 to 12 months, Auction.BILL_MONTHS). */
     public static final int BILL_MONTHS = 12;
 
     /**
      * One issue the rollover makes: the instrument by the quote functions'
-     * names ("Note", "Serial", "Term"), its term in their units (months for a
-     * note, years for the rest), whether it is sold abroad in dollars, the
+     * names ("Note", "Serial", "Term": the bill, the amortizing bond and the
+     * bond since CD2), its term in their units (months for a bill, years for
+     * the rest), whether it is sold abroad in dollars, the
      * cash it must bring in local money, the face its quote gives for that
      * cash as the books stand (in local money at the day's rate, for dollar
      * paper), how many pieces falling due roll into it, and how many of those
@@ -118,19 +119,19 @@ public final class Rollover {
     public record Issue(String type, int term, boolean foreign, double cash, double face,
                         int pieces, int atHomeForDollars) {
 
-        /** The paper, in words: "a 20-year term loan in dollars", "a 12-month note". */
+        /** The paper, in words: "a 20-year bond in dollars", "a 12-month bill". */
         public String paper() {
             String what = switch (type) {
-                case "Note"   -> term + "-month note";
-                case "Serial" -> term + "-year serial bond";
-                default       -> term + "-year term loan";
+                case "Note"   -> term + "-month bill";
+                case "Serial" -> term + "-year amortizing bond";
+                default       -> term + "-year bond";
             };
             return "a " + what + (foreign ? " in dollars" : "");
         }
 
         /** Why it is this paper, in words. */
         public String why(Mode mode) {
-            if (mode == Mode.TWELVE_MONTH_BILL) return "every piece into a note at home";
+            if (mode == Mode.TWELVE_MONTH_BILL) return "every piece into a bill at home";
             if (atHomeForDollars <= 0) return "as the paper falling due";
             return atHomeForDollars == pieces
                     ? "at home in place of dollars: the window abroad is shut"
@@ -196,12 +197,12 @@ public final class Rollover {
         }
     }
 
-    /** The setting in words, for the log and the Finances tab: "by hand", "in the same structure", "into 12-month notes". */
+    /** The setting in words, for the log and the Finances tab: "by hand", "in the same structure", "into 12-month bills". */
     public static String words(Mode mode) {
         return switch (mode == null ? Mode.MANUAL : mode) {
             case MANUAL            -> "by hand";
             case SAME_STRUCTURE    -> "in the same structure";
-            case TWELVE_MONTH_BILL -> "into " + BILL_MONTHS + "-month notes";
+            case TWELVE_MONTH_BILL -> "into " + BILL_MONTHS + "-month bills";
         };
     }
 

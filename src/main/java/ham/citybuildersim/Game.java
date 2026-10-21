@@ -9022,7 +9022,7 @@ public class Game {
         if (was != rollover.getMode()) {
             decisions.record(DecisionLog.BORROWING, switch (rollover.getMode()) {
                 case MANUAL            -> "Rollover off: what falls due is paid from cash";
-                case TWELVE_MONTH_BILL -> "Rollover on: everything into " + Rollover.BILL_MONTHS + "-month notes";
+                case TWELVE_MONTH_BILL -> "Rollover on: everything into " + Rollover.BILL_MONTHS + "-month bills";
                 default                -> "Rollover on: each piece into its own kind";
             });
         }
