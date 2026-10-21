@@ -4780,6 +4780,26 @@ public class LongPlaytest {
         }
     }
 
+    /*
+     * THE CURVE, COUNTED (CD1, 2026-10-20). The curve is priced on the dial
+     * the market expects, so a run says how often it came out inverted (the
+     * ten-year under the one-year), how often steep (the ten-year over the
+     * one-year by two points or more) and the widest gap it ever saw between
+     * today's dial and where the market expected it to settle - a curve that
+     * never leaves the same shape would be a curve nobody had tested.
+     */
+    static int monthsCurveInverted, monthsCurveSteep;
+    static double widestExpectedMove;
+
+    static void countTheCurve(Game g) {
+        DebtManager dm = g.getDebtManager();
+        double year = dm.curveRate(12), decade = dm.curveRate(120);
+        if (decade < year) monthsCurveInverted++;
+        if (decade - year > .02) monthsCurveSteep++;
+        widestExpectedMove = Math.max(widestExpectedMove,
+                Math.abs(dm.expectedDialIn(0) - dm.expectedDialIn(YieldCurve.HORIZON - 1)));
+    }
+
     static void countTheCentralBank(Game g) {
         CentralBank cb = g.getCentralBank();
         double owed = cb.getAdvancesToTreasury();
@@ -4911,6 +4931,7 @@ public class LongPlaytest {
             countTheCitysPaper(g);
             countTheCentralBank(g);
             countTheHolders(g);
+            countTheCurve(g);
             audit(g);
             traceMonth(g);
         }
@@ -6758,6 +6779,9 @@ public class LongPlaytest {
         out.printf("  the holdings at their most: %.3f points off the 50-year (m%d, holding %.1f%% of the"
                 + " term paper, the 50-year at %.2f%%)%n",
                 peakCompression * 100, peakCompressionMonth, heldShareAtPeak * 100, longRateAtPeak * 100);
+        out.printf("  the curve: %d month(s) inverted (10-year under 1-year), %d steep (10-year over 1-year by 2+ points);"
+                + " the widest move the market expected the dial to make %.2f points%n",
+                monthsCurveInverted, monthsCurveSteep, widestExpectedMove * 100);
         // ...and the floor split by who holds the paper (0.7.15): the central bank's
         // share at the policy rate, the rest at the bank's floor (DebtManager.floorRate()).
         out.printf("  the floor at the end: %.2f%% (the policy rate %.2f%%, the bank's floor %.2f%%; the central"

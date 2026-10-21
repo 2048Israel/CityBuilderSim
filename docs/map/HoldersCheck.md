@@ -1,4 +1,4 @@
-# HoldersCheck.java - 606 lines · 10 methods · 0 constants · harnesses
+# HoldersCheck.java - 607 lines · 10 methods · 0 constants · harnesses
 
 `ham/citybuildersim/HoldersCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -74,7 +74,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 554 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 53 | 555 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
 | 59 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 64 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 74 | 4 | `static void quietly(Runnable r)` |  |
@@ -84,10 +84,10 @@
 | 98 | 10 | `static MoneyAudit.Result play(Game g)` | A month, held to the audit. |
 | 109 | 336 | `public static void main(String[] args) throws Exception` |  |
 
-### 9. the whole of the paper (0.7.15) (lines 446-606)
+### 9. the whole of the paper (0.7.15) (lines 446-607)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 449 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
-| 455 | 151 | `static void theWholeBook() throws Exception` |  |
+| 455 | 152 | `static void theWholeBook() throws Exception` |  |
 

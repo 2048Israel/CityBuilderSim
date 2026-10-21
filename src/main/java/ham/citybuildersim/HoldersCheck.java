@@ -543,6 +543,7 @@ public class HoldersCheck {
         double move = Math.min(cb.stepFor(term), cb.getTargetShare() * term - heldBefore);
         double fromBank = Math.min(move, bond.bankPrincipal());
         double fromHouseholds = Math.min(move - fromBank, bond.householdPrincipal());
+        city.strikeTheCurve();   // the expectations the top will strike first (CD1)
         double expectedPrice = ledger.marketValue(bond) * fromHouseholds / bond.getOustandingPrincipal();
         double hhBefore = bond.householdPrincipal(), cellsBefore = hb.totalPaper();
         double m0Before = cb.m0();

@@ -6968,8 +6968,31 @@ public final class GameVersion {
      *   - Harness: PlanCheck 11 (new section); MapCheck's sidecar, fill and
      *     spill fixtures; LongPlaytest's THE LAYOUT, WATCHED. Save format
      *     unchanged.
+     *
+     * 0.8.15 (2026-10-21) - CD1, THE CURVE FROM THE DIAL THE MARKET EXPECTS
+     * (docs/queue/CD1-notes.md; docs/studies/spec-city-debt.md 3). Every
+     * trace that borrows moves.
+     *   - Curve: the market expects the dial to drift to the city's rule at
+     *     the inflation it expects, over YieldCurve.DRIFT_MONTHS (6, D15);
+     *     forwards are that plus the credit spreads, the zero rate compounds
+     *     them and carries the term premium less QE (YieldCurve, new). The
+     *     short end, getRate(), is unchanged; a never-struck manager prices
+     *     the old parallel curve to the bit.
+     *   - Prices: every payment of every piece at its own month's factor
+     *     (dollar paper on the world's curve, worldCurveAt()); a piece's
+     *     yield is solved from its price (yieldOf(), priceOfPar()).
+     *   - Issue: the quote's fixed point on the whole curve (quoteCurve());
+     *     the serial's coupon solved at par on it, the term loan's face on
+     *     its factors and its quote's rate the yield solved from its price,
+     *     home and abroad; the note at its term's zero rate.
+     *   - Month: Game.strikeTheCurve() after the autopilot (step 46), the
+     *     pair saved in DebtManager.marketToSave(); no save-format bump.
+     *   - Screen: Your rate's thirty-year point in its new parts, where the
+     *     market expects the dial; The book's yield from the price.
+     *   - Harness: CurveCheck (new); CentralBankCheck, HoldersCheck and
+     *     ForeignDebtCheck restated on the new pricing, premises kept.
      */
-    public static final String VERSION = "0.8.14";
+    public static final String VERSION = "0.8.15";
 
     /**
      * The save shape.

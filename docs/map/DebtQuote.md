@@ -29,7 +29,7 @@
 >                        exactly what this borrowing costs the city's credit
 >                        discount or premium, plus all the coupons
 
-**Used by (16):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CreditCheck](CreditCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md)
+**Used by (17):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md)
 
 ## Constants
 

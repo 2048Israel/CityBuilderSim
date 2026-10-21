@@ -38,7 +38,9 @@ ZERO_SLACK  the autopilot to month 1,800 (a mature city; Ensemble.SLACK_START), 
                month 600, the window's own inflation, median at most SLACK_MEDIAN_MAX, every seed
                at most SLACK_SEED_MAX, no yoy above RUNAWAY_YOY (see THE PREMISES RESTATED below)
 ZERO_HOT  0% held 240 months from HOT_START (young city), then the autopilot 120 months
-  H1 persists  (restated 0.7.100, A27) the zero window's two halves against the AUTO2 twin's same
+  H1 persists  RETIRED (CD1, 0.8.15; Jerus, 2026-10-21: "H1's premise is retired"): measured and
+               printed, neither scored nor counted (THE PREMISES RETIRED below). As it was written:
+               (restated 0.7.100, A27) the zero window's two halves against the AUTO2 twin's same
                months: the first half's inflation over the twin's (the burst) and the second
                half's (the burst persisting while the dial is held), median at least
                HOT_PERSIST_MIN each, and the second half no faster than the first by
@@ -48,7 +50,8 @@ ZERO_HOT  0% held 240 months from HOT_START (young city), then the autopilot 120
   H2 stops     (restated EN1) the last STOP_TAIL months of the autopilot phase against the AUTO2
                twin's same months: their inflation over the twin's, median at most HOT_STOP_EXCESS,
                and below the zero window's second half's over the twin's in at least SEEDS_MOST
-               seeds (vacuous - marked so - when H1 failed: there was no burst to stop). Until EN1
+               seeds (vacuous - marked so - when H1's measure finds no burst to stop; it still
+               does, H1 retired or not). Until EN1
                the tail's own inflation, median at most HOT_STOP_MAX (4%) and below the second
                half's own in SEEDS_MOST seeds
 SHOCK  the autopilot; at month 600 the world's price level x 1.3, once; 240 months on
@@ -187,7 +190,30 @@ HOT_PERSIST_MIN = ANCHOR_TOL
 # young city's own inflation (AUTO2_FROM to YOUNG_TO) is printed as info beside A1.
 HOT_STOP_EXCESS = ANCHOR_TOL
 
-POLICIES = ["AUTO2", "ZERO_SLACK", "ZERO_HOT", "SHOCK", "HIGH"]
+# ---- THE PREMISES RETIRED (CD1, 0.8.15; Jerus, 2026-10-21: "Keep D9 as decided: H1's premise is
+# retired, A2 ships as noise at its threshold. Ship CD1.") ---------------------------------------
+# A retired criterion is still measured and printed, with its numbers and its threshold as written,
+# so its history reads on from one baseline to the next; its verdict is RETIRED, with his words and
+# what the numbers alone would give, and it is neither scored (no PASS or FAIL) nor counted in
+# "criteria passed". Only Jerus retires a premise (EN1), and the entry names his words and the date.
+# H1 asserted that a young city whose dial is held at 0% by hand runs at least a point hotter than
+# its AUTO2 twin in each half of the zero window's twenty years, the second half no faster than the
+# first by a point or more: the burst a cheap dial buys, persisting while the dial is held. Its
+# premise was a curve that moved with the dial in parallel, so a dial at 0% made long money cheap
+# too. D9 (docs/studies/spec-city-debt.md section 9, built by CD1) has the market expect the dial
+# back at the city's own rule within about six months (YieldCurve.DRIFT_MONTHS), whoever holds it:
+# a dial held at 0% by hand makes short money cheap, and long money stays priced on where the rule
+# will take the dial - the study's "behind" city (section 3.3). On CD1's ensemble the first half's
+# excess over the twin is 0.27 points (0.8.12: 2.37) and the second's 3.02 (3.63): the burst comes,
+# a decade later. A first-decade burst needs a market that believes the hand on the dial, which D9
+# decided against. H2 still reads H1's measure of the burst, to know whether there is one to stop.
+# A2 is not retired: it is scored as written, red on 0.8.15's runs at its threshold (one seed's
+# spell of 12 months against "under 12"), and shipped as noise by the same word.
+RETIRED = {
+    "H1": "Jerus, 2026-10-21, on CD1: \"Keep D9 as decided: H1's premise is retired\"",
+}
+
+POLICIES =["AUTO2", "ZERO_SLACK", "ZERO_HOT", "SHOCK", "HIGH"]
 # months each policy runs to, as Ensemble.end() sets them (ZERO_HOT's and, since 0.7.100, ZERO_SLACK's are read from their phases)
 EXPECTED_END = {"AUTO2": 2400, "ZERO_SLACK": 2040, "SHOCK": 840, "HIGH": 720}
 
@@ -301,6 +327,10 @@ def main():
         if not isinstance(ok, str):
             ok = bool(ok)
         verdict = "PASS" if ok is True else "FAIL" if ok is False else str(ok)
+        if cid in RETIRED and verdict in ("PASS", "FAIL"):
+            # THE PREMISES RETIRED: measured and printed, neither scored nor counted.
+            note = f"{RETIRED[cid]}; the numbers alone would {verdict.lower()}" + (f"; {note}" if note else "")
+            verdict = "RETIRED"
         rows.append((pol, cid, what, value, threshold, verdict + (f" ({note})" if note else "")))
 
     twin = {s: runs.get(("AUTO2", s)) for s in seeds}
@@ -532,8 +562,9 @@ def main():
     crit = [r_ for r_ in rows if r_[1] not in ("info", "pairing") and r_[5].startswith(("PASS", "FAIL"))]
     npass = sum(1 for r_ in crit if r_[5].startswith("PASS"))
     vac = sum(1 for r_ in rows if r_[5].startswith("VACUOUS"))
+    ret = sum(1 for r_ in rows if r_[5].startswith("RETIRED"))
     print()
-    print(f"criteria passed: {npass}/{len(crit)} (vacuous, not counted: {vac}); "
+    print(f"criteria passed: {npass}/{len(crit)} (vacuous, not counted: {vac}; retired, not counted: {ret}); "
           f"missing runs: {missing or 'none'}; short runs: {short or 'none'}")
     times = os.path.join(outdir, "times.txt")
     if os.path.exists(times):
