@@ -123,6 +123,9 @@ public abstract class Debt {
     /** ...and the central bank, at face (its open-market holdings). Zero on an old save. */
     protected double centralBankPrincipal;
 
+    /** ...and the businesses, at face (CD2, slice 4): the sum of every sector's paper on OutwardInvestment. Zero on an old save. */
+    protected double firmPrincipal;
+
     /**
      * What the buyers still owe for this paper: the cash the treasury received
      * at issue, which the households and the bank hand over at the next settle
@@ -150,10 +153,12 @@ public abstract class Debt {
 
     public double householdPrincipal()   { return foreign ? 0 : householdPrincipal; }
     public double centralBankPrincipal() { return foreign ? 0 : centralBankPrincipal; }
+    public double firmPrincipal()        { return foreign ? 0 : firmPrincipal; }
 
-    /** What the commercial bank holds: the rest of the principal. Zero on a dollar bond, which is held abroad. */
+    /** What the commercial bank holds: the rest of the principal after the households, the central bank and the businesses. Zero on a dollar bond, which is held abroad. */
     public double bankPrincipal() {
-        return foreign ? 0 : Math.max(0, getOustandingPrincipal() - householdPrincipal - centralBankPrincipal);
+        return foreign ? 0
+                : Math.max(0, getOustandingPrincipal() - householdPrincipal - centralBankPrincipal - firmPrincipal);
     }
 
     public double getSettleDue()      { return settleDue; }
@@ -234,15 +239,15 @@ public abstract class Debt {
        (and added to at a reopening), read by the settle, cleared by it. Plain
        fields, so Gson saves them with the piece and a city saved between the
        sale and the settle settles the same. The firms' and the world's pairs
-       are written by the sale from the auction's fills, and read by slices
-       that make them holders; until then the auction has no firms or world in
-       it and they stay at nothing.
+       are written by the sale from the auction's fills: the firms' are read
+       by the settle since slice 4 (Game.firmsTakeTheirShare()); the world's
+       stay at nothing until slice 5 makes it a holder.
        ----------------------------------------------------------------------- */
 
     /** The face the sale still to be settled gave the households, and the cash they pay for it at the settle. */
     protected double allotHouseholdsFace, allotHouseholdsCash;
 
-    /** ...the businesses' (nothing until they hold city paper). */
+    /** ...the businesses' (CD2, slice 4: they pay it from their tills at the settle, Game.firmsTakeTheirShare()). */
     protected double allotFirmsFace, allotFirmsCash;
 
     /** ...and the world's (nothing until it holds city paper). */
@@ -311,9 +316,10 @@ public abstract class Debt {
         return settledDiscount * Math.min(1, paid / settledOut);
     }
 
-    /** Moves face between the holders: positive to the households or the central bank from the bank, negative back to it. */
+    /** Moves face between the holders: positive to the households, the central bank or the businesses from the bank, negative back to it. */
     void moveToHouseholds(double face)  { householdPrincipal = Math.max(0, householdPrincipal + face); }
     void moveToCentralBank(double face) { centralBankPrincipal = Math.max(0, centralBankPrincipal + face); }
+    void moveToFirms(double face)       { firmPrincipal = Math.max(0, firmPrincipal + face); }
 
     /**
      * THE CENTRAL BANK'S ADD-ON (0.7.15, round 2): this much more face of the
@@ -643,6 +649,7 @@ public abstract class Debt {
             // the yield is a rate and does not move.
             householdPrincipal *= scale;
             centralBankPrincipal *= scale;
+            firmPrincipal *= scale;
             settleDue *= scale;
             unsettledFace *= scale;
             allotHouseholdsFace *= scale;

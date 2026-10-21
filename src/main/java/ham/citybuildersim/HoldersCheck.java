@@ -46,6 +46,18 @@ import java.nio.file.Files;
  *      in the middle keeps the dial, the holdings and the pace, and both
  *      cities buy the same from the households the month after.
  *
+ * 10. The businesses are a fourth holder (CD2, slice 4, D33): the auction
+ *     allots them a share of the sale; at the settle each sector pays its
+ *     share out of its own till, in proportion to its own bid at the stop and
+ *     never past the till, and the bank takes what a till could not pay; the
+ *     coupon, the principal and a buyback's price arrive in the tills; they
+ *     sell to the bank's desk when the spread has gone, when a sector
+ *     borrows and when it wants the money; the central bank reaches them last
+ *     when its dial is the whole of the paper; and at every step the sectors'
+ *     paper is the paper's businesses' share, exactly, the audit closing
+ *     (a till and the bank are both pools, so nothing is declared), through a
+ *     save and load, and an old save loads with none.
+ *
  * Each fixture causes its condition rather than finding a city in it.
  *
  * @author Jerus
@@ -195,9 +207,13 @@ public class HoldersCheck {
         close("their savings fell by exactly what they paid", around[0] - around[1], paid, 1e-6);
         close("...for the face the issue's price buys: face times cash over received",
                 bond.householdPrincipal(), face * paid / received, 1e-6);
-        close("the bank paid exactly the rest", city.getCityPaperSettled(), received - paid, 1e-6);
+        // ...the households and, since CD2 (slice 4), the businesses: the sector tills pay what the auction
+        // allotted them, and the bank the rest of both. Section 10 holds the businesses' part to account.
+        double firmsPaid = city.getFirmsBoughtPaper();
+        close("the bank paid exactly the rest, after the households and the businesses", city.getCityPaperSettled(),
+                received - paid - firmsPaid, 1e-6);
         close("...and holds exactly the rest of the face", bond.bankPrincipal(),
-                face - bond.householdPrincipal(), 1e-9);
+                face - bond.householdPrincipal() - bond.firmPrincipal(), 1e-9);
         close("the paper's household share is the sum of every cell's paper",
                 hb.totalPaper(), ledger.householdPrincipal(), 1e-9);
         close("...and the treasury is owed nothing more for it", bond.getSettleDue(), 0, 0);
@@ -385,9 +401,14 @@ public class HoldersCheck {
         json.add("householdCells", shorter);
         for (com.google.gson.JsonElement e : json.getAsJsonArray("debts")) {
             com.google.gson.JsonObject d = e.getAsJsonObject();
-            for (String k : new String[] {"householdPrincipal", "centralBankPrincipal", "settleDue",
+            for (String k : new String[] {"householdPrincipal", "centralBankPrincipal", "firmPrincipal", "settleDue",
                     "issueYield", "issueDiscount", "discountLeft"}) d.remove(k);
         }
+        // ...and the sectors' array as it was before their paper was appended (CD2, slice 4).
+        com.google.gson.JsonArray sectorsFull = json.getAsJsonArray("outwardInvestment");
+        com.google.gson.JsonArray sectorsOld = new com.google.gson.JsonArray();
+        for (int i = 0; i < 7 + 3 * Sectors.KEYS.length; i++) sectorsOld.add(sectorsFull.get(i));
+        json.add("outwardInvestment", sectorsOld);
         for (String k : new String[] {"qeTargetShare", "householdPaperRatio",
                 "buybackToHouseholdsUnsettled", "buybackAbroadUnsettled"}) json.remove(k);
         // ...and the central bank's array as 0.7.0 wrote it, without the tail.
@@ -441,6 +462,7 @@ public class HoldersCheck {
         assertTrue("the audit closes on it", Math.abs(abroad.residual) <= MoneyAudit.tolerance(abroad.moved()));
 
         theWholeBook();
+        theBusinesses();
 
         assertTrue(String.format("every month this harness played closed the audit (%d)",
                 closedMonths + brokenMonths), brokenMonths == 0);
@@ -614,5 +636,462 @@ public class HoldersCheck {
                         + " the policy rate %.3f%%, the bank's floor %.3f%%%n", city.getMonth(), cb.getPaperHeld(),
                 cb.getBoughtFromHouseholdsLifetime(), ledger.floorRate() * 100, ledger.getPolicyRate() * 100,
                 ledger.bankFloorRate() * 100);
+    }
+
+    /* ================= 10. the businesses (CD2, slice 4, D33) ================= */
+
+    /** The two books of the businesses' paper agree: the sectors', and the paper's. */
+    static boolean firmsAgree(Game g) {
+        double sectors = g.getOutwardInvestment().totalPaper();
+        double paper = g.getDebtManager().firmPrincipal();
+        return Math.abs(sectors - paper) <= 1e-9 * Math.max(1, paper);
+    }
+
+    /** The domestic piece on the books that was not there before. */
+    static Debt newPiece(DebtManager ledger, java.util.List<Debt> before) {
+        Debt found = null;
+        for (Debt d : ledger.getDebt()) if (!d.isForeign() && !before.contains(d)) found = d;
+        return found;
+    }
+
+    /** Every sector's till, in Sectors.KEYS order. */
+    static double[] tills(Game g) {
+        double[] t = new double[Sectors.KEYS.length];
+        for (int i = 0; i < t.length; i++) t[i] = g.getEconomyManager().getSectorCash(Sectors.KEYS[i]);
+        return t;
+    }
+
+    /** Every sector's paper, in Sectors.KEYS order. */
+    static double[] holdings(Game g) {
+        double[] h = new double[Sectors.KEYS.length];
+        for (int i = 0; i < h.length; i++) h[i] = g.getOutwardInvestment().paperOf(Sectors.KEYS[i]);
+        return h;
+    }
+
+    /** True when these sectors' cash flow statements explain their tills to the cent this month (SectorBooks.SectorMonth.unexplained()). */
+    static boolean booksExplain(Game g, java.util.List<String> sectors) {
+        boolean ok = true;
+        for (String k : sectors) {
+            SectorBooks.SectorMonth m = g.getSectorBooks().get(k);
+            ok &= Math.abs(m.unexplained()) <= MoneyAudit.tolerance(1e-6, m.unexplainedScale());
+        }
+        return ok;
+    }
+
+    /** One close() with the tolerance a part in a billion of the figure, or a cent. */
+    static void near(String label, double actual, double expected) {
+        close(label, actual, expected, Math.max(1e-6, 1e-9 * Math.abs(expected)));
+    }
+
+    static void theBusinesses() throws Exception {
+        out.println("\n--- 10. the businesses are a holder: they buy at the settle, are paid, sell, and the books agree ---");
+        GameFiles files = GameFiles.scratch("holderscheck-firms");
+        Game city = new Game(files);
+        quietly(() -> {
+            city.run();
+            // The treasury, the ground and the held builders the other sections were written against (see main(), theWholeBook()).
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
+            city.getForeignAccounts().pinRate(1.0);
+            city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            city.buildStack(template(city, "Gravel Road"), 6, true);
+            city.buildStack(template(city, "House"), 300, false);
+            city.buildStack(template(city, "Convenience Store"), 6, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
+            city.buildStack(template(city, "Construction Depot"), 4, false);
+            city.buildStack(template(city, "Coal Power Plant"), 1, false);
+            city.buildStack(template(city, "Commercial Bank"), 1, false);
+            city.simulateMonths(60);
+            for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
+        });
+        HouseholdBalance hb = city.getHouseholdBalance();
+        DebtManager ledger = city.getDebtManager();
+        Bank bank = city.getBank();
+        CentralBank cb = city.getCentralBank();
+        EconomyManager econ = city.getEconomyManager();
+        OutwardInvestment outward = city.getOutwardInvestment();
+        ForeignAccounts fx = city.getForeignAccounts();
+        final String[] keys = Sectors.KEYS;
+        final int n = keys.length;
+        // Three times what the households can pay: they bid first and in full up to their purse (D32), so only
+        // an issue past it leaves the businesses, the bank and the world anything to be allotted.
+        final double ask = Math.max(100, hb.spareForPaper() * 3);
+
+        // The businesses with idle money: the first three sectors that owe nothing, each given a till worth
+        // a hundred issues, so the businesses are a bidder at the auction and not a rounding.
+        final java.util.List<String> idle = new java.util.ArrayList<>();
+        for (String k : keys) if (idle.size() < 3 && econ.getBusinessDebtManager().getPrincipal(k) <= 0) idle.add(k);
+        assertTrue("fixture: three sectors that owe nothing", idle.size() == 3);
+        final double till = 100 * ask;
+        Runnable fill = () -> { for (String k : idle) econ.setSectorCash(k, till); };
+        fill.run();
+        assertTrue("fixture: their idle money is what the auction counts of the businesses",
+                outward.idleWealth(econ) >= 3 * till * .99);
+        assertTrue("fixture: and they hold none of the city's paper yet", outward.totalPaper() == 0 && ledger.firmPrincipal() == 0);
+
+        /* ---- the settle ---- */
+        out.println("   -- the settle: each sector pays out of its till, in proportion to its own bid");
+        java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        final Debt bond = newPiece(ledger, had);
+        assertTrue("fixture: the treasury sold a twenty-year bond between the presses", bond != null);
+        double received = bond.getSettleDue(), face = bond.getOustandingPrincipal();
+        double allotFace = bond.allotFirmsFace(), allotCash = bond.allotFirmsCash();
+        out.printf("   it raised $%,.2fk on $%,.0fk of face at %.3f%%; the auction allotted the businesses $%,.2fk of face for $%,.2fk%n",
+                received, face, bond.getIssueYield() * 100, allotFace, allotCash);
+        assertTrue("fixture: the stop is over what the world pays, so the businesses' rule bids",
+                bond.getIssueYield() > DebtManager.WORLD_BASE_RATE);
+        assertTrue("fixture: the auction filled the businesses", allotFace > 0 && allotCash > 0);
+        near("...for the issue's price: their cash over their face is what the issue raised over its face",
+                allotCash / allotFace, received / face);
+        close("they hold none of it until the settle", bond.firmPrincipal(), 0, 0);
+
+        final double[] before = new double[n], atSettle = new double[n], held = new double[n], weight = new double[n];
+        final double[] seen = new double[1];     // the piece's businesses' share, once the settle has run
+        city.settleProbeForTest = after -> {
+            if (!after) {
+                for (int i = 0; i < n; i++) before[i] = econ.getSectorCash(keys[i]);
+                System.arraycopy(outward.allotmentWeights(bond.getIssueYield(), bank.depositRate(),
+                        DebtManager.WORLD_BASE_RATE, econ), 0, weight, 0, n);
+            } else {
+                for (int i = 0; i < n; i++) { atSettle[i] = econ.getSectorCash(keys[i]); held[i] = outward.paperOf(keys[i]); }
+                seen[0] = bond.firmPrincipal();
+            }
+        };
+        MoneyAudit.Result settled = play(city);
+        city.settleProbeForTest = null;
+        double sumW = 0, paidSum = 0;
+        boolean paidEach = true, holdsEach = true, couldPay = true;
+        for (int i = 0; i < n; i++) {
+            sumW += weight[i];
+            double paid = before[i] - atSettle[i];
+            paidSum += paid;
+            couldPay &= before[i] >= allotCash * weight[i];
+            paidEach &= Math.abs(paid - allotCash * weight[i]) <= 1e-6 * Math.max(1, allotCash);
+            holdsEach &= Math.abs(held[i] - allotFace * weight[i]) <= 1e-6 * Math.max(1, allotFace);
+        }
+        out.printf("   the businesses paid $%,.2fk; the three with idle money paid %.1f%% of it%n", paidSum,
+                100 * (weight[java.util.Arrays.asList(keys).indexOf(idle.get(0))]
+                        + weight[java.util.Arrays.asList(keys).indexOf(idle.get(1))]
+                        + weight[java.util.Arrays.asList(keys).indexOf(idle.get(2))]));
+        close("fixture: the sectors' shares of the allotment are their bids over all the bids, and sum to one", sumW, 1, 1e-9);
+        assertTrue("fixture: every till could pay its share, so nothing was cut", couldPay);
+        assertTrue("each sector paid its share of what the auction allotted the businesses, out of its till", paidEach);
+        assertTrue("...and holds the face that cash buys, in the same shares", holdsEach);
+        near("together they paid exactly what the auction allotted them", paidSum, allotCash);
+        near("...and the month's figure is the same", city.getFirmsBoughtPaper(), allotCash);
+        near("the paper's businesses' share is the face they were allotted", seen[0], allotFace);
+        assertTrue("...and it is the sectors' paper summed", firmsAgree(city));
+        near("...and they sold none of it in the month they bought it: the paper pays more than the world does, and"
+                + " is read at its own yield", outward.totalPaper(), allotFace);
+        near("the bank paid exactly the rest", city.getCityPaperSettled(),
+                received - city.getHouseholdsBoughtPaper() - city.getFirmsBoughtPaper());
+        close("...and holds exactly the rest of the face", bond.bankPrincipal(),
+                face - bond.householdPrincipal() - bond.firmPrincipal(), 1e-9 * face);
+        assertTrue("the audit closed on the settle month: a till paying the bank is a pool paying a pool",
+                Math.abs(settled.residual) <= MoneyAudit.tolerance(settled.moved()));
+
+        /* ---- the coupon ---- */
+        out.println("   -- the coupon reaches the tills, and the principal and a buyback do too");
+        double expected = 0;
+        for (Debt d : ledger.getDebt()) {
+            double owed = d.getOustandingPrincipal();
+            if (!d.isForeign() && owed > 0) expected += d.getMonthlyInterestExpense() * d.firmPrincipal() / owed;
+        }
+        assertTrue("fixture: the businesses hold paper that pays a coupon", expected > 0);
+        MoneyAudit.Result couponMonth = play(city);
+        near("the businesses were paid their share of the month's coupon", city.getCouponsToFirms(), expected);
+        assertTrue("...and the audit closes: the treasury paid the tills", Math.abs(couponMonth.residual)
+                <= MoneyAudit.tolerance(couponMonth.moved()));
+        assertTrue("the two books still agree", firmsAgree(city));
+        boolean paperCoupons = true;
+        for (String k : idle) paperCoupons &= city.getSectorBooks().get(k).bondCoupons() >= outward.getPaperCouponsThisMonth(k)
+                && outward.getPaperCouponsThisMonth(k) > 0;
+        assertTrue("each sector's books carry its coupon on the city's paper among the coupons on the bonds it holds", paperCoupons);
+        assertTrue("...and explain every cent of its till: the paper is a bond it holds, bought, paid and sold like the others",
+                booksExplain(city, idle));
+
+        // The split among the sectors, on a copy of their books (the live ones are held to the paper, so
+        // these arithmetic checks are made on a twin; the tills are the city's, the money between two months).
+        OutwardInvestment copy = new OutwardInvestment();
+        copy.restore(outward.toSaveArray());
+        double total = copy.totalPaper();
+        double[] tl = tills(city), cp = holdings(city);
+        copy.creditPaperCoupon(1000, econ);
+        boolean couponSplit = true;
+        double[] tl1 = tills(city);
+        for (int i = 0; i < n; i++) couponSplit &= Math.abs((tl1[i] - tl[i]) - 1000 * cp[i] / total) <= 1e-9 * 1000;
+        assertTrue("a coupon reaches each sector's till in proportion to the paper it holds", couponSplit);
+        double x = total / 4;
+        copy.creditPaperPrincipal(x, econ);
+        double[] tl2 = tills(city);
+        boolean principalSplit = true, paperDown = true;
+        for (int i = 0; i < n; i++) {
+            principalSplit &= Math.abs((tl2[i] - tl1[i]) - x * cp[i] / total) <= 1e-9 * x;
+            paperDown &= Math.abs((cp[i] - copy.paperOf(keys[i])) - x * cp[i] / total) <= 1e-9 * x;
+        }
+        assertTrue("principal reaches the tills in the same proportion", principalSplit);
+        assertTrue("...with each sector's paper down by the same", paperDown);
+        close("...so the paper is down by exactly the principal", total - copy.totalPaper(), x, 1e-9 * x);
+
+        /* ---- a till caps what its sector pays ---- */
+        out.println("   -- a till caps what its sector pays, and the bank takes the rest");
+        fill.run();
+        had = new java.util.ArrayList<>(ledger.getDebt());
+        quietly(() -> city.handleLongBondLogic(ask, 30, 100));
+        final Debt bond2 = newPiece(ledger, had);
+        assertTrue("fixture: the treasury sold a thirty-year bond", bond2 != null);
+        double received2 = bond2.getSettleDue(), face2 = bond2.getOustandingPrincipal();
+        double allotFace2 = bond2.allotFirmsFace(), allotCash2 = bond2.allotFirmsCash();
+        assertTrue("fixture: the businesses were allotted some", allotFace2 > 0 && allotCash2 > 0);
+        final String capped = idle.get(0);
+        final int ci = java.util.Arrays.asList(keys).indexOf(capped);
+        final double[] before2 = new double[n], atSettle2 = new double[n], held2 = new double[n], heldBefore2 = new double[n], weight2 = new double[n];
+        city.settleProbeForTest = after -> {
+            if (!after) {
+                // Cause it: its dollars abroad (a hundred issues of them) make it a bidder like the others, and its till
+                // is a quarter of what its share of the allotment would be.
+                // ...and what leaves the till goes to the treasury, a pool, inside the audit's window.
+                double[] arr = outward.toSaveArray();
+                arr[7 + 3 * ci] = till / outward.getLastRate();
+                outward.restore(arr);
+                double was = econ.getSectorCash(capped);
+                econ.setSectorCash(capped, 1);
+                double w = outward.allotmentWeights(bond2.getIssueYield(), bank.depositRate(), DebtManager.WORLD_BASE_RATE, econ)[ci];
+                econ.setSectorCash(capped, allotCash2 * w / 4);
+                city.setCashForTest(city.getCash() + (was - econ.getSectorCash(capped)));
+                for (int i = 0; i < n; i++) { before2[i] = econ.getSectorCash(keys[i]); heldBefore2[i] = outward.paperOf(keys[i]); }
+                System.arraycopy(outward.allotmentWeights(bond2.getIssueYield(), bank.depositRate(),
+                        DebtManager.WORLD_BASE_RATE, econ), 0, weight2, 0, n);
+            } else {
+                for (int i = 0; i < n; i++) { atSettle2[i] = econ.getSectorCash(keys[i]); held2[i] = outward.paperOf(keys[i]); }
+                seen[0] = bond2.firmPrincipal();
+            }
+        };
+        MoneyAudit.Result settled2 = play(city);
+        city.settleProbeForTest = null;
+        double demand = allotCash2 * weight2[ci];
+        assertTrue("fixture: the till is under what its share of the allotment asks", before2[ci] > 0 && before2[ci] < demand);
+        double cut = before2[ci] / demand;
+        out.printf("   %s was asked $%,.2fk and had $%,.2fk: it paid %.1f%% of its share%n", capped, demand, before2[ci], cut * 100);
+        close("it paid the whole of its till and not a unit more", atSettle2[ci], 0, 1e-9 * Math.max(1, demand));
+        close("...for that share of its face: the cut is the same on the face as on the cash",
+                held2[ci] - heldBefore2[ci], allotFace2 * weight2[ci] * cut, 1e-6 * Math.max(1, allotFace2));
+        double others = 0, othersFace = 0;
+        boolean fullOthers = true;
+        for (int i = 0; i < n; i++) {
+            if (i == ci) continue;
+            others += before2[i] - atSettle2[i];
+            othersFace += held2[i] - heldBefore2[i];
+            fullOthers &= Math.abs((before2[i] - atSettle2[i]) - allotCash2 * weight2[i]) <= 1e-6 * Math.max(1, allotCash2);
+        }
+        assertTrue("every other sector paid its share in full", fullOthers);
+        near("the businesses paid the others' shares and the capped one's till, no more", city.getFirmsBoughtPaper(),
+                others + before2[ci]);
+        near("the paper's businesses' share is the face the sectors took", seen[0], othersFace + held2[ci] - heldBefore2[ci]);
+        near("the bank paid exactly the rest, the shortfall included", city.getCityPaperSettled(),
+                received2 - city.getHouseholdsBoughtPaper() - city.getFirmsBoughtPaper());
+        close("...and holds the rest of the face", bond2.bankPrincipal(),
+                face2 - bond2.householdPrincipal() - bond2.firmPrincipal(), 1e-9 * face2);
+        assertTrue("the two books still agree", firmsAgree(city));
+        assertTrue("the audit closed on it", Math.abs(settled2.residual) <= MoneyAudit.tolerance(settled2.moved()));
+
+        /* ---- selling to the desk ---- */
+        out.println("   -- the spread gone, a borrower, and money wanted: each sells to the bank's desk");
+        // The spread gone: the paper pays what the world pays, so the sectors' target for it is nothing.
+        final double ratio = .95;
+        outward.setPaperBook(ratio, DebtManager.WORLD_BASE_RATE);
+        double[] h0 = holdings(city);
+        double total0 = outward.totalPaper();
+        double soldFace = total0 * OutwardInvestment.HOME_SPEED;
+        double unearned = 0;
+        for (Debt d : ledger.getDebt()) {
+            if (d.firmPrincipal() > 0) unearned += d.unaccretedOn(soldFace * d.firmPrincipal() / ledger.firmPrincipal());
+        }
+        double bankCash = bank.getCash(), bankBook = bank.getCityBook(), bankGains = bank.getPaperGains();
+        double soldBefore = outward.getLifetimePaperSold();
+        outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE, fx.getRate(), econ);
+        double[] h1 = holdings(city);
+        boolean eachSold = true;
+        for (int i = 0; i < n; i++) eachSold &= Math.abs((h0[i] - h1[i]) - h0[i] * OutwardInvestment.HOME_SPEED) <= 1e-9 * Math.max(1, h0[i]);
+        assertTrue("with no spread, every sector sold HOME_SPEED of what it held, the pace the dollars come home at", eachSold);
+        near("...to the desk at the month's ratio: the cash it paid", bankCash - bank.getCash(), soldFace * ratio);
+        near("...and the sectors' record of what they were paid is the same", outward.getLifetimePaperSold() - soldBefore, soldFace * ratio);
+        near("...its book rose by the face", bank.getCityBook() - bankBook, soldFace);
+        near("...and it booked the gain against what it carries the paper at, the unearned discount riding on it",
+                bank.getPaperGains() - bankGains, (soldFace - unearned) - soldFace * ratio);
+        assertTrue("the two books still agree", firmsAgree(city));
+
+        // A borrower: its target is nothing, so it sells whatever the spread, and the sectors that owe nothing do not.
+        final String owes = idle.get(1), keeps1 = idle.get(0), keeps2 = idle.get(2);
+        econ.getBusinessDebtManager().setAssets(owes, 4 * till);
+        econ.getBusinessDebtManager().issueLoan(owes, till / 10, city.getMonth());
+        assertTrue("fixture: the borrower owes something", econ.getBusinessDebtManager().getPrincipal(owes) > 0);
+        outward.setPaperBook(1, .08);       // six points over the world: a sector with money wants as much as it can
+        double[] h2 = holdings(city);
+        int oi = java.util.Arrays.asList(keys).indexOf(owes), k1 = java.util.Arrays.asList(keys).indexOf(keeps1),
+                k2 = java.util.Arrays.asList(keys).indexOf(keeps2);
+        assertTrue("fixture: the borrower holds some", h2[oi] > 0);
+        outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE, fx.getRate(), econ);
+        double[] h3 = holdings(city);
+        close("a sector that borrows sells HOME_SPEED of all it holds", h2[oi] - h3[oi], h2[oi] * OutwardInvestment.HOME_SPEED,
+                1e-9 * Math.max(1, h2[oi]));
+        assertTrue("...while the sectors with money and nothing owed keep theirs, the paper paying what it does",
+                h3[k1] == h2[k1] && h3[k2] == h2[k2]);
+        assertTrue("the two books still agree", firmsAgree(city));
+
+        // Money wanted: after the dollars, the paper. Dollars abroad are given by hand, to have them.
+        final String wants = keeps2;
+        double[] arr = outward.toSaveArray();
+        double abroadValue = 2 * ask;
+        arr[7 + 3 * k2] = abroadValue / outward.getLastRate();
+        outward.restore(arr);
+        double heldW = outward.paperOf(wants);
+        double tillW = econ.getSectorCash(wants), bankW = bank.getCash();
+        double got = outward.recall(wants, ask, econ);
+        near("asked for less than its dollars abroad are worth, the dollars come", got, ask);
+        close("...and the paper is not touched", outward.paperOf(wants), heldW, 0);
+        near("...into the till", econ.getSectorCash(wants) - tillW, ask);
+        double wantedMore = ask + .1 * heldW * outward.getPaperRatio();
+        got = outward.recall(wants, wantedMore, econ);
+        near("asked for more than its dollars, it gets all of them and the rest from its paper, at the month's ratio", got, wantedMore);
+        close("...the dollars gone", outward.getUsd(wants), 0, 1e-9);
+        close("...and a tenth of the paper sold to the desk", heldW - outward.paperOf(wants), .1 * heldW, 1e-9 * Math.max(1, heldW));
+        near("...the desk paying the paper's market value", bankW - bank.getCash(), .1 * heldW * outward.getPaperRatio());
+        double everything = outward.recall(wants, 1e9 * ask, econ);
+        near("asked for more than it has, it sells all its paper and no more", everything, .9 * heldW * outward.getPaperRatio());
+        close("...and holds none", outward.paperOf(wants), 0, 1e-12);
+        assertTrue("the two books still agree", firmsAgree(city));
+        // The dollars brought home by hand are this month's, declared by the next takeMonth() as they always were; fold them now,
+        // between two months, so the next month's window is not handed money that arrived before it opened.
+        outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE, fx.getRate(), econ);
+
+        /* ---- a buyback ---- */
+        out.println("   -- a buyback pays the businesses their share, into their tills");
+        double firmFace = bond2.firmPrincipal(), principal2 = bond2.getOustandingPrincipal(), bankFace2 = bond2.bankPrincipal();
+        assertTrue("fixture: the businesses still hold some of the thirty-year bond", firmFace > 0);
+        city.setCashForTest(city.getCash() + 2 * principal2);
+        double price2 = city.quoteRepurchase(bond2);
+        double[] hb4 = holdings(city), tl4 = tills(city);
+        double tot4 = outward.totalPaper(), bankCash4 = bank.getCash();
+        double paid2 = city.repurchaseDebt(bond2);
+        near("fixture: the buyback was at the quoted price", paid2, price2);
+        double firmPrice = price2 * firmFace / principal2;
+        double[] ha = holdings(city), ta = tills(city);
+        boolean buybackTills = true, buybackPaper = true;
+        for (int i = 0; i < n; i++) {
+            buybackTills &= Math.abs((ta[i] - tl4[i]) - firmPrice * hb4[i] / tot4) <= 1e-6 * Math.max(1, firmPrice);
+            buybackPaper &= Math.abs((hb4[i] - ha[i]) - firmFace * hb4[i] / tot4) <= 1e-6 * Math.max(1, firmFace);
+        }
+        assertTrue("the businesses' share of the price went into their tills, in proportion to the paper each holds", buybackTills);
+        assertTrue("...and their paper is down by the face they held of it, in the same proportion", buybackPaper);
+        near("the bank's share of the price went to its cash", bank.getCash() - bankCash4, price2 * bankFace2 / principal2);
+        assertTrue("the two books still agree", firmsAgree(city));
+        MoneyAudit.Result buyMonth = play(city);
+        assertTrue("the audit closes on the month after: the businesses are paid between two pools, nothing is carried",
+                Math.abs(buyMonth.residual) <= MoneyAudit.tolerance(buyMonth.moved()));
+
+        /* ---- the principal, at maturity ---- */
+        out.println("   -- the principal, at maturity: a two-year bond held to the end");
+        fill.run();
+        had = new java.util.ArrayList<>(ledger.getDebt());
+        quietly(() -> city.handleLongBondLogic(ask, 2, 100));
+        final Debt bond3 = newPiece(ledger, had);
+        assertTrue("fixture: the treasury sold a two-year bond", bond3 != null);
+        play(city);
+        assertTrue("fixture: the businesses took part of it at the settle", bond3.firmPrincipal() > 0);
+        double pre = bond3.firmPrincipal();
+        boolean agreeEvery = true;
+        int guard = 0;
+        boolean booksEvery = true;
+        while (ledger.getDebt().contains(bond3) && guard++ < 40) {
+            pre = bond3.firmPrincipal();
+            play(city);
+            agreeEvery &= firmsAgree(city);
+            booksEvery &= booksExplain(city, idle);
+        }
+        assertTrue("every month of its life, the sectors' paper was the paper's (a coupon, a sale, a settle among them)", agreeEvery);
+        assertTrue("...and the sectors' books explained their tills to the cent, the principal's month among them", booksEvery);
+        assertTrue("fixture: it fell due", !ledger.getDebt().contains(bond3) && guard < 40);
+        assertTrue("fixture: and the businesses held some of it to the end", pre > 0);
+        near("the businesses were paid, as principal, the face they held of it", city.getPrincipalToFirms(), pre);
+        assertTrue("...and the two books agree after it", firmsAgree(city));
+
+        /* ---- the save ---- */
+        out.println("   -- save and reload, and every holding is where it was");
+        assertTrue("fixture: the businesses still hold some of the twenty-year bond", outward.totalPaper() > 0 && bond.firmPrincipal() > 0);
+        final Game[] back = new Game[1];
+        quietly(() -> {
+            city.saveGame(3, "the businesses");
+            back[0] = new Game(files);
+            back[0].loadGameSave(3);
+        });
+        Game twin = back[0];
+        OutwardInvestment outward2 = twin.getOutwardInvestment();
+        boolean sameSectors = true;
+        for (String k : keys) sameSectors &= outward2.paperOf(k) == outward.paperOf(k);
+        assertTrue("every sector's paper came back exactly", sameSectors);
+        close("...the ratio and the yield it was struck at", outward2.getPaperRatio() + outward2.getPaperYield(),
+                outward.getPaperRatio() + outward.getPaperYield(), 0);
+        close("...what the businesses have bought and sold since founding", outward2.getLifetimePaperBought()
+                + outward2.getLifetimePaperSold(), outward.getLifetimePaperBought() + outward.getLifetimePaperSold(), 0);
+        boolean pieces = ledger.getDebt().size() == twin.getDebtManager().getDebt().size();
+        for (int i = 0; pieces && i < ledger.getDebt().size(); i++) {
+            pieces = ledger.getDebt().get(i).firmPrincipal() == twin.getDebtManager().getDebt().get(i).firmPrincipal();
+        }
+        assertTrue("...and every piece's businesses' share", pieces);
+        assertTrue("...and the two books agree in the reloaded city", firmsAgree(twin));
+        MoneyAudit.Result mine = play(city), theirs = play(twin);
+        near("a month on, both pay the businesses the same coupon", twin.getCouponsToFirms(), city.getCouponsToFirms());
+        near("...and hold the same", twin.getOutwardInvestment().totalPaper(), outward.totalPaper());
+        assertTrue("...and both months close", Math.abs(mine.residual) <= MoneyAudit.tolerance(mine.moved())
+                && Math.abs(theirs.residual) <= MoneyAudit.tolerance(theirs.moved()));
+
+        /* ---- a save from before the businesses held any ---- */
+        out.println("   -- a save from before the businesses held the paper loads with the bank holding it");
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
+                Files.readString(files.saveFile(3))).getAsJsonObject();
+        com.google.gson.JsonArray full = json.getAsJsonArray("outwardInvestment");
+        assertTrue("fixture: the save carries the sectors' paper at the end of the array", full != null && full.size() == 7 + 4 * n + 4);
+        com.google.gson.JsonArray cut7 = new com.google.gson.JsonArray();
+        for (int i = 0; i < 7 + 3 * n; i++) cut7.add(full.get(i));
+        json.add("outwardInvestment", cut7);
+        for (com.google.gson.JsonElement e : json.getAsJsonArray("debts")) e.getAsJsonObject().remove("firmPrincipal");
+        Files.writeString(files.saveFile(4), json.toString());
+        quietly(() -> {
+            back[0] = new Game(files);
+            back[0].loadGameSave(4);
+        });
+        Game old = back[0];
+        assertTrue("it loads", old.getLoadFailure() == null && old.getMonth() > 1);
+        close("the businesses hold none of the city's paper", old.getOutwardInvestment().totalPaper(), 0, 0);
+        close("...nor does the paper say they do", old.getDebtManager().firmPrincipal(), 0, 0);
+        close("...so the bank holds what the households and the central bank do not", old.getDebtManager().bankPrincipal(),
+                old.getDebtManager().getDomesticPrincipal() - old.getDebtManager().householdPrincipal()
+                        - old.getDebtManager().centralBankPrincipal(), 1e-9 * Math.max(1, old.getDebtManager().getDomesticPrincipal()));
+        int brokenBefore = brokenMonths;
+        for (int i = 0; i < 3; i++) play(old);
+        assertTrue("...and it runs, the audit closing every month", brokenMonths == brokenBefore);
+        assertTrue("...with the two books agreeing", firmsAgree(old));
+
+        /* ---- the central bank, last ---- */
+        out.println("   -- the dial at the whole of the paper reaches the businesses' last");
+        cb.setTargetShare(1.0);
+        boolean m0Exact = true, agreeAll = true;
+        int months = 0;
+        while (ledger.centralBankShareOfTerm() < 1 - 1e-12 && months++ < 14) {
+            double m0Before = cb.m0();
+            MoneyAudit.Result r = play(city);
+            m0Exact &= Math.abs((cb.m0() - m0Before) - (cb.getIssued() - cb.getRetired())) <= .005
+                    && Math.abs(r.moneyMade() - (cb.getIssued() - cb.getRetired())) <= .005;
+            agreeAll &= firmsAgree(city);
+        }
+        out.printf("   the central bank holds %.1f%% of the term paper after %d month(s); the businesses hold $%,.2fk%n",
+                ledger.centralBankShareOfTerm() * 100, months, ledger.firmPrincipal());
+        close("the dial is reached: the central bank holds all of the term paper", ledger.centralBankShareOfTerm(), 1, 1e-9);
+        close("...the businesses none of it, the last it reached", ledger.firmPrincipal(), 0, 1e-6);
+        close("...and the sectors' book says the same", outward.totalPaper(), 0, 1e-6);
+        assertTrue("every month on the way the books agreed", agreeAll);
+        assertTrue("...M0 moved by exactly the money made, the audit's MONEY lines the same, the businesses' purchase among it", m0Exact);
     }
 }

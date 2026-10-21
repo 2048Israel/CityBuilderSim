@@ -471,7 +471,8 @@ public class TreasuryCheck {
          */
         near("...and what it left over is the first coupon's timing, to the cent: the bank's share of it", m,
                 opened.getTreasuryResidual(), books.getInterestExpense()
-                        - opened.getCouponsToHouseholds() - opened.getCentralBank().getPaperCoupons());
+                        - opened.getCouponsToHouseholds() - opened.getCouponsToFirms()
+                        - opened.getCentralBank().getPaperCoupons());
 
         /* ---- and a month that has no journal has no lines, so the row stays shut ---- */
         Game plain = new Game(GameFiles.scratch("treasury-plain"));
