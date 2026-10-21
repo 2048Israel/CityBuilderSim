@@ -6922,8 +6922,26 @@ public final class GameVersion {
      *     the Freight Income page's shippers by division, a berth card's
      *     payback line on Build, Trade's band in legs, and the manual's
      *     freight pages.
+     *
+     * 0.8.12 (2026-10-20) - EG1, DEPOSITS WHERE THE GEOLOGY SAYS
+     * (docs/queue/EG1-notes.md; docs/studies/spec-earth2-terrain.md 8.5).
+     * Only the real Earth moves; a generated world draws its fields to the
+     * bit as before, and the default trace is byte-identical to 0.8.11's.
+     *   - Geology: oil by each province's known petroleum a km2 (E3's
+     *     petroleum factor gone; OIL_ALLOWANCE for a province with none),
+     *     the KNOWN hand rows for the US provinces and the Scotian Shelf;
+     *     iron on shields, IRON_ALLOWANCE elsewhere, IRON_DISTRICT_WEIGHT in
+     *     the 96 recorded iron districts (DISTRICTS); the Sydney coalfield in
+     *     the Sidney Basin (PATCHES); Z and the odds measured again.
+     *   - World: an Earth field is EARTH_FIELD_SCALE (3) times wider, a third
+     *     as many; a cluster's centre is drawn by its cell's points' weights,
+     *     and a centre or a field again while on ground holding none.
+     *   - Save format 41: an Earth save before it is refused
+     *     (EarthSite.DEPOSITS_FORMAT); a generated save of 40 still loads.
+     *   - Harness: EarthDepositsCheck (new); EarthTerrainCheck 11-13 and 15
+     *     and EarthFoundingCheck 2 and 6 moved onto it (6's fixture remade).
      */
-    public static final String VERSION = "0.8.11";
+    public static final String VERSION = "0.8.12";
 
     /**
      * The save shape.

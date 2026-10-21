@@ -12,7 +12,7 @@
 - **Fewer and bigger on Earth** (`World.EARTH_FIELD_SCALE` 3): an Earth field stands for 30 of the old world's fields, so a third as many and each three times wider (up to 15,360 sites, `MAX_SITES`). A generated world's stay at 10; the first 5,120 places of the larger site table are the old table's, in its order.
 - **A cluster stays on its province's ground** (`World.drawPool`'s Earth branch): a cluster's centre is drawn among its cell's 16 cells-pass points by their weights (`EarthTerrain.pointFieldWeights()`), then inside that point's 15 km square. A centre or a field is drawn again, up to `SEA_REDRAWS` times, while it lies on ground that holds none of its resource (`EarthTerrain.fieldGround()`); oil too, so no oil lands in a fold belt's or a shield's water. Five counters say how often (§5).
 - **The save**: `SAVE_FORMAT` 41. An Earth city saved before is refused with `EarthSite.BEFORE_DEPOSITS_WORDS`: its holdings name fields by cell and place, and those now lie elsewhere. A generated save of format 40 still loads, so the general floor stays 40, as E7's ice floor did. **Jerus's current Halifax city (month 477, format 40) no longer loads in 0.8.12**; the build that saved it opens it.
-- **Harnesses**: EarthDepositsCheck (new, §6); EarthTerrainCheck 11-13 and 15 and EarthFoundingCheck 2 and 6 moved onto EG1 (§3).
+- **Harnesses**: EarthDepositsCheck (new, §5); EarthTerrainCheck 11-13 and 15 and EarthFoundingCheck 2 and 6 moved onto EG1 (§3).
 
 ## 2. ★ calls
 
@@ -32,8 +32,8 @@
 |---|---|---|
 | 1, the model (Geology, EarthTerrain, World, Deposit, EarthSite) | Sonnet | nothing in the code. Its additions kept: a fifth counter (`centresOnNone`), `weightOf()`, `Deposit.mostReach()` at the Earth's widest (the map's and the conversion's pad only). The brief's javac line lacked JavaFX; corrected for the later slices |
 | 2, the save (GameVersion, EarthSite, DataSave) | Claude | - |
-| 3, EarthDepositsCheck | Sonnet | (to come) |
-| 4, the Earth checks moved | Sonnet | (to come) |
+| 3, EarthDepositsCheck (789 lines, new) | Sonnet | nothing. Its additions kept: detector controls in 7 (a sea plot reads "holds none" and an oil sea's plot "holds some", each as the model's `fieldGround` reads it, so a count of nought proves something), the full file's Rotterdam at the playtest's seed (4127) beside the fixture's, and a check that every world drew clusters by weight |
+| 4, the Earth checks moved (EarthTerrainCheck, EarthFoundingCheck) | Sonnet | nothing. EarthTerrainCheck 11 works EG1's multiplier out from the constants and the code's known petroleum, never Geology's tables; 12 tests purity on EG1's iron weights (cells with a district point left out: 75 of 3,283 land cells on the fixture, 458 of 41,759 on the full file; the shield/basin ratio 80, the pools' 78.6 at -1.8%, 2 sigma); 13 measures EG1's Z, and replays E3's with E3's weights against a new `E3_Z` table (within 0.0001: the patch moves copper's replay to 0.73226); 15 proves both Earth floors and that a generated save of 40 loads. **EarthFoundingCheck 6's fixture remade** (Jerus, 2026-10-20: a harness that asserted the old deposits' outcome has its fixture remade to cause its condition on the new ones): the nearest oil field a platform can stand in is 55.3 km out with 112 sites (main's 10.1 km, 21 sites), past the 200 purchases the loop was bounded by; it now buys toward the field until the city owns it, bounded by the field's distance in plots (it takes 242, then 197 sea sites, 4 wells, "Platform A: 55 m deep"); every assertion as it was |
 
 ## 4. What moved in the trace
 
@@ -49,17 +49,51 @@ Against main at 52f689e (0.8.11), EG1 at 128e032 (the model). Both pairs of runs
 | iron | 209 looks for a field found none listed; never a mine | an iron field bought at m1464 (West 4, 58 sites, 402.8 Mt, US$378M, the city 47,922 people); one Iron Mine, 40 of 58 sites worked by m1534 and 49 by m1775; worked out about m2000 ("the iron ore is worked out"); 80 looks found none listed |
 | oil | its first well m3656, 16 wells on 16 sites of its own ground at the end, 1.48 Mt of crude left | never a well: the fields its ground held on main's draw are not on EG1's (the Anglo-Dutch Basin's oil is drawn again, by its known petroleum, in bigger fields) |
 
-**Why.** Near Rotterdam EG1 has fewer iron fields, but they are bigger and grouped. The one that came within the land office's reach at m1464 was bought, and the city built a mine on it and dug for 36 years. The years with the mine slow the city a little (75,187 against 80,928 at m1775). Without its own wells from m3656, the later city imports its crude and grows past main's (584,776 against 479,492 at m3500). One run swings a long way with the city's path (FR2-notes §4), so the ensemble is the measure, and it reads only generated worlds (§5). The renders `EG1/rotterdam-before-after.png` and `EG1/halifax-before-after.png` show the fields within 350 km on both builds.
+**A second Earth run, at Halifax** (`LongPlaytest --earth halifax`, the same seed, 4127), added because Jerus's cities are there. It is identical to main's to month 1,086.
 
-## 5. The ensemble
+| | main | EG1 |
+|---|---|---|
+| people at m1071 / m1500 / m2022 / m2500 / m3000 / m3500 | 26,876 / 45,776 / 78,233 / 101,449 / 102,078 / 115,503 | 26,876 / 39,993 / 49,237 / 76,411 / 104,972 / 122,231 |
+| the end, m4001 | 179,019 people, $1.2T a month at 1,537.69 | 162,406 (-9.3%), $899.8B at 1,169.52 (real GDP -1.4%) |
+| iron | 208 looks found none listed; never a mine | a field bought at m1086 (West 4, 137 sites, 1,897.9 Mt, US$930M, the city 31,872 people); six Iron Mines built |
+| oil | never | never |
+
+**Why.** Both Earth cities find iron that main's never listed. The cause is the seed, and EG1 only changed which pattern it lands. Rotterdam's main world has its nearest iron 24 km south, Halifax's 9.6 km west, and none of those fields came into the city's 24 offers. EG1 draws a third as many fields, and outside the shields only one cluster to a pool. Those clusters land a field 5-8 km west of both sites (8.2 km and 58 sites at Rotterdam, 6.4 km and 137 sites at Halifax), and the West 4 offer holds it. **These positions are the seed's, not the geology's** (§8, found on the way): with seed 4127, Paris, Pittsburgh and Berlin have the same three fields at the same offsets, and main does the same at 34.5 km. A year of mining slows each city while it buys and builds: Rotterdam has 75,187 people at m1775 against 80,928, Halifax 49,237 at m2022 against 78,233. Rotterdam's mine works its 402.8 Mt out by about m2000 ("the iron ore is worked out"). Rotterdam's later city has no wells of its own: the oil under its ground on main's draw is not on EG1's, so it imports its crude, and it still grows past main's (584,776 against 479,492 at m3500). Halifax's ends 9.3% smaller. One run swings a long way with the city's path (FR2-notes §4), and the ensemble reads only generated worlds (§6), so these two runs are all the Earth has. The renders `EG1/rotterdam-before-after.png` and `EG1/halifax-before-after.png` show the fields within 350 km on both builds.
+
+## 5. The rules, counted (EarthDepositsCheck)
+
+**Nova Scotia, spec §8's fixture**: the worlds of Jerus's two saves, fields within 50 / 150 / 300 km of the founding site, EG1 against §8.3's:
+
+| | Halifax (44.65 N 63.60 W, seed 758,809,812) | Eastern Shore (45.17 N 61.72 W, seed 284,719,415) |
+|---|---|---|
+| iron | 0 / 21 / 47 (45 / 417 / 941) | 5 / 22 / 31 (72 / 320 / 699) |
+| oil | 0 / 0 / 32, 31 at sea (14 / 155 / 661) | 0 / 21 / 25, all at sea (8 / 182 / 646) |
+| oil on land within 150 km | 0 (53) | 0 |
+| coal | 0 / 0 / 7 (2 / 11 / 20) | 0 / 0 / 5 (0 / 3 / 15) |
+| oil at sea, by province | Scotian Shelf 28, Fundy Basin 3; none in the fold belt's water | Scotian Shelf 25; none in the fold belt's water (§8.3: 7 of the 8 within 50 km lay there) |
+
+The Scotian Shelf's oil multiplier is 0.3178 against its allowance alone of 0.1085: its hand row is two thirds of it. Glace Bay, New Waterford and Sydney Mines read the Sidney Basin (the patch moves the 3 grid cells in its box). Controls, iron within 50 km: Mesabi 925, a Superior Province shield spot outside every district (49.5 N 90.0 W) 126, Tom Price 794; Calgary's oil within 50 km 8 fields, all on land (§8.3: 37-44, before the fields were three times wider). The largest oil multipliers: Ghawar 127.1, Villahermosa 99.5, the Los Angeles Basin 97.5, the Qatar Arch 73.4, the Mesopotamian Foredeep 70.7; the Permian 14.7, the Anglo-Dutch Basin 7.6. 840 province rows stand on the allowance alone, 183 hold known petroleum.
+
+**How often the draw's rules fire** (World's counters, every pool each world drew):
+
+| world | clusters drawn by the points' weights | centres drawn again | centres left on none | fields drawn again | fields left on none |
+|---|---|---|---|---|---|
+| Rotterdam, the fixture | 529 | 16 | 0 | 78 | 0 |
+| Rotterdam, the full file at the playtest's seed | 623 | 32 | 1 | 171 | 5 |
+| Halifax, the full file | 91 | 1 | 0 | 35 | 0 |
+
+Within 300 km the harness's own count of fields on ground that holds none is 0 of 3,839, 1 of 3,988 (a stone field) and 0 of 197. **Fewer and bigger**: 221 Earth pools and 222 generated ones hold exactly the fields the pool rule allows; Earth fields run 32 to 886 sites, a mean of 76.28 against 75.72 expected (1.37 standard errors); generated 10 to 774, 25.29 against 25.24.
+
+## 6. The ensemble
+
+**The baseline is FR6's final run (fr6s1), not main rerun** (Jerus, 2026-10-20: main's ensemble is not run again while main's model has not moved; FX4, FR5 and FR4 all shipped with identical traces, so fr6s1 was scored on main's model). The 16-seed x 5-policy ensemble ran once, on EG1's model (the runner FR2 adapted for the PC, six at a time, from a classes snapshot, outside the tree): 80 runs, none missing or short. **All 80 runs are byte-identical to fr6s1's**, and the score is the same: 22/26, the four standing reds A2 (AUTO2's longest spell of yoy over 10%), S1 (ZERO_SLACK against its twin), H2 (ZERO_HOT's return to the autopilot) and R3 (HIGH against its twin). No premise moved, because the ensemble's cities stand on generated worlds, whose draws EG1 leaves to the bit. The growth EG1 changes is the Earth's (§4).
+
+## 7. The suite
 
 (to come)
 
-## 6. The suite
-
-(to come)
-
-## 7. Not built, and what is left
+## 8. Not built, and what is left
 
 - **For Jerus (Pending, EG1-C)**: the deposits round one of his cities on his own map. The renders beside these notes are the harness's picture, not the game's.
 - **Not built**: undiscovered petroleum (not in the file); MRDS as a baked layer; hand rows for the world's other unassessed provinces (★2); the far views' and the founding card's words naming a district.
+- **Found on the way: two Earth worlds of one seed share their fields' pattern.** A world's draws are keyed by its seed and its cells' numbers, and an Earth world puts its spot at the world's centre. So two spots founded with one seed draw the same pattern round their sites wherever their ground is alike. With seed 4127 (`Founding.DEFAULT_WORLD_SEED`, the playtests'), Paris, Pittsburgh, Berlin, Halifax and Rotterdam all have iron fields 5.0, 6.4 and 8.2 km west of the site on EG1, and main's Paris and Pittsburgh both have their nearest at 34.5 km. It predates EG1 (main has it), and the founding screen rolls a new seed every time it opens, so a player meets it only by typing one seed for two cities. Mixing the spot into an Earth world's draws would end it; that moves every Earth field again, and it is its own batch if Jerus wants it.

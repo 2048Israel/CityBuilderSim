@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.12 — EG1, deposits where the geology says — 2026-10-20, shipped, see docs/queue/EG1-notes.md
+
+On the real Earth the fields now lie where the geology puts them (spec-earth2-terrain §8.5), so Jerus's Nova Scotia
+cities no longer sit in a ring of oil and iron. Oil is drawn by each province's known petroleum a km2, with a tenth
+of its class's weight where none is known; 40 estimated hand rows fill the US provinces and the Scotian Shelf, which
+earth-1's USGS figures leave at nought. Iron keeps the shields' weight, a tenth elsewhere, and twenty in 96 recorded
+iron districts (the Pilbara to Wabana). The Sydney coalfield reads its basin. An Earth field is three times wider and
+a third as many, and a cluster stays on its own province's ground. Within 150 km of Halifax: iron 21 fields (417
+before), oil on land none (53). earth-1.bin is unchanged. A generated world is drawn to the bit as before: the default
+trace is byte-identical; Rotterdam's moves from month 1,464, when its city buys an iron field (711,024 people at the
+end against 588,872). Save format 41 refuses an Earth save only. Harness: EarthDepositsCheck.
+
 ### 0.8.11 — FR4, the freight screens — 2026-10-20, shipped, see docs/queue/FR4-notes.md
 
 The last freight batch draws what FR2-FR7 built. Build's "Roads & transit" is Infrastructure again and holds the
