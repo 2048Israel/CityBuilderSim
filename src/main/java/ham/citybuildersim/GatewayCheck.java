@@ -91,6 +91,18 @@ import java.util.TreeSet;
  *      arterial's ramp is found from both sides, and from there every
  *      highway plot the map draws lies in a piece with a ramp on a cell line.
  *
+ *  20. TWO LINES LEAVING TOGETHER GET LABELS APART, OR ONE (FX5, Jerus
+ *      2026-10-20: the highway's and the railway's "to the world" read
+ *      "tetohe wodld"): two parts three pixels apart on one bearing are drawn
+ *      by worldLabelAt() alone with their boxes overlapping (the fixture
+ *      causes it); LandMap.worldLabels() keeps the first's place exactly and
+ *      slides the second back along its own part until the boxes are clear
+ *      by WORLD_LABEL_PAD; where the parts are too short for that, the second
+ *      has none and the first names both (WORLD_BOTH_WORDS), inside the view;
+ *      two lines on opposite sides of the view keep worldLabelAt()'s places
+ *      to the pixel, none shared; a part of no length, or none at all, has no
+ *      label and does not disturb the others.
+ *
  * WHY THIS EXISTS: batch FR0 finds the land's mirror of SeaRoutes' offing,
  * so the highway and railway know which way the world is. A fixture CAUSES
  * each condition rather than waiting for a map to. Batch FX2 sections 16 to
@@ -505,6 +517,7 @@ public class GatewayCheck {
         halifaxSection();
         labelSection();
         undrawnSection();
+        togetherSection();
 
         System.out.println();
         System.out.println(fails == 0 ? "The gateways are found." : fails + " FAILED");
@@ -536,6 +549,18 @@ public class GatewayCheck {
             if (!World.dry(g)) water++;
         }
         return new int[] { water, 0 };
+    }
+
+    /** The least distance in plots from (x, y) to the route's polyline (FX5: a rounded route passes by its turns' points). */
+    static double nearestOnRoute(TrainSchedule.Route r, double x, double y) {
+        double best = Double.MAX_VALUE;
+        double[] xs = r.xs(), ys = r.ys();
+        for (int i = 0; i + 1 < xs.length; i++) {
+            double dx = xs[i + 1] - xs[i], dy = ys[i + 1] - ys[i], l2 = dx * dx + dy * dy;
+            double t = l2 > 0 ? Math.max(0, Math.min(1, ((x - xs[i]) * dx + (y - ys[i]) * dy) / l2)) : 0;
+            best = Math.min(best, Math.hypot(xs[i] + t * dx - x, ys[i] + t * dy - y));
+        }
+        return best;
     }
 
     /** How many of a route's points, read every WORLD_STEP along each leg, lie on neither dry ground nor a plot the railway carries (track, track over a highway, a yard); the points read are in samples[0]. */
@@ -642,14 +667,16 @@ public class GatewayCheck {
         for (TrainSchedule.Route r : routes) {
             if (r.xs().length < 3) { first = false; continue; }
             first &= Math.abs(r.xs()[0] - fx) < EPS && Math.abs(r.ys()[0] - fy) < EPS;
-            second &= Math.abs(r.xs()[1] - rail.x()) < EPS && Math.abs(r.ys()[1] - rail.y()) < EPS;
-            third &= Math.abs(r.xs()[2] - (mainArm.x + 0.5)) < EPS && Math.abs(r.ys()[2] - (mainArm.y + 0.5)) < EPS;
+            // FX5: the routes are rounded at their turns (TrackCurves.RADIUS), the line's join and the arm's end among them, so the
+            // route passes by those points within the radius rather than through them as points of its own.
+            second &= nearestOnRoute(r, rail.x(), rail.y()) <= TrackCurves.RADIUS;
+            third &= nearestOnRoute(r, mainArm.x + 0.5, mainArm.y + 0.5) <= TrackCurves.RADIUS;
             bad += offTrack(w, runs, r, samples);
         }
         System.out.printf("      %d route(s), %,d points read, %d on water off the track%n", routes.size(), samples[0], bad);
         check("...every route's first point is WORLD_PLOTS out along the line's way", first);
-        check("...its second point is the line's point", second);
-        check("...its third is the main arm's end plot's middle: the train meets the line where the track ends", third);
+        check("...it passes the line's point, within the curve's radius (FX5: its turns are rounded)", second);
+        check("...and the main arm's end plot's middle, within the radius: the train meets the line where the track ends", third);
         check("...no point of any leg on water off the track", bad == 0 && samples[0] > 0);
     }
 
@@ -826,6 +853,80 @@ public class GatewayCheck {
         check("a part of no length has no label", LandMap.worldLabelAt(500, 300, 500, 300, LABEL_W, LABEL_H, VIEW_W, VIEW_H) == null);
         check("a view smaller than the label and its pads has none either",
                 LandMap.worldLabelAt(0, 50, 90, 50, LABEL_W, LABEL_H, LABEL_W, VIEW_H) == null);
+    }
+
+    /* ----- two lines leaving together (section 20) ----- */
+
+    /** The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). */
+    static final double LABEL_BOTH_W = LABEL_W * LandMap.WORLD_BOTH_WORDS.length() / (double) LandMap.WORLD_WORDS.length();
+
+    /** Whether two label boxes (baselines' left ends a and b, widths wa and wb, LABEL_H high above their baselines) are clear of each other by `gap` pixels, across or down - the harness's own reading of the rule. */
+    static boolean clearOf(double[] a, double wa, double[] b, double wb, double gap) {
+        return a[0] + wa + gap <= b[0] + EPS || b[0] + wb + gap <= a[0] + EPS
+                || a[1] + gap <= b[1] - LABEL_H + EPS || b[1] + gap <= a[1] - LABEL_H + EPS;
+    }
+
+    /** Section 20: two world lines leaving together. */
+    static void togetherSection() {
+        System.out.println("\n--- two lines leaving together get labels apart, or one ---");
+        // His city's: the highway's and the railway's lines leave on one bearing, a few pixels apart, both through the right edge.
+        double[] hw = { 200, 400, VIEW_W, 300 }, rl = { 200, 403, VIEW_W, 303 };
+        double[] a = LandMap.worldLabelAt(hw[0], hw[1], hw[2], hw[3], LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+        double[] b = LandMap.worldLabelAt(rl[0], rl[1], rl[2], rl[3], LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+        check("fixture: two parts three pixels apart on one bearing are both placed by worldLabelAt() alone", a != null && b != null);
+        check("...and, drawn so (as MapView did), their boxes overlap: the words print over each other", a != null && b != null && !clearOf(a, LABEL_W, b, LABEL_W, 0));
+
+        // Parts too short for either label to slide clear: the fixture's old placement still overlaps.
+        double[] sh = { 900, 300, VIEW_W, 300 }, sr = { 900, 303, VIEW_W, 303 };
+        double[] sa = LandMap.worldLabelAt(sh[0], sh[1], sh[2], sh[3], LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+        double[] sb = LandMap.worldLabelAt(sr[0], sr[1], sr[2], sr[3], LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+        check("fixture: two parts of 100 px, three apart, fit no label anywhere on them, and worldLabelAt() puts both on one spot",
+                sa != null && sb != null && !clearOf(sa, LABEL_W, sb, LABEL_W, 0));
+
+        // The fix: the second slides back along its own part until the boxes are clear.
+        LandMap.WorldLabel[] two = LandMap.worldLabels(new double[][] { hw, rl }, LABEL_W, LABEL_BOTH_W, LABEL_H, VIEW_W, VIEW_H);
+        check("worldLabels() gives each of two parts leaving together a label", two.length == 2 && two[0] != null && two[1] != null);
+        if (two[0] != null && two[1] != null) {
+            double[] p0 = { two[0].x(), two[0].y() }, p1 = { two[1].x(), two[1].y() };
+            System.out.printf("      the labels' baselines start at (%.1f, %.1f) and (%.1f, %.1f)%n", p0[0], p0[1], p1[0], p1[1]);
+            check("...the first keeps worldLabelAt()'s place to the pixel", Math.abs(p0[0] - a[0]) < EPS && Math.abs(p0[1] - a[1]) < EPS);
+            check("...the boxes are clear of each other by WORLD_LABEL_PAD", clearOf(p0, LABEL_W, p1, LABEL_W, LandMap.WORLD_LABEL_PAD));
+            check("...each lies inside the view by WORLD_LABEL_PAD, on its own part", inView(p0[0], p0[1], VIEW_W, VIEW_H) && inView(p1[0], p1[1], VIEW_W, VIEW_H)
+                    && offPart(p0[0], p0[1], hw[0], hw[1], hw[2], hw[3]) < 1e-6 && offPart(p1[0], p1[1], rl[0], rl[1], rl[2], rl[3]) < 1e-6);
+            check("...and each names its own line: neither is shared", !two[0].both() && !two[1].both()
+                    && LandMap.WORLD_WORDS.equals(two[0].words()) && LandMap.WORLD_WORDS.equals(two[1].words()));
+        }
+        LandMap.WorldLabel[] five = LandMap.worldLabels(new double[][] { hw, rl }, LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+        check("...the five-argument form reads the shared words' width off the characters and places the same",
+                five[0] != null && five[1] != null && two[0] != null && two[1] != null && five[1].x() == two[1].x() && five[1].y() == two[1].y());
+
+        // Parts with no room to slide: one label names both.
+        LandMap.WorldLabel[] cramped = LandMap.worldLabels(new double[][] { sh, sr }, LABEL_W, LABEL_BOTH_W, LABEL_H, VIEW_W, VIEW_H);
+        check("two parts with no clear place anywhere have one label between them: the first names both, the second has none",
+                cramped[0] != null && cramped[0].both() && cramped[1] == null && LandMap.WORLD_BOTH_WORDS.equals(cramped[0].words()));
+        if (cramped[0] != null) {
+            double[] at = { cramped[0].x(), cramped[0].y() };
+            boolean inside = at[0] >= LandMap.WORLD_LABEL_PAD - EPS && at[0] + LABEL_BOTH_W <= VIEW_W - LandMap.WORLD_LABEL_PAD + EPS
+                    && at[1] - LABEL_H >= LandMap.WORLD_LABEL_PAD - EPS && at[1] <= VIEW_H - LandMap.WORLD_LABEL_PAD + EPS;
+            check("...and, the shared words being wider, it lies whole inside the view", inside);
+        }
+
+        // Two lines on opposite sides of the view: untouched.
+        double[] east = { 200, 300, VIEW_W, 250 }, west = { 800, 350, 0, 400 };
+        LandMap.WorldLabel[] apart = LandMap.worldLabels(new double[][] { east, west }, LABEL_W, LABEL_BOTH_W, LABEL_H, VIEW_W, VIEW_H);
+        double[] ea = LandMap.worldLabelAt(east[0], east[1], east[2], east[3], LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+        double[] wa = LandMap.worldLabelAt(west[0], west[1], west[2], west[3], LABEL_W, LABEL_H, VIEW_W, VIEW_H);
+        check("lines on opposite sides of the view keep worldLabelAt()'s places to the pixel",
+                apart[0] != null && apart[1] != null && ea != null && wa != null
+                        && apart[0].x() == ea[0] && apart[0].y() == ea[1] && apart[1].x() == wa[0] && apart[1].y() == wa[1]);
+        check("...and neither is shared", apart[0] != null && apart[1] != null && !apart[0].both() && !apart[1].both());
+
+        // A part of no length, or no part: no label, and the others undisturbed.
+        double[] none = { 500, 300, 500, 300 };
+        LandMap.WorldLabel[] mixed = LandMap.worldLabels(new double[][] { none, null, east }, LABEL_W, LABEL_BOTH_W, LABEL_H, VIEW_W, VIEW_H);
+        check("a part of no length has no label, nor has a line with no part", mixed[0] == null && mixed[1] == null);
+        check("...and the line after them keeps worldLabelAt()'s place", mixed[2] != null && ea != null && mixed[2].x() == ea[0] && mixed[2].y() == ea[1] && !mixed[2].both());
+        check("a call with no parts returns no labels", LandMap.worldLabels(new double[0][], LABEL_W, LABEL_BOTH_W, LABEL_H, VIEW_W, VIEW_H).length == 0);
     }
 
     /* ----- the highway that reaches no street (section 19) ----- */

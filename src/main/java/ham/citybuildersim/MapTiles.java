@@ -113,11 +113,14 @@ public final class MapTiles {
     /**
      * A stamp of everything a tile is painted from but its ground, which is
      * the world's and never changes: what is owned, its plan's streets and
-     * those just beyond its edges, the city's highways and track through it,
+     * those just beyond its edges (and, since FX5, on the ring of REACH plots
+     * about it), the city's highways and track through it,
      * its buildings' boxes (0.7.88; the counts and road plots dealt to it, its
      * neighbours' roads and the deal's plan before), its sites with their
      * states and mines, and (0.8.1) the freight station's place, whether the
-     * railway carries goods and on how many of a yard's tracks wagons stand.
+     * railway carries goods and on how many of a yard's tracks wagons stand,
+     * and (FX5) the railway's bends that reach it with the plots they replace,
+     * and (FX5 Y2) the yards that reach it, whole.
      * Two tiles with one stamp paint the same pixels.
      */
     public static long stamp(TilePainter.Input in) {
@@ -125,6 +128,9 @@ public final class MapTiles {
         h = World.mix(h ^ packed(in.owned));
         h = World.mix(h ^ packed(in.street));
         h = World.mix(h ^ packed(in.beyond));
+        // The ring of streets about it (FX5): a crossing on its corner is read whole - nothing with none.
+        long ring = packed(in.ring);
+        if (ring != 0) h = World.mix(h ^ ring);
         h = World.mix(h ^ packed(in.fixed));
         h = World.mix(h ^ packed(in.fixedBeyond));
         h = World.mix(h ^ in.stationX);
@@ -137,8 +143,14 @@ public final class MapTiles {
             h = World.mix(h ^ ((long) in.siteX0[s] << 40 ^ (long) in.siteY0[s] << 30 ^ (long) in.siteX1[s] << 20 ^ (long) in.siteY1[s] << 10));
             h = World.mix(h ^ ((long) in.siteKind[s] << 40 ^ (long) in.siteState[s] << 32 ^ (in.siteMine[s] + 1)));
         }
+        // The yards that reach it, whole (FX5 Y2): the box, the type, the layout of the fan and whether it is the station - nothing with none.
+        for (int k = 0; k < in.yards * TilePainter.Input.YARD_INTS; k++) h = World.mix(h ^ in.yard[k] * 0x9E3779B97F4A7C15L ^ (k + 1));
         // The interchanges' reserves that reach it (batch FR7) - nothing with none.
         for (int r = 0; r < in.reserves * TilePainter.RESERVE_INTS; r++) h = World.mix(h ^ in.reserve[r] * 0x9E3779B97F4A7C15L ^ r);
+        // The railway's bends that reach it and the plots they replace (FX5, TrackCurves) - nothing with none: a tile repaints when its bends change.
+        for (int k = 0; k < in.bends * TilePainter.Input.BEND_DOUBLES; k++) h = World.mix(h ^ Double.doubleToLongBits(in.bend[k]) * 31 ^ k);
+        long curved = packed(in.curved);
+        if (in.bends > 0 || curved != 0) h = World.mix(h ^ curved ^ in.bends);
         // The sidings its district's plan laid over it (batch FR7 slice 5) - nothing with none.
         long sidings = packed(in.siding);
         if (sidings != 0) h = World.mix(h ^ sidings);
@@ -208,6 +220,7 @@ public final class MapTiles {
         System.arraycopy(a.owned, 0, b.owned, 0, TilePainter.PLOTS);
         System.arraycopy(a.street, 0, b.street, 0, TilePainter.PLOTS);
         System.arraycopy(a.beyond, 0, b.beyond, 0, a.beyond.length);
+        System.arraycopy(a.ring, 0, b.ring, 0, a.ring.length);
         System.arraycopy(a.fixed, 0, b.fixed, 0, TilePainter.PLOTS);
         System.arraycopy(a.fixedBeyond, 0, b.fixedBeyond, 0, a.fixedBeyond.length);
         // ...and the runs' marks, the ramps and 45-degree stretches (0.7.98, batch O14: until then the kept copy the raster
@@ -221,12 +234,16 @@ public final class MapTiles {
         b.wagonTracks = a.wagonTracks;
         b.types = a.types;
         if (b.counts.length != a.counts.length) b.counts = new int[a.counts.length];
-        b.clearBuildings();
-        for (int k = 0; k < a.buildings; k++) b.addBuilding(a.boxes[2 * k], a.boxes[2 * k + 1]);
+        // ...each as it stands, a yard's part on a tile it is not counted on still a part, and the counts as they are (FX5 Y2).
+        b.copyBuildings(a);
+        // The yards that reach it, whole (FX5 Y2).
+        b.copyYards(a);
         b.clearSites();
         for (int s = 0; s < a.sites; s++) {
             b.addSite(a.siteX0[s], a.siteY0[s], a.siteX1[s], a.siteY1[s], a.siteKind[s], a.siteState[s], a.siteMine[s], a.siteKey[s]);
         }
+        // The railway's bends and the plots they replace (FX5).
+        b.copyBends(a);
         // The works at sea (0.7.97).
         b.clearSea();
         System.arraycopy(a.sea, 0, b.sea, 0, TilePainter.PLOTS);
@@ -280,7 +297,7 @@ public final class MapTiles {
 
     /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and site out; since 0.7.97 each plot's work at sea both ways, and the rings' and pipes' ends in. */
     public static long paintedBytes(TilePainter.Input in, TilePainter.Painted p) {
-        long input = 4L * TilePainter.PLOTS + 2L * in.beyond.length + 4L * (in.counts.length + in.boxes.length) + 16 + 4
+        long input = 4L * TilePainter.PLOTS + 2L * in.beyond.length + in.ring.length + 4L * (in.counts.length + in.boxes.length + in.yard.length) + 16 + 4
                 + 36L * in.siteX0.length + in.sea.length + 8L * (in.ringX.length + in.ringY.length) + 32L * in.pipeAX.length;
         long picture = 6L * TilePainter.PLOTS + 2L * 2 * TilePainter.PLOTS + 29L * p.bx.length + p.sea.length;
         return input + picture;

@@ -181,6 +181,10 @@ import java.util.Map;
  *      train pure in (call, t), a frame finding every train on screen; at
  *      10B a frame's trains in no more than TRAIN_FRAME_MS; and the played
  *      city's station no container yard, its railway having moved no boxes.
+ *      Since FX5 (0.8.15) the trains on the curves (trainsOnTheCurves()): no
+ *      two neighbouring vehicles of a train differ in heading by more than
+ *      MOST_TURN_DEG, and every vehicle shown whole is on the rail the tiles
+ *      draw at 8 px a plot.
  *  10. the map on Earth (0.7.119, batch E5; the project's spec-earth.md 3's
  *      "Far views" and 8's E5 row), on EarthCheck's fixture: a generated
  *      world's far node is its region at every stride, as before; an Earth
@@ -1598,6 +1602,9 @@ public class MapCheck {
                         run[g] = p.run[k];
                     }
                     for (int b = 0; b < p.buildings; b++) {
+                        // (FX5 Y2) A yard longer than a tile is a building on every tile its box reaches, counted on the tile holding its
+                        // first plot: its part on another tile (Painted.bpart) is the same building, as a site's mine is by its key below.
+                        if (p.bpart[b]) continue;
                         boxes.add(new int[] { ox + p.bx[b], oy + p.by[b], p.bw[b], p.bh[b], p.btype[b], p.bsite[b], p.bpacked[b] ? 1 : 0 });
                         if (p.bsite[b] >= 0) {
                             if (sites.add(in.siteKey[p.bsite[b]])) buildings[p.btype[b]]++;
@@ -4059,7 +4066,9 @@ public class MapCheck {
         for (int i = 0; i < runs.yards().size(); i++) {
             if (runs.wayTo(runs.yards().get(i)) == null) continue;
             reached++;
-            expectedRoutes += TileRaster.tracksOf(m.types()[m.yardTypeOf(i)]);
+            // FX5, Jerus 2026-10-20: ("Queue the fix" for a train standing over the yard's wagons) one route a yard and CLEAR siding of its own,
+            // not a siding the yard's standing wagons keep; none stand in this picture, so every siding is clear here, and a yard always keeps one.
+            expectedRoutes += TileRaster.tracksOf(m.types()[m.yardTypeOf(i)]) - standingOn(m, i);
         }
         boolean starts = true, onTrack = true, intoYard = true, sidings = true, stationOnes = true;
         double r = Math.toRadians(line.way());
@@ -4068,37 +4077,54 @@ public class MapCheck {
             if (rt.works()) { worksRoutes++; continue; }
             double[] xs = rt.xs(), ys = rt.ys();
             long[] yard = runs.yards().get(rt.yard());
+            // FX5: the routes are rounded at every turn (TrackCurves.RADIUS), the world line's join among them, so the route passes by
+            // the line's point within the radius and its faded part ends no more than a radius short of WORLD_PLOTS.
             starts &= Math.abs(xs[0] - (line.x() + Math.cos(r) * TrainSchedule.WORLD_PLOTS)) < 1e-9
                     && Math.abs(ys[0] - (line.y() + Math.sin(r) * TrainSchedule.WORLD_PLOTS)) < 1e-9
-                    && xs[1] == line.x() && ys[1] == line.y() && Math.abs(rt.fadeTo() - TrainSchedule.WORLD_PLOTS) < 1e-9;
-            // From the gate arm's end to where it enters its yard's box, every quarter step on a plot the railway carries.
-            int last = rt.siding() < 0 ? xs.length - 1 : xs.length - 3;
-            for (int i = 2; i < last; i++) {
+                    && GatewayCheck.nearestOnRoute(rt, line.x(), line.y()) <= TrackCurves.RADIUS
+                    && rt.fadeTo() <= TrainSchedule.WORLD_PLOTS + 1e-9 && rt.fadeTo() >= TrainSchedule.WORLD_PLOTS - TrackCurves.RADIUS;
+            // From past the world line's join to where it enters its yard's box, every quarter step on a plot the railway carries -
+            // or (FX5) beside one, where a curve cuts its corner: an arc strays at most RADIUS (1 - 1/sqrt 2) plots from its legs.
+            double[] al = rt.along();
+            int from = 0, last = xs.length - 1;
+            while (from < xs.length - 1 && al[from] < rt.fadeTo() + 2 * TrackCurves.RADIUS) from++;
+            if (rt.siding() >= 0) {
+                last = from;
+                while (last < xs.length - 1 && !(xs[last] >= yard[0] && xs[last] <= yard[0] + yard[2] && ys[last] >= yard[1] && ys[last] <= yard[1] + yard[3])) last++;
+            }
+            for (int i = from; i < last; i++) {
                 double len = Math.hypot(xs[i + 1] - xs[i], ys[i + 1] - ys[i]);
-                int n = (int) Math.ceil(len * 4);
+                int n = Math.max(1, (int) Math.ceil(len * 4));
                 for (int k = 0; k <= n; k++) {
                     double x = xs[i] + (xs[i + 1] - xs[i]) * k / n, y = ys[i] + (ys[i + 1] - ys[i]) * k / n;
-                    byte at = runs.at((long) Math.floor(x), (long) Math.floor(y));
-                    onTrack &= at == CityRuns.F_RAIL || at == CityRuns.F_RAIL_OVER || at == CityRuns.F_YARD;
+                    boolean near = false;
+                    for (int dy = -1; dy <= 1 && !near; dy++) {
+                        for (int dx = -1; dx <= 1 && !near; dx++) {
+                            if ((dx != 0 || dy != 0) && Math.hypot(x - (Math.floor(x) + dx + 0.5), y - (Math.floor(y) + dy + 0.5)) > 0.5 + TrackCurves.RADIUS * (1 - Math.sqrt(0.5)) + 1e-9) continue;
+                            byte at = runs.at((long) Math.floor(x) + dx, (long) Math.floor(y) + dy);
+                            near = at == CityRuns.F_RAIL || at == CityRuns.F_RAIL_OVER || at == CityRuns.F_YARD;
+                        }
+                    }
+                    onTrack &= near;
                 }
             }
-            // ...and its ladder and siding inside the box.
-            for (int i = last; i < xs.length; i++) {
+            // ...and its ladder and siding inside the box, from the first point in it.
+            for (int i = last; i < xs.length && rt.siding() >= 0; i++) {
                 intoYard &= xs[i] >= yard[0] && xs[i] <= yard[0] + yard[2] && ys[i] >= yard[1] && ys[i] <= yard[1] + yard[3];
             }
             sidingsOf.computeIfAbsent(rt.yard(), k -> new java.util.HashSet<>()).add(rt.siding());
             stationOnes &= rt.station() == java.util.Arrays.equals(yard, station);
         }
         for (java.util.Map.Entry<Integer, java.util.Set<Integer>> e : sidingsOf.entrySet()) {
-            sidings &= e.getValue().size() == TileRaster.tracksOf(m.types()[m.yardTypeOf(e.getKey())]);
+            sidings &= e.getValue().size() == TileRaster.tracksOf(m.types()[m.yardTypeOf(e.getKey())]) - standingOn(m, e.getKey());
         }
         out.printf("      %d of %d yards reached, %d routes found in %.1f ms (%d to a works' siding), the longest %.0f plots%n", reached, runs.yards().size(),
                 routes.size(), routesMs, worksRoutes, routes.stream().mapToDouble(TrainSchedule.Route::length).max().orElse(0));
-        check("THE TRAINS' ROUTES: one a yard the railway's way reaches and a siding of its own (a depot's, a terminal's), every yard reached",
+        check("THE TRAINS' ROUTES: one a yard the railway's way reaches and a clear siding of its own (a depot's, a terminal's; the yard's wagons keep the others), every yard reached",
                 reached == runs.yards().size() && sidingsOf.size() == reached && routes.size() == expectedRoutes + worksRoutes && sidings);
         check("...each from WORLD_PLOTS out along the world line, faded in to where the line leaves the city's ground",
                 starts && !routes.isEmpty());
-        check("...then on track every quarter plot, from the gate arm's end to its yard's box (CityRuns.wayTo())", onTrack);
+        check("...then on track every quarter plot, or beside it where a curve cuts a corner (FX5), from the gate arm's end to its yard's box (CityRuns.wayTo())", onTrack);
         check("...and its ladder and siding inside the yard's box, the freight station's routes marked so", intoYard && stationOnes);
         check("...kept against the map's changes: asked again, the same list", m.trainRoutes() == routes);
 
@@ -4157,20 +4183,28 @@ public class MapCheck {
                 pure &= java.util.Objects.equals(a, b) && java.util.Objects.equals(TrainSchedule.cars(a, rt), TrainSchedule.cars(b, rt));
                 for (TrainSchedule.Car car : TrainSchedule.cars(a, rt)) alpha &= car.alpha() >= 0 && car.alpha() <= 1;
             }
-            TrainSchedule.Train standing = TrainSchedule.position(c, rt, c.arrives() + dwell / 2);
+            // FX5 (slice T): a train's leg is its route's (Route.legSeconds()) and its stand its kind's (Kind.standSeconds()), not one pace for all.
+            double lc = rt.legSeconds() / TrainSchedule.MONTH_SECONDS, dc = c.kind().standSeconds() / TrainSchedule.MONTH_SECONDS;
+            TrainSchedule.Train standing = TrainSchedule.position(c, rt, c.arrives() + dc / 2);
             List<TrainSchedule.Car> cars = TrainSchedule.cars(standing, rt);
             whole &= standing != null && standing.standing() && cars.size() == c.kind().wagons() + 2;
             for (TrainSchedule.Car car : cars) whole &= car.alpha() == 1 || rt.length() - c.kind().length() < rt.fadeTo();
-            gone &= TrainSchedule.cars(TrainSchedule.position(c, rt, c.arrives() - leg), rt).isEmpty()
-                    && TrainSchedule.cars(TrainSchedule.position(c, rt, c.arrives() + dwell + leg), rt).isEmpty()
-                    && TrainSchedule.position(c, rt, c.arrives() - leg - 1e-6) == null;
-            boolean in0 = TrainSchedule.position(c, rt, c.arrives() - leg / 2).loaded(), out1 = TrainSchedule.position(c, rt, c.arrives() + dwell + leg / 2).loaded();
+            gone &= TrainSchedule.cars(TrainSchedule.position(c, rt, c.arrives() - lc), rt).isEmpty()
+                    && TrainSchedule.cars(TrainSchedule.position(c, rt, c.arrives() + dc + lc), rt).isEmpty()
+                    && TrainSchedule.position(c, rt, c.arrives() - lc - 1e-6) == null;
+            boolean in0 = TrainSchedule.position(c, rt, c.arrives() - lc / 2).loaded(), out1 = TrainSchedule.position(c, rt, c.arrives() + dc + lc / 2).loaded();
             loaded &= c.kind() == TrainSchedule.Kind.INTERMODAL ? in0 && out1 : in0 == c.inbound() && out1 == !c.inbound();
         }
         check("TRAINS: pure in (call, t), each vehicle's fade within [0, 1]", pure && alpha);
         check("...on its siding every vehicle there, whole past the world line's part", whole);
         check("...nothing of it on the line at either end of its visit, so none appears or vanishes", gone);
         check("...an import in full and out empty, an export the other way, boxes loaded both ways", loaded);
+
+        // ---- THE CURVES (FX5): no train swings on the spot, and every vehicle is on the rail it is drawn on.
+        trainsOnTheCurves(m, routes, mix);
+
+        // ---- THEIR LENGTH, THE SIDINGS THAT HOLD THEM AND THEIR PACE (FX5, slice T).
+        trainsByLength(routes, mix);
 
         // ---- A FRAME: every train with a vehicle on screen, looking at only those whose visit spans t.
         long sx = station[0] + station[2] / 2, sy = station[1] + station[3] / 2;
@@ -4183,7 +4217,8 @@ public class MapCheck {
             int want = 0, live = 0;
             for (TrainSchedule.Call c : mix.calls()) {
                 TrainSchedule.Train tr = TrainSchedule.position(c, routes.get(c.route()), t);
-                if (c.arrives() - leg <= t && t <= c.arrives() + dwell + leg) live++;
+                double lc = routes.get(c.route()).legSeconds() / TrainSchedule.MONTH_SECONDS, dc = c.kind().standSeconds() / TrainSchedule.MONTH_SECONDS;
+                if (c.arrives() - lc <= t && t <= c.arrives() + dc + lc) live++;
                 if (tr == null) continue;
                 for (TrainSchedule.Car car : TrainSchedule.cars(tr, routes.get(c.route()))) {
                     double w = TrainSchedule.LOCO_PLOTS;
@@ -4230,6 +4265,9 @@ public class MapCheck {
         check("...at 10 billion a frame's trains take no more than TRAIN_FRAME_MS (0.5 ms): an L0 screen and an L1 one",
                 Timing.within(best[0], TRAIN_FRAME_MS) && Timing.within(best[1], TRAIN_FRAME_MS) && ten.callCount() <= TrainSchedule.MOST_A_MONTH + 2 * kinds);
 
+        // ---- THE WAGONS STANDING IN THE YARDS (FX5, slice T): the routes skip the sidings they stand on.
+        trainsAndTheWagons(m, kinds);
+
         // ---- THE STATION'S LOOK: a railway that moved no boxes draws its station as a bulk yard (RailCheck 7 holds the other way).
         ham.citybuildersim.sectors.Freight rail = city.getSectors().freight();
         double boxes = rail.railedIn(Ports.Cargo.CONTAINER) + rail.railedOut(Ports.Cargo.CONTAINER);
@@ -4239,6 +4277,373 @@ public class MapCheck {
                 railed, boxes, city.getCityMap().railPicture().goodsByRail());
         check("...and the played city's railway moved no boxes, so its freight station is no container yard (TrainSchedule.boxesByRail())",
                 boxes == 0 && !city.getCityMap().railPicture().goodsByRail() && !city.mapRail().goodsByRail());
+    }
+
+    /* ----- FX5, slice T: real-length trains, onto clear sidings, at a pace that reads ----- */
+
+    /** The plots of train a route's siding holds: Route.holds(). */
+    static double holdsOf(TrainSchedule.Route rt) {
+        return rt.holds();
+    }
+
+    /** How far along a route its siding's ladder begins, in plots: Route.enters(). */
+    static double ladderOf(TrainSchedule.Route rt) {
+        return rt.enters();
+    }
+
+    /** Seconds a leg of a route `length` plots long takes: its length over the pace, no less than the shortest leg and no more than the longest. */
+    static double legSecondsOf(double length) {
+        return Math.max(TrainSchedule.LEG_SECONDS, Math.min(TrainSchedule.LEG_MOST, length / TrainSchedule.TRAIN_PLOTS_A_SECOND));
+    }
+
+    /** Seconds a train of a kind stands on its siding: a base and so much a wagon. */
+    static double standSecondsOf(TrainSchedule.Kind k) {
+        return TrainSchedule.DWELL_SECONDS + TrainSchedule.DWELL_A_WAGON * k.wagons();
+    }
+
+    /**
+     * A hand-made yard (FX5 T): three sidings off a ladder of 3 plots from a main line 64 plots long, the first holding `first` plots of
+     * train and the other two `second`. A siding is a route's last leg, its ladder the leg before.
+     */
+    static List<TrainSchedule.Route> handYard(double first, double second) {
+        List<TrainSchedule.Route> out = new ArrayList<>();
+        double[] holds = { first, second, second };
+        for (int s = 0; s < 3; s++) out.add(handRoute(s, 67 + holds[s]));
+        return out;
+    }
+
+    /** A hand-made route `length` plots long: the world line 64 plots, a ladder of 3, and the siding the rest, all on one line. */
+    static TrainSchedule.Route handRoute(int siding, double length) {
+        return TrainSchedule.Route.through(0, true, siding, new double[] { -64, 0, 3, length - 64 }, new double[] { 0, 0, 0, 0 }, 64, length - 67, 64);
+    }
+
+    /** How far along its route a call's train has its front at t, in plots; NaN while it is not on the line. */
+    static double frontAt(TrainSchedule.Call c, TrainSchedule.Route rt, double t) {
+        TrainSchedule.Train tr = TrainSchedule.position(c, rt, t);
+        return tr == null ? Double.NaN : tr.front();
+    }
+
+    /** Whether a call's train is on its route's siding at t: from its front reaching the ladder in to its rear leaving it out. */
+    static boolean onSiding(TrainSchedule.Call c, TrainSchedule.Route rt, double t) {
+        TrainSchedule.Train tr = TrainSchedule.position(c, rt, t);
+        if (tr == null) return false;
+        double d0 = ladderOf(rt);
+        return tr.standing() || (t < c.arrives() ? tr.front() > d0 : tr.front() - c.kind().length() > d0);
+    }
+
+    /** The most trains on one siding at once, over a month sampled 2,000 times. */
+    static int mostOnASiding(TrainSchedule month, List<TrainSchedule.Route> routes) {
+        int most = 0;
+        for (int i = 0; i <= 2000; i++) {
+            double t = i / 2000.0;
+            int[] on = new int[routes.size()];
+            for (TrainSchedule.Call c : month.calls()) if (c.route() >= 0 && onSiding(c, routes.get(c.route()), t)) most = Math.max(most, ++on[c.route()]);
+        }
+        return most;
+    }
+
+    /** Whether a standing train's rear vehicle lies on the route's last leg, its siding: the rear locomotive's middle between the leg's start and its end. */
+    static boolean rearOnSiding(TrainSchedule.Call c, TrainSchedule.Route rt) {
+        List<TrainSchedule.Car> cars = TrainSchedule.cars(TrainSchedule.position(c, rt, c.arrives()), rt);
+        TrainSchedule.Car last = cars.get(cars.size() - 1);
+        double[] xs = rt.xs(), ys = rt.ys();
+        int n = xs.length;
+        double sx = xs[n - 2], sy = ys[n - 2], ex = xs[n - 1] - sx, ey = ys[n - 1] - sy, len = Math.hypot(ex, ey);
+        double along = ((last.x() - sx) * ex + (last.y() - sy) * ey) / len;
+        return along >= -1e-9 && along <= len + 1e-9;
+    }
+
+    /**
+     * Section 9's trains at their real length, on sidings that hold them, at a pace that reads (FX5, slice T; Jerus, 2026-10-20: "real
+     * trains are really long", "the rail depots would have to be redesigned to accomdoate such large trains, as well as teh animation for
+     * them"): a unit train is 80 wagons and 41.4 plots, no cap; no train is longer than the siding its route holds; a standing train's rear
+     * vehicle lies on its siding; no two trains are on one siding at once; a train eases in to a stop and away from one, its leg and its
+     * stand set by its length; and every visit lies inside the month.
+     */
+    static void trainsByLength(List<TrainSchedule.Route> routes, TrainSchedule mix) {
+        out.println("      the trains' length, the sidings that hold them and their pace (FX5, slice T):");
+        TrainSchedule.Kind hopper = TrainSchedule.Kind.HOPPER, tank = TrainSchedule.Kind.TANK, box = TrainSchedule.Kind.INTERMODAL, mixed = TrainSchedule.Kind.MIXED;
+        int unit = (int) Math.ceil(TrainSchedule.UNIT_TONNES / TrainSchedule.WAGON_TONNES);
+        check("a train is drawn at its real length: a unit train 80 wagons and 41.4 plots (its payload over WAGON_TONNES, no cap), an intermodal train 50 and 26.4, a mixed train 15 and 8.9",
+                hopper.wagons() == 80 && tank.wagons() == 80 && unit == 80 && Math.abs(hopper.length() - (2 * TrainSchedule.LOCO_PLOTS + unit * TrainSchedule.CAR_PLOTS)) < 1e-9
+                && Math.abs(hopper.length() - 41.4) < 1e-9 && box.wagons() == TrainSchedule.INTERMODAL_BOXES / TrainSchedule.BOXES_A_WAGON && box.wagons() == 50
+                && Math.abs(box.length() - 26.4) < 1e-9 && mixed.wagons() == 15 && Math.abs(mixed.length() - 8.9) < 1e-9);
+
+        // ---- A YARD OF THREE SIDINGS, one holding 18 plots and two 45: a unit train (41.4) goes on the two.
+        int kinds = Ports.Cargo.values().length;
+        double[] none = new double[kinds], some = new double[kinds], heavy = new double[kinds];
+        some[Ports.Cargo.DRY_BULK.ordinal()] = 6 * TrainSchedule.UNIT_TONNES;
+        heavy[Ports.Cargo.DRY_BULK.ordinal()] = 25 * TrainSchedule.UNIT_TONNES;
+        List<TrainSchedule.Route> hand = handYard(18, 45);
+        boolean fits = true, rear = true;
+        int drawn = 0;
+        TrainSchedule month = TrainSchedule.of(7, heavy, none, hand);
+        for (TrainSchedule.Call c : month.calls()) {
+            if (c.route() < 0) continue;
+            drawn++;
+            TrainSchedule.Route rt = hand.get(c.route());
+            fits &= c.kind().length() <= holdsOf(rt) + 1e-9;
+            rear &= rearOnSiding(c, rt);
+        }
+        out.printf("      25 unit trains on a yard of sidings holding 18, 45 and 45 plots: %d drawn%n", drawn);
+        check("no train is longer than the siding of its route (a unit train, 41.4 plots, is not drawn on a siding of 18)", drawn > 0 && fits);
+        check("...a standing train's rear vehicle lies on its siding, between the siding's start and its end", drawn > 0 && rear);
+        check("...no two trains are on one siding at once, at 2,001 moments through the month", mostOnASiding(month, hand) <= 1);
+        TrainSchedule fewer = TrainSchedule.of(7, some, none, hand);
+        check("...nor with fewer trains (a train that finds its siding busy takes another or waits)", mostOnASiding(fewer, hand) <= 1);
+        boolean onlyShort = true;
+        for (TrainSchedule.Call c : TrainSchedule.of(7, some, none, handYard(18, 18)).calls()) onlyShort &= c.route() < 0;
+        TrainSchedule none18 = TrainSchedule.of(7, some, none, handYard(18, 18));
+        check("...and a kind no siding holds is not drawn: a unit train on a yard of sidings of 18 plots, counted by unfit()", onlyShort && none18.unfit() == none18.callCount() && none18.unfit() > 0);
+        check("...every train is drawn or counted unfit, none twice: " + drawn + " drawn and " + month.unfit() + " unfit of " + month.callCount(),
+                drawn + month.unfit() == month.callCount() && month.unfit() >= 0);
+
+        // ---- ON THE YARD CITY'S OWN ROUTES.
+        boolean city = true, cityRear = true;
+        int onYards = 0;
+        for (TrainSchedule.Call c : mix.calls()) {
+            TrainSchedule.Route rt = routes.get(c.route());
+            city &= c.kind().length() <= holdsOf(rt) + 1e-9;
+            if (rt.siding() < 0 || rt.works()) continue;
+            onYards++;
+            cityRear &= rearOnSiding(c, rt);
+        }
+        check("...the yard city's trains, every kind: none longer than the siding of its route, each standing rear on its siding", onYards > 0 && city && cityRear);
+        check("...and no two of the yard city's trains on one siding at once", mostOnASiding(mix, routes) <= 1);
+
+        // ---- THE PACE: a leg of the route's length over the pace, easing in to a stop and away from it.
+        double second = 1 / TrainSchedule.MONTH_SECONDS, a = 0.5;
+        TrainSchedule.Call unitCall = new TrainSchedule.Call(hopper, true, 0, a);
+        boolean legs = true;
+        for (double length : new double[] { 100, 400, 700 }) {
+            TrainSchedule.Route rt = handRoute(0, length);
+            double leg = legSecondsOf(length), stand = standSecondsOf(hopper);
+            legs &= TrainSchedule.position(unitCall, rt, a - (leg - 0.1) * second) != null && TrainSchedule.position(unitCall, rt, a - (leg + 0.1) * second) == null;
+            legs &= TrainSchedule.position(unitCall, rt, a + (stand + leg - 0.1) * second) != null && TrainSchedule.position(unitCall, rt, a + (stand + leg + 0.1) * second) == null;
+        }
+        check("a leg takes the route's length over TRAIN_PLOTS_A_SECOND seconds, no less than LEG_SECONDS and no more than LEG_MOST: 100 plots 6 s, 400 plots 8, 700 plots 10", legs);
+        TrainSchedule.Route four = handRoute(0, 400);
+        double leg4 = legSecondsOf(400), stand4 = standSecondsOf(hopper);
+        double firstIn = frontAt(unitCall, four, a - (leg4 - 1) * second) - frontAt(unitCall, four, a - leg4 * second + 1e-9);
+        double lastIn = frontAt(unitCall, four, a) - frontAt(unitCall, four, a - second);
+        double firstOut = frontAt(unitCall, four, a + stand4 * second) - frontAt(unitCall, four, a + (stand4 + 1) * second);
+        double lastOut = frontAt(unitCall, four, a + (stand4 + leg4 - 1) * second) - frontAt(unitCall, four, a + (stand4 + leg4) * second);
+        out.printf("      on a route of 400 plots: in, the first second runs %.1f plots and the last %.1f; out, the first %.1f and the last %.1f%n", firstIn, lastIn, firstOut, lastOut);
+        check("...a train eases in: its front moves less in a leg's last second than in its first", firstIn > lastIn && lastIn > 0);
+        check("...and eases out: it moves less in its first second away from the stand than in its last", firstOut < lastOut && firstOut > 0);
+        boolean stands = true;
+        for (TrainSchedule.Kind k : TrainSchedule.Kind.values()) {
+            TrainSchedule.Call call = new TrainSchedule.Call(k, true, 0, a);
+            double stand = standSecondsOf(k);
+            stands &= TrainSchedule.position(call, four, a + (stand - 0.05) * second).standing() && !TrainSchedule.position(call, four, a + (stand + 0.05) * second).standing();
+        }
+        check("...it stands DWELL_SECONDS and so much a wagon (DWELL_A_WAGON): a unit train 5 s, an intermodal 4.25, a mixed 3.375", stands);
+        boolean inside = true;
+        for (TrainSchedule month0 : new TrainSchedule[] { mix, month, fewer }) {
+            List<TrainSchedule.Route> rs = month0 == mix ? routes : hand;
+            for (TrainSchedule.Call c : month0.calls()) {
+                if (c.route() < 0) continue;
+                double leg = legSecondsOf(rs.get(c.route()).length()) / TrainSchedule.MONTH_SECONDS, dwell = standSecondsOf(c.kind()) / TrainSchedule.MONTH_SECONDS;
+                inside &= c.arrives() - leg >= 0 && c.arrives() + dwell + leg <= 1;
+            }
+        }
+        check("...and every train's visit, its leg in, its stand and its leg out, lies inside the month", inside);
+    }
+
+    /** The sidings of yard yi of the map that wagons stand on in the picture the map has: the tiles' count, scaled for the yard's sidings, never all of them. */
+    static int standingOn(CityMap m, int yi) {
+        int tracks = TileRaster.tracksOf(m.types()[m.yardTypeOf(yi)]);
+        int w = CityMap.wagonTracksOf(m.railPicture().wagonShare());
+        return TileRaster.wagonTracksOn(w, tracks);
+    }
+
+    /**
+     * Section 9's routes and the wagons standing in the yards (FX5, slice T; FX3's star 6: a train stood over the yard's own wagons): with
+     * none, half and all of the fleet's wagon sets standing, no route is laid to a siding the tiles stand wagons on, a yard keeps one
+     * siding clear, and no train stands on a siding the wagons stand on.
+     */
+    static void trainsAndTheWagons(CityMap m, int kinds) {
+        out.println("      the trains and the wagons standing in the yards (FX5, slice T):");
+        CityMap.RailPicture before = m.railPicture();
+        double[] bulk = new double[kinds], none = new double[kinds];
+        bulk[Ports.Cargo.DRY_BULK.ordinal()] = 25 * TrainSchedule.UNIT_TONNES;
+        for (double share : new double[] { 0, 0.5, 1 }) {
+            m.railPicture(new CityMap.RailPicture(false, share));
+            List<TrainSchedule.Route> rs = m.trainRoutes();
+            boolean clear = true, keeps = true;
+            int[] left = new int[m.runs().yards().size()];
+            for (TrainSchedule.Route rt : rs) {
+                if (rt.works() || rt.siding() < 0) continue;
+                clear &= rt.siding() >= standingOn(m, rt.yard());
+                left[rt.yard()]++;
+            }
+            for (int i = 0; i < left.length; i++) {
+                int tracks = TileRaster.tracksOf(m.types()[m.yardTypeOf(i)]);
+                keeps &= left[i] == tracks - standingOn(m, i) && left[i] >= 1;
+            }
+            TrainSchedule month = TrainSchedule.of(7, bulk, none, rs);
+            boolean over = false;
+            int drawn = 0;
+            for (TrainSchedule.Call c : month.calls()) {
+                if (c.route() < 0) continue;
+                drawn++;
+                TrainSchedule.Route rt = rs.get(c.route());
+                over |= !rt.works() && rt.siding() < standingOn(m, rt.yard());
+            }
+            out.printf("      with %d of %d wagon tracks standing (a depot's %d of %d): %d routes, %d of 25 unit trains drawn%n", CityMap.wagonTracksOf(share),
+                    TileRaster.YARD_TRACKS, standingOn(m, 0), TileRaster.DEPOT_TRACKS, rs.size(), drawn);
+            check("a yard's wagons standing (" + share + " of the fleet): no route is laid to a siding they stand on, and a yard keeps one siding clear", clear && keeps && !rs.isEmpty());
+            check("...so no train stands on a siding wagons stand on", drawn > 0 && !over);
+            check("...the routes kept against the map's changes and its picture: asked again, the same list", m.trainRoutes() == rs);
+        }
+        m.railPicture(before);
+    }
+
+    /** The most two neighbouring vehicles of a train may differ in heading, in degrees: 30 (FX5; on 0.8.14 a corner turned them 90 and a ladder 60). */
+    static final double MOST_TURN_DEG = 30;
+
+    /** ...and on a yard's ladder, the tightest curve the railway has: 45 degrees (FX5: an S of up to a few plots across over YARD_LADDER, 3 plots, turns a depot's neighbours 40; the long yards slice Y lays will lengthen the ladder and tighten this). */
+    static final double LADDER_TURN_DEG = 45;
+
+    /**
+     * Section 9's trains on the curves (FX5, 0.8.15; Jerus, 2026-10-20: "do
+     * trains make 90 degree turns?"): on the yard city's routes, at every
+     * sampled moment of the month's trains and at fronts all along every
+     * route, (a) no two neighbouring vehicles of a train differ in heading
+     * by more than MOST_TURN_DEG, and (b) every vehicle shown whole, from
+     * the first plot of the railway in, has its middle on track as the tiles
+     * draw it at 8 px a plot: the pixel under it, or one of its eight
+     * neighbours, is BALLAST, a SLEEPER or STEEL (dimmed toward the void
+     * where the ground is not the city's). The vehicles before the first
+     * plot of the railway run the world line's gap, where no track is drawn.
+     */
+    static void trainsOnTheCurves(CityMap m, List<TrainSchedule.Route> routes, TrainSchedule mix) {
+        out.println("      the trains on the curves (FX5):");
+        CityRuns runs = m.runs();
+        double leg = TrainSchedule.LEG_SECONDS / TrainSchedule.MONTH_SECONDS, dwell = TrainSchedule.DWELL_SECONDS / TrainSchedule.MONTH_SECONDS;
+        double worst = 0, awayFromEnd = 0;
+        long pairs = 0;
+        int where = -1;
+        // The month's trains at their moments, and a hopper train (the longest) at fronts all along every route.
+        for (TrainSchedule.Call c : mix.calls()) {
+            TrainSchedule.Route rt = routes.get(c.route());
+            for (int k = 0; k <= 48; k++) {
+                double t = c.arrives() - leg + (2 * leg + dwell) * k / 48.0;
+                TrainSchedule.Train tr = TrainSchedule.position(c, rt, t);
+                if (tr == null) continue;
+                List<TrainSchedule.Car> cars = TrainSchedule.cars(tr, rt);
+                double d = tr.front();
+                for (int i = 1; i < cars.size(); i++) {
+                    double apart = headingApart(cars.get(i - 1).heading(), cars.get(i).heading());
+                    double at = rt.length() - (d - (cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS) / 2);
+                    d -= cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS;
+                    pairs++;
+                    if (apart > worst) { worst = apart; where = c.route(); }
+                    if (!onLadder(rt, at) && apart > awayFromEnd) awayFromEnd = apart;
+                }
+            }
+        }
+        TrainSchedule.Call hopper = new TrainSchedule.Call(TrainSchedule.Kind.HOPPER, true, 0, 0.5);
+        for (int r = 0; r < routes.size(); r++) {
+            TrainSchedule.Route rt = routes.get(r);
+            for (double front = 0.3; front <= rt.length() + 1; front += 0.37) {
+                TrainSchedule.Train tr = new TrainSchedule.Train(hopper, front, true, false);
+                List<TrainSchedule.Car> cars = TrainSchedule.cars(tr, rt);
+                double d = tr.front();
+                for (int i = 1; i < cars.size(); i++) {
+                    double apart = headingApart(cars.get(i - 1).heading(), cars.get(i).heading());
+                    double at = rt.length() - (d - (cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS) / 2);
+                    d -= cars.get(i - 1).loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS;
+                    pairs++;
+                    if (apart > worst) { worst = apart; where = r; }
+                    if (!onLadder(rt, at) && apart > awayFromEnd) awayFromEnd = apart;
+                }
+            }
+        }
+        out.printf("      %,d neighbouring pairs of vehicles on %d routes: the sharpest turn between two is %.1f degrees (route %d), %.1f degrees off the yards' ladders (onLadder())%n",
+                pairs, routes.size(), worst, where, awayFromEnd);
+        check("(a) no two neighbouring vehicles of a train differ in heading by more than " + (int) MOST_TURN_DEG + " degrees, at any sampled moment"
+                + " and along every route, off its yard's ladder (on 0.8.14, 35 at the world line's join and 90 at a corner)", pairs > 0 && awayFromEnd <= MOST_TURN_DEG);
+        check("...and on a yard's ladder no more than " + (int) LADDER_TURN_DEG + " (an S over YARD_LADDER plots, until the yards are as long as their trains)",
+                pairs > 0 && worst <= LADDER_TURN_DEG);
+
+        // (b) on the rail as drawn: the tiles at 8 px a plot, kept as they are first wanted.
+        java.util.Map<Long, int[]> tiles = new java.util.HashMap<>();
+        int px = 8, w = World.TILE * px;
+        long checked = 0, off = 0;
+        List<String> examples = new ArrayList<>();
+        for (int r = 0; r < routes.size(); r++) {
+            TrainSchedule.Route rt = routes.get(r);
+            // The first point of the route on the railway's own plots: before it the route runs the world line's gap.
+            double from = rt.length() + 1;
+            for (int i = 1; i < rt.xs().length && from > rt.length(); i++) {
+                byte f = runs.at((long) Math.floor(rt.xs()[i]), (long) Math.floor(rt.ys()[i]));
+                if (f == CityRuns.F_RAIL || f == CityRuns.F_RAIL_OVER || f == CityRuns.F_YARD) from = rt.along()[i];
+            }
+            for (double front = from; front <= rt.length() + TrainSchedule.LOCO_PLOTS; front += 3.1) {
+                TrainSchedule.Train tr = new TrainSchedule.Train(hopper, Math.min(front, rt.length()), true, false);
+                List<TrainSchedule.Car> cars = TrainSchedule.cars(tr, rt);
+                double d = tr.front();
+                for (int k = 0; k < cars.size(); k++) {
+                    TrainSchedule.Car car = cars.get(k);
+                    double len = car.loco() ? TrainSchedule.LOCO_PLOTS : TrainSchedule.CAR_PLOTS, mid = d - len / 2;
+                    d -= len;
+                    if (car.alpha() < 1 || mid < from) continue;
+                    checked++;
+                    if (!onDrawnTrack(m, tiles, car.x(), car.y(), px, w)) {
+                        off++;
+                        if (examples.size() < 4) examples.add(String.format("route %d at (%.2f, %.2f), %.1f plots in", r, car.x(), car.y(), mid));
+                    }
+                }
+            }
+        }
+        out.printf("      %,d vehicles shown whole on the railway, %,d of them off the drawn rail%s%n", checked, off, examples.isEmpty() ? "" : ": " + examples);
+        check("(b) every vehicle shown whole has its middle on the track the tiles draw: its pixel or one of its eight neighbours is BALLAST, a SLEEPER or STEEL",
+                checked > 0 && off == 0);
+    }
+
+    /**
+     * Whether a point `fromEnd` plots before a route's end lies on its yard's ladder (FX5): the S between the fan's apex and the
+     * siding's start, the siding being the route's last leg - within a locomotive's length either side. A route with no siding
+     * has none. Since the long yards (slice Y1) the siding is most of a unit train long, so the ladder lies that far from the end.
+     */
+    static boolean onLadder(TrainSchedule.Route rt, double fromEnd) {
+        if (rt.siding() < 0 || rt.xs().length < 2) return false;
+        double[] al = rt.along();
+        double siding = al[al.length - 1] - al[al.length - 2];
+        return fromEnd >= siding - TrainSchedule.LOCO_PLOTS && fromEnd <= siding + TileRaster.YARD_LADDER + TrainSchedule.LOCO_PLOTS;
+    }
+
+    /** How far apart two headings are, in degrees, 0 to 180. */
+    static double headingApart(double a, double b) {
+        return Math.toDegrees(Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b))));
+    }
+
+    /** Whether the pixel under plot point (x, y), or one of its eight neighbours, is the railway's as the tile at 8 px a plot draws it (its tile rastered once into `tiles`). */
+    static boolean onDrawnTrack(CityMap m, java.util.Map<Long, int[]> tiles, double x, double y, int px, int w) {
+        long tx = Math.floorDiv((long) Math.floor(x), World.TILE), ty = Math.floorDiv((long) Math.floor(y), World.TILE);
+        int[] img = tiles.computeIfAbsent(tx * 1_000_003L + ty, k -> {
+            TilePainter.Input in = new TilePainter.Input();
+            m.tileInput(tx, ty, in);
+            TilePainter.Painted p = new TilePainter.Painted();
+            TilePainter.paint(in, p);
+            int[] pixels = new int[w * w];
+            TileRaster.raster(in, p, px, pixels);
+            return pixels;
+        });
+        int cx = (int) Math.floor((x - tx * World.TILE) * px), cy = (int) Math.floor((y - ty * World.TILE) * px);
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                int X = cx + dx, Y = cy + dy;
+                if (X < 0 || Y < 0 || X >= w || Y >= w) continue;
+                int c = img[Y * w + X];
+                if (c == TileRaster.BALLAST || c == TileRaster.SLEEPER || c == TileRaster.STEEL) return true;
+                if (c == TileRaster.blend(TileRaster.BALLAST, TileRaster.VOID, TileRaster.UNOWNED_DIM)
+                        || c == TileRaster.blend(TileRaster.SLEEPER, TileRaster.VOID, TileRaster.UNOWNED_DIM)
+                        || c == TileRaster.blend(TileRaster.STEEL, TileRaster.VOID, TileRaster.UNOWNED_DIM)) return true;
+            }
+        }
+        return false;
     }
 
     /**

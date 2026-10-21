@@ -7025,8 +7025,21 @@ public final class GameVersion {
      *   - Save: SAVE_FORMAT 42, OLDEST_LOADABLE_FORMAT 42.
      *   - Harness: AuctionCheck (new); NewGameCheck 11 and HoldersCheck
      *     restated to the auction, premises kept.
+     *
+     * 0.8.18 (2026-10-21) - FX5, THE MAP'S RAIL AND ROADS, FINISHED
+     *   (docs/queue/FX5-notes.md). The map's alone; the trace is 0.8.17's.
+     *   - A station alone lays its main line (CityRuns.layRail()).
+     *   - Curved rail, the routes rounded on it, S ladders (TrackCurves).
+     *   - Yards as long as their trains (TIER_LENGTHS, YARD_LONG 48),
+     *     drawn whole across tiles; sidecar FORMAT 10 (yardAsked()).
+     *   - Real-length trains, only onto sidings that hold them and are
+     *     clear, one a siding, at a pace that eases (TrainSchedule).
+     *   - One junction a crossing, mostly signals (TileRaster.Crossings).
+     *   - The diagonal highway's joints as arcs, its end squared.
+     *   - The world lines' labels apart; "Track" is "Unmade street".
+     *   - No save change (the map's sidecar only).
      */
-    public static final String VERSION = "0.8.17";
+    public static final String VERSION = "0.8.18";
 
     /**
      * The save shape.

@@ -86,6 +86,29 @@ import java.util.Set;
  *      lay the same net, and it reads back from its sidecar; the trains: a
  *      route to every siding, a bulk unit train's alone, on a real map too.
  *
+ *  14. A STATION ALONE LAYS ITS MAIN LINE (batch FX5, Jerus 2026-10-20, his new
+ *      Halifax city: "there is a railwawy depot but no rails"): with a gateway,
+ *      one Rail Depot's yard and no track at all, the gate arm still runs to
+ *      the city's edge and the yard stands on it; the same ground with no
+ *      station and no track lays no line; with a station and a little track
+ *      the line still runs to the edge, the sidings' budget and the surplus
+ *      as before (none); the station gone, the line is taken back.
+ *
+ * 15. A YARD IS AS LONG AS A UNIT TRAIN ALONG ITS LINE (batch FX5 Y1, Jerus
+ *      2026-10-20: "a long train will be out of the depot"): on open ground a
+ *      Rail Terminal and a Rail Depot, laid with their footprints through
+ *      layTo(), are CityRuns.YARD_LONG plots along the main line and
+ *      min(w, h) of their footprint across; every plot of the line inside the
+ *      box is track; the box covers the ring plot between two cells; a plan
+ *      given the yards' ground lays no street on any of its plots (and would,
+ *      were the ground not given); water on the ring plots beside the line
+ *      lays the yard at the cell's interior, water in the cell too at the
+ *      footprint's own length; each yard keeps the size it was asked for - laid
+ *      again the next month it is the same box, not laid anew - and the
+ *      sidecar writes and reads it back (an older one reads the box's own);
+ *      a yard across a district's edge is one district's work, clipped to its
+ *      frame (CityMap.workIn()).
+ *
  * WHY THIS EXISTS: batch FR0 slice M sets the main-line marks that the painter
  * already draws. A fixture CAUSES each condition, and every assertion is
  * against the model's own constants, never a bare number.
@@ -450,6 +473,8 @@ public class MainLineCheck {
         theMainArm(siteX, siteY);
         stackedOnACorridor(siteX, siteY);
         railWays(siteX, siteY, m, sq);
+        stationAlone(siteX, siteY);
+        longYards(m);
 
         System.out.println();
         System.out.println(fails == 0 ? "The main line runs to the freight station." : fails + " FAILED");
@@ -755,7 +780,11 @@ public class MainLineCheck {
                 int n = r.xs().length;
                 if (n < 4) { allNorthSouth = false; allOnColumn = false; continue; }
                 if (r.xs()[n - 1] != r.xs()[n - 2] || r.ys()[n - 1] == r.ys()[n - 2]) allNorthSouth = false;
-                if (Math.abs(r.xs()[n - 3] - (ix + 0.5)) > 1e-9) allOnColumn = false;
+                // FX5: the ladder is sampled (TrackCurves.ladder()), so the apex is the last point on the column before the siding's
+                // start, no more than YARD_LADDER plots along before it (the middle siding stays on the column to its end).
+                int k = n - 2;
+                while (k >= 0 && Math.abs(r.xs()[k] - (ix + 0.5)) > 1e-9) k--;
+                if (k < 0 || Math.abs(r.ys()[k] - r.ys()[n - 2]) > TileRaster.YARD_LADDER + 1e-9) allOnColumn = false;
             }
         }
         // The last three points of each yard's routes: the fan's apex, then the siding's two ends.
@@ -771,7 +800,8 @@ public class MainLineCheck {
             System.out.println(sb);
         }
         check("each yard's every route ends on a north-south siding: its last leg has the same x at both ends", allNorthSouth);
-        check("...and enters the fan at an apex on the corridor's column: the point before its last two has x = ix + 0.5", allOnColumn);
+        check("...and enters the fan at an apex on the corridor's column: its last point on x = ix + 0.5 is no more than YARD_LADDER"
+                + " plots before the siding (FX5: the ladder is an S of points)", allOnColumn);
 
         // The sidings are the routes' last legs; no leg of any route crosses one at a point strictly inside both.
         int crossings = 0;
@@ -941,7 +971,14 @@ public class MainLineCheck {
 
         // The yards: each its own size; the first on the line; the further one beside the largest group, by a branch.
         long[] y0 = runs.yards().get(0), y1 = runs.yards().get(1);
-        check("each yard keeps its own size: the first 24 x 24, the second 8 x 7", y0[2] == 24 && y0[3] == 24 && y1[2] == 8 && y1[3] == 7);
+        // FX5 (Jerus, 2026-10-20, "the rail depots would have to be redesigned to accomodate such large trains"): a yard's box is laid
+        // YARD_LONG along its line and its footprint's least side across, so "its own size" is the footprint it was asked for (yardAsked())
+        // and a box of that rule, not the footprint as the box.
+        check("each yard keeps its own size: the first asked 24 x 24, the second 8 x 7, each laid YARD_LONG along its line and its footprint's"
+                        + " least side across (FX5)",
+                java.util.Arrays.equals(runs.yardAsked(0), new int[] { 24, 24 }) && java.util.Arrays.equals(runs.yardAsked(1), new int[] { 8, 7 })
+                        && Math.max(y0[2], y0[3]) == CityRuns.YARD_LONG && Math.min(y0[2], y0[3]) == 24
+                        && Math.max(y1[2], y1[3]) == CityRuns.YARD_LONG && Math.min(y1[2], y1[3]) == 7);
         boolean firstOnLine = false;
         for (long y = y0[1]; y < y0[1] + y0[3]; y++) for (long x = y0[0]; x < y0[0] + y0[2]; x++) firstOnLine |= CityRuns.covered(rail, x, y);
         check("the first yard stands on the main line", firstOnLine);
@@ -1019,8 +1056,18 @@ public class MainLineCheck {
         shortRun.setGateway(0);
         shortRun.layTo(0, 72, sizes.subList(0, 1), 2, g, siteX, siteY, siteX, siteY, mines, works);
         CityRuns.Arm shortGate = shortRun.rail.arms.get(CityRuns.gateArm(shortRun.rail, 0));
-        check("a short track (72 plots, a spur's) is all main line: it has not reached the city's edge, so no siding is laid yet",
-                shortRun.rail.plots() == 72 && g.x1 - shortGate.x > CityRuns.LOOK && shortRun.sidings().isEmpty() && shortRun.trackSurplus() == 0);
+        // FX5 (Jerus, 2026-10-20, "there is a railwawy depot but no rails"): with a station standing the main line runs to the
+        // city's edge whatever track the model has, so this fixture's line is no longer its 72 plots; the premise kept is that
+        // track short of the line lays no siding. The 72 plots as the whole line, short of the edge, is held with no station.
+        check("a short track (72 plots, a spur's) beside a station: the line runs to the city's edge anyway (FX5), so the 72 plots"
+                        + " are all main line and no siding is laid yet",
+                shortRun.rail.plots() > 72 && g.x1 - shortGate.x <= CityRuns.LOOK && shortRun.sidings().isEmpty() && shortRun.trackSurplus() == 0);
+        CityRuns noStation = new CityRuns();
+        noStation.setGateway(0);
+        noStation.layTo(0, 72, sizes.subList(0, 0), 2, g, siteX, siteY, siteX, siteY, mines, works);
+        CityRuns.Arm noStationGate = noStation.rail.arms.get(CityRuns.gateArm(noStation.rail, 0));
+        check("...and with no station the 72 plots are the whole line, short of the city's edge, and no siding is laid",
+                noStation.rail.plots() == 72 && g.x1 - noStationGate.x > CityRuns.LOOK && noStation.sidings().isEmpty());
 
         // No gateway: the main line is the hub alone.
         CityRuns island = new CityRuns();
@@ -1182,6 +1229,300 @@ public class MainLineCheck {
                 what, mapSidings.size(), reached, mapRoutes.size(), worksRoutes);
         check(what + ": one bulk route to every siding the trains' way reaches, each ending on its last plot", worksRoutes == reached && endsOnPlot && (maybeNone || reached > 0));
         check("...and every other route belongs to a yard, as before", yardRoutesAreYards);
+    }
+
+    /** The Rail Depot's yard size, {across, down}: BuildingVisual.footprint() of the catalogue's depot, the size CityMap.layRuns() gives the runs. */
+    static int[] depotYard() {
+        for (BuildingVisual.Type t : BuildingVisual.table(new BuildingCatalog().load())) if (BuildingVisual.depot(t)) return BuildingVisual.footprint(t);
+        throw new IllegalStateException("no Rail Depot type");
+    }
+
+    /** How many plots of the net's arm `gate` (its start and every step) lie inside the yard's box {x, y, w, h}. */
+    static int armInside(CityRuns.Arm gate, long[] yard) {
+        int in = 0;
+        for (int k = 0; k <= gate.steps; k++) {
+            long[] q = plotOnArm(gate, k);
+            if (q != null && q[0] >= yard[0] && q[0] < yard[0] + yard[2] && q[1] >= yard[1] && q[1] < yard[1] + yard[3]) in++;
+        }
+        return in;
+    }
+
+    /** Section 14: a station alone lays its main line (batch FX5). */
+    static void stationAlone(long siteX, long siteY) {
+        System.out.println("\n--- a station alone lays its main line (FX5) ---");
+        BoxGround g = ground(siteX - 300, siteY - 100, siteX + 600, siteY + 100);
+        int[] fp = depotYard();
+        List<int[]> oneDepot = new ArrayList<>(List.of(fp));
+        check("fixture: the Rail Depot's yard is smaller than the district's interior, so a spot on the line takes it",
+                fp[0] >= 1 && fp[1] >= 1 && fp[0] <= DistrictPlan.INTERIOR && fp[1] <= DistrictPlan.INTERIOR);
+
+        CityRuns alone = new CityRuns();
+        alone.setGateway(0);
+        alone.layTo(0, 0, oneDepot, 0, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        int gate = CityRuns.gateArm(alone.rail, 0);
+        CityRuns.Arm gateA = gate < 0 ? null : alone.rail.arms.get(gate);
+        System.out.printf("  a depot (%d x %d) and no track: the gate arm %s%n", fp[0], fp[1], gateA == null ? "does not exist" : gateA.steps + " steps to (" + gateA.x + ", " + gateA.y + ")");
+        check("a city with one Rail Depot and no track lays the main line: the gate arm has steps", gateA != null && gateA.steps > 0);
+        check("...and it waits at the city's ground, fewer than LOOK plots short of the box's east edge",
+                gateA != null && g.x1 - gateA.x >= 0 && g.x1 - gateA.x < CityRuns.LOOK);
+        check("...the model has no track, so none is a siding's or a branch's, and there is no surplus",
+                alone.sidings().isEmpty() && alone.branches().isEmpty() && alone.trackSurplus() == 0 && alone.rail.plots() == 1 + (gateA == null ? 0 : gateA.steps));
+        // FX5 (slice Y1): the depot's box is YARD_LONG along its line and its footprint's least side across; it was asked for its footprint.
+        check("...the depot's yard is laid, asked for its own footprint, YARD_LONG along its line (FX5)", alone.yards().size() == 1
+                && java.util.Arrays.equals(alone.yardAsked(0), fp) && alone.yards().get(0)[2] == CityRuns.YARD_LONG && alone.yards().get(0)[3] == Math.min(fp[0], fp[1]));
+        check("...and its box covers the main line: the yard's whole length along the east gate arm, " + fp[0] + " plots, is inside it",
+                gateA != null && !alone.yards().isEmpty() && armInside(gateA, alone.yards().get(0)) >= fp[0]);
+
+        CityRuns none = new CityRuns();
+        none.setGateway(0);
+        none.layTo(0, 0, new ArrayList<>(), 0, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        int noneGate = CityRuns.gateArm(none.rail, 0);
+        check("control: the same ground with no station and no track lays no line",
+                none.rail.plots() == 0 && (noneGate < 0 || none.rail.arms.get(noneGate).steps == 0) && none.yards().isEmpty());
+
+        // A little track with a station: the line still runs to the edge; no siding, no surplus, as before.
+        long little = 40;
+        CityRuns some = new CityRuns();
+        some.setGateway(0);
+        some.layTo(0, little, oneDepot, 1, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        CityRuns.Arm someGate = some.rail.arms.get(CityRuns.gateArm(some.rail, 0));
+        check("a station with " + little + " plots of track runs the main line to the city's edge, past the track the model has",
+                someGate.steps + 1 > little && g.x1 - someGate.x >= 0 && g.x1 - someGate.x < CityRuns.LOOK);
+        check("...and lays no siding (the track is short of the line) and shows no surplus", some.sidings().isEmpty() && some.trackSurplus() == 0);
+
+        // The station gone: the model's track alone sets the line again.
+        alone.layTo(0, 0, new ArrayList<>(), 0, g, siteX, siteY, siteX, siteY, new ArrayList<>(), new ArrayList<>());
+        check("with the station gone and no track, the line is taken back", alone.rail.plots() == 0 && alone.yards().isEmpty());
+    }
+
+    /** The Rail Terminal's yard size, {across, down}: BuildingVisual.footprint() of the catalogue's terminal that is no depot. */
+    static int[] terminalYard() {
+        for (BuildingVisual.Type t : BuildingVisual.table(new BuildingCatalog().load())) if (t != null && t.terminal() && !BuildingVisual.depot(t)) return BuildingVisual.footprint(t);
+        throw new IllegalStateException("no Rail Terminal type");
+    }
+
+    /** A yard laid on the long fixture's ground: the gateway east, the founding site JunctionCheck.SITE, no mines, `track` plots of track, the sizes asked in order. */
+    static CityRuns yardsRun(BoxGround g, List<int[]> sizes, long track) {
+        CityRuns r = new CityRuns();
+        r.setGateway(0);
+        layYards(r, g, sizes, track);
+        return r;
+    }
+
+    /** ...laid (again) to the sizes and track given. */
+    static boolean layYards(CityRuns r, BoxGround g, List<int[]> sizes, long track) {
+        long s = JunctionCheck.SITE;
+        return r.layTo(0, track, sizes, 0, g, s, s, s, s, new ArrayList<>(), new ArrayList<>());
+    }
+
+    /** The ground of the long fixture: owned grass round the founding site, as JunctionCheck lays its cities (the frame at the world's origin lies inside it). */
+    static JunctionCheck.PatchGround longGround() {
+        long s = JunctionCheck.SITE;
+        return new JunctionCheck.PatchGround(s - 150, s - 150, s + 150, s + 150);
+    }
+
+    /** A yard's line: {along, across, 1 for a row}, the RAIL_AT line of its cell through its box being track the box's whole length; null where it is not. */
+    static int[] lineOf(CityRuns runs, long[] y) {
+        long ly = Math.floorDiv(y[1], CityRuns.CELL) * CityRuns.CELL + CityRuns.RAIL_AT, lx = Math.floorDiv(y[0], CityRuns.CELL) * CityRuns.CELL + CityRuns.RAIL_AT;
+        if (ly >= y[1] && ly < y[1] + y[3]) {
+            boolean all = true;
+            for (long x = y[0]; x < y[0] + y[2]; x++) all &= CityRuns.covered(runs.rail, x, ly);
+            if (all) return new int[] { (int) y[2], (int) y[3], 1 };
+        }
+        if (lx >= y[0] && lx < y[0] + y[2]) {
+            boolean all = true;
+            for (long yy = y[1]; yy < y[1] + y[3]; yy++) all &= CityRuns.covered(runs.rail, lx, yy);
+            if (all) return new int[] { (int) y[3], (int) y[2], 0 };
+        }
+        return null;
+    }
+
+    /** Whether the yard's line holds a ring plot (a multiple of CELL along it): the box runs on across the street between two cells. */
+    static boolean coversRing(long[] y, int[] line) {
+        long from = line[2] == 1 ? y[0] : y[1], to = from + line[0];
+        for (long p = from; p < to; p++) if (Math.floorMod(p, CityRuns.CELL) == 0) return true;
+        return false;
+    }
+
+    /** How many plots of the yards' boxes (in the frame at the world's origin) the plan lays a street on. */
+    static int streetsOnYards(DistrictPlan p, List<long[]> yards) {
+        int n = 0, f = DistrictPlan.FRAME;
+        for (long[] y : yards) {
+            for (long yy = y[1]; yy < y[1] + y[3]; yy++) {
+                for (long x = y[0]; x < y[0] + y[2]; x++) if (x >= 0 && yy >= 0 && x < f && yy < f && p.isStreet((int) (yy * f + x))) n++;
+            }
+        }
+        return n;
+    }
+
+    /** Section 15: a yard is as long as a unit train along its line (batch FX5 Y1). `real` is the yard city of section 9, laid by the map. */
+    static void longYards(CityMap real) {
+        System.out.println("\n--- a yard is as long as a unit train along its line (FX5) ---");
+        int[] term = terminalYard(), depot = depotYard();
+        int[][] fps = { term, depot };
+        String[] names = { "the Rail Terminal", "the Rail Depot" };
+        List<int[]> sizes = new ArrayList<>(List.of(term, depot));
+        int unit = (int) Math.ceil(2 * TrainSchedule.LOCO_PLOTS + Math.ceil(TrainSchedule.UNIT_TONNES / TrainSchedule.WAGON_TONNES) * TrainSchedule.CAR_PLOTS);
+        check("fixture: a unit train's length rounded up and two ladders (YARD_LONG) is longer than a cell's interior, so its yard must run on into the next cell",
+                CityRuns.YARD_LONG == unit + 2 * TileRaster.YARD_LADDER && CityRuns.YARD_LONG > DistrictPlan.INTERIOR
+                        && term[0] <= DistrictPlan.INTERIOR && depot[0] <= DistrictPlan.INTERIOR);
+
+        // Open ground: both yards as long as the unit train.
+        BoxGround g = longGround();
+        CityRuns open = yardsRun(g, sizes, 0);
+        check("fixture: both yards are laid on open ground", open.yards().size() == 2);
+        if (open.yards().size() != 2) return;
+        List<long[]> boxes = new ArrayList<>(open.yards());
+        for (int i = 0; i < 2; i++) {
+            long[] y = open.yards().get(i);
+            int[] ln = lineOf(open, y);
+            System.out.printf("  %s: box %s, along %s, asked %s%n", names[i], Arrays.toString(y), ln == null ? "no line" : ln[0] + " (" + (ln[2] == 1 ? "a row" : "a column") + ")", Arrays.toString(open.yardAsked(i)));
+            check(names[i] + " stands on the main line, the line's plots inside its box all track", ln != null);
+            if (ln == null) continue;
+            check("...it is YARD_LONG plots along its line, " + CityRuns.YARD_LONG, ln[0] == CityRuns.YARD_LONG);
+            check("...and min(w, h) of its footprint across, " + Math.min(fps[i][0], fps[i][1]), ln[1] == Math.min(fps[i][0], fps[i][1]));
+            check("...it covers a ring plot, the street between two cells", coversRing(y, ln));
+            check("...and keeps the footprint it was asked for, " + Arrays.toString(fps[i]) + ", which is not its box", Arrays.equals(open.yardAsked(i), fps[i]) && (y[2] != fps[i][0] || y[3] != fps[i][1]));
+        }
+
+        // The plan is given the yards' ground and lays no street across it.
+        DistrictPlan.Input in = JunctionCheck.planInput(open);
+        int given = 0, expect = 0, f = DistrictPlan.FRAME;
+        for (int q = 0; q < f * f; q++) if (in.fixed[q] == DistrictPlan.FIXED_YARD) given++;
+        for (long[] y : boxes) {
+            for (long yy = y[1]; yy < y[1] + y[3]; yy++) for (long x = y[0]; x < y[0] + y[2]; x++) if (x >= 0 && yy >= 0 && x < f && yy < f) expect++;
+        }
+        DistrictPlan plan = DistrictPlan.make(in);
+        int streets = streetsOnYards(plan, boxes);
+        DistrictPlan.Input bare = JunctionCheck.planInput(open);
+        for (int q = 0; q < f * f; q++) if (bare.fixed[q] == DistrictPlan.FIXED_YARD) bare.fixed[q] = 0;
+        int would = streetsOnYards(DistrictPlan.make(bare), boxes);
+        System.out.printf("  the plan: %d yard plots given (%d in the boxes), %d street plots on them; without the yards' ground %d%n", given, expect, streets, would);
+        check("a plan is given every plot of both long boxes as yard ground", given == expect && given > 0);
+        check("...and lays no street on any of them: the ring street stops at the yard on both sides", streets == 0);
+        check("...which the fixture causes: without the yards' ground the same plan lays a street across them", would > 0);
+
+        // The ground cuts the line short: water on the ring plots beside the line, the yards at the cell's interior...
+        long lineY = open.rail.hub()[1];
+        JunctionCheck.PatchGround rings = longGround();
+        for (long x = 0; x <= f; x += CityRuns.CELL) for (long y = rings.y0; y <= rings.y1; y++) if (y != lineY) rings.with(x, y, World.SALT);
+        CityRuns cell = yardsRun(rings, sizes, 0);
+        check("water on every ring plot but the line's: both yards are still laid", cell.yards().size() == 2);
+        for (int i = 0; i < cell.yards().size(); i++) {
+            long[] y = cell.yards().get(i);
+            int[] ln = lineOf(cell, y);
+            long from = ln == null ? 0 : (ln[2] == 1 ? y[0] : y[1]);
+            System.out.printf("  %s with water on the rings: box %s, asked %s%n", names[i], Arrays.toString(y), Arrays.toString(cell.yardAsked(i)));
+            check(names[i] + " is laid at the next length that fits, the cell's interior, " + DistrictPlan.INTERIOR + " plots, across min(w, h) as before",
+                    ln != null && ln[0] == DistrictPlan.INTERIOR && ln[1] == Math.min(fps[i][0], fps[i][1]));
+            check("...inside one cell, over no ring plot", ln != null && !coversRing(y, ln) && Math.floorDiv(from, CityRuns.CELL) == Math.floorDiv(from + ln[0] - 1, CityRuns.CELL));
+            check("...and it was asked for " + Arrays.toString(fps[i]), Arrays.equals(cell.yardAsked(i), fps[i]));
+        }
+        // ...water in the cell too, and the yards are their footprints' own length.
+        JunctionCheck.PatchGround within = longGround();
+        for (long x = 0; x <= f; x += CityRuns.CELL) {
+            for (long y = within.y0; y <= within.y1; y++) {
+                if (y == lineY) continue;
+                within.with(x, y, World.SALT);
+                within.with(x + 28, y, World.SALT);
+            }
+        }
+        CityRuns own = yardsRun(within, sizes, 0);
+        check("water on the rings and 28 plots into every cell: both yards are still laid", own.yards().size() == 2);
+        for (int i = 0; i < own.yards().size(); i++) {
+            long[] y = own.yards().get(i);
+            int[] ln = lineOf(own, y);
+            System.out.printf("  %s with water in the cells too: box %s%n", names[i], Arrays.toString(y));
+            // FX5 (the tiers by train): the dry stretch is the 27 plots between the two waters, so a yard takes the longest tier
+            // that fits in it - a Terminal its own 24, a Depot a mixed train's 15 (TIER_LENGTHS), not its 8-plot footprint, which holds none.
+            int fits = fps[i][0];
+            for (int t = 0; t < CityRuns.TIERS; t++) if (CityRuns.tierAlong(fps[i][0], t) <= 27) fits = Math.max(fits, CityRuns.tierAlong(fps[i][0], t));
+            check(names[i] + " is laid at the longest tier the 27 dry plots allow, " + fits + " plots along its row", ln != null && ln[2] == 1 && ln[0] == fits
+                    && ln[1] == (fits == fps[i][0] ? fps[i][1] : Math.min(fps[i][0], fps[i][1])));
+        }
+
+        // Each yard keeps the size it was asked for: laid again the next month, it is the same box, not laid anew.
+        long[] first = open.yards().get(0), second = open.yards().get(1);
+        long[] firstCopy = first.clone(), secondCopy = second.clone();
+        layYards(open, g, sizes, 1);
+        check("laid again the next month, the long yards are the same boxes", open.yards().size() == 2 && Arrays.equals(open.yards().get(0), firstCopy) && Arrays.equals(open.yards().get(1), secondCopy));
+        check("...kept, not taken up and laid anew: the same box objects", open.yards().get(0) == first && open.yards().get(1) == second);
+        long[] cellFirst = cell.yards().get(0);
+        layYards(cell, rings, sizes, 1);
+        check("a yard laid short by the ground is kept short the next month too, the same box", cell.yards().size() == 2 && cell.yards().get(0) == cellFirst);
+        // A footprint changed is a different yard asked for: it is laid again, at the new size.
+        List<int[]> bigger = new ArrayList<>(List.of(new int[] { term[0] + 2, term[1] + 2 }, depot));
+        layYards(cell, g, bigger, 2);
+        check("a yard asked for at another footprint is laid again, long where the ground allows, and keeps the new ask",
+                cell.yards().size() == 2 && Arrays.equals(cell.yardAsked(0), bigger.get(0)) && cell.yards().get(0)[2] == CityRuns.YARD_LONG);
+
+        // The sidecar writes the asked sizes and reads them back; an older one reads the boxes' own.
+        try {
+            java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+            open.write(new java.io.DataOutputStream(bytes));
+            CityRuns back = CityRuns.read(new java.io.DataInputStream(new java.io.ByteArrayInputStream(bytes.toByteArray())));
+            if (back != null) back.setGateway(0);
+            check("the long yards read back from the sidecar: the same runs", back != null && back.same(open));
+            boolean askedBack = back != null && back.yards().size() == 2;
+            for (int i = 0; askedBack && i < 2; i++) askedBack &= Arrays.equals(back.yardAsked(i), fps[i]) && (back.yards().get(i)[2] != fps[i][0] || back.yards().get(i)[3] != fps[i][1]);
+            check("...each with the footprint it was asked for, not its box's size", askedBack);
+            if (back != null) {
+                boolean moved = layYards(back, g, sizes, 0);
+                check("...and laid again to the same asks it moves nothing: the yards are not laid anew", !moved && back.same(open));
+            }
+            java.io.ByteArrayOutputStream oldBytes = new java.io.ByteArrayOutputStream();
+            open.write(new java.io.DataOutputStream(oldBytes), 9);
+            CityRuns older = CityRuns.read(new java.io.DataInputStream(new java.io.ByteArrayInputStream(oldBytes.toByteArray())), 9);
+            boolean boxes9 = older != null && older.yards().size() == 2;
+            for (int i = 0; boxes9 && i < 2; i++) boxes9 &= Arrays.equals(older.yardAsked(i), new int[] { (int) older.yards().get(i)[2], (int) older.yards().get(i)[3] });
+            check("a sidecar of FORMAT 9 reads each yard's footprint as its box's own width and height, and does not fail", boxes9);
+        } catch (java.io.IOException e) {
+            check("the sidecar round trip: " + e, false);
+        }
+
+        // On a real map the yards are laid through CityMap.layRuns(): each asked for its type's footprint, on its line, at one of the lengths.
+        CityRuns rr = real.runs();
+        boolean realAsked = !rr.yards().isEmpty(), realLine = true, realLength = true;
+        StringBuilder lengths = new StringBuilder();
+        for (int i = 0; i < rr.yards().size(); i++) {
+            int[] fp = BuildingVisual.footprint(real.types()[real.yardTypeOf(i)]);
+            realAsked &= Arrays.equals(rr.yardAsked(i), fp);
+            int[] ln = lineOf(rr, rr.yards().get(i));
+            realLine &= ln != null;
+            if (ln == null) continue;
+            int footAlong = ln[2] == 1 ? fp[0] : fp[1];
+            realLength &= (ln[0] == CityRuns.YARD_LONG || ln[0] == DistrictPlan.INTERIOR || ln[0] == footAlong) && ln[1] >= Math.min(fp[0], fp[1]);
+            lengths.append(ln[0]).append(' ');
+        }
+        System.out.printf("  the yard city's %d yards are %s plots along their lines%n", rr.yards().size(), lengths.toString().trim());
+        check("the yard city's yards, laid by the map, are each asked for their type's footprint", realAsked);
+        check("...each stands on its line, YARD_LONG, the cell's interior or its footprint's length along it", realLine && realLength);
+
+        // A yard across a district's edge is one district's work, whole, clipped to its frame.
+        int d = CityMap.DISTRICT;
+        long[][] across = { { d - 31, 97, CityRuns.YARD_LONG, 24 }, { d - 16, 97, CityRuns.YARD_LONG, 24 }, { 97, d - 31, 24, CityRuns.YARD_LONG }, { 97, d - 16, 24, CityRuns.YARD_LONG } };
+        boolean once = true, inside = true, larger = true;
+        for (int k = 0; k < across.length; k++) {
+            long[] y = across[k];
+            int owners = 0;
+            for (int dx = 0; dx <= (k < 2 ? 1 : 0); dx++) {
+                for (int dy = 0; dy <= (k < 2 ? 0 : 1); dy++) {
+                    int[] w = CityMap.workIn(y, (long) dx * d, (long) dy * d);
+                    if (w == null) continue;
+                    owners++;
+                    inside &= w[0] >= 1 && w[1] >= 1 && w[0] + w[2] <= d && w[1] + w[3] <= d;
+                    // The district holding more of the yard's plots is its owner: the first for the first and third, the next for the others.
+                    larger &= (k % 2 == 0) == (dx + dy == 0);
+                }
+            }
+            once &= owners == 1;
+        }
+        check("a long yard across a district's edge is one district's work, once", once);
+        check("...clipped to the plots that district's frame holds as its own, 1 to DISTRICT - 1", inside);
+        check("...the district that holds more of its plots", larger);
+        int[] whole = CityMap.workIn(new long[] { 100, 97, term[0], term[1] }, 0, 0);
+        check("a yard wholly inside one district is that district's work as it was, its own box", whole != null && whole[0] == 100 && whole[1] == 97 && whole[2] == term[0] && whole[3] == term[1]
+                && CityMap.workIn(new long[] { 100, 97, term[0], term[1] }, d, 0) == null);
     }
 
     static boolean marksCarry(CityMap m, int bits) {

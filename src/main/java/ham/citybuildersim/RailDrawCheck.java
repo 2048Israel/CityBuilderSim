@@ -46,7 +46,8 @@ import java.util.List;
  *  13. the freight station with goods is a container yard; the same yard not
  *      the station, and the station without goods, stay bulk;
  *  14. wagonTracks 0 draws no WAGON, YARD_TRACKS draws a wagon on every
- *      track's bed, and half of YARD_TRACKS on that many tracks only;
+ *      track's bed but one (FX5: a yard keeps a siding clear for a train),
+ *      and half of YARD_TRACKS on that many tracks only;
  *  15. a north-south line through the yard gives a north-south fan;
  *  16. at 4 px the yard still draws as a yard; below LINES_FROM it is a plain
  *      TRANSPORT box;
@@ -59,7 +60,8 @@ import java.util.List;
  *      RAIL_DARK, never RAIL_LINE, and a 2 x 2 TRANSPORT dot at each yard;
  *  20. the legend: planeLegend() has the transport class, the railway's four
  *      and the gateway, and (0.8.2) the train's entry, LandMap.TRAIN_WORDS,
- *      and no RAIL_LINE entry;
+ *      and no RAIL_LINE entry, and (FX5) the street with no road bought named
+ *      "Unmade street", not a second "Track" beside "Railway";
  *  21. (batch FX3, 0.8.4; red on 0.8.3) a second line crossing the yard's box:
  *      the fan closes on the line the yard stands on, not on the middle of
  *      all the track in the box; the crossing track is drawn from the box's
@@ -75,6 +77,37 @@ import java.util.List;
  *  24. (batch FR7 slice 3) a siding's loading shed: a plot marked M_SHED beside
  *      a works is drawn with a block in TRANSPORT's fill over the track's end;
  *      an unmarked track plot is not.
+ *  25. (batch FX5, 0.8.15; red before the curves) track turning a corner is
+ *      drawn as a curve: an L of single track, its bend built by
+ *      TrackCurves.bends() as the map builds it, has BALLAST, a sleeper or
+ *      STEEL on the arc's middle, ground where the old L drew its corner, no
+ *      ballast farther than the bed's half-width from the arc and the
+ *      straights, the straights beside it as before and no step in the rails
+ *      where the arc meets them; the polyline the trains run on (TrackCurves
+ *      round() of the L's points) is on the drawn rail all the way, and
+ *      TrackCurves' own rules hold (the radius, the cut to half a leg, the
+ *      arcs, the ladder's S); double track draws the wider bed; a 45-degree
+ *      turn draws its arc too and leaves no gap in it; the blocks' views draw
+ *      the arc in RAIL_DARK and not the corner's cell; the tile's stamp moves
+ *      with its bends.
+ *  26. (batch FX5) a yard's ladders are S curves: tangent to the line at the
+ *      apex and to the siding at its start, two rails from RAILS_FROM px.
+ *  27. (batch FX5 Y2; red before the yard is drawn whole) a yard longer than
+ *      a tile is drawn as one: a Rail Terminal's box CityRuns.YARD_LONG along
+ *      its line and 24 across, east-west, starting a plot into a tile and so
+ *      running on into the next across the ring (and, from plot 24, into a
+ *      third, each seam more than a ladder from the box's ends), its tiles' inputs built as CityMap.fillInput() builds them
+ *      (each tile given the yard whole in Input.yards and its clipped part as
+ *      a building), each tile rastered alone at 8 px and laid side by side:
+ *      each siding's ballast band lies at the same rows on both sides of a
+ *      seam and runs across it, no ladder (no steel off the sidings' rails)
+ *      within YARD_LADDER plots of a seam but one at each end of the box,
+ *      one shed and three stockpiles, not one set a tile; the second tile's
+ *      part is yard ground; a 24 x 24 yard inside one tile draws to the pixel
+ *      as it does with no entry (section 12's); the stamp folds the yards; and
+ *      on the skeleton city the map gives every tile a yard reaches the yard
+ *      whole, in the layout the trains' routes lay, counted once, and its
+ *      part on every tile is the yard's class in the blocks' views.
  *
  * Numbering is the running order.
  *
@@ -310,6 +343,9 @@ public class RailDrawCheck {
         gravelGrey();
         railDepotYard();
         sidingShed();
+        curvedCorner();
+        yardLadders();
+        yardAcrossTiles();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -621,7 +657,7 @@ public class RailDrawCheck {
 
     /* ================= 14. wagons standing ================= */
     static void wagonsStanding() {
-        System.out.println("--- 14. wagonTracks: none, every track, then half the tracks ---");
+        System.out.println("--- 14. wagonTracks: none, every track but one, then half the tracks ---");
         int px = 8, boxX = 4, boxY = 4, boxW = 24, boxH = 24, railY = 16, w = T * px;
         TilePainter.Input none = yardAt(terminal(), boxX, boxY, boxW, boxH);
         railRow(none, railY, 0);
@@ -636,11 +672,17 @@ public class RailDrawCheck {
         full.wagonTracks = TileRaster.YARD_TRACKS;
         TilePainter.Painted pf = paint(full);
         int[] imgf = raster(full, pf, px);
-        boolean allWagons = true;
-        for (int b = 0; b < bands.length / 2; b++) {
-            allWagons &= bandHas(imgf, w, boxX, boxY, boxW, boxH, px, TileRaster.WAGON, bands[2 * b], bands[2 * b + 1]);
+        // FX5, Jerus 2026-10-20 ("Queue the fix" for a train standing over the yard's own wagons): a yard keeps one siding clear of standing
+        // wagons, so a train always has one (TileRaster.wagonTracksOn(); CityMap.trainRoutes() lays no route to the others): YARD_TRACKS
+        // wagon tracks stand on every track's bed but one, the last from the shed's side. It was "every track's bed".
+        boolean allWagons = true, lastClear = true;
+        int tracksDrawn = bands.length / 2;
+        for (int b = 0; b < tracksDrawn; b++) {
+            boolean has = bandHas(imgf, w, boxX, boxY, boxW, boxH, px, TileRaster.WAGON, bands[2 * b], bands[2 * b + 1]);
+            if (b < tracksDrawn - 1) allWagons &= has;
+            else lastClear &= !has;
         }
-        check("YARD_TRACKS wagons stand on every track's bed", allWagons);
+        check("YARD_TRACKS wagons stand on every track's bed but one, which stays clear for a train", allWagons && lastClear);
 
         TilePainter.Input half = yardAt(terminal(), boxX, boxY, boxW, boxH);
         railRow(half, railY, 0);
@@ -831,6 +873,9 @@ public class RailDrawCheck {
         boolean railLine = false;
         for (LandMap.Entry e : plane) railLine |= e.colour() == TileRaster.RAIL_LINE;
         check("...and no entry wears the old RAIL_LINE", !railLine);
+        check("...a street with no road bought has \"" + LandMap.TRACK_ENTRY + "\" and the legend has no second \"Track\" beside \"Railway\" (FX5)",
+                legendHas(plane, LandMap.TRACK_ENTRY) && !legendHas(plane, "Track") && "Unmade street".equals(LandMap.TRACK_ENTRY));
+        check("...and its hover words begin with the entry's", LandMap.TRACK_WORDS.startsWith(LandMap.TRACK_ENTRY));
         System.out.println("  ui.MapView.LEGEND_ROWS is package-private, so this harness cannot reach it; the layout is checked by eye");
     }
 
@@ -1001,5 +1046,540 @@ public class RailDrawCheck {
         int[] imgo = raster(only, po, px);
         check("control: with only the north-south column the south apex STEEL is within 1 px of x = " + lineMid,
                 nearInRow(imgo, w, apexY, lineMid, 1, TileRaster.STEEL));
+    }
+
+    /* ================= 25. (FX5) a corner is drawn as a curve ================= */
+
+    /** Whether a pixel is the railway's: ballast, a sleeper or steel. */
+    static boolean isTrack(int c) {
+        return c == TileRaster.BALLAST || c == TileRaster.SLEEPER || c == TileRaster.STEEL;
+    }
+
+    /** An L of single track on owned ground, as the runs lay it: east along row `rowY` from column `x0` to column `colX`, then south down that column to row `y1`, each plot with `marks`. */
+    static TilePainter.Input lOfTrack(int x0, int rowY, int colX, int y1, int marks) {
+        TilePainter.Input in = owned();
+        for (int x = x0; x <= colX; x++) in.fixed[rowY * T + x] = TilePainter.RAIL;
+        for (int y = rowY; y <= y1; y++) in.fixed[y * T + colX] = TilePainter.RAIL;
+        if (marks != 0) for (int i = 0; i < TilePainter.PLOTS; i++) if (in.fixed[i] == TilePainter.RAIL) in.marks[i] = (byte) marks;
+        return in;
+    }
+
+    /** The bends of the polyline through the points, put into the input as CityMap puts a route's in, and the plots they replace marked. */
+    static List<TrackCurves.Bend> bendInto(TilePainter.Input in, double[] xs, double[] ys, boolean doubled) {
+        List<TrackCurves.Bend> bends = TrackCurves.bends(xs, ys, TrackCurves.RADIUS);
+        for (TrackCurves.Bend b : bends) in.addBend(b.net(), b.x(), b.y(), b.ux(), b.uy(), b.vx(), b.vy(), b.r(), b.t(), doubled);
+        in.markCurved();
+        return bends;
+    }
+
+    /** The distance, in pixels, from the middle of pixel (x, y) to the nearest of the path's points (in plots, scaled by px). */
+    static double pathDistance(double[][] path, int px, int x, int y) {
+        double best = Double.MAX_VALUE;
+        for (double[] q : path) best = Math.min(best, Math.hypot(q[0] * px - (x + 0.5), q[1] * px - (y + 0.5)));
+        return best;
+    }
+
+    /** An L's centreline bent by `b`, sampled every 1/50 plot: from plot edge (xa, ya) to the arc's start, the arc, and from its end on to plot edge (xb, yb). */
+    static double[][] bentPath(TrackCurves.Bend b, double xa, double ya, double xb, double yb) {
+        List<double[]> out = new java.util.ArrayList<>();
+        double d = Math.hypot(b.startX() - xa, b.startY() - ya);
+        for (int k = 0; k <= d * 50; k++) out.add(new double[] { xa + (b.startX() - xa) * k / (d * 50), ya + (b.startY() - ya) * k / (d * 50) });
+        for (int k = 0; k <= b.length() * 50; k++) {
+            double[] q = b.at(k / 50.0);
+            out.add(new double[] { q[0], q[1] });
+        }
+        double e = Math.hypot(xb - b.endX(), yb - b.endY());
+        for (int k = 0; k <= e * 50; k++) out.add(new double[] { b.endX() + (xb - b.endX()) * k / (e * 50), b.endY() + (yb - b.endY()) * k / (e * 50) });
+        return out.toArray(new double[0][]);
+    }
+
+    static void curvedCorner() {
+        System.out.println("--- 25. (FX5) track turning a corner is drawn as a curve: an arc of bed, rails and sleepers, ground where the L's corner was ---");
+        trackCurvesRules();
+        int px = 8, w = T * px, rowY = 10, colX = 14, x0 = 3, y1 = 22;
+        TilePainter.Input in = lOfTrack(x0, rowY, colX, y1, 0);
+        double[] xs = { x0 + .5, colX + .5, colX + .5 }, ys = { rowY + .5, rowY + .5, y1 + .5 };
+        List<TrackCurves.Bend> bends = bendInto(in, xs, ys, false);
+        check("fixture: the L's one bend has the radius TrackCurves.RADIUS and replaces the corner's plot and the next two on each leg, no more",
+                bends.size() == 1 && Math.abs(bends.get(0).r() - TrackCurves.RADIUS) < 1e-9 && in.curved[rowY * T + colX]
+                        && in.curved[rowY * T + colX - 1] && in.curved[rowY * T + colX - 2] && !in.curved[rowY * T + colX - 3]
+                        && in.curved[(rowY + 1) * T + colX] && in.curved[(rowY + 2) * T + colX] && !in.curved[(rowY + 3) * T + colX]);
+        TrackCurves.Bend b = bends.get(0);
+        TilePainter.Painted p = paint(in);
+        int[] img = raster(in, p, px);
+
+        double[] mid = b.at(b.length() / 2);
+        int mx = (int) Math.floor(mid[0] * px), my = (int) Math.floor(mid[1] * px);
+        check("the arc's middle (the centre plus the radius along the bisector) is BALLAST, a sleeper or STEEL", isTrack(img[my * w + mx]));
+        check("the L's corner, the middle of the corner plot, is ground and not the bed the L drew there",
+                !isTrack(img[(rowY * px + px / 2) * w + colX * px + px / 2]));
+        check("...and so is the pixel at the foot of the corner plot, where the L drew its arm to the south",
+                !isTrack(img[(rowY * px + px / 2 + 3) * w + colX * px + px / 2]));
+
+        double[][] path = bentPath(b, x0, rowY + .5, colX + .5, y1 + 1);
+        int bed = bedWidth(px, false), far = 0, steel = 0, sleepers = 0;
+        double worst = 0;
+        for (int y = 0; y < w; y++) {
+            for (int x = 0; x < w; x++) {
+                int c = img[y * w + x];
+                if (c == TileRaster.STEEL) steel++;
+                if (c == TileRaster.SLEEPER) sleepers++;
+                if (c != TileRaster.BALLAST) continue;
+                double d = pathDistance(path, px, x, y);
+                worst = Math.max(worst, d);
+                if (d > bed / 2.0 + 0.5) far++;
+            }
+        }
+        check("no BALLAST pixel lies farther than the bed's half-width (and half a pixel) from the arc and the straights: the worst is "
+                + String.format("%.2f", worst) + " px against " + (bed / 2.0 + 0.5), far == 0);
+        check("...and the arc has its rails and sleepers: STEEL and SLEEPER pixels over the tile", steel > 40 && sleepers > 10);
+
+        // The rails are there all the way round: along the arc, at the gauge to either side, a STEEL pixel within a pixel.
+        int off = Math.max(1, (int) Math.round(TileRaster.GAUGE / 2.0 * px)), gaps = 0;
+        for (int k = 0; k <= 20; k++) {
+            double[] q = b.at(b.length() * k / 20.0);
+            double nx = -Math.sin(q[2]), ny = Math.cos(q[2]);
+            for (int side = -1; side <= 1; side += 2) {
+                double cx = q[0] * px + nx * side * off + 0.5, cy = q[1] * px + ny * side * off + 0.5;
+                boolean found = false;
+                for (int yy = (int) Math.floor(cy) - 1; yy <= (int) Math.floor(cy) + 1; yy++)
+                    for (int xx = (int) Math.floor(cx) - 1; xx <= (int) Math.floor(cx) + 1; xx++) found |= img[yy * w + xx] == TileRaster.STEEL;
+                if (!found) gaps++;
+            }
+        }
+        check("...two rails the gauge apart all the way round it, no gap in either (21 places on the arc): " + gaps + " missing", gaps == 0);
+
+        // The trains' way round it is the same geometry: every point of the rounded polyline (TrackCurves.round(), as the routes are rounded)
+        // lies on the rail the tile draws - the pixel under it or one of its eight neighbours is the railway's.
+        double[][] way = TrackCurves.round(xs, ys, TrackCurves.RADIUS);
+        int offRail = 0, sampled = 0;
+        for (int k = 0; k + 1 < way[0].length; k++) {
+            double len = Math.hypot(way[0][k + 1] - way[0][k], way[1][k + 1] - way[1][k]);
+            for (double f = 0; f < len; f += 0.1) {
+                double wx = way[0][k] + (way[0][k + 1] - way[0][k]) * f / len, wy = way[1][k] + (way[1][k + 1] - way[1][k]) * f / len;
+                int cx = (int) Math.floor(wx * px), cy = (int) Math.floor(wy * px);
+                boolean on = false;
+                for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) on |= isTrack(img[(cy + dy) * w + cx + dx]);
+                sampled++;
+                if (!on) offRail++;
+            }
+        }
+        check("the rounded polyline the trains run (TrackCurves.round() of the L's points) is on the drawn rail all the way: " + offRail + " of " + sampled
+                + " points off it", sampled > 100 && offRail == 0);
+
+        // The straights beside the bend are as they were.
+        TilePainter.Input plain = owned();
+        railRow(plain, rowY, 0);
+        int[] pimg = raster(plain, paint(plain), px);
+        boolean same = true;
+        for (int plotX = x0 + 1; plotX < colX - 4; plotX++) {
+            for (int dy = 0; dy < px; dy++) for (int dx = 0; dx < px; dx++) same &= pixel(img, w, plotX, rowY, dx, dy, px) == pixel(pimg, w, plotX, rowY, dx, dy, px);
+        }
+        check("control: the straight plots away from the bend are drawn exactly as a straight track's (section 1's look)", same);
+        TilePainter.Input none = owned();
+        railRow(none, rowY, 0);
+        none.markCurved();
+        check("...and a track with no bend at all is drawn as before: markCurved() marks no plot and the image is the same",
+                !anyCurved(none) && java.util.Arrays.equals(raster(none, paint(none), px), pimg));
+
+        // No step where the arc meets the straight: each rail pixel of the last straight plot's last column has a rail within a pixel in the next column.
+        int seamX = (colX - 2) * px, steps = 0, rails = 0;
+        for (int y = (rowY - 1) * px; y < (rowY + 2) * px; y++) {
+            if (img[y * w + seamX - 1] != TileRaster.STEEL) continue;
+            rails++;
+            boolean next = false;
+            for (int dy = -1; dy <= 1; dy++) next |= img[(y + dy) * w + seamX] == TileRaster.STEEL;
+            if (!next) steps++;
+        }
+        check("the rails run on across the seam from the last straight plot into the arc, within a pixel: " + rails + " rails meet it, " + steps + " with a step",
+                rails == 2 && steps == 0);
+
+        // Double track: the L's plots marked M_MAIN | M_DOUBLE, its bend on double track.
+        TilePainter.Input two = lOfTrack(x0, rowY, colX, y1, TilePainter.M_MAIN | TilePainter.M_DOUBLE);
+        TrackCurves.Bend bd = bendInto(two, xs, ys, true).get(0);
+        int[] dimg = raster(two, paint(two), px);
+        double[][] dpath = bentPath(bd, x0, rowY + .5, colX + .5, y1 + 1);
+        int dbed = bedWidth(px, true), dfar = 0, wide = 0;
+        for (int y = 0; y < w; y++) {
+            for (int x = 0; x < w; x++) {
+                if (dimg[y * w + x] != TileRaster.BALLAST) continue;
+                double d = pathDistance(dpath, px, x, y);
+                if (d > dbed / 2.0 + 0.5) dfar++;
+                if (d > bed / 2.0 + 0.5) wide++;
+            }
+        }
+        double[] dmid = bd.at(bd.length() / 2);
+        check("double track: the arc has BED_DOUBLE's bed (some BALLAST beyond the single bed's width, none beyond the double's) and is track at its middle",
+                dfar == 0 && wide > 0 && isTrack(dimg[(int) Math.floor(dmid[1] * px) * w + (int) Math.floor(dmid[0] * px)]));
+
+        // A 45-degree turn: straight east, then a stretch south-east; the arc joins them and leaves no gap on its centreline.
+        TilePainter.Input diag = owned();
+        for (int x = 2; x <= 13; x++) diag.fixed[10 * T + x] = TilePainter.RAIL;
+        int code = CityRuns.diagCode(1);
+        for (int k = 1; k <= 5; k++) {
+            diag.fixed[(10 + k) * T + 12 + k] = TilePainter.RAIL;
+            diag.marks[(10 + k) * T + 12 + k] = (byte) (CityRuns.M_DIAG | (code << CityRuns.M_DIAG_SHIFT));
+            diag.fixed[(10 + k - 1) * T + 12 + k] = TilePainter.RAIL;
+            diag.marks[(10 + k - 1) * T + 12 + k] = (byte) (CityRuns.M_DIAG | (code << CityRuns.M_DIAG_SHIFT) | CityRuns.M_CORNER);
+        }
+        List<TrackCurves.Bend> turn = bendInto(diag, new double[] { 2.5, 12.5, 17.5 }, new double[] { 10.5, 10.5, 15.5 }, false);
+        int[] gimg = raster(diag, paint(diag), px);
+        TrackCurves.Bend t45 = turn.get(0);
+        int holes = 0;
+        for (int k = 0; k <= 20; k++) {
+            double[] q = t45.at(t45.length() * k / 20.0);
+            if (!isTrack(gimg[(int) Math.floor(q[1] * px) * w + (int) Math.floor(q[0] * px)])) holes++;
+        }
+        check("a 45-degree turn (straight into an M_DIAG stretch) is one bend of 45 degrees, its arc track all along its centreline: " + holes + " holes in 21",
+                turn.size() == 1 && Math.abs(Math.abs(t45.sweep()) - Math.PI / 4) < 1e-9 && holes == 0);
+        // ...and none of the old joint's ground inside its bed: every pixel within a pixel of the arc's centreline is track.
+        int ground = 0;
+        for (int k = 0; k <= 20; k++) {
+            double[] q = t45.at(t45.length() * k / 20.0);
+            for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) {
+                if (!isTrack(gimg[((int) Math.floor(q[1] * px) + dy) * w + (int) Math.floor(q[0] * px) + dx])) ground++;
+            }
+        }
+        check("...no ground pixel inside the bed at the joint: the 3 x 3 pixels about each of 21 places on the arc are all track: " + ground + " are ground", ground == 0);
+
+        // The blocks' views: L1 draws the arc in RAIL_DARK at the width it draws track, and not the corner's cell.
+        int bpx = MapFrame.MIDDLE_TILE_PX, bw = T * bpx;
+        int[] bl = blocks(in, p, bpx, TileRaster.BLOCK_MIDDLE);
+        check("L1 blocks: the arc's middle is RAIL_DARK", bl[(int) Math.floor(mid[1] * bpx) * bw + (int) Math.floor(mid[0] * bpx)] == TileRaster.RAIL_DARK);
+        check("...the corner's own cell is not (the corner is cut), and a straight plot of the leg still is",
+                bl[(rowY * bpx) * bw + colX * bpx] != TileRaster.RAIL_DARK && bl[(rowY * bpx) * bw + (x0 + 2) * bpx] == TileRaster.RAIL_DARK);
+        int fpx = MapFrame.FAR_TILE_PX, fw = T * fpx;
+        int[] far1 = blocks(in, p, fpx, TileRaster.BLOCK_FAR);
+        check("L2 blocks: the arc's middle is RAIL_DARK, the corner's cell is not",
+                far1[(int) Math.floor(mid[1] * fpx) * fw + (int) Math.floor(mid[0] * fpx)] == TileRaster.RAIL_DARK
+                        && far1[rowY * fpx * fw + colX * fpx] != TileRaster.RAIL_DARK);
+
+        // The stamp: a tile repaints when its bends change.
+        TilePainter.Input again = lOfTrack(x0, rowY, colX, y1, 0);
+        bendInto(again, xs, ys, false);
+        TilePainter.Input bare = lOfTrack(x0, rowY, colX, y1, 0);
+        check("the stamp is the same for the same bends, and changes with a bend's doubling or with none at all",
+                MapTiles.stamp(again) == MapTiles.stamp(in) && MapTiles.stamp(two) != MapTiles.stamp(in) && MapTiles.stamp(bare) != MapTiles.stamp(in));
+    }
+
+    /** TrackCurves' own rules, the geometry the drawing and the routes share: the radius, the shrinking, the arcs' tangency and the ladder's S. */
+    static void trackCurvesRules() {
+        // A turn of 90 degrees between two long legs takes the full radius; between short ones it is cut to half of each leg, the radius shrunk with it.
+        List<TrackCurves.Bend> longLegs = TrackCurves.bends(new double[] { 0, 20, 20 }, new double[] { 0, 0, 20 }, TrackCurves.RADIUS);
+        List<TrackCurves.Bend> shortLegs = TrackCurves.bends(new double[] { 0, 2, 2 }, new double[] { 0, 0, 3 }, TrackCurves.RADIUS);
+        check("a 90-degree turn between long legs has TrackCurves.RADIUS and a tangent length of as much; between legs of 2 and 3 plots it is cut to half the shorter",
+                longLegs.size() == 1 && Math.abs(longLegs.get(0).r() - TrackCurves.RADIUS) < 1e-9 && Math.abs(longLegs.get(0).t() - TrackCurves.RADIUS) < 1e-9
+                        && shortLegs.size() == 1 && Math.abs(shortLegs.get(0).t() - 1) < 1e-9 && Math.abs(shortLegs.get(0).r() - 1) < 1e-9);
+        // Collinear points and a doubling back are no bends; a leg of no length is passed over.
+        check("collinear points, a leg of no length and a doubling back make no bend",
+                TrackCurves.bends(new double[] { 0, 5, 9 }, new double[] { 0, 0, 0 }, 3).isEmpty()
+                        && TrackCurves.bends(new double[] { 0, 5, 5, 9 }, new double[] { 0, 0, 0, 0 }, 3).isEmpty()
+                        && TrackCurves.bends(new double[] { 0, 5, 0 }, new double[] { 0, 0, 0 }, 3).isEmpty());
+        // Two bends on one leg never meet: the legs' halves.
+        double[] sx = { 0, 4, 4, 0 }, sy = { 0, 0, 3, 3 };
+        List<TrackCurves.Bend> two = TrackCurves.bends(sx, sy, 3);
+        check("two turns on one leg (a jog of 3 plots) take at most half of it each: their tangent lengths on the middle leg sum to no more than its length",
+                two.size() == 2 && two.get(0).t() + two.get(1).t() <= 3 + 1e-9);
+        // round(): the ends kept, every point of an arc at the radius from its centre, the legs' tangent points on the legs.
+        double[][] r = TrackCurves.round(new double[] { 0, 20, 20 }, new double[] { 0, 0, 20 }, TrackCurves.RADIUS);
+        TrackCurves.Bend b = longLegs.get(0);
+        boolean onArc = true;
+        for (int i = 0; i < r[0].length; i++) {
+            if (r[0][i] > b.startX() + 1e-9 && r[1][i] < b.endY() - 1e-9) onArc &= Math.abs(Math.hypot(r[0][i] - b.cx(), r[1][i] - b.cy()) - b.r()) < 1e-9;
+        }
+        check("round() keeps the polyline's ends, and the points between the tangent points lie on the arc, a radius from its centre",
+                r[0][0] == 0 && r[1][0] == 0 && r[0][r[0].length - 1] == 20 && r[1][r[1].length - 1] == 20 && onArc
+                        && r[0].length > 8 && Math.abs(b.startX() - 17) < 1e-9 && Math.abs(b.endY() - 3) < 1e-9);
+        // The ladder: an S from the apex, level at both ends, over `along` and `off`.
+        double[][] lad = TrackCurves.ladder(10, 20, 1, 0, 0, 1, 3, 2.5);
+        int n = lad[0].length;
+        boolean monotone = true;
+        for (int i = 1; i < n; i++) monotone &= lad[0][i] > lad[0][i - 1] && lad[1][i] >= lad[1][i - 1] - 1e-12;
+        double slope0 = (lad[1][1] - lad[1][0]) / (lad[0][1] - lad[0][0]), slopeN = (lad[1][n - 1] - lad[1][n - 2]) / (lad[0][n - 1] - lad[0][n - 2]);
+        check("a ladder runs from the apex to the siding's start (along 3, off 2.5) as an S that is level at both ends: first slope " + String.format("%.2f", slope0)
+                        + ", last " + String.format("%.2f", slopeN) + ", halfway " + String.format("%.2f", TrackCurves.smoothstep(0.5)),
+                lad[0][0] == 10 && lad[1][0] == 20 && Math.abs(lad[0][n - 1] - 13) < 1e-9 && Math.abs(lad[1][n - 1] - 22.5) < 1e-9
+                        && monotone && slope0 < 0.5 && slopeN < 0.5 && Math.abs(TrackCurves.smoothstep(0.5) - 0.5) < 1e-12);
+    }
+
+    /** Whether any plot of the input is marked curved. */
+    static boolean anyCurved(TilePainter.Input in) {
+        for (boolean c : in.curved) if (c) return true;
+        return false;
+    }
+
+    /* ================= 26. (FX5) a yard's ladders are S curves ================= */
+
+    static void yardLadders() {
+        System.out.println("--- 26. (FX5) a yard's ladders are S curves: tangent to the line at the apex, to the siding at its start, two rails from RAILS_FROM ---");
+        int px = 8, boxX = 4, boxY = 4, boxW = 24, boxH = 24, railY = 16, w = T * px;
+        TilePainter.Input in = yardAt(terminal(), boxX, boxY, boxW, boxH);
+        railRow(in, railY, 0);
+        TilePainter.Painted p = paint(in);
+        int[] img = raster(in, p, px);
+        // The fan: eight sidings YARD_TRACK_APART apart about the line; the outermost two lie 5.25 plots off it, over a ladder of YARD_LADDER plots.
+        int line = (int) Math.round((railY + 0.5) * px), start = boxX * px + 1, ladder = (int) Math.round(TileRaster.YARD_LADDER * px);
+        int fanA = start + ladder, outer = (int) Math.round(line + (TileRaster.YARD_TRACKS - 1) / 2.0 * TileRaster.YARD_TRACK_APART * px);
+        // Two pixels along from the apex the straight ladder was 3.5 px off the line (4 rows with the pixel line's rounding); an S that leaves it level is 2 or under.
+        int apexCol = start + 2, south = -1, north = Integer.MAX_VALUE;
+        for (int y = 0; y < w; y++) {
+            if (img[y * w + apexCol] != TileRaster.STEEL) continue;
+            south = Math.max(south, y);
+            north = Math.min(north, y);
+        }
+        check("two pixels along from the apex the outermost ladders are still at the line (an S leaves it tangent): STEEL rows " + north + ".." + south
+                + " about " + line + " are within 2 px of it", south - line <= 2 && line - north <= 2);
+        // ...and the other end, two pixels short of the siding's start: the ladder is at the siding's row.
+        int fanCol = fanA - 2;
+        boolean reaches = false;
+        for (int y = 0; y < w; y++) reaches |= Math.abs(y - outer) <= 1 && img[y * w + fanCol] == TileRaster.STEEL;
+        check("...and meets the outermost siding tangent at the other end: STEEL within 1 px of its row (" + outer + ") two pixels before the fan", reaches);
+        // From RAILS_FROM px a plot a ladder is two rails: halfway along, a pair of STEEL pixels a gauge apart, not a one-pixel line.
+        int half = start + 12, pairs = 0;
+        for (int y = 1; y < w - 2; y++) {
+            if (img[y * w + half] == TileRaster.STEEL && img[(y + 1) * w + half] != TileRaster.STEEL && img[(y + 2) * w + half] == TileRaster.STEEL) pairs++;
+        }
+        check("at 8 px a ladder is two rails: a pair of STEEL pixels a gauge apart in its column halfway along, not a one-pixel line: " + pairs + " pairs", pairs >= 1);
+
+        // The middle siding of an odd fan lies on the line itself: its ladders are straight, two rails all the way from the apex to the siding.
+        TilePainter.Input odd = yardAt(depot(), 4, 4, 12, 12);
+        railRow(odd, 10, 0);
+        int[] oimg = raster(odd, paint(odd), px);
+        int oline = (int) Math.round((10 + 0.5) * px), ostart = 4 * px + 1, ofanA = ostart + (int) Math.round(TileRaster.YARD_LADDER * px), bare = 0;
+        for (int x = ostart + 4; x < ofanA - 4; x++) {
+            if (oimg[(oline - 1) * w + x] != TileRaster.STEEL || oimg[(oline + 1) * w + x] != TileRaster.STEEL) bare++;
+        }
+        check("the middle siding of a depot's three, on the line, has its two rails the whole length of its ladder: " + bare + " columns without", bare == 0);
+    }
+
+    /* ================= 27. a yard longer than a tile, drawn whole (FX5 Y2) ================= */
+
+    /** Which rows of pixel column `col` hold `colour`, in an image `width` across and `height` down. */
+    static boolean[] colRows(int[] img, int width, int height, int col, int colour) {
+        boolean[] rows = new boolean[height];
+        for (int y = 0; y < height; y++) rows[y] = img[y * width + col] == colour;
+        return rows;
+    }
+
+    /**
+     * The tiles an east-west yard reaches, as CityMap.fillInput() builds them
+     * (FX5 Y2): the yard's box starts at plot (boxX, boxY) of tile 0 and is
+     * `along` plots along and `across` across, its line the plot row
+     * `lineRow`. Every tile it reaches holds the yard whole (Input.yards: its
+     * layout from yardLayout() of the box's track, as the routes lay it) and
+     * its clipped part as a building, counted on the first tile only, with
+     * the line's track on its row. `entries` false leaves the yards out: the
+     * clipped parts alone, as a hand-built yard has always been.
+     */
+    static TilePainter.Input[] yardTiles(BuildingVisual.Type terminal, int boxX, int boxY, int along, int across, int lineRow, boolean entries) {
+        boolean[] rail = new boolean[along * across];
+        for (int x = 0; x < along; x++) rail[(lineRow - boxY) * along + x] = true;
+        int[] layout = TileRaster.yardLayout(rail, along, across);
+        int n = (boxX + along + T - 1) / T;
+        TilePainter.Input[] tiles = new TilePainter.Input[n];
+        for (int i = 0; i < n; i++) {
+            TilePainter.Input in = owned();
+            in.tx = i;
+            in.types = new BuildingVisual.Type[terminal.id() + 1];
+            in.types[terminal.id()] = terminal;
+            in.counts = new int[terminal.id() + 1];
+            int x0 = boxX - i * T, cx0 = Math.max(0, x0), cx1 = Math.min(T, x0 + along);
+            int box = CityMap.box(cx0, boxY, cx1 - cx0, across, false);
+            if (i == 0) in.addBuilding(box, terminal.id());
+            else in.addBuildingPart(box, terminal.id());
+            if (entries) in.addYard(x0, boxY, along, across, terminal.id(), layout, false);
+            railRow(in, lineRow, 0);
+            tiles[i] = in;
+        }
+        return tiles;
+    }
+
+    /** The tiles rastered alone at px and laid side by side: tiles.length * T * px across, T * px down. */
+    static int[] sideBySide(TilePainter.Input[] tiles, int px) {
+        int w = T * px, n = tiles.length;
+        int[] all = new int[n * w * w];
+        for (int i = 0; i < n; i++) {
+            int[] img = raster(tiles[i], paint(tiles[i]), px);
+            for (int y = 0; y < w; y++) System.arraycopy(img, y * w, all, y * n * w + i * w, w);
+        }
+        return all;
+    }
+
+    /** How many 4-connected pieces the pixels of colours a and b make in an image `width` across. */
+    static int pieces(int[] img, int width, int a, int b) {
+        int height = img.length / width, n = 0;
+        boolean[] seen = new boolean[img.length];
+        int[] stack = new int[img.length];
+        for (int s = 0; s < img.length; s++) {
+            if (seen[s] || img[s] != a && img[s] != b) continue;
+            n++;
+            int top = 0;
+            stack[top++] = s;
+            seen[s] = true;
+            while (top > 0) {
+                int at = stack[--top], x = at % width, y = at / width;
+                int[] next = { x > 0 ? at - 1 : -1, x < width - 1 ? at + 1 : -1, y > 0 ? at - width : -1, y < height - 1 ? at + width : -1 };
+                for (int q : next) {
+                    if (q < 0 || seen[q] || img[q] != a && img[q] != b) continue;
+                    seen[q] = true;
+                    stack[top++] = q;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** A track's bed in a pixel column: its ballast rows and the steel rows among them. */
+    static boolean[] bedRows(int[] img, int width, int height, int col) {
+        boolean[] ballast = colRows(img, width, height, col, TileRaster.BALLAST), steel = colRows(img, width, height, col, TileRaster.STEEL);
+        for (int y = 0; y < height; y++) ballast[y] |= steel[y];
+        return ballast;
+    }
+
+    /** How many runs of true the column of rows has. */
+    static int runs(boolean[] rows) {
+        int n = 0;
+        for (int y = 0; y < rows.length; y++) if (rows[y] && (y == 0 || !rows[y - 1])) n++;
+        return n;
+    }
+
+    static void yardAcrossTiles() {
+        System.out.println("--- 27. (FX5 Y2) a yard longer than a tile is drawn as one: one fan, ladders at its two ends, one shed ---");
+        BuildingVisual.Type terminal = terminal();
+        int px = 8, w = T * px, along = CityRuns.YARD_LONG, across = 24, boxY = 4, lineRow = 16, ladder = TileRaster.YARD_LADDER * px;
+        check("the fixture's yard is longer than a tile: YARD_LONG " + along + " plots against a tile's " + T, along > T);
+        for (int boxX : new int[] { 1, 24 }) {
+            TilePainter.Input[] tiles = yardTiles(terminal, boxX, boxY, along, across, lineRow, true);
+            int n = tiles.length, width = n * w;
+            int[] all = sideBySide(tiles, px);
+            String where = "a yard from plot " + boxX;
+            check(where + " reaches " + (boxX == 1 ? 2 : 3) + " tiles, each holding its part as a building: " + n, n == (boxX == 1 ? 2 : 3));
+            // The fan's straight middle is the reference: YARD_TRACKS ballast bands, and the rows of steel the sidings' rails make.
+            int midCol = boxX * px + along * px / 2;
+            boolean[] ballast = colRows(all, width, w, midCol, TileRaster.BALLAST), steel = colRows(all, width, w, midCol, TileRaster.STEEL);
+            int bands = runs(bedRows(all, width, w, midCol));
+            check(where + ": the fan's middle has YARD_TRACKS ballast bands: " + bands, bands == TileRaster.YARD_TRACKS);
+            for (int s = 1; s < n; s++) {
+                int seam = s * w, bad = 0, badSteel = 0, cut = 0;
+                for (int col = seam - ladder; col < seam + ladder; col++) {
+                    if (!Arrays.equals(colRows(all, width, w, col, TileRaster.BALLAST), ballast)) bad++;
+                    if (!Arrays.equals(colRows(all, width, w, col, TileRaster.STEEL), steel)) badSteel++;
+                }
+                for (int y = 0; y < w; y++) {
+                    if (ballast[y] != (all[y * width + seam - 1] == TileRaster.BALLAST) || ballast[y] != (all[y * width + seam] == TileRaster.BALLAST)) cut++;
+                }
+                check(where + ", seam " + s + ": every siding's ballast band lies at the same rows on both sides and runs across it: "
+                        + bad + " of " + 2 * ladder + " columns off, " + cut + " rows cut", bad == 0 && cut == 0);
+                check("...and no steel but the sidings' rails within YARD_LADDER plots of it, no ladder at a seam: "
+                        + badSteel + " of " + 2 * ladder + " columns off", badSteel == 0);
+            }
+            // The two ends: a ladder at the box's west end and at its east end, one ballast band by the apex, not the fan's eight.
+            int west = boxX * px + 1 + 2, east = (boxX + along) * px - 1 - 2;
+            check(where + ": a ladder at the box's west end (fewer ballast bands by the apex than the fan's)",
+                    runs(bedRows(all, width, w, west)) < TileRaster.YARD_TRACKS);
+            check("...and at its east end", runs(bedRows(all, width, w, east)) < TileRaster.YARD_TRACKS);
+            // One shed and one set of stockpiles, not a set a tile.
+            int shed = pieces(all, width, terminal.fill(), terminal.edge());
+            int heaps = pieces(all, width, TileRaster.ORE_HEAP, TileRaster.blend(TileRaster.ORE_HEAP, 0xff000000, 0.25));
+            check(where + ": one shed, not one a tile: " + shed, shed == 1);
+            check("...and three stockpiles, not three a tile: " + heaps, heaps == 3);
+            // The part on a later tile is yard ground, not the plain track the tile alone would show.
+            boolean groundOnLater = true;
+            for (int i = 1; i < n; i++) {
+                int[] tileImg = raster(tiles[i], paint(tiles[i]), px);
+                int x0 = Math.max(0, boxX - i * T), x1 = Math.min(T, boxX + along - i * T);
+                groundOnLater &= hasInBox(tileImg, w, x0, boxY, x1 - x0, across, px, TileRaster.YARD_GROUND);
+            }
+            check(where + ": the part on each later tile is yard ground", groundOnLater);
+        }
+
+        // The control: a 24 x 24 yard inside one tile draws to the pixel as it does with no entry, and as section 12 asserts.
+        int boxX = 4, railY = 16;
+        TilePainter.Input[] one = yardTiles(terminal, boxX, boxY, 24, 24, railY, true), bare = yardTiles(terminal, boxX, boxY, 24, 24, railY, false);
+        int[] with = sideBySide(one, px), without = sideBySide(bare, px);
+        check("control: a 24 x 24 yard inside one tile is drawn to the pixel as with no entry", one.length == 1 && Arrays.equals(with, without));
+        check("...with YARD_GROUND, STEEL on YARD_TRACKS rows and the shed, as section 12 asserts",
+                hasInBox(with, w, boxX, boxY, 24, 24, px, TileRaster.YARD_GROUND)
+                        && distinctRows(with, w, boxX, boxY, 24, 24, px, TileRaster.STEEL) >= TileRaster.YARD_TRACKS
+                        && hasInBox(with, w, boxX, boxY, 24, 24, px, terminal.fill()));
+
+        // The line that runs into the yard is drawn to its box, not left a dead end short of it: the plot before the box (the box from plot 1, the line along its row)
+        // has its bed and rails to the edge it shares with the box, where the yard's ground begins (a gap there is where the trains' vehicles would run off the rail).
+        TilePainter.Input[] into = yardTiles(terminal, 1, boxY, along, across, lineRow, true);
+        int[] intoImg = raster(into[0], paint(into[0]), px);
+        boolean reachesBox = false;
+        for (int dy = 0; dy < px; dy++) {
+            int c = pixel(intoImg, w, 0, lineRow, px - 1, dy, px);
+            reachesBox |= c == TileRaster.BALLAST || c == TileRaster.STEEL;
+        }
+        check("the line meets the yard's box: the plot before the box has its bed to the edge it shares with it", reachesBox);
+
+        // The stamp folds the yards: a tile repaints when its yard's layout moves.
+        TilePainter.Input a = yardTiles(terminal, 1, boxY, along, across, lineRow, true)[1], b = yardTiles(terminal, 1, boxY, along, across, lineRow, true)[1];
+        check("the stamp: the same yards, the same stamp", MapTiles.stamp(a) == MapTiles.stamp(b));
+        b.yard[6] += 1;
+        check("...a yard's line moved, another stamp", MapTiles.stamp(a) != MapTiles.stamp(b));
+        b.yard[6] -= 1;
+        b.yard[2] += 1;
+        check("...a yard's box longer, another stamp", MapTiles.stamp(a) != MapTiles.stamp(b));
+        b.yard[2] -= 1;
+        b.yard[9] = 1;
+        check("...the yard the freight station, another stamp", MapTiles.stamp(a) != MapTiles.stamp(b));
+        b.yard[9] = 0;
+        TilePainter.Input copy = new TilePainter.Input();
+        MapTiles.copy(a, copy);
+        check("...and a kept copy of the tile has its yards and buildings as the tile had them, counted as it counted them",
+                MapTiles.stamp(copy) == MapTiles.stamp(a) && copy.yards == a.yards && copy.buildings == a.buildings && Arrays.equals(copy.counts, a.counts));
+
+        // The map: every tile a yard of the skeleton city reaches is given the yard whole, in the layout the routes lay, counted on the tile holding its first plot only.
+        CityMap m = skeletonCity();
+        List<long[]> yards = m.runs().yards();
+        int longer = 0, wholeOn = 0, reached = 0, layouts = 0, counted = 0, parts = 0, blockPlots = 0, blockDrawn = 0;
+        for (int yi = 0; yi < yards.size(); yi++) {
+            long[] yd = yards.get(yi);
+            int type = m.yardTypeOf(yi);
+            if (type < 0) continue;
+            int[] layout = TileRaster.yardLayout(CityMap.yardRail(m.runs(), yd), (int) yd[2], (int) yd[3]);
+            long tx0 = Math.floorDiv(yd[0], T), tx1 = Math.floorDiv(yd[0] + yd[2] - 1, T), ty0 = Math.floorDiv(yd[1], T), ty1 = Math.floorDiv(yd[1] + yd[3] - 1, T);
+            if (tx1 > tx0 || ty1 > ty0) longer++;
+            for (long ty = ty0; ty <= ty1; ty++) {
+                for (long tx = tx0; tx <= tx1; tx++) {
+                    TilePainter.Input in = new TilePainter.Input();
+                    m.tileInput(tx, ty, in);
+                    reached++;
+                    boolean found = false;
+                    for (int k = 0; k < in.yards; k++) {
+                        int o = k * TilePainter.Input.YARD_INTS;
+                        if (in.yard[o] != yd[0] - tx * T || in.yard[o + 1] != yd[1] - ty * T || in.yard[o + 2] != yd[2] || in.yard[o + 3] != yd[3] || in.yard[o + 4] != type) continue;
+                        found = true;
+                        if (in.yard[o + 5] == layout[0] && in.yard[o + 6] == layout[1] && in.yard[o + 7] == layout[2] && in.yard[o + 8] == layout[3]) layouts++;
+                    }
+                    if (found) wholeOn++;
+                    TilePainter.Painted p = paint(in);
+                    int cx0 = (int) Math.max(0, yd[0] - tx * T), cy0 = (int) Math.max(0, yd[1] - ty * T);
+                    int cx1 = (int) Math.min(T, yd[0] + yd[2] - tx * T), cy1 = (int) Math.min(T, yd[1] + yd[3] - ty * T);
+                    boolean every = true;
+                    for (int y = cy0; y < cy1; y++) {
+                        for (int x = cx0; x < cx1; x++) every &= p.use[y * T + x] == TilePainter.BUILDING && p.bld[y * T + x] > 0 && p.btype[p.bld[y * T + x] - 1] == type;
+                    }
+                    if (every) parts++;
+                    // ...and the blocks' views draw it there as the yard's class: a tile's part not under ground colour alone (L1, 2 px a plot, 4-plot blocks).
+                    int[] blk = blocks(in, p, 2, 4);
+                    for (int y = cy0; y < cy1; y++) {
+                        for (int x = cx0; x < cx1; x++) {
+                            blockPlots++;
+                            if (blk[(y * 2) * T * 2 + x * 2] != TileRaster.groundColour(in, p, y * T + x)) blockDrawn++;
+                        }
+                    }
+                    if (yd[0] >= tx * T && yd[1] >= ty * T && yd[0] < (tx + 1) * T && yd[1] < (ty + 1) * T && in.counts[type] > 0) counted++;
+                }
+            }
+        }
+        check("the skeleton city has a yard that reaches more than one tile, so the fixture causes the condition: " + longer + " of " + yards.size(), longer > 0);
+        check("the map gives every tile a yard reaches the yard whole, its box in the tile's plots: " + wholeOn + " of " + reached, reached > 0 && wholeOn == reached);
+        check("...in the layout the trains' routes lay (yardLayout() of yardRail()): " + layouts + " of " + reached, reached > 0 && layouts == reached);
+        check("...with its part there a building on every plot: " + parts + " of " + reached, reached > 0 && parts == reached);
+        check("...drawn in the blocks' views as the yard's class on every plot of every part: " + blockDrawn + " of " + blockPlots + " plots", blockPlots > 0 && blockDrawn == blockPlots);
+        check("...and counted on the tile holding its first plot: " + counted + " of " + yards.size(), counted == yards.size());
     }
 }

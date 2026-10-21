@@ -181,6 +181,17 @@ public final class TilePainter {
     /** The longest crossing of fresh water a railway's track makes: 14, as a highway's (star N3-6). */
     public static final int RAIL_BRIDGE = 14;
 
+    /** A building's box in Input.boxes with this bit set is the part, on the tile, of a building counted on another (FX5 Y2): a yard whose box spans tiles is counted on the tile holding its first plot, and on the others is only its part, drawn there (Painted.bpart). Above CityMap.PACKED_BIT. */
+    public static final int PART_BIT = 1 << 21;
+
+    /** Plots: the side of Input.ring, the tile and REACH plots about it on every side (FX5). */
+    public static final int RING = TILE + 2 * REACH;
+
+    /** Where plot (x, y) is in Input.ring, for x and y from -REACH to TILE + REACH - 1. */
+    public static int ringIndex(int x, int y) {
+        return (y + REACH) * RING + x + REACH;
+    }
+
     /** North, east, south, west. */
     static final int[] DX = { 0, 1, 0, -1 }, DY = { -1, 0, 1, 0 };
 
@@ -205,6 +216,8 @@ public final class TilePainter {
         public final byte[] street = new byte[PLOTS];
         /** ...and the street on each plot just outside the tile, north, east, south and west (TILE each, along the edge): what a street at the edge joins to, as the plans have it. */
         public final byte[] beyond = new byte[4 * TILE];
+        /** ...and the street on every plot within REACH of the tile, corners too (FX5): RING * RING S_ codes row by row from plot (-REACH, -REACH), the tile's own plots among them; what a crossing on a tile's corner is read whole from (ringIndex()). */
+        public final byte[] ring = new byte[RING * RING];
         /** Each plot of the city's runs (CityRuns.fill(); CityMap's network's until 0.7.88): a highway's (BuildingVisual.HIGHWAY), the railway's track (RAIL) or the track bridging a highway (RAIL_OVER), 0 for none... */
         public final byte[] fixed = new byte[PLOTS];
         /** ...and those just outside the tile, as beyond. */
@@ -224,7 +237,7 @@ public final class TilePainter {
         /** The types, by id (BuildingVisual.table()). */
         public BuildingVisual.Type[] types = new BuildingVisual.Type[0];
 
-        /** The plan's buildings on it (0.7.88): how many, and each one's box as CityMap.box() packs it (x, y, w - 1, h - 1 at five bits each, PACKED_BIT when packed without a street) and its type id, two ints a building. */
+        /** The plan's buildings on it (0.7.88): how many, and each one's box as CityMap.box() packs it (x, y, w - 1, h - 1 at five bits each, PACKED_BIT when packed without a street, PART_BIT when it is the part of a building counted on another tile: a yard across a seam, FX5 Y2) and its type id, two ints a building. */
         public int buildings;
         public int[] boxes = new int[128];
         /** ...its buildings by type id (a mine or well standing on a site is the site's, not counted): what a hover and a harness read. */
@@ -266,6 +279,120 @@ public final class TilePainter {
             reserves++;
         }
 
+        /** The ints Input.yard holds a yard in (FX5 Y2): its box (x0, y0, w, h), its type id, its layout (TileRaster.yardLayout()'s east-west, line, span start and end), and 1 when it is the freight station. */
+        public static final int YARD_INTS = 10;
+
+        /** The yards whose box reaches the tile (FX5 Y2): how many, and each as YARD_INTS ints - its whole box in the tile's plots (it may lie off the tile, a yard a unit train long spanning two or three), its type, the layout of its fan as the trains' routes lay it, whether it is the freight station. The raster draws each whole, clipped to the tile, so a yard across a seam has one fan, two ladders and one shed. */
+        public int yards;
+        public int[] yard = new int[4 * YARD_INTS];
+
+        /** Clears the yards; the array is reused. */
+        public void clearYards() { yards = 0; }
+
+        /** Adds a yard: its whole box in the tile's plots, its type id, its layout (TileRaster.yardLayout()'s four ints) and whether it is the freight station. */
+        public void addYard(int x0, int y0, int w, int h, int type, int[] layout, boolean station) {
+            if ((yards + 1) * YARD_INTS > yard.length) yard = Arrays.copyOf(yard, yard.length * 2);
+            int o = yards * YARD_INTS;
+            yard[o] = x0; yard[o + 1] = y0; yard[o + 2] = w; yard[o + 3] = h; yard[o + 4] = type;
+            yard[o + 5] = layout[0]; yard[o + 6] = layout[1]; yard[o + 7] = layout[2]; yard[o + 8] = layout[3];
+            yard[o + 9] = station ? 1 : 0;
+            yards++;
+        }
+
+        /** Copies the yards of `from`, the array reused. */
+        public void copyYards(Input from) {
+            yards = from.yards;
+            if (yard.length < from.yard.length) yard = new int[from.yard.length];
+            System.arraycopy(from.yard, 0, yard, 0, from.yards * YARD_INTS);
+        }
+
+        /** The ints Input.bend holds a bend in (FX5): its net, corner x and y, incoming and outgoing headings (4), radius, tangent length, and 1 on double track. */
+        public static final int BEND_DOUBLES = 10;
+
+        /** The bends of the routes that reach the tile (FX5, TrackCurves): how many, and each as BEND_DOUBLES numbers in the tile's plots (the corner may lie off the tile). The raster draws each as an arc between its tangent points. */
+        public int bends;
+        public double[] bend = new double[4 * BEND_DOUBLES];
+
+        /** The plots of the tile the bends replace (FX5): the plot's middle on a bend's path strictly inside its tangent points, the corner's included, with the bend's two legs its only track (a highway bend's, FX5 slice D: the highway's plots within its tangent length of the corner on its legs' lines, a 45-degree stretch's steps and corners among them). The raster draws such a plot as the arc, not as its cell. */
+        public final boolean[] curved = new boolean[PLOTS];
+
+        /** Clears the bends and the plots they replace; the arrays are reused. */
+        public void clearBends() {
+            bends = 0;
+            Arrays.fill(curved, false);
+        }
+
+        /** Adds a bend: its net (TrackCurves.RAILWAY or HIGHWAY), its corner, the unit headings in and out of it, its radius and tangent length, all in the tile's plots, and whether it lies on double track. */
+        public void addBend(int net, double x, double y, double ux, double uy, double vx, double vy, double r, double t, boolean doubled) {
+            if ((bends + 1) * BEND_DOUBLES > bend.length) bend = Arrays.copyOf(bend, bend.length * 2);
+            int o = bends * BEND_DOUBLES;
+            bend[o] = net; bend[o + 1] = x; bend[o + 2] = y; bend[o + 3] = ux; bend[o + 4] = uy;
+            bend[o + 5] = vx; bend[o + 6] = vy; bend[o + 7] = r; bend[o + 8] = t; bend[o + 9] = doubled ? 1 : 0;
+            bends++;
+        }
+
+        /** Bend k as TrackCurves works it (its circle worked out). */
+        public TrackCurves.Bend bendAt(int k) {
+            int o = k * BEND_DOUBLES;
+            return TrackCurves.Bend.of((int) bend[o], bend[o + 1], bend[o + 2], bend[o + 3], bend[o + 4], bend[o + 5], bend[o + 6], bend[o + 7], bend[o + 8]);
+        }
+
+        /** Whether bend k lies on double track. */
+        public boolean bendDoubled(int k) { return bend[k * BEND_DOUBLES + 9] != 0; }
+
+        /** Copies the bends and the curved plots of `from`, the arrays reused. */
+        public void copyBends(Input from) {
+            bends = from.bends;
+            if (bend.length < from.bend.length) bend = new double[from.bend.length];
+            System.arraycopy(from.bend, 0, bend, 0, from.bends * BEND_DOUBLES);
+            System.arraycopy(from.curved, 0, curved, 0, PLOTS);
+        }
+
+        /**
+         * Marks the plots the bends replace (curved), from the track the
+         * input holds (fixed, fixedBeyond, and the plan's sidings): TrackCurves
+         * names the plots of each bend (TrackCurves.replaced(); for a highway bend, FX5 slice D, TrackCurves.replacedHighway(), the highway's plots in fixed), and those
+         * of the tile are kept, so a plot with a third arm - a T, a crossing -
+         * keeps its straights, and the arc is drawn over it. Call it once the
+         * bends and the track are in.
+         */
+        public void markCurved() {
+            Arrays.fill(curved, false);
+            TrackCurves.Rail rail = (x, y) -> {
+                if (x >= 0 && y >= 0 && x < TILE && y < TILE) {
+                    int i = y * TILE + x;
+                    return fixed[i] == RAIL || fixed[i] == RAIL_OVER || siding[i] != 0;
+                }
+                byte f;
+                if (y == -1 && x >= 0 && x < TILE) f = fixedBeyond[x];
+                else if (x == TILE && y >= 0 && y < TILE) f = fixedBeyond[TILE + y];
+                else if (y == TILE && x >= 0 && x < TILE) f = fixedBeyond[2 * TILE + x];
+                else if (x == -1 && y >= 0 && y < TILE) f = fixedBeyond[3 * TILE + y];
+                else return false;
+                return f == RAIL || f == RAIL_OVER;
+            };
+            // The highway's, for a highway bend (FX5 slice D): a plot of the highway, as the raster reads them (highwayAt()).
+            TrackCurves.Rail highway = (x, y) -> {
+                if (x >= 0 && y >= 0 && x < TILE && y < TILE) return fixed[y * TILE + x] == BuildingVisual.HIGHWAY;
+                byte f;
+                if (y == -1 && x >= 0 && x < TILE) f = fixedBeyond[x];
+                else if (x == TILE && y >= 0 && y < TILE) f = fixedBeyond[TILE + y];
+                else if (y == TILE && x >= 0 && x < TILE) f = fixedBeyond[2 * TILE + x];
+                else if (x == -1 && y >= 0 && y < TILE) f = fixedBeyond[3 * TILE + y];
+                else return false;
+                return f == BuildingVisual.HIGHWAY || f == RAIL_OVER;
+            };
+            for (int k = 0; k < bends; k++) {
+                TrackCurves.Bend b = bendAt(k);
+                boolean hw = b.net() == TrackCurves.HIGHWAY;
+                for (int[] at : hw ? TrackCurves.replacedHighway(b, highway) : TrackCurves.replaced(b, rail)) {
+                    if (at[0] < 0 || at[1] < 0 || at[0] >= TILE || at[1] >= TILE) continue;
+                    int i = at[1] * TILE + at[0];
+                    if (fixed[i] == (hw ? BuildingVisual.HIGHWAY : RAIL)) curved[i] = true;
+                }
+            }
+        }
+
         /** Clears the works at sea; the arrays are reused. */
         public void clearSea() {
             Arrays.fill(sea, (byte) 0);
@@ -304,6 +431,23 @@ public final class TilePainter {
             boxes[2 * buildings + 1] = type;
             buildings++;
             if (type >= 0 && type < counts.length) counts[type]++;
+        }
+
+        /** Adds the part of a building that lies on this tile when the building is counted on another (FX5 Y2: a yard across a seam, counted in the tile holding its first plot): its packed box (marked PART_BIT) and type id, not counted. */
+        public void addBuildingPart(int box, int type) {
+            if (2 * buildings + 2 > boxes.length) boxes = Arrays.copyOf(boxes, boxes.length * 2);
+            boxes[2 * buildings] = box | PART_BIT;
+            boxes[2 * buildings + 1] = type;
+            buildings++;
+        }
+
+        /** Copies the buildings of `from` as they stand, parts and counts included, the arrays reused. */
+        public void copyBuildings(Input from) {
+            buildings = from.buildings;
+            if (boxes.length < from.boxes.length) boxes = new int[from.boxes.length];
+            System.arraycopy(from.boxes, 0, boxes, 0, 2 * from.buildings);
+            if (counts.length != from.counts.length) counts = new int[from.counts.length];
+            System.arraycopy(from.counts, 0, counts, 0, from.counts.length);
         }
 
         /** Clears the sites; the arrays are reused. */
@@ -365,6 +509,8 @@ public final class TilePainter {
         public int[] bsite = new int[256];
         /** Whether it was packed without a street, the city having no room for it in any district's plan (R7). */
         public boolean[] bpacked = new boolean[256];
+        /** Whether it is the part of a building counted on another tile (PART_BIT, FX5 Y2): a yard's, on a tile its first plot is not on. */
+        public boolean[] bpart = new boolean[256];
         /** How many buildings were drawn, and how many of them packed (R7). */
         public int buildings, packed;
         /** Street plots laid by kind [0, gravel, paved, highway, track] - a crossing of the track among them - and their surface in half plots by kind [0, gravel, paved, highway]. */
@@ -400,9 +546,10 @@ public final class TilePainter {
                 int n = buildings + buildings / 2;
                 bx = Arrays.copyOf(bx, n); by = Arrays.copyOf(by, n); bw = Arrays.copyOf(bw, n); bh = Arrays.copyOf(bh, n);
                 btype = Arrays.copyOf(btype, n); bsite = Arrays.copyOf(bsite, n); bpacked = Arrays.copyOf(bpacked, n);
+                bpart = Arrays.copyOf(bpart, n);
             }
             bx[buildings] = x0; by[buildings] = y0; bw[buildings] = w; bh[buildings] = h;
-            btype[buildings] = type; bsite[buildings] = siteIndex; bpacked[buildings] = packedOne;
+            btype[buildings] = type; bsite[buildings] = siteIndex; bpacked[buildings] = packedOne; bpart[buildings] = false;
             if (packedOne) packed++;
             return buildings++;
         }
@@ -508,6 +655,7 @@ public final class TilePainter {
             int x0 = box & 31, y0 = (box >> 5) & 31, w = ((box >> 10) & 31) + 1, h = ((box >> 15) & 31) + 1;
             boolean packed = (box & CityMap.PACKED_BIT) != 0;
             int k = p.add(x0, y0, w, h, type, -1, packed);
+            p.bpart[k] = (box & PART_BIT) != 0;
             for (int y = y0; y < Math.min(TILE, y0 + h); y++) {
                 for (int x = x0; x < Math.min(TILE, x0 + w); x++) {
                     int i = y * TILE + x;
