@@ -6,7 +6,7 @@ curve; Jerus on §3.2, 2026-10-18: "if it is realistic then yes"), §8's CD1
 row, §8.1 (the current-code handoff) and §9 (D9, D15, D31). Planned while EG1
 shipped, built from main 0f6e1b6 (0.8.12).*
 
-**STATE** - see the last section.
+**Ready.** See the last section.
 
 ## 1. What it does
 
@@ -75,7 +75,7 @@ The suite (`Batch check.bat --maps`, beside CL2's batch, timing soft): 125
 harnesses run in 745 s, **125 passed**; the maps regenerated; Stale 0 firm
 findings. Main's one red, ScaleCheck's "...and it builds" (SC1), passes here:
 the moved trajectory builds more homes by its end, which is not SC1's fix -
-SC1 stays queued. The timing harnesses, hard and alone: TIMING_LINE
+SC1 stays queued. The timing harnesses, hard and alone (`--timing`): 8 run in 133 s, all green.
 
 Existing harnesses restated, each premise kept (the design D9 replaced only
 how they measured):
@@ -177,4 +177,9 @@ curve's rate at its months.
 
 ## 7. State
 
-STATE_LINE
+**Ready** at the tip of `batch/CD1`: built to the plan, every slice reviewed
+and committed, the suite 125/125, `--timing` 8/8 hard, the maps regenerated,
+the ensemble stored as `docs/ensemble/0.8.13.md`, the row out of `QUEUE.md`
+and CD1-C under Pending. Version 0.8.13 (main is 0.8.12; if CL2 ships first,
+the version after its). Left to the orchestrator: the gate, the ship, the
+docs pass.
