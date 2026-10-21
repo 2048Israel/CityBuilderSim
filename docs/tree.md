@@ -532,7 +532,7 @@ adds its line here, not in `CLAUDE.md`.
                                          2026-10-17, after the FR0 test in 6fd8dda); docs/deepseek.md is the how
     tools/ensemble/                      the 16-seed x 5-policy ensemble (EN1, 2026-10-20; until then only in
                                          workbench/workbench-delta-20261010.zip and each session's copy):
-                                         Ensemble.java the driver, compiled at run time against a snapshot of
+                                         the driver (class Ensemble), compiled at run time against a snapshot of
                                          target/classes; ensemble.sh the runner, five runs at once on the PC;
                                          score.py the scorer (pandas); README.md. Its scores, one a version
                                          whose trace moved, are docs/ensemble/<version>.md; EnsembleCheck keeps
