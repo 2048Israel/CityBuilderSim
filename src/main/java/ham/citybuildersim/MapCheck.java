@@ -51,7 +51,14 @@ import java.util.Map;
  *      by one while the deal stood) in that district's plan it moves only the
  *      buildings placed after it - where the plan's ladder takes the same
  *      step and its first band is dealt round as many cells - and one fewer
- *      likewise;
+ *      likewise; and (2b, CL3) a district takes buildings month by month
+ *      until its used cells are no more than its room, PLAN_FILL of its
+ *      owned plots, and within one building's cells of it, the next going to
+ *      the next district; and a spill keeps its time: two districts' inputs
+ *      chained by hand, the second carried the pairs {month, type} the first
+ *      leaves, and when the first's log gains a later month's arrivals that
+ *      overflow too, the second's carry keeps its earlier pairs as they were
+ *      and every box the second had placed stands where it stood;
  *   3. the painter draws the plan (0.7.88; the mockup's rules on the deal's
  *      tiles before): on the dense screen every plot a district's plan
  *      surfaces is painted as that street - kind and width - its seams once;
@@ -64,8 +71,14 @@ import java.util.Map;
  *      map again canonically, a city with no map saves none, and (0.7.88) a
  *      FORMAT 4 sidecar still loads into the same map - and (0.7.89) it and
  *      0.7.88's FORMAT 5, which wrote no runs, with their runs laid as a map
- *      drawn afresh lays them; and at five and ten billion it is written and
- *      read back the same;
+ *      drawn afresh lays them; and (CL3) the district logs ride along: a map
+ *      read back plans every district box for box as the map saved did and
+ *      its logs are the same record by record, a log that does not add up to
+ *      its district's counts is not read (the map is drawn again), and a
+ *      FORMAT 8 sidecar, which has no logs, starts each as one batch at the
+ *      save's month and plans as today; and at five and ten billion it is
+ *      written and read back the same, the log's records counted and the
+ *      sidecar within SIDECAR_BYTES, written and read in SIDECAR_MS;
  *   5. the cost follows the screen: a 1,389 x 868 L0 screen (SCREEN_TILES)
  *      paints and rasters from its districts' plans in no more than SCREEN_MS
  *      at Jerus's city x 1, x 9,814 (5B), x 10,000 and x 19,629 (10B), each
@@ -387,6 +400,7 @@ public class MapCheck {
         Path root = Files.createTempDirectory("mapcheck");
         Game city = playedCity(root);
         nothingMoves(city);
+        districtsHoldAndSpill(city);
         Squares sq = new Squares();
         painterRules(sq.maps[DENSE]);
         drawnAsItIs(sq.maps[DENSE]);
@@ -805,6 +819,160 @@ public class MapCheck {
                         !sameStep || first);
             }
         }
+    }
+
+    /* =====================================================================
+       2b. A DISTRICT IS FULL AT WHAT ITS PLAN CAN DRAW, AND A SPILL KEEPS ITS TIME (batch CL3)
+       ===================================================================== */
+
+    /*
+     * CL3 gave each district a log of its count changes, month by month, and a
+     * room of PLAN_FILL of its owned plots (a plan draws no more than that):
+     * 2b is the map's side of it - the districts fill to their room and spill
+     * to the next - and the plan's side of the spill, two inputs chained by
+     * hand as the map's chain chains them (PlanJob: the carry of the district
+     * before is {month, type} pairs, the month each came in). Section 4 holds
+     * the log across a save and a load.
+     */
+
+    /** The cells across the window of whole cells a spill's first district owns and its second: 2 and 6 of a district's 8 - the first draws little, the second all it is carried. */
+    static final int SPILL_FIRST_CELLS = 2, SPILL_SECOND_CELLS = 6;
+
+    static void districtsHoldAndSpill(Game g) {
+        out.println("\n--- 2b. a district is full at what its plan can draw (PLAN_FILL), and a spill keeps its time (CL3) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        holdsWhatItCanDraw(types, g.getBuildingManager().getTemplateByName("Low-Rise Apartments").getId());
+        spillKeepsItsTime(types, g.getBuildingManager().getTemplateByName("House").getId(),
+                g.getBuildingManager().getTemplateByName("Convenience Store").getId());
+    }
+
+    /**
+     * A district holds what its plan can draw: on a square city of four districts, a few apartment blocks added month by month (reconcile) until the
+     * nearest district stops taking them. Its used cells are no more than its room, floor(owned x PLAN_FILL), and within one block's cells of it
+     * (the next would not have fitted); the next block went to the next district, and it takes no more after.
+     */
+    static void holdsWhatItCanDraw(BuildingVisual.Type[] types, int flats) {
+        int each = BuildingVisual.cells(types[flats]);
+        // A capacity whose room is no whole number of the blocks, so "within one building's cells" is a remainder to see, not a tie.
+        int capacity = 1000;
+        while ((long) Math.floor(capacity * CityMap.PLAN_FILL) % each == 0) capacity++;
+        long seed = Founding.DEFAULT_WORLD_SEED;
+        long[] place = dryPlace(World.of(seed));
+        CityMap m = CityMap.square(seed, place[0], place[1], types, 2, capacity, new long[types.length]);
+        List<CityMap.District> ds = m.districts();
+        CityMap.District first = ds.get(0), second = ds.get(1), third = ds.get(2);
+        long[] model = new long[types.length];
+        int step = 5, month = 10;
+        boolean reconciled = true;
+        int guard = (int) (first.room() / each / step) + 10;
+        while (second.count(flats) == 0 && guard-- > 0) {
+            model[flats] += step;
+            reconciled &= m.reconcile(model, month++);
+        }
+        int spillMonth = month - 1;
+        long room = first.room(), used = first.usedCells();
+        out.printf("      %d blocks of %d cells added %d a month to a square of 4 districts of %d plots: the first holds %d (%,d of its room of %,d cells,"
+                + " %,d to spare), the next from month %d%n", model[flats], each, step, capacity, first.count(flats), used, room, room - used, spillMonth);
+        check("fixture: a room that is no whole number of blocks (floor(owned x PLAN_FILL) = " + room + ", " + each + " cells a block), and a month's reconcile that took",
+                room % each != 0 && first.owned() == capacity && reconciled);
+        check("a district takes buildings month by month until it is full: the first stops taking them and the next is given them", second.count(flats) > 0
+                && first.count(flats) > 0);
+        check("...its used cells no more than its room, floor(owned x PLAN_FILL) of its owned plots (and so short of the plots it owns)",
+                room == (long) Math.floor(first.owned() * CityMap.PLAN_FILL) && used <= room && used <= first.owned() * CityMap.PLAN_FILL && used < first.owned());
+        check("...and within one building's cells of its room: the next block would not have fitted", room - used < each && used == first.count(flats) * (long) each
+                && first.freeCells() == room - used);
+        check("...the next went to the next district, from the month the first was full, and to no district beyond it", second.logSize() > 0
+                && second.logMonth[0] == spillMonth && third.count(flats) == 0 && first.logMonth[first.logSize() - 1] <= spillMonth);
+        int held = first.count(flats), given = second.count(flats);
+        model[flats] += step;
+        reconciled = m.reconcile(model, month++);
+        check("...and the first takes no more after: the month after, all of it is the next's", reconciled && first.count(flats) == held
+                && second.count(flats) == given + step && first.usedCells() == used);
+        check("...every district's log sums to its counts, the blocks' records one to a district and month", logsAddUp(m));
+    }
+
+    /**
+     * A spill keeps its time, at the plan's level: the first district's input is given more than its window of ground can draw, the second's carry is the
+     * pairs the first leaves ({month, type}, the month each came in) - and when the first's log gains a later month's arrivals that overflow too, the
+     * second's carry keeps the pairs it had, as they were, a prefix, and every box the second had placed stands where it stood.
+     */
+    static void spillKeepsItsTime(BuildingVisual.Type[] types, int house, int store) {
+        // What the first district can draw: houses given it, doubling, till some are left without a place.
+        int n = 2000, capacity;
+        while (true) {
+            DistrictPlan p = DistrictPlan.make(spillInput(types, SPILL_FIRST_CELLS, new int[][] { { 1, house, n } }, 1, null));
+            capacity = p.buildings;
+            if (p.overflowCount() > 0 || n > 200_000) break;
+            n *= 2;
+        }
+        int c = capacity;
+        // Months 1 and 2 (.6 and .25 of it) it draws; month 3 (.43) fills it and some are left over; month 4 (.25) is all over; month 5 is the later one.
+        int[][] early = { { 1, house, c / 2 }, { 1, store, c / 10 }, { 2, house, c / 4 } };
+        int[][] over = { { 3, house, c / 3 }, { 3, store, c / 10 }, { 4, house, c / 4 } };
+        int[][] later = { { 5, house, c / 4 }, { 5, store, c / 10 } };
+        int[][] log = java.util.stream.Stream.concat(Arrays.stream(early), Arrays.stream(over)).toArray(int[][]::new);
+        int[][] logLater = java.util.stream.Stream.concat(Arrays.stream(log), Arrays.stream(later)).toArray(int[][]::new);
+        int firstBatch = 2;
+        DistrictPlan drew = DistrictPlan.make(spillInput(types, SPILL_FIRST_CELLS, early, firstBatch, null));
+        DistrictPlan a1 = DistrictPlan.make(spillInput(types, SPILL_FIRST_CELLS, log, firstBatch, null));
+        DistrictPlan a2 = DistrictPlan.make(spillInput(types, SPILL_FIRST_CELLS, logLater, firstBatch, null));
+        int[] carry1 = a1.overflowLog, carry2 = a2.overflowLog;
+        // The second district: its own two months of houses, then what it is carried.
+        int[][] own = { { 1, house, c / 8 }, { 2, house, c / 8 } };
+        int ownCount = 2 * (c / 8);
+        DistrictPlan b1 = DistrictPlan.make(spillInput(types, SPILL_SECOND_CELLS, own, 1, carry1));
+        DistrictPlan b2 = DistrictPlan.make(spillInput(types, SPILL_SECOND_CELLS, own, 1, carry2));
+        java.util.TreeSet<Integer> months1 = new java.util.TreeSet<>(), months2 = new java.util.TreeSet<>();
+        for (int k = 0; carry1 != null && k < carry1.length; k += 2) months1.add(carry1[k]);
+        for (int k = 0; carry2 != null && k < carry2.length; k += 2) months2.add(carry2[k]);
+        out.printf("      the first district draws %,d of the %,d it is given (%,d of months 1 and 2 whole), leaves %,d to the next, from months %s; with month 5's, %,d of %,d, from months %s;"
+                + " the second places %,d (its own %,d and the carry), then %,d%n", a1.buildings, a1.buildings + a1.overflowCount(), drew.buildings, a1.overflowCount(), months1,
+                a2.overflowCount(), a2.buildings + a2.overflowCount(), months2, b1.buildings, ownCount, b2.buildings);
+        check("fixture: the first district draws what months 1 and 2 bring it whole, and leaves some of what months 3 and 4 bring without a place",
+                drew.overflowCount() == 0 && a1.overflowCount() > 0 && carry1 != null);
+        check("...and more with month 5's, which overflows too", a2.overflowCount() > a1.overflowCount() && carry2 != null);
+        check("fixture: the second district draws all it is carried, own and carried, in the first case and the second", b1.overflowCount() == 0
+                && b2.overflowCount() == 0 && carry1 != null && b1.buildings == ownCount + a1.overflowCount() && b2.buildings == ownCount + a2.overflowCount());
+        check("the spill is a {month, type} pair to each building left without a place, in the months they came in (3 and 4), not the month of the last",
+                carry1 != null && carry1.length == 2 * a1.overflowCount() && months1.equals(new java.util.TreeSet<>(List.of(3, 4))));
+        boolean prefix = carry1 != null && carry2 != null && carry2.length > carry1.length
+                && Arrays.equals(Arrays.copyOf(carry2, carry1.length), carry1);
+        boolean added5 = prefix;
+        for (int k = carry1 == null ? 0 : carry1.length; prefix && k < carry2.length; k += 2) added5 &= carry2[k] == 5;
+        check("a later month's arrivals that also overflow add to the spill at its end: the second's carry keeps the pairs it had, as they were (a prefix)", prefix);
+        check("...and the pairs added are the later month's (5)", added5);
+        boolean stand = b2.buildings >= b1.buildings;
+        for (int i = 0; stand && i < b1.buildings; i++) {
+            stand = b1.btype[i] == b2.btype[i] && b1.bx[i] == b2.bx[i] && b1.by[i] == b2.by[i] && b1.bw[i] == b2.bw[i] && b1.bh[i] == b2.bh[i];
+        }
+        check("every box the second district had placed stands where it stood (" + b1.buildings + " of them)", stand && b1.buildings > 0);
+        check("...and it places the later month's arrivals besides", carry1 != null && carry2 != null && b2.buildings - b1.buildings == (carry2.length - carry1.length) / 2);
+    }
+
+    /**
+     * A hand-made district for 2b's spill: flat ground, a square window of whole cells round the hub owned (the rest not), its types, its log
+     * (records {month, type, change}, the first `firstBatch` one batch; its counts the log's sums) and the carry in ({month, type} pairs), copied.
+     */
+    static DistrictPlan.Input spillInput(BuildingVisual.Type[] types, int cellsAcross, int[][] records, int firstBatch, int[] carry) {
+        DistrictPlan.Input in = new DistrictPlan.Input();
+        in.types = types;
+        in.seed = Founding.DEFAULT_WORLD_SEED;
+        in.hubX = in.hubY = DistrictPlan.FRAME / 2;
+        int lo = (DistrictPlan.CELLS_A_SIDE - cellsAcross) / 2 * DistrictPlan.CELL, hi = lo + cellsAcross * DistrictPlan.CELL;
+        for (int y = lo; y < hi; y++) for (int x = lo; x < hi; x++) in.owned[y * DistrictPlan.FRAME + x] = true;
+        in.counts = new int[types.length];
+        in.logMonth = new int[records.length];
+        in.logType = new int[records.length];
+        in.logChange = new int[records.length];
+        for (int k = 0; k < records.length; k++) {
+            in.logMonth[k] = records[k][0];
+            in.logType[k] = records[k][1];
+            in.logChange[k] = records[k][2];
+            in.counts[records[k][1]] += records[k][2];
+        }
+        in.firstBatch = firstBatch;
+        in.carry = carry == null ? null : carry.clone();
+        return in;
     }
 
     /* =====================================================================
@@ -2220,11 +2388,13 @@ public class MapCheck {
         GameFiles files = cityFiles;
         PrintStream real = System.out;
         System.setOut(QUIET);
-        Game back, next, stale, plain;
-        byte[] first, second;
+        Game back, next, stale, plain, badLog;
+        byte[] first, second, goodBytes, badBytes;
         long stampInSave;
         boolean nextSame, readSame;
         String plainJson;
+        // CL3's log across the reload: the plan of every district on both maps, box for box, and the logs record by record.
+        int districtsPlanned = 0, plansDiffer = 0, logsDiffer = 0, logsPastBatch = 0;
         try {
             g.saveGame(3, "mapcheck");
             first = Files.readAllBytes(files.mapFile(3));
@@ -2232,6 +2402,17 @@ public class MapCheck {
             back = new Game(files);
             back.loadGameSave(3);
             readSame = back.hasCityMap() && back.getCityMap().same(g.getCityMap());
+            if (back.hasCityMap()) {
+                CityMap was = g.getCityMap(), read = back.getCityMap();
+                for (int i = 0; i < was.districts().size() && i < read.districts().size(); i++) {
+                    CityMap.District a = was.districts().get(i), b = read.districts().get(i);
+                    districtsPlanned++;
+                    // The plan each map draws from the input it hands the planner, its log and all.
+                    if (!sameBoxes(DistrictPlan.make(was.planInput(a)), DistrictPlan.make(read.planInput(b)))) plansDiffer++;
+                    if (!a.sameLog(b)) logsDiffer++;
+                    if (a.logSize() > a.firstBatch) logsPastBatch++;
+                }
+            }
             back.saveGame(4, "mapcheck again");
             second = Files.readAllBytes(files.mapFile(4));
             // The next month, played by the city and by the one loaded from its save.
@@ -2243,6 +2424,21 @@ public class MapCheck {
             Files.write(files.mapFile(3), Files.readAllBytes(files.mapFile(5)));
             stale = new Game(files);
             stale.loadGameSave(3);
+            // A log made not to add up (CL3): the newest record of the first district holding any moved by one in the map in memory, saved under
+            // its own stamp - so slot 6's sidecar differs from slot 5's, the same month's, in that one change - and put back at once.
+            goodBytes = Files.readAllBytes(files.mapFile(5));
+            CityMap.District victim = null;
+            for (CityMap.District d : g.getCityMap().districts()) if (victim == null && d.logSize() > 0) victim = d;
+            int newest = victim.logSize() - 1;
+            victim.logChange[newest] += 1;
+            try {
+                g.saveGame(6, "mapcheck a log that does not add up");
+            } finally {
+                victim.logChange[newest] -= 1;
+            }
+            badBytes = Files.readAllBytes(files.mapFile(6));
+            badLog = new Game(files);
+            badLog.loadGameSave(6);
             // A city never asked for its map saves none.
             GameFiles bare = new GameFiles(root.resolve("bare"), root.resolve("bare-no-legacy"));
             plain = new Game(bare, LongPlaytest.founding());
@@ -2259,10 +2455,34 @@ public class MapCheck {
         check("a load reads the map back from its sidecar: the same map", readSame);
         check("...and saved again, the sidecar is the same file byte for byte", Arrays.equals(first, second));
         check("...and the next month plays to the same map in both", nextSame);
+        // THE SAME CITY AFTER A RELOAD (CL3): the log is a flow, so what the plan is drawn by comes back with the map.
+        out.printf("      the log: %d of the played city's %d districts hold records past their first batch%n", logsPastBatch, districtsPlanned);
+        check("fixture: the played city's logs go on past their first batch (a log worth a round trip)", logsPastBatch > 0);
+        check("a map saved and read back plans every district box for box as the map it was saved from (each plan made from its input, log and all)",
+                districtsPlanned > 0 && plansDiffer == 0);
+        check("...and each district's log round-trips: its records and its first batch, which same() compares (the check above)", logsDiffer == 0);
         CityMap canonical = CityMap.canonical(stale.getCityLand(), stale.getLandManager()::remainingByHolding,
                 stale.getMapTypes(), stale.getMapCounts(), stale.getMonth());
         check("a stale sidecar is not read: the load draws the map again canonically", stale.hasCityMap()
                 && stale.getCityMap().same(canonical));
+        // A STALE LOG IS NOT READ (CL3): a log that does not add up to its district's counts is no log of that district.
+        CityMap goodRead = CityMap.readSidecar(goodBytes, badLog.getCityLand(), badLog.getLandManager()::remainingByHolding, badLog.getMapTypes(),
+                badLog.getMonth(), CityMap.stampIn(goodBytes));
+        CityMap badRead = CityMap.readSidecar(badBytes, badLog.getCityLand(), badLog.getLandManager()::remainingByHolding, badLog.getMapTypes(),
+                badLog.getMonth(), CityMap.stampIn(badBytes));
+        check("fixture: the same month's sidecar with one record moved by one is another file, its stamp its own, and the one beside it reads back",
+                !Arrays.equals(goodBytes, badBytes) && CityMap.stampIn(goodBytes) != CityMap.stampIn(badBytes) && goodRead != null);
+        check("...every log of a sidecar read back sums, type by type, to its district's counts", logsAddUp(goodRead) && logsAddUp(back.getCityMap()));
+        check("a log that does not sum to its district's counts is not read: readSidecar answers null, stamp and month right", badRead == null);
+        CityMap canonicalBad = CityMap.canonical(badLog.getCityLand(), badLog.getLandManager()::remainingByHolding,
+                badLog.getMapTypes(), badLog.getMapCounts(), badLog.getMonth());
+        check("...and the load draws the map again canonically", badLog.hasCityMap() && badLog.getCityMap().same(canonicalBad));
+        boolean oneBatchNow = true;
+        for (CityMap.District d : badLog.getCityMap().districts()) {
+            oneBatchNow &= d.firstBatch == d.logSize();
+            for (int k = 0; k < d.logSize(); k++) oneBatchNow &= d.logMonth[k] == badLog.getMonth();
+        }
+        check("...each district's log then one batch of its counts at the month it was drawn", oneBatchNow && logsAddUp(badLog.getCityMap()));
         check("a city never asked for its map saves no stamp, and loads with none", !plainJson.contains("\"mapStamp\"")
                 && !next.hasCityMap());
         check("...and a sidecar that is not one is read as none", CityMap.readSidecar(new byte[] { 1, 2, 3 },
@@ -2284,6 +2504,35 @@ public class MapCheck {
                 fromOld != null && fromOld.sameDistricts(live, false) && fromOld.runs().same(afresh.runs()));
         check("...and 0.7.88's FORMAT 5, which wrote no runs, likewise", fromNone != null && fromNone.sameDistricts(live, false)
                 && fromNone.runs().same(afresh.runs()));
+        // THE OLD SAVE (CL3): a sidecar of FORMAT 8 has no logs. Each district's log starts as its counts, one batch at the save's month, and its plan is
+        // today's: the plan drawn from the log is the plan drawn from the counts alone (logMonth, logType and logChange set to null), box for box.
+        byte[] eight = live.writeSidecar(back.getMonth(), 8);
+        CityMap fromEight = CityMap.readSidecar(eight, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
+                back.getMonth(), CityMap.stampIn(eight));
+        int eightDistricts = 0, eightOneBatch = 0, eightAtSave = 0, eightToday = 0, eightPlaced = 0;
+        if (fromEight != null) {
+            for (CityMap.District d : fromEight.districts()) {
+                eightDistricts++;
+                if (d.firstBatch == d.logSize()) eightOneBatch++;
+                boolean atSave = true;
+                for (int k = 0; k < d.logSize(); k++) atSave &= d.logMonth[k] == back.getMonth();
+                if (atSave) eightAtSave++;
+                DistrictPlan.Input withLog = fromEight.planInput(d), fromCounts = fromEight.planInput(d);
+                fromCounts.logMonth = null;
+                fromCounts.logType = null;
+                fromCounts.logChange = null;
+                DistrictPlan logPlan = DistrictPlan.make(withLog), countsPlan = DistrictPlan.make(fromCounts);
+                eightPlaced += logPlan.buildings;
+                if (sameBoxes(logPlan, countsPlan)) eightToday++;
+            }
+        }
+        out.printf("      as FORMAT 8 (no logs): %,d bytes, read back to %d districts - %d each one batch at the save's month, %d planned as today's, %,d buildings placed%n",
+                eight.length, eightDistricts, eightOneBatch, eightToday, eightPlaced);
+        check("a FORMAT 8 sidecar still loads, into the same districts (their logs begun at the save, so not compared)", fromEight != null
+                && fromEight.sameDistricts(live, false));
+        check("...each district's log one batch (its first batch is all its records) at the save's month, adding up to its counts", eightDistricts > 0
+                && eightOneBatch == eightDistricts && eightAtSave == eightDistricts && logsAddUp(fromEight));
+        check("...and its plan is today's, box for box: made from its log it is the plan made from its counts", eightToday == eightDistricts && eightPlaced > 0);
         for (int i = 1; i < TIMES.length; i++) {
             if (TIMES[i] != 9_814 && TIMES[i] != 19_629) continue;
             CityMap m = sq.maps[i];
@@ -2298,7 +2547,48 @@ public class MapCheck {
                     TIMES[i], m.districts().size(), raw / 1e6, bytes.length / 1e6, wms, rms);
             check("at " + (TIMES[i] < 10_000 ? "5" : "10") + " billion it is read back the same and written again byte for byte",
                     read != null && read.same(m) && Arrays.equals(read.writeSidecar(1), bytes));
+            // THE LOG'S COST (CL3): its records over the city, and the sidecar with them against the sidecar of FORMAT 8 without.
+            long records = 0;
+            for (CityMap.District d : m.districts()) records += d.logSize();
+            int without = m.writeSidecar(1, 8).length;
+            out.printf("      ...the log: %,d records over %,d districts (%.1f a district), %,d bytes deflated with it against %,d without (FORMAT 8): %,d for the log;"
+                    + " bounds %,d bytes, %.0f ms a write and a read%n", records, m.districts().size(), records / (double) m.districts().size(), bytes.length,
+                    without, bytes.length - without, SIDECAR_BYTES, SIDECAR_MS);
+            check("at " + (TIMES[i] < 10_000 ? "5" : "10") + " billion the sidecar, log and all, is no more than SIDECAR_BYTES (" + SIDECAR_BYTES + ") deflated",
+                    records > 0 && bytes.length <= SIDECAR_BYTES);
+            check("...and is written and read back in no more than SIDECAR_MS (" + (int) SIDECAR_MS + " ms) each", Timing.within(wms, SIDECAR_MS)
+                    && Timing.within(rms, SIDECAR_MS));
         }
+    }
+
+    /**
+     * The most a sidecar may be at 5 and 10 billion people, log and all, in deflated bytes (CL3): the 10B copy's measured 333,776 (294,101 without the log, in
+     * FORMAT 8; its 1,457,418 records the canonical deal's, one batch, about 50 a district) and a half again. The study's 1 to 2 MB at 10B was a log of years of
+     * months; this copy has the deal's alone, so the bound holds the log's size per record, not a played city's.
+     */
+    static final int SIDECAR_BYTES = 500_000;
+
+    /** The most the 5B and 10B copies' sidecar may take to write, and to read, in ms (CL3): measured 271 and 267 at 10B (240 and 161 at 5B), and near twice that. */
+    static final double SIDECAR_MS = 500;
+
+    /** Whether two plans place the same boxes: the same count of buildings, each one's type and its box {x, y, w, h}, in the same order, and the same buildings left without a place (by type). */
+    static boolean sameBoxes(DistrictPlan a, DistrictPlan b) {
+        if (a.buildings != b.buildings || !Arrays.equals(a.overflow, b.overflow)) return false;
+        for (int i = 0; i < a.buildings; i++) {
+            if (a.btype[i] != b.btype[i] || a.bx[i] != b.bx[i] || a.by[i] != b.by[i] || a.bw[i] != b.bw[i] || a.bh[i] != b.bh[i]) return false;
+        }
+        return true;
+    }
+
+    /** Whether every district's log sums, type by type, to its counts: what a log is for, and what a sidecar read back is held to (CL3). */
+    static boolean logsAddUp(CityMap m) {
+        if (m == null) return false;
+        for (CityMap.District d : m.districts()) {
+            int[] sums = new int[d.counts.length];
+            for (int k = 0; k < d.logSize(); k++) sums[d.logType[k]] += d.logChange[k];
+            if (!Arrays.equals(sums, d.counts)) return false;
+        }
+        return true;
     }
 
     /* =====================================================================
