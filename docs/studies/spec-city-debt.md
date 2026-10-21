@@ -29,7 +29,7 @@
 - **Closing early (§6).** A reverse auction: holders offer, each at the price where its own buying rule stops wanting the bond, never under fair; the city takes the cheapest and pays each its own price. A callable line can be called at 100 from its first call date; the card says when calling is worth it.
 - **The screens (§7).** The book as a desk, a line's own page, the buyback and the call, Borrow as an auction, and Your rate as the curve the central bank sets.
 
-**Six batches (§8), CD1 to CD6,** in the queue before research (Jerus): the curve, the lineup and the auction, the books, closing early, the floating and linked notes, the screens.
+**Six batches (§8), CD1 to CD6,** in the queue before research (Jerus): the curve, the lineup and the auction, the books, closing early, the floating and linked notes, the rest of the screens (each batch ships its own screen: D31, 2026-10-20).
 
 ---
 
@@ -344,13 +344,13 @@ The boards in `city-debt/city-debt-study.html`, one city in January 2203, eighte
 | Batch | What | Traces |
 |---|---|---|
 | **CD1 ★** | **The curve** (§3): the expected path from `Expectations` and the rule, discount factors month by month, every piece priced on its own schedule and its yield solved from the price; `BondMarket`'s benchmark reads it; the rate taken apart in its new parts. A `CurveCheck`: a fixture that causes each shape (calm equal to today's curve, hiking inverted, behind steep, QE), asserted against `DRIFT_MONTHS`, `ADAPT_MONTHS` and the rule's own constants; `RestructureCheck` neutral or worse | every trace that borrows moves; re-baseline, the ensemble |
-| **CD2 ★** | **The lineup and the auction** (§2.1–2.3, 2.7, §4): bills, bonds at the six terms in lines that reopen, the amortizing bond on one solved coupon; the auction with the game's own bidders, non-competitive households, single price, cover, tail, the highest yield or Fill it, a capped sale that falls short; the fees; `DebtQuote` as the auction's preview; the rollover, automatic building, the build screen and the time skip on the new paper, each with its own cap or Fill it, the rollover's shortfall to the advances and automatic building's open ask (§4.5); the term loan and the old serial removed; `SAVE_FORMAT` and its floor raised. An `AuctionCheck` | moves |
+| **CD2 ★** | **The lineup and the auction** (§2.1–2.3, 2.7, §4): bills, bonds at the six terms in lines that reopen, the amortizing bond on one solved coupon; the auction with the game's own bidders, non-competitive households, single price, cover, tail, the highest yield or Fill it, a capped sale that falls short; the fees; `DebtQuote` as the auction's preview; the rollover, automatic building, the build screen and the time skip on the new paper, each with its own cap or Fill it, the rollover's shortfall to the advances and automatic building's open ask (§4.5); the term loan and the old serial removed; `SAVE_FORMAT` and its floor raised; **its screen, Borrow as an auction** (§7, board 4; D31). An `AuctionCheck` | moves |
 | **CD3** | **The books** (§5): effective interest a line, blended at a reopening; carrying value; the budget's interest line, the gain or loss on retirement, the balance at carrying value and the fair-value note; dollar paper amortised too. `TreasuryCheck` and `MoneyCheck` extended | moves (the interest line) |
-| **CD4** | **Closing early** (§6, §2.6): the reverse auction (offers by each holder's own rule, multiple price, the most to pay, the central bank out), callable lines on a Ho–Lee tree at the measured volatility, the call, "worth calling"; `repurchaseDebt()` replaced. `RestructureCheck`'s round trip on the new mechanism, its premise unchanged | identical unless a playtest buys back |
-| **CD5** | **Floating and linked** (§2.4, 2.5, 5.3): the floating-rate note on the dial, the linked bond on the price index with its deflation floor and its uplift line | identical (nothing sells them unasked) |
-| **CD6** | **The screens** (§7): the book as a desk, a line's page, Close it now, Borrow as an auction, Your rate; the manual | identical to CD5 |
+| **CD4** | **Closing early** (§6, §2.6): the reverse auction (offers by each holder's own rule, multiple price, the most to pay, the central bank out), callable lines on a Ho–Lee tree at the measured volatility, the call, "worth calling"; `repurchaseDebt()` replaced; **its screen, Close it now and the call card** (§7, board 3; D31). `RestructureCheck`'s round trip on the new mechanism, its premise unchanged | identical unless a playtest buys back |
+| **CD5** | **Floating and linked** (§2.4, 2.5, 5.3): the floating-rate note on the dial, the linked bond on the price index with its deflation floor and its uplift line; **their choices on Borrow** (D31) | identical (nothing sells them unasked) |
+| **CD6** | **The rest of the screens** (§7, boards 1, 2 and 5): the book as a desk, a line's page, Your rate; the manual (D31) | identical to CD5 |
 
-In `QUEUE.md` before R0, the research batches (Jerus, 2026-10-12: "add it before research"). CD1 can go alone and changes how every price of money in the city reads the dial. CD2 is the heart and depends on CD1. CD3 and CD4 follow CD2 in either order; CD5 after CD3. CD6 last, or each screen with its batch if the implementer prefers.
+In `QUEUE.md` before R0, the research batches (Jerus, 2026-10-12: "add it before research"). CD1 can go alone and changes how every price of money in the city reads the dial. CD2 is the heart and depends on CD1. CD3 and CD4 follow CD2 in either order; CD5 after CD3. **Each batch ships with its own screen** (D31, 2026-10-20): Borrow as an auction with CD2, Close it now and the call with CD4, the floating and linked choices with CD5, so no batch leaves a screen offering paper that is gone or a mechanism with no button. CD6 last, with what is left.
 
 ---
 
@@ -409,6 +409,9 @@ In `QUEUE.md` before R0, the research batches (Jerus, 2026-10-12: "add it before
 28. **D28. The rollover and automatic building each have their own cap or Fill it.** **Jerus's call:** "each its own" (not one setting shared). Default fair + 1 point.
 29. **D29. A capped rollover that falls short pays the rest of the maturity from cash, then the central bank's advances.** **Jerus's call.** The maturity is a promise; the inbox names what was printed for it.
 30. **D30. A capped automatic-building sale that falls short keeps its ask open** until what was raised plus the spare cash covers the order, offered again each month. **Jerus's call:** "stays open the ask until money raised, and what already raised plus cash can be used". The build screen offers the same choice when the player is there.
+
+**Answered, 2026-10-20** (a question-and-answer session on the CD batches)
+31. **D31. Each CD batch ships with its own screen.** **Jerus's call:** "Yes: each CD batch ships with its own screen (Borrow as an auction with CD2, Close it now and the call with CD4, the floating and linked choices with CD5). CD6 keeps the book as a desk, a line's page, Your rate and the manual." Why it came up: CD2 removes the term loan and the serial bond, and with the screens all in CD6 the old Borrow would have offered paper that no longer exists, and CD4's and CD5's mechanisms would have had no button, for three batches.
 
 ---
 
