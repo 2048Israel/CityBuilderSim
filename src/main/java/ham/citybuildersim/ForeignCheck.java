@@ -380,8 +380,10 @@ public class ForeignCheck {
         close("...and the absorption",
                 back.getLastAbsorption(), fx.getLastAbsorption(), 1e-9);
         /*
-         * THE FLOAT (XR1; the pressure reading that stood here is retired, and slot 12
-         * of the save with it): its trend, the real gap's level reached, the market's
+         * THE FLOAT (XR1). (b) replaces "...and the pressure reading with it": section 5's
+         * XR1 row retires "RATE_PULL's push" and with it the pressure, and slot 12 of the
+         * save (written as 0, read by nobody). The new lines are new in XR1: the trend,
+         * the real gap's level reached, the market's
          * swing, the month's move and the draws the market has taken are all carried.
          * The city is seeded at founding and has repriced every month since, so each of
          * these is something in the fixture first - three fields that reload as 0 from
@@ -664,11 +666,11 @@ public class ForeignCheck {
         // (getBalanceReached(), positive weaker) in a quiet market, not the pressure. The
         // vault's cover is a force of its own now - an empty one costs the D$ RISK_PREMIUM,
         // more than a surplus of this size strengthens it - so each city holds a vault past
-        // THIN_COVER, its purchase cleared from the month's books (startMonth()), and the
-        // balance is the only force under test.
+        // THIN_COVER, its purchase the fixture's set-up that the rate forgets (forgetDealing()),
+        // and the balance is the only force under test.
         ForeignAccounts weak = new ForeignAccounts();
         weak.buyReserves(10_000);
-        weak.startMonth();
+        weak.forgetDealing();
         for (int m = 0; m < 240; m++) {
             weak.takeMonth(month(400, 1_000), 6_000);   // sells 400, buys 1,000
             weak.repriceCurrency();
@@ -686,11 +688,12 @@ public class ForeignCheck {
          * this is the assertion that says it is still there. Written the other
          * way round first, and it failed.
          */
-        assertTrue("...and the level that did it reads as depreciation", weak.getBalanceReached() > 0);
+        // (a) measured the new way, the label as it was: the push that did it is the balance's level.
+        assertTrue("...and the pressure that did it reads as depreciation pressure", weak.getBalanceReached() > 0);
 
         ForeignAccounts strong = new ForeignAccounts();
         strong.buyReserves(10_000);
-        strong.startMonth();
+        strong.forgetDealing();
         for (int m = 0; m < 240; m++) {
             strong.takeMonth(month(1_000, 400), 6_000);
             strong.repriceCurrency();
@@ -698,7 +701,7 @@ public class ForeignCheck {
         out.printf("   240 months of surplus: rate %.4f (balance level %+.3f)%n",
                 strong.getRate(), strong.getBalanceReached());
         assertTrue("a sustained surplus strengthens it", strong.getRate() < 1.0);
-        assertTrue("...and reads as appreciation", strong.getBalanceReached() < 0);
+        assertTrue("...and reads as appreciation pressure", strong.getBalanceReached() < 0);
 
         /*
          * AND IT CANNOT RUN AWAY. Two thousand months of the most lopsided trade
@@ -759,9 +762,9 @@ public class ForeignCheck {
         // XR1: an empty vault costs the D$ RISK_PREMIUM for good, and the way home is
         // measured for a city that has rebuilt one - the premise, that a displaced rate
         // comes home when the pressure comes off, is the old one; its anchor is parity's
-        // trend now (spec 3.2) - its purchase cleared from the month's books.
+        // trend now (spec 3.2) - its purchase the fixture's set-up that the rate forgets.
         wandered.buyReserves(wandered.monthlyImports() * ForeignAccounts.COMFORTABLE_COVER * 2);
-        wandered.startMonth();
+        wandered.forgetDealing();
 
         for (int m = 0; m < 600; m++) {
             wandered.takeMonth(month(2_000, 2_000), 6_000);   // trade in balance
@@ -1188,43 +1191,45 @@ public class ForeignCheck {
         return ForeignAccounts.INTERVENTION_IMPACT * fx.getDefenceLocal() / (12 * fx.getGdpTrailing());
     }
 
-    /** A city that has traded its months, with a vault twice the cover that earns the most damping - its purchase cleared from the month's books, as a founding's is (XR1: a purchase in the month is an intervention the rate feels). */
+    /** A city that has traded its months, with a vault twice the cover that earns the most absorption - its purchase the fixture's set-up, not a purchase under test, so the rate forgets it (forgetDealing()) as it forgets a founding's. */
     static ForeignAccounts deepVaultCity(double exports, double imports, double gdp) {
         ForeignAccounts fx = new ForeignAccounts();
         for (int m = 0; m < TRADED_BEFORE + 12; m++) fx.takeMonth(month(exports, imports), gdp);
         fx.buyReserves(fx.monthlyImports() * ForeignAccounts.COMFORTABLE_COVER * 2);
+        fx.forgetDealing();
         fx.startMonth();
         return fx;
     }
 
     /**
-     * Section 13: the vault defends a fall and nothing else (2026-09-21).
+     * Section 13: the vault damps a fall and nothing else (2026-09-21).
      *
      * Jerus: "a reserve defends a currency; it does not hold one down." Damped
      * both ways, a deep vault muted the surplus and the policy rate - the two
      * forces that pull a currency back out of an inflation spiral - and the
      * founding reserve reproduced the year book in three seeds of eight. So:
-     * a deep vault and a month that would weaken the currency, sold into at
-     * the cover's absorption; the same vault and a month that would strengthen
+     * a deep vault and a month that would weaken the currency, damped by the
+     * cover's absorption; the same vault and a month that would strengthen
      * it, passed through in full; and the rate's support inside a weakening
-     * month, which shortens the month's move before the vault sees it - and
-     * turns it, when it outweighs the deficit, so that nothing is sold.
+     * month, which shortens the push before the vault damps what is left.
      *
-     * RESTATED FOR XR1 (docs/studies/spec-exchange-rates.md 3.6's last point). The
-     * sale no longer damps a push by the share of the deficit it met: the vault
-     * sells against the month's deficit in a month whose move, before the defence,
-     * would weaken the D$ (getLastWouldBeMove() > 0), and the sale lifts the D$ at its
-     * real size, INTERVENTION_IMPACT x what it fetched over a year of GDP
-     * (getMoveIntervention()). The amounts and the premise are the old section's;
-     * the damping arithmetic is the lift from the constants. What the old last
-     * paragraph asserted - that the trade page's preview leaves the month's record
-     * alone - is section 15's now: the float's readers change nothing.
+     * RESTATED FOR XR1 (docs/studies/spec-exchange-rates.md 3.6's last point; the
+     * lean smooths). Two kinds of line. (a) The same premise, measured the new way,
+     * its label as it was. (b) A premise a decided call replaces, the call quoted
+     * beside it: the vault no longer damps a push by the share of the deficit its
+     * sale met - star 7, "Interventions move the rate, at the real size" (spec
+     * section 6, Jerus: "Yes, real size"): its sale goes through INTERVENTION_IMPACT
+     * and lifts the D$ (getMoveIntervention()); and star 8, "whatever real life does",
+     * replaces the rate's support, a push by RATE_PULL, with the real gap's level. The
+     * vault sells what takes back absorption() of the month's fall (getLastWouldBeMove()),
+     * at most absorption() x the deficit, at most the vault: this fixture's fall is
+     * large, so the deficit's cap binds and the old amounts hold; the support case
+     * shortens the fall until the need binds. The old last paragraph - that the trade
+     * page's preview leaves the month's record alone - is section 15's now.
      *
      * Since 0.7.2 the sale is what the central bank SELLS, as a share of the
-     * month's own deficit (ForeignAccounts, A DEFENCE THAT SPENDS). This
-     * fixture's months are in deficit and its vault is twelve months deep, so
-     * every sale is met in full and the realised absorption is the capacity.
-     * What a vault running short does is CurrencyCheck's section 3.
+     * month's own deficit (ForeignAccounts, A DEFENCE THAT SPENDS). What a vault
+     * running short does is CurrencyCheck's section 3.
      */
     static void reserveDefends() {
 
@@ -1237,8 +1242,8 @@ public class ForeignCheck {
         ForeignAccounts deficit = deepVaultCity(trade / 3, trade * 2 / 3, gdp);
         ForeignAccounts surplus = deepVaultCity(trade * 2 / 3, trade / 3, gdp);
 
-        assertTrue("fixture: the deficit city's balance level weakens the currency", deficit.balanceTarget() > 0);
-        assertTrue("fixture: the surplus city's strengthens it", surplus.balanceTarget() < 0);
+        assertTrue("fixture: the deficit city is pushed weaker", deficit.balanceTarget() > 0);
+        assertTrue("fixture: the surplus city is pushed stronger", surplus.balanceTarget() < 0);
         assertTrue("fixture: both trade a fraction of their output",
                 deficit.getOpenness() > 0 && deficit.getOpenness() < 1);
         close("fixture: both vaults are deep enough for the most damping",
@@ -1246,54 +1251,88 @@ public class ForeignCheck {
                 ForeignAccounts.MAX_ABSORPTION, 1e-12);
 
         double deficitUsd = deficit.monthDeficitUsd();
-        double d0 = deficit.getRate();
+        double d0 = deficit.getRate(), dCapacity = deficit.absorption(), dGdp = deficit.getGdpTrailing();
+        double dFall0 = CurrencyCheck.firstFall(deficit, 0);
+        // New in XR1: the fall is large - the need to take back absorption() of it is more than
+        // absorption() x the deficit, which the vault holds - so the deficit's cap binds.
+        assertTrue("fixture: the fall is large: the need exceeds absorption() x the deficit, which the vault holds",
+                deficit.getDealtSinceReprice() == 0 && dFall0 > 0
+                        && CurrencyCheck.need(dCapacity, dFall0, dGdp, d0) > dCapacity * deficitUsd
+                        && dCapacity * deficitUsd < deficit.getReservesUsd());
         deficit.repriceCurrency();
+        // New in XR1: the month's move before the defence leans is a fall.
         assertTrue("fixture: the deficit city's month, before the defence, weakens the D$", deficit.getLastWouldBeMove() > 0);
-        out.printf("   weaker: the month would move %+.4f, the vault sold US$%,.2fk (%.0f%% of the deficit), the rate %.4f -> %.4f%n",
+        out.printf("   weaker: the month would fall by %.4f, the vault sold US$%,.2fk (%.0f%% of the deficit), the rate %.4f -> %.4f%n",
                 deficit.getLastWouldBeMove(), deficit.getDefenceUsd(), deficit.getLastAbsorption() * 100, d0, deficit.getRate());
-        close("a month that would weaken the currency is leaned against: the vault sells the cover's absorption of the deficit",
+        // (b) replaces "a push weaker is damped by the vault's cover": star 7 (above) - the vault leans against a
+        // weakening month by selling the cover's absorption of the deficit, and the sale lifts the D$.
+        close("a month weaker is leaned against by the vault's cover: it sells absorption() x the deficit",
                 deficit.getDefenceUsd(), ForeignAccounts.MAX_ABSORPTION * deficitUsd, 1e-9);
         close("...and the absorption it records is what was applied",
                 deficit.getLastAbsorption(), ForeignAccounts.MAX_ABSORPTION, 1e-12);
+        // New in XR1: the same sale, from the constants and the getters.
+        close("...which is what the lean sells: the need, at most absorption() x the deficit, at most the vault",
+                deficit.getDefenceUsd(),
+                CurrencyCheck.expectedSale(dCapacity, deficit.getLastWouldBeMove(), dGdp, d0, deficitUsd, deficit.getReservesUsd() + deficit.getDefenceUsd()), 1e-9);
+        // (b) star 7: the sale's lift is the intervention channel, INTERVENTION_IMPACT x what it fetched over a year's GDP.
         close("...and the sale lifted the D$ by INTERVENTION_IMPACT x what it fetched over a year's GDP",
                 deficit.getMoveIntervention(), -lift(deficit), 1e-12);
-        close("...so the move that reached the rate is the would-be move less the lift",
+        close("...so the move that reached the rate is the fall less the lift",
                 Math.log(deficit.getRate() / d0), deficit.getLastWouldBeMove() - lift(deficit), 1e-12);
 
         double s0 = surplus.getRate();
         surplus.repriceCurrency();
+        // New in XR1: the month's move before the defence leans is a rise.
         assertTrue("fixture: the surplus city's month would strengthen the D$", surplus.getLastWouldBeMove() < 0);
         out.printf("   stronger: the month would move %+.4f, the vault sold US$%,.2fk, the rate %.4f -> %.4f%n",
                 surplus.getLastWouldBeMove(), surplus.getDefenceUsd(), s0, surplus.getRate());
-        close("the same vault passes a rise in full: it sells nothing", surplus.getDefenceUsd(), 0, 0);
+        // (a) measured the new way: a rise is never defended, and reaches the rate in full.
+        close("the same vault passes a push stronger in full", Math.log(surplus.getRate() / s0),
+                surplus.getLastWouldBeMove(), 1e-12);
         close("...and records that it absorbed nothing", surplus.getLastAbsorption(), 0, 0);
         close("...though its cover could have absorbed the most there is",
                 surplus.absorption(), ForeignAccounts.MAX_ABSORPTION, 1e-12);
-        close("...and the rise reaches the rate in full",
-                Math.log(surplus.getRate() / s0), surplus.getLastWouldBeMove(), 1e-12);
+        // New in XR1: it sold nothing, and felt nothing from the set-up.
+        close("...it sold no dollars, and the rate felt nothing of the vault's set-up",
+                surplus.getDefenceUsd() + Math.abs(surplus.getMoveIntervention()), 0, 0);
 
         /*
          * THE RATE'S SUPPORT INSIDE A WEAKENING MONTH. A real rate over the
          * world's (the real differential since 0.7.2) holds the D$ dearer: it
-         * shortens the month's move before the vault sees it, and the vault
+         * shortens the month's fall before the vault sees it, and the vault
          * leans against what is left - while a gap that outweighs the deficit
          * turns the month, and a rise is never defended.
          */
+        // (b) star 8, "whatever real life does" (spec section 6): the support is the gap's level, gapLevelFor(),
+        // reached 60% at once and the rest building (3.3), not a push of RATE_PULL per point (section 5's XR1 row
+        // retires "RATE_PULL's push"): the fixture is a gap of half a point over the world's.
         ForeignAccounts supported = deepVaultCity(trade / 3, trade * 2 / 3, gdp);
         supported.setRealRateDifferential(.005);
+        double pCapacity = supported.absorption(), p0 = supported.getRate(), pGdp = supported.getGdpTrailing();
+        double pFall0 = CurrencyCheck.firstFall(supported, .005), pVault = supported.getReservesUsd();
+        assertTrue("fixture: the support is a part of the trade term's level, unclipped: a real rate over the world's shortens the fall, which still weakens the D$",
+                pFall0 > 0 && pFall0 < dFall0
+                        && CurrencyCheck.need(pCapacity, pFall0, pGdp, p0) < pCapacity * deficitUsd);
         supported.repriceCurrency();
-        assertTrue("fixture: a real rate over the world's shortens the month's move, which still weakens the D$",
-                supported.getLastWouldBeMove() > 0 && supported.getLastWouldBeMove() < deficit.getLastWouldBeMove());
-        assertTrue("the rate's support comes off before the vault sees it: it leans against what is left",
-                supported.getDefenceUsd() > 0);
+        assertTrue("fixture: the support is shown in the fall the vault sees", Math.abs(supported.getLastWouldBeMove() - pFall0) < 1e-12
+                && supported.getLastWouldBeMove() < deficit.getLastWouldBeMove());
+        assertTrue("the rate's support comes off before the vault sees it",
+                supported.getDefenceUsd() > 0 && supported.getDefenceUsd() < deficit.getDefenceUsd());
+        // (a) measured the new way: the vault leans against what is left of the fall.
+        close("...and the vault damps what is left", supported.getDefenceUsd(),
+                CurrencyCheck.expectedSale(pCapacity, supported.getLastWouldBeMove(), pGdp, p0, deficitUsd, pVault), 1e-9);
+        close("...taking back absorption() of it, exactly: the lift", lift(supported), pCapacity * supported.getLastWouldBeMove(), 1e-12);
         close("...and the sale lifted the D$ by what it fetched", supported.getMoveIntervention(), -lift(supported), 1e-12);
 
         ForeignAccounts overtaken = deepVaultCity(trade / 3, trade * 2 / 3, gdp);
         overtaken.setRealRateDifferential(.04);
+        double o0 = overtaken.getRate();
         overtaken.repriceCurrency();
-        assertTrue("fixture: support larger than the deficit's level turns the month", overtaken.getLastWouldBeMove() < 0);
-        close("support outweighing the deficit reaches the rate in full: nothing is sold", overtaken.getDefenceUsd(), 0, 0);
-        close("...and nothing is absorbed", overtaken.getLastAbsorption(), 0, 0);
+        assertTrue("fixture: support larger than the trade term turns the push", overtaken.getLastWouldBeMove() < 0);
+        close("support outweighing the deficit reaches the rate in full", Math.log(overtaken.getRate() / o0),
+                overtaken.getLastWouldBeMove(), 1e-12);
+        // New in XR1: and nothing is sold or absorbed.
+        close("...nothing is sold and nothing absorbed", overtaken.getDefenceUsd() + overtaken.getLastAbsorption(), 0, 0);
     }
 
     /* ============ 14. land bought by conversion is no intervention ============
@@ -1332,13 +1371,16 @@ public class ForeignCheck {
             double[] saved = fx.toSaveArray();
             saved[3] = 1.6;
             fx.restore(saved);
+            // The thin vault is the fixture's set-up, not a purchase under test: the rate forgets it.
+            fx.forgetDealing();
             fx.startMonth();
         }
-        assertTrue("fixture: the city's balance level weakens the currency", control.balanceTarget() > 0);
+        assertTrue("fixture: the city is pushed weaker", control.balanceTarget() > 0);
 
         double usd = 1_500;
         double vaultBefore = control.getReservesUsd();
         double interventionBefore = control.getLifetimeIntervention();
+        // THE PURCHASE UNDER TEST, left pending: the rate feels what was dealt since its last reprice.
         reserves.buyReserves(usd * reserves.getRate());
         double paid = land.buyAndSpendDollarsForLand(usd);
 
@@ -1348,15 +1390,21 @@ public class ForeignCheck {
         c.repriceCurrency();
         r.repriceCurrency();
         l.repriceCurrency();
-        double lift = ForeignAccounts.INTERVENTION_IMPACT * r.getBoughtThisMonth() / (12 * r.getGdpTrailing());
-        assertTrue("fixture: the reserve purchase is this month's, and the control's month is the same one",
-                r.getBoughtThisMonth() == usd * 1.6 && c.getBoughtThisMonth() == 0);
-        close("converting for land puts no intervention on the rate: its intervention's move is nothing",
-                l.getMoveIntervention(), 0, 0);
-        close("...so it moves the rate as buying nothing does: a treasury's dollars bought and spent in one breath net to nothing",
-                l.getLastMove(), c.getLastMove(), 0);
-        close("...where buying the same dollars for the vault lifts the rate by INTERVENTION_IMPACT x their price over a year's GDP",
+        // New in XR1: only the reserve twin has dealt since its last reprice - the rate feels that purchase at the reprice.
+        assertTrue("fixture: the reserve purchase is pending, the control's and the land's month are the same one",
+                r.getDealtSinceReprice() == 0 && reserves.getDealtSinceReprice() == usd * 1.6
+                        && control.getDealtSinceReprice() == 0 && land.getDealtSinceReprice() == 0);
+        double lift = ForeignAccounts.INTERVENTION_IMPACT * reserves.getDealtSinceReprice() / (12 * r.getGdpTrailing());
+        // (b) replaces "converting for land pushes the rate as buying the dollars for the vault does": star 7,
+        // "Interventions move the rate, at the real size" (spec section 6, Jerus: "Yes, real size"; 3.6, "a
+        // purchase cheapens it as much") - a reserve purchase is an intervention now, land conversion nets to nothing.
+        close("buying the dollars for the vault lifts the rate by INTERVENTION_IMPACT x their price over a year's GDP, which the next reprice feels",
                 r.getMoveIntervention(), lift, 1e-12);
+        // (a) measured the new way: converting for land moves the rate as buying nothing does.
+        close("...which is what buying nothing pushes: a treasury's dollars are the financing item",
+                l.getLastMove(), c.getLastMove(), 0);
+        // New in XR1: the land twin's intervention line is nothing.
+        close("...its intervention's move is nothing", l.getMoveIntervention(), 0, 0);
         assertTrue("...and it leaves the vault where it began", land.getReservesUsd() == vaultBefore);
         close("...where the reserve purchase leaves it the parcel's dollars fuller",
                 reserves.getReservesUsd() - vaultBefore, usd, 1e-9);
@@ -1369,8 +1417,8 @@ public class ForeignCheck {
         out.printf("   the intervention's move: control %+.5f, reserves %+.5f, land %+.5f; the vault could absorb %.1f%% / %.1f%% / %.1f%%%n",
                 c.getMoveIntervention(), r.getMoveIntervention(), l.getMoveIntervention(),
                 control.absorption() * 100, reserves.absorption() * 100, land.absorption() * 100);
-        close("...so what the vault could absorb is the control's...", land.absorption(), control.absorption(), 0);
-        assertTrue("...not the reserve buyer's, whose dollars stayed in the vault", reserves.absorption() > control.absorption());
+        assertTrue("...so what the vault would absorb is the control's, not the reserve buyer's",
+                land.absorption() == control.absorption() && reserves.absorption() > control.absorption());
 
         /* From the vault: the dollars leave it, at the rate of the day, and nothing else. */
         double spent = land.spendReservesOnLand(usd);
@@ -1685,7 +1733,19 @@ public class ForeignCheck {
          * defence and whatever else the month did.
          */
         double before = fx.getRate();
+        // New in XR1: the vault bought above is dealing under test here - the rate feels it at this reprice.
+        assertTrue("fixture: the treasury has dealt since the last reprice", fx.getDealtSinceReprice() > 0);
         fx.repriceCurrency();
+        assertTrue("the next reprice felt it: nothing is pending, and the interventions moved the rate",
+                fx.getDealtSinceReprice() == 0 && fx.getMoveIntervention() != 0);
+        // (b) replaces "the push and the pull the tab draws add to the move it draws" and the anchored-drift
+        // fixture and sum after it ("fixture: an anchored drift handed to the currency...", "the push, the drift and
+        // the pull the tab draws add to the move it draws", "...the drift in it"): section 5's XR1 row retires
+        // "REVERSION's pull, the anchored drift, RATE_PULL's push"; spec 3.1 shows each piece "as a line of its own"
+        // and board 1 "what moved it this month in five lines that sum to the month's move" (six here, the market
+        // being the sixth). The preview block of section 13 ("previewing the push leaves the month's pressure as
+        // recorded" and its four neighbours) is retired with previewPressure() on the same row; its premise, that a
+        // screen's read does not rewrite the month, is carried by the readers line below.
         double[] six = { fx.getMoveTrend(), fx.getMoveGap(), fx.getMoveBalance(), fx.getMoveCover(),
                 fx.getMoveIntervention(), fx.getMoveMarket() };
         assertTrue("fixture: the month moved parity's trend, the real rate, the balance, the interventions and the market",
@@ -1734,7 +1794,8 @@ public class ForeignCheck {
                         + fx.getMoveIntervention() + fx.getMoveMarket(), Math.log(fx.getRate() / before2), 1e-12);
         fx.pinRate(fx.getRate());
         fx.repriceCurrency();
-        close("a pinned rate's last move is nothing", Math.abs(fx.getLastMove()), 0, 0);
+        // (a) measured the new way (the preview is retired, the last move is the nearest reading): a pinned rate's move is nothing.
+        close("a pinned rate's previewed move is nothing", Math.abs(fx.getLastMove()), 0, 0);
         close("...and nothing is drawn from the market for it", fx.getMarketDraws(), draws + 1, 0);
 
         /*

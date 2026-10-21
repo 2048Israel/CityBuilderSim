@@ -42,14 +42,16 @@ import java.nio.file.Path;
  *      the market quiet, ten months of 40% inflation put each month's rate on
  *      getParityTrend(), and the rate ends above where it began.
  *   3. THE DEFENCE SPENDS. A vault of US$10M at six months' cover against a
- *      month with a US$2M deficit and a month the D$ would fall sells exactly
- *      absorption() x US$2M; the vault falls by it; the sale lifts the D$ by
- *      INTERVENTION_IMPACT x what it fetched over a year of GDP (the intervention's
- *      move, which replaces the old damping of a push); cover falls. An empty
- *      vault sells nothing and lifts nothing. A surplus month with the
- *      currency rising sells nothing and buys nothing. A vault of US$500k
- *      against the same deficit sells all of it and meets 500k / 2M of it, not
- *      absorption().
+ *      month with a US$2M deficit and a month the D$ would fall by more than
+ *      the deficit's cap sells exactly absorption() x US$2M; the vault falls
+ *      by it; the sale lifts the D$ by INTERVENTION_IMPACT x what it fetched
+ *      over a year of GDP (the intervention's move, which replaces the old
+ *      damping of a push); cover falls. An empty vault sells nothing and
+ *      lifts nothing. A surplus month with the currency rising sells nothing
+ *      and buys nothing. A vault of US$500k against the same deficit sells
+ *      all of it and meets 500k / 2M of it, not absorption(). New in XR1
+ *      (the lean smooths): a small fall sells only what takes back
+ *      absorption() of it.
  *   4. WHAT IT FETCHES IS THE CENTRAL BANK'S CAPITAL, NOT MONEY DESTROYED.
  *      On a bare balance sheet: the sale leaves M0, issued and retired
  *      exactly where they were, takes equity down by exactly what the dollars
@@ -158,13 +160,15 @@ public class CurrencyCheck {
     static void realRate() {
         out.println("--- 1. the real rate holds the currency at a level, and the inflation differential reaches it only through parity's trend ---");
 
-        // RESTATED FOR XR1 (docs/studies/spec-exchange-rates.md 3.2 and 3.3). The
-        // premise of 0.7.2 - that the inflation differential moves no rate by rule,
-        // only the real gap's push does - is retired: parity's trend is followed one
-        // for one (3.2), and the real gap is a level (3.3). What stays is the
-        // direction (paying over the world's holds the D$ dearer, under it cheaper)
-        // and that the differential alone, with the real gap at nothing, adds nothing
-        // of its own beyond the parity it raises.
+        // RESTATED FOR XR1 (docs/studies/spec-exchange-rates.md 3.2 and 3.3). Two kinds
+        // of line below. (a) THE SAME PREMISE, MEASURED THE NEW WAY, its label as it was:
+        // the fixture, and the direction (paying over the world's real rate strengthens the
+        // rate, under it weakens it), read against the neutral dial's rate instead of the
+        // pull-only rate. (b) A PREMISE A DECIDED CALL REPLACES, with the call quoted
+        // beside it: 0.7.2's "the inflation differential moves no rate by rule" and the
+        // real gap's push by RATE_PULL are replaced by section 3.2 (parity's trend is
+        // followed one for one) and 3.3 (the gap is a level), and section 5's XR1 row
+        // retires "REVERSION's pull, the anchored drift, RATE_PULL's push and SETTLING_MONTHS".
         final double worldInflation = .02, cityInflation = .20;
         // Trade in balance and equal to output: no balance level, openness one, so
         // the gate is fully open.
@@ -182,11 +186,13 @@ public class CurrencyCheck {
             fxs[i] = fx;
             double gap = (dials[i] - cityInflation) - worldReal;
             if (i == 0) {
-                assertTrue("fixture: trade in balance, the vault empty, the market quiet",
-                        fx.balanceTarget() == 0 && fx.getReservesUsd() == 0 && !fx.isMarketSeeded());
-                close("fixture: ...and the whole economy trades, so openness is one and the gate open", fx.getOpenness(), 1, 0);
-                close("fixture: ...and the empty vault costs the whole risk premium", fx.coverTarget(),
-                        ForeignAccounts.RISK_PREMIUM, 1e-12);
+                assertTrue("fixture: past settling, trade in balance, the vault empty",
+                        fx.balanceTarget() == 0 && fx.getReservesUsd() == 0);
+                close("fixture: ...and the whole economy trades, so openness is one", fx.getOpenness(), 1, 0);
+                // New in XR1: the market is quiet (a bare ForeignAccounts is unseeded), and the empty
+                // vault costs the whole risk premium, which is part of the expected figure below.
+                assertTrue("fixture: the market is quiet, and the empty vault costs the whole risk premium",
+                        !fx.isMarketSeeded() && Math.abs(fx.coverTarget() - ForeignAccounts.RISK_PREMIUM) < 1e-12);
             }
             double r0 = fx.getRate();
             for (int m = 0; m < 120; m++) {
@@ -200,16 +206,26 @@ public class CurrencyCheck {
             out.printf("   %s: real gap %+.2f points, the rate %.6f -> %.6f after 120 months"
                     + " (trend %.6f, the gap's level reached %+.4f, the cover's %+.4f)%n", names[i], gap * 100, r0,
                     fx.getRate(), fx.getParityTrend(), fx.getGapReached(), fx.getCoverReached());
+            // (b) replaces "...by exactly -((real gap + the expected reversion) x RATE_PULL) x DRIFT_SPEED,
+            // and the parity pull" (and "...by exactly the mirror"): star 8, "whatever real life does" (spec
+            // section 6, Jerus) - the real gap holds a level (3.3), 60% at once and the rest building, not a push.
             close("after 120 months, " + names[i] + ": the rate is the trend and the three levels reached",
                     fx.getRate(), expected, 1e-9);
         }
         ForeignAccounts dear = fxs[0], cheap = fxs[1], neutral = fxs[2];
-        assertTrue("paying over the world in real terms holds the rate under the neutral dial's", dear.getRate() < neutral.getRate());
-        assertTrue("...and paying under it holds the rate over the neutral dial's", cheap.getRate() > neutral.getRate());
+        assertTrue("paying over the world in real terms strengthens the rate", dear.getRate() < neutral.getRate());
+        assertTrue("paying under it weakens the rate", cheap.getRate() > neutral.getRate());
+        // (b) replaces "at the world's real rate the rate moves by the parity pull and the expected
+        // reversion alone": spec 3.2 follows parity's trend one for one, and section 5's XR1 row retires
+        // "REVERSION's pull" and the UIP level.
         close("at the world's real rate the rate is parity's trend times the cover's premium alone",
                 neutral.getRate(), neutral.getParityTrend() * Math.exp(neutral.gate() * neutral.getCoverReached()), 1e-9);
+        // New in XR1: the trend is the parity the city was handed.
         close("...and parity's trend is the parity it was handed, held for 120 months",
                 neutral.getParityTrend(), neutral.getParity(), 1e-9);
+        // (b) replaces "...so the inflation differential no longer moves the rate directly" (0.7.2): spec 3.2,
+        // "The spiral of 0.7.2" - the drift form deleted then returns slowed, the gap passing into the rate
+        // through parity's trend one for one; star 2, "Basket, rent capped", is what parity is struck from.
         assertTrue("...so the inflation differential reaches the rate only through the parity it raises",
                 neutral.inflationGap() > .1 && Math.abs(neutral.getGapReached()) < 1e-12);
     }
@@ -218,20 +234,20 @@ public class CurrencyCheck {
     static void spiral() {
         out.println("\n--- 2. ten months of inflation move the rate with parity's trend and no further ---");
 
-        // RESTATED FOR XR1 (spec 3.2). The 0.7.2 premise - a spiral needs an
-        // outflow, so with the real gap at nothing and no deficit the rate moves by
-        // the parity pull alone - is retired with the pull: the rate follows parity's
-        // trend one for one. What stays: with no gap, no deficit and nothing from the
-        // vault or the market, the only thing that moves the rate is the trend.
+        // RESTATED FOR XR1 (spec 3.2). The fixture is the old one, measured the new way (a);
+        // the 0.7.2 premise that with the real gap at nothing and no outflow the rate moves by
+        // the parity pull alone is retired with the pull (section 5's XR1 row: "REVERSION's
+        // pull ... retired"): the rate follows parity's trend one for one (b).
         final double worldInflation = .02, cityInflation = .40;
         final double worldReal = DebtManager.WORLD_BASE_RATE - worldInflation;
         final double dial = cityInflation + worldReal;
         final double trade = 3_000, gdp = 6_000;
 
         ForeignAccounts fx = settled(trade, trade, gdp);
-        // A vault at THIN_COVER or more, so no premium; bought before the month starts,
-        // which startMonth() clears from the month's books - a founding's is not an intervention.
+        // A vault at THIN_COVER or more, so no premium; its purchase is the fixture's set-up,
+        // not a purchase under test, so the rate forgets it (forgetDealing()) as it forgets a founding's.
         fx.buyReserves(fx.monthlyImports() * 2 * ForeignAccounts.THIN_COVER);
+        fx.forgetDealing();
         double level = 1.0, monthly = Math.pow(1 + cityInflation, 1 / 12.0);
         double r0 = fx.getRate(), worst = 0;
         boolean quiet_ = fx.importCover() >= ForeignAccounts.THIN_COVER;
@@ -247,8 +263,12 @@ public class CurrencyCheck {
         }
         out.printf("   ten months of 40%% inflation: the rate %.6f from %.6f, parity %.6f, its trend %.6f%n",
                 fx.getRate(), r0, fx.getParity(), fx.getParityTrend());
-        assertTrue("fixture: ten months with no gap, no deficit and no premium", quiet_);
+        assertTrue("fixture: ten months with no push and no deficit", quiet_);
+        // (b) replaces "with the real gap at nothing and no outflow, the rate moves by the parity pull and the
+        // expected reversion alone": spec 3.2, parity's trend followed one for one.
         close("each month the rate is parity's trend, and nothing else moved it", worst, 0, 1e-12);
+        // (b) replaces "...where the inflation drift would have carried it a third weaker" (the old drift is retired,
+        // section 5's XR1 row "the anchored drift"): the rate now follows the inflation.
         assertTrue("...and after ten months it is above where it began: it followed the inflation", fx.getRate() > r0);
     }
 
@@ -261,23 +281,66 @@ public class CurrencyCheck {
      */
     static ForeignAccounts defended(double exports, double imports, double gdp, double vaultUsd,
                                     double capitalOut) {
-        ForeignAccounts fx = settled(exports, imports, gdp);
+        return defended(exports, imports, gdp, vaultUsd, capitalOut, 0);
+    }
+
+    /** ...and, when `settlingOut` is more than nothing, that much capital leaving every month of the settling too: a chronic deficit, so the trailing balance is the month's own. */
+    static ForeignAccounts defended(double exports, double imports, double gdp, double vaultUsd,
+                                    double capitalOut, double settlingOut) {
+        ForeignAccounts fx = new ForeignAccounts();
+        for (int m = 0; m < TRADING_MONTHS; m++) {
+            fx.takeMonth(month(exports, imports, 0, settlingOut), gdp);
+        }
         fx.buyReserves(vaultUsd * fx.getRate());
+        // The vault is the fixture's set-up, not a purchase under test: the rate forgets it
+        // (forgetDealing()), or the next reprice would feel it as an intervention.
+        fx.forgetDealing();
         fx.startMonth();
         fx.takeMonth(month(exports, imports, 0, capitalOut), gdp);
         return fx;
     }
 
+    /** The dollars it takes to take back `absorption` of a fall of `fall` (logs) at INTERVENTION_IMPACT, on a GDP and a rate (ForeignAccounts, THE FLOAT, step 7): the need. */
+    static double need(double absorption, double fall, double gdpTrailing, double rate) {
+        return absorption * fall * 12 * gdpTrailing / ForeignAccounts.INTERVENTION_IMPACT / rate;
+    }
+
+    /** What the lean sells in a month the D$ would fall by `fall`: the need, at most absorption() x the month's deficit, at most the vault; nothing on a rise or with no deficit. All read before the reprice but the fall (getLastWouldBeMove(), the figure the model leans on). */
+    static double expectedSale(double absorption, double fall, double gdpTrailing, double rate, double deficitUsd, double vaultUsd) {
+        if (!(fall > 0) || !(deficitUsd > 0)) return 0;
+        return Math.min(need(absorption, fall, gdpTrailing, rate), Math.min(absorption * deficitUsd, vaultUsd));
+    }
+
+    /**
+     * The fall the FIRST reprice of a fixture from defended() makes, from its figures alone
+     * (the rate at 1.00, nothing repriced before, the market quiet, parity at 1): the gated
+     * gap, balance and cover levels reached in one month - so a fixture's regime (the need
+     * binds, the deficit's cap binds, the vault binds) is caused by its figures and asserted
+     * before the reprice, not read off it.
+     */
+    static double firstFall(ForeignAccounts fx, double gap) {
+        double build = 1 - Math.pow(.5, 1 / ForeignAccounts.GAP_BUILD_HALF_LIFE);
+        double gapReached = (ForeignAccounts.GAP_IMPACT + (1 - ForeignAccounts.GAP_IMPACT) * build)
+                * ForeignAccounts.gapLevelFor(gap);
+        return fx.gate() * (gapReached + ForeignAccounts.MARKET_SPEED * fx.balanceTarget()
+                + ForeignAccounts.MARKET_SPEED * fx.coverTarget());
+    }
+
     static void defence() {
         out.println("\n--- 3. the defence sells the vault's dollars, and what it sells lifts the D$ ---");
 
-        // RESTATED FOR XR1 (spec 3.6's last point). The sale no longer damps a push by
-        // its share of the deficit: it moves the rate through the intervention channel
-        // at its real size, INTERVENTION_IMPACT x what it fetched over a year's GDP. The
-        // amounts - what is sold, the vault, the local price, the record, the realised
-        // share - are the old section's, and each fixture now asserts that the month
-        // would have weakened the D$ (getLastWouldBeMove()), which is what the defence
-        // leans against.
+        // RESTATED FOR XR1 (spec 3.6's last point; the lean smooths). The defence now sells
+        // what takes back absorption() of the month's fall - the move the gated
+        // fundamentals and the market alone would make, getLastWouldBeMove() - and no more
+        // than absorption() x the month's deficit (the most anyone came to the window for),
+        // or than the vault holds. The main fixtures below are built so that the deficit's
+        // cap binds, and then the old premises hold as they were, label for label (a): the
+        // central bank sells absorption() x the deficit, to the cent; a US$500k vault against
+        // a US$2M deficit sells all of it. What the old section called the damping of a push
+        // is the sale's lift on the D$, INTERVENTION_IMPACT x what it fetched over a year's GDP
+        // (b): star 7, "Interventions move the rate, at the real size" (spec section 6,
+        // Jerus: "Yes, real size"); 3.6's last point puts the defence's sale through that channel.
+        // New in XR1: the small fall, where the need binds, is asserted on its own below.
 
         // A US$10M vault is six months of these imports: exactly the cover
         // that earns the most damping there is.
@@ -286,89 +349,147 @@ public class CurrencyCheck {
         final double exports = imports / 2;
         final double gdp = 20_000;
         // The month under test: the same trade, and capital leaving, so the
-        // month's own accounts show a deficit of exactly US$2M.
+        // month's own accounts show a deficit of exactly US$2M - and, in the main fixture, in
+        // every month of the settling too, so the trailing balance is the month's own and the
+        // fall is large enough that the deficit's cap binds.
         final double deficit = 2_000;
         final double capitalOut = deficit - (imports - exports);
 
-        ForeignAccounts full = defended(exports, imports, gdp, vault, capitalOut);
+        ForeignAccounts full = defended(exports, imports, gdp, vault, capitalOut, capitalOut);
         double capacity = full.absorption();
         double cover = full.importCover();
         double r0 = full.getRate();
-        assertTrue("fixture: the trailing deficit's level weakens the currency", full.balanceTarget() > 0);
+        double gdpYear = full.getGdpTrailing();
+        double fall0 = firstFall(full, 0);
+        assertTrue("fixture: the trailing deficit pushes the currency weaker", full.balanceTarget() > 0);
         close("fixture: the month's own accounts show a US$2M deficit", full.monthDeficitUsd(), deficit, 1e-9);
         close("fixture: the vault is at six months' cover", cover, ForeignAccounts.COMFORTABLE_COVER, 1e-9);
         close("fixture: ...so its capacity is the most there is", capacity, ForeignAccounts.MAX_ABSORPTION, 1e-12);
         close("fixture: the treasury bought nothing this month", full.getBoughtThisMonth(), 0, 0);
+        // New in XR1: the rate has dealt with nothing since its last reprice, and the fall is large - the
+        // need to take back absorption() of it is more than the cap, which the vault holds.
+        assertTrue("fixture: the rate has dealt with nothing, and the fall is large: the need exceeds absorption() x the deficit, which the vault holds",
+                full.getDealtSinceReprice() == 0 && fall0 > 0
+                        && need(capacity, fall0, gdpYear, r0) > capacity * deficit && capacity * deficit < vault);
 
         full.repriceCurrency();
+        // New in XR1: the month's move before the defence leans is a fall, and is what the fixture's figures make it.
         assertTrue("fixture: the month's move before the defence weakens the D$", full.getLastWouldBeMove() > 0);
+        close("fixture: ...and is what the fixture's figures make it", full.getLastWouldBeMove(), fall0, 1e-12);
+        double fall = full.getLastWouldBeMove();
         double sold = full.getDefenceUsd();
-        out.printf("   a US$10,000k vault against a US$2,000k deficit: sold US$%,.2fk, met %.0f%% of it,"
+        out.printf("   a US$10,000k vault against a US$2,000k deficit, a fall of %.4f: sold US$%,.2fk, met %.0f%% of it,"
                 + " the rate %.6f -> %.6f, cover %.2f -> %.2f months%n",
-                sold, full.getLastAbsorption() * 100, r0, full.getRate(), cover, full.importCover());
+                fall, sold, full.getLastAbsorption() * 100, r0, full.getRate(), cover, full.importCover());
         close("the central bank sells absorption() x the deficit, to the cent", sold, capacity * deficit, 1e-9);
+        // New in XR1: the same sale, read as the lean's arithmetic from the constants and the getters.
+        close("...which is what the lean sells: the need, at most absorption() x the deficit, at most the vault", sold,
+                expectedSale(capacity, fall, gdpYear, r0, deficit, vault), 1e-9);
         close("...and the vault falls by exactly that", full.getReservesUsd(), vault - sold, 1e-9);
         close("...at the month's rate, which is what it fetches", full.getDefenceLocal(), sold * r0, 1e-9);
         close("...and comes off the treasury's intervention record, as a sale does",
                 full.getLifetimeIntervention(), vault * ForeignAccounts.OPENING_RATE - sold * r0, 1e-9);
         close("the realised absorption is what the sale met of the deficit", full.getLastAbsorption(),
                 sold / deficit, 1e-12);
+        // (b) replaces "the push that reached the rate is total x (1 - realised) x openness": star 7,
+        // "Interventions move the rate, at the real size" (spec section 6; Jerus: "Yes, real size") - the
+        // defence's sale goes through INTERVENTION_IMPACT (3.6's last point), nothing was felt before it.
         close("the sale lifted the D$ by INTERVENTION_IMPACT x what it fetched over a year's GDP: nothing was felt before, so the intervention's move is minus the lift",
                 full.getMoveIntervention(), -lift(full), 1e-12);
-        close("...and the move that reached the rate is the would-be move less the lift",
-                Math.log(full.getRate() / r0), full.getLastWouldBeMove() - lift(full), 1e-12);
+        close("...and the move that reached the rate is the fall less the lift",
+                Math.log(full.getRate() / r0), fall - lift(full), 1e-12);
+        assertTrue("...which is less than absorption() of the fall: the deficit's cap held the sale back",
+                lift(full) < capacity * fall);
         assertTrue("...and cover fell", full.importCover() < cover);
         close("...to what is left, at the new rate", full.importCover(),
                 (vault - sold) * full.getRate() / imports, 1e-9);
         close("the dollars sold since founding count it", full.getDefenceUsdLifetime(), sold, 1e-12);
 
+        /* ---- a small fall: new in XR1, the need binds ---- */
+        // The same month with the capital leaving once, not all along: the trailing balance sees a
+        // twelfth of it, so the fall is small and the lean sells only what takes back absorption() of it.
+        ForeignAccounts small = defended(exports, imports, gdp, vault, capitalOut);
+        double mCapacity = small.absorption(), m0 = small.getRate(), mGdp = small.getGdpTrailing();
+        double mFall0 = firstFall(small, 0);
+        assertTrue("fixture: the fall is small: the need to take back absorption() of it is under absorption() x the deficit and under the vault",
+                mFall0 > 0 && need(mCapacity, mFall0, mGdp, m0) < mCapacity * small.monthDeficitUsd()
+                        && need(mCapacity, mFall0, mGdp, m0) < vault);
+        small.repriceCurrency();
+        double mSold = small.getDefenceUsd();
+        out.printf("   the same month with the capital leaving once, a fall of %.4f: sold US$%,.2fk (the need), met %.0f%% of the deficit%n",
+                small.getLastWouldBeMove(), mSold, small.getLastAbsorption() * 100);
+        close("a small fall is sold into to take back absorption() of it, to the cent: the need",
+                mSold, need(mCapacity, mFall0, mGdp, m0), 1e-9);
+        close("...which is what the lean sells from the constants and the getters", mSold,
+                expectedSale(mCapacity, small.getLastWouldBeMove(), mGdp, m0, small.monthDeficitUsd(), vault), 1e-9);
+        assertTrue("...under absorption() x the deficit", mSold < mCapacity * deficit);
+        close("...and the lift takes back absorption() of the fall, exactly", lift(small), mCapacity * small.getLastWouldBeMove(), 1e-12);
+        close("...so the move that reached the rate is the fall less absorption() of it",
+                Math.log(small.getRate() / m0), small.getLastWouldBeMove() * (1 - mCapacity), 1e-12);
+
         /* ---- the same month with nothing in the vault ---- */
-        ForeignAccounts empty = defended(exports, imports, gdp, 0, capitalOut);
+        ForeignAccounts empty = defended(exports, imports, gdp, 0, capitalOut, capitalOut);
         double e0 = empty.getRate();
         empty.repriceCurrency();
         assertTrue("fixture: the month's move before the defence weakens the D$, with nothing to sell",
                 empty.getLastWouldBeMove() > 0);
         close("an empty vault sells nothing", empty.getDefenceUsd(), 0, 0);
-        close("...meets nothing of the deficit", empty.getLastAbsorption(), 0, 0);
+        close("...damps nothing", empty.getLastAbsorption(), 0, 0);
         close("...lifts nothing: the intervention's move is nothing", empty.getMoveIntervention(), 0, 0);
-        close("...and the whole of the month's would-be move reaches the rate",
+        // (a) measured the new way: the whole fall is the move, the sale being nothing.
+        close("...and the whole push reaches the rate",
                 Math.log(empty.getRate() / e0), empty.getLastWouldBeMove(), 1e-12);
 
         /* ---- a surplus, and the currency rising ---- */
         ForeignAccounts surplus = defended(imports * 2, imports, gdp, vault, 0);
         double s0 = surplus.getRate();
-        assertTrue("fixture: a month in surplus, the balance's level strengthens the currency",
+        assertTrue("fixture: a month in surplus, pushed stronger",
                 surplus.balanceTarget() < 0 && surplus.monthDeficitUsd() == 0);
         surplus.repriceCurrency();
         assertTrue("...and the surplus month's would-be move strengthens it", surplus.getLastWouldBeMove() < 0);
         close("a surplus month sells nothing", surplus.getDefenceUsd(), 0, 0);
         close("...and buys nothing: the vault is what it was", surplus.getReservesUsd(), vault, 0);
         close("...not by the treasury either", surplus.getBoughtThisMonth(), 0, 0);
+        // (a) measured the new way: the rise is the would-be move, nothing felt from the forgotten set-up.
         close("...and the rise reaches the rate in full", Math.log(surplus.getRate() / s0),
                 surplus.getLastWouldBeMove(), 1e-12);
         assertTrue("...which rose", surplus.getRate() < s0);
 
         /* ---- a vault that cannot meet what its cover would sell ---- */
-        // Small imports, so US$500k is ten months of them and the capacity is
-        // the most there is; the month's deficit is capital leaving.
-        final double smallImports = 50, smallExports = 40, smallVault = 500;
-        ForeignAccounts shallow = defended(smallExports, smallImports, 400, smallVault,
+        // Small imports, so US$500k is ten months of them and the capacity is the most there
+        // is; the month's deficit is capital leaving, so its cap is more than the vault holds;
+        // and the dial far under the world's real rate adds its level to the balance's, so the
+        // fall is large enough that the need is more than the vault holds as well.
+        final double smallImports = 50, smallExports = 40, smallVault = 500, smallGdp = 400, gap = -.20;
+        ForeignAccounts shallow = defended(smallExports, smallImports, smallGdp, smallVault,
                 deficit - (smallImports - smallExports));
+        shallow.setRealRateDifferential(gap);
         double shallowCapacity = shallow.absorption();
-        double h0 = shallow.getRate();
+        double h0 = shallow.getRate(), hGdp = shallow.getGdpTrailing();
+        double hFall0 = firstFall(shallow, gap);
         assertTrue("fixture: the vault's capacity would sell more than it holds",
                 shallow.balanceTarget() > 0 && shallowCapacity * shallow.monthDeficitUsd() > smallVault);
+        // New in XR1: and so would the need to take back absorption() of the fall.
+        assertTrue("fixture: ...and so would the need to take back absorption() of the fall",
+                need(shallowCapacity, hFall0, hGdp, h0) > smallVault);
         shallow.repriceCurrency();
         assertTrue("fixture: the month's move before the defence weakens the D$", shallow.getLastWouldBeMove() > 0);
-        out.printf("   a US$500k vault against the same deficit: capacity %.0f%%, sold US$%,.2fk, met %.0f%% of it%n",
-                shallowCapacity * 100, shallow.getDefenceUsd(), shallow.getLastAbsorption() * 100);
+        close("fixture: ...and is what the fixture's figures make it", shallow.getLastWouldBeMove(), hFall0, 1e-12);
+        out.printf("   a US$500k vault against the same deficit, a fall of %.4f: capacity %.0f%%, sold US$%,.2fk, met %.0f%% of it%n",
+                shallow.getLastWouldBeMove(), shallowCapacity * 100, shallow.getDefenceUsd(), shallow.getLastAbsorption() * 100);
         close("a US$500k vault against a US$2M deficit sells all of it", shallow.getDefenceUsd(), smallVault, 1e-9);
         close("...and is empty", shallow.getReservesUsd(), 0, 0);
-        close("...and meets 500k / 2M of it", shallow.getLastAbsorption(), smallVault / deficit, 1e-12);
+        close("...and damps 500k / 2M", shallow.getLastAbsorption(), smallVault / deficit, 1e-12);
         assertTrue("...not absorption()", Math.abs(shallow.getLastAbsorption() - shallowCapacity) > .1);
+        // New in XR1: the same sale from the constants and the getters.
+        close("...which is what the lean sells: the need, the deficit's cap and the vault, whichever is least",
+                shallow.getDefenceUsd(),
+                expectedSale(shallowCapacity, shallow.getLastWouldBeMove(), hGdp, h0, deficit, smallVault), 1e-9);
+        // (b) replaces "...and the push that reached the rate is the rest of it": star 7, "Interventions
+        // move the rate, at the real size" (spec section 6; Jerus: "Yes, real size"); 3.6's last point.
         close("...and it lifted the D$ by what it fetched, over a year of the GDP: minus the lift",
                 shallow.getMoveIntervention(), -lift(shallow), 1e-12);
-        close("...so the move that reached the rate is the would-be move less the lift",
+        close("...so the move that reached the rate is the fall less the lift",
                 Math.log(shallow.getRate() / h0), shallow.getLastWouldBeMove() - lift(shallow), 1e-12);
     }
 
@@ -486,8 +607,12 @@ public class CurrencyCheck {
         double capacity = ForeignAccounts.MAX_ABSORPTION * Math.max(0, Math.min(1,
                 vaultBefore * rateBefore / fx.monthlyImports() / ForeignAccounts.COMFORTABLE_COVER));
         close("fixture: the treasury neither bought nor sold", fx.getBoughtThisMonth() + fx.getSoldThisMonth(), 0, 0);
+        // The premise is the old one, the sale is what the vault's capacity times the month's own deficit
+        // allows, at most the vault - and, new in XR1 (the lean smooths), no more than what takes back that
+        // capacity of the month's fall: so the sale is the least of the three.
         close("the sale is the vault's capacity times the month's own deficit, at most the vault",
-                sold, Math.min(capacity * deficitUsd, vaultBefore), 1e-9 * Math.max(1, sold));
+                sold, expectedSale(capacity, fx.getLastWouldBeMove(), fx.getGdpTrailing(), rateBefore, deficitUsd, vaultBefore),
+                1e-9 * Math.max(1, sold));
         close("...the vault fell by exactly it", vaultBefore - fx.getReservesUsd(), sold, 1e-9 * Math.max(1, sold));
         close("...and it fetched the dollars at the month's rate", fetched, sold * rateBefore, 1e-9 * Math.max(1, fetched));
         close("the central bank booked it the month it was sold", cb.getDefendedThisMonth(), fetched, 1e-9);
@@ -704,10 +829,13 @@ public class CurrencyCheck {
         out.println("\n--- 6. the rate goes where parity's trend takes it: the guards are a billion either way ---");
 
         // RESTATED FOR XR1 (spec 3.2). The old section drove the rate past the guards
-        // with a push of a hundred points of real gap, which no longer exists: now the
-        // rate goes where parity's trend goes. The fixture holds parity at 150 (the
-        // city's prices 150 times the world's) from a currency whose trend has started
-        // at 1, with a quiet market, for as many months as it takes the trend to arrive.
+        // with a push of a hundred points of real gap, which no longer exists (section 5's
+        // XR1 row retires "RATE_PULL's push"): now the rate goes where parity's trend goes,
+        // followed one for one (3.2) - lines (b), the old label's premise replaced. The
+        // fixture holds parity at 150 (the city's prices 150 times the world's) from a
+        // currency whose trend has started at 1, with a quiet market, for as many months as
+        // it takes the trend to arrive. The debt's revaluation and the reform's scaling keep
+        // their premises and their labels (a).
         final double usdOwed = 1_000, target = 150;
         final int most = 240;
 
@@ -715,8 +843,10 @@ public class CurrencyCheck {
         ForeignAccounts high = at(1);
         high.takeForeignDebt(usdOwed, 1);
         month(high, 1.0, 0);
-        assertTrue("fixture: past settling, trade in balance, the vault empty, the whole economy trading, the market quiet",
-                high.balanceTarget() == 0 && high.getReservesUsd() == 0 && high.getOpenness() == 1 && !high.isMarketSeeded());
+        assertTrue("fixture: past settling, trade in balance, the vault empty, the whole economy trading",
+                high.balanceTarget() == 0 && high.getReservesUsd() == 0 && high.getOpenness() == 1);
+        // New in XR1: the market is quiet (a bare ForeignAccounts is unseeded).
+        assertTrue("fixture: the market is quiet", !high.isMarketSeeded());
         double before = high.getRate(), first = 0, worst = 0;
         int months = 0;
         while (high.getRate() <= OLD_MAX_RATE && months < most) {
@@ -728,11 +858,17 @@ public class CurrencyCheck {
         }
         out.printf("   parity at %.0f: %.4f after one month, %.4f after %d (the old guard: %.0f)%n",
                 target, first, high.getRate(), months, OLD_MAX_RATE);
-        assertTrue("fixture: the trend arrived - the rate is past the old guard of 100", high.getRate() > OLD_MAX_RATE);
-        assertTrue("...a rate under the old guard crosses it, never held by it", first < OLD_MAX_RATE);
-        close("...every month the rate is the fundamentals' level, never the guard", worst, 0, 1e-9);
+        // (b) replaces "a month's push past the old guard of 100 takes the rate to 150, not 100": section 3.2,
+        // "A trend, not the month" - the rate follows parity's trend (star 2, "Basket, rent capped", is what
+        // parity is struck from), so it arrives over months and the old guard of 100 does not hold it.
+        assertTrue("a month's trend past the old guard of 100 takes the rate beyond it, not held at 100: the trend arrived",
+                high.getRate() > OLD_MAX_RATE);
+        // (b) replaces "a rate under the old guard crosses it in a month" and "...and every month is the push and
+        // the pull, never the guard": the same section 3.2 - it crosses the old guard as the trend arrives.
+        assertTrue("...a rate under the old guard crosses it", first < OLD_MAX_RATE);
+        close("...and every month is the trend and the levels, never the guard", worst, 0, 1e-9);
         close("...and the dollar debt is worth the dollars at it", high.getForeignDebt(), usdOwed * high.getRate(), 1e-6);
-        close("...the month's revaluation the whole of that month's move", high.getLastRevaluation(),
+        close("...the month's revaluation the whole of the move", high.getLastRevaluation(),
                 usdOwed * (high.getRate() - before), 1e-6);
 
         /* UNDER A HUNDREDTH, the mirror: parity at 1/200, the trend falling past the old floor. */
@@ -751,10 +887,13 @@ public class CurrencyCheck {
         }
         out.printf("   parity at %.3f: %.4f after one month, %.6f after %d (the old guard: %.2f)%n",
                 low, firstDown, dear.getRate(), months, OLD_MIN_RATE);
-        assertTrue("fixture: the trend arrived - the rate is under the old floor of .01", dear.getRate() < OLD_MIN_RATE);
-        assertTrue("...a rate over the old floor crosses it, never held by it", firstDown > OLD_MIN_RATE);
+        // (b) replaces "a month's push past the old floor of .01 takes the rate to 1/150, not .01" and "a rate
+        // over the old floor crosses it in a month, by the push and the pull alone ... to under .01": spec 3.2.
+        assertTrue("a month's trend past the old floor of .01 takes the rate under it, not held at .01: the trend arrived",
+                dear.getRate() < OLD_MIN_RATE);
+        assertTrue("a rate over the old floor crosses it", firstDown > OLD_MIN_RATE);
         close("...and the dollar debt is worth the dollars at it", dear.getForeignDebt(), usdOwed * dear.getRate(), 1e-9);
-        close("...the month's revaluation the whole of that month's move, a gain", dear.getLastRevaluation(),
+        close("...the month's revaluation the whole of the move, a gain", dear.getLastRevaluation(),
                 usdOwed * (dear.getRate() - before), 1e-9);
 
         /*
@@ -780,7 +919,9 @@ public class CurrencyCheck {
             month(twin, target, 0);
             worstGap = Math.max(worstGap, Math.abs(reformed.getRate() - twin.getRate() * .001));
         }
-        close("...and parity's trend moves it as it moves the unreformed one, a thousandth the size, every month for thirty",
+        // (a) measured the new way, as the old label said it: the reformed currency moves exactly as the
+        // unreformed one would, a thousandth the size, here every month for thirty, within the same tolerance.
+        close("...and the push moves it as it moves the unreformed one, a thousandth the size",
                 worstGap, 0, 1e-12);
         ForeignAccounts seeded = new ForeignAccounts();
         seeded.seedConstants(1_000);
