@@ -101,7 +101,8 @@ import java.util.List;
  *      a comb cell's streets all meet) and no building on an outer plot; a
  *      homes cell an avenue crosses keeps the comb; every box of a month
  *      stands the next and a cell's avenue plots are the same whichever
- *      month it opened; a pure function, two neighbouring districts laying
+ *      month it opened, and ground bought after its cell opened gets the
+ *      avenue in the month it is bought; a pure function, two neighbouring districts laying
  *      the same plots and marks on the line they share; and the counts in a
  *      real run.
  *
@@ -2816,6 +2817,45 @@ public class PlanCheck {
                 colPairs, sharedCol, agreeCol, rowPairs, sharedRow, agreeRow);
         check("(h) two neighbouring districts lay the same avenue plots with the same marks on the column and on the row their frames share (an arm crosses each)",
                 sharedCol > 0 && agreeCol == colPairs && sharedRow > 0 && agreeRow == rowPairs);
+
+        // ---- (j) ground bought after its cell opened (CL4 with FX6's THE GROUND BOUGHT): the arms' plots the city did not own when
+        // the cell opened are laid in the month the ground is bought - nothing stood on them, so nothing moves. Until the review of
+        // slice A they were decided "not laid" at the opening and never laid (the Earth playtest's north-west arm: 31 of 169 plots).
+        {
+            final int jHouse = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+            final int jShop = pick(types, 1, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+            final int jWorks = pick(types, 9, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
+            final int jPaved = pavedRoad(types);
+            // Section 12's ground: cells 0 to 3 across and 3 and 4 down, the old ground west of the middle of cell 3 - the cells the
+            // north-west and south-west arms leave the origin (the hub, a cell's corner) through - its east half bought in month 5.
+            final int jBought = 5, jCut = 4 * DistrictPlan.CELL - DistrictPlan.CELL / 2;
+            Log jLog = new Log();
+            jLog.add(0, jHouse, 150).add(0, jShop, 20).add(0, jWorks, 2).add(0, jPaved, 3).batch();
+            for (int m = 1; m <= jBought + 1; m++) jLog.add(m, jHouse, 200).add(m, jShop, 10).add(m, jWorks, 1).add(m, jPaved, 2);
+            DistrictPlan.Input jOld = westOf(cellsOwned(types, 0, 3, 3, 4), jCut), jWhole = cellsOwned(types, 0, 3, 3, 4);
+            DistrictPlan jBefore = DistrictPlan.make(jLog.until(jBought).into(westOf(cellsOwned(types, 0, 3, 3, 4), jCut)));
+            DistrictPlan.Input jIn = jLog.into(cellsOwned(types, 0, 3, 3, 4));
+            jIn.boughtAt = boughtOn(jWhole, jOld, jBought);
+            DistrictPlan jAfter = DistrictPlan.make(jIn);
+            Stairs sj = stairs(jIn);
+            // The arms' plots in the boxes of the two cells beside the origin, on the half bought.
+            int expected = 0, laidBefore = 0, laidAfter = 0, laidWest = 0;
+            for (int q = 0; q < DistrictPlan.AREA; q++) {
+                int x = q % DistrictPlan.FRAME, y = q / DistrictPlan.FRAME;
+                if (sj.mark[q] == 0 || x < 3 * DistrictPlan.CELL || x > 4 * DistrictPlan.CELL || y < 3 * DistrictPlan.CELL || y > 5 * DistrictPlan.CELL) continue;
+                if (x <= jCut) { if (jBefore.avenue != null && jBefore.avenue[q] != 0) laidWest++; continue; }
+                expected++;
+                if (jBefore.avenue != null && jBefore.avenue[q] != 0) laidBefore++;
+                if (jAfter.avenue != null && jAfter.avenue[q] != 0) laidAfter++;
+            }
+            boolean bothOpen = jBefore.cellKind[3 + 3 * DistrictPlan.CELLS_A_SIDE] != DistrictPlan.CLOSED && jBefore.cellKind[3 + 4 * DistrictPlan.CELLS_A_SIDE] != DistrictPlan.CLOSED;
+            out.printf("      (j) the half of the cells beside the origin bought in month %d: of its %d avenue plots %d laid before the purchase (%d west of it), %d after; %d of month %d's boxes moved%n",
+                    jBought, expected, laidBefore, laidWest, laidAfter, missing(jBefore, jAfter), jBought);
+            check("(j) the fixture: the cells the arms leave the origin through open on the old ground, the avenue laid there, none on the half not yet bought", bothOpen && laidWest > 0
+                    && expected > 0 && laidBefore == 0);
+            check("(j) ground bought after its cell opened: the avenue is laid on it in the month it is bought, every plot (" + laidAfter + " of " + expected + ")", laidAfter == expected);
+            check("(j) ...every box of the month before the purchase stands after it, and every check holds", missing(jBefore, jAfter) == 0 && figures(jAfter, jIn).holds(jAfter, jIn));
+        }
 
         // ---- (i) the counts in a real run
         if (x1Avenues != null && playedAvenues != null) {

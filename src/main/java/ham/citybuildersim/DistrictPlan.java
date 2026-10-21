@@ -148,7 +148,8 @@ import java.util.List;
  * S_(k-1), C_k, S_k, O_k, which the smooth band the painter draws along the line through the steps clips: no building
  * stands on one (ground() bars them, so growGround() keeps them). An avenue plot is laid when its cell OPENS, plot by
  * plot, from inputs that never change (the origin, the cell's place, the ground the plan has then): so no later month moves
- * a box (THE ORDER OF ARRIVAL, THE GROUND BOUGHT). Owned dry ground is a street; a highway's plot is passed beneath (UNDER,
+ * a box (THE ORDER OF ARRIVAL, THE GROUND BOUGHT); a plot the city buys after its cell opened is laid in the month it is
+ * bought (avOnGrown()), as nothing stands on ground just bought. Owned dry ground is a street; a highway's plot is passed beneath (UNDER,
  * never the plot itself); the railway is crossed (CROSSING); a yard's, an interchange's reserve's, a mine's plot is not laid
  * and the avenue goes on beyond; fresh water is a bridge where the run over it, in steps x sqrt 2, is at most ARTERIAL_BRIDGE
  * plots (AVENUE_BRIDGE_STEPS = 9 steps), else not laid at all; salt water and unowned ground are not laid. THE + FLOOR
@@ -1858,6 +1859,8 @@ public final class DistrictPlan {
                 forgetFails(c);
                 mergeFails[c] = 0;
             }
+            // The avenues on the ground just bought (CL4): an open cell lays the staircase plots it could not when it opened.
+            if (avOn) avOnGrown(n);
             cutLines.clear();
             // The order: the cells either pointer has taken keep their places; between them the cells of the grown ground in
             // its growth order, then any that stood between and the new order lacks, in their old order.
@@ -2638,7 +2641,7 @@ public final class DistrictPlan {
                 }
             }
             // THE AVENUES (CL4): the arms' staircase plots in its box laid as arterials, then the + floor along them.
-            boolean avBroke = layAvenues(x0, y0, x1, y1);
+            boolean avBroke = layAvenues(x0, y0, x1, y1, true);
             if (avOn) avFloor(x0 - 1, y0 - 1, x1, y1);
             // Where the ground cuts it (H2): a dead end joined to its neighbour along the cut; a piece the cut leaves
             // shorter than a block, touching no other street, not laid (no stray roads).
@@ -2795,20 +2798,27 @@ public final class DistrictPlan {
          * Cell c's avenues laid as it opens: every staircase plot of every arm inside its box - the interior and the four
          * ring lines - that has not been decided, as a street of the role ROLE_ARTERIAL (art, so the surface takes it with the
          * arterials), beneath a highway (UNDER) or across the railway as an arterial is; not at a yard, a reserve or a mine's
-         * site, nor over fresh water too wide for a bridge, nor on ground the city does not own. A plot two cells share (a ring
-         * line) is decided by the first to open. Whether any plot was not laid (the caller prunes the pieces that leaves).
+         * site, nor over fresh water too wide for a bridge, nor on ground the plan does not own yet - a plot the city buys
+         * later is left undecided and laid when the ground grows to it (avOnGrown()). A plot two cells share (a ring line) is
+         * decided by the first to open. `opening`: the cell opens now (it is counted among those an avenue crosses), else its
+         * ground grew. Whether any plot was not laid (the caller prunes the pieces that leaves).
          */
-        boolean layAvenues(int x0, int y0, int x1, int y1) {
+        boolean layAvenues(int x0, int y0, int x1, int y1, boolean opening) {
             if (!avOn) return false;
             boolean broke = false;
-            if (avAny(x0, y0, x1 - 1, y1 - 1)) avN[AV_CELLS]++;
+            if (opening && avAny(x0, y0, x1 - 1, y1 - 1)) avN[AV_CELLS]++;
             for (int a = 0; a < 4; a++) {
                 int n = avPlots(a, x0 - 1, y0 - 1, x1, y1);
                 for (int i = 0; i < n; i++) {
                     int p = avBuf[i];
                     if (avDone[p] != 0) continue;
                     int kind = avKind(p);
-                    if (kind == AVK_OFF || kind == AVK_BROKEN || kind == AVK_WATER) {
+                    if (kind == AVK_OFF) {
+                        // Not the plan's ground (yet): undecided, so ground the city buys later lays it (CL4, THE GROUND BOUGHT).
+                        broke = true;
+                        continue;
+                    }
+                    if (kind == AVK_BROKEN || kind == AVK_WATER) {
                         avDone[p] = 2;
                         if (kind == AVK_BROKEN) avN[AV_BROKEN]++;
                         else if (kind == AVK_WATER) avN[AV_WATER]++;
@@ -2876,6 +2886,57 @@ public final class DistrictPlan {
             return p;
         }
 
+        /** The cell-street plots avFloor() took up last, and how many: what avOnGrown() gives back to the ground. */
+        int[] avTakenAt = new int[64];
+        int nAvTaken;
+
+        /**
+         * THE AVENUES ON GROUND BOUGHT (CL4 with FX6's THE GROUND BOUGHT): the open cells whose box the ground just grew into
+         * (growGround(), the `n` plots in grown[]) lay the staircase plots of it they could not lay when they opened - the city
+         * did not own them then - as at opening, then the + floor along them and the stray pieces taken up. A plot just bought
+         * holds no building, so nothing that stands moves; without this an avenue was missing wherever the city bought its
+         * ground after the cell opened (the Earth playtest's north-west arm: 31 of its district's 169 plots laid).
+         */
+        void avOnGrown(int n) {
+            boolean any = false;
+            boolean[] cells = null;
+            for (int k = 0; k < n; k++) {
+                int p = grown[k];
+                if (avMark[p] == 0 || avDone[p] != 0) continue;
+                int x = p % FRAME, y = p / FRAME;
+                // The open cells whose box (interior and ring lines) holds the plot: up to four, where ring lines meet.
+                for (int cj = Math.max(0, (y - 1) / CELL); cj <= Math.min(CELLS_A_SIDE - 1, y / CELL); cj++) {
+                    for (int ci = Math.max(0, (x - 1) / CELL); ci <= Math.min(CELLS_A_SIDE - 1, x / CELL); ci++) {
+                        int c = ci + cj * CELLS_A_SIDE;
+                        if (x < CELL * ci || x > CELL * ci + CELL || y < CELL * cj || y > CELL * cj + CELL || bOut.cellKind[c] == CLOSED) continue;
+                        if (cells == null) cells = new boolean[CELLS];
+                        cells[c] = true;
+                        any = true;
+                    }
+                }
+            }
+            if (!any) return;
+            for (int c = 0; c < CELLS; c++) {
+                if (!cells[c]) continue;
+                int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
+                nChanged = 0;
+                layAvenues(x0, y0, x0 + INTERIOR, y0 + INTERIOR, false);
+                avFloor(x0 - 1, y0 - 1, x0 + INTERIOR, y0 + INTERIOR);
+                int given = nAvTaken;
+                bOut.strays += prune();
+                // What holds a street now is no building's; what the floor or the pruning took up is ground again.
+                for (int k = 0; k < nChanged; k++) {
+                    int p = changed[k];
+                    occ[p] = str[p] || under[p] ? -1 : occStart[p];
+                }
+                for (int k = 0; k < given; k++) occ[avTakenAt[k]] = occStart[avTakenAt[k]];
+                nChanged = 0;
+                refreeCell(c);
+                forgetFails(c);
+                staleAround(c);
+            }
+        }
+
         /**
          * THE + FLOOR ALONG AN AVENUE, for the staircase plots just laid in the box: of each arm's junctions with a cell's street
          * (ROLE_STREET) there, in order outward from the origin, those that keep every other junction kept on the arm - the ring's
@@ -2884,6 +2945,7 @@ public final class DistrictPlan {
          */
         void avFloor(int bx0, int by0, int bx1, int by1) {
             boolean taken = false;
+            nAvTaken = 0;
             for (int a = 0; a < 4; a++) {
                 int n = avPlots(a, bx0, by0, bx1, by1);
                 if (n == 0) continue;
@@ -2927,6 +2989,8 @@ public final class DistrictPlan {
                         under[p] = false;
                         role[p] = 0;
                         taken = true;
+                        if (nAvTaken == avTakenAt.length) avTakenAt = Arrays.copyOf(avTakenAt, nAvTaken * 2);
+                        avTakenAt[nAvTaken++] = p;
                     }
                 }
             }
