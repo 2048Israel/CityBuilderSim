@@ -551,7 +551,6 @@ public class GatewayCheck {
         return new int[] { water, 0 };
     }
 
-    /** How many of a route's points, read every WORLD_STEP along each leg, lie on neither dry ground nor a plot the railway carries (track, track over a highway, a yard); the points read are in samples[0]. */
     /** The least distance in plots from (x, y) to the route's polyline (FX5: a rounded route passes by its turns' points). */
     static double nearestOnRoute(TrainSchedule.Route r, double x, double y) {
         double best = Double.MAX_VALUE;
@@ -564,6 +563,7 @@ public class GatewayCheck {
         return best;
     }
 
+    /** How many of a route's points, read every WORLD_STEP along each leg, lie on neither dry ground nor a plot the railway carries (track, track over a highway, a yard); the points read are in samples[0]. */
     static int offTrack(World w, CityRuns runs, TrainSchedule.Route r, int[] samples) {
         int bad = 0;
         for (int i = 1; i < r.xs().length; i++) {

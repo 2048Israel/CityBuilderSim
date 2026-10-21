@@ -61,10 +61,13 @@ import java.util.Arrays;
  * of a railway carrying goods rows of boxes and two gantries - and wagons
  * standing on as many sidings as the fleet's share of its wagon sets gives.
  * From JUNCTIONS_FROM the junctions are drawn by rule, none of them a
- * building: signals where arterials cross, roundabouts where boulevards
- * cross, diamonds where a street passes beneath a ramp, stacks where
- * highways cross; and from 4 px a highway's open end comes down to the
- * ground. (Batch FR7, slice 4) Where a crossing has kept its ground
+ * building: signals where arterials or boulevards cross - since FX5 (Jerus,
+ * 2026-10-20, "Mostly signals") one box over the whole crossing and zebras
+ * only outside it, and a roundabout only where five or more roads meet, one
+ * ring about the crossing's middle (Crossings; it was one at every crossing of
+ * boulevards, and a wide crossing drew nine) - diamonds where a street passes
+ * beneath a ramp, stacks where highways cross; and from 4 px a highway's open
+ * end comes down to the ground. (Batch FR7, slice 4) Where a crossing has kept its ground
  * (InterchangeGround: a 19-plot reserve for a cloverleaf, an 11-plot one for a
  * trumpet) the stack gives way to the loops drawn on it (loops()); and a +
  * of streets, a street's T on an arterial, are drawn with kerb corners, wide
@@ -156,16 +159,18 @@ public final class TileRaster {
     public static final int ZEBRA = 0xfff2f2f2;
     /** Plots: a zebra crossing's depth along its arm. */
     public static final double ZEBRA_DEPTH = 0.3;
-    /** Plots: a roundabout's outer radius, spec: "a circle of 1.5 plots". */
+    /** Plots: a roundabout's outer radius, spec: "a circle of 1.5 plots" - about a crossing one plot wide; since FX5 a wider crossing's ring is that and half of the rectangle's longer side less a plot more. */
     public static final double ROUNDABOUT_RADIUS = 0.75;
-    /** Plots: its planted middle's radius. */
+    /** Plots: its planted middle's radius, widened as the ring is. */
     public static final double ROUNDABOUT_ISLAND = 0.35;
     /** The planted middle. */
     public static final int ISLAND = 0xff6f9a4f;
     /** Plots: a diamond's slip road along the verge each side of its street. */
     public static final double SLIP_LENGTH = 2;
-    /** Plots: the least run of junction streets through a plot along an axis for a road to cross there (FX3): a road up to three plots wide - a cell's boulevard, two deep, beside the next cell's road, as a tile sees it one plot past its edge - is one road, not a junction on every plot. */
+    /** Plots: the least run of junction streets through a plot along an axis for a road to cross there (FX3): a road up to three plots wide - a cell's boulevard, two deep, beside the next cell's road, as a tile sees it past its edge - is one road, not a junction on every plot; the runs are read over the tile and its ring of REACH plots (Crossings). */
     static final int JUNCTION_RUN = 4;
+    /** Roads: the fewest that leave a crossing (counted by Crossings.roadsLeaving(): each run of streets along a side of its rectangle, each slanted street off a corner) for it to be a roundabout, not a signal (FX5; Jerus, 2026-10-20, "Mostly signals"). */
+    static final int ROUNDABOUT_ROADS = 5;
 
     /** Pixels a plot from which the blocks' view draws the track's cross-ticks (the L1 raster). */
     public static final int TICKS_FROM = 2;
@@ -1305,8 +1310,9 @@ public final class TileRaster {
         railCrossings(in, p, px, img);
         // Junctions on the streets, before the highways are drawn over them.
         if (px >= JUNCTIONS_FROM) {
-            signals(in, p, px, img);
-            roundabouts(in, p, px, img);
+            Crossings crossings = Crossings.of(in, p);
+            signals(in, p, px, img, crossings);
+            roundabouts(in, p, px, img, crossings);
             diamonds(in, p, px, img);
             kerbs(in, p, px, img);
         }
@@ -1465,17 +1471,30 @@ public final class TileRaster {
 
     /* ----- junctions' helpers ----- */
 
-    /** The role of the street at plot (x, y) - in the tile, or just across one of its edges - ARTERIAL or BOULEVARD; 0 for none, a track, a street beneath a highway, or a corner beyond the tile. */
+    /**
+     * The role of the street at plot (x, y) - ARTERIAL, BOULEVARD, ACCESS or
+     * STREET: in the tile, from its painted plots; the plot just across one of
+     * its edges, from Input.beyond; and (FX5) any other plot within
+     * TilePainter.REACH of the tile, corners too, from Input.ring, so a
+     * crossing on a tile's corner is read whole. 0 for none, a track, a street
+     * beneath a highway, or a plot farther out.
+     */
     private static byte streetRoleAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
-        int tile = TilePainter.TILE;
+        int tile = TilePainter.TILE, reach = TilePainter.REACH;
         if (x >= 0 && y >= 0 && x < tile && y < tile) {
             int i = y * tile + x;
             return isStreet(p, i) ? p.role[i] : 0;
         }
-        if ((x < 0 || x >= tile) && (y < 0 || y >= tile)) return 0;
-        int dir = y < 0 ? 0 : y >= tile ? 2 : x < 0 ? 3 : 1;
-        int along = dir == 0 || dir == 2 ? x : y;
-        int code = in.beyond[dir * tile + along] & 0xff;
+        int code;
+        if (x >= 0 && x < tile && (y == -1 || y == tile)) code = in.beyond[(y < 0 ? 0 : 2) * tile + x];
+        else if (y >= 0 && y < tile && (x == -1 || x == tile)) code = in.beyond[(x < 0 ? 3 : 1) * tile + y];
+        else if (x >= -reach && y >= -reach && x < tile + reach && y < tile + reach) code = in.ring[TilePainter.ringIndex(x, y)];
+        else return 0;
+        return roleOfCode(code & 0xff);
+    }
+
+    /** The role of a street code (the S_ codes) as streetRoleAt() answers it: 0 for none or a street beneath a highway. */
+    private static byte roleOfCode(int code) {
         int kind = code & TilePainter.S_KIND;
         if (kind == DistrictPlan.NONE || kind == DistrictPlan.UNDER) return 0;
         return TilePainter.roleOf(code);
@@ -1487,38 +1506,174 @@ public final class TileRaster {
     }
 
     /**
-     * The plots in a run of streets through plot (x, y) along (dx, dy), itself
-     * counted: its neighbours each way while their role is a junction's
-     * (boulevards alone with `boulevards`; FX3, Jerus's eye check of 0.8.3). It
-     * reads at most one plot past the tile's edge (streetRoleAt() answers any
-     * x or y beyond with that one plot), so it stops at -1 and at TILE.
+     * The crossings of a tile's streets (FX5; Jerus, 2026-10-20, "Mostly
+     * signals"), read once for the tile over the plots about it - the tile and
+     * TilePainter.REACH more on every side, which Input.ring gives - so a
+     * crossing on a tile's corner is read whole by each of the four. A junction
+     * plot is a plot of a junction role with a run of JUNCTION_RUN or more
+     * junction streets through it on each axis (a road two plots wide is one
+     * road, three too); a crossing is a 4-connected group of junction plots,
+     * and its rectangle their bounding one. A crossing is a signal - one box
+     * over the rectangle's streets, zebras and stop lines on the street plots
+     * just outside it - unless ROUNDABOUT_ROADS or more roads leave it, when it
+     * is a roundabout, one ring about the rectangle's middle.
+     *
+     * WHY. FX3 decided junctions plot by plot, so boulevards three plots wide
+     * crossing drew nine rings, each centred on its own plot, with zebras
+     * between them, and every boulevard crossing was a roundabout.
      */
-    private static int junctionRun(TilePainter.Input in, TilePainter.Painted p, int x, int y, int dx, int dy, boolean boulevards) {
-        int tile = TilePainter.TILE, n = 1;
-        for (int s = -1; s <= 1; s += 2) {
-            int cx = x + s * dx, cy = y + s * dy;
-            while (cx >= -1 && cy >= -1 && cx <= tile && cy <= tile) {
-                byte role = streetRoleAt(in, p, cx, cy);
-                if (boulevards ? role != TilePainter.BOULEVARD : !junctionRole(role)) break;
-                n++;
-                cx += s * dx;
-                cy += s * dy;
-            }
+    private static final class Crossings {
+        static final int N = TilePainter.RING, R = TilePainter.REACH;
+        static final Crossings NONE = new Crossings();
+
+        /** The role of the street on each plot of the ring, by TilePainter.ringIndex(); null with no junction street about the tile. */
+        final byte[] role;
+        /** The crossing each plot belongs to, or -1; null with none. */
+        final int[] group;
+        /** The crossings: each one's rectangle (first and last column and row, in the tile's plots, which may lie off the tile), the roads that leave it, and whether it is a roundabout. */
+        int groups;
+        int[] x0 = new int[8], y0 = new int[8], x1 = new int[8], y1 = new int[8], roads = new int[8];
+        boolean[] round = new boolean[8];
+
+        private Crossings() {
+            role = null;
+            group = null;
         }
-        return n;
-    }
 
-    /** Whether the street at plot (x, y) is a signalled junction: itself an arterial or boulevard, with a run of JUNCTION_RUN or more of them through it on each axis (a road two plots wide is one road), and not a roundabout. */
-    private static boolean signalAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
-        byte role = streetRoleAt(in, p, x, y);
-        if (!junctionRole(role) || roundaboutAt(in, p, x, y)) return false;
-        return junctionRun(in, p, x, y, 1, 0, false) >= JUNCTION_RUN && junctionRun(in, p, x, y, 0, 1, false) >= JUNCTION_RUN;
-    }
+        private Crossings(byte[] role) {
+            this.role = role;
+            group = new int[N * N];
+            Arrays.fill(group, -1);
+        }
 
-    /** Whether the street at plot (x, y) is a roundabout: itself a boulevard, with a run of JUNCTION_RUN or more boulevards through it on each axis. */
-    private static boolean roundaboutAt(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
-        if (streetRoleAt(in, p, x, y) != TilePainter.BOULEVARD) return false;
-        return junctionRun(in, p, x, y, 1, 0, true) >= JUNCTION_RUN && junctionRun(in, p, x, y, 0, 1, true) >= JUNCTION_RUN;
+        /** The crossings of the tile in/p draw. */
+        static Crossings of(TilePainter.Input in, TilePainter.Painted p) {
+            byte[] role = new byte[N * N];
+            boolean any = false;
+            for (int y = -R; y < TilePainter.TILE + R; y++) {
+                for (int x = -R; x < TilePainter.TILE + R; x++) {
+                    byte r = streetRoleAt(in, p, x, y);
+                    role[(y + R) * N + x + R] = r;
+                    any |= junctionRole(r);
+                }
+            }
+            if (!any) return NONE;
+            // The runs of junction streets along each row and column, each plot with its run's length.
+            int[] hrun = new int[N * N], vrun = new int[N * N];
+            for (int y = 0; y < N; y++) {
+                for (int x = 0; x < N; ) {
+                    if (!junctionRole(role[y * N + x])) { x++; continue; }
+                    int s = x;
+                    while (x < N && junctionRole(role[y * N + x])) x++;
+                    for (int k = s; k < x; k++) hrun[y * N + k] = x - s;
+                }
+            }
+            for (int x = 0; x < N; x++) {
+                for (int y = 0; y < N; ) {
+                    if (!junctionRole(role[y * N + x])) { y++; continue; }
+                    int s = y;
+                    while (y < N && junctionRole(role[y * N + x])) y++;
+                    for (int k = s; k < y; k++) vrun[k * N + x] = y - s;
+                }
+            }
+            Crossings c = new Crossings(role);
+            int[] stack = new int[N * N];
+            for (int i = 0; i < N * N; i++) {
+                if (c.group[i] >= 0 || hrun[i] < JUNCTION_RUN || vrun[i] < JUNCTION_RUN) continue;
+                int g = c.open(i % N - R, i / N - R);
+                int top = 0;
+                stack[top++] = i;
+                c.group[i] = g;
+                while (top > 0) {
+                    int j = stack[--top], jx = j % N, jy = j / N;
+                    c.grow(g, jx - R, jy - R);
+                    for (int d = 0; d < 4; d++) {
+                        int nx = jx + TilePainter.DX[d], ny = jy + TilePainter.DY[d];
+                        if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue;
+                        int k = ny * N + nx;
+                        if (c.group[k] >= 0 || hrun[k] < JUNCTION_RUN || vrun[k] < JUNCTION_RUN) continue;
+                        c.group[k] = g;
+                        stack[top++] = k;
+                    }
+                }
+            }
+            for (int g = 0; g < c.groups; g++) {
+                c.roads[g] = c.roadsLeaving(g);
+                c.round[g] = c.roads[g] >= ROUNDABOUT_ROADS;
+            }
+            return c;
+        }
+
+        /** Starts a crossing at plot (x, y); its number. */
+        private int open(int x, int y) {
+            if (groups == x0.length) {
+                int n = groups * 2;
+                x0 = Arrays.copyOf(x0, n); y0 = Arrays.copyOf(y0, n); x1 = Arrays.copyOf(x1, n); y1 = Arrays.copyOf(y1, n);
+                roads = Arrays.copyOf(roads, n); round = Arrays.copyOf(round, n);
+            }
+            x0[groups] = x1[groups] = x;
+            y0[groups] = y1[groups] = y;
+            return groups++;
+        }
+
+        /** Adds plot (x, y) to crossing g's rectangle. */
+        private void grow(int g, int x, int y) {
+            x0[g] = Math.min(x0[g], x); x1[g] = Math.max(x1[g], x);
+            y0[g] = Math.min(y0[g], y); y1[g] = Math.max(y1[g], y);
+        }
+
+        /** The role of the street at plot (x, y) of the ring; 0 for none or for a plot off it. */
+        byte roleAt(int x, int y) {
+            if (x < -R || y < -R || x >= TilePainter.TILE + R || y >= TilePainter.TILE + R) return 0;
+            return role[(y + R) * N + x + R];
+        }
+
+        /** The crossing plot (x, y) is a junction plot of, or -1. */
+        int at(int x, int y) {
+            if (group == null || x < -R || y < -R || x >= TilePainter.TILE + R || y >= TilePainter.TILE + R) return -1;
+            return group[(y + R) * N + x + R];
+        }
+
+        /** Whether plot (x, y) is a junction plot of a signal. */
+        boolean signalAt(int x, int y) {
+            int g = at(x, y);
+            return g >= 0 && !round[g];
+        }
+
+        /** Whether plot (x, y) lies in crossing g's rectangle. */
+        boolean inRect(int g, int x, int y) {
+            return x >= x0[g] && x <= x1[g] && y >= y0[g] && y <= y1[g];
+        }
+
+        /**
+         * The roads that leave crossing g: on each of the rectangle's four sides
+         * each maximal run of street plots just outside it is one road, and a
+         * street plot diagonally off a corner is one more where the street goes
+         * on out along the diagonal (the plot two off the corner a street too) -
+         * a slanted avenue; a street that only touches a side road, running on
+         * beside it, is part of it.
+         */
+        private int roadsLeaving(int g) {
+            int n = 0;
+            for (int side = 0; side < 4; side++) {
+                boolean row = side < 2; // North and south are rows of plots along x, west and east columns along y.
+                int from = row ? x0[g] : y0[g], to = row ? x1[g] : y1[g];
+                int fixed = side == 0 ? y0[g] - 1 : side == 1 ? y1[g] + 1 : side == 2 ? x0[g] - 1 : x1[g] + 1;
+                boolean inRun = false;
+                for (int k = from; k <= to; k++) {
+                    boolean street = (row ? roleAt(k, fixed) : roleAt(fixed, k)) != 0;
+                    if (street && !inRun) n++;
+                    inRun = street;
+                }
+            }
+            for (int sy = -1; sy <= 1; sy += 2) {
+                for (int sx = -1; sx <= 1; sx += 2) {
+                    int cx = sx < 0 ? x0[g] - 1 : x1[g] + 1, cy = sy < 0 ? y0[g] - 1 : y1[g] + 1;
+                    if (roleAt(cx, cy) != 0 && roleAt(cx + sx, cy + sy) != 0) n++;
+                }
+            }
+            return n;
+        }
     }
 
     /** A street's surface across its plot at px pixels a plot: {its width, its offset from the plot's edge}. */
@@ -1527,13 +1682,13 @@ public final class TileRaster {
         return new int[] { t, (px - t) / 2 };
     }
 
-    /* ----- 1. signals: arterial x arterial ----- */
+    /* ----- 1. signals: where arterials, boulevards and access roads cross (FX5: one box a crossing) ----- */
 
-    private static void signals(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+    private static void signals(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr) {
         int tile = TilePainter.TILE;
-        // Each junction's surface is the dark box.
+        // Each junction plot's surface is the dark box; a wide crossing's are one box.
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!signalAt(in, p, i % tile, i / tile)) continue;
+            if (!cr.signalAt(i % tile, i / tile)) continue;
             int[] s = surfaceAt(p, i, px);
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             int c = in.owned[i] ? JUNCTION_BOX : blend(JUNCTION_BOX, VOID, UNOWNED_DIM);
@@ -1542,12 +1697,15 @@ public final class TileRaster {
             if (h) fillRect(img, tile * px, x0, y0 + s[1], x0 + px, y0 + s[1] + s[0], c);
             if (v) fillRect(img, tile * px, x0 + s[1], y0, x0 + s[1] + s[0], y0 + px, c);
         }
-        // Each arm, drawn by the plot it is on (so the two tiles draw their halves of a junction across an edge).
+        // Each arm, drawn by the plot it is on (so the tiles draw their parts of a junction across an edge): only the street plots just outside
+        // a crossing's rectangle, facing it - none inside the crossing.
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (!isStreet(p, i) || p.beneath[i] || p.road[i] == TilePainter.TRACK) continue;
             int x = i % tile, y = i / tile;
+            if (cr.at(x, y) >= 0) continue;
             for (int dir = 0; dir < 4; dir++) {
-                if (!signalAt(in, p, x + TilePainter.DX[dir], y + TilePainter.DY[dir])) continue;
+                int g = cr.at(x + TilePainter.DX[dir], y + TilePainter.DY[dir]);
+                if (g < 0 || cr.round[g] || cr.inRect(g, x, y)) continue;
                 drawSignalArm(in, p, i, px, img, dir);
             }
         }
@@ -1580,16 +1738,22 @@ public final class TileRaster {
         }
     }
 
-    /* ----- 2. roundabouts: boulevard x boulevard ----- */
+    /* ----- 2. roundabouts: where ROUNDABOUT_ROADS or more roads meet (FX5; before, wherever boulevards crossed) ----- */
 
-    private static void roundabouts(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+    private static void roundabouts(TilePainter.Input in, TilePainter.Painted p, int px, int[] img, Crossings cr) {
         int tile = TilePainter.TILE;
-        for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!roundaboutTarget(in, p, i)) continue;
-            int x = i % tile, y = i / tile;
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dx = -1; dx <= 1; dx++) {
-                    if (roundaboutAt(in, p, x + dx, y + dy)) drawRoundaboutOn(in, p, i, px, img, x + dx, y + dy);
+        for (int g = 0; g < cr.groups; g++) {
+            if (!cr.round[g]) continue;
+            // One ring about the rectangle's middle, a lane wider than the crossing's half: drawn on the plots it covers, from each tile they lie in.
+            double span = Math.max(cr.x1[g] - cr.x0[g], cr.y1[g] - cr.y0[g]) / 2.0; // (max(w, h) - 1) / 2
+            double outer = ROUNDABOUT_RADIUS + span, inner = ROUNDABOUT_ISLAND + span;
+            double mx = (cr.x0[g] + cr.x1[g] + 1) / 2.0, my = (cr.y0[g] + cr.y1[g] + 1) / 2.0;
+            int xa = Math.max(0, (int) Math.floor(mx - outer)), xb = Math.min(tile - 1, (int) Math.floor(mx + outer));
+            int ya = Math.max(0, (int) Math.floor(my - outer)), yb = Math.min(tile - 1, (int) Math.floor(my + outer));
+            for (int y = ya; y <= yb; y++) {
+                for (int x = xa; x <= xb; x++) {
+                    int i = y * tile + x;
+                    if (roundaboutTarget(in, p, i)) drawRoundaboutOn(in, i, px, img, mx * px, my * px, outer * px, inner * px);
                 }
             }
         }
@@ -1602,12 +1766,10 @@ public final class TileRaster {
         return p.use[i] == TilePainter.EMPTY || p.use[i] == TilePainter.FIELD || isStreet(p, i);
     }
 
-    /** The ring's and island's pixels of a roundabout centred on plot (cx, cy) that fall on plot i. */
-    private static void drawRoundaboutOn(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int cx, int cy) {
+    /** The ring's and island's pixels of a roundabout centred on (centreX, centreY), in the tile's pixels, with an outer and an island radius in pixels, that fall on plot i. */
+    private static void drawRoundaboutOn(TilePainter.Input in, int i, int px, int[] img, double centreX, double centreY, double outer, double inner) {
         int tile = TilePainter.TILE, w = tile * px;
         int x0 = (i % tile) * px, y0 = (i / tile) * px;
-        double centreX = (cx + 0.5) * px, centreY = (cy + 0.5) * px;
-        double outer = ROUNDABOUT_RADIUS * px, inner = ROUNDABOUT_ISLAND * px;
         int paved = in.owned[i] ? ROAD[BuildingVisual.PAVED] : blend(ROAD[BuildingVisual.PAVED], VOID, UNOWNED_DIM);
         int island = in.owned[i] ? ISLAND : blend(ISLAND, VOID, UNOWNED_DIM);
         for (int v = 0; v < px; v++) {

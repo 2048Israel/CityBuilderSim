@@ -113,7 +113,8 @@ public final class MapTiles {
     /**
      * A stamp of everything a tile is painted from but its ground, which is
      * the world's and never changes: what is owned, its plan's streets and
-     * those just beyond its edges, the city's highways and track through it,
+     * those just beyond its edges (and, since FX5, on the ring of REACH plots
+     * about it), the city's highways and track through it,
      * its buildings' boxes (0.7.88; the counts and road plots dealt to it, its
      * neighbours' roads and the deal's plan before), its sites with their
      * states and mines, and (0.8.1) the freight station's place, whether the
@@ -126,6 +127,9 @@ public final class MapTiles {
         h = World.mix(h ^ packed(in.owned));
         h = World.mix(h ^ packed(in.street));
         h = World.mix(h ^ packed(in.beyond));
+        // The ring of streets about it (FX5): a crossing on its corner is read whole - nothing with none.
+        long ring = packed(in.ring);
+        if (ring != 0) h = World.mix(h ^ ring);
         h = World.mix(h ^ packed(in.fixed));
         h = World.mix(h ^ packed(in.fixedBeyond));
         h = World.mix(h ^ in.stationX);
@@ -213,6 +217,7 @@ public final class MapTiles {
         System.arraycopy(a.owned, 0, b.owned, 0, TilePainter.PLOTS);
         System.arraycopy(a.street, 0, b.street, 0, TilePainter.PLOTS);
         System.arraycopy(a.beyond, 0, b.beyond, 0, a.beyond.length);
+        System.arraycopy(a.ring, 0, b.ring, 0, a.ring.length);
         System.arraycopy(a.fixed, 0, b.fixed, 0, TilePainter.PLOTS);
         System.arraycopy(a.fixedBeyond, 0, b.fixedBeyond, 0, a.fixedBeyond.length);
         // ...and the runs' marks, the ramps and 45-degree stretches (0.7.98, batch O14: until then the kept copy the raster
@@ -287,7 +292,7 @@ public final class MapTiles {
 
     /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and site out; since 0.7.97 each plot's work at sea both ways, and the rings' and pipes' ends in. */
     public static long paintedBytes(TilePainter.Input in, TilePainter.Painted p) {
-        long input = 4L * TilePainter.PLOTS + 2L * in.beyond.length + 4L * (in.counts.length + in.boxes.length) + 16 + 4
+        long input = 4L * TilePainter.PLOTS + 2L * in.beyond.length + in.ring.length + 4L * (in.counts.length + in.boxes.length) + 16 + 4
                 + 36L * in.siteX0.length + in.sea.length + 8L * (in.ringX.length + in.ringY.length) + 32L * in.pipeAX.length;
         long picture = 6L * TilePainter.PLOTS + 2L * 2 * TilePainter.PLOTS + 29L * p.bx.length + p.sea.length;
         return input + picture;

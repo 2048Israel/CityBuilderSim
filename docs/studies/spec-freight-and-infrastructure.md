@@ -40,7 +40,7 @@
 - **Rail drawn as rail:** sleepers and two rails close in, double track on the main line.
 - **Trains arriving as the ships do:** calls from the railway's tonnes, a pure function of time, in the boats' colours.
 - **Access roads** from every port, yard and depot to the nearest highway ramp.
-- **Junctions drawn by rule:** signals, roundabouts, diamonds, a trumpet, a cloverleaf where highways cross. **Drawn, not built:** the player never chooses where one goes, so a building would be a cost with no decision (★ D19).
+- **Junctions drawn by rule:** signals wherever arterials or boulevards cross, one junction over the whole crossing, and a roundabout only where five or more roads meet (Jerus, 2026-10-20, FX5: "Mostly signals"); diamonds, a trumpet, a cloverleaf where highways cross. **Drawn, not built:** the player never chooses where one goes, so a building would be a cost with no decision (★ D19).
 - Optional: **trucks on the highways**, and the network's skeleton at the far view.
 
 **The build menu (§5):**
@@ -403,8 +403,8 @@ Double track is a picture of scale, not of capacity: single track with central t
 |---|---|---|
 | Street × street (homes cells) | a plain + with kerb corners | the streets' |
 | Street × arterial, estate T | a T with wide radius corners (trucks turn here) | the streets' |
-| Arterial × arterial | **signals**: zebra crossings on each arm, stop lines, a dark box | the streets' |
-| Boulevard × boulevard, or arterial where five or more cells meet | a **roundabout**: a circle of 1.5 plots with a planted middle | one plot of each corner cell |
+| Arterial × arterial, or boulevard × boulevard, or one of them across the other (FX5: a crossing three plots wide is one junction, not one a plot) | **signals**: zebra crossings on each arm just outside the crossing, stop lines, one dark box over it | the streets' |
+| Five or more roads meeting at a crossing (FX5; until then boulevard × boulevard, always, by FR0's rule: Jerus's "some intersections have 9 roundabouts" made it "Mostly signals", 2026-10-20) | a **roundabout**: one circle of 1.5 plots, wider by the crossing's size, with a planted middle, about the crossing's middle | one plot of each corner cell |
 | Arterial under a highway (every other one, and every access road) | a **diamond**: four slip roads parallel to the highway in the verge, joining the arterial either side | the verge (H5's plot each side), as now |
 | Highway arm ending at another highway | a **trumpet**: one loop | an 11 × 11 plot reserve in the cell beside the junction (about 11 ha, est.) |
 | Highway × highway (`CityRuns.Interchange`) | a **cloverleaf**: four loops, four slips | a 19 × 19 plot reserve centred on the crossing (570 m square, about 32 ha: about 20 acres a quadrant [R82]) |
@@ -546,7 +546,7 @@ FR0, FR1 and FR5 are the map's alone and can go now, in any order after FR0. FR2
 18. **D18. No level crossings on arterials:** an arterial or boulevard crosses the main line on a bridge; streets cross at level. **Recommend yes.**
 
 **Junctions**
-19. **D19. Junctions and interchanges drawn by rule, not built:** signals at arterials, roundabouts at boulevards, diamonds at ramps, a trumpet at a T, a cloverleaf where corridors cross (a stack where there is no room). **Recommend yes.** **The alternative**, an Interchange building on Build › Infrastructure, would cost money and ground but give the player no decision, because the map, not the player, places it (§4.6).
+19. **D19. Junctions and interchanges drawn by rule, not built:** signals wherever arterials or boulevards cross, one junction over the whole crossing, a roundabout only where five or more roads meet (Jerus, 2026-10-20, FX5: "Mostly signals"), diamonds at ramps, a trumpet at a T, a cloverleaf where corridors cross (a stack where there is no room). **Recommend yes.** **The alternative**, an Interchange building on Build › Infrastructure, would cost money and ground but give the player no decision, because the map, not the player, places it (§4.6).
 20. **D20. If the Elevated Highway's price leaves out its ramps, raise it about 30%** (a diamond every 1.92 km at about US$25.6M, against D$45.7M a km of highway, §4.6). **Recommend: check the price's source in FR2's brief first**, then raise it if needed. It moves traces.
 
 **Optional**

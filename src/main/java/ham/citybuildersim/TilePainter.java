@@ -181,6 +181,14 @@ public final class TilePainter {
     /** The longest crossing of fresh water a railway's track makes: 14, as a highway's (star N3-6). */
     public static final int RAIL_BRIDGE = 14;
 
+    /** Plots: the side of Input.ring, the tile and REACH plots about it on every side (FX5). */
+    public static final int RING = TILE + 2 * REACH;
+
+    /** Where plot (x, y) is in Input.ring, for x and y from -REACH to TILE + REACH - 1. */
+    public static int ringIndex(int x, int y) {
+        return (y + REACH) * RING + x + REACH;
+    }
+
     /** North, east, south, west. */
     static final int[] DX = { 0, 1, 0, -1 }, DY = { -1, 0, 1, 0 };
 
@@ -205,6 +213,8 @@ public final class TilePainter {
         public final byte[] street = new byte[PLOTS];
         /** ...and the street on each plot just outside the tile, north, east, south and west (TILE each, along the edge): what a street at the edge joins to, as the plans have it. */
         public final byte[] beyond = new byte[4 * TILE];
+        /** ...and the street on every plot within REACH of the tile, corners too (FX5): RING * RING S_ codes row by row from plot (-REACH, -REACH), the tile's own plots among them; what a crossing on a tile's corner is read whole from (ringIndex()). */
+        public final byte[] ring = new byte[RING * RING];
         /** Each plot of the city's runs (CityRuns.fill(); CityMap's network's until 0.7.88): a highway's (BuildingVisual.HIGHWAY), the railway's track (RAIL) or the track bridging a highway (RAIL_OVER), 0 for none... */
         public final byte[] fixed = new byte[PLOTS];
         /** ...and those just outside the tile, as beyond. */

@@ -5064,6 +5064,22 @@ public final class CityMap {
             in.beyond[2 * World.TILE + m] = streetAt(px0 + m, py0 + World.TILE, seen);
             in.beyond[3 * World.TILE + m] = streetAt(px0 - 1, py0 + m, seen);
         }
+        // ...and the ring about it (FX5): the street on every plot within REACH of the tile, corners too, so a crossing on the tile's corner
+        // is read whole. The tile's own plots are `street` and the plots just across its edges `beyond`; streetAt() gives the rest.
+        int reach = TilePainter.REACH, tile = World.TILE;
+        for (int y = -reach; y < tile + reach; y++) {
+            boolean rowIn = y >= 0 && y < tile;
+            for (int x = -reach; x < tile + reach; x++) {
+                byte code;
+                if (rowIn && x >= 0 && x < tile) code = in.street[y * tile + x];
+                else if (y == -1 && x >= 0 && x < tile) code = in.beyond[x];
+                else if (y == tile && x >= 0 && x < tile) code = in.beyond[2 * tile + x];
+                else if (x == -1 && rowIn) code = in.beyond[3 * tile + y];
+                else if (x == tile && rowIn) code = in.beyond[tile + y];
+                else code = streetAt(px0 + x, py0 + y, seen);
+                in.ring[TilePainter.ringIndex(x, y)] = code;
+            }
+        }
         // The city's highways and track through it and the ring about it (0.7.89: the city's runs; THE NETWORK's plan's until
         // 0.7.88), their ramps and 45-degree stretches; its yards drawn over their track.
         int rw = World.TILE + 2;
