@@ -1,0 +1,40 @@
+package ham.citybuildersim;
+
+import java.io.*;
+import java.nio.file.*;
+
+/** Study probe, not part of the game: loads a COPY of a save into a scratch folder and splits each month's central-bank profit into its parts. */
+public final class CbProbe {
+    public static void main(String[] a) throws Exception {
+        String src = a[0];          // e.g. C:\...\saves\slot-03 (stem, no extension)
+        int months = Integer.parseInt(a[1]);
+        GameFiles files = GameFiles.scratch("cbprobe");
+        Path saves = files.savesDirectory();
+        Files.createDirectories(saves);
+        for (String ext : new String[] {".json", "-history.json", "-map.bin"}) {
+            Path from = Paths.get(src + ext);
+            if (Files.exists(from)) Files.copy(from, saves.resolve("slot-01" + ext));
+        }
+        PrintStream real = System.out;
+        PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
+        Game g = new Game(files);
+        System.setOut(quiet);
+        try { g.loadGameSave(1); } finally { System.setOut(real); }
+        CentralBank cb = g.getCentralBank();
+        Bank bank = g.getBank();
+        DebtManager dm = g.getDebtManager();
+        real.printf("loaded month %d, autopilot %s, dial %.4f, paper %.0f, lossCarried %.0f, reserves %.0f, bank cash %.0f%n",
+                g.getMonth(), dm.isAutopilot(), dm.getPolicyRate(), cb.getPaperHeld(), cb.getLossCarried(), cb.getReserves(), bank.cashReserves() - bank.borrowings());
+        real.println("month,dial,revenue,remitted,window,advances,coupons,gains,ior,profit,lossCarried,windowLoans,advToTreasury,paperHeld,reserves,bankCash,bankWholesale,treasuryCash");
+        for (int m = 0; m < months; m++) {
+            System.setOut(quiet);
+            try { g.simulateMonths(1); } finally { System.setOut(real); }
+            double rev = g.getEconomyManager().getNationalAccounts().getTotalRevenue();
+            real.printf(java.util.Locale.ROOT, "%d,%.4f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f%n",
+                    g.getMonth(), dm.getPolicyRate(), rev, cb.getRemitted(), cb.getWindowInterest(), cb.getAdvancesInterest(),
+                    cb.getPaperCoupons(), cb.getPaperGains(), cb.getInterestOnReserves(), cb.monthProfit(), cb.getLossCarried(),
+                    cb.getAdvancesToBank(), cb.getAdvancesToTreasury(), cb.getPaperHeld(), cb.getReserves(),
+                    bank.cashReserves() - bank.borrowings(), bank.wholesaleFunding(), g.getCash());
+        }
+    }
+}
