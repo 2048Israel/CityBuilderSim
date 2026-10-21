@@ -607,14 +607,17 @@ public class CurrencyCheck {
         double capacity = ForeignAccounts.MAX_ABSORPTION * Math.max(0, Math.min(1,
                 vaultBefore * rateBefore / fx.monthlyImports() / ForeignAccounts.COMFORTABLE_COVER));
         close("fixture: the treasury neither bought nor sold", fx.getBoughtThisMonth() + fx.getSoldThisMonth(), 0, 0);
-        // Main's label was "the sale is the vault's capacity times the month's own deficit, at most the
-        // vault". In this real city's first defended month the lean's need (XR1: what takes back the
-        // vault's capacity of the month's fall) is under that cap, so the old amount cannot hold here: the
-        // sizing is XR1's, a call for Jerus in XR1-C (docs/queue/XR1-notes.md), and the label says what is
-        // measured. The cap's premise, word for word, is asserted on CurrencyCheck 3's fixture, which binds it.
-        close("the sale is the least of the lean's need, the vault's capacity times the month's own deficit, and the vault",
-                sold, expectedSale(capacity, fx.getLastWouldBeMove(), fx.getGdpTrailing(), rateBefore, deficitUsd, vaultBefore),
-                1e-9 * Math.max(1, sold));
+        // RED BY XR1'S LEAN, A CALL FOR JERUS (XR1-C ★1, docs/queue/XR1-notes.md). Main's premise, word
+        // for word: the sale is the vault's capacity times the month's own deficit. XR1's lean sells only
+        // what takes back that capacity of the month's fall - in this real city's first defended month
+        // US$921k of a cap of US$2,353k - because sized to the whole deficit its sales held a young town's
+        // D$ 26% over its fair level and fed a held 3% dial 45% a year (MonetaryCheck's town, measured).
+        // Neither kind the gate allows (the same premise measured anew, or one a decided call replaces),
+        // so it stays as it was and red until he answers. What the lean does sell, to the cent:
+        out.printf("   the lean sold US$%,.2fk; its own arithmetic (the least of the need, the cap and the vault) gives US$%,.2fk%n",
+                sold, expectedSale(capacity, fx.getLastWouldBeMove(), fx.getGdpTrailing(), rateBefore, deficitUsd, vaultBefore));
+        close("the sale is the vault's capacity times the month's own deficit, at most the vault",
+                sold, Math.min(capacity * deficitUsd, vaultBefore), 1e-9 * Math.max(1, sold));
         close("...the vault fell by exactly it", vaultBefore - fx.getReservesUsd(), sold, 1e-9 * Math.max(1, sold));
         close("...and it fetched the dollars at the month's rate", fetched, sold * rateBefore, 1e-9 * Math.max(1, fetched));
         close("the central bank booked it the month it was sold", cb.getDefendedThisMonth(), fetched, 1e-9);

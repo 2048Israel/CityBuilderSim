@@ -7038,8 +7038,24 @@ public final class GameVersion {
      *   - The diagonal highway's joints as arcs, its end squared.
      *   - The world lines' labels apart; "Track" is "Unmade street".
      *   - No save change (the map's sidecar only).
+     *
+     * 0.8.19 (2026-10-21) - XR1, THE D$ AS A FLOAT THAT FOLLOWS ITS PARITY
+     *   (docs/queue/XR1-notes.md; docs/studies/spec-exchange-rates.md 3.1-3.4).
+     *   Every trace moves: the default city now hyperinflates unless the
+     *   player stops it (Jerus: "ship it as is").
+     *   - Parity on the basket with rent held to a third (PriceIndex.RENT_CAP).
+     *   - The rate a level: parity's trend (Holt) times the real gap's level,
+     *     the balance's and the cover's, times a seeded market (ForeignAccounts,
+     *     THE FLOAT); the pull, the anchored drift and the push retired.
+     *   - Interventions move the rate at 2% per 1% of a year's GDP; the
+     *     defence leans against a month's new fall through the same channel.
+     *   - Screen: Trade › The currency as the study's board 1.
+     *   - Save: SAVE_FORMAT 43, OLDEST_LOADABLE_FORMAT 43; HistorySave fxFair,
+     *     fxMarket.
+     *   - Harness: ExchangeRateCheck (new); CurrencyCheck, ForeignCheck,
+     *     ExpectationsCheck, MonetaryCheck restated (XR1-notes §6).
      */
-    public static final String VERSION = "0.8.18";
+    public static final String VERSION = "0.8.19";
 
     /**
      * The save shape.
