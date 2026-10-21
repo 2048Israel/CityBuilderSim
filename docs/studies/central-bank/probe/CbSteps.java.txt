@@ -1,0 +1,55 @@
+package ham.citybuildersim;
+
+import java.io.*;
+import java.nio.file.*;
+
+/** Study probe, not part of the game: plays a COPY of a save with the dial set in quarter-point steps at decisions, or on the autopilot as saved. */
+public final class CbSteps {
+    public static void main(String[] a) throws Exception {
+        String src = a[0];
+        int months = Integer.parseInt(a[1]);
+        String mode = a[2];                       // "auto" or "steps"
+        int every = a.length > 3 ? Integer.parseInt(a[3]) : 3;
+        double cap = a.length > 4 ? Double.parseDouble(a[4]) : .0075;
+        double gapUrgent = a.length > 5 ? Double.parseDouble(a[5]) : 9;
+        double capUrgent = a.length > 6 ? Double.parseDouble(a[6]) : .01;
+        GameFiles files = GameFiles.scratch("cbsteps");
+        Path saves = files.savesDirectory();
+        Files.createDirectories(saves);
+        for (String ext : new String[] {".json", "-history.json", "-map.bin"}) {
+            Path from = Paths.get(src + ext);
+            if (Files.exists(from)) Files.copy(from, saves.resolve("slot-01" + ext));
+        }
+        PrintStream real = System.out, quiet = new PrintStream(OutputStream.nullOutputStream());
+        Game g = new Game(files);
+        System.setOut(quiet);
+        try { g.loadGameSave(1); } finally { System.setOut(real); }
+        DebtManager dm = g.getDebtManager();
+        PriceIndex pi = g.getPriceIndex();
+        boolean steps = mode.equals("steps");
+        double bottom = Math.max(0, Math.floor(dm.getPolicyRate() / .0025 + 1e-9) * .0025);
+        if (steps) { dm.setAutopilot(false); dm.setPolicyRate(bottom + .0015); }
+        real.println("month,dial,inflation,unemployment,gdp,population,decision");
+        for (int m = 0; m < months; m++) {
+            String decision = "";
+            if (steps && pi.hasRate()) {
+                double target = dm.advisedPolicyRate(pi.inflation());
+                double mid = bottom + .00125, gap = target - mid;
+                boolean scheduled = m % every == 0, urgent = Math.abs(gap) >= gapUrgent;
+                if ((scheduled || urgent) && Math.abs(gap) > .00125) {
+                    double limit = scheduled ? (urgent ? Math.max(cap, capUrgent) : cap) : capUrgent;
+                    double move = Math.min(Math.round(Math.abs(gap) / .0025) * .0025, limit);
+                    bottom = Math.max(0, bottom + Math.copySign(move, gap));
+                    decision = scheduled ? "scheduled" : "unscheduled";
+                }
+                dm.setPolicyRate(bottom + .0015);   // the overnight, flush: IORB, ten points under the top
+            }
+            System.setOut(quiet);
+            try { g.simulateMonths(1); } finally { System.setOut(real); }
+            var pm = g.getPopulationManager(); double out = pm.getWorkforce() > 0 ? (double) pm.getUnemployed() / pm.getWorkforce() : 0;
+            real.printf(java.util.Locale.ROOT, "%d,%.5f,%.5f,%.4f,%.0f,%d,%s%n", g.getMonth(), dm.getPolicyRate(),
+                    pi.hasRate() ? pi.inflation() : Double.NaN, out, g.getEconomyManager().getMonthGdp(),
+                    g.getPopulationManager().getPopulation(), decision);
+        }
+    }
+}
