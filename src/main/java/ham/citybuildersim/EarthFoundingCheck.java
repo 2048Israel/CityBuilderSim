@@ -211,7 +211,7 @@ public class EarthFoundingCheck {
             int row = w.provinceAt(c.siteX(), c.siteY());
             boolean mult = row == c.provinceRow() && w.geology().kindOf(row) == c.kind();
             for (Resource res : Resource.values()) {
-                mult &= res.inFields() ? c.multiplier(res) == w.geology().multiplier(res, row) : Double.isNaN(c.multiplier(res));
+                mult &= res.inFields() ? c.multiplier(res) == w.geology().multiplierAt(res, row, c.siteLat(), c.siteLon()) : Double.isNaN(c.multiplier(res));
             }
             check(name + ": its province and every multiplier are World's and Geology's, forest none", mult);
             double[] iron = bruteIron(w, c.siteX(), c.siteY(), c.ironKm());
