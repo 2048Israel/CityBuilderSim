@@ -606,17 +606,20 @@ public class CurrencyCheck {
         double capacity = ForeignAccounts.MAX_ABSORPTION * Math.max(0, Math.min(1,
                 vaultBefore * rateBefore / fx.monthlyImports() / ForeignAccounts.COMFORTABLE_COVER));
         close("fixture: the treasury neither bought nor sold", fx.getBoughtThisMonth() + fx.getSoldThisMonth(), 0, 0);
-        // RED BY XR1'S LEAN, A CALL FOR JERUS (XR1-C ★1, docs/queue/XR1-notes.md). Main's premise, word
-        // for word: the sale is the vault's capacity times the month's own deficit. XR1's lean sells only
-        // what takes back that capacity of the month's fall - in this real city's first defended month
-        // US$921k of a cap of US$2,353k - because sized to the whole deficit its sales held a young town's
-        // D$ 26% over its fair level and fed a held 3% dial 45% a year (MonetaryCheck's town, measured).
-        // Neither kind the gate allows (the same premise measured anew, or one a decided call replaces),
-        // so it stays as it was and red until he answers. What the lean does sell, to the cent:
-        out.printf("   the lean sold US$%,.2fk; its own arithmetic (the least of the need, the cap and the vault) gives US$%,.2fk%n",
-                sold, expectedSale(capacity, fx.getLastWouldBeMove(), fx.getGdpTrailing(), rateBefore, deficitUsd, vaultBefore));
-        close("the sale is the vault's capacity times the month's own deficit, at most the vault",
-                sold, Math.min(capacity * deficitUsd, vaultBefore), 1e-9 * Math.max(1, sold));
+        // (b) RESTATED FOR XR1'S LEAN, A CALL JERUS SETTLED (XR1-C ★1, 2026-10-22: "Keep as built"). Main's
+        // premise, word for word, was that the sale is the vault's capacity times the month's own deficit.
+        // The lean sells what takes back that capacity of the month's NEW fall, at most that capacity times
+        // the month's own deficit and at most the vault - in this real city's first defended month US$923k
+        // of a cap of US$2,698k (AN1's build; XR1's read US$921k of US$2,353k) - because sized to the
+        // whole deficit the sales held a young town's D$ 26%
+        // over its fair level and fed a held 3% dial 45% a year (MonetaryCheck's town, measured;
+        // docs/queue/XR1-notes.md, section 4). The cap's own premise still holds word for word in section 3,
+        // whose fixture binds it. So the label says what the lean does, asserted against its own arithmetic
+        // (expectedSale(): the least of the need, the cap and the vault), to the cent:
+        double lean = expectedSale(capacity, fx.getLastWouldBeMove(), fx.getGdpTrailing(), rateBefore, deficitUsd, vaultBefore);
+        out.printf("   the lean sold US$%,.2fk; its own arithmetic (the least of the need, the cap and the vault) gives US$%,.2fk%n", sold, lean);
+        close("the sale is what takes back the vault's capacity of the month's new fall, at most that capacity times the month's own deficit and at most the vault",
+                sold, lean, 1e-9 * Math.max(1, sold));
         close("...the vault fell by exactly it", vaultBefore - fx.getReservesUsd(), sold, 1e-9 * Math.max(1, sold));
         close("...and it fetched the dollars at the month's rate", fetched, sold * rateBefore, 1e-9 * Math.max(1, fetched));
         close("the central bank booked it the month it was sold", cb.getDefendedThisMonth(), fetched, 1e-9);
