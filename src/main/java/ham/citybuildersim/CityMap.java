@@ -3624,7 +3624,7 @@ public final class CityMap {
      * YARD_TRACKS, and each of the works' sidings (CityRuns.sidings()) has one
      * more route, TrainSchedule.Route.toWorks(): the world line, the main line
      * and straight into the siding's end, no yard - a bulk unit train's alone.
-     * None without the railway's world line. Since FX5 (0.8.15) each route is
+     * None without the railway's world line. Since FX5 (0.8.18) each route is
      * rounded at its turns (TrackCurves.round(), TrackCurves.RADIUS plots, the
      * world line's part ending where the rounded route leaves its first
      * straight) and each siding's ladder is TrackCurves.ladder()'s S, so no

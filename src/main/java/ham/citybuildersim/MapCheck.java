@@ -181,7 +181,7 @@ import java.util.Map;
  *      train pure in (call, t), a frame finding every train on screen; at
  *      10B a frame's trains in no more than TRAIN_FRAME_MS; and the played
  *      city's station no container yard, its railway having moved no boxes.
- *      Since FX5 (0.8.15) the trains on the curves (trainsOnTheCurves()): no
+ *      Since FX5 (0.8.18) the trains on the curves (trainsOnTheCurves()): no
  *      two neighbouring vehicles of a train differ in heading by more than
  *      MOST_TURN_DEG, and every vehicle shown whole is on the rail the tiles
  *      draw at 8 px a plot.
@@ -4525,7 +4525,7 @@ public class MapCheck {
     static final double LADDER_TURN_DEG = 45;
 
     /**
-     * Section 9's trains on the curves (FX5, 0.8.15; Jerus, 2026-10-20: "do
+     * Section 9's trains on the curves (FX5, 0.8.18; Jerus, 2026-10-20: "do
      * trains make 90 degree turns?"): on the yard city's routes, at every
      * sampled moment of the month's trains and at fronts all along every
      * route, (a) no two neighbouring vehicles of a train differ in heading

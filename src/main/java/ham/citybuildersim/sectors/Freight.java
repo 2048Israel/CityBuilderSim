@@ -1844,9 +1844,10 @@ public final class Freight extends Sector {
         }
 
         /*
-         * ...AND ITS TRUCKS (FR2): Haulage's figures, the division's own. The
-         * screens' division strip is FR4's (spec-freight 6); until then the
-         * trucks are read here, under the railway.
+         * ...AND ITS TRUCKS (FR2): Haulage's figures, the division's own, read
+         * here under the railway. Since FR4 the page's division strip draws
+         * them apart (FreightView; SectorScreen's freightPanels()), and these
+         * lines are still the page's ITS OWN FIGURES grid below it.
          */
         Haulage h = haulage;
         lines.add(Line.head("Haulage, the trucks"));
@@ -1869,7 +1870,8 @@ public final class Freight extends Sector {
         /*
          * ...AND ITS QUAY (FR3): the Ports division's figures, a block for each
          * kind of cargo the city has a berth for. Read off the division's
-         * getters, never worked here. The screens' division strip is FR4's.
+         * getters, never worked here. The division strip has drawn them since
+         * FR4 (FreightView).
          */
         PortDivision pd = portDivision;
         double[] berths = ham.citybuildersim.Ports.berths(buildings);

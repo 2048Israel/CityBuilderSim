@@ -46,7 +46,7 @@ import java.util.Arrays;
  * main line; below 4 px and in the blocks, its plots in RAIL_DARK with
  * cross-ticks every block from 2 px. The mockup drew no railway, so the
  * colours are a map's convention (star N3-9, spec-freight 4.3). Since FX5
- * (0.8.15; Jerus, 2026-10-20: "do trains make 90 degree turns?") a corner of
+ * (0.8.18; Jerus, 2026-10-20: "do trains make 90 degree turns?") a corner of
  * the railway is an arc, not an L: the turns of the trains' routes
  * (CityMap.trainRoutes()) are TrackCurves' bends, drawn by the arcs of
  * bends() over the plots they replace (Input.curved), and a yard's ladders
@@ -524,7 +524,7 @@ public final class TileRaster {
      * and the boxes kept to that stretch, and the track that crosses the
      * line drawn over the yard's ground through the head the stretch leaves,
      * so a line crossing the yard meets the fan at its throat. Since FX5
-     * (0.8.15) each ladder from the fan's apex to its siding's start is
+     * (0.8.18) each ladder from the fan's apex to its siding's start is
      * TrackCurves.ladder()'s S, tangent to the line and to the siding, drawn
      * as the siding's rails (ladderRails()) - the points the routes run on.
      * Since FX5 Y2 a yard longer than a tile (CityRuns.YARD_LONG, a unit

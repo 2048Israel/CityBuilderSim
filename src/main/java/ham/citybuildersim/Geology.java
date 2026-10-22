@@ -80,7 +80,8 @@ import java.util.Map;
  * measured again (zOf(Resource, Geology)). A generated world reads none of
  * it, as before.
  *
- * EarthTerrainCheck 10 to 14 hold it, on the fixture and on the full file.
+ * EarthTerrainCheck 10 to 14 hold it, on the fixture and on the full file,
+ * and EarthDepositsCheck holds EG1's half.
  */
 public final class Geology {
 

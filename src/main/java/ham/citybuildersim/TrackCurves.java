@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * The railway's curves as one geometry, for the drawing and for the trains'
- * routes alike (FX5, 0.8.15): a polyline's corners rounded with arcs of a
+ * routes alike (FX5, 0.8.18): a polyline's corners rounded with arcs of a
  * radius, the arcs the tiles draw and the routes run along, and the yard's
  * ladder as an S that leaves its line and meets its siding tangent at both
  * ends. Pure: points in plots in, points in plots out, no map and no screen.
