@@ -47,7 +47,9 @@ import java.util.List;
  *           BRICK (see a homes cell's layout, in the builder); a cell a
  *           highway, railway, yard or reserve crosses keeps the comb; a merge
  *           in one of the last two takes up the dead ends it leaves, or is
- *           undone;
+ *           undone; (batch CL4) far from the founding site (CRESCENT_FROM) a
+ *           long-block cell of one of those layouts may be a CRESCENT, its
+ *           cross street a quarter arc between its rings (see CURVES);
  *   JOIN    the street pieces joined to the largest along the lattice, and
  *           (0.7.88, ACROSS DISTRICTS) to the streets of the districts
  *           before it in the map's order where they meet its frame's edge;
@@ -65,7 +67,8 @@ import java.util.List;
  *   WATER   a street bridges fresh water up to STREET_BRIDGE plots, an
  *           arterial up to ARTERIAL_BRIDGE (2.4);
  *   CUTS    where water or the city's edge cuts a cell (H2), a street the cut
- *           leaves as a dead end is joined to its neighbour along the cut; a
+ *           leaves as a dead end is joined to its neighbour along the cut
+ *           (drawn as a smooth curve since batch CL4, see CURVES); a
  *           piece it leaves shorter than a block, touching nothing, is not
  *           laid (Jerus: "no stray roads"); a merge or a closed spine that
  *           would part the network is not made; the join looks along the
@@ -163,6 +166,31 @@ import java.util.List;
  * end joined to the network by the street it came from. The join's, the shore's and the access roads' streets are laid
  * later and meet it as they meet any arterial. A homes cell an avenue crosses keeps the comb, as one a highway crosses does.
  * Input.latticeOnly (and Input.asPrototype) lays none of it. DistrictPlan.avenue is each laid plot's mark in CityRuns' bits.
+ *
+ * CURVES (batch CL4, slice C; Jerus, 2026-10-20: "All three"). Two kinds of street are given a smooth line, drawn by the painter
+ * from DistrictPlan.curves over the plots they are laid on. A CRESCENT: a long-block homes cell (not squared) whose middle lies
+ * CRESCENT_FROM cells or more from the founding site (Euclidean, in cells of CELL plots), no highway, railway, yard, reserve or
+ * avenue crossing it, whose CL2 layout is not the comb and whose hash (CRESCENT_SALT) is under CRESCENT_SHARE (crescentOf()) -
+ * so beyond that distance a third of the long-block cells keep the comb, a third are crescents, a sixth drop crossings, a sixth
+ * are brick - takes LAYOUT_CRESCENT when the ground lays its arc whole (a cell it would not keeps the layout it had, counted in
+ * crescentsOff): its three long streets whole and, in place of its cross street (the line u = MIDDLE, u along the long streets, v
+ * across them), a quarter of a circle of radius ARC_RADIUS = (INTERIOR + 1) / sqrt 2 between the middles of the ring plots
+ * (a, -1) and (a, INTERIOR), a = MIDDLE - bulge x ARC_SHIFT, bulging toward +u or -u by the hash, so it turns 90 degrees, meets
+ * each ring at 45 and stands in the cell's middle (its apex 6.6 plots from its ends). Its STAIRCASE is the plots the thin arc
+ * passes through (ArcShape), laid as ROLE_STREET by lay() and meeting each ring in a T; it crosses the three long streets. A
+ * crescent cell merges no blocks (mergeFor refuses it), so the arc is never taken up. A STREET ALONG A CUT is a join shore() laid:
+ * its plots in order, the dead end's last plot first and the street it meets last; its line the middles of the plots simplified
+ * to within StreetCurves.FIT, its corners rounded with TrackCurves at StreetCurves.CURVE_RADIUS (StreetCurves.fit(), line():
+ * the painter calls the same). Both are decided when the cell opens, from the cell's place, the hub and the ground then, and
+ * both keep the ground their band reaches (StreetCurves.BAND_HALF, a street's widest surface either side of the line: the
+ * plots whose square lies nearer the line than that, as the fourth plot of an avenue's 2 x 2 block is) free of buildings - for
+ * good: a merge, a field or ground bought later does not free them - so a building that stands never moves. A cell's curves
+ * are recorded after its pruning; complete() hands the painter those whose plots are still streets (Curve: kind, geometry as
+ * numbers in the frame's plots, plots(), band()). Input.latticeOnly, Input.asPrototype and (for crescents) Input.combOnly lay none.
+ *
+ * (The ground bought: an avenue's plot on ground the city buys after its cell opened is laid when it is bought; a crescent's arc
+ * is not - it is laid whole when the cell opens or not at all, so a cell opened on ground that would not lay it keeps its
+ * layout for good, as the comb's cross street is not laid on ground bought later either.)
  *
  * ESTATE LINES (0.7.90, batch RD5). The prototype's estate cell has one
  * spine across its middle and two strips 15 plots deep. Rows 4 to 10 and
@@ -292,14 +320,29 @@ public final class DistrictPlan {
 
     /* ----- a homes cell's layout (CL2) ----- */
 
-    /** A homes cell's street layout, chosen by layoutOf(): TODAY the comb (a squared cell: the whole square) as ever, DROPPED some of its crossings left out, BRICK its cross street's pieces at alternating lines (a squared cell: in bands). */
-    public static final byte LAYOUT_TODAY = 0, LAYOUT_DROPPED = 1, LAYOUT_BRICK = 2;
+    /** A homes cell's street layout, chosen by layoutOf(): TODAY the comb (a squared cell: the whole square) as ever, DROPPED some of its crossings left out, BRICK its cross street's pieces at alternating lines (a squared cell: in bands); and (CL4) CRESCENT, a long-block cell far from the founding site (crescentOf()) whose cross street is a quarter of a circle between its rings. */
+    public static final byte LAYOUT_TODAY = 0, LAYOUT_DROPPED = 1, LAYOUT_BRICK = 2, LAYOUT_CRESCENT = 3;
 
     /** The share of homes cells, long-block and squared alike, that keep today's layout: a third (Jerus, 2026-10-20: "A third stays"). */
     public static final double TODAY_SHARE = 1.0 / 3;
 
     /** ...and the share that drop crossings (the rest are brick), likewise: a third. */
     public static final double DROPPED_SHARE = 1.0 / 3;
+
+    /** How far from the founding site a long-block homes cell's middle must lie, in cells (Euclidean, CELL plots a cell), to be laid as a crescent (CL4, crescentOf()): 16 - two districts, 15 km, past where the city's own ground and arterials give the grid its reason. */
+    public static final double CRESCENT_FROM = 16;
+
+    /** The share of the long-block homes cells beyond CRESCENT_FROM, whose layout is not the comb, that are crescents: a half - so beyond it a third of the cells keep the comb (Jerus's "a third stays"), a third are crescents, a sixth drop crossings and a sixth are brick. */
+    public static final double CRESCENT_SHARE = 0.5;
+
+    /** The salt of the crescent's hash in layoutHash(): 120, beyond the layouts' own (0, 11 to 16, 21, 22, 31, 40 to 111); the bulge's is the next, CRESCENT_SALT + 1. */
+    static final int CRESCENT_SALT = 120;
+
+    /** How far the crescent's arc stands from the cell's cross line (the line u = MIDDLE) at its ends, in plots: 3 - its ends stand at MIDDLE - bulge x 3 and it bulges toward the other side, so the arc stands in the cell's middle (its apex 6.6 plots out from its ends). */
+    static final int ARC_SHIFT = 3;
+
+    /** The crescent's arc radius, in plots: (INTERIOR + 1) / sqrt 2 - a quarter of a circle whose chord runs from the ring at v = -1 to the ring at v = INTERIOR, so it turns 90 degrees and meets each ring at 45. */
+    static final double ARC_RADIUS = (INTERIOR + 1) / Math.sqrt(2);
 
     /** The chance a dropped long-block cell also loses half of a long street (its block beside it 15 deep): 0.25. */
     static final double HALF_DROP = 0.25;
@@ -549,7 +592,7 @@ public final class DistrictPlan {
         public boolean bandsApart;
         /** Every homes cell laid as 0.8.11 laid them all, the comb or the whole square (CL2, a homes cell's layout): PlanCheck's comparison. */
         public boolean combOnly;
-        /** No avenue (and, in a later slice, no crescent): every street on the lattice as 0.8.18 laid it (CL4); asPrototype implies it. PlanCheck's comparison, and the fixtures that pin a plan from before the avenues. */
+        /** No avenue, no crescent and no curve along a cut (no building kept off the plots their bands reach): every street on the lattice as 0.8.18 laid it (CL4); asPrototype implies it. PlanCheck's comparison, and the fixtures that pin a plan from before the avenues. */
         public boolean latticeOnly;
         /** The hashes, or null for the world's. */
         public Hashes hashes;
@@ -596,6 +639,94 @@ public final class DistrictPlan {
     static byte layoutOf(long seed, long cellX, long cellY, boolean square) {
         double r = layoutHash(seed, cellX, cellY, 0);
         return r < TODAY_SHARE ? LAYOUT_TODAY : r < TODAY_SHARE + DROPPED_SHARE ? LAYOUT_DROPPED : LAYOUT_BRICK;
+    }
+
+    /** Whether a long-block homes cell is, by its place, a crescent (CL4): its CL2 layout is not the comb and the crescent's hash is under CRESCENT_SHARE; how far the cell lies from the founding site (CRESCENT_FROM) and whether the ground lays its arc whole are asked where it opens. */
+    static boolean crescentOf(long seed, long cellX, long cellY) {
+        return layoutOf(seed, cellX, cellY, false) != LAYOUT_TODAY && layoutHash(seed, cellX, cellY, CRESCENT_SALT) < CRESCENT_SHARE;
+    }
+
+    /** Which way a crescent bulges (+1 toward the cell's +u, -1 toward -u, u along its long streets), by the hash of its place. */
+    static int crescentBulge(long seed, long cellX, long cellY) {
+        return layoutHash(seed, cellX, cellY, CRESCENT_SALT + 1) < 0.5 ? -1 : 1;
+    }
+
+    /**
+     * A crescent's arc worked out in the cell's own axes (CL4) for one bulge, once: u along the long streets, v across them, plot
+     * (u, v) the square [u, u + 1] by [v, v + 1] in plots into the interior (the rings at v = -1 and v = INTERIOR). The arc is a
+     * quarter of a circle of radius ARC_RADIUS whose chord runs between the middles of the two ring plots (a, -1) and
+     * (a, INTERIOR), a = MIDDLE - bulge x ARC_SHIFT, the centre on the other side of the chord from the bulge. Its STAIRCASE is
+     * the plots the thin arc passes through (the arc is monotone in v: each row of the interior holds the plots from the one the arc
+     * enters it at to the one it leaves by, and its apex), the ring plot at each end first and last, by row and in a row by u; its
+     * BAND the plots outside that which a street-wide band along the arc reaches (StreetCurves.BAND_HALF), no building standing on any.
+     * Square roots only: the same plots on any machine.
+     */
+    static final class ArcShape {
+        final int bulge, a;
+        final double cu, cv;
+        final int[] stairU, stairV, keepU, keepV;
+
+        ArcShape(int s) {
+            bulge = s;
+            a = MIDDLE - s * ARC_SHIFT;
+            double half = (INTERIOR + 1) / 2.0, r2 = (INTERIOR + 1) * (double) (INTERIOR + 1) / 2;
+            cu = a + 0.5 - s * half;
+            cv = INTERIOR / 2.0;
+            int[] su = new int[4 * INTERIOR], sv = new int[4 * INTERIOR];
+            int n = 0;
+            su[n] = a;
+            sv[n++] = -1;
+            int[] lo = new int[INTERIOR], hi = new int[INTERIOR];
+            for (int k = 0; k < INTERIOR; k++) {
+                double u0 = cu + s * Math.sqrt(r2 - (k - cv) * (k - cv)), u1 = cu + s * Math.sqrt(r2 - (k + 1 - cv) * (k + 1 - cv));
+                double mn = Math.min(u0, u1), mx = Math.max(u0, u1);
+                if (cv >= k && cv <= k + 1) {
+                    double apex = cu + s * Math.sqrt(r2);
+                    mn = Math.min(mn, apex);
+                    mx = Math.max(mx, apex);
+                }
+                lo[k] = (int) Math.floor(mn);
+                hi[k] = (int) Math.floor(mx);
+                for (int u = lo[k]; u <= hi[k]; u++) {
+                    su[n] = u;
+                    sv[n++] = k;
+                }
+            }
+            su[n] = a;
+            sv[n++] = INTERIOR;
+            stairU = Arrays.copyOf(su, n);
+            stairV = Arrays.copyOf(sv, n);
+            int[] ku = new int[INTERIOR * 4], kv = new int[INTERIOR * 4];
+            int m = 0;
+            for (int k = 0; k < INTERIOR; k++) {
+                for (int u = 0; u < INTERIOR; u++) {
+                    if (u >= lo[k] && u <= hi[k]) continue;
+                    if (circleDistance(u, k) >= StreetCurves.BAND_HALF - StreetCurves.EDGE) continue;
+                    if (m == ku.length) { ku = Arrays.copyOf(ku, m * 2); kv = Arrays.copyOf(kv, m * 2); }
+                    ku[m] = u;
+                    kv[m++] = k;
+                }
+            }
+            keepU = Arrays.copyOf(ku, m);
+            keepV = Arrays.copyOf(kv, m);
+        }
+
+        /** The distance from the arc's circle to the closed square of plot (u, v): 0 where the circle crosses it. */
+        double circleDistance(int u, int v) {
+            double nx = Math.max(Math.max(u - cu, 0), cu - (u + 1)), ny = Math.max(Math.max(v - cv, 0), cv - (v + 1));
+            double dmin = Math.sqrt(nx * nx + ny * ny);
+            double fx = Math.max(Math.abs(cu - u), Math.abs(cu - (u + 1))), fy = Math.max(Math.abs(cv - v), Math.abs(cv - (v + 1)));
+            double dmax = Math.sqrt(fx * fx + fy * fy);
+            return ARC_RADIUS < dmin ? dmin - ARC_RADIUS : ARC_RADIUS > dmax ? ARC_RADIUS - dmax : 0;
+        }
+    }
+
+    /** The two crescent shapes, bulge -1 and +1 (arc()). */
+    static final ArcShape[] ARCS = { new ArcShape(-1), new ArcShape(1) };
+
+    /** The crescent shape of a bulge (+1 or -1). */
+    static ArcShape arc(int bulge) {
+        return ARCS[(bulge + 1) / 2];
     }
 
     /**
@@ -700,6 +831,71 @@ public final class DistrictPlan {
 
     /** The avenues' counts (CL4): plots laid; of them beneath a highway, crossing the railway, bridging fresh water; plots not laid at a yard, an interchange's reserve or a mine's site; plots not laid at fresh water too wide for a bridge; cell streets stopped a plot short by the + floor; open cells an avenue crosses. */
     public int avenuePlots, avenueUnder, avenueRail, avenueBridged, avenueBroken, avenueWater, avenueStops, avenueCells;
+
+    /**
+     * A curve the painter draws smooth (batch CL4, slice C; CURVES in the class javadoc): a crescent's arc or a street along a cut,
+     * with the plots it is laid on and the ground its band reaches. Compact - the map keeps every district's plan, and a far city
+     * holds thousands of crescents: a crescent keeps its cell and its bulge and works its plots out from the shape every crescent
+     * shares; a shore curve keeps its path. Frame coordinates: plot (x, y) is the square [x, x + 1] by [y, y + 1], its middle
+     * (x + 0.5, y + 0.5), and a plot's index y x FRAME + x.
+     */
+    public static final class Curve {
+        /** A crescent's arc (geom: its circle {centre x, centre y, radius, the angle from the centre to the arc's start, the signed sweep}, as TrackCurves.Bend has them; radius = the circle's) and a street along a cut (geom: the simplified line's vertices x0, y0, x1, y1, ...; radius = what its corners are rounded with, StreetCurves.line()). */
+        public static final byte CRESCENT = 1, SHORE = 2;
+        public final byte kind;
+        public final double[] geom;
+        public final double radius;
+        /** A shore curve's plots in order, the dead end's last plot first and the plot it meets last, and the plots its band reaches that are not its own; null for a crescent's. */
+        private final int[] path, band;
+        /** A crescent's cell: its interior's north-west plot in the frame, whether its long streets run east-west, and its bulge. */
+        private final int x0, y0;
+        private final boolean across;
+        private final byte bulge;
+
+        Curve(byte kind, double[] geom, double radius, int[] path, int[] band, int x0, int y0, boolean across, byte bulge) {
+            this.kind = kind;
+            this.geom = geom;
+            this.radius = radius;
+            this.path = path;
+            this.band = band;
+            this.x0 = x0;
+            this.y0 = y0;
+            this.across = across;
+            this.bulge = bulge;
+        }
+
+        /** The frame plot of a crescent's cell-axes plot (u, v). */
+        private int crescentPlot(int u, int v) {
+            return across ? (y0 + v) * FRAME + x0 + u : (y0 + u) * FRAME + x0 + v;
+        }
+
+        /** The plots the curve is drawn over, as frame indices: a shore curve's path in order (its first plot the dead end's, its last the street it meets); a crescent's staircase by row from its ring at v = -1 to its ring at v = INTERIOR (the ring plots first and last, the street it meets in a T), a row's plots by u. */
+        public int[] plots() {
+            if (path != null) return path.clone();
+            ArcShape s = arc(bulge);
+            int[] out = new int[s.stairU.length];
+            for (int i = 0; i < out.length; i++) out[i] = crescentPlot(s.stairU[i], s.stairV[i]);
+            return out;
+        }
+
+        /** The plots its band reaches that are not its own, as frame indices, sorted for a shore curve and by row for a crescent: open ground no building stands on - a street of the cell's own may be among them, and a plot of water or ground not owned yet. */
+        public int[] band() {
+            if (band != null) return band.clone();
+            ArcShape s = arc(bulge);
+            int[] out = new int[s.keepU.length];
+            for (int i = 0; i < out.length; i++) out[i] = crescentPlot(s.keepU[i], s.keepV[i]);
+            return out;
+        }
+    }
+
+    /** No curves: a plan that lays none (the prototype's, Input.latticeOnly) has this list. */
+    static final List<Curve> NO_CURVES = List.of();
+
+    /** The plan's curves (CL4, slice C): a crescent's arc for each homes cell laid as one whose arc is still whole, and a street along a cut for each dead end the cut's join (shore()) still joins - in the order the cells opened. */
+    public List<Curve> curves = NO_CURVES;
+
+    /** The curves' counts (CL4): homes cells laid as a crescent (LAYOUT_CRESCENT); cells the hash and the distance made a crescent whose arc the ground could not lay whole, which keep the comb; streets along a cut drawn as a curve. */
+    public int crescents, crescentsOff, shoreCurves;
 
     /** The surface left over when every step of the ladder is taken: road the plan has no street for (0 where the ladder holds it). */
     public double surplus;
@@ -911,6 +1107,10 @@ public final class DistrictPlan {
         byte[] avDone;
         int[] avN, avKept;
         int avKeptN;
+        /** The curves' state (CL4, slice C): the plots kept free of buildings, the curves laid, the crescents the ground refused. */
+        int[] cvKeepList;
+        int cvKeepN, cvCurveN, cvOff;
+        Curve[] cvCurves;
         final List<int[]> unplacedAt = new ArrayList<>();
         int shoreJoins, strays, mergesRefused, mergesUndone, onFields;
     }
@@ -1099,6 +1299,7 @@ public final class DistrictPlan {
             this.in = in;
             this.proto = in.asPrototype;
             this.avOn = !proto && !in.latticeOnly;
+            this.cvOn = avOn;
             this.hash = in.hashes != null ? in.hashes : worldHashes(in.seed, in.x0, in.y0);
             turnsUsed = 0;
             cutLines.clear();
@@ -1842,8 +2043,9 @@ public final class DistrictPlan {
             boolean[] roomed = new boolean[CELLS];
             for (int k = 0; k < n; k++) {
                 int p = grown[k], x = p % FRAME, y = p / FRAME;
-                occ[p] = occStart[p];
-                if (x < 1 || y < 1 || x > SIDE || y > SIDE) continue;
+                // A plot a curve's band reaches (CL4) stays free of buildings: bought or not, it is no room.
+                occ[p] = cvKeep[p] ? -1 : occStart[p];
+                if (cvKeep[p] || x < 1 || y < 1 || x > SIDE || y > SIDE) continue;
                 int lx = (x - 1) % CELL, ly = (y - 1) % CELL;
                 if (lx >= INTERIOR || ly >= INTERIOR) continue;
                 int c = cellOfPlot(x, y);
@@ -2112,6 +2314,7 @@ public final class DistrictPlan {
                 Arrays.fill(avDone, (byte) 0);
                 Arrays.fill(avN, 0);
                 avKeptN = 0;
+                cvReset();
                 Arrays.fill(reachStale, true);
                 Arrays.fill(fails, 0);
                 Arrays.fill(failsF, 0);
@@ -2207,6 +2410,7 @@ public final class DistrictPlan {
             out.overflow = over;
             out.mixedSlots = mixedSlots;
             avOutput(out);
+            cvOutput(out);
             // ACCESS ROADS (batch FR7): over what the plan has laid and left, after every building stands - none moves for one.
             access(out, placed);
             // SIDINGS (batch FR7 slice 5): the same ground, the streets and the access roads as they stand, nothing taken from the plan.
@@ -2439,6 +2643,11 @@ public final class DistrictPlan {
             t.avN = copyInto(avN, avN.length, t.avN);
             t.avKept = copyInto(avKept, avKeptN, t.avKept);
             t.avKeptN = avKeptN;
+            t.cvKeepList = copyInto(cvKeepList, cvKeepN, t.cvKeepList);
+            t.cvKeepN = cvKeepN;
+            t.cvCurves = Arrays.copyOf(cvCurves, cvCurveN);
+            t.cvCurveN = cvCurveN;
+            t.cvOff = cvOff;
             t.rowBits = copyInto(rowBits, t.rowBits);
             t.reachStale = copyInto(reachStale, t.reachStale);
             t.cellCut = copyInto(cellCut, t.cellCut);
@@ -2490,6 +2699,12 @@ public final class DistrictPlan {
             avKeptN = t.avKeptN;
             if (avKept.length < avKeptN) avKept = new int[Math.max(avKeptN, avKept.length * 2)];
             System.arraycopy(t.avKept, 0, avKept, 0, avKeptN);
+            cvReset();
+            for (int i = 0; i < t.cvKeepN; i++) cvKeepPlot(t.cvKeepList[i]);
+            if (cvCurves.length < t.cvCurveN) cvCurves = new Curve[Math.max(t.cvCurveN, cvCurves.length * 2)];
+            System.arraycopy(t.cvCurves, 0, cvCurves, 0, t.cvCurveN);
+            cvCurveN = t.cvCurveN;
+            cvOff = t.cvOff;
             System.arraycopy(t.rowBits, 0, rowBits, 0, rowBits.length);
             System.arraycopy(t.reachStale, 0, reachStale, 0, CELLS);
             System.arraycopy(t.cellCut, 0, cellCut, 0, CELLS);
@@ -2603,8 +2818,22 @@ public final class DistrictPlan {
             byte st = (byte) ROLE_STREET;
             long cellX = in.x0 + (long) CELL * ci, cellY = in.y0 + (long) CELL * cj;
             byte layout = kind == HOMES && !proto && !in.combOnly && !crossed(x0, y0) ? layoutOf(in.seed, cellX, cellY, square) : LAYOUT_TODAY;
+            // A long-block cell far from the founding site whose layout is not the comb may be a crescent (CL4): its arc laid whole, or the cell keeps the layout it has.
+            ArcShape crescent = null;
+            cvPending.clear();
+            if (layout != LAYOUT_TODAY && !square && cvOn && crescentFar(ci, cj) && crescentOf(in.seed, cellX, cellY)) {
+                ArcShape arc = arc(crescentBulge(in.seed, cellX, cellY));
+                if (arcWhole(x0, y0, across, arc)) {
+                    crescent = arc;
+                    layout = LAYOUT_CRESCENT;
+                } else {
+                    cvOff++;
+                }
+            }
             out.cellLayout[c] = layout;
-            if (layout != LAYOUT_TODAY) {
+            if (crescent != null) {
+                crescentLayout(x0, y0, across, crescent, st);
+            } else if (layout != LAYOUT_TODAY) {
                 if (square) squareLayout(x0, y0, across, layout, cellX, cellY, st);
                 else homesLayout(x0, y0, across, layout, cellX, cellY, st);
             } else if (square) {
@@ -2656,6 +2885,8 @@ public final class DistrictPlan {
                 out.strays += taken;
                 cellCut[c] = true;
             }
+            // THE CURVES (CL4): the crescent's arc and each street along a cut recorded, the ground their bands reach kept free.
+            if (cvOn) cvRecord(x0, y0, crescent, across);
             for (int k = 0; k < nChanged; k++) occ[changed[k]] = -1;
             freshCell(c);
             staleAround(c);
@@ -2927,9 +3158,9 @@ public final class DistrictPlan {
                 // What holds a street now is no building's; what the floor or the pruning took up is ground again.
                 for (int k = 0; k < nChanged; k++) {
                     int p = changed[k];
-                    occ[p] = str[p] || under[p] ? -1 : occStart[p];
+                    occ[p] = str[p] || under[p] || cvKeep[p] ? -1 : occStart[p];
                 }
-                for (int k = 0; k < given; k++) occ[avTakenAt[k]] = occStart[avTakenAt[k]];
+                for (int k = 0; k < given; k++) occ[avTakenAt[k]] = cvKeep[avTakenAt[k]] ? -1 : occStart[avTakenAt[k]];
                 nChanged = 0;
                 refreeCell(c);
                 forgetFails(c);
@@ -3018,6 +3249,166 @@ public final class DistrictPlan {
             out.avenueCells = avN[AV_CELLS];
         }
 
+        /* ----- the curves (CL4, slice C) -----
+         *
+         * WHY: the avenues broke the grid's diagonals, but the rest of the city still read as straight bars - and the streets a cut
+         * lays along water were staircases of crosses (Jerus, 2026-10-20: "having some slanted roads and curves"; the study
+         * spec-city-layout 5.2, "All three"). Two curves are drawn smooth: a CRESCENT, the cross street of a long-block homes cell
+         * far from the founding site laid as a quarter arc between its rings (ArcShape: the staircase of the plots the arc passes
+         * through), and the street along a cut (shore(): a path of ROLE_SHORE plots from a dead end to the street it meets). The plan
+         * decides both when the cell OPENS, from inputs that never change (the cell's place, the hub, the ground it has then), so a
+         * building that stands never moves (CL3, FX6); and it keeps buildings off the ground the band the painter draws through the
+         * curve reaches (StreetCurves.BAND_HALF, as an avenue's outer plots): those plots hold `cvKeep`, a build's state a ladder's
+         * turn keeps, and no merge, field or ground bought frees them. The curves are recorded when the cell has opened and its
+         * pruning is done; complete() hands the painter those whose plots are still streets (a merge may take a shore street up).
+         */
+
+        /** Whether this plan lays curves: the avenues' switch - the game's rules and not Input.latticeOnly. */
+        boolean cvOn;
+        /** The plots kept free of buildings by a curve's band, by plot, and listed in the order kept (a new build clears only those). */
+        final boolean[] cvKeep = new boolean[AREA];
+        int[] cvKeepList = new int[512];
+        int cvKeepN;
+        /** The curves laid so far, in the order their cells opened, and the crescents the ground would not lay whole. */
+        Curve[] cvCurves = new Curve[16];
+        int cvCurveN, cvOff;
+        /** shore()'s joins of the cell being opened, each its plots in order (the dead end's first, the street it meets last), until the cell's pruning is done. */
+        final List<int[]> cvPending = new ArrayList<>();
+        /** shore()'s walk back along a join (kept, as stubAt). */
+        int[] shoreTmp = new int[64];
+
+        /** This build's curves forgotten (a new build, or a ladder's turn put back). */
+        void cvReset() {
+            for (int i = 0; i < cvKeepN; i++) cvKeep[cvKeepList[i]] = false;
+            cvKeepN = 0;
+            cvCurveN = 0;
+            cvOff = 0;
+            cvPending.clear();
+        }
+
+        /** Plot p kept free of buildings. Whether it was not already. */
+        boolean cvKeepPlot(int p) {
+            if (cvKeep[p]) return false;
+            cvKeep[p] = true;
+            if (cvKeepN == cvKeepList.length) cvKeepList = Arrays.copyOf(cvKeepList, cvKeepN * 2);
+            cvKeepList[cvKeepN++] = p;
+            return true;
+        }
+
+        /** Whether the middle of cell (ci, cj) lies CRESCENT_FROM cells or more from the founding site, in a straight line (Euclidean; the cell's tile is CELL plots a side). */
+        boolean crescentFar(int ci, int cj) {
+            double dx = CELL * ci + CELL / 2.0 - in.hubX, dy = CELL * cj + CELL / 2.0 - in.hubY, from = CRESCENT_FROM * CELL;
+            return dx * dx + dy * dy >= from * from;
+        }
+
+        /** Whether the ground lays the arc whole: every plot of its staircase a street (lineKind) or, at either end, the ring's own arterial plot the ground lays. */
+        boolean arcWhole(int x0, int y0, boolean across, ArcShape arc) {
+            for (int i = 0; i < arc.stairU.length; i++) {
+                int v = arc.stairV[i], x = across ? x0 + arc.stairU[i] : x0 + v, y = across ? y0 + v : y0 + arc.stairU[i];
+                if (v < 0 || v >= INTERIOR) {
+                    if (x < 0 || y < 0 || x >= FRAME || y >= FRAME || (layCode[y * FRAME + x] & (across ? H_ARTERIAL : V_ARTERIAL)) != 0) return false;
+                } else if (lineKind(x, y, !across) == 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /** A crescent cell's streets: the comb's three long streets whole, and in place of its cross street the arc's staircase (the ring plots at its ends are the ring's own). */
+        void crescentLayout(int x0, int y0, boolean across, ArcShape arc, byte st) {
+            for (int v : STREETS_AT) layStretch(x0, y0, across, true, v, 0, INTERIOR - 1, st);
+            for (int i = 0; i < arc.stairU.length; i++) {
+                int v = arc.stairV[i];
+                if (v < 0 || v >= INTERIOR) continue;
+                lay(across ? x0 + arc.stairU[i] : x0 + v, across ? y0 + v : y0 + arc.stairU[i], !across, false, st);
+            }
+        }
+
+        /**
+         * The curves of the cell just opened recorded (interior from (x0, y0)): its crescent's, if it is one (`arc`), and each join
+         * shore() laid that is still laid - and the ground their bands reach in its interior, not a street and dry land, kept free
+         * of buildings (cvKeep; added to the changed plots, which freshCell() leaves out of the free rows and the opening marks taken).
+         */
+        void cvRecord(int x0, int y0, ArcShape arc, boolean across) {
+            if (arc != null) recordCrescent(x0, y0, across, arc);
+            for (int[] path : cvPending) recordShore(path, x0, y0);
+            cvPending.clear();
+        }
+
+        /** Whether plot p of the cell whose interior starts at (x0, y0) is open dry ground a curve's band may keep free: in the interior, no street, dry land (owned or not yet). */
+        boolean cvKeepable(int p, int x0, int y0) {
+            int x = p % FRAME - x0, y = p / FRAME - y0;
+            return x >= 0 && y >= 0 && x < INTERIOR && y < INTERIOR && !str[p] && !under[p] && World.dry(in.terrain[p]);
+        }
+
+        /** The crescent's arc recorded, if all its plots are streets still, and its band's ground kept free. */
+        void recordCrescent(int x0, int y0, boolean across, ArcShape arc) {
+            for (int i = 0; i < arc.stairU.length; i++) {
+                int u = arc.stairU[i], v = arc.stairV[i];
+                int p = across ? (y0 + v) * FRAME + x0 + u : (y0 + u) * FRAME + x0 + v;
+                if (!(str[p] || under[p])) return;
+            }
+            for (int i = 0; i < arc.keepU.length; i++) {
+                int u = arc.keepU[i], v = arc.keepV[i];
+                int p = across ? (y0 + v) * FRAME + x0 + u : (y0 + u) * FRAME + x0 + v;
+                if (cvKeepable(p, x0, y0) && cvKeepPlot(p)) changed[nChanged++] = p;
+            }
+            // The circle in the frame: the centre, the angle to the arc's start and the signed sweep (as TrackCurves.Bend has them).
+            double cx = across ? x0 + arc.cu : x0 + arc.cv, cy = across ? y0 + arc.cv : y0 + arc.cu;
+            double p0x = across ? x0 + arc.a + 0.5 : x0 - 0.5, p0y = across ? y0 - 0.5 : y0 + arc.a + 0.5;
+            double p1x = across ? x0 + arc.a + 0.5 : x0 + INTERIOR + 0.5, p1y = across ? y0 + INTERIOR + 0.5 : y0 + arc.a + 0.5;
+            double a0 = StrictMath.atan2(p0y - cy, p0x - cx);
+            double cross = (p0x - cx) * (p1y - cy) - (p0y - cy) * (p1x - cx);
+            double sweep = cross > 0 ? StrictMath.PI / 2 : -StrictMath.PI / 2;
+            cvAdd(new Curve(Curve.CRESCENT, new double[] { cx, cy, ARC_RADIUS, a0, sweep }, ARC_RADIUS, null, null, x0, y0, across, (byte) arc.bulge));
+        }
+
+        /** A street along a cut recorded (the join's plots in order, the dead end's first, the street it meets last), if all its plots are streets still: its line, the plots its band reaches that are not its own, and those kept free of buildings. */
+        void recordShore(int[] path, int x0, int y0) {
+            for (int p : path) if (!(str[p] || under[p])) return;
+            double[][] fit = StreetCurves.fit(path, path.length, FRAME);
+            double[][] line = StreetCurves.line(fit[0], fit[1]);
+            int[] reached = StreetCurves.reached(line[0], line[1], FRAME);
+            int[] own = path.clone();
+            Arrays.sort(own);
+            int[] band = new int[reached.length];
+            int n = 0;
+            for (int q : reached) if (Arrays.binarySearch(own, q) < 0) band[n++] = q;
+            band = Arrays.copyOf(band, n);
+            for (int q : band) if (cvKeepable(q, x0, y0) && cvKeepPlot(q)) changed[nChanged++] = q;
+            double[] geom = new double[2 * fit[0].length];
+            for (int i = 0; i < fit[0].length; i++) {
+                geom[2 * i] = fit[0][i];
+                geom[2 * i + 1] = fit[1][i];
+            }
+            cvAdd(new Curve(Curve.SHORE, geom, StreetCurves.CURVE_RADIUS, path, band, 0, 0, false, (byte) 0));
+        }
+
+        void cvAdd(Curve cv) {
+            if (cvCurveN == cvCurves.length) cvCurves = Arrays.copyOf(cvCurves, cvCurveN * 2);
+            cvCurves[cvCurveN++] = cv;
+        }
+
+        /** The plan's curves and counts from this build's state (complete()): the curves whose plots are all still streets (a merge may have taken a street along a cut up), and the crescents the cells hold. */
+        void cvOutput(DistrictPlan out) {
+            int crescents = 0, shore = 0;
+            for (int c = 0; c < CELLS; c++) if (out.cellKind[c] == HOMES && out.cellLayout[c] == LAYOUT_CRESCENT) crescents++;
+            List<Curve> list = null;
+            for (int i = 0; i < cvCurveN; i++) {
+                Curve cv = cvCurves[i];
+                boolean stands = true;
+                for (int p : cv.plots()) if (!(str[p] || under[p])) { stands = false; break; }
+                if (!stands) continue;
+                if (list == null) list = new ArrayList<>();
+                list.add(cv);
+                if (cv.kind == Curve.SHORE) shore++;
+            }
+            out.curves = list == null ? NO_CURVES : List.copyOf(list);
+            out.crescents = crescents;
+            out.crescentsOff = cvOff;
+            out.shoreCurves = shore;
+        }
+
         /* ----- a homes cell's layout (CL2, 2026-10-20) -----
          *
          * A homes cell takes one of three layouts when it opens, by a hash of the world's seed and the cell's place in
@@ -3032,6 +3423,11 @@ public final class DistrictPlan {
          * (crossed()): a varied layout's pieces end against them, and a piece joined along a 45-degree highway's
          * verge is a staircase (the study's decision 5). A merge of blocks in a varied cell takes up the stubs it
          * leaves, or is not made (mergeFor, stubsFree, mergeVaried).
+         *
+         * CRESCENT (CL4, slice C; the class javadoc's CURVES): a long-block cell of the layout DROPPED or BRICK, far from the
+         * founding site, may be a fourth layout, LAYOUT_CRESCENT, decided on top of layoutOf() by crescentOf() (its own hash,
+         * its own share) and the distance (crescentFar()) - layoutOf() and its shares stay CL2's - when the ground lays the
+         * arc whole (arcWhole()): the comb's three long streets and a quarter-circle cross street (crescentLayout()).
          */
 
         /** Whether a highway, railway, yard or reserve (in.fixed) has a plot in the cell whose interior starts at (x0, y0), its ring included: such a cell keeps the comb, which crosses them as it always has (CL2). */
@@ -3660,11 +4056,24 @@ public final class DistrictPlan {
                         }
                     }
                     if (end < 0) continue;
+                    int walked = 0;
                     for (int ai = (end / FRAME - by0) * bw + (end % FRAME - bx0); ai >= 0 && from[ai] != -1; ai = from[ai]) {
                         int a = (by0 + ai / bw) * FRAME + bx0 + ai % bw;
                         setStr(a, true);
                         role[a] = (byte) ROLE_SHORE;
                         changed[nChanged++] = a;
+                        if (cvOn) {
+                            if (walked == shoreTmp.length) shoreTmp = Arrays.copyOf(shoreTmp, walked * 2);
+                            shoreTmp[walked++] = a;
+                        }
+                    }
+                    if (cvOn) {
+                        // The join as a curve to be drawn smooth (CL4): the dead end's last plot, the plots laid from it on, the street it meets.
+                        int[] path = new int[walked + 2];
+                        path[0] = p0;
+                        for (int i = 0; i < walked; i++) path[1 + i] = shoreTmp[walked - 1 - i];
+                        path[walked + 1] = target;
+                        cvPending.add(path);
                     }
                     joined++;
                 }
@@ -3887,7 +4296,7 @@ public final class DistrictPlan {
                 for (int i = 0; i < INTERIOR; i++) {
                     int p = base + i;
                     if (occ[p] == 0) bits |= 1 << i;
-                    if (occ[p] == 0 || (fieldOk[p] && occ[p] == -1 && !str[p] && !under[p])) withFields |= 1 << i;
+                    if (occ[p] == 0 || (fieldOk[p] && occ[p] == -1 && !str[p] && !under[p] && !cvKeep[p])) withFields |= 1 << i;
                 }
                 free[c][j] = bits;
                 freeF[c][j] = withFields;
@@ -4098,7 +4507,7 @@ public final class DistrictPlan {
                         if (str[p]) setStr(p, false);
                         under[p] = false;
                         role[p] = 0;
-                        if (occ[p] == -1 && !blocked[p]) occ[p] = 0;
+                        if (occ[p] == -1 && !blocked[p] && !cvKeep[p]) occ[p] = 0;
                     }
                 }
             }
@@ -4140,6 +4549,8 @@ public final class DistrictPlan {
          */
         boolean mergeFor(DistrictPlan out, int c, int w, int h) {
             if (out.cellKind[c] != HOMES) return false;
+            // A crescent cell merges no blocks (CL4): a building wider than a block looks in the other cells, so its arc is never taken up.
+            if (out.cellLayout[c] == LAYOUT_CRESCENT) return false;
             for (int k = 0; k < mergeFails[c]; k++) {
                 int a = mergeFailW[c][k], b = mergeFailH[c][k];
                 if ((w >= a && h >= b) || (w >= b && h >= a)) return false;
@@ -4199,7 +4610,7 @@ public final class DistrictPlan {
             under[p] = false;
             art[p] = false;
             role[p] = 0;
-            if (occ[p] == -1 && !blocked[p]) occ[p] = 0;
+            if (occ[p] == -1 && !blocked[p] && !cvKeep[p]) occ[p] = 0;
         }
 
         /** The plots a tentative merge has taken up, in the order taken (the group's streets, row by row, then its stubs'), and each as it was (stateOf()), to be put back. */

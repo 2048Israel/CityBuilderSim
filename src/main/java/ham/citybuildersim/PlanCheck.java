@@ -104,7 +104,22 @@ import java.util.List;
  *      month it opened, and ground bought after its cell opened gets the
  *      avenue in the month it is bought; a pure function, two neighbouring districts laying
  *      the same plots and marks on the line they share; and the counts in a
- *      real run.
+ *      real run;
+ *  14. the curves (batch CL4, slice C; DistrictPlan's CURVES): a long-block
+ *      homes cell beyond CRESCENT_FROM cells of the founding site, whose CL2
+ *      layout is not the comb and whose hash is under CRESCENT_SHARE, is a
+ *      crescent - its cross street a quarter arc between its rings, laid plot
+ *      for plot as the harness walks the circle out itself, joining both rings
+ *      and crossing its three long streets, its curve the staircase and the
+ *      circle, its blocks never merged and no box on the plots its band
+ *      reaches; none nearer than the distance (the threshold from both sides),
+ *      none in a cell something crosses (a railway plot, an avenue), a cell
+ *      whose arc the ground would not lay whole keeps its layout, the share is
+ *      CRESCENT_SHARE of the cells that are not the comb; each street the
+ *      ground's cut lays along water (the test district) is a curve whose line
+ *      starts and ends on its plots, turns at no corner tighter than its
+ *      radius allows and keeps its band's ground free; a pure function, every
+ *      crescent standing as its district grows, and the counts in a real run.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -126,6 +141,8 @@ import java.util.List;
  *     not the avenue's with an arm's staircase - walked from DistrictPlan.avenue
  *     by this harness's own geometry (Stairs, junctions()) - no two are fewer
  *     than LATTICE steps apart; and no building on an outer plot.
+ *   - (CL4, section 14) no building on a plot a curve's band reaches, and the
+ *     crescent's arc and a shore curve held to the harness's own working.
  */
 public class PlanCheck {
 
@@ -300,6 +317,7 @@ public class PlanCheck {
         arrivals(types);
         groundBought(types);
         avenues(types);
+        curves(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -964,6 +982,8 @@ public class PlanCheck {
         /** The avenues' counts summed (CL4): plots laid, beneath a highway, across the railway, bridging, not laid at a yard, reserve or mine, at water too wide, stops, open cells crossed; and the floor and outer-plot breaches. */
         final long[] av = new long[8];
         int avenueBad, avenueOuter;
+        /** The curves' counts summed (CL4, slice C): crescents, crescents the ground would not lay whole, streets along a cut drawn as curves, curves in all. */
+        final long[] cv = new long[4];
         final List<Double> planMs = new ArrayList<>(), inputMs = new ArrayList<>();
         boolean timed;
 
@@ -1040,6 +1060,7 @@ public class PlanCheck {
             av[4] += p.avenueBroken; av[5] += p.avenueWater; av[6] += p.avenueStops; av[7] += p.avenueCells;
             avenueBad += f.avenueBad;
             avenueOuter += f.avenueOuter;
+            cv[0] += p.crescents; cv[1] += p.crescentsOff; cv[2] += p.shoreCurves; cv[3] += p.curves.size();
         }
 
         /** The open homes cells that took a layout other than the comb or the whole square. */
@@ -1083,6 +1104,7 @@ public class PlanCheck {
             out.printf("      ...avenues (CL4), summed over the districts: %,d plots laid (%,d beneath a highway, %,d across the railway, %,d bridging water), %,d not laid at a yard, reserve or mine,"
                     + " %,d at water too wide, %,d cell streets stopped short, %,d open cells crossed; %d box(es) on an outer plot, %d breach(es) of the + floor along an avenue%n",
                     av[0], av[1], av[2], av[3], av[4], av[5], av[6], av[7], avenueOuter, avenueBad);
+            out.printf("      ...curves (CL4), summed over the districts: %,d crescents (%,d the ground would not lay whole), %,d streets along a cut drawn as curves, %,d curves%n", cv[0], cv[1], cv[2], cv[3]);
             if (timed) out.printf("      ...a plan's time: median %.2f ms a district, the most %.2f ms (the median of %d after one untimed); its inputs %.2f ms%n",
                     median(planMs), max(planMs), TIMED, median(inputMs));
             if (!firstFail.isEmpty()) out.printf("      ...first to fail: %s%n", firstFail);
@@ -1150,6 +1172,7 @@ public class PlanCheck {
         check("...in one network, each", t.network == t.districts);
         // The dense copy's screen (MapCheck 3 and 5): 18 x 11 tiles at its site, and the districts they show.
         x1Avenues = t.av.clone();
+        x1Curves = t.cv.clone();
         check("...avenues are laid in his city x 1, and no box stands on an outer plot nor does the + floor along an avenue break (" + t.av[0] + " plots in " + t.av[7] + " open cells)",
                 t.av[0] > 0 && t.avenueBad == 0 && t.avenueOuter == 0);
         denseScreen(types);
@@ -1228,6 +1251,7 @@ public class PlanCheck {
         t.report("month " + g.getMonth() + ", " + samples + " samples");
         check("at every " + MapCheck.DRAWN_EVERY + "th month every district's plan keeps every check", t.allHold() && samples == MapCheck.MONTHS / MapCheck.DRAWN_EVERY);
         playedAvenues = t.av.clone();
+        playedCurves = t.cv.clone();
         check("...the avenues were laid in the played city (" + t.av[0] + " plots in " + t.av[7] + " open cells over the samples), every check holding with them", t.av[0] > 0 && t.allHold());
         // CL2: how often the variety fired in this run. A city of a few homes cells says little, so the assertion waits for enough of them.
         if (t.homesCells() >= HOMES_ENOUGH) {
@@ -1475,7 +1499,7 @@ public class PlanCheck {
     /** A plan's open homes cells counted by kind (0 long blocks, 1 squared; a boulevard's interior by whether it is squared) and layout. */
     static int[][] homesByLayout(DistrictPlan p) {
         int[][] n = new int[2][3];
-        for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellKind[c] == DistrictPlan.HOMES) n[p.cellSquare[c] ? 1 : 0][p.cellLayout[c]]++;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellKind[c] == DistrictPlan.HOMES && p.cellLayout[c] <= DistrictPlan.LAYOUT_BRICK) n[p.cellSquare[c] ? 1 : 0][p.cellLayout[c]]++;
         return n;
     }
 
@@ -1526,7 +1550,7 @@ public class PlanCheck {
         long[][] s = new long[6][2];
         int n = DistrictPlan.FRAME;
         for (int c = 0; c < DistrictPlan.CELLS; c++) {
-            if (p.cellKind[c] != DistrictPlan.HOMES) continue;
+            if (p.cellKind[c] != DistrictPlan.HOMES || p.cellLayout[c] > DistrictPlan.LAYOUT_BRICK) continue;
             long[] row = s[(p.cellSquare[c] ? 3 : 0) + p.cellLayout[c]];
             int x0 = DistrictPlan.CELL * (c % DistrictPlan.CELLS_A_SIDE), y0 = DistrictPlan.CELL * (c / DistrictPlan.CELLS_A_SIDE);
             for (int y = y0; y < y0 + DistrictPlan.CELL; y++) {
@@ -2866,6 +2890,636 @@ public class PlanCheck {
             check("(i) avenues are laid in a real run - his city x 1 and the played city - and every check held with them (sections 5 and 6)", x1Avenues[0] > 0 && playedAvenues[0] > 0);
         }
     }
+
+    /* =====================================================================
+       14. THE CURVES (batch CL4, slice C)
+       ===================================================================== */
+
+    /** The curves' counts of section 5's city x 1 and section 6's played city, summed over their districts (Tally.cv): crescents, crescents the ground refused, streets along a cut drawn as curves, curves in all. For (g). */
+    static long[] x1Curves, playedCurves;
+
+    /** How many cells west of the frame section 14's far fixture puts the founding site: CRESCENT_FROM and four more, so every cell of the frame lies beyond CRESCENT_FROM. */
+    static final int FAR_CELLS = (int) DistrictPlan.CRESCENT_FROM + 4;
+
+    /** Section 14's crowded fixture: 90% of the ground, with 0.7 of his roads - the ladder takes several builds (the later ones from its turns), squares a few homes cells and leaves a few buildings out, and the far homes cells it does not square are crescents. */
+    static final double CROWDED_FILL = 0.90, CROWDED_ROADS = 0.7;
+
+    /** The roads section 14's road-rich fixture is given, a factor of his: BOULEVARD_ROADS, 1 - road enough for the ladder to square cells and make boulevards. */
+    static final double ROAD_RICH = BOULEVARD_ROADS;
+
+    /** Section 14 (b)'s site, in cells west of the frame's edge short of CRESCENT_FROM: 1.25 - the frame's first column of cells lies within CRESCENT_FROM of it and its second beyond. */
+    static final double MID_WEST = 1.25;
+
+    /** Section 14 (c)'s site for an avenue across the frame: (-ARM_SITE, -ARM_SITE), 21 cells out along the diagonal, so its south-east arm runs through the frame's diagonal cells - the ones nearest it, where the homes cells open. */
+    static final int ARM_SITE = 21 * DistrictPlan.CELL;
+
+    /** Section 10's LONG fixture (flat ground at his fill, his roads times LONG_ROADS: every homes cell long blocks) with the founding site at (hubX, hubY) in the frame's plots - outside the frame, for a far one. */
+    static DistrictPlan.Input farHomes(BuildingVisual.Type[] types, double hubX, double hubY) {
+        DistrictPlan.Input in = layoutInput(types, 0, false);
+        in.hubX = hubX;
+        in.hubY = hubY;
+        return in;
+    }
+
+    /** The far fixture: the founding site FAR_CELLS cells west of the frame, level with its middle. */
+    static DistrictPlan.Input farHomes(BuildingVisual.Type[] types) {
+        return farHomes(types, -FAR_CELLS * DistrictPlan.CELL, DistrictPlan.FRAME / 2);
+    }
+
+    /** The frame plot of the cell-axes plot (u, v) of the cell whose interior starts at (x0, y0): u along the long streets, v across them, the long streets running east-west where `across`. */
+    static int cellPlot(int x0, int y0, boolean across, int u, int v) {
+        return across ? (y0 + v) * DistrictPlan.FRAME + x0 + u : (y0 + u) * DistrictPlan.FRAME + x0 + v;
+    }
+
+    /** The harness's own working of a crescent for one bulge (CL4), in the cell's axes, by walking the circle in small steps rather than by DistrictPlan's rows: the plots (u, v) the arc passes through (stair), and those outside them a street-wide band along it reaches, by the nearest approach of a step to the plot's square - surely (tight, nearer than BAND_HALF less a millionth) and at most (loose, a millionth more). */
+    static final class Crescent {
+        final int bulge, a;
+        final double cu, cv, r;
+        final boolean[][] stair = new boolean[DistrictPlan.INTERIOR][DistrictPlan.INTERIOR];
+        final boolean[][] tight = new boolean[DistrictPlan.INTERIOR][DistrictPlan.INTERIOR], loose = new boolean[DistrictPlan.INTERIOR][DistrictPlan.INTERIOR];
+        double firstV, lastV;
+
+        Crescent(int s) {
+            int in = DistrictPlan.INTERIOR;
+            bulge = s;
+            a = DistrictPlan.MIDDLE - s * DistrictPlan.ARC_SHIFT;
+            double chord = in + 1;
+            r = chord / Math.sqrt(2);
+            cu = a + 0.5 - s * chord / 2;
+            cv = chord / 2 - 0.5;
+            int steps = 40000;
+            double[] us = new double[steps + 1], vs = new double[steps + 1];
+            for (int i = 0; i <= steps; i++) {
+                double th = -Math.PI / 4 + (Math.PI / 2) * i / steps;
+                us[i] = cu + s * r * Math.cos(th);
+                vs[i] = cv + r * Math.sin(th);
+                int iu = (int) Math.floor(us[i]), iv = (int) Math.floor(vs[i]);
+                if (iu >= 0 && iu < in && iv >= 0 && iv < in) stair[iv][iu] = true;
+            }
+            firstV = vs[0];
+            lastV = vs[steps];
+            for (int v = 0; v < in; v++) {
+                for (int u = 0; u < in; u++) {
+                    if (stair[v][u]) continue;
+                    boolean near = false;
+                    for (int dv = -1; dv <= 1 && !near; dv++) for (int du = -1; du <= 1 && !near; du++) {
+                        int qv = v + dv, qu = u + du;
+                        near = qv >= 0 && qv < in && qu >= 0 && qu < in && stair[qv][qu];
+                    }
+                    if (!near) continue;
+                    double best = Double.MAX_VALUE;
+                    for (int i = 0; i <= steps; i++) {
+                        double dx = Math.max(Math.max(u - us[i], 0), us[i] - (u + 1)), dy = Math.max(Math.max(v - vs[i], 0), vs[i] - (v + 1));
+                        best = Math.min(best, Math.sqrt(dx * dx + dy * dy));
+                    }
+                    tight[v][u] = best < StreetCurves.BAND_HALF - 1e-6;
+                    loose[v][u] = best < StreetCurves.BAND_HALF + 1e-6;
+                }
+            }
+        }
+
+        /** Whether (u, v) is on one of the cell's three long streets' rows. */
+        static boolean longRow(int v) {
+            for (int s : DistrictPlan.STREETS_AT) if (s == v) return true;
+            return false;
+        }
+    }
+
+    /** The cell c's bulge as its streets show it: +1 or -1 where the street plots of its interior are exactly its three long streets and the harness's arc of that bulge (and a boulevard cell's second row of ring), 0 where they are neither's. */
+    static int bulgeOf(DistrictPlan p, int c, Crescent[] arcs) {
+        int x0 = DistrictPlan.CELL * (c % DistrictPlan.CELLS_A_SIDE) + 1, y0 = DistrictPlan.CELL * (c / DistrictPlan.CELLS_A_SIDE) + 1;
+        boolean across = p.cellAcross[c];
+        for (Crescent a : arcs) {
+            boolean same = true;
+            for (int v = 0; v < DistrictPlan.INTERIOR && same; v++) {
+                for (int u = 0; u < DistrictPlan.INTERIOR; u++) {
+                    boolean street = p.kindAt(cellPlot(x0, y0, across, u, v)) != DistrictPlan.NONE;
+                    boolean boulevardRing = p.cellBoulevard[c] && (u == 0 || v == 0 || u == DistrictPlan.INTERIOR - 1 || v == DistrictPlan.INTERIOR - 1);
+                    if (street != (Crescent.longRow(v) || a.stair[v][u] || boulevardRing)) { same = false; break; }
+                }
+            }
+            if (same) return a.bulge;
+        }
+        return 0;
+    }
+
+    /** Whether the middle of cell c of an input lies DistrictPlan.CRESCENT_FROM cells or more from its founding site, in a straight line, as the harness measures it (the squares in plots, against CRESCENT_FROM x CELL squared). */
+    static boolean farEnough(DistrictPlan.Input in, int c) {
+        double dx = DistrictPlan.CELL * (c % DistrictPlan.CELLS_A_SIDE) + DistrictPlan.CELL / 2.0 - in.hubX, dy = DistrictPlan.CELL * (c / DistrictPlan.CELLS_A_SIDE) + DistrictPlan.CELL / 2.0 - in.hubY;
+        double from = DistrictPlan.CRESCENT_FROM * DistrictPlan.CELL;
+        return dx * dx + dy * dy >= from * from;
+    }
+
+    /** Whether the place's hash and CL2 layout make cell c a crescent, whatever its distance and its ground (DistrictPlan.crescentOf at the cell's place in the world). */
+    static boolean hashWants(DistrictPlan.Input in, int c) {
+        return DistrictPlan.crescentOf(in.seed, in.x0 + (long) DistrictPlan.CELL * (c % DistrictPlan.CELLS_A_SIDE), in.y0 + (long) DistrictPlan.CELL * (c / DistrictPlan.CELLS_A_SIDE));
+    }
+
+    /** The crescent cell a plan opened, as the harness expects it of a long-block homes cell: the place's hash and layout, beyond CRESCENT_FROM, no highway, railway, yard, reserve or avenue in it - and the ground laying the arc whole, which flat owned ground does. */
+    static boolean expectedCrescent(DistrictPlan p, DistrictPlan.Input in, int c) {
+        if (p.cellKind[c] != DistrictPlan.HOMES || p.cellSquare[c] || in.asPrototype || in.latticeOnly || in.combOnly) return false;
+        return farEnough(in, c) && hashWants(in, c) && !crossedCell(in, c % DistrictPlan.CELLS_A_SIDE, c / DistrictPlan.CELLS_A_SIDE);
+    }
+
+    /** A crescent curve of plan p whose first plot is the frame plot `first`, or null. */
+    static DistrictPlan.Curve crescentCurve(DistrictPlan p, int first) {
+        for (DistrictPlan.Curve cv : p.curves) if (cv.kind == DistrictPlan.Curve.CRESCENT && cv.plots()[0] == first) return cv;
+        return null;
+    }
+
+    /** The plots every curve of the plan reaches with its band, by plot. */
+    static boolean[] bandMask(DistrictPlan p) {
+        boolean[] m = new boolean[DistrictPlan.AREA];
+        for (DistrictPlan.Curve cv : p.curves) for (int q : cv.band()) m[q] = true;
+        return m;
+    }
+
+    /** How many of a plan's boxes stand on a plot of mask. */
+    static int boxesOn(DistrictPlan p, boolean[] mask) {
+        int n = 0;
+        for (int i = 0; i < p.buildings; i++) {
+            boolean hit = false;
+            for (int y = p.by[i]; y < p.by[i] + p.bh[i] && !hit; y++) for (int x = p.bx[i]; x < p.bx[i] + p.bw[i]; x++) if (mask[y * DistrictPlan.FRAME + x]) { hit = true; break; }
+            if (hit) n++;
+        }
+        return n;
+    }
+
+    /** Whether two plans have the same curves: kind, circle or vertices, radius, plots and band, in order. */
+    static boolean sameCurves(DistrictPlan a, DistrictPlan b) {
+        if (a.curves.size() != b.curves.size()) return false;
+        for (int i = 0; i < a.curves.size(); i++) {
+            DistrictPlan.Curve x = a.curves.get(i), y = b.curves.get(i);
+            if (x.kind != y.kind || !Arrays.equals(x.geom, y.geom) || x.radius != y.radius || !Arrays.equals(x.plots(), y.plots()) || !Arrays.equals(x.band(), y.band())) return false;
+        }
+        return true;
+    }
+
+    /** What section 14 finds of a plan's homes cells and crescents (crescentStats()). */
+    static final class CrescentStats {
+        boolean wrongLayout, exact = true, ringsJoined = true, crossesAll = true, curved = true, geomHolds = true, bandHolds = true, noMerge = true;
+        int homes, squared, crescents, wanted, mergedElsewhere, wideBoxes, wideInCrescent, onBand, acrossCells, alongCells;
+        final int[] bulges = new int[2];
+        String first = "";
+    }
+
+    /** A plan's homes cells held to what the harness expects of them: each crescent exactly the cell the place, the distance and the crossings make one, its streets its three long streets and the arc the harness walks out, its curve and band the harness's, its blocks unmerged, no box on a band, no wide box in one. */
+    static CrescentStats crescentStats(DistrictPlan p, DistrictPlan.Input in, Crescent[] arcs) {
+        final int n = DistrictPlan.FRAME, cell = DistrictPlan.CELL, side = DistrictPlan.CELLS_A_SIDE, in31 = DistrictPlan.INTERIOR;
+        CrescentStats st = new CrescentStats();
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (p.cellKind[c] != DistrictPlan.HOMES) continue;
+            st.homes++;
+            if (p.cellSquare[c]) st.squared++;
+            boolean want = expectedCrescent(p, in, c), is = p.cellLayout[c] == DistrictPlan.LAYOUT_CRESCENT;
+            if (want) st.wanted++;
+            if (want != is) { st.wrongLayout = true; if (st.first.isEmpty()) st.first = "cell " + c + " expected " + want + " is " + is; }
+            if (!is) {
+                if (p.cellMerged[c]) st.mergedElsewhere++;
+                continue;
+            }
+            st.crescents++;
+            if (p.cellMerged[c]) st.noMerge = false;
+            int x0 = cell * (c % side) + 1, y0 = cell * (c / side) + 1;
+            boolean across = p.cellAcross[c];
+            if (across) st.acrossCells++; else st.alongCells++;
+            int s = bulgeOf(p, c, arcs);
+            st.exact &= s != 0;
+            if (s == 0) { if (st.first.isEmpty()) st.first = "cell " + c + " streets match neither arc"; continue; }
+            st.bulges[(s + 1) / 2]++;
+            Crescent a = arcs[(s + 1) / 2];
+            // The rings: the arc's end plots are the ring's own arterial plots, and the plot beside each inside the cell is the arc's.
+            int ringA = cellPlot(x0, y0, across, a.a, -1), ringB = cellPlot(x0, y0, across, a.a, in31);
+            st.ringsJoined &= (p.roleAt(ringA) == DistrictPlan.ROLE_ARTERIAL || p.roleAt(ringA) == DistrictPlan.ROLE_BOULEVARD)
+                    && (p.roleAt(ringB) == DistrictPlan.ROLE_ARTERIAL || p.roleAt(ringB) == DistrictPlan.ROLE_BOULEVARD)
+                    && a.stair[0][a.a] && a.stair[in31 - 1][a.a] && p.kindAt(cellPlot(x0, y0, across, a.a, 0)) != DistrictPlan.NONE && p.kindAt(cellPlot(x0, y0, across, a.a, in31 - 1)) != DistrictPlan.NONE;
+            // It crosses each long street: a plot of the arc in its row, a street of the cell's.
+            for (int v : DistrictPlan.STREETS_AT) {
+                boolean cross = false;
+                for (int u = 0; u < in31; u++) if (a.stair[v][u] && p.roleAt(cellPlot(x0, y0, across, u, v)) == DistrictPlan.ROLE_STREET) cross = true;
+                st.crossesAll &= cross;
+            }
+            // Its curve: the staircase from ring to ring, the circle, the band.
+            DistrictPlan.Curve cv = crescentCurve(p, ringA);
+            if (cv == null) { st.curved = false; if (st.first.isEmpty()) st.first = "cell " + c + " has no curve"; continue; }
+            java.util.Set<Integer> want0 = new java.util.HashSet<>(), got = new java.util.HashSet<>();
+            for (int v = 0; v < in31; v++) for (int u = 0; u < in31; u++) if (a.stair[v][u]) want0.add(cellPlot(x0, y0, across, u, v));
+            want0.add(ringA);
+            want0.add(ringB);
+            int[] pl = cv.plots();
+            for (int q : pl) got.add(q);
+            st.curved &= want0.equals(got) && pl.length == want0.size() && pl[pl.length - 1] == ringB;
+            // The circle: radius, a quarter turn, from the middle of the first ring plot to the middle of the last.
+            double cx = cv.geom[0], cy = cv.geom[1], r = cv.geom[2], a0 = cv.geom[3], sw = cv.geom[4];
+            double sx = cx + r * Math.cos(a0), sy = cy + r * Math.sin(a0), ex = cx + r * Math.cos(a0 + sw), ey = cy + r * Math.sin(a0 + sw);
+            boolean ends = Math.abs(sx - (ringA % n + 0.5)) < 1e-6 && Math.abs(sy - (ringA / n + 0.5)) < 1e-6 && Math.abs(ex - (ringB % n + 0.5)) < 1e-6 && Math.abs(ey - (ringB / n + 0.5)) < 1e-6;
+            st.geomHolds &= ends && Math.abs(r - (in31 + 1) / Math.sqrt(2)) < 1e-9 && Math.abs(Math.abs(sw) - Math.PI / 2) < 1e-9 && cv.radius == r && cv.kind == DistrictPlan.Curve.CRESCENT;
+            // The band: the plots the harness's walk surely reaches are in it, and it reaches none the walk does not (within a millionth).
+            java.util.Set<Integer> band = new java.util.HashSet<>();
+            for (int q : cv.band()) band.add(q);
+            for (int v = 0; v < in31; v++) {
+                for (int u = 0; u < in31; u++) {
+                    int q = cellPlot(x0, y0, across, u, v);
+                    if (a.tight[v][u] && !band.contains(q)) st.bandHolds = false;
+                    if (band.contains(q) && !a.loose[v][u]) st.bandHolds = false;
+                }
+            }
+        }
+        for (int i = 0; i < p.buildings; i++) {
+            if (Math.min(p.bw[i], p.bh[i]) <= DistrictPlan.BLOCK_DEPTH) continue;
+            st.wideBoxes++;
+            if (p.cellLayout[cellOfBox(p, i)] == DistrictPlan.LAYOUT_CRESCENT) st.wideInCrescent++;
+        }
+        st.onBand = boxesOn(p, bandMask(p));
+        return st;
+    }
+
+    /** Every check but the one network, which holds on a district planned alone only where the ground leaves it one piece: the map joins a district's pieces across the districts before it, and a district of the dense city's rim planned alone (rimCurves()) is often several, at 0.8.18 as now. */
+    static boolean holdsApartFromNetwork(Figures f, DistrictPlan p, DistrictPlan.Input in) {
+        return f.closestPlus >= DistrictPlan.LATTICE && f.outOfReach == 0 && f.onStreet == 0 && f.surfaceHolds(p, in) && f.besideHighway == 0 && f.estateHolds() && f.avenueBad == 0 && f.avenueOuter == 0;
+    }
+
+    static void curves(BuildingVisual.Type[] types) {
+        out.println("\n--- 14. the curves (batch CL4, slice C): crescents far from the founding site, and the streets along a cut drawn smooth ---");
+        final int n = DistrictPlan.FRAME, cell = DistrictPlan.CELL, side = DistrictPlan.CELLS_A_SIDE, in31 = DistrictPlan.INTERIOR;
+        final long seed = Founding.DEFAULT_WORLD_SEED;
+        final Crescent[] arcs = { new Crescent(-1), new Crescent(1) };
+        final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        final int shop = pick(types, 1, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        final int works = pick(types, 9, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
+        final int farm = pick(types, 1, t -> t.category() == BuildingType.AGRICULTURE && t.outer() && t.site() == null);
+        final int paved = pavedRoad(types);
+
+        // ---- (a) flat owned ground, its homes cells long blocks, the founding site FAR_CELLS cells west of the frame
+        DistrictPlan.Input far = farHomes(types);
+        DistrictPlan p = DistrictPlan.make(far);
+        Figures f = figures(p, far);
+        CrescentStats cs = crescentStats(p, far, arcs);
+        int[] bulges = cs.bulges;
+        out.printf("      (a) flat owned ground, the founding site %d cells west of the frame: %d homes cells (%d squared), %d crescents of %d expected (bulge toward -u %d, +u %d; the long streets running east-west in %d, north-south in %d), %d crescent curves;"
+                + " %d boxes wider than a block (%d in a crescent), %d cells with blocks merged (none a crescent); %d boxes on a band; %s%n", FAR_CELLS, cs.homes, cs.squared, cs.crescents, cs.wanted, bulges[0], bulges[1], cs.acrossCells, cs.alongCells,
+                p.curves.size(), cs.wideBoxes, cs.wideInCrescent, cs.mergedElsewhere, cs.onBand, line(p, f));
+        check("(a) the fixture: long-block homes cells only (none squared), and beyond CRESCENT_FROM = " + (int) DistrictPlan.CRESCENT_FROM + " cells from the founding site some cells are crescents (" + cs.crescents + " of " + cs.homes + ")",
+                cs.homes > 0 && cs.squared == 0 && cs.crescents > 0 && p.crescents == cs.crescents && p.crescentsOff == 0);
+        check("(a) the crescents are exactly the cells the harness expects - the place's hash and CL2 layout, beyond the distance, uncrossed" + (cs.first.isEmpty() ? "" : " (" + cs.first + ")"), !cs.wrongLayout && cs.crescents == cs.wanted);
+        check("(a) each crescent's streets are its three long streets and the arc the harness walks out for its bulge, plot for plot (both bulges appear, " + bulges[0] + " and " + bulges[1] + ", and both directions of the long streets, "
+                + cs.acrossCells + " and " + cs.alongCells + ")", cs.exact && bulges[0] > 0 && bulges[1] > 0 && cs.acrossCells > 0 && cs.alongCells > 0);
+        check("(a) ...the arc joins its two rings in T junctions (the ring's plot at each end, the arc's beside it) and crosses its three long streets", cs.ringsJoined && cs.crossesAll);
+        check("(a) ...its curve is the staircase from ring to ring and the circle of radius (INTERIOR + 1) / sqrt 2, a quarter turn from the middle of one ring plot to the middle of the other", cs.curved && cs.geomHolds && p.curves.size() == cs.crescents);
+        check("(a) ...and its band is the plots a street-wide band along the arc reaches, no box standing on one (" + cs.onBand + " boxes on the " + countTrue(bandMask(p)) + " plots)", cs.bandHolds && cs.onBand == 0);
+        check("(a) every check holds - one network, the + floor, reach, the surface - and no building wider than a block stands in a crescent, whose blocks are never merged (" + cs.wideBoxes + " such boxes, "
+                + cs.mergedElsewhere + " cells merged elsewhere)", f.holds(p, far) && f.pieces == 1 && cs.wideBoxes > 0 && cs.wideInCrescent == 0 && cs.noMerge && cs.mergedElsewhere > 0);
+        // The same with road to spare: the surface ladder climbs (squares some homes cells, makes boulevards of arterials), its steps built from the ladder's turns - the crescents among the cells it leaves long blocks hold all the same.
+        DistrictPlan.Input rich = farHomes(types);
+        rich.gravel *= ROAD_RICH / LONG_ROADS;
+        rich.paved *= ROAD_RICH / LONG_ROADS;
+        DistrictPlan prich = DistrictPlan.make(rich);
+        Figures frich = figures(prich, rich);
+        CrescentStats rs = crescentStats(prich, rich, arcs);
+        out.printf("      (a) with %.1f times his roads (the ladder climbed: %d builds): %d homes cells (%d squared), %d crescents of %d expected, %d crescent curves, %d boxes on a band; %s%n", ROAD_RICH, prich.builds, rs.homes, rs.squared, rs.crescents, rs.wanted,
+                prich.curves.size(), rs.onBand, line(prich, frich));
+        check("(a) with road to spare the ladder squares homes cells (" + rs.squared + " of " + rs.homes + ", " + prich.builds + " builds), the crescents among the others are the cells expected and their arcs, curves and bands are the harness's, every check holding",
+                prich.builds > 1 && rs.squared > 0 && rs.crescents > 0 && !rs.wrongLayout && rs.crescents == rs.wanted && rs.exact && rs.curved && rs.geomHolds && rs.bandHolds && rs.noMerge && rs.onBand == 0
+                        && rs.wideInCrescent == 0 && frich.holds(prich, rich) && prich.curves.size() == rs.crescents);
+
+        // ...and crowded, the ladder's first steps leaving buildings out so a later one is gone on with from a turn (THE LADDER'S TURNS): the curves kept through it.
+        DistrictPlan.Input crowd = flatMix(types, CROWDED_FILL, true, false);
+        crowd.gravel *= CROWDED_ROADS;
+        crowd.paved *= CROWDED_ROADS;
+        crowd.hubX = -FAR_CELLS * cell;
+        crowd.hubY = DistrictPlan.FRAME / 2;
+        DistrictPlan pcrowd = DistrictPlan.make(crowd);
+        Figures fcrowd = figures(pcrowd, crowd);
+        CrescentStats ccs = crescentStats(pcrowd, crowd, arcs);
+        out.printf("      (a) crowded, at %.0f%% of the ground with %.1f times his roads (%d builds, %d buildings without a place): %d homes cells (%d squared), %d crescents of %d expected, %d crescent curves, %d boxes on a band; %s%n", CROWDED_FILL * 100, CROWDED_ROADS,
+                pcrowd.builds, pcrowd.overflowCount(), ccs.homes, ccs.squared,
+                ccs.crescents, ccs.wanted, pcrowd.curves.size(), ccs.onBand, line(pcrowd, fcrowd));
+        check("(a) crowded the ladder takes several builds (" + pcrowd.builds + "), the later ones from its turns, and squares only some homes cells (" + ccs.squared + " of " + ccs.homes + "): the crescents among the rest are the cells expected, their arcs, curves and bands the harness's, no box on a band, every check holding",
+                pcrowd.builds > 2 && ccs.squared > 0 && ccs.squared < ccs.homes && ccs.crescents > 0 && !ccs.wrongLayout && ccs.crescents == ccs.wanted && ccs.exact && ccs.curved && ccs.geomHolds && ccs.bandHolds && ccs.noMerge && ccs.onBand == 0 && ccs.wideInCrescent == 0
+                        && fcrowd.holds(pcrowd, crowd) && pcrowd.curves.size() == ccs.crescents);
+
+        // ---- (b) the same ground with the founding site inside the frame, and one site that puts some cells on each side of the distance
+        DistrictPlan.Input near = layoutInput(types, 0, false);
+        DistrictPlan pn = DistrictPlan.make(near);
+        int hashNear = 0, crescentsNear = 0, variedNear = 0;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (pn.cellKind[c] != DistrictPlan.HOMES) continue;
+            if (hashWants(near, c)) hashNear++;
+            if (pn.cellLayout[c] == DistrictPlan.LAYOUT_CRESCENT) crescentsNear++;
+            if (pn.cellLayout[c] != DistrictPlan.LAYOUT_TODAY) variedNear++;
+        }
+        DistrictPlan.Input mid = farHomes(types, -(DistrictPlan.CRESCENT_FROM - MID_WEST) * cell, DistrictPlan.FRAME / 2);
+        DistrictPlan pm = DistrictPlan.make(mid);
+        int farWant = 0, nearWant = 0, farCrescent = 0, nearCrescent = 0;
+        boolean midRight = true;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (pm.cellKind[c] != DistrictPlan.HOMES || pm.cellSquare[c] || crossedCell(mid, c % side, c / side) || !hashWants(mid, c)) continue;
+            boolean farCell = farEnough(mid, c), is = pm.cellLayout[c] == DistrictPlan.LAYOUT_CRESCENT;
+            if (farCell) { farWant++; if (is) farCrescent++; } else { nearWant++; if (is) nearCrescent++; }
+            midRight &= is == farCell;
+        }
+        out.printf("      (b) the founding site inside the frame: %d homes cells, %d of them the hash would make crescents, %d crescents, %d of another layout than the comb; the site %.2f cells west of the frame's edge:"
+                + " %d cells the hash wants beyond the distance (%d crescents) and %d within it (%d crescents)%n", homesIn(pn), hashNear, crescentsNear, variedNear, DistrictPlan.CRESCENT_FROM - MID_WEST, farWant, farCrescent, nearWant, nearCrescent);
+        check("(b) nearer than CRESCENT_FROM no cell is a crescent, though the hash and CL2 layout would make " + hashNear + " of them one beyond it", hashNear > 0 && crescentsNear == 0 && variedNear > 0 && pn.crescents == 0 && pn.curves.stream().noneMatch(cv -> cv.kind == DistrictPlan.Curve.CRESCENT));
+        check("(b) ...the threshold from both sides in one plan: of the cells the hash wants, those beyond the distance are crescents (" + farCrescent + " of " + farWant + ") and those within it are not (" + nearCrescent + " of " + nearWant + ")",
+                farWant > 0 && nearWant > 0 && midRight && farCrescent == farWant && nearCrescent == 0);
+
+        // ---- (c) a crossed cell beyond CRESCENT_FROM keeps the comb: a railway plot in a crescent's interior, and avenues across the cells
+        int railCell = -1, crossedKept = 0, crossedTried = 0;
+        boolean othersKept = false;
+        for (int c = 0; c < DistrictPlan.CELLS && railCell < 0; c++) {
+            if (p.cellLayout[c] != DistrictPlan.LAYOUT_CRESCENT) continue;
+            crossedTried++;
+            int x0 = cell * (c % side) + 1, y0 = cell * (c / side) + 1;
+            DistrictPlan.Input rail = farHomes(types);
+            rail.fixed[(y0 + 3) * n + x0 + 3] = DistrictPlan.FIXED_RAIL;
+            DistrictPlan pr = DistrictPlan.make(rail);
+            if (pr.cellKind[c] != DistrictPlan.HOMES || pr.cellSquare[c] || !hashWants(rail, c)) continue;
+            railCell = c;
+            crossedKept = pr.cellLayout[c] == DistrictPlan.LAYOUT_TODAY ? 1 : 0;
+            for (int d = 0; d < DistrictPlan.CELLS; d++) if (d != c && pr.cellLayout[d] == DistrictPlan.LAYOUT_CRESCENT) othersKept = true;
+        }
+        DistrictPlan.Input arms = farHomes(types, -ARM_SITE, -ARM_SITE);
+        DistrictPlan pa = DistrictPlan.make(arms);
+        int armCells = 0, armComb = 0, armCrescents = 0, armWanted = 0;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (pa.cellKind[c] != DistrictPlan.HOMES || pa.cellSquare[c]) continue;
+            if (pa.cellLayout[c] == DistrictPlan.LAYOUT_CRESCENT) armCrescents++;
+            if (!crossedCell(arms, c % side, c / side)) continue;
+            armCells++;
+            if (pa.cellLayout[c] == DistrictPlan.LAYOUT_TODAY) armComb++;
+            if (farEnough(arms, c) && hashWants(arms, c)) armWanted++;
+        }
+        out.printf("      (c) a railway plot in the interior of crescent cell %s (the %d%s tried): that cell has the comb %s, other cells still crescents %s; with an avenue's arm across the frame (the site at (-%d, -%d), its south-east arm along the frame's diagonal):"
+                + " %d homes cells it crosses, %d of them the comb (%d would be crescents by hash and distance), %d crescents elsewhere%n", railCell, crossedTried, crossedTried == 1 ? "st" : "th", crossedKept == 1, othersKept,
+                ARM_SITE, ARM_SITE, armCells, armComb, armWanted, armCrescents);
+        check("(c) a crescent cell a railway plot is laid in (the same input with it) keeps the comb, the other crescents staying", railCell >= 0 && crossedKept == 1 && othersKept);
+        check("(c) ...so do the cells an avenue crosses: all " + armCells + " keep the comb, though the hash and distance would make " + armWanted + " of them crescents, and the cells it does not cross are crescents (" + armCrescents + ")",
+                armCells > 0 && armComb == armCells && armWanted > 0 && armCrescents > 0 && figures(pa, arms).holds(pa, arms));
+
+        // ---- (d) the share over many cells, and (with the plans) every cell as the function says
+        long[] place = MapCheck.dryPlace(World.of(seed));
+        long i0 = Math.floorDiv(place[0], cell), j0 = Math.floorDiv(place[1], cell);
+        int notComb = 0, cres = 0, plus = 0, minus = 0, cells = SHARE_SIDE * SHARE_SIDE;
+        for (int j = 0; j < SHARE_SIDE; j++) {
+            for (int i = 0; i < SHARE_SIDE; i++) {
+                long cx = (i0 + i) * cell, cy = (j0 + j) * cell;
+                if (DistrictPlan.layoutOf(seed, cx, cy, false) == DistrictPlan.LAYOUT_TODAY) continue;
+                notComb++;
+                if (!DistrictPlan.crescentOf(seed, cx, cy)) continue;
+                cres++;
+                if (DistrictPlan.crescentBulge(seed, cx, cy) > 0) plus++; else minus++;
+            }
+        }
+        double share = cres / (double) notComb;
+        out.printf("      (d) over %,d cells of the lattice: %,d are not the comb, %,d of those crescents - %.4f against CRESCENT_SHARE %.2f (%.4f of all the cells: a third); bulging toward +u %,d, -u %,d%n", cells, notComb, cres, share,
+                DistrictPlan.CRESCENT_SHARE, cres / (double) cells, plus, minus);
+        check("(d) of the long-block cells beyond CRESCENT_FROM whose CL2 layout is not the comb, the crescents' share is CRESCENT_SHARE within 0.01 (" + String.format("%.4f", share) + ")", Math.abs(share - DistrictPlan.CRESCENT_SHARE) <= SHARE_TOLERANCE);
+        check("(d) ...a third of all the cells are crescents (a third keep the comb, a sixth drop crossings, a sixth are brick) and the arc bulges each way in about half", Math.abs(cres / (double) cells - (1 - DistrictPlan.TODAY_SHARE) * DistrictPlan.CRESCENT_SHARE) <= SHARE_TOLERANCE
+                && Math.abs(plus / (double) cres - 0.5) <= SHARE_TOLERANCE);
+
+        // ---- (c2) the ground refusing an arc: a pond wider than a street's bridge in the middle of every second crescent's arc; the cells it cuts keep the layout they have
+        DistrictPlan.Input wet = farHomes(types);
+        final int wide = DistrictPlan.STREET_BRIDGE + 2;
+        boolean[] pond = new boolean[DistrictPlan.CELLS];
+        int ponds = 0, seen = 0;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (p.cellLayout[c] != DistrictPlan.LAYOUT_CRESCENT || seen++ % 2 == 0) continue;
+            int s = bulgeOf(p, c, arcs), x0 = cell * (c % side) + 1, y0 = cell * (c / side) + 1;
+            Crescent a = arcs[(s + 1) / 2];
+            int lo = in31, hi = -1;
+            for (int u = 0; u < in31; u++) if (a.stair[in31 / 2][u]) { lo = Math.min(lo, u); hi = Math.max(hi, u); }
+            int mu = (lo + hi) / 2;
+            for (int v = in31 / 2 - wide / 2; v < in31 / 2 - wide / 2 + wide; v++) {
+                for (int u = mu - wide / 2; u < mu - wide / 2 + wide; u++) wet.terrain[cellPlot(x0, y0, p.cellAcross[c], u, v)] = World.FRESH;
+            }
+            pond[c] = true;
+            ponds++;
+        }
+        DistrictPlan pw = DistrictPlan.make(wet);
+        int wetWant = 0, wetKept = 0, wetOff = 0, wetCres = 0, wetWrong = 0;
+        boolean wetWhole = true;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) {
+            if (pw.cellKind[c] != DistrictPlan.HOMES || pw.cellSquare[c] || !hashWants(wet, c) || !farEnough(wet, c) || crossedCell(wet, c % side, c / side)) continue;
+            wetWant++;
+            if (pw.cellLayout[c] == DistrictPlan.LAYOUT_CRESCENT) {
+                wetCres++;
+                wetWhole &= bulgeOf(pw, c, arcs) != 0;
+                if (pond[c]) wetWrong++;
+            } else {
+                wetOff++;
+                if (pw.cellLayout[c] == DistrictPlan.layoutOf(seed, wet.x0 + (long) cell * (c % side), wet.y0 + (long) cell * (c / side), false)) wetKept++;
+                if (!pond[c]) wetWrong++;
+            }
+        }
+        Figures fw = figures(pw, wet);
+        out.printf("      (c2) a %d x %d pond in the middle of the arc of %d of the %d crescents: of %d cells the hash wants as crescents %d are (arcs whole), %d keep the layout CL2 gave them (counted: %d), %d on the wrong side of their pond; %s%n",
+                wide, wide, ponds, p.crescents, wetWant, wetCres, wetOff, pw.crescentsOff, wetWrong, line(pw, fw));
+        check("(c2) a cell the hash wants as a crescent whose arc the ground would not lay whole (water wider than a street's bridge) keeps its CL2 layout and is counted (" + wetOff + " cells, crescentsOff " + pw.crescentsOff + "), the others are crescents with the arc whole ("
+                + wetCres + ")", ponds > 0 && wetOff > 0 && wetCres > 0 && wetKept == wetOff && pw.crescentsOff == wetOff && wetWhole && pw.crescents == wetCres && wetWrong == 0);
+        check("(c2) ...every check holds with the ponds (one network or pieces the ground parts)", fw.holds(pw, wet));
+        DistrictPlan.Input lat = farHomes(types);
+        lat.latticeOnly = true;
+        DistrictPlan pl = DistrictPlan.make(lat);
+        DistrictPlan.Input comb = farHomes(types);
+        comb.combOnly = true;
+        DistrictPlan pc0 = DistrictPlan.make(comb);
+        check("(c2) with latticeOnly or combOnly no cell is a crescent and the plan lays no curve (" + pl.crescents + " and " + pc0.crescents + " crescents, " + pl.curves.size() + " and " + pc0.curves.stream().filter(cv -> cv.kind == DistrictPlan.Curve.CRESCENT).count() + " curves)",
+                pl.crescents == 0 && pc0.crescents == 0 && pl.curves.isEmpty() && pc0.curves.stream().noneMatch(cv -> cv.kind == DistrictPlan.Curve.CRESCENT));
+
+        // ---- (e) the shore: the test district cut by its river and the sea
+        shoreCurves(types);
+
+        // ---- (f) a pure function, and the order of arrival
+        DistrictPlan again = DistrictPlan.make(far);
+        check("(f) the same input twice is the same plan: boxes, streets, layouts, counts and every curve, its plots and its band", samePlan(p, again) && Arrays.equals(p.cellLayout, again.cellLayout) && sameCurves(p, again)
+                && p.crescents == again.crescents && p.shoreCurves == again.shoreCurves);
+        Log log = new Log();
+        log.add(0, house, 150).add(0, shop, 20).add(0, works, 2).add(0, paved, 3).batch();
+        final int months = 6;
+        for (int m = 1; m <= months; m++) log.add(m, house, HOUSES_A_MONTH_FAR).add(m, shop, 15).add(m, works, 1 + m % 2).add(m, paved, 2).add(m, farm, 1);
+        DistrictPlan[] pmo = new DistrictPlan[months + 1];
+        boolean monthsHold = true, curvesStand = true;
+        int movedBoxes = 0, crescentsEver = 0;
+        for (int m = 0; m <= months; m++) {
+            DistrictPlan.Input im = log.until(m).into(flat(types));
+            im.hubX = -FAR_CELLS * cell;
+            im.hubY = DistrictPlan.FRAME / 2;
+            pmo[m] = DistrictPlan.make(im);
+            monthsHold &= figures(pmo[m], im).holds(pmo[m], im);
+        }
+        for (int m = 0; m < months; m++) {
+            movedBoxes += missing(pmo[m], pmo[m + 1]);
+            for (DistrictPlan.Curve cv : pmo[m].curves) {
+                boolean found = false;
+                for (DistrictPlan.Curve later : pmo[m + 1].curves) {
+                    if (later.kind == cv.kind && Arrays.equals(later.geom, cv.geom) && Arrays.equals(later.plots(), cv.plots()) && Arrays.equals(later.band(), cv.band())) { found = true; break; }
+                }
+                curvesStand &= found;
+            }
+        }
+        StringBuilder perMonth = new StringBuilder();
+        for (int m = 0; m <= months; m++) perMonth.append(' ').append(pmo[m].crescents).append('/').append(cellsOpened(pmo[m]));
+        crescentsEver = pmo[months].crescents;
+        out.printf("      (f) a log of %d months on the far fixture: crescents / open cells by month:%s; boxes moved from one month to the next %d%n", months, perMonth, movedBoxes);
+        check("(f) the fixture: cells open month by month beyond CRESCENT_FROM and crescents among them (" + pmo[0].crescents + " at month 0, " + crescentsEver + " at month " + months + ")", pmo[months].crescents > pmo[0].crescents && crescentsEver > 0);
+        check("(f) every box of month m stands at month m + 1, and every crescent of month m is the same curve at month m + 1 (the arc and its band, plot for plot), every check holding each month", movedBoxes == 0 && curvesStand && monthsHold);
+        // ...and the ground under a crescent's band bought after the cell opened (THE GROUND BOUGHT): the plots stay free of buildings, bought or not.
+        boolean[] hole = new boolean[DistrictPlan.AREA];
+        int holes = 0;
+        for (DistrictPlan.Curve cv : pmo[months].curves) {
+            if (cv.kind != DistrictPlan.Curve.CRESCENT) continue;
+            for (int q : cv.band()) if (pmo[months].kindAt(q) == DistrictPlan.NONE && !hole[q]) { hole[q] = true; holes++; }
+        }
+        final int boughtMonth = 3;
+        DistrictPlan.Input dated = log.into(flat(types)), datedLattice = log.into(flat(types));
+        for (DistrictPlan.Input d : new DistrictPlan.Input[] { dated, datedLattice }) {
+            d.hubX = -FAR_CELLS * cell;
+            d.hubY = DistrictPlan.FRAME / 2;
+            d.boughtAt = new int[DistrictPlan.AREA];
+            for (int q = 0; q < DistrictPlan.AREA; q++) if (hole[q]) d.boughtAt[q] = boughtMonth;
+        }
+        datedLattice.latticeOnly = true;
+        DistrictPlan pdated = DistrictPlan.make(dated), plattice = DistrictPlan.make(datedLattice);
+        int onHoles = boxesOn(pdated, hole), onHolesLattice = boxesOn(plattice, hole);
+        boolean wholeArcs = true;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) if (pdated.cellLayout[c] == DistrictPlan.LAYOUT_CRESCENT) wholeArcs &= bulgeOf(pdated, c, arcs) != 0;
+        out.printf("      (f) the %d plots of the crescents' bands (the final month's) bought in month %d, after the cells opened: %d crescents, %d boxes on the plots; with latticeOnly (no crescent, no band) %d boxes on them%n", holes, boughtMonth,
+                pdated.crescents, onHoles, onHolesLattice);
+        check("(f) ground bought under a crescent's band after its cell opened stays free of buildings: " + onHoles + " boxes on the " + holes + " plots, where the same ground without the band takes " + onHolesLattice + " (the arrivals after the purchase)",
+                holes > 0 && pdated.crescents > 0 && wholeArcs && onHoles == 0 && onHolesLattice > 0 && figures(pdated, dated).holds(pdated, dated));
+
+        // ---- (g) the counts in a real run
+        if (x1Curves != null && playedCurves != null) {
+            out.printf("      (g) his city x 1, summed over its districts: %,d crescents (%,d the ground would not lay whole), %,d streets along a cut drawn as curves, %,d curves%n", x1Curves[0], x1Curves[1], x1Curves[2], x1Curves[3]);
+            out.printf("      (g) the played city (section 6's samples), summed: %,d crescents (%,d the ground would not lay whole), %,d streets along a cut drawn as curves, %,d curves%n", playedCurves[0], playedCurves[1], playedCurves[2], playedCurves[3]);
+            check("(g) streets along a cut are drawn as curves in a real run (his city x 1 or the played city), every check holding with them (sections 5 and 6)", x1Curves[2] + playedCurves[2] > 0);
+        }
+        rimCurves(types);
+    }
+
+    /** The houses each month brings in (f): enough to open a homes cell or three a month beyond CRESCENT_FROM. */
+    static final int HOUSES_A_MONTH_FAR = 3000;
+
+    /** The homes cells a plan opened. */
+    static int homesIn(DistrictPlan p) {
+        int k = 0;
+        for (int c = 0; c < DistrictPlan.CELLS; c++) if (p.cellKind[c] == DistrictPlan.HOMES) k++;
+        return k;
+    }
+
+    /** The plots a mask holds. */
+    static int countTrue(boolean[] mask) {
+        int k = 0;
+        for (boolean b : mask) if (b) k++;
+        return k;
+    }
+
+    /** Section 14 (e): the test district cut by its river and the sea, the game's rules - each street along a cut a curve whose line starts and ends where its plots do, with corners no tighter than their radius, and no box on the plots its band reaches. */
+    static void shoreCurves(BuildingVisual.Type[] types) {
+        final int n = DistrictPlan.FRAME;
+        DistrictPlan.Input cut = testDistrict(types, 0, false);
+        DistrictPlan pc = DistrictPlan.make(cut);
+        Figures fc = figures(pc, cut);
+        int curves = 0, withBand = 0, bandPlots = 0, fullBends = 0, cutBends = 0, bends = 0;
+        boolean ordered = true, roles = true, endsOn = true, near = true, corners = true, ownBand = true;
+        double farthest = 0;
+        for (DistrictPlan.Curve cv : pc.curves) {
+            if (cv.kind != DistrictPlan.Curve.SHORE) continue;
+            curves++;
+            int[] pl = cv.plots();
+            // Its plots in order: four-connected, the dead end's last plot first and the street it meets last, the plots between the join's own.
+            boolean chain = pl.length >= 3;
+            for (int i = 1; i < pl.length; i++) chain &= Math.abs(pl[i] % n - pl[i - 1] % n) + Math.abs(pl[i] / n - pl[i - 1] / n) == 1;
+            ordered &= chain;
+            boolean own = true;
+            for (int i = 1; i + 1 < pl.length; i++) own &= pc.roleAt(pl[i]) == DistrictPlan.ROLE_SHORE;
+            roles &= own && pc.roleAt(pl[0]) != DistrictPlan.ROLE_SHORE && pc.kindAt(pl[0]) != DistrictPlan.NONE && pc.kindAt(pl[pl.length - 1]) != DistrictPlan.NONE;
+            // Its line, as the painter will draw it: from the middle of the first plot to the middle of the last.
+            double[] vx = new double[cv.geom.length / 2], vy = new double[cv.geom.length / 2];
+            for (int i = 0; i < vx.length; i++) { vx[i] = cv.geom[2 * i]; vy[i] = cv.geom[2 * i + 1]; }
+            double[][] line = StreetCurves.line(vx, vy);
+            int last = line[0].length - 1;
+            endsOn &= Math.abs(line[0][0] - (pl[0] % n + 0.5)) < 1e-9 && Math.abs(line[1][0] - (pl[0] / n + 0.5)) < 1e-9
+                    && Math.abs(line[0][last] - (pl[pl.length - 1] % n + 0.5)) < 1e-9 && Math.abs(line[1][last] - (pl[pl.length - 1] / n + 0.5)) < 1e-9 && cv.radius == StreetCurves.CURVE_RADIUS;
+            // ...within one plot of its own plots' middles.
+            for (int i = 0; i <= last; i++) {
+                double best = Double.MAX_VALUE;
+                for (int q : pl) best = Math.min(best, Math.hypot(line[0][i] - (q % n + 0.5), line[1][i] - (q / n + 0.5)));
+                farthest = Math.max(farthest, best);
+                if (best > 1 + 1e-9) near = false;
+            }
+            // ...and every corner of its polyline rounded with no radius over the curve radius and no tangent over half of a leg beside it.
+            for (TrackCurves.Bend b : TrackCurves.bends(vx, vy, cv.radius)) {
+                bends++;
+                double tangent = b.r() * Math.tan(Math.abs(b.sweep()) / 2);
+                int k = -1;
+                for (int i = 1; i + 1 < vx.length; i++) if (Math.abs(vx[i] - b.x()) < 1e-9 && Math.abs(vy[i] - b.y()) < 1e-9) k = i;
+                double legs = k < 0 ? 0 : Math.min(Math.hypot(vx[k] - vx[k - 1], vy[k] - vy[k - 1]), Math.hypot(vx[k + 1] - vx[k], vy[k + 1] - vy[k]));
+                corners &= k > 0 && b.r() <= cv.radius + 1e-9 && b.t() <= legs / 2 + 1e-9 && Math.abs(tangent - b.t()) < 1e-9;
+                if (Math.abs(b.r() - cv.radius) < 1e-9) fullBends++; else cutBends++;
+            }
+            int[] band = cv.band();
+            bandPlots += band.length;
+            if (band.length > 0) withBand++;
+            java.util.Set<Integer> own0 = new java.util.HashSet<>();
+            for (int q : pl) own0.add(q);
+            for (int q : band) ownBand &= !own0.contains(q);
+        }
+        boolean[] mask = bandMask(pc);
+        int onBand = boxesOn(pc, mask);
+        // The premise from both sides: with latticeOnly the same ground lays no curve and keeps no plot free.
+        DistrictPlan.Input flatCut = testDistrict(types, 0, false);
+        flatCut.latticeOnly = true;
+        DistrictPlan plain = DistrictPlan.make(flatCut);
+        out.printf("      (e) the test district cut by its river and the sea: %d dead ends joined along a cut, %d drawn as curves (%d reaching ground beyond their own plots, %d such plots), %d corners rounded (%d with the full radius %.0f, %d cut to fit a short leg),"
+                + " the line at most %.2f plots from its plots' middles; %d boxes on a band; with latticeOnly %d curves; %s%n", pc.shoreJoins, curves, withBand, bandPlots, bends, fullBends, StreetCurves.CURVE_RADIUS, cutBends, farthest, onBand,
+                plain.curves.size(), line(pc, fc));
+        check("(e) the fixture: the ground cuts cells and dead ends are joined along the cut (" + pc.shoreJoins + "), most of them drawn as curves (" + curves + ")", pc.shoreJoins > 0 && curves > 0 && pc.shoreCurves == curves && curves <= pc.shoreJoins);
+        check("(e) each curve's plots run from the dead end's last plot to the street it meets, four-connected, the plots between the cut's join (ROLE_SHORE)", ordered && roles);
+        check("(e) ...its line starts at the dead end's plot middle and ends at the met street's, and stays within one plot of its own plots' middles (at most " + String.format("%.2f", farthest) + ")", endsOn && near);
+        check("(e) ...turns at no corner tighter than its radius allows: no corner over CURVE_RADIUS, none whose tangent is over half of a leg beside it (" + bends + " corners, " + fullBends + " with the full radius, " + cutBends + " cut)", corners && bends > 0 && fullBends > 0);
+        check("(e) ...the plots its band reaches beyond its own are kept free (" + bandPlots + " plots of " + withBand + " curves), no box standing on one, and with latticeOnly the same ground keeps none and lays none ("
+                + plain.curves.size() + " curves)", ownBand && withBand > 0 && onBand == 0 && plain.curves.isEmpty() && plain.shoreJoins > 0);
+        check("(e) every check holds on the cut ground with its curves, and no building lacks a place that the same ground without them places (" + pc.overflowCount() + " against " + plain.overflowCount() + ")", fc.holds(pc, cut) && pc.overflowCount() <= plain.overflowCount());
+    }
+
+    /** Section 14 (g), the rim of the dense city: the plans of districts far from its founding site, where crescents are laid in a real city (the screen and the samples of sections 5 and 6 lie within CRESCENT_FROM cells of it). */
+    static void rimCurves(BuildingVisual.Type[] types) {
+        denseScreen(types);
+        CityMap dense = denseCity;
+        long[] cv = new long[4];
+        int planned = 0, rim = 0, apart = 0, onBand = 0;
+        boolean holds = true;
+        long ms = 0;
+        for (CityMap.District d : dense.districts()) {
+            if (Math.max(Math.abs(d.dx), Math.abs(d.dy)) < RIM_FROM) continue;
+            rim++;
+            if (rim % RIM_EVERY != 0) continue;
+            long t0 = System.nanoTime();
+            DistrictPlan.Input in = dense.planInput(d);
+            DistrictPlan p = DistrictPlan.make(in);
+            ms += (System.nanoTime() - t0) / 1_000_000;
+            planned++;
+            Figures fg = figures(p, in);
+            holds &= holdsApartFromNetwork(fg, p, in);
+            if (fg.pieces > 1 && !fg.groundParts) apart++;
+            onBand += boxesOn(p, bandMask(p));
+            cv[0] += p.crescents;
+            cv[1] += p.crescentsOff;
+            cv[2] += p.shoreCurves;
+            cv[3] += p.curves.size();
+        }
+        out.printf("      (g) the dense city (x %,.0f): its %,d districts at least %d districts from the site, every %dth planned (%d): %,d crescents (%,d the ground would not lay whole), %,d streets along a cut drawn as curves, %,d curves, %d boxes on a band, %d districts of several pieces planned alone, %d ms in all%n",
+                MapCheck.TIMES[MapCheck.DENSE], rim, RIM_FROM, RIM_EVERY, planned, cv[0], cv[1], cv[2], cv[3], onBand, apart, ms);
+        check("(g) crescents are laid at the rim of a real city, every check but the one network holding on the " + planned + " districts planned (alone they are often several pieces, as at 0.8.18), no box on a band", planned > 0 && cv[0] > 0 && holds && onBand == 0);
+    }
+
+    /** The rim of the dense city (rimCurves()): districts this many or more from the one the founding site lies in, by the larger of their columns and rows. */
+    static final int RIM_FROM = 3;
+
+    /** ...and of those, one in this many is planned: 37, a stride that takes districts all round it. */
+    static final int RIM_EVERY = 37;
 
     static void packing(BuildingVisual.Type[] types) {
         denseScreen(types);
