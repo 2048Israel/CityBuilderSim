@@ -1,6 +1,6 @@
 # ShortTermTBill.java - 115 lines · 13 methods · 1 constants · model
 
-`ham/citybuildersim/ShortTermTBill.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ShortTermTBill.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > A bill: borrow now, repay one lump, no coupon - at 1, 3, 6 or 12 months,
 > each sale its own line (CD2).

@@ -1,6 +1,6 @@
-# EnsembleCheck.java - 505 lines · 24 methods · 10 constants · harnesses
+# EnsembleCheck.java - 509 lines · 24 methods · 10 constants · harnesses
 
-`ham/citybuildersim/EnsembleCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EnsembleCheck.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > The inflation ensemble is in the tree and still runs: its driver compiles
 > against this tree, its two halves name the same policies, and the stored
@@ -58,8 +58,8 @@
 | 119 | 1. the runner is in the tree |
 | 131 | 2. the driver compiles against this tree |
 | 211 | 3. the same policies |
-| 303 | 4. the baseline reads |
-| 476 | · THE FIXTURES, WHICH CAUSE THE CONDITION RATHER THAN WAITING FOR IT |
+| 304 | 4. the baseline reads |
+| 480 | · THE FIXTURES, WHICH CAUSE THE CONDITION RATHER THAN WAITING FOR IT |
 
 ## Constants
 
@@ -67,14 +67,14 @@
 |---:|---|---|---|
 | 213 | `EnsembleCheck.POLICY_ENUM` | `Pattern.compile("\\benum\\s+Policy\\s*\\{([^}]*)\\}")` |  |
 | 214 | `EnsembleCheck.POLICIES_LIST` | `Pattern.compile("(?m)^POLICIES\\s*=\\s*\\[([^\\]]*)\\]")` |  |
-| 215 | `EnsembleCheck.QUOTED` | `Pattern.compile("\"([^\"]*)\"\|'([^']*)'")` |  |
-| 305 | `EnsembleCheck.BASELINE_NAME` | `Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)\\.md")` |  |
-| 306 | `EnsembleCheck.CRITERIA` | `Pattern.compile("(?m)^criteria passed:\\s*(\\d+)\\s*/\\s*(\\d+)\\b")` |  |
-| 307 | `EnsembleCheck.JSON_BLOCK` | `Pattern.compile("(?s)'''json\\s*\\R(.*?)\\R\\s*'''")` |  |
-| 393 | `EnsembleCheck.VERDICT` | `"criteria passed: 5/6(vacuous, not counted: 0); missing runs: none; short run...` |  |
-| 394 | `EnsembleCheck.JSON` | `""" { "seeds": 4, "policies": { "ALPHA": {"final_pop_median": 1000.5, "runs_w...` |  |
-| 481 | `EnsembleCheck.BROKEN` | `""" package ham.citybuildersim; final class EnsembleCheckBroken { static void...` | Calls a method that no class has: the change the guard exists for, made by hand. |
-| 490 | `EnsembleCheck.SOUND` | `""" package ham.citybuildersim; final class EnsembleCheckSound { static Class...` | Calls a class that is there. |
+| 216 | `EnsembleCheck.QUOTED` | `Pattern.compile("\"([^\"]*)\"\|'([^']*)'")` | A name in double or single quotes, as either half lists its policies. |
+| 306 | `EnsembleCheck.BASELINE_NAME` | `Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)\\.md")` |  |
+| 308 | `EnsembleCheck.CRITERIA` | `Pattern.compile("(?m)^criteria passed:\\s*(\\d+)\\s*/\\s*(\\d+)\\b")` | A stored score's verdict line: "criteria passed: N / M". |
+| 309 | `EnsembleCheck.JSON_BLOCK` | `Pattern.compile("(?s)'''json\\s*\\R(.*?)\\R\\s*'''")` |  |
+| 396 | `EnsembleCheck.VERDICT` | `"criteria passed: 5/6(vacuous, not counted: 0); missing runs: none; short run...` | A canned page's verdict line, for the reader's fixtures. |
+| 398 | `EnsembleCheck.JSON` | `""" { "seeds": 4, "policies": { "ALPHA": {"final_pop_median": 1000.5, "runs_w...` | ...and its JSON block, sound as it stands; a fixture edits it into a page the reader should refuse. |
+| 485 | `EnsembleCheck.BROKEN` | `""" package ham.citybuildersim; final class EnsembleCheckBroken { static void...` | Calls a method that no class has: the change the guard exists for, made by hand. |
+| 494 | `EnsembleCheck.SOUND` | `""" package ham.citybuildersim; final class EnsembleCheckSound { static Class...` | Calls a class that is there. |
 
 ## Fields (state)
 
@@ -86,7 +86,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 431 | **type** `public class EnsembleCheck` | The inflation ensemble is in the tree and still runs: its driver compiles against this tree, its two halves name the same policies, and the stored baseline reads. |
+| 75 | 435 | **type** `public class EnsembleCheck` | The inflation ensemble is in the tree and still runs: its driver compiles against this tree, its two halves name the same policies, and the stored baseline reads. |
 | 79 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 85 | 4 | `static void assertTrue(String label, boolean ok, String whyNot)` | An assertion that has a reason to print when it fails. |
 | 91 | 3 | `static Path toolsDir()` | The folder the runner lives in. |
@@ -107,33 +107,33 @@
 | 180 | 23 | `static List<String> compileProblems(JavaCompiler compiler, List<Path> sources, Path outDir) throws IOException` | Compile these sources into outDir against the classpath this JVM runs on, and say what went wrong: one line per error, file:line and the message, in English whatever the machine's own language is. |
 | 205 | 5 | `static String firstOf(List<String> lines, int n)` | The first few of a list, one to a line, for a failing assertion to print. |
 
-### 3. the same policies (lines 211-302)
+### 3. the same policies (lines 211-303)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 218 | 14 | `static List<String> driverPolicies(String source)` | The constants of the driver's Policy enum, in the order written; empty when the source has none. |
-| 234 | 9 | `static List<String> scorerPolicies(String source)` | The strings of the scorer's POLICIES list, in the order written; empty when it has none. |
-| 245 | 17 | `static String policyProblem(String driverSource, String scorerSource)` | Null when the two sources name the same policies, else why not. |
-| 263 | 7 | `static String read(Path p)` |  |
-| 272 | 30 | `static List<String> samePolicies()` | Section 3; returns the driver's policies, which section 4 holds the baseline to. |
+| 219 | 14 | `static List<String> driverPolicies(String source)` | The constants of the driver's Policy enum, in the order written; empty when the source has none. |
+| 235 | 9 | `static List<String> scorerPolicies(String source)` | The strings of the scorer's POLICIES list, in the order written; empty when it has none. |
+| 246 | 17 | `static String policyProblem(String driverSource, String scorerSource)` | Null when the two sources name the same policies, else why not. |
+| 264 | 7 | `static String read(Path p)` |  |
+| 273 | 30 | `static List<String> samePolicies()` | Section 3; returns the driver's policies, which section 4 holds the baseline to. |
 
-### 4. the baseline reads (lines 303-475)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 310 | 5 | `static int[] versionOf(String s)` | The three numbers of x.y.z, or null when it is not one. |
-| 317 | 5 | `static int compareVersions(String a, String b)` | Negative when a is the older version, by the numbers and not by the letters ("0.8.9" is older than "0.8.11"). |
-| 324 | 10 | `static String newestBaseline(List<String> names)` | The file name of the newest baseline among these names, or null when none is named x.y.z.md. |
-| 335 | 3 | `private static boolean isNumber(JsonElement e)` |  |
-| 339 | 5 | `private static boolean isInteger(JsonElement e)` |  |
-| 352 | 33 | `static String baselineProblem(String text, List<String> policies)` | Null when this baseline page is sound, else the reason it is not: the verdict line, then the first json block, which has to parse to the seeds (an integer of 1 or more), the take-offs (an integer) and, for every one o... |
-| 387 | 5 | `static String canned(String verdictLine, String json)` | A baseline page with these two parts of it: the verdict line and the json. |
-| 409 | 7 | `static String withJson(String from, String to)` | A canned page with one change made to its json. |
-| 417 | 58 | `static void baselineReads(List<String> policies) throws IOException` |  |
-
-### THE FIXTURES, WHICH CAUSE THE CONDITION RATHER THAN WAITING FOR IT (lines 476-505)
+### 4. the baseline reads (lines 304-479)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 498 | 7 | `static void cleanUp(Path root)` |  |
+| 312 | 5 | `static int[] versionOf(String s)` | The three numbers of x.y.z, or null when it is not one. |
+| 319 | 5 | `static int compareVersions(String a, String b)` | Negative when a is the older version, by the numbers and not by the letters ("0.8.9" is older than "0.8.11"). |
+| 326 | 10 | `static String newestBaseline(List<String> names)` | The file name of the newest baseline among these names, or null when none is named x.y.z.md. |
+| 337 | 3 | `private static boolean isNumber(JsonElement e)` |  |
+| 341 | 5 | `private static boolean isInteger(JsonElement e)` |  |
+| 354 | 33 | `static String baselineProblem(String text, List<String> policies)` | Null when this baseline page is sound, else the reason it is not: the verdict line, then the first json block, which has to parse to the seeds (an integer of 1 or more), the take-offs (an integer) and, for every one o... |
+| 389 | 5 | `static String canned(String verdictLine, String json)` | A baseline page with these two parts of it: the verdict line and the json. |
+| 413 | 7 | `static String withJson(String from, String to)` | A canned page with one change made to its json. |
+| 421 | 58 | `static void baselineReads(List<String> policies) throws IOException` |  |
+
+### THE FIXTURES, WHICH CAUSE THE CONDITION RATHER THAN WAITING FOR IT (lines 480-509)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 502 | 7 | `static void cleanUp(Path root)` |  |
 

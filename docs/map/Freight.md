@@ -1,6 +1,6 @@
-# Freight.java - 2,033 lines · 95 methods · 13 constants · sectors
+# Freight.java - 2,035 lines · 95 methods · 13 constants · sectors
 
-`ham/citybuildersim/sectors/Freight.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Freight.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18;
 > docs/studies/spec-freight-and-infrastructure.md 3.1, D1). Its Rail division is the
@@ -81,7 +81,7 @@
 | 1483 | PLANNING - the freight nobody is carrying |
 | 1762 | · the books |
 | 1797 | · the screen |
-| 1890 | · save/load |
+| 1892 | · save/load |
 
 ## Constants
 
@@ -133,7 +133,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 143 | 1891 | **type** `public final class Freight extends Sector` | The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 3.1, D1). |
+| 143 | 1893 | **type** `public final class Freight extends Sector` | The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 3.1, D1). |
 | 451 | 20 | `public Freight()` |  |
 
 ### THE MONTH (lines 472-889)
@@ -265,19 +265,19 @@
 | 1792 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a carrier, read by its revenue a worker. |
 | 1795 | 1 | `public String inputLabel()` |  |
 
-### the screen (lines 1797-1889)
+### the screen (lines 1797-1891)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1800 | 1 | `public boolean hasPlantBlock()` |  |
-| 1803 | 86 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 1803 | 88 | `public List<Sector.Line> ownLines(Game game)` |  |
 
-### save/load (lines 1890-2033)
+### save/load (lines 1892-2035)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1893 | 43 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 1938 | 45 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 1985 | 22 | `protected void resetExtras()` |  |
-| 2017 | 16 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
+| 1895 | 43 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 1940 | 45 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 1987 | 22 | `protected void resetExtras()` |  |
+| 2019 | 16 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
 

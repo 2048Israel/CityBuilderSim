@@ -1,6 +1,6 @@
-# ExchangeRateCheck.java - 1,097 lines · 36 methods · 6 constants · harnesses
+# ExchangeRateCheck.java - 1,098 lines · 36 methods · 6 constants · harnesses
 
-`ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > Proves the D$ is a float that follows its parity and swings like a real
 > currency (XR1, 2026-10-21): parity is the basket with rent held to a third,
@@ -71,15 +71,15 @@
 | line | section |
 |---:|---|
 | 167 | 0. parity is the basket with rent held to a third |
-| 272 | 1. parity's trend is followed with no lag |
-| 325 | 2. the market is a real float's |
-| 464 | 3. the real rate holds a level |
-| 561 | 4. the balance and the vault's cover |
-| 615 | 5. interventions move the rate at the real size |
-| 683 | 6. one seed, one path |
-| 788 | 7. a save mid-swing continues exactly |
-| 846 | 8. in a real city the D$ moves like a float |
-| 991 | 9. the game survives the spiral |
+| 273 | 1. parity's trend is followed with no lag |
+| 326 | 2. the market is a real float's |
+| 465 | 3. the real rate holds a level |
+| 562 | 4. the balance and the vault's cover |
+| 616 | 5. interventions move the rate at the real size |
+| 684 | 6. one seed, one path |
+| 789 | 7. a save mid-swing continues exactly |
+| 847 | 8. in a real city the D$ moves like a float |
+| 992 | 9. the game survives the spiral |
 
 ## Constants
 
@@ -88,9 +88,9 @@
 | 121 | `ExchangeRateCheck.TRADE` | `3_000, GDP = 6_000` | The trade a quiet currency settles on, each way, and the output it is weighed against: openness one. |
 | 124 | `ExchangeRateCheck.SEED` | `20_261_021L` | The market's seed in the sections that draw one; the others are quiet. |
 | 127 | `ExchangeRateCheck.OLD_PULL` | `.004` | The old pull toward parity, REVERSION, retired by XR1 (WHAT XR1 RETIRED): a month's share of the distance it closed. |
-| 169 | `ExchangeRateCheck.FEES` | `{ 1, 1, 1, 1 }` |  |
-| 171 | `ExchangeRateCheck.RENT_HEAVY` | `{.15,.60,.10,.05, 0 }, RENT_HEAVY_FEES = {.04,.03,.02,.01 }` | Spending that puts rent at 60% of the basket (groceries 15, meals 10, luxury 5, services 10 - the fee lines add to it), and spending that puts it at 30%. |
-| 172 | `ExchangeRateCheck.RENT_LIGHT` | `{.30,.30,.20,.05, 0 }, RENT_LIGHT_FEES = {.06,.04,.03,.02 }` |  |
+| 170 | `ExchangeRateCheck.FEES` | `{ 1, 1, 1, 1 }` | The four fees' prices a fixture's basket is fed: all at 1. |
+| 172 | `ExchangeRateCheck.RENT_HEAVY` | `{.15,.60,.10,.05, 0 }, RENT_HEAVY_FEES = {.04,.03,.02,.01 }` | Spending that puts rent at 60% of the basket (groceries 15, meals 10, luxury 5, services 10 - the fee lines add to it), and spending that puts it at 30%. |
+| 173 | `ExchangeRateCheck.RENT_LIGHT` | `{.30,.30,.20,.05, 0 }, RENT_LIGHT_FEES = {.06,.04,.03,.02 }` |  |
 
 ## Fields (state)
 
@@ -99,14 +99,14 @@
 | 94 | `static int fails` |  |
 | 95 | `static PrintStream out` |  |
 | 96 | `static PrintStream quiet` |  |
-| 850 | `int months, fromMonth60, longest, run, sign, far, defended, dealt, marketOver2, gateShut` |  |
-| 851 | `double sum, sum2, worstAdd, biggest, gateSum, defendedUsd` |  |
+| 851 | `int months, fromMonth60, longest, run, sign, far, defended, dealt, marketOver2, gateShut` |  |
+| 852 | `double sum, sum2, worstAdd, biggest, gateSum, defendedUsd` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 92 | 1006 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
+| 92 | 1007 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
 | 98 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 103 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 114 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
@@ -115,83 +115,83 @@
 | 142 | 5 | `static void month(ForeignAccounts fx)` | One month of the standard trade, repriced. |
 | 148 | 18 | `public static void main(String[] args) throws Exception` |  |
 
-### 0. parity is the basket with rent held to a third (lines 167-271)
+### 0. parity is the basket with rent held to a third (lines 167-272)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 174 | 3 | `static void feed(PriceIndex px, double[] prices, double[] spends, double[] feeSpends, int month)` |  |
-| 178 | 93 | `static void parityIsTheCappedBasket()` |  |
+| 175 | 3 | `static void feed(PriceIndex px, double[] prices, double[] spends, double[] feeSpends, int month)` |  |
+| 179 | 93 | `static void parityIsTheCappedBasket()` |  |
 
-### 1. parity's trend is followed with no lag (lines 272-324)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 274 | 50 | `static void theTrendIsFollowed()` |  |
-
-### 2. the market is a real float's (lines 325-463)
+### 1. parity's trend is followed with no lag (lines 273-325)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 328 | 5 | `static double[] moves(double[] lnRate)` | A path's monthly log moves of the rate: the first from the founding rate of one. |
-| 334 | 5 | `static double mean(double[] x, int from)` |  |
-| 341 | 5 | `static double sd(double[] x, int from)` | The population standard deviation of x from `from` on. |
-| 348 | 8 | `static double autocorrelation(double[] x, int from)` | The first autocorrelation of x from `from` on. |
-| 358 | 13 | `static double[] arSums(double[] x, int from)` | One path's AR(1) sums, [cross-product, lag's squares], both about the path's own means: pooled across paths they give a slope with a smaller error than one path's. |
-| 373 | 11 | `static double[][] swing(ForeignAccounts fx, double exports, double imports, double gdp, int months)` | A still currency's path under a market: [ln rate, the market, ln of parity's trend], a month each. |
-| 385 | 78 | `static void theMarketIsAFloats()` |  |
+| 275 | 50 | `static void theTrendIsFollowed()` |  |
 
-### 3. the real rate holds a level (lines 464-560)
+### 2. the market is a real float's (lines 326-464)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 466 | 94 | `static void theRealRateHoldsALevel()` |  |
+| 329 | 5 | `static double[] moves(double[] lnRate)` | A path's monthly log moves of the rate: the first from the founding rate of one. |
+| 335 | 5 | `static double mean(double[] x, int from)` |  |
+| 342 | 5 | `static double sd(double[] x, int from)` | The population standard deviation of x from `from` on. |
+| 349 | 8 | `static double autocorrelation(double[] x, int from)` | The first autocorrelation of x from `from` on. |
+| 359 | 13 | `static double[] arSums(double[] x, int from)` | One path's AR(1) sums, [cross-product, lag's squares], both about the path's own means: pooled across paths they give a slope with a smaller error than one path's. |
+| 374 | 11 | `static double[][] swing(ForeignAccounts fx, double exports, double imports, double gdp, int months)` | A still currency's path under a market: [ln rate, the market, ln of parity's trend], a month each. |
+| 386 | 78 | `static void theMarketIsAFloats()` |  |
 
-### 4. the balance and the vault's cover (lines 561-614)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 564 | 10 | `static ForeignAccounts held(double exports, double imports, double capitalOut, int months, double[] firstMonth)` | A currency with the trade and the capital of its months, settled and then repriced for `months` months, its vault empty. |
-| 575 | 39 | `static void theBalanceAndTheCover()` |  |
-
-### 5. interventions move the rate at the real size (lines 615-682)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 617 | 65 | `static void interventionsAtTheRealSize()` |  |
-
-### 6. one seed, one path (lines 683-787)
+### 3. the real rate holds a level (lines 465-561)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 686 | 19 | `static void drive(ForeignAccounts fx, int from, int to, java.util.List<double[]> trace)` | A currency fed a month of a city's weather, deterministic in the month's number: trade that swings, capital that comes and goes, a parity that drifts, a real gap that wanders, and the treasury's deals. |
-| 706 | 9 | `static int differences(java.util.List<double[]> a, java.util.List<double[]> b)` |  |
-| 717 | 16 | `static Game town(String label, Founding founding)` | A trading town on the default founding, as CurrencyCheck builds it; the rate it plays is what the founding's seed makes. |
-| 735 | 8 | `static double[] play(Game city, int months)` | The town's rate, month by month, for this many months. |
-| 744 | 43 | `static void oneSeedOnePath()` |  |
+| 467 | 94 | `static void theRealRateHoldsALevel()` |  |
 
-### 7. a save mid-swing continues exactly (lines 788-845)
+### 4. the balance and the vault's cover (lines 562-615)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 790 | 55 | `static void aSaveMidSwing()` |  |
+| 565 | 10 | `static ForeignAccounts held(double exports, double imports, double capitalOut, int months, double[] firstMonth)` | A currency with the trade and the capital of its months, settled and then repriced for `months` months, its vault empty. |
+| 576 | 39 | `static void theBalanceAndTheCover()` |  |
 
-### 8. in a real city the D$ moves like a float (lines 846-990)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 849 | 35 | **type** `static final class Tally` | What a real city's D$ did, counted a month at a time the way the playtest counts it (LongPlaytest.countTheFloat()), and checked against it. |
-| 854 | 24 | `void step(Game g)` _(in ExchangeRateCheck.Tally)_ | Plays one month as the playtest plays it and counts it. |
-| 879 | 4 | `double volatility()` _(in ExchangeRateCheck.Tally)_ |  |
-| 885 | 6 | `static void play(Game g, int months, Tally tally)` |  |
-| 897 | 43 | `static Game playtestCity(String label, int target, Tally tally)` | The default playtest's city, founded and played as LongPlaytest.main plays it (its founding by hand, then its rhythm of skips and looks - the fixture AuctionCheck's real run borrows), up to this month. |
-| 941 | 41 | `static void inARealCity()` |  |
-| 984 | 6 | `static void stepQuietly(Tally t, Game g)` | One counted month with the narration sent nowhere (LongPlaytest prints through a stream of its own). |
-
-### 9. the game survives the spiral (lines 991-1097)
+### 5. interventions move the rate at the real size (lines 616-683)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 994 | 10 | `static String notANumber(Game g)` | The first figure of the city that is not a number, or null: the rate, the price index, the treasury's cash, GDP, M0 and the vault. |
-| 1006 | 4 | `static boolean auditCloses(Game g)` | The audit closes as it does in the playtest (LongPlaytest.audit(), CurrencyCheck 4): no residual over a cent, or none over a ten-millionth of the money moved. |
-| 1011 | 86 | `static void theGameSurvivesTheSpiral()` |  |
+| 618 | 65 | `static void interventionsAtTheRealSize()` |  |
+
+### 6. one seed, one path (lines 684-788)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 687 | 19 | `static void drive(ForeignAccounts fx, int from, int to, java.util.List<double[]> trace)` | A currency fed a month of a city's weather, deterministic in the month's number: trade that swings, capital that comes and goes, a parity that drifts, a real gap that wanders, and the treasury's deals. |
+| 707 | 9 | `static int differences(java.util.List<double[]> a, java.util.List<double[]> b)` |  |
+| 718 | 16 | `static Game town(String label, Founding founding)` | A trading town on the default founding, as CurrencyCheck builds it; the rate it plays is what the founding's seed makes. |
+| 736 | 8 | `static double[] play(Game city, int months)` | The town's rate, month by month, for this many months. |
+| 745 | 43 | `static void oneSeedOnePath()` |  |
+
+### 7. a save mid-swing continues exactly (lines 789-846)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 791 | 55 | `static void aSaveMidSwing()` |  |
+
+### 8. in a real city the D$ moves like a float (lines 847-991)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 850 | 35 | **type** `static final class Tally` | What a real city's D$ did, counted a month at a time the way the playtest counts it (LongPlaytest.countTheFloat()), and checked against it. |
+| 855 | 24 | `void step(Game g)` _(in ExchangeRateCheck.Tally)_ | Plays one month as the playtest plays it and counts it. |
+| 880 | 4 | `double volatility()` _(in ExchangeRateCheck.Tally)_ |  |
+| 886 | 6 | `static void play(Game g, int months, Tally tally)` |  |
+| 898 | 43 | `static Game playtestCity(String label, int target, Tally tally)` | The default playtest's city, founded and played as LongPlaytest.main plays it (its founding by hand, then its rhythm of skips and looks - the fixture AuctionCheck's real run borrows), up to this month. |
+| 942 | 41 | `static void inARealCity()` |  |
+| 985 | 6 | `static void stepQuietly(Tally t, Game g)` | One counted month with the narration sent nowhere (LongPlaytest prints through a stream of its own). |
+
+### 9. the game survives the spiral (lines 992-1098)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 995 | 10 | `static String notANumber(Game g)` | The first figure of the city that is not a number, or null: the rate, the price index, the treasury's cash, GDP, M0 and the vault. |
+| 1007 | 4 | `static boolean auditCloses(Game g)` | The audit closes as it does in the playtest (LongPlaytest.audit(), CurrencyCheck 4): no residual over a cent, or none over a ten-millionth of the money moved. |
+| 1012 | 86 | `static void theGameSurvivesTheSpiral()` |  |
 

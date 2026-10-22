@@ -1,6 +1,6 @@
 # MediumTermBond.java - 226 lines · 16 methods · 1 constants · model
 
-`ham/citybuildersim/MediumTermBond.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MediumTermBond.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > The amortizing bond: the workhorse of municipal finance - at 5 to 30 years in
 > fives, one coupon, each sale its own line (CD2). It was the serial bond; the

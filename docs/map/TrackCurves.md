@@ -1,9 +1,9 @@
 # TrackCurves.java - 346 lines · 26 methods · 7 constants · model
 
-`ham/citybuildersim/TrackCurves.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TrackCurves.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > The railway's curves as one geometry, for the drawing and for the trains'
-> routes alike (FX5, 0.8.15): a polyline's corners rounded with arcs of a
+> routes alike (FX5, 0.8.18): a polyline's corners rounded with arcs of a
 > radius, the arcs the tiles draw and the routes run along, and the yard's
 > ladder as an S that leaves its line and meets its siding tangent at both
 > ends. Pure: points in plots in, points in plots out, no map and no screen.
@@ -41,7 +41,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 319 | **type** `public final class TrackCurves` | The railway's curves as one geometry, for the drawing and for the trains' routes alike (FX5, 0.8.15): a polyline's corners rounded with arcs of a radius, the arcs the tiles draw and the routes run along, and the yard'... |
+| 28 | 319 | **type** `public final class TrackCurves` | The railway's curves as one geometry, for the drawing and for the trains' routes alike (FX5, 0.8.18): a polyline's corners rounded with arcs of a radius, the arcs the tiles draw and the routes run along, and the yard'... |
 | 30 | 1 | `private TrackCurves()` |  |
 | 57 | 32 | **type** `public record Bend(int net, double x, double y, double ux, double uy, double vx, double vy, double r, doubl...` | One turn of a polyline: its corner point (x, y), the unit headings into and out of it, the radius it is rounded with (the radius asked, less where the legs beside it are short), the tangent length along each leg from ... |
 | 61 | 7 | `public static Bend of(int net, double x, double y, double ux, double uy, double vx, double vy, double r, double t)` _(in TrackCurves.Bend)_ | The bend at corner (x, y) between headings u and v (unit) with the arc's radius r and tangent length t (the radius and the length agree: t = r * tan(turn / 2)); its circle worked out. |

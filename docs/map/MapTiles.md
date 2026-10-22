@@ -1,6 +1,6 @@
 # MapTiles.java - 638 lines · 33 methods · 8 constants · model
 
-`ham/citybuildersim/MapTiles.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MapTiles.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kept for the hover and a change of level, the per-tile path from inputs to pixels, and the far view's node pixels from the world's ground, the districts' pictures and shares, and the city's runs and edge.
 > 
