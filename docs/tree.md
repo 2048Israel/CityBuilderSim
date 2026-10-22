@@ -570,7 +570,7 @@ adds its line here, not in `CLAUDE.md`.
                                    named, or Fill it - one for each cap: Borrow's, the rollover's,
                                    automatic building's and the build screen's funding card's). The model
                                    never imports it.
-        *Check.java                126 harnesses, each a main() with static helpers
+        *Check.java                127 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under

@@ -698,6 +698,17 @@ public class CreditCheck {
                 city.getEconomyManager().getMonthGdp(),
                 city.getEconomyManager().getTaxIncome());
 
+        // AN1 (2026-10-22): this section measures what a quote is against the book, not what the market expects
+        // of the dial. The curve is built on the inflation the rule read when the month was struck, and the
+        // ring of XR1's float had carried that to +5.5% at month 61, so the rule stood above the 3% dial and
+        // every quote sat over the floor (the $5M serial at 4.17%). With the goods struck at a D$ that follows
+        // the D$ slowly the same city reads -0.2%: the rule stands at 0%, the market expects the dial to come
+        // down, and the 5-year quote is 2.65% - on the curve, but under the 3% floor onCurve() bounds it
+        // with. The month is therefore struck at the target, the rule's neutral (3%, no gap), as a fixture's
+        // own set-up; nothing else in the section reads the expectation.
+        city.getDebtManager().strikeExpectations(
+                city.getDebtManager().getInflationTarget(), city.getDebtManager().getInflationTarget());
+
         // Quoting must not touch anything. Ask three hundred times, loudly.
         double principalBeforeAsking = city.getDebtManager().getAllPrincipal();
         double cashBeforeAsking = city.getCash();

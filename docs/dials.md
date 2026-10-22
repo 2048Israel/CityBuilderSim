@@ -2,9 +2,9 @@
 
 Generated 2026-10-22 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**3,807 constants in 384 files.**
+**3,816 constants in 385 files.**
 
-## model (1950 constants)
+## model (1951 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -943,14 +943,15 @@ Generated 2026-10-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 658 | `EconomyManager.CITY_MAINTAINED` | `{ BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE, BuildingTy...` | EVERY BUILDING IN THE CITY, BILLED FOR STANDING THERE. |
-| 672 | `EconomyManager.MAINTENANCE_RATE` | `ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12` |  |
-| 881 | `EconomyManager.PBRH_MIN_UNITS` | `4` | A building with this many dwellings or more is purpose-built rental housing (CRA: "at least 4 residential units each with a private kitchen, a private bathroom, and a private living area"). |
-| 883 | `EconomyManager.NRRP_SHARE` | `.36` | The new residential rental property rebate's share of the tax on a unit: 36% (Excise Tax Act section 256.2(3)(a); CRA RC4231). |
-| 885 | `EconomyManager.NRRP_CAP` | `6.3` | ...and its most a unit, in founding thousands: $6,300. |
-| 887 | `EconomyManager.NRRP_FULL_BELOW` | `350` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
-| 889 | `EconomyManager.NRRP_NONE_FROM` | `450` | ...and none for a unit worth this or more: $450,000. |
-| 2348 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 295 | `EconomyManager.PASS_THROUGH` | `1 / 36.0` | How much of the gap, in logs, between the D$ the city's goods were last struck at and today's D$ they close in a month: a thirty-sixth, so half of a move in two years and 29% of it in the first - t... |
+| 722 | `EconomyManager.CITY_MAINTAINED` | `{ BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE, BuildingTy...` | EVERY BUILDING IN THE CITY, BILLED FOR STANDING THERE. |
+| 736 | `EconomyManager.MAINTENANCE_RATE` | `ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12` |  |
+| 945 | `EconomyManager.PBRH_MIN_UNITS` | `4` | A building with this many dwellings or more is purpose-built rental housing (CRA: "at least 4 residential units each with a private kitchen, a private bathroom, and a private living area"). |
+| 947 | `EconomyManager.NRRP_SHARE` | `.36` | The new residential rental property rebate's share of the tax on a unit: 36% (Excise Tax Act section 256.2(3)(a); CRA RC4231). |
+| 949 | `EconomyManager.NRRP_CAP` | `6.3` | ...and its most a unit, in founding thousands: $6,300. |
+| 951 | `EconomyManager.NRRP_FULL_BELOW` | `350` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
+| 953 | `EconomyManager.NRRP_NONE_FROM` | `450` | ...and none for a unit worth this or more: $450,000. |
+| 2412 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### Education.java ([map](map/Education.md))
 
@@ -1165,13 +1166,13 @@ Generated 2026-10-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 8575 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
 | 8755 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
 | 8878 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 10587 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 10599 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 10602 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 10617 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
-| 10628 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 12216 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 12599 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 10593 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 10605 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 10608 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 10623 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
+| 10634 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 12222 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 12605 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1208,10 +1209,10 @@ Generated 2026-10-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7072 | `GameVersion.VERSION` | `"0.8.20"` | Bump on release. |
-| 7814 | `GameVersion.SAVE_FORMAT` | `43` | The save shape. |
-| 7850 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `43` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 7852 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 7084 | `GameVersion.VERSION` | `"0.8.21"` | Bump on release. |
+| 7826 | `GameVersion.SAVE_FORMAT` | `43` | The save shape. |
+| 7862 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `43` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 7864 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ### Gateways.java ([map](map/Gateways.md))
 
@@ -3988,7 +3989,7 @@ Generated 2026-10-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (772 constants)
+## harnesses (780 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -4203,7 +4204,7 @@ Generated 2026-10-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 111 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
 | 114 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
 | 127 | `CurrencyCheck.TRADING_MONTHS` | `24 + 12` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, and a year more for the trailing figures to settle. |
-| 695 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
+| 698 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
 
 ### CurveCheck.java ([map](map/CurveCheck.md))
 
@@ -4865,6 +4866,19 @@ Generated 2026-10-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 76 | `OrderSearchCheck.COPY_TIMES` | `1000` | ...how many times over it is copied... |
 | 78 | `OrderSearchCheck.COPY_MONTHS` | `24` | ...and the months the copy plays. |
 
+### PassThroughCheck.java ([map](map/PassThroughCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 123 | `PassThroughCheck.K` | `EconomyManager.PASS_THROUGH` | The speed the goods follow the D$ at, as the model has it. |
+| 129 | `PassThroughCheck.MONTHS` | `240` | The months section 2 plays the real city, and the one it is saved at the end of. |
+| 132 | `PassThroughCheck.STEP` | `1.10` | The size of the step in sections 1 and 3: the D$ 10% weaker. |
+| 189 | `PassThroughCheck.BASE_SLOT` | `1` |  |
+| 234 | `PassThroughCheck.seen` | `new double [ MONTHS ], struck = new double [ MONTHS ]` | The D$ the strike saw, and the goods' D$ it struck, for each of section 2's months: section 6 reads them. |
+| 344 | `PassThroughCheck.SWING` | `.05` | The size of the treasury's swing: dollars worth this share of a year's GDP. |
+| 347 | `PassThroughCheck.HELD` | `12, FOLLOWED = 120` | The months the swing is bought, held and sold in, and the months it is followed for after: a year held, ten years in all. |
+| 350 | `PassThroughCheck.HORIZON` | `HELD +(int) Math.ceil(Math.log(.5) / Math.log(1 - K))` | The swing's own horizon, from the model's constants: the round trip (HELD) and the months the goods take to feel half of it (their half-life, rounded up). |
+
 ### PlanCheck.java ([map](map/PlanCheck.md))
 
 | line | constant | value | says |
@@ -4921,7 +4935,7 @@ Generated 2026-10-22 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 87 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 140 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "700" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders. |
+| 151 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "700" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders. |
 
 ### PopulationCheck.java ([map](map/PopulationCheck.md))
 

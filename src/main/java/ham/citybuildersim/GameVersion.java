@@ -7068,8 +7068,20 @@ public final class GameVersion {
      *     (FR7's, MapTiles.copy()).
      *   - Harness: PlanCheck 13 and 14, MapCheck 16 and 17, RailDrawCheck
      *     28, JunctionCheck 13's kept copy.
+     *
+     * 0.8.21 (2026-10-22) - AN1, THE PRICE LEVEL'S ANCHOR
+     *   (docs/queue/AN1-notes.md). Every trace moves: the default city no
+     *   longer hyperinflates under XR1's float.
+     *   - The city's goods are struck at a D$ that follows the D$ slowly,
+     *     PASS_THROUGH (a 36th) of the gap a month, the world's own level at
+     *     once (EconomyManager, THE D$ THE GOODS ARE STRUCK AT); the D$, its
+     *     parity and every conversion of money unchanged.
+     *   - Save: DataSave.struckRate (no format bump: a save without it strikes
+     *     at the D$, as every month did before).
+     *   - Harness: PassThroughCheck (new); CurrencyCheck 4 restated to the
+     *     lean as built (XR1-C star 1, "Keep as built").
      */
-    public static final String VERSION = "0.8.20";
+    public static final String VERSION = "0.8.21";
 
     /**
      * The save shape.

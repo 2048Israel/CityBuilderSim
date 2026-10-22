@@ -248,8 +248,9 @@ public class EconomyManager {
     /**
      * Every world price in the game is quoted by the world in ITS money and
      * converted at this rate - times the world's own price level, which is
-     * how world inflation rides in. Pushed in by Game.startOfMonthUpdate()
-     * before anything is priced.
+     * how world inflation rides in. Struck by Game.startOfMonthUpdate()
+     * before anything is priced (strikeExchangeRate(), since AN1 the D$ the
+     * goods are struck at rather than the D$ itself).
      */
     private double exchangeRate = 1.0;
 
@@ -260,6 +261,69 @@ public class EconomyManager {
     }
 
     public double getExchangeRate() { return exchangeRate; }
+
+    /* ===== THE D$ THE GOODS ARE STRUCK AT (AN1, 2026-10-22) =====
+     *
+     * Jerus, 2026-10-22: "Fix hyperinflation first". Since XR1 the D$ follows
+     * its parity one for one, and until AN1 every traded price - the dock's
+     * imports and exports, the band the city's own goods trade in, the
+     * materials in a building's cost - was struck at the D$ of the month. So a
+     * price rise moved parity, the D$ followed it, imports dearer, prices rose
+     * again: the 0.7.2 ring, with no lag anywhere in it. The default playtest
+     * ran 1.7e9 times its founding prices, the D$ at its 1e9 guard from m2160
+     * (docs/queue/XR1-notes.md, section 3).
+     *
+     * So the goods are struck at a D$ that follows the D$ slowly: each month
+     * they close PASS_THROUGH of the gap, in logs. The world's own price level
+     * still rides in at once - it is the world's repricing, in its own money -
+     * and only the D$'s moves are smoothed. A step in the D$ reaches every
+     * traded price in full, half of it in two years; a D$ that keeps falling
+     * is followed at a lag, which is what holds a price level that has
+     * started to chase its own currency. The D$ itself, its parity and every
+     * conversion of money (the vault, the debts, the land office) stay at the
+     * D$ of the month: XR1's float is untouched.
+     *
+     * WHY ON THE GOODS AND NOT THE SHELF ALONE: measured on the default
+     * playtest (docs/queue/AN1-notes.md), a lag on the grocery shelf's cost
+     * alone left prices at 3.7e7 times founding; the ring runs through every
+     * traded price, so the lag has to as well.
+     */
+
+    /**
+     * How much of the gap, in logs, between the D$ the city's goods were last struck at and today's D$ they close in a month: a thirty-sixth, so half of a move in two years and 29% of it in the first - the dock's 64% in a year (Campa and Goldberg 2005) reaching a shelf whose price is half the import (est.), since nothing here keeps a local share of it.
+     */
+    public static final double PASS_THROUGH = 1 / 36.0;
+
+    /** The D$ per US$ the goods were last struck at; 0 until the first strike, which strikes at the D$ itself. Saved (DataSave.struckRate). */
+    private double struckRate;
+
+    /** The speed the goods follow the D$ at: PASS_THROUGH, unless a harness's twin is told otherwise (not saved; a reload strikes at PASS_THROUGH). */
+    private double passThroughSpeed = PASS_THROUGH;
+
+    /**
+     * The month's strike: the goods' D$ moves PASS_THROUGH of the way to
+     * `rate` in logs (at once on the first strike, or after a save that did
+     * not carry it), and every world price is struck at it times the world's
+     * own price level.
+     */
+    public void strikeExchangeRate(double rate, double worldLevel) {
+        if (rate > 0) struckRate = struckRate > 0 ? passThrough(struckRate, rate, passThroughSpeed) : rate;
+        setExchangeRate(struckRate * worldLevel);
+    }
+
+    /** The rule alone: `struck` moved `speed` of the way to `rate`, in logs. */
+    public static double passThrough(double struck, double rate, double speed) {
+        return Math.exp(Math.log(struck) + speed * (Math.log(rate) - Math.log(struck)));
+    }
+
+    /** The D$ per US$ the goods were last struck at (0 before the first strike). */
+    public double getStruckRate() { return struckRate; }
+
+    /** The load path's half: the D$ the goods were struck at when the city was saved (0 on a save without it: the next strike is at the D$). */
+    public void setStruckRate(double rate) { this.struckRate = rate > 0 ? rate : 0; }
+
+    /** For a harness's twin only: the speed its goods follow the D$ at (one is the rule before AN1). */
+    void setPassThroughForTest(double speed) { this.passThroughSpeed = speed; }
 
     /* ------------------------------ the land ------------------------------ */
 
@@ -2397,6 +2461,7 @@ public class EconomyManager {
         transitBill *= scale;
         transitFares *= scale;
         exchangeRate *= scale;
+        struckRate *= scale;   // the D$ the goods are struck at is a rate in today's unit too (AN1)
         pricePerWatt *= scale;
         pricePerWaterUnit *= scale;
         scaleArray(wageRates, scale);

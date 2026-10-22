@@ -10294,9 +10294,15 @@ public class Game {
          * used to convert a currency; this is the only place the two are
          * multiplied together, and that is deliberate - a rate that quietly had
          * inflation baked into it would be unreadable on every screen.
+         *
+         * ...AND THE D$ IT IS STRUCK AT FOLLOWS THE D$ SLOWLY (AN1, 2026-10-22):
+         * PASS_THROUGH of the gap a month, the world's level at once - see
+         * EconomyManager, THE D$ THE GOODS ARE STRUCK AT. Under XR1's float a
+         * D$ struck one for one let the city's prices chase their own currency
+         * without end.
          */
         world.advanceMonth(month);
-        economyManager.setExchangeRate(foreign.getRate() * world.getPriceLevel());
+        economyManager.strikeExchangeRate(foreign.getRate(), world.getPriceLevel());
 
         /*
          * ...and wages start chasing what the basket now costs.
@@ -12753,6 +12759,7 @@ public class Game {
         dataSave.setExpectations(expectations.toSaveArray());
         dataSave.setWorldEconomy(world.toSaveArray());
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
+        dataSave.setStruckRate(economyManager.getStruckRate());   // ...and the D$ it was struck at (AN1)
         dataSave.setPolicyRate(debtManager.getPolicyRate());
         dataSave.setPolicyAutopilot(debtManager.isAutopilot());
         // ...and the treasury's rollover (0.7.13): its setting by name, the
@@ -15691,6 +15698,9 @@ public class Game {
             double traded = loaded.getTradedExchangeRate();
             economyManager.setExchangeRate(
                     traded > 0 ? traded : foreign.getRate() * world.getPriceLevel());
+            // ...and the D$ the goods were struck at (AN1), which the next month's strike moves from; a save
+            // without it strikes at the D$ itself, as every month did before AN1.
+            economyManager.setStruckRate(loaded.getStruckRate());
             /*
              * The player's own decision, and the one thing on the debt market
              * that is not derived from the city's books. A reload that dropped

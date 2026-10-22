@@ -14,6 +14,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.21 — AN1, the price level's anchor — 2026-10-22, ready, see docs/queue/AN1-notes.md
+
+The default city no longer hyperinflates under XR1's float. The city's goods - the dock's imports and exports, the band
+its own goods trade in, a building's materials - are struck at a D$ that follows the D$ slowly: a 36th of the gap a month
+in logs (EconomyManager.PASS_THROUGH), half of a move in two years, the world's own level at once; the D$, its parity and
+every conversion of money are XR1's. Measured first on the default playtest, 17 runs (AN1-notes §2): the lag anchors from
+a 24th a month slower, not at a 12th, and not on the grocery shelf alone; a shelf that falls as readily as it rises does
+not anchor and adds nothing beside it. The playtest: prices 8.2 / 62 / 13,374 times founding near m600 / m1060 / the end
+(0.8.19 13.8 / 12,225 / 2.9e9; 0.8.18 4.7 / 15 / 1,036), 625,815 people (10,980; 573,349), the D$ never at its guard.
+Saved (DataSave.struckRate), no format bump. PassThroughCheck (new); CurrencyCheck 4 restated to the lean as built
+(XR1-C ★1, "Keep as built"); three fixtures re-caused. Ensemble 24/26 (0.8.19 18/25). ★ for Jerus: the dial's value, land at the D$
+itself, the map's "an old works moved" in a city that grows again (AN1-notes §5).
+
 ### Docs pass 2026-10-22 — over FR4, EG1, CL2, CL3, CD1, FX6, CD2, FX5, TD1, XR1 and CL4 — shipped, no tag
 
 The daily docs pass by a fresh session over the eleven batches since the 2026-10-19 pass (abfca4fb..01f9bf98).
