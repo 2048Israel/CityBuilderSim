@@ -2123,6 +2123,7 @@ final class TradeScreen {
      * fits - the Freight page's LegBar, for money.
      */
     static final class BandBar extends javafx.scene.layout.Pane {
+        /** The bar's height, in pixels: 26, the Freight page's LegBar's. */
         static final double BAND = 26;
         private final List<TradeBand.Piece> pieces;
         private final double scale;

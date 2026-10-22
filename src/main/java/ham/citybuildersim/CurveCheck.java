@@ -159,14 +159,19 @@ public class CurveCheck {
     /** The study's four cities: the dial, the inflation now, the credibility, the share of the term paper the central bank holds, and section 3.3's row in per cent. */
     record Study(String name, double dial, double inflationNow, double credibility, double centralBankShare, double[] row) { }
 
+    /** The calm city: the dial at 3%, inflation at 2%, credibility .80, no holdings. */
     static final Study CALM = new Study("calm", .03, .02, .80, 0,
             new double[] {3.12, 3.12, 3.18, 3.35, 3.62, 4.02, 4.27, 4.62});
+    /** ...the hiking city: the dial at 7% against inflation at 6%, credibility .65. */
     static final Study HIKING = new Study("hiking", .07, .06, .65, 0,
             new double[] {7.12, 6.85, 6.50, 6.04, 6.02, 6.27, 6.47, 6.78});
+    /** ...the city behind: the dial at 1% against inflation at 5%, credibility .60. */
     static final Study BEHIND = new Study("behind", .01, .05, .60, 0,
             new double[] {1.12, 3.65, 4.46, 5.00, 5.35, 5.79, 6.05, 6.41});
+    /** ...and QE: the calm city with the central bank holding a quarter of the term paper. */
     static final Study QE = new Study("QE", .03, .02, .80, .25,
             new double[] {3.12, 3.12, 3.15, 3.24, 3.37, 3.57, 3.70, 3.87});
+    /** The four, in the study's order. */
     static final Study[] CITIES = {CALM, HIKING, BEHIND, QE};
 
     /**

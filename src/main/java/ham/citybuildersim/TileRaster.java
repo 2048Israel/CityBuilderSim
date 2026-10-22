@@ -2505,7 +2505,9 @@ public final class TileRaster {
      * between them, and every boulevard crossing was a roundabout.
      */
     private static final class Crossings {
+        /** The side of Input.ring and how far it reaches past the tile on every side, in plots: TilePainter.RING and TilePainter.REACH. */
         static final int N = TilePainter.RING, R = TilePainter.REACH;
+        /** A tile with no junction street about it: no crossings. */
         static final Crossings NONE = new Crossings();
 
         /** The role of the street on each plot of the ring, by TilePainter.ringIndex(); null with no junction street about the tile. */

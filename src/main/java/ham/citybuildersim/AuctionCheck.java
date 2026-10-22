@@ -721,6 +721,7 @@ public class AuctionCheck {
        past the cushion), and then LongPlaytest's fixture for the long count.
        ===================================================================== */
 
+    /** A stream that prints nothing: System.out and LongPlaytest's out while a fixture city runs. */
     static final PrintStream QUIET = new PrintStream(java.io.OutputStream.nullOutputStream());
 
     /** Runs a piece of the city with the game's narration off. */

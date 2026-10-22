@@ -3278,7 +3278,8 @@ final class FinancesScreen {
     static final class AuctionChart extends javafx.scene.layout.Pane {
         /** The bidders' colours in Auction.Fill's order, as the holders' bar has them. */
         static final String[] WHO_COLOURS = { Palette.PEOPLE, Palette.BUSINESS, Palette.ORE, Palette.MONEY };
-        static final String[] WHO = { "households", "the firms", "the world", "the bank" };
+        /** ...and their names, in the same order. */
+        static final String[] WHO ={ "households", "the firms", "the world", "the bank" };
         /** Its height and its margins, in pixels; the width it is first drawn at, and the least it is drawn at. */
         static final double H = 240, LEFT = 62, RIGHT = 16, TOP = 16, FOOT = 26, FIRST_W = 720, LEAST_W = 420;
         /** How many yields the bids are read at across the axis. */

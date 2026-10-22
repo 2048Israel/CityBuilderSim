@@ -113,6 +113,7 @@ public class FreightViewCheck {
         return Math.abs(a - b) <= CENT;
     }
 
+    /** The kinds of cargo a berth handles: Ports.Cargo's count. */
     static final int K = Ports.Cargo.values().length;
 
     /* ================================================================

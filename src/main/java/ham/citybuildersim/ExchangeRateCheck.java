@@ -166,6 +166,7 @@ public class ExchangeRateCheck {
 
     /* ================= 0. parity is the basket with rent held to a third ================= */
 
+    /** The four fees' prices a fixture's basket is fed: all at 1. */
     static final double[] FEES = { 1, 1, 1, 1 };
     /** Spending that puts rent at 60% of the basket (groceries 15, meals 10, luxury 5, services 10 - the fee lines add to it), and spending that puts it at 30%. */
     static final double[] RENT_HEAVY = { .15, .60, .10, .05, 0 }, RENT_HEAVY_FEES = { .04, .03, .02, .01 };

@@ -1497,9 +1497,10 @@ public final class World {
      * The ground a resource's fields are drawn on in a cell, km2: its land
      * (landKm2()) on a generated world; on Earth (0.7.117, batch E3;
      * spec-earth 4) its field land, the land at each of the cells pass's
-     * points times its province's Geology.multiplier() - w x Z, oil's
-     * petroleum factor - and oil's with a shelf's, basin's or rift's sea
-     * (EarthTerrain.cellFieldLand()).
+     * points times its province's Geology.multiplier() - w x Z (oil's w its
+     * known petroleum a km2 since EG1, where E3 took a petroleum factor;
+     * iron's the point's, Geology.multiplierAt()) - and oil's with a shelf's,
+     * basin's or rift's sea (EarthTerrain.cellFieldLand()).
      */
     private double fieldKm2(int cell, Resource r) { return earth != null ? earth.cellFieldLand(cell, r) * CELL_KM2 : landKm2(cell); }
 
