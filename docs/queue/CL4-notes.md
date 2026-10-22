@@ -286,7 +286,23 @@ plan from before CL4:
 **The checks every plan runs** gained two: the + floor along an avenue, by the
 harness's own walk, and no building on an outer plot.
 
-The suite, `--timing` and the trace: to come.
+**The suite** (`Batch check.bat --maps`):
+- On the merged tree at e1c376ac: 127 harnesses in 797 s, 121 passed, 6 failed, the
+  maps regenerated, Stale 0 firm findings.
+- The six are main's own, XR1's named reds, and nothing else: CurrencyCheck,
+  MonetaryCheck, CentralBankCheck, HealthCheck, SectorBooksCheck and LongPlaytest.
+  LongPlaytest's three findings are 0.8.19's, word for word.
+- Before the merge, on fc45191d: 126 harnesses in 808 s, all 126 passed.
+- The first run on the merged tree had a seventh red, MapCheck 8 (the avenue alone,
+  section 1.1). It is fixed and green.
+
+**`--timing`, alone and hard** (`Batch check.bat --timing`, last, on eac06e47):
+8 harnesses in 168 s, all clear.
+- PlanCheck's dense screen, its slowest district: 9.86 ms (PLAN_MS 40).
+- MapCheck's screen: 20.9 ms at x 1 and 24.0 ms at x 10,000 (SCREEN_MS 80).
+- The screen at the site with its avenues: 23.4 ms.
+- The densest far screen of curves: 23.3 ms, against 21.0 without their marks.
+- A month's change at 5 and 10 billion: within its 5 ms.
 
 ## 5. Limits
 
