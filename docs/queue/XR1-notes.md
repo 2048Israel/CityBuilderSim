@@ -156,6 +156,9 @@ HealthCheck's hunger line (★3), SectorBooksCheck's imports by good (★4),
 CentralBankCheck's "no spiral" and LongPlaytest's three findings (both the
 spiral, on Jerus's word).
 
+**`--timing`, alone and hard** (`Batch check.bat --timing`, last, after
+waiting for another batch's JVM): **8 harnesses in 148 s, all clear.**
+
 **The suite before the triage** (`Batch check.bat --maps`, on 15790302): 127 harnesses in
 795 s, **111 passed, 16 failed**, the maps regenerated, Stale's two firm
 findings fixed after it (README's count, a file named without its path).
