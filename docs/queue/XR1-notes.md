@@ -178,12 +178,13 @@ not saved, so where a fixture compares a city with its reload or with
 twins loaded from its save, the comment says which side floats.
 
 **The trace.** XR1 moves every trace (§3). Both playtests on the final
-model (classes of 07a843a6; slice 3 is the screen and a fixture), run alone
-on the PC, against main's 0.8.17/0.8.18 trace (CD2-notes §3, FX5-notes §3):
+model (b2ccce69: the dust-loan fix moved the default trace from m3516 on
+against 07a843a6's, so both were run again), run alone on the PC, against
+main's 0.8.17/0.8.18 trace (CD2-notes §3, FX5-notes §3):
 
 | playtest | main | XR1 |
 |---|---|---|
-| default, people at m4002 | 573,349 | 10,877 |
+| default, people at m4002 | 573,349 | 10,980 |
 | default, prices against founding | 1,036x | 2.9e9x; the D$ at its 1e9 guard 1,765 months |
 | default, findings | none | three, all the spiral's: the businesses' paper and the paper disagree 1,790 times from m2213 (both read $0.0000: sums past 1e20 lose their cents), MATERIALS outside its band 5 times (m1908-2483), industry farther out than the homes once at m4000 |
 | --earth rotterdam, people at m4003 | 761,080 | 284,646 |
@@ -192,8 +193,8 @@ on the PC, against main's 0.8.17/0.8.18 trace (CD2-notes §3, FX5-notes §3):
 
 The default playtest's own D$ line: volatility 9.1% a year from month 60
 (the study's slot-3 replay: 9.2%), the longest run one way 89 months (in the
-spiral), 3,573 months more than 25% from parity, the defence sold in 495
-months (US$190,131k), the treasury dealt in 52, the market moved it over 2%
+spiral), 3,573 months more than 25% from parity, the defence sold in 497
+months (US$190,309k), the treasury dealt in 52, the market moved it over 2%
 in 919. Rotterdam: 11.8% a year, 51 months, the defence in 468 months.
 
 **What moved and why.** Every figure that a price touches, from about month
@@ -202,23 +203,28 @@ in 919. Rotterdam: 11.8% a year, 51 months, the defence in 468 months.
 nothing stops it; under the ensemble's autopilot (AUTO2), which moves the
 dial every month, the cities live at 4.4% a year.
 
-**The ensemble** (`tools/ensemble/ensemble.sh xr1`, 80 of 80 runs, 21.8
-minutes, against `docs/ensemble/0.8.17.md`): **18/25 against 23/25**,
-committed as `docs/ensemble/0.8.19.md`.
+**The ensemble** on the final model (`tools/ensemble/ensemble.sh xr1b`,
+classes of 412e1792, 80 of 80 runs, 9.7 minutes, against
+`docs/ensemble/0.8.17.md`): **18/25 against 23/25**, committed as
+`docs/ensemble/0.8.19.md`. (A first run on 07a843a6, before the dust-loan
+fix, read the same 18/25. The final run was at first scored against that
+first run's file, then the newest in `docs/ensemble/`, and read 19/25,
+ZERO_SLACK's F1 against a baseline of one finding; rescored against 0.8.17,
+as the rule says, it is red.)
 
 | criterion | 0.8.17 | 0.8.19 | why |
 |---|---|---|---|
-| A1 inflation m240-end, AUTO2 | 2.27%, PASS | 4.41%, 0/16 in band, FAIL | the spiral, held back by the autopilot |
+| A1 inflation m240-end, AUTO2 | 2.27%, PASS | 4.47%, 0/16 in band, FAIL | the spiral, held back by the autopilot |
 | A2 spells over 10% | 7 months [1-10], PASS | 30 months [9-70], FAIL | the spiral |
 | A3 deflation spells; final/peak | 0 months, PASS | 12 months; one seed at 21.7% of its peak, FAIL | the D$'s swings, both ways |
 | S1 a held 0% over the twin | +1.85% a year (longest spell 17 months), FAIL | +47.4% a year, the D$ 2,660 times the twin's at m2040, FAIL | the spiral at a held dial: the count the study's §3.2 asked for |
-| K2 a world shock's inflation | 2.88%; +0.68% over the twin, PASS | 6.46%; +0.21% over the twin, FAIL (the level, not the excess) | a world price step passes through the rate and parity |
-| R3 a held 15%, m660-720 | -2.34%, 3 above +1 point, FAIL | +2.23%, 9 above +1 point, FAIL | as before, and the swings |
+| K2 a world shock's inflation | 2.88%; +0.68% over the twin, PASS | 6.72%; +0.21% over the twin, FAIL (the level, not the excess) | a world price step passes through the rate and parity |
+| R3 a held 15%, m660-720 | -2.34%, 3 above +1 point, FAIL | +2.22%, 9 above +1 point, FAIL | as before, and the swings |
 | F1 ZERO_SLACK findings | 0, PASS | 1 (MATERIALS outside its band), FAIL | the spiral |
-| T1, T2, M1, the other F1s, K1, R1, R2, the pairing | PASS | PASS | AUTO2's people 213,841 against 217,480; no audit month failed |
+| T1, T2, M1, the other F1s, K1, R1, R2, the pairing | PASS | PASS | AUTO2's people 213,330 against 217,480; no audit month failed |
 
 **The premises that fail ship on Jerus's word** (2026-10-21, "ship it as is"):
-A1, A2, A3, K2, F1 (ZERO_SLACK) are red because of the spiral; S1 and R3
+A1, A2, A3, K2 and ZERO_SLACK's F1 are red because of the spiral; S1 and R3
 were red before and are worse. None was moved. EN1-C's ★1 (S1 restated or
 retired) and ★2 (R3) stand, with these numbers beside them.
 
