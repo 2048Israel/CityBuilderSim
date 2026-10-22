@@ -248,6 +248,8 @@ tools/earth/                          the pipeline that bakes the real Earth's d
                                       and get-earth.bat, which fetches the baked file from the release earth-1
 tools/deepseek/                       the DeepSeek coding agent a batch's Claude session hands a slice to
                                       (Python, outside the game); docs/deepseek.md says how
+tools/ensemble/                       the 80-run ensemble: its driver, runner and scorer (EN1; not in the
+                                      suite, see The checks), its stored scores in docs/ensemble/
 data/earth-1.bin                      the real Earth's data itself, about 53 MB, beside the game and not in git;
                                       the game runs without it, and New city offers the generated world then
 ```
