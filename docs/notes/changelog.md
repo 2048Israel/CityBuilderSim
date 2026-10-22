@@ -14,6 +14,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.22 — XR2, the currency's regimes — 2026-10-22, ready, see docs/queue/XR2-notes.md
+
+Policy › Money › The currency chooses how the D$ is held (★3): Float; Lean against falls, XR1's float and the default;
+a Band whose edges the vault holds, its centre crawling; or a Peg to the US$, held while the vault meets the month's whole
+balance. Beside every regime runs the shadow rate, where the float would be. A peg breaks (★4) when the vault would fall
+under a month of imports, or by doubt at a chance that rises past a 10% gap, landing at the shadow plus a quarter of the
+gap; the hot money leaves at that chance, and credibility loses half its way to the floor. Under a peg the dial is tied to
+the US's rate with a spread to defend (★5); the autopilot aims at inflation, the currency or a mix (★13); the strong
+edge's dollars are paid by the central bank in new money or by the treasury (★6). Trade › The currency's seventh force is
+the hold. Lean computes every figure it did: the playtest's trace is unchanged, so no ensemble. CurrencyRegimeCheck
+(new): 1,000 seeded pegs break at their summed hazard, median life 7.5 years, median break 31% (the study's 7.4 and 31%).
+Saved, no format bump. ★ for Jerus: does a band break; a float's currency aim; the dent's size (XR2-notes §4).
+
 ### 0.8.21 — AN1, the price level's anchor — 2026-10-22, ready, see docs/queue/AN1-notes.md
 
 The default city no longer hyperinflates under XR1's float. The city's goods - the dock's imports and exports, the band

@@ -48,7 +48,7 @@
 
 **Uses:** [ForeignAccounts](ForeignAccounts.md) (102), [Game](Game.md) (19), [Sectors](Sectors.md) (14), [GameFiles](GameFiles.md) (7), [Good](Good.md) (7), [TempDirs](TempDirs.md) (6), [MoneyAudit](MoneyAudit.md) (6), [CurrencyCheck](CurrencyCheck.md) (6), [Founding](Founding.md) (5), [Retail](Retail.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sector](Sector.md) (2), [CentralBank](CentralBank.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Consumption](Consumption.md) (1)
 
-**Used by (3):** [CurrencyCheck](CurrencyCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [PassThroughCheck](PassThroughCheck.md)
+**Used by (4):** [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [PassThroughCheck](PassThroughCheck.md)
 
 ## Sections
 

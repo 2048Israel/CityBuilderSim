@@ -2,7 +2,7 @@
 
 Generated 2026-10-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**128 harness files, 12,634 labelled assertions.** AllChecks runs 128 of them.
+**129 harness files, 12,810 labelled assertions.** AllChecks runs 129 of them.
 
 ## Which harnesses read which class
 
@@ -36,10 +36,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, LongPlaytest |
 | [CapSetting](map/CapSetting.md) | AuctionCheck |
-| [CapitalFlows](map/CapitalFlows.md) | AuctionCheck, BondCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, HoldersCheck, LongPlaytest, MoneyCheck |
+| [CapitalFlows](map/CapitalFlows.md) | AuctionCheck, BondCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, HoldersCheck, LongPlaytest, MoneyCheck |
 | [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, ChildcareCheck, ExpectationsCheck, HealthCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
-| [CentralBank](map/CentralBank.md) | BankCheck, CentralBankCheck, CurrencyCheck, CurveCheck, ForeignCheck, FundCheck, HoldersCheck, LongPlaytest, MortgageCheck, PolicyPreviewCheck, ScaleCheck |
+| [CentralBank](map/CentralBank.md) | BankCheck, CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, ForeignCheck, FundCheck, HoldersCheck, LongPlaytest, MortgageCheck, PolicyPreviewCheck, ScaleCheck |
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, ReadPathCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, YearBookCheck |
@@ -59,7 +59,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Currency](map/Currency.md) | DenominationCheck, HistoryCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | EarthTerrainCheck, MapCheck, PopulationCheck, SaveFileCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, CentralBankCheck, ChartCheck, CreditCheck, CurveCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SectorStatementCheck, TreasuryCheck |
-| [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurveCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, ForeignDebtCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PolicyPreviewCheck, ReadPathCheck |
+| [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, ForeignDebtCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PolicyPreviewCheck, ReadPathCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, CreditCheck, CurveCheck, ForeignDebtCheck, FundCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, RestructureCheck |
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, LongPlaytest, OilCheck, ReadPathCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
@@ -76,23 +76,23 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorStatementCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
-| [Expectations](map/Expectations.md) | CentralBankCheck, CurveCheck, ExpectationsCheck |
+| [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck |
 | [FamilyModel](map/FamilyModel.md) | CrimeCheck, EducationCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, LongPlaytest, OutsideCheck, PopulationCheck |
 | [FamilyStructure](map/FamilyStructure.md) | BankCheck, BondCheck, CarCheck, ConsumptionCheck, CrimeCheck, EducationCheck, EquityCheck, ExchangeCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InvestCheck, LongPlaytest, OutsideCheck, PopulationCheck, RestaurantsCheck |
 | [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, WaterCheck |
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
-| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck |
+| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathCareFirstCheck, DenominationCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Freight](map/Freight.md) | BuildCardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck |
 | [FreightView](map/FreightView.md) | FreightViewCheck, TradeBandCheck |
 | [FuelSplit](map/FuelSplit.md) | OilCheck |
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
-| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
 | [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -207,7 +207,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, RailCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TrainShapes](map/TrainShapes.md) | ReadPathCheck |
 | [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, HomeRailCheck, LongPlaytest, MapCheck, OrderSearchCheck, PlanCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, SectorStatementCheck |
-| [TreasuryJournal](map/TreasuryJournal.md) | CentralBankCheck, ConstructionControlCheck, EducationCheck, FundCheck, LandCheck, OilCheck, SaveFileCheck, TreasuryCheck |
+| [TreasuryJournal](map/TreasuryJournal.md) | CentralBankCheck, ConstructionControlCheck, CurrencyRegimeCheck, EducationCheck, FundCheck, LandCheck, OilCheck, SaveFileCheck, TreasuryCheck |
 | [TreasuryLine](map/TreasuryLine.md) | BankCheck, CentralBankCheck, FundCheck, GroceryCheck, LongPlaytest |
 | [TruckSchedule](map/TruckSchedule.md) | TruckCheck, TruckRouteCheck |
 | [TruckShapes](map/TruckShapes.md) | **none** |
@@ -4250,6 +4250,211 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L931 ...and the push moves it as it moves the unreformed one, a thousandth the size
   - L935 a city founded in the new unit carries the guards in it
 
+## CurrencyRegimeCheck.java - 176 labelled assertions
+
+> Proves the D$'s four regimes - Float, Lean against falls (the default), Band
+> and Peg to the US$ - hold the currency where they say and cost what they
+> should (XR2, 2026-10-22): Lean is exactly the float the city had before there
+> were regimes, a peg holds to the digit while the vault meets the month's
+> balance and gives way at the floor or by doubt at the chance the gap makes
+> it, the doubt takes the hot money home, a band's edges hold and its inside is
+> free, the dial is tied to the US's rate under a peg and the autopilot's aim
+> picks the rule, the currency aim keeps the shadow inside a band, the strong
+> edge's dollars are paid exactly by the payer chosen, and all of it is saved.
+> Not part of the game.
+> 
+> WHY THIS EXISTS. Jerus, 2026-10-21 (docs/studies/spec-exchange-rates.md, 3.6;
+> ...
+
+- **L257 0. Lean is today's float, to the cent**
+  - L266 fixture: both cities are on Lean, the twin having been Float and back before its first month
+  - L282 fixture: the lean sold in some month, or the comparison means nothing (
+  - L283 the Float-and-back city plays the plain one's 60 months to the bit: rate, vault, defence, seven moves, M0, cash,
+  - L285 under Lean every month: the shadow is the rate, the held move is exactly 0, nothing bought at an edge, no doubt,
+- **L302 1. Float sells nothing**
+  - L307 fixture: the two have the same vault, and are on Lean and on Float
+  - L319 fixture: the Lean twin sells in many of the months (
+  - L320 fixture: and its vault is the lower for it
+  - L321 Float's getDefenceUsd() is 0 every month
+  - L322 ...its vault is unchanged every month, to the bit
+  - L323 ...and nothing sold since founding
+  - L324 ...nor leaned on: the share of the deficit the vault met
+- **L330 2. a peg holds to the digit, and the vault pays the month's balance**
+  - L336 fixture: a settled currency pegged away from its rate arrives at the peg
+  - L337 fixture: balanced trade dealt nothing and the vault is where it was
+  - L361 fixture: the month's deficit is 20% of imports at the pegged rate, in dollars
+  - L362 a deficit, twelve months: every one the rate is getPegRate() exactly and the regime is the peg
+  - L363 ...the vault met the deficit every month (
+  - L365 ...the vault's dollars fell by exactly the month's deficit, each month, to a millionth of a dollar
+  - L366 ...and the defence sold exactly that
+  - L367 ...the seven moves add to the month's log move in the rate, each month
+  - L368 ...the six forces and the hold add to nothing: the held line is what holds the rate where the six would take it
+  - L369 ...and the hold did something: the held move was not nothing in
+  - L370 ...the gap from the peg is the log of the shadow over it
+  - L371 ...and the month's chance of a break is hazard() of that gap, each month
+  - L400 fixture: the month's surplus is 20% of imports at the pegged rate, in dollars
+  - L401 a surplus, twelve months: the peg holds every one and the vault sold nothing
+  - L402 ...the vault's dollars rose by exactly the surplus (the edge's purchase), each month, to a millionth of a dollar
+  - L403 ...getEdgeBoughtUsd() is that purchase
+  - L404 ...and what is owed for it is the purchase at the month's rate
+  - L405 ...owed by the central bank, as it is unless the player says otherwise
+  - L406 ...what is owed adds up until it is taken, and taking it clears it (
+  - L407 ...a surplus is no pressure to break: the hazard is BREAK_BASE
+- **L442 3. a vault at the floor breaks that month, at the shadow plus overshoot**
+  - L450 fixture: there is a deficit and a floor
+  - L454 fixture: both are pegged, quiet, and the first would be a dollar under its floor after the deficit, the second a dollar over
+  - L462 the peg whose vault the deficit would take under its floor breaks that month
+  - L463 ...by the vault, not by doubt
+  - L464 ...the regime is Float after it
+  - L465 ...nothing was sold that month, and the vault is where it was
+  - L469 fixture: the shadow was the weaker side of the peg (
+  - L472 ...the rate it lands at is the shadow times exp(OVERSHOOT x the gap):
+  - L474 ...the jump it records is the log move of the rate that month
+  - L475 ...and the hold gave way: the held move is last month's gap of the shadow over the rate
+  - L477 ...and the seven moves add to the jump
+  - L478 its twin, a vault a dollar deeper, holds: still a peg, the rate at the peg, nothing broken
+  - L480 ...and its vault met the deficit, to the dollar
+  - L481 ...leaving it a dollar over its floor
+  - L504 fixture: a peg broke by chance with the shadow stronger than the peg
+  - L507 the rate lands at the shadow itself: no overshoot on a gap the other way
+  - L509 fixture: the month had a surplus, which a held peg would have bought (US$
+  - L510 ...Float after it, and nothing bought or sold that month (the vault is where it was)
+  - L513 ...the D$ jumped stronger, by the log move recorded
+  - L514 ...and it is a jump the right way: the break let the D$ go stronger
+  - L538 fixture: a peg broke by doubt on the weaker side beside its floating twin
+  - L545 the floating twin's rate is the shadow the peg broke from
+  - L546 ...so the break left the peg's rate over it by OVERSHOOT of the gap
+  - L547 fixture: the gap was past BREAK_GAP, as a doubt break must be
+  - L549 fixture: MARKET_HALF_LIFE is a whole number of months
+  - L551 MARKET_HALF_LIFE months on, half the overshoot is gone
+  - L553 ...and another MARKET_HALF_LIFE on, a quarter of it is left
+  - L554 ...and the peg's market path is the floating twin's, every month of it (
+  - L565 fixture: the doubt city's peg broke within
+  - L575 fixture: the twin's peg did not break that month, and the city's did
+  - L576 fixture: the twin's credibility climbed that month (the bank's gain branch, miss within tolerance)
+  - L581 the month a peg broke, credibility fell by PEG_BREAK_DENT of its distance to KMIN
+  - L587 a bare Expectations: pegBroke() takes PEG_BREAK_DENT of the distance to KMIN
+  - L590 ...and never takes it under KMIN, however many pegs break
+- **L597 4. the chance of a break, counted over 1,000 seeded pegs against hazard()**
+  - L599 hazard(0) is BREAK_BASE
+  - L600 hazard(BREAK_GAP) is BREAK_BASE: doubt adds nothing under the first BREAK_GAP
+  - L602 hazard(2 x BREAK_GAP) is BREAK_BASE + BREAK_SLOPE
+  - L656 fixture: enough pegs broke for the count to mean something (
+  - L657 fixture: in the first
+  - L659 no peg broke by the vault: the vault was too deep to reach its floor
+  - L660 the breaks counted are within 3 standard deviations of the hazards summed (
+  - L662 ...and in the first
+  - L676 fixture: the pegged twin was pegged for some months and then broke, so the comparison spans the break
+  - L677 the market's path is the same pegged or not: getMarket() equal to the bit in every month
+  - L678 ...and it has taken the same draws: the peg's chance is a stream of its own
+- **L696 5. the doubt takes the hot money home**
+  - L700 fixture: the two have the same stock, and it is money (
+  - L706 setDoubt(h) takes exactly h of the stock, after its own move: getDoubtDeparted()
+  - L708 ...what is left is the rest
+  - L709 ...it is inside what departed: the twin's departure and the doubt's
+  - L710 ...what arrived is untouched
+  - L711 ...and the twin that doubted nothing left nothing on doubt
+  - L712 ...the lifetime of it is saved with it, the array one slot longer
+  - L713 ...the saved array carries the lifetime and restores it
+  - L728 setDoubt(0) changes nothing against a twin that never called it: 24 months, every figure equal to the bit
+  - L734 setDoubt(more than 1) is all of it: the stock is gone
+  - L739 setDoubt(not a number) is none
+  - L745 fixture: a city that pays the world rate attracts nothing
+  - L746 a doubt with no stock to take leaves nothing on doubt
+  - L761 fixture: a city pegged a fifth under its shadow held the month, with hot money in the city and a doubt struck
+  - L765 fixture: the gap is past BREAK_GAP (
+  - L766 the doubt share struck is hazard() of the gap, as the last reprice left it
+  - L771 the month's doubt departure is the stock times the share the last reprice struck (the share of the stock after its own move)
+  - L773 ...it is inside what departed that month, and the lifetime rose by it
+  - L775 ...and the audit closes (residual
+- **L790 6. a band's edges hold and its inside is free**
+  - L796 fixture: the band is
+  - L835 fixture: months fell past the weak edge, past the strong edge and inside it (
+  - L837 fixture: the vault sold in months past the weak edge and bought in months past the strong one
+  - L838 fixture: the band's shadow is the floating twin's rate, month by month (the hold changes nothing the float's rule says)
+  - L839 past the weak edge the rate is the weak edge exactly and nothing is bought; past the strong edge the strong edge exactly and nothing is sold
+  - L840 ...the vault sold exactly the month's deficit at the weak edge and bought exactly the surplus at the strong, in dollars
+  - L841 inside the band the rate is the shadow exactly (the floating twin's rate to the bit), and nothing is dealt
+  - L848 the centre crawls at the slope: after 12 reprices it is the centre times exp(slope)
+  - L849 ...and the edges are the centre's width either side of it
+  - L865 fixture: the shadow is past the weak edge in both
+  - L866 a vault a dollar under its floor after the deficit: the band gives way that month, the regime still Band, nothing sold
+  - L868 ...the rate is the shadow (the floating twin's rate), not the edge
+  - L869 ...past the edge it was to hold
+  - L870 its twin a dollar over the floor holds the weak edge
+  - L871 ...selling the deficit
+- **L899 7. under a peg the dial is the US's rate plus the spread; the aim**
+  - L905 fixture: the city has a year of prices, so the inflation rule has a rate to read
+  - L913 fixture: pegged, the autopilot off, a gap of the D$ past the peg
+  - L914 a peg, the autopilot off: the policy rate is WORLD_BASE_RATE plus the spread
+  - L920 fixture: the inflation rule would set a different rate (
+  - L923 a peg, the autopilot on, aiming at inflation: still WORLD_BASE_RATE plus the spread
+  - L924 fixture: the gap the aim ignored was not nothing (
+  - L932 fixture: the gap is
+  - L934 a peg, the autopilot aiming at the currency: the policy rate is tiedRate(currencyGap())
+  - L935 ...and that is WORLD_BASE_RATE plus CURRENCY_WEIGHT of the gap, inside the dial's bounds
+  - L940 a peg, the autopilot off whatever the aim: the player's spread still
+  - L948 fixture: a band, the shadow
+  - L950 a band, the autopilot aiming at the currency: currencyRate(gap)
+  - L957 fixture: a mix of the rule and the gap is not the rule alone, nor the gap alone
+  - L959 a band, the autopilot aiming at a mix: mixRate(inflation, gap)
+  - L964 a band, the autopilot aiming at inflation: the inflation rule
+  - L978 under Lean or Float, whatever the aim: the policy rate is the inflation rule's advisedPolicyRate(), exactly (
+  - L984 a band, the autopilot off: the dial stays where the player left it
+- **L1017 8. the currency aim holds a band, counted over 1,000 seeded years**
+  - L1024 fixture: the neutral dial's band is a hard one: the shadow is outside it more than a third of the months, and the vault spent
+  - L1025 the currency aim's share of months with the shadow inside the band is higher (
+  - L1027 ...and its vault spends less defending the weak edge (US$
+- **L1056 9. the toggle's two payers each pay exactly what the edge bought**
+  - L1063 a bare central bank: the vault's new dollars lift its equity before the money is made
+  - L1065 ...paying for them in new money: it pays what it is asked
+  - L1066 ...M0 is up by their price
+  - L1067 ...and equity is where it was: the assets grew by what the liabilities grew by
+  - L1068 ...the money made is the month's issue, and it is recorded as bought
+  - L1069 ...getDollarsBought() and its lifetime
+  - L1070 ...and it buys nothing for nothing
+  - L1075 fixture: two cities, pegged with a spread of 30 points, and the payer on the toggle is each's
+  - L1082 fixture: money arrived and the vault bought dollars at the peg, the same in both cities (a surplus at the peg), and the payer is recorded with it
+  - L1085 fixture: nothing was paid yet: the bill is settled the month after, and the cities are alike to the bit until it is
+  - L1095 the central bank's city: it paid the owed local price in new money: getDollarsBought() is exactly it
+  - L1096 ...and its lifetime
+  - L1097 ...M0 moved by what was made less what was taken back, to the cent
+  - L1098 ...and the money made includes it (
+  - L1100 ...the treasury's cash did not pay it: no line in the treasury's journal for the bill
+  - L1104 the treasury's city: its cash paid it, as much as its room allowed (
+  - L1106 ...getBoughtThisMonth() includes it: the treasury's city bought what the central bank's did, and the bill besides (
+  - L1109 ...the treasury's cash is lower than the central bank's city's by what it paid
+  - L1111 ...and the central bank's city's M0 is higher by it (the treasury's money left the city, the central bank's was made)
+  - L1113 the audit closes in both, the settlement month (residuals
+  - L1135 equity after the settlement, less the purchase not yet paid for, differs between the cities by what the treasury paid, to the cent: the central bank's own
+  - L1137 the audit closes in both, every month of it
+- **L1152 10. saved and loaded mid-peg**
+  - L1161 fixture: a pegged city with a purchase owed, a doubt share struck and the rate held away from its shadow
+  - L1167 saved to its scratch folder
+  - L1171 the loaded city keeps the regime, the payer, the peg, the shadow, the doubt, what is owed and who owes it, to the bit
+  - L1173 ...and the hot money's doubt, the vault and the dial
+  - L1193 the next 12 months of rate, vault, M0, cash and credibility equal the twin that never saved (within SaveFileCheck's replay tolerance, 1e-9)
+  - L1194 ...and the regime is the same every month, the break (if any) in the same month
+  - L1195 ...to the bit
+  - L1206 fixture: a band mid-crawl, the rate held away from the shadow, with a purchase owed by the treasury
+  - L1218 fixture: a peg that broke by doubt eight months ago, its overshoot still fading
+  - L1227 restore(toSaveArray()) keeps every regime field of
+  - L1228 ...and the regime's state it cannot be asked: the market, the draws, the seed
+  - L1245 ...and each plays 24 months on exactly as the one it was saved from: rate, vault and every regime field to the bit (the fade of a break, the crawl of a band)
+  - L1250 fixture: the regimes are slots 71 on, the array longer than 94
+  - L1253 an array cut at slot 70, as an older save wrote it, restores as Lean with nothing owed, held or broken
+  - L1256 ...its band is the default width, unset
+  - L1257 ...and the rate it had is the saved one
+  - L1258 ...and the vault is the saved vault, in dollars
+- **L1264 11. a real run, counted**
+  - L1304 every figure of the city is a number every month, and the audit closes every month (
+  - L1306 fixture: the city was pegged for some months (
+  - L1307 every month the peg held the rate was the peg to the digit, and a month that held did not break
+  - L1308 the peg broke at most once, and the count agrees with the model's
+  - L1310 a break month is the last pegged month: it began pegged and ended on Float, nothing was pegged after it, and the months pegged are the months to the break
+  - L1313 what was counted is consistent: the months held and the month that broke are the months pegged, and the vault sold or bought in no more of them than held
+  - L1315 ...a month the peg broke sold and bought nothing (its break let the rate go)
+
 ## CurveCheck.java - 78 labelled assertions
 
 > Proves the curve from the dial the market expects (CD1, spec-city-debt.md
@@ -8073,7 +8278,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1378 a month on, both pay the world the same coupon
   - L1379 ...and hold the same
   - L1380 ...and both months close
-  - L1388 fixture: the save carries the world's paper at the end of the capital flows array
+  - L1388 fixture: the save carries the world's paper in slots 12-14 of the capital flows array
   - L1399 it loads
   - L1400 the world holds none of the city's paper
   - L1401 ...nor does the paper say it does
