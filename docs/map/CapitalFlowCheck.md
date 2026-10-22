@@ -1,4 +1,4 @@
-# CapitalFlowCheck.java - 486 lines · 6 methods · 0 constants · harnesses
+# CapitalFlowCheck.java - 489 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -50,11 +50,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 458 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
+| 29 | 461 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
 | 35 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 40 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 51 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
-| 57 | 413 | `public static void main(String[] args) throws Exception` |  |
-| 472 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
-| 480 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 57 | 416 | `public static void main(String[] args) throws Exception` |  |
+| 475 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
+| 483 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

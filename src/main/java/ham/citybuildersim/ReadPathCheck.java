@@ -829,22 +829,30 @@ public class ReadPathCheck {
         record.total("bankWriteOffs");
         record.worstYear("bankProvisions");
         // the trade page's forces on the rate, and what the currency did to
-        // the debt (2026-09-21): the page previews the push rather than asking
-        // the month's own effectivePressure(), which records - ForeignCheck
-        // section 13 causes the case where the two differ
-        g.getForeignAccounts().previewPressure();
-        g.getForeignAccounts().previewRawPressure();
-        g.getForeignAccounts().previewAbsorption();
-        g.getForeignAccounts().getLastPressure();
+        // the debt (2026-09-21): since XR1 the page reads the float's pure
+        // readers (the gate, the balance's and the cover's levels, the fair
+        // level, the trend, the month's six moves) rather than a preview of
+        // the push, and none of them records - ForeignCheck's section on what
+        // the Trade tab reads asserts the rate, the vault, the moves and the
+        // market equal before and after
+        g.getForeignAccounts().gate();
+        g.getForeignAccounts().balanceTarget();
+        g.getForeignAccounts().coverTarget();
+        g.getForeignAccounts().getFairLevel();
+        g.getForeignAccounts().deviationFromFair();
+        g.getForeignAccounts().getParityTrend();
+        g.getForeignAccounts().getMoveTrend();
+        g.getForeignAccounts().getMoveGap();
+        g.getForeignAccounts().getMoveBalance();
+        g.getForeignAccounts().getMoveCover();
+        g.getForeignAccounts().getMoveIntervention();
+        g.getForeignAccounts().getMoveMarket();
+        g.getForeignAccounts().getLastMove();
         g.getForeignAccounts().getLastAbsorption();
         g.getForeignAccounts().getLastRevaluation();
-        // ...and what 0.7.35's Trade tab reads: the push and the pull it draws,
-        // the cover a purchase would buy, its verdicts, the month's goods off the
-        // businesses' books, what is held where, and History's rate and parity
-        g.getForeignAccounts().previewPush();
-        g.getForeignAccounts().previewDrift();
-        g.getForeignAccounts().previewPull();
-        g.getForeignAccounts().previewMove();
+        // ...and what 0.7.35's Trade tab reads: the cover a purchase would buy,
+        // its verdicts, the month's goods off the businesses' books, what is
+        // held where, and History's rate and parity
         // ...and what 0.7.45's pass over the new price model reads: the anchor's
         // move and miss, the real dial, the neutral rate, the index's components,
         // the shelf's limit and its prices, who went without and the vouchers,

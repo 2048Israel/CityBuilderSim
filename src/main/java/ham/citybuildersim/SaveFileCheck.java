@@ -1056,8 +1056,9 @@ public class SaveFileCheck {
 
            The fixture CAUSES a revaluation rather than finding one: the city
            borrows dollars on its first morning, and is played until a month in
-           which the rate actually moved them - which it cannot do before
-           ForeignAccounts.SETTLING_MONTHS of trade, so that many months first.
+           which the rate actually moved them - which it cannot do until the
+           city has traded a while (the currency's settling months until XR1),
+           so that many months first.
            ================================================================= */
         System.out.println("\n--- and a city with dollars owed abroad ---");
 
@@ -1070,7 +1071,10 @@ public class SaveFileCheck {
             abroad.buildStack(template(abroad, "House"), 80, false);
             abroad.buildStack(template(abroad, "Convenience Store"), 3, false);
             abroad.handleForeignLogic("Term", 5_000, 30, 100, false);   // one of the five (0.7.1)
-            abroad.simulateMonths(ForeignAccounts.SETTLING_MONTHS + 2);
+            // The months the fixture trades before its test month: 24, the currency's
+            // settling months until XR1, kept so the fixture's city is the city it always was.
+            final int tradingMonths = 24;
+            abroad.simulateMonths(tradingMonths + 2);
             for (int extra = 0; extra < 120
                     && Math.abs(abroad.getForeignAccounts().getLastRevaluation()) < 1e-6; extra++) {
                 abroad.simulateMonths(1);
@@ -1094,6 +1098,16 @@ public class SaveFileCheck {
         same("...beside the rest of the foreign accounts, which always did",
                 abroadBack.getForeignAccounts().getLifetimeRevaluation(),
                 abroad.getForeignAccounts().getLifetimeRevaluation());
+        // ...and the ring of twelve rates the year's depreciation is read off inside the month (XR1), a
+        // flow: Game.yearlyDepreciation(), which the hot money's run reads before the month writes its own
+        // slot. Read between months it is the slot just written, so the ring itself is compared.
+        double[] ring = abroad.rateHistoryToSave(), ringBack = abroadBack.rateHistoryToSave();
+        double lowest = Double.MAX_VALUE, highest = 0;
+        for (int k = 0; k < 12; k++) { lowest = Math.min(lowest, ring[k]); highest = Math.max(highest, ring[k]); }
+        assertTrue("fixture: the city has a full year of rates, and the D$ moved over it",
+                ring[12] == 12 && highest > lowest * (1 + 1e-6));
+        assertTrue("the year of rates reloads, so a run on the currency fires in the loaded city as in its original",
+                java.util.Arrays.equals(ring, ringBack));
 
         /* ============ 13. AND NOTHING READS ZERO ON A FRESHLY LOADED CITY ============
 
@@ -2373,16 +2387,24 @@ public class SaveFileCheck {
         assertTrue("fixture: the city bought the preferred", fundCity.acceptPreferredOffer());
         // ...and a share on the book from the world, so a lot has a value at the step to keep (0.7.39, FundLedger) - of the first
         // company in the register's order whose share the world sells and the fund's rule buys (since 0.7.120: Iron & Steel,
-        // the first the world holds, can have no share abroad to sell - its holders' emigrants' - nor room under the rule's cap).
+        // the first the world holds, can have no share abroad to sell - its holders' emigrants' - nor room under the rule's cap)
+        // and for which somebody stands bid at what the withdrawal below will ask of it, fair value less the rule's premium
+        // (TreasuryFund.RULE_PREMIUM, Exchange.postFund()): a fund made to sell to pay needs a buyer for the share it sells.
+        // XR1 moved this city's path (the currency is a float now): Real Estate, the first the world sells, had sellers on
+        // its book - the world, the emigrants, the bank's desk - and no bid at any step, so its share never sold and the
+        // withdrawal below never paid late; the fixture takes the first company with a bid standing, and says so.
+        int shareCo = -1;
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             if (c == Equity.BANK || !(fundCity.getEquity().getForeignShares(c) > 1) || !(fundCity.getExchange().fair(c) > 0)) continue;
             Exchange ex = fundCity.getExchange();
+            if (!(ex.bookOf(c).bestBid() >= ex.fair(c) * (1 - TreasuryFund.RULE_PREMIUM))) continue;
             double p = ex.price(c), q = Math.min(1, fundCity.getFund().getCash() / Math.max(1e-9, 2 * p));
             ex.bookOf(c).withdrawAll();
             ex.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.SELL, p, q);
-            if (!ex.tradeForCheck(c, Exchange.FUND, OrderBook.Side.BUY, p, q).isEmpty()) break;
+            if (!ex.tradeForCheck(c, Exchange.FUND, OrderBook.Side.BUY, p, q).isEmpty()) { shareCo = c; break; }
             ex.bookOf(c).withdrawAll();
         }
+        assertTrue("fixture: the fund holds a share of a company the world sells and somebody stands bid for", shareCo >= 0);
         fundCity.fundBuyShares(0, 1_000);
         assertTrue("saved it with the preferred bought and an order waiting", fundCity.saveGame(4, "preferred").ok);
         Game bought = new Game(fundCity.getGameFiles());

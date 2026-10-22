@@ -25,8 +25,9 @@ package ham.citybuildersim;
  * the money constants at that level every month (Game.restrikeMoneyConstants()),
  * the wages take half their indexing from it (LabourMarket.updateCostOfLiving()),
  * the real rates are struck against it (Game.realRateDifferential(),
- * realDepositRate()), and the currency drifts at its credible part
- * (ForeignAccounts.setExpectedDrift()).
+ * realDepositRate()); the currency takes no drift of it (retired by XR1: the
+ * real rate gap is the only way expected inflation reaches the D$, through
+ * ForeignAccounts.gapLevelFor()).
  *
  * CREDIBILITY IS HARD TO WIN AND SLOW TO LOSE WHILE THE BANK FIGHTS. On target
  * (a smoothed miss within TOLERANCE) it climbs a GAIN_MONTHS-th of the way to

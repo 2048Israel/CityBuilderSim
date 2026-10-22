@@ -904,6 +904,11 @@ public class RefineryCheck {
         PLANNER_FILES.put(g, files);
         quietly(() -> {
             g.newGame();
+            // XR1 (2026-10-21): the planner sections measure what a refinery orders and runs on, not the currency.
+            // Under THE FLOAT the D$ moves in the two years section 14 waits and the best unit no longer pays
+            // ("a Small Cracking Unit would lose $89.0k a month on it"), so no order is placed; the rate is held where
+            // the founding leaves it, in every planner town.
+            g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             g.setCashForTest(Founding.WEALTHY_CASH);
             BuildingManager b = g.getBuildingManager();
             String[] names = { "House", "Convenience Store", "Small Grocery Store", "Industrial Bakery", "Paved Road",

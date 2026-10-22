@@ -1,4 +1,4 @@
-# CrimeCheck.java - 340 lines · 8 methods · 0 constants · harnesses
+# CrimeCheck.java - 344 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CrimeCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -33,7 +33,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 329 | **type** `public class CrimeCheck` | Crime, the police and the prisons: every claim in claude/crime-has-reasons.md, each with its own cause. |
+| 12 | 333 | **type** `public class CrimeCheck` | Crime, the police and the prisons: every claim in claude/crime-has-reasons.md, each with its own cause. |
 | 16 | 5 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 22 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 27 | 5 | `static void quietly(Runnable work)` |  |
@@ -41,5 +41,5 @@
 | 39 | 3 | `static double officersFor(double coverage, double people)` | Officers for this coverage of this many people. |
 | 44 | 5 | `static Crime month(Crime.Causes k, double people, double coverage, double cells)` | One month of a fresh Crime with these reasons, returned. |
 | 50 | 9 | `static Crime.Causes bust(double adults)` |  |
-| 60 | 280 | `public static void main(String[] args) throws Exception` |  |
+| 60 | 284 | `public static void main(String[] args) throws Exception` |  |
 

@@ -135,6 +135,12 @@ public class DenominationCheck {
         Game g = new Game(GameFiles.scratch(name));
         quietly(() -> {
             g.run();
+            // XR1 (2026-10-21): the bus towns measure a reform of the transit bill, the fares and the fuel, not the
+            // currency. Under THE FLOAT the town's D$ is at 1.79 by month 121 and its drivers burn no fuel yet (fuel bill
+            // 0.0, households' fuel 0.0), so the fixture "the drivers burn fuel" has nothing to read; the rate is held
+            // where the founding leaves it, and the fuel is burnt. The twins of section 2 are not pinned: they are the
+            // harness's reform-neutrality test, and the currency moving under them is the case it exists for.
+            if (buses) g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
             // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.

@@ -297,6 +297,11 @@ public class AutoBuildCheck {
         try {
             quietly(() -> {
                 g.run();
+                // XR1 (2026-10-21): this harness measures the auto-builder, not the currency. Under THE FLOAT the
+                // decades' D$ is at 4.2 by month 600 and jumps 19% in month 609 (cash -$159,614k, the hot money
+                // stopped), and the city placed no order in the 36 months after section 4's save, so the fixture
+                // no longer causes "it placed orders"; the rate is held where the founding leaves it.
+                g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
                 g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
                 g.setRolloverMode(LongPlaytest.ROLLOVER);
                 g.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
@@ -662,6 +667,9 @@ public class AutoBuildCheck {
         GameFiles files = new GameFiles(root.resolve("decades").resolve("data"), root.resolve("decades").resolve("no-legacy"));
         Game back = new Game(files);
         quietly(() -> back.loadGameSave(slot));
+        // XR1 (2026-10-21): the decades' city is held at its rate (decades()), and a pin is a fixture's, not the save's:
+        // the twin is held at the same rate, or it floats alone and the two are two cities.
+        back.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
         AutoBuilder a = g.getAutoBuilder(), b = back.getAutoBuilder();
         assertTrue("it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds",
                 back.getLoadFailure() == null && b.isOn() && b.getSlack() == a.getSlack() && b.getDebtLimit() == a.getDebtLimit()

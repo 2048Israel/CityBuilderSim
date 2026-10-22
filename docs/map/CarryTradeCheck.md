@@ -1,4 +1,4 @@
-# CarryTradeCheck.java - 300 lines · 5 methods · 0 constants · harnesses
+# CarryTradeCheck.java - 303 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CarryTradeCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -58,10 +58,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 261 | **type** `public class CarryTradeCheck` | The carry trade: the other side of hot money, and the bank's first borrower. |
+| 40 | 264 | **type** `public class CarryTradeCheck` | The carry trade: the other side of hot money, and the bank's first borrower. |
 | 46 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 51 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 62 | 7 | `static CapitalFlows settle(double lendingRate, double premium, double headroom, int months)` | Run a stock to rest against a fixed rate, premium and headroom. |
-| 70 | 221 | `public static void main(String[] args) throws Exception` |  |
-| 293 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double borrowedOut)` | A month at the city's edge, with an outflow on the financial account. |
+| 70 | 224 | `public static void main(String[] args) throws Exception` |  |
+| 296 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double borrowedOut)` | A month at the city's edge, with an outflow on the financial account. |
 

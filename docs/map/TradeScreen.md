@@ -1,4 +1,4 @@
-# TradeScreen.java - 2,990 lines · 127 methods · 48 constants · interface
+# TradeScreen.java - 3,247 lines · 140 methods · 57 constants · interface
 
 `ham/citybuildersim/ui/TradeScreen.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -48,7 +48,7 @@
 > the folds, the river's toggle, the goods' toggle and the exchange's ask
 > all survive a redraw.
 
-**Uses:** [Palette](Palette.md) (333), [ForeignAccounts](ForeignAccounts.md) (86), [Icons](Icons.md) (45), [TradeBand](TradeBand.md) (22), [Sectors](Sectors.md) (18), [TimeChart](TimeChart.md) (12), [CapitalFlows](CapitalFlows.md) (11), [Currency](Currency.md) (10), [Good](Good.md) (8), [ChartModel](ChartModel.md) (8), [SectorScreen](SectorScreen.md) (8), [BuildScreen](BuildScreen.md) (7), [HistorySave](HistorySave.md) (6), [HistoryScreen](HistoryScreen.md) (6), [Sector](Sector.md) (5), [FreightView](FreightView.md) (4), [UserInterface](UserInterface.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Retail](Retail.md) (2), [YearBook](YearBook.md) (2), [BondMarket](BondMarket.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [PolicyScreen](PolicyScreen.md) (2), [Statement](Statement.md) (1), [DecisionLog](DecisionLog.md) (1), [WorldEconomy](WorldEconomy.md) (1), [DebtManager](DebtManager.md) (1), [Bank](Bank.md) (1), [Game](Game.md) (1)
+**Uses:** [Palette](Palette.md) (342), [ForeignAccounts](ForeignAccounts.md) (126), [Icons](Icons.md) (46), [TradeBand](TradeBand.md) (22), [Sectors](Sectors.md) (18), [Currency](Currency.md) (16), [TimeChart](TimeChart.md) (13), [CapitalFlows](CapitalFlows.md) (11), [Good](Good.md) (8), [ChartModel](ChartModel.md) (8), [SectorScreen](SectorScreen.md) (8), [BuildScreen](BuildScreen.md) (7), [HistoryScreen](HistoryScreen.md) (7), [HistorySave](HistorySave.md) (6), [Sector](Sector.md) (5), [FreightView](FreightView.md) (4), [UserInterface](UserInterface.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Retail](Retail.md) (2), [YearBook](YearBook.md) (2), [BondMarket](BondMarket.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Statement](Statement.md) (1), [DecisionLog](DecisionLog.md) (1), [WorldEconomy](WorldEconomy.md) (1), [Bank](Bank.md) (1), [Game](Game.md) (1)
 
 **Used by (4):** [FinancesScreen](FinancesScreen.md), [PolicyScreen](PolicyScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
@@ -56,58 +56,59 @@
 
 | line | section |
 |---:|---|
-| 83 | TRADE & THE WORLD (0.7.35): THE FRAME |
-| 176 | · one way to write each number |
-| 244 | · the frame |
-| 399 | · the five figures |
-| 491 | · the action cards |
-| 561 | · the screen's own pieces |
-| 735 | THE OVERVIEW (0.7.35; the landing's four rows until then) |
-| 768 | · what we trade, as bars |
-| 1010 | · the currency, as a card |
-| 1074 | · the three gauges |
+| 82 | TRADE & THE WORLD (0.7.35): THE FRAME |
+| 175 | · one way to write each number |
+| 235 | · the frame |
+| 390 | · the five figures |
+| 482 | · the action cards |
+| 552 | · the screen's own pieces |
+| 726 | THE OVERVIEW (0.7.35; the landing's four rows until then) |
+| 759 | · what we trade, as bars |
+| 1001 | · the currency, as a card |
+| 1073 | · the three gauges |
 | 1171 | THE MONTH (0.7.35; "The picture" and "The two accounts" until then) |
 | 1374 | · the river |
 | 1566 | · what is held where |
 | 1637 | · the statement, under details |
 | 1743 | WHAT WE TRADE (0.7.35; "In and out" and "Since founding" until then) |
 | 1965 | · THE BAND IN LEGS (FR4, 2026-10-20) |
-| 2203 | THE CURRENCY (0.7.35; "The rate" and "What is moving it" until then) |
-| 2320 | · what is moving it |
-| 2528 | · what the rate is doing |
-| 2578 | THE RESERVES (0.7.35; "What is yours", "Cover" and "Exchange" until then) |
-| 2814 | · the exchange |
+| 2203 | THE CURRENCY (0.7.35; "The rate" and "What is moving it, next month" |
+| 2391 | · what moved it |
+| 2607 | · where the fundamentals hold it |
+| 2785 | · what the rate is doing |
+| 2835 | THE RESERVES (0.7.35; "What is yours", "Cover" and "Exchange" until then) |
+| 3071 | · the exchange |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 98 | `TradeScreen.OVERVIEW` | `"Overview", MONTH = "The month", GOODS = "What we trade", CURRENCY = "The cur...` | The five pages, in the strip's order. |
-| 102 | `TradeScreen.PAGES` | `{ OVERVIEW, MONTH, GOODS, CURRENCY, RESERVES }` | ...as the strip lists them. |
-| 105 | `TradeScreen.PAGE_ICONS` | `{ Icons.OVERVIEW, Icons.COIN, Icons.LORRY, Icons.EXCHANGE, Icons.SAFE }` | ...and each one's icon: the tiles, the coin, the lorry, the two arrows, the safe. |
-| 108 | `TradeScreen.TRADE_HOME` | `OVERVIEW` | The page the tab opens on, and the one the rail's trade icon resets to. |
-| 123 | `TradeScreen.TRADE_MONEY_PAGES` | `{ "The rate", "What is moving it" }` | The currency's two pages until 0.7.35: a door that names the first lands on The currency. |
-| 126 | `TradeScreen.TRADE_VAULT_PAGES` | `{ "What is yours", "Cover", "Exchange" }` | The reserves' three pages until 0.7.35: a door that names the first lands on The reserves. |
-| 161 | `TradeScreen.FRAME_CHROME` | `200` | How much of the stage the fixed frame takes above the page's scroller - the head, the chips and the five figures - until the frame is laid out and its own height is read. |
-| 164 | `TradeScreen.STAGE_REST` | `36` | What the menu spends around the frame and the page: its padding over and under them and the gap between, and the four pixels of slack its height is held to (UserInterface's rootMenu) - BankScreen's, for the same frame. |
-| 167 | `TradeScreen.GROW_MILLIS` | `500` | How long the bars take to grow out of their axis when a month lands. |
-| 170 | `TradeScreen.OVERVIEW_GOODS` | `8, PAGE_GOODS = 12` | The Overview shows this many goods; What we trade this many before "+N more" (the spec's D6). |
-| 173 | `TradeScreen.EXCHANGE_CARD` | `"#exchange", HOLDINGS = "#holdings", FORCES = "#forces", DEBT = "#debt", LEAV...` | The scroll targets a door can land on. |
-| 356 | `TradeScreen.LEAD_INFO` | `"What the city sells, what it buys, and what it owes in somebody else's money...` | The tab's (i): the landing's lead (the spec's L2), and what the Overview shows. |
-| 361 | `TradeScreen.PAGE_INFO` | `{ "Every dollar that crossed the city's edge this month, and which way: a wal...` | Each page's (i), in PAGES' order after the Overview: what it holds (the landing's row blurbs until 0.7.35). |
-| 405 | `TradeScreen.NOT_COUNTED` | `"not counted yet"` | What a figure of the month says until a month has turned since the city was loaded or founded (ForeignAccounts.isMonthCounted()). |
-| 408 | `TradeScreen.NOT_COUNTED_NOTE` | `"since the city was founded, or loaded from a save before 0.7.46: a month on,...` | ...and its note. |
-| 763 | `TradeScreen.GAUGES_INFO` | `"Always here, deliberately understated, and the same three every month - so a...` | The section's (i): the banner's reason (the spec's L8). |
-| 923 | `TradeScreen.TRADE_INFO` | `"Every good the city's businesses sold abroad and bought abroad this month, f...` | WHAT WE TRADE's (i). |
-| 931 | `TradeScreen.NOTHING_CROSSED` | `"Nothing crossed the city's edge this month.No exports, no imports, nothing "...` | The empty month's whole (the spec's M2). |
-| 1001 | `TradeScreen.PUMP_WORDS` | `String.format("The grocers' filling stations buy the drivers' petrol at whole...` | Petrol's popover, under the pump price (0.7.83): where it comes from - the fuel duty on the sign since 0.7.103. |
-| 1007 | `TradeScreen.FREIGHT_AFTER_LOAD` | `"Not counted yet: the railway's freight on each good is struck when the month...` | The prices before a month is counted - a city just founded, or loaded from a save before 0.7.46 (the spec's B14; a newer save carries the month's trade the freight is struck on, A1). |
-| 1041 | `TradeScreen.RATE_INFO` | `"How many of the city's dollars one US dollar costs.Higher is a weaker curren...` | THE CURRENCY's (i): the unit, and parity (the spec's Q1, Q3). |
-| 1095 | `TradeScreen.COVER_SCALE` | `ForeignAccounts.COMFORTABLE_COVER * 2` | The cover gauge's scale: twice the comfortable line, a year of imports. |
-| 1122 | `TradeScreen.PARITY_SCALE` | `ForeignAccounts.PARITY_FAR * 1.5` | The parity gauge's scale either side: half as far again as PARITY_FAR, so the red band shows. |
-| 1156 | `TradeScreen.COVER_INFO` | `String.format("Import cover is the oldest test there is: if every dollar of "...` | The gauges' (i)s: what each one measures (the cover sentence, the spec's C1; the others the landing's notes). |
-| 1162 | `TradeScreen.BACKING_INFO` | `String.format("The vault against the foreign money parked in the city's bank,...` | ...the backing gauge's: the vault against the money that can leave, and where a run becomes likely. |
-| 1166 | `TradeScreen.PARITY_INFO` | `String.format("How far the rate sits from parity - where a basket costs the s...` | ...and the parity gauge's: the one parity rule's two lines, and where else they are read. |
+| 97 | `TradeScreen.OVERVIEW` | `"Overview", MONTH = "The month", GOODS = "What we trade", CURRENCY = "The cur...` | The five pages, in the strip's order. |
+| 101 | `TradeScreen.PAGES` | `{ OVERVIEW, MONTH, GOODS, CURRENCY, RESERVES }` | ...as the strip lists them. |
+| 104 | `TradeScreen.PAGE_ICONS` | `{ Icons.OVERVIEW, Icons.COIN, Icons.LORRY, Icons.EXCHANGE, Icons.SAFE }` | ...and each one's icon: the tiles, the coin, the lorry, the two arrows, the safe. |
+| 107 | `TradeScreen.TRADE_HOME` | `OVERVIEW` | The page the tab opens on, and the one the rail's trade icon resets to. |
+| 122 | `TradeScreen.TRADE_MONEY_PAGES` | `{ "The rate", "What is moving it" }` | The currency's two pages until 0.7.35: a door that names the first lands on The currency. |
+| 125 | `TradeScreen.TRADE_VAULT_PAGES` | `{ "What is yours", "Cover", "Exchange" }` | The reserves' three pages until 0.7.35: a door that names the first lands on The reserves. |
+| 160 | `TradeScreen.FRAME_CHROME` | `200` | How much of the stage the fixed frame takes above the page's scroller - the head, the chips and the five figures - until the frame is laid out and its own height is read. |
+| 163 | `TradeScreen.STAGE_REST` | `36` | What the menu spends around the frame and the page: its padding over and under them and the gap between, and the four pixels of slack its height is held to (UserInterface's rootMenu) - BankScreen's, for the same frame. |
+| 166 | `TradeScreen.GROW_MILLIS` | `500` | How long the bars take to grow out of their axis when a month lands. |
+| 169 | `TradeScreen.OVERVIEW_GOODS` | `8, PAGE_GOODS = 12` | The Overview shows this many goods; What we trade this many before "+N more" (the spec's D6). |
+| 172 | `TradeScreen.EXCHANGE_CARD` | `"#exchange", HOLDINGS = "#holdings", FORCES = "#forces", DEBT = "#debt", LEAV...` | The scroll targets a door can land on. |
+| 347 | `TradeScreen.LEAD_INFO` | `"What the city sells, what it buys, and what it owes in somebody else's money...` | The tab's (i): the landing's lead (the spec's L2), and what the Overview shows. |
+| 352 | `TradeScreen.PAGE_INFO` | `{ "Every dollar that crossed the city's edge this month, and which way: a wal...` | Each page's (i), in PAGES' order after the Overview: what it holds (the landing's row blurbs until 0.7.35). |
+| 396 | `TradeScreen.NOT_COUNTED` | `"not counted yet"` | What a figure of the month says until a month has turned since the city was loaded or founded (ForeignAccounts.isMonthCounted()). |
+| 399 | `TradeScreen.NOT_COUNTED_NOTE` | `"since the city was founded, or loaded from a save before 0.7.46: a month on,...` | ...and its note. |
+| 754 | `TradeScreen.GAUGES_INFO` | `"Always here, deliberately understated, and the same three every month - so a...` | The section's (i): the banner's reason (the spec's L8). |
+| 914 | `TradeScreen.TRADE_INFO` | `"Every good the city's businesses sold abroad and bought abroad this month, f...` | WHAT WE TRADE's (i). |
+| 922 | `TradeScreen.NOTHING_CROSSED` | `"Nothing crossed the city's edge this month.No exports, no imports, nothing "...` | The empty month's whole (the spec's M2). |
+| 992 | `TradeScreen.PUMP_WORDS` | `String.format("The grocers' filling stations buy the drivers' petrol at whole...` | Petrol's popover, under the pump price (0.7.83): where it comes from - the fuel duty on the sign since 0.7.103. |
+| 998 | `TradeScreen.FREIGHT_AFTER_LOAD` | `"Not counted yet: the railway's freight on each good is struck when the month...` | The prices before a month is counted - a city just founded, or loaded from a save before 0.7.46 (the spec's B14; a newer save carries the month's trade the freight is struck on, A1). |
+| 1032 | `TradeScreen.RATE_INFO` | `"How many of the city's dollars one US dollar costs.Higher is a weaker curren...` | THE CURRENCY's (i): the unit, and parity (the spec's Q1, Q3). |
+| 1094 | `TradeScreen.COVER_SCALE` | `ForeignAccounts.COMFORTABLE_COVER * 2` | The cover gauge's scale: twice the comfortable line, a year of imports. |
+| 1121 | `TradeScreen.PARITY_SCALE` | `ForeignAccounts.PARITY_FAR * 1.5` | The parity gauge's scale either side: half as far again as PARITY_FAR, so the red band shows. |
+| 1155 | `TradeScreen.COVER_INFO` | `String.format("Import cover is the oldest test there is: if every dollar of "...` | The gauges' (i)s: what each one measures (the cover sentence, the spec's C1; the others the landing's notes). |
+| 1161 | `TradeScreen.BACKING_INFO` | `String.format("The vault against the foreign money parked in the city's bank,...` | ...the backing gauge's: the vault against the money that can leave, and where a run becomes likely. |
+| 1165 | `TradeScreen.PARITY_INFO` | `String.format("How far the rate sits from parity - where a basket costs the s...` | ...and the parity gauge's: the one parity rule's two lines, and where else they are read. |
 | 1198 | `TradeScreen.NOTHING` | `.0005` | Under half a dollar is nothing: a step that small is named, not drawn. |
 | 1270 | `TradeScreen.CURRENT_INFO` | `"What the city earned from the world by selling it things, less what it spent...` | The current account's note (the spec's A1). |
 | 1275 | `TradeScreen.FINANCIAL_INFO` | `"Borrowing abroad and foreign money parking here are both inflows, and neithe...` | The financial account's note (A2). |
@@ -126,30 +127,39 @@
 | 1994 | `TradeScreen.NO_BAND` | `"No good the city trades has both a world buyer and a world seller yet, so th...` | The card's line while no good has a band: the world will not both buy and sell anything the city makes. |
 | 1998 | `TradeScreen.NO_BAND_TRADE` | `"Nothing has crossed the edge in the month the books last struck, so there is...` | ...and while the books have no trade to weigh it by (a city just founded, or a month with nothing across the edge). |
 | 2126 | `TradeScreen.BandBar.BAND` | `26` |  |
-| 2449 | `TradeScreen.FORCES_INFO` | `"One reading: what the next month does to the rate, on the accounts as they s...` | The forces card's (i) (the spec's F1). |
-| 2457 | `TradeScreen.COMES_TO_INFO` | `"The push is what the month is doing to the currency; the drift is the slide ...` | WHICH COMES TO's (i) (F3's two notes). |
-| 2573 | `TradeScreen.VAULT_MOVED_INFO` | `"The vault is kept in dollars, so its dollar figure stays put and its local f...` | What the currency does to the vault (the spec's E2 note, both ways). |
-| 2647 | `TradeScreen.ONE_POT_INFO` | `"The vault is one pot — the game does not tag a dollar as borrowed or earned,...` | WHOSE IT IS's (i) (the spec's R4, and B11: the method's name is out of it). |
+| 2385 | `TradeScreen.FAIR_INFO` | `String.format("The fair level is where the fundamentals alone put the currenc...` | The fair-level gauge's (i): what the level is and why its gauge has no verdict. |
+| 2569 | `TradeScreen.FORCES_INFO` | `"Six parts add to the month's move, in log points of the rate.Parity's trend:...` | The forces card's (i): the six parts and what each is. |
+| 2577 | `TradeScreen.TREND_INFO` | `"The city's price level against the world's, on the basket with rent held to ...` | ...and each force's own (i): what it is, and the dials behind it. |
+| 2580 | `TradeScreen.REAL_RATE_INFO` | `String.format("A real rate over the world's brings money here and holds the "...` |  |
+| 2585 | `TradeScreen.BALANCE_INFO` | `String.format("A year of the current and the financial account together, agai...` |  |
+| 2589 | `TradeScreen.COVER_FORCE_INFO` | `String.format("An empty vault costs the currency a %.0f%% discount, falling t...` |  |
+| 2592 | `TradeScreen.INTERVENTION_INFO` | `String.format("Dollars the treasury buys cheapen the currency and dollars it ...` |  |
+| 2596 | `TradeScreen.MARKET_INFO` | `String.format("The currency's own swing, drawn from the city's seed so the sa...` |  |
+| 2601 | `TradeScreen.GATE_INFO` | `String.format("How much of the market's swing and of the fundamentals - the r...` | The gate's (i): what it lets through, and what it does not gate. |
+| 2754 | `TradeScreen.FUNDAMENTALS_INFO` | `"The rate built up from parity, one step at a time, each row the rate after "...` | The steps card's (i): how to read the table. |
+| 2762 | `TradeScreen.RULE` | `String.format("The rate is parity's trend, times where the fundamentals put t...` | THE RULE, folded at the page's foot: the board's paragraph in the model's words and dials. |
+| 2830 | `TradeScreen.VAULT_MOVED_INFO` | `"The vault is kept in dollars, so its dollar figure stays put and its local f...` | What the currency does to the vault (the spec's E2 note, both ways). |
+| 2904 | `TradeScreen.ONE_POT_INFO` | `"The vault is one pot — the game does not tag a dollar as borrowed or earned,...` | WHOSE IT IS's (i) (the spec's R4, and B11: the method's name is out of it). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 79 | `private final UserInterface ui` | The window this screen draws into: its game, its root, its clearMenu(). |
-| 111 | `String tradePage` | The page open: one of PAGES. |
-| 120 | `String tradeArea` | A page asked for by name from outside, read once and then null: the nine pages lived under four areas until 0.7.35, and FinancesScreen's doors still set the area ("The currency", "The reserves") with its first page (T... |
-| 129 | `final Set<String> openLines` | What the player has opened - a fold, the goods past the first twelve - by key, so a redraw on the clock leaves it open. |
-| 132 | `boolean showRiver` | The month page draws the river rather than the steps (the spec's D2: the steps lead, the river one toggle away), kept while the game runs. |
-| 135 | `boolean byBusiness` | What we trade draws a row a business rather than a row a good (D19), kept while the game runs. |
-| 138 | `boolean tradeBuying` | The exchange: buying foreign money rather than selling it, and how much is asked, in local money. |
-| 139 | `double tradeExchange` |  |
-| 142 | `private String scrollTarget` | Where the page is to be scrolled to once it is drawn - a card's key - or null for its top. |
-| 145 | `private Good popGood` | A good whose popover opens once What we trade is drawn - an Overview row's click - or null. |
-| 148 | `private final Map<String, Node> targets` | The nodes a door on this tab can scroll to, by key, as the page draws them. |
-| 151 | `private javafx.scene.control.ScrollPane body` | The page's scroller. |
-| 154 | `private final ChartModel rateWindow` | The currency chart's window and the lines its legend has hidden, kept across the month's redraw so a chart dragged back stays where it was put. |
-| 155 | `private final Set<String> rateHidden` |  |
-| 158 | `private int drawnMonth` | The month the tab last drew: a new month landing is when its figures count up and its bars grow. |
+| 78 | `private final UserInterface ui` | The window this screen draws into: its game, its root, its clearMenu(). |
+| 110 | `String tradePage` | The page open: one of PAGES. |
+| 119 | `String tradeArea` | A page asked for by name from outside, read once and then null: the nine pages lived under four areas until 0.7.35, and FinancesScreen's doors still set the area ("The currency", "The reserves") with its first page (T... |
+| 128 | `final Set<String> openLines` | What the player has opened - a fold, the goods past the first twelve - by key, so a redraw on the clock leaves it open. |
+| 131 | `boolean showRiver` | The month page draws the river rather than the steps (the spec's D2: the steps lead, the river one toggle away), kept while the game runs. |
+| 134 | `boolean byBusiness` | What we trade draws a row a business rather than a row a good (D19), kept while the game runs. |
+| 137 | `boolean tradeBuying` | The exchange: buying foreign money rather than selling it, and how much is asked, in local money. |
+| 138 | `double tradeExchange` |  |
+| 141 | `private String scrollTarget` | Where the page is to be scrolled to once it is drawn - a card's key - or null for its top. |
+| 144 | `private Good popGood` | A good whose popover opens once What we trade is drawn - an Overview row's click - or null. |
+| 147 | `private final Map<String, Node> targets` | The nodes a door on this tab can scroll to, by key, as the page draws them. |
+| 150 | `private javafx.scene.control.ScrollPane body` | The page's scroller. |
+| 153 | `private final ChartModel rateWindow` | The currency chart's window and the lines its legend has hidden, kept across the month's redraw so a chart dragged back stays where it was put. |
+| 154 | `private final Set<String> rateHidden` |  |
+| 157 | `private int drawnMonth` | The month the tab last drew: a new month landing is when its figures count up and its bars grow. |
 | 2127 | `private final List<TradeBand.Piece> pieces` |  |
 | 2128 | `private final double scale` |  |
 | 2129 | `private final Region track` |  |
@@ -160,127 +170,126 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 2915 | **type** `final class TradeScreen` | The Trade & the world tab: how the city stands against the world this month - what it sells and buys abroad, the month's balance of payments, what a US dollar costs and which way it is going, and the vault - on an Ove... |
-| 81 | 1 | `TradeScreen(UserInterface ui)` |  |
+| 75 | 3173 | **type** `final class TradeScreen` | The Trade & the world tab: how the city stands against the world this month - what it sells and buys abroad, the month's balance of payments, what a US dollar costs and which way it is going, and the vault - on an Ove... |
+| 80 | 1 | `TradeScreen(UserInterface ui)` |  |
 
-### TRADE & THE WORLD (0.7.35): THE FRAME (lines 83-175)
+### TRADE & THE WORLD (0.7.35): THE FRAME (lines 82-174)
 
-### one way to write each number (lines 176-243)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 179 | 1 | `String sym()` | The city's money's mark: "D$". |
-| 182 | 4 | `String d(double thousands)` | Local money with its mark and a true minus: "D$2.4M", "−D$725k" (FinancesScreen's, the spec's D9). |
-| 188 | 4 | `String dFull(double thousands)` | ...with every digit. |
-| 194 | 5 | `String signedD(double thousands)` | ...signed, as a movement: "+D$1.2M", "−D$3.5M", "D$0". |
-| 201 | 1 | `String unitD(double thousands)` | A price a unit, with its mark: "D$29,559", "D$1.31". |
-| 204 | 1 | `String perUsd(double rate)` | An exchange rate with its unit, the header's way: "D$0.7072 per US$" (the spec's B4). |
-| 207 | 5 | `String oneOfOurs()` | One of ours in theirs: "D$1 = US$1.41", "D$1 = US¢0.27" for a currency worth under a cent of theirs. |
-| 214 | 6 | `static String parityWords(ForeignAccounts fx)` | How far from parity, in words: "26.2% stronger than parity", "at parity", "held fixed". |
-| 222 | 3 | `static String parityTone(int level)` | A parity level's colour: plain near, the watch amber, far red (ForeignAccounts.parityLevel()). |
-| 227 | 3 | `static String coverTone(int level)` | A cover level's colour: red thin, amber under comfortable, plain over it (ForeignAccounts.coverLevel()). |
-| 232 | 5 | `static String moveWords(double move)` | A move as a fraction, in words with its direction - a rate up is a weaker currency: "0.229% weaker", "0.142% stronger", "no move". |
-| 239 | 4 | `static String pushWords(double pressure)` | A pressure as a share of the currency, with its direction: "15.5% weaker", "none". |
-
-### the frame (lines 244-398)
+### one way to write each number (lines 175-234)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 252 | 47 | `void showForeignMenu()` | The tab's entry point: the Overview, or the page the player was on. |
-| 301 | 3 | `void open(String page)` | One of the five pages, at its top: a chip picked, or a door. |
-| 306 | 7 | `void open(String page, String target)` | ...scrolled to a card on it (the doors land where the figure is taken apart). |
-| 315 | 1 | `void openOverview()` | The Overview, at its top. |
-| 318 | 5 | `void openExchange(boolean buying)` | The exchange card, buying or selling - an ask the other way cleared: the cover alert's "Buy reserves". |
-| 325 | 16 | `private void frameOver(VBox frame, VBox page)` | The fixed frame over a scrolling page, at the page's width, the page as tall as what is left under the frame as laid out (BankScreen's). |
-| 343 | 11 | `void scrollTo(Node target)` | Scroll the page to a node on it (InfrastructureScreen's). |
-| 376 | 4 | `static String pageInfo(String page)` | A page's (i) by its name. |
-| 386 | 12 | `HBox head()` | The head: "Trade & the world" with the business violet's swatch, or the breadcrumb "Trade › The currency", "Trade" a way back to the Overview; at its right a door to City History on the page's own lines. |
+| 178 | 1 | `String sym()` | The city's money's mark: "D$". |
+| 181 | 4 | `String d(double thousands)` | Local money with its mark and a true minus: "D$2.4M", "−D$725k" (FinancesScreen's, the spec's D9). |
+| 187 | 4 | `String dFull(double thousands)` | ...with every digit. |
+| 193 | 5 | `String signedD(double thousands)` | ...signed, as a movement: "+D$1.2M", "−D$3.5M", "D$0". |
+| 200 | 1 | `String unitD(double thousands)` | A price a unit, with its mark: "D$29,559", "D$1.31". |
+| 203 | 1 | `String perUsd(double rate)` | An exchange rate with its unit, the header's way: "D$0.7072 per US$" (the spec's B4). |
+| 206 | 5 | `String oneOfOurs()` | One of ours in theirs: "D$1 = US$1.41", "D$1 = US¢0.27" for a currency worth under a cent of theirs. |
+| 213 | 4 | `static String parityWords(ForeignAccounts fx)` | How far from parity, in words: "26.2% stronger than parity", "at parity", "held fixed" - and "1.2M times parity" for a rate at its guard (farFrom()). |
+| 219 | 3 | `static String parityTone(int level)` | A parity level's colour: plain near, the watch amber, far red (ForeignAccounts.parityLevel()). |
+| 224 | 3 | `static String coverTone(int level)` | A cover level's colour: red thin, amber under comfortable, plain over it (ForeignAccounts.coverLevel()). |
+| 229 | 5 | `static String moveWords(double move)` | A move as a fraction, in words with its direction - a rate up is a weaker currency: "0.229% weaker", "0.142% stronger", "no move". |
 
-### the five figures (lines 399-490)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 402 | 1 | **type** `record Cell(String label, String value, String note, String tone, String where)` | One figure of the strip, worked out without drawing it: its label, its figure, its note, its colour, and where its click goes. |
-| 418 | 32 | `List<Cell> kpiCells()` | THE FIVE (pure: the probe reads them as the strip shows them). |
-| 452 | 23 | `HBox kpiStrip(boolean fresh)` | The strip: the five as limit cells, each a door; SOLD and BOUGHT count up from last month's when a month lands (the spec's section 5). |
-| 477 | 6 | `private void countFrom(VBox cell, HistorySave h, String series, double now)` | A cell's figure counted up from the month before's, History's second-last point (SectorScreen.countUp()). |
-| 485 | 5 | `String rateMove()` | The rate's move on last month, from History's last two points: "▲ 0.100% weaker this month"; null with fewer than two or no move to three places (the spec's section 5). |
-
-### the action cards (lines 491-560)
+### the frame (lines 235-389)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 500 | 43 | `List<Node> actionCards()` | What the player must act on or know of first, at the top of every page (the landing's four loud blocks, the spec's D18): the money leaving, under three months of cover, the hot money barely backed - red - and more owe... |
-| 545 | 15 | `static VBox actionCard(String svg, String tone, String title, String line, String whole, Node act)` | One action card: its icon square, its title, one line with the whole behind an (i), and its door (null: none), on the raised ground with a 3 px top edge in `tone` (BankScreen's). |
+| 243 | 47 | `void showForeignMenu()` | The tab's entry point: the Overview, or the page the player was on. |
+| 292 | 3 | `void open(String page)` | One of the five pages, at its top: a chip picked, or a door. |
+| 297 | 7 | `void open(String page, String target)` | ...scrolled to a card on it (the doors land where the figure is taken apart). |
+| 306 | 1 | `void openOverview()` | The Overview, at its top. |
+| 309 | 5 | `void openExchange(boolean buying)` | The exchange card, buying or selling - an ask the other way cleared: the cover alert's "Buy reserves". |
+| 316 | 16 | `private void frameOver(VBox frame, VBox page)` | The fixed frame over a scrolling page, at the page's width, the page as tall as what is left under the frame as laid out (BankScreen's). |
+| 334 | 11 | `void scrollTo(Node target)` | Scroll the page to a node on it (InfrastructureScreen's). |
+| 367 | 4 | `static String pageInfo(String page)` | A page's (i) by its name. |
+| 377 | 12 | `HBox head()` | The head: "Trade & the world" with the business violet's swatch, or the breadcrumb "Trade › The currency", "Trade" a way back to the Overview; at its right a door to City History on the page's own lines. |
 
-### the screen's own pieces (lines 561-734)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 564 | 7 | `static Label words(String text, double size, String tone)` | Words that wrap, at a size, in a colour. |
-| 573 | 6 | `static Label figure(String text, double size, String tone)` | A figure that is never cut, at a size, in a colour. |
-| 581 | 17 | `static HBox cardHead(String svg, String colour, String title, String info, Node right)` | A card's head: its icon in a square tinted in its colour, its title in capitals, an (i) when `info` is not null, and at its right `right` (null: nothing) - BankScreen's. |
-| 600 | 7 | `static VBox card(Node...rows)` | A card on Build's ground: RAISED, radius 8, a 1 px edge, padding 12. |
-| 609 | 4 | `static String cardStyle(String edge)` | The card's ground, with its edge in a colour. |
-| 615 | 9 | `static VBox doorCard(VBox c, Runnable go)` | A card that opens somewhere: the accent edge under the pointer, and a click goes. |
-| 626 | 9 | `static HBox cardLine(String label, String value, String tone)` | A line of a card: words at the left, wrapping, and a figure at the right. |
-| 637 | 5 | `static HBox cardLine(String label, String value, String tone, String info)` | ...with an (i) after its words. |
-| 644 | 3 | `static HBox noteLine(String shown, String whole, double wide)` | A muted line with its whole behind an (i), wrapping at `wide`. |
-| 649 | 4 | `static Node line(String text, String whole)` | A plain line of words in a card, wrapping, with its whole behind an (i) when `whole` is not null. |
-| 655 | 1 | `static Label muted(String text)` | ...muted. |
-| 658 | 5 | `static Label quiet(String text)` | A heading's quiet words at its right, never cut (Pieces.hint() at its own width). |
-| 665 | 6 | `static HBox chipInfo(String text, String colour, String whole)` | A chip, and after it an (i) holding `whole` when that is not null. |
-| 673 | 5 | `static FlowPane chips(Node...cs)` | A row of chips, wrapping. |
-| 680 | 6 | `static VBox column(Node...rows)` | A statement column, for a fold: the old rows at their old width. |
-| 688 | 3 | `VBox fold(String key, String caption, java.util.function.Supplier<Node> inside)` | A fold kept on this screen: "details ▸ caption". |
-| 693 | 12 | `static GridPane row(Node...cards)` | Cards side by side in equal columns, each as tall as the tallest. |
-| 707 | 1 | `static HBox swatch(String colour, String name)` | A key's entry: a swatch and a name. |
-| 710 | 5 | `static FlowPane keyRow(Node...entries)` | A row of a key: entries with a gap, wrapping. |
-| 717 | 3 | `static Segment seg(double amount, String colour, String tip)` | A stretch of a segment bar with its tooltip. |
-| 722 | 1 | `Sector sector(String key)` | A sector by its key, or null. |
-| 725 | 4 | `void openSector(String key)` | One business's books, on its Operations page (Sectors › it). |
-| 731 | 3 | `HBox sectorDoor(String words, String key)` | A door to one business: a pill in the business violet with its icon. |
-
-### THE OVERVIEW (0.7.35; the landing's four rows until then) (lines 735-767)
+### the five figures (lines 390-481)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 747 | 14 | `void overviewPage(VBox page, boolean fresh)` |  |
+| 393 | 1 | **type** `record Cell(String label, String value, String note, String tone, String where)` | One figure of the strip, worked out without drawing it: its label, its figure, its note, its colour, and where its click goes. |
+| 409 | 32 | `List<Cell> kpiCells()` | THE FIVE (pure: the probe reads them as the strip shows them). |
+| 443 | 23 | `HBox kpiStrip(boolean fresh)` | The strip: the five as limit cells, each a door; SOLD and BOUGHT count up from last month's when a month lands (the spec's section 5). |
+| 468 | 6 | `private void countFrom(VBox cell, HistorySave h, String series, double now)` | A cell's figure counted up from the month before's, History's second-last point (SectorScreen.countUp()). |
+| 476 | 5 | `String rateMove()` | The rate's move on last month, from History's last two points: "▲ 0.100% weaker this month"; null with fewer than two or no move to three places (the spec's section 5). |
 
-### what we trade, as bars (lines 768-1009)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 776 | 2 | **type** `record GoodRow(String icon, String name, double bought, double sold, double net, String tip, Good good, Str...` | One row of the goods or the businesses, worked out without drawing it (pure: the probe reads them): its icon, its name, what it bought and sold abroad, its net, its tooltip, and the good or the sector key it opens (on... |
-| 789 | 18 | `List<GoodRow> goodRows(Sectors.TradeByGood t)` | Every good that crossed the edge this month, largest side first (the spec's D6: a good with nothing either way is not a row), then what was bought abroad with no good behind it, by the sector that bought it (pure). |
-| 809 | 7 | `String goodTip(Sectors.GoodTrade g)` | A good's tooltip: what crossed each way, and who. |
-| 818 | 10 | `String whoWords(Map<String, Double> who)` | "Automotive D$288.4M, Manufacturing D$37.0M" - by sector, largest first. |
-| 830 | 3 | `static String who(String key)` | A buyer's or seller's name in words: a sector's key, "the households", and since 0.7.85 "the city's reserve" (Sectors.CITY: its crude). |
-| 835 | 3 | `static boolean hasPage(String key)` | ...and whether it has a sector's page to open: not the households, not the city (0.7.85). |
-| 845 | 19 | `List<GoodRow> businessRows(Sectors.TradeByGood t)` | A row a business (pure, the spec's D19): every sector that sold or bought abroad this month, off its statement's exports and imports, and the households' cars when they bought any - and their fuel (0.7.49), on the sam... |
-| 866 | 21 | `MirrorRows mirror(List<GoodRow> rows, String leftHead, String rightHead, boolean nets, boolean toPage)` | The rows as mirrored bars, each a click: a good's popover, a business's books. |
-| 893 | 28 | `VBox tradeCard(int shown, boolean fresh, boolean page)` | WHAT WE TRADE, as a card: the goods as mirrored bars, the first `shown` of them, the rest folded into one line; on the Overview a door to What we trade (a row there opens What we trade with its popover). |
-| 941 | 51 | `Node goodPopover(Good good)` | A good's popover (the spec's section 3): who sold it and who bought it, by sector; what the world pays for one and charges to bring one in, the market's own prices (GoodsMarket.exportPrice(), importPrice() - the railw... |
-| 994 | 5 | `static List<Map.Entry<String, Double>> sorted(Map<String, Double> who)` | Who, largest first. |
-
-### the currency, as a card (lines 1010-1073)
+### the action cards (lines 482-551)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1019 | 20 | `VBox currencyCard()` | THE CURRENCY, as a card: what a US dollar costs at 28 px with its unit, one of ours in theirs and parity, the distance from parity as a chip in its level, the rate's last ten years on a small chart with parity beside ... |
-| 1055 | 18 | `TimeChart rateChart(HistorySave h, ChartModel window, boolean main, double width, double height)` | The rate and parity on a chart: History's fxRate in the money blue and fxParity (recorded since 0.7.35) in its light step. |
+| 491 | 43 | `List<Node> actionCards()` | What the player must act on or know of first, at the top of every page (the landing's four loud blocks, the spec's D18): the money leaving, under three months of cover, the hot money barely backed - red - and more owe... |
+| 536 | 15 | `static VBox actionCard(String svg, String tone, String title, String line, String whole, Node act)` | One action card: its icon square, its title, one line with the whole behind an (i), and its door (null: none), on the raised ground with a 3 px top edge in `tone` (BankScreen's). |
 
-### the three gauges (lines 1074-1170)
+### the screen's own pieces (lines 552-725)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1081 | 1 | **type** `record Gauge(String reading, String chip, String chipTone, double at, boolean muted)` | One gauge's words, worked out without drawing it (pure: the probe reads them): its reading, its chip and the chip's colour (null: none), where its mark sits (0 to 1), and whether the reading does not apply. |
-| 1084 | 9 | `Gauge cover()` | Import cover on 0 to 12 months: red under THIN_COVER "crisis pricing", amber under COMFORTABLE_COVER "thin", green "comfortable" (pure). |
-| 1098 | 10 | `Gauge backing()` | What backs the money that can leave, on 0 to 200%: red under PANIC_BACKING "a run likely", amber under 100% "thin", green "covered" (pure). |
-| 1110 | 10 | `Gauge parity()` | How far the rate has run from parity, either side, on 0 to 1.5 times PARITY_FAR: "near" plain, "far" amber past PARITY_WATCH, "very far" red past PARITY_FAR (D8; pure). |
-| 1124 | 10 | `VBox coverGauge()` |  |
-| 1135 | 9 | `VBox backingGauge()` |  |
-| 1145 | 9 | `VBox parityGauge()` |  |
+| 555 | 7 | `static Label words(String text, double size, String tone)` | Words that wrap, at a size, in a colour. |
+| 564 | 6 | `static Label figure(String text, double size, String tone)` | A figure that is never cut, at a size, in a colour. |
+| 572 | 17 | `static HBox cardHead(String svg, String colour, String title, String info, Node right)` | A card's head: its icon in a square tinted in its colour, its title in capitals, an (i) when `info` is not null, and at its right `right` (null: nothing) - BankScreen's. |
+| 591 | 7 | `static VBox card(Node...rows)` | A card on Build's ground: RAISED, radius 8, a 1 px edge, padding 12. |
+| 600 | 4 | `static String cardStyle(String edge)` | The card's ground, with its edge in a colour. |
+| 606 | 9 | `static VBox doorCard(VBox c, Runnable go)` | A card that opens somewhere: the accent edge under the pointer, and a click goes. |
+| 617 | 9 | `static HBox cardLine(String label, String value, String tone)` | A line of a card: words at the left, wrapping, and a figure at the right. |
+| 628 | 5 | `static HBox cardLine(String label, String value, String tone, String info)` | ...with an (i) after its words. |
+| 635 | 3 | `static HBox noteLine(String shown, String whole, double wide)` | A muted line with its whole behind an (i), wrapping at `wide`. |
+| 640 | 4 | `static Node line(String text, String whole)` | A plain line of words in a card, wrapping, with its whole behind an (i) when `whole` is not null. |
+| 646 | 1 | `static Label muted(String text)` | ...muted. |
+| 649 | 5 | `static Label quiet(String text)` | A heading's quiet words at its right, never cut (Pieces.hint() at its own width). |
+| 656 | 6 | `static HBox chipInfo(String text, String colour, String whole)` | A chip, and after it an (i) holding `whole` when that is not null. |
+| 664 | 5 | `static FlowPane chips(Node...cs)` | A row of chips, wrapping. |
+| 671 | 6 | `static VBox column(Node...rows)` | A statement column, for a fold: the old rows at their old width. |
+| 679 | 3 | `VBox fold(String key, String caption, java.util.function.Supplier<Node> inside)` | A fold kept on this screen: "details ▸ caption". |
+| 684 | 12 | `static GridPane row(Node...cards)` | Cards side by side in equal columns, each as tall as the tallest. |
+| 698 | 1 | `static HBox swatch(String colour, String name)` | A key's entry: a swatch and a name. |
+| 701 | 5 | `static FlowPane keyRow(Node...entries)` | A row of a key: entries with a gap, wrapping. |
+| 708 | 3 | `static Segment seg(double amount, String colour, String tip)` | A stretch of a segment bar with its tooltip. |
+| 713 | 1 | `Sector sector(String key)` | A sector by its key, or null. |
+| 716 | 4 | `void openSector(String key)` | One business's books, on its Operations page (Sectors › it). |
+| 722 | 3 | `HBox sectorDoor(String words, String key)` | A door to one business: a pill in the business violet with its icon. |
+
+### THE OVERVIEW (0.7.35; the landing's four rows until then) (lines 726-758)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 738 | 14 | `void overviewPage(VBox page, boolean fresh)` |  |
+
+### what we trade, as bars (lines 759-1000)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 767 | 2 | **type** `record GoodRow(String icon, String name, double bought, double sold, double net, String tip, Good good, Str...` | One row of the goods or the businesses, worked out without drawing it (pure: the probe reads them): its icon, its name, what it bought and sold abroad, its net, its tooltip, and the good or the sector key it opens (on... |
+| 780 | 18 | `List<GoodRow> goodRows(Sectors.TradeByGood t)` | Every good that crossed the edge this month, largest side first (the spec's D6: a good with nothing either way is not a row), then what was bought abroad with no good behind it, by the sector that bought it (pure). |
+| 800 | 7 | `String goodTip(Sectors.GoodTrade g)` | A good's tooltip: what crossed each way, and who. |
+| 809 | 10 | `String whoWords(Map<String, Double> who)` | "Automotive D$288.4M, Manufacturing D$37.0M" - by sector, largest first. |
+| 821 | 3 | `static String who(String key)` | A buyer's or seller's name in words: a sector's key, "the households", and since 0.7.85 "the city's reserve" (Sectors.CITY: its crude). |
+| 826 | 3 | `static boolean hasPage(String key)` | ...and whether it has a sector's page to open: not the households, not the city (0.7.85). |
+| 836 | 19 | `List<GoodRow> businessRows(Sectors.TradeByGood t)` | A row a business (pure, the spec's D19): every sector that sold or bought abroad this month, off its statement's exports and imports, and the households' cars when they bought any - and their fuel (0.7.49), on the sam... |
+| 857 | 21 | `MirrorRows mirror(List<GoodRow> rows, String leftHead, String rightHead, boolean nets, boolean toPage)` | The rows as mirrored bars, each a click: a good's popover, a business's books. |
+| 884 | 28 | `VBox tradeCard(int shown, boolean fresh, boolean page)` | WHAT WE TRADE, as a card: the goods as mirrored bars, the first `shown` of them, the rest folded into one line; on the Overview a door to What we trade (a row there opens What we trade with its popover). |
+| 932 | 51 | `Node goodPopover(Good good)` | A good's popover (the spec's section 3): who sold it and who bought it, by sector; what the world pays for one and charges to bring one in, the market's own prices (GoodsMarket.exportPrice(), importPrice() - the railw... |
+| 985 | 5 | `static List<Map.Entry<String, Double>> sorted(Map<String, Double> who)` | Who, largest first. |
+
+### the currency, as a card (lines 1001-1072)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1010 | 20 | `VBox currencyCard()` | THE CURRENCY, as a card: what a US dollar costs at 28 px with its unit, one of ours in theirs and parity, the distance from parity as a chip in its level, the rate's last ten years on a small chart with parity beside ... |
+| 1049 | 23 | `TimeChart rateChart(HistorySave h, ChartModel window, boolean main, double width, double height)` | The rate and parity on a chart: History's fxRate in the money blue and fxParity (recorded since 0.7.35; since XR1 the basket with rent held to a third) in its light step, and on the big one fxFair (recorded since XR1)... |
+
+### the three gauges (lines 1073-1170)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1080 | 1 | **type** `record Gauge(String reading, String chip, String chipTone, double at, boolean muted)` | One gauge's words, worked out without drawing it (pure: the probe reads them): its reading, its chip and the chip's colour (null: none), where its mark sits (0 to 1), and whether the reading does not apply. |
+| 1083 | 9 | `Gauge cover()` | Import cover on 0 to 12 months: red under THIN_COVER "crisis pricing", amber under COMFORTABLE_COVER "thin", green "comfortable" (pure). |
+| 1097 | 10 | `Gauge backing()` | What backs the money that can leave, on 0 to 200%: red under PANIC_BACKING "a run likely", amber under 100% "thin", green "covered" (pure). |
+| 1109 | 10 | `Gauge parity()` | How far the rate has run from parity, either side, on 0 to 1.5 times PARITY_FAR: "near" plain, "far" amber past PARITY_WATCH, "very far" red past PARITY_FAR (D8; pure). |
+| 1123 | 10 | `VBox coverGauge()` |  |
+| 1134 | 9 | `VBox backingGauge()` |  |
+| 1144 | 9 | `VBox parityGauge()` |  |
 
 ### THE MONTH (0.7.35; "The picture" and "The two accounts" until then) (lines 1171-1373)
 
@@ -346,56 +355,76 @@
 | 2133 | 41 | `BandBar(List<TradeBand.Piece> pieces, List<String> tips, double scale, boolean named)` _(in TradeScreen.BandBar)_ |  |
 | 2175 | 26 | `protected void layoutChildren()` _(in TradeScreen.BandBar)_ |  |
 
-### THE CURRENCY (0.7.35; "The rate" and "What is moving it" until then) (lines 2203-2319)
+### THE CURRENCY (0.7.35; "The rate" and "What is moving it, next month" (lines 2203-2390)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2220 | 36 | `void currencyPage(VBox page)` |  |
-| 2264 | 36 | `VBox rateCard()` | THE RATE: what a US dollar costs at 28 px with its unit; one of ours in theirs; this month's move; parity with its line; the parity gauge either side of parity - its bands the one rule's (amber past PARITY_WATCH, red ... |
-| 2302 | 17 | `static String parityLineInfo(ForeignAccounts fx)` | Where the rate sits against parity, and what that does (the spec's Q3 and the parity note). |
+| 2238 | 51 | `void currencyPage(VBox page)` |  |
+| 2299 | 33 | `VBox rateCard()` | THE RATE: what a US dollar costs at 28 px with its unit; one of ours in theirs; this month's move; the key to reading it (a rising figure is a cheaper currency); then two gauges of one scale either side of their centr... |
+| 2334 | 4 | `static double gaugeAt(double deviation)` | Where a deviation sits on the two gauges, 0 to 1 across: the centre at nothing, PARITY_SCALE either side at the ends. |
+| 2340 | 7 | `static HBox gaugeEnds()` | The two gauges' ends, named in the scale they share: "‹ 75% stronger" and "75% weaker ›". |
+| 2349 | 7 | `static String compact(double v)` | A number past a thousand written short, so a currency at its guard fits a card: "1,234.5", "12,346", "1.2M", "1.0B". |
+| 2358 | 5 | `static String farFrom(double deviation, String anchor)` | How far a rate sits from a level, in words: "8.3% weaker than the fair level", "at parity", and past a hundredfold "1.2M times parity" - the rate at its guard fits the card. |
+| 2365 | 18 | `static String parityLineInfo(ForeignAccounts fx)` | The parity gauge's (i): which way the rate sits and what that does, then what parity is and what follows it (the spec's Q3). |
 
-### what is moving it (lines 2320-2527)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2329 | 13 | `List<Force> pressureForces()` | THE PRESSURE (pure): the trade term - both accounts' trailing imbalance over everything that crossed (ForeignAccounts.pressure()) - and the real rate's term (ratePressure()), and the two together, the model's previewR... |
-| 2352 | 17 | `List<Force> comesToForces()` | WHICH COMES TO (pure): the month's push - the pressure less what the vault meets, times the openness, at DRIFT_SPEED - the anchored drift (0.7.45; the UI spec's B6, D18: the month applies it, and the preview left it o... |
-| 2371 | 22 | `String tradeTermInfo(ForeignAccounts fx)` | The trade term's sentences (the spec's F2: the current account's, the financial account's and the trade term's, verbatim). |
-| 2400 | 8 | `String realRateInfo(ForeignAccounts fx)` | The real rate's sentence (F2), with the dial, the inflation people expect and the world's rate - ex ante since 0.7.42, as the model strikes it (Game.realRateDifferential()); it printed the year's inflation as the subt... |
-| 2415 | 32 | `VBox forcesCard()` | WHAT IS MOVING IT, NEXT MONTH: a banner when the rate is pinned; two halves - THE PRESSURE on its own scale, the vault's defence and the openness under it; WHICH COMES TO on its own - and the old page's readings under... |
-| 2464 | 9 | `String vaultWords(ForeignAccounts fx)` | The vault's defence in words: what it would sell, or nothing - or not counted yet (a city just founded, or loaded from a save before 0.7.46), when the month's deficit decides it (B1). |
-| 2475 | 11 | `String vaultInfo(ForeignAccounts fx)` | ...and its sentence (F2). |
-| 2488 | 4 | `static String opennessWords(ForeignAccounts fx)` | Openness, clamped at 100% by the model (B17, D20): "trade ≥ output (100%)" when it is. |
-| 2494 | 22 | `Node forceReadings()` | The old page's readings, under "details": each reading and its sentence (the statement it was, B19's colours plain). |
-| 2518 | 3 | `static void forceLine(VBox column, String label, String value)` | A reading on its statement line. |
-| 2523 | 4 | `static String signedPct3(double v)` | A fraction as a signed per cent to three places, with a true minus: "−0.229%". |
-
-### what the rate is doing (lines 2528-2577)
+### what moved it (lines 2391-2606)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2531 | 27 | `VBox dollarDebtCard()` | THE DOLLAR DEBT (the spec's Q4): owed abroad in US$, what that is at this rate, and what the currency did to it - or one line when nothing is owed. |
-| 2560 | 11 | `VBox vaultCard()` | THE VAULT (E2): its dollars, what they are worth at this rate, and what the currency did to them - a door to The reserves. |
+| 2402 | 17 | `VBox forcesCard()` | WHAT MOVED IT THIS MONTH (XR1; board 1): the month's move by force as the model struck it - parity's trend, the real rate, the balance, the vault's cover, interventions and the market (ForeignAccounts.getMoveTrend() a... |
+| 2421 | 11 | `List<Force> moveForces()` | The six forces and their sum as the bars' rows (pure): each its sentence under its name, the (i) behind what the force is. |
+| 2434 | 6 | `static String pointsOfRate(double move)` | A log move as percentage points of the rate, signed with a true minus: "+0.440%", "−0.120%", and whole past a hundred points so a currency at its guard fits the figure column. |
+| 2442 | 7 | `static String gateWords(ForeignAccounts fx)` | How much of the market and the fundamentals the city's trade lets reach the rate, in words (pure). |
+| 2451 | 5 | `static String heldWords(double log, String subject)` | What a log shift does to the rate, as a sentence's verb: "holds it about 2.4% dearer", "holds the D$ about 10.5% cheaper", "leaves it where it stands". |
+| 2458 | 6 | `static String overUnder(double gap)` | A real rate gap in the sentence's words: "1.0 point over the world's real rate", "level with the world's real rate". |
+| 2466 | 7 | `static String balancePhrase(ForeignAccounts fx)` | The overall balance in words: "a deficit of 0.2% of GDP", "a surplus of 1.4% of GDP", "a balance within 0.05% of GDP", or that no year of output is known yet. |
+| 2475 | 5 | `static String coverPhrase(ForeignAccounts fx)` | The vault in the sentence's words: "an empty vault", "a vault holding 6.2 months of imports", "a vault with no import bill to cover". |
+| 2482 | 10 | `String trendSentence()` | PARITY'S TREND (pure): which way the city's prices ran against the world's this month, and that the rate follows them one for one. |
+| 2494 | 8 | `String realRateSentence()` | THE REAL RATE (pure): the dial, the inflation people expect, the gap to the world's real rate, where that holds the currency, and how fast. |
+| 2504 | 6 | `String balanceSentence()` | THE BALANCE (pure): trade and capital over twelve months against a year of output, and where that holds the currency. |
+| 2512 | 17 | `String coverSentence()` | THE VAULT'S COVER (pure): how many months of imports it holds, the market's discount for the shortfall from THIN_COVER, and whether it moved anything this month. |
+| 2531 | 14 | `String interventionSentence()` | INTERVENTIONS (pure): what the treasury bought or sold this month, what the central bank sold defending the currency, and what is still felt - or that nothing was dealt. |
+| 2547 | 9 | `String marketSentence()` | THE MARKET (pure): the currency's own swing, what is left of the month's move, where it stands and how fast it fades. |
+| 2558 | 9 | `String totalSentence()` | THE MONTH'S MOVE (pure): where US$1 stood and where it stands, which the six add up to. |
 
-### THE RESERVES (0.7.35; "What is yours", "Cover" and "Exchange" until then) (lines 2578-2813)
+### where the fundamentals hold it (lines 2607-2784)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2592 | 12 | `void reservesPage(VBox page)` |  |
-| 2613 | 32 | `VBox whoseCard()` | WHOSE IT IS: the claim bar - the dollar paper in the money blue's dark step, the parked money sand, the city's own in the money blue (B7: they were amber, red and green, verdicts on parts of one pot) - and a line a pa... |
-| 2661 | 15 | `VBox claimBar(double gross, double debt, double parked, double own)` | One bar of the vault with the claims against it eaten out of the left (the Trade tab's since 0.7.0), at any width: drawn as one stock with bites taken out, because the question is what is left; when the claims run pas... |
-| 2683 | 28 | `VBox coverCard()` | HOW LONG IT WOULD LAST: the cover gauge on 0 to 12 months with ticks at THIN_COVER and COMFORTABLE_COVER, its reading at 28 px, the vault against a month of imports, and what THIN_COVER months would need (D12) when it... |
-| 2713 | 27 | `VBox leaveCard()` | THE MONEY THAT CAN LEAVE (the spec's C2): what is parked here, what pulls it, and what it has done before. |
-| 2742 | 1 | **type** `record Moved(String words, String tone, String info)` | One of WHAT ELSE MOVED THE VAULT's chips, worked out without drawing it (pure): its words, its colour, its (i). |
-| 2750 | 47 | `List<Moved> moved()` | WHAT ELSE MOVED THE VAULT (pure; the spec's E2-E5): the currency's move on its dollars, the central bank's defence - amber the month it sold, an event (section 5) - the land office's dollars out of it, and on a young ... |
-| 2798 | 15 | `VBox movedCard()` |  |
+| 2610 | 1 | **type** `record FairStep(String name, String what, double after, boolean total)` | One step of the build-up: its name, what it does in words (null: the name spans), the rate after it, and whether it is a result (the fair level, the rate). |
+| 2620 | 18 | `VBox fundamentalsCard()` | WHERE THE FUNDAMENTALS HOLD IT (XR1; board 1): US$1 in the city's money built up step by step - parity, the real rate, the vault's cover, the balance, parity's trend ahead of (or behind) the month's parity, which make... |
+| 2647 | 40 | `List<FairStep> fairSteps()` | The steps from parity to the rate (pure): each computed from the model's getters, the fair level reached by them and set to getFairLevel() itself (they are equal but for rounding); the market's step is what the rate h... |
+| 2689 | 5 | `static double fairBase(List<FairStep> steps)` | Where the table's bars start: a rate of 1, or the lowest step when a step runs under it. |
+| 2696 | 41 | `Node fairTable(List<FairStep> steps, double base)` | The steps as a table: step, what it does, a thin bar from `base` on a log scale, and the rate after it. |
+| 2739 | 13 | `String fadeSentence()` | How fast a market swing fades, and where it would be halfway back (pure): the rate halfway to the fair level in logs, by the half-life's month. |
+| 2780 | 4 | `static String signedPct3(double v)` | A fraction as a signed per cent to three places, with a true minus: "−0.229%". |
 
-### the exchange (lines 2814-2990)
+### what the rate is doing (lines 2785-2834)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2817 | 9 | `Press exchangePress()` | What a press on the exchange's button says (pure: the probe reads it): GO with the amount; CHOOSE with nothing asked yet - a press asks the smallest step and prices it, and never trades. |
-| 2828 | 10 | `List<double[]> exchangeSteps(double ceiling)` | The exchange's "to N months" steps (pure, D12): buying and short, each cover line the cash can reach, as {months, local money}; the shares, all of it and clear are the card's own. |
-| 2847 | 116 | `VBox exchangeCard()` | BUY OR SELL FOREIGN MONEY (the Exchange page until 0.7.35): the toggle, the first sentence with the rest behind the (i), what can be spent or sold, the ask and its steps, what it would do - before and after, the cover... |
-| 2965 | 25 | `Node claimsGrid()` | The two claims, side by side (the spec's R5, under "details"), and what was walked away from (R6). |
+| 2788 | 27 | `VBox dollarDebtCard()` | THE DOLLAR DEBT (the spec's Q4): owed abroad in US$, what that is at this rate, and what the currency did to it - or one line when nothing is owed. |
+| 2817 | 11 | `VBox vaultCard()` | THE VAULT (E2): its dollars, what they are worth at this rate, and what the currency did to them - a door to The reserves. |
+
+### THE RESERVES (0.7.35; "What is yours", "Cover" and "Exchange" until then) (lines 2835-3070)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2849 | 12 | `void reservesPage(VBox page)` |  |
+| 2870 | 32 | `VBox whoseCard()` | WHOSE IT IS: the claim bar - the dollar paper in the money blue's dark step, the parked money sand, the city's own in the money blue (B7: they were amber, red and green, verdicts on parts of one pot) - and a line a pa... |
+| 2918 | 15 | `VBox claimBar(double gross, double debt, double parked, double own)` | One bar of the vault with the claims against it eaten out of the left (the Trade tab's since 0.7.0), at any width: drawn as one stock with bites taken out, because the question is what is left; when the claims run pas... |
+| 2940 | 28 | `VBox coverCard()` | HOW LONG IT WOULD LAST: the cover gauge on 0 to 12 months with ticks at THIN_COVER and COMFORTABLE_COVER, its reading at 28 px, the vault against a month of imports, and what THIN_COVER months would need (D12) when it... |
+| 2970 | 27 | `VBox leaveCard()` | THE MONEY THAT CAN LEAVE (the spec's C2): what is parked here, what pulls it, and what it has done before. |
+| 2999 | 1 | **type** `record Moved(String words, String tone, String info)` | One of WHAT ELSE MOVED THE VAULT's chips, worked out without drawing it (pure): its words, its colour, its (i). |
+| 3007 | 47 | `List<Moved> moved()` | WHAT ELSE MOVED THE VAULT (pure; the spec's E2-E5): the currency's move on its dollars, the central bank's defence - amber the month it sold, an event (section 5) - the land office's dollars out of it, and on a young ... |
+| 3055 | 15 | `VBox movedCard()` |  |
+
+### the exchange (lines 3071-3247)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3074 | 9 | `Press exchangePress()` | What a press on the exchange's button says (pure: the probe reads it): GO with the amount; CHOOSE with nothing asked yet - a press asks the smallest step and prices it, and never trades. |
+| 3085 | 10 | `List<double[]> exchangeSteps(double ceiling)` | The exchange's "to N months" steps (pure, D12): buying and short, each cover line the cash can reach, as {months, local money}; the shares, all of it and clear are the card's own. |
+| 3104 | 116 | `VBox exchangeCard()` | BUY OR SELL FOREIGN MONEY (the Exchange page until 0.7.35): the toggle, the first sentence with the rest behind the (i), what can be spent or sold, the ask and its steps, what it would do - before and after, the cover... |
+| 3222 | 25 | `Node claimsGrid()` | The two claims, side by side (the spec's R5, under "details"), and what was walked away from (R6). |
 

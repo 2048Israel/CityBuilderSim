@@ -803,6 +803,12 @@ public class HealthCheck {
         System.setOut(quiet);
         try {
             paid.run();
+            // XR1 (2026-10-21): the books and the premium measure the health bill, not the currency. Under THE FLOAT the
+            // D$ moves in these 60 months and fees at 1x price people out of care (the fee-funded twin served 65.48 of
+            // childcare to the insured twin's 84.32), so the rate is held where the founding leaves it while this
+            // city is built. A pin is not saved: the two twins loaded from its save below float, on the one seeded
+            // path, so they still differ by the dials alone.
+            paid.getForeignAccounts().pinRate(paid.getForeignAccounts().getRate());
             /*
              * A HUNDRED BLOCKS MORE (0.7.55). The ground is priced by how
              * crowded the city is now (LandMarket, THE CROWDING PREMIUM): this

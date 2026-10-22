@@ -231,6 +231,8 @@ public final class YearBook {
         rate(m, "rentPrice", "rent, per month in thousands");
         rate(m, "fxRate", MONEY + " per US dollar - 1.000 at founding, HIGHER is a fallen currency");
         rate(m, "fxParity", MONEY + " per US dollar where a basket costs the same here and abroad - where the rate is pulled back to (recorded since 0.7.35)");
+        rate(m, "fxFair", MONEY + " per US dollar where parity's trend and the real rate gap, the balance and the vault's cover put the rate, before the market's swing and the interventions (recorded since XR1)");
+        rate(m, "fxMarket", "how far the rate sat from that level, a fraction, positive weaker - the market's swing and the interventions (recorded since XR1)");
         rate(m, "priceIndex", "the basket against its base month, 1.000 at the base - struck again every ten years since 0.7.43 and chained, so the level runs on unbroken");
         rate(m, "expectedInflation", "what the city expected inflation to be, a fraction a year - the target weighted by credibility, recent inflation by the rest (recorded since 0.7.42)");
         rate(m, "credibility", "how far the city believed the central bank, " + Expectations.KMIN + " to " + Expectations.KMAX

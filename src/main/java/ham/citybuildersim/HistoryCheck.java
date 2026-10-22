@@ -548,10 +548,10 @@ public class HistoryCheck {
         String before077 = json;
         // ...and without 0.7.8's six, which a history from before 0.7.7 has
         // none of either (they fill the same way - asserted at the end).
-        // ...nor 0.7.35's parity beside the rate.
+        // ...nor 0.7.35's parity beside the rate, nor XR1's fair level and market swing.
         for (String added : new String[]{"policyRate", "bankPrime", "bankDepositRate", "bankFees",
                 "bankCapitalRatio", "bankCapitalTarget", "bankAllowance", "bankProvisions",
-                "bankDividends", "bankReturnOnEquity", "fxParity"}) {
+                "bankDividends", "bankReturnOnEquity", "fxParity", "fxFair", "fxMarket"}) {
             before077 = dropSeries(before077, added);
         }
         StringBuilder premiums = new StringBuilder("\"bankPremium\":[");
@@ -588,6 +588,15 @@ public class HistoryCheck {
                         && old076.getHistorySave().seriesByName().get("fxParity").size() == 2
                         && Double.isNaN(old076.getHistorySave().aligned("fxParity")[0])
                         && !Double.isNaN(old076.getHistorySave().aligned("fxParity")
+                                [old076.getHistorySave().months() - 1]));
+        assertTrue("...and so do XR1's fair level and market swing, drawn as not recorded before",
+                was.seriesByName().get("fxFair") != null && was.seriesByName().get("fxMarket") != null
+                        && old076.getHistorySave().seriesByName().get("fxFair").size() == 2
+                        && old076.getHistorySave().seriesByName().get("fxMarket").size() == 2
+                        && Double.isNaN(old076.getHistorySave().aligned("fxFair")[0])
+                        && !Double.isNaN(old076.getHistorySave().aligned("fxFair")
+                                [old076.getHistorySave().months() - 1])
+                        && !Double.isNaN(old076.getHistorySave().aligned("fxMarket")
                                 [old076.getHistorySave().months() - 1]));
 
         /* ============ 4. the derived series do not divide by zero ============

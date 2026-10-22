@@ -43,11 +43,13 @@ import java.nio.file.Path;
  *      expected level, the labour in a cost split at the level; a reform
  *      divides them all at once, and the month after strikes them at the new
  *      unit and the reformed twin agrees with its unreformed self.
- *   8. The currency: the rate's own pressure is zero at uipLevel(), a real
- *      gap holds the rate at a level rather than a drift, the anchored drift
- *      moves an unpushed rate by its twelfth root and a pinned one not at
- *      all, and a city hands the currency its anchored drift - nothing
- *      before the basket is based.
+ *   8. The currency: a real gap held for good moves the rate to a level
+ *      and stops (restated for XR1, docs/studies/spec-exchange-rates.md 3.3:
+ *      the UIP level and the anchored drift of 0.7.42 are retired, and the
+ *      currency takes no drift from the anchor): a quiet-market currency
+ *      trading in balance, the vault at THIN_COVER or more, parity flat and
+ *      the gap held, ends at parity x exp(gate() x gapLevelFor(gap)) and a
+ *      month later has not moved; a pinned one does not move at all.
  *   9. A save carries the anchor whole and the next month is the same
  *      month, the month's step in its eighth slot (0.7.45), which a save of
  *      seven slots reads as nothing; a save from before 0.7.42 is seeded -
@@ -165,8 +167,9 @@ public class ExpectationsCheck {
         check("...so its constants are struck at founding money",
                 founding.getSectors().retail().getOpeningSellPrice() == ham.citybuildersim.sectors.Retail.OPENING_SELL_PRICE / unit
                         && founding.getHealthcare().feeAtOne(CareType.GENERAL) == Healthcare.GENERAL_FEE / unit);
-        check("...and its currency is handed no drift", founding.anchoredDrift() == 0
-                && founding.getForeignAccounts().getExpectedDrift() == 0);
+        // (b) The line "...and its currency is handed no drift" is retired with the anchored drift (section 5's XR1 row:
+        // "REVERSION's pull, the anchored drift, RATE_PULL's push and SETTLING_MONTHS retired"): the currency takes
+        // none from the anchor, section 8.
     }
 
     /* ================= 2. on target ================= */
@@ -453,60 +456,50 @@ public class ExpectationsCheck {
 
     /* ================= 8. the currency ================= */
     static void theCurrency(Path root) {
-        out.println("\n--- 8. the currency: a level for a real gap, and the anchored drift ---");
+        out.println("\n--- 8. the currency: a real gap held for good moves the rate to a level and stops ---");
+        // RESTATED FOR XR1 (spec 3.3). (b) The 0.7.42 lines about the UIP level -
+        // "uipLevel() is e^(-gap / EXPECTED_REVERSION)", the rate's own pressure nothing at
+        // that distance from parity, "nearer parity than that, it strengthens the currency on
+        // toward it", "further from parity, it weakens it back", the clause "between uipLevel()
+        // and parity" - and the anchored drift's ("with no push, the anchored drift moves the
+        // rate by its twelfth root, before the parity pull"; a city's drift and "its currency is
+        // handed no drift") are replaced by star 8, "whatever real life does" (spec section 6,
+        // Jerus): the real gap's effect is a level, gapLevelFor(), not a push toward a UIP level,
+        // and section 5's XR1 row retires "REVERSION's pull, the anchored drift, RATE_PULL's push".
+        // (a) The premise stays, its label as it was without the retired clause: a real gap held
+        // for good moves the rate to a level and it stops there; and a pinned currency does not
+        // move. The gap is held for 600 months: 240 leave the gap's build (a nine-month
+        // half-life) 2e-11 short of done, a month's move over 1e-12.
         final double gap = .03, trade = 3_000, gdp = 6_000;
-        ForeignAccounts fx = CurrencyCheck.settled(trade, trade, gdp);
-        double uip = Math.exp(-gap / ForeignAccounts.EXPECTED_REVERSION);
-        fx.setRealRateDifferential(gap);
-        close("uipLevel() is e^(-gap / EXPECTED_REVERSION)", fx.uipLevel(), uip, 1e-15);
-        fx.setParity(1 / uip, 1, 0, 0);
-        close("at that distance from parity the rate's own pressure is nothing", fx.ratePressure(), 0, 1e-12);
-        fx.setParity(.9 / uip, 1, 0, 0);
-        check("...nearer parity than that, it strengthens the currency on toward it", fx.ratePressure() < 0);
-        fx.setParity(1.1 / uip, 1, 0, 0);
-        check("...further from parity, it weakens it back", fx.ratePressure() > 0);
-        out.printf("   a %.0f-point real gap: the currency %.1f%% from parity where investors expect nothing more%n",
-                gap * 100, (1 / uip - 1) * 100);
-
         ForeignAccounts held = CurrencyCheck.settled(trade, trade, gdp);
+        // The vault at THIN_COVER or more, so no premium; its purchase is the fixture's set-up,
+        // not a purchase under test, so the rate forgets it (forgetDealing()) as it forgets a founding's.
+        held.buyReserves(held.monthlyImports() * 2 * ForeignAccounts.THIN_COVER);
+        held.forgetDealing();
         held.setParity(1, 1, 0, 0);
         held.setRealRateDifferential(gap);
-        double last = held.getRate(), lastMove = 0;
-        for (int k = 0; k < 3_000; k++) {
-            held.repriceCurrency();
-            lastMove = Math.abs(held.getRate() / last - 1);
-            last = held.getRate();
-        }
-        out.printf("   held at the gap for 250 years: the rate %.6f, its last month's move %.2e (uipLevel %.6f, parity 1)%n",
-                held.getRate(), lastMove, uip);
-        check("a real gap held for good moves the rate to a level and stops, between uipLevel() and parity",
-                lastMove < 1e-12 && held.getRate() > uip && held.getRate() < 1);
+        check("fixture: a quiet market, trade in balance, the vault at THIN_COVER or more",
+                !held.isMarketSeeded() && held.balanceTarget() == 0 && held.importCover() >= ForeignAccounts.THIN_COVER);
+        double level = ForeignAccounts.gapLevelFor(gap);
+        for (int k = 0; k < 600; k++) held.repriceCurrency();
+        double expected = held.getParity() * Math.exp(held.gate() * level);
+        double last = held.getRate();
+        held.repriceCurrency();
+        double lastMove = Math.abs(held.getRate() - last);
+        out.printf("   held at the gap for 50 years: the rate %.6f, its last month's move %.2e (parity x exp(gate x level) %.6f, parity 1)%n",
+                last, lastMove, expected);
+        check("a real gap held for good moves the rate to a level and stops",
+                Math.abs(last - expected) < 1e-9 && lastMove < 1e-12);
+        // New in XR1: the level is parity x exp(gate() x gapLevelFor(gap)), dearer than parity for a gap over the world's.
+        check("...the level the formula says, dearer than parity for a gap over the world's",
+                Math.abs(last - expected) < 1e-9 && last < held.getParity());
 
-        ForeignAccounts drifting = CurrencyCheck.settled(trade, trade, gdp);
-        drifting.setParity(1, 1, 0, 0);
-        drifting.setRealRateDifferential(0);
-        drifting.setExpectedDrift(.024);
-        double r0 = drifting.getRate();
-        drifting.repriceCurrency();
-        close("with no push, the anchored drift moves the rate by its twelfth root, before the parity pull",
-                drifting.getRate(), CurrencyCheck.pulled(r0 * Math.pow(1.024, 1.0 / 12), drifting.getParity()), 1e-15);
         ForeignAccounts pinned = CurrencyCheck.settled(trade, trade, gdp);
         pinned.pinRate(1.1);
-        pinned.setExpectedDrift(.05);
+        pinned.setRealRateDifferential(gap);
         pinned.repriceCurrency();
+        // (a) measured the new way, the drift no longer being handed: the label as it was.
         check("...and a pinned currency not at all", pinned.getRate() == 1.1);
-
-        Game c = city(root, "x8", 48);
-        Expectations x = c.getExpectations();
-        double drift = (1 + x.getCredibility() * c.getDebtManager().getInflationTarget())
-                / (1 + c.getWorldEconomy().realisedInflation()) - 1;
-        out.printf("   a city at month %d: credibility %.4f, target %.1f%%, the world %.2f%%: drift %.3f%% a year%n",
-                c.getMonth(), x.getCredibility(), c.getDebtManager().getInflationTarget() * 100,
-                c.getWorldEconomy().realisedInflation() * 100, drift * 100);
-        check("fixture: the city's basket is based", c.getPriceIndex().isBased());
-        check("a city's anchored drift is the credible part of its target against the world's inflation",
-                c.anchoredDrift() == drift);
-        check("...and it is what the month handed its currency", c.getForeignAccounts().getExpectedDrift() == drift);
     }
 
     /* ================= 9. a save ================= */

@@ -1,4 +1,4 @@
-# DenominationCheck.java - 658 lines · 17 methods · 0 constants · harnesses
+# DenominationCheck.java - 664 lines · 17 methods · 0 constants · harnesses
 
 `ham/citybuildersim/DenominationCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -39,16 +39,16 @@
 | line | section |
 |---:|---|
 | 128 | · (untitled) |
-| 168 | · (untitled) |
-| 176 | · 1. THE UNIT |
-| 202 | · 2. IT IS THE SAME CITY |
-| 240 | · ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT |
-| 366 | · 3. AND IT STAYS THE SAME CITY |
-| 471 | · 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING |
-| 491 | · 4. AND NO MONEY WAS MADE OR LOST |
-| 506 | · 5. AND IT SURVIVES A SAVE |
-| 535 | · 6. AND THE TRAMS (B6, 0.7.47) |
-| 599 | · helpers |
+| 174 | · (untitled) |
+| 182 | · 1. THE UNIT |
+| 208 | · 2. IT IS THE SAME CITY |
+| 246 | · ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT |
+| 372 | · 3. AND IT STAYS THE SAME CITY |
+| 477 | · 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING |
+| 497 | · 4. AND NO MONEY WAS MADE OR LOST |
+| 512 | · 5. AND IT SURVIVES A SAVE |
+| 541 | · 6. AND THE TRAMS (B6, 0.7.47) |
+| 605 | · helpers |
 
 ## Fields (state)
 
@@ -57,15 +57,15 @@
 | 43 | `static int fails` |  |
 | 44 | `static PrintStream out` |  |
 | 45 | `static PrintStream quiet` |  |
-| 602 | `static int emptyHolding` | Cells under half a household holding something, counted over every scan. |
-| 604 | `static int emptyHeldAfterReform` | ...and the same, as it stood right after the reform. |
-| 605 | `static int looks` |  |
+| 608 | `static int emptyHolding` | Cells under half a household holding something, counted over every scan. |
+| 610 | `static int emptyHeldAfterReform` | ...and the same, as it stood right after the reform. |
+| 611 | `static int looks` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 618 | **type** `public class DenominationCheck` | A currency reform is a change of units, and this is how we know. |
+| 41 | 624 | **type** `public class DenominationCheck` | A currency reform is a change of units, and this is how we know. |
 | 47 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 23 | `static void sameCity(Game plain, Game lopped, double factor, double band)` | Everything real to the person, everything nominal to the factor. |
 | 84 | 11 | `static void relative(String label, double actual, double expected, double band)` | Equal to within a RELATIVE band, so one helper works at any scale. |
@@ -74,28 +74,28 @@
 | 112 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 122 | 5 | `static void quietly(Runnable work)` |  |
 
-### (untitled) (lines 128-167)
+### (untitled) (lines 128-173)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 131 | 1 | `static Game city(String name)` | A city with a bit of everything in it, so the reform has work to do. |
-| 134 | 33 | `static Game city(String name, boolean buses)` | ...with a bus network on its roads too (B6, 0.7.47): a fare, riders and the month's transit lines for a reform to carry. |
+| 134 | 39 | `static Game city(String name, boolean buses)` | ...with a bus network on its roads too (B6, 0.7.47): a fare, riders and the month's transit lines for a reform to carry. |
 
-### (untitled) (lines 168-598)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 170 | 428 | `public static void main(String[] args) throws Exception` |  |
-
-### helpers (lines 599-658)
+### (untitled) (lines 174-604)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 608 | 8 | `static void stepBoth(Game a, Game b, int months)` | Both cities a month at a time, each scanned after every month. |
-| 618 | 11 | `static void scanEmpty(Game g)` | One look at a city: whether any cell is under half a household, and any of them holding something. |
-| 631 | 5 | `static boolean force(Game g, double factor)` | Reforms regardless of the price-level gate, which is tested separately. |
-| 638 | 7 | `static boolean same(Game a, Game b)` | The real city: who lives there and how much of everything there is. |
-| 646 | 3 | `static double shelf(Game g)` |  |
-| 650 | 3 | `static double rent(Game g)` |  |
-| 654 | 4 | `static double cost(Game g, String name)` |  |
+| 176 | 428 | `public static void main(String[] args) throws Exception` |  |
+
+### helpers (lines 605-664)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 614 | 8 | `static void stepBoth(Game a, Game b, int months)` | Both cities a month at a time, each scanned after every month. |
+| 624 | 11 | `static void scanEmpty(Game g)` | One look at a city: whether any cell is under half a household, and any of them holding something. |
+| 637 | 5 | `static boolean force(Game g, double factor)` | Reforms regardless of the price-level gate, which is tested separately. |
+| 644 | 7 | `static boolean same(Game a, Game b)` | The real city: who lives there and how much of everything there is. |
+| 652 | 3 | `static double shelf(Game g)` |  |
+| 656 | 3 | `static double rent(Game g)` |  |
+| 660 | 4 | `static double cost(Game g, String name)` |  |
 

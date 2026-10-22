@@ -100,6 +100,11 @@ public class ZoningCheck {
         Game g = new Game(new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy")));
         quietly(() -> {
             g.run();
+            // XR1 (2026-10-21): this harness measures ground, zones and the forest, not the currency. Under THE
+            // FLOAT the D$ falls to 0.72 in these two years and the city's prices with it, until section 8's
+            // fields find no farm that pays ("a bad year would leave $80,324 a month on it") and its fixture
+            // no longer causes its condition; the rate is held where the founding leaves it.
+            g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             if (before != null) before.accept(g);
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000);
