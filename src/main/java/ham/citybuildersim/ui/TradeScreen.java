@@ -1016,6 +1016,7 @@ final class TradeScreen {
         big.setAlignment(Pos.BASELINE_LEFT);
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE CURRENCY", RATE_INFO, null), big,
                 muted(oneOfOurs() + " · parity " + sym() + fxRate(fx.getParity())));
+        addRegimeLine(c);
         int level = fx.isPinned() ? 0 : ForeignAccounts.parityLevel(fx.deviationFromParity());
         c.getChildren().add(chips(chip(parityWords(fx), level == 0 ? Palette.TEXT_MUTED : parityTone(level))));
         if (h.months() >= 2) {
@@ -1026,6 +1027,30 @@ final class TradeScreen {
                 ? (Math.abs(year) < .0005 ? "no move in a year" : share1(Math.abs(year)) + (year > 0 ? " weaker" : " stronger") + " than a year ago")
                 : "not a year recorded yet"));
         return doorCard(c, () -> open(CURRENCY));
+    }
+
+    /**
+     * How the D$ is held, in one muted line, when it is not Lean (XR2; pure):
+     * "Held at a peg of D$1.300", "In a band of D$1.261-D$1.339", "Floating
+     * freely". Null under Lean, so the card is exactly as it was.
+     */
+    String regimeLine() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        return switch (fx.getRegime()) {
+            case LEAN -> null;
+            case FLOAT -> "Floating freely";
+            case BAND -> "In a band of " + sym() + fxRate(fx.bandStrongEdge()) + "-" + sym() + fxRate(fx.bandWeakEdge());
+            case PEG -> "Held at a peg of " + sym() + fxRate(fx.getPegRate());
+        };
+    }
+
+    /** The regime's line and its door to Policy › Money › The currency, on a card of the rate; nothing under Lean. */
+    void addRegimeLine(VBox card) {
+        String regime = regimeLine();
+        if (regime == null) return;
+        card.getChildren().add(muted(regime));
+        card.getChildren().add(doorPill("Policy › The currency", Icons.POLICY, Palette.MONEY,
+                () -> ui.policyScreen.open(PolicyScreen.MONEY, PolicyScreen.CURRENCY_PAGE)));
     }
 
     /** THE CURRENCY's (i): the unit, and parity (the spec's Q1, Q3). */
@@ -2306,6 +2331,7 @@ final class TradeScreen {
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE RATE", RATE_INFO, null), big, muted(oneOfOurs()));
         String moved = rateMove();
         if (moved != null) c.getChildren().add(muted(moved));
+        addRegimeLine(c);
         c.getChildren().add(muted("A rising figure is a cheaper " + sym() + ": " + Currency.FOREIGN_SYMBOL + "1 costs more of it."));
         if (fx.isPinned()) {
             c.getChildren().add(chips(chip("held fixed", Palette.TEXT_LABEL)));
@@ -2398,7 +2424,8 @@ final class TradeScreen {
      * the rest, log points, which add) - as diverging bars with their
      * sentences, the total under them, and a chip saying how much of the
      * market and the fundamentals the city's trade lets through. One line,
-     * and no bars, when the rate is pinned.
+     * and no bars, when the rate is pinned. Since XR2 a seventh, THE HOLD,
+     * joins them under a band or a peg (moveForces()).
      */
     VBox forcesCard() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
@@ -2418,17 +2445,31 @@ final class TradeScreen {
         return c;
     }
 
-    /** The six forces and their sum as the bars' rows (pure): each its sentence under its name, the (i) behind what the force is. */
+    /**
+     * The seven forces and their sum as the bars' rows (pure): each its sentence
+     * under its name, the (i) behind what the force is. The seventh, THE HOLD
+     * (XR2), is the vault holding a peg or a band's edge, and is a row only
+     * under a band or a peg or in a month it moved the rate (showsHold()): under
+     * Lean and Float the card is the six and the sum, exactly as it was.
+     */
     List<Force> moveForces() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
-        return List.of(
+        List<Force> rows = new ArrayList<>(List.of(
                 new Force("Parity's trend", fx.getMoveTrend(), false, false, TREND_INFO, trendSentence()),
                 new Force("The real rate", fx.getMoveGap(), false, false, REAL_RATE_INFO, realRateSentence()),
                 new Force("The balance", fx.getMoveBalance(), false, false, BALANCE_INFO, balanceSentence()),
                 new Force("The vault's cover", fx.getMoveCover(), false, false, COVER_FORCE_INFO, coverSentence()),
                 new Force("Interventions", fx.getMoveIntervention(), false, false, INTERVENTION_INFO, interventionSentence()),
-                new Force("The market", fx.getMoveMarket(), false, false, MARKET_INFO, marketSentence()),
-                new Force("The month's move", fx.getLastMove(), true, false, null, totalSentence()));
+                new Force("The market", fx.getMoveMarket(), false, false, MARKET_INFO, marketSentence())));
+        if (showsHold(fx)) rows.add(new Force("The hold", fx.getMoveHeld(), false, false, HOLD_INFO, holdSentence()));
+        rows.add(new Force("The month's move", fx.getLastMove(), true, false, null, totalSentence()));
+        return rows;
+    }
+
+    /** Whether THE HOLD is a row: the regime is a band or a peg, or the hold moved the rate last month (a peg that broke, a regime since left). */
+    static boolean showsHold(ForeignAccounts fx) {
+        return fx.getRegime() == ForeignAccounts.Regime.BAND || fx.getRegime() == ForeignAccounts.Regime.PEG
+                || fx.getMoveHeld() != 0;
     }
 
     /** A log move as percentage points of the rate, signed with a true minus: "+0.440%", "−0.120%", and whole past a hundred points so a currency at its guard fits the figure column. */
@@ -2555,7 +2596,49 @@ final class TradeScreen {
                 + ", and fades by half in about " + String.format("%.1f", ForeignAccounts.MARKET_HALF_LIFE / 12) + " years.";
     }
 
-    /** THE MONTH'S MOVE (pure): where US$1 stood and where it stands, which the six add up to. */
+    /**
+     * THE HOLD (XR2; pure): what the vault did to the rate beside where the
+     * float's rule put it - a peg held, a band's edge held, or the peg letting
+     * go - in the month's own figures; or that nothing was held.
+     */
+    String holdSentence() {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        String d = sym();
+        if (fx.brokeThisMonth()) {
+            double jump = Math.expm1(fx.getLastBreakJump());
+            return "The peg gave way, because " + fx.getLastBreakCause().words + ": the " + d + " landed at " + d
+                    + fxRate(fx.getRate()) + ", " + share1(Math.abs(jump)) + (jump >= 0 ? " weaker" : " stronger")
+                    + " in the month, where the float's rule had it at " + d + fxRate(fx.getLastBreakShadow())
+                    + ". This is the peg letting go of the rate it had held.";
+        }
+        ForeignAccounts.Regime regime = fx.getRegime();
+        if (regime == ForeignAccounts.Regime.PEG) {
+            return fx.isHeld()
+                    ? "The vault held the " + d + " at the peg, " + d + fxRate(fx.getPegRate()) + ", away from where the "
+                      + "float's rule put it, " + d + fxRate(fx.getShadowRate()) + ": the part of the month's move the peg "
+                      + "kept off the rate."
+                    : "The float's rule and the peg were in step, " + d + fxRate(fx.getPegRate()) + ": nothing to hold "
+                      + "this month.";
+        }
+        if (regime == ForeignAccounts.Regime.BAND) {
+            return fx.isHeld()
+                    ? "The rate reached the band's edge and the vault held it there, " + d + fxRate(fx.getRate()) + ", away "
+                      + "from where the float's rule put it, " + d + fxRate(fx.getShadowRate()) + ": the part of the month's "
+                      + "move the band kept off the rate."
+                    : "The rate stayed inside the band, " + d + fxRate(fx.bandStrongEdge()) + " to " + d
+                      + fxRate(fx.bandWeakEdge()) + ": nothing to hold this month.";
+        }
+        return "The hold moved the rate last month, under a regime the city has since left; nothing is held now.";
+    }
+
+    /** THE HOLD's (i): what it is, why the six do not stand on their own under it, and what it is outside a band and a peg. */
+    static final String HOLD_INFO = "The part of the month's move the vault's hold made: under a peg the rate stays at the "
+            + "peg, and under a band it stops at the edge, away from where the float's rule - the other six forces - would "
+            + "have put it. So this line undoes what they added, and all seven still add to the month's move. In a month a "
+            + "peg gave way it is the peg letting go of the rate it had held. Exactly nothing under Lean and Float, and "
+            + "while a band's rate is inside it. Policy › Money › The currency is where it is set.";
+
+    /** THE MONTH'S MOVE (pure): where US$1 stood and where it stands, which the six (and the hold, when it is a row) add up to. */
     String totalSentence() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         double now = fx.getRate(), move = fx.getLastMove(), before = now / Math.exp(move);
@@ -2563,16 +2646,17 @@ final class TradeScreen {
             return Currency.FOREIGN_SYMBOL + "1 stayed at " + sym() + fxRate(now) + ": nothing to add up.";
         }
         return Currency.FOREIGN_SYMBOL + "1 went from " + sym() + fxRate(before) + " to " + sym() + fxRate(now)
-                + ". The six add up to it.";
+                + (showsHold(fx) ? ". The six and the hold add up to it." : ". The six add up to it.");
     }
 
-    /** The forces card's (i): the six parts and what each is. */
+    /** The forces card's (i): the six parts and what each is, and under a band or a peg the seventh. */
     static final String FORCES_INFO = "Six parts add to the month's move, in log points of the rate. Parity's trend: the "
             + "city's prices against the world's, followed one for one. The real rate: a real rate over the world's holds the "
             + "currency dearer, building over a year or two. The balance: a deficit year after year cheapens it. The "
             + "vault's cover: an empty vault costs it a discount. Interventions: dollars the treasury or the central bank "
-            + "buys or sells. The market: the currency's own swing, which most of a real float's month is. Weaker is to "
-            + "the right.";
+            + "buys or sells. The market: the currency's own swing, which most of a real float's month is. Under a band "
+            + "or a peg a seventh joins them, the hold: the vault keeping the rate where it is set, away from where the "
+            + "six would take it. Weaker is to the right.";
 
     /** ...and each force's own (i): what it is, and the dials behind it. */
     static final String TREND_INFO = "The city's price level against the world's, on the basket with rent held to a third "
