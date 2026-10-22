@@ -175,12 +175,12 @@ are the ones the renders and counts read:
 
 | | Earth (Rotterdam), m4006, 12 districts | default (an island city), m4003, 10 districts |
 |---|---|---|
-| avenue plots laid | 220, in 11 open cells | 697, in 14 open cells |
-| ...beneath a highway / across the railway / bridged | 0 / 2 / 9 | 4 / 0 / 4 |
+| avenue plots laid | 215, in 11 open cells | 712, in 14 open cells |
+| ...beneath a highway / across the railway / bridged | 0 / 2 / 0 | 6 / 0 / 4 |
 | ...not laid: at a yard, reserve or mine / at water too wide | 25 / 0 | 13 / 49 |
 | cell streets stopped short by the + floor | 0 | 0 |
 | crescents (refused by the ground) | 1 (2) | 2 (1) |
-| shore curves | 162 | 174 |
+| shore curves | 158 | 174 |
 
 - The avenues are short in these cities because they own little ground along the
   diagonals: Rotterdam's grows west along its river and its highway.
@@ -310,8 +310,12 @@ The suite, `--timing` and the trace: to come.
 ## 6. Renders
 
 [`docs/queue/CL4/`](CL4/), drawn by the game's own painter (`RenderCL4.java`, FX5's
-tool) from the cities kept at main's playtests' last months. 0.8.18 is on the left
-and CL4 on the right, each build laying the map itself (`-Drender.months=1`):
+tool) from the cities kept at main's 0.8.18 playtests' last months. 0.8.18 is on the
+left and CL4 on the right, each build laying the map itself (`-Drender.months=1`).
+
+CL4's side is drawn by the branch's final map code on 0.8.18's model (f9010b84 with
+`avAlone()`), because 0.8.19's save format refuses those cities and its own playtest
+city is too small to show the avenues. The merge brought no map code.
 
 - `earth-avenue.png`: Rotterdam's north-west avenue at 8 px, a band across two
   cells, a roundabout at the ring's corner.
