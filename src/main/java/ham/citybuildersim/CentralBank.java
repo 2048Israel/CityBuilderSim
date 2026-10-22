@@ -70,15 +70,22 @@ package ham.citybuildersim;
  * it has not lent), and this ledger moves only when this bank acts, which is
  * what "money is issued and retired only here" requires.
  *
- * EQUITY is assets less liabilities. Without the vault it is always the
- * remittance not yet paid less the loss carried (see lossCarried), which the
- * harness asserts: a central bank's profit is remitted, so it keeps none -
- * between two presses, plus the gain on a buyback that the top of the next
- * month will take into profit (see paperBoughtBack()). The vault is in it
- * whole, because the treasury bought the vault with its own cash, not with
- * money made here - so since 0.7.2 a dollar the defence sells takes its local
- * price off equity with it, the vault smaller and M0 where it was, and
- * vaultSpent() is that line: spent defending the currency since founding.
+ * EQUITY is assets less liabilities. Without the vault, and with what this
+ * bank paid in new money for the vault's dollars added back
+ * (getDollarsBoughtLifetime()), it is always the remittance not yet paid less
+ * the loss carried (see lossCarried), which the harness asserts: a central
+ * bank's profit is remitted, so it keeps none - between two presses, plus the
+ * gain on a buyback that the top of the next month will take into profit (see
+ * paperBoughtBack()). The vault is in it whole. The treasury bought its
+ * dollars with its own cash, not with money made here - so since 0.7.2 a
+ * dollar the defence sells takes its local price off equity with it, the
+ * vault smaller and M0 where it was, and vaultSpent() is that line: spent
+ * defending the currency since founding. The dollars this bank buys at the
+ * strong edge (XR2, THE MIRROR OF THE DEFENCE) it pays for in money made here,
+ * so they leave equity where it was, M0 up by their local price, and take
+ * equity less the vault down by exactly what they cost: the term added back
+ * (FX8, 2026-10-22; until then the sentence said the treasury bought all of
+ * the vault, and the identity was false by that term under a peg or a band).
  */
 public final class CentralBank {
 

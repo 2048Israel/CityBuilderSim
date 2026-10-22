@@ -232,7 +232,8 @@ public class CentralBankCheck {
         boolean closes = Math.abs(r.residual) <= .01 || r.relative() <= 1e-7;
         boolean sameMoney = Math.abs(r.moneyMade() - made) <= .005;
         boolean m0Moved = Math.abs((cb.m0() - m0Before) - made) <= .005;
-        boolean keptNothing = Math.abs(cb.equity() - cb.getVault()
+        // Equity less the vault, with what it paid in new money for the vault's dollars added back (FX8: the strong edge's purchases).
+        boolean keptNothing = Math.abs(cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime()
                 - (cb.getRemittanceDue() - cb.getLossCarried())) <= .01;
         monthsPlayed++;
         worstResidual = Math.max(worstResidual, Math.abs(r.residual));
@@ -240,7 +241,7 @@ public class CentralBankCheck {
             monthsBroken++;
             out.printf("   m%d: residual %.4f, audit made %.4f, bank made %.4f, M0 moved %.4f, kept %.4f%n",
                     g.getMonth(), r.residual, r.moneyMade(), made, cb.m0() - m0Before,
-                    cb.equity() - cb.getVault() - (cb.getRemittanceDue() - cb.getLossCarried()));
+                    cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime() - (cb.getRemittanceDue() - cb.getLossCarried()));
         }
         int kinds = kindsThisMonth(cb);
         mostKindsInAMonth = Math.max(mostKindsInAMonth, kinds);

@@ -182,8 +182,8 @@ public class CapitalFlows {
     private double stock;
     private double target;
     private double spread;
-    private double arrived;          // this month, gross
-    private double departed;         // this month, gross
+    private double arrived;          // this month, gross; saved (FX8)
+    private double departed;         // this month, gross; saved (FX8)
     private int panicUntil = -1;
     private String panicReason = "";
     private double depositShare = .5;
@@ -616,7 +616,7 @@ public class CapitalFlows {
 
     /** The month's break chance as the last reprice left it (ForeignAccounts.getDoubtShare()), the share of the stock that takes itself home on doubt this month. Transient: Game sets it every month before takeMonth(). */
     private double doubt;
-    /** What left on doubt this month (inside getDeparted()) and since founding (XR2). The lifetime is saved. */
+    /** What left on doubt this month (inside getDeparted()) and since founding (XR2). Both saved: the month's since FX8, because Policy shows it the month after ("of which ... left on doubt"). */
     private double doubtDeparted, doubtDepartedLifetime;
 
     /** Told the month's doubt before takeMonth(): a share of the stock, 0 to 1. Not saved; Game sets it every month. */
@@ -666,7 +666,9 @@ public class CapitalFlows {
                 // CD2 slice 5: the city's paper the world holds, and what it paid and was paid for it.
                 paper, lifetimePaperBought, lifetimePaperSold,
                 // XR2: what has left on doubt since founding.
-                doubtDepartedLifetime };
+                doubtDepartedLifetime,
+                // FX8: the month's flows, which a screen reads the month after and nothing can rebuild.
+                arrived, departed, doubtDeparted };
     }
 
     public void restore(double[] saved) {
@@ -693,6 +695,11 @@ public class CapitalFlows {
             lifetimePaperSold = saved[14];
         }
         if (saved.length > 15) doubtDepartedLifetime = Math.max(0, saved[15]);
+        if (saved.length > 18) {
+            arrived = Math.max(0, saved[16]);
+            departed = Math.max(0, saved[17]);
+            doubtDeparted = Math.max(0, saved[18]);
+        }
     }
 
     public void reset() {

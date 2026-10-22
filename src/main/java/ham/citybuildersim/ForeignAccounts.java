@@ -1125,7 +1125,12 @@ public class ForeignAccounts {
      * Chooses the regime. Entering a peg pegs to the rate of the day; entering a
      * band centres it on the rate of the day, flat, at the board's width (unless
      * it is the band already). Leaving a regime keeps its settings in the fields
-     * so a re-entry can show them, but they act only in force.
+     * so a re-entry can show them, but they act only in force - all but the
+     * peg's doubt, which acts the month after it was struck (Game hands it to
+     * the hot money before the reprice), so leaving a peg clears it (FX8,
+     * 2026-10-22): until then a peg left between two presses sent the hot money
+     * home at the dead peg's hazard for one more month, against the "0 under
+     * every other regime" Game says.
      */
     public void setRegime(Regime r) {
         if (r == null || r == regime) return;
@@ -1136,6 +1141,7 @@ public class ForeignAccounts {
             bandSlope = 0;
             bandWidth = BAND_WIDTH;
         }
+        if (regime == Regime.PEG) doubtShare = 0;
         regime = r;
     }
 
@@ -1281,6 +1287,21 @@ public class ForeignAccounts {
     public void noteEdgePaidByTreasury(double local) {
         if (!(local > 0)) return;
         boughtThisMonth += local;
+        lifetimeIntervention += local;
+    }
+
+    /**
+     * The central bank paid this much of what the edge owed, in new money
+     * (CentralBank.buyDollarsForVault()): the lifetime dealing alone, the
+     * mirror of the defence's sales, which it has counted since 0.7.2 (FX8,
+     * 2026-10-22; before, the record and Trade's "net bought into the vault"
+     * left out every dollar a peg or a band bought on the central bank's
+     * money). NOT the month's purchases, which are the treasury's (MoneyAudit
+     * declares this as "- centralbank DollarsBoughtAbroad"), NOT the vault,
+     * and NOT dealtSinceReprice.
+     */
+    public void noteEdgePaidByCentralBank(double local) {
+        if (!(local > 0)) return;
         lifetimeIntervention += local;
     }
 
@@ -1923,7 +1944,14 @@ public class ForeignAccounts {
     }
 
     /**
-     * What the treasury has bought and sold on its own account, since founding.
+     * What has been bought into the vault less what has been taken out of it,
+     * since founding, in the local money each cost or fetched: the treasury's
+     * purchases and sales, the defence's sales (0.7.2), the land office's
+     * dollars, and the strong edge's purchases by whichever paid for them, the
+     * treasury out of its cash or the central bank in new money (FX8,
+     * 2026-10-22: until then the record said "what the treasury has bought and
+     * sold on its own account" and left the central bank's purchases out,
+     * though it counted the central bank's sales).
      *
      * Kept separate from lifetimeFinancial because an intervention is not a
      * financial-account flow - it is the financing item below the line. Adding

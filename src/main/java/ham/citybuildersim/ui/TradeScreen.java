@@ -1911,8 +1911,8 @@ final class TradeScreen {
         List<Node> also = new ArrayList<>();
         if (fx.getLifetimeIntervention() != 0) {
             also.add(chipInfo("net bought into the vault " + signedD(fx.getLifetimeIntervention()), Palette.TEXT_LABEL,
-                    "What the treasury has bought into the vault less what it, the central bank's defence and the land "
-                            + "office have taken out, in the local money each cost or fetched."));
+                    "What the treasury and the central bank have bought into the vault less what the treasury, the central "
+                            + "bank's defence and the land office have taken out, in the local money each cost or fetched."));
         }
         if (fx.getForgiven() != 0) {
             also.add(chipInfo("forgiven or settled " + d(fx.getForgiven()), Palette.TEXT_LABEL,
