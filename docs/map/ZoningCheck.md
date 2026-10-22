@@ -1,4 +1,4 @@
-# ZoningCheck.java - 591 lines · 17 methods · 3 constants · harnesses
+# ZoningCheck.java - 596 lines · 17 methods · 3 constants · harnesses
 
 `ham/citybuildersim/ZoningCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -58,16 +58,16 @@
 
 | line | section |
 |---:|---|
-| 152 | 1. NOTHING SET, NOTHING MOVES |
-| 203 | 2. A ZONE'S GROUND IS ITS SECTOR'S |
-| 254 | 3. THE PRICE AND THE ROLL |
-| 307 | 4. ONE DIAL, TWO DOORS |
-| 337 | 5. BIGGER THAN THE FREE GROUND |
-| 362 | 6. THE FOREST LAW |
-| 392 | 7. CLEARING |
-| 449 | 8. ZONED FIELDS DO NOT YIELD |
-| 506 | 9. SAVED AND RELOADED |
-| 548 | 10. FORESTRY ON THE ZONES AND THE LAW |
+| 157 | 1. NOTHING SET, NOTHING MOVES |
+| 208 | 2. A ZONE'S GROUND IS ITS SECTOR'S |
+| 259 | 3. THE PRICE AND THE ROLL |
+| 312 | 4. ONE DIAL, TWO DOORS |
+| 342 | 5. BIGGER THAN THE FREE GROUND |
+| 367 | 6. THE FOREST LAW |
+| 397 | 7. CLEARING |
+| 454 | 8. ZONED FIELDS DO NOT YIELD |
+| 511 | 9. SAVED AND RELOADED |
+| 553 | 10. FORESTRY ON THE ZONES AND THE LAW |
 
 ## Constants
 
@@ -89,72 +89,72 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 532 | **type** `public class ZoningCheck` | Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury, the roll and the world's totals. |
+| 60 | 537 | **type** `public class ZoningCheck` | Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury, the roll and the world's totals. |
 | 66 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 74 | 1 | `static boolean near(double a, double b)` |  |
 | 77 | 1 | `static boolean same(double a, double b)` | ...and two ground or wood figures the same to a part in a billion of the larger: one rounding, not a square foot. |
 | 79 | 5 | `static void quietly(Runnable r)` |  |
-| 100 | 17 | `static Game city(Path root, String name, int months, java.util.function.Consumer<Game> before)` | A played city: the orders put up finished out of a Wealthy treasury on 200 million square feet more ground, the fields held out of the investment engine (section 8 asks them itself), then `months` played - `before` ru... |
-| 119 | 5 | `static LandManager office(double km2)` | A land office on its own whose ground is drawn round the default world's founding site to this many square kilometres: forest and bare ground both. |
-| 125 | 26 | `public static void main(String[] args) throws Exception` |  |
+| 100 | 22 | `static Game city(Path root, String name, int months, java.util.function.Consumer<Game> before)` | A played city: the orders put up finished out of a Wealthy treasury on 200 million square feet more ground, the fields held out of the investment engine (section 8 asks them itself), then `months` played - `before` ru... |
+| 124 | 5 | `static LandManager office(double km2)` | A land office on its own whose ground is drawn round the default world's founding site to this many square kilometres: forest and bare ground both. |
+| 130 | 26 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. NOTHING SET, NOTHING MOVES (lines 152-202)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 154 | 48 | `static void nothingSet(Path root)` |  |
-
-### 2. A ZONE'S GROUND IS ITS SECTOR'S (lines 203-253)
+### 1. NOTHING SET, NOTHING MOVES (lines 157-207)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 205 | 48 | `static void theZonesGround(Game g)` |  |
+| 159 | 48 | `static void nothingSet(Path root)` |  |
 
-### 3. THE PRICE AND THE ROLL (lines 254-306)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 256 | 50 | `static void thePriceAndTheRoll(Game g)` |  |
-
-### 4. ONE DIAL, TWO DOORS (lines 307-336)
+### 2. A ZONE'S GROUND IS ITS SECTOR'S (lines 208-258)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 309 | 27 | `static void oneDialTwoDoors(Path root)` |  |
+| 210 | 48 | `static void theZonesGround(Game g)` |  |
 
-### 5. BIGGER THAN THE FREE GROUND (lines 337-361)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 339 | 22 | `static void biggerThanTheFreeGround()` |  |
-
-### 6. THE FOREST LAW (lines 362-391)
+### 3. THE PRICE AND THE ROLL (lines 259-311)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 364 | 27 | `static void theForestLaw()` |  |
+| 261 | 50 | `static void thePriceAndTheRoll(Game g)` |  |
 
-### 7. CLEARING (lines 392-448)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 394 | 54 | `static void clearing()` |  |
-
-### 8. ZONED FIELDS DO NOT YIELD (lines 449-505)
+### 4. ONE DIAL, TWO DOORS (lines 312-341)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 451 | 54 | `static void theFields(Game g)` |  |
+| 314 | 27 | `static void oneDialTwoDoors(Path root)` |  |
 
-### 9. SAVED AND RELOADED (lines 506-547)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 508 | 39 | `static void savedAndReloaded(Path root, Game g)` |  |
-
-### 10. FORESTRY ON THE ZONES AND THE LAW (lines 548-591)
+### 5. BIGGER THAN THE FREE GROUND (lines 342-366)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 550 | 41 | `static void forestry()` |  |
+| 344 | 22 | `static void biggerThanTheFreeGround()` |  |
+
+### 6. THE FOREST LAW (lines 367-396)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 369 | 27 | `static void theForestLaw()` |  |
+
+### 7. CLEARING (lines 397-453)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 399 | 54 | `static void clearing()` |  |
+
+### 8. ZONED FIELDS DO NOT YIELD (lines 454-510)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 456 | 54 | `static void theFields(Game g)` |  |
+
+### 9. SAVED AND RELOADED (lines 511-552)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 513 | 39 | `static void savedAndReloaded(Path root, Game g)` |  |
+
+### 10. FORESTRY ON THE ZONES AND THE LAW (lines 553-596)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 555 | 41 | `static void forestry()` |  |
 

@@ -1,4 +1,4 @@
-# HealthCheck.java - 1,700 lines · 6 methods · 0 constants · harnesses
+# HealthCheck.java - 1,706 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/HealthCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -52,12 +52,12 @@
 | 707 | · 8. death care |
 | 778 | · 9. senior care draws people in |
 | 799 | · 10. and somebody pays for all of it |
-| 933 | · 11. a skip cannot hide an epidemic |
-| 970 | · 12. the fee has a dial, and the funerals do not |
-| 1080 | · 13. who can afford the clinic |
-| 1461 | · 14. the unchanged case, at zero tolerance |
-| 1500 | · 15. the premium |
-| 1589 | · 16. both dials survive a save, and a reform |
+| 939 | · 11. a skip cannot hide an epidemic |
+| 976 | · 12. the fee has a dial, and the funerals do not |
+| 1086 | · 13. who can afford the clinic |
+| 1467 | · 14. the unchanged case, at zero tolerance |
+| 1506 | · 15. the premium |
+| 1595 | · 16. both dials survive a save, and a reform |
 
 ## Fields (state)
 
@@ -69,11 +69,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 1660 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
+| 41 | 1666 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
 | 45 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 57 | 1595 | `public static void main(String[] args) throws Exception` |  |
-| 1654 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
-| 1681 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
-| 1693 | 7 | `static void cleanUp(Path root)` |  |
+| 57 | 1601 | `public static void main(String[] args) throws Exception` |  |
+| 1660 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
+| 1687 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
+| 1699 | 7 | `static void cleanUp(Path root)` |  |
 

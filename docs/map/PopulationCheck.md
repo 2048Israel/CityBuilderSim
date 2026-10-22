@@ -1,4 +1,4 @@
-# PopulationCheck.java - 1,422 lines · 11 methods · 1 constants · harnesses
+# PopulationCheck.java - 1,426 lines · 11 methods · 1 constants · harnesses
 
 `ham/citybuildersim/PopulationCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -38,10 +38,10 @@
 | 628 | · · limited, not switched off (0.7.17) |
 | 749 | · · DECLINING IN WHAT IT BUYS, NOT IN WHAT IT SAYS (2026-09-08) |
 | 1019 | · 5. and it survives a save |
-| 1135 | THE PYRAMID IS SAVED BY NAME, NOT BY POSITION |
-| 1270 | THE FAMILIES AND THE RING OF THE LONG SICK, SAME PROPERTY |
-| 1303 | · · families |
-| 1351 | · · the ring |
+| 1139 | THE PYRAMID IS SAVED BY NAME, NOT BY POSITION |
+| 1274 | THE FAMILIES AND THE RING OF THE LONG SICK, SAME PROPERTY |
+| 1307 | · · families |
+| 1355 | · · the ring |
 
 ## Constants
 
@@ -61,26 +61,26 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 1394 | **type** `public class PopulationCheck` | The demographics: do they hold together, and do they move the city the way they were told to? |
+| 29 | 1398 | **type** `public class PopulationCheck` | The demographics: do they hold together, and do they move the city the way they were told to? |
 | 49 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 61 | 8 | `static double arrivalsFrom(Migration mig, PopulationCohorts people, FamilyModel households, int totalJobs, long[] census)` | One month's arrivals into a city of these people and households against this door census, with this many posts pulling - the census handed to migration the way Game hands it (Migration.setDoors()). |
 | 70 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 75 | 1021 | `public static void main(String[] args) throws Exception` |  |
-| 1098 | 36 | `static double[] play(Path root, String name, int months) throws Exception` | Plays a standard city for a given number of months and reports it. |
+| 1098 | 40 | `static double[] play(Path root, String name, int months) throws Exception` | Plays a standard city for a given number of months and reports it. |
 
-### THE PYRAMID IS SAVED BY NAME, NOT BY POSITION (lines 1135-1269)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1152 | 117 | `static void theBandsAreSavedByName()` |  |
-
-### THE FAMILIES AND THE RING OF THE LONG SICK, SAME PROPERTY (lines 1270-1422)
+### THE PYRAMID IS SAVED BY NAME, NOT BY POSITION (lines 1139-1273)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1293 | 90 | `static void theOtherTwoBandArraysSurviveItToo()` |  |
-| 1385 | 4 | `static int orphanBlockEnd(int bands, int shapes)` | Where FamilyModel's orphan block ends, counting from the front of its array. |
-| 1391 | 7 | `static double[] spliceOneSlot(double[] source, int at, double value)` | The same array with one extra slot pushed in at `at`, everything behind it moved along. |
-| 1399 | 15 | `static void sameArray(String label, double[] got, double[] wanted)` |  |
-| 1415 | 7 | `static void cleanUp(Path root)` |  |
+| 1156 | 117 | `static void theBandsAreSavedByName()` |  |
+
+### THE FAMILIES AND THE RING OF THE LONG SICK, SAME PROPERTY (lines 1274-1426)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1297 | 90 | `static void theOtherTwoBandArraysSurviveItToo()` |  |
+| 1389 | 4 | `static int orphanBlockEnd(int bands, int shapes)` | Where FamilyModel's orphan block ends, counting from the front of its array. |
+| 1395 | 7 | `static double[] spliceOneSlot(double[] source, int at, double value)` | The same array with one extra slot pushed in at `at`, everything behind it moved along. |
+| 1403 | 15 | `static void sameArray(String label, double[] got, double[] wanted)` |  |
+| 1419 | 7 | `static void cleanUp(Path root)` |  |
 

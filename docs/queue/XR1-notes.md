@@ -148,7 +148,15 @@ amount (CurrencyCheck 4 is red on it, §6).
 
 ## 5. The checks, the trace and the ensemble
 
-**The suite** (`Batch check.bat --maps`, on 15790302): 127 harnesses in
+**The suite on the final tree** (`Batch check.bat --maps`, on 1ef0624b):
+**127 harnesses in 784 s, 121 passed, 6 failed**, the maps regenerated,
+Stale 0 firm findings. The six are the batch's named reds and nothing else:
+CurrencyCheck 4 (XR1-C ★1, the lean), MonetaryCheck's allowance (★2),
+HealthCheck's hunger line (★3), SectorBooksCheck's imports by good (★4),
+CentralBankCheck's "no spiral" and LongPlaytest's three findings (both the
+spiral, on Jerus's word).
+
+**The suite before the triage** (`Batch check.bat --maps`, on 15790302): 127 harnesses in
 795 s, **111 passed, 16 failed**, the maps regenerated, Stale's two firm
 findings fixed after it (README's count, a file named without its path).
 The twelve reds outside the batch's own (NewGameCheck, ZoningCheck,
