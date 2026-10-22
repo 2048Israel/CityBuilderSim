@@ -164,6 +164,10 @@ public class Expectations {
         boolean seedingNow = !seeded;
         if (!seeded) seed(index, target);
         step = 0;
+        // A peg's break this month (pegBroke(), after the reprice and before this)
+        // is in the month's move: the record is the month's whole loss of trust.
+        double dent = dented;
+        dented = 0;
         // BEFORE THE BASKET IS BASED there is no inflation to read: everyone
         // expects the target, the level is founding's, and credibility waits.
         if (!index.isBased()) {
@@ -173,7 +177,7 @@ public class Expectations {
             lean = 0;
             return;
         }
-        double before = credibility;
+        double before = credibility + dent;
         double inflation = index.hasRate() ? index.inflation() : target;
         smoothed += (inflation - smoothed) / ADAPT_MONTHS;
         double miss = Math.abs(smoothed - target);
@@ -209,6 +213,7 @@ public class Expectations {
      */
     public void seed(PriceIndex index, double target) {
         credibility = KSEED;
+        dented = 0;
         smoothed = index != null && index.hasRate() ? index.inflation() : target;
         expected = Math.max(EXPECTED_FLOOR, credibility * target + (1 - credibility) * smoothed);
         level = 1.0;
@@ -229,13 +234,19 @@ public class Expectations {
      * target.
      */
     public void pegBroke() {
+        double was = credibility;
         credibility -= PEG_BREAK_DENT * (credibility - KMIN);
         credibility = Math.max(KMIN, Math.min(KMAX, credibility));
+        dented += was - credibility;
     }
+
+    /** What pegBroke() took this month, for takeMonth()'s record of the month's move; struck and cleared there, the same month, so never saved. */
+    private double dented;
 
     /** A new game: unseeded, at the defaults; its first month seeds it at the city's target. */
     public void reset() {
         credibility = KSEED;
+        dented = 0;
         smoothed = expected = DebtManager.DEFAULT_INFLATION_TARGET;
         level = 1.0;
         struck = 1.0;
