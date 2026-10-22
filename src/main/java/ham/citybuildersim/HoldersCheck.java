@@ -1385,7 +1385,7 @@ public class HoldersCheck {
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
                 Files.readString(files.saveFile(3))).getAsJsonObject();
         com.google.gson.JsonArray full = json.getAsJsonArray("capitalFlows");
-        assertTrue("fixture: the save carries the world's paper at the end of the capital flows array", full != null && full.size() == 15);
+        assertTrue("fixture: the save carries the world's paper in slots 12-14 of the capital flows array", full != null && full.size() >= 15);   // XR2 appended slot 15, what left on doubt
         com.google.gson.JsonArray cut12 = new com.google.gson.JsonArray();
         for (int i = 0; i < 12; i++) cut12.add(full.get(i));
         json.add("capitalFlows", cut12);

@@ -218,6 +218,21 @@ public class Expectations {
         seeded = true;
     }
 
+    /** The share of the way to KMIN that credibility falls the month a peg breaks (XR2, est.): a bank that promised a rate and could not keep it is believed half as much as it was above the floor. */
+    public static final double PEG_BREAK_DENT = .5;
+
+    /**
+     * A peg broke this month (ForeignAccounts, THE REGIMES; Game, right after
+     * the reprice): credibility falls PEG_BREAK_DENT of the way to KMIN, at
+     * once. The next month's takeMonth() prices it into expected inflation, and
+     * credibility then climbs back at GAIN_MONTHS only while inflation sits on
+     * target.
+     */
+    public void pegBroke() {
+        credibility -= PEG_BREAK_DENT * (credibility - KMIN);
+        credibility = Math.max(KMIN, Math.min(KMAX, credibility));
+    }
+
     /** A new game: unseeded, at the defaults; its first month seeds it at the city's target. */
     public void reset() {
         credibility = KSEED;

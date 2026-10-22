@@ -201,6 +201,20 @@ public class HistorySave {
      * interventions, a ratio and not money.
      */
     private List<Double> fxMarket = new ArrayList<>();
+    /**
+     * The shadow rate (XR2, 2026-10-22): where the float's rule put the D$ at
+     * the month's reprice, in the rate's own units (ForeignAccounts
+     * .getShadowRate()) - the rate itself under Lean and Float, the rate the
+     * hold is set against under a band or a peg - so the Trade tab can draw
+     * the hold's gap. A history file older than this has none.
+     */
+    private List<Double> fxShadow = new ArrayList<>();
+    /**
+     * ...and the vault's cover, in months of imports (ForeignAccounts
+     * .importCover(), at most 99): the hold's reserve, beside the shadow. A
+     * ratio and not money.
+     */
+    private List<Double> fxCover = new ArrayList<>();
     private List<Double> reservesUsd = new ArrayList<>();
     private List<Double> foreignDebtUsd = new ArrayList<>();
     private List<Double> currentAccount = new ArrayList<>();
@@ -647,6 +661,8 @@ public class HistorySave {
         fxParity.add(round4(abroad.getParity()));
         fxFair.add(round4(abroad.getFairLevel()));
         fxMarket.add(round4(abroad.deviationFromFair()));
+        fxShadow.add(round4(abroad.getShadowRate()));
+        fxCover.add(round2(Math.min(99, abroad.importCover())));
         reservesUsd.add(round2(abroad.getReservesUsd()));
         foreignDebtUsd.add(round2(abroad.getForeignDebtUsd()));
         currentAccount.add(round2(abroad.currentAccount()));
@@ -1055,6 +1071,8 @@ public class HistorySave {
         fxParity = copy(loaded.fxParity);
         fxFair = copy(loaded.fxFair);
         fxMarket = copy(loaded.fxMarket);
+        fxShadow = copy(loaded.fxShadow);
+        fxCover = copy(loaded.fxCover);
         reservesUsd = copy(loaded.reservesUsd);
         foreignDebtUsd = copy(loaded.foreignDebtUsd);
         currentAccount = copy(loaded.currentAccount);
@@ -1473,6 +1491,8 @@ public class HistorySave {
         map.put("fxParity", fxParity);
         map.put("fxFair", fxFair);
         map.put("fxMarket", fxMarket);
+        map.put("fxShadow", fxShadow);
+        map.put("fxCover", fxCover);
         map.put("reservesUsd", reservesUsd);
         map.put("foreignDebtUsd", foreignDebtUsd);
         map.put("currentAccount", currentAccount);
@@ -1650,7 +1670,8 @@ public class HistorySave {
          * money, which a domestic reform cannot reach. priceIndex is a ratio of
          * two baskets and a reform divides both; fxMarket (XR1) is a ratio of
          * the rate to its fair level, which a reform divides both of, and
-         * fxFair is a rate and scales like fxRate. policyRate, bankPrime and
+         * fxFair is a rate and scales like fxRate; so is fxShadow (XR2), and
+         * fxCover is months of imports, a ratio. policyRate, bankPrime and
          * bankDepositRate are rates (bankPremium was, until 0.7.7), and so
          * are the bank's capital ratio, its target and its return on equity
          * (0.7.8), and its leverage ratio and that target (0.7.46); its
@@ -1660,7 +1681,7 @@ public class HistorySave {
          * of things, and landUse is a share -
          * none of them is money at all.
          */
-        scaleAll(scale, fxRate, fxParity, fxFair, currentAccount, exportsAbroad, importsAbroad,
+        scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad,
                 businessDebt, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
                 householdSavings, bankFees,

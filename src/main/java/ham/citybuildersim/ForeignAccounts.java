@@ -457,7 +457,8 @@ public class ForeignAccounts {
      * make it a path, the interventions still felt, a year's GDP as a rolling
      * mean, and the month's moves by force with the contributions they were
      * struck from. A flow cannot be reconstructed from the state a month ended
-     * in, so the last month's six moves ride the save.
+     * in, so the last month's moves ride the save (the seventh, XR2's, with the
+     * regimes' state, slots 71 on).
      */
     private double trendLevel, trendSlope;
     private boolean trendStarted;
@@ -471,8 +472,8 @@ public class ForeignAccounts {
     private double gdpTrailing;
     /** The five contributions last month (trend, gap, balance, cover, intervention): this month's move by force is the change from them. */
     private final double[] lastContrib = new double[5];
-    /** This month's move by force (trend, gap, balance, cover, intervention, market); they add to the month's log move. */
-    private final double[] moves = new double[6];
+    /** This month's move by force (trend, gap, balance, cover, intervention, market, held); they add to the month's log move. The seventh, XR2's, is the hold of a peg or a band's edge: exactly 0 under Lean and Float. */
+    private final double[] moves = new double[7];
     /** The month's fall against parity's trend before the defence leaned on it (repriceCurrency(), step 7). */
     private double lastWouldBeMove;
     /**
@@ -564,10 +565,12 @@ public class ForeignAccounts {
     public double getMoveCover() { return moves[3]; }
     /** ...from interventions, the treasury's and the defence's. */
     public double getMoveIntervention() { return moves[4]; }
-    /** ...from the market: what is left once the five are taken, so the six always add to the month's move, through a pin or a guard. */
+    /** ...from the market: what is left of the shadow rate's move once the five are taken, so the six and the hold always add to the month's move, through a pin or a guard. Under Lean and Float the shadow is the rate. */
     public double getMoveMarket() { return moves[5]; }
+    /** ...from the hold (XR2): the part of the move the vault's hold of a peg or a band's edge made, and in a month a peg gave way the peg giving way. 0 under Lean and Float. */
+    public double getMoveHeld() { return moves[6]; }
 
-    /** Last month's move in the rate, in logs, positive weaker: the six moves added. */
+    /** Last month's move in the rate, in logs, positive weaker: the seven moves added. */
     public double getLastMove() {
         double sum = 0;
         for (double m : moves) sum += m;
@@ -597,6 +600,7 @@ public class ForeignAccounts {
         marketSeed = seed & ((1L << 52) - 1);
         marketSeeded = true;
         marketDraws = 0;
+        pegDraws = 0;   // ...and the peg's chance restarts beside it (XR2)
     }
 
     /**
@@ -744,17 +748,33 @@ public class ForeignAccounts {
      *
      * A pinned rate does not move and is not defended by a sale: the promise
      * is the treasury's, and nothing is sold - and nothing is drawn, so a pin
-     * does not shift the market's path.
+     * does not shift the market's path. Nor does a pin touch the regime's
+     * state (XR2, THE REGIMES): the edge buys nothing and no peg breaks.
+     *
+     * Steps 1-6 are the same under every regime; step 7 is the regime's own
+     * (LEAN is the lean against a fall, as it has always been; FLOAT leans on
+     * nothing; BAND and PEG hold the rate where they say), and steps 8-9 close
+     * the month on the rate it set. See THE REGIMES.
      */
     public void repriceCurrency() {
         if (pinned) {
             defenceUsd = defenceLocal = 0;
+            edgeBoughtUsd = edgeBoughtLocal = 0;
+            brokeThisMonth = false;
             java.util.Arrays.fill(moves, 0);
             lastWouldBeMove = 0;
             dealtSinceReprice = 0;   // ...and a pinned month's dealing is the promise's, not the market's
             return;
         }
+        // The month's regime events are the month's (XR2): cleared as it opens.
+        brokeThisMonth = false;
+        edgeBoughtUsd = edgeBoughtLocal = 0;
         double prevLog = Math.log(rate);
+        // ...and where the SHADOW stood last month: the rate itself, unless last
+        // month's reprice held the rate away from it (a peg in force, a band at
+        // an edge), when it is the float's own rule the held rate was set beside.
+        // Under Lean the two are the same number, bit for bit.
+        double prevShadowLog = heldLastMonth ? lastShadowLog : prevLog;
 
         // 1. PARITY'S TREND, Holt's level and slope on ln(parity): the first
         // reprice opens it on parity, so a founding starts on its own level.
@@ -793,6 +813,9 @@ public class ForeignAccounts {
         // founders' dollars are an endowment, forgotten at founding
         // (forgetDealing()), so they never count.
         interventionFelt *= Math.pow(.5, 1 / INTERVENTION_HALF_LIFE);
+        // ...and what a peg's breaking still puts on the rate (XR2): it fades as
+        // the market's swings do, and is nothing, so 0 stays 0, until a peg breaks.
+        breakFelt *= Math.pow(.5, 1 / MARKET_HALF_LIFE);
         double annual = 12 * gdpTrailing;
         if (annual > 0) interventionFelt += INTERVENTION_IMPACT * dealtSinceReprice / annual;
         dealtSinceReprice = 0;
@@ -800,7 +823,7 @@ public class ForeignAccounts {
         // 6. THE MONTH'S LOG RATE.
         double g = gate();
         double fundamentals = gapReached + balanceReached + coverReached + market;
-        double x = trendLevel + g * fundamentals + interventionFelt;
+        double x = trendLevel + g * fundamentals + interventionFelt + breakFelt;
 
         /*
          * 7. LEAN AGAINST A FALL (A RESERVE DEFENDS A CURRENCY): the fall the
@@ -825,26 +848,122 @@ public class ForeignAccounts {
          * 25% over by month 36 and the vault at 1.3 months by 60, the D$ then
          * 80% weaker in two years. A rise is never defended: nothing is bought.
          */
+        /*
+         * ...THAT IS THE LEAN REGIME, and it is exactly what the city did
+         * before there were regimes (XR2 added the other three beside it, THE
+         * REGIMES): the one difference is that the fall is struck from where
+         * the SHADOW stood last month, which is the rate itself unless last
+         * month held the rate away from it - so after a peg or a band is left
+         * for Lean, the release of the hold is not a new fall to sell against.
+         */
         double deficitUsd = monthDeficitUsd();
-        double fall = x - prevLog - (trendLevel - lastContrib[0]) - (interventionFelt - lastContrib[4]);
+        // The month's own balance in dollars, at the month's rate before it moves
+        // (a surplus positive): what a peg meets, and a band's edge.
+        double balanceUsd = rate > 0 ? (currentAccount() + financialAccount()) / rate : 0;
+        double fall = x - prevShadowLog - (trendLevel - lastContrib[0]) - (interventionFelt - lastContrib[4]);
         lastWouldBeMove = fall;
-        double sold = 0;
-        if (fall > 0 && annual > 0 && rate > 0) {
-            double need = absorption() * fall * annual / INTERVENTION_IMPACT / rate;
-            sold = Math.min(need, dollarsFor(deficitUsd));
-        }
-        sellToDefend(sold);
-        lastAbsorption = defenceUsd > 0 && deficitUsd > 0 ? defenceUsd / deficitUsd : 0;
-        if (defenceLocal > 0) {
-            interventionFelt -= INTERVENTION_IMPACT * defenceLocal / annual;
-            x = trendLevel + g * fundamentals + interventionFelt;
-        }
+        double shadow;
+        if (regime == Regime.LEAN) {
+            double sold = 0;
+            if (fall > 0 && annual > 0 && rate > 0) {
+                double need = absorption() * fall * annual / INTERVENTION_IMPACT / rate;
+                sold = Math.min(need, dollarsFor(deficitUsd));
+            }
+            sellToDefend(sold);
+            lastAbsorption = defenceUsd > 0 && deficitUsd > 0 ? defenceUsd / deficitUsd : 0;
+            if (defenceLocal > 0) {
+                interventionFelt -= INTERVENTION_IMPACT * defenceLocal / annual;
+                x = trendLevel + g * fundamentals + interventionFelt + breakFelt;
+            }
 
-        // 8. THE RATE, inside the numerical guards.
-        rate = Math.max(minRate, Math.min(maxRate, Math.exp(x)));
+            // 8. THE RATE, inside the numerical guards.
+            rate = clampRate(Math.exp(x));
+            shadow = rate;
+            doubtShare = lastHazard = lastPegGap = 0;
+        } else if (regime == Regime.FLOAT) {
+            // Nothing is sold and nothing leaned on: the rule's rate, as it falls.
+            sellToDefend(0);
+            lastAbsorption = 0;
+            rate = clampRate(Math.exp(x));
+            shadow = rate;
+            doubtShare = lastHazard = lastPegGap = 0;
+        } else if (regime == Regime.BAND) {
+            sellToDefend(0);
+            lastAbsorption = 0;
+            // The centre crawls first, so the edges are read where it has got to.
+            bandCentre *= Math.exp(bandSlope / 12);
+            shadow = clampRate(Math.exp(x));
+            double weak = bandWeakEdge();
+            double strong = bandStrongEdge();
+            if (shadow > weak) {
+                // Past the weak edge: the vault sells the month's whole deficit and the
+                // rate is held at the edge - unless paying it would take the vault under
+                // its floor, when the band gives way for the month (the regime stays).
+                double need = Math.max(0, -balanceUsd);
+                if (reservesUsd - need < vaultFloorUsd()) {
+                    rate = shadow;
+                } else {
+                    sellToDefend(need);
+                    rate = clampRate(weak);
+                }
+            } else if (shadow < strong) {
+                // Past the strong edge: the vault buys the month's surplus (THE STRONG EDGE).
+                edgeBuy(Math.max(0, balanceUsd));
+                rate = clampRate(strong);
+            } else {
+                rate = shadow;
+            }
+            doubtShare = lastHazard = lastPegGap = 0;
+        } else {
+            // PEG. The shadow is where the float's rule would have the D$; its gap
+            // from the peg is the pressure, and the pressure is the chance of a break.
+            sellToDefend(0);
+            lastAbsorption = 0;
+            if (!(pegRate > 0)) pegRate = rate;
+            shadow = clampRate(Math.exp(x));
+            double gap = Math.log(shadow / pegRate);
+            double h = hazard(Math.max(0, gap));
+            BreakCause cause = BreakCause.NONE;
+            // (a) DOUBT: a draw from a stream of its own, so the market's path is the same
+            // pegged or not. A quiet (unseeded) market never draws and never doubts.
+            if (marketSeeded) {
+                double u = new java.util.Random(mix(marketSeed ^ PEG_SALT, pegDraws++)).nextDouble();
+                if (u < h) cause = BreakCause.DOUBT;
+            }
+            // (b) THE VAULT: paying the month's deficit at the peg would take it under its floor.
+            if (cause == BreakCause.NONE && balanceUsd < 0 && reservesUsd + balanceUsd < vaultFloorUsd()) {
+                cause = BreakCause.VAULT;
+            }
+            lastHazard = h;
+            lastPegGap = gap;
+            if (cause == BreakCause.NONE) {
+                // (c) HELD: the vault meets the month's whole balance at the peg.
+                if (balanceUsd < 0) sellToDefend(-balanceUsd); else edgeBuy(balanceUsd);
+                rate = clampRate(pegRate);
+                doubtShare = gap > 0 ? h : 0;
+            } else {
+                // THE BREAK: the rate lands at the shadow plus OVERSHOOT of the gap again
+                // (a gap the other way is no overshoot), and fades like the market's swings.
+                double overshoot = OVERSHOOT * Math.max(0, gap);
+                breakFelt += overshoot;
+                rate = clampRate(Math.exp(x + overshoot));
+                regime = Regime.FLOAT;
+                brokeThisMonth = true;
+                breaks++;
+                lastBreakCause = cause;
+                lastBreakJump = Math.log(rate) - prevLog;
+                lastBreakShadow = shadow;
+                shadow = rate;   // it floats now
+                doubtShare = 0;
+            }
+        }
 
         // 9. THE MONTH'S MOVES BY FORCE, from the contributions: the market's
-        // line is what is left, so the six always add to the month's move.
+        // line is what is left of the SHADOW's move, so the six add to it, and
+        // the seventh is the hold (what a peg or an edge made of the rate beside
+        // the shadow, and in a break month the peg giving way): all seven add to
+        // the month's move. Under Lean and Float the shadow is the rate, and the
+        // seventh is exactly nothing.
         double[] c = { trendLevel, g * gapReached, g * balanceReached, g * coverReached, interventionFelt };
         double sum = 0;
         for (int k = 0; k < 5; k++) {
@@ -852,8 +971,14 @@ public class ForeignAccounts {
             sum += moves[k];
             lastContrib[k] = c[k];
         }
-        moves[5] = Math.log(rate) - prevLog - sum;
+        moves[5] = Math.log(shadow) - prevShadowLog - sum;
+        moves[6] = (Math.log(rate) - prevLog) - (Math.log(shadow) - prevShadowLog);
+        lastShadowLog = Math.log(shadow);
+        heldLastMonth = (regime == Regime.BAND || regime == Regime.PEG) && rate != shadow;
     }
+
+    /** A rate inside the numerical guards. */
+    private double clampRate(double r) { return Math.max(minRate, Math.min(maxRate, r)); }
 
     /** How far the currency sits from parity. Negative is stronger than parity. */
     public double deviationFromParity() { return parity > 0 ? rate / parity - 1 : 0; }
@@ -866,6 +991,298 @@ public class ForeignAccounts {
 
     /** ...and the other way. */
     public double toUsd(double local) { return rate > 0 ? local / rate : 0; }
+
+    /* ================ THE REGIMES (XR2, 2026-10-22) ================
+     *
+     * Jerus, 2026-10-21 (docs/studies/spec-exchange-rates.md, 3.6; his calls
+     * star 3, 4, 5, 6 and 13): the city chooses what its D$ is held to. Four
+     * regimes, one reprice (repriceCurrency(), steps 7 to 9):
+     *
+     *   LEAN   the default, and what the city did before there were regimes:
+     *          the float's rate, a fall damped by the vault's sales (XR1,
+     *          step 7). Every number it computes is the number it computed
+     *          before XR2 - the new terms below are exactly nothing under it.
+     *   FLOAT  the float's rate, and the vault does nothing.
+     *   BAND   the rate floats inside centre x (1 -/+ width), the centre
+     *          crawling at the slope; at the weak edge the vault sells the
+     *          month's deficit, at the strong edge it buys the month's surplus.
+     *   PEG    the rate is held at the peg, and the vault meets the month's whole
+     *          balance at it. The rate is D$ per US$, so a HIGHER rate is a
+     *          WEAKER D$ - the weak edge is the upper one.
+     *
+     * THE SHADOW RATE is the float's rule run beside every regime: where the D$
+     * would be. Under Lean and Float it is the rate itself; under a band or a
+     * peg it is the rate the hold is set against, and its gap from the peg (or
+     * the band's centre) is the pressure, shown (currencyGap()).
+     *
+     * HOW A PEG BREAKS (star 4): the vault cannot pay the month's deficit at
+     * the peg without falling under VAULT_FLOOR months of imports (Krugman's
+     * first generation), or by chance, hazard(gap) a month, which rises with the
+     * shadow's gap from the peg (Obstfeld's second: doubt itself breaks a peg).
+     * The rate lands at the shadow plus OVERSHOOT of the gap again (breakFelt,
+     * fading as the market's swings do), the regime becomes Float, and
+     * Expectations loses credibility (pegBroke()). The chance is drawn from a
+     * stream of its own (pegDraws) so the market's path is the same pegged or
+     * not, and a quiet (unseeded) ForeignAccounts never breaks by chance.
+     *
+     * THE STRONG EDGE (star 6): the vault takes the dollars at once, at the
+     * month's rate before the reprice (as sellToDefend() sells), and the local
+     * price is settled at the top of the next month by its payer, inside the
+     * audit's window (Game.settleTheEdge()): by default the central bank, in
+     * new money (CentralBank.buyDollarsForVault(), M0 rises as the SNB's did
+     * 2011-2015), or the treasury, out of its cash, as a reserve purchase of
+     * its own (noteEdgePaidByTreasury()). Neither is dealing the next reprice
+     * feels: the edge's purchase IS the hold.
+     *
+     * Leaving a regime keeps its settings in the fields, so a re-entry can show
+     * them; they act only in force.
+     */
+
+    /** The four ways a city can hold its D$ (XR2; the study's 3.6). */
+    public enum Regime {
+        FLOAT("Float"), LEAN("Lean against falls"), BAND("Band"), PEG("Peg to the US$");
+        public final String words;
+        Regime(String words) { this.words = words; }
+    }
+
+    /** Who pays the local price of the dollars the vault buys at the strong edge (star 6). */
+    public enum EdgePayer {
+        CENTRAL_BANK("The central bank, in new money"), TREASURY("The treasury, out of its cash");
+        public final String words;
+        EdgePayer(String words) { this.words = words; }
+    }
+
+    /** Why a peg broke: the vault could not pay the month's deficit, or doubt itself did it (star 4). */
+    public enum BreakCause {
+        NONE("none"), VAULT("the vault ran short"), DOUBT("doubt");
+        public final String words;
+        BreakCause(String words) { this.words = words; }
+    }
+
+    /** Where a band opens, this share either side of its centre: the study's board 2 (est.; Singapore's band is thought to be about 2% either side, R36). */
+    public static final double BAND_WIDTH = .03;
+
+    /** The widest a band can be set, a share either side of the centre. */
+    public static final double MAX_BAND_WIDTH = .25;
+
+    /** The steepest a band's centre can crawl, a log a year, either way. */
+    public static final double MAX_BAND_SLOPE = .25;
+
+    /** Months of imports the vault must keep under a peg or a band: under it the hold gives way (the usual rule of thumb is three months of cover; the study's prototype breaks at one). */
+    public static final double VAULT_FLOOR = 1;
+
+    /** A broken peg lands at the shadow plus this share of the gap from the peg again, and fades as the market's swings do (RatesModel, the study's prototype). */
+    public static final double OVERSHOOT = .25;
+
+    /** A peg's chance of breaking by doubt in a month at no gap at all (0.1%). */
+    public static final double BREAK_BASE = .001;
+
+    /** ...rising by this much for each BREAK_GAP the shadow sits past the peg beyond the first BREAK_GAP (3% a month at a 20% gap). */
+    public static final double BREAK_SLOPE = .03;
+
+    /** ...the gap, a log, under which doubt adds nothing to BREAK_BASE (10%). */
+    public static final double BREAK_GAP = .10;
+
+    /** The salt that makes the peg's draws a stream of their own (odd). */
+    private static final long PEG_SALT = 0x5DEECE66D1B54A33L;
+
+    /** A peg's chance of breaking in a month by doubt, given the log of the shadow over the peg (pass it at least 0): BREAK_BASE, plus BREAK_SLOPE for each BREAK_GAP past BREAK_GAP. Pure. */
+    public static double hazard(double gap) {
+        return BREAK_BASE + BREAK_SLOPE * Math.max(0, gap - BREAK_GAP) / BREAK_GAP;
+    }
+
+    /** The regime in force. A new city is on Lean, the regime it has always had. */
+    private Regime regime = Regime.LEAN;
+    /** Who pays at the strong edge. */
+    private EdgePayer edgePayer = EdgePayer.CENTRAL_BANK;
+    /** The band: its centre now (D$ per US$), the log a year the centre crawls, and the share either side the edges sit. Kept when the regime is left. */
+    private double bandCentre, bandSlope, bandWidth = BAND_WIDTH;
+    /** The peg, D$ per US$. Kept when the regime is left. */
+    private double pegRate;
+    /** What a break put on the rate and has not yet faded, in logs, positive weaker: the overshoot (repriceCurrency(), step 6). Saved. */
+    private double breakFelt;
+    /** The log of the shadow rate at the last reprice, and whether that reprice held the rate away from it (a peg in force, a band at an edge). Saved. */
+    private double lastShadowLog;
+    private boolean heldLastMonth;
+    /** How many draws the peg's chance has taken: a stream apart from the market's. Saved. */
+    private long pegDraws;
+    /** The month's break chance as the last reprice left it (what the hot money takes of itself home the next month), the last reprice's hazard, and the shadow's log gap from the peg then. Saved. */
+    private double doubtShare, lastHazard, lastPegGap;
+    /** The strong edge's dollars the vault took at the last reprice and their local price at the rate before it: the month's, cleared as the next reprice opens. Saved. */
+    private double edgeBoughtUsd, edgeBoughtLocal;
+    /** ...and since founding. Saved. */
+    private double edgeBoughtUsdLifetime;
+    /** The local price still owed for the dollars the edge bought, and who owes it as it stood when they were bought: settled at the top of the next month (Game.settleTheEdge()). Saved: a purchase pressed before a save is paid after the load. */
+    private double edgeOwedLocal;
+    private EdgePayer edgeOwedPayer = EdgePayer.CENTRAL_BANK;
+    /** Pegs broken since founding, and the last one's cause, jump (the log move of the rate that month) and shadow rate; whether the last reprice broke one. Saved. */
+    private int breaks;
+    private BreakCause lastBreakCause = BreakCause.NONE;
+    private double lastBreakJump, lastBreakShadow;
+    private boolean brokeThisMonth;
+
+    /**
+     * Chooses the regime. Entering a peg pegs to the rate of the day; entering a
+     * band centres it on the rate of the day, flat, at the board's width (unless
+     * it is the band already). Leaving a regime keeps its settings in the fields
+     * so a re-entry can show them, but they act only in force.
+     */
+    public void setRegime(Regime r) {
+        if (r == null || r == regime) return;
+        if (r == Regime.PEG) {
+            pegRate = rate;
+        } else if (r == Regime.BAND) {
+            bandCentre = rate;
+            bandSlope = 0;
+            bandWidth = BAND_WIDTH;
+        }
+        regime = r;
+    }
+
+    /** A devaluation (a higher peg, a weaker D$) or a revaluation, under a peg; nothing under another regime. The rate follows at the next reprice. */
+    public void repeg(double newPeg) {
+        if (regime != Regime.PEG || !(newPeg > 0) || !Double.isFinite(newPeg)) return;
+        pegRate = clampRate(newPeg);
+    }
+
+    /** Sets the band: its centre (D$ per US$), the log a year it crawls and the share either side the edges sit, each inside its limits. The rate follows at the next reprice. */
+    public void setBand(double centre, double slopeAYear, double width) {
+        if (centre > 0 && Double.isFinite(centre)) bandCentre = clampRate(centre);
+        if (Double.isFinite(slopeAYear)) bandSlope = Math.max(-MAX_BAND_SLOPE, Math.min(MAX_BAND_SLOPE, slopeAYear));
+        if (Double.isFinite(width)) bandWidth = Math.max(0, Math.min(MAX_BAND_WIDTH, width));
+    }
+
+    /** Chooses who pays for the dollars the vault buys at the strong edge. */
+    public void setEdgePayer(EdgePayer p) {
+        if (p != null) edgePayer = p;
+    }
+
+    public Regime getRegime()         { return regime; }
+    public EdgePayer getEdgePayer()   { return edgePayer; }
+    public double getPegRate()        { return pegRate; }
+    public double getBandCentre()     { return bandCentre; }
+    /** The log a year the band's centre crawls. */
+    public double getBandSlope()      { return bandSlope; }
+    /** The share either side of the centre the edges sit. */
+    public double getBandWidth()      { return bandWidth; }
+    /** The band's weak edge, D$ per US$ (a higher rate is a weaker D$): the centre and its width. */
+    public double bandWeakEdge()      { return bandCentre * (1 + bandWidth); }
+    /** ...and its strong edge. */
+    public double bandStrongEdge()    { return bandCentre * (1 - bandWidth); }
+
+    /**
+     * Where the float's rule put the D$ at the last reprice, D$ per US$: the
+     * rate itself unless that reprice held the rate away from it (a peg in
+     * force, a band at an edge). Pure.
+     */
+    public double getShadowRate() { return heldLastMonth ? Math.exp(lastShadowLog) : rate; }
+
+    /** Whether the last reprice held the rate away from the shadow: a peg in force, a band at an edge. */
+    public boolean isHeld() { return heldLastMonth; }
+
+    /**
+     * How far the D$ sits past its target, a share, positive weaker: the
+     * shadow over the peg under a peg, over the band's centre under a band, and
+     * nothing under Lean and Float, which have no target to aim at (a call for
+     * Jerus whether a float should aim at the real rate). What the autopilot's
+     * currency aim sets the dial against (DebtManager.currencyRate()). Pure.
+     */
+    public double currencyGap() {
+        if (regime == Regime.PEG && pegRate > 0) return getShadowRate() / pegRate - 1;
+        if (regime == Regime.BAND && bandCentre > 0) return getShadowRate() / bandCentre - 1;
+        return 0;
+    }
+
+    /** A peg's chance of breaking by doubt at the last reprice (0 outside a peg). */
+    public double getLastHazard()     { return lastHazard; }
+    /** ...and the log of the shadow over the peg then. */
+    public double getLastPegGap()     { return lastPegGap; }
+    /** The share of the hot money that takes itself home in the coming month: the break chance the last reprice left, when the peg held with the shadow past it (Game hands it to CapitalFlows.setDoubt()). */
+    public double getDoubtShare()     { return doubtShare; }
+    /** Whether the last reprice broke a peg. */
+    public boolean brokeThisMonth()   { return brokeThisMonth; }
+    /** Pegs broken since founding. */
+    public int getBreaks()            { return breaks; }
+    public BreakCause getLastBreakCause() { return lastBreakCause; }
+    /** The last break's jump in the rate, in logs, that month. */
+    public double getLastBreakJump()  { return lastBreakJump; }
+    /** ...and where the shadow stood then, D$ per US$. */
+    public double getLastBreakShadow() { return lastBreakShadow; }
+
+    /** The dollars the hold must not let the vault fall under: VAULT_FLOOR months of the trailing import bill at the rate; nothing with no imports. Pure. */
+    public double vaultFloorUsd() {
+        return importsTrailing > 0 && rate > 0 ? VAULT_FLOOR * importsTrailing / rate : 0;
+    }
+
+    /** Where a peg that broke now would land, D$ per US$: the shadow plus OVERSHOOT of its gap again (as the break itself does it); the rate itself outside a peg. Pure. */
+    public double breakLanding() {
+        if (regime != Regime.PEG || !(pegRate > 0)) return rate;
+        double shadow = getShadowRate();
+        return shadow * Math.exp(OVERSHOOT * Math.max(0, Math.log(shadow / pegRate)));
+    }
+
+    /** How many months the vault lasts at the last reprice's sales, to its floor, under a peg or a band that sold; infinity when it sold nothing. Pure. */
+    public double monthsToFloor() {
+        if ((regime == Regime.PEG || regime == Regime.BAND) && defenceUsd > 0) {
+            return (reservesUsd - vaultFloorUsd()) / defenceUsd;
+        }
+        return Double.POSITIVE_INFINITY;
+    }
+
+    /** What a purchase of dollars for this much local money would put on the float's log rate (positive weaker; a sale the other way), at the real size: the interventions' channel. 0 with no GDP. Pure. */
+    public double dealEffect(double localPurchase) {
+        return gdpTrailing > 0 ? INTERVENTION_IMPACT * localPurchase / (12 * gdpTrailing) : 0;
+    }
+
+    /** The dollars the strong edge bought at the last reprice, and their local price at the rate before it. */
+    public double getEdgeBoughtUsd()      { return edgeBoughtUsd; }
+    public double getEdgeBoughtLocal()    { return edgeBoughtLocal; }
+    /** ...since founding, in dollars. */
+    public double getEdgeBoughtUsdLifetime() { return edgeBoughtUsdLifetime; }
+    /** The local price still owed for them, and by whom: settled at the top of the next month. */
+    public double getEdgeOwedLocal()      { return edgeOwedLocal; }
+    public EdgePayer getEdgeOwedPayer()   { return edgeOwedPayer; }
+
+    /**
+     * The vault takes these dollars at once, at the month's rate before the
+     * reprice moves it (as sellToDefend() sells, so revalueVault() stays
+     * clean), and the local price is owed to its payer at the top of the next
+     * month. Not dealing the next reprice feels: the purchase is the hold.
+     */
+    private void edgeBuy(double usd) {
+        if (!(usd > 0) || !(rate > 0)) return;
+        reservesUsd += usd;
+        edgeBoughtUsd = usd;
+        edgeBoughtLocal = usd * rate;
+        edgeOwedLocal += edgeBoughtLocal;
+        edgeOwedPayer = edgePayer;
+        edgeBoughtUsdLifetime += usd;
+    }
+
+    /**
+     * Hands over what is owed for the dollars the edge bought, and clears it:
+     * called once, at the top of the month inside the audit's window. Read
+     * getEdgeOwedPayer() first for who owes it.
+     */
+    public double takeEdgeOwed() {
+        double owed = edgeOwedLocal;
+        edgeOwedLocal = 0;
+        return owed;
+    }
+
+    /**
+     * The treasury paid this much of what the edge owed, out of its cash: a
+     * reserve purchase of its own, so it joins the month's purchases (and
+     * MoneyAudit's "- treasury BoughtReserves" declares it) and the lifetime
+     * dealing. NOT the vault, which has the dollars already, and NOT
+     * dealtSinceReprice: the edge's purchase is the hold itself, never felt as
+     * an intervention.
+     */
+    public void noteEdgePaidByTreasury(double local) {
+        if (!(local > 0)) return;
+        boughtThisMonth += local;
+        lifetimeIntervention += local;
+    }
 
     /* --------------------------- the month's account --------------------------- */
 
@@ -1775,7 +2192,32 @@ public class ForeignAccounts {
                 lastContrib[0], lastContrib[1], lastContrib[2], lastContrib[3], lastContrib[4],
                 moves[0], moves[1], moves[2], moves[3], moves[4], moves[5],
                 gdpTrailing, lastWouldBeMove,
-                dealtSinceReprice };
+                dealtSinceReprice,
+                /*
+                 * ...AND THE REGIMES, slots 71-94 (XR2; THE REGIMES): the regime
+                 * and who pays at the strong edge (ordinals), the band (centre,
+                 * slope, width) and the peg, what a break still puts on the
+                 * rate, the shadow's log and whether the last reprice held the
+                 * rate away from it, the peg's draws, the break chance the hot
+                 * money will take of itself home and the hazard and gap that
+                 * made it, the local price still owed for the edge's dollars
+                 * and who owes it (a purchase pressed before a save is paid
+                 * after the load), the edge's dollars the month bought and
+                 * their price and the lifetime, the pegs broken and the last
+                 * break's cause, jump and shadow, whether the last reprice
+                 * broke one, and the seventh move, the hold. Each is a level
+                 * or a flow the month cannot restrike from the state it ended
+                 * in. An older save reads Lean, nothing owed, nothing held.
+                 */
+                regime.ordinal(), edgePayer.ordinal(),
+                bandCentre, bandSlope, bandWidth, pegRate,
+                breakFelt, lastShadowLog, heldLastMonth ? 1 : 0, (double) pegDraws,
+                doubtShare, lastHazard, lastPegGap,
+                edgeOwedLocal, edgeOwedPayer.ordinal(),
+                edgeBoughtUsd, edgeBoughtLocal, edgeBoughtUsdLifetime,
+                breaks, lastBreakCause.ordinal(), lastBreakJump, lastBreakShadow,
+                brokeThisMonth ? 1 : 0,
+                moves[6] };
     }
 
     public void restore(double[] saved) {
@@ -1885,6 +2327,41 @@ public class ForeignAccounts {
             lastWouldBeMove = saved[69];
         }
         if (saved.length > 70) dealtSinceReprice = saved[70];
+        // The regimes (XR2, slots 71-94); a save from before them is on Lean with
+        // nothing owed and nothing held, which is what the city was.
+        if (saved.length > 94) {
+            // An ordinal that is not one reads the default (Lean, the central bank, no cause), never the nearest.
+            regime = Regime.values()[ordinalOr(saved[71], Regime.values().length, Regime.LEAN.ordinal())];
+            edgePayer = EdgePayer.values()[ordinalOr(saved[72], EdgePayer.values().length, EdgePayer.CENTRAL_BANK.ordinal())];
+            bandCentre = Math.max(0, saved[73]);
+            bandSlope = Math.max(-MAX_BAND_SLOPE, Math.min(MAX_BAND_SLOPE, saved[74]));
+            bandWidth = Math.max(0, Math.min(MAX_BAND_WIDTH, saved[75]));
+            pegRate = Math.max(0, saved[76]);
+            breakFelt = saved[77];
+            lastShadowLog = saved[78];
+            heldLastMonth = saved[79] > .5;
+            pegDraws = Math.max(0, (long) saved[80]);
+            doubtShare = Math.max(0, Math.min(1, saved[81]));
+            lastHazard = Math.max(0, saved[82]);
+            lastPegGap = saved[83];
+            edgeOwedLocal = Math.max(0, saved[84]);
+            edgeOwedPayer = EdgePayer.values()[ordinalOr(saved[85], EdgePayer.values().length, EdgePayer.CENTRAL_BANK.ordinal())];
+            edgeBoughtUsd = Math.max(0, saved[86]);
+            edgeBoughtLocal = Math.max(0, saved[87]);
+            edgeBoughtUsdLifetime = Math.max(0, saved[88]);
+            breaks = Math.max(0, (int) Math.round(saved[89]));
+            lastBreakCause = BreakCause.values()[ordinalOr(saved[90], BreakCause.values().length, BreakCause.NONE.ordinal())];
+            lastBreakJump = saved[91];
+            lastBreakShadow = Math.max(0, saved[92]);
+            brokeThisMonth = saved[93] > .5;
+            moves[6] = saved[94];
+        }
+    }
+
+    /** A saved ordinal, or the fallback's when it is not a whole number inside 0 to length - 1. */
+    private static int ordinalOr(double saved, int length, int fallback) {
+        long k = Math.round(saved);
+        return Double.isFinite(saved) && k >= 0 && k < length ? (int) k : fallback;
     }
 
     public void reset() {
@@ -1944,6 +2421,23 @@ public class ForeignAccounts {
         java.util.Arrays.fill(moves, 0);
         lastWouldBeMove = 0;
         dealtSinceReprice = 0;
+        // ...and the regimes (XR2): Lean, who pays the central bank, no band, no
+        // peg, nothing owed, nothing held, nothing broken.
+        regime = Regime.LEAN;
+        edgePayer = EdgePayer.CENTRAL_BANK;
+        bandCentre = bandSlope = pegRate = 0;
+        bandWidth = BAND_WIDTH;
+        breakFelt = lastShadowLog = 0;
+        heldLastMonth = false;
+        pegDraws = 0;
+        doubtShare = lastHazard = lastPegGap = 0;
+        edgeBoughtUsd = edgeBoughtLocal = edgeBoughtUsdLifetime = 0;
+        edgeOwedLocal = 0;
+        edgeOwedPayer = EdgePayer.CENTRAL_BANK;
+        breaks = 0;
+        lastBreakCause = BreakCause.NONE;
+        lastBreakJump = lastBreakShadow = 0;
+        brokeThisMonth = false;
     }
 
     /**
@@ -2023,6 +2517,15 @@ public class ForeignAccounts {
         trendLevel += Math.log(scale);
         lastContrib[0] += Math.log(scale);
         gdpTrailing *= scale;
+        // The regimes (XR2): every rate and local figure moves like the rate; the
+        // shadow's log shifts by the log of the scale, as the trend's does, so
+        // the reform is not a move. The dollars, the logs and the shares stay.
+        bandCentre *= scale;
+        pegRate *= scale;
+        lastBreakShadow *= scale;
+        edgeOwedLocal *= scale;
+        edgeBoughtLocal *= scale;
+        lastShadowLog += Math.log(scale);
     }
 
 }
