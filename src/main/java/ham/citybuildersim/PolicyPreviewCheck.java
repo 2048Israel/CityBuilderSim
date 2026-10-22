@@ -118,12 +118,23 @@ public class PolicyPreviewCheck {
      * the pool back (204 claimants at month 61, 254 in section 7), the same
      * remedy as 0.7.55's, for the same reason: the condition is a pool that
      * the city's businesses have not hired empty.
+     *
+     * THE D$ HELD SINCE AN1, where the float moved it. With the goods struck
+     * at a D$ that follows the D$ slowly the city's rate ends the five years
+     * at 0.87 D$ a US$ (1.34 on main, where the prices chased it up), imports are
+     * cheaper, and the city hires its pool empty again: 4,990 people, 0 on EI
+     * and 46 openings at month 61 (4,634, 208 on EI and 1 opening on main).
+     * This fixture measures the Policy tab's previews, not the currency, so
+     * the rate is held where the founding leaves it: 4,622 people and 197 on
+     * EI at month 61.
      */
     static Game city(Path root) {
         GameFiles files = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy"));
         Game g = new Game(files);
         quietly(() -> {
             g.run();
+            // AN1 (2026-10-22): the D$ is held (see above); the reload twin of section 5 runs no month, so no side of it floats.
+            g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);

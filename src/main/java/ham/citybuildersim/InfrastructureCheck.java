@@ -296,6 +296,16 @@ public class InfrastructureCheck {
         Game without = new Game(files);
         without.loadGameSave(2);
 
+        // AN1 (2026-10-22): both twins hold the D$ the save carried. A pin is not saved, so the saved city above
+        // floats and each twin is pinned after its load; they differ by the two roads alone. Unpinned they float
+        // apart (the road city's rate 1.03 -> 4.25 in the 60 months, the other's 0.93: the road city imports its
+        // materials), and the pair stopped isolating roads: the city that built nothing shed its load by itself
+        // (376 of 400 used, 70.3% through) while the road city grew into its capacity (3,718 of 2,800, 62.8%),
+        // so "cleared the jam" read false. This section measures roads, not the currency (pinned: 100.0%
+        // through with roads, 69.7% without).
+        withRoads.getForeignAccounts().pinRate(withRoads.getForeignAccounts().getRate());
+        without.getForeignAccounts().pinRate(without.getForeignAccounts().getRate());
+
         double capacityBefore = withRoads.getInfrastructureManager().getCapacity();
 
         /*
