@@ -66,7 +66,8 @@ The D$ is now a level, struck every month:
 | 1 the model | Sonnet 5.5 xhigh | PriceIndex's capped parity, the float, Game's wiring and seed, every caller made to compile and its harness restated | The defence's size, twice (§4): "as today" fed a held 3% dial 45% a year. The treasury's dealing kept since the last reprice (`dealtSinceReprice`, slot 70; the slice had found the gap and reported it), the founders' dollars forgotten (`forgetDealing()`). A local in `PriceIndex.relink()` named like a method, renamed. |
 | 1b the restatement | Sonnet 5.5 xhigh | CurrencyCheck and ForeignCheck restated to the lean and the pending dealing, under the gate's two kinds; the table of §6 | CurrencyCheck 4's sale: the slice kept main's label over a changed measurement; restored as on main and left red, a call (XR1-C ★1). |
 | 2 the harness | Sonnet 5.5 xhigh | ExchangeRateCheck 0-9, HistorySave's fxFair and fxMarket, the playtest's D$ line, the ensemble's market seed | Nothing: the half-life pooled over five seeds (one path's sampling error is about 10%) is right, and each path is printed. |
-| 3 the screen | Sonnet 5.5 xhigh | Trade › The currency as board 1; SaveFileCheck's fund fixture re-caused | (to fill) |
+| 3 the screen | Sonnet 5.5 xhigh | Trade › The currency as board 1; SaveFileCheck's fund fixture re-caused (a share somebody stands bid for) | Nothing in the code; the screen is not checked by eye here (XR1-C). |
+| 4 the suite's reds | Sonnet 5.5 xhigh | the twelve harnesses XR1 turned red, diagnosed one by one (§5) | HealthCheck's comment made exact (a pin is not saved: the twins float); L1 and L2 written by me from its evidence, its pin of AutoBuildCheck's reload twin kept now that the ring is saved |
 | mine | Opus | the design, the month's order, the save format, the version, the notes | - |
 
 ## 3. Found on the way: the float spirals
@@ -147,7 +148,34 @@ amount (CurrencyCheck 4 is red on it, §6).
 
 ## 5. The checks, the trace and the ensemble
 
-**The suite** (`Batch check.bat --maps`, on 15790302): SUITE_LINE
+**The suite** (`Batch check.bat --maps`, on 15790302): 127 harnesses in
+795 s, **111 passed, 16 failed**, the maps regenerated, Stale's two firm
+findings fixed after it (README's count, a file named without its path).
+The twelve reds outside the batch's own (NewGameCheck, ZoningCheck,
+AutoBuildCheck, CentralBankCheck, DenominationCheck, PopulationCheck,
+HealthCheck, ScaleCheck, SectorBooksCheck, CrimeCheck, RefineryCheck,
+WellCheck) are all green on main (d2869a5, each built from main's sources and
+run alone in a scratch folder), so XR1 caused every one.
+
+| harness | kind | the cause | now |
+|---|---|---|---|
+| NewGameCheck 11 | fixture | the D$ went 1.00 to 0.77 in its 12-month wait, which put the bond gap inside a coupon-step tooth (overshoot $682k, bound $112k) | pinned after founding; green, over by $7.32k |
+| ZoningCheck 8 | fixture | the D$ at 0.72 in two years, so the farm no longer paid | pinned in `city()`; green |
+| AutoBuildCheck | fixture, and a latent bug | the decades city at 4.2 with a 19% move in month 609 placed no orders; its reload twin parted at month 610 because Game's year of rates was never saved | pinned in `decades()` and its twin; the ring now saved (`DataSave.rateHistory`, SaveFileCheck asserts it); green |
+| CentralBankCheck | **the spiral** | "its last year is within a full miss of the target, no spiral": Very strict ends at 8.26% against 2% +/- 5 (Standard 9.02%; 14-17% a year over 240 months); pinned it is green | **red, on Jerus's word** |
+| DenominationCheck | a latent bug | an order costing exactly its payer's cash left 2.84e-14 after a hundredfold reform, borrowed as a bank loan of nothing, which forked the twin at +8 months; the bus town's line a fixture | `Game.buildFor()` borrows nothing under `SHORTFALL_DUST` of the cost; the bus towns pinned; green |
+| PopulationCheck | fixture | the played city at 602 of its 986 with no arrivals | pinned in `play()`; green |
+| HealthCheck | two fixture, one **a call** | the two "fees 0 + premium" lines: the D$ moved under the paid city; the hunger line ("the dear city is no hungrier than the free one by more than the price of care") is +11.5 points against 5, and +11.5 on main with the same pin (+2.4 on plain main): it held only while the D$ glided | the paid city pinned while it is built; the hunger line **red, XR1-C ★3** |
+| ScaleCheck | fixture | the playtest city at month 600 is in the spiral (money past 1e18; `HistorySave.round2` saturates past 9.2e16) | pinned before `playtestCity`, FREE_FIXTURE_MONTHS re-scanned to 622 (621-624 pass); green |
+| SectorBooksCheck | **a harness gap** | "imports by good" leaves out the named imported services (`bookImportedService()`: Consumables, Shuttle tankers), which the statement's imports hold; the gap each month is the Consumables line exactly; it shows when Wood Products has a works with consumables standing, which this path reaches and main's did not | **red, XR1-C ★4**: the expected side should add the named services, or the screen should list them |
+| CrimeCheck | fixture | the bare twin 1,586 people and 0.88x Canada | both twins pinned; green |
+| RefineryCheck 14 | fixture | the best unit lost $89.0k a month, so no order | pinned in `plannerTown()`; green |
+| WellCheck 4 | fixture | the freed sites drilled slower | pinned in `town()`; green |
+
+Each pin carries a comment saying XR1's float moved the path and that the
+harness measures something else (`pinRate()` is for exactly that). A pin is
+not saved, so where a fixture compares a city with its reload or with
+twins loaded from its save, the comment says which side floats.
 
 **The trace.** XR1 moves every trace (§3). Both playtests on the final
 model (classes of 07a843a6; slice 3 is the screen and a fixture), run alone
