@@ -1498,6 +1498,17 @@ public class DataSave {
     public double getTradedExchangeRate()          { return tradedExchangeRate; }
 
     /**
+     * The D$ per US$ the city's goods were struck at (AN1, EconomyManager's
+     * THE D$ THE GOODS ARE STRUCK AT): the state the next month's strike
+     * moves from, which neither the D$ nor the traded rate above can give
+     * back. Zero on a save without it: the next strike is at the D$.
+     */
+    private double struckRate;
+
+    public void setStruckRate(double rate) { this.struckRate = rate; }
+    public double getStruckRate()          { return struckRate; }
+
+    /**
      * The currency's unit and how many reforms it has been through.
      *
      * CARRIED, NOT DERIVED, and it has to be: buildings.json is read fresh in
