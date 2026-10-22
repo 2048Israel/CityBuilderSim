@@ -10,7 +10,7 @@ adds its line here, not in `CLAUDE.md`.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; over 16,000 lines, 42 banner sections
+        Game.java                  the month, the seam every system meets at; over 17,000 lines, 43 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
@@ -96,12 +96,19 @@ adds its line here, not in `CLAUDE.md`.
         Rollover.java              the treasury's rollover of what falls due next month (0.7.13): the setting,
                                    the ledger of the surplus it has netted and the record; Game's ROLLING WHAT
                                    FALLS DUE reads the city and books the issues (the project's
-                                   rolling-what-falls-due.md); since 0.8.15 (batch CD2) its own cap
+                                   rolling-what-falls-due.md); since 0.8.17 (batch CD2) its own cap
         Auction.java, AuctionTally.java, CapSetting.java
-                                   the city's paper sold at auction (0.8.15, batch CD2): the bidders, each by
+                                   the city's paper sold at auction (0.8.17, batch CD2): the bidders, each by
                                    its own rule (the households, the firms, the world, the bank), the one
                                    clearing yield, capped or Fill it; the tally of the sales booked (D33);
                                    a cap as the save keeps it (docs/studies/spec-city-debt.md 4; AuctionCheck)
+        YieldCurve.java            the city's curve (0.8.15, batch CD1; docs/studies/spec-city-debt.md 3): a
+                                   discount factor for every month to fifty years, the forward the dial the
+                                   market expects plus the credit spreads, compounded, with the term
+                                   premium less the central bank's compression on top - every payment of a
+                                   piece discounted at its own month's factor, so a piece's yield is solved
+                                   from its price; pure, DebtManager builds it from the city - CurveCheck
+                                   holds it
         TreasuryFund.java          the city's fund (0.7.14): its cash, its two dials (what goes in, and since
                                    0.7.48 what it withdraws), its rule's statics, the
                                    rescues and the bank's preferred offer as a record; the books themselves
@@ -240,6 +247,16 @@ adds its line here, not in `CLAUDE.md`.
                                    furnace, kiln, mill); the takers; one scale, in tonnes (the forest's m3) -
                                    and the strip of cells under it; pure, ui/SectorScreen's OPERATIONS paints
                                    it with the refinery's painter, IndustryViewCheck 12 holds it
+        FreightView.java, TradeBand.java
+                                   the freight screens' figures (0.8.11, batch FR4; spec-freight 6): the
+                                   Freight sector's divisions as its page's strip (All, Haulage, Rail,
+                                   Ports) and Infrastructure › Freight and › Ports draw them - the month's
+                                   tonnes by leg and mode, each division's fleet against its need, its
+                                   quote and its bill - and a works' own strip of how its tonnes move; and
+                                   the Trade tab's freight band split into its legs (the world's margin,
+                                   the long haul by mode, the quay, the city leg), a good's gap a unit and
+                                   the whole over the month's trade; pure, every figure a model getter's -
+                                   FreightViewCheck and TradeBandCheck hold them
         SectorStatements.java      one business's month as formal statements (0.7.74): profit or loss through
                                    gross and operating profit, the classified sheet, the cash flow in three
                                    sections, the changes in equity (since 0.7.75 in columns, share capital and
@@ -318,7 +335,15 @@ adds its line here, not in `CLAUDE.md`.
                                    (EarthTerrain.Camera): the city's plane, the far nodes byte for byte
                                    as before; a latitude-longitude grid, the planet's picture's; the
                                    globe's, its forest dithered from a fixed latitude-longitude grid
-                                   (GlobeCheck)
+                                   (GlobeCheck); and since 0.8.12 (batch EG1, docs/studies/
+                                   spec-earth2-terrain.md 8.5) oil and iron where the geology says: oil's
+                                   weight a province's known petroleum a km2 against the Earth's mean
+                                   (with an allowance where none is known, and a hand table for the
+                                   provinces the USGS left at nought), iron's a shield's, a tenth of its
+                                   class's elsewhere and twenty in a recorded iron district
+                                   (Geology.multiplierAt()), the Sydney coalfield patched into its basin,
+                                   an Earth field wider and fewer, a cluster kept on its province's ground;
+                                   a generated world as before (EarthDepositsCheck)
         EarthSite.java             founding a city on the real Earth (0.7.121, batch E4; spec-earth.md 2
                                    and 6): whether the game has the Earth's data (gameData(), the file at
                                    EarthData.DATA_FILE, which is not in git - data/ is ignored; since
@@ -409,6 +434,16 @@ adds its line here, not in `CLAUDE.md`.
                                    ground (InterchangeGround), access roads from every yard, sea
                                    terminal and Truck Depot, and gravel drawn grey; since 0.8.8 (batch
                                    FR5) the trucks' routes (CityMap.truckRoutes(), accessRoutesIn());
+                                   since 0.8.14 (batch CL3) each district's log of its count changes month
+                                   by month, kept in the sidecar (FORMAT 9), its plan placing them in the
+                                   order they came, and since 0.8.16 (batch FX6) its ground dated from the
+                                   land's own records, so nothing that stands moves; since 0.8.18 (batch
+                                   FX5) the railway's corners and the yards' ladders as curves the trains
+                                   run along (TrackCurves), trains their real length, yards as long as a
+                                   unit train along their line and drawn whole across tiles, one junction a
+                                   crossing, and "Unmade street" for the legend's track (FORMAT 10); since
+                                   0.8.20 (batch CL4) the four avenues and the curved streets drawn as
+                                   smooth bands (TileRaster's THE AVENUES, THE CURVES);
                                    nothing in the model reads it - MapCheck holds it (15 the
                                    materials), RailDrawCheck and JunctionCheck the drawing
         MiniMapFrame.java          the minimap's arithmetic (0.7.134, batch MM2; docs/studies/spec-globe.md
@@ -429,7 +464,10 @@ adds its line here, not in `CLAUDE.md`.
                                    laid toward the gateway, its gateway arm first, the bearing in the
                                    sidecar (FORMAT 8), and the main line from the gateway to the
                                    freight station (the yard nearest it), double with a Freight Line -
-                                   GatewayCheck and MainLineCheck hold them
+                                   GatewayCheck and MainLineCheck hold them; since 0.8.18 (batch FX5) each
+                                   yard laid along its line as long as a unit train where the ground allows
+                                   (YARD_LONG), across a cell's ring street, and a station alone laying its
+                                   main line (MainLineCheck)
         Gateways.java              the land's offing (0.8.1, batch FR0; spec-freight 4.1): the bearing
                                    with the longest run of land from the founding site, ties by its
                                    hash; on the Earth toward the nearest larger place along land; none
@@ -443,7 +481,25 @@ adds its line here, not in `CLAUDE.md`.
                                    cell's streets sized to what opens it, since 0.7.92 the outer
                                    kinds on industry's leftover ground when no cell is left, since
                                    0.7.97 the refinery's units first of industry in touching cells (one
-                                   campus) - PlanCheck holds it
+                                   campus); since 0.8.13 (batch CL2) a homes cell's streets one of three
+                                   layouts by a hash of its place (the comb, dropped crossings, brick);
+                                   since 0.8.14 (batch CL3) a district with a log planned in the order its
+                                   buildings came (THE ORDER OF ARRIVAL), so what is placed never moves,
+                                   and since 0.8.16 (batch FX6) on its ground as bought, month by month
+                                   (THE GROUND BOUGHT); since 0.8.20 (batch CL4) four avenues at 45 degrees
+                                   from the founding site, laid as each cell opens, and the curves - far
+                                   crescents and the streets along a cut, drawn smooth (StreetCurves) -
+                                   PlanCheck holds it
+        TrackCurves.java, StreetCurves.java
+                                   the map's curves as one geometry (0.8.18, batch FX5; 0.8.20, batch
+                                   CL4): a polyline's corners rounded with arcs - the railway's bends and
+                                   its yards' S-curve ladders, which the trains' routes run along and the
+                                   tiles draw, and the highways' 45-degree joints - and a street's smooth
+                                   line from the plots a cut lays it on, simplified and rounded with
+                                   TrackCurves, with the plots its band reaches, which the district plan
+                                   keeps free and the painter draws across: one geometry read by both
+                                   (FX3's rule); pure - RailDrawCheck 25 and 26, MapCheck 9 and PlanCheck 14
+                                   hold them
         CityShore.java, SeaRoutes.java, ShipShapes.java
                                    the map at the water (0.7.97): the sea terminals, tank farms and the
                                    reserve's tanks laid once on the shore, a terminal by water that opens
@@ -509,17 +565,29 @@ adds its line here, not in `CLAUDE.md`.
                                    the staged set and the tray), and MiniMap.java (the minimap, 0.7.134: a
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
-                                   arithmetic). The model never imports it.
-        *Check.java                119 harnesses, each a main() with static helpers
+                                   arithmetic), and CapChips.java (0.8.17, batch CD2: the highest yield a
+                                   sale takes as three chips and a yield box - fair plus a point, a yield
+                                   named, or Fill it - one for each cap: Borrow's, the rollover's,
+                                   automatic building's and the build screen's funding card's). The model
+                                   never imports it.
+        *Check.java                126 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under
                                    -Dcbs.timing=soft a figure over its budget says SOFT and is not counted, so
                                    two batches' suites check side by side; TimingCheck holds it
+        TempDirs.java              the one place a harness or a scratch city gets a temporary folder from
+                                   (batch TD1, 2026-10-21): one folder per JVM under
+                                   <java.io.tmpdir>/citybuildersim-tmp/<pid>, deleted by a shutdown hook
+                                   when the JVM exits, and the next JVM's first call sweeping the folders
+                                   of processes that are gone; in place of Files.createTempDirectory,
+                                   whose folders nothing deleted (37 GB of the PC's disk)
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103);
                                    since 0.7.139 it says what childcare it stands at m1,000 to m4,000, and
-                                   -Dplaytest.budget=N prints the treasury's month line by line
+                                   -Dplaytest.budget=N prints the treasury's month line by line; since
+                                   0.8.14 (batch CL3) its layout watch: how many boxes the map moved
+                                   between month pairs, and where industry and the homes stand
         tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
