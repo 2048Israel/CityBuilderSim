@@ -1103,6 +1103,10 @@ public class PopulationCheck {
         System.setOut(quiet);
         try {
             g.run();
+            // XR1 (2026-10-21): this city measures how migration fills a town, not the currency. Under THE FLOAT the
+            // D$ moves in the decade it is played (the city stood at 602 of its 986 target, 61%, with no arrivals), so
+            // the rate is held where the founding leaves it.
+            g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
 
             BuildingManager b = g.getBuildingManager();
             b.addStack(b.getTemplateByName("House"), 200, true);

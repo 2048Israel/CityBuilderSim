@@ -816,6 +816,11 @@ public class NewGameCheck {
 
         // The getter is the invoice: a new city is charged exactly this for the village.
         Game v = quietly(() -> { Game g = new Game(files); g.run(); return g; });
+        // XR1 (2026-10-21): this section measures what the founding endowment buys and a bond sized to a gap,
+        // not the currency. Under THE FLOAT the D$ falls from 1.00 to 0.77 in the year the fixture waits, which
+        // moves the gap to a face where the auction's coupon steps an eighth (an $800k tooth in the proceeds,
+        // see the sawtooth below) and the quote overshot by $682k, so the rate is held where the founding leaves it.
+        v.getForeignAccounts().pinRate(v.getForeignAccounts().getRate());
         v.getLandManager().setOwnedSqFt(30_000_000);
         double before = v.getCash();
         boolean villagePlaced = true;

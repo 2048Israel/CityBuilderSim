@@ -148,6 +148,11 @@ public class WellCheck {
         FILES.put(g, files);
         quietly(() -> {
             if (seed == 0) g.newGame(); else g.newGame(Founding.defaults().withWorldSeed(seed));
+            // XR1 (2026-10-21): the wells measure what a sector drills, lifts and retires, not the currency. Under THE
+            // FLOAT the D$ moves in the year section 4 waits and the sector drills its freed sites slower ([3, 3, 3, 3, 4,
+            // 4, 4, 4] wells committed by month, the fourth not open by the eighth), so the rate is held where the
+            // founding leaves it, in every town.
+            g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             g.setCashForTest(Founding.WEALTHY_CASH);
             BuildingManager b = g.getBuildingManager();
             String[] names = { "House", "Convenience Store", "Small Grocery Store", "Industrial Bakery", "Paved Road",

@@ -1098,6 +1098,16 @@ public class SaveFileCheck {
         same("...beside the rest of the foreign accounts, which always did",
                 abroadBack.getForeignAccounts().getLifetimeRevaluation(),
                 abroad.getForeignAccounts().getLifetimeRevaluation());
+        // ...and the ring of twelve rates the year's depreciation is read off inside the month (XR1), a
+        // flow: Game.yearlyDepreciation(), which the hot money's run reads before the month writes its own
+        // slot. Read between months it is the slot just written, so the ring itself is compared.
+        double[] ring = abroad.rateHistoryToSave(), ringBack = abroadBack.rateHistoryToSave();
+        double lowest = Double.MAX_VALUE, highest = 0;
+        for (int k = 0; k < 12; k++) { lowest = Math.min(lowest, ring[k]); highest = Math.max(highest, ring[k]); }
+        assertTrue("fixture: the city has a full year of rates, and the D$ moved over it",
+                ring[12] == 12 && highest > lowest * (1 + 1e-6));
+        assertTrue("the year of rates reloads, so a run on the currency fires in the loaded city as in its original",
+                java.util.Arrays.equals(ring, ringBack));
 
         /* ============ 13. AND NOTHING READS ZERO ON A FRESHLY LOADED CITY ============
 

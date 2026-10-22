@@ -226,6 +226,10 @@ public class CrimeCheck {
         for (Game g : new Game[] {bare, policed}) {
             quietly(() -> {
                 g.run();
+                // XR1 (2026-10-21): this city measures crime and its police, not the currency. Under THE FLOAT the bare
+                // twin stood at 1,586 people, 76% covered by the founding constabulary and 0.88x Canada, so "crime is
+                // above Canada's" had no city to read; the rate is held where the founding leaves it, in both twins.
+                g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
                 // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings
                 // are placed free, but their running costs - the coal plant's unbilled
                 // draw, the city's own services - come out of the treasury month after

@@ -1151,6 +1151,12 @@ public class DataSave {
     public void setForeignAccounts(double[] state) { this.foreignAccounts = state; }
     public double[] getForeignAccounts()           { return foreignAccounts; }
 
+    /** Game's ring of the last twelve exchange rates and how full it is (XR1): the year's depreciation the hot money reads. */
+    private double[] rateHistory;
+
+    public void setRateHistory(double[] ring) { this.rateHistory = ring; }
+    public double[] getRateHistory()          { return rateHistory; }
+
     /**
      * The central bank's balance sheet (0.7.0), under its own key: the two
      * advances, the paper it holds, reserves and currency, the loss it

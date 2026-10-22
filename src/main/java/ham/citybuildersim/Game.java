@@ -7718,7 +7718,16 @@ public class Game {
 
         double shortfall = totalCost - payer.getCash();
 
-        if (shortfall > 0) {
+        /*
+         * DUST IS NOT A SHORTFALL (XR1, found by DenominationCheck). An order
+         * sized to the payer's cash costs exactly that cash, and the
+         * subtraction leaves nothing - or, in another unit, a rounding error:
+         * after a hundredfold reform a Diner's order left 2.84e-14, which was
+         * borrowed, a bank loan of nothing that forked the reformed city from
+         * its twin eight months on. A shortfall under a billionth of the cost
+         * is the arithmetic's, not the payer's, and is not borrowed.
+         */
+        if (shortfall > SHORTFALL_DUST * Math.max(1, totalCost)) {
             if (!payer.canBorrow(shortfall)) {
                 return false;
             }
@@ -12191,9 +12200,36 @@ public class Game {
 
     public CapitalFlows getCapitalFlows() { return hotMoney; }
 
-    /** The rate a year ago, for spotting a run. Twelve months, kept as a ring. */
+    /** The rate a year ago, for spotting a run. Twelve months, kept as a ring; saved since XR1 (see rateHistoryToSave()). */
     private final double[] rateHistory = new double[12];
     private int rateHistoryFilled;
+
+    /** A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. */
+    static final double SHORTFALL_DUST = 1e-9;
+
+    /**
+     * The ring and how full it is, for the save (XR1, found by AutoBuildCheck's
+     * reload twin): a FLOW, twelve months of rates the state a month ended in
+     * cannot give back. Unsaved, a loaded city read yearlyDepreciation() as 0
+     * for a year, so the hot money's run on a falling currency (CapitalFlows)
+     * never fired in it while it did in the city it was saved from - a fork
+     * nobody saw while the D$ glided at 1.2% a year.
+     */
+    double[] rateHistoryToSave() {
+        double[] out = new double[13];
+        System.arraycopy(rateHistory, 0, out, 0, 12);
+        out[12] = rateHistoryFilled;
+        return out;
+    }
+
+    /** ...and back: an array of any other length (an older save) leaves the ring empty, as it always loaded. */
+    private void restoreRateHistory(double[] saved) {
+        java.util.Arrays.fill(rateHistory, 0);
+        rateHistoryFilled = 0;
+        if (saved == null || saved.length != 13) return;
+        System.arraycopy(saved, 0, rateHistory, 0, 12);
+        rateHistoryFilled = (int) Math.max(0, Math.min(12, Math.round(saved[12])));
+    }
 
     /** How far the currency has fallen over the last year, as a share. */
     public double yearlyDepreciation() {
@@ -12695,6 +12731,7 @@ public class Game {
         dataSave.setHousingOccupancy(new double[]{
                 getSectors().realEstate().getOccupiedHomes() });
         dataSave.setForeignAccounts(foreign.toSaveArray());
+        dataSave.setRateHistory(rateHistoryToSave());
         dataSave.setCentralBank(centralBank.toSaveArray());
         dataSave.setTreasuryArrears(arrears.keySet().toArray(new String[0]),
                 arrears.values().stream().mapToDouble(Double::doubleValue).toArray());
@@ -15584,6 +15621,7 @@ public class Game {
             }
             economyManager.setBankTax(loaded.getBankTaxCharged());
             foreign.restore(loaded.getForeignAccounts());
+            restoreRateHistory(loaded.getRateHistory());
             /*
              * AN OLDER QUOTE WAS PRICED IN LOCAL MONEY (0.7.6), and it is
              * read as dollars at the rate of the day it is loaded - which is
