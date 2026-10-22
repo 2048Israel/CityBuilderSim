@@ -77,7 +77,7 @@ import java.util.List;
  *  24. (batch FR7 slice 3) a siding's loading shed: a plot marked M_SHED beside
  *      a works is drawn with a block in TRANSPORT's fill over the track's end;
  *      an unmarked track plot is not.
- *  25. (batch FX5, 0.8.15; red before the curves) track turning a corner is
+ *  25. (batch FX5, 0.8.18; red before the curves) track turning a corner is
  *      drawn as a curve: an L of single track, its bend built by
  *      TrackCurves.bends() as the map builds it, has BALLAST, a sleeper or
  *      STEEL on the arc's middle, ground where the old L drew its corner, no

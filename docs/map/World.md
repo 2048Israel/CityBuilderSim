@@ -1,6 +1,6 @@
-# World.java - 2,027 lines · 108 methods · 97 constants · model
+# World.java - 2,028 lines · 108 methods · 97 constants · model
 
-`ham/citybuildersim/World.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/World.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and river, and the fields of the seven resources - every one of them a pure function of one seed, or since 0.7.115 of a key naming the real Earth round a spot (EarthTerrain).
 > 
@@ -88,8 +88,8 @@
 | 994 | THE FOUNDING LAKE AND RIVER |
 | 1108 | THE TERRAIN, A PLOT, A TILE OR A REGION AT A TIME |
 | 1453 | THE DEPOSITS |
-| 1614 | FEWER AND BIGGER DEPOSITS: THE POOLS AND THEIR CLUSTERS (0.7.99; the |
-| 1682 | · EG1's counters: how often the Earth rules fire (they feed no draw) |
+| 1615 | FEWER AND BIGGER DEPOSITS: THE POOLS AND THEIR CLUSTERS (0.7.99; the |
+| 1683 | · EG1's counters: how often the Earth rules fire (they feed no draw) |
 
 ## Enum constants
 
@@ -197,8 +197,8 @@
 | 1153 | `World.SCRATCH` | `ThreadLocal.withInitial(TileScratch : : new)` |  |
 | 1295 | `World.LineScratch.CORNERS` | `64` | The corners it keeps: 64 slots, picked by the top six bits of the corner's hash. |
 | 1312 | `World.LINE_SCRATCH` | `ThreadLocal.withInitial(LineScratch : : new)` | Each thread's LineScratch, made on its first line. |
-| 1620 | `World.POOL_SIDE` | `new int [ Resource.values().length ]` | Each resource's pool side in cells, in Resource's order (poolCells()). |
-| 1673 | `World.NO_POOL` | `new Pool(new long [ 0 ], new long [ 0 ], new int [ 0 ], new double [ 0 ], 0, 0)` | The pool of a place whose land cells hold no old draw of the resource: no field, no tonnes. |
+| 1621 | `World.POOL_SIDE` | `new int [ Resource.values().length ]` | Each resource's pool side in cells, in Resource's order (poolCells()). |
+| 1674 | `World.NO_POOL` | `new Pool(new long [ 0 ], new long [ 0 ], new int [ 0 ], new double [ 0 ], 0, 0)` | The pool of a place whose land cells hold no old draw of the resource: no field, no tonnes. |
 
 ## Fields (state)
 
@@ -225,21 +225,21 @@
 | 1296 | `final long[] cornerX` |  |
 | 1297 | `final boolean[] cornerSet` |  |
 | 1298 | `final double[][] cornerV` |  |
-| 1656 | `final long[] xs, ys` |  |
-| 1657 | `final int[] sites` |  |
-| 1658 | `final double[] amounts` |  |
-| 1659 | `final double total` |  |
-| 1660 | `final long old` |  |
-| 1676 | `private final Map<Long, Pool> pools` | The pools drawn, kept: by resource and place, the last POOLS_KEPT asked for. |
-| 1684 | `private final AtomicLong centresByWeight` |  |
-| 1685 | `private final AtomicLong fieldRedraws` |  |
-| 1992 | `private double[] totals` | The totals once computed (0.7.57): what every city founded on this world stores. |
+| 1657 | `final long[] xs, ys` |  |
+| 1658 | `final int[] sites` |  |
+| 1659 | `final double[] amounts` |  |
+| 1660 | `final double total` |  |
+| 1661 | `final long old` |  |
+| 1677 | `private final Map<Long, Pool> pools` | The pools drawn, kept: by resource and place, the last POOLS_KEPT asked for. |
+| 1685 | `private final AtomicLong centresByWeight` |  |
+| 1686 | `private final AtomicLong fieldRedraws` |  |
+| 1993 | `private double[] totals` | The totals once computed (0.7.57): what every city founded on this world stores. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 1954 | **type** `public final class World` | The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and river, and the fields of the seven resources - every one of them a pure ... |
+| 74 | 1955 | **type** `public final class World` | The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and river, and the fields of the seven resources - every one of them a pure ... |
 
 ### THE GRID (lines 76-103)
 
@@ -364,7 +364,7 @@
 | 1398 | 24 | `public void regionTerrain(long x0, long y0, int stride, int n, byte[] out)` | A region's ground at a stride, for the far view (spec-land 2.6, L2): n x n pixels from plot (x0, y0), each `stride` plots wide, classed at its centre (out[py x n + px]). |
 | 1424 | 28 | `private void regionOctave(long field, int k, long x0, long y0, int stride, int n, double amp, double[] acc)` | Adds amp x one octave over a region's pixel centres, or amp x its mean, 0.5, when the octave is no wider than a pixel. |
 
-### THE DEPOSITS (lines 1453-1613)
+### THE DEPOSITS (lines 1453-1614)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -373,54 +373,54 @@
 | 1470 | 17 | `static long poisson(long h, double m)` | A Poisson count from a hash: by inversion for a small mean, a rounded normal above POISSON_NORMAL_ABOVE. |
 | 1489 | 3 | `private long cellHash(int cell, Resource r)` | A cell's stream for a resource. |
 | 1494 | 1 | `private double landKm2(int cell)` | A cell's land, in square kilometres: its land share times its area. |
-| 1504 | 1 | `private double fieldKm2(int cell, Resource r)` | The ground a resource's fields are drawn on in a cell, km2: its land (landKm2()) on a generated world; on Earth (0.7.117, batch E3; spec-earth 4) its field land, the land at each of the cells pass's points times its p... |
-| 1507 | 4 | `double cellFieldShare(int cell, Resource r)` | A cell's field land for a resource as a share of its area (0.7.117): its land share on a generated world, on Earth EarthTerrain.cellFieldLand() - EarthTerrainCheck's door. |
-| 1513 | 1 | `public Geology geology()` | An Earth world's geology (0.7.117): its data's provinces, classes and multipliers; null on a generated world. |
-| 1516 | 1 | `public int provinceAt(long x, long y)` | The province under a plot's centre on Earth, its row in the data (0 for none); 0 on a generated world (0.7.117). |
-| 1519 | 1 | `public Geology.Kind geologyAt(long x, long y)` | The class of the ground under a plot's centre on Earth (0.7.117; Geology.Kind.OTHER where no province is); null on a generated world - what a field's type leans on (Deposit.type()). |
-| 1522 | 4 | `public long cellFieldCount(int cell, Resource r)` | How many fields of a resource a cell lists (fieldsInCell(); since 0.7.99 the fewer and bigger ones). |
-| 1528 | 4 | `public long legacyCellFieldCount(int cell, Resource r)` | ...and how many of the old world's it held (to 0.7.98): a Poisson count, its mean the resource's density times the cell's land - what its total is drawn from, and what legacyFieldsInCell() lists. |
-| 1533 | 4 | `private long countOf(int cell, Resource r)` |  |
-| 1546 | 4 | `public double cellTotal(int cell, Resource r)` | What a cell holds of a resource, in whole tonnes (forest, whole cubic metres): its old count x MEAN_SITES x the amount a site x the cell's richness, drawn without drawing a field. |
-| 1551 | 10 | `private double totalOf(int cell, Resource r)` |  |
-| 1563 | 3 | `private double richnessOf(int cell, Resource r)` | A cell's richness for a resource, RICHNESS_MIN to + RICHNESS_SPAN: the draw its total is struck at (totalOf()), and since 0.7.99 the richness of a cluster standing in it. |
-| 1575 | 4 | `public List<Deposit> legacyFieldsInCell(int cell, Resource r)` | A cell's fields of a resource as the old world drew them (to 0.7.98), from the cell's own stream: each one's centre (drawn again, up to SEA_REDRAWS times, while it is in the sea - but oil's), its sites, and its share ... |
-| 1580 | 33 | `private List<Deposit> legacyFieldsOf(int cell, Resource r)` |  |
+| 1505 | 1 | `private double fieldKm2(int cell, Resource r)` | The ground a resource's fields are drawn on in a cell, km2: its land (landKm2()) on a generated world; on Earth (0.7.117, batch E3; spec-earth 4) its field land, the land at each of the cells pass's points times its p... |
+| 1508 | 4 | `double cellFieldShare(int cell, Resource r)` | A cell's field land for a resource as a share of its area (0.7.117): its land share on a generated world, on Earth EarthTerrain.cellFieldLand() - EarthTerrainCheck's door. |
+| 1514 | 1 | `public Geology geology()` | An Earth world's geology (0.7.117): its data's provinces, classes and multipliers; null on a generated world. |
+| 1517 | 1 | `public int provinceAt(long x, long y)` | The province under a plot's centre on Earth, its row in the data (0 for none); 0 on a generated world (0.7.117). |
+| 1520 | 1 | `public Geology.Kind geologyAt(long x, long y)` | The class of the ground under a plot's centre on Earth (0.7.117; Geology.Kind.OTHER where no province is); null on a generated world - what a field's type leans on (Deposit.type()). |
+| 1523 | 4 | `public long cellFieldCount(int cell, Resource r)` | How many fields of a resource a cell lists (fieldsInCell(); since 0.7.99 the fewer and bigger ones). |
+| 1529 | 4 | `public long legacyCellFieldCount(int cell, Resource r)` | ...and how many of the old world's it held (to 0.7.98): a Poisson count, its mean the resource's density times the cell's land - what its total is drawn from, and what legacyFieldsInCell() lists. |
+| 1534 | 4 | `private long countOf(int cell, Resource r)` |  |
+| 1547 | 4 | `public double cellTotal(int cell, Resource r)` | What a cell holds of a resource, in whole tonnes (forest, whole cubic metres): its old count x MEAN_SITES x the amount a site x the cell's richness, drawn without drawing a field. |
+| 1552 | 10 | `private double totalOf(int cell, Resource r)` |  |
+| 1564 | 3 | `private double richnessOf(int cell, Resource r)` | A cell's richness for a resource, RICHNESS_MIN to + RICHNESS_SPAN: the draw its total is struck at (totalOf()), and since 0.7.99 the richness of a cluster standing in it. |
+| 1576 | 4 | `public List<Deposit> legacyFieldsInCell(int cell, Resource r)` | A cell's fields of a resource as the old world drew them (to 0.7.98), from the cell's own stream: each one's centre (drawn again, up to SEA_REDRAWS times, while it is in the sea - but oil's), its sites, and its share ... |
+| 1581 | 33 | `private List<Deposit> legacyFieldsOf(int cell, Resource r)` |  |
 
-### FEWER AND BIGGER DEPOSITS: THE POOLS AND THEIR CLUSTERS (0.7.99; the (lines 1614-1681)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1621 | 8 | `static { ... }` |  |
-| 1636 | 1 | `public static int poolCells(Resource r)` | The side of a resource's pool, in cells (0.7.99): the fewest whose square of land holds POOL_CLUSTERS clusters on the mean, POOL_CLUSTERS x CLUSTER_FIELDS x FIELD_SCALE of the old world's fields - iron 2, oil 4, stone... |
-| 1639 | 4 | `public static int poolsOnSide(Resource r)` | A resource's pools on the world's side: CELLS over poolCells(), rounded up (the last a part pool); 0 for forest. |
-| 1650 | 3 | `public static double clusterKm(Resource r)` | A cluster's radius for a resource, in km (0.7.99): the disc that holds CLUSTER_FIELDS fields at the old world's density, sqrt(CLUSTER_FIELDS / (pi x its fields a km2)) - iron 4.0, oil 12.6, stone 17.8, coal 39.9, copp... |
-| 1655 | 16 | **type** `private static final class Pool` | A pool's fields as drawn: each one's centre plot, sites and amount, in the order drawn; the pool's total and its old count. |
-| 1662 | 8 | `Pool(long[] xs, long[] ys, int[] sites, double[] amounts, double total, long old)` _(in World.Pool)_ |  |
-
-### EG1's counters: how often the Earth rules fire (they feed no draw) (lines 1682-2027)
+### FEWER AND BIGGER DEPOSITS: THE POOLS AND THEIR CLUSTERS (0.7.99; the (lines 1615-1682)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1688 | 1 | `long clustersByWeight()` | Clusters whose centre was drawn among its cell's points by their weights, on Earth, since this world began drawing pools (EG1). |
-| 1691 | 1 | `long centreRedraws()` | Times a cluster's centre was drawn again inside its point's square for lying on ground that holds none of the resource (EG1). |
-| 1694 | 1 | `long centresOnNone()` | Clusters whose centre still lay on ground that holds none after SEA_REDRAWS draws again (EG1). |
-| 1697 | 1 | `long fieldRedraws()` | Times a field was drawn again in its cluster's disc for lying on ground that holds none of the resource (EG1). |
-| 1700 | 1 | `long fieldsOnNone()` | Fields that still lay on ground that holds none after SEA_REDRAWS draws again (EG1). |
-| 1703 | 12 | `private Pool pool(Resource r, int px, int py)` | A pool, drawn once and kept: its place in pools (px east, py south, each 0 to poolsOnSide() - 1). |
-| 1717 | 3 | `private long poolHash(Resource r, int px, int py)` | A pool's stream for a resource. |
-| 1722 | 1 | `private int fieldScale()` | How many of the old world's fields one field stands for in this world: FIELD_SCALE on a generated world, FIELD_SCALE x EARTH_FIELD_SCALE on Earth (EG1). |
-| 1725 | 5 | `static int atLeastOne(long count, int per, double u)` | `count` over `per`, its fraction a draw (u under it adds one), at least one when `count` is not nought: how many fields N old ones make, and how many clusters those fields lie in. |
-| 1746 | 132 | `private Pool drawPool(Resource r, int px, int py)` | Draws a pool (0.7.99): its cells' old counts and totals, row by row; its fields, N / fieldScale() of the old count's N; its clusters, one for every CLUSTER_FIELDS fields, each centred in a cell drawn as its share of t... |
-| 1880 | 5 | `public static int[] poolOf(int cell, Resource r)` | The pool holding a cell, as {px, py}, for a resource; null for forest or off the world. |
-| 1887 | 12 | `public double poolTotal(Resource r, int px, int py)` | What a pool shares among its fields: its cells' totals added (cellTotal()), whole tonnes, row by row - without drawing a field. |
-| 1901 | 8 | `public long poolFieldCount(Resource r, int px, int py)` | How many fields a pool holds (fewer and bigger, 0.7.99) - computed from its cells' old counts without drawing them. |
-| 1911 | 13 | `public long poolLegacyCount(Resource r, int px, int py)` | ...and how many of the old world's fields its cells held: their old counts added. |
-| 1926 | 5 | `public long fieldCount(Resource r)` | The fields of a resource the whole world holds (0.7.99): every pool's, from their old counts, without drawing one. |
-| 1933 | 6 | `public long legacyFieldCount(Resource r)` | ...and the old world's: every cell's old count. |
-| 1941 | 15 | `public List<Deposit> poolFields(Resource r, int px, int py)` | A pool's fields, each as the cell its centre is in lists it (fieldsInCell()), in the order the pool drew them; one not found there is left out. |
-| 1964 | 4 | `public List<Deposit> fieldsInCell(int cell, Resource r)` | A cell's fields of a resource (since 0.7.99, FEWER AND BIGGER DEPOSITS): every field of every pool whose clusters reach the cell whose centre plot is in it, pool by pool (north to south, west to east) in the order eac... |
-| 1969 | 21 | `private List<Deposit> fieldsOf(int cell, Resource r)` |  |
-| 1999 | 6 | `public double[] totals()` | The world's totals, computed once and kept (0.7.57): computeTotals()'s figures, a copy - what a city founded or converted on this world stores, so a load needs no pass (spec-land 2.1). |
-| 2013 | 14 | `public double[] computeTotals()` | The world's totals, a resource at a time in Resource's order: every cell's cellTotal(), summed in cell order - one pass over 135,424 cells, about 30 ms, the same every time. |
+| 1622 | 8 | `static { ... }` |  |
+| 1637 | 1 | `public static int poolCells(Resource r)` | The side of a resource's pool, in cells (0.7.99): the fewest whose square of land holds POOL_CLUSTERS clusters on the mean, POOL_CLUSTERS x CLUSTER_FIELDS x FIELD_SCALE of the old world's fields - iron 2, oil 4, stone... |
+| 1640 | 4 | `public static int poolsOnSide(Resource r)` | A resource's pools on the world's side: CELLS over poolCells(), rounded up (the last a part pool); 0 for forest. |
+| 1651 | 3 | `public static double clusterKm(Resource r)` | A cluster's radius for a resource, in km (0.7.99): the disc that holds CLUSTER_FIELDS fields at the old world's density, sqrt(CLUSTER_FIELDS / (pi x its fields a km2)) - iron 4.0, oil 12.6, stone 17.8, coal 39.9, copp... |
+| 1656 | 16 | **type** `private static final class Pool` | A pool's fields as drawn: each one's centre plot, sites and amount, in the order drawn; the pool's total and its old count. |
+| 1663 | 8 | `Pool(long[] xs, long[] ys, int[] sites, double[] amounts, double total, long old)` _(in World.Pool)_ |  |
+
+### EG1's counters: how often the Earth rules fire (they feed no draw) (lines 1683-2028)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1689 | 1 | `long clustersByWeight()` | Clusters whose centre was drawn among its cell's points by their weights, on Earth, since this world began drawing pools (EG1). |
+| 1692 | 1 | `long centreRedraws()` | Times a cluster's centre was drawn again inside its point's square for lying on ground that holds none of the resource (EG1). |
+| 1695 | 1 | `long centresOnNone()` | Clusters whose centre still lay on ground that holds none after SEA_REDRAWS draws again (EG1). |
+| 1698 | 1 | `long fieldRedraws()` | Times a field was drawn again in its cluster's disc for lying on ground that holds none of the resource (EG1). |
+| 1701 | 1 | `long fieldsOnNone()` | Fields that still lay on ground that holds none after SEA_REDRAWS draws again (EG1). |
+| 1704 | 12 | `private Pool pool(Resource r, int px, int py)` | A pool, drawn once and kept: its place in pools (px east, py south, each 0 to poolsOnSide() - 1). |
+| 1718 | 3 | `private long poolHash(Resource r, int px, int py)` | A pool's stream for a resource. |
+| 1723 | 1 | `private int fieldScale()` | How many of the old world's fields one field stands for in this world: FIELD_SCALE on a generated world, FIELD_SCALE x EARTH_FIELD_SCALE on Earth (EG1). |
+| 1726 | 5 | `static int atLeastOne(long count, int per, double u)` | `count` over `per`, its fraction a draw (u under it adds one), at least one when `count` is not nought: how many fields N old ones make, and how many clusters those fields lie in. |
+| 1747 | 132 | `private Pool drawPool(Resource r, int px, int py)` | Draws a pool (0.7.99): its cells' old counts and totals, row by row; its fields, N / fieldScale() of the old count's N; its clusters, one for every CLUSTER_FIELDS fields, each centred in a cell drawn as its share of t... |
+| 1881 | 5 | `public static int[] poolOf(int cell, Resource r)` | The pool holding a cell, as {px, py}, for a resource; null for forest or off the world. |
+| 1888 | 12 | `public double poolTotal(Resource r, int px, int py)` | What a pool shares among its fields: its cells' totals added (cellTotal()), whole tonnes, row by row - without drawing a field. |
+| 1902 | 8 | `public long poolFieldCount(Resource r, int px, int py)` | How many fields a pool holds (fewer and bigger, 0.7.99) - computed from its cells' old counts without drawing them. |
+| 1912 | 13 | `public long poolLegacyCount(Resource r, int px, int py)` | ...and how many of the old world's fields its cells held: their old counts added. |
+| 1927 | 5 | `public long fieldCount(Resource r)` | The fields of a resource the whole world holds (0.7.99): every pool's, from their old counts, without drawing one. |
+| 1934 | 6 | `public long legacyFieldCount(Resource r)` | ...and the old world's: every cell's old count. |
+| 1942 | 15 | `public List<Deposit> poolFields(Resource r, int px, int py)` | A pool's fields, each as the cell its centre is in lists it (fieldsInCell()), in the order the pool drew them; one not found there is left out. |
+| 1965 | 4 | `public List<Deposit> fieldsInCell(int cell, Resource r)` | A cell's fields of a resource (since 0.7.99, FEWER AND BIGGER DEPOSITS): every field of every pool whose clusters reach the cell whose centre plot is in it, pool by pool (north to south, west to east) in the order eac... |
+| 1970 | 21 | `private List<Deposit> fieldsOf(int cell, Resource r)` |  |
+| 2000 | 6 | `public double[] totals()` | The world's totals, computed once and kept (0.7.57): computeTotals()'s figures, a copy - what a city founded or converted on this world stores, so a load needs no pass (spec-land 2.1). |
+| 2014 | 14 | `public double[] computeTotals()` | The world's totals, a resource at a time in Resource's order: every cell's cellTotal(), summed in cell order - one pass over 135,424 cells, about 30 ms, the same every time. |
 

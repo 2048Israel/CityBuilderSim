@@ -7,6 +7,27 @@ cannot reach. The changelog is no longer the project's: since 2026-10-20 it
 is `changelog.md` beside this file, and its blocks that waited here moved
 there.
 
+## 0.8.11 to 0.8.20 - for `claude/todo.md`
+
+- Section 0, under the manual's entry: its headline numbers moved - the build 0.8.20, SAVE_FORMAT 43 (XR1; the
+  oldest loadable 43: older saves are refused), 126 harnesses (127 run with the playtest); 143 buildings and the
+  twenty-four sectors as they were. Pages the manual carries that the range changed: Borrow as an auction, with bills
+  of 1 to 12 months, bonds of 2 to 50 years in lines and the amortizing bond, the cap chips, the term loan and the
+  underwriting spread gone (CD2); the curve from the dial the market expects (CD1); the D$ as a float on parity's
+  trend, Trade › The currency (XR1); the freight screens, Build's Infrastructure and Freight tabs and Policy › Taxes ›
+  Port dues (FR4); the map's avenues, crescents and curves (CL4), rail curves and real-length trains (FX5).
+- What each batch left open is under Pending in QUEUE.md (FR4-C, EG1-C, CL2-C, CL3-C, CD1-C, FX6-C, CD2-C, FX5-C,
+  XR1-C, CL4-C; TD1 left nothing).
+- The docs pass of 2026-10-22 flagged, for a code batch or Jerus (it changes no code):
+  - Government's debt page still names its kinds "Notes", "Serial bonds" and "Term loans"
+    (GovernmentScreen.paperKinds()' strings), where CD2 sells bills, bonds and the amortizing bond - CD6's screens?
+  - Freight's operations page draws Haulage's and the quay's figures twice: FR4's division strip, and below it the
+    ITS OWN FIGURES grid of Freight.ownLines(), which still lists them under the railway - meant, or a leftover?
+  - The suite ran in 800 and 917 s on the PC on 2026-10-22 (no other batch's JVM), against the "about nine minutes" README
+    and CLAUDE.md give; a slower PC that day, or a suite grown by seven harnesses since?
+  - The 2026-10-19 pass's four flags (Freight.getKept(), MapView's legend rows, MapCheck's trackSurplus() labels,
+    BuildingManager's RAIL example) are still open; the Rail build card's owner was FR4's, done.
+
 ## 0.8.4 to 0.8.10 - for `claude/todo.md`
 
 - Section 0, under the manual's entry: its headline numbers moved - the build 0.8.10, SAVE_FORMAT 40 (FR2, the

@@ -1,6 +1,6 @@
 # CopperMining.java - 256 lines · 12 methods · 5 constants · sectors
 
-`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133,
 > batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the

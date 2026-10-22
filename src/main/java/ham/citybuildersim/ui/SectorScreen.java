@@ -5391,6 +5391,7 @@ final class SectorScreen {
      * has one (the world's lorries have none).
      */
     static final class LegBar extends javafx.scene.layout.Pane {
+        /** The bar's height, in pixels: 26. */
         static final double BAND = 26;
         private final List<FreightView.Row> rows;
         private final double scale;

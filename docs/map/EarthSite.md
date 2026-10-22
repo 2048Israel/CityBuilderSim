@@ -1,6 +1,6 @@
 # EarthSite.java - 559 lines · 34 methods · 16 constants · model
 
-`ham/citybuildersim/EarthSite.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthSite.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > A spot on the real Earth as the founding screen weighs it: whether the game has the Earth's data, the place names a player searches, the spot the seed picks, and the founding card - the site the snap finds, the ground within 5 km measured on the world's own plots, the province's deposit multipliers, the nearest iron, and why a spot is refused or warned of.
 > 

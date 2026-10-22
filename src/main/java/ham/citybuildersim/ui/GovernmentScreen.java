@@ -1206,7 +1206,7 @@ final class GovernmentScreen {
                 na.getReserveCrudeSold(),
                 // ...and the fuel duty on the drivers' petrol (0.7.103, Jerus's A7), its own line.
                 na.getFuelDuty(),
-                // ...and the port dues Freight paid on its berths' tonnes (FR3), its own line; the dial's door is FR4's.
+                // ...and the port dues Freight paid on its berths' tonnes (FR3), its own line; the dial's door is Policy › Taxes › Port dues (FR4).
                 na.getPortDues());
     }
 

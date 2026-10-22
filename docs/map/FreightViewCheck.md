@@ -1,6 +1,6 @@
-# FreightViewCheck.java - 715 lines · 26 methods · 2 constants · harnesses
+# FreightViewCheck.java - 716 lines · 26 methods · 2 constants · harnesses
 
-`ham/citybuildersim/FreightViewCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FreightViewCheck.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > FreightView, the model behind the Freight screens, held to the study's
 > board 2 (docs/studies/spec-freight-and-infrastructure.md 6): the city's
@@ -57,21 +57,21 @@
 
 | line | section |
 |---:|---|
-| 118 | THE FIXTURES |
-| 186 | 1. NO FREIGHT |
-| 227 | 2. THE LEGS |
-| 290 | 3. HAULAGE |
-| 333 | 4. RAIL |
-| 375 | 5. PORTS |
-| 460 | 6. THE SHIPPERS |
-| 491 | 7. THE WORKS' STRIP |
+| 119 | THE FIXTURES |
+| 187 | 1. NO FREIGHT |
+| 228 | 2. THE LEGS |
+| 291 | 3. HAULAGE |
+| 334 | 4. RAIL |
+| 376 | 5. PORTS |
+| 461 | 6. THE SHIPPERS |
+| 492 | 7. THE WORKS' STRIP |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 110 | `FreightViewCheck.CENT` | `0.01 / 1000` | A cent, in the game's money: D$0.01, and the money is in D$ thousands. |
-| 116 | `FreightViewCheck.K` | `Ports.Cargo.values().length` |  |
+| 117 | `FreightViewCheck.K` | `Ports.Cargo.values().length` | The kinds of cargo a berth handles: Ports.Cargo's count. |
 
 ## Fields (state)
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 637 | **type** `public class FreightViewCheck` | FreightView, the model behind the Freight screens, held to the study's board 2 (docs/studies/spec-freight-and-infrastructure.md 6): the city's freight this month in legs, and the Haulage, Rail and Ports pages with eac... |
+| 79 | 638 | **type** `public class FreightViewCheck` | FreightView, the model behind the Freight screens, held to the study's board 2 (docs/studies/spec-freight-and-infrastructure.md 6): the city's freight this month in legs, and the Haulage, Rail and Ports pages with eac... |
 | 83 | 5 | `static void quietly(Runnable r)` |  |
 | 89 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 94 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -91,63 +91,63 @@
 | 105 | 3 | `static boolean near(double a, double b)` | Within a rounding: sums the model makes in another order. |
 | 112 | 3 | `static boolean toTheCent(double a, double b)` |  |
 
-### THE FIXTURES (lines 118-185)
+### THE FIXTURES (lines 119-186)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 123 | 8 | `static Game unplayed(String label)` | A founded city that has never been played: no haul has run. |
-| 138 | 11 | `static Game full(String label)` | HomeRailCheck's railed city (HaulageCheck's three iron mines and a pelletising plant, played fourteen months) with two Rail Depots, two Rail Spurs and a Bulk Terminal laid, then a General Cargo Terminal, two Tanker Te... |
-| 151 | 24 | `static String nonFinite(Object o, String path)` | Every double in a record (lists, optionals and nested records included) is finite; the first that is not, named. |
-| 177 | 8 | `static int standing(Game g, Ports.Cargo kind)` | The terminals of a kind standing, counted from the catalogue by the building manager's own quantities. |
+| 124 | 8 | `static Game unplayed(String label)` | A founded city that has never been played: no haul has run. |
+| 139 | 11 | `static Game full(String label)` | HomeRailCheck's railed city (HaulageCheck's three iron mines and a pelletising plant, played fourteen months) with two Rail Depots, two Rail Spurs and a Bulk Terminal laid, then a General Cargo Terminal, two Tanker Te... |
+| 152 | 24 | `static String nonFinite(Object o, String path)` | Every double in a record (lists, optionals and nested records included) is finite; the first that is not, named. |
+| 178 | 8 | `static int standing(Game g, Ports.Cargo kind)` | The terminals of a kind standing, counted from the catalogue by the building manager's own quantities. |
 
-### 1. NO FREIGHT (lines 186-226)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 190 | 36 | `static void noFreight()` |  |
-
-### 2. THE LEGS (lines 227-289)
+### 1. NO FREIGHT (lines 187-227)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 231 | 40 | `static void legs(Game g, View v)` |  |
-| 273 | 16 | `static void lorries()` | ...and a played city with a railway and no berth: the lorries are what the railway left, the sea bar and the ports page are zero. |
+| 191 | 36 | `static void noFreight()` |  |
 
-### 3. HAULAGE (lines 290-332)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 294 | 38 | `static void haulage(Game g, View v)` |  |
-
-### 4. RAIL (lines 333-374)
+### 2. THE LEGS (lines 228-290)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 337 | 37 | `static void rail(Game g, View v)` |  |
+| 232 | 40 | `static void legs(Game g, View v)` |  |
+| 274 | 16 | `static void lorries()` | ...and a played city with a railway and no berth: the lorries are what the railway left, the sea bar and the ports page are zero. |
 
-### 5. PORTS (lines 375-459)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 379 | 74 | `static void ports(Game g, View v)` |  |
-| 454 | 5 | `static double sum(double[] a)` |  |
-
-### 6. THE SHIPPERS (lines 460-490)
+### 3. HAULAGE (lines 291-333)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 464 | 26 | `static void shippers(Game g, View v)` |  |
+| 295 | 38 | `static void haulage(Game g, View v)` |  |
 
-### 7. THE WORKS' STRIP (lines 491-715)
+### 4. RAIL (lines 334-375)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 496 | 5 | `static List<Tonnes> strips(Game g)` | Every Tonnes a city's sectors give, in the sector order. |
-| 503 | 65 | `static void stripSums(Game g, String when)` | The city's strips held to the model's own counts: `when` names the month in the labels. |
-| 570 | 40 | `static void stripSiding(Game g)` | The siding's saving, the rate and the empty strips, in a played city. |
-| 612 | 44 | `static void stripPlant(Game g)` | The pellet plant before and after (spec 3.6), from the model's own tonnes and constants. |
-| 658 | 13 | `static void stripSaved(Game g)` | The strip is saved: reset, restored from the sector's state, the same lines come back. |
-| 673 | 11 | `static void stripNone()` | A city that never hauled: every strip is zero and finite. |
-| 685 | 10 | `static void strip(Game g)` |  |
-| 696 | 19 | `public static void main(String[] args) throws Exception` |  |
+| 338 | 37 | `static void rail(Game g, View v)` |  |
+
+### 5. PORTS (lines 376-460)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 380 | 74 | `static void ports(Game g, View v)` |  |
+| 455 | 5 | `static double sum(double[] a)` |  |
+
+### 6. THE SHIPPERS (lines 461-491)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 465 | 26 | `static void shippers(Game g, View v)` |  |
+
+### 7. THE WORKS' STRIP (lines 492-716)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 497 | 5 | `static List<Tonnes> strips(Game g)` | Every Tonnes a city's sectors give, in the sector order. |
+| 504 | 65 | `static void stripSums(Game g, String when)` | The city's strips held to the model's own counts: `when` names the month in the labels. |
+| 571 | 40 | `static void stripSiding(Game g)` | The siding's saving, the rate and the empty strips, in a played city. |
+| 613 | 44 | `static void stripPlant(Game g)` | The pellet plant before and after (spec 3.6), from the model's own tonnes and constants. |
+| 659 | 13 | `static void stripSaved(Game g)` | The strip is saved: reset, restored from the sector's state, the same lines come back. |
+| 674 | 11 | `static void stripNone()` | A city that never hauled: every strip is zero and finite. |
+| 686 | 10 | `static void strip(Game g)` |  |
+| 697 | 19 | `public static void main(String[] args) throws Exception` |  |
 

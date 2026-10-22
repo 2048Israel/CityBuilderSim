@@ -1,6 +1,6 @@
-# SectorScreen.java - 6,294 lines · 246 methods · 71 constants · interface
+# SectorScreen.java - 6,295 lines · 246 methods · 71 constants · interface
 
-`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > The sector economy: every business in the city as a card, and each one's
 > five pages - what goes in and what comes out, the income statement with
@@ -60,11 +60,11 @@
 | 4720 | · OPERATIONS · THE OIL INDUSTRY (0.7.96) |
 | 5144 | · OPERATIONS · FREIGHT (FR4, 2026-10-19) |
 | 5276 | · ALL |
-| 5467 | · HAULAGE |
-| 5601 | · RAIL |
-| 5658 | · PORTS |
-| 5718 | · THE SHELF (0.7.45) |
-| 5870 | · WHAT IT CHARGES (0.7.45) |
+| 5468 | · HAULAGE |
+| 5602 | · RAIL |
+| 5659 | · PORTS |
+| 5719 | · THE SHELF (0.7.45) |
+| 5871 | · WHAT IT CHARGES (0.7.45) |
 
 ## Constants
 
@@ -133,14 +133,14 @@
 | 5184 | `SectorScreen.FREIGHT_LEGS_INFO` | `"Every tonne that crossed the city's boundary went the long haul by the " + "...` | The legs card's (i). |
 | 5192 | `SectorScreen.FREIGHT_SHIPPERS_INFO` | `"The sectors billed by this division this month, largest bill first: the " + ...` | The shippers card's (i). |
 | 5370 | `SectorScreen.LEG_NAME` | `120` | The width of a leg's name column. |
-| 5394 | `SectorScreen.LegBar.BAND` | `26` |  |
-| 5505 | `SectorScreen.FREIGHT_TRUCKS_INFO` | `"The trucks Haulage owns against the trucks the plant standing asks for to " ...` | Haulage's fleet card's (i). |
-| 5510 | `SectorScreen.FREIGHT_HAULAGE_QUOTE_INFO` | `"What a tonne's city leg costs the shipper.The rule: Haulage's running " + "c...` | Haulage's price card's (i). |
-| 5647 | `SectorScreen.FREIGHT_RAIL_INFO` | `"The wagon sets the railway owns against the sets its track standing needs." ...` | The railway's fleet card's (i). |
-| 5654 | `SectorScreen.FREIGHT_RAIL_QUOTE_INFO` | `"What the railway charges a tonne, as a share of what a lorry charges the " +...` | The railway's price card's (i). |
-| 5681 | `SectorScreen.FREIGHT_PORTS_INFO` | `"The terminals standing by kind, the tonnes each kind handled this month " + ...` | The berths card's (i). |
-| 5815 | `SectorScreen.SHELF_INFO` | `"A basket is one person's groceries for a month.The shelf moves a sixth of th...` | THE SHELF's (i). |
-| 5971 | `SectorScreen.FOLD_PAST` | `6` | The goods a column folds into one row past this many (the shops' and the kitchens' thirteen foods). |
+| 5395 | `SectorScreen.LegBar.BAND` | `26` | The bar's height, in pixels: 26. |
+| 5506 | `SectorScreen.FREIGHT_TRUCKS_INFO` | `"The trucks Haulage owns against the trucks the plant standing asks for to " ...` | Haulage's fleet card's (i). |
+| 5511 | `SectorScreen.FREIGHT_HAULAGE_QUOTE_INFO` | `"What a tonne's city leg costs the shipper.The rule: Haulage's running " + "c...` | Haulage's price card's (i). |
+| 5648 | `SectorScreen.FREIGHT_RAIL_INFO` | `"The wagon sets the railway owns against the sets its track standing needs." ...` | The railway's fleet card's (i). |
+| 5655 | `SectorScreen.FREIGHT_RAIL_QUOTE_INFO` | `"What the railway charges a tonne, as a share of what a lorry charges the " +...` | The railway's price card's (i). |
+| 5682 | `SectorScreen.FREIGHT_PORTS_INFO` | `"The terminals standing by kind, the tonnes each kind handled this month " + ...` | The berths card's (i). |
+| 5816 | `SectorScreen.SHELF_INFO` | `"A basket is one person's groceries for a month.The shelf moves a sixth of th...` | THE SHELF's (i). |
+| 5972 | `SectorScreen.FOLD_PAST` | `6` | The goods a column folds into one row past this many (the shops' and the kitchens' thirteen foods). |
 
 ## Fields (state)
 
@@ -163,17 +163,17 @@
 | 4588 | `private final IndustryView.View view` |  |
 | 4589 | `private double drawnAt` |  |
 | 5196 | `FreightView.Division freightDivision` | The division the Freight sector's Operations page is open on - kept while the game runs, not saved (FR4); InfrastructureScreen's doors may set it before opening the page. |
-| 5395 | `private final List<FreightView.Row> rows` |  |
-| 5396 | `private final double scale` |  |
-| 5397 | `private final Region track` |  |
-| 5398 | `private final List<javafx.scene.shape.Rectangle> blocks` |  |
-| 5399 | `private final List<Label> labels` |  |
+| 5396 | `private final List<FreightView.Row> rows` |  |
+| 5397 | `private final double scale` |  |
+| 5398 | `private final Region track` |  |
+| 5399 | `private final List<javafx.scene.shape.Rectangle> blocks` |  |
+| 5400 | `private final List<Label> labels` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 6249 | **type** `final class SectorScreen` | The sector economy: every business in the city as a card, and each one's five pages - what goes in and what comes out, the income statement with last month beside it, the balance sheet and its owners, cash and credit,... |
+| 46 | 6250 | **type** `final class SectorScreen` | The sector economy: every business in the city as a card, and each one's five pages - what goes in and what comes out, the income statement with last month beside it, the balance sheet and its owners, cash and credit,... |
 | 51 | 1 | `SectorScreen(UserInterface ui)` |  |
 
 ### THE SECTOR ECONOMY. (lines 53-190)
@@ -507,7 +507,7 @@
 | 5246 | 20 | `HBox freightStrip()` | DIVISION, and its four chips: All, Haulage, Rail, Ports, each with the dot of its mode. |
 | 5268 | 7 | `Label freightDoor(String words, FreightView.Division division)` | A door to a division in the accent: "Haulage ›". |
 
-### ALL (lines 5276-5466)
+### ALL (lines 5276-5467)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -518,67 +518,67 @@
 | 5326 | 4 | `static String say(FreightView.Quote q, double value)` | One figure of a quote in its unit. |
 | 5332 | 36 | `VBox freightLegs(FreightView.Legs legs)` | THE CITY'S FREIGHT THIS MONTH, IN LEGS: a bar a leg, its modes in segments, and the key. |
 | 5373 | 13 | `HBox legRow(FreightView.Leg leg, double total, List<FreightView.Row> rows, double scale)` | A leg: its name and tonnes, and its bar. |
-| 5393 | 73 | **type** `static final class LegBar extends javafx.scene.layout.Pane` | A leg's bar: its modes' tonnes end to end to the scale given, each in its mode's colour, hatched where the tonnes are paid abroad, named when the name fits and always in a tooltip, and a door to its division where it ... |
-| 5401 | 39 | `LegBar(List<FreightView.Row> rows, double scale, java.util.function.Consumer<FreightView.Division> door)` _(in SectorScreen.LegBar)_ |  |
-| 5441 | 24 | `protected void layoutChildren()` _(in SectorScreen.LegBar)_ |  |
+| 5393 | 74 | **type** `static final class LegBar extends javafx.scene.layout.Pane` | A leg's bar: its modes' tonnes end to end to the scale given, each in its mode's colour, hatched where the tonnes are paid abroad, named when the name fits and always in a tooltip, and a door to its division where it ... |
+| 5402 | 39 | `LegBar(List<FreightView.Row> rows, double scale, java.util.function.Consumer<FreightView.Division> door)` _(in SectorScreen.LegBar)_ |  |
+| 5442 | 24 | `protected void layoutChildren()` _(in SectorScreen.LegBar)_ |  |
 
-### HAULAGE (lines 5467-5600)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5470 | 33 | `List<Node> haulagePanels(FreightView.View v)` | Haulage: its fleet, its price, its shippers. |
-| 5516 | 10 | `VBox fleetCard(String title, String info, String sub, double have, double need, double asked, String colour, String words, Stri...` | A fleet card: its words, a bar against what is needed, and the fact grid under. |
-| 5533 | 13 | `VBox quoteCard(String title, String info, String sub, FreightView.Quote q, String floorIs, String targetIs)` | A division's price: its bar against the rule's floor and target where the model keeps them, and the three figures under it - FLOOR, TARGET, QUOTE - a dash for the one it does not keep, "estimated" until a month has st... |
-| 5548 | 6 | `static VBox quoteTile(String name, String is, String figure)` | One of a quote's three figures: its name, the figure, what it is. |
-| 5556 | 44 | `VBox shippersCard(FreightView.View v, java.util.function.ToDoubleFunction<FreightView.Shipper> part, double total)` | SHIPPERS BILLED: the sectors this division billed, largest first, each a door to that sector's operations, with the total. |
-
-### RAIL (lines 5601-5657)
+### HAULAGE (lines 5468-5601)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5604 | 41 | `List<Node> railPanels(FreightView.View v)` | Rail: its wagon sets, its quote, its shippers. |
+| 5471 | 33 | `List<Node> haulagePanels(FreightView.View v)` | Haulage: its fleet, its price, its shippers. |
+| 5517 | 10 | `VBox fleetCard(String title, String info, String sub, double have, double need, double asked, String colour, String words, Stri...` | A fleet card: its words, a bar against what is needed, and the fact grid under. |
+| 5534 | 13 | `VBox quoteCard(String title, String info, String sub, FreightView.Quote q, String floorIs, String targetIs)` | A division's price: its bar against the rule's floor and target where the model keeps them, and the three figures under it - FLOOR, TARGET, QUOTE - a dash for the one it does not keep, "estimated" until a month has st... |
+| 5549 | 6 | `static VBox quoteTile(String name, String is, String figure)` | One of a quote's three figures: its name, the figure, what it is. |
+| 5557 | 44 | `VBox shippersCard(FreightView.View v, java.util.function.ToDoubleFunction<FreightView.Shipper> part, double total)` | SHIPPERS BILLED: the sectors this division billed, largest first, each a door to that sector's operations, with the total. |
 
-### PORTS (lines 5658-5717)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5661 | 18 | `List<Node> portsPanels(FreightView.View v)` | Ports: the berths by kind, and the shippers billed for handling. |
-| 5687 | 30 | `HBox berthRow(FreightView.Berth b)` | One kind of berth: its name, the berths, the fill bar with its tonnes, and the handling quote. |
-
-### THE SHELF (0.7.45) (lines 5718-5869)
+### RAIL (lines 5602-5658)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5727 | 4 | **type** `record ShelfWords(boolean counted, double shelf, double floor, double cap, double clearing, boolean clearin...` | THE SHELF's words and figures, worked out without drawing them. |
-| 5733 | 7 | `static String wayWords(double speed)` | A share of the way in words: "a sixth", "a quarter", "half". |
-| 5741 | 60 | `ShelfWords shelfWords(Retail r)` |  |
-| 5803 | 10 | `static String throttleCategory(SectorFlow.Plant plant)` | The Build category that relieves the thinnest of a plant's power, road and health (D13's rule, one plant), or null. |
-| 5822 | 47 | `VBox shelfCard(Retail r)` | THE SHELF: what a basket costs, beside the baskets and what limited them. |
+| 5605 | 41 | `List<Node> railPanels(FreightView.View v)` | Rail: its wagon sets, its quote, its shippers. |
 
-### WHAT IT CHARGES (0.7.45) (lines 5870-6294)
+### PORTS (lines 5659-5718)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5876 | 1 | **type** `record ChargesWords(double floor, double ceiling, double charged, double target, String line, String served...` | WHAT IT CHARGES' words and figures, worked out without drawing them. |
-| 5883 | 3 | `static String served(double served, double reach, double wanted)` | "Served nothing" when a month counted a reach or a want and served none of it; a reload counts none of the three until its month runs (they are the month's flows, not saved), and that is not a month that served nothing. |
-| 5887 | 9 | `static ChargesWords chargesWords(Restaurants k)` |  |
-| 5897 | 9 | `static ChargesWords chargesWords(LuxuryRetail l)` |  |
-| 5908 | 14 | `VBox marginCard(ChargesWords w)` | WHAT IT CHARGES: the margin as a run from its floor to its ceiling, the target a dashed rule. |
-| 5924 | 15 | `VBox everyLine(Sector sector)` | The old page, whole: Sector.operations() drawn as statement lines. |
-| 5941 | 16 | `VBox flowCard(Sector sector, SectorFlow.Flow flow, boolean animate)` | The flow: what goes in, a chevron, the plant, a chevron, what comes out. |
-| 5959 | 10 | `static Label chevron()` | A chevron between the flow's columns. |
-| 5974 | 42 | `VBox inputsColumn(Sector sector, SectorFlow.Flow flow)` | WHAT GOES IN: each good bought - the city's part and the world's - and each service, by name. |
-| 6018 | 9 | `static HBox rowHead(Node name, String info, String money)` | A row's head: its name (and its (i)), and its money at the right. |
-| 6029 | 29 | `VBox inputRow(SectorFlow.In i, boolean counted)` | One good bought: its name, the city's part and the world's on a bar, the units and the share, the money; or a service, by name. |
-| 6060 | 16 | `static String inputWords(SectorFlow.In i)` | A good bought, in words: "82,647 t · 7% from the city · on hand 3,478 vans". |
-| 6078 | 4 | `static String units(double n, Good g)` | A count of a good in its unit, "under 1 van" for a fraction that would read "0 vans". |
-| 6090 | 43 | `VBox plantCard(Sector sector, SectorFlow.Flow flow, boolean animate)` | THE PLANT: how many stand and are on site; a ring of the rate it runs at, sweeping up on a new month; the six throttles as a cascade, each its ratio on a bar and the running product after it, the thinnest amber; and i... |
-| 6135 | 5 | `static HBox centred(Node n)` | A node centred in a row of its own. |
-| 6142 | 22 | `static GridPane cascade(SectorFlow.Plant p)` | The throttle cascade: each of the six, its ratio on a bar, and the rate after it - the thinnest drawn amber. |
-| 6166 | 54 | `VBox outputsColumn(SectorFlow.Flow flow)` | WHAT COMES OUT: each good made against what it could make - sold here, shipped, into stock, idled - its price and cost; and work billed. |
-| 6222 | 29 | `static String outputWords(SectorFlow.Out o, BuildCard.Note note)` | A good made, in words: "made 78,615 t of 203,400 · 32,018 here · 46,598 shipped"; a seller-priced one against the Build note's capacity. |
-| 6253 | 9 | `static String coverWords(BuildCard.Note note)` | What a seller-priced good's capacity is, in the Build note's words. |
-| 6264 | 6 | `static String railWords(BuildCard.Note note, boolean counted)` | The railway's work against its track, off Build's note (RAIL {the city's trade in tonnes, the network's capacity}); null for anyone else. |
-| 6276 | 5 | `static HBox noteInLayers(String shown, String whole)` | A sector's note in two layers (0.7.21; Sector.Line.note(shown, whole)): the short line where statementNote() would put the paragraph, and the paragraph behind its (i). |
-| 6283 | 11 | `static String toneColour(Sector.Line.Tone tone)` | The palette colour a sector's line asked for, or none. |
+| 5662 | 18 | `List<Node> portsPanels(FreightView.View v)` | Ports: the berths by kind, and the shippers billed for handling. |
+| 5688 | 30 | `HBox berthRow(FreightView.Berth b)` | One kind of berth: its name, the berths, the fill bar with its tonnes, and the handling quote. |
+
+### THE SHELF (0.7.45) (lines 5719-5870)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5728 | 4 | **type** `record ShelfWords(boolean counted, double shelf, double floor, double cap, double clearing, boolean clearin...` | THE SHELF's words and figures, worked out without drawing them. |
+| 5734 | 7 | `static String wayWords(double speed)` | A share of the way in words: "a sixth", "a quarter", "half". |
+| 5742 | 60 | `ShelfWords shelfWords(Retail r)` |  |
+| 5804 | 10 | `static String throttleCategory(SectorFlow.Plant plant)` | The Build category that relieves the thinnest of a plant's power, road and health (D13's rule, one plant), or null. |
+| 5823 | 47 | `VBox shelfCard(Retail r)` | THE SHELF: what a basket costs, beside the baskets and what limited them. |
+
+### WHAT IT CHARGES (0.7.45) (lines 5871-6295)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5877 | 1 | **type** `record ChargesWords(double floor, double ceiling, double charged, double target, String line, String served...` | WHAT IT CHARGES' words and figures, worked out without drawing them. |
+| 5884 | 3 | `static String served(double served, double reach, double wanted)` | "Served nothing" when a month counted a reach or a want and served none of it; a reload counts none of the three until its month runs (they are the month's flows, not saved), and that is not a month that served nothing. |
+| 5888 | 9 | `static ChargesWords chargesWords(Restaurants k)` |  |
+| 5898 | 9 | `static ChargesWords chargesWords(LuxuryRetail l)` |  |
+| 5909 | 14 | `VBox marginCard(ChargesWords w)` | WHAT IT CHARGES: the margin as a run from its floor to its ceiling, the target a dashed rule. |
+| 5925 | 15 | `VBox everyLine(Sector sector)` | The old page, whole: Sector.operations() drawn as statement lines. |
+| 5942 | 16 | `VBox flowCard(Sector sector, SectorFlow.Flow flow, boolean animate)` | The flow: what goes in, a chevron, the plant, a chevron, what comes out. |
+| 5960 | 10 | `static Label chevron()` | A chevron between the flow's columns. |
+| 5975 | 42 | `VBox inputsColumn(Sector sector, SectorFlow.Flow flow)` | WHAT GOES IN: each good bought - the city's part and the world's - and each service, by name. |
+| 6019 | 9 | `static HBox rowHead(Node name, String info, String money)` | A row's head: its name (and its (i)), and its money at the right. |
+| 6030 | 29 | `VBox inputRow(SectorFlow.In i, boolean counted)` | One good bought: its name, the city's part and the world's on a bar, the units and the share, the money; or a service, by name. |
+| 6061 | 16 | `static String inputWords(SectorFlow.In i)` | A good bought, in words: "82,647 t · 7% from the city · on hand 3,478 vans". |
+| 6079 | 4 | `static String units(double n, Good g)` | A count of a good in its unit, "under 1 van" for a fraction that would read "0 vans". |
+| 6091 | 43 | `VBox plantCard(Sector sector, SectorFlow.Flow flow, boolean animate)` | THE PLANT: how many stand and are on site; a ring of the rate it runs at, sweeping up on a new month; the six throttles as a cascade, each its ratio on a bar and the running product after it, the thinnest amber; and i... |
+| 6136 | 5 | `static HBox centred(Node n)` | A node centred in a row of its own. |
+| 6143 | 22 | `static GridPane cascade(SectorFlow.Plant p)` | The throttle cascade: each of the six, its ratio on a bar, and the rate after it - the thinnest drawn amber. |
+| 6167 | 54 | `VBox outputsColumn(SectorFlow.Flow flow)` | WHAT COMES OUT: each good made against what it could make - sold here, shipped, into stock, idled - its price and cost; and work billed. |
+| 6223 | 29 | `static String outputWords(SectorFlow.Out o, BuildCard.Note note)` | A good made, in words: "made 78,615 t of 203,400 · 32,018 here · 46,598 shipped"; a seller-priced one against the Build note's capacity. |
+| 6254 | 9 | `static String coverWords(BuildCard.Note note)` | What a seller-priced good's capacity is, in the Build note's words. |
+| 6265 | 6 | `static String railWords(BuildCard.Note note, boolean counted)` | The railway's work against its track, off Build's note (RAIL {the city's trade in tonnes, the network's capacity}); null for anyone else. |
+| 6277 | 5 | `static HBox noteInLayers(String shown, String whole)` | A sector's note in two layers (0.7.21; Sector.Line.note(shown, whole)): the short line where statementNote() would put the paragraph, and the paragraph behind its (i). |
+| 6284 | 11 | `static String toneColour(Sector.Line.Tone tone)` | The palette colour a sector's line asked for, or none. |
 

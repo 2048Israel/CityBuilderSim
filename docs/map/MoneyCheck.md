@@ -1,6 +1,6 @@
 # MoneyCheck.java - 455 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/MoneyCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneyCheck.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > Money is conserved: every dollar that leaves a pool arrives in another, or
 > crosses the city's boundary in a way the audit can name.

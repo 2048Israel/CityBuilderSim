@@ -1,6 +1,6 @@
 # ConstructionControl.java - 823 lines · 59 methods · 11 constants · model
 
-`ham/citybuildersim/ConstructionControl.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConstructionControl.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
 > The player's hand on the construction queue (0.7.22): the order the
 > city's own sites are served in, the sites it has put on overtime, the

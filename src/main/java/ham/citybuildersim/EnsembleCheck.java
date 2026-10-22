@@ -212,6 +212,7 @@ public class EnsembleCheck {
 
     static final Pattern POLICY_ENUM = Pattern.compile("\\benum\\s+Policy\\s*\\{([^}]*)\\}");
     static final Pattern POLICIES_LIST = Pattern.compile("(?m)^POLICIES\\s*=\\s*\\[([^\\]]*)\\]");
+    /** A name in double or single quotes, as either half lists its policies. */
     static final Pattern QUOTED = Pattern.compile("\"([^\"]*)\"|'([^']*)'");
 
     /** The constants of the driver's Policy enum, in the order written; empty when the source has none. */
@@ -303,6 +304,7 @@ public class EnsembleCheck {
     /* ==================== 4. the baseline reads =========================== */
 
     static final Pattern BASELINE_NAME = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)\\.md");
+    /** A stored score's verdict line: "criteria passed: N / M". */
     static final Pattern CRITERIA = Pattern.compile("(?m)^criteria passed:\\s*(\\d+)\\s*/\\s*(\\d+)\\b");
     static final Pattern JSON_BLOCK = Pattern.compile("(?s)```json\\s*\\R(.*?)\\R\\s*```");
 
@@ -390,7 +392,9 @@ public class EnsembleCheck {
                 + "```json\n" + json + "\n```\n";
     }
 
+    /** A canned page's verdict line, for the reader's fixtures. */
     static final String VERDICT = "criteria passed: 5/6 (vacuous, not counted: 0); missing runs: none; short runs: none";
+    /** ...and its JSON block, sound as it stands; a fixture edits it into a page the reader should refuse. */
     static final String JSON = """
             {
              "seeds": 4,

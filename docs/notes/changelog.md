@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### Docs pass 2026-10-22 — over FR4, EG1, CL2, CL3, CD1, FX6, CD2, FX5, TD1, XR1 and CL4 — shipped, no tag
+
+The daily docs pass by a fresh session over the eleven batches since the 2026-10-19 pass (abfca4fb..01f9bf98).
+Comments, indexes and the record only. FX5 was 0.8.15 in seven comments (its number before CD1, FX6 and CD2 merged
+first) and CD2 0.8.15 in docs/tree.md: both are their shipped numbers. What CD2 retired outside the files it touched:
+the term loan, the underwriting spread on the city's paper (Rollover, BondMarket, Game's issue costs, Founding,
+DebtManager's curve); XR1's retired push in CentralBank's defence; FR4's strip and port dues door said as done.
+docs/tree.md has entries for YieldCurve, FreightView, TradeBand, TrackCurves, StreetCurves, TempDirs and CapChips,
+the reshaped map, Earth and plan files' batches, 126 harnesses; README counts 127 run and lists tools/ensemble/; the changelog's stray separator gone; the maps
+regenerated. Suite on its tree 121 of 127: main's six reds, nothing else (CurrencyCheck 4, MonetaryCheck's
+allowance, HealthCheck's hunger line, SectorBooksCheck's imports by good, CentralBankCheck's spiral, LongPlaytest).
+
 ### 0.8.20 — CL4, slanted avenues and curved streets — 2026-10-21, ready, see docs/queue/CL4-notes.md
 
 Four avenues at 45 degrees run out from the lattice node nearest the founding site, laid by every district's plan as
@@ -61,6 +73,7 @@ main line (his Halifax depot had no rails). One junction a crossing, mostly sign
 roads meet); the diagonal highway joins the grid as one carriageway; the world lines' labels apart; "Track" is
 "Unmade street". The map's alone: the trace is 0.8.17's, no ensemble; the map's sidecar FORMAT 10, no save change.
 ★ for Jerus: eleven calls (FX5-notes §2), above all ★3, ★5 and ★2.
+
 ### 0.8.17 — CD2, the lineup and the auction — 2026-10-21, ready, see docs/queue/CD2-notes.md
 
 The city sells bills (1-12 months), bonds (2-50 years, the coupon the clearing yield rounded down to an eighth, in
@@ -72,10 +85,6 @@ automatic building each sell at their own cap: a short rollover is paid from cas
 sale keeps its ask open. Borrow is the auction's screen. The study's model, rerun with the firms first: the tight
 city's tail 28 bp, not 503. Save format 42. Traces move (default 573,349 people against 619,699, Rotterdam 761,080
 against 834,678; one domestic sale between them, at fair); ensemble 23/25 against 22/25, A2 green. AuctionCheck.
-
-
-
----
 
 ### 0.8.16 — FX6, a district that buys land inside itself keeps its buildings where they stand — 2026-10-21, ready, see docs/queue/FX6-notes.md
 

@@ -601,8 +601,9 @@ public final class CentralBank {
      * the-central-bank.md section 8: "a defence that spends: the central bank
      * sells dollars from the vault for local money, which destroys M0 - the
      * classic, and what the founding US$1B is for." Jerus had already decided
-     * which way it runs: the vault is spent only when the push would weaken
-     * the currency (ForeignAccounts, A RESERVE DEFENDS A CURRENCY).
+     * which way it runs: the vault is spent only when the currency would
+     * fall (ForeignAccounts, A RESERVE DEFENDS A CURRENCY - when the push
+     * would weaken it, until XR1 retired the push).
      *
      * A CAPITAL TRANSACTION AGAINST THE WORLD, NOT A RETIREMENT, and this is
      * where the model reads differently from the textbook it was briefed

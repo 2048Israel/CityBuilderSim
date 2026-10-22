@@ -79,7 +79,7 @@ did not work.
 ## The checks
 
 `AllChecks` runs the lot, one JVM each — **126 harnesses plus the
-4,000-odd-month playtest**, which it counts as 125 run (124 where
+4,000-odd-month playtest**, which it counts as 127 run (126 where
 JavaFX is not on the classpath, which skips `BuildMenuCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
@@ -248,6 +248,8 @@ tools/earth/                          the pipeline that bakes the real Earth's d
                                       and get-earth.bat, which fetches the baked file from the release earth-1
 tools/deepseek/                       the DeepSeek coding agent a batch's Claude session hands a slice to
                                       (Python, outside the game); docs/deepseek.md says how
+tools/ensemble/                       the 80-run ensemble: its driver, runner and scorer (EN1; not in the
+                                      suite, see The checks), its stored scores in docs/ensemble/
 data/earth-1.bin                      the real Earth's data itself, about 53 MB, beside the game and not in git;
                                       the game runs without it, and New city offers the generated world then
 ```

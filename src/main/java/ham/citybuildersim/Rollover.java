@@ -58,9 +58,11 @@ import java.util.List;
  *      the tail when it passes the default cap (Auction.MAX_TAIL).
  *
  * WHAT ROLLING FOR CASH DOES. Paper sells under its face - a note by its
- * discount, a term loan by its redemption premium (its coupon is a third of
- * its yield), any issue by the underwriting spread and the fixed fee - so
- * the face whose cash covers the maturity is more than the face falling
+ * discount, a bond by its coupon (since CD2 the clearing yield rounded down
+ * to an eighth, so a new line sells just under 100; until then a term loan's
+ * redemption premium, its coupon a third of its yield), any issue by the
+ * fixed fee (and until CD2 the underwriting spread, Game.costOfIssuance()) -
+ * so the face whose cash covers the maturity is more than the face falling
  * due. Rolling for cash capitalises the interest of the paper it replaces
  * into the new principal, at every roll, at whatever rate the city then
  * pays. Nothing in the model caps what a city may sell of its own paper at

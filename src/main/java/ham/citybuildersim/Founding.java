@@ -76,7 +76,7 @@ public final class Founding {
        in the treasury, nothing in the vault, and the city owes the world for
        its ground: the plots it is founded on at the land market's opening
        dollar price a square foot (LandMarket.openingUsdPerSqFt()), on the
-       model's own twenty-year dollar term loan with its coupon fixed at
+       model's own twenty-year dollar bond (a term loan until CD2) with its coupon fixed at
        Jerus's 3% (landBondUsd(), Game.foundTheLandBond()). A founding of D$0
        and US$0 reads back as Insane (Preset.of()).
 
@@ -95,7 +95,7 @@ public final class Founding {
     /** Insane's coupon on the land it owes for, a year: 3%, Jerus's number. */
     public static final double INSANE_LAND_COUPON = .03;
 
-    /** Insane's land bond's term, in years: twenty, Jerus's "20y" - one of the five term loans (LongTermBond.MATURITIES). */
+    /** Insane's land bond's term, in years: twenty, Jerus's "20y" - one of the six bond maturities (LongTermBond.MATURITIES). */
     public static final int INSANE_LAND_YEARS = 20;
 
     /** What an Insane city owes for its founding ground, in thousands of US dollars: the plots its centre holds, as the land office charges ground (LandMarket.groundKm2()), at the land market's opening dollar price a square foot (0.7.106; STARTING_SQ_FT's square feet until then). */

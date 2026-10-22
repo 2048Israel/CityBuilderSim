@@ -3974,7 +3974,9 @@ public class LongPlaytest {
     static final java.util.TreeMap<Integer, Long> layoutSpillByMonth = new java.util.TreeMap<>();
     /** The first window's first month: its month, each district's industry boxes (sorted keys) and its count of boxes by type. */
     static int layoutOldMonth;
+    /** ...each district's industry boxes, by its key... */
     static final Map<Long, long[]> layoutOldBoxes = new java.util.HashMap<>();
+    /** ...and each district's count of boxes by type. */
     static final Map<Long, int[]> layoutOldCounts = new java.util.HashMap<>();
     /** ...and each district's model count of every type (District.count()) then and the lowest it has been in any month since: a finding's detail (an old works that left in a dip of its type's count did not move), not the test. */
     static final Map<Long, int[][]> layoutOldModel = new java.util.HashMap<>();
