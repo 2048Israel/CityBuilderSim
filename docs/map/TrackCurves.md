@@ -23,7 +23,7 @@
 > A bend carries the net it belongs to (RAILWAY, 0): the highways' 45-degree
 > joints (FX5 slice D) are bends of the other net, drawn by the same arcs.
 
-**Used by (7):** [CityMap](CityMap.md), [GatewayCheck](GatewayCheck.md), [JunctionCheck](JunctionCheck.md), [MapCheck](MapCheck.md), [RailDrawCheck](RailDrawCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md)
+**Used by (9):** [CityMap](CityMap.md), [GatewayCheck](GatewayCheck.md), [JunctionCheck](JunctionCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [StreetCurves](StreetCurves.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md)
 
 ## Constants
 

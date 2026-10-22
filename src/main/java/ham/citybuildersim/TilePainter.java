@@ -228,6 +228,14 @@ public final class TilePainter {
         public final byte[] marksBeyond = new byte[4 * TILE];
         /** Each plot's siding from its district's plan (batch FR7 slice 5, D14): SIDING_PLOT where a siding the plan laid runs, SIDING_END at its first plot, beside the works' box, which carries the loading shed; 0 for none. The plan's own track over the ground the runs left: drawn as track (RAIL) but counted apart from the runs' (Painted.sidingLaid); the siding just outside the tile is in fixedBeyond. */
         public final byte[] siding = new byte[PLOTS];
+        /** Each plot's avenue mark from the district plans (batch CL4, DistrictPlan.avenue): CityRuns.M_DIAG, its arm's heading at M_DIAG_SHIFT and M_CORNER on a corner of the staircase, 0 for none - the plots of the four 45-degree avenues, which TileRaster draws as one smooth band along each arm's line, not as the staircase's bars. A plot two arms share carries the first arm's mark; the origin's neighbourhood is drawn from avenueOx/avenueOy as well. */
+        public final byte[] avenue = new byte[PLOTS];
+        /** ...and the mark on every plot within REACH of the tile, corners too (CL4): RING * RING bytes row by row from plot (-REACH, -REACH), the tile's own plots among them (as ring is for the streets) - what a step across the tile's edge, a crossing on its corner and the band beside the last plot are read from (avenueAt()). Both districts that lay a plot lay it alike, so either's mark is the mark. */
+        public final byte[] avenueRing = new byte[RING * RING];
+        /** How many plots of avenueRing hold a mark: 0 when no avenue lies about the tile (the raster's fast path). */
+        public int avenueMarks;
+        /** The avenues' origin, the lattice node nearest the founding site, in the tile's plots (it may lie off the tile); Integer.MIN_VALUE for none - a harness's input without one draws the avenues from the marks alone. */
+        public int avenueOx = Integer.MIN_VALUE, avenueOy = Integer.MIN_VALUE;
         /** The freight station's yard, its box's first plot in the world: the yard nearest the rail gateway, spec 4.2; MIN_VALUE for none. */
         public long stationX = Long.MIN_VALUE, stationY = Long.MIN_VALUE;
         /** The railway carries goods, so the freight station is a container yard, spec 4.3. */
@@ -266,6 +274,98 @@ public final class TilePainter {
         /** The interchanges' reserves whose box reaches the tile (batch FR7, InterchangeGround.Site, the ones that got their ground): how many, and each as RESERVE_INTS ints - its kind, its stub's side, its junction plot (x, y) and its box (x0, y0, w, h), all in the tile's plots (they may lie off the tile). The raster draws the loops within them. */
         public int reserves;
         public int[] reserve = new int[4 * RESERVE_INTS];
+
+        /** The avenue mark on plot (x, y) of the tile or within REACH of it: 0 for none or for a plot farther out. */
+        public int avenueAt(int x, int y) {
+            if (avenueMarks == 0 || x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return 0;
+            return avenueRing[ringIndex(x, y)] & 0xff;
+        }
+
+        /** Clears the avenues (the marks, their count and the origin); the arrays are reused. */
+        public void clearAvenues() {
+            if (avenueMarks != 0) {
+                Arrays.fill(avenue, (byte) 0);
+                Arrays.fill(avenueRing, (byte) 0);
+            }
+            avenueMarks = 0;
+            avenueOx = avenueOy = Integer.MIN_VALUE;
+        }
+
+        /** Sets the mark on plot (x, y) within REACH of the tile (a harness's hand-built avenue, or CityMap's fill); the tile's own plots go to avenue too. */
+        public void setAvenue(int x, int y, int mark) {
+            if (x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return;
+            int r = ringIndex(x, y);
+            if (avenueRing[r] == 0 && mark != 0) avenueMarks++;
+            else if (avenueRing[r] != 0 && mark == 0) avenueMarks--;
+            avenueRing[r] = (byte) mark;
+            if (x >= 0 && y >= 0 && x < TILE && y < TILE) avenue[y * TILE + x] = (byte) mark;
+        }
+
+        /** A plot's curve mark (curve, curveRing; batch CL4, slice D): CV_OWN, a plot a curve is laid on (DistrictPlan.Curve.plots()); CV_BAND, a plot its band reaches that is not its own, kept free of buildings (Curve.band()); CV_END, with CV_OWN, a plot at either end of the curve's own plots - the dead end's last plot, the street it meets, a crescent's ring plot - which keeps its street's bars, the curve starting or ending at its middle. */
+        public static final byte CV_OWN = 1, CV_BAND = 2, CV_END = 4;
+
+        /** The curve marks of the tile's own plots (CL4, slice D), by plot: what CityMap's fill sets from the district plans' curves - the crescents' arcs and the shore's streets, which TileRaster draws as smooth bands along their lines, not as the staircases' bars. */
+        public final byte[] curve = new byte[PLOTS];
+        /** ...and on every plot within REACH of the tile, corners too: RING * RING bytes row by row from plot (-REACH, -REACH), the tile's own plots among them - what a bar's neighbour across the tile's edge is read from (curveAt()). */
+        public final byte[] curveRing = new byte[RING * RING];
+        /** How many plots of curveRing hold a mark: 0 when no curve lies about the tile (the raster's fast path). */
+        public int curveMarks;
+        /** The curves reaching the tile (CL4, slice D): how many, and each as CURVE_HEAD numbers - its kind (DistrictPlan.Curve.CRESCENT or SHORE), its radius, the count n of the numbers after - then its geometry as DistrictPlan.Curve.geom has it (a crescent's circle: centre x and y, radius, the angle to the arc's start, the signed sweep; a shore's simplified vertices x0, y0, x1, y1, ...), in the tile's plots (the curve may lie partly off the tile). curveLen numbers are held. */
+        public int curves;
+        public double[] curveGeom = new double[64];
+        public int curveLen;
+        /** The numbers before a curve's geometry in curveGeom: its kind, its radius and the count of numbers after. */
+        public static final int CURVE_HEAD = 3;
+
+        /** The curve mark on plot (x, y) of the tile or within REACH of it: 0 for none or for a plot farther out. */
+        public int curveAt(int x, int y) {
+            if (curveMarks == 0 || x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return 0;
+            return curveRing[ringIndex(x, y)] & 0xff;
+        }
+
+        /** Clears the curves (the marks, the count and the geometry); the arrays are reused. */
+        public void clearCurves() {
+            if (curveMarks != 0) {
+                Arrays.fill(curve, (byte) 0);
+                Arrays.fill(curveRing, (byte) 0);
+            }
+            curveMarks = 0;
+            curves = 0;
+            curveLen = 0;
+        }
+
+        /** Adds `mark` to the curve marks of plot (x, y) within REACH of the tile (CityMap's fill, or a harness's hand-built curve); the tile's own plots go to curve too. */
+        public void setCurvePlot(int x, int y, int mark) {
+            if (mark == 0 || x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return;
+            int r = ringIndex(x, y);
+            if (curveRing[r] == 0) curveMarks++;
+            curveRing[r] |= (byte) mark;
+            if (x >= 0 && y >= 0 && x < TILE && y < TILE) curve[y * TILE + x] |= (byte) mark;
+        }
+
+        /** Adds a curve: its kind, its radius and its geometry (n numbers), in the tile's plots. */
+        public void addCurve(int kind, double radius, double[] geom, int n) {
+            if (curveLen + CURVE_HEAD + n > curveGeom.length) curveGeom = Arrays.copyOf(curveGeom, Math.max(curveGeom.length * 2, curveLen + CURVE_HEAD + n));
+            curveGeom[curveLen] = kind;
+            curveGeom[curveLen + 1] = radius;
+            curveGeom[curveLen + 2] = n;
+            System.arraycopy(geom, 0, curveGeom, curveLen + CURVE_HEAD, n);
+            curveLen += CURVE_HEAD + n;
+            curves++;
+        }
+
+        /** Copies the curves of `from` (marks, count and geometry), the arrays reused. */
+        public void copyCurves(Input from) {
+            clearCurves();
+            if (from.curves == 0 && from.curveMarks == 0) return;
+            System.arraycopy(from.curve, 0, curve, 0, PLOTS);
+            System.arraycopy(from.curveRing, 0, curveRing, 0, from.curveRing.length);
+            curveMarks = from.curveMarks;
+            curves = from.curves;
+            if (curveGeom.length < from.curveLen) curveGeom = new double[from.curveGeom.length];
+            System.arraycopy(from.curveGeom, 0, curveGeom, 0, from.curveLen);
+            curveLen = from.curveLen;
+        }
 
         /** Clears the reserves; the array is reused. */
         public void clearReserves() { reserves = 0; }
