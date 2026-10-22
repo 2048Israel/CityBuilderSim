@@ -1,4 +1,4 @@
-# CreditCheck.java - 2,054 lines · 18 methods · 1 constants · harnesses
+# CreditCheck.java - 2,065 lines · 18 methods · 1 constants · harnesses
 
 `ham/citybuildersim/CreditCheck.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
@@ -26,15 +26,15 @@
 | 508 | · 7. the spiral guard |
 | 540 | · the CITY's debt market, repriced |
 | 652 | · 7. the quote IS the deal |
-| 748 | · 9. A NOTE DELIVERS WHAT IT WAS ASKED FOR |
-| 812 | · 10. THE STORY THAT BROKE, END TO END |
-| 900 | · 10. THE BAN IS ONE BAN |
-| 916 | · · MORE PEOPLE THAN THE SHOPS CAN COVER, AND IT HAS TO STAY THAT WAY. |
-| 1119 | 13. CAN'T PAY MEANS DEFAULT (0.7.12, round 4) |
-| 1344 | 15. A NEW SECTOR'S FIRST READING (0.7.12, round 7) |
-| 1466 | 16. THE SHORTFALL DESK'S BOND, GROSSED UP (0.7.12, round 7) |
-| 1590 | 12. NOTHING PAST THE DEFAULT POINT (0.7.12, round 2) |
-| 1873 | 11. THE CURVE (0.7.1) |
+| 759 | · 9. A NOTE DELIVERS WHAT IT WAS ASKED FOR |
+| 823 | · 10. THE STORY THAT BROKE, END TO END |
+| 911 | · 10. THE BAN IS ONE BAN |
+| 927 | · · MORE PEOPLE THAN THE SHOPS CAN COVER, AND IT HAS TO STAY THAT WAY. |
+| 1130 | 13. CAN'T PAY MEANS DEFAULT (0.7.12, round 4) |
+| 1355 | 15. A NEW SECTOR'S FIRST READING (0.7.12, round 7) |
+| 1477 | 16. THE SHORTFALL DESK'S BOND, GROSSED UP (0.7.12, round 7) |
+| 1601 | 12. NOTHING PAST THE DEFAULT POINT (0.7.12, round 2) |
+| 1884 | 11. THE CURVE (0.7.1) |
 
 ## Constants
 
@@ -52,48 +52,48 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4 | 2051 | **type** `public class CreditCheck` | Verifies private-sector credit: pricing, origination, rollover, cash conservation. |
+| 4 | 2062 | **type** `public class CreditCheck` | Verifies private-sector credit: pricing, origination, rollover, cash conservation. |
 | 8 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 15 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 23 | 9 | `static double priced(DebtManager m, double cash)` | The standing rate at a given cash position, leaving the market as it found it. |
-| 33 | 1085 | `public static void main(String[] args) throws Exception` |  |
+| 33 | 1096 | `public static void main(String[] args) throws Exception` |  |
 
-### 13. CAN'T PAY MEANS DEFAULT (0.7.12, round 4) (lines 1119-1343)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1134 | 12 | `static BusinessDebtManager.BondBook bondsOf(String s, double[] face)` |  |
-| 1147 | 196 | `static void cantPayMeansDefault()` |  |
-
-### 15. A NEW SECTOR'S FIRST READING (0.7.12, round 7) (lines 1344-1465)
+### 13. CAN'T PAY MEANS DEFAULT (0.7.12, round 4) (lines 1130-1354)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1362 | 103 | `static void firstReading() throws Exception` |  |
+| 1145 | 12 | `static BusinessDebtManager.BondBook bondsOf(String s, double[] face)` |  |
+| 1158 | 196 | `static void cantPayMeansDefault()` |  |
 
-### 16. THE SHORTFALL DESK'S BOND, GROSSED UP (0.7.12, round 7) (lines 1466-1589)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1475 | 14 | `static BusinessDebtManager.BondDesk deskOf(double bondPart, double cost)` |  |
-| 1490 | 20 | `static void shortfallBondGrossedUp()` |  |
-| 1512 | 11 | `static double nothingLeft()` | A sector owing $1,000 of loans and a $200 interim loan with nothing left: what of the interim loan the backstop keeps. |
-| 1524 | 65 | `static void creditLinesStayOpen()` |  |
-
-### 12. NOTHING PAST THE DEFAULT POINT (0.7.12, round 2) (lines 1590-1872)
+### 15. A NEW SECTOR'S FIRST READING (0.7.12, round 7) (lines 1355-1476)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1604 | 268 | `static void nothingPastTheDefaultPoint() throws Exception` |  |
+| 1373 | 103 | `static void firstReading() throws Exception` |  |
 
-### 11. THE CURVE (0.7.1) (lines 1873-2054)
+### 16. THE SHORTFALL DESK'S BOND, GROSSED UP (0.7.12, round 7) (lines 1477-1600)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1887 | 79 | `static void theCurve(Game city)` |  |
-| 1975 | 3 | `static boolean onCurve(DebtQuote q)` | True if this quote came off the sloped part of the curve. |
-| 1979 | 6 | `static boolean onCurve(double rate)` |  |
-| 1987 | 5 | `static void quietly(Runnable work)` | Runs a stretch of the game without its per-month console output. |
-| 1993 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 2009 | 45 | `static void bookAndCompare(Game g, String type, double amount, int duration, double rounding, boolean mustBeOnCurve)` | Takes a quote, books it, and checks the books say what the quote said. |
+| 1486 | 14 | `static BusinessDebtManager.BondDesk deskOf(double bondPart, double cost)` |  |
+| 1501 | 20 | `static void shortfallBondGrossedUp()` |  |
+| 1523 | 11 | `static double nothingLeft()` | A sector owing $1,000 of loans and a $200 interim loan with nothing left: what of the interim loan the backstop keeps. |
+| 1535 | 65 | `static void creditLinesStayOpen()` |  |
+
+### 12. NOTHING PAST THE DEFAULT POINT (0.7.12, round 2) (lines 1601-1883)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1615 | 268 | `static void nothingPastTheDefaultPoint() throws Exception` |  |
+
+### 11. THE CURVE (0.7.1) (lines 1884-2065)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1898 | 79 | `static void theCurve(Game city)` |  |
+| 1986 | 3 | `static boolean onCurve(DebtQuote q)` | True if this quote came off the sloped part of the curve. |
+| 1990 | 6 | `static boolean onCurve(double rate)` |  |
+| 1998 | 5 | `static void quietly(Runnable work)` | Runs a stretch of the game without its per-month console output. |
+| 2004 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 2020 | 45 | `static void bookAndCompare(Game g, String type, double amount, int duration, double rounding, boolean mustBeOnCurve)` | Takes a quote, books it, and checks the books say what the quote said. |
 
