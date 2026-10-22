@@ -5,7 +5,8 @@
 Jerus's star 2, "All three", and star 3, "Move both up"). The map's alone:
 nothing in the model reads it. The slices went to Sonnet 5.5 subagents at xhigh,
 one at a time (section 8). Two faults found on main ride along as commits of their
-own, at the orchestrator's word (section 1.5). XR1 takes 0.8.19.*
+own, at the orchestrator's word (section 1.5). Built on 0.8.18; main (XR1's
+0.8.19 and TD1) merged in before the final checks.*
 
 ## 1. What was built
 
@@ -28,6 +29,16 @@ own, at the orchestrator's word (section 1.5). XR1 takes 0.8.19.*
     district's 169 plots: the ground along it was bought at month 3,641.
   - With the fix the district lays 160.
   - Ordinary cell streets still get none on ground bought later (FX6's ★1).
+- **No piece of avenue alone.** After main was merged in, MapCheck 8 went red.
+  - XR1's two-district played city drew a 15-plot piece of its south-west avenue
+    apart from every other street. It lay on ground bought later, between strips the
+    ring was never laid on.
+  - Now a piece an avenue's laying makes that touches no other street is taken up
+    again and left undecided (`avAlone()`), and tried again, every open cell
+    together, whenever the ground grows.
+  - The staircase's own plots are barred to buildings, so the avenue is laid where it
+    would have been.
+  - MapCheck 8: 328 road plots in one piece (two before).
 - **What an avenue does at each obstacle:**
   - beneath a highway it passes under, as a street does;
   - it crosses the railway as an arterial does;
@@ -158,7 +169,9 @@ own, at the orchestrator's word (section 1.5). XR1 takes 0.8.19.*
 ## 3. Measured
 
 **The playtests' cities, planned by this build.** Main's two playtests were played on
-0.8.18's classes, and their last months kept (`-Dplaytest.keep`):
+0.8.18's classes and their last months kept (`-Dplaytest.keep`), before XR1 shipped.
+Since XR1 the default playtest's city ends at 10,980 people, so these grown cities
+are the ones the renders and counts read:
 
 | | Earth (Rotterdam), m4006, 12 districts | default (an island city), m4003, 10 districts |
 |---|---|---|
@@ -194,11 +207,18 @@ Further figures:
   curve).
 - `--timing`, alone and hard, below.
 
-**The trace.** The default playtest on the branch's final classes against main's
-0.8.18 (d2869a5), both on this PC tonight: all eight CSVs are byte-identical. The
-report differs only in its run time and the layout watch's figures. Of 171,104 boxes
-compared, 0 moved inside or outside a spill's districts, and the findings are
-"Nothing." No ensemble (EN1's rule).
+**The trace.** The default playtest on the merged branch's classes against main's
+0.8.19 (37cbfe3f, built in a scratch worktree), both on this PC tonight: all eight
+CSVs are byte-identical, and so are the findings.
+- The report differs only in its run time and in the layout watch's figures:
+  - boxes compared, 6,194 against 5,942, 0 moved in either;
+  - the ring at m4000, homes 0.34 km against 0.28.
+- Both runs exit 1 on 0.8.19's own findings, XR1's named reds: the spiral, and the
+  ring flagged in a city of one district.
+- Before the merge, against 0.8.18 (d2869a5): all eight CSVs byte-identical, 0 of
+  171,104 boxes moved, and the findings "Nothing."
+
+No ensemble (EN1's rule).
 
 ## 4. The checks
 
