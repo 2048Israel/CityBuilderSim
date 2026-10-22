@@ -46,7 +46,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7103 | `GameVersion.VERSION` | `"0.8.22"` | Bump on release. |
+| 7103 | `GameVersion.VERSION` | `"0.8.23"` | Bump on release. |
 | 7845 | `GameVersion.SAVE_FORMAT` | `43` | The save shape. |
 | 7881 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `43` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
 | 7883 | `GameVersion.NAME` | `"CityBuilderSim"` |  |

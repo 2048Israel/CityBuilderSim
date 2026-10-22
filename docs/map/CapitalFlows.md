@@ -1,4 +1,4 @@
-# CapitalFlows.java - 741 lines · 47 methods · 14 constants · model
+# CapitalFlows.java - 748 lines · 47 methods · 14 constants · model
 
 `ham/citybuildersim/CapitalFlows.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
@@ -29,7 +29,7 @@
 > holds both. The split is reported, because the player should see which offer
 > is pulling; it is not two flows, because there is one balance sheet.
 
-**Used by (14):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (15):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -76,9 +76,9 @@
 | 182 | `private double stock` |  |
 | 183 | `private double target` |  |
 | 184 | `private double spread` |  |
-| 185 | `private double arrived` | this month, gross |
-| 186 | `private double departed` | this month, gross |
-| 187 | `private int panicUntil` | this month, gross |
+| 185 | `private double arrived` | this month, gross; saved (FX8) |
+| 186 | `private double departed` | this month, gross; saved (FX8) |
+| 187 | `private int panicUntil` | this month, gross; saved (FX8) |
 | 188 | `private String panicReason` |  |
 | 189 | `private double depositShare` |  |
 | 190 | `private double lifetimeArrived, lifetimeDeparted` |  |
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 709 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
+| 33 | 716 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
 
 ### HOW MUCH WANTS TO COME (lines 35-133)
 
@@ -176,12 +176,12 @@
 | 651 | 1 | `public void setMonth(int month)` |  |
 | 654 | 1 | `public int stopMonthsLeft()` | Months of the stop still to run, or 0. |
 
-### carrying (lines 656-741)
+### carrying (lines 656-748)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 658 | 13 | `public double[] toSaveArray()` |  |
-| 672 | 25 | `public void restore(double[] saved)` |  |
-| 698 | 15 | `public void reset()` |  |
-| 715 | 25 | `public void redenominate(double scale)` | Hot money, in the new unit. |
+| 658 | 15 | `public double[] toSaveArray()` |  |
+| 674 | 30 | `public void restore(double[] saved)` |  |
+| 705 | 15 | `public void reset()` |  |
+| 722 | 25 | `public void redenominate(double scale)` | Hot money, in the new unit. |
 
