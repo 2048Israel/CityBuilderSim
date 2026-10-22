@@ -3852,7 +3852,7 @@ public class Game {
 
     /**
      * AN INSANE CITY OWES THE WORLD FOR ITS GROUND (0.7.14): the model's own
-     * twenty-year dollar term loan, LongTermBond abroad, its coupon fixed at
+     * twenty-year dollar bond (a term loan until CD2), LongTermBond abroad, its coupon fixed at
      * Founding.INSANE_LAND_COUPON (Jerus's 3%) on Founding.landBondUsd() -
      * the plots the city is founded on at the land market's opening dollar
      * price (since 0.7.106; STARTING_SQ_FT's square feet until then). The proceeds
@@ -3944,7 +3944,9 @@ public class Game {
      * city's foreign position down - which lowers its import cover, which raises
      * the pressure on the rate. A defence that does not fix the trade balance
      * underneath it makes the next month worse, and that is not a bug in this
-     * model, it is the entire history of currency defences.
+     * model, it is the entire history of currency defences. (Since XR1 the
+     * sale is also dealing the next reprice feels, the interventions' move:
+     * ForeignAccounts, THE FLOAT.)
      */
     public double sellForeignCurrency(double amount) {
         double sold = foreign.sellReserves(Math.max(0, amount));
@@ -9250,8 +9252,8 @@ public class Game {
     /**
      * The paper whose CASH covers a rollover issue's share, on the existing
      * quotes, at the build screen's granules: a note by quoteTBill(), whose
-     * ask is the cash; a serial by quoteMediumBondForCash(); a term loan by
-     * quoteLongBondForCash(); dollar paper by quoteForeignForCash(), its
+     * ask is the cash; an amortizing bond (the serial until CD2) by
+     * quoteMediumBondForCash(); a bond by quoteLongBondForCash(); dollar paper by quoteForeignForCash(), its
      * share in dollars at the day's rate - the rate the dollar paper falling
      * due is valued at. Books nothing.
      */
@@ -10573,6 +10575,12 @@ public class Game {
        a tiny issue absurd rather than merely unwise, and it is what motivates
        the minimum issue size below instead of that minimum being an arbitrary
        constant nobody can justify.
+
+       THE FIXED COMPONENT ALONE since CD2 (spec-city-debt.md 4.4, D21): an
+       auction has no underwriter, so the city's paper pays FIXED_ISSUE_COST
+       and no percentage (costOfIssuance()) - its cost of selling is the tail,
+       which it can see and cap. UNDERWRITING_SPREAD stays, the businesses'
+       bonds' (BondMarket, WHAT AN ISSUE COSTS).
        ===================================================================== */
 
     /** The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. */

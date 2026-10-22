@@ -40,7 +40,8 @@ import java.util.Map;
  * where anybody must trade: an order waits until somebody meets it.
  *
  * EVERY DIAL HERE IS ANOTHER CLASS'S. The underwriter's charge is the one
- * the city pays (Game.FIXED_ISSUE_COST, UNDERWRITING_SPREAD); each
+ * the city paid until CD2 (Game.FIXED_ISSUE_COST, UNDERWRITING_SPREAD; the
+ * city's auctions pay the fixed cost alone since); each
  * participant bids by the rule it already follows for the nearest thing it
  * holds today - the households by their rule for the city's paper, the
  * companies and the world by the rules that send idle cash and hot money
@@ -540,13 +541,14 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     /* =====================================================================
        WHAT AN ISSUE COSTS
 
-       The city's own shape, reused (Game, WHAT IT COSTS TO GO TO MARKET AT
-       ALL): a fixed part - counsel, the rating, the listing - plus the
+       The city's own shape until CD2, reused (Game, WHAT IT COSTS TO GO TO
+       MARKET AT ALL; the city's auctions have no underwriter and pay the
+       fixed part alone since): a fixed part - counsel, the rating, the listing - plus the
        underwriter's spread on the face, 0.75%, inside the 0.5-1% gross
        spread investment-grade corporate issues pay (Melnik & Nissim, 2003,
        "Debt issue costs and issue characteristics in the market for US
        dollar denominated international bonds"). The bank is the
-       underwriter, as it is for the city: it is paid the costs out of the
+       underwriter, as it was for the city until CD2: it is paid the costs out of the
        proceeds. Spread over the bond's TERM_YEARS, they are what makes a
        small bond dear - so the size at which a bond beats the bank is not
        set anywhere; it is where these costs and the two prices cross

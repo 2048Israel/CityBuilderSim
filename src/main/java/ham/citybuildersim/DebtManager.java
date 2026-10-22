@@ -1506,11 +1506,12 @@ public class DebtManager {
        CD1; at no months, or with the dial where the rule will have it, the
        two are one)
 
-       THE SHORT END IS THE DIAL. A note (3-12 months) carries no premium: it
+       THE SHORT END IS THE DIAL. A bill (1-12 months since CD2; a note of 3-12
+       before) carries no premium: it
        is the T-bill rate, Jerus's "the one you choose", and getRate() - the
        standing "city's rate" the screens read - stays
-       exactly that. The premium is a table of five points at the five term
-       maturities, linear between them, linear from nothing at a year to the
+       exactly that. The premium is a table of five points, at 10, 20, 30, 40
+       and 50 years (the five term maturities until CD2's six), linear between them, linear from nothing at a year to the
        ten-year point (so a serial bond's final maturity prices on the same
        curve), and flat past fifty years.
 
