@@ -61,7 +61,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [ConstructionControl](ConstructionControl.md) (60), [Game](Game.md) (28), [BuildingManager](BuildingManager.md) (15), [BuildingsStacks](BuildingsStacks.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (9), [JobType](JobType.md) (6), [GameFiles](GameFiles.md) (4), [Sector](Sector.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Good](Good.md) (3), [GameVersion](GameVersion.md) (3), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [Construction](Construction.md) (2), [Notice](Notice.md) (2), [Founding](Founding.md) (1), [PopulationManager](PopulationManager.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
+**Uses:** [ConstructionControl](ConstructionControl.md) (60), [Game](Game.md) (28), [BuildingManager](BuildingManager.md) (15), [BuildingsStacks](BuildingsStacks.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (9), [JobType](JobType.md) (6), [GameFiles](GameFiles.md) (4), [Sector](Sector.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Good](Good.md) (3), [GameVersion](GameVersion.md) (3), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [Construction](Construction.md) (2), [Notice](Notice.md) (2), [Founding](Founding.md) (1), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
 
 ## Sections
 

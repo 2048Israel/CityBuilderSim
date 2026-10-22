@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -203,7 +202,7 @@ public class CarryTradeCheck {
          * proves nothing on its own. What proves it is that the audit's
          * FINANCIAL out-leg moves when the carry does, and by the same amount.
          */
-        Path root = Files.createTempDirectory("carrytrade");
+        Path root = TempDirs.create("carrytrade");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
         double worstResidual = 0, movedOut = 0, lentTotal = 0;
@@ -279,12 +278,15 @@ public class CarryTradeCheck {
             alone.takeMonth(bop(4_000, 2_000, 0), 6_000);
             financed.takeMonth(bop(4_000, 2_000, 2_000), 6_000);
         }
-        out.printf("   pressure on a $2,000k surplus: %+.2f alone, %+.2f with the carry%n",
-                alone.pressure(), financed.pressure());
+        // The rate reads the overall balance against a year's GDP since XR1 (the balance's
+        // level, ForeignAccounts.balanceTarget(), positive weaker): the premise is the old
+        // pressure's, only the instrument is new - the fixture already passes a GDP of 6,000.
+        out.printf("   balance level on a $2,000k surplus: %+.3f alone, %+.3f with the carry%n",
+                alone.balanceTarget(), financed.balanceTarget());
         assertTrue("fixture: the surplus alone would strengthen the currency",
-                alone.pressure() < 0);
+                alone.balanceTarget() < 0);
         assertTrue("money borrowed and taken out offsets a surplus",
-                financed.pressure() > alone.pressure());
+                financed.balanceTarget() > alone.balanceTarget());
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

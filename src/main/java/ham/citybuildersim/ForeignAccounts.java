@@ -38,7 +38,7 @@ package ham.citybuildersim;
  *      bank's deposits.
  *
  * ALL FOUR ARE BUILT, and the list is kept as the plan it was. The rate
- * floats (repriceCurrency(), WHAT MOVES THE RATE); the treasury borrows in
+ * floats (repriceCurrency(), THE FLOAT); the treasury borrows in
  * dollars (WHAT THE CITY OWES ABROAD, and DebtManager's foreign paper); the
  * hot money and the carry trade are CapitalFlows.
  *
@@ -52,7 +52,7 @@ package ham.citybuildersim;
  * THE VAULT is a holding: the US dollars the treasury chose to buy and has
  * not yet sold. The treasury buying and selling moves it (buyReserves(),
  * sellReserves()), since 0.7.2 the central bank selling it to defend the
- * currency (A DEFENCE THAT SPENDS, at effectivePressure()), and since 0.7.6
+ * currency (A DEFENCE THAT SPENDS, at repriceCurrency()), and since 0.7.6
  * the land office paid out of it when the player says so
  * (spendReservesOnLand()); it cannot go below zero, and it is KEPT IN DOLLARS -
  * reservesUsd - so everything local about it, what it is worth, what can be
@@ -62,10 +62,9 @@ package ham.citybuildersim;
  * in the dollar debt's shape: not cash, and not an audit flow. A new city
  * opens with the founders' dollars in it - US$25M on the default founding
  * since 0.7.10, US$1B before (Game's THE FOUNDING RESERVE) - and it is
- * spent only when the push would weaken the currency (A RESERVE DEFENDS A
- * CURRENCY, at effectivePressure()): the central bank sells its dollars
- * against the month's deficit, and what they meet of it is what damps the
- * push.
+ * spent only when the D$ would fall (A RESERVE DEFENDS A CURRENCY, at
+ * repriceCurrency()): the central bank sells its dollars against the
+ * month's deficit, and since XR1 the sale lifts the rate at its real size.
  *
  * THE RECORD is the cumulative balance: every month's balance of payments,
  * added up since founding - what the city has earned abroad less what it has
@@ -115,32 +114,18 @@ public class ForeignAccounts {
      *   a residential city   deficit is 89% of its imports   catastrophic
      *   an industrial city   deficit is  4% of its trade     noise
      *
-     * So PRESSURE is the current account as a share of what the city trades, and
-     * RESERVES are the buffer that decides how much of it reaches the rate. Deep
-     * cover absorbs a bad year; shallow cover means it lands immediately; no
-     * cover at all and the defence is over. That is how a managed float actually
-     * behaves, and it gives long quiet stretches with sharp adjustments at the
-     * edges rather than a rate that twitches every month.
+     * So the balance is read against what the city is, not as a stock (since
+     * XR1, against a year of its GDP: THE FLOAT, below), and the RESERVES are
+     * the buffer: the vault leans against a fall (A RESERVE DEFENDS A
+     * CURRENCY) and, once it is thin, costs the money a premium (RISK_PREMIUM).
+     * The rule itself is THE FLOAT; what it replaced is WHAT XR1 RETIRED.
      */
 
-    /** Deficits smaller than this share of trade are noise, and are ignored. */
-    public static final double DEAD_BAND = .05;
-
-    /** Cover at which reserves fully absorb the month's pressure. */
+    /** Cover at which reserves fully absorb the month's deficit. */
     public static final double COMFORTABLE_COVER = 6;
 
-    /** The most of the pressure deep reserves can absorb. */
+    /** The most of the month's deficit deep reserves can absorb. */
     public static final double MAX_ABSORPTION = .85;
-
-    /**
-     * How much of a month's pressure passes into the rate.
-     *
-     * Small on purpose. At the residential city's 89% deficit this is about
-     * 1.6% a month - roughly 20% a year, which is a currency in visible trouble
-     * without being a currency that has ceased to exist. A 4% deficit inside the
-     * dead band moves nothing at all.
-     */
-    public static final double DRIFT_SPEED = .02;
 
     /*
      * THE RATE CANNOT LEAVE THIS RANGE, WHATEVER THE ARITHMETIC SAYS - and
@@ -210,32 +195,6 @@ public class ForeignAccounts {
         parityBase = OPENING_RATE / unit;
     }
 
-    /*
-     * ==================== AND A PULL BACK TOWARDS PARITY ====================
-     *
-     * WHY THIS IS NEEDED, and it is not a fudge.
-     *
-     * The pressure signal is the current account as a share of trade, and both
-     * of those are local-currency figures that scale with the exchange rate by
-     * exactly the same factor. So the RATIO IS SCALE-INVARIANT: moving the rate
-     * does not, by itself, change the number driving the rate. It only bites
-     * through VOLUMES - imports get dear and people buy fewer.
-     *
-     * That works where volumes respond. It does not where they do not: a mine
-     * sells whatever it digs at the world price, so an industrial city's export
-     * volume is indifferent to the currency, its surplus never closes, and the
-     * rate drifts in one direction for as long as the run lasts. Measured over
-     * 4,000 months - which is 333 YEARS - it appreciated all the way to the
-     * floor, quartering the ore price from $0.30 to $0.07 and closing mines.
-     *
-     * A long-run anchor fixes it and is better economics than leaving it out.
-     * Real exchange rates mean-revert towards purchasing power parity, with a
-     * half-life measured in years, and the pull is what stops small persistent
-     * pressures compounding into absurdity over a century. Equilibrium is where
-     * the pressure drift and the pull balance, which is a rate that reflects a
-     * city's trade position without being a function of how long it has existed.
-     */
-
     /**
      * The rate at which a basket costs the same at home and abroad.
      *
@@ -267,9 +226,11 @@ public class ForeignAccounts {
 
     /**
      * The two inflation rates, and the level ratio parity is struck from.
-     * Since 0.7.2 the inflations move nothing here directly - the drift they
-     * were struck for is deleted (THE DRIFT THAT WAS DELETED) - and are kept
-     * for the screens; Game hands the same two to the real rate differential.
+     * The inflations move nothing here directly - the drift they were struck
+     * for is deleted (WHAT XR1 RETIRED) - and are kept for the screens; Game
+     * hands the same two to the real rate differential. Since XR1 the level
+     * is the basket with rent capped (PriceIndex.getParityLevel()), and parity's
+     * trend, not the month's level, is what the rate follows (THE FLOAT).
      *
      * @param localLevel the city's basket vs founding
      * @param worldLevel the world's, likewise
@@ -317,71 +278,40 @@ public class ForeignAccounts {
 
     public double getParity() { return parity; }
 
-    /** How hard. A half-life of roughly fifteen years. */
-    public static final double REVERSION = .004;
-
     private double rate = OPENING_RATE;
-    private double lastPressure;
     private double lastAbsorption;
 
-    /**
-     * The month's depreciation pressure: the current-account deficit as a share
-     * of everything the city trades. Positive means the currency should weaken.
-     */
-    public double pressure() {
-        /*
-         * ON TRAILING FIGURES, and that is not a refinement.
-         *
-         * Measured on a single month, one construction order looks like a
-         * currency crisis: the industrial city's current account swung from
-         * +$874 to -$9,311 to +$3,246 in three consecutive years, and the rate
-         * chased every one of them into the cap. A month says whether a mill was
-         * staffed; a year says whether the city earns its living.
-         */
-        if (monthsOfHistory < SETTLING_MONTHS) return 0;
-
-        /*
-         * ON THE OVERALL BALANCE, NOT THE TRADE BALANCE (2026-09-10).
-         *
-         * This was the current account over the trade volume, which is the
-         * whole pressure on a currency only in a city where nothing else
-         * crosses the border. Money crosses it: a foreign bond the treasury
-         * sells, a foreign shareholder's capital, and - the reason this
-         * changed - the sectors' own savings going abroad for the world's
-         * rate (OutwardInvestment). A surplus that is recycled into foreign
-         * assets is not a surplus of demand for the currency; it is a
-         * surplus met by an outflow, and the rate has to see both halves or
-         * it appreciates on a demand that is not there. Measured before
-         * this: every steel economy in the game appreciated at ten percent
-         * a year until its exporters were dead, because nothing it earned
-         * abroad ever went back.
-         *
-         * The reserve transactions stay out, as before: the vault meets
-         * pressure by selling (effectivePressure(), since 0.7.2), which is the
-         * same idea from the other side, and counting them here as well would
-         * take it twice.
-         * The volume grows by the gross of what crossed, so a month of pure
-         * capital flow with no trade reads as a full push and not as a
-         * division by nothing.
-         */
-        double volume = exportsTrailing + importsTrailing + financialGrossTrailing;
-        if (volume <= minTrade) return 0;
-
-        double raw = -(currentTrailing + financialTrailing) / volume;
-        raw = Math.max(-1, Math.min(1, raw));
-        if (Math.abs(raw) < DEAD_BAND) return 0;
-        return raw - Math.signum(raw) * DEAD_BAND;
-    }
-
-    /**
-     * Months before the rate is allowed to move at all.
+    /* ================ WHAT XR1 RETIRED (2026-10-21) ================
      *
-     * A city that has been trading for three months has no trend to read, and
-     * its first construction order is its entire balance of payments. Without
-     * this the currency had already fallen a third before the city had a
-     * thousand people in it.
+     * The rule that stood here from 0.7.2 to 0.8.18 moved the rate a little
+     * every month by a push and two pulls. Four forms of it, in the order they
+     * came, and what the study measured (docs/studies/spec-exchange-rates.md,
+     * section 1) of the whole:
+     *
+     *   THE LEVEL FORM pulled the rate to localLevel / worldLevel; it survived,
+     *     slowed, as the PULL to parity at REVERSION .004 a month.
+     *   THE DRIFT FORM (deleted in 0.7.2) moved the rate by the whole
+     *     inflation differential every month; with imports repricing one for
+     *     one it fed inflation through the currency (the 0.6.9 year book: prices
+     *     399x, the currency at its guard).
+     *   RATE_PULL's PUSH on the real gap (4 per unit of gap, at DRIFT_SPEED
+     *     .02, less the vault's share, times the openness), with the trade
+     *     balance's own push beside it (DEAD_BAND .05, quiet for SETTLING_MONTHS).
+     *   THE UIP LEVEL (0.7.42): the push read the gap less EXPECTED_REVERSION
+     *     .15 of the distance from parity, so a held gap settled at e^(-gap /
+     *     .15); and THE ANCHORED DRIFT (0.7.42): the credible part of expected
+     *     inflation against the world's, a twelfth a month.
+     *
+     * What they did, measured on slot 3 and the playtest: the D$ moved 1.2% a
+     * year (a float moves 8-12%, a currency board under 1%), in runs of up to 78
+     * months one way and 242 in slot 1; a pull of k toward a parity growing g a
+     * month settles at rate/parity = k / (k + g), 0.70-0.80 for 333 years of the
+     * playtest, a lag that never closes; parity was 41% to 80% rent; and the
+     * treasury's purchases sat outside the balance while a fuller vault took
+     * more of every fall, so buying US$205M of dollars left the D$ 7.7% dearer
+     * two years on. `git show d2869a5:src/main/java/ham/citybuildersim/ForeignAccounts.java`
+     * has the full text.
      */
-    public static final int SETTLING_MONTHS = 24;
 
     /** Below this much trade a month, the exchange rate is not a real price. */
     public static final double MIN_TRADE = 50;
@@ -389,13 +319,14 @@ public class ForeignAccounts {
     /**
      * The same floor, in TODAY's money.
      *
-     * A MONEY THRESHOLD IN A RATIO'S CLOTHING. pressure() is scale-free - a
-     * deficit as a share of trade - so a currency reform should not touch it,
-     * and it did: the guard underneath it is fifty DOLLARS of trade, and after
-     * lopping two zeros a city trading $6,000 a month was trading $60 and fell
-     * straight through it. Pressure went to exactly zero, the trade term
-     * stopped defending the currency at all, and the two cities parted company
-     * in the first month.
+     * A MONEY THRESHOLD IN A RATIO'S CLOTHING. The old trade pressure was
+     * scale-free - a deficit as a share of trade - so a currency reform should
+     * not have touched it, and it did: the guard underneath it is fifty
+     * DOLLARS of trade, and after lopping two zeros a city trading $6,000 a
+     * month was trading $60 and fell straight through it. Pressure went to
+     * exactly zero, the trade term stopped defending the currency at all, and
+     * the two cities parted company in the first month. (gate() reads the
+     * floor now, as the pressure did.)
      *
      * Fourth sighting of this exact shape: MATERIAL_MONTHS against a stock that
      * could not reach it, MAX_SETTABLE against an indexed wage floor, MIN_RATE
@@ -414,10 +345,10 @@ public class ForeignAccounts {
      * is owed abroad.
      *
      * The vault's CAPACITY - what it COULD do, which the screens show:
-     * effectivePressure() sells this share of the month's deficit, since
-     * 2026-09-21 only against a push that would weaken the currency, and
-     * since 0.7.2 what actually damps the push is what the sale met
-     * (getLastAbsorption()), which is less when the vault runs short.
+     * repriceCurrency() sells this share of the month's deficit, since
+     * 2026-09-21 only in a month the D$ would fall, and what the sale
+     * actually met is getLastAbsorption(), which is less when the vault runs
+     * short.
      */
     public double absorption() {
         if (reservesUsd <= 0) return 0;
@@ -427,84 +358,14 @@ public class ForeignAccounts {
     }
 
     /**
-     * How far the city's own rate is above the world's - in real terms since
-     * 0.7.2 - and what that is worth to the currency.
-     *
-     * THE CHANNEL THAT MAKES THE RATE A LEVER. Until this existed, pressure()
-     * read the trade balance and nothing else, so a rate rise could not defend
-     * a currency - which is the single most important thing a rate rise does in
-     * an open economy and the whole reason the lever was deferred to this
-     * phase. Money goes where it is paid better; a city paying five points over
-     * the world is a city people buy currency to lend to.
-     *
-     * SIGNED AGAINST THE TRADE TERM. pressure() is DEPRECIATION pressure, so a
-     * rate advantage has to come out negative: paying more than the world
-     * supports the currency. Getting this backwards would make every rate rise
-     * a devaluation, which is the sort of thing that passes review and fails a
-     * playtest three hundred years later.
-     *
-     * Damped by the same openness the trade term is, because a closed economy's
-     * rate is not a price anybody outside is trading on.
-     *
-     * ================ THE REAL RATE, NOT THE NOMINAL (0.7.2) ================
-     *
-     * Jerus: "i think we need to uncap the rate... but if we do... what
-     * happens to everyone?"
-     *
-     * Until 0.7.2 the differential was NOMINAL - the policy rate less the
-     * world's base rate - and capped at MAX_RATE_PRESSURE .8, so it saturated
-     * 13.3 points over the world while the drift beside it (repriceCurrency(),
-     * THE DRIFT THAT WAS DELETED) moved the rate by the whole inflation
-     * differential, unbounded. A city inflating at 40% saw its currency fall
-     * 40% a year by rule whatever its central bank did, and a dial past 17%
-     * bought nothing. That was the ring the 0.6.9 year book closed.
-     *
-     * Now it is uncovered interest parity on the REAL rates: money moves to
-     * the higher real return, so what Game hands setRealRateDifferential() is
-     *
-     *     (policy - the city's inflation) - (world base - the world's inflation)
-     *
-     * - the same two inflations setParity() receives until 0.7.42, and since
-     * then the city's side ex ante, at the inflation it EXPECTS
-     * (Game.realRateDifferential(); INVESTORS EXPECT A CURRENCY TO COME BACK,
-     * below, for what bounds it). A city inflating at 40%
-     * with its dial at 25% pays -15 real and is pushed down by the outflow
-     * that implies; the same city at 45% is supported. A spiral needs an
-     * actual outflow to continue, and a credible real rate stops it.
-     *
-     * ================== FOUR, NOT SIX (0.7.2, measured) ==================
-     *
-     * Six was struck against the NOMINAL gap under the .8 cap, where it
-     * bought thirteen points of support and nothing past them. Uncapped and
-     * on the real gap it is the loop's gain instead: a city whose dial sits
-     * still while its prices rise sees its currency fall RATE_PULL x
-     * DRIFT_SPEED x 12 times the gap a year (times the openness) - 1.44 at
-     * six, half as fast again as the drift it replaced, which fell one for
-     * one - and import prices follow it. Measured at six on the eight default
-     * seeds, whose player looks in every few decades: seed 2's dial sat at
-     * 0.08% while a local shock took inflation from 2% to 15% in ten months;
-     * the real gap ran to -118 points, the rate to its guard and prices to
-     * 115x founding, until the player's rule took the dial to 82% and the
-     * same term, turned round, appreciated the currency 8% a month into 54%
-     * deflation. At four the gain is 0.96 at full openness, under the
-     * drift's one, and that episode did not recur (the seed swung 1.37x); a
-     * credible real rate buys two thirds of the support it did, and with the
-     * rule on the dial (the autopilot) neither setting spirals. Once the
-     * household ledger's empty cells were fixed (0.7.2's gate) seed 2 took
-     * another path and swings 2.65x on a different episode, with no month at
-     * the guard: a bank failure at month 809, the vault sold down from month
-     * 811 and empty by month 850, the dollar at 1.87 by month 980 and prices
-     * at 2.47x by month 988, back to 1.16 by the end. The one retune the
-     * batch allowed itself; Jerus's number to settle.
+     * The real rate gap the month was handed (Game.realRateDifferential()): the
+     * city's real rate less the world's, a year - the dial less the inflation
+     * it expects, against the world's base rate less its realised inflation.
+     * THE FLOAT reads it through gapLevelFor().
      */
-    public static final double RATE_PULL = 4.0;
-
-    /** A numerical guard, not a mechanic: it binds only at a real gap of MAX_RATE_PRESSURE / RATE_PULL - a hundred points, a currency in collapse rather than a policy (it was .8 until 0.7.2, a cap at 13 points that was the mechanic). */
-    public static final double MAX_RATE_PRESSURE = 4.0;
-
     private double realRateDifferential;
 
-    /** @param differential the city's real rate less the world's real rate, annual - see THE REAL RATE, NOT THE NOMINAL */
+    /** @param differential the city's real rate less the world's real rate, annual; not a number reads as none */
     public void setRealRateDifferential(double differential) {
         this.realRateDifferential = Double.isFinite(differential) ? differential : 0;
     }
@@ -512,205 +373,295 @@ public class ForeignAccounts {
     /** The city's real rate less the world's, as the month was handed it. */
     public double getRealRateDifferential() { return realRateDifferential; }
 
-    /*
-     * ============ INVESTORS EXPECT A CURRENCY TO COME BACK (0.7.42) ============
+    /* ================ THE FLOAT (XR1, 2026-10-21) ================
      *
-     * Uncovered interest parity with an expected reversion: money comes to be
-     * lent here for the real rate it earns, LESS what it expects to lose as a
-     * currency that sits strong against parity comes back (or plus what it
-     * expects to gain as a weak one recovers). EXPECTED_REVERSION is how fast
-     * investors expect that: the pressure is
+     * Jerus, 2026-10-21: "the current one is wierd". The study found why (WHAT
+     * XR1 RETIRED, above; docs/studies/spec-exchange-rates.md, sections 0 and
+     * 1): the D$ glided a tenth as far as a real currency moves and lagged a
+     * moving parity for ever, it sat 20-34% dearer than a parity that was mostly
+     * rent, and buying dollars made it dearer. What replaced it follows Jerus's
+     * calls of 2026-10-21: star 1, the market like a real float; star 2, parity
+     * on the basket with rent capped at a third (PriceIndex.RENT_CAP); star 7,
+     * interventions move the rate at the real size; star 8, the real gap's
+     * effect "whatever real life does".
      *
-     *     -RATE_PULL x (real rate differential + EXPECTED_REVERSION x ln(rate / parity))
+     * Every month, in logs:
      *
-     * and it is zero where the two cancel, at rate / parity = e^(-gap /
-     * EXPECTED_REVERSION) - uipLevel(). A sustained real gap now moves the
-     * currency to a LEVEL (a three-point gap holds it 22% from parity, either
-     * way) instead of a drift for as long as the gap lasts.
+     *   ln rate = trend + g x (gap reached + balance reached + cover reached + market)
+     *             + intervention felt
      *
-     * Why: with the anchor's expected inflation in the real rate, a held 0%
-     * rate under a 2% expectation is a two-point negative gap for good, and
-     * without the reversion that compounded into a currency falling every
-     * month (spec-inflation.md, sections 2.5 and 5; star 16). It also bounds
-     * the leak of new money abroad (HouseholdBalance.investAbroad(), star 11).
+     *   trend         parity's level and slope (Holt), followed one for one: no lag.
+     *   gap reached   where the real rate gap puts the D$ (gapLevelFor()): a part
+     *                 at once, the rest building, so the peak comes in a year or two.
+     *   balance       the overall balance against a year's GDP (balanceTarget()).
+     *   cover         the vault's shortfall from THIN_COVER months of imports
+     *                 (coverTarget()), its premium; both reached at MARKET_SPEED.
+     *   market        the D$'s own swing: seeded, fading (MARKET_SIGMA).
+     *   felt          the treasury's and the defence's dollars, at the real size.
+     *   g             gate(): a city that hardly trades has no market price to move.
+     *
+     * Each piece is a LEVEL, not a speed, so nothing lags a moving target, and
+     * each is a line of its own on the screens (getMoveTrend() and the rest).
      */
 
-    /** How fast investors expect a currency away from parity to come back, a fraction of the log gap a year: the reversion that sets the UIP level at e^(-gap / this). */
-    public static final double EXPECTED_REVERSION = .15;
+    /** How much of a month's jump in parity the trend takes at once: Holt's level, so a steady inflation gap passes into the rate one for one and a single month's spike moves it a sixth of itself. */
+    public static final double TREND_LEVEL = 1 / 6.0;
 
-    /** Negative when the city pays over the odds in real terms: a real rate advantage is support - less what a strong currency is expected to give back (INVESTORS EXPECT A CURRENCY TO COME BACK). */
-    public double ratePressure() {
-        double expectedReturn = rate > 0 && parity > 0 ? EXPECTED_REVERSION * Math.log(rate / parity) : 0;
-        double raw = -(realRateDifferential + expectedReturn) * RATE_PULL;
-        return Math.max(-MAX_RATE_PRESSURE, Math.min(MAX_RATE_PRESSURE, raw));
-    }
+    /** ...and how fast its slope learns, a twenty-fourth of the level's change a month: about two years. */
+    public static final double TREND_SLOPE = 1 / 24.0;
 
-    /** Where the rate's own pressure is zero against parity: rate / parity = e^(-real gap / EXPECTED_REVERSION). The level a sustained real gap holds the currency at, other pressures aside. */
-    public double uipLevel() {
-        return Math.exp(-realRateDifferential / EXPECTED_REVERSION);
-    }
+    /** How many years the market expects a real rate gap to last, so a sustained point of gap holds the D$ about 2.5% dearer (or cheaper, when negative). */
+    public static final double PERSISTENCE = 2.5;
 
-    /*
-     * ================ THE ANCHORED DRIFT (0.7.42) ================
-     *
-     * Every month, after the push, the rate moves by the CREDIBLE part of the
-     * city's expected inflation against the world's realised inflation:
-     *
-     *     d = (1 + credibility x target) / (1 + world inflation) - 1,  a year
-     *
-     * set by Game before the reprice (setExpectedDrift()), zero before the
-     * basket is based, and nothing while the currency is pinned. It is the
-     * relative-PPP drift deleted in 0.7.2 (THE DRIFT THAT WAS DELETED, below),
-     * back in the one form with no loop in it: credibility times the TARGET
-     * has no inflation in it, so a city inflating cannot drift itself further
-     * by rule. The rest of expected inflation reaches the currency only
-     * through the real rate, which UIP bounds to a level.
-     *
-     * Why it is needed at all: the money constants now drift at the expected
-     * price level, and a currency that did not drift with them left the
-     * exporters' costs rising against a fixed rate - measured in the
-     * prototype, a 2% city ended at 0.43-0.46 of parity and its population
-     * halved (0.7.41: 0.62). With the drift: 0.78-0.85, and growth came back.
-     * At FULL expected inflation the drift compounded with the real rate and
-     * a held 0% ran at 41-66% a year (spec-inflation.md, section 2.5; star 16).
-     * Derived every month, so not saved: Game re-sets it on a load.
-     */
-    private double expectedDrift;
+    /** The most a real rate gap can move the level either way, a soft cap (tanh): markets do not believe a seventeen-point gap lasts. */
+    public static final double GAP_CAP = .35;
 
-    /** @param drift the anchored drift, a fraction a year - see THE ANCHORED DRIFT; not a number reads as none */
-    public void setExpectedDrift(double drift) {
-        this.expectedDrift = Double.isFinite(drift) ? drift : 0;
-    }
+    /** The share of a change in the gap's level that the rate shows in its month: Kearns and Manners' 1.5% a point on the day (R16). */
+    public static final double GAP_IMPACT = .6;
 
-    /** The anchored drift the month was handed, a fraction a year. */
-    public double getExpectedDrift() { return expectedDrift; }
+    /** ...and the rest builds with this half-life, in months, so the peak comes within one to three years: delayed overshooting (R15). */
+    public static final double GAP_BUILD_HALF_LIFE = 9;
+
+    /** How far a year's overall balance, against a year's GDP, moves the level: a deficit of a tenth of GDP cheapens the D$ 5%. */
+    public static final double BALANCE_WEIGHT = .5;
+
+    /** ...at most this far either way. */
+    public static final double BALANCE_CAP = .20;
+
+    /** An empty vault's discount on the D$, falling to nothing at THIN_COVER months of imports, which is its safe cover: one dial, one meaning (the oldest rule of thumb, R31). */
+    public static final double RISK_PREMIUM = .10;
+
+    /** How much of a change in the balance's and the cover's levels reaches the rate in its month. */
+    public static final double MARKET_SPEED = .5;
+
+    /** The market's own swing a month, about 8% a year: a real float's (Jerus, star 1). */
+    public static final double MARKET_SIGMA = .022;
+
+    /** ...fading by half in this many months, the half-life of real currencies' gaps from parity (Rogoff, R1). */
+    public static final double MARKET_HALF_LIFE = 42;
+
+    /** The openness, trade over GDP, at which the market and the fundamentals reach the rate in full; a less open city feels them in proportion. */
+    public static final double OPEN_ENOUGH = .10;
+
+    /** How far a purchase of dollars moves the rate: 2% per 1% of a year's GDP, a sale the other way (the IMF's 1.7-2.0%, R33; Jerus, star 7). */
+    public static final double INTERVENTION_IMPACT = 2.0;
+
+    /** ...fading by half in this many months. */
+    public static final double INTERVENTION_HALF_LIFE = 6;
 
     /**
-     * The pressure that actually reaches the rate this month.
-     *
-     * ==================== A RESERVE DEFENDS A CURRENCY ====================
+     * The float's state, every figure a log and all of it saved (slots 45-70):
+     * parity's trend (a level and a slope, from the first reprice), the real
+     * gap's level and how much of it the rate shows, the balance's and the
+     * cover's levels reached, the market's swing and the seed and draws that
+     * make it a path, the interventions still felt, a year's GDP as a rolling
+     * mean, and the month's moves by force with the contributions they were
+     * struck from. A flow cannot be reconstructed from the state a month ended
+     * in, so the last month's six moves ride the save.
+     */
+    private double trendLevel, trendSlope;
+    private boolean trendStarted;
+    private double gapTarget, gapReached;
+    private double balanceReached, coverReached;
+    private double market;
+    private double interventionFelt;
+    private long marketSeed;
+    private boolean marketSeeded;
+    private long marketDraws;
+    private double gdpTrailing;
+    /** The five contributions last month (trend, gap, balance, cover, intervention): this month's move by force is the change from them. */
+    private final double[] lastContrib = new double[5];
+    /** This month's move by force (trend, gap, balance, cover, intervention, market); they add to the month's log move. */
+    private final double[] moves = new double[6];
+    /** The month's fall against parity's trend before the defence leaned on it (repriceCurrency(), step 7). */
+    private double lastWouldBeMove;
+    /**
+     * What the treasury has dealt since the last reprice, local money, a
+     * purchase of dollars positive: the player deals between months, and the
+     * next month's startMonth() clears boughtThisMonth and soldThisMonth
+     * before any reprice reads them. Saved (slot 70): a purchase pressed
+     * before a save moves the rate after the load.
+     */
+    private double dealtSinceReprice;
+
+    /** Where a real rate gap puts the D$ against parity's trend, in logs: negative is dearer (the rate is D$ per US$, so a lower rate is a dearer D$), the gap's sign the other way round, and never past GAP_CAP either way. Pure. */
+    public static double gapLevelFor(double gap) {
+        return -GAP_CAP * Math.tanh(PERSISTENCE * gap / GAP_CAP);
+    }
+
+    /**
+     * Where the overall balance puts the D$ in logs, positive weaker: minus
+     * BALANCE_WEIGHT times the year's current plus financial account over the
+     * year's GDP, at most BALANCE_CAP either way - nothing before a GDP is known.
+     * The reserve transactions stay out of both, as they stay out of the
+     * accounts: the vault meets a deficit by selling, which the felt carries.
+     * Pure.
+     */
+    public double balanceTarget() {
+        if (!(gdpTrailing > 0)) return 0;
+        double raw = -BALANCE_WEIGHT * (currentTrailing + financialTrailing) / gdpTrailing;
+        return Math.max(-BALANCE_CAP, Math.min(BALANCE_CAP, raw));
+    }
+
+    /** Where the vault's cover puts the D$ in logs, positive weaker: RISK_PREMIUM times how far the cover falls short of THIN_COVER months of imports - the whole premium on an empty vault, none with no import bill to cover. Pure. */
+    public double coverTarget() {
+        return RISK_PREMIUM * Math.max(0, 1 - importCover() / THIN_COVER);
+    }
+
+    /** How much of the market and the fundamentals reaches the rate: nothing while the city trades no more than minTrade a month, else its openness over OPEN_ENOUGH, at most 1. Pure. */
+    public double gate() {
+        if (exportsTrailing + importsTrailing + financialGrossTrailing <= minTrade) return 0;
+        return Math.min(1, openness / OPEN_ENOUGH);
+    }
+
+    /** Parity's trend in logs: where the trend stands once started, parity's own log before the first reprice. */
+    private double trendLog() {
+        return trendStarted ? trendLevel : (parity > 0 ? Math.log(parity) : 0);
+    }
+
+    /** Parity's trend as a rate, local money per US dollar: the Holt level of parity, followed one for one; parity itself before the first reprice. Pure. */
+    public double getParityTrend() { return Math.exp(trendLog()); }
+
+    /** The trend's slope, a log a month. */
+    public double getTrendSlope() { return trendSlope; }
+
+    /** The real rate gap's level the market has priced, in logs (gapLevelFor() of the gap it was handed). */
+    public double getGapTarget() { return gapTarget; }
+
+    /** ...and how much of it the rate shows so far: GAP_IMPACT of each change at once, the rest building. */
+    public double getGapReached() { return gapReached; }
+
+    /** The balance's level as reached, in logs. */
+    public double getBalanceReached() { return balanceReached; }
+
+    /** The cover's premium as reached, in logs. */
+    public double getCoverReached() { return coverReached; }
+
+    /** The market's own swing, in logs, ungated; the rate carries gate() of it. */
+    public double getMarket() { return market; }
+
+    /** What the interventions still felt put on the rate, in logs, positive weaker: the treasury's purchases and the defence's sales, fading by half in INTERVENTION_HALF_LIFE months. */
+    public double getInterventionFelt() { return interventionFelt; }
+
+    /** Where the fundamentals put the D$ now, local money per US dollar: the trend and gate() of the real gap's, the balance's and the cover's levels reached - the rate without the market and the interventions. Pure. */
+    public double getFairLevel() {
+        return Math.exp(trendLog() + gate() * (gapReached + balanceReached + coverReached));
+    }
+
+    /** How far the rate sits from the fundamentals' level: positive is weaker than it. Pure. */
+    public double deviationFromFair() {
+        double fair = getFairLevel();
+        return fair > 0 ? rate / fair - 1 : 0;
+    }
+
+    /** Last month's move from parity's trend, in logs, positive weaker. */
+    public double getMoveTrend() { return moves[0]; }
+    /** ...from the real rate gap. */
+    public double getMoveGap() { return moves[1]; }
+    /** ...from the balance. */
+    public double getMoveBalance() { return moves[2]; }
+    /** ...from the vault's cover. */
+    public double getMoveCover() { return moves[3]; }
+    /** ...from interventions, the treasury's and the defence's. */
+    public double getMoveIntervention() { return moves[4]; }
+    /** ...from the market: what is left once the five are taken, so the six always add to the month's move, through a pin or a guard. */
+    public double getMoveMarket() { return moves[5]; }
+
+    /** Last month's move in the rate, in logs, positive weaker: the six moves added. */
+    public double getLastMove() {
+        double sum = 0;
+        for (double m : moves) sum += m;
+        return sum;
+    }
+
+    /** The month's fall before the defence leaned on it: the move of the market and the fundamentals alone, parity's trend and the interventions left out - positive is a fall the vault, if it holds dollars, sells against (repriceCurrency(), step 7). */
+    public double getLastWouldBeMove() { return lastWouldBeMove; }
+
+    /** The seed the market's path is drawn from (52 bits, so it survives a double in the save). */
+    public long getMarketSeed() { return marketSeed; }
+
+    /** Whether the market is drawn at all: a city is seeded at founding (Game.buildWorld()); a bare ForeignAccounts has a quiet market. */
+    public boolean isMarketSeeded() { return marketSeeded; }
+
+    /** How many draws the path has taken: one a month the rate is not pinned. */
+    public long getMarketDraws() { return marketDraws; }
+
+    /** A year of the city's output as a rolling monthly mean, local money, the figure the balance and the interventions are weighed against. */
+    public double getGdpTrailing() { return gdpTrailing; }
+
+    /**
+     * Seeds the market: one seed, one path (the nations study's D9). Cut to 52
+     * bits so the save carries it as a double exactly, and the path restarts.
+     */
+    public void setMarketSeed(long seed) {
+        marketSeed = seed & ((1L << 52) - 1);
+        marketSeeded = true;
+        marketDraws = 0;
+    }
+
+    /**
+     * Quiets the market, beside pinRate() and for the same reason: FOR FIXTURES
+     * THAT MEASURE SOMETHING ELSE. A fixture about the real gap's level or the
+     * defence's arithmetic cannot have a swing of 2% a month underneath it. A
+     * new ForeignAccounts is quiet until it is seeded; Game seeds every city
+     * at founding.
+     */
+    public void quietMarket() {
+        marketSeeded = false;
+        market = 0;
+    }
+
+    /** The market's next normal draw, a function of the seed and the draws taken - the same seed, the same path, however the months are grouped. */
+    private double draw() {
+        return new java.util.Random(mix(marketSeed, marketDraws++)).nextGaussian();
+    }
+
+    /** SplitMix64's finaliser over seed x golden-gamma + draws: neighbouring draws are unrelated seeds. */
+    private static long mix(long seed, long draws) {
+        long z = seed * 0x9E3779B97F4A7C15L + draws;
+        z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+        z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+        return z ^ (z >>> 31);
+    }
+
+    /* ==================== A RESERVE DEFENDS A CURRENCY ====================
      *
      * Jerus, 2026-09-21: "a reserve defends a currency; it does not hold one
-     * down." So the vault absorbs a push only when the push would WEAKEN the
-     * currency - the total, trade term plus the rate's support, positive. A
-     * push the other way, appreciation from a surplus or the support of a
-     * policy rate paid over the world's, passes through undamped.
+     * down." So the central bank sells dollars only in a month the D$ would
+     * FALL (repriceCurrency(), step 7), never in a month it would rise. It was
+     * damped both ways until then, and a deep vault muted the only two forces
+     * that pull a currency back from a spiral - the surplus a weak currency
+     * earns, and the policy rate: of the ensemble's eight seeds three
+     * reproduced the year book that started the batch (prices 141x and 190x
+     * founding, the currency at its guard), against a median 1.60x once it
+     * leaned on the way down only. Leaning against a rise is BUYING dollars,
+     * which is a decision, not something a vault does by standing there.
      *
-     * IT WAS DAMPED BOTH WAYS, and nobody could see it while the vault was
-     * small. Nothing about a stock of dollars resists a currency rising: a
-     * central bank leans against appreciation by BUYING dollars, which is a
-     * decision, not something its vault does by standing there. Damped both
-     * ways, a deep vault muted the only two forces that pull a currency back
-     * from an inflation spiral - the surplus a weak currency earns, and the
-     * policy rate - and left the drift, which carries the rate up with local
-     * prices and import prices up with the rate. The old vault was held at
-     * the price paid, so its cover fell as the currency fell and the damping
-     * let go when it mattered: a stabiliser by accident, gone the day the
-     * vault was kept in dollars. The founding reserve then gave every young
-     * city hundreds of months of cover and the 0.85 ceiling for decades.
-     *
-     * Measured over the ensemble's eight seeds, founding reserve in: damped
-     * both ways, three of the eight reproduced the year book that started the
-     * batch - prices 141x and 190x founding with the currency at its guard,
-     * and 11x - and the median swing of the price level went from 1.63x to
-     * 3.80x. Damped on the way down only: median 1.60x, none past 2.81x
-     * (the pristine runs' worst was 7.13x), and the dearest dollar 1.65.
-     *
-     * lastAbsorption is what was APPLIED - nothing on a month the currency was
-     * pushed up - so the screens and the save say what the vault did, not
-     * what it could have done. absorption() is still the vault's capacity.
-     * Since 0.7.2 it is the REALISED figure: what the dollars actually sold
-     * met of the month's deficit (A DEFENCE THAT SPENDS, below).
-     *
-     * ================== A DEFENCE THAT SPENDS (0.7.2) ==================
-     *
-     * Jerus, on the founding reserve: "1B is in usd in the reserve ... since
-     * 99% players wont add to reserves" - and the-central-bank.md section 8:
-     * the defence is what the founding US$1B is for. Until 0.7.2 absorption()
-     * was applied to a weakening push and not a dollar left the vault: a
-     * capacity that cost nothing, which is why the default player never saw
-     * the vault work and why it could sit at 0.85 for fifty years. Now the
+     * A DEFENCE THAT SPENDS (0.7.2). Jerus, on the founding reserve: "1B is in
+     * usd in the reserve ... since 99% players wont add to reserves". The
      * central bank SELLS:
      *
      *     dollarsSold = absorption() x deficitUsd, at most what the vault holds
      *
-     * deficitUsd is the month's OWN net outflow - its current plus financial
-     * account off the audit the month just struck, when negative, in dollars
-     * at the month's rate (monthDeficitUsd()) - and not the trailing sum
-     * pressure() reads. The trailing window says which way the currency is
-     * being pushed; the month says how many dollars were actually wanted, and
-     * a central bank sells what is asked of it this month, not a year's
-     * average of it. What damps the push is the REALISED absorption,
-     * dollarsSold / deficitUsd: a full vault damps exactly what absorption()
-     * says, one running low damps less each month as its cover falls, and an
-     * empty one damps nothing at all.
+     * deficitUsd is the month's OWN net outflow (monthDeficitUsd()), not a
+     * trailing sum: a central bank sells what is asked of it this month, and a
+     * month with no deficit sells nothing. getLastAbsorption() is the share of
+     * the deficit the sale met - the capacity with a full vault, less as the
+     * cover runs low, nothing on an empty one.
      *
-     * A PUSH TO WEAKEN ON A MONTH WITH NO DEFICIT sells nothing and damps
-     * nothing - the trailing window remembering last year's deficit, or the
-     * real rate pushing on its own. That is the honest reading: nobody came
-     * to the window for dollars this month, so there was nothing to meet, and
-     * the whole push reaches the rate.
+     * SINCE XR1 THE SALE MOVES THE RATE AT ITS REAL SIZE, through the channel
+     * the treasury's own purchases use (INTERVENTION_IMPACT): the dollars it
+     * sells lift the D$, and fade. Until then the sale only damped a push by
+     * its share of the deficit - which is why a bigger vault took more of every
+     * fall and buying dollars left the D$ dearer (WHAT XR1 RETIRED).
      *
-     * A RISE IS NEVER DEFENDED: nothing is bought. Leaning against
-     * appreciation is buying dollars, which is a decision (batch E, if Jerus
-     * wants it), not something a vault does by standing there.
-     *
-     * THE OTHER SIDE IS THE CENTRAL BANK'S EQUITY (CentralBank, THE
-     * DEFENCE): the vault's dollars leave here, the central bank's equity
-     * falls by their local price, and M0 does not move - a capital
-     * transaction against the world, not money destroyed; no pool moves, so
-     * the audit declares nothing. lifetimeIntervention falls by the local
-     * money exactly as a treasury sale does - the vault is still "what the
-     * treasury chose to buy and has not yet sold". The treasury's own
-     * sellReserves() is not this and is untouched.
-     *
-     * The month's own call, from repriceCurrency(), and it RECORDS AND SELLS:
-     * lastPressure, lastAbsorption and the month's sale are written here. A
-     * screen asks previewPressure(), the same arithmetic with nothing written
-     * and nothing sold.
+     * THE OTHER SIDE IS THE CENTRAL BANK'S EQUITY (CentralBank, THE DEFENCE):
+     * the vault's dollars leave here, the central bank's equity falls by their
+     * local price, and M0 does not move - a capital transaction against the
+     * world, not money destroyed; no pool moves, so the audit declares nothing.
+     * lifetimeIntervention falls by the local money exactly as a treasury sale
+     * does. The treasury's own sellReserves() is not this and is untouched.
      */
-    public double effectivePressure() {
-        lastPressure = pressure() + ratePressure();
-        double deficitUsd = monthDeficitUsd();
-        // Both struck before the sale: absorption() reads the vault the sale empties.
-        lastAbsorption = realisedFor(lastPressure, deficitUsd);
-        sellToDefend(dollarsFor(lastPressure, deficitUsd));
-        return damped(lastPressure, lastAbsorption);
-    }
-
-    /**
-     * The same push, computed and not recorded - for a screen.
-     *
-     * WHY IT EXISTS (2026-09-21). The trade page's "forces on the rate" asked
-     * effectivePressure() for the figure it prints, and effectivePressure()
-     * writes lastPressure and lastAbsorption - the two readings the month
-     * records for the save and for the same page's own lines. So opening the
-     * page between two months rewrote the month's record from the screen, the
-     * shape ReadPathCheck exists to stop: reading the city must not change the
-     * city. This is the arithmetic without the two writes; the month's caller,
-     * repriceCurrency(), still records them - and since 0.7.2 sells the vault's
-     * dollars, which a screen doing would be a great deal worse than a write.
-     */
-    public double previewPressure() {
-        double total = pressure() + ratePressure();
-        return damped(total, realisedFor(total, monthDeficitUsd()));
-    }
-
-    /**
-     * ...and the readings it is made of, on the same figures and recorded
-     * nowhere (0.7.1): the imbalance and the real rate together, and what the
-     * vault would take of it - since 0.7.2 the share of this month's deficit
-     * the dollars it would sell would meet, and the dollars themselves. The
-     * trade page's forces are one reading - the next reprice, on today's
-     * figures - and it printed the month's RECORDED pressure and absorption
-     * (getLastPressure(), getLastAbsorption()) beside this preview's push,
-     * which are a month apart once the month's accounts have moved.
-     */
-    public double previewRawPressure() { return pressure() + ratePressure(); }
-
-    public double previewAbsorption()  { return realisedFor(previewRawPressure(), monthDeficitUsd()); }
-
-    public double previewDefenceUsd()  { return dollarsFor(previewRawPressure(), monthDeficitUsd()); }
 
     /**
      * The month's own net outflow, in dollars at the month's rate: its current
@@ -723,22 +674,10 @@ public class ForeignAccounts {
         return balance < 0 && rate > 0 ? -balance / rate : 0;
     }
 
-    /** What the central bank sells against a push of this size on this deficit: the vault's capacity times the deficit, at most the vault; nothing against a rise, nothing on a month with no deficit. */
-    private double dollarsFor(double total, double deficitUsd) {
-        if (!(total > 0) || !(deficitUsd > 0) || !(reservesUsd > 0)) return 0;
+    /** The most the central bank sells against a month's deficit: the vault's capacity times the deficit, at most the vault; nothing on a month with no deficit. What it does sell is what takes back absorption() of the month's fall (repriceCurrency(), step 7). */
+    private double dollarsFor(double deficitUsd) {
+        if (!(deficitUsd > 0) || !(reservesUsd > 0)) return 0;
         return Math.min(absorption() * deficitUsd, reservesUsd);
-    }
-
-    /** ...and the share of the deficit it meets, which is what damps the push: the capacity when the vault covers the sale, less when it cannot. */
-    private double realisedFor(double total, double deficitUsd) {
-        double sold = dollarsFor(total, deficitUsd);
-        if (sold <= 0) return 0;
-        return sold < absorption() * deficitUsd ? sold / deficitUsd : absorption();
-    }
-
-    /** The push that reaches the rate, once the vault and the openness have had their share. */
-    private double damped(double total, double absorbed) {
-        return total * (1 - absorbed) * openness;
     }
 
     /**
@@ -773,7 +712,6 @@ public class ForeignAccounts {
     /** Dollars sold defending the currency since founding. */
     public double getDefenceUsdLifetime() { return defenceUsdLifetime; }
 
-    public double getLastPressure()   { return lastPressure; }
     /** The share of the month's deficit the vault met - the realised absorption, 0 on a month nothing was sold. */
     public double getLastAbsorption() { return lastAbsorption; }
 
@@ -802,79 +740,119 @@ public class ForeignAccounts {
     public boolean isPinned() { return pinned; }
 
     /**
-     * Moves the rate on the month just taken.
+     * Moves the rate on the month just taken: THE FLOAT, in nine steps.
      *
-     * Proportional rather than additive, so a 2% move is 2% whether the currency
-     * stands at one or at four - an additive drift would be trivial when the
-     * rate is high and catastrophic when it is low.
-     *
-     * TWO TERMS SINCE 0.7.2: the month's push - the trade balance and the real
-     * rate, less what the vault's sale met of it - and the pull back to
-     * parity. A pinned rate is not defended by a sale: the promise is the
-     * treasury's, and nothing is sold.
+     * A pinned rate does not move and is not defended by a sale: the promise
+     * is the treasury's, and nothing is sold - and nothing is drawn, so a pin
+     * does not shift the market's path.
      */
     public void repriceCurrency() {
-        if (pinned) { defenceUsd = defenceLocal = 0; return; }
+        if (pinned) {
+            defenceUsd = defenceLocal = 0;
+            java.util.Arrays.fill(moves, 0);
+            lastWouldBeMove = 0;
+            dealtSinceReprice = 0;   // ...and a pinned month's dealing is the promise's, not the market's
+            return;
+        }
+        double prevLog = Math.log(rate);
 
-        double push = effectivePressure();
-        rate *= (1 + push * DRIFT_SPEED);
-        // ...and the anchored drift, the credible part of expected inflation
-        // against the world's (0.7.42; THE ANCHORED DRIFT).
-        rate *= Math.pow(1 + expectedDrift, 1.0 / 12);
+        // 1. PARITY'S TREND, Holt's level and slope on ln(parity): the first
+        // reprice opens it on parity, so a founding starts on its own level.
+        double lnParity = parity > 0 ? Math.log(parity) : trendLog();
+        if (!trendStarted) {
+            trendLevel = lnParity;
+            trendSlope = 0;
+            trendStarted = true;
+        } else {
+            double before = trendLevel;
+            trendLevel = TREND_LEVEL * lnParity + (1 - TREND_LEVEL) * (trendLevel + trendSlope);
+            trendSlope = TREND_SLOPE * (trendLevel - before) + (1 - TREND_SLOPE) * trendSlope;
+        }
+
+        // 2. THE REAL RATE GAP: GAP_IMPACT of a change in its level shows at
+        // once and the rest builds. No started flag - both open at nothing, so a
+        // founding's gap is news like any other.
+        double target = gapLevelFor(realRateDifferential);
+        gapReached += GAP_IMPACT * (target - gapTarget);
+        gapTarget = target;
+        gapReached += (1 - Math.pow(.5, 1 / GAP_BUILD_HALF_LIFE)) * (gapTarget - gapReached);
+
+        // 3. THE BALANCE AND THE COVER, levels the market reaches at MARKET_SPEED.
+        balanceReached += MARKET_SPEED * (balanceTarget() - balanceReached);
+        coverReached += MARKET_SPEED * (coverTarget() - coverReached);
+
+        // 4. THE MARKET, its own swing: an AR(1) drawn from the seed. Nothing is
+        // drawn while it is quiet, so a fixture's rate has nothing underneath it.
+        market = Math.pow(.5, 1 / MARKET_HALF_LIFE) * market + (marketSeeded ? MARKET_SIGMA * draw() : 0);
+
+        // 5. WHAT INTERVENTIONS STILL FEEL, fading, plus what the treasury has
+        // dealt since the last reprice (buyReserves(), sellReserves()): a
+        // purchase of dollars cheapens the D$. Since the last reprice and not
+        // this month, because the player deals BETWEEN months, before the
+        // next month's startMonth() clears the month's bookkeeping. The
+        // founders' dollars are an endowment, forgotten at founding
+        // (forgetDealing()), so they never count.
+        interventionFelt *= Math.pow(.5, 1 / INTERVENTION_HALF_LIFE);
+        double annual = 12 * gdpTrailing;
+        if (annual > 0) interventionFelt += INTERVENTION_IMPACT * dealtSinceReprice / annual;
+        dealtSinceReprice = 0;
+
+        // 6. THE MONTH'S LOG RATE.
+        double g = gate();
+        double fundamentals = gapReached + balanceReached + coverReached + market;
+        double x = trendLevel + g * fundamentals + interventionFelt;
 
         /*
-         * ================ THE DRIFT THAT WAS DELETED (0.7.2) ================
+         * 7. LEAN AGAINST A FALL (A RESERVE DEFENDS A CURRENCY): the fall the
+         * market and the fundamentals would make this month - not parity's
+         * trend, and not the fading of what was sold before. A bank that
+         * leaned against parity would spend its vault holding up a currency
+         * its own prices are cheapening; one that leaned against its own
+         * support fading would sell again every month to hold where it had
+         * got to, which is a peg, and lose the vault.
          *
-         * Three forms of relative PPP have stood here, and the history is the
-         * reason for the one that is left.
-         *
-         * THE LEVEL FORM pulled the rate toward localLevel / worldLevel. It is
-         * unbounded over a long run: the playtest's city became self-sufficient
-         * in food, its prices decoupled from the world's, and after 333 years
-         * of world inflation the level ratio said the currency should be worth
-         * ten thousand times more than it started - the rate went to 0.05. It
-         * survives, bounded, as the PULL below: parity is the level form,
-         * applied at REVERSION, a half-life of fifteen years.
-         *
-         * THE DRIFT FORM moved the rate every month by the whole inflation
-         * differential, rate *= 1 + (local - world) / 12: "the direction of
-         * drift from an inflation differential", which is what PPP predicts
-         * well. And it was the ring. With imports repricing through the rate
-         * one for one, wages chasing the whole index and the shelf cost-plus,
-         * a gain of one on this link meant a city whose prices rose 40% a year
-         * saw its currency fall 40% a year by rule, whatever its central bank
-         * did - while the support a high rate gave it was capped at 13 points
-         * and the dial at 25%. Jerus's 0.6.9 year book is that loop run for
-         * 306 months: prices 399x, the currency at its guard
-         * (a-reserve-defends-a-currency.md section 1).
-         *
-         * NEITHER SURVIVES AS A DIRECT TERM. The inflation differential still
-         * reaches the currency - through the pull toward parity, which rises
-         * with local prices, and through the trade balance a dear or cheap
-         * currency earns (pressure()) - but not by rule, month by month. The
-         * monthly drift comes from the capital account now: ratePressure() on
-         * the REAL rate, so a spiral needs an actual outflow to continue and a
-         * credible real rate stops it (THE REAL RATE, NOT THE NOMINAL).
-         *
-         * ...UNTIL 0.7.42, when the drift came back in the one form that has
-         * no inflation in it - credibility times the target, against the
-         * world (THE ANCHORED DRIFT, above, applied just before this note).
+         * It takes back absorption() of that fall, the vault's capacity by its
+         * cover, as the old defence damped a push by it, and sells only the
+         * dollars that takes at INTERVENTION_IMPACT - at most absorption() x
+         * the month's deficit, the most anyone came to the window for, and at
+         * most the vault. The support then fades at INTERVENTION_HALF_LIFE: a
+         * fall is spread over months, and the fundamentals have the last word.
+         * Measured on MonetaryCheck's town at a held 3% (US$25M of founders'
+         * dollars against a town of 357): sized to the whole deficit (slice
+         * 1's first cut) the sales held the D$ 26% over its fair level by
+         * month 26 and emptied the vault by month 42, and the fall that
+         * followed fed it 45% a year; leaning against its own fading as well,
+         * 25% over by month 36 and the vault at 1.3 months by 60, the D$ then
+         * 80% weaker in two years. A rise is never defended: nothing is bought.
          */
+        double deficitUsd = monthDeficitUsd();
+        double fall = x - prevLog - (trendLevel - lastContrib[0]) - (interventionFelt - lastContrib[4]);
+        lastWouldBeMove = fall;
+        double sold = 0;
+        if (fall > 0 && annual > 0 && rate > 0) {
+            double need = absorption() * fall * annual / INTERVENTION_IMPACT / rate;
+            sold = Math.min(need, dollarsFor(deficitUsd));
+        }
+        sellToDefend(sold);
+        lastAbsorption = defenceUsd > 0 && deficitUsd > 0 ? defenceUsd / deficitUsd : 0;
+        if (defenceLocal > 0) {
+            interventionFelt -= INTERVENTION_IMPACT * defenceLocal / annual;
+            x = trendLevel + g * fundamentals + interventionFelt;
+        }
 
-        // ...and the long-run pull. Applied every month, pressure or none, so a
-        // city whose trade has come back into balance drifts home rather than
-        // staying wherever the last crisis left it.
-        /*
-         * STILL PULLED TOWARD PPP, because the push alone has no restoring
-         * force: with nothing holding it, a city with a persistent trade
-         * surplus rode its own pressure term straight to the floor - which is
-         * what a bound with nothing behind it looks like. The push says which
-         * way the rate is being moved this month, and this says where it
-         * should end up.
-         */
-        rate += (parity - rate) * REVERSION;
+        // 8. THE RATE, inside the numerical guards.
+        rate = Math.max(minRate, Math.min(maxRate, Math.exp(x)));
 
-        rate = Math.max(minRate, Math.min(maxRate, rate));
+        // 9. THE MONTH'S MOVES BY FORCE, from the contributions: the market's
+        // line is what is left, so the six always add to the month's move.
+        double[] c = { trendLevel, g * gapReached, g * balanceReached, g * coverReached, interventionFelt };
+        double sum = 0;
+        for (int k = 0; k < 5; k++) {
+            moves[k] = c[k] - lastContrib[k];
+            sum += moves[k];
+            lastContrib[k] = c[k];
+        }
+        moves[5] = Math.log(rate) - prevLog - sum;
     }
 
     /** How far the currency sits from parity. Negative is stronger than parity. */
@@ -966,13 +944,14 @@ public class ForeignAccounts {
     private double cumulativeBalance;
     private double forgiven;
 
-    /* Trailing means, for anything the rate is decided on. See pressure(). */
+    /* Trailing means, for anything the rate is decided on. See balanceTarget(). */
     private double exportsTrailing;
     private double currentTrailing;
     /**
      * The financial account, trailing, and the gross of it - what crossed in
-     * either direction - so the pressure can be struck on the OVERALL balance
-     * over everything that crossed. Since 2026-09-10; see pressure().
+     * either direction - so the rate can be struck on the OVERALL balance, and
+     * gate() can tell a city that trades from one that does not. Since
+     * 2026-09-10; see balanceTarget().
      */
     private double financialTrailing;
     private double financialGrossTrailing;
@@ -998,7 +977,7 @@ public class ForeignAccounts {
 
     /**
      * How many months the trailing figures are averaged over: the import bill
-     * the cover is measured against, and the balances the pressure reads.
+     * the cover is measured against, and the balances the float reads.
      *
      * Measured against a TRAILING AVERAGE of imports rather than last month's,
      * so a single month with no construction going on does not report the city
@@ -1038,19 +1017,20 @@ public class ForeignAccounts {
     /** ...and the trailing figures the rate is decided on. */
     public double monthlyExports()       { return exportsTrailing; }
     public double monthlyCurrentAccount(){ return currentTrailing; }
-    /** The financial account, trailing: positive is money coming in. See pressure(). */
+    /** The financial account, trailing: positive is money coming in. See balanceTarget(). */
     public double monthlyFinancialAccount(){ return financialTrailing; }
 
     /**
      * How much of the economy actually crosses the border.
      *
-     * Trade against GDP, and it is the missing half of the pressure signal. The
-     * deficit-as-a-share-of-trade ratio says how BAD an imbalance is; this says
-     * how much the economy cares. Without it, a city with no exports sits at the
-     * maximum reading for ever - its deficit is 100% of its trade whether that
-     * trade is a tenth of the economy or all of it - and the currency falls at a
-     * fixed rate until it hits the floor, which is a mechanic with no gradient
-     * in it.
+     * Trade against GDP: how much the economy cares about the rate (since
+     * XR1, gate() scales the market and the fundamentals by it up to
+     * OPEN_ENOUGH). It was the missing half of the old pressure signal: a
+     * deficit as a share of trade says how BAD an imbalance is, not how
+     * much the economy cares, and a city with no exports sat at the maximum
+     * reading for ever - its deficit 100% of its trade whether that trade was
+     * a tenth of the economy or all of it - and the currency fell at a fixed
+     * rate until it hit the floor.
      *
      * Measured: a residential city pinned at 0.95 pressure for twenty years,
      * devaluing 8x while its trade was a fifth of its output.
@@ -1109,6 +1089,10 @@ public class ForeignAccounts {
         // A rolling mean, kept as a mean rather than as a window of months: one
         // number, no array to carry in the save, and it settles within a year.
         double weight = Math.min(monthsOfHistory, COVER_WINDOW - 1);
+        // ...and the output, the same mean (XR1): what the balance and the
+        // interventions are weighed against. A city that has not reported a
+        // GDP yet opens the mean on its first.
+        if (monthlyGdp > 0) gdpTrailing = gdpTrailing > 0 ? (gdpTrailing * weight + monthlyGdp) / (weight + 1) : monthlyGdp;
         importsTrailing = (importsTrailing * weight + tradeImports()) / (weight + 1);
         exportsTrailing = (exportsTrailing * weight + exports) / (weight + 1);
         currentTrailing = (currentTrailing * weight + currentAccount()) / (weight + 1);
@@ -1269,11 +1253,28 @@ public class ForeignAccounts {
     private double boughtThisMonth;
     private double soldThisMonth;
 
-    /** Clears the month's intervention. Called at the top of the month. */
+    /**
+     * Clears the month's intervention. Called at the top of the month - so
+     * a purchase made between two presses, as the player makes one, is
+     * cleared here before any reprice has read it; the rate reads what was
+     * dealt since the last reprice instead (dealtSinceReprice), which this
+     * leaves alone.
+     */
     public void startMonth() {
         boughtThisMonth = 0;
         soldThisMonth = 0;
     }
+
+    /**
+     * Forgets what has been dealt since the last reprice: the founders'
+     * dollars (Game.buildWorld()), an endowment the market never saw bought,
+     * and a fixture's vault, set up as a holding rather than a purchase under
+     * test. The vault and the books keep the purchase; only the rate forgets it.
+     */
+    public void forgetDealing() { dealtSinceReprice = 0; }
+
+    /** What the treasury has dealt since the last reprice, local money, a purchase of dollars positive: what the next reprice feels (THE FLOAT, step 5). */
+    public double getDealtSinceReprice() { return dealtSinceReprice; }
 
     /**
      * Local currency spent buying foreign money. Raises the stock.
@@ -1292,6 +1293,7 @@ public class ForeignAccounts {
         if (localAmount <= 0 || rate <= 0) return;
         reservesUsd += localAmount / rate;
         boughtThisMonth += localAmount;
+        dealtSinceReprice += localAmount;
         lifetimeIntervention += localAmount;
     }
 
@@ -1324,6 +1326,7 @@ public class ForeignAccounts {
         if (sold <= 0 || rate <= 0) return 0;
         reservesUsd = sold >= held ? 0 : Math.max(0, reservesUsd - sold / rate);
         soldThisMonth += sold;
+        dealtSinceReprice -= sold;
         lifetimeIntervention -= sold;
         return sold;
     }
@@ -1347,15 +1350,15 @@ public class ForeignAccounts {
        went out on); the vault ends where it began. The two intervention
        figures a reserve purchase moves - boughtThisMonth and
        lifetimeIntervention - net to nothing on it, because the dollars were
-       bought and spent in the same breath, and they are the only way a
-       treasury purchase of dollars touches the currency: a reserve
-       transaction is the financing item (MoneyAudit, Scope.RESERVE), so
-       pressure() and monthDeficitUsd() read neither, and buying dollars puts
-       no push on the rate here. Converting for land therefore puts exactly
-       the push a reserve purchase of the same dollars would - none - and the
-       only difference between the two is that the reserve purchase leaves the
-       dollars in the vault, where absorption() can see them. ForeignCheck
-       asserts both halves.
+       bought and spent in the same breath, and boughtThisMonth is the only
+       way a treasury purchase of dollars touches the rate (the interventions
+       felt, THE FLOAT): a reserve transaction is the financing item
+       (MoneyAudit, Scope.RESERVE), so the balance and monthDeficitUsd() read
+       neither. Converting for land therefore puts no push on the rate - where
+       a reserve purchase of the same dollars cheapens the D$ at the real size
+       (INTERVENTION_IMPACT) - and the other difference is that the reserve
+       purchase leaves the dollars in the vault, where absorption() can see
+       them. ForeignCheck asserts both halves.
 
        FROM THE VAULT: the dollars leave reservesUsd and no local money moves
        - spendReservesOnLand(), a capital transaction like the defence's
@@ -1522,11 +1525,12 @@ public class ForeignAccounts {
     /* ================ WHAT THE TRADE TAB READS (0.7.35) ================
      *
      * Pure reads for the Trade tab's redesign (the project's
-     * spec-trade-0734.md): nothing here is read by the month, and nothing
-     * here writes. The tab drew several of these as its own arithmetic -
-     * the forces' push and pull, the cover a purchase would buy, three
-     * parity verdicts for one rate - and the screens' rule is that a figure
-     * is a model read.
+     * spec-trade-0734.md): nothing here is read by the month (but THIN_COVER,
+     * since XR1), and nothing here writes. The tab drew several of these as
+     * its own arithmetic - the cover a purchase would buy, three parity
+     * verdicts for one rate - and the screens' rule is that a figure is a
+     * model read. The float's own reads (gate(), balanceTarget(),
+     * coverTarget(), getFairLevel(), the six moves) are under THE FLOAT.
      */
 
     /**
@@ -1577,8 +1581,9 @@ public class ForeignAccounts {
     /**
      * Months of import cover under which the world prices a currency for a
      * crisis rather than on its trade balance - the Trade tab's red line and
-     * its alert, three months by the usual rule of thumb. The screens' line:
-     * nothing in the month reads it (absorption() reads COMFORTABLE_COVER).
+     * its alert, three months by the usual rule of thumb - and since XR1 the
+     * cover at which the risk premium is gone (coverTarget(), RISK_PREMIUM).
+     * The defence reads COMFORTABLE_COVER (absorption()).
      */
     public static final double THIN_COVER = 3;
 
@@ -1605,40 +1610,6 @@ public class ForeignAccounts {
     public double toCover(double months) {
         return Math.max(0, months * importsTrailing - getReserves());
     }
-
-    /**
-     * The next reprice, in its three parts, as fractions of today's rate:
-     * the month's push - previewPressure() at DRIFT_SPEED - the anchored
-     * drift on the rate the push leaves, and the pull back to parity, struck
-     * on the rate the push and the drift leave, as repriceCurrency() applies
-     * them; so the three add to previewMove(), the rate's next move, exactly
-     * (the guards aside, which no city reaches). A pinned rate does not move.
-     * Positive is weaker. The drift is at the expected drift handed this
-     * month (setExpectedDrift()); the next month hands its own.
-     *
-     * THE DRIFT WAS LEFT OUT until 0.7.45 (the UI spec's B6): the preview
-     * was two parts while the month applied three since 0.7.42, so the Trade
-     * tab's "next month" was short by a twelfth of the drift.
-     */
-    public double previewPush() {
-        return pinned ? 0 : previewPressure() * DRIFT_SPEED;
-    }
-
-    /** ...the anchored drift, on the rate the push leaves (0.7.45). */
-    public double previewDrift() {
-        if (pinned || !(rate > 0)) return 0;
-        return (1 + previewPush()) * (Math.pow(1 + expectedDrift, 1.0 / 12) - 1);
-    }
-
-    /** ...the pull back to parity, on the rate the push and the drift leave. */
-    public double previewPull() {
-        if (pinned || !(rate > 0)) return 0;
-        double drifted = rate * (1 + previewPush()) * Math.pow(1 + expectedDrift, 1.0 / 12);
-        return (parity - drifted) * REVERSION / rate;
-    }
-
-    /** ...and the three together: the next month's move, a fraction of today's rate. */
-    public double previewMove() { return previewPush() + previewDrift() + previewPull(); }
 
     /* ------------------------------- carrying ------------------------------- */
 
@@ -1669,8 +1640,13 @@ public class ForeignAccounts {
                  * A flow cannot be reconstructed from the state a month ended
                  * in - the ninth or tenth time this file has been the one to
                  * say so.
+                 *
+                 * SLOT 12 WAS THE PRESSURE, retired by XR1: it is written as 0
+                 * and read by nobody, and the slots after it keep their places.
+                 * The month's moves by force (slots 62-67) are what the screens
+                 * show of it now.
                  */
-                openness, lastPressure, lastAbsorption,
+                openness, 0, lastAbsorption,
                 /*
                  * AND THE RATE THE DEBT WAS LAST VALUED AT.
                  *
@@ -1695,7 +1671,7 @@ public class ForeignAccounts {
                 getReserves(),
                 /*
                  * The financial account's two trailing figures, slots 20 and
-                 * 21, since the pressure was struck on the overall balance.
+                 * 21, since the rate was struck on the overall balance.
                  * Absent from an older save: both start at zero and settle
                  * within a year, as the current one always did.
                  */
@@ -1778,7 +1754,28 @@ public class ForeignAccounts {
                  * has none of the eight and counts no month until one turns.
                  */
                 exports, imports, foreignInterest, financialIn, financialOut, lastValuation,
-                boughtThisMonth, soldThisMonth };
+                boughtThisMonth, soldThisMonth,
+                /*
+                 * ...AND THE FLOAT, slots 45-70 (XR1; THE FLOAT): parity's
+                 * trend (level, slope, started), the real gap's level and what
+                 * the rate shows of it, the balance's and the cover's levels
+                 * reached, the market's swing and the interventions still felt,
+                 * the market's seed (52 bits, so it is exact as a double), whether
+                 * it is seeded and how many draws it has taken, the last month's
+                 * five contributions and six moves, a year's GDP, the fall the
+                 * month would have made before the defence, and (slot 70) what
+                 * the treasury dealt since the last reprice. Every one is a
+                 * level or a flow the month cannot restrike from the state it
+                 * ended in: the trend and the market are paths, and a reload
+                 * that dropped them would open the currency on a different one.
+                 */
+                trendLevel, trendSlope, trendStarted ? 1 : 0,
+                gapTarget, gapReached, balanceReached, coverReached, market, interventionFelt,
+                (double) marketSeed, marketSeeded ? 1 : 0, (double) marketDraws,
+                lastContrib[0], lastContrib[1], lastContrib[2], lastContrib[3], lastContrib[4],
+                moves[0], moves[1], moves[2], moves[3], moves[4], moves[5],
+                gdpTrailing, lastWouldBeMove,
+                dealtSinceReprice };
     }
 
     public void restore(double[] saved) {
@@ -1810,7 +1807,7 @@ public class ForeignAccounts {
         }
         if (saved.length > 13) {
             openness = saved[11];
-            lastPressure = saved[12];
+            // slot 12 was the pressure, retired by XR1: written as 0, read by nobody
             lastAbsorption = saved[13];
         }
         if (saved.length > 15) {
@@ -1867,6 +1864,27 @@ public class ForeignAccounts {
             soldThisMonth = saved[44];
             monthCounted = true;
         }
+        // The float (XR1, slots 45-70); a save from before it has none and its
+        // trend opens on the next reprice, its market unseeded until Game seeds it.
+        if (saved.length > 69) {
+            trendLevel = saved[45];
+            trendSlope = saved[46];
+            trendStarted = saved[47] > .5;
+            gapTarget = saved[48];
+            gapReached = saved[49];
+            balanceReached = saved[50];
+            coverReached = saved[51];
+            market = saved[52];
+            interventionFelt = saved[53];
+            marketSeed = (long) saved[54];
+            marketSeeded = saved[55] > .5;
+            marketDraws = Math.max(0, (long) saved[56]);
+            for (int k = 0; k < 5; k++) lastContrib[k] = saved[57 + k];
+            for (int k = 0; k < 6; k++) moves[k] = saved[62 + k];
+            gdpTrailing = Math.max(0, saved[68]);
+            lastWouldBeMove = saved[69];
+        }
+        if (saved.length > 70) dealtSinceReprice = saved[70];
     }
 
     public void reset() {
@@ -1889,7 +1907,7 @@ public class ForeignAccounts {
         boughtThisMonth = soldThisMonth = 0;
         monthCounted = false;
         openness = 0;
-        lastPressure = lastAbsorption = 0;
+        lastAbsorption = 0;
         foreignDebt = foreignDebtUsd = 0;
         lastDebtRate = OPENING_RATE;
         lastRevaluation = lifetimeRevaluation = 0;
@@ -1912,6 +1930,20 @@ public class ForeignAccounts {
          */
         realRateDifferential = 0;
         localInflation = worldInflation = 0;
+        // ...and the float, at its founding values (XR1): a trend still to start,
+        // every level and the market at nothing, no seed.
+        trendLevel = trendSlope = 0;
+        trendStarted = false;
+        gapTarget = gapReached = 0;
+        balanceReached = coverReached = 0;
+        market = interventionFelt = 0;
+        marketSeed = marketDraws = 0;
+        marketSeeded = false;
+        gdpTrailing = 0;
+        java.util.Arrays.fill(lastContrib, 0);
+        java.util.Arrays.fill(moves, 0);
+        lastWouldBeMove = 0;
+        dealtSinceReprice = 0;
     }
 
     /**
@@ -1931,8 +1963,11 @@ public class ForeignAccounts {
      * has already been divided - scaling both would divide it twice; so too
      * the dollars the defence sold (0.7.2) and the dollars paid for land
      * (0.7.6), while the local money the one fetched and the other cost
-     * moves. Nor openness, absorption, pressure, the inflation rates or the
-     * real rate differential - all ratios.
+     * moves. Nor openness, absorption, the inflation rates or the real rate
+     * differential - all ratios - nor any of the float's levels bar the trend:
+     * each is a log of a ratio, and the trend is a log of a rate, which a
+     * reform shifts by the log of its scale (trendLevel, and last month's
+     * trend contribution beside it, so the reform is not a move).
      *
      * The parity moves because it is a rate, not a ratio: it is the level the
      * exchange rate reverts to, quoted in the same units as the rate itself.
@@ -1976,11 +2011,18 @@ public class ForeignAccounts {
         repudiated      *= scale;
         boughtThisMonth *= scale;
         soldThisMonth   *= scale;
+        dealtSinceReprice *= scale;
         defenceLocal    *= scale;   // the dollars do not move; what they fetched is local money
         landLocalOpen      *= scale;   // ...and the same for what the land cost here (0.7.6)
         landVaultLocalOpen *= scale;
         landLocal          *= scale;
         landVaultLocal     *= scale;
+        // The float (XR1): the trend is a log of a rate and moves with it; the GDP
+        // it weighs the balance against is local money. Every other level is a
+        // log of a ratio and stays.
+        trendLevel += Math.log(scale);
+        lastContrib[0] += Math.log(scale);
+        gdpTrailing *= scale;
     }
 
 }

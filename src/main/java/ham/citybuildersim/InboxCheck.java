@@ -59,7 +59,7 @@ public class InboxCheck {
 
     public static void main(String[] args) throws Exception {
 
-        Path root = Files.createTempDirectory("inbox");
+        Path root = TempDirs.create("inbox");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         /* ============ 1. a new city has an empty inbox ============ */

@@ -52,7 +52,7 @@ public class RobustnessCheck {
 
     public static void main(String[] args) throws Exception {
 
-        Path root = Files.createTempDirectory("robustness");
+        Path root = TempDirs.create("robustness");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         Game game = new Game(files);
@@ -343,7 +343,7 @@ public class RobustnessCheck {
         /* ============ 6. the log ============ */
         System.out.println("\n--- the log ---");
 
-        Path logRoot = Files.createTempDirectory("logcheck");
+        Path logRoot = TempDirs.create("logcheck");
         GameFiles logFiles = new GameFiles(logRoot.resolve("data"),
                 logRoot.resolve("no-legacy"));
 

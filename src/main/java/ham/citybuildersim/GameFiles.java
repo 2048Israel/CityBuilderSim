@@ -101,7 +101,7 @@ public final class GameFiles {
      */
     public static GameFiles scratch(String label) {
         try {
-            Path root = Files.createTempDirectory(label);
+            Path root = TempDirs.create(label);
             return new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         } catch (IOException e) {
             throw new IllegalStateException("could not create a scratch save folder", e);

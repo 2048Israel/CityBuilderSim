@@ -14,7 +14,7 @@
 > value is not face value, and which side of face it lands on says something
 > true about the city's credit.
 
-**Uses:** [Game](Game.md) (15), [LongTermBond](LongTermBond.md) (10), [Debt](Debt.md) (8), [GameFiles](GameFiles.md) (6), [ShortTermTBill](ShortTermTBill.md) (4), [MediumTermBond](MediumTermBond.md) (3), [Auction](Auction.md) (2), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [DebtQuote](DebtQuote.md) (1), [BuildingManager](BuildingManager.md) (1)
+**Uses:** [Game](Game.md) (15), [LongTermBond](LongTermBond.md) (10), [Debt](Debt.md) (8), [GameFiles](GameFiles.md) (6), [ShortTermTBill](ShortTermTBill.md) (4), [TempDirs](TempDirs.md) (3), [MediumTermBond](MediumTermBond.md) (3), [Auction](Auction.md) (2), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [DebtQuote](DebtQuote.md) (1), [BuildingManager](BuildingManager.md) (1)
 
 **Used by (1):** [CurveCheck](CurveCheck.md)
 

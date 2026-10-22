@@ -144,7 +144,7 @@ public class InfrastructureCheck {
         /* ================= 4. a real city ================= */
         System.out.println("\n--- and now a city that has to live with it ---");
 
-        Path root = Files.createTempDirectory("roads");
+        Path root = TempDirs.create("roads");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         Game city = new Game(files);

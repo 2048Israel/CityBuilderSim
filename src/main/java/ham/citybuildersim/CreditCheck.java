@@ -666,7 +666,7 @@ public class CreditCheck {
          */
         System.out.println("\n--- the quote is the deal ---");
 
-        java.nio.file.Path root = java.nio.file.Files.createTempDirectory("creditcheck");
+        java.nio.file.Path root = TempDirs.create("creditcheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         Game city = new Game(files);

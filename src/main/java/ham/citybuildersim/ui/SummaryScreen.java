@@ -964,13 +964,13 @@ final class SummaryScreen {
                             fxPanel.getCumulativeBalance() < 0 ? PANEL_WARN : PANEL_GOOD));
                     b.getChildren().add(panelNote("since founding; a record, not a stock"));
                     /*
-                     * POSITIVE PRESSURE IS A CURRENCY ABOUT TO WEAKEN, because
-                     * pressure() is depreciation pressure and carries the minus
-                     * sign off the current account inside it. Written as
-                     * `< -.25` first, which lit the warning on a city running a
-                     * surplus. Shown with the word rather than the sign.
+                     * A POSITIVE MOVE IS A CURRENCY THAT WEAKENED, because the
+                     * rate is D$ per US$ and getLastMove() is the log of its
+                     * change. Written as `< -.05` first, the pressure's
+                     * mistake, which lit the warning on a currency that rose.
+                     * Shown with the word rather than the sign.
                      */
-                    double press = fxPanel.getLastPressure();
+                    double move = fxPanel.getLastMove();
                     if (fxPanel.getForeignDebt() > 0) {
                         b.getChildren().add(statLine("Owed in " + Currency.FOREIGN_CODE,
                                 usd(fxPanel.getForeignDebtUsd()), PANEL_BAD));
@@ -985,10 +985,10 @@ final class SummaryScreen {
                                 money(fxPanel.netForeignPosition()),
                                 fxPanel.netForeignPosition() < 0 ? PANEL_BAD : null));
                     }
-                    b.getChildren().add(statLine("Pressure",
-                            String.format("%.0f%% %s", Math.abs(press) * 100,
-                                    press > 0 ? "weaker" : press < 0 ? "stronger" : ""),
-                            press > .25 ? PANEL_WARN : null));
+                    b.getChildren().add(statLine("This month",
+                            String.format("%.1f%% %s", Math.abs(move) * 100,
+                                    move > 0 ? "weaker" : move < 0 ? "stronger" : ""),
+                            move > .05 ? PANEL_WARN : null));
                     return b;
                 }));
 

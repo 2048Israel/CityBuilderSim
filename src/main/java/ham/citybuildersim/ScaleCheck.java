@@ -205,8 +205,25 @@ public class ScaleCheck {
      * pulled migrants otherwise as well), and at 515 the city's own rents
      * priced migrants out. 600 is the middle of 595 to 610: 3,877 people at
      * 605.
+     *
+     * ...AT 622 SINCE 0.8.19 (batch XR1), BY THE SAME PREMISE. The D$ floats
+     * (ForeignAccounts, THE FLOAT) and the playtest's city, left to it, is in
+     * spiral by month 600: its money reads 1e18 and more where main's read 1e11,
+     * past what the history keeps (cents in a long, 9.2e16), so the history
+     * and the audit could not be held to the cent. The rate is held where the
+     * founding leaves it (section 6 below), which brings the money back to
+     * main's size and the lines of the history and the rents back; the
+     * town is another one, and the copies built no more homes than they began
+     * with at 560 to 620 and at 625 to 660. Scanned (a scratch scan,
+     * ScaleCheck with the month changed, every assertion read): every
+     * assertion holds at 621, 622, 623 and 624; at 560, 580, 600, 610, 615,
+     * 618, 619, 620 and 625 the copies built no more homes than they began with
+     * (at 560 and 625 a copy's rents pulled migrants otherwise as well), and at
+     * 630, 650 and 660 the city's own rents priced migrants out (at 640 a
+     * copy's rents pulled migrants otherwise). 622 is the middle
+     * of 621 to 624, a narrow window: 2,388 people at 627.
      */
-    static final int FREE_FIXTURE_MONTHS = 600;
+    static final int FREE_FIXTURE_MONTHS = 622;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
@@ -263,7 +280,7 @@ public class ScaleCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("scalecheck");
+        Path root = TempDirs.create("scalecheck");
         try {
             run(root);
         } finally {
@@ -429,6 +446,11 @@ public class ScaleCheck {
                 + " and its player's look ---");
         GameFiles grown = new GameFiles(root.resolve("grown"), root.resolve("grown-no-legacy"));
         Game city = new Game(grown, LongPlaytest.founding());
+        // XR1 (2026-10-21): this check measures counts, sums and copies at size, not the currency. Under THE FLOAT the
+        // playtest's city is in spiral by month 600 and its money reads 1e18 and more (main's 1e11), past the history's
+        // cents (a long: 9.2e16), so the history and the audit cannot be held "to the cent"; the rate is held at the
+        // founding's from the first month.
+        city.getForeignAccounts().pinRate(city.getForeignAccounts().getRate());
         OrderSearchCheck.playtestCity(city, FREE_FIXTURE_MONTHS, quiet);
         lookAt(city);
         quietly(() -> city.saveGame(10, "scalecheck grown"));

@@ -139,7 +139,7 @@ public class ChartCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("chartcheck");
+        Path root = TempDirs.create("chartcheck");
 
         Game g = theLogRecordsEachKind(root);
         theLogSurvivesASave(root, g);

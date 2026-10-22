@@ -228,7 +228,7 @@ public class HouseholdMemoryCheck {
 
         /* ============ 7. a city ============ */
         System.out.println("\n--- a played city ---");
-        java.nio.file.Path root = java.nio.file.Files.createTempDirectory("householdmemory");
+        java.nio.file.Path root = TempDirs.create("householdmemory");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game g = new Game(files);
         quietly(() -> {

@@ -147,7 +147,7 @@ public class EarthFoundingCheck {
         report("...and how it gets there: in a copy of the repository the script, which Play CityBuilderSim.bat runs; in the built game its zip",
                 fetch.contains(EarthData.DATA_FILE) && fetch.contains(EarthSite.GET_EARTH) && fetch.contains("Play CityBuilderSim.bat")
                 && zip.contains(EarthData.DATA_FILE) && zip.contains("zip") && !zip.contains(".bat"), fetch + " | " + zip);
-        Path bad = Files.createTempDirectory("earthfounding-words").resolve("earth-1.bin");
+        Path bad = TempDirs.create("earthfounding-words").resolve("earth-1.bin");
         Files.write(bad, new byte[] { 1, 2, 3 });
         String replace = EarthSite.dataWords(bad, true), unzip = EarthSite.dataWords(bad, false);
         report("...for a file that is not this build's, the file, this build's identity and what replaces it: the script, or the zip",

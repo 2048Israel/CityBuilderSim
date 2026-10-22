@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -138,7 +137,7 @@ public class BuildersFirstCheck {
         // DeathCareFirstCheck's fixture builds the city, quietly, through its own streams.
         DeathCareFirstCheck.out = out;
         DeathCareFirstCheck.quiet = quiet;
-        Path root = Files.createTempDirectory("buildersfirstcheck");
+        Path root = TempDirs.create("buildersfirstcheck");
 
         arithmetic();
         Game[] twins = stall(root);

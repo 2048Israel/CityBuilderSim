@@ -1,4 +1,4 @@
-# GroceryCheck.java - 460 lines · 10 methods · 0 constants · harnesses
+# GroceryCheck.java - 459 lines · 10 methods · 0 constants · harnesses
 
 `ham/citybuildersim/GroceryCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -45,45 +45,45 @@
 >      priced out and the short of stock to the hunger, and THE BUDGET
 >      previews the dial by the vouchers it would have paid.
 
-**Uses:** [Retail](Retail.md) (20), [HouseholdBalance](HouseholdBalance.md) (16), [PolicyPreview](PolicyPreview.md) (15), [Household](Household.md) (14), [Game](Game.md) (8), [FamilyStructure](FamilyStructure.md) (7), [PayTier](PayTier.md) (7), [BondCheck](BondCheck.md) (2), [TreasuryLine](TreasuryLine.md) (2), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [LongPlaytest](LongPlaytest.md) (1), [PriceIndex](PriceIndex.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [Retail](Retail.md) (20), [HouseholdBalance](HouseholdBalance.md) (16), [PolicyPreview](PolicyPreview.md) (15), [Household](Household.md) (14), [Game](Game.md) (8), [FamilyStructure](FamilyStructure.md) (7), [PayTier](PayTier.md) (7), [BondCheck](BondCheck.md) (2), [TreasuryLine](TreasuryLine.md) (2), [TempDirs](TempDirs.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [LongPlaytest](LongPlaytest.md) (1), [PriceIndex](PriceIndex.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 87 | · 1-3. demand at a price |
-| 116 | · 4. the clearing price |
-| 131 | · 5. the shortage, shared out |
-| 149 | · 6-7. the shelf |
-| 179 | · 8. food assistance, on the bench |
-| 255 | 9. IN A CITY: THE TREASURY PAYS, TO THE CENT |
+| 86 | · 1-3. demand at a price |
+| 115 | · 4. the clearing price |
+| 130 | · 5. the shortage, shared out |
+| 148 | · 6-7. the shelf |
+| 178 | · 8. food assistance, on the bench |
+| 254 | 9. IN A CITY: THE TREASURY PAYS, TO THE CENT |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 54 | `static int fails` |  |
-| 55 | `static PrintStream out` |  |
-| 56 | `static PrintStream quiet` |  |
+| 53 | `static int fails` |  |
+| 54 | `static PrintStream out` |  |
+| 55 | `static PrintStream quiet` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 409 | **type** `public class GroceryCheck` | Groceries at a price, the shelf cleared stickily, and food assistance (0.7.43): the households' demand curve, the clearing price, who is handed the baskets a shortage leaves, the shelf's step toward its target, and th... |
-| 58 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 63 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 70 | 8 | `static Household cell(HouseholdBalance hb, FamilyStructure shape, PayTier tier, double households, double foodMoney)` | A bench of the household ledger: one cell of each kind the sections need, by hand. |
-| 79 | 146 | `public static void main(String[] args) throws Exception` |  |
-| 232 | 10 | `static double aidedWithIncome(double pSat, double floor)` | A household whose investment income lifts its means past twice its baskets holds no voucher. |
-| 244 | 10 | `static double aidedWithACoupon(double pSat, double floor)` | ...and one that had the same income in one month only - a coupon - which the year's average holds a twelfth of: still a voucher. |
+| 51 | 409 | **type** `public class GroceryCheck` | Groceries at a price, the shelf cleared stickily, and food assistance (0.7.43): the households' demand curve, the clearing price, who is handed the baskets a shortage leaves, the shelf's step toward its target, and th... |
+| 57 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 62 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 69 | 8 | `static Household cell(HouseholdBalance hb, FamilyStructure shape, PayTier tier, double households, double foodMoney)` | A bench of the household ledger: one cell of each kind the sections need, by hand. |
+| 78 | 146 | `public static void main(String[] args) throws Exception` |  |
+| 231 | 10 | `static double aidedWithIncome(double pSat, double floor)` | A household whose investment income lifts its means past twice its baskets holds no voucher. |
+| 243 | 10 | `static double aidedWithACoupon(double pSat, double floor)` | ...and one that had the same income in one month only - a coupon - which the year's average holds a twelfth of: still a voucher. |
 
-### 9. IN A CITY: THE TREASURY PAYS, TO THE CENT (lines 255-460)
+### 9. IN A CITY: THE TREASURY PAYS, TO THE CENT (lines 254-459)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 268 | 19 | `static Game founding(Path root, String label)` |  |
-| 289 | 9 | `static boolean underTheCap(Game g, double share)` | Whether somebody's voucher at this dial is above nothing and under what their baskets cost at the last sale - the voucher's cap (0.7.62). |
-| 299 | 156 | `static void inACity(Path root)` |  |
-| 456 | 4 | `static Household byKey(HouseholdBalance hb, String key)` |  |
+| 267 | 19 | `static Game founding(Path root, String label)` |  |
+| 288 | 9 | `static boolean underTheCap(Game g, double share)` | Whether somebody's voucher at this dial is above nothing and under what their baskets cost at the last sale - the voucher's cap (0.7.62). |
+| 298 | 156 | `static void inACity(Path root)` |  |
+| 455 | 4 | `static Household byKey(HouseholdBalance hb, String key)` |  |
 

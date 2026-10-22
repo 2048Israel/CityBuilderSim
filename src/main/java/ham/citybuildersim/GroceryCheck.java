@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -217,7 +216,7 @@ public class GroceryCheck {
         close("the household books split it by the cells paid", aided.foodAssistanceByRow()[broke.row()],
                 broke.assistance() * broke.households(), 1e-9);
 
-        inACity(Files.createTempDirectory("grocery"));
+        inACity(TempDirs.create("grocery"));
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

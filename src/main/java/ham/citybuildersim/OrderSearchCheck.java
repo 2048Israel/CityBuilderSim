@@ -98,7 +98,7 @@ public class OrderSearchCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("ordersearchcheck");
+        Path root = TempDirs.create("ordersearchcheck");
         try {
             run(root);
             search();

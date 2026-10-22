@@ -175,7 +175,7 @@ public class ConstructionControlCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = Files.createTempDirectory("constructioncontrolcheck");
+        Path root = TempDirs.create("constructioncontrolcheck");
 
         overtimeTable();
         noOrder(root);

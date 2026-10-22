@@ -5,7 +5,6 @@ import ham.citybuildersim.sectors.Manufacturing;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -208,7 +207,7 @@ public class ManufacturingCheck {
         /* ============ 3. the templates are the design's arithmetic ============ */
         out.println("\n--- the three plants ---");
 
-        Path root = Files.createTempDirectory("mfgcheck");
+        Path root = TempDirs.create("mfgcheck");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Game plain = new Game(files);
         quietly(plain::run);

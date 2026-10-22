@@ -136,6 +136,26 @@ public class PriceIndex {
      */
     private final double[] componentLink = { 1, 1, 1, 1, 1 };
 
+    /**
+     * The most of the basket rent may be in the level the currency's parity is
+     * struck from: a third, about its share in real consumer price indexes
+     * (Jerus, 2026-10-21, XR1, "Basket, rent capped"). Rent is what no border
+     * arbitrages, and in a city's own basket it ran 41% to 80% of the weight
+     * (docs/studies/spec-exchange-rates.md, section 3.2); the other four
+     * parts are scaled up to fill the rest. The index itself keeps the basket
+     * as the households spend it.
+     */
+    public static final double RENT_CAP = 1 / 3.0;
+
+    /**
+     * The level the capped basket was linked at (XR1): the capped level on
+     * the basket just left at this month's prices, or the index's own level
+     * at the first basing and on a link pending, so the capped level runs on
+     * unbroken across every rebasing as the index does. Saved, after
+     * componentLink.
+     */
+    private double parityLink = 1;
+
     /** Each fee line's price at the link, its share of the fees then, and its last price seen. */
     private final double[] feeBase = new double[FEE_LINES];
     private final double[] feeShare = new double[FEE_LINES];
@@ -326,6 +346,35 @@ public class PriceIndex {
         return weights > 0 ? link * sum / weights : link;
     }
 
+    /**
+     * The weights of the basket in force with rent held to RENT_CAP (XR1): rent
+     * at the cap and every other weight scaled so the five add to what they did
+     * - when rent weighs more than the cap and the others weigh something;
+     * otherwise the weights as they stand.
+     */
+    private double[] cappedWeights() {
+        double[] cw = weight.clone();
+        double rest = 0;
+        for (int k = 0; k < COMPONENTS; k++) if (k != RENT) rest += weight[k];
+        if (weight[RENT] > RENT_CAP && rest > 0) {
+            double scale = (1 - RENT_CAP) / rest;
+            for (int k = 0; k < COMPONENTS; k++) cw[k] = k == RENT ? RENT_CAP : weight[k] * scale;
+        }
+        return cw;
+    }
+
+    /** The level this month on the basket in force with rent capped: parityLink times each component's relative, weighted by cappedWeights() - parityLink with no weights yet. Reads the relatives as last struck. */
+    private double cappedLevelOnThisBasket() {
+        double[] cw = cappedWeights();
+        double sum = 0, weights = 0;
+        for (int k = 0; k < COMPONENTS; k++) {
+            if (!(cw[k] > 0)) continue;
+            sum += cw[k] * relative[k];
+            weights += cw[k];
+        }
+        return weights > 0 ? parityLink * sum / weights : parityLink;
+    }
+
     /** The services price: each fee line's price over its price at the link, weighted by its share of the fees then - 1 at the link, and with no fees, for ever. */
     private double feeLevel() {
         double sum = 0, shares = 0;
@@ -343,6 +392,18 @@ public class PriceIndex {
      * based at its price now - and the link, the level the basket opens at.
      */
     private void relink(int month, double level) {
+        /*
+         * THE CAPPED LEVEL RUNS ON TOO (XR1): read first, before any base or
+         * weight below moves. On a rebasing the relatives are this month's
+         * (levelOnThisBasket() struck them just before), so the capped level
+         * on the basket being left, at this month's prices, is where the
+         * capped level opens on the new one and never jumps. At the first
+         * basing there are no weights yet, and on a link pending the old
+         * basket is the two-component one: both open at the index's level.
+         */
+        double oldWeights = 0;
+        for (double w : weight) oldWeights += w;
+        parityLink = based && !linkPending && oldWeights > 0 ? cappedLevelOnThisBasket() : level;
         /*
          * EACH COMPONENT'S OWN LEVEL RUNS ON (0.7.45): its level on the old
          * basket this month - its link times its price over its old base -
@@ -441,6 +502,21 @@ public class PriceIndex {
     /** The level the basket in force was linked at: 1 for a city's first basket. */
     public double getLink() { return link; }
 
+    /**
+     * The currency's parity level (XR1): the basket with rent held to RENT_CAP,
+     * chained and priced as the index is - the level the capped basket was
+     * linked at times each component's price over its base, weighted by
+     * getParityWeight(). It equals getIndex() while rent weighs the cap or
+     * less, and 1 before the basket is based. Pure.
+     */
+    public double getParityLevel() { return based ? cappedLevelOnThisBasket() : 1; }
+
+    /** One component's weight in the basket parity is struck from: the basket in force with rent held to RENT_CAP (COMPONENTS order; they add to what the basket's do). Pure. */
+    public double getParityWeight(int component) { return cappedWeights()[component]; }
+
+    /** True when the basket in force has rent over RENT_CAP, so the level parity is struck from holds it down to the cap (XR1). Pure. */
+    public boolean isRentCapped() { return weight[RENT] > RENT_CAP; }
+
     /** The month the basket in force was linked: the base month, or the last chain-link. */
     public int getLinkedMonth() { return linkedAt; }
 
@@ -506,7 +582,7 @@ public class PriceIndex {
     private static final int CHAIN_TAIL_0743 = 4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS * (COMPONENTS + FEE_LINES);
 
     public double[] toSaveArray() {
-        int tail = CHAIN_TAIL_0743 + COMPONENTS;
+        int tail = CHAIN_TAIL_0743 + COMPONENTS + 1;
         double[] out = new double[SLOTS_BEFORE_CHAIN + tail];
         out[0] = based ? 1 : 0;
         out[1] = baseFood;
@@ -548,6 +624,8 @@ public class PriceIndex {
         }
         // ...and each component's chained level at the link (0.7.45), after the ring.
         for (int k = 0; k < COMPONENTS; k++) out[i++] = componentLink[k];
+        // ...and the capped level's link (XR1), after those.
+        out[i++] = parityLink;
         return out;
     }
 
@@ -598,7 +676,8 @@ public class PriceIndex {
     /** The chained basket behind the marker, or a link pending on an older save; the array is read whole or not at all. */
     private void restoreChain(double[] saved) {
         clearChain();
-        boolean withLevels = saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS;
+        boolean withParity = saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS + 1;
+        boolean withLevels = withParity || saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS;
         if ((saved.length != SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 && !withLevels)
                 || saved[SLOTS_BEFORE_CHAIN] != CHAIN_MARKER) {
             linkPending = based;
@@ -621,6 +700,10 @@ public class PriceIndex {
             double level = withLevels ? saved[i++] : link;
             componentLink[k] = level > 0 && Double.isFinite(level) ? level : link;
         }
+        // The capped level's link (XR1); an older array has none, and the capped
+        // level runs on from the level of the link (the rent cap binds from then).
+        double capped = withParity ? saved[i++] : link;
+        parityLink = capped > 0 && Double.isFinite(capped) ? capped : link;
         // The relatives are this month's and are struck by the next; on the
         // basket in force they read as last struck.
         for (int k = 0; k < COMPONENTS; k++) {
@@ -632,6 +715,7 @@ public class PriceIndex {
     /** Nothing linked, nothing spent: a basket still to be struck. */
     private void clearChain() {
         link = 1;
+        parityLink = 1;
         linkedAt = 0;
         linkPending = false;
         java.util.Arrays.fill(base, 0);

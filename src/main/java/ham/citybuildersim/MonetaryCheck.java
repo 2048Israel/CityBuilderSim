@@ -251,9 +251,17 @@ public class MonetaryCheck {
             worstReloaded = Math.max(worstReloaded, Math.abs(chainBack.getComponentLevel(k) - chain.getComponentLevel(k)));
         }
         close("...and the same chained level for every component (0.7.45)", worstReloaded, 0, 1e-12);
-        PriceIndex from744 = new PriceIndex();
+        close("...and the same capped level parity is struck from (XR1)", chainBack.getParityLevel(), chain.getParityLevel(), 1e-12);
+        // A save from 0.7.45 to the float's (XR1) has the levels and not the capped basket's link:
+        // the capped level runs on from the level of the link.
+        PriceIndex from745 = new PriceIndex();
         double[] whole = chain.toSaveArray();
-        from744.restore(java.util.Arrays.copyOf(whole, whole.length - PriceIndex.COMPONENTS));
+        from745.restore(java.util.Arrays.copyOf(whole, whole.length - 1));
+        assertTrue("a save from before the capped basket's link still reads as a chain, and its capped level runs on from the link",
+                !from745.isLinkPending() && from745.getLink() == chain.getLink() && from745.getIndex() == chain.getIndex()
+                        && from745.getComponentLevel(PriceIndex.MEALS) == chain.getComponentLevel(PriceIndex.MEALS));
+        PriceIndex from744 = new PriceIndex();
+        from744.restore(java.util.Arrays.copyOf(whole, whole.length - PriceIndex.COMPONENTS - 1));
         double worstSeeded = 0;
         for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
             worstSeeded = Math.max(worstSeeded,
@@ -451,39 +459,49 @@ public class MonetaryCheck {
 
         /*
          * ...AND IT REACHES THE CURRENCY - in REAL terms since 0.7.2, and
-         * uncapped: the rate term was held under the trade term's reach
-         * (MAX_RATE_PRESSURE .8, "neither can swamp the trade balance on its
-         * own"), and that cap was the channel's saturation at 13 points that
-         * 0.7.2 lifts on purpose (ForeignAccounts, THE REAL RATE, NOT THE
-         * NOMINAL). What is asserted now is the channel's price: RATE_PULL
-         * per point of real gap, either way.
+         * uncapped by a fence: the rate term was a push of RATE_PULL per point
+         * of real gap (and a numerical guard, MAX_RATE_PRESSURE).
+         *
+         * RESTATED FOR XR1 (docs/studies/spec-exchange-rates.md 3.3). (a) The
+         * same premise, measured the new way, its label as it was: paying under
+         * the world in real terms weakens the currency, over it supports it.
+         * (b) A premise a decided call replaces: star 8, "whatever real life
+         * does" (spec section 6, Jerus) - the real gap's effect is a LEVEL, the
+         * gap's, held by a soft cap (ForeignAccounts.gapLevelFor(): minus GAP_CAP
+         * x tanh(PERSISTENCE x gap / GAP_CAP), in logs, negative a dearer D$), at
+         * most 35% either way - so "...by RATE_PULL for every point of the real
+         * gap" and "...and past any gap a city reaches, only the numerical guard"
+         * give way to the level's own arithmetic from the constants and its cap;
+         * "fixture: both currencies sit at parity, so nothing is expected back"
+         * is retired with EXPECTED_REVERSION (section 5's XR1 row retires
+         * "RATE_PULL's push"): the level is a function of the gap alone.
          */
         ForeignAccounts cheap = new ForeignAccounts();
         cheap.setRealRateDifferential(-.04);
         ForeignAccounts dear = new ForeignAccounts();
         dear.setRealRateDifferential(.04);
-        // AT PARITY (0.7.42): investors expect a currency away from parity to
-        // come back (ForeignAccounts, INVESTORS EXPECT A CURRENCY TO COME
-        // BACK), so the gap alone is the price of the channel only where the
-        // rate sits at parity - which a fresh currency does.
-        assertTrue("fixture: both currencies sit at parity, so nothing is expected back",
-                cheap.getRate() == cheap.getParity() && dear.getRate() == dear.getParity());
+        double cheapLevel = ForeignAccounts.gapLevelFor(cheap.getRealRateDifferential());
+        double dearLevel = ForeignAccounts.gapLevelFor(dear.getRealRateDifferential());
 
-        out.printf("   four real points under the world pulls %+.2f, four points over %+.2f%n",
-                cheap.ratePressure(), dear.ratePressure());
-        assertTrue("paying under the world in real terms weakens the currency", cheap.ratePressure() > 0);
-        assertTrue("...and paying over it supports the currency", dear.ratePressure() < 0);
-        close("...by RATE_PULL for every point of the real gap",
-                dear.ratePressure(), -.04 * ForeignAccounts.RATE_PULL, 1e-12);
+        out.printf("   four real points under the world holds the D$ %+.4f, four points over %+.4f (in logs)%n",
+                cheapLevel, dearLevel);
+        assertTrue("paying under the world in real terms weakens the currency", cheapLevel > 0);
+        assertTrue("...and paying over it supports the currency", dearLevel < 0);
+        close("...by exactly -GAP_CAP x tanh(PERSISTENCE x gap / GAP_CAP) for a gap of four points",
+                dearLevel, -ForeignAccounts.GAP_CAP * Math.tanh(ForeignAccounts.PERSISTENCE * .04 / ForeignAccounts.GAP_CAP), 1e-12);
+        // New in XR1: the level is symmetric.
+        close("...and the same the other way", cheapLevel, -dearLevel, 1e-12);
         ForeignAccounts wild = new ForeignAccounts();
-        wild.setRealRateDifferential(-10);
-        close("...and past any gap a city reaches, only the numerical guard",
-                wild.ratePressure(), ForeignAccounts.MAX_RATE_PRESSURE, 0);
+        wild.setRealRateDifferential(1.0);
+        close("...and past any gap a city reaches (a hundred points), held inside GAP_CAP",
+                ForeignAccounts.gapLevelFor(wild.getRealRateDifferential()), -ForeignAccounts.GAP_CAP, 1e-6);
+        // New in XR1: the cap holds the other way, too.
+        close("...either way", ForeignAccounts.gapLevelFor(-wild.getRealRateDifferential()), ForeignAccounts.GAP_CAP, 1e-6);
 
         /* ================= 5. in a city, and across a reload ================= */
         out.println("\n--- and all of it survives a city and a reload ---");
 
-        Path root = Files.createTempDirectory("monetary");
+        Path root = TempDirs.create("monetary");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
         System.setOut(quiet);
@@ -675,8 +693,8 @@ public class MonetaryCheck {
     /** How long each run is: five years, the last three of them at the held rate. */
     static final int MEASURED_MONTHS = 60;
 
-    /** The month the dial is held from: the first in which the currency may move. */
-    static final int HELD_FROM = ForeignAccounts.SETTLING_MONTHS + 1;
+    /** The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. */
+    static final int HELD_FROM = LongPlaytest.HELD_AFTER + 1;
 
     /**
      * How far apart two runs of the one founding may read, in inflation a year, when only the dial's timing moves: 0.10 points.

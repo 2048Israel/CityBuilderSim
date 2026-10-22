@@ -748,7 +748,7 @@ public class BankCheck {
         /* ================= 4. a real city, and its money ================= */
         out.println("\n--- a bank in a city that has one ---");
 
-        Path root = Files.createTempDirectory("bankcheck");
+        Path root = TempDirs.create("bankcheck");
         /*
          * THE CURRENCY IS HELD STILL THROUGHOUT THIS FILE.
          *
@@ -1051,7 +1051,7 @@ public class BankCheck {
          * to a branch on its own then no unattended city ever gets one, and the
          * whole feature is a punishment for not knowing about it.
          */
-        Path lonely = Files.createTempDirectory("bankcheck-advisor");
+        Path lonely = TempDirs.create("bankcheck-advisor");
         Game unattended = new Game(new GameFiles(lonely.resolve("data"), lonely.resolve("no-legacy")));
         System.setOut(quiet);
         int branchesBuilt;
@@ -1226,7 +1226,7 @@ public class BankCheck {
 
         /* ---- and a city that can pay for one, does ---- */
 
-        Path solvent = Files.createTempDirectory("bankcheck-solvent");
+        Path solvent = TempDirs.create("bankcheck-solvent");
         Game trading = new Game(new GameFiles(solvent.resolve("data"), solvent.resolve("no-legacy")));
         System.setOut(quiet);
         int builtWhenAffordable;
@@ -1365,7 +1365,7 @@ public class BankCheck {
         /* ============ 8. the accounting identities, on a played city ============ */
         out.println("\n--- and its books actually balance ---");
 
-        Path booksRoot = Files.createTempDirectory("bankcheck-books");
+        Path booksRoot = TempDirs.create("bankcheck-books");
         double profitTaxedNextMonth = 0;
         Game books = new Game(new GameFiles(booksRoot.resolve("data"), booksRoot.resolve("no-legacy")));
         System.setOut(quiet);
@@ -2330,7 +2330,7 @@ public class BankCheck {
 
         out.println("\n--- (14) a played city through months of slices: the money audit closes ---");
 
-        Path root = Files.createTempDirectory("bankcheck-slices");
+        Path root = TempDirs.create("bankcheck-slices");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
         System.setOut(quiet);
         try {
@@ -2462,7 +2462,7 @@ public class BankCheck {
 
         out.println("\n--- (15) a failing sector's plant is sold to the builders, as its materials ---");
 
-        Path root = Files.createTempDirectory("bankcheck-salvage");
+        Path root = TempDirs.create("bankcheck-salvage");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
         System.setOut(quiet);
         try {
@@ -3267,7 +3267,7 @@ public class BankCheck {
                 0, 1e-12);
         close("...and together they are its interest", paid.interestIncome(), 3_340, 1e-12);
 
-        Path root = Files.createTempDirectory("bankcheck-tab");
+        Path root = TempDirs.create("bankcheck-tab");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
         Bank bank = city.getBank();
         double worstResidual = 0, worstBetween = 0, worstByWho = 0, worstLast = 0, worstYear = 0, worstFoot = 0;
@@ -3965,7 +3965,7 @@ public class BankCheck {
     static void theBankPaysForTheCitysPaper() throws Exception {
         out.println("\n--- and the bank pays for the city's paper ---");
 
-        Path paperRoot = Files.createTempDirectory("bankcheck-paper");
+        Path paperRoot = TempDirs.create("bankcheck-paper");
         GameFiles paperFiles = new GameFiles(paperRoot.resolve("data"), paperRoot.resolve("no-legacy"));
         Game city = new Game(paperFiles);
         System.setOut(quiet);

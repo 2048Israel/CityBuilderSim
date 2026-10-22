@@ -1,4 +1,4 @@
-# SupplierCreditCheck.java - 341 lines · 10 methods · 1 constants · harnesses
+# SupplierCreditCheck.java - 340 lines · 10 methods · 1 constants · harnesses
 
 `ham/citybuildersim/SupplierCreditCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -38,56 +38,56 @@
 >   5. A grocer whose till covers its stock takes none.
 >   6. Saved and loaded, what it owes and what it bought on credit come back.
 
-**Uses:** [SupplierCredit](SupplierCredit.md) (16), [Good](Good.md) (13), [Trade](Trade.md) (12), [Sectors](Sectors.md) (8), [Game](Game.md) (7), [BondCheck](BondCheck.md) (6), [Retail](Retail.md) (4), [GameFiles](GameFiles.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Sector](Sector.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [SectorBooksCheck](SectorBooksCheck.md) (2), [BalanceSheet](BalanceSheet.md) (2), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [EconomyManager](EconomyManager.md) (1), [SectorBooks](SectorBooks.md) (1)
+**Uses:** [SupplierCredit](SupplierCredit.md) (16), [Good](Good.md) (13), [Trade](Trade.md) (12), [Sectors](Sectors.md) (8), [Game](Game.md) (7), [BondCheck](BondCheck.md) (6), [Retail](Retail.md) (4), [GameFiles](GameFiles.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Sector](Sector.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [SectorBooksCheck](SectorBooksCheck.md) (2), [BalanceSheet](BalanceSheet.md) (2), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [EconomyManager](EconomyManager.md) (1), [SectorBooks](SectorBooks.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 83 | 1. THE RULE ALONE |
-| 151 | 2-6. IN A CITY |
-| 254 | · · 3. AT THE STRIKE |
-| 300 | · · 6. SAVED AND LOADED |
-| 315 | · · 4. REPAID |
+| 82 | 1. THE RULE ALONE |
+| 150 | 2-6. IN A CITY |
+| 253 | · · 3. AT THE STRIKE |
+| 299 | · · 6. SAVED AND LOADED |
+| 314 | · · 4. REPAID |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 86 | `SupplierCreditCheck.FARM` | `Sectors.AGRICULTURE, LORRIES = Sectors.AUTOMOTIVE` | The two local suppliers the rule's fixtures name: the farms, which fill the shelf's meat, and the car makers, which fill the fleet's vans. |
+| 85 | `SupplierCreditCheck.FARM` | `Sectors.AGRICULTURE, LORRIES = Sectors.AUTOMOTIVE` | The two local suppliers the rule's fixtures name: the farms, which fill the shelf's meat, and the car makers, which fill the fleet's vans. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 50 | `static int fails` |  |
-| 51 | `static PrintStream out` |  |
-| 52 | `static PrintStream quiet` |  |
-| 174 | `static int closedMonths, playedMonths` |  |
+| 49 | `static int fails` |  |
+| 50 | `static PrintStream out` |  |
+| 51 | `static PrintStream quiet` |  |
+| 173 | `static int closedMonths, playedMonths` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 294 | **type** `public class SupplierCreditCheck` | The grocers' supplier credit (0.7.44): stock bought on the suppliers' credit when the till cannot pay for it, owed for a month, repaid out of the sale it stocked - on both sides' books, through the money audit to the ... |
-| 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 59 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 65 | 5 | `static void quietly(Runnable r)` |  |
-| 71 | 11 | `public static void main(String[] args) throws Exception` |  |
+| 47 | 294 | **type** `public class SupplierCreditCheck` | The grocers' supplier credit (0.7.44): stock bought on the suppliers' credit when the till cannot pay for it, owed for a month, repaid out of the sale it stocked - on both sides' books, through the money audit to the ... |
+| 53 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 58 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 64 | 5 | `static void quietly(Runnable r)` |  |
+| 70 | 11 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE RULE ALONE (lines 83-150)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 89 | 9 | `static SupplierCredit clearing(double limit, double till)` | One clearing on a fresh ledger covering meat and grains: 200 of meat from the farms, 50 of grains from the world, 30 of vans. |
-| 99 | 51 | `static void theRule()` |  |
-
-### 2-6. IN A CITY (lines 151-341)
+### 1. THE RULE ALONE (lines 82-149)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 154 | 19 | `static Game city(Path root, String name)` | A city with households, shops, a bank and the food plants: founded, built, played two years. |
-| 176 | 8 | `static MoneyAudit.Result play(Game g)` |  |
-| 186 | 8 | `static double shelfBought(ham.citybuildersim.sectors.Retail shops)` | What the shops bought of the shelf's goods in the month just played, in money. |
-| 195 | 146 | `static void inACity(Path root) throws Exception` |  |
+| 88 | 9 | `static SupplierCredit clearing(double limit, double till)` | One clearing on a fresh ledger covering meat and grains: 200 of meat from the farms, 50 of grains from the world, 30 of vans. |
+| 98 | 51 | `static void theRule()` |  |
+
+### 2-6. IN A CITY (lines 150-340)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 153 | 19 | `static Game city(Path root, String name)` | A city with households, shops, a bank and the food plants: founded, built, played two years. |
+| 175 | 8 | `static MoneyAudit.Result play(Game g)` |  |
+| 185 | 8 | `static double shelfBought(ham.citybuildersim.sectors.Retail shops)` | What the shops bought of the shelf's goods in the month just played, in money. |
+| 194 | 146 | `static void inACity(Path root) throws Exception` |  |
 

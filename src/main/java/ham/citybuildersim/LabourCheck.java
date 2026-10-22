@@ -295,7 +295,7 @@ public class LabourCheck {
            ============================================================== */
         System.out.println("\n--- through a save ---");
 
-        Path root = Files.createTempDirectory("labour");
+        Path root = TempDirs.create("labour");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
         Game lived = new Game(files);

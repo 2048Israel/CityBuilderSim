@@ -2,7 +2,6 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -172,7 +171,7 @@ public class ForeignDebtCheck {
         /* ============ 2. and the world is cheaper, to begin with ============ */
         out.println("\n--- and the world quotes it a better price ---");
 
-        Path root = Files.createTempDirectory("fxdebt");
+        Path root = TempDirs.create("fxdebt");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
         System.setOut(quiet);
@@ -394,7 +393,7 @@ public class ForeignDebtCheck {
          * Two cities, identical but for the toggle, measured the instant the
          * bond is signed.
          */
-        Path uses = Files.createTempDirectory("fxdebt-uses");
+        Path uses = TempDirs.create("fxdebt-uses");
         double spendCash, spendReserves, holdCash, holdReserves, holdNet, holdNetBefore, proceeds;
 
         System.setOut(quiet);

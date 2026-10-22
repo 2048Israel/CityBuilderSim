@@ -1,4 +1,4 @@
-# RefineryCheck.java - 1,503 lines · 35 methods · 18 constants · harnesses
+# RefineryCheck.java - 1,508 lines · 35 methods · 18 constants · harnesses
 
 `ham/citybuildersim/RefineryCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -80,19 +80,19 @@
 | 432 | · 9-14. THE SPREAD PLANNER |
 | 442 | · 16-19. THE RUN, THE PLANNER AT THE MARGIN, ONE ORDER (0.7.105) |
 | 567 | THE SPREAD PLANNER (0.7.82, batch O5) |
-| 1095 | 15. THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103) |
-| 1167 | 16. THE RUN (0.7.105) |
-| 1326 | 17. THE RUN IN A TOWN (0.7.105) |
-| 1411 | 18. THE PLANNER'S PRICES AT THE MARGIN (0.7.105) |
-| 1463 | 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) |
+| 1100 | 15. THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103) |
+| 1172 | 16. THE RUN (0.7.105) |
+| 1331 | 17. THE RUN IN A TOWN (0.7.105) |
+| 1416 | 18. THE PLANNER'S PRICES AT THE MARGIN (0.7.105) |
+| 1468 | 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 1192 | `RefineryCheck.Way.LORRY` |  |
-| 1192 | `RefineryCheck.Way.RAIL` |  |
-| 1192 | `RefineryCheck.Way.SEA` |  |
+| 1197 | `RefineryCheck.Way.LORRY` |  |
+| 1197 | `RefineryCheck.Way.RAIL` |  |
+| 1197 | `RefineryCheck.Way.SEA` |  |
 
 ## Constants
 
@@ -108,14 +108,14 @@
 | 582 | `RefineryCheck.PROTOTYPE_MONTHS` | `240` | ...and the months it runs. |
 | 585 | `RefineryCheck.M4000_PETROL` | `7.63e6, M4000_DIESEL = 16.13e6` | The prototype's demands, litres a month of petrol and diesel: the playtest's city at m4000 (spread.py's cities). |
 | 588 | `RefineryCheck.FORTY_WELLS` | `40 * 415` | ...and its wells in the 40-well rows: 40 land wells' 415 t a month. |
-| 926 | `RefineryCheck.PLANNER_FILES` | `new java.util.IdentityHashMap<>()` | Each planner town's save folder (plannerTown()), for the sections that save one and load its twin. |
-| 1170 | `RefineryCheck.TOWN_WELLS` | `30` | Wells the town of section 14 stands under its Oil Refinery (OilCheck 4's thirty): more crude than it runs, its barrel paying at their price. |
-| 1173 | `RefineryCheck.STUDY_LORRY` | `-.100, STUDY_RAIL = -.047, STUDY_FLOOR = -.007, STUDY_TANKER =.023, STUDY_CON...` | The study's margins (the project's why-the-refinery-loses.md, on 0.7.99), a share of crude's world middle: a topping barrel of medium crude on imported crude, all exported, by lorry, by rail at .60 and at the floor, a... |
-| 1176 | `RefineryCheck.STUDY_HOME_FLOOR` | `.014, STUDY_HOME_RAIL = -.017` | ...and the barrels the city's own petrol and diesel take, at the net import price: at the floor, and at .60. |
-| 1179 | `RefineryCheck.STUDY_QUOTE` | `.60` | The study's railway above its floor: a quote of .60 of a lorry's rate. |
-| 1182 | `RefineryCheck.STUDY_ROUNDING` | `.0006` | The study's figures are to a tenth of a point, and its tanker's +2.3% is +2.25% here: within six hundredths. |
-| 1185 | `RefineryCheck.HIS_CRUDE` | `5 * 415_000 + 8_300` | Jerus's campus: five Crude Units and an Oil Refinery - the study's 500,000 b/d topping plant. |
-| 1188 | `RefineryCheck.NINE` | `{ Good.PETROL, Good.DIESEL, Good.LPG, Good.NAPHTHA, Good.JET, Good.FUEL_OIL, ...` | The nine products, as Refining lists them. |
+| 931 | `RefineryCheck.PLANNER_FILES` | `new java.util.IdentityHashMap<>()` | Each planner town's save folder (plannerTown()), for the sections that save one and load its twin. |
+| 1175 | `RefineryCheck.TOWN_WELLS` | `30` | Wells the town of section 14 stands under its Oil Refinery (OilCheck 4's thirty): more crude than it runs, its barrel paying at their price. |
+| 1178 | `RefineryCheck.STUDY_LORRY` | `-.100, STUDY_RAIL = -.047, STUDY_FLOOR = -.007, STUDY_TANKER =.023, STUDY_CON...` | The study's margins (the project's why-the-refinery-loses.md, on 0.7.99), a share of crude's world middle: a topping barrel of medium crude on imported crude, all exported, by lorry, by rail at .60 and at the floor, a... |
+| 1181 | `RefineryCheck.STUDY_HOME_FLOOR` | `.014, STUDY_HOME_RAIL = -.017` | ...and the barrels the city's own petrol and diesel take, at the net import price: at the floor, and at .60. |
+| 1184 | `RefineryCheck.STUDY_QUOTE` | `.60` | The study's railway above its floor: a quote of .60 of a lorry's rate. |
+| 1187 | `RefineryCheck.STUDY_ROUNDING` | `.0006` | The study's figures are to a tenth of a point, and its tanker's +2.3% is +2.25% here: within six hundredths. |
+| 1190 | `RefineryCheck.HIS_CRUDE` | `5 * 415_000 + 8_300` | Jerus's campus: five Crude Units and an Oil Refinery - the study's 500,000 b/d topping plant. |
+| 1193 | `RefineryCheck.NINE` | `{ Good.PETROL, Good.DIESEL, Good.LPG, Good.NAPHTHA, Good.JET, Good.FUEL_OIL, ...` | The nine products, as Refining lists them. |
 
 ## Fields (state)
 
@@ -127,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 151 | 1353 | **type** `public class RefineryCheck` | The refinery's units and the flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner). |
+| 151 | 1358 | **type** `public class RefineryCheck` | The refinery's units and the flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the spread planner that orders them (batch O5; spec-oil 2.4, SpreadPlanner). |
 | 159 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 164 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 169 | 5 | `static void quietly(Runnable r)` |  |
@@ -139,7 +139,7 @@
 | 201 | 250 | `public static void main(String[] args) throws Exception` |  |
 | 456 | 110 | `static void town() throws Exception` |  |
 
-### THE SPREAD PLANNER (0.7.82, batch O5) (lines 567-1094)
+### THE SPREAD PLANNER (0.7.82, batch O5) (lines 567-1099)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -155,43 +155,43 @@
 | 754 | 61 | `static void gates(BuildingManager catalogue)` |  |
 | 816 | 48 | `static void theGameMoneyGates() throws Exception` |  |
 | 865 | 34 | `static void fourRows(BuildingManager catalogue)` |  |
-| 901 | 23 | `static Game plannerTown(String label, boolean held, String...units)` | The town the planner sections stand: the section 7 town's houses and works, an Oil Refinery and `units`; Refining held or not. |
-| 928 | 43 | `static void idleThenShed() throws Exception` |  |
-| 972 | 122 | `static void theInvestorsOrderAUnit() throws Exception` |  |
+| 901 | 28 | `static Game plannerTown(String label, boolean held, String...units)` | The town the planner sections stand: the section 7 town's houses and works, an Oil Refinery and `units`; Refining held or not. |
+| 933 | 43 | `static void idleThenShed() throws Exception` |  |
+| 977 | 122 | `static void theInvestorsOrderAUnit() throws Exception` |  |
 
-### 15. THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103) (lines 1095-1166)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1097 | 69 | `static void lubricantsCapped(BuildingManager catalogue) throws Exception` |  |
-
-### 16. THE RUN (0.7.105) (lines 1167-1325)
+### 15. THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103) (lines 1100-1171)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1192 | 1 | **type** `enum Way` | How the oil moves in a fixture: by lorry, all by rail at a quote, or by sea. |
-| 1195 | 8 | `static GoodsMarket moved(Good g, Way way, double quote)` | A good's market as it moves one way (exchange 1): the band's share of a lorry's freight and the railway's charge, as sectors.Freight.haul() sets them (Ports.factor()). |
-| 1205 | 14 | `static Refining.RunPrices movedPrices(Way way, double quote, double petrol, double diesel, double lubricants, double wells)` | The run's prices, every good moved one way: petrol and diesel's `petrol` and `diesel` litres at the net import price, the rest of every product at its net export price, the wells' `wells` tonnes at crude's export pric... |
-| 1221 | 1 | `static double crudeMiddle()` | Crude's world middle: what the study's margins are a share of. |
-| 1224 | 1 | `static double ofMiddle(double share, double crudeCost)` | A verdict's barrel - `share`, a share of what its crude cost - as a share of crude's world middle. |
-| 1226 | 99 | `static void theRun(BuildingManager catalogue)` |  |
+| 1102 | 69 | `static void lubricantsCapped(BuildingManager catalogue) throws Exception` |  |
 
-### 17. THE RUN IN A TOWN (0.7.105) (lines 1326-1410)
+### 16. THE RUN (0.7.105) (lines 1172-1330)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1328 | 82 | `static void theRunInATown() throws Exception` |  |
+| 1197 | 1 | **type** `enum Way` | How the oil moves in a fixture: by lorry, all by rail at a quote, or by sea. |
+| 1200 | 8 | `static GoodsMarket moved(Good g, Way way, double quote)` | A good's market as it moves one way (exchange 1): the band's share of a lorry's freight and the railway's charge, as sectors.Freight.haul() sets them (Ports.factor()). |
+| 1210 | 14 | `static Refining.RunPrices movedPrices(Way way, double quote, double petrol, double diesel, double lubricants, double wells)` | The run's prices, every good moved one way: petrol and diesel's `petrol` and `diesel` litres at the net import price, the rest of every product at its net export price, the wells' `wells` tonnes at crude's export pric... |
+| 1226 | 1 | `static double crudeMiddle()` | Crude's world middle: what the study's margins are a share of. |
+| 1229 | 1 | `static double ofMiddle(double share, double crudeCost)` | A verdict's barrel - `share`, a share of what its crude cost - as a share of crude's world middle. |
+| 1231 | 99 | `static void theRun(BuildingManager catalogue)` |  |
 
-### 18. THE PLANNER'S PRICES AT THE MARGIN (0.7.105) (lines 1411-1462)
+### 17. THE RUN IN A TOWN (0.7.105) (lines 1331-1415)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1413 | 49 | `static void thePlannerAtTheMargin(BuildingManager catalogue)` |  |
+| 1333 | 82 | `static void theRunInATown() throws Exception` |  |
 
-### 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) (lines 1463-1503)
+### 18. THE PLANNER'S PRICES AT THE MARGIN (0.7.105) (lines 1416-1467)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1465 | 31 | `static void oneOrderInFlight() throws Exception` |  |
-| 1498 | 5 | `static String names(java.util.List<BuildingsTemplate> with)` | The buildings a package was weighed with, by name. |
+| 1418 | 49 | `static void thePlannerAtTheMargin(BuildingManager catalogue)` |  |
+
+### 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) (lines 1468-1508)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1470 | 31 | `static void oneOrderInFlight() throws Exception` |  |
+| 1503 | 5 | `static String names(java.util.List<BuildingsTemplate> with)` | The buildings a package was weighed with, by name. |
 

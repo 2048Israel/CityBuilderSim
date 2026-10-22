@@ -23,7 +23,33 @@ shore's streets are drawn as curves (FX5's TrackCurves), and past 15 km a third 
 crescents, their cross street a quarter circle. No building that stands moves: the playtest's layout watch moved 0 of
 171,104 boxes. Two faults on main fixed in commits of their own: the near view threw at a depot with no track (FX5's,
 0.8.18), and the interchanges' loops were never drawn at the near view in the game (FR7's, MapTiles.copy()). The map's
-alone: the trace is 0.8.18's, no ensemble. ★ for Jerus: six calls (CL4-notes §2), above all ★2 and ★3.
+alone: the trace is 0.8.19's, no ensemble. ★ for Jerus: six calls (CL4-notes §2), above all ★2 and ★3.
+
+### 0.8.19 — XR1, the D$ as a float that follows its parity — 2026-10-21, ready, see docs/queue/XR1-notes.md
+
+**The default city now hyperinflates unless the player stops it** (Jerus: "ship it as is, im going to test it to see
+if player led behaviour can prevent hyperinflation"). The D$ is a level now: parity's trend, on the basket with rent
+held to a third, followed one for one; where the real rate (60% of a change at once, at most 35%), the year's balance
+and the vault's cover hold it; and a seeded market of its own, about 8% a year. Buying dollars now cheapens the D$, at
+2% per 1% of a year's GDP, and the central bank's defence leans against a month's new fall the same way. Trade › The
+currency is the study's board 1. With the rate following prices and prices following the rate, the default playtest
+ends at 2.9 billion times founding's prices with the D$ at its guard, 10,980 people (main: 1,036 times, 573,349);
+Rotterdam 284,646 (main 761,080). Under the autopilot the ensemble's cities live (213,000 at the median) at 4.5% a
+year: 18/25 against 0.8.17's 23/25. Save format 43; older saves are refused. ★ for Jerus: XR1-C, the anchor's leads.
+
+### TD1, the checks' temp folders deleted when they finish — 2026-10-21, shipped, no tag
+
+Every harness, `GameFiles.scratch` and `LongPlaytest` made its temp folders
+with `Files.createTempDirectory` straight into %TEMP% and never removed one:
+about 95 a suite run, 37 GB on the PC in a week, the disk nearly full. All 93
+calls now go through the new `TempDirs.create(prefix)`, the same call into
+`%TEMP%\citybuildersim-tmp\<pid>`, which a shutdown hook deletes when the JVM
+exits; the next JVM's first call deletes any folder there whose process is gone
+(a run killed hard). Deleting never follows a link or leaves that folder. The
+model is untouched: no ensemble, no version. CLAUDE.md now forbids
+`Files.createTempDirectory` in a harness, and has a session delete its
+`%TEMP%\cbs-<id>*` folders once its batch ships (24 left behind held 5 GB).
+
 ### 0.8.18 — FX5, the map's rail and roads finished — 2026-10-21, ready, see docs/queue/FX5-notes.md
 
 Rail curves at its corners and the trains follow them: a new `TrackCurves` rounds every route's turn (3 plots) and

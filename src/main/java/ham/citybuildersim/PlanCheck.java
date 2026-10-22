@@ -1210,7 +1210,7 @@ public class PlanCheck {
     static void played() throws Exception {
         out.println("\n--- 6. a city played " + MapCheck.MONTHS + " months as the playtest plays it (MapCheck 1's): every district, every "
                 + MapCheck.DRAWN_EVERY + "th month ---");
-        Path root = Files.createTempDirectory("plancheck");
+        Path root = TempDirs.create("plancheck");
         GameFiles files = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy"));
         // MapCheck 1's city, on MiningCheck.IRON_SEED's world since 0.7.99 (its iron a kilometre out).
         Game g = new Game(files, LongPlaytest.founding().withWorldSeed(MiningCheck.IRON_SEED));
@@ -3573,7 +3573,7 @@ public class PlanCheck {
     /** A save folder's autosave, loaded from a copy (a game run autosaves into any city it loads): every district planned, checked and timed. */
     static void save(Path dir) throws Exception {
         out.println("\n--- 9. the save in " + dir + ": every district ---");
-        Path root = Files.createTempDirectory("plancheck-save");
+        Path root = TempDirs.create("plancheck-save");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         Files.createDirectories(files.savesDirectory());
         for (String suffix : new String[] { ".json", "-history.json", "-map.bin" }) {

@@ -21,7 +21,7 @@
 > No message, no error, no load: the exception reached the FX thread's default
 > handler and a stderr that does not exist in a packaged build.
 
-**Uses:** [Game](Game.md) (24), [GameLog](GameLog.md) (19), [GameFiles](GameFiles.md) (5), [GameVersion](GameVersion.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Construction](Construction.md) (1)
+**Uses:** [Game](Game.md) (24), [GameLog](GameLog.md) (19), [GameFiles](GameFiles.md) (5), [GameVersion](GameVersion.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [TempDirs](TempDirs.md) (2), [Construction](Construction.md) (1)
 
 ## Sections
 

@@ -64,7 +64,7 @@
 >      lent after it and section 3 holds its debt, land and buildings to
 > ... (3 more lines in the source)
 
-**Uses:** [SectorStatements](SectorStatements.md) (162), [Game](Game.md) (21), [Bank](Bank.md) (18), [LongPlaytest](LongPlaytest.md) (16), [SectorBooks](SectorBooks.md) (14), [Equity](Equity.md) (11), [BuildCard](BuildCard.md) (11), [Sector](Sector.md) (10), [Sectors](Sectors.md) (8), [Debt](Debt.md) (5), [GameVersion](GameVersion.md) (5), [GameFiles](GameFiles.md) (2), [JobType](JobType.md) (2), [TreasuryFund](TreasuryFund.md) (1), [EconomyManager](EconomyManager.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
+**Uses:** [SectorStatements](SectorStatements.md) (162), [Game](Game.md) (21), [Bank](Bank.md) (18), [LongPlaytest](LongPlaytest.md) (16), [SectorBooks](SectorBooks.md) (14), [Equity](Equity.md) (11), [BuildCard](BuildCard.md) (11), [Sector](Sector.md) (10), [Sectors](Sectors.md) (8), [Debt](Debt.md) (5), [GameVersion](GameVersion.md) (5), [GameFiles](GameFiles.md) (2), [JobType](JobType.md) (2), [TempDirs](TempDirs.md) (1), [TreasuryFund](TreasuryFund.md) (1), [EconomyManager](EconomyManager.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
 
 ## Sections
 

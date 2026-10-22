@@ -1,4 +1,4 @@
-# CarryTradeCheck.java - 301 lines · 5 methods · 0 constants · harnesses
+# CarryTradeCheck.java - 303 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CarryTradeCheck.java` - generated 2026-10-21 by CodeMap; line numbers are as of that run.
 
@@ -34,34 +34,34 @@
 >      years. A carry trade that does not reach the financial account is that
 >      bug again, and section 5 is the assertion that would have caught it.
 
-**Uses:** [CapitalFlows](CapitalFlows.md) (22), [DebtManager](DebtManager.md) (6), [ForeignAccounts](ForeignAccounts.md) (4), [MoneyAudit](MoneyAudit.md) (3), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1)
+**Uses:** [CapitalFlows](CapitalFlows.md) (22), [DebtManager](DebtManager.md) (6), [ForeignAccounts](ForeignAccounts.md) (4), [MoneyAudit](MoneyAudit.md) (3), [Game](Game.md) (2), [TempDirs](TempDirs.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 76 | · 1. it is the opposite sign |
-| 110 | · 2. the bank's book is the bound |
-| 134 | · 3. it builds and unwinds gradually |
-| 168 | · 4. it survives a save |
-| 194 | · 5. and it reaches the border |
+| 75 | · 1. it is the opposite sign |
+| 109 | · 2. the bank's book is the bound |
+| 133 | · 3. it builds and unwinds gradually |
+| 167 | · 4. it survives a save |
+| 193 | · 5. and it reaches the border |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 43 | `static int fails` |  |
-| 44 | `static PrintStream out` |  |
-| 45 | `static PrintStream quiet` |  |
+| 42 | `static int fails` |  |
+| 43 | `static PrintStream out` |  |
+| 44 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 261 | **type** `public class CarryTradeCheck` | The carry trade: the other side of hot money, and the bank's first borrower. |
-| 47 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 52 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 63 | 7 | `static CapitalFlows settle(double lendingRate, double premium, double headroom, int months)` | Run a stock to rest against a fixed rate, premium and headroom. |
-| 71 | 221 | `public static void main(String[] args) throws Exception` |  |
-| 294 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double borrowedOut)` | A month at the city's edge, with an outflow on the financial account. |
+| 40 | 264 | **type** `public class CarryTradeCheck` | The carry trade: the other side of hot money, and the bank's first borrower. |
+| 46 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 51 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 62 | 7 | `static CapitalFlows settle(double lendingRate, double premium, double headroom, int months)` | Run a stock to rest against a fixed rate, premium and headroom. |
+| 70 | 224 | `public static void main(String[] args) throws Exception` |  |
+| 296 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double borrowedOut)` | A month at the city's edge, with an outflow on the financial account. |
 

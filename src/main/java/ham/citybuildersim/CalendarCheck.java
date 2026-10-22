@@ -48,7 +48,7 @@ public class CalendarCheck {
 
         // A new game really does start at month 1, so the epoch is not an
         // assumption this harness is making on its own.
-        Path root = Files.createTempDirectory("cal");
+        Path root = TempDirs.create("cal");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
         PrintStream out = System.out;
         PrintStream quiet = new PrintStream(new OutputStream() {

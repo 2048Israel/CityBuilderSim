@@ -5,7 +5,6 @@ import ham.citybuildersim.sectors.Retail;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -97,7 +96,7 @@ public class RestaurantsCheck {
          * either conjuring food or throwing it away - silently, because
          * nothing else in the game divides one by the other.
          */
-        Path dir = Files.createTempDirectory("restaurantscheck");
+        Path dir = TempDirs.create("restaurantscheck");
         GameFiles files = new GameFiles(dir.resolve("data"), dir.resolve("no-legacy"));
         Game game = new Game(files);
         quietly(game::run);
@@ -449,7 +448,7 @@ public class RestaurantsCheck {
          * signal has to be the QUEUE, which exists whether or not there is
          * anywhere to eat.
          */
-        Path dir2 = Files.createTempDirectory("restaurantscheck-plan");
+        Path dir2 = TempDirs.create("restaurantscheck-plan");
         Game hungry = new Game(new GameFiles(dir2.resolve("data"), dir2.resolve("no-legacy")));
         quietly(() -> {
             hungry.run();

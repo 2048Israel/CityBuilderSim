@@ -139,7 +139,7 @@ public class EnsembleCheck {
             return;
         }
 
-        Path root = Files.createTempDirectory("ensemble-compile");
+        Path root = TempDirs.create("ensemble-compile");
         try {
             Path fixtures = Files.createDirectories(root.resolve("fixtures"));
 
