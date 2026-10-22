@@ -862,6 +862,12 @@ public final class MoneyAudit {
         // declare - the maturing par it is repaid leaves by "- centralbank
         // PaperRedeemed", as it always has.
         in += credit.apply("+ centralbank BoughtPaper", cb.getBoughtPaper(), Scope.MONEY);
+        // ...and what it made to pay for the dollars the vault bought at the
+        // strong edge of a band or a peg (XR2; Game.settleTheEdge()): money
+        // made, declared here as made and below as paid abroad (- centralbank
+        // DollarsBoughtAbroad, RESERVE), so no pool moves and the month's MONEY
+        // in less out is still M0's move.
+        in += credit.apply("+ centralbank IssuedForDollars", cb.getDollarsBought(), Scope.MONEY);
 
         double out = 0;
         // Payrolls, as each statement charged them.
@@ -1136,6 +1142,11 @@ public final class MoneyAudit {
         out += debit.apply("- equity BuybackAbroad", g.getExchange().getBuybackAbroad(), Scope.FINANCIAL);
         out += debit.apply("- treasury BoughtReserves",
                 g.getForeignAccounts().getBoughtThisMonth(), Scope.RESERVE);
+        // ...and the central bank's, in the money it made for the vault's dollars
+        // (XR2, the other leg of "+ centralbank IssuedForDollars"): a reserve
+        // transaction, the financing item, as the treasury's purchase is.
+        out += debit.apply("- centralbank DollarsBoughtAbroad",
+                g.getCentralBank().getDollarsBought(), Scope.RESERVE);
         // What the city pays the outside world: pensions, and the upkeep of its
         // own services.
         //

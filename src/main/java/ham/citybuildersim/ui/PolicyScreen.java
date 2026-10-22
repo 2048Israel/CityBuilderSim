@@ -139,15 +139,17 @@ final class PolicyScreen {
     static final String[] POLICY_TAX_PAGES =
             {"Everything", "Profit", "Sales", "Wage", "Property", "Fuel", "Port dues"};
     static final String[] POLICY_WAGE_PAGES    = {"The floor"};
-    static final String[] POLICY_MONEY_PAGES   = {"The policy rate", "Currency reform"};
+    /** Money's middle page (XR2): how the D$ is held - its regime, the peg or the band, who pays at the strong edge, what the dial aims at. */
+    static final String CURRENCY_PAGE = "The currency";
+    static final String[] POLICY_MONEY_PAGES   = {"The policy rate", CURRENCY_PAGE, "Currency reform"};
     static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Food", "Health", "Schools", "Subsidies"};
 
     /** Each page's icon on its tab, in the pages' order (the crane for the port dues, FR4). */
     static final String[] TAX_ICONS = {Icons.OVERVIEW, Icons.SECTOR, Icons.SHOPS, Icons.STAFF, Icons.HOMES, Icons.DROP, Icons.CRANE};
     /** ...Wages' one, the staff. */
     static final String[] WAGE_ICONS = {Icons.STAFF};
-    /** ...Money's: the bank for the policy rate, the banknote for the currency reform. */
-    static final String[] MONEY_ICONS = {Icons.BANK, Icons.BANKNOTE};
+    /** ...Money's: the bank for the policy rate, the two arrows for the currency (XR2), the banknote for the currency reform. */
+    static final String[] MONEY_ICONS = {Icons.BANK, Icons.EXCHANGE, Icons.BANKNOTE};
     /** ...and the promises': the cane, the staff, food, health, education and the sector icon for the subsidies. */
     static final String[] PROMISE_ICONS = {Icons.CANE, Icons.STAFF, Icons.FOOD, Icons.HEALTH, Icons.EDUCATION, Icons.SECTOR};
 
@@ -224,6 +226,7 @@ final class PolicyScreen {
                 case WAGES -> floorPage(page);
                 case MONEY -> {
                     if ("Currency reform".equals(policyPage)) reformPage(page);
+                    else if (CURRENCY_PAGE.equals(policyPage)) currencyPage(page);
                     else                                      ratePage(page);
                 }
                 case ZONING -> zoning.page(page);
@@ -322,7 +325,8 @@ final class PolicyScreen {
                     + "game at all: a surplus at the floor cannot be priced away, so it leaves.";
             case MONEY -> "The price of money, and the units it is counted in: the policy rate under every other "
                     + "rate in the city, the rule beside it, what people expect prices to do and how far they trust "
-                    + "the bank, the central bank's holdings and its ceiling, and the currency reform.";
+                    + "the bank, the central bank's holdings and its ceiling, how the currency is held - floating, leaning, in a "
+                    + "band or at a peg - and what the dial aims at, and the currency reform.";
             case PROMISES -> "Pensions, EI, food assistance, the clinic's price, school fees, and the sectors the city "
                     + "will not let fail: what the city has promised, what it collects for it and what it costs.";
             case ZONING -> ZoningScreen.AREA_INFO;
@@ -1332,6 +1336,24 @@ final class PolicyScreen {
                     + trust.reading().replace("trust falling: ", "") + ". What they expect follows prices the less they"
                     + " trust it, and every wage and fee follows what they expect; leaning the rate against the miss"
                     + " stops the fall.", MONEY, "The policy rate", "The policy rate"));
+        }
+
+        /* ------------------------- the peg (XR2, the study's alerts) -------------------------
+         * A peg whose vault is under THIN_COVER months of imports, and the month
+         * a peg broke: the two moments the board's alerts name for the regime.
+         */
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        if (fx.brokeThisMonth()) {
+            out.add(new Flag(Palette.BAD, "The peg broke",
+                    "It broke by " + fx.getLastBreakCause().words + ": the " + sym() + " fell "
+                    + share1(Math.abs(Math.expm1(fx.getLastBreakJump()))) + " in the month and floats now. The bank is"
+                    + " believed less for it.", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
+        } else if (fx.getRegime() == ForeignAccounts.Regime.PEG && fx.monthlyImports() > 0
+                && fx.importCover() < ForeignAccounts.THIN_COVER) {
+            out.add(new Flag(Palette.WARN, "The peg's vault is thin",
+                    String.format("The vault covers %.1f months of imports; the peg breaks under %s. %s", fx.importCover(),
+                            plain(ForeignAccounts.VAULT_FLOOR) + (ForeignAccounts.VAULT_FLOOR == 1 ? " month" : " months"),
+                            floorWords(fx.monthsToFloor())) + ".", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
         }
 
         /* ---------------------------- the money itself ---------------------------- */
@@ -2690,6 +2712,7 @@ final class PolicyScreen {
      * takes the dial from the rule (DebtManager.takeTheDial()).
      */
     VBox theDialCard(DebtManager market, PriceIndex px, double rate, double want) {
+        if (ui.game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.PEG) return tiedDialCard(market, rate);
         Bank bank = ui.game.getBank();
         Ladder ladder = ownLadder("policy", rate, DebtManager.MIN_POLICY_RATE, DebtManager.MAX_POLICY_RATE, .0005, Money::pct2);
         double advised = px.hasRate() ? market.advisedPolicyRate(px.inflation()) : Double.NaN;
@@ -2717,6 +2740,33 @@ final class PolicyScreen {
                 "The one number under every other rate in the city.", List.of(steps, hand), ladder, want, effects,
                 "It reprices no bond already sold.", REPRICE_INFO,
                 applyFoot("policy", "Set the policy rate to " + pct2(want), () -> market.takeTheDial(want))), 360, true);
+    }
+
+    /**
+     * THE DIAL under a peg (XR2, star 5): tied to the US's rate, so it offers
+     * no chips and no Apply - the dial as the US's rate plus the spread in one
+     * line, a door to where the spread is set (Policy › Money › The currency),
+     * and the autopilot's toggle, which still decides whether the rule sets the
+     * spread.
+     */
+    VBox tiedDialCard(DebtManager market, double rate) {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        double tied = market.tiedRate(fx.currencyGap());
+        boolean ruleSetsSpread = market.isAutopilot() && market.getAim() != DebtManager.Aim.INFLATION;
+        double spread = ruleSetsSpread ? tied - DebtManager.WORLD_BASE_RATE : market.getPegSpread();
+        boolean ruleHasIt = market.isAutopilot();
+        HBox hand = new HBox(8, words(ruleHasIt
+                        ? "In the rule's hand: aiming at " + market.getAim().words.toLowerCase() + "."
+                        : "In your hand: the spread is yours.", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
+                stepChip(ruleHasIt ? "take the dial back" : "hand the dial to the rule",
+                        () -> { market.setAutopilot(!ruleHasIt); showPolicyMenu(); }, false), infoButton(HAND_INFO, true));
+        hand.setAlignment(Pos.CENTER_LEFT);
+        return card(cardHead(Icons.BANK, Palette.MONEY, "THE DIAL", rateInfo(), quiet("tied to the US's rate")),
+                figure(pct2(rate), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+                line("Tied to the US's rate under the peg: " + tiedWords(tied, spread, " plus ", " less ")
+                        + ". Set the spread on Policy › Money › The currency.", null),
+                doorPill("The currency · Policy", Icons.EXCHANGE, Palette.MONEY, () -> open(MONEY, CURRENCY_PAGE)),
+                hand);
     }
 
     /** The policy rate's effects at any value of its thumb (pure: the probe reads them). */
@@ -3229,6 +3279,775 @@ final class PolicyScreen {
         }
         c.getChildren().addAll(lines);
         return c;
+    }
+
+    /* =====================================================================
+       MONEY - the currency (XR2, 2026-10-22)
+
+       WHAT THE D$ IS HELD TO. Jerus, 2026-10-21 (the study's 3.6, his calls
+       star 3 to 6 and 13): the city chooses how its D$ is held - Float, Lean
+       against falls (the default, and what the city did before there were
+       regimes), a Band, or a Peg - and what the dial aims at. The model is
+       ForeignAccounts' THE REGIMES, DebtManager's WHAT THE AUTOPILOT AIMS AT
+       and Game's WHAT THE D$ IS HELD TO; this page is its board (the study's
+       board 2, docs/studies/exchange-rates/2-the-regime.html) and decides
+       nothing of its own: every figure is a getter and every sentence is
+       built from the model's constants, never typed.
+
+       ONE DIFFERENCE FROM THE BOARD, decided after it (star 5): under a peg
+       the dial is TIED, the US's rate plus a spread, so "the dial is still
+       yours" became the spread to set, or with the autopilot aiming at the
+       currency the rule's (DebtManager.tiedRate()); the policy rate page says
+       so where its dial was.
+
+       EVERY CHOICE IS STAGED and has an Apply of its own, on its own card
+       (a dial that keeps its own Apply): the regime, the peg's steps, the
+       band's centre, slope and width, who pays at the strong edge, what the
+       dial aims at, the spread. Applying one leaves the others as they are;
+       a page change throws them all away. The cards, in order: HOW THE D$ IS
+       SET, THE PEG or THE BAND (whichever is in force; a short note when one
+       is staged), WHO BUYS AT THE STRONG EDGE and WHAT THE DIAL AIMS AT side
+       by side, THE DIAL UNDER A PEG beside BUY OR SELL THE D$. In the money
+       blues: never a verdict's colour for a force, because a rate held away
+       from where the float would put it is not good or bad news.
+       ===================================================================== */
+
+    /** The staged keys of the currency page: the regime, who pays at the strong edge and what the dial aims at by ordinal; the peg; the band's centre, slope and width; the spread over the US's rate under a peg. */
+    static final String XR_REGIME = "xr:regime", XR_PAYER = "xr:payer", XR_AIM = "xr:aim", XR_PEG = "xr:peg",
+            XR_CENTRE = "xr:centre", XR_SLOPE = "xr:slope", XR_WIDTH = "xr:width", XR_SPREAD = "xr:spread";
+
+    /** One step of the peg's chips: a hundredth of the peg, up to devalue and down to revalue. */
+    static final double PEG_STEP = .01;
+
+    /** One step of the band's centre: a hundredth of it. */
+    static final double CENTRE_STEP = .01;
+
+    /** One step of the band's slope and of its width: half a point. */
+    static final double SLOPE_STEP = .005, WIDTH_STEP = .005;
+
+    /** One step of the spread over the US's rate: a quarter of a point. */
+    static final double SPREAD_STEP = .0025;
+
+    /** The months the currency page's charts show: five years. */
+    static final int CURRENCY_CHART_MONTHS = 60;
+
+    /** The most months of import cover the vault's chart draws: a year. A vault deeper than that is drawn at it, so a founder's 99 months does not flatten the months that matter. */
+    static final double COVER_CHART_TOP = 12;
+
+    /** The size of a deal the BUY OR SELL card weighs, a share of a year's output. */
+    static final double DEAL_SHARE = .01;
+
+    /** The city's money's mark: "D$". */
+    private String sym() { return ui.game.getCurrency().qualifiedSymbol(); }
+
+    /** An exchange rate with the D$'s mark: "D$1.411". */
+    private String curRate(double rate) { return sym() + fxRate(rate); }
+
+    /** Local money with its mark and a true minus: "D$2.4M", "−D$725k". */
+    private String curLocal(double thousands) {
+        String shown = money(Math.abs(thousands));
+        return (thousands < 0 && !"$0".equals(shown) ? "−" : "") + marked(sym(), shown);
+    }
+
+    /** A gap of the shadow from its target in words: "8.5% weaker than the peg", "3.0% stronger than the centre", "level with the peg" (pure). */
+    static String curGap(double gap, String target) {
+        if (!(Math.abs(gap) >= .0005)) return "level with " + target;
+        return share1(Math.abs(gap)) + (gap > 0 ? " weaker" : " stronger") + " than " + target;
+    }
+
+    /** A number of months of imports in words: "1 month", "3 months", "1.5 months" (pure). */
+    static String curMonths(double months) {
+        return plain(months) + (Math.abs(months - 1) < 1e-9 ? " month" : " months");
+    }
+
+    /** The choice staged under `key`, or the one in force: an enum staged by its ordinal. */
+    private <E extends Enum<E>> E stagedChoice(String key, E now, E[] all) {
+        if (!isStaged(key)) return now;
+        int i = (int) Math.round(staged(key, now.ordinal()));
+        return i >= 0 && i < all.length ? all[i] : now;
+    }
+
+    /** Stages a choice, or puts the staging back when it is the one in force; and draws the page again. */
+    private <E extends Enum<E>> void choose(String key, E now, E pick) {
+        if (pick == now) unstage(key); else stage(key, pick.ordinal());
+        showPolicyMenu();
+    }
+
+    /** The regime staged, or the one in force. */
+    ForeignAccounts.Regime stagedRegime(ForeignAccounts.Regime now) {
+        return stagedChoice(XR_REGIME, now, ForeignAccounts.Regime.values());
+    }
+
+    /**
+     * THE CURRENCY PAGE: the regime and what entering it does; the peg or the
+     * band, whichever is in force (a note when one is staged and not yet); who
+     * pays at the strong edge and what the dial aims at; and under a peg the
+     * dial's tie, beside dealing in dollars.
+     */
+    void currencyPage(VBox page) {
+        ForeignAccounts fx = ui.game.getForeignAccounts();
+        ForeignAccounts.Regime now = fx.getRegime(), want = stagedRegime(now);
+        page.getChildren().add(regimeCard(fx, now, want));
+        if (now == ForeignAccounts.Regime.PEG || want == ForeignAccounts.Regime.PEG) {
+            page.getChildren().add(pegCard(fx, now));
+        }
+        if (now == ForeignAccounts.Regime.BAND || want == ForeignAccounts.Regime.BAND) {
+            page.getChildren().add(bandCard(fx, now));
+        }
+        page.getChildren().add(row(payerCard(fx), aimCard(fx)));
+        if (now == ForeignAccounts.Regime.PEG) {
+            page.getChildren().add(row(pegDialCard(fx), dealCard(fx)));
+        } else {
+            page.getChildren().add(dealCard(fx));
+        }
+    }
+
+    /* ----- the pieces the currency page is built from ----- */
+
+    /** One option of a choice: its chip (lit when it is the one staged or in force), "in force" beside it when it is, and what it does underneath. */
+    private VBox option(String name, String says, boolean lit, boolean inForce, Runnable pick) {
+        Label choice = new Label(name);
+        choice.setMinWidth(Region.USE_PREF_SIZE);
+        // A chosen chip has the money blue's edge, so the one picked is told from the rest at a glance.
+        choice.setStyle("-fx-padding: 4 10 4 10; -fx-cursor: hand;"
+                + (lit ? Palette.block(Palette.CONTROL, Palette.ACCENT) + Palette.strong(Palette.SIZE_CAPTION + 1, Palette.TEXT_HEAD)
+                        : Palette.block(Palette.PANEL) + Palette.words(Palette.SIZE_CAPTION + 1, Palette.TEXT_LABEL)));
+        choice.setOnMouseClicked(e -> pick.run());
+        FlowPane head = new FlowPane(6, 4, choice);
+        if (inForce) head.getChildren().add(chip("in force", Palette.MONEY));
+        head.setAlignment(Pos.CENTER_LEFT);
+        VBox col = new VBox(6, head, words(says, Palette.SIZE_LABEL, lit ? Palette.TEXT_BODY : Palette.TEXT_MUTED));
+        col.setMinWidth(0);
+        return col;
+    }
+
+    /** One figure on a panel, as the rate line's cells are: its label (with an (i) when `info` is given), its figure and a line under it. */
+    private static VBox fxCell(String label, String value, String line, String info) {
+        Label l = new Label(label);
+        l.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        l.setMinWidth(Region.USE_PREF_SIZE);
+        HBox head = new HBox(Palette.GAP_TIGHT, l);
+        if (info != null) head.getChildren().add(infoButton(info, true));
+        head.setAlignment(Pos.CENTER_LEFT);
+        VBox c = new VBox(2, head, figure(value, Palette.SIZE_HEADING + 2, Palette.TEXT_HEAD), muted(line));
+        c.setStyle("-fx-padding: 8 10 8 10; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 6;");
+        c.setMinWidth(0);
+        return c;
+    }
+
+    /** A figure's − and + steps, staged under `key` against what it is now; `down` and `up` say what each does. */
+    private HBox stepper(String key, double now, double step, double lo, double hi, String down, String up) {
+        double want = staged(key, now);
+        HBox row = new HBox(6,
+                stepChip("− " + down, () -> restage(key, now, want - step, step, lo, hi), false),
+                stepChip("+ " + up, () -> restage(key, now, want + step, step, lo, hi), false));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /** A stepped value staged on the grid of its steps from what it is now, held between its limits, or put back when it is where it started. */
+    private void restage(String key, double now, double to, double step, double lo, double hi) {
+        double next = snapped(Math.max(lo, Math.min(hi, to)), now, step);
+        if (moved(next, now, step)) stage(key, next); else unstage(key);
+        showPolicyMenu();
+    }
+
+    /**
+     * The foot of a card of this page: Apply, and "Leave it as it is", once
+     * any of its keys is staged - and only theirs go when it is pressed, so a
+     * second card's staging survives the first one's Apply (applyFoot() drops
+     * the whole set).
+     */
+    private List<Node> currencyFoot(String label, Runnable apply, String... keys) {
+        boolean any = false;
+        for (String k : keys) any |= isStaged(k);
+        if (!any) return List.of();
+        Pieces.ActionButton go = actionButton(Icons.TICK, Palette.MONEY, ACTION_INLINE,
+                new Press(Look.GO, label, null), () -> {
+                    apply.run();
+                    for (String k : keys) unstage(k);
+                    showPolicyMenu();
+                });
+        go.setMinWidth(240);
+        Pieces.ActionButton no = actionButton(Icons.CLOSE, Palette.TEXT_LABEL, ACTION_INLINE,
+                new Press(Look.CHOOSE, "Leave it as it is", null), () -> {
+                    for (String k : keys) unstage(k);
+                    showPolicyMenu();
+                });
+        no.setMinWidth(170);
+        HBox bar = new HBox(8, go, no);
+        bar.setAlignment(Pos.CENTER_LEFT);
+        bar.setStyle("-fx-padding: 6 0 2 0;");
+        return List.of(bar);
+    }
+
+    /* ----- HOW THE D$ IS SET ----- */
+
+    /** What each regime does, in a line (the board's own words). */
+    static String regimeSays(ForeignAccounts.Regime r) {
+        return switch (r) {
+            case FLOAT -> "The market sets it. The vault does nothing.";
+            case LEAN -> "The vault sells dollars against a fall: the city's way until now, and the default.";
+            case BAND -> "Free inside a band you set. The vault holds its edges.";
+            case PEG -> "Held at one rate. The vault meets every flow at it.";
+        };
+    }
+
+    /** The regime card's (i): the four ways, and what history says of a peg. */
+    String regimeInfo() {
+        return "How the city holds its " + sym() + ". Float: the market sets it and the vault does nothing. Lean against falls is the "
+                + "default and what the city did before there were regimes: the vault sells dollars against a fall (a "
+                + "reserve defends a currency; it does not hold one down). Band: the rate floats inside a band you set - a "
+                + "centre, the slope it crawls at and a width either side - and the vault holds its edges, selling dollars "
+                + "at the weak one and buying them at the strong one, as the Monetary Authority of Singapore does (its band "
+                + "is thought to be about 2% either side). Peg: held at one rate, the vault meeting every flow at it, until "
+                + "it cannot. A peg breaks when the vault would fall under " + curMonths(ForeignAccounts.VAULT_FLOOR)
+                + " of imports, or by chance as the shadow rate - where the float would be - sits further from it. History: "
+                + "sterling in 1992 fell 10% against the mark in two weeks and 24% against the dollar in four months; the baht "
+                + "in 1997 lost 55% in six and a half months; Argentina in 2002 about two thirds. Among 125 countries the "
+                + "median peg lasted two years. Pegs at 2, 5 and 10 points of inflation over the US's last a median 7.4, 4.5 "
+                + "and 2.9 years in the study's model, and break by 31%, 37% and 47%.";
+    }
+
+    /** What the regime in force means now, in a line (pure). */
+    String regimeNow(ForeignAccounts fx) {
+        return switch (fx.getRegime()) {
+            case FLOAT -> "Floating: the " + sym() + " is where the market puts it, " + curRate(fx.getRate()) + " per "
+                    + Currency.FOREIGN_SYMBOL + ". The vault does nothing to hold it.";
+            case LEAN -> "Leaning against falls: the float's rate, a fall damped by the vault's sales while it has "
+                    + "dollars to sell.";
+            case BAND -> "In a band of " + curRate(fx.bandStrongEdge()) + " to " + curRate(fx.bandWeakEdge()) + " per "
+                    + Currency.FOREIGN_SYMBOL + ": free inside it, the vault holding its edges.";
+            case PEG -> "Pegged at " + curRate(fx.getPegRate()) + " per " + Currency.FOREIGN_SYMBOL
+                    + ": the vault meets every flow at it.";
+        };
+    }
+
+    /** What entering a regime does, today (pure): a peg pegs at the rate of the day, a band centres on it. */
+    String regimeEntering(ForeignAccounts fx, ForeignAccounts.Regime r) {
+        return switch (r) {
+            case FLOAT -> "Floating: the vault stops selling dollars against a fall, and the " + sym() + " goes where the market takes it.";
+            case LEAN -> "Leaning: the vault sells dollars against a fall again, as the city did before there were regimes.";
+            case BAND -> "Entering the band centres it on today's rate, " + curRate(fx.getRate()) + ", flat, "
+                    + share1(ForeignAccounts.BAND_WIDTH) + " either side. Its centre, slope and width are yours to set "
+                    + "once it is in force.";
+            case PEG -> "Entering the peg pegs the " + sym() + " at today's rate, " + curRate(fx.getRate()) + " per "
+                    + Currency.FOREIGN_SYMBOL + ". The vault then meets the month's whole balance at it, until it falls "
+                    + "under " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports.";
+        };
+    }
+
+    /** The chip row's Apply button: what pressing it does. */
+    private String regimeApplies(ForeignAccounts fx, ForeignAccounts.Regime r) {
+        return switch (r) {
+            case FLOAT -> "Float the " + sym();
+            case LEAN -> "Lean against falls";
+            case BAND -> "Hold the " + sym() + " in a band around " + curRate(fx.getRate());
+            case PEG -> "Peg the " + sym() + " at " + curRate(fx.getRate());
+        };
+    }
+
+    /** The last peg that broke and how many have, in words; null before the first (pure). */
+    String breakLine(ForeignAccounts fx) {
+        if (fx.getBreaks() <= 0) return null;
+        String times = fx.getBreaks() == 1 ? "A peg has broken once since founding" : "Pegs have broken " + fx.getBreaks()
+                + " times since founding";
+        return times + ". The last gave way because " + fx.getLastBreakCause().words + ": the " + sym() + " jumped "
+                + share1(Math.abs(Math.expm1(fx.getLastBreakJump()))) + (fx.getLastBreakJump() >= 0 ? " weaker" : " stronger")
+                + " that month; the float's rule had it at " + curRate(fx.getLastBreakShadow()) + ".";
+    }
+
+    /**
+     * HOW THE D$ IS SET: the four regimes as chips with a line each, the one in
+     * force marked, a choice staged until Apply, and what entering it does.
+     */
+    VBox regimeCard(ForeignAccounts fx, ForeignAccounts.Regime now, ForeignAccounts.Regime want) {
+        ForeignAccounts.Regime[] all = ForeignAccounts.Regime.values();
+        Node[] cols = new Node[all.length];
+        for (int i = 0; i < all.length; i++) {
+            ForeignAccounts.Regime r = all[i];
+            cols[i] = option(r.words, regimeSays(r), r == want, r == now, () -> choose(XR_REGIME, now, r));
+        }
+        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "HOW THE " + sym() + " IS SET", regimeInfo(),
+                quiet("what each way does, before it is chosen")), row(cols));
+        c.getChildren().add(line(want == now ? regimeNow(fx) : regimeEntering(fx, want), null));
+        String broke = breakLine(fx);
+        if (broke != null && now != ForeignAccounts.Regime.PEG) c.getChildren().add(muted(broke));
+        c.getChildren().addAll(currencyFoot(regimeApplies(fx, want), () -> {
+            ui.game.setCurrencyRegime(want);
+            // A peg or a band staged for the regime that just left has nothing to apply to.
+            unstage(XR_PEG);
+            unstage(XR_CENTRE);
+            unstage(XR_SLOPE);
+            unstage(XR_WIDTH);
+        }, XR_REGIME));
+        return c;
+    }
+
+    /* ----- THE PEG ----- */
+
+    /** THE PEG's (i): what holds it, how it breaks, and what a devaluation is. */
+    String pegInfo() {
+        return "A peg holds the " + sym() + " at one rate: the vault meets the month's whole balance at it, selling dollars when "
+                + "the city runs short of them and taking them when it runs long. The shadow rate is where the float "
+                + "would put the " + sym() + ", and its gap from the peg is the pressure on it. The peg breaks when paying the "
+                + "month's deficit would take the vault under " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports, "
+                + "or by doubt: " + share1(ForeignAccounts.BREAK_BASE) + " a month at no gap, rising with the shadow's gap "
+                + "once it is past " + pct0(ForeignAccounts.BREAK_GAP) + " (" + share1(ForeignAccounts.hazard(2 * ForeignAccounts.BREAK_GAP))
+                + " a month at a gap of " + pct0(2 * ForeignAccounts.BREAK_GAP) + "), and hot money leaves on that doubt "
+                + "before it. When it breaks the " + sym() + " lands at the shadow rate plus " + pct0(ForeignAccounts.OVERSHOOT)
+                + " of the gap again, floats from then on, and trust in the bank falls " + pct0(Expectations.PEG_BREAK_DENT)
+                + " of the way to its least. A higher rate is a weaker " + sym() + ": raising the peg devalues, lowering it revalues, "
+                + "and the rate follows at the next reprice.";
+    }
+
+    /** The break sentence: what breaks a peg, this month's chance, and where the D$ would land (pure). */
+    String pegBreakWords(ForeignAccounts fx) {
+        return "A peg breaks when the vault falls under " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports ("
+                + usd(fx.vaultFloorUsd()) + "), or sooner by chance as the gap passes " + pct0(ForeignAccounts.BREAK_GAP)
+                + ": this month's chance " + share1(fx.getLastHazard()) + ". If it broke today the " + sym() + " would land at about "
+                + curRate(fx.breakLanding()) + ": the shadow rate, and " + pct0(ForeignAccounts.OVERSHOOT)
+                + " of the gap again.";
+    }
+
+    /** The vault's life at this pace, in words: "the floor in 8 months", "under its floor", "not falling" (pure). */
+    static String floorWords(double months) {
+        if (Double.isInfinite(months)) return "not falling";
+        if (months <= 0) return "under its floor";
+        if (months < 1) return "the floor in under a month";
+        if (months >= 120) return "over 10 years to the floor";
+        return String.format("the floor in %.0f month%s", months, Math.round(months) == 1 ? "" : "s");
+    }
+
+    /** The four figures under the peg: the shadow rate, what the vault did this month, the vault and its pace (pure of drawing). */
+    private Node[] pegCells(ForeignAccounts fx, double peg) {
+        double gap = fx.currencyGap();
+        VBox shadow = fxCell("THE SHADOW RATE", curRate(fx.getShadowRate()),
+                "where the float would be, " + curGap(gap, "the peg"),
+                "The rate the float's rule puts the " + sym() + " at, run beside the peg every month. Its gap from the peg is the "
+                        + "pressure on it: the vault pays to hold it, and past " + pct0(ForeignAccounts.BREAK_GAP)
+                        + " doubt itself starts to break the peg.");
+        double doubtUsd = fx.toUsd(ui.game.getCapitalFlows().getDoubtDeparted());
+        VBox dealt;
+        if (fx.getDefenceUsd() > 0) {
+            dealt = fxCell("THIS MONTH THE VAULT PAID", usd(fx.getDefenceUsd()), "to hold " + curRate(peg)
+                    + (doubtUsd > 0 ? ", of which " + usd(doubtUsd) + " was hot money leaving on doubt" : ""), null);
+        } else if (fx.getEdgeBoughtUsd() > 0) {
+            dealt = fxCell("THIS MONTH THE VAULT BOUGHT", usd(fx.getEdgeBoughtUsd()), "at the peg, paid by "
+                    + fx.getEdgeOwedPayer().words.toLowerCase() + " at the top of next month", null);
+        } else {
+            dealt = fxCell("THIS MONTH THE VAULT DEALT", "nothing", "the float's rule and the peg were in step", null);
+        }
+        VBox vault = fxCell("THE VAULT", coverMonths(fx.importCover()), "of imports (" + usd(fx.getReservesUsd()) + ")", null);
+        VBox pace = fxCell("AT THIS PACE", floorWords(fx.monthsToFloor()),
+                Double.isInfinite(fx.monthsToFloor()) ? "the vault is not falling: it sold nothing at the last reprice"
+                        : "the floor is " + usd(fx.vaultFloorUsd()) + ", " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports",
+                null);
+        return new Node[] {shadow, dealt, vault, pace};
+    }
+
+    /**
+     * THE PEG (when it is in force; a short note when it is only staged): the
+     * peg with steps to devalue or revalue, the shadow rate, what the vault did
+     * this month, its cover and its pace to the floor, how a peg breaks, the
+     * last break, and the peg and the shadow beside the vault's cover.
+     */
+    VBox pegCard(ForeignAccounts fx, ForeignAccounts.Regime now) {
+        if (now != ForeignAccounts.Regime.PEG) {
+            return card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE PEG", pegInfo(), quiet("if chosen · not in force")),
+                    line("If chosen, the " + sym() + " is pegged at today's rate, " + curRate(fx.getRate()) + " per "
+                            + Currency.FOREIGN_SYMBOL + ". This card then shows the peg with its steps, the shadow rate, "
+                            + "what the vault pays to hold it, how long its dollars last and the chance the peg breaks.", null));
+        }
+        double peg = fx.getPegRate(), want = staged(XR_PEG, peg), step = peg * PEG_STEP;
+        HBox big = new HBox(8, figure(curRate(want), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+                words("per " + Currency.FOREIGN_SYMBOL, Palette.SIZE_BODY, Palette.TEXT_LABEL),
+                stepper(XR_PEG, peg, step, step, Double.MAX_VALUE, pct0(PEG_STEP) + " · revalue", pct0(PEG_STEP) + " · devalue"));
+        big.setAlignment(Pos.CENTER_LEFT);
+        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE PEG", pegInfo(),
+                quiet("a higher rate is a weaker " + sym())), big);
+        if (isStaged(XR_PEG)) {
+            c.getChildren().add(muted("Staged: " + (want > peg ? "devalue" : "revalue") + " to " + curRate(want) + " from "
+                    + curRate(peg) + ". The rate follows at the next reprice."));
+        }
+        c.getChildren().add(row(pegCells(fx, peg)));
+        c.getChildren().add(line(pegBreakWords(fx), null));
+        String broke = breakLine(fx);
+        if (broke != null) c.getChildren().add(muted(broke));
+        c.getChildren().add(pegCharts());
+        c.getChildren().addAll(currencyFoot((want > peg ? "Devalue" : "Revalue") + " the peg to " + curRate(want),
+                () -> ui.game.repeg(want), XR_PEG));
+        return c;
+    }
+
+    /** The last CURRENCY_CHART_MONTHS months of a History series (aligned to the months), from the index `from`. */
+    private static double[] curTail(double[] all, int from) {
+        return java.util.Arrays.copyOfRange(all, Math.min(from, all.length), all.length);
+    }
+
+    /** A flat line `n` months long: a level the chart draws across it. */
+    private static double[] curFlat(int n, double level) {
+        double[] out = new double[n];
+        java.util.Arrays.fill(out, level);
+        return out;
+    }
+
+    /** A small chart of the given lines over `months`, on the left axis given. */
+    private TimeChart curChart(List<Integer> months, List<TimeChart.Line> lines, TimeChart.Axis axis, double width, double height) {
+        TimeChart chart = new TimeChart(new ChartModel(), Set.of(), false);
+        chart.setData(months, lines, axis, null, false, false, null, List.of(), List.of(), List.of(),
+                "no months recorded yet");
+        chart.setSize(width, height);
+        return chart;
+    }
+
+    /** One of the page's lines: History's series `key` over the last months, on the left axis, drawn in `colour`, read with `reads`. */
+    private TimeChart.Line curLine(String key, String label, String colour, double[] values,
+                                   java.util.function.DoubleFunction<String> reads) {
+        return new TimeChart.Line(key, label, colour, 0, values, v -> v, reads, "");
+    }
+
+    /** Two small charts under a peg: the rate (the peg while it holds) beside the shadow, and the vault's cover with its floor marked. */
+    Node pegCharts() {
+        HistorySave h = ui.game.getHistorySave();
+        if (h.months() < 2) return quiet("A line needs two months; come back next month.");
+        int from = Math.max(0, h.months() - CURRENCY_CHART_MONTHS), n = h.months() - from;
+        List<Integer> months = h.getMonth().subList(from, h.months());
+        TimeChart rates = curChart(months, List.of(
+                curLine("fxRate", "the rate", Palette.MONEY, curTail(h.aligned("fxRate"), from), v -> curRate(v)),
+                curLine("fxShadow", "the shadow rate", Palette.MONEY_LIGHT, curTail(h.aligned("fxShadow"), from),
+                        v -> curRate(v)).asDashed()), HistoryScreen.axisFor("rate"), 520, 150);
+        // The cover as recorded can open at 99 months (a founder's vault with no imports to weigh it against): drawn at most at COVER_CHART_TOP.
+        double[] covered = curTail(h.aligned("fxCover"), from);
+        for (int i = 0; i < covered.length; i++) covered[i] = Math.min(covered[i], COVER_CHART_TOP);
+        TimeChart cover = curChart(months, List.of(
+                curLine("fxCover", "the vault's cover", Palette.MONEY, covered,
+                        v -> v >= COVER_CHART_TOP ? "over " + curMonths(COVER_CHART_TOP) : coverMonths(v)),
+                curLine("fxFloor", "the floor", Palette.TEXT_LABEL, curFlat(n, ForeignAccounts.VAULT_FLOOR),
+                        v -> curMonths(v)).asDashed()),
+                new TimeChart.Axis((v, step) -> String.format("%.0f", v), true), 520, 150);
+        VBox left = new VBox(4, words("THE RATE AND THE SHADOW · " + sym() + " per " + Currency.FOREIGN_SYMBOL,
+                        Palette.SIZE_LABEL, Palette.TEXT_LABEL), rates,
+                new FlowPane(14, 4, keySwatch(Palette.MONEY, "the rate (the peg, while it holds)"),
+                        keySwatch(Palette.MONEY_LIGHT, "the shadow rate, dashed")));
+        VBox right = new VBox(4, words("THE VAULT'S COVER · months of imports, drawn at most to " + plain(COVER_CHART_TOP),
+                        Palette.SIZE_LABEL, Palette.TEXT_LABEL), cover,
+                new FlowPane(14, 4, keySwatch(Palette.MONEY, "the vault's cover"),
+                        keySwatch(Palette.TEXT_LABEL, "the floor: " + curMonths(ForeignAccounts.VAULT_FLOOR) + ", dashed")));
+        return new FlowPane(18, 10, left, right);
+    }
+
+    /* ----- THE BAND ----- */
+
+    /** THE BAND's (i): the three settings, the two edges and what the vault does at each. */
+    String bandInfo() {
+        return "A band is a centre, the slope it crawls at a year and a width either side. The rate floats inside it as "
+                + "the float's rule takes it; at the weak edge (the upper rate: a weaker " + sym() + ") the vault sells the month's "
+                + "deficit in dollars, at the strong edge it buys the month's surplus - the dollars paid for by whoever "
+                + "you choose below. The centre can crawl at most " + share1(ForeignAccounts.MAX_BAND_SLOPE) + " a year and "
+                + "the band can be at most " + share1(ForeignAccounts.MAX_BAND_WIDTH) + " either side. It opens at "
+                + share1(ForeignAccounts.BAND_WIDTH) + " either side of the rate of the day. The vault holds the edges "
+                + "only while it has dollars to sell: under " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports the "
+                + "hold gives way.";
+    }
+
+    /** What the band did this month in a line: the weak edge touched, the strong, or inside (pure). */
+    String bandMonthWords(ForeignAccounts fx) {
+        if (fx.getRate() > fx.bandWeakEdge() * (1 + 1e-9)) {
+            return "This month the band gave way: paying the deficit would have taken the vault under "
+                    + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports, so the rate stands where the float's rule puts it, "
+                    + curRate(fx.getRate()) + ", past the weak edge. The band is still the regime.";
+        }
+        if (fx.getDefenceUsd() > 0) {
+            return "This month the rate touched the weak edge: the vault sold " + usd(fx.getDefenceUsd()) + " to hold it.";
+        }
+        if (fx.getEdgeBoughtUsd() > 0) {
+            return "This month the rate touched the strong edge: the vault bought " + usd(fx.getEdgeBoughtUsd())
+                    + " to hold it, paid by " + fx.getEdgeOwedPayer().words.toLowerCase() + " at the top of next month.";
+        }
+        return "This month the rate stayed inside the band: nothing dealt.";
+    }
+
+    /**
+     * THE BAND (when it is in force; a short note when it is only staged): the
+     * centre, slope and width with steps, the two edges, what the band did this
+     * month, the shadow's gap from the centre, and the rate and the shadow over
+     * the last five years with today's edges across them.
+     */
+    VBox bandCard(ForeignAccounts fx, ForeignAccounts.Regime now) {
+        if (now != ForeignAccounts.Regime.BAND) {
+            return card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE BAND", bandInfo(), quiet("if chosen · not in force")),
+                    line("If chosen, the band centres on today's rate, " + curRate(fx.getRate()) + ", flat, "
+                            + share1(ForeignAccounts.BAND_WIDTH) + " either side. This card then shows its centre, slope "
+                            + "and width with steps, the two edges and where the rate has been inside them.", null));
+        }
+        double centre = fx.getBandCentre(), slope = fx.getBandSlope(), width = fx.getBandWidth();
+        double wc = staged(XR_CENTRE, centre), ws = staged(XR_SLOPE, slope), ww = staged(XR_WIDTH, width);
+        VBox cCentre = fxCell("CENTRE", curRate(wc), "per " + Currency.FOREIGN_SYMBOL + (isStaged(XR_CENTRE) ? " · staged" : ""), null);
+        cCentre.getChildren().add(stepper(XR_CENTRE, centre, centre * CENTRE_STEP, centre * CENTRE_STEP, Double.MAX_VALUE,
+                pct0(CENTRE_STEP), pct0(CENTRE_STEP)));
+        VBox cSlope = fxCell("SLOPE", signedPct1(ws) + " a year", "the centre crawls" + (isStaged(XR_SLOPE) ? " · staged" : ""), null);
+        cSlope.getChildren().add(stepper(XR_SLOPE, slope, SLOPE_STEP, -ForeignAccounts.MAX_BAND_SLOPE,
+                ForeignAccounts.MAX_BAND_SLOPE, pointsOf(SLOPE_STEP * 100), pointsOf(SLOPE_STEP * 100)));
+        VBox cWidth = fxCell("WIDTH", "±" + share1(ww), "either side of the centre" + (isStaged(XR_WIDTH) ? " · staged" : ""), null);
+        cWidth.getChildren().add(stepper(XR_WIDTH, width, WIDTH_STEP, 0, ForeignAccounts.MAX_BAND_WIDTH,
+                pointsOf(WIDTH_STEP * 100), pointsOf(WIDTH_STEP * 100)));
+        VBox weak = fxCell("THE WEAK EDGE", curRate(fx.bandWeakEdge()), "the vault sells " + Currency.FOREIGN_SYMBOL + " here", null);
+        VBox strong = fxCell("THE STRONG EDGE", curRate(fx.bandStrongEdge()), "the vault buys " + Currency.FOREIGN_SYMBOL + " here", null);
+        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE BAND", bandInfo(), quiet("a higher rate is a weaker " + sym())),
+                row(cCentre, cSlope, cWidth, weak, strong));
+        if (isStaged(XR_CENTRE) || isStaged(XR_SLOPE) || isStaged(XR_WIDTH)) {
+            c.getChildren().add(muted("The edges above are the band now; the staged settings take hold at the next reprice."));
+        }
+        c.getChildren().add(line(bandMonthWords(fx), null));
+        c.getChildren().add(line("The shadow rate, where the float would be, " + curRate(fx.getShadowRate()) + ", sits "
+                + curGap(fx.currencyGap(), "the centre") + ".", null));
+        c.getChildren().add(bandChart(fx));
+        c.getChildren().addAll(currencyFoot("Set the band at " + curRate(wc) + ", ±" + share1(ww) + ", " + signedPct1(ws) + " a year",
+                () -> ui.game.setBand(wc, ws, ww), XR_CENTRE, XR_SLOPE, XR_WIDTH));
+        return c;
+    }
+
+    /** The rate and the shadow over the last CURRENCY_CHART_MONTHS months with today's two edges drawn flat across them, labelled "the band as set now". */
+    Node bandChart(ForeignAccounts fx) {
+        HistorySave h = ui.game.getHistorySave();
+        if (h.months() < 2) return quiet("A line needs two months; come back next month.");
+        int from = Math.max(0, h.months() - CURRENCY_CHART_MONTHS), n = h.months() - from;
+        List<Integer> months = h.getMonth().subList(from, h.months());
+        TimeChart chart = curChart(months, List.of(
+                curLine("fxRate", "the rate", Palette.MONEY, curTail(h.aligned("fxRate"), from), v -> curRate(v)),
+                curLine("fxShadow", "the shadow rate", Palette.MONEY_LIGHT, curTail(h.aligned("fxShadow"), from),
+                        v -> curRate(v)).asDashed(),
+                curLine("bandWeak", "the weak edge now", Palette.TEXT_LABEL, curFlat(n, fx.bandWeakEdge()), v -> curRate(v)).asDashed(),
+                curLine("bandStrong", "the strong edge now", Palette.TEXT_LABEL, curFlat(n, fx.bandStrongEdge()),
+                        v -> curRate(v)).asDashed()), HistoryScreen.axisFor("rate"), 1000, 170);
+        return new VBox(4, words("THE RATE AND THE BAND · " + sym() + " per " + Currency.FOREIGN_SYMBOL + ", the last "
+                        + Math.min(n, CURRENCY_CHART_MONTHS) + " months", Palette.SIZE_LABEL, Palette.TEXT_LABEL), chart,
+                new FlowPane(14, 4, keySwatch(Palette.MONEY, "the rate"), keySwatch(Palette.MONEY_LIGHT, "the shadow rate, dashed"),
+                        keySwatch(Palette.TEXT_LABEL, "the band as set now: the weak edge above, the strong below")));
+    }
+
+    /* ----- WHO BUYS AT THE STRONG EDGE ----- */
+
+    /** Each payer's line, under its chip: what paying that way does (star 6's own words). */
+    static String payerSays(ForeignAccounts.EdgePayer p) {
+        return switch (p) {
+            case CENTRAL_BANK -> "M0 rises, as the Swiss National Bank's did from 2011 to 2015.";
+            case TREASURY -> "A reserve purchase: money that could have built something.";
+        };
+    }
+
+    /** What the payer's Apply says: the chip's words, and that it buys at the strong edge. */
+    static String payerApplies(ForeignAccounts.EdgePayer p) {
+        return switch (p) {
+            case CENTRAL_BANK -> "The central bank buys at the strong edge, in new money";
+            case TREASURY -> "The treasury buys at the strong edge, out of its cash";
+        };
+    }
+
+    /** WHO BUYS AT THE STRONG EDGE's (i). */
+    static String payerInfo() {
+        return "At a band's strong edge, or under a peg when the city earns more dollars than it spends, the vault takes "
+                + "the surplus at once; the local money for it is owed to its payer and settled at the top of the next "
+                + "month. Paid by the central bank it is new money, so M0 rises and the city's money supply with it, as the "
+                + "Swiss National Bank's did buying euros from 2011 to 2015. Paid by the treasury it comes out of its "
+                + "cash, a reserve purchase like any other: money that could have built something. What the treasury "
+                + "cannot pay the central bank does. It acts only under a band or a peg.";
+    }
+
+    /** WHO BUYS AT THE STRONG EDGE (star 6): the two payers as chips, the default marked, what is owed now and what has been bought since founding. */
+    VBox payerCard(ForeignAccounts fx) {
+        ForeignAccounts.EdgePayer now = fx.getEdgePayer(), want = stagedChoice(XR_PAYER, now, ForeignAccounts.EdgePayer.values());
+        VBox options = new VBox(10);
+        for (ForeignAccounts.EdgePayer p : ForeignAccounts.EdgePayer.values()) {
+            options.getChildren().add(option(p.words, payerSays(p), p == want, p == now, () -> choose(XR_PAYER, now, p)));
+        }
+        VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "WHO BUYS AT THE STRONG EDGE", payerInfo(), null), options);
+        ForeignAccounts.Regime regime = fx.getRegime();
+        if (regime == ForeignAccounts.Regime.FLOAT || regime == ForeignAccounts.Regime.LEAN) {
+            c.getChildren().add(muted("It acts only under a band or a peg: under "
+                    + (regime == ForeignAccounts.Regime.FLOAT ? "a float" : "leaning against falls")
+                    + " the vault buys nothing at an edge."));
+        }
+        c.getChildren().add(cardLine(fx.getEdgeOwedLocal() > 0
+                        ? "Owed now, by " + fx.getEdgeOwedPayer().words.toLowerCase() + ", paid at the top of next month"
+                        : "Owed now, paid at the top of next month",
+                fx.getEdgeOwedLocal() > 0 ? curLocal(fx.getEdgeOwedLocal()) : "nothing", null));
+        c.getChildren().add(cardLine("Dollars bought at an edge since founding", usd(fx.getEdgeBoughtUsdLifetime()), null));
+        c.getChildren().add(cardLine("...of it paid in new money by the central bank, since founding",
+                curLocal(ui.game.getCentralBank().getDollarsBoughtLifetime()), null));
+        c.getChildren().addAll(currencyFoot(payerApplies(want), () -> ui.game.setEdgePayer(want), XR_PAYER));
+        return c;
+    }
+
+    /* ----- WHAT THE DIAL AIMS AT ----- */
+
+    /** Each aim's line, from the model's constants (star 13). */
+    String aimSays(DebtManager.Aim a) {
+        return switch (a) {
+            case INFLATION -> "The Taylor rule, as before: the Fed's and the ECB's way.";
+            case CURRENCY -> "The dial holds the band or the peg: the US's rate, " + pct2(DebtManager.WORLD_BASE_RATE)
+                    + ", plus " + pointsOf(DebtManager.CURRENCY_WEIGHT) + " for each 1% the " + sym() + " sits past its target.";
+            case MIX -> "The inflation rule plus that: " + pointsOf(DebtManager.CURRENCY_WEIGHT)
+                    + " for each 1% the " + sym() + " sits past its target.";
+        };
+    }
+
+    /** WHAT THE DIAL AIMS AT's (i). */
+    String aimInfo() {
+        return "What the autopilot sets the dial to hold. Inflation: the rule as before, the way the Fed and the ECB aim "
+                + "at inflation and let the currency float. The currency: the dial that holds the band or the peg, the US's "
+                + "rate plus " + pointsOf(DebtManager.CURRENCY_WEIGHT) + " for each 1% the " + sym() + "'s shadow rate sits past its "
+                + "target (the peg, or the band's centre) - an open-economy Taylor rule, as small open economies run. A "
+                + "mix: the inflation rule plus that. Under a peg the dial is tied to the US's rate whatever is chosen: "
+                + "only the spread is the aim's. The aim acts only with the autopilot on; a float has no target for the "
+                + "currency to aim at, so there the dial follows inflation whatever is chosen. The US's rate stands for "
+                + "a figure of the world's own, " + pct2(DebtManager.WORLD_BASE_RATE) + ", until the US has a rate of its own.";
+    }
+
+    /** What each aim would set the dial to now, under the regime in force (pure): a rate; null for a rule that reads inflation before there is a year of prices to read. */
+    String aimDialNow(DebtManager.Aim a, ForeignAccounts fx) {
+        DebtManager market = ui.game.getDebtManager();
+        PriceIndex px = ui.game.getPriceIndex();
+        double gap = fx.currencyGap();
+        if (fx.getRegime() == ForeignAccounts.Regime.PEG) return pct2(market.tiedRate(gap));
+        boolean aims = fx.getRegime() == ForeignAccounts.Regime.BAND;
+        if (a == DebtManager.Aim.CURRENCY && aims) return pct2(market.currencyRate(gap));
+        if (!px.hasRate()) return null;
+        if (a == DebtManager.Aim.MIX && aims) return pct2(market.mixRate(px.inflation(), gap));
+        return pct2(market.advisedPolicyRate(px.inflation()));
+    }
+
+    /** ...as a sentence: "It would set the dial to 3.10% now.", or that it has nothing to read yet. */
+    String aimWouldSet(DebtManager.Aim a, ForeignAccounts fx) {
+        String rate = aimDialNow(a, fx);
+        return rate == null ? "It has nothing to read until there is a year of prices." : "It would set the dial to " + rate + " now.";
+    }
+
+    /**
+     * WHAT THE DIAL AIMS AT (star 13): inflation, the currency or a mix as
+     * chips, each with the dial it would set now under the regime in force;
+     * that it acts only with the autopilot on, with a door to where that is
+     * set; and under a float or a lean that there is nothing for the currency to
+     * aim at.
+     */
+    VBox aimCard(ForeignAccounts fx) {
+        DebtManager market = ui.game.getDebtManager();
+        DebtManager.Aim now = market.getAim(), want = stagedChoice(XR_AIM, now, DebtManager.Aim.values());
+        ForeignAccounts.Regime regime = fx.getRegime();
+        // Under a band each aim sets its own dial, so each says what it would set now; under a float, a lean or a peg
+        // one rule sets it whatever is chosen, and it is said once under the chips.
+        boolean eachSets = regime == ForeignAccounts.Regime.BAND;
+        VBox options = new VBox(10);
+        for (DebtManager.Aim a : DebtManager.Aim.values()) {
+            options.getChildren().add(option(a.words, aimSays(a) + (eachSets ? " " + aimWouldSet(a, fx) : ""),
+                    a == want, a == now, () -> choose(XR_AIM, now, a)));
+        }
+        VBox c = card(cardHead(Icons.POLICY, Palette.MONEY, "WHAT THE DIAL AIMS AT", aimInfo(), null), options);
+        if (regime == ForeignAccounts.Regime.FLOAT || regime == ForeignAccounts.Regime.LEAN) {
+            c.getChildren().add(muted("A float has no target for the currency to aim at: the dial follows inflation "
+                    + "whatever is chosen. " + aimWouldSet(DebtManager.Aim.INFLATION, fx).replace("It would", "The rule would")
+                    + " The aim waits for a band or a peg."));
+        } else if (regime == ForeignAccounts.Regime.PEG) {
+            c.getChildren().add(muted("Under the peg the dial is tied to the US's rate whatever is chosen: "
+                    + aimWouldSet(now, fx).replace("It would", "it would") + " The aim only decides who sets the spread, you or the rule."));
+        }
+        HBox hand = new HBox(8, words(market.isAutopilot()
+                        ? "The autopilot is on: the dial follows the aim."
+                        : "The autopilot is off, so the dial is in your hand and the aim waits.",
+                        Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
+                doorPill("Policy rate · the autopilot", Icons.BANK, Palette.MONEY, () -> open(MONEY, "The policy rate")));
+        hand.setAlignment(Pos.CENTER_LEFT);
+        c.getChildren().add(hand);
+        c.getChildren().addAll(currencyFoot("The dial aims at " + want.words.toLowerCase(),
+                () -> market.setAim(want), XR_AIM));
+        return c;
+    }
+
+    /* ----- THE DIAL UNDER A PEG ----- */
+
+    /** THE DIAL UNDER A PEG's (i): the tie, the spread, and the trinity. */
+    static String pegDialInfo() {
+        return "Under a peg the dial is tied to the US's rate: the policy rate is the US's, " + pct2(DebtManager.WORLD_BASE_RATE)
+                + " until the US has a rate of its own, plus a spread. The spread is yours to set - up against money "
+                + "leaving, down against money arriving - or, with the autopilot aiming at the currency or a mix, the "
+                + "rule's: " + plain(DebtManager.CURRENCY_WEIGHT) + " times the gap of the shadow rate from the peg. Hong "
+                + "Kong's rate follows the US's by this working. A free dial, an open border and a fixed rate cannot all "
+                + "hold at once: under the peg the city gives up the first.";
+    }
+
+    /** The tied dial in words: "2.50% = the US's 2.00% + the spread 0.50%", or with the joiners "plus" and "less" (pure). */
+    static String tiedWords(double dial, double spread, String plus, String minus) {
+        return pct2(dial) + " = the US's " + pct2(DebtManager.WORLD_BASE_RATE) + (spread < 0 ? minus : plus)
+                + "the spread " + pct2(Math.abs(spread));
+    }
+
+    /**
+     * THE DIAL UNDER A PEG (star 5; the board's "the dial is still yours" became
+     * the tie): the dial as the US's rate plus the spread, the spread with
+     * quarter-point steps - or the rule's, with the autopilot aiming at the
+     * currency - and the trinity.
+     */
+    VBox pegDialCard(ForeignAccounts fx) {
+        DebtManager market = ui.game.getDebtManager();
+        double gap = fx.currencyGap(), tied = market.tiedRate(gap);
+        boolean ruleHas = market.isAutopilot() && market.getAim() != DebtManager.Aim.INFLATION;
+        double spread = ruleHas ? tied - DebtManager.WORLD_BASE_RATE : market.getPegSpread();
+        VBox c = card(cardHead(Icons.BANK, Palette.MONEY, "THE DIAL UNDER A PEG", pegDialInfo(), null),
+                words(tiedWords(tied, spread, " + ", " − "), Palette.SIZE_HEADING + 3, Palette.TEXT_HEAD));
+        if (Math.abs(market.getPolicyRate() - tied) > 1e-9) {
+            c.getChildren().add(muted("The dial stands at " + pct2(market.getPolicyRate())
+                    + " until the month turns, then goes to " + pct2(tied) + "."));
+        }
+        if (ruleHas) {
+            c.getChildren().add(line("The rule sets the spread: " + plain(DebtManager.CURRENCY_WEIGHT) + " × the gap (the "
+                    + "shadow rate " + curGap(gap, "the peg") + ") = " + points(spread) + ".", null));
+            c.getChildren().add(stepChip("the rule has it", () -> { }, true));
+        } else {
+            double want = staged(XR_SPREAD, spread);
+            c.getChildren().add(cardLine("The spread over the US's rate", points(want) + (isStaged(XR_SPREAD) ? " · staged" : ""), null));
+            c.getChildren().add(stepper(XR_SPREAD, spread, SPREAD_STEP, DebtManager.MIN_POLICY_RATE - DebtManager.WORLD_BASE_RATE,
+                    DebtManager.MAX_POLICY_RATE - DebtManager.WORLD_BASE_RATE,
+                    pointsOf(SPREAD_STEP * 100), pointsOf(SPREAD_STEP * 100)));
+            c.getChildren().add(muted("Raise it against money leaving, lower it against money arriving."));
+            c.getChildren().addAll(currencyFoot("Set the spread to " + points(want), () -> market.setPegSpread(want), XR_SPREAD));
+        }
+        c.getChildren().add(line("A free dial, an open border and a fixed rate cannot all hold at once: under the peg the "
+                + "city gives up the first.", null));
+        return c;
+    }
+
+    /* ----- BUY OR SELL THE D$ ----- */
+
+    /** What a deal of DEAL_SHARE of a year's output would do to the rate, under the regime in force (pure). */
+    String dealWords(ForeignAccounts fx) {
+        double year = 12 * fx.getGdpTrailing(), deal = DEAL_SHARE * year, effect = fx.dealEffect(deal);
+        if (!(effect > 0)) return "There is no year of output yet to weigh a deal against.";
+        String size = "A deal of " + pct0(DEAL_SHARE) + " of a year's output, " + curLocal(deal) + " (" + usd(fx.toUsd(deal)) + "): ";
+        String half = "half of that gone in " + plain(ForeignAccounts.INTERVENTION_HALF_LIFE) + " months";
+        String sale = "a sale would make the " + sym() + " about " + share1(-Math.expm1(-effect)) + " dearer, " + half
+                + "; a purchase about " + share1(Math.expm1(effect)) + " cheaper.";
+        return fx.getRegime() == ForeignAccounts.Regime.PEG
+                ? size + "under the peg it moves nothing: the rate is held, and a sale is more of the vault spent holding it. "
+                        + "Floating, leaning or in a band, " + sale
+                : size + sale;
+    }
+
+    /** BUY OR SELL THE D$'s (i). */
+    String dealInfo() {
+        return String.format("The treasury can sell dollars from the vault (the %s dearer) or buy them (cheaper). At the real "
+                + "size a deal of 1%% of a year's output moves the float's rate by about %.0f%%, fading by half in %.0f "
+                + "months. Under a peg it moves nothing - the rate is held - and a sale is more of the vault spent holding "
+                + "it. The dealing itself is on Trade, in the reserves.",
+                sym(), ForeignAccounts.INTERVENTION_IMPACT, ForeignAccounts.INTERVENTION_HALF_LIFE);
+    }
+
+    /** BUY OR SELL THE D$: what a deal of 1% of a year's output would do, and a door to Trade's reserves, where the dealing is. */
+    VBox dealCard(ForeignAccounts fx) {
+        return card(cardHead(Icons.EXCHANGE, Palette.MONEY, "BUY OR SELL THE " + sym(), dealInfo(), null),
+                line(dealWords(fx), null),
+                doorPill("Buy or sell " + Currency.FOREIGN_SYMBOL + " · Trade › The reserves", Icons.EXCHANGE, Palette.MONEY,
+                        () -> ui.tradeScreen.open(TradeScreen.RESERVES, TradeScreen.EXCHANGE_CARD)));
     }
 
     /* =====================================================================

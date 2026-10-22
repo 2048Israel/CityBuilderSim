@@ -64,7 +64,7 @@
 >   buyForeignCurrency()      JOURNALLED  "Bought reserves" - no budget line
 > ... (98 more lines in the source)
 
-**Used by (11):** [CentralBankCheck](CentralBankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [EducationCheck](EducationCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LandCheck](LandCheck.md), [OilCheck](OilCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md)
+**Used by (12):** [CentralBankCheck](CentralBankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [EducationCheck](EducationCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LandCheck](LandCheck.md), [OilCheck](OilCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

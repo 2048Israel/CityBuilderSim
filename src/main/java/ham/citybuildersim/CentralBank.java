@@ -209,6 +209,8 @@ public final class CentralBank {
     private double boughtAtIssue, parAtIssue;
     /** The defence's month (0.7.2): the local price of the vault's dollars sold at this month's reprice - equity spent, not money destroyed. */
     private double defendedThisMonth;
+    /** The mirror of the defence (XR2): the local price of the dollars it bought for the vault this month at the strong edge of a band or a peg, in money made and paid abroad for them. */
+    private double dollarsBought;
 
     /* ------------------------------------------------------------------ the city's life */
 
@@ -223,6 +225,8 @@ public final class CentralBank {
     private double boughtAtIssueLifetime, parAtIssueLifetime;
     /** Spent defending the currency since founding (0.7.2): the vault's dollars at the rates they were sold at. Appended to the save; zero on an old one. */
     private double defendedLifetime;
+    /** ...and what it paid, in money made, for the dollars it bought for the vault since founding (XR2). Appended to the save; zero on an old one. */
+    private double dollarsBoughtLifetime;
 
     /** The treasury's revenue, the last REVENUE_MONTHS of it, for the ceiling. Empty on an old save, which has no ceiling until a month is struck. */
     private final double[] revenue = new double[REVENUE_MONTHS];
@@ -248,6 +252,7 @@ public final class CentralBank {
         boughtFromHouseholds = boughtFromWorld = 0;
         boughtAtIssue = parAtIssue = 0;
         defendedThisMonth = 0;
+        dollarsBought = 0;
     }
 
     private void issue(double x)  { reserves += x; issued += x;  issuedLifetime += x; }
@@ -633,6 +638,19 @@ public final class CentralBank {
      * deficit it had already paid, and since deposits are not the commercial
      * bank's liabilities here (Bank, THE THREE STATEMENTS) it would have come
      * straight out of the bank's equity.
+     *
+     * THE MIRROR OF THE DEFENCE (XR2, ForeignAccounts, THE REGIMES): at the
+     * strong edge of a band, or in a pegged month's surplus, the vault BUYS
+     * dollars, and by default this bank pays for them in new money (the SNB's
+     * 2011-2015, its balance sheet from CHF 250 billion to 640 billion). The
+     * vault is up by the dollars, M0 is up by their local price, and equity is
+     * where it was: the assets grew by what the liabilities grew by. The money
+     * made goes abroad for the dollars, so MoneyAudit declares it twice - made
+     * (MONEY, "+ centralbank IssuedForDollars") and paid abroad (RESERVE, "-
+     * centralbank DollarsBoughtAbroad") - and no pool moves, so issued less
+     * retired is still M0's move to the cent. Unlike the defence it is settled
+     * at the top of the month after the reprice, inside the audit's window
+     * (Game.settleTheEdge()), like the treasury's redemptions.
      * ======================================================================== */
 
     /**
@@ -657,6 +675,27 @@ public final class CentralBank {
      * is lower - it is lower already, through the vault it reads.
      */
     public double vaultSpent() { return defendedLifetime; }
+
+    /**
+     * Pays this much local money, made for the purpose, for the dollars the
+     * vault bought at the strong edge (the mirror of the defence; Game
+     * .settleTheEdge()). The money is made - M0 rises, reserves are the ledger
+     * of what this bank made - and leaves the city for the dollars.
+     *
+     * @return what was paid
+     */
+    public double buyDollarsForVault(double local) {
+        if (!(local > 0) || !Double.isFinite(local)) return 0;
+        issue(local);
+        dollarsBought += local;
+        dollarsBoughtLifetime += local;
+        return local;
+    }
+
+    /** What it paid, in new money, for the dollars it bought for the vault this month. */
+    public double getDollarsBought()         { return dollarsBought; }
+    /** ...and since founding. */
+    public double getDollarsBoughtLifetime() { return dollarsBoughtLifetime; }
 
     /* ============================ THE CEILING ============================ */
 
@@ -787,13 +826,14 @@ public final class CentralBank {
      * paper bought and sold since founding, and the dial's previous setting;
      * since 0.7.2 what the defence has spent since founding; and since
      * 0.7.15 what it has paid the households for their paper, and (round 2)
-     * what it has paid at issue rolling its own paper, and that paper's par. A
+     * what it has paid at issue rolling its own paper, and that paper's par;
+     * and since XR2 what it has paid in new money for the vault's dollars. A
      * slot appended later reads zero from an older save, which is a bank that
      * has not done that yet. A save without the key founds an empty bank. The
      * two dials, the holdings and the ceiling, are under keys of their own.
      */
     public double[] toSaveArray() {
-        double[] out = new double[13 + REVENUE_MONTHS + 9];
+        double[] out = new double[13 + REVENUE_MONTHS + 10];
         int i = 0;
         out[i++] = advancesToBank;
         out[i++] = advancesToTreasury;
@@ -818,6 +858,7 @@ public final class CentralBank {
         out[i++] = boughtFromHouseholdsLifetime;
         out[i++] = boughtAtIssueLifetime;
         out[i++] = parAtIssueLifetime;
+        out[i++] = dollarsBoughtLifetime;
         return out;
     }
 
@@ -852,6 +893,8 @@ public final class CentralBank {
         // ...and round 2's: an older save has rolled nothing at issue.
         if (i < saved.length) boughtAtIssueLifetime = Math.max(0, saved[i++]);
         if (i < saved.length) parAtIssueLifetime    = Math.max(0, saved[i++]);
+        // ...and XR2's: an older save has bought no dollars for the vault in new money.
+        if (i < saved.length) dollarsBoughtLifetime = Math.max(0, saved[i++]);
     }
 
     /** An empty bank: nothing lent, nothing made. */
@@ -865,6 +908,7 @@ public final class CentralBank {
         boughtFromHouseholdsLifetime = 0;
         boughtAtIssueLifetime = parAtIssueLifetime = 0;
         defendedLifetime = 0;
+        dollarsBoughtLifetime = 0;
         targetShare = previousTarget = 0;
         advancesCeilingMonths = DEFAULT_ADVANCES_MONTHS;
         java.util.Arrays.fill(revenue, 0);
@@ -897,6 +941,7 @@ public final class CentralBank {
         boughtAtIssueLifetime *= scale;  parAtIssueLifetime *= scale;
         paperRedeemed *= scale;  boughtBack *= scale;  paperGains *= scale;
         defendedThisMonth *= scale;  defendedLifetime *= scale;
+        dollarsBought *= scale;  dollarsBoughtLifetime *= scale;
         for (int r = 0; r < REVENUE_MONTHS; r++) revenue[r] *= scale;
     }
 }

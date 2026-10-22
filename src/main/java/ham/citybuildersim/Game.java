@@ -3959,6 +3959,83 @@ public class Game {
     }
 
     /* =======================================================================
+       WHAT THE D$ IS HELD TO (XR2, 2026-10-22; ForeignAccounts, THE REGIMES)
+
+       The city's regime for its currency, and the settings that go with it.
+       Thin decisions: the model (ForeignAccounts) clamps and holds them, these
+       record what changed in the decision log. The aim and the spread are
+       DebtManager's own (setAim(), setPegSpread()), which record theirs.
+       ======================================================================= */
+
+    /** Chooses how the D$ is held: Float, Lean against falls (the default), Band or Peg. Entering a peg pegs at today's rate; entering a band centres on it. */
+    public void setCurrencyRegime(ForeignAccounts.Regime regime) {
+        ForeignAccounts.Regime was = foreign.getRegime();
+        foreign.setRegime(regime);
+        if (foreign.getRegime() != was) {
+            decisions.record(DecisionLog.CURRENCY, "Currency regime to " + foreign.getRegime().words);
+        }
+    }
+
+    /** Moves the peg (a higher rate is a devaluation); nothing outside a peg. */
+    public void repeg(double rate) {
+        double was = foreign.getPegRate();
+        foreign.repeg(rate);
+        if (DecisionLog.moved(was, foreign.getPegRate())) {
+            decisions.record(DecisionLog.CURRENCY, String.format("%s the peg to %.4f D$ per US$",
+                    foreign.getPegRate() > was ? "Devalued" : "Revalued", foreign.getPegRate()));
+        }
+    }
+
+    /** Sets the band: its centre, the log a year it crawls and the share either side its edges sit. */
+    public void setBand(double centre, double slopeAYear, double width) {
+        double c = foreign.getBandCentre(), s = foreign.getBandSlope(), w = foreign.getBandWidth();
+        foreign.setBand(centre, slopeAYear, width);
+        if (DecisionLog.moved(c, foreign.getBandCentre()) || DecisionLog.moved(s, foreign.getBandSlope())
+                || DecisionLog.moved(w, foreign.getBandWidth())) {
+            decisions.record(DecisionLog.CURRENCY, String.format("Band to %.4f D$ per US$, %s either side, crawling %s a year",
+                    foreign.getBandCentre(), DecisionLog.pct(foreign.getBandWidth()), DecisionLog.pct(foreign.getBandSlope())));
+        }
+    }
+
+    /** Chooses who pays for the dollars the vault buys at the strong edge. */
+    public void setEdgePayer(ForeignAccounts.EdgePayer payer) {
+        ForeignAccounts.EdgePayer was = foreign.getEdgePayer();
+        foreign.setEdgePayer(payer);
+        if (foreign.getEdgePayer() != was) {
+            decisions.record(DecisionLog.CURRENCY, "The band's and the peg's dollars paid by "
+                    + foreign.getEdgePayer().words.toLowerCase());
+        }
+    }
+
+    /**
+     * THE STRONG EDGE'S BILL (XR2, star 6), at the top of the month, inside
+     * the audit's window, after the redemptions: the dollars the vault took at
+     * the last reprice (ForeignAccounts.edgeBuy()) are paid for here, at the
+     * local price they were bought at, by whoever paid when they were bought -
+     * by default the central bank, in new money (CentralBank
+     * .buyDollarsForVault(): M0 rises, and MoneyAudit declares it made and
+     * paid abroad), or the treasury, out of its cash, as a reserve purchase of
+     * its own (so "- treasury BoughtReserves" declares it). What the treasury
+     * cannot pay the central bank does, so the vault is never paid for twice
+     * nor left owing.
+     */
+    private void settleTheEdge() {
+        ForeignAccounts.EdgePayer payer = foreign.getEdgeOwedPayer();
+        double owed = foreign.takeEdgeOwed();
+        if (!(owed > 0)) return;
+        double rest = owed;
+        if (payer == ForeignAccounts.EdgePayer.TREASURY) {
+            double paid = treasuryPays(TreasuryLine.RESERVE_PURCHASES, owed);
+            if (paid > 0) {
+                foreign.noteEdgePaidByTreasury(paid);
+                treasuryJournal.record("The band's or the peg's dollars", -paid);
+            }
+            rest = owed - paid;
+        }
+        if (rest > 0) centralBank.buyDollarsForVault(rest);
+    }
+
+    /* =======================================================================
        THE STRATEGIC RESERVE (0.7.85, batch O8; docs/studies/spec-oil.md 2.8)
 
        The city's crude, in its own tanks (StrategicReserve; the buildings are
@@ -9553,6 +9630,9 @@ public class Game {
         buybackAbroad = buybackAbroadUnsettled;
         buybackToHouseholdsUnsettled = buybackAbroadUnsettled = 0;
         centralBank.settleRedemptions();
+        // ...and the dollars the vault took at the strong edge of a band or a
+        // peg at the last reprice are paid for here, by their payer (XR2).
+        settleTheEdge();
 
         /*
          * THE AUTOPILOT (0.7.0), before anything is priced: with the rule's
@@ -9560,9 +9640,27 @@ public class Game {
          * .advisedPolicyRate() on the year's inflation - and holds where it
          * is until there is a year of prices to read. Jerus's toggle; the
          * player's hand on the dial turns it off (DebtManager.takeTheDial()).
+         *
+         * SINCE XR2 THE REGIME AND THE AIM CHOOSE THE RULE (ForeignAccounts,
+         * THE REGIMES; DebtManager, WHAT THE AUTOPILOT AIMS AT). Under a PEG the
+         * dial is tied to the US's rate, whatever the autopilot (star 5): the
+         * world's rate plus the player's spread, or with the autopilot aiming at
+         * the currency (or a mix) the spread the D$'s gap asks. Under a BAND the
+         * autopilot's aim picks the rule: Inflation as before, the Currency (the
+         * US's rate plus the gap's quarter point), or a Mix (the inflation rule
+         * plus it). Under Lean and Float it is today's line: the inflation rule.
+         * WORLD_BASE_RATE stands for the US's rate until XR4.
          */
-        if (debtManager.isAutopilot() && priceIndex.hasRate()) {
-            debtManager.setPolicyRate(debtManager.advisedPolicyRate(priceIndex.inflation()));
+        ForeignAccounts.Regime fxRegime = foreign.getRegime();
+        if (fxRegime == ForeignAccounts.Regime.PEG) {
+            debtManager.setPolicyRate(debtManager.tiedRate(foreign.currencyGap()));
+        } else if (debtManager.isAutopilot() && fxRegime == ForeignAccounts.Regime.BAND
+                && debtManager.getAim() == DebtManager.Aim.CURRENCY) {
+            debtManager.setPolicyRate(debtManager.currencyRate(foreign.currencyGap()));
+        } else if (debtManager.isAutopilot() && priceIndex.hasRate()) {
+            debtManager.setPolicyRate(fxRegime == ForeignAccounts.Regime.BAND && debtManager.getAim() == DebtManager.Aim.MIX
+                    ? debtManager.mixRate(priceIndex.inflation(), foreign.currencyGap())
+                    : debtManager.advisedPolicyRate(priceIndex.inflation()));
         }
 
         // THE CURVE'S EXPECTATIONS, struck once a month after the dial is set
@@ -10002,6 +10100,9 @@ public class Game {
            ================================================================= */
         double hotBefore = hotMoney.getStock();
         hotMoney.setMonth(month);
+        // The hot money takes the break chance of itself home under a peg (XR2): the
+        // share the last reprice left, 0 under every other regime.
+        hotMoney.setDoubt(foreign.getDoubtShare());
         hotMoney.takeMonth(
                 bank.depositRate(),
                 // The city's rate: there is no strain premium in it to take
@@ -10098,7 +10199,20 @@ public class Game {
         foreign.setRealRateDifferential(realRateDifferential());
         // The rate follows parity's trend, the real gap's level, the balance, the cover,
         // the market and the interventions felt (ForeignAccounts, THE FLOAT).
+        double rateBeforeReprice = foreign.getRate();
         foreign.repriceCurrency();
+        /*
+         * ...AND A PEG THAT BROKE (XR2, star 4): credibility takes its dent, and
+         * the log says so - by the vault or by doubt, and where the D$ landed. The
+         * city's fate and not the player's decision, so it is not in the decision
+         * log.
+         */
+        if (foreign.brokeThisMonth()) {
+            expectations.pegBroke();
+            GameLog.note(String.format("The peg broke, by %s: the D$ went from %.4f to %.4f per US$ (%+.1f%%).",
+                    foreign.getLastBreakCause().words, rateBeforeReprice, foreign.getRate(),
+                    100 * (foreign.getRate() / rateBeforeReprice - 1)));
+        }
         /*
          * ...and what the vault's dollars fetched, if the reprice defended the
          * currency: the central bank's equity line, booked here, after the
@@ -12762,6 +12876,9 @@ public class Game {
         dataSave.setStruckRate(economyManager.getStruckRate());   // ...and the D$ it was struck at (AN1)
         dataSave.setPolicyRate(debtManager.getPolicyRate());
         dataSave.setPolicyAutopilot(debtManager.isAutopilot());
+        // ...and what the autopilot aims at and the spread the dial stands at under a peg (XR2).
+        dataSave.setPolicyAim(debtManager.getAim().name());
+        dataSave.setPegSpread(debtManager.getPegSpread());
         // ...and the treasury's rollover (0.7.13): its setting by name, the
         // ledger of what it netted, and its record.
         dataSave.setRolloverMode(rollover.getMode().name());
@@ -15715,6 +15832,10 @@ public class Game {
             if (loaded.getPolicyRate() != null) debtManager.setPolicyRate(loaded.getPolicyRate());
             // ...and whose hand was on it: an older save reads the player's.
             debtManager.setAutopilot(loaded.getPolicyAutopilot());
+            // ...and what it aims at, and the spread under a peg (XR2): an older
+            // save reads Inflation and none, the rule it was played under.
+            debtManager.setAim(loaded.getPolicyAim());
+            debtManager.setPegSpread(loaded.getPegSpread());
             // ...and how the land office pays (0.7.6): an older save converts.
             landPaidFromVault = loaded.getLandPaidFromVault();
             // ...and the treasury's rollover (0.7.13). An older save rolls

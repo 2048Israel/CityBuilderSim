@@ -7080,8 +7080,27 @@ public final class GameVersion {
      *     at the D$, as every month did before).
      *   - Harness: PassThroughCheck (new); CurrencyCheck 4 restated to the
      *     lean as built (XR1-C star 1, "Keep as built").
+     *
+     * 0.8.22 (2026-10-22) - XR2, THE CURRENCY'S REGIMES
+     *   (docs/queue/XR2-notes.md). No trace moves: Lean is the default and
+     *   computes every figure it did.
+     *   - Policy › Money › The currency: Float, Lean against falls (the
+     *     default), Band and Peg to the US$ (ForeignAccounts, THE REGIMES); the
+     *     shadow rate; a peg held while the vault meets the month's balance,
+     *     broken by the vault under VAULT_FLOOR or by doubt at hazard(), landing
+     *     at the shadow plus OVERSHOOT; the hot money leaving on doubt
+     *     (CapitalFlows); credibility's dent (Expectations.pegBroke()).
+     *   - The dial tied to the US's rate under a peg, a spread to defend; the
+     *     autopilot's aim, Inflation, the Currency or a Mix (DebtManager); the
+     *     strong edge's dollars paid by the central bank in new money or the
+     *     treasury (Game.settleTheEdge()).
+     *   - Trade › The currency: the seventh force, the hold.
+     *   - Save: ForeignAccounts slots 71-94, CentralBank and CapitalFlows a
+     *     slot each, DataSave policyAim and pegSpread, HistorySave fxShadow
+     *     and fxCover (no format bump: an older save loads as Lean).
+     *   - Harness: CurrencyRegimeCheck (new); HoldersCheck's fixture restated.
      */
-    public static final String VERSION = "0.8.21";
+    public static final String VERSION = "0.8.22";
 
     /**
      * The save shape.

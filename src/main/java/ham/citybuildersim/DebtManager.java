@@ -122,6 +122,83 @@ public class DebtManager {
         this.autopilot = on;
     }
 
+    /* -----------------------------------------------------------------------
+       WHAT THE AUTOPILOT AIMS AT, AND THE DIAL UNDER A PEG (XR2, 2026-10-22)
+
+       Jerus's own question, 2026-10-21: "the policy rate you could choose to
+       either follow the taylor rule, or try to control the currency or a mix of
+       both? or real life doesnt work like that?" It does, all three: the Fed
+       and the ECB aim at inflation and let the currency float; many small open
+       economies put the exchange rate into the rule, an open-economy Taylor
+       rule; Singapore sets its currency's band and lets its rate follow (the
+       study's R36, R39). So the autopilot has an AIM: Inflation (the rule above,
+       the default), the Currency (the dial that holds the band or the peg), or a
+       Mix of the two. And under a PEG the dial is TIED to the US's rate, as
+       Hong Kong's follows the US's by the board's own working (star 5): only a
+       SPREAD over it is the city's to set, up against money leaving, down
+       against money arriving - or the currency aim sets it.
+
+       WORLD_BASE_RATE STANDS FOR THE US'S RATE until XR4 gives the US one.
+       The gap each of these reads is ForeignAccounts.currencyGap(): the D$'s
+       shadow past its target (the peg, the band's centre), a share, positive
+       weaker; Lean and Float have no target, so the aim has nothing to read
+       there (a call for Jerus whether a float should aim at the real rate).
+       ----------------------------------------------------------------------- */
+
+    /** What the autopilot sets the dial to hold (XR2; the study's star 13). */
+    public enum Aim {
+        INFLATION("Inflation"), CURRENCY("The currency"), MIX("A mix");
+        public final String words;
+        Aim(String words) { this.words = words; }
+    }
+
+    /** A quarter point of rate for each 1% the D$ sits past its target: the open-economy Taylor rule's weight on the exchange rate (the study's star 13, R39). */
+    public static final double CURRENCY_WEIGHT = .25;
+
+    private Aim aim = Aim.INFLATION;
+
+    /** What the autopilot aims at: Inflation unless the player says otherwise. */
+    public Aim getAim() { return aim; }
+
+    public void setAim(Aim a) {
+        Aim next = a == null ? Aim.INFLATION : a;
+        if (next != aim) decided(DecisionLog.CENTRAL_BANK, "Central bank aims at " + next.words);
+        this.aim = next;
+    }
+
+    /** Under a peg, what the dial stands over the US's rate (a fraction a year, negative under it): the player's to set, to defend the peg. Kept when the peg is left. */
+    private double pegSpread;
+
+    public double getPegSpread() { return pegSpread; }
+
+    /** Sets the spread, inside what keeps the tied rate on the dial (MIN_POLICY_RATE to MAX_POLICY_RATE over WORLD_BASE_RATE). */
+    public void setPegSpread(double spread) {
+        double next = Double.isFinite(spread)
+                ? Math.max(MIN_POLICY_RATE - WORLD_BASE_RATE, Math.min(MAX_POLICY_RATE - WORLD_BASE_RATE, spread))
+                : 0;
+        if (DecisionLog.moved(pegSpread, next)) {
+            decided(DecisionLog.CENTRAL_BANK, "Spread over the US rate to " + DecisionLog.pct2(next));
+        }
+        this.pegSpread = next;
+    }
+
+    /** The dial that holds the currency alone: the US's rate plus CURRENCY_WEIGHT for each unit of gap (the D$ past its target, a share, positive weaker), inside the dial's bounds. Pure. */
+    public double currencyRate(double gap) {
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, WORLD_BASE_RATE + CURRENCY_WEIGHT * gap));
+    }
+
+    /** The inflation rule's dial plus CURRENCY_WEIGHT for each unit of gap: the mix of the two aims, inside the dial's bounds. Pure. */
+    public double mixRate(double inflation, double gap) {
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE,
+                advisedPolicyRate(inflation) + CURRENCY_WEIGHT * gap));
+    }
+
+    /** The dial under a peg (star 5): the US's rate plus the spread - the player's, or with the autopilot aiming at the currency (or a mix) the one the gap asks - inside the dial's bounds. Pure. */
+    public double tiedRate(double gap) {
+        double spread = autopilot && aim != Aim.INFLATION ? CURRENCY_WEIGHT * gap : pegSpread;
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, WORLD_BASE_RATE + spread));
+    }
+
     /**
      * The player moves the dial by hand, which takes it back from the rule.
      * What the screens call; setPolicyRate() is what the rule and a fixture

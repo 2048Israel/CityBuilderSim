@@ -1550,6 +1550,29 @@ public class DataSave {
     public boolean getPolicyAutopilot()        { return policyAutopilot != null && policyAutopilot; }
 
     /**
+     * What the autopilot aims at (XR2; DebtManager.Aim), by name. Null on an
+     * older save, which reads Inflation: the rule it was played under.
+     */
+    private String policyAim;
+
+    public void setPolicyAim(String name) { this.policyAim = name; }
+    public DebtManager.Aim getPolicyAim() {
+        if (policyAim != null) {
+            try { return DebtManager.Aim.valueOf(policyAim); } catch (IllegalArgumentException ignored) { }
+        }
+        return DebtManager.Aim.INFLATION;
+    }
+
+    /**
+     * The spread the dial stands at over the US's rate under a peg (XR2), a
+     * fraction a year. Null on an older save, which reads none.
+     */
+    private Double pegSpread;
+
+    public void setPegSpread(double spread) { this.pegSpread = spread; }
+    public double getPegSpread()            { return pegSpread == null ? 0 : pegSpread; }
+
+    /**
      * The treasury's rollover (0.7.13), by name: its setting, the ledger of
      * what it netted from the year's surplus - {month, netted} pairs, so two
      * months cannot net the same surplus twice across a reload - and its

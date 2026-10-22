@@ -474,8 +474,24 @@ public class CapitalFlows {
             departed += stock;
             stock = 0;
         }
+        /*
+         * THE MONEY THAT LEAVES ON DOUBT (XR2, star 4's second generation): under
+         * a peg, the hot money takes the month's break chance of itself home
+         * (ForeignAccounts.getDoubtShare(), handed in by Game before this
+         * runs). It is departed like any other, so Game moves it out of the
+         * bank's deposits and the audit sees it cross the edge; the bank's own
+         * foreign book is left for XR4. Nothing here changes with no doubt.
+         */
+        if (doubt > 0 && stock > 0) {
+            doubtDeparted = stock * doubt;
+            departed += doubtDeparted;
+            stock -= doubtDeparted;
+        } else {
+            doubtDeparted = 0;
+        }
         lifetimeArrived += arrived;
         lifetimeDeparted += departed;
+        doubtDepartedLifetime += doubtDeparted;
 
         /*
          * THE PEAK, not the end state - H2 in the design queue, and K1 beside
@@ -598,6 +614,21 @@ public class CapitalFlows {
     public double getArrived()  { return arrived; }
     public double getDeparted() { return departed; }
 
+    /** The month's break chance as the last reprice left it (ForeignAccounts.getDoubtShare()), the share of the stock that takes itself home on doubt this month. Transient: Game sets it every month before takeMonth(). */
+    private double doubt;
+    /** What left on doubt this month (inside getDeparted()) and since founding (XR2). The lifetime is saved. */
+    private double doubtDeparted, doubtDepartedLifetime;
+
+    /** Told the month's doubt before takeMonth(): a share of the stock, 0 to 1. Not saved; Game sets it every month. */
+    public void setDoubt(double share) {
+        doubt = Double.isFinite(share) ? Math.max(0, Math.min(1, share)) : 0;
+    }
+
+    /** What left on doubt this month, inside getDeparted(). */
+    public double getDoubtDeparted()         { return doubtDeparted; }
+    /** ...and since founding. */
+    public double getDoubtDepartedLifetime() { return doubtDepartedLifetime; }
+
     /** The month's flow, positive when money is coming in. */
     public double netFlow() { return arrived - departed; }
 
@@ -633,7 +664,9 @@ public class CapitalFlows {
                 carryStock, lifetimeCarryBorrowed, lifetimeCarryRepaid,
                 lifetimeCarryInterest, peakCarryStock,
                 // CD2 slice 5: the city's paper the world holds, and what it paid and was paid for it.
-                paper, lifetimePaperBought, lifetimePaperSold };
+                paper, lifetimePaperBought, lifetimePaperSold,
+                // XR2: what has left on doubt since founding.
+                doubtDepartedLifetime };
     }
 
     public void restore(double[] saved) {
@@ -659,6 +692,7 @@ public class CapitalFlows {
             lifetimePaperBought = saved[13];
             lifetimePaperSold = saved[14];
         }
+        if (saved.length > 15) doubtDepartedLifetime = Math.max(0, saved[15]);
     }
 
     public void reset() {
@@ -674,6 +708,7 @@ public class CapitalFlows {
         lifetimeCarryBorrowed = lifetimeCarryRepaid = lifetimeCarryInterest = 0;
         peakCarryStock = peakCarrySpread = 0;
         paper = lifetimePaperBought = lifetimePaperSold = 0;
+        doubt = doubtDeparted = doubtDepartedLifetime = 0;
     }
 
     /** Hot money, in the new unit. The spread is a rate and does not move. */
@@ -699,6 +734,8 @@ public class CapitalFlows {
         paper *= scale;
         lifetimePaperBought *= scale;
         lifetimePaperSold *= scale;
+        doubtDeparted *= scale;
+        doubtDepartedLifetime *= scale;
     }
 
 }
