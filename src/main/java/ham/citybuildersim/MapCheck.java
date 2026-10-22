@@ -304,6 +304,15 @@ import java.util.Map;
  *      arterial a signal (the avenue's two directions among the roads), through a cell's corner and at the origin with a street along
  *      each axis one ring, the origin's four arms alone a signal; and the dense screen at the founding site, the arms across it,
  *      within SCREEN_MS.
+ *  17. (batch CL4, slice D) THE CURVES DRAWN: the crescents and the streets along a cut the district plans lay as curves are drawn as
+ *      smooth bands - on the dense city's far districts (three to eight east and south of the founding site) along every curve's line
+ *      from end to end, at 4 px a plot and at 8, every sample the street's colour and no building's, the band's middle within a pixel
+ *      of the line and the band as wide as its street (no staircase step, across the tile edges) and its turn between samples no
+ *      sharper than the line's; a tile rastered twice, from the view's kept copy (MapTiles.copy, its stamp moving with the marks) and
+ *      from a twin map built alike, the same pixels; no building under a plot a curve is laid on or reaches, none changed in a
+ *      pixel by the curve; on hand-built tiles a crescent alone no junction, the street that crosses it running on across the band,
+ *      a crossing beside it the signal it was; the curves' bytes in the plans' Drawn a small share; and the screen over the far
+ *      districts, curves across it, within SCREEN_MS.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -431,6 +440,7 @@ public class MapCheck {
         buyingFromTheMap(city);
         materials(sq.seed);
         avenuesDrawn(sq);
+        curvesDrawn(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -7457,5 +7467,608 @@ public class MapCheck {
                 TIMES[DENSE], SCREEN_TILES, avenueTiles, PX, bestWith, bestWith / SCREEN_TILES, bestWithout);
         check("THE SCREEN: the dense screen at the founding site, the four avenues across it (tiles with avenues about them: " + avenueTiles + "), paints and rasters in no more than " + (int) SCREEN_MS + " ms",
                 avenueTiles > 0 && Timing.within(bestWith, SCREEN_MS));
+    }
+
+    /* =====================================================================
+       17. THE CURVES DRAWN (batch CL4, slice D; the study spec-city-layout 5.2)
+       ===================================================================== */
+
+    /*
+     * The district plans lay two kinds of street as curves (DistrictPlan, CURVES): a crescent, the cross street of a long-block homes
+     * cell 16 cells or more from the founding site, a quarter of a circle between its rings, and the street a cut lays along water, a
+     * path of plots from a dead end to the street it meets, its line the simplified middles of the plots with its corners rounded
+     * (StreetCurves); and the painter draws each as one smooth band along its line, not as the staircase's bars (TileRaster, THE
+     * CURVES). On the dense city's districts three to eight districts east and south of the founding site, where the crescents are,
+     * what this proves is what the eye sees: along each curve's line, from end to end, every sample is the street's colour, the band's
+     * middle stays within CV_CENTRE_PX of the line and the band as wide as the street (no staircase step, however many plots the
+     * line crosses), and the band turns between neighbouring samples no sharper than the line does; the same pixels from the same
+     * inputs, a tile rastered twice, from the view's kept copy and from a map built alike; no building under the curve's plots or
+     * over its pixels; and, on hand-built tiles that cause each case, a crescent alone no junction, the street that crosses it
+     * running on across the band, a crossing beside it the signal it was; and the screen over the districts, within SCREEN_MS.
+     */
+
+    /** The districts the curves are looked for in, in districts east and south of the founding site's: 3 to 8 - past CRESCENT_FROM (16 cells, two districts) wherever the cell lies. */
+    static final int CV_FROM = 3, CV_TO = 8;
+
+    /** The most crescents and shore curves the audit follows: 8 and 16 (the shore curves that cross a tile's edge, and those that bend, first). */
+    static final int CV_CRESCENTS = 8, CV_SHORES = 16;
+
+    /** How far apart, in plots, the turn audit's samples are: 4 - at a crescent's radius (22.6 plots) a turn of 0.18 radian between neighbours. */
+    static final int CV_TURN_SPAN = 4;
+
+    /** How far the band's middle, measured across it from the pixels, may lie from the line: a pixel - the least a raster can place a band, and less than the 2.8 pixels at 4 px a plot a staircase's bars lie from the arc through them. */
+    static final double CV_CENTRE_PX = 1.0;
+
+    /** How much narrower than its street the band, measured across it, may measure: 1.5 pixels (a pixel's rounding at either end and a half). */
+    static final double CV_NARROW_PX = 1.5;
+
+    /** How much the line may turn within a plot and a quarter either side of a sample for the band to be measured across it there: 0.2 radian - a crescent turns 0.06 over that; a shore street's corner (rounded to as little as half a plot, where its legs are short) turns more, and the band beside its other leg lies across the normal. */
+    static final double CV_GENTLE = 0.2;
+
+    /** The share of a kind's samples the band must have been measured across (crescents, shore curves): a half, and 35% - a shore's line turns a corner every few plots, and the band is not measured within a plot and a quarter of one. */
+    static final double[] CV_MEASURED = { 0.5, 0.35 };
+
+    /** A curve found in a Drawn, with where its district's frame lies in the world. */
+    record CvFound(CityMap.District d, CityMap.DrawnCurve c, long ox, long oy) {
+        /** Its line in the world's plots: {xs, ys}. */
+        double[][] line() {
+            double[][] l = TileRaster.curveLine(c.kind, c.geom, 0, c.geom.length);
+            for (int k = 0; k < l[0].length; k++) { l[0][k] += ox; l[1][k] += oy; }
+            return l;
+        }
+
+        /** Plot k of its list in the world's plots: {x, y}. */
+        long[] plot(int k) {
+            int q = c.plots[k] & (CityMap.CURVE_BAND_BIT - 1);
+            return new long[] { ox + q % DistrictPlan.FRAME, oy + q / DistrictPlan.FRAME };
+        }
+    }
+
+    /** One map's tiles as the curves section samples them at `px` a plot: the rastered image, and what the painter was given and made of each plot. */
+    static final class CvTiles {
+        final CityMap m;
+        final int px;
+        final TilePainter.Input in = new TilePainter.Input();
+        final TilePainter.Painted p = new TilePainter.Painted();
+        final java.util.Map<Long, int[]> img = new java.util.HashMap<>();
+        final java.util.Map<Long, byte[]> street = new java.util.HashMap<>(), use = new java.util.HashMap<>(), curve = new java.util.HashMap<>(), flags = new java.util.HashMap<>();
+        final java.util.Map<Long, short[]> types = new java.util.HashMap<>();
+
+        /** Whether the tiles are drawn without the curves (the control: as they were before CL4). */
+        final boolean bare;
+
+        CvTiles(CityMap m, int px) { this(m, px, false); }
+
+        CvTiles(CityMap m, int px, boolean bare) { this.m = m; this.px = px; this.bare = bare; }
+
+        private static long key(long tx, long ty) { return tx * 1_000_003L + ty; }
+
+        private void load(long tx, long ty) {
+            long k = key(tx, ty);
+            if (img.containsKey(k)) return;
+            m.tileInput(tx, ty, in);
+            // The control tiles are drawn as before CL4: no curve about them, the staircases' bars.
+            if (bare) in.clearCurves();
+            TilePainter.paint(in, p);
+            int[] pixels = new int[(World.TILE * px) * (World.TILE * px)];
+            TileRaster.raster(in, p, px, pixels);
+            byte[] f = new byte[TilePainter.PLOTS];
+            for (int i = 0; i < f.length; i++) f[i] = (byte) ((in.owned[i] ? 1 : 0) | (p.bridge[i] ? 2 : 0) | (p.beneath[i] ? 4 : 0));
+            img.put(k, pixels);
+            street.put(k, in.street.clone());
+            use.put(k, p.use.clone());
+            curve.put(k, in.curve.clone());
+            flags.put(k, f);
+            short[] bt = new short[TilePainter.PLOTS];
+            for (int i = 0; i < bt.length; i++) bt[i] = (short) (p.use[i] == TilePainter.BUILDING && p.bld[i] > 0 ? p.btype[p.bld[i] - 1] : -1);
+            types.put(k, bt);
+        }
+
+        private int at(java.util.Map<Long, byte[]> what, long x, long y) {
+            long tx = Math.floorDiv(x, World.TILE), ty = Math.floorDiv(y, World.TILE);
+            load(tx, ty);
+            return what.get(key(tx, ty))[(int) (Math.floorMod(y, World.TILE) * World.TILE + Math.floorMod(x, World.TILE))] & 0xff;
+        }
+
+        /** The plan's street code, the painter's use, the curve mark and the flags (1 owned, 2 bridge, 4 beneath) of world plot (x, y). */
+        int code(long x, long y) { return at(street, x, y); }
+        int use(long x, long y) { return at(use, x, y); }
+        int mark(long x, long y) { return at(curve, x, y); }
+        int flag(long x, long y) { return at(flags, x, y); }
+
+        /** The type id of the building on world plot (x, y), or -1 for none. */
+        int type(long x, long y) {
+            long tx = Math.floorDiv(x, World.TILE), ty = Math.floorDiv(y, World.TILE);
+            load(tx, ty);
+            return types.get(key(tx, ty))[(int) (Math.floorMod(y, World.TILE) * World.TILE + Math.floorMod(x, World.TILE))];
+        }
+
+        /** The pixel of the raster at world pixel (X, Y). */
+        int pixel(long X, long Y) {
+            long tx = Math.floorDiv(X, World.TILE * px), ty = Math.floorDiv(Y, World.TILE * px);
+            load(tx, ty);
+            return img.get(key(tx, ty))[(int) (Math.floorMod(Y, World.TILE * px) * (World.TILE * px) + Math.floorMod(X, World.TILE * px))];
+        }
+    }
+
+    /** Whether a pixel is a surfaced street's, owned or dimmed as ground the city has not bought is: the paved colour, the gravel's or its grain. */
+    static boolean cvStreetColour(int c) {
+        for (int k : new int[] { TileRaster.ROAD[BuildingVisual.PAVED], TileRaster.ROAD[BuildingVisual.GRAVEL], TileRaster.GRAVEL_GRAIN }) {
+            if (c == k || c == TileRaster.blend(k, TileRaster.VOID, TileRaster.UNOWNED_DIM)) return true;
+        }
+        return false;
+    }
+
+    /** What an audit of one curve's drawn line found. */
+    static final class CvAudit {
+        int samples, badColour, onBuilding, edges, audited, narrow, off, turns, turnsBad, tracks;
+        double worstCentre, worstExcess, worstIdeal;
+        /** The first sample that was not the street's colour or lay off the line, for the line a failure prints: where, what. */
+        String firstBad = "";
+    }
+
+    /** The own plots of a curve (the first `own` of its list) as a set of world plot keys. */
+    static java.util.Set<Long> cvPlotSet(CvFound f) {
+        java.util.Set<Long> set = new java.util.HashSet<>();
+        for (int k = 0; k < f.c().own; k++) { long[] q = f.plot(k); set.add(q[0] * 2_000_003L + q[1]); }
+        return set;
+    }
+
+    /**
+     * One curve's line audited on the raster t (THE CURVES DRAWN): samples every pixel along it, from its first point to its last. Each
+     * sample is the street's colour and no building's (fills). Where no other street lies within a plot of the sample (the plots about
+     * it are the curve's own or ground) and the street's kind and width are the same on the plots it is drawn on, the band is
+     * measured across the line, from the sample's pixel out along the normal until the colour changes: its middle within
+     * CV_CENTRE_PX of the line, its width within CV_NARROW_PX of the street's (and not a plot's width more). Then, every
+     * CV_TURN_SPAN plots along it, the middles measured are joined and the turn at each is no more than the line's own turn there
+     * with the error two measured middles allow a chord of that length.
+     */
+    static CvAudit cvAudit(CvTiles t, CvFound f, java.util.Set<Integer> fills) {
+        CvAudit a = new CvAudit();
+        int px = t.px;
+        double[][] line = f.line();
+        java.util.Set<Long> mine = cvPlotSet(f);
+        // The samples: a pixel apart along the line, each with its heading.
+        java.util.List<double[]> pts = new java.util.ArrayList<>();
+        double carry = 0, step1 = 1.0 / px;
+        for (int s = 0; s + 1 < line[0].length; s++) {
+            double ax = line[0][s], ay = line[1][s], dx = line[0][s + 1] - ax, dy = line[1][s + 1] - ay, len = Math.hypot(dx, dy);
+            if (len < 1e-12) continue;
+            double hx = dx / len, hy = dy / len, at = carry;
+            while (at <= len + 1e-9) {
+                pts.add(new double[] { ax + hx * at, ay + hy * at, hx, hy });
+                at += step1;
+            }
+            carry = at - len;
+        }
+        int step = CV_TURN_SPAN * px, n = pts.size();
+        java.util.List<double[]> kept = new java.util.ArrayList<>();
+        long prevTx = Long.MIN_VALUE, prevTy = Long.MIN_VALUE;
+        for (int index = 0; index < n; index++) {
+            double[] pt = pts.get(index);
+            double wx = pt[0], wy = pt[1], hx = pt[2], hy = pt[3];
+            long X = (long) Math.floor(wx * px), Y = (long) Math.floor(wy * px), fx = (long) Math.floor(wx), fy = (long) Math.floor(wy);
+            a.samples++;
+            int c = t.pixel(X, Y);
+            // (A plot of a street the city has not bought a road for is a track, dashes and no band: it is no sample of the band's colour.)
+            if (TilePainter.kindOf(t.code(fx, fy)) == TilePainter.TRACK) a.tracks++;
+            else if (!cvStreetColour(c)) {
+                a.badColour++;
+                if (a.firstBad.isEmpty()) a.firstBad = String.format("colour %08x at (%.2f, %.2f), plot code %02x use %d", c, wx, wy, t.code(fx, fy), t.use(fx, fy));
+            }
+            if (fills.contains(c)) a.onBuilding++;
+            long tx = Math.floorDiv(fx, World.TILE), ty = Math.floorDiv(fy, World.TILE);
+            if (prevTx != Long.MIN_VALUE && (tx != prevTx || ty != prevTy)) a.edges++;
+            prevTx = tx;
+            prevTy = ty;
+            // The band measured across the line where it is measurable: nothing else a street about it, the street the same on the plots about, and the line
+            // gentle - its heading within CV_GENTLE (as the distance between unit headings, near enough the angle) of itself at every quarter plot out to a plot and a quarter either way (at a tight corner the band of the leg beside it lies across the normal).
+            boolean clean = true;
+            int code = -1;
+            for (long y = fy - 1; y <= fy + 1 && clean; y++) {
+                for (long x = fx - 1; x <= fx + 1; x++) {
+                    int cd = t.code(x, y);
+                    if (TilePainter.kindOf(cd) == 0) continue;
+                    if (!mine.contains(x * 2_000_003L + y)) { clean = false; break; }
+                    if (code >= 0 && (cd & 0x7f) != (code & 0x7f)) { clean = false; break; }
+                    code = cd;
+                }
+            }
+            int kind = code < 0 ? 0 : TilePainter.kindOf(code);
+            if (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED) clean = false;
+            for (int d = px / 4; d <= px * 5 / 4 && clean; d += Math.max(1, px / 4)) {
+                double[] before = pts.get(Math.max(0, index - d)), after = pts.get(Math.min(n - 1, index + d));
+                if (Math.hypot(before[2] - hx, before[3] - hy) > CV_GENTLE) clean = false;
+                if (Math.hypot(after[2] - hx, after[3] - hy) > CV_GENTLE) clean = false;
+            }
+            double centre = Double.NaN;
+            if (clean) {
+                double nx = -hy, ny = hx, lim = px + 2, pos = 0, neg = 0;
+                while (pos < lim && cvStreetColour(t.pixel((long) Math.floor(wx * px + nx * (pos + 0.25)), (long) Math.floor(wy * px + ny * (pos + 0.25))))) pos += 0.25;
+                while (neg < lim && cvStreetColour(t.pixel((long) Math.floor(wx * px - nx * (neg + 0.25)), (long) Math.floor(wy * px - ny * (neg + 0.25))))) neg += 0.25;
+                int want = Math.max(1, (int) Math.round(TileRaster.SURFACE[Math.max(1, Math.min(2, (code >> TilePainter.S_WIDTH_SHIFT) & 3))] * px));
+                centre = (pos - neg) / 2;
+                a.audited++;
+                a.worstCentre = Math.max(a.worstCentre, Math.abs(centre));
+                if ((Math.abs(centre) > CV_CENTRE_PX || pos + neg < want - CV_NARROW_PX || pos + neg > want + px) && a.firstBad.isEmpty()) {
+                    a.firstBad = String.format("middle %.2f px off at (%.2f, %.2f), width %.2f of %d, plot code %02x", centre, wx, wy, pos + neg, want, code);
+                }
+                if (Math.abs(centre) > CV_CENTRE_PX) a.off++;
+                if (pos + neg < want - CV_NARROW_PX || pos + neg > want + px) a.narrow++;
+            }
+            if (index % step == 0) kept.add(new double[] { wx, wy, Double.isNaN(centre) ? Double.NaN : wx - hy * centre / px, Double.isNaN(centre) ? Double.NaN : wy + hx * centre / px });
+        }
+        // The turn at each kept sample, from the middles measured, against the line's own.
+        double err = Math.asin(Math.min(1, 2 * (CV_CENTRE_PX / px) / CV_TURN_SPAN));
+        for (int j = 1; j + 1 < kept.size(); j++) {
+            double[] p0 = kept.get(j - 1), p1 = kept.get(j), p2 = kept.get(j + 1);
+            if (Double.isNaN(p0[2]) || Double.isNaN(p1[2]) || Double.isNaN(p2[2])) continue;
+            double ideal = Math.abs(cvTurn(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1]));
+            double drawn = Math.abs(cvTurn(p0[2], p0[3], p1[2], p1[3], p2[2], p2[3]));
+            a.turns++;
+            a.worstIdeal = Math.max(a.worstIdeal, ideal);
+            a.worstExcess = Math.max(a.worstExcess, drawn - ideal);
+            if (drawn - ideal > 2 * err + 1e-9) a.turnsBad++;
+        }
+        return a;
+    }
+
+    /** The signed turn, in radians, from the chord (x0, y0)-(x1, y1) to (x1, y1)-(x2, y2). */
+    static double cvTurn(double x0, double y0, double x1, double y1, double x2, double y2) {
+        double ux = x1 - x0, uy = y1 - y0, vx = x2 - x1, vy = y2 - y1;
+        return Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);
+    }
+
+    /** Whether the line passes from one tile to another. */
+    static boolean cvCrossesTile(double[][] line) {
+        for (int k = 1; k < line[0].length; k++) {
+            if (Math.floorDiv((long) Math.floor(line[0][k]), World.TILE) != Math.floorDiv((long) Math.floor(line[0][k - 1]), World.TILE)
+                    || Math.floorDiv((long) Math.floor(line[1][k]), World.TILE) != Math.floorDiv((long) Math.floor(line[1][k - 1]), World.TILE)) return true;
+        }
+        return false;
+    }
+
+    /** The tiles about a curve's plots: its bounding box in tiles, a tile more on each side, as {tx, ty} pairs. */
+    static java.util.List<long[]> cvTiles(CvFound f) {
+        long x0 = f.ox + f.c().x0, y0 = f.oy + f.c().y0, x1 = f.ox + f.c().x1, y1 = f.oy + f.c().y1;
+        java.util.List<long[]> out = new java.util.ArrayList<>();
+        for (long ty = Math.floorDiv(y0, World.TILE) - 1; ty <= Math.floorDiv(y1, World.TILE) + 1; ty++) {
+            for (long tx = Math.floorDiv(x0, World.TILE) - 1; tx <= Math.floorDiv(x1, World.TILE) + 1; tx++) out.add(new long[] { tx, ty });
+        }
+        return out;
+    }
+
+    /** A hand-built tile of owned bare ground at 8 px a plot, JunctionCheck's: a crescent in the cell whose interior's north-west plot is (0, 1), bulging toward +x, its staircase laid as street plots with its curve, and the streets `extra` besides. */
+    static int[] handCrescent(JunctionCheck.Streets extra) {
+        DistrictPlan.ArcShape arc = DistrictPlan.arc(1);
+        int x0 = 0, y0 = 1;
+        java.util.Set<Long> stairs = new java.util.HashSet<>();
+        for (int k = 0; k < arc.stairU.length; k++) if (arc.stairV[k] >= 0 && arc.stairV[k] < DistrictPlan.INTERIOR) stairs.add((long) (y0 + arc.stairV[k]) * 1000 + x0 + arc.stairU[k]);
+        JunctionCheck.Streets f = (x, y) -> stairs.contains((long) y * 1000 + x) ? JunctionCheck.STREET : extra == null ? 0 : extra.at(x, y);
+        TilePainter.Input in = JunctionCheck.inputFor(0, 0, f);
+        // The circle in the frame (DistrictPlan's recordCrescent): the plan's cell is across (u along x).
+        double cx = x0 + arc.cu, cy = y0 + arc.cv;
+        double p0x = x0 + arc.a + 0.5, p0y = y0 - 0.5, p1x = x0 + arc.a + 0.5, p1y = y0 + DistrictPlan.INTERIOR + 0.5;
+        double a0 = StrictMath.atan2(p0y - cy, p0x - cx), cross = (p0x - cx) * (p1y - cy) - (p0y - cy) * (p1x - cx);
+        double sweep = cross > 0 ? StrictMath.PI / 2 : -StrictMath.PI / 2;
+        DistrictPlan.Curve cv = new DistrictPlan.Curve(DistrictPlan.Curve.CRESCENT, new double[] { cx, cy, DistrictPlan.ARC_RADIUS, a0, sweep }, DistrictPlan.ARC_RADIUS, null, null, x0, y0, true, (byte) 1);
+        in.addCurve(cv.kind, cv.radius, cv.geom, cv.geom.length);
+        int[] own = cv.plots(), band = cv.band();
+        for (int k = 0; k < own.length; k++) in.setCurvePlot(own[k] % DistrictPlan.FRAME, own[k] / DistrictPlan.FRAME, TilePainter.Input.CV_OWN | (k == 0 || k == own.length - 1 ? TilePainter.Input.CV_END : 0));
+        for (int q : band) in.setCurvePlot(q % DistrictPlan.FRAME, q / DistrictPlan.FRAME, TilePainter.Input.CV_BAND);
+        return JunctionCheck.raster(in, JunctionCheck.paint(in), 8);
+    }
+
+    /** A hand-built tile of owned bare ground at 8 px a plot, JunctionCheck's: a street along a cut, a path of street plots along row 10 from column 2 to 20 with its curve (StreetCurves' line, its band beside it) - with `bridge`, the plots 9 to 12 over fresh water as a bridge. */
+    static int[] handShore(boolean bridge) {
+        int y = 10, x0 = 2, x1 = 20;
+        int[] path = new int[x1 - x0 + 1];
+        for (int x = x0; x <= x1; x++) path[x - x0] = y * DistrictPlan.FRAME + x;
+        JunctionCheck.Streets f = (x, yy) -> yy == y && x >= x0 && x <= x1 ? (bridge && x >= 9 && x <= 12 ? JunctionCheck.STREET | TilePainter.S_BRIDGE : JunctionCheck.STREET) : 0;
+        TilePainter.Input in = JunctionCheck.inputFor(0, 0, f);
+        if (bridge) for (int x = 9; x <= 12; x++) in.terrain[y * World.TILE + x] = World.FRESH;
+        double[][] fit = StreetCurves.fit(path, path.length, DistrictPlan.FRAME);
+        double[][] line = StreetCurves.line(fit[0], fit[1]);
+        int[] reached = StreetCurves.reached(line[0], line[1], DistrictPlan.FRAME);
+        java.util.List<Integer> band = new java.util.ArrayList<>();
+        for (int q : reached) if (Arrays.binarySearch(path, q) < 0) band.add(q);
+        double[] geom = new double[2 * fit[0].length];
+        for (int k = 0; k < fit[0].length; k++) { geom[2 * k] = fit[0][k]; geom[2 * k + 1] = fit[1][k]; }
+        in.addCurve(DistrictPlan.Curve.SHORE, StreetCurves.CURVE_RADIUS, geom, geom.length);
+        for (int k = 0; k < path.length; k++) in.setCurvePlot(path[k] % DistrictPlan.FRAME, path[k] / DistrictPlan.FRAME, TilePainter.Input.CV_OWN | (k == 0 || k == path.length - 1 ? TilePainter.Input.CV_END : 0));
+        for (int q : band) in.setCurvePlot(q % DistrictPlan.FRAME, q / DistrictPlan.FRAME, TilePainter.Input.CV_BAND);
+        return JunctionCheck.raster(in, JunctionCheck.paint(in), 8);
+    }
+
+    static void curvesDrawn(Squares sq) {
+        out.println("\n--- 17. the curves drawn (CL4): a crescent and a street along a cut as smooth lines - every sample the street's, no staircase step,"
+                + " the same pixels from the same inputs, no building under or over them, no junction of their own - and the screen within 80 ms ---");
+        CityMap m = sq.maps[DENSE];
+        int tile = World.TILE;
+        long sdx = Math.floorDiv(m.land().siteX(), CityMap.DISTRICT), sdy = Math.floorDiv(m.land().siteY(), CityMap.DISTRICT);
+        // ---- THE FIXTURE: the curves of the districts CV_FROM to CV_TO east and south of the founding site's
+        java.util.List<CvFound> crescents = new java.util.ArrayList<>(), shores = new java.util.ArrayList<>();
+        long drawnBytes = 0, curveBytes = 0;
+        int withCurves = 0, districts = 0;
+        for (CityMap.District d : m.districts()) {
+            long ddx = m.baseDX() + d.dx - sdx, ddy = m.baseDY() + d.dy - sdy;
+            if (ddx < CV_FROM || ddx > CV_TO || ddy < CV_FROM || ddy > CV_TO) continue;
+            CityMap.Drawn dr = m.drawn(d);
+            districts++;
+            drawnBytes += dr.bytes();
+            if (dr.curves == null) continue;
+            withCurves++;
+            long ox = (m.baseDX() + d.dx) * (long) CityMap.DISTRICT, oy = (m.baseDY() + d.dy) * (long) CityMap.DISTRICT;
+            for (CityMap.DrawnCurve c : dr.curves) {
+                curveBytes += c.bytes();
+                (c.kind == DistrictPlan.Curve.CRESCENT ? crescents : shores).add(new CvFound(d, c, ox, oy));
+            }
+        }
+        // The shore curves that cross a tile's edge, and those that bend, first.
+        shores.sort(java.util.Comparator.comparingInt((CvFound f) -> (cvCrossesTile(f.line()) ? 0 : 2) + (f.c().geom.length / 2 >= 3 ? 0 : 1)));
+        int crossing = 0, bending = 0;
+        for (CvFound f : shores) { if (cvCrossesTile(f.line())) crossing++; if (f.c().geom.length / 2 >= 3) bending++; }
+        out.printf("      the districts %d to %d east and %d to %d south of the founding site's: %d, %d with curves - %d crescents, %d shore curves (%d cross a tile's edge, %d bend); their Drawn bytes %,d, the curves' %,d (%.1f%%)%n",
+                CV_FROM, CV_TO, CV_FROM, CV_TO, districts, withCurves, crescents.size(), shores.size(), crossing, bending, drawnBytes, curveBytes, 100.0 * curveBytes / Math.max(1, drawnBytes));
+        check("fixture: the far districts hold crescents and shore curves, shore curves that cross a tile's edge and some that bend, and their plans are drawn (a Drawn counts them)",
+                crescents.size() >= CV_CRESCENTS && shores.size() >= CV_SHORES && crossing > 0 && bending > 0 && curveBytes > 0);
+        check("...the curves' bytes are a small share of the plans' (compact: the geometry as numbers, the plots as one list of ints): at most 15%", curveBytes * 100 <= drawnBytes * 15);
+        java.util.Set<Integer> fills = new java.util.HashSet<>();
+        for (BuildingVisual.Type ty : sq.types) if (ty != null) { fills.add(ty.fill()); fills.add(ty.edge()); }
+
+        // ---- THE LINE: at 4 px a plot (the near view's least) and 8 (its most)
+        for (int px : new int[] { 4, 8 }) {
+            CvTiles t = new CvTiles(m, px);
+            int[][] total = new int[2][9];
+            double[][] worst = new double[2][3];
+            int[] followed = new int[2];
+            String[] firstBad = { "", "" };
+            for (int kind = 0; kind < 2; kind++) {
+                java.util.List<CvFound> list = kind == 0 ? crescents : shores;
+                int want = kind == 0 ? CV_CRESCENTS : CV_SHORES;
+                for (int n = 0; n < list.size() && followed[kind] < want; n++) {
+                    CvFound f = list.get(n);
+                    // A street the city has not bought a road for is a track, dashes and no band: left to the dashes' own rule.
+                    boolean track = false;
+                    for (int k = 1; k + 1 < f.c().own; k++) { long[] q = f.plot(k); if (TilePainter.kindOf(t.code(q[0], q[1])) == TilePainter.TRACK) track = true; }
+                    if (track) continue;
+                    CvAudit a = cvAudit(t, f, fills);
+                    followed[kind]++;
+                    int[] tot = total[kind];
+                    tot[0] += a.samples; tot[1] += a.badColour; tot[2] += a.onBuilding; tot[3] += a.edges; tot[4] += a.audited; tot[5] += a.narrow; tot[6] += a.off; tot[7] += a.turns; tot[8] += a.turnsBad;
+                    worst[kind][0] = Math.max(worst[kind][0], a.worstCentre);
+                    worst[kind][1] = Math.max(worst[kind][1], a.worstExcess);
+                    worst[kind][2] = Math.max(worst[kind][2], a.worstIdeal);
+                    if (firstBad[kind].isEmpty()) firstBad[kind] = a.firstBad;
+                }
+                int[] tot = total[kind];
+                String what = kind == 0 ? "crescents" : "shore curves";
+                out.printf("      at %d px a plot, %d %s followed end to end: %,d samples (%d across a tile's edge), %,d of them measured across the band (worst middle %.2f px from the line), %d turns audited (the line's sharpest %.3f rad, the band's worst excess %.3f)%n",
+                        px, followed[kind], what, tot[0], tot[3], tot[4], worst[kind][0], tot[7], worst[kind][2], worst[kind][1]);
+                if (!firstBad[kind].isEmpty()) out.println("      the first sample off: " + firstBad[kind]);
+                check("THE LINE at " + px + " px a plot: along " + what + " from end to end every sample is the street's colour, and no sample a building's - across the tile edges, no gap",
+                        followed[kind] >= (kind == 0 ? CV_CRESCENTS / 2 : CV_SHORES / 2) && tot[0] > 0 && tot[1] == 0 && tot[2] == 0 && (kind == 0 || tot[3] > 0));
+                check("...the band's middle stays within " + CV_CENTRE_PX + " px of the line and the band is as wide as its street (less " + CV_NARROW_PX + " px, no more than a plot over), measured across it on at least " + (int) (100 * CV_MEASURED[kind]) + "% of the samples (the rest are by another street, at a corner or where the street changes): no staircase step",
+                        tot[4] >= CV_MEASURED[kind] * tot[0] && tot[5] == 0 && tot[6] == 0);
+                check("...and between samples " + CV_TURN_SPAN + " plots apart the band turns no sharper than the line does (a crescent's line no sharper than " + CV_TURN_SPAN + " / ARC_RADIUS), within what two measured middles allow",
+                        tot[7] > 0 && tot[8] == 0 && (kind == 1 || worst[kind][2] <= CV_TURN_SPAN / DistrictPlan.ARC_RADIUS + 1e-3));
+            }
+        }
+
+        // ---- THE CONTROL: the same lines audited on tiles drawn as before CL4 (no curve about them, the staircases' bars) - the audit can tell
+        CvTiles bare = new CvTiles(m, 8, true);
+        int bareSamples = 0, bareOff = 0, bareNarrow = 0, bareBad = 0, bareFollowed = 0;
+        for (int n = 0; n < crescents.size() && bareFollowed < CV_CRESCENTS; n++) {
+            CvFound f = crescents.get(n);
+            CvAudit a = cvAudit(bare, f, fills);
+            bareFollowed++;
+            bareSamples += a.audited;
+            bareOff += a.off;
+            bareNarrow += a.narrow;
+            bareBad += a.badColour;
+        }
+        out.printf("      the %d crescents again at 8 px a plot on tiles drawn without the curves (the staircase's bars): %,d samples measured across, %d off the line by more than %.1f px, %d narrower or wider than the street, %d not the street's colour%n",
+                bareFollowed, bareSamples, bareOff, CV_CENTRE_PX, bareNarrow, bareBad);
+        check("THE CONTROL: the same crescents drawn without the curves, as the staircase of bars they were, fail the audit - the band's middle off the line, its width wrong or a sample not the street's colour - so the audit can tell the smooth line from the staircase",
+                bareFollowed > 0 && bareOff + bareNarrow + bareBad > 0);
+
+        // ---- THE SAME PIXELS: a tile twice, from the kept copy the view paints from, and from a map built alike
+        TilePainter.Input in = new TilePainter.Input(), kept = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted(), pk = new TilePainter.Painted();
+        int[] img = new int[(tile * PX) * (tile * PX)], again = img.clone(), copy = img.clone();
+        java.util.List<long[]> tiles = new java.util.ArrayList<>();
+        for (CvFound f : java.util.List.of(crescents.get(0), crescents.get(1), shores.get(0), shores.get(1), shores.get(2))) {
+            for (long[] q : cvTiles(f)) {
+                boolean have = false;
+                for (long[] o : tiles) if (o[0] == q[0] && o[1] == q[1]) have = true;
+                if (!have) tiles.add(q);
+            }
+        }
+        int withCurve = 0, twice = 0, copies = 0, stamps = 0, moved = 0;
+        for (long[] q : tiles) {
+            m.tileInput(q[0], q[1], in);
+            if (in.curveMarks == 0) continue;
+            withCurve++;
+            TilePainter.paint(in, p);
+            TileRaster.raster(in, p, PX, img);
+            TileRaster.raster(in, p, PX, again);
+            if (Arrays.equals(img, again)) twice++;
+            MapTiles.copy(in, kept);
+            // (MapTiles.copy leaves the interchanges' reserves out, as it always has: handed over here, so the stamp and the pixels are the curves' alone.)
+            kept.reserves = in.reserves;
+            kept.reserve = in.reserve.clone();
+            TilePainter.paint(kept, pk);
+            TileRaster.raster(kept, pk, PX, copy);
+            if (Arrays.equals(img, copy)) copies++;
+            if (MapTiles.stamp(in) == MapTiles.stamp(kept)) stamps++;
+            // ...and a tile with a curve's mark added beside it repaints: its stamp moves with the marks.
+            int free = 0;
+            while (free < TilePainter.RING * TilePainter.RING && kept.curveRing[free] != 0) free++;
+            if (free < TilePainter.RING * TilePainter.RING) {
+                kept.setCurvePlot(free % TilePainter.RING - TilePainter.REACH, free / TilePainter.RING - TilePainter.REACH, TilePainter.Input.CV_BAND);
+                if (MapTiles.stamp(in) != MapTiles.stamp(kept)) moved++;
+            }
+        }
+        check("fixture: the tiles about the first crescents and shore curves have curves about them", withCurve >= 9);
+        check("THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp", twice == withCurve && copies == withCurve && stamps == withCurve);
+        check("...and a copy with a curve mark added beside the tile has another stamp: a tile repaints when a curve plot beside it is laid", moved == withCurve);
+        long[] noMines = m.totals();
+        for (int ty = 0; ty < noMines.length; ty++) if (m.types()[ty] != null && m.types()[ty].site() != null) noMines[ty] = 0;
+        CityMap twin = CityMap.square(m.seed(), m.land().siteX(), m.land().siteY(), m.types(), (int) Math.round(Math.sqrt(m.districts().size())), m.districts().get(0).owned(), noMines);
+        twin.reconcile(m.totals());
+        TilePainter.Input in2 = new TilePainter.Input();
+        TilePainter.Painted p2 = new TilePainter.Painted();
+        int[] other = img.clone();
+        int alike = 0, compared = 0;
+        for (long[] q : tiles) {
+            m.tileInput(q[0], q[1], in);
+            if (in.curveMarks == 0) continue;
+            TilePainter.paint(in, p);
+            TileRaster.raster(in, p, PX, img);
+            twin.tileInput(q[0], q[1], in2);
+            TilePainter.paint(in2, p2);
+            TileRaster.raster(in2, p2, PX, other);
+            compared++;
+            if (Arrays.equals(img, other)) alike++;
+        }
+        out.printf("      the dense city and its twin built the same way: %d tiles with a curve about them compared%n", compared);
+        check("...and a tile of a curve from a twin map built alike paints the same pixels", compared >= 9 && alike == compared);
+
+        // ---- NO BUILDING UNDER OR OVER: not on a plot a curve is laid on or reaches, and not a pixel of a building's changed by the curve
+        CvTiles t8 = new CvTiles(m, 8);
+        int plots = 0, builtOn = 0, onWorks = 0, overBuilding = 0, buildingPixels = 0, tilesCompared = 0;
+        java.util.List<CvFound> all = new java.util.ArrayList<>(crescents);
+        all.addAll(shores);
+        for (CvFound f : all) {
+            for (int k = 0; k < f.c().plots.length; k++) {
+                long[] q = f.plot(k);
+                plots++;
+                if (t8.use(q[0], q[1]) != TilePainter.BUILDING) continue;
+                // A works at the water (CityShore) and a mine on its site stand where the map deals them, after the plan, which cannot keep their ground free: counted apart.
+                boolean apart = false;
+                for (CityShore.Work wk : m.shore().works()) if (q[0] >= wk.x0() && q[0] < wk.x0() + wk.w() && q[1] >= wk.y0() && q[1] < wk.y0() + wk.h()) apart = true;
+                int type = t8.type(q[0], q[1]);
+                if (type >= 0 && type < m.types().length && m.types()[type] != null && m.types()[type].site() != null) apart = true;
+                if (apart) onWorks++; else builtOn++;
+            }
+        }
+        java.util.List<long[]> seenTiles = new java.util.ArrayList<>();
+        int[] with = new int[(tile * 8) * (tile * 8)], without = with.clone();
+        for (CvFound f : all.subList(0, Math.min(all.size(), 24))) {
+            for (long[] q : cvTiles(f)) {
+                boolean have = false;
+                for (long[] o : seenTiles) if (o[0] == q[0] && o[1] == q[1]) have = true;
+                if (have) continue;
+                seenTiles.add(q);
+                m.tileInput(q[0], q[1], in);
+                if (in.curveMarks == 0) continue;
+                TilePainter.paint(in, p);
+                TileRaster.raster(in, p, 8, with);
+                in.clearCurves();
+                TilePainter.paint(in, p);
+                TileRaster.raster(in, p, 8, without);
+                tilesCompared++;
+                // The buildings' pixels - their whole plots, the inset border among them - are the same with the curve and without it.
+                for (int i = 0; i < TilePainter.PLOTS; i++) {
+                    if (p.use[i] != TilePainter.BUILDING) continue;
+                    for (int y = 0; y < 8; y++) {
+                        for (int x = 0; x < 8; x++) {
+                            int o = ((i / tile) * 8 + y) * (tile * 8) + (i % tile) * 8 + x;
+                            buildingPixels++;
+                            if (with[o] != without[o]) overBuilding++;
+                        }
+                    }
+                }
+            }
+        }
+        out.printf("      the curves' plots on the dense city: %,d plots (own and band) of %d curves, %d of them under a building of the plan and %d under a works at the water or a mine on its site (the map's deals, placed after the plan); %,d pixels of buildings on %d tiles with and without the curves, %d changed%n",
+                plots, all.size(), builtOn, onWorks, buildingPixels, tilesCompared, overBuilding);
+        check("NO BUILDING UNDER OR OVER A CURVE: not one plot a curve is laid on or reaches is under a building of the plan (a works at the water, which CityShore places on the shore after the plan, or a mine on its site may stand on a plot of a band: the drawing leaves its pixels alone), and the pixels of the buildings on the tiles about them (their insets too) are the same with the curves drawn and without",
+                plots > 0 && builtOn == 0 && tilesCompared >= 9 && buildingPixels > 0 && overBuilding == 0);
+
+        // ---- THE CROSSINGS: hand-built tiles at 8 px a plot, each causing its case
+        int px = 8, w = World.TILE * px, paved = TileRaster.ROAD[BuildingVisual.PAVED];
+        JunctionCheck.Streets rings = (x, y) -> y == 0 || y == 32 ? JunctionCheck.ARTERIAL : 0;
+        JunctionCheck.Streets longs = (x, y) -> y == 0 || y == 32 ? JunctionCheck.ARTERIAL : x >= 0 && x <= 30 && (y == 8 || y == 16 || y == 24) ? JunctionCheck.STREET : 0;
+        int[] alone = handCrescent(rings);
+        boolean none = JunctionCheck.noneOf(alone, TileRaster.ISLAND, TileRaster.ZEBRA, TileRaster.JUNCTION_BOX);
+        DistrictPlan.ArcShape arc = DistrictPlan.arc(1);
+        int apexRow = DistrictPlan.INTERIOR / 2, apexU = arc.stairU[0];
+        for (int k = 0; k < arc.stairU.length; k++) if (arc.stairV[k] == apexRow) apexU = Math.max(apexU, arc.stairU[k]);
+        check("CROSSINGS: a crescent's plots alone are no junction - between its two rings it draws no box, no zebra, no ring (and is drawn: its paved band is on its apex plot)",
+                none && JunctionCheck.hasColour(alone, w, apexU, 1 + apexRow, px, paved));
+        int[] crossed = handCrescent(longs);
+        // The long street at row 16 crosses the arc: over the plots the staircase holds in its row and three each side, the street's colour at its middle line at every plot's two edges.
+        int rowU0 = Integer.MAX_VALUE, rowU1 = Integer.MIN_VALUE;
+        for (int k = 0; k < arc.stairU.length; k++) if (arc.stairV[k] == 15) { rowU0 = Math.min(rowU0, arc.stairU[k]); rowU1 = Math.max(rowU1, arc.stairU[k]); }
+        int streetAt = (px - Math.max(1, (int) Math.round(TileRaster.SURFACE[1] * px))) / 2;
+        boolean across = true;
+        for (int u = Math.max(0, rowU0 - 3); u <= rowU1 + 3; u++) {
+            int y = 16 * px + streetAt + 1;
+            across &= cvStreetColour(crossed[y * w + u * px]) && cvStreetColour(crossed[y * w + u * px + px - 1]);
+        }
+        check("...a street that crosses it runs on across the band: along the long street's row, over the plots the arc crosses and three each side, its colour at the middle of the street at every plot's edge, and no box, no zebra, no ring",
+                across && JunctionCheck.noneOf(crossed, TileRaster.ISLAND, TileRaster.ZEBRA, TileRaster.JUNCTION_BOX));
+        // A crossing beside it is the signal it was: two arterials crossing away from the arc, the crescent in the tile, the box only in their plot.
+        JunctionCheck.Streets twoArterials = (x, y) -> (x == 3 && y >= 0 && y <= 32) || (y == 24 && x >= 0 && x <= 8) ? JunctionCheck.ARTERIAL : 0;
+        int[] signal = handCrescent(twoArterials);
+        boolean boxOnlyThere = true;
+        for (int y = 0; y < World.TILE; y++) for (int x = 0; x < World.TILE; x++)
+            if ((x < 2 || x > 4 || y < 23 || y > 25) && JunctionCheck.hasColour(signal, w, x, y, px, TileRaster.JUNCTION_BOX)) boxOnlyThere = false;
+        check("...and an arterial crossing another with the crescent in the tile is a signal as it was: the box on the crossing's plot, nowhere else, no ring",
+                JunctionCheck.hasColour(signal, w, 3, 24, px, TileRaster.JUNCTION_BOX) && boxOnlyThere && JunctionCheck.noneOf(signal, TileRaster.ISLAND));
+        // A street along a cut over a bridge: the plots that bridge fresh water keep their staircase (the deck and the bars of FX5's decks), the band on the plots beside them stopping at their edges.
+        int[] straight = handShore(false), bridged = handShore(true);
+        boolean runs = true, decked = true, dry = true;
+        int rowPx = 10 * px + (px - Math.max(1, (int) Math.round(TileRaster.SURFACE[1] * px))) / 2 + 1;
+        for (int X = 2 * px + px / 2; X < 20 * px + px / 2; X++) runs &= cvStreetColour(bridged[rowPx * w + X]) && cvStreetColour(straight[rowPx * w + X]);
+        for (int x = 9; x <= 12; x++) decked &= JunctionCheck.hasColour(bridged, w, x, 10, px, TileRaster.DECK);
+        for (int x = 3; x <= 19; x++) if (x < 9 || x > 12) dry &= !JunctionCheck.hasColour(bridged, w, x, 10, px, TileRaster.DECK);
+        check("...and over a bridge a street along a cut is drawn through: its colour along the whole line from its first plot's middle to its last's, the deck on the four plots that bridge and on no other, and the same line without the bridge",
+                runs && decked && dry);
+
+        // ---- THE SCREEN: over the far districts where the most tiles have a curve about them, within SCREEN_MS
+        TilePainter.Input sin = new TilePainter.Input();
+        int perDistrict = CityMap.DISTRICT / tile;
+        long tx0 = Math.floorDiv(m.land().siteX(), (long) tile) + CV_FROM * perDistrict, ty0 = Math.floorDiv(m.land().siteY(), (long) tile) + CV_FROM * perDistrict;
+        int mostTiles = -1;
+        long bestX = tx0, bestY = ty0;
+        for (long sy = Math.floorDiv(m.land().siteY(), (long) tile) + CV_FROM * perDistrict; sy + SCREEN_DOWN <= Math.floorDiv(m.land().siteY(), (long) tile) + (CV_TO + 1) * perDistrict; sy += 3) {
+            for (long sx = Math.floorDiv(m.land().siteX(), (long) tile) + CV_FROM * perDistrict; sx + SCREEN_ACROSS <= Math.floorDiv(m.land().siteX(), (long) tile) + (CV_TO + 1) * perDistrict; sx += 3) {
+                int count = 0;
+                for (int j = 0; j < SCREEN_DOWN; j++) for (int c = 0; c < SCREEN_ACROSS; c++) { m.tileInput(sx + c, sy + j, sin); if (sin.curveMarks != 0) count++; }
+                if (count > mostTiles) { mostTiles = count; bestX = sx; bestY = sy; }
+            }
+        }
+        tx0 = bestX;
+        ty0 = bestY;
+        TilePainter.Painted sp = new TilePainter.Painted();
+        int[] simg = new int[(tile * PX) * (tile * PX)];
+        int curveTiles = 0;
+        double bestWith = Double.MAX_VALUE, bestWithout = Double.MAX_VALUE;
+        System.gc();
+        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+            for (int variant = 0; variant < 2; variant++) {
+                int n = 0;
+                long t0 = System.nanoTime();
+                for (int j = 0; j < SCREEN_DOWN; j++) {
+                    for (int c = 0; c < SCREEN_ACROSS; c++) {
+                        m.tileInput(tx0 + c, ty0 + j, sin);
+                        if (sin.curveMarks != 0) n++;
+                        // The second variant is the same screen with its curves' marks cleared, as it was drawn before CL4: the curves' share of the time.
+                        if (variant == 1) sin.clearCurves();
+                        TilePainter.paint(sin, sp);
+                        TileRaster.raster(sin, sp, PX, simg);
+                    }
+                }
+                double ms = (System.nanoTime() - t0) / 1e6;
+                if (variant == 0) curveTiles = n;
+                if (round >= WARM_ROUNDS) { if (variant == 0) bestWith = Math.min(bestWith, ms); else bestWithout = Math.min(bestWithout, ms); }
+            }
+        }
+        out.printf("      x %,.0f: the screen's %d tiles over the far districts where curves are thickest, %d with a curve about them - terrain, the plans' tiles, paint and raster at %d px - in %.1f ms (%.3f ms a tile); the same screen without the curves' marks %.1f ms%n",
+                TIMES[DENSE], SCREEN_TILES, curveTiles, PX, bestWith, bestWith / SCREEN_TILES, bestWithout);
+        check("THE SCREEN: the dense screen over the far districts where curves are thickest, curves across it (tiles with curves about them: " + curveTiles + "), paints and rasters in no more than " + (int) SCREEN_MS + " ms",
+                curveTiles > 0 && Timing.within(bestWith, SCREEN_MS));
     }
 }

@@ -104,6 +104,20 @@ import java.util.Arrays;
  * heading, its bridge a deck along the band, and where it meets another street
  * a crossing counted by its roads, the avenue's two directions among them
  * (Crossings; avenuePlot(), avenueNotch(), avenueEnds(), avenueOrigin()).
+ *
+ * THE CURVES (batch CL4, slice D; Jerus, 2026-10-20: "All three"). The two
+ * kinds of street the district plans give a smooth line - a crescent, the
+ * cross street of a long-block homes cell far from the founding site, a
+ * quarter of a circle between its rings, and the street a cut lays along
+ * water, a path of plots with its corners rounded (DistrictPlan, CURVES;
+ * StreetCurves) - are, from LINES_FROM px a plot, one band along each line
+ * (curves(): curveLine(), drawCurve()), in the street's colour and width,
+ * over the curve's own plots and the plots its band reaches that the plan keeps
+ * free of buildings, never over a building, the railway or a bridge's deck; the
+ * plots are verge where the band does not cover them, a street that crosses the
+ * curve is drawn across the band, and the dead end a curve leaves from and the
+ * street it meets keep their bars, the band starting at their middles
+ * (curveDrawn(), curveArm(), curveLink(), curveLooks()).
  */
 public final class TileRaster {
 
@@ -1253,13 +1267,16 @@ public final class TileRaster {
             int along = dir == 0 || dir == 2 ? i % tile : i / tile;
             street = (in.beyond[dir * tile + along] & TilePainter.S_KIND) != DistrictPlan.NONE;
         }
-        if (!street || in.avenueMarks == 0) return street;
-        // An avenue's plots (CL4): the staircase's own plots are streets beside each other all along, and the band joins them, so no
-        // way runs from one to the next; a street beside the avenue joins it only where it crosses (axisArm()), from either side.
-        boolean here = in.avenue[i] != 0, there = in.avenueAt(x, y) != 0;
-        if (!here && !there) return true;
-        if (here && there) return false;
-        return here ? axisArm(in, p, i % tile, i / tile, dir) : axisArm(in, p, x, y, (dir + 2) & 3);
+        if (!street) return false;
+        if (in.avenueMarks != 0) {
+            // An avenue's plots (CL4): the staircase's own plots are streets beside each other all along, and the band joins them, so no
+            // way runs from one to the next; a street beside the avenue joins it only where it crosses (axisArm()), from either side.
+            boolean here = in.avenue[i] != 0, there = in.avenueAt(x, y) != 0;
+            if (here && there) return false;
+            if ((here || there) && !(here ? axisArm(in, p, i % tile, i / tile, dir) : axisArm(in, p, x, y, (dir + 2) & 3))) return false;
+        }
+        // A curve's plots (CL4, slice D), likewise: the plots the band draws have no bars between them, and a street joins one where it crosses it.
+        return in.curveMarks == 0 || curveLink(in, p, i % tile, i / tile, x, y, dir);
     }
 
     /** ...and a highway's own plot, a step from plot i. */
@@ -1834,6 +1851,281 @@ public final class TileRaster {
     }
 
     /* =====================================================================
+       THE CURVES (batch CL4, slice D; the study spec-city-layout 5.2)
+       ===================================================================== */
+
+    /*
+     * WHY. The district plans give two kinds of street a smooth line (DistrictPlan, CURVES; StreetCurves): a crescent, the cross
+     * street of a long-block homes cell far from the founding site, a quarter of a circle between its rings, and the street a cut
+     * lays along water, a path of plots from a dead end to the street it meets whose simplified line has its corners rounded.
+     * Drawn plot by plot - a bar across each toward the street plots beside it - each is a staircase of crosses, as the avenues
+     * were. From LINES_FROM px a plot each is one smooth band along its line (curveLine(): the arc sampled, the rounded polyline
+     * StreetCurves.line() makes - the line the plan kept the ground free for), in its street's colour and width (SURFACE by the
+     * plot's width, ROAD[kind], gravel's grain, a track's dashes counted along the line): the pixels within half the width of the
+     * line, over the plots of the curve - its own, laid as streets, and the plots its band reaches that the plan keeps free of
+     * buildings (Input.curve's CV_OWN and CV_BAND) - and nowhere else, so never over a building, a highway, the railway or a bridge's deck; the
+     * band crosses the corner of a plot of water the simplified line cuts across (bandable()), as the line is, rather than leave a gap in the street.
+     * The plots are verge where the band does not cover them (the own plots with the streets', the band's open ground in
+     * ways()). An own plot the band draws (curveDrawn(): a street plot of the tile or its ring, not an end of the curve, not a
+     * bridge, not beneath a highway, not the railway's) has no bars of its own: a street that meets the curve through it - one
+     * plot beside it that is none of the curve's, with a street plot beyond (curveArm()) - is drawn as a bar across the plot, so
+     * a long street crossing a crescent runs across the band and a street the curve meets reads as one network; the curve's
+     * ends, the dead end's last plot and the street it meets (CV_END), are drawn as the streets they are (a street that comes from one side
+     * alone, the dead end's, to the plot's middle: curveEndBars()), the band starting
+     * and ending at their middles. A bridge's plots stay the staircase (FX5 kept a curve on a deck as its staircase) and the
+     * band stops at their edges. Below LINES_FROM nothing changes: a plot is its colour.
+     */
+
+    /** Whether plot (x, y), of the tile or within REACH of it, is a street plot a curve draws in place of its bars (see THE CURVES). */
+    private static boolean curveDrawn(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int m = in.curveAt(x, y);
+        if ((m & TilePainter.Input.CV_OWN) == 0 || (m & TilePainter.Input.CV_END) != 0) return false;
+        int tile = TilePainter.TILE;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) {
+            int i = y * tile + x;
+            return p.use[i] == TilePainter.ROAD && isStreet(p, i) && !p.beneath[i] && !p.bridge[i];
+        }
+        int code = codeAt(in, x, y), kind = TilePainter.kindOf(code);
+        return kind >= BuildingVisual.GRAVEL && kind <= TilePainter.TRACK && (code & TilePainter.S_BRIDGE) == 0;
+    }
+
+    /**
+     * Whether curve-drawn plot (x, y) has an ARM in direction d (north, east, south, west): a street running into it that is none of
+     * the curve's - the plot beside it a street plot and no curve's own, and the plot beyond that another (a street that goes on
+     * out, not a stub beside the curve). It is how the street a crescent crosses is told from the staircase's own plots.
+     */
+    private static boolean curveArm(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d) {
+        int nx = x + TilePainter.DX[d], ny = y + TilePainter.DY[d];
+        if ((in.curveAt(nx, ny) & TilePainter.Input.CV_OWN) != 0 || !ringStreet(in, p, nx, ny)) return false;
+        int bx = nx + TilePainter.DX[d], by = ny + TilePainter.DY[d];
+        return (in.curveAt(bx, by) & TilePainter.Input.CV_OWN) == 0 && ringStreet(in, p, bx, by);
+    }
+
+    /**
+     * Whether plot A (ax, ay) of the tile, beside the street plot B (bx, by) in direction d, has a bar toward it, where a curve is
+     * about (streetAt()): two plots the curve draws have none between them; a plot the curve draws has one toward each arm; a plot
+     * beside one the curve draws has one toward it when it is the curve's own, a bridge's or a plot beneath a highway (not an end:
+     * the band starts at an end's middle), else (a street that is none of the curve's) when B has it as an arm.
+     */
+    private static boolean curveLink(TilePainter.Input in, TilePainter.Painted p, int ax, int ay, int bx, int by, int d) {
+        boolean da = curveDrawn(in, p, ax, ay), db = curveDrawn(in, p, bx, by);
+        if (!da && !db) return true;
+        if (da && db) return false;
+        if (da) return curveArm(in, p, ax, ay, d);
+        int ma = in.curveAt(ax, ay);
+        if ((ma & TilePainter.Input.CV_OWN) != 0) return (ma & TilePainter.Input.CV_END) == 0;
+        return curveArm(in, p, bx, by, (d + 2) & 3);
+    }
+
+    /** The bars of curve-drawn plot i: the street that crosses it along each axis, across the plot in that street's kind and width (axisBar()). */
+    private static void curveArms(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img) {
+        int tile = TilePainter.TILE, x = i % tile, y = i / tile;
+        int vCode = curveArmCode(in, p, x, y, 0, 2), hCode = curveArmCode(in, p, x, y, 1, 3);
+        if (hCode != 0) axisBar(in, i, px, img, true, hCode, false);
+        if (vCode != 0) axisBar(in, i, px, img, false, vCode, false);
+    }
+
+    /** The street code of the first of the two arms (directions d0 and d1) of curve-drawn plot (x, y); 0 for none. */
+    private static int curveArmCode(TilePainter.Input in, TilePainter.Painted p, int x, int y, int d0, int d1) {
+        int d = curveArm(in, p, x, y, d0) ? d0 : curveArm(in, p, x, y, d1) ? d1 : -1;
+        return d < 0 ? 0 : codeAt(in, x + TilePainter.DX[d], y + TilePainter.DY[d]);
+    }
+
+    /**
+     * The bars of an end of a curve (CV_END), where the street runs into it from one side alone on an axis - the dead end the street
+     * along a cut leaves from, whose street stops there - so the bar is drawn from that side's edge to the plot's middle, where the
+     * curve's band starts (no stub of the street beyond the join, whichever way the curve leaves). An axis with a street on both sides
+     * is drawn whole as ever (a crescent's ring, the street a shore street meets). False, drawing nothing, where no axis is
+     * one-sided or the plot is no surfaced street, so the plot is drawn as any other.
+     */
+    private static boolean curveEndBars(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int dashT, int dashStep, int dashLen) {
+        int kind = p.road[i];
+        if (p.use[i] != TilePainter.ROAD || p.beneath[i] || kind < BuildingVisual.GRAVEL || kind > TilePainter.TRACK) return false;
+        boolean n = streetAt(in, p, i, 0), e = streetAt(in, p, i, 1), s = streetAt(in, p, i, 2), wst = streetAt(in, p, i, 3);
+        boolean oneH = e != wst, oneV = n != s;
+        if (!oneH && !oneV) return false;
+        int tile = TilePainter.TILE, w = tile * px, x0 = (i % tile) * px, y0 = (i / tile) * px;
+        // Along each axis the bar's span in pixels across the plot: whole, or from the side the street comes from to the middle.
+        int hLo = e && !wst ? px / 2 : 0, hHi = wst && !e ? px / 2 : px, vLo = s && !n ? px / 2 : 0, vHi = n && !s ? px / 2 : px;
+        boolean h = e || wst, v = n || s;
+        if (kind == TilePainter.TRACK) {
+            int c = in.owned[i] ? TRACK_DASH : blend(TRACK_DASH, VOID, UNOWNED_DIM), mid = (px - dashT) / 2;
+            for (int a = 0; a < px; a += dashStep) {
+                int b = Math.min(px, a + dashLen);
+                if (h && b > hLo && a < hHi) fillRect(img, w, x0 + Math.max(a, hLo), y0 + mid, x0 + Math.min(b, hHi), y0 + mid + dashT, c);
+                if (v && b > vLo && a < vHi) fillRect(img, w, x0 + mid, y0 + Math.max(a, vLo), x0 + mid + dashT, y0 + Math.min(b, vHi), c);
+            }
+            return true;
+        }
+        int t = surfaceOf(p.width[i], px), o = (px - t) / 2;
+        int c = in.owned[i] ? ROAD[Math.min(kind, BuildingVisual.HIGHWAY)] : blend(ROAD[Math.min(kind, BuildingVisual.HIGHWAY)], VOID, UNOWNED_DIM);
+        if (h) fillRect(img, w, x0 + hLo, y0 + o, x0 + hHi, y0 + o + t, c);
+        if (v) fillRect(img, w, x0 + o, y0 + vLo, x0 + o + t, y0 + vHi, c);
+        if (kind == BuildingVisual.GRAVEL) {
+            int grain = in.owned[i] ? GRAVEL_GRAIN : blend(GRAVEL_GRAIN, VOID, UNOWNED_DIM);
+            if (h) grain(in, img, w, x0 + hLo, y0 + o, x0 + hHi, y0 + o + t, grain);
+            if (v) grain(in, img, w, x0 + o, y0 + vLo, x0 + o + t, y0 + vHi, grain);
+        }
+        return true;
+    }
+
+    /** Whether the band may be drawn on plot i of the tile: a street's plot (no bridge's, none beneath a highway, no highway's own) or open ground, the water the line cuts across a corner of among it - never a building, the railway, a bridge's deck. */
+    private static boolean bandable(TilePainter.Painted p, int i) {
+        if (p.beneath[i] || p.bridge[i]) return false;
+        if (p.use[i] == TilePainter.ROAD) return isStreet(p, i);
+        return p.use[i] == TilePainter.EMPTY;
+    }
+
+    /** What the band is drawn as on own plot (x, y) of the tile or its ring: (kind << 4 | width) + 1 of its street, 0 where it is none the band is drawn as (a highway's, one beneath a highway, a bridge's). */
+    private static int curveLookOf(TilePainter.Input in, TilePainter.Painted p, int x, int y) {
+        int tile = TilePainter.TILE;
+        if (x >= 0 && y >= 0 && x < tile && y < tile) {
+            int j = y * tile + x;
+            if (p.use[j] != TilePainter.ROAD || !isStreet(p, j) || p.beneath[j] || p.road[j] < BuildingVisual.GRAVEL || p.road[j] > TilePainter.TRACK) return 0;
+            return 1 + (p.road[j] << 4 | p.width[j]);
+        }
+        int code = codeAt(in, x, y), kind = TilePainter.kindOf(code);
+        if (kind < BuildingVisual.GRAVEL || kind > TilePainter.TRACK) return 0;
+        return 1 + (kind << 4 | (kind == TilePainter.TRACK ? 0 : (code >> TilePainter.S_WIDTH_SHIFT) & 3));
+    }
+
+    /** What the band is drawn as on the plots of the tile: per plot, 0 for none or (kind << 4 | width) + 1 - an own street plot's own kind and width, a band plot's those of the nearest own street plot beside it (the four sides first, then the corners; an end's street, the arterial a crescent meets, last: it is no part of the curve's own street). */
+    private static int[] curveLooks(TilePainter.Input in, TilePainter.Painted p) {
+        int tile = TilePainter.TILE;
+        int[] look = new int[TilePainter.PLOTS];
+        for (int y = 0; y < tile; y++) {
+            for (int x = 0; x < tile; x++) {
+                int i = y * tile + x, m = in.curve[i] & 0xff;
+                if (m == 0 || !bandable(p, i)) continue;
+                if ((m & TilePainter.Input.CV_OWN) != 0 && p.use[i] == TilePainter.ROAD) {
+                    look[i] = curveLookOf(in, p, x, y);
+                    continue;
+                }
+                for (int pass = 0; pass < 2 && look[i] == 0; pass++) {
+                    for (int s = 0; s < 8 && look[i] == 0; s++) {
+                        int nx = x + (s < 4 ? TilePainter.DX[s] : (s & 1) == 0 ? -1 : 1), ny = y + (s < 4 ? TilePainter.DY[s] : (s & 2) == 0 ? -1 : 1);
+                        int nm = in.curveAt(nx, ny);
+                        if ((nm & TilePainter.Input.CV_OWN) == 0 || ((nm & TilePainter.Input.CV_END) != 0) != (pass == 1)) continue;
+                        look[i] = curveLookOf(in, p, nx, ny);
+                    }
+                }
+            }
+        }
+        return look;
+    }
+
+    /**
+     * A curve's line, in the plots of the tile, from the numbers Input.curveGeom holds (n of them from `at`): {xs, ys}. A crescent's
+     * arc (its circle: centre, radius, the angle to the start, the signed sweep) is sampled every TrackCurves.STEP of its length, its
+     * ends the arc's; a shore's is StreetCurves.line() of its simplified vertices, the line the plan kept the ground free for.
+     */
+    static double[][] curveLine(int kind, double[] g, int at, int n) {
+        if (kind == DistrictPlan.Curve.CRESCENT) {
+            double cx = g[at], cy = g[at + 1], r = g[at + 2], a0 = g[at + 3], sweep = g[at + 4];
+            int steps = Math.max(1, (int) Math.ceil(r * Math.abs(sweep) / TrackCurves.STEP - 1e-9));
+            double[] xs = new double[steps + 1], ys = new double[steps + 1];
+            for (int k = 0; k <= steps; k++) {
+                double a = a0 + sweep * k / steps;
+                xs[k] = cx + r * StrictMath.cos(a);
+                ys[k] = cy + r * StrictMath.sin(a);
+            }
+            return new double[][] { xs, ys };
+        }
+        double[] vx = new double[n / 2], vy = new double[n / 2];
+        for (int k = 0; k < vx.length; k++) {
+            vx[k] = g[at + 2 * k];
+            vy[k] = g[at + 2 * k + 1];
+        }
+        return StreetCurves.line(vx, vy);
+    }
+
+    /** Every curve of the tile drawn (THE CURVES): the band along each line over the plots it is drawn on. */
+    private static void curves(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        if (in.curves == 0) return;
+        int[] look = curveLooks(in, p);
+        int at = 0;
+        for (int k = 0; k < in.curves; k++) {
+            int kind = (int) in.curveGeom[at], n = (int) in.curveGeom[at + 2];
+            double[][] line = curveLine(kind, in.curveGeom, at + TilePainter.Input.CURVE_HEAD, n);
+            at += TilePainter.Input.CURVE_HEAD + n;
+            drawCurve(in, px, img, look, line[0], line[1]);
+        }
+    }
+
+    /**
+     * One curve's band: for each plot the curve is drawn on (look), the pixels of it whose centres lie within half the street's width
+     * of the line (xs, ys, in plots) - a track's width, the dashes counted along the line from its start, so they run on across the
+     * plots and the tiles - in the street's colour, gravel's grain over it, ground the city does not own dimmed.
+     */
+    private static void drawCurve(TilePainter.Input in, int px, int[] img, int[] look, double[] xs, double[] ys) {
+        int tile = TilePainter.TILE, w = tile * px, m = xs.length;
+        if (m < 2) return;
+        double[] lx = new double[m], ly = new double[m], cum = new double[m], len = new double[m];
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        for (int s = 0; s < m; s++) {
+            lx[s] = xs[s] * px;
+            ly[s] = ys[s] * px;
+            minX = Math.min(minX, lx[s]);
+            maxX = Math.max(maxX, lx[s]);
+            minY = Math.min(minY, ly[s]);
+            maxY = Math.max(maxY, ly[s]);
+            if (s > 0) {
+                len[s - 1] = Math.hypot(lx[s] - lx[s - 1], ly[s] - ly[s - 1]);
+                cum[s] = cum[s - 1] + len[s - 1];
+            }
+        }
+        double reach = px / 2.0 + 1;
+        int gx0 = (int) Math.max(0, Math.floor((minX - reach) / px)), gx1 = (int) Math.min(tile - 1, Math.floor((maxX + reach) / px));
+        int gy0 = (int) Math.max(0, Math.floor((minY - reach) / px)), gy1 = (int) Math.min(tile - 1, Math.floor((maxY + reach) / px));
+        int[] near = new int[m];
+        int dashT = Math.max(2, px / 5), dashStep = Math.max(2, px / 2), dashLen = Math.max(2, px / 3);
+        for (int gy = gy0; gy <= gy1; gy++) {
+            for (int gx = gx0; gx <= gx1; gx++) {
+                int i = gy * tile + gx, a = look[i];
+                if (a == 0) continue;
+                int kind = (a - 1) >> 4, width = (a - 1) & 15;
+                boolean track = kind == TilePainter.TRACK;
+                double half = track ? dashT / 2.0 : surfaceOf(width, px) / 2.0;
+                // The segments of the line that come within `half` of the plot.
+                double bx0 = gx * px - half, by0 = gy * px - half, bx1 = (gx + 1) * px + half, by1 = (gy + 1) * px + half;
+                int nn = 0;
+                for (int s = 0; s + 1 < m; s++) {
+                    if (Math.max(lx[s], lx[s + 1]) < bx0 || Math.min(lx[s], lx[s + 1]) > bx1 || Math.max(ly[s], ly[s + 1]) < by0 || Math.min(ly[s], ly[s + 1]) > by1) continue;
+                    near[nn++] = s;
+                }
+                if (nn == 0) continue;
+                boolean owned = in.owned[i];
+                int c = track ? TRACK_DASH : ROAD[Math.min(kind, BuildingVisual.HIGHWAY)];
+                if (!owned) c = blend(c, VOID, UNOWNED_DIM);
+                int grain = !track && kind == BuildingVisual.GRAVEL ? (owned ? GRAVEL_GRAIN : blend(GRAVEL_GRAIN, VOID, UNOWNED_DIM)) : 0;
+                double half2 = half * half;
+                for (int v = 0; v < px; v++) {
+                    for (int u = 0; u < px; u++) {
+                        double qx = gx * px + u + 0.5, qy = gy * px + v + 0.5, best = Double.MAX_VALUE, along = 0;
+                        for (int q = 0; q < nn; q++) {
+                            int s = near[q];
+                            double ax = lx[s], ay = ly[s], dx = lx[s + 1] - ax, dy = ly[s + 1] - ay, l2 = dx * dx + dy * dy;
+                            double t = l2 < 1e-18 ? 0 : Math.max(0, Math.min(1, ((qx - ax) * dx + (qy - ay) * dy) / l2));
+                            double ex = ax + t * dx - qx, ey = ay + t * dy - qy, d2 = ex * ex + ey * ey;
+                            if (d2 < best) { best = d2; along = cum[s] + t * len[s]; }
+                        }
+                        if (best >= half2) continue;
+                        if (track && Math.floorMod((long) Math.floor(along), (long) dashStep) >= dashLen) continue;
+                        int col = c;
+                        if (grain != 0) {
+                            int X = gx * px + u, Y = gy * px + v;
+                            double h = World.unit(World.mix((in.tx * 8191L + X) * 0x9E3779B97F4A7C15L
+                                    ^ (in.ty * 8191L + Y) * 0xC2B2AE3D27D4EB4FL ^ in.seed ^ 0x47524156L));
+                            if (h < GRAVEL_GRAIN_SHARE) col = grain;
+                        }
+                        img[(gy * px + v) * w + gx * px + u] = col;
+                    }
+                }
+            }
+        }
+    }
+
+    /* =====================================================================
        THE WAYS AS LINES (0.7.88, batch RD2; from LINES_FROM px a plot)
        ===================================================================== */
 
@@ -1868,7 +2160,10 @@ public final class TileRaster {
      * avenues of the district plans (CL4, THE AVENUES above) are drawn in the
      * same passes: their plots' verges with the streets', their outer plots'
      * beside, their decks with the bridges', the bars of the streets that cross
-     * them and their bands with the streets' surfaces, their boxes with the signals'.
+     * them and their bands with the streets' surfaces, their boxes with the signals'. The
+     * curves (CL4, slice D, THE CURVES above) likewise: the open ground their bands
+     * reach has its verge with the streets', a plot they draw only the bars of the
+     * streets that cross it, and their bands come after the streets' surfaces.
      */
     private static void ways(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
@@ -1885,6 +2180,15 @@ public final class TileRaster {
         if (notches != null) {
             for (int i = 0; i < TilePainter.PLOTS; i++) {
                 if (notches[i] == 0 || !notchVerge(in, p, i)) continue;
+                int x0 = (i % tile) * px, y0 = (i / tile) * px;
+                fillRect(img, w, x0, y0, x0 + px, y0 + px, in.owned[i] ? VERGE : blend(VERGE, VOID, UNOWNED_DIM));
+            }
+        }
+        // ...and the open ground a curve's band reaches (CL4, slice D), the plots the plan keeps free beside it, outside the band.
+        boolean curves = in.curveMarks != 0;
+        if (curves) {
+            for (int i = 0; i < TilePainter.PLOTS; i++) {
+                if (in.curve[i] == 0 || p.use[i] != TilePainter.EMPTY || in.terrain[i] == World.FRESH || in.terrain[i] == World.SALT) continue;
                 int x0 = (i % tile) * px, y0 = (i / tile) * px;
                 fillRect(img, w, x0, y0, x0 + px, y0 + px, in.owned[i] ? VERGE : blend(VERGE, VOID, UNOWNED_DIM));
             }
@@ -1934,6 +2238,13 @@ public final class TileRaster {
                 avenuePlot(in, p, i, px, img, false);
                 continue;
             }
+            // A plot a curve draws (CL4, slice D): only the bars of the streets that cross it; the band along its line comes below.
+            if (curves && curveDrawn(in, p, i % tile, i / tile)) {
+                curveArms(in, p, i, px, img);
+                continue;
+            }
+            // An end of a curve with a street to one side alone on an axis (the dead end the street along a cut leaves from): the bar runs from that edge to the middle, where the band starts.
+            if (curves && (in.curve[i] & (TilePainter.Input.CV_OWN | TilePainter.Input.CV_END)) == (TilePainter.Input.CV_OWN | TilePainter.Input.CV_END) && curveEndBars(in, p, i, px, img, dashT, dashStep, dashLen)) continue;
             int kind = p.road[i];
             boolean h = streetAt(in, p, i, 1) || streetAt(in, p, i, 3), v = streetAt(in, p, i, 0) || streetAt(in, p, i, 2);
             if (!h && !v) h = true;
@@ -1960,6 +2271,8 @@ public final class TileRaster {
                 if (v) grain(in, img, w, x0 + o, y0, x0 + o + t, y0 + px, grain);
             }
         }
+        // The curves' bands (CL4, slice D), over the bars of the plots they cross and the ends of the streets they start from.
+        if (curves) curves(in, p, px, img);
         // The avenues' outer plots, the origin's other line and the squared ends of the pieces (CL4), then the railway's crossings.
         if (avenues) {
             if (notches != null) {
@@ -2463,6 +2776,7 @@ public final class TileRaster {
         for (int i = 0; i < TilePainter.PLOTS; i++) {
             if (!isStreet(p, i) || p.beneath[i] || p.road[i] == TilePainter.TRACK) continue;
             if (avenues && in.avenue[i] != 0) continue; // An avenue's arm has no zebra: its edge is slanted.
+            if (in.curveMarks != 0 && curveDrawn(in, p, i % tile, i / tile)) continue; // ...nor has a curve's (CL4, slice D).
             int x = i % tile, y = i / tile;
             if (cr.at(x, y) >= 0) continue;
             for (int dir = 0; dir < 4; dir++) {
@@ -2853,11 +3167,16 @@ public final class TileRaster {
             int kind = p.road[i];
             if (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED) continue;
             int x = i % tile, y = i / tile;
+            if (in.curveMarks != 0 && curveDrawn(in, p, x, y)) continue; // ...nor a curve's (CL4, slice D).
             byte role = p.role[i];
             int t = Math.max(1, (int) Math.round(SURFACE[Math.max(1, Math.min(2, (int) p.width[i]))] * px)), o = (px - t) / 2;
             if (role == TilePainter.STREET) {
                 boolean plus = true;
-                for (int d = 0; d < 4; d++) plus &= streetRoleAt(in, p, x + TilePainter.DX[d], y + TilePainter.DY[d]) == TilePainter.STREET;
+                for (int d = 0; d < 4; d++) {
+                    plus &= streetRoleAt(in, p, x + TilePainter.DX[d], y + TilePainter.DY[d]) == TilePainter.STREET;
+                    // A curve's plot beside it is no side street: its band meets this one's at its own angle (CL4, slice D).
+                    if (in.curveMarks != 0) plus &= !curveDrawn(in, p, x + TilePainter.DX[d], y + TilePainter.DY[d]);
+                }
                 if (!plus) continue;
                 int r = Math.max(1, (int) Math.round(KERB_RADIUS * px));
                 for (int sy = -1; sy <= 1; sy += 2) {
@@ -2872,6 +3191,8 @@ public final class TileRaster {
                 }
                 if (stems != 1) continue;
                 int back = (stem + 2) % 4, left = (stem + 3) % 4, right = (stem + 1) % 4;
+                // A stem a curve draws meets the arterial at the band's angle, not at a right angle (CL4, slice D).
+                if (in.curveMarks != 0 && curveDrawn(in, p, x + TilePainter.DX[stem], y + TilePainter.DY[stem])) continue;
                 if (streetRoleAt(in, p, x + TilePainter.DX[back], y + TilePainter.DY[back]) != 0) continue;
                 if (!junctionRole(streetRoleAt(in, p, x + TilePainter.DX[left], y + TilePainter.DY[left]))
                         || !junctionRole(streetRoleAt(in, p, x + TilePainter.DX[right], y + TilePainter.DY[right]))) continue;

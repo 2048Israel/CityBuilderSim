@@ -301,6 +301,72 @@ public final class TilePainter {
             if (x >= 0 && y >= 0 && x < TILE && y < TILE) avenue[y * TILE + x] = (byte) mark;
         }
 
+        /** A plot's curve mark (curve, curveRing; batch CL4, slice D): CV_OWN, a plot a curve is laid on (DistrictPlan.Curve.plots()); CV_BAND, a plot its band reaches that is not its own, kept free of buildings (Curve.band()); CV_END, with CV_OWN, a plot at either end of the curve's own plots - the dead end's last plot, the street it meets, a crescent's ring plot - which keeps its street's bars, the curve starting or ending at its middle. */
+        public static final byte CV_OWN = 1, CV_BAND = 2, CV_END = 4;
+
+        /** The curve marks of the tile's own plots (CL4, slice D), by plot: what CityMap's fill sets from the district plans' curves - the crescents' arcs and the shore's streets, which TileRaster draws as smooth bands along their lines, not as the staircases' bars. */
+        public final byte[] curve = new byte[PLOTS];
+        /** ...and on every plot within REACH of the tile, corners too: RING * RING bytes row by row from plot (-REACH, -REACH), the tile's own plots among them - what a bar's neighbour across the tile's edge is read from (curveAt()). */
+        public final byte[] curveRing = new byte[RING * RING];
+        /** How many plots of curveRing hold a mark: 0 when no curve lies about the tile (the raster's fast path). */
+        public int curveMarks;
+        /** The curves reaching the tile (CL4, slice D): how many, and each as CURVE_HEAD numbers - its kind (DistrictPlan.Curve.CRESCENT or SHORE), its radius, the count n of the numbers after - then its geometry as DistrictPlan.Curve.geom has it (a crescent's circle: centre x and y, radius, the angle to the arc's start, the signed sweep; a shore's simplified vertices x0, y0, x1, y1, ...), in the tile's plots (the curve may lie partly off the tile). curveLen numbers are held. */
+        public int curves;
+        public double[] curveGeom = new double[64];
+        public int curveLen;
+        /** The numbers before a curve's geometry in curveGeom: its kind, its radius and the count of numbers after. */
+        public static final int CURVE_HEAD = 3;
+
+        /** The curve mark on plot (x, y) of the tile or within REACH of it: 0 for none or for a plot farther out. */
+        public int curveAt(int x, int y) {
+            if (curveMarks == 0 || x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return 0;
+            return curveRing[ringIndex(x, y)] & 0xff;
+        }
+
+        /** Clears the curves (the marks, the count and the geometry); the arrays are reused. */
+        public void clearCurves() {
+            if (curveMarks != 0) {
+                Arrays.fill(curve, (byte) 0);
+                Arrays.fill(curveRing, (byte) 0);
+            }
+            curveMarks = 0;
+            curves = 0;
+            curveLen = 0;
+        }
+
+        /** Adds `mark` to the curve marks of plot (x, y) within REACH of the tile (CityMap's fill, or a harness's hand-built curve); the tile's own plots go to curve too. */
+        public void setCurvePlot(int x, int y, int mark) {
+            if (mark == 0 || x < -REACH || y < -REACH || x >= TILE + REACH || y >= TILE + REACH) return;
+            int r = ringIndex(x, y);
+            if (curveRing[r] == 0) curveMarks++;
+            curveRing[r] |= (byte) mark;
+            if (x >= 0 && y >= 0 && x < TILE && y < TILE) curve[y * TILE + x] |= (byte) mark;
+        }
+
+        /** Adds a curve: its kind, its radius and its geometry (n numbers), in the tile's plots. */
+        public void addCurve(int kind, double radius, double[] geom, int n) {
+            if (curveLen + CURVE_HEAD + n > curveGeom.length) curveGeom = Arrays.copyOf(curveGeom, Math.max(curveGeom.length * 2, curveLen + CURVE_HEAD + n));
+            curveGeom[curveLen] = kind;
+            curveGeom[curveLen + 1] = radius;
+            curveGeom[curveLen + 2] = n;
+            System.arraycopy(geom, 0, curveGeom, curveLen + CURVE_HEAD, n);
+            curveLen += CURVE_HEAD + n;
+            curves++;
+        }
+
+        /** Copies the curves of `from` (marks, count and geometry), the arrays reused. */
+        public void copyCurves(Input from) {
+            clearCurves();
+            if (from.curves == 0 && from.curveMarks == 0) return;
+            System.arraycopy(from.curve, 0, curve, 0, PLOTS);
+            System.arraycopy(from.curveRing, 0, curveRing, 0, from.curveRing.length);
+            curveMarks = from.curveMarks;
+            curves = from.curves;
+            if (curveGeom.length < from.curveLen) curveGeom = new double[from.curveGeom.length];
+            System.arraycopy(from.curveGeom, 0, curveGeom, 0, from.curveLen);
+            curveLen = from.curveLen;
+        }
+
         /** Clears the reserves; the array is reused. */
         public void clearReserves() { reserves = 0; }
 

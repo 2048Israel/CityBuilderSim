@@ -159,6 +159,11 @@ public final class MapTiles {
             h = World.mix(h ^ packed(in.avenueRing) ^ in.avenueMarks);
             h = World.mix(h ^ ((long) in.avenueOx << 32) ^ (in.avenueOy & 0xffffffffL));
         }
+        // The curves about it (batch CL4, slice D) - nothing with none: a tile repaints when a curve beside it is laid, and when one it holds moves.
+        if (in.curves != 0 || in.curveMarks != 0) {
+            h = World.mix(h ^ packed(in.curveRing) ^ in.curveMarks ^ ((long) in.curves << 40));
+            for (int k = 0; k < in.curveLen; k++) h = World.mix(h ^ Double.doubleToLongBits(in.curveGeom[k]) * 31 ^ k);
+        }
         // The works at sea (0.7.97): the quays', jackets' and wells' plots, the rings and the pipes - nothing with none.
         long sea = packed(in.sea);
         if (sea != 0) h = World.mix(h ^ sea);
@@ -242,6 +247,8 @@ public final class MapTiles {
             b.avenueOx = a.avenueOx;
             b.avenueOy = a.avenueOy;
         }
+        // The curves about it (batch CL4, slice D): the marks and the geometry, as the kept copy the raster reads must have them.
+        b.copyCurves(a);
         b.stationX = a.stationX;
         b.stationY = a.stationY;
         b.goodsByRail = a.goodsByRail;
@@ -316,11 +323,11 @@ public final class MapTiles {
         }
     }
 
-    /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and site out; since 0.7.97 each plot's work at sea both ways, and the rings' and pipes' ends in; since CL4 the avenues' marks, on the tile and its ring. */
+    /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and site out; since 0.7.97 each plot's work at sea both ways, and the rings' and pipes' ends in; since CL4 the avenues' marks, on the tile and its ring, and the curves' (their marks on the tile and its ring, their geometry). */
     public static long paintedBytes(TilePainter.Input in, TilePainter.Painted p) {
         long input = 4L * TilePainter.PLOTS + 2L * in.beyond.length + in.ring.length + 4L * (in.counts.length + in.boxes.length + in.yard.length) + 16 + 4
                 + 36L * in.siteX0.length + in.sea.length + 8L * (in.ringX.length + in.ringY.length) + 32L * in.pipeAX.length
-                + in.avenue.length + in.avenueRing.length;
+                + in.avenue.length + in.avenueRing.length + in.curve.length + in.curveRing.length + 8L * in.curveLen;
         long picture = 6L * TilePainter.PLOTS + 2L * 2 * TilePainter.PLOTS + 29L * p.bx.length + p.sea.length;
         return input + picture;
     }

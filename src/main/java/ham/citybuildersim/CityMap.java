@@ -2074,6 +2074,53 @@ public final class CityMap {
     /** Where a Drawn avenue plot's mark starts (Drawn.avenue): above the frame's plot, which is under 2^17 (a frame has 66,049 of them). */
     static final int AVENUE_MARK_SHIFT = 17;
 
+    /** A band plot of a DrawnCurve (DrawnCurve.plots) whose bit this is: a plot the curve's band reaches that is not its own. The plot is below it: a frame has 66,049 of them. */
+    static final int CURVE_BAND_BIT = 1 << 20;
+
+    /**
+     * A district plan's curve as the painter reads it (batch CL4, slice D; DistrictPlan.Curve): kept small - the map keeps up to
+     * PLANS_KEPT of these for a city - its geometry as numbers and the plots it is laid on and reaches as one list of ints, so a far
+     * city's crescents, a third of its long-block homes cells, weigh a few hundred bytes each (Drawn.bytes()).
+     */
+    static final class DrawnCurve {
+        /** Its kind (DistrictPlan.Curve.CRESCENT or SHORE), its radius and its geometry as DistrictPlan.Curve has them, in the frame's plots. */
+        final byte kind;
+        final double radius;
+        final double[] geom;
+        /** Its own plots, in the order DistrictPlan.Curve.plots() gives them (the first and the last are its ends), then the plots its band reaches, each with CURVE_BAND_BIT; all frame plots (y x FRAME + x). */
+        final int[] plots;
+        /** How many of those are its own. */
+        final int own;
+        /** The box of all its plots, in the frame's plots (inclusive). */
+        final int x0, y0, x1, y1;
+
+        DrawnCurve(DistrictPlan.Curve c) {
+            kind = c.kind;
+            radius = c.radius;
+            geom = c.geom.clone();
+            int[] mine = c.plots(), band = c.band();
+            own = mine.length;
+            plots = new int[mine.length + band.length];
+            System.arraycopy(mine, 0, plots, 0, mine.length);
+            for (int i = 0; i < band.length; i++) plots[mine.length + i] = band[i] | CURVE_BAND_BIT;
+            int f = DistrictPlan.FRAME, ax = f, ay = f, bx = 0, by = 0;
+            for (int e : plots) {
+                int q = e & (CURVE_BAND_BIT - 1), x = q % f, y = q / f;
+                ax = Math.min(ax, x);
+                ay = Math.min(ay, y);
+                bx = Math.max(bx, x);
+                by = Math.max(by, y);
+            }
+            x0 = ax;
+            y0 = ay;
+            x1 = bx;
+            y1 = by;
+        }
+
+        /** The bytes it holds, about. */
+        long bytes() { return 56 + 16 + 8L * geom.length + 16 + 4L * plots.length; }
+    }
+
     /** Where a Drawn box's type id starts: above the box's 20 bits and PACKED_BIT, eleven bits for ids under 2,048 (buildings.json's ids are under 128). */
     public static final int BOX_TYPE_SHIFT = 21;
 
@@ -2091,6 +2138,8 @@ public final class CityMap {
         int[] siding;
         /** The plots its plan's avenues run over (batch CL4, DistrictPlan.avenue), each a plot of its frame (y x FRAME + x) with the avenue's mark - CityRuns' M_DIAG, the arm's heading and M_CORNER - above it at AVENUE_MARK_SHIFT, in the order of the plots; null for none. A plot is under 2^17, a mark a byte. */
         int[] avenue;
+        /** Its plan's curves (batch CL4, slice D; DistrictPlan.curves) as the painter reads them, in the order the plan has them; null for none. */
+        DrawnCurve[] curves;
         /** Its plan's access roads (batch FR7, D17) as the trucks drive them (FR5, slice B): each a way of plots of its frame (y x FRAME + x), the road's end first and its gate last, 4-connected over the plots the roads run over (DistrictPlan.accessAt); null for none. A road the plan laid but that cannot be traced, or that already stood on one (ACCESS_HAD), has none. */
         int[][] access;
         /** Buildings its plan placed, and what it could not hold (carried on, R7). */
@@ -2115,6 +2164,10 @@ public final class CityMap {
             for (int[] x : boxes) if (x != null) b += 16 + 4L * x.length;
             if (siding != null) b += 16 + 4L * siding.length;
             if (avenue != null) b += 16 + 4L * avenue.length;
+            if (curves != null) {
+                b += 16 + 4L * curves.length;
+                for (DrawnCurve c : curves) b += c.bytes();
+            }
             if (access != null) {
                 b += 16;
                 for (int[] a : access) b += 16 + 4L * a.length;
@@ -2246,6 +2299,11 @@ public final class CityMap {
                 count = 0;
                 for (int q = 0; q < p.avenue.length; q++) if (p.avenue[q] != 0) out.avenue[count++] = q | (p.avenue[q] & 0xff) << AVENUE_MARK_SHIFT;
             }
+        }
+        // The curves it laid (batch CL4, slice D): each with its geometry and the plots it is laid on and reaches.
+        if (!p.curves.isEmpty()) {
+            out.curves = new DrawnCurve[p.curves.size()];
+            for (int c = 0; c < out.curves.length; c++) out.curves[c] = new DrawnCurve(p.curves.get(c));
         }
         out.access = accessWays(p);
         out.placed = p.buildings;
@@ -5230,6 +5288,55 @@ public final class CityMap {
         }
     }
 
+    /**
+     * The curves that reach the tile at world plot (px0, py0) and the REACH plots about it (batch CL4, slice D), into the input's
+     * curves: each plan of the districts the ring reaches (seen, looked up as fillAvenues() has them) lists its curves with the box
+     * of their plots, and a curve whose box reaches the ring is handed over whole - its geometry moved to the tile's plots, so a
+     * curve across a tile's edge or a district's seam is the same line on both sides - and its plots marked: CV_OWN on its own,
+     * CV_END as well on its first and last, CV_BAND on those its band reaches. A plan with no curve adds nothing, and a tile with
+     * none about it clears two arrays it did not fill.
+     */
+    private void fillCurves(long px0, long py0, TilePainter.Input in, Map<Long, Drawn> seen) {
+        in.clearCurves();
+        int reach = TilePainter.REACH, tile = World.TILE, f = DistrictPlan.FRAME;
+        long dxLo = Math.floorDiv(px0 - reach, DISTRICT), dxHi = Math.floorDiv(px0 + tile + reach - 1, DISTRICT);
+        long dyLo = Math.floorDiv(py0 - reach, DISTRICT), dyHi = Math.floorDiv(py0 + tile + reach - 1, DISTRICT);
+        double[] moved = new double[0];
+        for (long dyl = dyLo; dyl <= dyHi; dyl++) {
+            for (long dxl = dxLo; dxl <= dxHi; dxl++) {
+                long dk = key((int) (dxl - baseDX), (int) (dyl - baseDY));
+                Drawn dr;
+                if (seen.containsKey(dk)) dr = seen.get(dk);
+                else {
+                    District d = byKey.get(dk);
+                    dr = d == null ? null : drawnOf(d);
+                    seen.put(dk, dr);
+                }
+                if (dr == null || dr.curves == null) continue;
+                long ox = dxl * DISTRICT - px0, oy = dyl * DISTRICT - py0;
+                for (DrawnCurve c : dr.curves) {
+                    if (ox + c.x1 < -reach || ox + c.x0 >= tile + reach || oy + c.y1 < -reach || oy + c.y0 >= tile + reach) continue;
+                    if (moved.length < c.geom.length) moved = new double[c.geom.length];
+                    // A crescent's circle is moved by its centre alone; a shore's vertices, every one.
+                    for (int g = 0; g < c.geom.length; g++) {
+                        boolean xs = c.kind == DistrictPlan.Curve.CRESCENT ? g == 0 : (g & 1) == 0;
+                        boolean ys = c.kind == DistrictPlan.Curve.CRESCENT ? g == 1 : (g & 1) == 1;
+                        moved[g] = c.geom[g] + (xs ? ox : ys ? oy : 0);
+                    }
+                    in.addCurve(c.kind, c.radius, moved, c.geom.length);
+                    for (int k = 0; k < c.plots.length; k++) {
+                        int e = c.plots[k], q = e & (CURVE_BAND_BIT - 1);
+                        long x = ox + q % f, y = oy + q / f;
+                        if (x < -reach || x >= tile + reach || y < -reach || y >= tile + reach) continue;
+                        int mark = k >= c.own ? TilePainter.Input.CV_BAND : TilePainter.Input.CV_OWN;
+                        if (k == 0 || k == c.own - 1) mark |= TilePainter.Input.CV_END;
+                        in.setCurvePlot((int) x, (int) y, mark);
+                    }
+                }
+            }
+        }
+    }
+
     /** Everything tileInput() fills but the ground, which is in `in` already. */
     private void fillInput(long tx, long ty, TilePainter.Input in) {
         in.seed = seed;
@@ -5284,6 +5391,8 @@ public final class CityMap {
         }
         // The avenues about it (batch CL4): the marks of the four 45-degree avenues the plans lay, on the tile and the ring about it.
         fillAvenues(px0, py0, in, seen);
+        // ...and the curves (batch CL4, slice D): the crescents' arcs and the shore's streets that reach it, with the plots they are laid on and reach.
+        fillCurves(px0, py0, in, seen);
         // The city's highways and track through it and the ring about it (0.7.89: the city's runs; THE NETWORK's plan's until
         // 0.7.88), their ramps and 45-degree stretches; its yards drawn over their track.
         int rw = World.TILE + 2;
