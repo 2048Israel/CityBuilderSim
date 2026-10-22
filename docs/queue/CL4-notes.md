@@ -95,7 +95,18 @@ own, at the orchestrator's word (section 1.5). XR1 takes 0.8.19.*
 
 ### 1.4 The curves drawn (slice D)
 
-To come.
+- **The plumbing.** `CityMap` carries each plan's curves to the tiles
+  (`DrawnCurve`, `fillCurves()`: the geometry, each curve's own plots and its band
+  plots, every curve whose box reaches the tile and the plots around it), and
+  `MapTiles` keeps and stamps them.
+- **The band.** `TileRaster`'s THE CURVES draws a band a curve, along the arc or the
+  rounded line, at the street's width and in its colour (gravel's grain, a track's
+  dashes counted along it):
+  - verge on its band plots;
+  - never over a building;
+  - a bridge keeps its staircase and deck.
+- **Meeting streets.** A street that meets a curve is drawn to it, and a long street
+  runs straight across a crescent.
 
 ### 1.5 Two faults found on main, fixed in commits of their own
 
@@ -146,7 +157,48 @@ To come.
 
 ## 3. Measured
 
-To come: the real runs' counts, the screen and the plans' time, the trace.
+**The playtests' cities, planned by this build.** Main's two playtests were played on
+0.8.18's classes, and their last months kept (`-Dplaytest.keep`):
+
+| | Earth (Rotterdam), m4006, 12 districts | default (an island city), m4003, 10 districts |
+|---|---|---|
+| avenue plots laid | 220, in 11 open cells | 697, in 14 open cells |
+| ...beneath a highway / across the railway / bridged | 0 / 2 / 9 | 4 / 0 / 4 |
+| ...not laid: at a yard, reserve or mine / at water too wide | 25 / 0 | 13 / 49 |
+| cell streets stopped short by the + floor | 0 | 0 |
+| crescents (refused by the ground) | 1 (2) | 2 (1) |
+| shore curves | 162 | 174 |
+
+- The avenues are short in these cities because they own little ground along the
+  diagonals: Rotterdam's grows west along its river and its highway.
+- Crescents need a city past 15 km; both cities just reach it.
+- PlanCheck 14's rim of the dense city (402 districts at least 3 from the site):
+  150 crescents and 1,787 shore curves.
+
+**The plans' time.** PlanCheck 5's dense screen, its slowest district (the median of
+five), soft beside XR1's suite:
+- on main, 6.43 ms in the baseline run;
+- on CL4, 4.61 ms.
+
+Both are within noise of each other and far under PLAN_MS (40).
+
+**The screen.** MapCheck's SCREEN_MS lines (x 1 / 9,814 / 10,000 / 19,629), soft:
+- before slice D: 21.7 / 24.8 / 24.9 / 24.9 ms;
+- after: 22.1 / 25.0 / 25.2 / 25.0 ms.
+
+Further figures:
+- The avenues add about 3 ms to the densest screen at the site (49 of 198 tiles with
+  one).
+- The curves add 2 ms to the densest far screen (71 of 198 tiles with one).
+- A far city's `Drawn` is 7.4% curves (76,660 of 1,039,544 bytes, about 260 bytes a
+  curve).
+- `--timing`, alone and hard, below.
+
+**The trace.** The default playtest on the branch's final classes against main's
+0.8.18 (d2869a5), both on this PC tonight: all eight CSVs are byte-identical. The
+report differs only in its run time and the layout watch's figures. Of 171,104 boxes
+compared, 0 moved inside or outside a spill's districts, and the findings are
+"Nothing." No ensemble (EN1's rule).
 
 ## 4. The checks
 
@@ -194,6 +246,15 @@ To come: the real runs' counts, the screen and the plans' time, the trace.
 - no building pixel on the band;
 - the crossings: a signal; a ring where five or more roads leave.
 
+**MapCheck 17 (new): the curves drawn**, on the dense city's far districts (27
+crescents and 269 shore curves):
+- 8 crescents and 16 shore curves followed at 4 and 8 px, every sample the street's
+  colour, the band's middle at most half a pixel off the line;
+- the control: the old staircase drawn through the same crescents is off by more than
+  a pixel at 771 of 1,261 samples;
+- the same pixels from the kept copy and from a twin map;
+- no building pixel changed.
+
 **RailDrawCheck 28 and JunctionCheck 13's kept copy**: section 1.5.
 
 **Pinned to `latticeOnly`, each with a comment.** Each of these fixtures pins a
@@ -216,17 +277,48 @@ The suite, `--timing` and the trace: to come.
   painter draws the second diagonal from the origin's place.
 - **An avenue ending beside a half-width arterial** can leave about a quarter plot
   of gap between its squared end and the street's bar (slice B).
+- **A mine or a shore works can stand on a curve's band plot.** The map deals them
+  after the plan, which keeps the band free only of its own buildings (2 of 8,135
+  band plots in MapCheck 17, under an Iron Mine). The drawing never paints over
+  them, so the band is notched there.
+- **A band crosses the corner of a water plot** where the simplified line cuts it,
+  so the street has no gap.
 - **A crescent is not laid on ground bought after its cell opened** (it is a cell
   street, by FX6's rule), so a cell that opened on part of its ground keeps its CL2
   layout.
 
 ## 6. Renders
 
-To come.
+[`docs/queue/CL4/`](CL4/), drawn by the game's own painter (`RenderCL4.java`, FX5's
+tool) from the cities kept at main's playtests' last months. 0.8.18 is on the left
+and CL4 on the right, each build laying the map itself (`-Drender.months=1`):
+
+- `earth-avenue.png`: Rotterdam's north-west avenue at 8 px, a band across two
+  cells, a roundabout at the ring's corner.
+- `earth-shore.png`: its river shore.
+- `earth-crescent.png`: its one crescent, 17 cells from the site.
+- `earth-city.png`: the city at 1 px.
+- `island-shore.png`: the default playtest's lake at 8 px. The shore's streets are
+  curves where 0.8.18 drew staircases; the north-west avenue crosses the lake
+  district.
+- `island-core-sw.png`: south-west of its core, the south-west avenue.
+- `island-crescent.png`: a crescent 16 to 19 cells out, its arc a smooth dashed
+  track (the district has no road for it yet).
+- `island-city.png`: the city at 1 px.
+- `island-core-after.png`: CL4 alone. The four avenues leave one roundabout at the
+  origin, beside the depot whose tile 0.8.18 could not draw at all (section 1.5).
 
 ## 7. To check by eye (CL4-C)
 
-To come.
+The renders first. Then in the game, on a new city past two districts across (his
+saves before 0.8.12 do not load on this build):
+- the four avenues reading as lines at the far view and as smooth bands near;
+- their roundabouts every 960 m;
+- the coast's streets as curves;
+- crescents in the outer suburbs;
+- a save and a load drawing the same city;
+- his calls on ★1 to ★6, above all ★2 (the crescent's shape and share) and ★3 (the
+  roundabouts).
 
 ## 8. The Sonnet slices
 
@@ -235,4 +327,4 @@ To come.
 | A (411k tokens, 47 min) | the avenues in `DistrictPlan`, PlanCheck 13 | an unowned plot left undecided and laid when bought (`avOnGrown()`), PlanCheck 13 (j) |
 | B (584k, 66 min) | the avenues drawn (`CityMap`, `MapTiles`, `TilePainter`, `TileRaster`), MapCheck 16 | nothing; its find (the reserves not copied) became a fix of its own |
 | C (570k, 40 min) | the crescents, the shore's curves, `StreetCurves`, PlanCheck 14 | `FIT` 0.5 to 0.75, as the slice suggested |
-| D | the curves drawn | to come |
+| D (524k, 71 min) | the curves drawn (`CityMap`, `MapTiles`, `TilePainter`, `TileRaster`), MapCheck 17 | nothing |

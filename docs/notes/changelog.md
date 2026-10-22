@@ -14,6 +14,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.20 — CL4, slanted avenues and curved streets — 2026-10-21, ready, see docs/queue/CL4-notes.md
+
+Four avenues at 45 degrees run out from the lattice node nearest the founding site, laid by every district's plan as
+arterials wherever they cross an open cell - as the cell opens, or as ground is bought later - and drawn as one smooth
+band, with roundabouts where five roads meet; a lattice street meets one only 8 steps from the next junction. The
+shore's streets are drawn as curves (FX5's TrackCurves), and past 15 km a third of the long-block homes cells are
+crescents, their cross street a quarter circle. No building that stands moves: the playtest's layout watch moved 0 of
+171,104 boxes. Two faults on main fixed in commits of their own: the near view threw at a depot with no track (FX5's,
+0.8.18), and the interchanges' loops were never drawn at the near view in the game (FR7's, MapTiles.copy()). The map's
+alone: the trace is 0.8.18's, no ensemble. ★ for Jerus: six calls (CL4-notes §2), above all ★2 and ★3.
 ### 0.8.18 — FX5, the map's rail and roads finished — 2026-10-21, ready, see docs/queue/FX5-notes.md
 
 Rail curves at its corners and the trains follow them: a new `TrackCurves` rounds every route's turn (3 plots) and
