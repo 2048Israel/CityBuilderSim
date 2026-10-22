@@ -7038,8 +7038,22 @@ public final class GameVersion {
      *   - The diagonal highway's joints as arcs, its end squared.
      *   - The world lines' labels apart; "Track" is "Unmade street".
      *   - No save change (the map's sidecar only).
+     *
+     * 0.8.20 (2026-10-21) - CL4, SLANTED AVENUES AND CURVED STREETS
+     *   (docs/queue/CL4-notes.md). The map's alone; the trace is 0.8.18's.
+     *   - Four avenues at 45 degrees from the lattice node nearest the
+     *     founding site, laid as a cell opens, or as its ground is bought
+     *     (DistrictPlan, the avenues), drawn as one smooth band (TileRaster,
+     *     THE AVENUES); the + floor along them.
+     *   - The shore's streets drawn as curves (StreetCurves); crescents in
+     *     long-block homes cells past CRESCENT_FROM (16 cells).
+     *   - Fixes: a depot's heaps kept in its picture (the near view threw,
+     *     FX5's); the interchanges' loops drawn from the view's kept copy
+     *     (FR7's, MapTiles.copy()).
+     *   - Harness: PlanCheck 13 and 14, MapCheck 16 and 17, RailDrawCheck
+     *     28, JunctionCheck 13's kept copy.
      */
-    public static final String VERSION = "0.8.18";
+    public static final String VERSION = "0.8.20";
 
     /**
      * The save shape.
