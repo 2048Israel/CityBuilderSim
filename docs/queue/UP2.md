@@ -57,9 +57,10 @@ rebuilt each month. It would buy a faster first switch, 23-52 ms at month
 4,000, about one to three frames, for twelve pages of nodes held in memory.
 Not done. What would cut a redraw is updating the page in place instead of
 rebuilding it, since CSS and layout are about 60% of a redraw. That is a
-rewrite of the twelve screens' builders, so it is a question for Jerus
-(below), not this batch. This batch does it only for the chrome, which is on
-every screen.
+rewrite of the twelve screens' builders, so it is the study UP4's to plan
+(queued just ahead of this batch), not this batch's. This batch does it only
+for the chrome, which is on every screen. If UP4 has shipped and its note
+plans the chrome too, this batch follows UP4's plan for it.
 
 ## What changes
 
@@ -139,10 +140,8 @@ display; UP1).
 - **The speed shown is lower than the rung asked for.** That is the point.
   It is checked by eye.
 
-## Calls for Jerus
+## Decided
 
-- Should the screens themselves update in place instead of being rebuilt
-  each month? CSS and layout are about 60% of a redraw (17-34 ms a page at
-  month 4,000), and in-place updates would remove most of it. It means
-  rewriting each screen's builder: twelve screen classes, about 46,000
-  lines. It would be a study first, if he wants it.
+- **The screens updated in place get a study of their own, now** (Jerus,
+  2026-10-22: "Study it now"). That is UP4, queued after UP1 and ahead of
+  this batch. This batch keeps to the chrome.

@@ -147,16 +147,17 @@ since they catch a field the snapshot forgets.
   the fixture's exact comparison are the guard.
 - **The waits.** An autosave left writing when the player loads, quits or
   saves to a slot must finish first. Each of those is asserted.
-- **The cadence.** At 50x the writer is still asked every 1.2 s, and at
-  month 4,000 writes about 17 MB each time on another core. Whether to also
-  hold the autosave to a floor of real time is Jerus's call (below). The
-  batch leaves the cadence as it is unless he says otherwise.
+- **The cadence.** At 50x the writer was asked every 1.2 s, and at month
+  4,000 it wrote about 17 MB each time. The floor below holds that to once
+  every 30 s.
 
-## Calls for Jerus
+## Decided
 
-- At 50x the autosave comes every 1.2 s of real time (every 12 game
-  months). Once it is off the clock it no longer stalls the screen, but it
-  still writes about 17 MB at month 4,000, 25 MB or more in his cities, every
-  1.2 s. Keep every 12 months? Or every 12 months but at most once every 30 s
-  of real time? The floor would lose up to 30 s of play on a crash at high
-  speed. At 1x nothing changes, since 12 months take 60 s.
+- **The autosave has a floor of real time** (Jerus, 2026-10-22: "At most
+  every 30 s"). It still comes every `Game.AUTOSAVE_MONTHS` (12) game months,
+  but never sooner than 30 s of real time after the last one. That is a dial
+  of its own, one sentence above it, and the harness asserts against it.
+  A month that is due inside the floor waits for the next due month past it;
+  no save is queued for later. At 1x nothing changes, since 12 months take
+  60 s. A crash at high speed loses at most 30 s of play. The harness drives
+  the clock fast enough that the floor binds, and counts the autosaves.
