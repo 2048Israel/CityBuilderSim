@@ -55,7 +55,7 @@
 
 **Uses:** [EconomyManager](EconomyManager.md) (12), [Sectors](Sectors.md) (10), [ForeignAccounts](ForeignAccounts.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (2)
 
-**Used by (13):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [CapitalFlowCheck](CapitalFlowCheck.md), [EconomyManager](EconomyManager.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [TradeScreen](TradeScreen.md)
+**Used by (15):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [EconomyManager](EconomyManager.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

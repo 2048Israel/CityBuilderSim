@@ -66,7 +66,7 @@
 
 **Uses:** [Game](Game.md) (70), [Debt](Debt.md) (29), [Rollover](Rollover.md) (24), [DebtManager](DebtManager.md) (16), [TreasuryJournal](TreasuryJournal.md) (15), [LongTermBond](LongTermBond.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (5), [GameFiles](GameFiles.md) (5), [NationalAccounts](NationalAccounts.md) (5), [MoneyAudit](MoneyAudit.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [MediumTermBond](MediumTermBond.md) (2), [Sectors](Sectors.md) (1), [LandParcel](LandParcel.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Founding](Founding.md) (1), [EconomyManager](EconomyManager.md) (1)
 
-**Used by (1):** [ScaleCheck](ScaleCheck.md)
+**Used by (2):** [CallCheck](CallCheck.md), [ScaleCheck](ScaleCheck.md)
 
 ## Sections
 

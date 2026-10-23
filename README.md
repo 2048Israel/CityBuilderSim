@@ -78,8 +78,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **130 harnesses plus the
-4,000-odd-month playtest**, which it counts as 131 run (129 where
+`AllChecks` runs the lot, one JVM each — **132 harnesses plus the
+4,000-odd-month playtest**, which it counts as 133 run (131 where
 JavaFX is not on the classpath, which skips `BuildMenuCheck` and `KeptCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with

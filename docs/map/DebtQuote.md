@@ -1,4 +1,4 @@
-# DebtQuote.java - 264 lines · 11 methods · 1 constants · model
+# DebtQuote.java - 281 lines · 12 methods · 1 constants · model
 
 `ham/citybuildersim/DebtQuote.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -41,32 +41,35 @@
 >                        bond's, rounded down to an eighth of a point; the
 >                        stop itself for an amortizing bond) or the world's
 >                        for a dollar bond; 0 for a bill
+>                        carries the city's right to call it whole at 100
+>                        reopened keeps its own); -1 when not callable
 
-**Uses:** [Auction](Auction.md) (1)
+**Uses:** [Auction](Auction.md) (2)
 
-**Used by (19):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [RestructureCheck](RestructureCheck.md)
+**Used by (20):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CallCheck](CallCheck.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [RestructureCheck](RestructureCheck.md)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 258 | `DebtQuote.FORMAT` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 275 | `DebtQuote.FORMAT` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 207 | **type** `public record DebtQuote(String instrument, int duration, double requested, double marketRate, double rateBe...` | What a loan would cost, worked out BEFORE the player agrees to it. |
-| 72 | 3 | `public String timeUnit()` | Years for a bond, months for a bill - the unit the duration is in. |
-| 83 | 10 | `public String creditImpact()` | What the borrowing does to the city's credit, as a sentence. |
-| 103 | 41 | `public String summary()` | The terms, in the vocabulary a bond is actually described in. |
-| 151 | 16 | `private String saleLines()` | What the auction did, for a sale at home: the stop and the tail over fair, the cover, the coupon and the price per 100, and "sold X of Y" when the bids did not reach the issue at the highest yield the city took. |
-| 169 | 3 | `public double pricePerPar()` | Where it was issued against par, the way bonds are quoted. |
-| 174 | 3 | `public boolean isDiscount()` | True when the city receives less than it will repay. |
-| 183 | 4 | `public double couponRate()` | The annual coupon the paper carries: the one the sale set, no longer backed out of the monthly bill (CD2). |
-| 189 | 3 | `public boolean isShort()` | True when this was sold at auction and the bids did not reach the issue at the highest yield the city took: the quote is what it sold. |
-| 194 | 3 | `public boolean isEmpty()` | True if the city is receiving nothing worth booking. |
-| 212 | 32 | `public double[] schedule(double toLocal)` | Every payment this paper would ask, month by month, index i paid i + 1 months after it is issued, times `toLocal` (1 for the city's own paper; the exchange rate, for a dollar quote's figures into local money): a bill'... |
-| 254 | 3 | `private static String f(double v)` | A figure on this quote, in dollars. |
-| 260 | 4 | `static { ... }` |  |
+| 62 | 220 | **type** `public record DebtQuote(String instrument, int duration, double requested, double marketRate, double rateBe...` | What a loan would cost, worked out BEFORE the player agrees to it. |
+| 78 | 6 | `public DebtQuote(String instrument, int duration, double requested, double marketRate, double rateBefore, double faceValue, dou...` | A quote of paper that cannot be called: every sale before CD4, and every one that does not ask for the option. |
+| 86 | 3 | `public String timeUnit()` | Years for a bond, months for a bill - the unit the duration is in. |
+| 97 | 10 | `public String creditImpact()` | What the borrowing does to the city's credit, as a sentence. |
+| 117 | 41 | `public String summary()` | The terms, in the vocabulary a bond is actually described in. |
+| 165 | 19 | `private String saleLines()` | What the auction did, for a sale at home: the stop and the tail over fair, the cover, the coupon and the price per 100, and "sold X of Y" when the bids did not reach the issue at the highest yield the city took. |
+| 186 | 3 | `public double pricePerPar()` | Where it was issued against par, the way bonds are quoted. |
+| 191 | 3 | `public boolean isDiscount()` | True when the city receives less than it will repay. |
+| 200 | 4 | `public double couponRate()` | The annual coupon the paper carries: the one the sale set, no longer backed out of the monthly bill (CD2). |
+| 206 | 3 | `public boolean isShort()` | True when this was sold at auction and the bids did not reach the issue at the highest yield the city took: the quote is what it sold. |
+| 211 | 3 | `public boolean isEmpty()` | True if the city is receiving nothing worth booking. |
+| 229 | 32 | `public double[] schedule(double toLocal)` | Every payment this paper would ask, month by month, index i paid i + 1 months after it is issued, times `toLocal` (1 for the city's own paper; the exchange rate, for a dollar quote's figures into local money): a bill'... |
+| 271 | 3 | `private static String f(double v)` | A figure on this quote, in dollars. |
+| 277 | 4 | `static { ... }` |  |
 
