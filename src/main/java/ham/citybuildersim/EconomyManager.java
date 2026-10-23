@@ -2409,8 +2409,14 @@ public class EconomyManager {
         if (population > 0) {
             System.out.printf("GDP per Capita:              $%s%n", formatter.format(((yearGDP) / population) * 1000));
         }
-        System.out.printf("Debt-to-GDP Ratio:           %.2f%%%n", (debt / (yearGDP)) * 100);
+        System.out.println(debtToGdpLine(debt, yearGDP));
         System.out.println("================================================================\n");
+    }
+
+    /** The report's debt-to-GDP line: a dash, not "NaN%", while there is no GDP to divide by (months 1 and 2). */
+    static String debtToGdpLine(double debt, double yearGdp) {
+        double ratio = debt / yearGdp * 100;
+        return "Debt-to-GDP Ratio:           " + (Double.isFinite(ratio) ? String.format("%.2f%%", ratio) : "—");
     }
 
     public void resetEconomyManager() {
