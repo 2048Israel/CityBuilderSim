@@ -541,7 +541,9 @@ public final class Kept {
        WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE
        ===================================================================== */
 
+    /** The key Tooltip.install() keeps a node's tooltip under in its properties: what tipOf() reads. */
     private static final String TOOLTIP = "javafx.scene.control.Tooltip";
+    /** The key play() keeps a node's last animation under in its properties, to stop it before the next. */
     private static final String ANIMATION = "kept.animation";
 
     /** The tooltip installed on a node, or null. */

@@ -1434,6 +1434,7 @@ public class MapCheck {
 
     /** The kinds of fixed plot the runs lay, in the order a line prints them. */
     static final byte[] RUN_KINDS = { DistrictPlan.FIXED_YARD, DistrictPlan.FIXED_RAIL, DistrictPlan.FIXED_HIGHWAY, DistrictPlan.FIXED_RESERVE };
+    /** ...and their names, in the same order. */
     static final String[] RUN_NAMES = { "yard", "rail", "highway", "reserve" };
 
     /** What the runs laid between two snapshots, by kind: "yard 56, rail 19". */

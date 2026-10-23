@@ -186,6 +186,7 @@ public class PassThroughCheck {
         return g;
     }
 
+    /** The slot, in this harness's own folder (TempDirs), the base city is saved to and its twins are loaded from. */
     static final int BASE_SLOT = 1;
 
     /** Section 2's city, and the save sections 3 to 5 load from; set by section 2. */

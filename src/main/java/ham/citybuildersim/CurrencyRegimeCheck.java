@@ -155,6 +155,7 @@ public class CurrencyRegimeCheck {
         try { work.run(); } finally { System.setOut(was); }
     }
 
+    /** The four regimes, by their short names. */
     static final ForeignAccounts.Regime FLOAT = ForeignAccounts.Regime.FLOAT, LEAN = ForeignAccounts.Regime.LEAN,
             BAND = ForeignAccounts.Regime.BAND, PEG = ForeignAccounts.Regime.PEG;
 
