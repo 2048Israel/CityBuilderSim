@@ -7,6 +7,24 @@ cannot reach. The changelog is no longer the project's: since 2026-10-20 it
 is `changelog.md` beside this file, and its blocks that waited here moved
 there.
 
+## 0.8.21 to 0.8.27 - for `claude/todo.md`
+
+- Section 0, under the manual's entry: its headline numbers moved - the build 0.8.27, 129 harnesses (130 run with the
+  playtest, 128 where JavaFX is missing, which skips BuildMenuCheck and KeptCheck); SAVE_FORMAT 43 (the oldest loadable
+  43), 143 buildings and the twenty-four sectors as they were. Pages the manual carries that the range changed: the
+  goods priced at a D$ that follows the D$ slowly, a 36th of the gap a month (AN1); Policy › Money › The currency -
+  Float, Lean (the default), Band, Peg, who pays at the strong edge, what the dial aims at, the dial tied to the US's
+  rate under a peg - and Trade › The currency's seventh force, the hold (XR2); the autosave written off the clock, at
+  most once in 30 s of real time (UP1); the People page kept between redraws (UP4); the map's month redrawn only where
+  it moved (UP3) and a district's plan on the runs of each month (FX7).
+- What each batch left open is under Pending in QUEUE.md (AN1-C, XR2-C, FX7-C, UP1-C, UP4-C, UP3-C; FX8 left
+  nothing new).
+- The docs pass of 2026-10-23 flagged, for the orchestrator or Jerus (it changes no code):
+  - CLAUDE.md's index sizes are out: docs/harnesses.md is 1.1 MB (it says 800 KB) and docs/dials.md 645 KB (500 KB).
+    The pass did not edit CLAUDE.md.
+  - ui/UserInterface.java's banner A KEPT SCREEN (about line 1150) says "study UP4, 0.8.25"; UP4 shipped as 0.8.26.
+    Left for the 2026-10-24 pass, since UP2 is changing that file.
+
 ## 0.8.11 to 0.8.20 - for `claude/todo.md`
 
 - Section 0, under the manual's entry: its headline numbers moved - the build 0.8.20, SAVE_FORMAT 43 (XR1; the
