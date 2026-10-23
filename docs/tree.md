@@ -475,7 +475,10 @@ adds its line here, not in `CLAUDE.md`.
                                    (YARD_LONG), across a cell's ring street, and a station alone laying its
                                    main line (MainLineCheck); since 0.8.24 (batch FX7) it tells a witness of
                                    each district a month's layTo() is about to change, so the map can date
-                                   the runs
+                                   the runs; since 0.8.30 (batch CL5) a stuck highway net opens its next
+                                   corridor by a link that searches its way over the dry ground, and every
+                                   piece of ground the water parts that holds buildings grows its own net
+                                   (CityMap's pieces), the sidecar FORMAT 12 - IslandNetCheck holds it
         Gateways.java              the land's offing (0.8.1, batch FR0; spec-freight 4.1): the bearing
                                    with the longest run of land from the founding site, ties by its
                                    hash; on the Earth toward the nearest larger place along land; none

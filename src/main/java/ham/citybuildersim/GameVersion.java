@@ -7207,7 +7207,18 @@ public final class GameVersion {
      *     the book. SAVE_FORMAT 44 and its floor.
      *   - Harness: TreasuryCheck 9 (new part), MoneyCheck's paper on its books.
      *
-     * 0.8.30 (2026-10-23) - PT1, ELEVEN FIXES FROM A PLAYED CITY
+     * 0.8.30 (2026-10-23) - CL5, HIGHWAYS THAT REACH THE WHOLE CITY
+     * spec-city-layout.md section 5.6 (docs/queue/CL5-notes.md): the map's
+     * highways laid over all the city's ground. The model's trace does not
+     * move.
+     *   - The runs: a stuck net opens its next corridor by a link that
+     *     searches its way over the piece's dry ground (CityRuns).
+     *   - Every piece of ground the water parts that holds buildings grows its
+     *     own net (CityMap's pieces), the model's plots dealt by built ground.
+     *   - The map's sidecar FORMAT 12.
+     *   - Harness: IslandNetCheck (new).
+     *
+     * 0.8.31 (2026-10-23) - PT1, ELEVEN FIXES FROM A PLAYED CITY
      * docs/queue/PT1-notes.md: screens, words and the log; the trace does
      * not move.
      *   - A standing bank no month has opened reads "opens with the first
@@ -7220,7 +7231,7 @@ public final class GameVersion {
      *     log's debt-to-GDP and interest lines. The toast's corner: PT1-C.
      *   - Harness: PlaytestFixCheck (new), ChartCheck 9.
      */
-    public static final String VERSION = "0.8.30";
+    public static final String VERSION = "0.8.31";
 
     /**
      * The save shape.
