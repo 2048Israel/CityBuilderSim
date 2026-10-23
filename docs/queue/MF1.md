@@ -50,7 +50,15 @@ eye check.
    90 and 40 in his shots). Confirm what they are first. His call: keep them
    by the city - an overflow building stands at the built edge beside the
    streets it belongs to, with a street laid to it; no lone grid in the
-   fields.
+   fields. CL3's notes confirm what they are: a city out of ground packs its
+   newest houses at its edge without a street rather than its works (the
+   playtest at m4000: 3,570 against 450 before CL3).
+   With it, CL3's re-chaining (Jerus, 2026-10-23, "Into MF1"): a district
+   bought into the map's order ahead of others hands the spill's chain on
+   afresh, and what was carried into the districts after it moves that month
+   (the playtest's last two months: 4,355 boxes; none in its other 46 month
+   pairs). Keep what is carried in place when a district is bought
+   (`CL3-notes.md`).
 8. **The coast** (shots 3, 9, 10): every quay and sea terminal gets its own
    pier, so the whole shore is piers ("i dont think real life is like
    that"), each with its own ship lanes fanning out, hundreds of lines. His
