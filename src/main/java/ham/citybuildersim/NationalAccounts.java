@@ -959,6 +959,44 @@ public class NationalAccounts {
     /** ...and what the reserve's crude sold for - a revenue line since 0.7.102. */
     public double getReserveCrudeSold()   { return reserveCrudeSold; }
 
+    /* ---------------------------------------------------------------------
+       THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5)
+
+       Two lines the debt's books add to the government's month:
+
+         interestNotCash   the discount amortised this month - the piece's
+                           effective interest less its coupon, summed over
+                           the city's paper (DebtManager.getAmortisedBooked()).
+                           Part of the budget's interest, "Interest on the
+                           city's paper", which is the cash coupons plus
+                           this; and not cash, so the treasury bridge adds it
+                           back (Game.getTreasuryNotCash()). Below nothing
+                           for paper sold over par.
+         retiredGain       the gain, below nothing a loss, on paper retired in
+                           the window: the carrying value less the price paid
+                           (Game.repurchaseGain()). Below the operating lines
+                           and in the result: getBalance() takes it, the
+                           totals do not. Not cash either - the price paid
+                           is - so the bridge takes it back out.
+
+       Appended to the government block's end and saved there; set by the
+       month's strike (EconomyManager.refreshGovernmentAccounts()), and left
+       alone by the load path's floor, which the saved block then replaces.
+       --------------------------------------------------------------------- */
+    private double interestNotCash, retiredGain;
+
+    /** The month's amortisation and the gain on paper retired in its window, as the strike hands them over. */
+    public void setDebtBooks(double interestNotCash, double retiredGain) {
+        this.interestNotCash = Double.isFinite(interestNotCash) ? interestNotCash : 0;
+        this.retiredGain = Double.isFinite(retiredGain) ? retiredGain : 0;
+    }
+
+    /** The discount the month amortised on the city's paper: the non-cash part of its interest (below nothing for a premium). */
+    public double getInterestNotCash() { return interestNotCash; }
+
+    /** The gain (below nothing, a loss) on the paper the city retired in the window: the carrying value less the price. */
+    public double getRetiredGain()     { return retiredGain; }
+
     /**
      * THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): a duty a litre on the
      * drivers' petrol at the pump (TaxPolicy, THE FUEL DUTY), a revenue
@@ -1104,11 +1142,16 @@ public class NationalAccounts {
             // ...and the four lines 0.7.102 took inside the totals (A15): an
             // older save reads zero for each, the budget that city struck -
             // its journal carries them by name.
-            cityRepairs, arrearsPaid, reserveCrudeBought, reserveCrudeSold };
+            cityRepairs, arrearsPaid, reserveCrudeBought, reserveCrudeSold,
+            // ...and the debt's two (CD3): the discount amortised, and the
+            // gain on paper retired. The cash coupons stay where they were,
+            // slot 7; the budget's interest is the sum of that and the first.
+            interestNotCash, retiredGain };
     }
 
     void restoreGovernment(double[] saved) {
-        // Thirty-three since the repairs, the arrears and the reserve's crude (0.7.102);
+        // Thirty-five since the city's paper on amortised cost (CD3); thirty-three
+        // since the repairs, the arrears and the reserve's crude (0.7.102);
         // twenty-nine since food assistance; twenty-eight since the city's fund; twenty-seven since the mortgage
         // insurance; twenty-five since the central bank; twenty-three since
         // the student loan interest; twenty-two since the health premium;
@@ -1117,7 +1160,9 @@ public class NationalAccounts {
         if (saved == null || (saved.length != 17 && saved.length != 20
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
                 && saved.length != 25 && saved.length != 27 && saved.length != 28
-                && saved.length != 29 && saved.length != 33)) return;
+                && saved.length != 29 && saved.length != 33 && saved.length != 35)) return;
+        interestNotCash       = saved.length >= 35 ? saved[33] : 0;
+        retiredGain           = saved.length >= 35 ? saved[34] : 0;
         fundTransfer          = saved.length >= 28 ? saved[27] : 0;
         foodAssistance        = saved.length >= 29 ? saved[28] : 0;
         cityRepairs           = saved.length >= 33 ? saved[29] : 0;
@@ -1295,12 +1340,21 @@ public class NationalAccounts {
                 + portDues;
     }
 
-    public double getInterestExpense() { return interestExpense; }
+    /**
+     * The budget's "Interest on the city's paper" (CD3): the effective
+     * interest - the cash coupons the month paid (interestExpense) and the
+     * discount it amortised (interestNotCash) together. It was the coupons
+     * alone, so a bill, which pays none, cost the budget nothing.
+     */
+    public double getInterestExpense() { return interestExpense + interestNotCash; }
+
+    /** The cash part of it: the coupons the month paid, every holder's, the dollar paper's at the month's rate. */
+    public double getInterestPaidInCash() { return interestExpense; }
     public double getCapitalSpending() { return capitalSpending; }
     public double getLandPurchases()   { return landPurchases; }
 
     public double getTotalExpenses() {
-        return interestExpense + capitalSpending + landPurchases + pensions
+        return getInterestExpense() + capitalSpending + landPurchases + pensions
                 + eiBenefits + studentGrants
                 + healthSpending + educationSpending + safetySpending + subsidies
                 // ...and the interest on the central bank's advances (0.7.0).
@@ -1316,9 +1370,16 @@ public class NationalAccounts {
                 + cityRepairs + arrearsPaid + reserveCrudeBought;
     }
 
-    /** Surplus or deficit - what actually moves the city's cash this month. */
+    /**
+     * Surplus or deficit - the month's result. What moves the city's cash is
+     * this less the non-cash lines (interestNotCash, which it takes off, and
+     * retiredGain, which it adds): the bridge adds the first back and takes
+     * the second out (Game.getTreasuryNotCash()). The gain on paper retired
+     * is below the operating lines, so the totals leave it out and the result
+     * has it (spec-city-debt.md 5.4).
+     */
     public double getBalance() {
-        return getTotalRevenue() - getTotalExpenses();
+        return getTotalRevenue() - getTotalExpenses() + retiredGain;
     }
 
     /** Revenue as a share of output. The city's effective take from the economy. */
@@ -1395,6 +1456,7 @@ public class NationalAccounts {
         cityRepairs *= scale;  arrearsPaid *= scale;
         reserveCrudeBought *= scale;  reserveCrudeSold *= scale;
         fuelDuty *= scale;  portDues *= scale;
+        interestNotCash *= scale;  retiredGain *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;

@@ -447,7 +447,7 @@ public class Game {
         lastOrphanDeaths = 0; lastUnhousedDeaths = 0;
         studentLoansLent = 0; studentLoansRepaid = 0; studentLoansWrittenOff = 0;
         studentLoanInterest = 0;
-        treasuryJournal.reset(); treasuryRaisedSoFar = 0;
+        treasuryJournal.reset(); treasuryRaisedSoFar = 0; retiredGainSoFar = 0; treasuryNotCash = 0;
         // ...and paper the last city sold and its bank has not paid for, which
         // the next settle would otherwise charge to THIS city's bank. Harmless
         // while the settle read zero; not since it pays (2026-09-21).
@@ -3881,7 +3881,9 @@ public class Game {
     private void foundTheLandBond() {
         double usd = Founding.landBondUsd(founding.getWorldKey());
         if (!(usd > 0)) return;
-        debtManager.addLongTermBond(usd, Founding.INSANE_LAND_YEARS * 12, month, Founding.INSANE_LAND_COUPON, true);
+        // Carried at what it raised, which is its face: the plots were bought with the bond at par (CD3).
+        debtManager.addLongTermBond(usd, Founding.INSANE_LAND_YEARS * 12, month, Founding.INSANE_LAND_COUPON, true)
+                .openBooks(usd);
         foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
     }
 
@@ -8872,13 +8874,16 @@ public class Game {
         DebtQuote quote = quoteForeign(type, requestedUsd, duration, rounding);
         if (quote.isEmpty()) return "Nothing issued.";
 
-        switch (type) {
+        Debt dollarPaper = switch (type) {
             case "Note"   -> debtManager.addShortTermTBill(
                     quote.faceValue(), duration, month, true);
             case "Term"   -> debtManager.addLongTermBond(
                     quote.faceValue(), duration * 12, month, quote.couponRate(), true);
             default -> throw new IllegalArgumentException("No such instrument: " + type);
-        }
+        };
+        // The city's books (CD3) open with what the sale raised, in dollars: markIssued() returns early for
+        // paper abroad, so this is the dollar piece's carrying value and effective rate.
+        dollarPaper.openBooks(quote.cashReceived());
 
         /*
          * THE DOLLARS ARRIVE. WHERE THEY GO IS THE PLAYER'S DECISION.
@@ -10933,11 +10938,22 @@ public class Game {
         // and there; this is the books catching up with it.
         economyManager.setSubsidiesPaid(getTotalSubsidyPaid());
 
+        /*
+         * THE CITY'S PAPER ON AMORTISED COST (CD3). The interest is the cash
+         * coupons just paid, plus the discount the month's processAllDebts()
+         * amortised (non-cash, the budget's but not the treasury's); and the
+         * gain on paper retired since the last strike, which the buyback
+         * counted as it happened (retiredGainSoFar), moves into the month and
+         * is cleared with the other accumulators below.
+         */
         economyManager.refreshGovernmentAccounts(
                 landManager.getLandSalesThisMonth(),
                 cityCapitalSpending,
                 landManager.getLandPurchasesThisMonth(),
-                cityInterestPaid + foreignInterestPaidThisMonth);
+                cityInterestPaid + foreignInterestPaidThisMonth,
+                debtManager.getAmortisedBooked(),
+                retiredGainSoFar);
+        retiredGainSoFar = 0;
 
         // The month's revenue, filed for the ceiling on the central bank's
         // advances: six months of it, averaged over the last twelve.
@@ -13174,6 +13190,7 @@ public class Game {
         dataSave.setTreasuryJournal(treasuryJournal.closedLabels(), treasuryJournal.closedAmounts(),
                 treasuryJournal.pendingLabels(), treasuryJournal.pendingAmounts());
         dataSave.setTreasuryRaisedPending(treasuryRaisedSoFar);
+        dataSave.setRetiredGainPending(retiredGainSoFar);
         dataSave.setCityPaperUnsettled(getCityPaperUnsettled(), cityDiscountThisMonth + cityDiscountForBank);
         dataSave.setGovernmentMonth(economyManager.governmentMonthToSave());
         dataSave.setReports(reports);
@@ -14432,6 +14449,27 @@ public class Game {
      */
     private double treasuryRaisedSoFar;
 
+    /**
+     * The gain (below nothing, a loss) on paper the treasury has retired
+     * since the last strike, in local money - the carrying value less the
+     * price paid, counted as each buyback happens (repurchaseDebt()), press
+     * to press like treasuryRaisedSoFar. The strike moves it into
+     * NationalAccounts.getRetiredGain() and clears it
+     * (strikeGovernmentBooks()). Saved, since a city saved between two
+     * presses has already retired what the next strike counts
+     * (DataSave.retiredGainPending).
+     */
+    private double retiredGainSoFar;
+
+    /**
+     * The part of the month's budget balance that is not cash (CD3): the
+     * discount amortised, which the budget charges and the treasury never
+     * pays, less the gain on paper retired, which the budget books and the
+     * treasury never receives (what it paid was the price). Struck at the
+     * bottom of the month with the rest of the bridge.
+     */
+    private double treasuryNotCash;
+
     /** The named non-budget movements, this month and last. See TreasuryJournal. */
     private final TreasuryJournal treasuryJournal = new TreasuryJournal();
 
@@ -14441,6 +14479,8 @@ public class Game {
         treasuryRaisedSoFar = 0;
         treasuryRepaid  = cityPrincipalRepaidThisMonth + foreignPrincipalRepaidThisMonth;
         treasurySurplus = economyManager.getNationalAccounts().getBalance();
+        treasuryNotCash = economyManager.getNationalAccounts().getInterestNotCash()
+                - economyManager.getNationalAccounts().getRetiredGain();
         treasuryRecorded = true;
         // Struck with the rest: last month's lines become the ones the bridge
         // shows, and the month in progress opens empty - here, at the bottom
@@ -14458,6 +14498,9 @@ public class Game {
     public double getTreasuryRepaid()  { return treasuryRepaid; }
     public double getTreasurySurplus() { return treasurySurplus; }
 
+    /** What the balance charged or booked that the cash did not (CD3): the discount amortised, less the gain on paper retired. */
+    public double getTreasuryNotCash() { return treasuryNotCash; }
+
     /** What the balance actually did, which is the figure a player watches. */
     public double getTreasuryChange() { return treasuryClosing - treasuryOpening; }
 
@@ -14471,6 +14514,16 @@ public class Game {
      */
     public double getNetPosition() {
         return cash - debtManager.getAllPrincipal() - centralBank.getAdvancesToTreasury();
+    }
+
+    /**
+     * The same net position with the paper at what the books carry it at (CD3,
+     * spec-city-debt.md 5.4): its face less the discount not yet worn off, plus
+     * any premium. What the Finances tab's THE BALANCE shows; getNetPosition()
+     * stays at face, which the model reads.
+     */
+    public double getNetPositionAtCarrying() {
+        return cash - debtManager.getCarryingValue() - centralBank.getAdvancesToTreasury();
     }
 
     /**
@@ -14493,7 +14546,7 @@ public class Game {
      */
     public double getTreasuryUnexplained() {
         return getTreasuryChange()
-                - (treasurySurplus + treasuryRaised - treasuryRepaid);
+                - (treasurySurplus + treasuryNotCash + treasuryRaised - treasuryRepaid);
     }
 
     /**
@@ -14542,8 +14595,9 @@ public class Game {
        vouchers (0.7.45), the central bank's remittance and its interest, the
        students' loan interest - and since 0.7.102 (A15) four: the repairs to
        the city's own buildings, the arrears paid down, and the reserve's
-       crude bought and sold. Those fifteen are the steps, each an existing
-       getter. The transit fares were a step until 0.7.49: in EARNED and in
+       crude bought and sold - and since CD3 two more, the discount the city's
+       paper amortised and the gain on paper retired. Those seventeen are the
+       steps, each an existing getter. The transit fares were a step until 0.7.49: in EARNED and in
        the cash, and not in the budget. The budget carries them since (B9),
        with the bill EARNED carries too.
 
@@ -14577,7 +14631,12 @@ public class Game {
                 new TreasuryJournal.Entry("Repairs", -na.getCityRepairs()),
                 new TreasuryJournal.Entry("Arrears paid down", -na.getArrearsPaid()),
                 new TreasuryJournal.Entry("Crude for the reserve", -na.getReserveCrudeBought()),
-                new TreasuryJournal.Entry("Crude sold from the reserve", na.getReserveCrudeSold()));
+                new TreasuryJournal.Entry("Crude sold from the reserve", na.getReserveCrudeSold()),
+                // ...and the city's paper on amortised cost (CD3): the discount amortised is in the
+                // budget's interest and not in EARNED, which is cash; the gain on paper retired is in
+                // the budget's result and not in EARNED either.
+                new TreasuryJournal.Entry("Discount amortised on the city's paper", -na.getInterestNotCash()),
+                new TreasuryJournal.Entry("Gain (loss) on debt retired", na.getRetiredGain()));
     }
 
     /** What the steps leave between EARNED and the budget: the dials moved since the month was struck, and nothing in a month nobody moved one. */
@@ -14590,7 +14649,9 @@ public class Game {
     double[] treasuryMonthToSave() {
         return new double[] { treasuryOpening, treasuryClosing, treasuryRaised,
                               treasuryRepaid, treasurySurplus,
-                              treasuryRecorded ? 1 : 0 };
+                              treasuryRecorded ? 1 : 0,
+                              // ...and the non-cash part of the balance (CD3), appended: a save without it reads zero.
+                              treasuryNotCash };
     }
 
     void restoreTreasuryMonth(double[] saved) {
@@ -14601,6 +14662,7 @@ public class Game {
         treasuryRepaid   = saved[3];
         treasurySurplus  = saved[4];
         treasuryRecorded = saved[5] != 0;
+        treasuryNotCash  = saved.length >= 7 ? saved[6] : 0;
     }
 
     /**
@@ -14958,10 +15020,16 @@ public class Game {
         return debtManager.marketValue(debt);
     }
 
-    /** What the city would book as a gain (positive) or loss (negative). */
+    /**
+     * What the city would book as a gain (positive) or loss (negative): the
+     * piece's carrying value less the price (CD3) - what the books hold it at
+     * against what buying it back costs. It was the face less the price, which
+     * is the gain only on paper carried at its face; a piece sold under par
+     * carries less than its face until the discount has worn off.
+     */
     public double repurchaseGain(Debt debt) {
         if (debt == null) return 0;
-        return debt.getOustandingPrincipal() - quoteRepurchase(debt);
+        return debt.getCarryingValue() - quoteRepurchase(debt);
     }
 
     /**
@@ -15000,11 +15068,15 @@ public class Game {
         double firmFace = debt.firmPrincipal(), worldFace = debt.worldPrincipal();
         double bankFace = debt.bankPrincipal();
         double bankUnearned = debt.unaccretedOn(bankFace);
+        double carried = debt.getCarryingValue();
         if (!debtManager.retire(debt)) {
             return 0;   // not on the books; do not charge for it
         }
 
         treasuryPays(TreasuryLine.BUYBACKS, price);
+        // The gain on the books (CD3): what the piece was carried at, less what it cost to clear. Not cash:
+        // the price is what the cash paid. The next strike moves it into the month (strikeGovernmentBooks()).
+        retiredGainSoFar += carried - price;
         decisions.record(DecisionLog.BORROWING, "Bought back " + DecisionLog.money(principal) + " of "
                 + debt.getType() + " paper for " + DecisionLog.money(price));
         // Not a repayment - retire() takes it off the books without touching
@@ -16113,6 +16185,7 @@ public class Game {
             treasuryJournal.restore(loaded.getTreasuryJournalLabels(), loaded.getTreasuryJournalAmounts(),
                     loaded.getTreasuryJournalPendingLabels(), loaded.getTreasuryJournalPendingAmounts());
             treasuryRaisedSoFar = loaded.getTreasuryRaisedPending();
+            retiredGainSoFar = loaded.getRetiredGainPending();
             // ...and the paper its bank has not yet paid for, which the next
             // settle pays (THE BANK PAYS FOR THE CITY'S PAPER). Zero from an
             // older save, which is what its bank would have paid.
@@ -17234,6 +17307,8 @@ public class Game {
         paperBoughtFromWorld *= scale;
         bankPrincipalRepaidThisMonth *= scale;
         treasuryRaisedSoFar *= scale;
+        retiredGainSoFar *= scale;
+        treasuryNotCash *= scale;
         treasuryJournal.redenominate(scale);
 
         economyManager.redenominate(scale);

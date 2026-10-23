@@ -7190,8 +7190,35 @@ public final class GameVersion {
      *     HeadlineTile and Sparkline told their figures; Kept.draw re-entrant.
      *   - ui/UiProbe: the pulse's own passes, the chrome alone, FRAME_P95.
      *   - Harness: ClockCheck (new); KeptCheck 6-13 (new sections).
+     *
+     * 0.8.29 (2026-10-23) - CD3, THE CITY'S BOOKS
+     * spec-city-debt.md section 5 (docs/queue/CD3-notes.md): the city's paper
+     * carried at amortised cost by effective interest. The trace moves with
+     * the budget's interest line.
+     *   - Debt: a carrying value and an effective rate a line, opened at what
+     *     the sale raised, blended at a reopening (D16), stepped every month
+     *     (amortise()) and closed to nothing; dollar paper in its own dollars,
+     *     read in D$ at the month's D$ (D26).
+     *   - The budget: "Interest on the city's paper" is the coupons and the
+     *     discount wearing off; the gain (loss) on debt retired is against
+     *     carrying value; the treasury's bridge has the not-cash row.
+     *   - The screens: the bridge's steps, the debt card, the balance at
+     *     carrying value with the fair-value note, carried and effective on
+     *     the book. SAVE_FORMAT 44 and its floor.
+     *   - Harness: TreasuryCheck 9 (new part), MoneyCheck's paper on its books.
+     *
+     * 0.8.30 (2026-10-23) - CL5, HIGHWAYS THAT REACH THE WHOLE CITY
+     * spec-city-layout.md section 5.6 (docs/queue/CL5-notes.md): the map's
+     * highways laid over all the city's ground. The model's trace does not
+     * move.
+     *   - The runs: a stuck net opens its next corridor by a link that
+     *     searches its way over the piece's dry ground (CityRuns).
+     *   - Every piece of ground the water parts that holds buildings grows its
+     *     own net (CityMap's pieces), the model's plots dealt by built ground.
+     *   - The map's sidecar FORMAT 12.
+     *   - Harness: IslandNetCheck (new).
      */
-    public static final String VERSION = "0.8.29";
+    public static final String VERSION = "0.8.30";
 
     /**
      * The save shape.
@@ -7932,8 +7959,26 @@ public final class GameVersion {
      *     THE FLOOR RISES TO 43 WITH IT (the rule): a save of format 42 or
      *     older is refused, naming the build that still opens it. Jerus,
      *     2026-10-18: "my saves never matter".
+     *
+     * 44 - THE CITY'S PAPER ON AMORTISED COST (batch CD3, slice 1;
+     *     docs/studies/spec-city-debt.md 5): every piece of the city's paper
+     *     carries a carrying value (what it raised, net of the fixed cost,
+     *     stepped each month by the effective interest less the payment) and
+     *     the effective rate that brings it to nothing at maturity (Debt, THE
+     *     CITY'S BOOKS), and the budget's interest is that expense, the
+     *     discount wearing off in it, not the coupon alone. A save's pieces
+     *     carry no carrying value and would book their interest wrongly - the
+     *     first month's expense nothing, the carrying value running negative
+     *     under the coupon - and its government block has no line for the
+     *     non-cash part, so its treasury bridge would not foot. Gson leaves a
+     *     missing key alone, so the new fields alone would not have needed a
+     *     bump.
+     *
+     *     THE FLOOR RISES TO 44 WITH IT (the rule): a save of format 43 or
+     *     older is refused, naming the build that still opens it. No
+     *     conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 43;
+    public static final int SAVE_FORMAT = 44;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -7943,7 +7988,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 43 since batch XR1 (THE FLOAT above: a save's currency would load
+     * 44 since batch CD3 (THE CITY'S PAPER ON AMORTISED COST above: a save's
+     * pieces carry no carrying value and would book their interest wrongly).
+     * 43 from batch XR1 (THE FLOAT above: a save's currency would load
      * wrongly). 42 from batch CD2 (THE LINEUP AND THE AUCTION above: a save's term
      * loan would load wrongly), and 40 before it, from 0.8.5 (batch FR2,
      * THE FREIGHT SECTOR above: a format-39
@@ -7969,7 +8016,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 43;
+    public static final int OLDEST_LOADABLE_FORMAT = 44;
 
     public static final String NAME = "CityBuilderSim";
 

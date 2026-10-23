@@ -475,7 +475,7 @@ adds its line here, not in `CLAUDE.md`.
                                    (YARD_LONG), across a cell's ring street, and a station alone laying its
                                    main line (MainLineCheck); since 0.8.24 (batch FX7) it tells a witness of
                                    each district a month's layTo() is about to change, so the map can date
-                                   the runs; since 0.8.29 (batch CL5) a stuck highway net opens its next
+                                   the runs; since 0.8.30 (batch CL5) a stuck highway net opens its next
                                    corridor by a link that searches its way over the dry ground, and every
                                    piece of ground the water parts that holds buildings grows its own net
                                    (CityMap's pieces), the sidecar FORMAT 12 - IslandNetCheck holds it

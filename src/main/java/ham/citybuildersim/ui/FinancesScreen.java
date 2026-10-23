@@ -1614,7 +1614,15 @@ final class FinancesScreen {
             + "build owns the building. What decides whether the debt is carryable is when it falls due (the hub's "
             + "ladder) and whether the month's revenue covers what the month's paper costs (Debt service). The net "
             + "position is the cash - below nothing when it is overdrawn - less the paper and what the central bank "
-            + "has advanced.";
+            + "has advanced. The paper is counted at what the books carry it at: its face less the discount not yet "
+            + "worn off, or plus the premium. What the market would pay for it today is a note under the figure, "
+            + "not on the books.";
+
+    /** The line under THE BALANCE's bars: three readings of the same paper. */
+    static final String PAPER_VALUES_INFO = "The same paper three ways. Its face is what falls due. What the books "
+            + "carry it at is the face less the discount not yet worn off, so it climbs to the face by the day it "
+            + "falls due; the bar and the net position use it. What it is worth today is what the market would pay "
+            + "for it now at the going rate: a note a government discloses and does not book.";
 
     /** THE BALANCE: the cash against what is owed, two bars on one scale, and the net position (the spec's section 3 B). */
     VBox balanceCard() {
@@ -1622,7 +1630,9 @@ final class FinancesScreen {
         DebtManager ledger = g.getDebtManager();
         double cash = g.getCash();
         double held = Math.max(0, cash);
-        double principal = ledger.getAllPrincipal();
+        // The paper at what the books carry it at (CD3), not at its face: the face and the market's worth are
+        // the line under the bars.
+        double face = ledger.getAllPrincipal(), principal = ledger.getCarryingValue(), worth = ledger.getFairValue();
         double overdraft = ledger.getOverdraft();
         double advanced = g.getCentralBank().getAdvancesToTreasury();
         double scale = Math.max(held, principal + overdraft + advanced);
@@ -1630,8 +1640,8 @@ final class FinancesScreen {
         card.getChildren().add(cardLine("In the treasury", d(cash), cash < 0 ? Palette.BAD : null));
         card.getChildren().add(segmentBar(List.of(seg(held, Palette.MONEY, "in the treasury " + dFull(cash))),
                 scale > 0 ? scale : 1, null, 0, 16));
-        card.getChildren().add(cardLine("Owed", d(principal), null));
-        card.getChildren().add(segmentBar(List.of(seg(principal, Palette.MONEY_DARK, "owed on paper " + dFull(principal)),
+        card.getChildren().add(cardLine("Owed, as carried", d(principal), null));
+        card.getChildren().add(segmentBar(List.of(seg(principal, Palette.MONEY_DARK, "owed on paper, as carried " + dFull(principal)),
                         seg(overdraft, Palette.BAD, "overdrawn " + dFull(overdraft)),
                         seg(advanced, Palette.BAD, "advanced by the central bank " + dFull(advanced))),
                 scale > 0 ? scale : 1, null, 0, 16));
@@ -1640,7 +1650,13 @@ final class FinancesScreen {
                     + (advanced > 0 ? "+ " + d(advanced) + " advanced by the central bank" : ""),
                     Palette.SIZE_LABEL + 1, Palette.BAD));
         }
-        HBox net = new HBox(Palette.GAP, figure(signedD(g.getNetPosition()), 22, Palette.TEXT_HEAD),
+        // ...the face, the carrying value and the market's worth in one line (spec-city-debt.md 5.4): the last
+        // is a note a government discloses and does not book, so it is said not to be on the books.
+        if (face > 0 || principal > 0) {
+            card.getChildren().add(noteLine("at face " + d(face) + " · carried " + d(principal) + " · worth today "
+                            + d(worth) + " (a note: what the market would pay; not on the books)", PAPER_VALUES_INFO, 440));
+        }
+        HBox net = new HBox(Palette.GAP, figure(signedD(g.getNetPositionAtCarrying()), 22, Palette.TEXT_HEAD),
                 words("net", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL));
         net.setAlignment(Pos.BASELINE_LEFT);
         card.getChildren().add(net);
@@ -1826,18 +1842,27 @@ final class FinancesScreen {
     }
 
     /** LAST MONTH's (i): the spec's T14. */
-    static final String LAST_MONTH_INFO = "Only the coupon is an expense; the principal is a balance-sheet movement. "
-            + "Both leave the treasury, which is why both are on the ladder, and separated on the Government spending "
+    static final String LAST_MONTH_INFO = "Only the interest is an expense; the principal is a balance-sheet movement. "
+            + "The interest is the coupon paid in cash and the discount wearing off the paper, which no cash pays "
+            + "until the paper falls due (paper sold over its face runs the other way). The coupon and the principal "
+            + "leave the treasury, which is why both are on the ladder, and separated on the Government spending "
             + "page. What fell due was netted from last year's surplus, raised again as new paper by the rollover, or "
             + "paid from the cash.";
 
-    /** LAST MONTH: the coupon, and the principal that fell due at the last press split as the rollover booked it. */
+    /** LAST MONTH: the interest on the city's paper (the coupon paid and the discount wearing off), and the principal that fell due at the last press split as the rollover booked it. */
     VBox lastMonthCard() {
         Game g = ui.game;
-        DebtManager ledger = g.getDebtManager();
         Rollover r = g.getRollover();
+        // The interest is the effective interest (CD3): the coupons paid in cash and the discount the month
+        // amortised, which the budget charges and no cash paid. The principal is not interest.
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         VBox card = card(caption("LAST MONTH", LAST_MONTH_INFO));
-        card.getChildren().add(cardLine("Coupon on everything outstanding, a month", d(ledger.getMonthlyCoupon()), null));
+        card.getChildren().add(cardLine("Interest on the city's paper", d(na.getInterestExpense()), null));
+        card.getChildren().add(cardLine("...the coupon paid", d(na.getInterestPaidInCash()), Palette.TEXT_LABEL));
+        if (Math.abs(na.getInterestNotCash()) >= .5) {
+            card.getChildren().add(cardLine(na.getInterestNotCash() > 0 ? "...the discount wearing off (no cash)"
+                    : "...less the premium wearing off (no cash)", d(na.getInterestNotCash()), Palette.TEXT_LABEL));
+        }
         double repaid = g.hasTreasuryMonth() ? g.getTreasuryRepaid() : 0;
         card.getChildren().add(cardLine("Principal that fell due last month", d(repaid), null));
         if (r.getLastMonth() == g.getMonth() - 1 && r.getLastDue() >= .5) {
@@ -2268,13 +2293,25 @@ final class FinancesScreen {
     }
 
     /** A bill's (i): the spec's T28. */
-    static final String NOTE_INFO = "No coupon at all - the lender's return was the discount, taken out of the proceeds "
-            + "at issue. It costs nothing monthly and the whole face falls due at once.";
+    static final String NOTE_INFO = "No coupon. The lender's return was the discount, taken out of the proceeds at "
+            + "issue. The city books it as interest, a little every month, so the bill is carried under its face and "
+            + "climbs to it by the day it falls due. No cash leaves until then, and the whole face falls due at once.";
+
+    /* ----- the books (CD3) ----- */
+
+    /** The "carried · effective" line on a piece's card: its (i). */
+    static final String CARRIED_INFO = "What the books hold the piece at, and the rate they charge it at. It starts "
+            + "at what the sale raised, so a piece sold under its face is carried under it. Each month the interest "
+            + "is that figure at the effective rate; what the coupon does not pay of it is added to what is carried, "
+            + "so the figure climbs to the face by the day it falls due. Paper sold over its face runs down to it "
+            + "instead. The effective rate is the yield the sale made of the piece's payments, not its coupon.";
 
     /** A price against face, in words (the spec's T33, D16). */
     static final String PREMIUM_INFO = "Buying a piece back pays its holders what it is worth today. Under its face, "
             + "the city clears more debt than it pays - because its credit has got worse since the piece was sold, or "
-            + "rates have risen. Over its face, a premium: this piece pays more than the city could borrow at today.";
+            + "rates have risen. Over its face, a premium: this piece pays more than the city could borrow at today. "
+            + "The gain or loss the books show is against what the piece is carried at, which is not its face while "
+            + "a discount is still wearing off.";
 
     void bookPage(VBox page) {
         Game g = ui.game;
@@ -2286,8 +2323,9 @@ final class FinancesScreen {
                     door("Borrow", Palette.ACCENT, () -> open("Borrow", "At home", null))));
             return;
         }
-        String head = String.format("%d %s · %s owed · %s coupon a month · cleared today for %s · %s in the treasury",
-                paper.size(), paper.size() == 1 ? "piece" : "pieces", d(ledger.getAllPrincipal()), d(ledger.getMonthlyCoupon()),
+        String head = String.format("%d %s · %s owed · %s carried · %s coupon a month · cleared today for %s · %s in the treasury",
+                paper.size(), paper.size() == 1 ? "piece" : "pieces", d(ledger.getAllPrincipal()),
+                d(ledger.getCarryingValue()), d(ledger.getMonthlyCoupon()),
                 d(ledger.getTotalMarketValue()), d(g.getCash()));
         page.getChildren().add(infoLine(head, bookInfo(), true, Palette.SIZE_BODY + 1, Palette.TEXT_LABEL, 1200));
         GridPane cards = equalColumns(2, TILE_GAP);
@@ -2373,7 +2411,10 @@ final class FinancesScreen {
 
         double coupon = debt.getMonthlyInterestExpense();
         Node couponLine = coupon >= .5 ? line("coupon " + d(coupon) + " a month")
-                : noteLine("no coupon - the discount was the price", NOTE_INFO, 560);
+                : noteLine("no coupon - the discount wears off as interest", NOTE_INFO, 560);
+        // The piece's books (CD3): what it is carried at and the rate it is charged at.
+        Node booksLine = infoLine("carried " + d(debt.getCarryingValue()) + " · effective " + pct2(debt.getEffectiveRate()),
+                CARRIED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
 
         Node holders;
         if (debt.isForeign()) {
@@ -2394,6 +2435,10 @@ final class FinancesScreen {
         String price = String.format("worth today %s · %.1f of par · yields %s", d(worth),
                 ledger.priceOfPar(debt), pct2(ledger.yieldOf(debt)));
         String against = Math.abs(under) < .5 ? "at its face" : under > 0 ? d(under) + " under face" : "a premium of " + d(-under);
+        // The gain the books would show (Game.repurchaseGain(): what the piece is carried at less the price).
+        double gain = g.repurchaseGain(debt);
+        String gainWords = Math.abs(gain) < .5 ? "no gain or loss against what it is carried at"
+                : (gain > 0 ? "a gain of " : "a loss of ") + d(Math.abs(gain)) + " against what it is carried at";
         boolean affordable = worth > 0 && worth <= g.getCash();
         Button buy = new Button(affordable ? "Buy back" : "Too dear");
         buy.setMinWidth(Region.USE_PREF_SIZE);
@@ -2408,16 +2453,17 @@ final class FinancesScreen {
         HBox.setHgrow(g3, Priority.ALWAYS);
         VBox says = new VBox(2, words(price, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
                 infoLine("clears " + d(debt.getOustandingPrincipal()) + " for " + d(worth) + " · " + against,
-                        PREMIUM_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_MUTED, 420));
+                        PREMIUM_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_MUTED, 420),
+                muted("buying it back books " + gainWords));
         HBox foot = new HBox(Palette.GAP, says, g3, buy);
         foot.setAlignment(Pos.CENTER_LEFT);
-        return card(head, face, lifeBar, ends, couponLine, holders, foot);
+        return card(head, face, lifeBar, ends, couponLine, booksLine, holders, foot);
     }
 
-    /** The book as the old page's table, in the fold: kind, owed, coupon a month, when it matures, how far off. */
+    /** The book as the old page's table, in the fold: kind, owed (face), carried and effective rate (CD3), coupon a month, when it matures, how far off. */
     Node bookGrid(List<Debt> paper) {
-        GridPane t = grid(new double[] {104, 116, 110, 100, 122}, rightAfterFirst(5));
-        gridHead(t, "", "owed", "coupon /mo", "matures", "how far off");
+        GridPane t = grid(new double[] {84, 74, 74, 76, 64, 70, 100}, rightAfterFirst(7));
+        gridHead(t, "", "owed", "carried", "coupon /mo", "effective", "matures", "how far off");
         int month = ui.game.getMonth();
         int line = 1;
         for (Debt debt : paper) {
@@ -2425,17 +2471,20 @@ final class FinancesScreen {
             kind.setStyle(Palette.words(Palette.SIZE_CAPTION, instrumentColour(debt.getType())));
             t.add(kind, 0, line);
             t.add(gridCell(d(debt.getOustandingPrincipal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
+            t.add(gridCell(d(debt.getCarryingValue()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 2, line);
             t.add(gridCell(debt.getMonthlyInterestExpense() > 0 ? d(debt.getMonthlyInterestExpense()) : "none",
                     debt.getMonthlyInterestExpense() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
-                    Palette.SIZE_CAPTION, true), 2, line);
-            t.add(gridCell(CityCalendar.formatShort(debt.getMaturityMonth()), Palette.TEXT_MUTED,
                     Palette.SIZE_CAPTION, true), 3, line);
+            t.add(gridCell(pct2(debt.getEffectiveRate()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 4, line);
+            t.add(gridCell(CityCalendar.formatShort(debt.getMaturityMonth()), Palette.TEXT_MUTED,
+                    Palette.SIZE_CAPTION, true), 5, line);
             t.add(gridCell(CityCalendar.until(month, debt.getMaturityMonth()),
-                    urgency(debt.getMaturityMonth() - month), Palette.SIZE_CAPTION, true), 4, line);
+                    urgency(debt.getMaturityMonth() - month), Palette.SIZE_CAPTION, true), 6, line);
             line++;
         }
         DebtManager ledger = ui.game.getDebtManager();
         return column(t, statementTotal("On the book altogether", dFull(ledger.getAllPrincipal()), Palette.TEXT_HEAD),
+                statementLine("Carried on the books", dFull(ledger.getCarryingValue())),
                 statementLine("Coupon a month", dFull(ledger.getMonthlyCoupon())));
     }
 

@@ -14,7 +14,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.29 — CL5, highways that reach the whole city — 2026-10-23, ready, see docs/queue/CL5-notes.md
+### 0.8.30 — CL5, highways that reach the whole city — 2026-10-23, ready, see docs/queue/CL5-notes.md
 
 A highway net that stops no longer stops for good (CityRuns): when no arm can grow and no corridor line crosses the net, a
 LINK searches the piece's dry ground from the net to the nearest open line (k districts from its hub), straightened into
@@ -25,6 +25,18 @@ back only when the model's fall, and a purchase that joins two pieces moves noth
 default playtest's city at month 4,005: 301 of the model's 1,687 highway plots laid before, all 1,687 now, and the
 district on the other island has a highway. IslandNetCheck (new) causes each case. The model's trace is main's but for
 the map's own layout-watch counts (0 boxes moved), so no ensemble. Calls for Jerus: CL5-C (the railway on other pieces).
+### 0.8.29 — CD3, the city's books — 2026-10-23, ready, see docs/queue/CD3-notes.md
+
+The city's paper is carried at amortised cost by effective interest (spec-city-debt §5, D10, D16, D26): each line opens
+at what its sale raised, solves the rate its payments are worth that at, books carrying x rate / 12 a month and closes to
+nothing; a reopening blends the rate; dollar paper keeps its books in dollars, read at the month's D$ (not the goods'
+struck rate). The budget's "Interest on the city's paper" is the coupons and the discount wearing off; the gain or loss on
+debt retired is against carrying value; the treasury's bridge has a not-cash row, so it still foots. The screens show it:
+the bridge's steps, the debt card's two parts, the balance at carrying value with the fair value as a note, carried and
+effective on the book. The money closes: the new figures are no cash, and MoneyCheck holds the interest less the
+amortisation equal to the cash coupons, holder by holder, every month. TreasuryCheck 9 (new, 113 assertions). The bank's
+straight-line accretion is unchanged. SAVE_FORMAT 44 and its floor. Ensemble 24/26, 0.8.21's score and its two reds (A2,
+S1). Calls for Jerus: CD3-C.
 
 ### 0.8.28 — UP2, the clock keeps its frame — 2026-10-23, ready, see docs/queue/UP2-notes.md
 

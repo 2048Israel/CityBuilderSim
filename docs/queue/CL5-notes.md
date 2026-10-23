@@ -1,4 +1,4 @@
-# CL5 notes - highways that reach the whole city (0.8.29, 2026-10-23)
+# CL5 notes - highways that reach the whole city (0.8.30, 2026-10-23)
 
 The brief is [CL5.md](CL5.md); the study [spec-city-layout §5.6](../studies/spec-city-layout.md#56-highways-on-one-island-only).
 
