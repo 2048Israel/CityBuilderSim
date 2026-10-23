@@ -86,7 +86,7 @@
 | 86 | 3 | `public Markets()` |  |
 | 90 | 1 | `public GoodsMarket get(Good g)` |  |
 | 92 | 1 | `public Iterable<GoodsMarket> all()` |  |
-| 95 | 3 | `public void setExchangeRate(double rate)` | City money per dollar, times the world's price level. |
+| 95 | 3 | `public void setExchangeRate(double rate)` | City money per dollar, times the world's price level - since AN1 at the D$ the goods are struck at (EconomyManager.strikeExchangeRate()). |
 | 108 | 4 | `public double getExchangeRate()` | The one rate every market here was told, read off one of them. |
 
 ### THE MONTH (lines 113-372)
