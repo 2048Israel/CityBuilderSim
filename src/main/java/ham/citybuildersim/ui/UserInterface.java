@@ -2711,7 +2711,7 @@ public class UserInterface extends Application {
         private double[] points = new double[0];
         private int[] at = new int[0];
         private javafx.scene.paint.Color colour;
-        private final javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas();
+        private javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas();
         private double drawnW = -1, drawnH = -1;
         private int firstMonth, lastMonth;
         /** Whether set() has been told a series yet: the first one always draws. */
@@ -2775,6 +2775,13 @@ public class UserInterface extends Application {
         private void paint(double w, double h) {
             drawnW = w;
             drawnH = h;
+            // A new canvas when the size moves (UP2): a kept canvas resized keeps the texture it had, and a
+            // narrower line then showed its last pixel column whole where a canvas made at that width shows
+            // it cut (the renders against 0.8.26: 4-5 pixels of a header, by up to 21 levels).
+            if (canvas.getWidth() > 0 && (canvas.getWidth() != w || canvas.getHeight() != h)) {
+                canvas = new javafx.scene.canvas.Canvas();
+                getChildren().setAll(canvas);
+            }
             canvas.setWidth(w);
             canvas.setHeight(h);
             javafx.scene.canvas.GraphicsContext g = canvas.getGraphicsContext2D();
