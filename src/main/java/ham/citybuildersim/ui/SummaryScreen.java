@@ -746,6 +746,15 @@ final class SummaryScreen {
             }
         }
 
+        // PT1: the note sat after HOW THE CITY IS, under readings that were all healthy, and said "above" of
+        // them; it closes NEEDS YOU's rows now, so "above" is those rows and "below" the symptoms.
+        rows.getChildren().add(panelNote(biting.isEmpty()
+                ? "Nothing is near a limit. The readings below are what the city is "
+                  + "doing about it; Dashboard has every figure."
+                : "Everything above is near a limit or past one, and every one of them "
+                  + "has a fix. Click to go there; they leave this list when they are "
+                  + "solved."));
+
         /* ------------------------------ the symptoms ------------------------------ */
         rows.getChildren().add(panelHeading("HOW THE CITY IS"));
         for (Watch w : citySymptoms()) {
@@ -757,12 +766,6 @@ final class SummaryScreen {
         }
 
         body.getChildren().add(rows);
-        body.getChildren().add(panelNote(biting.isEmpty()
-                ? "Nothing is near a limit. The readings below are what the city is "
-                  + "doing about it; Dashboard has every figure."
-                : "Everything above is near a limit or past one, and every one of them "
-                  + "has a fix. Click to go there; they leave this list when they are "
-                  + "solved."));
     }
 
     /** A rule and a caption, dividing the panel's two halves. */

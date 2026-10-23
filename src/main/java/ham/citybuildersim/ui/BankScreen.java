@@ -631,7 +631,7 @@ final class BankScreen {
                     null));
         } else if (bank.getBranches() <= 0) {
             HBox build = doorPill("Build a Commercial Bank", Icons.BUILD, Palette.BUILDING,
-                    () -> ui.buildScreen.openCategory(BuildAdvice.SHOPS));
+                    () -> ui.buildScreen.openOnBuilding(BuildAdvice.SHOPS, "Commercial Bank"));
             out.add(actionCard(Icons.BANK, Palette.BAD, "There is no bank in this city",
                     "Every borrower is lent money from the central bank, priced as a bank would price it.",
                     "Every borrower is lent money from the central bank, priced as a bank would price it. Build a "
@@ -3535,7 +3535,7 @@ final class BankScreen {
                 muted((branch != null ? "another costs " + m(ui.game.quoteBuild(branch, 1).total) + " · " : "")
                         + "its owners put in " + m(bank.getPaidInPerBranch())));
         HBox build = doorPill("Build a Commercial Bank", Icons.BUILD, Palette.BUILDING,
-                () -> ui.buildScreen.openCategory(BuildAdvice.SHOPS));
+                () -> ui.buildScreen.openOnBuilding(BuildAdvice.SHOPS, "Commercial Bank"));
         answer.getChildren().add(build);
         answer.setMinWidth(300);
         answer.setPrefWidth(420);
