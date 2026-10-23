@@ -1323,11 +1323,11 @@ public class DebtManager {
     /**
      * Face value of the discount notes outstanding.
      *
-     * The screens need it because a note is the one instrument whose interest
-     * is not a monthly expense - it was taken out of the proceeds at issue - so
-     * a city financed entirely on notes shows a Debt Interest line of zero
-     * while plainly owing money. That reads as a bug, and the honest answer is
-     * a sentence rather than a number. See ShortTermTBill.
+     * The screens need it because a note is the one instrument with no
+     * coupon: its interest is its discount, which since CD3 wears off on the
+     * budget month by month as effective interest (Debt.amortise()) though no
+     * cash leaves until it falls due - a sentence the screen says beside the
+     * number. See ShortTermTBill.
      */
     public double getNotePrincipal() {
         double total = 0;

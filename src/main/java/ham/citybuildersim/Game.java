@@ -14517,6 +14517,16 @@ public class Game {
     }
 
     /**
+     * The same net position with the paper at what the books carry it at (CD3,
+     * spec-city-debt.md 5.4): its face less the discount not yet worn off, plus
+     * any premium. What the Finances tab's THE BALANCE shows; getNetPosition()
+     * stays at face, which the model reads.
+     */
+    public double getNetPositionAtCarrying() {
+        return cash - debtManager.getCarryingValue() - centralBank.getAdvancesToTreasury();
+    }
+
+    /**
      * Everything the three named flows do not explain - the whole of the
      * bridge's last row, "Everything else the treasury did".
      *
