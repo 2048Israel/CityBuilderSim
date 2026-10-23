@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author Jerus
  */
-public class Notice {
+public class Notice implements Cloneable {
 
     /* Which condition this is. The inbox keys on it, so a city can never hold
      * two live notices about the same thing, and the screen maps it to the
@@ -52,6 +52,22 @@ public class Notice {
         this.title = title;
         this.body = new ArrayList<>(body);
         this.raised = month;
+    }
+
+    /**
+     * A copy that shares nothing with this notice (UP1, 2026-10-22): the
+     * autosave is written on another thread while markRead(), markResolved()
+     * and refresh() go on changing the live ones. A clone, so a field added
+     * later is in the copy; the body is the one mutable part.
+     */
+    Notice copy() {
+        try {
+            Notice c = (Notice) super.clone();
+            if (body != null) c.body = new ArrayList<>(body);
+            return c;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     public String getKey()   { return key == null ? "" : key; }

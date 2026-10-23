@@ -2261,7 +2261,7 @@ public class Bank {
      * redeemed with its warrants still out stays, at a par of nothing, until
      * they are bought back or exercised. Saved by Gson as it stands.
      */
-    public static final class Preferred {
+    public static final class Preferred implements Cloneable {
         double par;
         double arrears;
         int issued;
@@ -2272,6 +2272,15 @@ public class Bank {
         boolean warrantsOut;
 
         Preferred() { }
+
+        /** A copy that shares nothing with this block (UP1, 2026-10-22): the autosave's, while the live block's arrears and par go on changing. A clone, so a field added later is in it. */
+        Preferred copy() {
+            try {
+                return (Preferred) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
 
         public double par()           { return par; }
         public double arrears()       { return arrears; }

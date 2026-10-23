@@ -268,7 +268,7 @@ public final class AutoBuilder {
        ===================================================================== */
 
     /** One order it placed, and why. Money in thousands, as every figure in the model. */
-    public static final class Entry {
+    public static final class Entry implements Cloneable {
         public int month;
         public String measure;
         public String building;
@@ -286,6 +286,15 @@ public final class AutoBuilder {
         public String landWhere;
 
         public Entry() { }
+
+        /** A copy that shares nothing with this entry: toState()'s, for the autosave (UP1). A clone, so a field added later is in it. */
+        Entry copy() {
+            try {
+                return (Entry) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
 
         Entry(int month, String measure, String building, int count, int wanted, double cost, double borrowed,
               boolean paving, String why) {
@@ -1965,7 +1974,7 @@ public final class AutoBuilder {
         s.slack = slack;
         s.debtToGdp = debtLimit;
         s.cashAnyway = cashAnyway;
-        s.log = new ArrayList<>(log);
+        s.log = SaveCopy.list(log, Entry::copy);   // UP1: copies - the entries are the log's own
         s.held = new ArrayList<>(held);
         s.lastPass = lastPass;
         s.orders = orders;

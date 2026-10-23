@@ -60,6 +60,15 @@ public final class SaveWriter {
             this.map = map;
         }
 
+        /** For SaveSlotCheck: the save this job writes. */
+        DataSave data() { return data; }
+
+        /** For SaveSlotCheck: the history this job writes. */
+        HistorySave history() { return history; }
+
+        /** For SaveSlotCheck: the map's bytes, or null when the city has none. */
+        byte[] map() { return map; }
+
         /** The file this job is for: the save's; two jobs with the same target never run beside each other. */
         public Path target() {
             return files.saveFile(slot);

@@ -54,7 +54,7 @@ import java.util.List;
  *
  * Every field is plain data, so the book saves with Gson as it stands.
  */
-public class OrderBook {
+public class OrderBook implements Cloneable {
 
     /** Which side of the book an order is on. */
     public enum Side { BUY, SELL }
@@ -82,7 +82,7 @@ public class OrderBook {
     public double getDust() { return dust; }
 
     /** One order, resting or just submitted. */
-    public static final class Order {
+    public static final class Order implements Cloneable {
         long seq;
         String who;
         Side side;
@@ -116,6 +116,15 @@ public class OrderBook {
         public double submitted() { return submitted; }
         /** The month it was posted in. */
         public int month()       { return month; }
+
+        /** A copy that shares nothing with this order: the autosave's (UP1). A clone, so a field added later is in it. */
+        Order copy() {
+            try {
+                return (Order) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
     }
 
     /**
@@ -145,9 +154,9 @@ public class OrderBook {
 
     private String instrument;
     /** Resting bids, best first: highest price, then earliest. */
-    private final List<Order> bids = new ArrayList<>();
+    private List<Order> bids = new ArrayList<>();
     /** Resting asks, best first: lowest price, then earliest. */
-    private final List<Order> asks = new ArrayList<>();
+    private List<Order> asks = new ArrayList<>();
     private long nextSeq;
     /** The last trade's price, 0 before the first (a save carries no NaN). */
     private double lastPrice;
@@ -162,6 +171,23 @@ public class OrderBook {
     OrderBook() { }
 
     public OrderBook(String instrument) { this.instrument = instrument; }
+
+    /**
+     * A copy that shares nothing with this book, its resting orders copied
+     * too (UP1, 2026-10-22): the autosave's, written while the months go on
+     * submitting to the live one. A clone, so a field added later is in it
+     * (the two lists are why they are not final).
+     */
+    public OrderBook copy() {
+        try {
+            OrderBook c = (OrderBook) super.clone();
+            c.bids = SaveCopy.list(bids, Order::copy);
+            c.asks = SaveCopy.list(asks, Order::copy);
+            return c;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+    }
 
     /** What this book trades. */
     public String instrument() { return instrument; }

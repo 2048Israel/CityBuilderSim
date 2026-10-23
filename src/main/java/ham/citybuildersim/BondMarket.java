@@ -1902,7 +1902,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     /* ============================== save and load ============================== */
 
     /** Everything the market carries from one month to the next, as the save writes it. */
-    public static final class State {
+    public static final class State implements Cloneable {
         List<CorporateBond> bonds;
         List<OrderBook> books;
         int nextId;
@@ -1911,6 +1911,32 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         String lastIssue;
         double[] lastIssueFigures;
         Map<String, Double> issuedBySector, proceedsBySector, repaidBySector, boughtBySector, couponsBySector;
+
+        /**
+         * A copy that shares nothing with this state (UP1, 2026-10-22):
+         * toState() lists the market's own bonds and books, which the months
+         * go on changing while the autosave is written. A clone, so a field
+         * added later is in it; each bond, each book with its resting
+         * orders, each array and each map are copied.
+         */
+        State copy() {
+            try {
+                State c = (State) super.clone();
+                c.bonds = SaveCopy.list(bonds, CorporateBond::copy);
+                c.books = SaveCopy.list(books, OrderBook::copy);
+                c.month = month == null ? null : month.clone();
+                c.life = life == null ? null : life.clone();
+                c.lastIssueFigures = lastIssueFigures == null ? null : lastIssueFigures.clone();
+                c.issuedBySector = SaveCopy.map(issuedBySector);
+                c.proceedsBySector = SaveCopy.map(proceedsBySector);
+                c.repaidBySector = SaveCopy.map(repaidBySector);
+                c.boughtBySector = SaveCopy.map(boughtBySector);
+                c.couponsBySector = SaveCopy.map(couponsBySector);
+                return c;
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
     }
 
     public State toState() {

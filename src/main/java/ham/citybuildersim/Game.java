@@ -12863,6 +12863,20 @@ public class Game {
     }
 
     /**
+     * For SaveSlotCheck (UP1): the save filled as an autosave fills it, the
+     * snapshot taken and nothing written, so a check can read what the writer
+     * thread would be handed.
+     */
+    SaveWriter.Job prepareSaveForChecks(int slot, String slotName) {
+        return prepareSave(slot, slotName, true);
+    }
+
+    /** For SaveSlotCheck (UP1): the persistent save the setters fill, to measure what a snapshot shares with it. */
+    DataSave liveSaveForChecks() {
+        return dataSave;
+    }
+
+    /**
      * Fills the save from the city as it stands, asks the map for its bytes
      * and stamps it; everything save() did before it wrote anything. With
      * {@code snapshot} the job holds copies of the save and the history (the
