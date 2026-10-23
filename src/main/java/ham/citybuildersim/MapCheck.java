@@ -58,7 +58,12 @@ import java.util.Map;
  *      chained by hand, the second carried the pairs {month, type} the first
  *      leaves, and when the first's log gains a later month's arrivals that
  *      overflow too, the second's carry keeps its earlier pairs as they were
- *      and every box the second had placed stands where it stood;
+ *      and every box the second had placed stands where it stood; and (2d,
+ *      FX7) a run laid across a district's buildings - a Rail Depot's yard and
+ *      main line at the hub, the yard gone and laid again, Elevated Highways
+ *      drawn across them - moves none of them, every box of the plan before
+ *      standing in the plan after, and the arrivals after a run stand on none
+ *      of its plots;
  *   3. the painter draws the plan (0.7.88; the mockup's rules on the deal's
  *      tiles before): on the dense screen every plot a district's plan
  *      surfaces is painted as that street - kind and width - its seams once;
@@ -423,6 +428,7 @@ public class MapCheck {
         nothingMoves(city);
         districtsHoldAndSpill(city);
         districtBuysLandInside(city);
+        runsLaidAcross(city);
         Squares sq = new Squares();
         painterRules(sq.maps[DENSE]);
         drawnAsItIs(sq.maps[DENSE]);
@@ -1259,6 +1265,346 @@ public class MapCheck {
         boolean free = land.grid().owned(b.x0(), b.y0(), b.x1(), b.y1()) == 0;
         boolean dry = b.dry() == dryPlots(frame, b.x0(), b.y0(), b.x1(), b.y1()) && 2L * b.dry() >= (b.x1() - b.x0()) * (b.y1() - b.y0());
         return whole && inside && free && dry;
+    }
+
+    /* =====================================================================
+       2d. A RUN LAID ACROSS A DISTRICT'S BUILDINGS MOVES NONE OF THEM (batch FX7)
+       ===================================================================== */
+
+    /*
+     * FX6 dated the plan's ground, so land bought later only adds room. The plan's other input from the city was still read as it stands today for
+     * the plan's whole history: Input.fixed, the city's highways, railway, rail yards and interchange reserves (CityRuns, laid month by month by
+     * CityMap.layRuns() inside reconcile), and the shore's works. So when the runs lay something new across a district that already has buildings -
+     * a Rail Depot's yard at the rail hub, a highway arm growing through, the highways first drawn once they reach a street - the plan replays every
+     * arrival since its log began round the new plots: the growth order, the cells' free rows and the first fits all change, and most of the
+     * district's buildings move (on the default playtest the founding district's Rail Depot yard, 8 x 7 plots, came and went about twenty times
+     * between months 1,128 and 3,934, each time moving 100 to 260 of its 300 boxes; the highway plots laid at months 2,131 and 2,485 to 2,834 moved
+     * 10 to 100 each; the last month's fixed swapped into this month's input removed every move). What is right is the other way, as for the
+     * ground: what the plan placed stands, and a run laid later takes only the ground nothing stands on. 2d is that, on the real map and the real
+     * land: the played city's ground (a copy of it, nothing built, nothing mined), the district that holds the founding site given houses and a few
+     * buildings of several sizes a month until it uses half its room, then a Rail Depot (the runs start the railway at its hub, the lattice crossing
+     * nearest the site when nothing is mined, and lay the depot's yard and the main line there), more months, the depot gone, more months, the depot
+     * again, more months, then Elevated Highways until some are laid in the district - the plan drawn before each change and after the month of it,
+     * every box of the one against the other (printed beside it, the plan made with the earlier month's fixed ground in the new input, which moved none
+     * when the finding was made: the run is what moves them). A highway rides the plan's street line, so on this city it takes no box's own plots; what it takes is the
+     * ground beside them (no building touches a highway plot, corners included), and those boxes move too. The fixture's checks hold on any code;
+     * the finding's hold once the plan dates the runs as it dates the ground.
+     */
+
+    /** What the founding district is given month by month besides houses, in turn (an apartment block, shops, a school, works): buildings of several sizes for its plan to place. */
+    static final String[] MIX = { "Low-Rise Apartments", "Small Grocery Store", "Bakery", "Elementary School", "Industrial Bakery", "Bottling Plant", "Snack & Oils Plant" };
+
+    /** How much of its room the founding district is brought to before a run is laid across it: half of the cells its plan may fill (CityMap.PLAN_FILL of its owned plots). */
+    static final double USED_SHARE = 0.5;
+
+    /** The buildings of the mix the founding district is given each month, beside its houses. */
+    static final int BUILDINGS_A_MONTH = 3;
+
+    /** Months of arrivals after each change of the runs, before the next plan is drawn: the buildings that must go on the ground as the run left it. */
+    static final int MONTHS_BETWEEN = 4;
+
+    /** The most months the highways are given to reach the district, and the Elevated Highways added a month while they do. */
+    static final int HIGHWAY_MONTHS = 60, HIGHWAY_STEP = 8;
+
+    /** A building keeps this far from a highway plot (batch H5: no building touches one, corners included): the reach, in plots, within which a highway laid takes a box's place. */
+    static final int HIGHWAY_CLEAR = 1;
+
+    /** The arrivals of the founding district, month by month: `step` houses and BUILDINGS_A_MONTH buildings of the mix, in turn. */
+    static final class Arrivals {
+        final Months h;
+        final int[] mix;
+        final int step;
+        int next;
+
+        Arrivals(Months h, int[] mix, int step) {
+            this.h = h;
+            this.mix = mix;
+            this.step = step;
+        }
+
+        /** One month: the mix's next buildings and the houses. */
+        void month() {
+            for (int k = 0; k < BUILDINGS_A_MONTH; k++) h.model[mix[next++ % mix.length]]++;
+            h.run(step);
+        }
+
+        /** `n` months. */
+        void months(int n) {
+            for (int i = 0; i < n; i++) month();
+        }
+    }
+
+    /** The founding district's plan at one moment: its boxes, the plots its input fixes, the city's runs alone in its frame, and the ramps. */
+    static final class Snap {
+        final DistrictPlan plan;
+        final java.util.Set<PlanBox> boxes;
+        final byte[] fixed, runs;
+        final boolean[] ramp;
+
+        Snap(CityMap m, CityMap.District d) {
+            DistrictPlan.Input in = m.planInput(d);
+            fixed = in.fixed.clone();
+            ramp = in.ramp == null ? null : in.ramp.clone();
+            runs = new byte[DistrictPlan.AREA];
+            m.runsInto(d, runs);
+            plan = DistrictPlan.make(in);
+            boxes = boxesOf(plan);
+        }
+
+        /** How many of this plan's boxes have a plot within `reach` plots of a plot the runs hold in `later` and did not hold here: the buildings a run laid in between lies across. */
+        int under(Snap later, int reach) {
+            int n = 0;
+            for (PlanBox b : boxes) if (anyPlot(b, reach, p -> later.runs[p] != 0 && runs[p] == 0)) n++;
+            return n;
+        }
+
+        /** How many of `later`'s boxes that are not among this plan's lie on a plot fixed in `later`, in its input or among the runs: the arrivals that stand on a run. */
+        int arrivalsOnRuns(Snap later) {
+            int n = 0;
+            for (PlanBox b : later.boxes) if (!boxes.contains(b) && anyPlot(b, 0, p -> later.fixed[p] != 0 || later.runs[p] != 0)) n++;
+            return n;
+        }
+
+        /** The plots of kind `kind` in the runs. */
+        int plots(byte kind) {
+            int n = 0;
+            for (byte f : runs) if (f == kind) n++;
+            return n;
+        }
+
+        /** The plots of kind `kind` the runs hold in `later` and did not hold here. */
+        int newPlots(Snap later, byte kind) {
+            int n = 0;
+            for (int p = 0; p < runs.length; p++) if (later.runs[p] == kind && runs[p] != kind) n++;
+            return n;
+        }
+
+        /**
+         * How many of this plan's boxes are not in the plan the map makes now when its input is given this snapshot's fixed ground and ramps: the buildings
+         * that move with the arrivals alone, the runs left as they were. The control: the run is what moved the rest.
+         */
+        int movedWithTheseRuns(CityMap m, CityMap.District d) {
+            DistrictPlan.Input in = m.planInput(d);
+            System.arraycopy(fixed, 0, in.fixed, 0, in.fixed.length);
+            in.ramp = ramp == null ? null : ramp.clone();
+            return movedOf(boxes, boxesOf(DistrictPlan.make(in)));
+        }
+    }
+
+    /** Whether any plot within `reach` plots of the box (in the frame's plots, clipped to the frame) satisfies the test, a plot's index in the frame. */
+    static boolean anyPlot(PlanBox b, int reach, java.util.function.IntPredicate test) {
+        for (int y = Math.max(0, b.y() - reach); y < Math.min(DistrictPlan.FRAME, b.y() + b.h() + reach); y++) {
+            for (int x = Math.max(0, b.x() - reach); x < Math.min(DistrictPlan.FRAME, b.x() + b.w() + reach); x++) if (test.test(y * DistrictPlan.FRAME + x)) return true;
+        }
+        return false;
+    }
+
+    /** The kinds of fixed plot the runs lay, in the order a line prints them. */
+    static final byte[] RUN_KINDS = { DistrictPlan.FIXED_YARD, DistrictPlan.FIXED_RAIL, DistrictPlan.FIXED_HIGHWAY, DistrictPlan.FIXED_RESERVE };
+    static final String[] RUN_NAMES = { "yard", "rail", "highway", "reserve" };
+
+    /** What the runs laid between two snapshots, by kind: "yard 56, rail 19". */
+    static String laidOf(Snap before, Snap after) {
+        StringBuilder s = new StringBuilder();
+        for (int k = 0; k < RUN_KINDS.length; k++) {
+            int n = before.newPlots(after, RUN_KINDS[k]);
+            if (n > 0) s.append(s.length() > 0 ? ", " : "").append(RUN_NAMES[k]).append(' ').append(n);
+        }
+        return s.length() == 0 ? "none" : s.toString();
+    }
+
+    /** The district's plan after one month of the model as it stands, nothing added: the month a run is laid in. */
+    static Snap quietMonth(Months h, CityMap.District d) {
+        h.run(0);
+        return new Snap(h.map, d);
+    }
+
+    /** The id of the building template of that name. */
+    static int idOf(Game g, String name) {
+        return g.getBuildingManager().getTemplateByName(name).getId();
+    }
+
+    /**
+     * Whether a run laid across a district's buildings moves none of them (batch FX7): on the played city's ground the district holding the founding
+     * site is given houses and BUILDINGS_A_MONTH buildings of the mix a month until half its room is used; a Rail Depot is added and a month run (the runs' yard and main
+     * line), four months of arrivals, the depot taken away, four months, the depot again, four months, then Elevated Highways a month until they lie in the
+     * district. The district's plan is not kept: it is drawn from the map at each moment.
+     */
+    static void runsLaidAcross(Game g) {
+        out.println("\n--- 2d. a run laid across a district's buildings moves none of them (FX7) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), depot = idOf(g, "Rail Depot"), highway = idOf(g, "Elevated Highway");
+        int[] mix = new int[MIX.length];
+        for (int i = 0; i < mix.length; i++) mix[i] = idOf(g, MIX[i]);
+        CityLand land = g.getCityLand().copy();
+        long[] model = new long[types.length];
+        CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
+        Months h = new Months(m, model, house, g.getMonth() + 1);
+        int firstMonth = h.month;
+        CityMap.District d = null;
+        DistrictPlan.Input frame = null;
+        for (CityMap.District e : m.districts()) {
+            DistrictPlan.Input in = m.planInput(e);
+            if (land.siteX() >= in.x0 && land.siteX() < in.x0 + DistrictPlan.SIDE && land.siteY() >= in.y0 && land.siteY() < in.y0 + DistrictPlan.SIDE) {
+                d = e;
+                frame = in;
+            }
+        }
+        int each = BuildingVisual.cells(types[house]), step = Math.max(2, (int) (d.room() / each / 24));
+        long roomAtFirst = d.room();
+        boolean noRunsYet = m.runs().yards().isEmpty() && !m.runs().rail().started && !m.runs().highways().started && m.minedSites().isEmpty();
+        Arrivals in = new Arrivals(h, mix, step);
+
+        // ----- S1: most of the room used, room left -----
+        int guard = 400;
+        while (d.usedCells() < d.room() * USED_SHARE && guard-- > 0) in.month();
+        int month1 = h.last();
+        Snap s1 = new Snap(m, d);
+        int placed1 = d.count(house);
+        boolean allKinds1 = d.count(house) > 0;
+        for (int t : mix) {
+            placed1 += d.count(t);
+            allKinds1 &= d.count(t) > 0;
+        }
+        long used1 = d.usedCells(), room1 = d.room(), free1 = d.freeCells();
+
+        // ----- the yard: a Rail Depot, and the month that follows it -----
+        model[depot] = 1;
+        Snap s2 = quietMonth(h, d);
+        int yardMonth = h.last();
+        int under12 = s1.under(s2, 0), moved12 = movedOf(s1.boxes, s2.boxes), yardPlots = s2.plots(DistrictPlan.FIXED_YARD), railPlots = s2.plots(DistrictPlan.FIXED_RAIL);
+        int control12 = s1.movedWithTheseRuns(m, d);
+        List<long[]> yards = new ArrayList<>(m.runs().yards());
+        long[] railHub = m.runs().rail().hub();
+
+        // ----- four months of arrivals on the ground the yard left -----
+        in.months(MONTHS_BETWEEN);
+        Snap s2b = new Snap(m, d);
+        int moved2b = movedOf(s2.boxes, s2b.boxes);
+
+        // ----- the yard goes: no Rail Depot, and the month that follows -----
+        model[depot] = 0;
+        Snap s3 = quietMonth(h, d);
+        int goneMonth = h.last();
+        int moved3 = movedOf(s2b.boxes, s3.boxes), yardLeft = s3.plots(DistrictPlan.FIXED_YARD), freed = s2b.plots(DistrictPlan.FIXED_YARD) - yardLeft;
+        boolean yardGone = model[depot] == 0 && m.runs().yards().isEmpty();
+
+        // ----- four months, and the depot again -----
+        in.months(MONTHS_BETWEEN);
+        Snap s3b = new Snap(m, d);
+        model[depot] = 1;
+        Snap s4 = quietMonth(h, d);
+        int backMonth = h.last();
+        int under34 = s3b.under(s4, 0), moved4 = movedOf(s3b.boxes, s4.boxes), yardBack = s4.plots(DistrictPlan.FIXED_YARD);
+        int control34 = s3b.movedWithTheseRuns(m, d);
+        int sameSpot = 0;
+        for (int p = 0; p < s4.runs.length; p++) if (s4.runs[p] == DistrictPlan.FIXED_YARD && s2.runs[p] == DistrictPlan.FIXED_YARD) sameSpot++;
+        in.months(MONTHS_BETWEEN);
+        Snap s4b = new Snap(m, d);
+
+        // ----- the highways: Elevated Highways a month until some lie in the district, the plan of that month against the month before -----
+        Snap before = s4b, hwBefore = null, s5 = null;
+        int hwMonth = -1, hwNew = 0, hwNear = 0, hwMoved = 0, hwControl = 0, hwUnder = 0, hwOnRuns = 0, hwMonths = 0;
+        boolean reached = false;
+        for (int i = 0; i < HIGHWAY_MONTHS && s5 == null; i++) {
+            model[highway] += HIGHWAY_STEP;
+            Snap after = quietMonth(h, d);
+            hwMonths++;
+            hwOnRuns += before.arrivalsOnRuns(after);
+            hwNew = before.newPlots(after, DistrictPlan.FIXED_HIGHWAY);
+            if (hwNew > 0) {
+                s5 = after;
+                hwBefore = before;
+                hwMonth = h.last();
+                hwUnder = before.under(after, 0);
+                hwNear = before.under(after, HIGHWAY_CLEAR);
+                hwMoved = movedOf(before.boxes, after.boxes);
+                hwControl = before.movedWithTheseRuns(m, d);
+                reached = m.runs().highwaysReach();
+            }
+            before = after;
+        }
+        int hwBoxes = hwBefore == null ? 0 : hwBefore.boxes.size();
+        Snap s6 = before;
+        if (s5 != null) {
+            in.months(MONTHS_BETWEEN);
+            s6 = new Snap(m, d);
+        }
+        long[] highwayHub = m.runs().highways().hub();
+
+        // ----- the arrivals after each run stand on none of its plots; every log adds up; the sidecar -----
+        int onRuns = s1.arrivalsOnRuns(s2) + s2.arrivalsOnRuns(s2b) + s2b.arrivalsOnRuns(s3) + s3.arrivalsOnRuns(s3b) + s3b.arrivalsOnRuns(s4) + s4.arrivalsOnRuns(s4b) + hwOnRuns
+                + (s5 == null ? 0 : s5.arrivalsOnRuns(s6));
+        boolean adds = logsAddUp(m);
+        byte[] side = m.writeSidecar(h.last(), CityMap.FORMAT);
+        CityMap back = CityMap.readSidecar(side, land, r -> land.amountsInOrder(r), types, h.last(), CityMap.stampIn(side));
+        CityMap.District same = null;
+        if (back != null) for (CityMap.District e : back.districts()) if (e.dx == d.dx && e.dy == d.dy) same = e;
+        java.util.Set<PlanBox> read = same == null ? null : boxesOf(back.plan(same));
+        int readDiffer = read == null ? -1 : movedOf(s6.boxes, read) + movedOf(read, s6.boxes);
+
+        out.printf("      the founding site's district (%d,%d): %,d owned plots, a room of %,d cells, %d houses a month (a house takes %d) and one of %d kinds of building (%d to %d cells) from month %d;"
+                + " the founding site at (%d,%d) in its frame, no mine on the map%n", d.dx, d.dy, d.owned(), roomAtFirst, step, each, mix.length, cellsMin(types, mix), cellsMax(types, mix), firstMonth,
+                land.siteX() - frame.x0, land.siteY() - frame.y0);
+        out.printf("      S1 (month %d): %,d buildings placed, %,d of %,d cells used, the plan places %,d%n", month1, placed1, used1, room1, s1.plan.buildings);
+        out.printf("      the yard (month %d): %s laid in the frame, %,d of S1's %,d boxes lie under them, %,d moved (%,d when the plan is made with S1's fixed ground); the railway's hub (%s) and the yards: %s%n",
+                yardMonth, laidOf(s1, s2), under12, s1.boxes.size(), moved12, control12, hubText(railHub, frame), yardsText(yards, frame));
+        out.printf("      %d months on: %,d of the %,d boxes moved%n", MONTHS_BETWEEN, moved2b, s2.boxes.size());
+        out.printf("      the yard gone (month %d): %,d yard plots left in the frame, %,d freed, %,d of %,d boxes moved%n", goneMonth, yardLeft, freed, moved3, s2b.boxes.size());
+        out.printf("      the yard again (month %d): %s laid, %,d of %,d boxes lie under them, %,d moved (%,d with the fixed ground before); %,d of its %,d yard plots on the first yard's ground%n", backMonth,
+                laidOf(s3b, s4), under34, s3b.boxes.size(), moved4, control34, sameSpot, yardBack);
+        out.printf("      the highways (hub (%s), %d more Elevated Highways a month, laid in the district in the month %d of them, month %d): %,d plots, reaching a street: %b; %,d of the %,d boxes lie under them,"
+                + " %,d within %d plot, %,d moved (%,d with the fixed ground before)%n", hubText(highwayHub, frame), HIGHWAY_STEP, hwMonths, hwMonth, hwNew, reached, hwUnder, hwBoxes, hwNear,
+                HIGHWAY_CLEAR, hwMoved, hwControl);
+
+        check("fixture: the founding site's district found, and no run, mine or highway on the map before the fixture's months", d != null && frame != null && h.reconciled && noRunsYet);
+        check("fixture: the district holds houses and every kind of the mix, uses half its room and has room left, and its plan places every one of them",
+                allKinds1 && used1 >= room1 * USED_SHARE && s1.boxes.size() == placed1 && s1.plan.overflowCount() == 0 && free1 >= each);
+        check("fixture: the Rail Depot's month lays a yard in the district (" + yardPlots + " plots) and a main line (" + railPlots + " plots of rail), and the model has one depot",
+                yardPlots > 0 && railPlots > 0 && !yards.isEmpty() && model[depot] == 1);
+        check("fixture: the yard's month lays plots under buildings that stand: " + under12 + " of S1's " + s1.boxes.size() + " boxes have a plot the runs hold now and did not before", under12 > 0);
+        check("a yard laid across a district's buildings moves none of them: every box of the plan before stands in the plan after (" + s1.boxes.size() + " of them, " + moved12 + " moved)",
+                moved12 == 0 && s1.boxes.size() > 0);
+        check("...and the arrivals after it go on with the yard's ground left as it is: every box stands four months on (" + s2.boxes.size() + " of them, " + moved2b + " moved)", moved2b == 0);
+        check("fixture: the depot taken away, the yard is gone from the district's frame (" + freed + " plots freed)", yardGone && yardLeft == 0 && freed > 0);
+        check("a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (" + s2b.boxes.size() + " of them, " + moved3 + " moved)", moved3 == 0 && s2b.boxes.size() > 0);
+        check("fixture: the depot again, a yard is laid in the frame (" + yardBack + " plots, " + sameSpot + " on the first yard's ground) and lies under " + under34 + " boxes of the plan before",
+                yardBack > 0 && under34 > 0);
+        check("a yard laid again across the buildings that stand moves none of them: every box of the plan before stands in the plan after (" + s3b.boxes.size() + " of them, " + moved4 + " moved)",
+                moved4 == 0 && s3b.boxes.size() > 0);
+        check("fixture: Elevated Highways are laid in the district and reach a street (" + hwNew + " plots, month " + hwMonth + "), among buildings that stand: " + hwNear + " of the " + hwBoxes
+                + " boxes within " + HIGHWAY_CLEAR + " plot of them", hwNew > 0 && reached && hwNear > 0);
+        check("highways laid in a district's buildings move none of them: every box of the plan before the month stands in the plan after (" + hwBoxes + " of them, " + hwMoved + " moved)",
+                hwMoved == 0 && hwBoxes > 0);
+        check("the arrivals after a run stand on none of its plots: " + onRuns + " of the boxes the later plans hold that the earlier did not lie on a plot fixed in the input or among the runs", onRuns == 0);
+        check("...every district's log still sums to its counts after the runs came and went", adds);
+        check("the sidecar written after them and read back plans the district box for box as the map it was written from (" + s6.boxes.size() + " boxes, " + readDiffer + " differ)",
+                back != null && same != null && readDiffer == 0 && s6.boxes.size() > 0);
+    }
+
+    /** The smallest and the largest footprint, in cells, of the types listed. */
+    static int cellsMin(BuildingVisual.Type[] types, int[] ids) {
+        int n = Integer.MAX_VALUE;
+        for (int t : ids) n = Math.min(n, BuildingVisual.cells(types[t]));
+        return n;
+    }
+
+    static int cellsMax(BuildingVisual.Type[] types, int[] ids) {
+        int n = 0;
+        for (int t : ids) n = Math.max(n, BuildingVisual.cells(types[t]));
+        return n;
+    }
+
+    /** A net's hub in the frame's plots, for a line: "40,72". */
+    static String hubText(long[] hub, DistrictPlan.Input frame) {
+        return hub == null ? "none" : (hub[0] - frame.x0) + "," + (hub[1] - frame.y0);
+    }
+
+    /** The runs' yards in the frame's plots, for a line: "[x,y 8x7]". */
+    static String yardsText(List<long[]> yards, DistrictPlan.Input frame) {
+        StringBuilder s = new StringBuilder();
+        for (long[] y : yards) s.append(s.length() > 0 ? ", " : "").append('[').append(y[0] - frame.x0).append(',').append(y[1] - frame.y0).append(' ').append(y[2]).append('x').append(y[3]).append(']');
+        return s.length() == 0 ? "none" : s.toString();
     }
 
     /* =====================================================================
