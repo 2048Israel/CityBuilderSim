@@ -6700,33 +6700,17 @@ public class BuildingManager {
     }
 
     /**
-     * The city's own crews, plus whatever the depots add.
+     * The public works yard: it produces this many units of materials a month on its own.
      *
-     * BASE_CONSTRUCTION is the municipal works department: a city with no
-     * Construction Depot at all still puts up this many points a month, which
-     * is what makes the opening city able to build its first depot.
-     *
-     * RAISED FROM 100 TO 400 on 2026-09-09, Jerus's call, with the founding
-     * endowment and the founding bank. A hundred points against a Construction
-     * Depot that costs 3,000 is thirty months of the whole city's output to buy
-     * the thing that makes it build faster - so the opening decade was spent
-     * waiting rather than deciding, and every measurement of the early game was
-     * really a measurement of that queue.
-     *
-     * It is also the number housing maintenance is charged against. At 100 a
-     * depot-less city with a thousand flats was spending a third of its works
-     * department on repairs; at 400 that is under a tenth, which is the share
-     * the maintenance rate was calibrated for.
-     */
-    public static final int BASE_CONSTRUCTION = 400;
-
-    /**
-     * Same idea for materials: a yard that produces this many a month on its own.
-     *
-     * MOVED WITH BASE_CONSTRUCTION, and by the same factor, deliberately, on
-     * 2026-09-09: points and materials were two halves of one build rate, and
-     * raising one without the other would have quadrupled how fast the city
-     * could build and left it importing four times as much material to do it.
+     * IT MOVED WITH THE POINTS on 2026-09-09, as the other half of one build
+     * rate: raising one without the other would have quadrupled how fast the
+     * city could build and left it importing four times as much material to do
+     * it. It STAYS at PT1-M4 (2026-10-23), when the free points were retired:
+     * the founding depot's nameplate is the same 400 the points were, so the
+     * pair is the same build rate at nameplate - and the yard's material is not
+     * the builders' earning: an order's invoice already leaves out what the
+     * yard covers (Founding.orderCost(), Game.quoteBuild()), so the free
+     * material is the order placer's, not Construction's margin.
      *
      * 320 -> 36 on 2026-09-10, WITH THE UNIT, NOT AGAINST IT. The unit of
      * material went from $2,000 to $18,000 (see MATERIALS_WORLD_PRICE), so the
@@ -6743,12 +6727,22 @@ public class BuildingManager {
      */
     public static final int BASE_MATERIALS = 36;
 
+    /**
+     * The builders' depots' nameplate, and nothing else since PT1-M4
+     * (2026-10-23): the municipal works department's free 400 points are
+     * retired, and the city founds with a depot instead (Game.foundingDepot()).
+     *
+     * The works department put up 100 points a month with no posts behind
+     * them, raised to 400 on 2026-09-09 because the opening decade waited on
+     * the first depot. It went because Construction was paid for points
+     * nobody worked: PT1's month 183 had $377k of the month at a 72% margin
+     * with 0 workers.
+     */
     public long getTotalConstructionCapacity() {
         // NOTE: getProduction1() is a double; the original loop truncated it via
         // implicit int += double narrowing. Casting explicitly here to keep that
         // same truncating behavior rather than silently changing it to round.
-        return BASE_CONSTRUCTION
-                + (long) totalBySector("Construction", t -> t.makes(Good.BUILDING_WORK));
+        return (long) totalBySector("Construction", t -> t.makes(Good.BUILDING_WORK));
     }
 
     /**

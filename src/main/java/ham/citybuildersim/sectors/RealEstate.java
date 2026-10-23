@@ -115,6 +115,17 @@ public final class RealEstate extends Sector {
      * $34 a home a month; a tenth to a fifth of gross rent, which is what
      * real landlords spend. The house rate: since 0.7.103 a road kind has its
      * own (BuildingsTemplate.repairsPerYear()).
+     *
+     * CALIBRATED AGAINST THE WORKS DEPARTMENT, RE-BASED ON THE FOUNDING DEPOT
+     * (PT1-M4). The works department's javadoc said housing maintenance was
+     * charged against its 400 free points - at 100 a depot-less city
+     * with a thousand flats spent a third of its works department on repairs, at
+     * 400 under a tenth, the share this rate was set for. The founding depot's
+     * nameplate is the same 400, so the rate's share is the same against the
+     * crews that now do the repairs; and the repairs count in the work the
+     * builders strike their crews for (sectors.Construction, THE CREWS THE WORK
+     * NEEDS), so they are worked by crews kept on for them, not taken out of a
+     * free month. The rate is not moved.
      */
     public static final double MAINTENANCE_PER_YEAR = .01;
 

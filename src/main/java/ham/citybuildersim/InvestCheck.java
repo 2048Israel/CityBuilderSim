@@ -318,6 +318,17 @@ public class InvestCheck {
         java.util.Arrays.fill(fullFill, 1.0);
         mills.updateJobFillRate(fullFill);
         mills.updateWages(milling.getEconomyManager().getWageRates(), mills.postsPerTier());
+        /*
+         * ...AND THE BUILDERS' DEPOT STAFFED (PT1-M4). The city opens with one
+         * depot and no free works department behind it, and a fixture city
+         * nobody lives in strikes its builders' fill at nothing (Game.
+         * strikeFoundingCrews()), so the plant would have no one to build it.
+         * The question here is price against cost, so the builders are handed
+         * a full crew as the mills are.
+         */
+        Sector millBuilders = milling.getSectors().construction();
+        millBuilders.updateJobFillRate(fullFill);
+        millBuilders.updateWages(milling.getEconomyManager().getWageRates(), millBuilders.postsPerTier());
         mills.setPricePerWatt(.01);
         /*
          * ...AND HANDS FOR THE PLANT (0.7.18, re-caused): the makers ask the
@@ -485,6 +496,11 @@ public class InvestCheck {
         BusinessInvestment plansBuild = new BusinessInvestment(bb, building.getEconomyManager());
         plansBuild.setLandAvailable(1e12, 0);
         Sector crews = building.getSectors().construction();
+        // ...its founding depot staffed (PT1-M4): a fixture city nobody lives in strikes the builders' fill at nothing.
+        double[] crewed = new double[11];
+        java.util.Arrays.fill(crewed, 1.0);
+        crews.updateJobFillRate(crewed);
+        crews.updateWages(building.getEconomyManager().getWageRates(), crews.postsPerTier());
 
         // A short queue: a few houses against the works yard.
         bb.addStack(template(building, "House"), 20, false);
@@ -635,7 +651,7 @@ public class InvestCheck {
          * (Construction.strikeCrews(), THE CREWS THE WORK NEEDS).
          */
         busy.updateJobFillRate(filled);
-        busy.strikeCrews(2_000, 0, 1_000);   // more work than every crew can do
+        busy.strikeCrews(2_000, 1_000);   // more work than every crew can do
         busy.updateWages(w, j);
         busy.bill(10000, 10000);
         busy.recogniseWork(1000, 1000);  // plenty of work
@@ -644,7 +660,7 @@ public class InvestCheck {
 
         ham.citybuildersim.sectors.Construction idle = new ham.citybuildersim.sectors.Construction();
         idle.updateJobFillRate(filled);
-        idle.strikeCrews(0, 0, 1_000);       // nothing ahead
+        idle.strikeCrews(0, 1_000);       // nothing ahead
         idle.updateWages(w, j);
         idle.recogniseWork(0, 1000);     // nothing on site
         check("idle: the core crew kept on, IDLE_PAYROLL_FLOOR of the posts", idle.getPostsOffered(),
@@ -654,9 +670,9 @@ public class InvestCheck {
         assertTrue("idle costs less than busy", idle.getPayroll() < fullPayroll);
         ham.citybuildersim.sectors.Construction half = new ham.citybuildersim.sectors.Construction();
         half.updateJobFillRate(filled);
-        half.strikeCrews(700, 200, 1_000);   // the city's own works do 200 of it
+        half.strikeCrews(500, 1_000);        // half the work
         half.updateWages(w, j);
-        check("half the work past the city's own works, half the crews", half.getPostsOffered(), 50);
+        check("half the work, half the crews", half.getPostsOffered(), 50);
 
         /*
          * ...OVER THE FILL (0.7.17, fourth revision): a builder whose posts
@@ -669,7 +685,7 @@ public class InvestCheck {
         java.util.Arrays.fill(fourFifths, .8);
         fourInFive.updateJobFillRate(fourFifths);
         fourInFive.updateWages(w, j);                            // last month: four posts in five filled
-        fourInFive.strikeCrews(700, 200, 1_000);
+        fourInFive.strikeCrews(500, 1_000);
         check("fixture: last month's wages left the builders four posts in five filled", fourInFive.getFillStruckOn(), .8, 1e-12);
         check("...so they keep the need over the fill: half the work, five eighths of the posts",
                 fourInFive.getPostsOfferedShare(), .5 / .8, 1e-12);
@@ -1073,15 +1089,15 @@ public class InvestCheck {
          * THE REPAIRS COUNT IN THE CREWS KEPT ON (0.7.17, revised: "Lay off
          * idle crews"). With nothing on site a builder whose repairs fill
          * part of its month is not idle: it keeps the crews the repairs need,
-         * past what the city's own works department does, over its depots'
-         * output at full staffing - and never fewer than the core crew.
+         * over its depots' output at full staffing - and never fewer than the
+         * core crew.
          */
         keeping.strikeBuildersCrews();
         double atFull = keeping.getServicesManager().getRoadRatio() * keeping.getHealth().getWorkRatio();
-        double depotsFull = (nameplate - BuildingManager.BASE_CONSTRUCTION) * atFull;
-        double repairCrews = (repairs - BuildingManager.BASE_CONSTRUCTION * atFull) / depotsFull;
-        System.out.printf("   repairs %,.0f a month; the depots at full staffing %,.0f, the works department %,.0f: %.0f%% of the crews%n",
-                repairs, depotsFull, BuildingManager.BASE_CONSTRUCTION * atFull, repairCrews * 100);
+        double depotsFull = nameplate * atFull;
+        double repairCrews = repairs / depotsFull;
+        System.out.printf("   repairs %,.0f a month; the depots at full staffing %,.0f: %.0f%% of the crews%n",
+                repairs, depotsFull, repairCrews * 100);
         assertTrue("fixture: nothing on site, and the repairs need more than the core crew",
                 kb.getRemainingConstructionPoints() == 0
                         && repairCrews > ham.citybuildersim.sectors.Construction.IDLE_PAYROLL_FLOOR && repairCrews < 1);

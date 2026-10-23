@@ -520,8 +520,9 @@ public class Game {
          * In thousands, like every money field here - so $300M to $500M. See
          * BuildingsTemplate's header, or claude/reading-the-numbers.md.
          *
-         * Jerus's call, alongside quadrupling the municipal works and giving the
-         * city a bank on day one. All four are the same decision seen from four
+         * Jerus's call, alongside quadrupling the municipal works (retired at
+         * PT1-M4: the city founds with a depot instead, foundingDepot()) and
+         * giving the city a bank on day one. All four are the same decision seen from four
          * sides: the opening was a city that could not afford to do anything
          * with its first decade. $300M bought about forty Gravel Roads ($6.0M
          * each) OR one Coal Power Plant ($206M), the works department put up 100
@@ -666,6 +667,8 @@ public class Game {
     public void run() {
         initialize();
         foundingBank();
+        foundingDepot();
+        strikeFoundingCrews();
     }
         
     private void initialize() {
@@ -741,6 +744,8 @@ public class Game {
         initialized = false;
         initialize();
         foundingBank();
+        foundingDepot();
+        strikeFoundingCrews();
 
         /*
          * A NEW GAME FOUNDS ON THE AUTOPILOT, AND ROLLS WHAT FALLS DUE (0.7.13).
@@ -784,7 +789,7 @@ public class Game {
      * answer is to hand the city one rather than to soften the premium.
      *
      * PLACED, NOT BUILT - `true` is noConstruction - so it does not consume a
-     * decade of the works department's output before it exists. It is part of
+     * decade of the founding builders' output before it exists. It is part of
      * the endowment, like the hundred people the city houses for nothing.
      *
      * The shareholders' capital arrives on its own: `openBranches()` counts
@@ -827,6 +832,74 @@ public class Game {
          * ground, exactly as it already houses a hundred people.
          */
         landManager.allocate(branch.getLandSqFt());
+    }
+
+    /**
+     * The city opens with one builders' depot already standing (PT1-M4).
+     *
+     * WHY. The city used to build its first depot with the municipal works
+     * department: its constant of 400 points a month, with no
+     * posts behind them, which Construction was paid for. PT1's month 183 was
+     * the finding: $377k of the month at a 72% margin with 0 workers - revenue
+     * for work nobody did. Jerus (2026-10-12): "not meant ... ya sure fix,
+     * perhaps a starting depot or something instead". So the free points are
+     * retired and the city is founded with a Construction Depot (50 posts, 400
+     * points) standing, staffed and paid like any other, and the sector earns
+     * only for the work its own people do. No new template: measured, a
+     * founding town staffs the ordinary depot well enough, because the depot's
+     * own posts bring people.
+     *
+     * PLACED, NOT BUILT - `true` is noConstruction - like the founding bank: it
+     * is part of the endowment, not a month of the builders' output. Its posts
+     * are Construction's and paid like any depot's, and its crews are struck by
+     * the work (sectors.Construction, THE CREWS THE WORK NEEDS), after the
+     * founding's crews are struck (strikeFoundingCrews()).
+     *
+     * CALLED FROM newGame() AND run(), NOT FROM initialize(), for the reason
+     * foundingBank() gives: the load path restores buildings by adding to
+     * whatever is standing, so a depot founded there would be one more on every
+     * load.
+     */
+    private void foundingDepot() {
+        BuildingsTemplate depot = buildingManager.getTemplateByName("Construction Depot");
+        if (depot == null) return;                                       // no such template
+        if (buildingManager.countByName("Construction Depot") > 0) return;   // already has one
+
+        buildingManager.addStack(depot, 1, true);
+
+        // The ground under it, for the reason the bank's note gives: addStack()
+        // does not tell the land office, and the load path derives the
+        // allocation from what stands.
+        landManager.allocate(depot.getLandSqFt());
+    }
+
+    /**
+     * The founding's crews are the people the city has (PT1-M4).
+     *
+     * It counts the posts and strikes every sector's fill from the founding
+     * workforce, with the calls the load path makes in
+     * rebuildSimulationState(): recomputeWorkforce(), updateJobs(), then the
+     * fill rate and the wages to every sector.
+     *
+     * WHY. A sector's fill defaults to 1 until its first wage strike, so
+     * without this the founding depot would work month 1 at its whole
+     * nameplate in a city nobody lives in yet - month 1 is advanced on the
+     * crews struck the month before, and there is no month before. Construction
+     * would be paid for 400 points nobody worked, the finding itself in
+     * miniature. And a city saved before its first month reloads through
+     * rebuildSimulationState(), which strikes the fill from the workforce, so
+     * without this the live city and its own reload would build different
+     * first months.
+     *
+     * Called from newGame() and run(), after foundingDepot(), for the reason
+     * that one gives.
+     */
+    private void strikeFoundingCrews() {
+        populationManager.recomputeWorkforce();
+        populationManager.updateJobs(getJobs());
+        economyManager.updateJobFillRate(populationManager.getJobFillRate());
+        economyManager.updateWages(populationManager.getWagesPerType(),
+                buildingManager.getJobArrayByName("Commercial Bank"));
     }
     public void resumeGame(){
         // Just make sure templates/state are initialized; the JavaFX screen
@@ -5694,15 +5767,13 @@ public class Game {
 
         /*
          * THE CREWS KEPT ON (0.7.17): the depots' capacity at the share of
-         * their posts the builders offered this month, the city's own works
-         * department whole - it has no posts to lay off. See
-         * sectors.Construction, THE CREWS THE WORK NEEDS. With every post
-         * offered this is the figure it always was
-         * (getConstructionOutputAtEveryPost()).
+         * their posts the builders offered this month - and since PT1-M4
+         * nothing else: no free points kept whole. See sectors.Construction,
+         * THE CREWS THE WORK NEEDS. With every post offered this is the
+         * figure it always was (getConstructionOutputAtEveryPost()).
          */
-        double capacity = buildingManager.getTotalConstructionCapacity();
-        double depots = Math.max(0, capacity - BuildingManager.BASE_CONSTRUCTION);
-        double working = capacity - depots * (1 - builders.getPostsOfferedShare());
+        double working = buildingManager.getTotalConstructionCapacity()
+                * builders.getPostsOfferedShare();
 
         /*
          * Sickness slows the sites too, and construction is where a player
@@ -5740,8 +5811,8 @@ public class Game {
     /**
      * The builders strike the month's crews (0.7.17): the work ahead - the
      * repairs of the city standing now and every point still owed on site
-     * after this month's advance - against what their depots and the city's
-     * works department would do with every post filled. Called once a month
+     * after this month's advance - against what their depots would do with
+     * every post filled. Called once a month
      * from SimulationEngine.updatePopulation(), before the jobs are counted
      * and the labour market allocates them. See sectors.Construction, THE
      * CREWS THE WORK NEEDS, for why there and what a reload does.
@@ -5749,11 +5820,9 @@ public class Game {
     void strikeBuildersCrews() {
         double atFullStaffing = servicesManager.getRoadRatio() * health.getWorkRatio();
         double capacity = buildingManager.getTotalConstructionCapacity();
-        double depots = Math.max(0, capacity - BuildingManager.BASE_CONSTRUCTION);
         getSectors().construction().strikeCrews(
                 getMaintenancePoints() + buildingManager.getRemainingConstructionPoints(),
-                (capacity - depots) * atFullStaffing,
-                depots * atFullStaffing);
+                capacity * atFullStaffing);
         // ...and Freight's drivers, a post for each truck a depot keeps (FR2), at the same moment and for the same reason.
         getSectors().freight().haulage().strikeDrivers();
     }
@@ -6958,8 +7027,32 @@ public class Game {
     public int demolishable(BuildingsTemplate t) {
         if (t == null) return 0;
         int paving = ConstructionControl.paves(t) ? buildingManager.getControl().paving() : 0;
-        return Math.max(0, buildingManager.getQuantity(t.getId()) - buildingManager.getControl().closingOf(t.getId())
+        int n = Math.max(0, buildingManager.getQuantity(t.getId()) - buildingManager.getControl().closingOf(t.getId())
                 - paving);
+        /*
+         * THE BUILDERS' LAST DEPOT CANNOT BE BOUGHT OUT AND DEMOLISHED (PT1-M4):
+         * the depot is what builds, the demolition itself included, and a city
+         * with none can never build another.
+         */
+        if (n > 0 && isBuildersDepot(t) && otherBuildersDepotsStanding(t) == 0) return n - 1;
+        return n;
+    }
+
+    /** Whether this template is a builders' depot: owned by Construction and making building work. */
+    private boolean isBuildersDepot(BuildingsTemplate t) {
+        return t.isOwnedBySector() && t.getSector().equals(getSectors().construction().key())
+                && t.makes(Good.BUILDING_WORK) > 0;
+    }
+
+    /** How many builders' depots of any other Construction template stand. */
+    private int otherBuildersDepotsStanding(BuildingsTemplate t) {
+        int standing = 0;
+        for (BuildingsTemplate d : buildingManager.getTemplatesBySector(getSectors().construction().key())) {
+            if (d.getId() != t.getId() && d.makes(Good.BUILDING_WORK) > 0) {
+                standing += buildingManager.getQuantity(d.getId());
+            }
+        }
+        return standing;
     }
 
     /** The demolition order every path shares: paid as a building order is, and the site put up, its buildings to close as the month starts (closeDemolished()). */

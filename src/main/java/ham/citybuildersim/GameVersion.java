@@ -8024,8 +8024,23 @@ public final class GameVersion {
      *     THE FLOOR RISES TO 44 WITH IT (the rule): a save of format 43 or
      *     older is refused, naming the build that still opens it. No
      *     conversion is written.
+     *
+     * 45 - THE WORKS DEPARTMENT RETIRED (batch PT1-M4; docs/queue/PT1.md,
+     *     M4): the builders' capacity is their depots' nameplate alone, and a
+     *     new city founds with a Construction Depot standing
+     *     (Game.foundingDepot()) where it had 400 free points a month. Nothing
+     *     new is saved, but a save from before was played on the free points
+     *     and would load WRONGLY, not merely incompletely: one with no depot
+     *     yet - PT1's city at month 183 was one - would load with no builders
+     *     at all, a city that can never build anything again, its depot
+     *     included; and every older city's crews would be struck 400 points
+     *     short of the month it was saved in.
+     *
+     *     THE FLOOR RISES TO 45 WITH IT (the rule): a save of format 44 or
+     *     older is refused, naming the build that still opens it. No
+     *     conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 44;
+    public static final int SAVE_FORMAT = 45;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8035,7 +8050,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 44 since batch CD3 (THE CITY'S PAPER ON AMORTISED COST above: a save's
+     * 45 since batch PT1-M4 (THE WORKS DEPARTMENT RETIRED above: a save
+     * without a depot would load into a city that can never build). 44 from
+     * batch CD3 (THE CITY'S PAPER ON AMORTISED COST above: a save's
      * pieces carry no carrying value and would book their interest wrongly).
      * 43 from batch XR1 (THE FLOAT above: a save's currency would load
      * wrongly). 42 from batch CD2 (THE LINEUP AND THE AUCTION above: a save's term
@@ -8063,7 +8080,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 44;
+    public static final int OLDEST_LOADABLE_FORMAT = 45;
 
     public static final String NAME = "CityBuilderSim";
 
