@@ -318,17 +318,6 @@ public class InvestCheck {
         java.util.Arrays.fill(fullFill, 1.0);
         mills.updateJobFillRate(fullFill);
         mills.updateWages(milling.getEconomyManager().getWageRates(), mills.postsPerTier());
-        /*
-         * ...AND THE BUILDERS' DEPOT STAFFED (PT1-M4). The city opens with one
-         * depot and no free works department behind it, and a fixture city
-         * nobody lives in strikes its builders' fill at nothing (Game.
-         * strikeFoundingCrews()), so the plant would have no one to build it.
-         * The question here is price against cost, so the builders are handed
-         * a full crew as the mills are.
-         */
-        Sector millBuilders = milling.getSectors().construction();
-        millBuilders.updateJobFillRate(fullFill);
-        millBuilders.updateWages(milling.getEconomyManager().getWageRates(), millBuilders.postsPerTier());
         mills.setPricePerWatt(.01);
         /*
          * ...AND HANDS FOR THE PLANT (0.7.18, re-caused): the makers ask the
@@ -496,11 +485,6 @@ public class InvestCheck {
         BusinessInvestment plansBuild = new BusinessInvestment(bb, building.getEconomyManager());
         plansBuild.setLandAvailable(1e12, 0);
         Sector crews = building.getSectors().construction();
-        // ...its founding depot staffed (PT1-M4): a fixture city nobody lives in strikes the builders' fill at nothing.
-        double[] crewed = new double[11];
-        java.util.Arrays.fill(crewed, 1.0);
-        crews.updateJobFillRate(crewed);
-        crews.updateWages(building.getEconomyManager().getWageRates(), crews.postsPerTier());
 
         // A short queue: a few houses against the works yard.
         bb.addStack(template(building, "House"), 20, false);

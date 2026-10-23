@@ -668,7 +668,6 @@ public class Game {
         initialize();
         foundingBank();
         foundingDepot();
-        strikeFoundingCrews();
     }
         
     private void initialize() {
@@ -745,7 +744,6 @@ public class Game {
         initialize();
         foundingBank();
         foundingDepot();
-        strikeFoundingCrews();
 
         /*
          * A NEW GAME FOUNDS ON THE AUTOPILOT, AND ROLLS WHAT FALLS DUE (0.7.13).
@@ -852,8 +850,18 @@ public class Game {
      * PLACED, NOT BUILT - `true` is noConstruction - like the founding bank: it
      * is part of the endowment, not a month of the builders' output. Its posts
      * are Construction's and paid like any depot's, and its crews are struck by
-     * the work (sectors.Construction, THE CREWS THE WORK NEEDS), after the
-     * founding's crews are struck (strikeFoundingCrews()).
+     * the work (sectors.Construction, THE CREWS THE WORK NEEDS).
+     *
+     * ITS FIRST MONTH IS THE MODEL'S FIRST-MONTH CONVENTION, and was left so
+     * (PT1-M4, measured; the batch's notes). Every employer's fill reads 1
+     * until the first month's labour market strikes it, and the sites of
+     * month 1 advance before that market runs, so the depot works month 1 at
+     * its nameplate in a city nobody lives in yet: one month of 400 points with
+     * no payroll, where the works department did it every month. Striking the
+     * founding's fill from its empty workforce, as the load path would, left
+     * the village unbuilt until month 3 and the playtest's first households
+     * with nowhere to live in months 2-3, and four more harnesses red - a call
+     * for Jerus, not taken here.
      *
      * CALLED FROM newGame() AND run(), NOT FROM initialize(), for the reason
      * foundingBank() gives: the load path restores buildings by adding to
@@ -873,34 +881,6 @@ public class Game {
         landManager.allocate(depot.getLandSqFt());
     }
 
-    /**
-     * The founding's crews are the people the city has (PT1-M4).
-     *
-     * It counts the posts and strikes every sector's fill from the founding
-     * workforce, with the calls the load path makes in
-     * rebuildSimulationState(): recomputeWorkforce(), updateJobs(), then the
-     * fill rate and the wages to every sector.
-     *
-     * WHY. A sector's fill defaults to 1 until its first wage strike, so
-     * without this the founding depot would work month 1 at its whole
-     * nameplate in a city nobody lives in yet - month 1 is advanced on the
-     * crews struck the month before, and there is no month before. Construction
-     * would be paid for 400 points nobody worked, the finding itself in
-     * miniature. And a city saved before its first month reloads through
-     * rebuildSimulationState(), which strikes the fill from the workforce, so
-     * without this the live city and its own reload would build different
-     * first months.
-     *
-     * Called from newGame() and run(), after foundingDepot(), for the reason
-     * that one gives.
-     */
-    private void strikeFoundingCrews() {
-        populationManager.recomputeWorkforce();
-        populationManager.updateJobs(getJobs());
-        economyManager.updateJobFillRate(populationManager.getJobFillRate());
-        economyManager.updateWages(populationManager.getWagesPerType(),
-                buildingManager.getJobArrayByName("Commercial Bank"));
-    }
     public void resumeGame(){
         // Just make sure templates/state are initialized; the JavaFX screen
         // that follows this call is responsible for displaying the game.
