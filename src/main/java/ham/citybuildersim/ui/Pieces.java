@@ -45,6 +45,11 @@ import javafx.scene.layout.Priority;
  * and a gain or a loss in its colour; and since 0.7.45 who goes without,
  * the hunger in its two halves.
  *
+ * Since 0.8.26 (study UP4) the helpers the People page reaches make their
+ * nodes through Kept, and the pictures among them (SegmentBar, Waterfall) are
+ * told their figures by set(); outside a kept draw Kept makes a new node, so
+ * every other screen gets what it got before.
+ *
  * Static for the same reason as Money and Statement: no state, used
  * everywhere, called unqualified through an import static. The scroller is
  * not here: scrolled() reads the shell's current screen, so it stayed there.

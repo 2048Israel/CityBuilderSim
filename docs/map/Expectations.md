@@ -1,4 +1,4 @@
-# Expectations.java - 286 lines · 16 methods · 11 constants · model
+# Expectations.java - 287 lines · 16 methods · 11 constants · model
 
 `ham/citybuildersim/Expectations.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -73,7 +73,7 @@
 | 68 | THE DIALS (spec-inflation.md, section 2.1 and star 14) |
 | 99 | THE STATE - eight slots saved: four numbers and whether they are seeded, the level the month is struck at, and the mo... |
 | 149 | THE MONTH |
-| 258 | · carrying |
+| 259 | · carrying |
 
 ## Constants
 
@@ -89,7 +89,7 @@
 | 94 | `Expectations.KSEED` | `.80` | Where a new city, and a save from before the anchor, starts: a bank believed more than not, with something to earn. |
 | 97 | `Expectations.EXPECTED_FLOOR` | `-.01` | The least inflation anybody expects, a fraction a year: the floor under the deflation attractor (minus one per cent). |
 | 227 | `Expectations.PEG_BREAK_DENT` | `.5` | The share of the way to KMIN that credibility falls the month a peg breaks (XR2, est.): a bank that promised a rate and could not keep it is believed half as much as it was above the floor. |
-| 261 | `Expectations.SAVE_SLOTS` | `8` | The slots a save carries: credibility, smoothed, expected, level, seeded - then the lean, the level the month's constants are struck at, and (0.7.45) the month's move in credibility. |
+| 262 | `Expectations.SAVE_SLOTS` | `8` | The slots a save carries: credibility, smoothed, expected, level, seeded - then the lean, the level the month's constants are struck at, and (0.7.45) the month's move in credibility. |
 
 ## Fields (state)
 
@@ -103,13 +103,13 @@
 | 110 | `private double lean` | This month's lean against the miss, 0 to 1 - a record for the screens; nothing reads it back. |
 | 112 | `private double struck` | The level the money constants are struck at this month: the expected level as the month began (strikeLevel()). |
 | 114 | `private double step` | This month's move in credibility, the month's own less the last's (0.7.45): a record for NEEDS YOU and the Policy tab - nothing reads it back. |
-| 244 | `private double dented` | What pegBroke() took this month, for takeMonth()'s record of the month's move; struck and cleared there, the same month, so never saved. |
+| 245 | `private double dented` | What pegBroke() took this month, for takeMonth()'s record of the month's move; struck and cleared there, the same month, so never saved. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 66 | 221 | **type** `public class Expectations` | What the city expects prices to do, and how far it believes the central bank. |
+| 66 | 222 | **type** `public class Expectations` | What the city expects prices to do, and how far it believes the central bank. |
 
 ### THE DIALS (spec-inflation.md, section 2.1 and star 14) (lines 68-98)
 
@@ -128,19 +128,19 @@
 | 141 | 4 | `public double strikeLevel()` | The top of a month: the constants are to be struck at the level the last month ended on. |
 | 147 | 1 | `public double monthlyExpected()` | Expected inflation as a month's growth: (1 + expected) to the twelfth, less one. |
 
-### THE MONTH (lines 149-257)
+### THE MONTH (lines 149-258)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 163 | 44 | `public void takeMonth(PriceIndex index, double target, double policy, double neutral, double rule)` | One month, read straight after the price index has taken its month. |
 | 214 | 11 | `public void seed(PriceIndex index, double target)` | Seeds a city with no anchor yet: a new game's first month, or a save from before 0.7.42 on its load. |
-| 236 | 6 | `public void pegBroke()` | A peg broke this month (ForeignAccounts, THE REGIMES; Game, right after the reprice): credibility falls PEG_BREAK_DENT of the way to KMIN, at once. |
-| 247 | 10 | `public void reset()` | A new game: unseeded, at the defaults; its first month seeds it at the city's target. |
+| 237 | 6 | `public void pegBroke()` | A peg broke this month (ForeignAccounts, THE REGIMES; Game, right after the reprice): credibility falls PEG_BREAK_DENT of the way to KMIN, at once. |
+| 248 | 10 | `public void reset()` | A new game: unseeded, at the defaults; its first month seeds it at the city's target. |
 
-### carrying (lines 258-286)
+### carrying (lines 259-287)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 264 | 3 | `public double[] toSaveArray()` | The state as the save carries it: DataSave.expectations. |
-| 273 | 13 | `public boolean restore(double[] saved)` | from before 0.7.42), with nothing changed - the load path then seeds it (seed()). |
+| 265 | 3 | `public double[] toSaveArray()` | The state as the save carries it: DataSave.expectations. |
+| 274 | 13 | `public boolean restore(double[] saved)` | from before 0.7.42), with nothing changed - the load path then seeds it (seed()). |
 

@@ -112,7 +112,7 @@ public final class GoodsMarket {
 
     public Good good() { return good; }
 
-    /** City money per dollar. Pushed in each month by EconomyManager, before anything is priced. */
+    /** City money per dollar, times the world's price level - since AN1 the D$ the goods are struck at (EconomyManager, THE D$ THE GOODS ARE STRUCK AT), not the D$ itself. Pushed in each month by EconomyManager, before anything is priced. */
     public void setExchangeRate(double rate) {
         this.exchangeRate = rate > 0 ? rate : 1;
     }

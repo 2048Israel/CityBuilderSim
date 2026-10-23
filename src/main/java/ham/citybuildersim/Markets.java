@@ -91,7 +91,7 @@ public final class Markets {
 
     public Iterable<GoodsMarket> all() { return markets.values(); }
 
-    /** City money per dollar, times the world's price level. Before anything is priced. */
+    /** City money per dollar, times the world's price level - since AN1 at the D$ the goods are struck at (EconomyManager.strikeExchangeRate()). Before anything is priced. */
     public void setExchangeRate(double rate) {
         for (GoodsMarket m : markets.values()) m.setExchangeRate(rate);
     }

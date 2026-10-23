@@ -7100,6 +7100,23 @@ public final class GameVersion {
      *     and fxCover (no format bump: an older save loads as Lean).
      *   - Harness: CurrencyRegimeCheck (new); HoldersCheck's fixture restated.
      *
+     * 0.8.23 (2026-10-22) - FX8, XR2'S LOOSE ENDS OFF THE DEFAULT PATH
+     *   (docs/queue/FX8-notes.md). No trace moves: under Lean all of it is
+     *   off.
+     *   - The central bank keeps nothing, restated: equity less the vault,
+     *     plus what it paid in new money for the vault's dollars, is the
+     *     remittance due less the loss carried.
+     *   - Leaving a peg clears its doubt (ForeignAccounts.setRegime()), so
+     *     the hot money no longer leaves at the dead peg's hazard for one
+     *     more month.
+     *   - Save: the hot money's month (arrived, departed, on doubt) in
+     *     CapitalFlows slots 16-18, the array 19 long (no format bump: a
+     *     shorter one leaves them at 0).
+     *   - Trade's "net bought into the vault" counts the central bank's edge
+     *     purchases (ForeignAccounts.noteEdgePaidByCentralBank()).
+     *   - Harness: CurrencyRegimeCheck 5, 9 and 11 restated and extended, 12
+     *     and 13 new; HoldersCheck pins the array at 19 slots.
+     *
      * 0.8.24 (2026-10-22) - FX7, THE RUNS DATED: A RUN LAID ACROSS A
      * DISTRICT'S BUILDINGS MOVES NONE OF THEM (docs/queue/FX7-notes.md). The
      * map's alone; the trace is byte-identical to 0.8.23's.

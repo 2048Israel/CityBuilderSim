@@ -103,6 +103,7 @@ public class KeptCheck {
     /** The budget for the kept People page's month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC. */
     static final double KEPT_MONTH_MS = 12;
 
+    /** Where a month's log goes while month() runs it: nowhere. */
     private static final PrintStream QUIET = new PrintStream(OutputStream.nullOutputStream());
 
     static <T> T fx(Callable<T> c) throws Exception {

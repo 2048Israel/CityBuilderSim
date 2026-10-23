@@ -623,6 +623,7 @@ public final class KeptBench {
         return out;
     }
 
+    /** Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). */
     static final boolean PRECISE = Boolean.getBoolean("keptbench.precise");
 
     private static void sign(Node n, String path, List<String> out) {

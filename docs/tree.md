@@ -10,7 +10,7 @@ adds its line here, not in `CLAUDE.md`.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; over 17,000 lines, 43 banner sections
+        Game.java                  the month, the seam every system meets at; over 17,000 lines, 45 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
@@ -443,8 +443,14 @@ adds its line here, not in `CLAUDE.md`.
                                    unit train along their line and drawn whole across tiles, one junction a
                                    crossing, and "Unmade street" for the legend's track (FORMAT 10); since
                                    0.8.20 (batch CL4) the four avenues and the curved streets drawn as
-                                   smooth bands (TileRaster's THE AVENUES, THE CURVES);
-                                   nothing in the model reads it - MapCheck holds it (15 the
+                                   smooth bands (TileRaster's THE AVENUES, THE CURVES); since 0.8.24
+                                   (batch FX7, THE RUNS DATED) each district's journal of the plots whose
+                                   kind of fixed ground (highway, track, yard) a month changed, handed to
+                                   its plan and kept in the sidecar (FORMAT 11) - MapCheck 2d; since 0.8.27
+                                   (batch UP3) the minimap's far node kept as three layers, land, districts
+                                   and runs, each redrawn only when its key moved (MapTiles.KeptNode), and
+                                   what any far node is drawn from hashed (MapTiles.nodeKey()) - MapCheck
+                                   18; nothing in the model reads it - MapCheck holds it (15 the
                                    materials), RailDrawCheck and JunctionCheck the drawing
         MiniMapFrame.java          the minimap's arithmetic (0.7.134, batch MM2; docs/studies/spec-globe.md
                                    8.3): what the stamp at the rail's foot and its hover preview frame -
@@ -467,7 +473,9 @@ adds its line here, not in `CLAUDE.md`.
                                    GatewayCheck and MainLineCheck hold them; since 0.8.18 (batch FX5) each
                                    yard laid along its line as long as a unit train where the ground allows
                                    (YARD_LONG), across a cell's ring street, and a station alone laying its
-                                   main line (MainLineCheck)
+                                   main line (MainLineCheck); since 0.8.24 (batch FX7) it tells a witness of
+                                   each district a month's layTo() is about to change, so the map can date
+                                   the runs
         Gateways.java              the land's offing (0.8.1, batch FR0; spec-freight 4.1): the bearing
                                    with the longest run of land from the founding site, ties by its
                                    hash; on the Earth toward the nearest larger place along land; none
@@ -488,8 +496,10 @@ adds its line here, not in `CLAUDE.md`.
                                    and since 0.8.16 (batch FX6) on its ground as bought, month by month
                                    (THE GROUND BOUGHT); since 0.8.20 (batch CL4) four avenues at 45 degrees
                                    from the founding site, laid as each cell opens, and the curves - far
-                                   crescents and the streets along a cut, drawn smooth (StreetCurves) -
-                                   PlanCheck holds it
+                                   crescents and the streets along a cut, drawn smooth (StreetCurves);
+                                   since 0.8.24 (batch FX7, THE RUNS DATED) its history replayed on the runs
+                                   of each month, not today's, so a box under a run laid later stays and
+                                   ground a run leaves is room again (PlanCheck 15) - PlanCheck holds it
         TrackCurves.java, StreetCurves.java
                                    the map's curves as one geometry (0.8.18, batch FX5; 0.8.20, batch
                                    CL4): a polyline's corners rounded with arcs - the railway's bends and
@@ -560,20 +570,30 @@ adds its line here, not in `CLAUDE.md`.
                                    and labelled "to the world" (worldLines()), and the legend's
                                    TRANSPORT, the railway in four entries and the gateway its own; since
                                    0.8.8, batch FR5, Haulage's trucks at the near view (trucks(),
-                                   TruckShapes), while GamePrefs' trucksOnMap is on), and ZoningScreen.java (Policy's fifth
+                                   TruckShapes), while GamePrefs' trucksOnMap is on; since 0.8.27, batch
+                                   UP3, a far node re-coloured only when its MapTiles.nodeKey() moved),
+                                   and ZoningScreen.java (Policy's fifth
                                    area, Zoning, 0.7.109: PolicyScreen dispatches the area to it and keeps
                                    the staged set and the tray), and MiniMap.java (the minimap, 0.7.134: a
                                    stamp of the city at the rail's foot above Menu, its preview on hover,
                                    the land office's map over the window on a click; MiniMapFrame's
-                                   arithmetic), and CapChips.java (0.8.17, batch CD2: the highest yield a
+                                   arithmetic; since 0.8.27, batch UP3, the stamp and the preview from
+                                   kept nodes, a picture begun at most every STAMP_EVERY_MS), and
+                                   CapChips.java (0.8.17, batch CD2: the highest yield a
                                    sale takes as three chips and a yield box - fair plus a point, a yield
                                    named, or Fill it - one for each cap: Borrow's, the rollover's,
                                    automatic building's and the build screen's funding card's), and
                                    UiProbe.java (0.8.25, batch UP1: the window's probe - each rail screen's
                                    build and layout, the clock at 50x, the FX thread's shares under JFR, on
                                    the playtest's city grown to the months it is given; a main() run by hand
-                                   on the PC, not in AllChecks). The model never imports it.
-        *Check.java                127 harnesses, each a main() with static helpers
+                                   on the PC, not in AllChecks), and Kept.java (0.8.26, study UP4,
+                                   docs/studies/spec-screens-in-place.md: a page kept between redraws - the
+                                   screen's own drawing code run over the nodes it made last time, by scope
+                                   and order, its boxes setting their children in one call where they
+                                   differ; People's page the pilot, through UserInterface.keepMenu()) with
+                                   KeptBench.java (the People page on a scene of its own, drawn kept and
+                                   built new, for KeptCheck). The model never imports it.
+        *Check.java                129 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under

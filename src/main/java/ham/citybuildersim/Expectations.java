@@ -229,7 +229,8 @@ public class Expectations {
     /**
      * A peg broke this month (ForeignAccounts, THE REGIMES; Game, right after
      * the reprice): credibility falls PEG_BREAK_DENT of the way to KMIN, at
-     * once. The next month's takeMonth() prices it into expected inflation, and
+     * once. The same month's takeMonth(), which Game calls after it, prices it
+     * into expected inflation and counts it in the month's move, and
      * credibility then climbs back at GAIN_MONTHS only while inflation sits on
      * target.
      */

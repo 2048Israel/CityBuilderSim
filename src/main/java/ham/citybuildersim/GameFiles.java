@@ -411,8 +411,8 @@ public final class GameFiles {
      * String first - a 13 MB history was a String of 13 MB on the FX thread,
      * and a copy of it as bytes. The .tmp is closed before anything else
      * happens; then the rule is the byte version's: the .bak, then the swap.
-     * A body that throws, of whatever kind, leaves no .tmp and the old file
-     * untouched.
+     * A body that throws an IOException or any RuntimeException leaves no
+     * .tmp and the old file untouched (an Error is not caught).
      */
     public Result write(Path file, Body body) {
 

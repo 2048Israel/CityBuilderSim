@@ -37,8 +37,9 @@ import java.util.function.Supplier;
  * them, at the next - so a month that lands sets its figures on the page on show instead of
  * throwing the page away and building another.
  *
- * <p>WHY. Until 0.8.25 every screen was drawn by emptying the page and building it afresh
- * (UserInterface.clearMenu()), on every month the clock redraws. A node new to the scene is
+ * <p>WHY. Before 0.8.26 every screen was drawn by emptying the page and building it afresh
+ * (UserInterface.clearMenu()), on every month the clock redraws, and every screen but People
+ * still is. A node new to the scene is
  * styled from nothing - its skin made, every CSS property looked up - then laid out with its
  * text measured, then given a peer for the renderer; a node kept in place pays none of that,
  * and a label whose text is unchanged is not even laid out again. At month 4,000 of the
@@ -572,7 +573,9 @@ public final class Kept {
        WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE
        ===================================================================== */
 
+    /** The key Tooltip.install() keeps a node's tooltip under in its properties: what tipOf() reads. */
     private static final String TOOLTIP = "javafx.scene.control.Tooltip";
+    /** The key play() keeps a node's last animation under in its properties, to stop it before the next. */
     private static final String ANIMATION = "kept.animation";
 
     /** The tooltip installed on a node, or null. */

@@ -108,6 +108,7 @@ public final class SaveWriter {
         }
     }
 
+    /** The one writer every city in the JVM shares: what shared() hands out. */
     private static final SaveWriter SHARED = new SaveWriter();
 
     /** The writer every save in this JVM goes through. */

@@ -1,4 +1,4 @@
-# UiProbe.java - 694 lines · 22 methods · 6 constants · interface
+# UiProbe.java - 695 lines · 22 methods · 6 constants · interface
 
 `ham/citybuildersim/ui/UiProbe.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -81,7 +81,7 @@
 | 155 | `UiProbe.FRAME_P95` | `Map.ofEntries(Map.entry("Build", 133.0), Map.entry("Land", 96.0), Map.entry("...` | Every rail screen's 95th-percentile frame at 50x at month 4,000, ms: its figure before UP2, as this probe measured it on the PC at 0.8.26 (main 95d02db3, another batch's suite running beside it; docs/queue/UP2-notes.m... |
 | 162 | `UiProbe.FRAME_P95_FROM` | `4000` | The month from which FRAME_P95 is asserted: the city it was measured on. |
 | 562 | `UiProbe.KEYS` | `{ "ham.citybuildersim.ui.UserInterface$", "ham.citybuildersim.Game.nextMonth"...` | The prefixes of "type.method" an FX-thread sample is counted under, if any frame of its stack starts with one: inclusive shares, so a sample counts once for each key it is under. |
-| 598 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` |  |
+| 599 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` | The JavaFX thread's name, as the recording names it: the only thread whose samples analyse() reads. |
 
 ## Fields (state)
 
@@ -100,7 +100,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 126 | 569 | **type** `public final class UiProbe` | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on it, and times every rail screen, the real clock at 50x and the save. |
+| 126 | 570 | **type** `public final class UiProbe` | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on it, and times every rail screen, the real clock at 50x and the save. |
 | 128 | 1 | `private UiProbe()` |  |
 | 170 | 17 | `static double[] pulse(javafx.scene.Scene sc) throws Exception` | The pulse's CSS and layout, as a frame runs them (Scene.focusCleanup and doCSSPass, then doLayoutPass; by reflection, since the toolkit is on the class path): {CSS ms, layout ms}. |
 | 189 | 7 | `private static void chrome() throws Exception` | The chrome drawn again, as every redraw draws it: the header, the rail, the city panel, the construction panel and the inbox. |
@@ -124,10 +124,10 @@
 | 517 | 31 | `private static void saveAndLoad(GameFiles files) throws Exception` | The save as UP1 made it, then the load. |
 | 549 | 5 | `private static int buildings()` |  |
 
-### reading the recording (lines 555-694)
+### reading the recording (lines 555-695)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 600 | 49 | `private static void analyse(Path jfr) throws Exception` |  |
-| 656 | 38 | `private static void callers(String[] a) throws Exception` | {@code --callers file.jfr method-prefix [rows]}: for the FX-thread samples with a method starting with the prefix in their stack, the ham.* frames from there up (six at most), most common path first. |
+| 601 | 49 | `private static void analyse(Path jfr) throws Exception` |  |
+| 657 | 38 | `private static void callers(String[] a) throws Exception` | {@code --callers file.jfr method-prefix [rows]}: for the FX-thread samples with a method starting with the prefix in their stack, the ham.* frames from there up (six at most), most common path first. |
 

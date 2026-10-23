@@ -1,4 +1,4 @@
-# KeptBench.java - 683 lines · 61 methods · 5 constants · interface
+# KeptBench.java - 684 lines · 61 methods · 5 constants · interface
 
 `ham/citybuildersim/ui/KeptBench.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -35,7 +35,7 @@
 | 63 | `KeptBench.HEADER_WIDTH` | `1600` | The window's width in KeptCheck's pictures: the header is laid out across it. |
 | 66 | `KeptBench.RAIL_HEIGHT` | `900` | The window's height: the rail is laid out down it. |
 | 73 | `KeptBench.PANEL_HEIGHT` | `900` | The three panels' scenes (UP2, slice 2b): the city panel's 290 wide, the construction panel's 280, the inbox list's. |
-| 626 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` |  |
+| 627 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
 
 ## Fields (state)
 
@@ -57,7 +57,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 632 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
+| 52 | 633 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
 | 79 | 29 | `public KeptBench(Game game)` | The bench on a city: the window's object with no stage, its menu column in a scene of its own. |
 | 110 | 5 | `public double drawKept()` | People's page drawn kept from its pool (the first draw makes every node): the draw's own milliseconds. |
 | 117 | 3 | `public int lastMade()` | The nodes the last kept draw made new. |
@@ -95,7 +95,7 @@
 | 358 | 6 | `public boolean headerHasFocus()` | Whether the focus is on a node inside the header (the header itself is the scene's root here, where the draw puts the focus). |
 | 370 | 15 | `public static boolean nestedDrawsKeepEach()` | A draw of one pool inside a draw of another (the header's draw reaches the envelope's) gives each its own nodes: the outer's three are handed back to it at the next round, the inner's one to the inner pool - drawn on ... |
 
-### THE THREE PANELS (UP2, slice 2b): the city panel, the construction panel, the inbox's list (lines 386-683)
+### THE THREE PANELS (UP2, slice 2b): the city panel, the construction panel, the inbox's list (lines 386-684)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -126,7 +126,7 @@
 | 580 | 22 | `private static double[] passes(Scene sc, javafx.scene.Parent root) throws Exception` |  |
 | 604 | 9 | `public int[] pixels()` | The page as pixels, ARGB, row by row: the menu column's snapshot, with its width and height first. |
 | 620 | 5 | `public List<String> signature()` | The page as it is now, a line a node in the order its code made them: the node's class; its words; its inline style; the values code set on it (the styleable ones whose origin is code); whether it has a click, a hover... |
-| 628 | 25 | `private static void sign(Node n, String path, List<String> out)` |  |
-| 660 | 12 | `private static String codeSet(Styleable n)` | Every styleable value a node has now, by property, where it is not the property's initial value: what code set and what its style made of it, both pages styled and laid out alike. |
-| 674 | 9 | `private static String shape(Node n)` | A shape's own geometry, which no style sets. |
+| 629 | 25 | `private static void sign(Node n, String path, List<String> out)` |  |
+| 661 | 12 | `private static String codeSet(Styleable n)` | Every styleable value a node has now, by property, where it is not the property's initial value: what code set and what its style made of it, both pages styled and laid out alike. |
+| 675 | 9 | `private static String shape(Node n)` | A shape's own geometry, which no style sets. |
 

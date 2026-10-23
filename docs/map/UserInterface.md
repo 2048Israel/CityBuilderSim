@@ -41,7 +41,7 @@
 | 790 | · AND THE TIME CONTROLS DID NOT FLOAT, WHICH WAS A CORRECTION. |
 | 806 | · THE WHEEL WORKS WHERE THE POINTER ALREADY IS. |
 | 859 | · FULL SCREEN, AND THE TWO THINGS JAVAFX DOES ABOUT IT THAT WE DO NOT |
-| 1135 | A KEPT SCREEN (study UP4, 0.8.25; docs/studies/spec-screens-in-place.md). |
+| 1135 | A KEPT SCREEN (study UP4, 0.8.26; docs/studies/spec-screens-in-place.md). |
 | 1200 | · AND THE SCROLL STAYS WHERE YOU PUT IT. |
 | 1270 | · HOLD THE PAGE'S HEIGHT WHILE IT IS REBUILT, so the position is |
 | 1307 | · A PAGE TORN DOWN HEARS NOTHING (0.7.50). |
@@ -271,7 +271,7 @@
 | 537 | 588 | `public void start(Stage primaryStage)` |  |
 | 1131 | 3 | `void clearMenu(String screen, Runnable again)` | Clears the menu area and refreshes the construction panel. |
 
-### A KEPT SCREEN (study UP4, 0.8.25; docs/studies/spec-screens-in-place.md). (lines 1135-1385)
+### A KEPT SCREEN (study UP4, 0.8.26; docs/studies/spec-screens-in-place.md). (lines 1135-1385)
 
 | line | len | member | says |
 |---:|---:|---|---|

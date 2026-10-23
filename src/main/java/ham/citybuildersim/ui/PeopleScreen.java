@@ -46,6 +46,13 @@ import static ham.citybuildersim.ui.Levers.*;
  * were, but for the fees named apart and the rows below the rule measured
  * against a basket (0.7.27). The page reveals the open cell itself now:
  * revealTop and revealBottom are its own, read by its own scroll.
+ *
+ * Since 0.8.26 (study UP4, docs/studies/spec-screens-in-place.md) the People
+ * page is kept between redraws, the study's pilot: drawPage() runs through
+ * Kept over the nodes it made last month (UserInterface.keepMenu()), so a
+ * month that lands sets its figures on the page on show instead of building
+ * another. KeptCheck holds the kept page to one built new. Household money is
+ * drawn as before.
  */
 final class PeopleScreen {
 

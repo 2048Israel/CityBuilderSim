@@ -38,7 +38,8 @@ package ham.citybuildersim;
  *      bank's deposits.
  *
  * ALL FOUR ARE BUILT, and the list is kept as the plan it was. The rate
- * floats (repriceCurrency(), THE FLOAT); the treasury borrows in
+ * floats (repriceCurrency(), THE FLOAT), held as the city chooses since XR2
+ * (THE REGIMES: Float, Lean, Band, Peg); the treasury borrows in
  * dollars (WHAT THE CITY OWES ABROAD, and DebtManager's foreign paper); the
  * hot money and the carry trade are CapitalFlows.
  *
@@ -65,6 +66,9 @@ package ham.citybuildersim;
  * spent only when the D$ would fall (A RESERVE DEFENDS A CURRENCY, at
  * repriceCurrency()): the central bank sells its dollars against the
  * month's deficit, and since XR1 the sale lifts the rate at its real size.
+ * Under a band or a peg (XR2, THE REGIMES) the vault holds the rate instead:
+ * it sells the month's deficit at the weak edge or the peg, and buys the
+ * month's surplus at the strong edge (THE STRONG EDGE).
  *
  * THE RECORD is the cumulative balance: every month's balance of payments,
  * added up since founding - what the city has earned abroad less what it has
