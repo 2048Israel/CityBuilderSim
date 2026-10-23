@@ -790,7 +790,6 @@ public final class Pieces {
         mark.setStrokeWidth(2);
         mark.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
         mark.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
-        mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED));
         javafx.scene.layout.Pane box = Kept.plain(mark);
         box.setPrefSize(24, 24);
         box.setMinSize(24, 24);
@@ -802,6 +801,8 @@ public final class Pieces {
         button.setPrefSize(INFO_SIZE, INFO_SIZE);
         button.setMaxSize(INFO_SIZE, INFO_SIZE);
         button.setStyle("-fx-cursor: hand;");
+        // The look the pointer calls for: a kept (i) is not entered afresh when it is drawn again under the pointer (UP2).
+        mark.setStroke(javafx.scene.paint.Color.web(button.isHover() ? Palette.ACCENT : Palette.TEXT_MUTED));
         button.setOnMouseEntered(e -> mark.setStroke(javafx.scene.paint.Color.web(Palette.ACCENT)));
         button.setOnMouseExited(e -> mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED)));
         // Handlers set, not added: a kept (i) is handed back with none, and given this draw's words.

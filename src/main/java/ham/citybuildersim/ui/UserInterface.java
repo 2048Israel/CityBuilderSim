@@ -177,7 +177,7 @@ public class UserInterface extends Application {
     VBox rootMenu;
 
     /** The navigation rail down the window's left edge (0.7.21; it was the panel's right edge); see start(). */
-    private VBox tabRail;
+    VBox tabRail;
     /** The minimap at the rail's foot (0.7.134); see THE RAIL. Made the first time the rail is. */
     private MiniMap miniMap;
     /** The middle of the window, with the City overview's drawer and the construction panel (both since 0.7.24), the inbox's list and the toasts on top of it. */
@@ -397,8 +397,32 @@ public class UserInterface extends Application {
     }
 
     /** The always-visible strip on the BorderPane's top edge: the header (0.7.21; the date bar until then). The debt bar on the bottom edge went to the Finances hub in 0.7.24. */
-    private HBox header;
+    HBox header;
     private Scene scene;
+
+    /**
+     * The chrome kept between redraws (UP2, study UP4): the header's nodes and the rail's, made once
+     * and handed back to the code that draws them at every redraw, so a month that lands sets their
+     * figures and does not throw them away. The envelope has a pool of its own because it is drawn
+     * on its own as well as in the header (a notice read elsewhere). All three are forgotten when
+     * another city opens (anotherCity()), so nothing of the last city is handed to the next.
+     * Not final: KeptBench swaps them for empty pools to draw a chrome built new beside the kept one.
+     */
+    Kept.Pool headerPool = new Kept.Pool();
+    Kept.Pool inboxPool = new Kept.Pool();
+    Kept.Pool railPool = new Kept.Pool();
+
+    /** The minimap's node in the rail, or null before the rail is first drawn (KeptBench keeps it off the picture). */
+    javafx.scene.Node miniMapNode() {
+        return miniMap == null ? null : miniMap.node();
+    }
+
+    /** Every kept node of the chrome let go: the next draw of the header, the envelope and the rail makes them all new. */
+    void forgetChrome() {
+        headerPool.forget();
+        inboxPool.forget();
+        railPool.forget();
+    }
 
     /* =====================================================================
        THE CLOCK
@@ -443,8 +467,8 @@ public class UserInterface extends Application {
     private static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50};
     private static final int NORMAL_SPEED = 3;              // 1x
 
-    private int speedIndex = NORMAL_SPEED;
-    private boolean clockRunning;
+    int speedIndex = NORMAL_SPEED;
+    boolean clockRunning;
     private long lastFrame;
 
     /**
@@ -497,7 +521,7 @@ public class UserInterface extends Application {
     private Label dayLabel;
 
     /** Why the clock stopped itself, shown until it is started again. */
-    private String pausedBecause;
+    String pausedBecause;
 
     /** The notice that last stopped it, so one condition interrupts once. */
     private String pausedOnKey = "";
@@ -597,13 +621,7 @@ public class UserInterface extends Application {
          * so anything meant to be always-visible has to hang off the
          * BorderPane instead.
          */
-        this.header = new HBox(10);
-        this.header.setAlignment(Pos.CENTER_LEFT);
-        this.header.setPrefHeight(Palette.HEADER);
-        this.header.setMinHeight(Palette.HEADER);
-        this.header.setStyle(
-                "-fx-padding: 10 14 10 14; -fx-background-color: " + Palette.PANEL + ";"
-                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 1 0;");
+        this.header = headerBox();
 
 
         /* =====================================================================
@@ -733,14 +751,7 @@ public class UserInterface extends Application {
            colour (see THE RAIL). A rail of names reads on its own, and the
            window's edge is where a player's eye goes for the way round.
            ===================================================================== */
-        this.tabRail = new VBox(0);
-        this.tabRail.setPrefWidth(RAIL_WIDTH);
-        this.tabRail.setMinWidth(RAIL_WIDTH);
-        this.tabRail.setMaxWidth(RAIL_WIDTH);
-        this.tabRail.setAlignment(Pos.TOP_CENTER);
-        this.tabRail.setStyle(
-                "-fx-padding: 6 0 0 0; -fx-background-color: " + Palette.PANEL + ";"
-                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 1 0 0;");
+        this.tabRail = railBox();
 
         // The rail alone at the left since 0.7.24: the City overview panel is a
         // drawer over the stage (THE FRAME FOLDS AWAY).
@@ -1959,24 +1970,78 @@ public class UserInterface extends Application {
     /** Where the inbox's envelope is drawn in the header, so a notice read elsewhere can redraw its count. */
     private StackPane inboxHolder;
 
+    /** The header's box, empty and styled: start() puts it across the window's top and KeptBench in a scene of its own. */
+    static HBox headerBox() {
+        HBox box = new HBox(10);
+        box.setAlignment(Pos.CENTER_LEFT);
+        box.setPrefHeight(Palette.HEADER);
+        box.setMinHeight(Palette.HEADER);
+        box.setStyle(
+                "-fx-padding: 10 14 10 14; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 1 0;");
+        return box;
+    }
+
+    /** The rail's box, empty and styled: start() puts it at the window's left and KeptBench in a scene of its own. */
+    static VBox railBox() {
+        VBox box = new VBox(0);
+        box.setPrefWidth(RAIL_WIDTH);
+        box.setMinWidth(RAIL_WIDTH);
+        box.setMaxWidth(RAIL_WIDTH);
+        box.setAlignment(Pos.TOP_CENTER);
+        box.setStyle(
+                "-fx-padding: 6 0 0 0; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 1 0 0;");
+        return box;
+    }
+
     /**
-     * The header, rebuilt: the clock, the money block, the five tiles, the
-     * "Needs you" chip, the rating and the inbox.
-     * Every redraw calls it, so it reads the month that has just landed.
+     * A node of the chrome that had the focus loses it, as it did when the chrome was rebuilt under
+     * it: a play button, a speed arrow or a tile clicked keeps no focus ring now that its node
+     * survives the redraw, and the keys go where they went (the window's).
      */
-    private void refreshHeader() {
-        header.getChildren().clear();
+    private static void dropFocusIn(javafx.scene.Node container) {
+        javafx.scene.Scene s = container == null ? null : container.getScene();
+        if (s == null) return;
+        for (javafx.scene.Node n = s.getFocusOwner(); n != null; n = n.getParent()) {
+            if (n == container) {
+                s.getRoot().requestFocus();
+                return;
+            }
+        }
+    }
+
+    /**
+     * The header, drawn kept (UP2): the clock, the money block, the five tiles, the
+     * "Needs you" chip, the rating and the inbox.
+     * Every redraw calls it, so it reads the month that has just landed; its nodes are the
+     * ones the last draw made, with this month's figures set on them (headerPool).
+     */
+    void refreshHeader() {
+        if (headerPool.holds()) dropFocusIn(header);
+        Kept.draw(headerPool, this::drawHeader);
+    }
+
+    private void drawHeader() {
         boolean inCity = !isGameMenu(currentScreen);
 
-        HeadlineRow tiles = new HeadlineRow(Palette.GAP);
-        for (Headline h : headlines()) tiles.getChildren().add(headlineTile(h));
-        HBox.setHgrow(tiles, Priority.ALWAYS);
+        HeadlineRow tiles = Kept.scope("tiles", () -> {
+            HeadlineRow row = Kept.of(HeadlineRow.class, HeadlineRow::new);
+            row.setGap(Palette.GAP);
+            // The series are the last months only (sparkSeries()), so the axis is cut to the same months in each tile.
+            List<Integer> axis = game.getHistorySave().getMonth();
+            List<javafx.scene.Node> made = new ArrayList<>();
+            for (Headline h : headlines()) made.add(headlineTile(h, axis));
+            Kept.set(row.getChildren(), made);
+            HBox.setHgrow(row, Priority.ALWAYS);
+            return row;
+        });
 
-        HBox clock = clockBlock(inCity);
+        HBox clock = Kept.scope("clock", () -> clockBlock(inCity));
         // TREASURY left the tile row in 0.7.24: its own block, by the clock (THE MONEY BLOCK).
-        Region money = moneyBlock();
-        HBox right = ratingAndInbox(inCity);
-        header.getChildren().addAll(clock, money, tiles, right);
+        Region money = Kept.scope("money", this::moneyBlock);
+        HBox right = Kept.scope("right", () -> ratingAndInbox(inCity));
+        Kept.set(header.getChildren(), List.of(clock, money, tiles, right));
     }
 
     /**
@@ -2263,43 +2328,42 @@ public class UserInterface extends Application {
 
         Region coin = iconSquare(Icons.COIN, Palette.MONEY, 36, 20);
 
-        Label label = new Label("TREASURY");
+        Label label = Kept.label("TREASURY");
         label.setStyle(Fonts.sansSemiBold() + " -fx-font-size: " + TILE_LABEL + "px; -fx-text-fill: " + Palette.MONEY + ";");
         label.setMinWidth(Region.USE_PREF_SIZE);
-        HBox labelRow = new HBox(4, label, infoButton(treasuryWhy(income, moved), false));
+        HBox labelRow = Kept.row(4, label, infoButton(treasuryWhy(income, moved), false));
         labelRow.setAlignment(Pos.CENTER_LEFT);
 
-        Label figure = new Label(money(cash));
+        Label figure = Kept.label(money(cash));
         figure.setStyle(Fonts.monoSemiBold() + " -fx-font-size: " + MONEY_FIGURE + "px;"
                 + " -fx-text-fill: " + (cash < 0 ? Palette.BAD : Palette.TEXT_HEAD) + ";");
         figure.setMinWidth(Region.USE_PREF_SIZE);
 
-        Label month = new Label(signedTight(income, false) + " earned a month");
+        Label month = Kept.label(signedTight(income, false) + " earned a month");
         month.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 11.5px; -fx-text-fill: "
                 + (Math.abs(income) < .5 ? Palette.TEXT_MUTED : income > 0 ? Palette.GOOD : Palette.BAD) + ";");
         month.setMinWidth(Region.USE_PREF_SIZE);
 
         // Packed close: the 28 px figure's own line height carries the air, and the
         // block stays inside the header's 64 px between its paddings.
-        VBox words = new VBox(-4, labelRow, figure, month);
+        VBox words = Kept.column(-4, labelRow, figure, month);
         words.setAlignment(Pos.CENTER_LEFT);
         words.setMinWidth(Region.USE_PREF_SIZE);
 
-        HBox block = new HBox(10, coin, words);
+        HBox block = Kept.row(10, coin, words);
         block.setAlignment(Pos.CENTER_LEFT);
         block.setMinWidth(Region.USE_PREF_SIZE);
         String rest = "-fx-padding: 1 14 1 10; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 1; -fx-cursor: hand;";
-        block.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";");
+        // The look the pointer calls for (a kept block is not entered afresh when it is drawn again under the pointer).
+        block.setStyle(rest + " -fx-border-color: " + (block.isHover() ? Palette.MONEY : Palette.EDGE) + ";");
         block.setOnMouseEntered(e -> block.setStyle(rest + " -fx-border-color: " + Palette.MONEY + ";"));
         block.setOnMouseExited(e -> block.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";"));
-        Tooltip tip = new Tooltip(String.format("The city's cash%s.%n"
+        Kept.tip(block, String.format("The city's cash%s.%n"
                         + "Under it: what the month EARNED, at today's tax rates - not the budget's surplus, nor the change in the cash%s.%n"
                         + "Click for Finances.",
                 cash < 0 ? " - overdrawn: the central bank advances it at the policy rate" : "",
-                banked ? ", which was " + signedTight(moved, false) : ""));
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(block, tip);
+                banked ? ", which was " + signedTight(moved, false) : ""), 300);
         block.setOnMouseClicked(e -> {
             resetSection("finances");
             railJump = true;            // clearMenu: arriving, not redrawing
@@ -2360,45 +2424,23 @@ public class UserInterface extends Application {
      * ever cut: each is held at its own width, and the tile's least width is
      * the widest of them, its change line in its shortest wording.
      */
-    private Region headlineTile(Headline t) {
-        Label label = new Label(t.label());
-        label.setStyle(Fonts.sansSemiBold() + " -fx-font-size: " + TILE_LABEL + "px;"
-                + " -fx-text-fill: " + t.area() + ";");
-        label.setMinWidth(Region.USE_PREF_SIZE);
-        HBox labelRow = new HBox(4, label);
-        labelRow.setAlignment(Pos.CENTER_LEFT);
-        labelRow.setMinWidth(Region.USE_PREF_SIZE);
-        if (t.more() != null) labelRow.getChildren().add(infoButton(t.more(), false));
-
-        Label figure = new Label(t.value());
-        figure.setStyle(Fonts.monoSemiBold() + " -fx-font-size: " + TILE_FIGURE + "px;"
-                + " -fx-text-fill: " + t.valueTone() + ";");
-        // The figure is the one thing a tile never cuts.
-        figure.setMinWidth(Region.USE_PREF_SIZE);
-
-        List<Label> changes = new ArrayList<>();
-        for (String wording : t.change()) {
-            Label change = new Label(wording);
-            change.setStyle("-fx-font-size: " + TILE_CHANGE + "px; -fx-text-fill: " + t.changeTone() + ";");
-            change.setMinWidth(Region.USE_PREF_SIZE);
-            changes.add(change);
-        }
-
-        // The series is the last months only (sparkSeries()), so the axis is cut to the same months.
-        List<Integer> axis = game.getHistorySave().getMonth();
-        HeadlineTile tile = new HeadlineTile(labelRow, figure, changes,
-                new Sparkline(t.series(), axis.subList(Math.max(0, axis.size() - t.series().length), axis.size()), t.area()));
-        // 6 and 10 (0.7.24; 8 and 12 until then): the five, the money block and the clock in 1,280 px.
-        String rest = "-fx-padding: 6 10 6 10; -fx-background-color: " + Palette.RAISED + ";"
-                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 1; -fx-cursor: hand;";
-        tile.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";");
-        tile.setOnMouseEntered(e -> tile.setStyle(rest + " -fx-border-color: " + t.area() + ";"));
-        tile.setOnMouseExited(e -> tile.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";"));
-        Tooltip tip = new Tooltip(t.tip());
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(tile, tip);
-        tile.setOnMouseClicked(e -> openHistory(t.keys()));
-        return tile;
+    private Region headlineTile(Headline t, List<Integer> axis) {
+        return Kept.scope(t.label(), () -> {
+            HeadlineTile tile = Kept.of(HeadlineTile.class, HeadlineTile::new);
+            // The (i) is made through Kept, in a scope of its own: a tile with none leaves its nodes out of the pool.
+            javafx.scene.Node info = t.more() == null ? null : Kept.scope("info", () -> infoButton(t.more(), false));
+            tile.set(t, axis, info);
+            // 6 and 10 (0.7.24; 8 and 12 until then): the five, the money block and the clock in 1,280 px.
+            String rest = "-fx-padding: 6 10 6 10; -fx-background-color: " + Palette.RAISED + ";"
+                    + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 1; -fx-cursor: hand;";
+            // The look the pointer calls for: a kept tile is not entered afresh when it is drawn again under the pointer.
+            tile.setStyle(rest + " -fx-border-color: " + (tile.isHover() ? t.area() : Palette.EDGE) + ";");
+            tile.setOnMouseEntered(e -> tile.setStyle(rest + " -fx-border-color: " + t.area() + ";"));
+            tile.setOnMouseExited(e -> tile.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";"));
+            Kept.tip(tile, t.tip(), 300);
+            tile.setOnMouseClicked(e -> openHistory(t.keys()));
+            return tile;
+        });
     }
 
     /**
@@ -2425,8 +2467,16 @@ public class UserInterface extends Application {
      * with a floor.
      */
     private static final class HeadlineRow extends javafx.scene.layout.Pane {
-        private final double gap;
+        private double gap;
+        HeadlineRow() { }
         HeadlineRow(double gap) { this.gap = gap; }
+
+        /** The gap between the tiles, set at every draw: the layout is asked for only when it moved. */
+        void setGap(double gap) {
+            if (this.gap == gap) return;
+            this.gap = gap;
+            requestLayout();
+        }
 
         @Override protected double computeMinWidth(double height) {
             double sum = 0;
@@ -2488,18 +2538,62 @@ public class UserInterface extends Application {
      * every tile at least that.
      */
     private static final class HeadlineTile extends Region {
-        private final HBox labelRow;
-        private final Label figure;
-        private final List<Label> changes;
-        private final Sparkline spark;
+        private final Label label = new Label();
+        private final HBox labelRow = new HBox(4, label);
+        private final Label figure = new Label();
+        private final List<Label> changes = new ArrayList<>();
+        private final Sparkline spark = new Sparkline();
+        /** The (i) in the label's row, or null for a tile with none. */
+        private javafx.scene.Node info;
 
-        HeadlineTile(HBox labelRow, Label figure, List<Label> changes, Sparkline spark) {
-            this.labelRow = labelRow;
-            this.figure = figure;
-            this.changes = changes;
-            this.spark = spark;
+        /**
+         * A tile's parts, made once (UP2): the picture is told its figures by set() at every draw, as the
+         * People page's Mirror is, and its parts are its own (made with new, never through Kept).
+         */
+        HeadlineTile() {
+            label.setMinWidth(Region.USE_PREF_SIZE);
+            labelRow.setAlignment(Pos.CENTER_LEFT);
+            labelRow.setMinWidth(Region.USE_PREF_SIZE);
+            // The figure is the one thing a tile never cuts.
+            figure.setMinWidth(Region.USE_PREF_SIZE);
             getChildren().addAll(labelRow, spark, figure);
-            getChildren().addAll(changes);
+        }
+
+        /**
+         * The tile told what it shows: its label, figure and change wordings set (a label whose words
+         * are the same is not laid out again), the sparkline given the series, the (i) put in or taken
+         * out of the label's row. Layout is asked for by the parts that moved and by nothing else.
+         *
+         * @param axis the months the history records, whose last ones the series is of
+         * @param more the tile's (i), made by the caller through Kept, or null
+         */
+        void set(Headline t, List<Integer> axis, javafx.scene.Node more) {
+            label.setText(t.label());
+            label.setStyle(Fonts.sansSemiBold() + " -fx-font-size: " + TILE_LABEL + "px;"
+                    + " -fx-text-fill: " + t.area() + ";");
+            if (more != info) {
+                if (info != null) labelRow.getChildren().remove(info);
+                if (more != null) labelRow.getChildren().add(more);
+                info = more;
+            }
+            figure.setText(t.value());
+            figure.setStyle(Fonts.monoSemiBold() + " -fx-font-size: " + TILE_FIGURE + "px;"
+                    + " -fx-text-fill: " + t.valueTone() + ";");
+            String[] wordings = t.change();
+            while (changes.size() < wordings.length) {
+                Label c = new Label();
+                c.setMinWidth(Region.USE_PREF_SIZE);
+                changes.add(c);
+                getChildren().add(c);
+            }
+            while (changes.size() > wordings.length) getChildren().remove(changes.remove(changes.size() - 1));
+            for (int i = 0; i < wordings.length; i++) {
+                Label c = changes.get(i);
+                c.setText(wordings[i]);
+                c.setStyle("-fx-font-size: " + TILE_CHANGE + "px; -fx-text-fill: " + t.changeTone() + ";");
+            }
+            // The series is the last months only (sparkSeries()), so the axis is cut to the same months.
+            spark.set(t.series(), axis.subList(Math.max(0, axis.size() - t.series().length), axis.size()), t.area());
         }
 
         private double shortest() {
@@ -2576,31 +2670,17 @@ public class UserInterface extends Application {
      * mark at the foot is each January: the ten years, counted.
      */
     static final class Sparkline extends Region {
-        private final double[] points;
-        private final int[] at;
-        private final javafx.scene.paint.Color colour;
+        private double[] points = new double[0];
+        private int[] at = new int[0];
+        private javafx.scene.paint.Color colour;
         private final javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas();
         private double drawnW = -1, drawnH = -1;
         private int firstMonth, lastMonth;
+        /** Whether set() has been told a series yet: the first one always draws. */
+        private boolean told;
 
-        Sparkline(double[] series, List<Integer> months, String colour) {
-            List<Double> finite = new ArrayList<>();
-            List<Integer> when = new ArrayList<>();
-            if (series != null) {
-                int from = Math.max(0, series.length - SPARK_MONTHS);
-                boolean dated = months != null && months.size() == series.length;
-                firstMonth = dated && series.length > 0 ? months.get(from) : from;
-                lastMonth = dated && series.length > 0 ? months.get(series.length - 1) : series.length - 1;
-                for (int i = from; i < series.length; i++) {
-                    if (!Double.isFinite(series[i])) continue;
-                    finite.add(series[i]);
-                    when.add(dated ? months.get(i) : i);
-                }
-            }
-            this.points = new double[finite.size()];
-            this.at = new int[finite.size()];
-            for (int i = 0; i < points.length; i++) { points[i] = finite.get(i); at[i] = when.get(i); }
-            this.colour = javafx.scene.paint.Color.web(colour);
+        /** A sparkline with no series yet, told its figures by set() (the header's tiles keep theirs, UP2). */
+        Sparkline() {
             getChildren().add(canvas);
             setMinSize(0, 0);
             setPrefSize(SPARK_WIDTH, SPARK_HEIGHT);
@@ -2608,9 +2688,53 @@ public class UserInterface extends Application {
             setMouseTransparent(true);
         }
 
+        Sparkline(double[] series, List<Integer> months, String colour) {
+            this();
+            set(series, months, colour);
+        }
+
+        /**
+         * The line told its figures: the points, the months they sit at and the colour. A series the
+         * line already draws is left alone; otherwise the canvas is drawn again at once, at the size it
+         * was last laid out at (no layout is asked for: the size has not moved), or at its first layout.
+         */
+        void set(double[] series, List<Integer> months, String colour) {
+            List<Double> finite = new ArrayList<>();
+            List<Integer> when = new ArrayList<>();
+            int first = 0, last = 0;
+            if (series != null) {
+                int from = Math.max(0, series.length - SPARK_MONTHS);
+                boolean dated = months != null && months.size() == series.length;
+                first = dated && series.length > 0 ? months.get(from) : from;
+                last = dated && series.length > 0 ? months.get(series.length - 1) : series.length - 1;
+                for (int i = from; i < series.length; i++) {
+                    if (!Double.isFinite(series[i])) continue;
+                    finite.add(series[i]);
+                    when.add(dated ? months.get(i) : i);
+                }
+            }
+            double[] p = new double[finite.size()];
+            int[] a = new int[finite.size()];
+            for (int i = 0; i < p.length; i++) { p[i] = finite.get(i); a[i] = when.get(i); }
+            javafx.scene.paint.Color c = javafx.scene.paint.Color.web(colour);
+            if (told && first == firstMonth && last == lastMonth && c.equals(this.colour)
+                    && java.util.Arrays.equals(p, points) && java.util.Arrays.equals(a, at)) return;
+            told = true;
+            points = p;
+            at = a;
+            firstMonth = first;
+            lastMonth = last;
+            this.colour = c;
+            if (drawnW >= 0) paint(drawnW, drawnH);
+        }
+
         @Override protected void layoutChildren() {
             double w = getWidth(), h = getHeight();
             if (w == drawnW && h == drawnH) return;
+            paint(w, h);
+        }
+
+        private void paint(double w, double h) {
             drawnW = w;
             drawnH = h;
             canvas.setWidth(w);
@@ -2665,10 +2789,10 @@ public class UserInterface extends Application {
     private HBox clockBlock(boolean inCity) {
         int month = game.getMonth();
 
-        javafx.scene.shape.SVGPath glyph = new javafx.scene.shape.SVGPath();
+        javafx.scene.shape.SVGPath glyph = Kept.of(javafx.scene.shape.SVGPath.class, javafx.scene.shape.SVGPath::new);
         glyph.setContent(clockRunning ? "M8 5h3v14H8z M13 5h3v14h-3z" : "M8 5v14l11-7z");
         glyph.setFill(javafx.scene.paint.Color.web(Palette.ON_FILL));
-        Button play = new Button();
+        Button play = Kept.of(Button.class, Button::new);
         play.setGraphic(glyph);
         play.setMinSize(44, 44);
         play.setPrefSize(44, 44);
@@ -2676,9 +2800,8 @@ public class UserInterface extends Application {
         play.setPadding(javafx.geometry.Insets.EMPTY);
         play.setStyle("-fx-background-color: " + Palette.GOOD + "; -fx-background-radius: 22;"
                 + " -fx-border-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
-        Tooltip playTip = new Tooltip(clockRunning ? "Pause  (Space)" : "Run the clock  (Space)");
-        playTip.setShowDelay(Duration.millis(250));
-        play.setTooltip(playTip);
+        // Its tooltip through Kept, installed once and its words set at each draw (they follow the clock).
+        Kept.tip(play, clockRunning ? "Pause  (Space)" : "Run the clock  (Space)", 250);
         play.setOnAction(e -> {
             setClockRunning(!clockRunning);
             redrawScreen.run();
@@ -2691,7 +2814,7 @@ public class UserInterface extends Application {
          * must not rebuild the screen to do it - see paintDay(). Held at
          * DATE_WIDTH so the tiles beside it do not shift as the day changes.
          */
-        Label date = new Label(CityCalendar.formatDay(month, pace.progress()));
+        Label date = Kept.label(CityCalendar.formatDay(month, pace.progress()));
         date.setStyle(Fonts.sansSemiBold() + " -fx-font-size: " + DATE_SIZE + "px; -fx-text-fill: " + Palette.TEXT_MAX + ";");
         date.setMinWidth(DATE_WIDTH);
         date.setPrefWidth(DATE_WIDTH);
@@ -2704,25 +2827,25 @@ public class UserInterface extends Application {
          * "the demolition log says 14 months ago", "this bond matures in month
          * 340" - needs the number the game actually counts in.
          */
-        monthFigure = new Label("month " + formatter.format(month));
+        monthFigure = Kept.label("month " + formatter.format(month));
         monthFigure.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
         // The reading is the rung, and the speed achieved after it when the months fall short (UP2);
         // it may grow to hold both, and never under 34.
-        speedReading = new Label(speedText());
+        speedReading = Kept.label(speedText());
         speedReading.setMinWidth(34);
         speedReading.setAlignment(Pos.CENTER);
         speedReading.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
                 + " -fx-text-fill: " + Palette.TEXT_HEAD + ";");
-        HBox speed = new HBox(0, speedArrow("‹", -1), speedReading, speedArrow("›", 1));
+        HBox speed = Kept.row(0, speedArrow("‹", -1), speedReading, speedArrow("›", 1));
         speed.setAlignment(Pos.CENTER_LEFT);
-        Tooltip.install(speed, new Tooltip("How fast a month passes: " + (int) SECONDS_PER_MONTH
-                + " seconds a month at 1×. ← and → change it too."));
+        Kept.tip(speed, "How fast a month passes: " + (int) SECONDS_PER_MONTH
+                + " seconds a month at 1×. ← and → change it too.", 1000);
         speed.setVisible(inCity);
 
-        HBox second = new HBox(8, monthFigure, speed);
+        HBox second = Kept.row(8, monthFigure, speed);
         second.setAlignment(Pos.CENTER_LEFT);
-        VBox words = new VBox(0, date, second);
+        VBox words = Kept.column(0, date, second);
         words.setAlignment(Pos.CENTER_LEFT);
 
         /*
@@ -2732,15 +2855,19 @@ public class UserInterface extends Application {
          * beside the button they are about to press to start it again.
          */
         if (inCity && pausedBecause != null && !clockRunning) {
-            Label why = new Label(pausedBecause);
-            why.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.WARN + ";");
-            why.setMaxWidth(DATE_WIDTH + 40);
-            Tooltip.install(why, new Tooltip("The clock stopped itself: " + pausedBecause
-                    + "\nSettings, \"Stop for anything important\", turns this off."));
-            words.getChildren().add(why);
+            final String because = pausedBecause;
+            // In a scope of its own: a line that comes and goes does not shift the nodes after it.
+            words.getChildren().add(Kept.scope("why", () -> {
+                Label why = Kept.label(because);
+                why.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.WARN + ";");
+                why.setMaxWidth(DATE_WIDTH + 40);
+                Kept.tip(why, "The clock stopped itself: " + because
+                        + "\nSettings, \"Stop for anything important\", turns this off.", 1000);
+                return why;
+            }));
         }
 
-        HBox clock = new HBox(12, play, words);
+        HBox clock = Kept.row(12, play, words);
         clock.setAlignment(Pos.CENTER_LEFT);
         clock.setMinWidth(Region.USE_PREF_SIZE);
         clock.setStyle("-fx-padding: 0 16 0 0; -fx-border-color: " + Palette.EDGE + ";"
@@ -2755,9 +2882,10 @@ public class UserInterface extends Application {
 
     /** One of the speed's two arrows: a rung down or up the ladder, the reading changed in place. */
     private Label speedArrow(String glyph, int step) {
-        Label arrow = new Label(glyph);
+        Label arrow = Kept.label(glyph);
         String rest = "-fx-font-size: 14px; -fx-padding: 0 4 0 4; -fx-cursor: hand; -fx-text-fill: ";
-        arrow.setStyle(rest + Palette.TEXT_LABEL + ";");
+        // The look the pointer calls for: a kept arrow is not entered afresh when it is drawn again under the pointer.
+        arrow.setStyle(rest + (arrow.isHover() ? Palette.TEXT_HEAD : Palette.TEXT_LABEL) + ";");
         arrow.setOnMouseEntered(e -> arrow.setStyle(rest + Palette.TEXT_HEAD + ";"));
         arrow.setOnMouseExited(e -> arrow.setStyle(rest + Palette.TEXT_LABEL + ";"));
         arrow.setOnMouseClicked(e -> {
@@ -2775,23 +2903,23 @@ public class UserInterface extends Application {
         // The rating, which the rate curve already knew; a letter is how a
         // borrower actually experiences its own credit.
         String rating = game.getCreditRating();
-        Label chip = new Label(rating);
+        Label chip = Kept.label(rating);
         chip.setStyle(Fonts.monoSemiBold() + " -fx-font-size: 12px; -fx-text-fill: " + Palette.ON_FILL + ";"
                 + " -fx-background-color: " + ratingColour(rating) + "; -fx-background-radius: 4;"
                 + " -fx-padding: 3 6 3 6;");
         chip.setMinWidth(Region.USE_PREF_SIZE);
-        Tooltip.install(chip, new Tooltip("The city's credit rating, " + rating
-                + ": what lenders make of its debt, and part of what it pays to borrow."));
+        Kept.tip(chip, "The city's credit rating, " + rating
+                + ": what lenders make of its debt, and part of what it pays to borrow.", 1000);
 
-        inboxHolder = new StackPane();
+        inboxHolder = Kept.stack();
         refreshInboxButton();
         inboxHolder.setVisible(inCity);
 
         // "Needs you" and its count by the rating and the envelope since 0.7.24: the drawer's door.
-        Region needs = needsChip();
+        Region needs = Kept.scope("needs", this::needsChip);
         needs.setVisible(inCity);
 
-        HBox box = new HBox(10, needs, chip, inboxHolder);
+        HBox box = Kept.row(10, needs, chip, inboxHolder);
         box.setAlignment(Pos.CENTER_LEFT);
         box.setMinWidth(Region.USE_PREF_SIZE);
         box.setStyle("-fx-padding: 0 0 0 14; -fx-border-color: " + Palette.EDGE + ";"
@@ -3693,6 +3821,8 @@ public class UserInterface extends Application {
         if (miniMap != null) miniMap.forget();
         // ...and People: no month has just landed on it (0.7.27).
         peopleScreen.forget();
+        // ...and the header and the rail hand the next city none of this one's nodes (UP2).
+        forgetChrome();
     }
 
     /** The founding screen's last step: found the city as chosen, and open it. */
@@ -4668,25 +4798,28 @@ public class UserInterface extends Application {
         // The panel's own colours: a red row is past its line, an amber one near it.
         String tone = worst >= 2 ? Palette.BAD : worst == 1 ? Palette.WARN : Palette.GOOD;
 
-        HBox chip = new HBox(6);
+        HBox chip = Kept.row(6);
         chip.setAlignment(Pos.CENTER_LEFT);
         chip.setMinWidth(Region.USE_PREF_SIZE);
-        if (n == 0) {
-            Label none = new Label("Nothing needs you");
-            none.setStyle(Palette.words(12, Palette.TEXT_LABEL));
-            none.setMinWidth(Region.USE_PREF_SIZE);
-            chip.getChildren().addAll(Pieces.icon(Icons.TICK, tone, 14), none);
-        } else {
-            Label words = new Label("Needs you");
+        // The chip is one or the other, each in a scope of its own: the nodes of the one it is not are let go.
+        List<javafx.scene.Node> parts = Kept.scope(n == 0 ? "clear" : "biting", () -> {
+            if (n == 0) {
+                Label none = Kept.label("Nothing needs you");
+                none.setStyle(Palette.words(12, Palette.TEXT_LABEL));
+                none.setMinWidth(Region.USE_PREF_SIZE);
+                return List.<javafx.scene.Node>of(Pieces.icon(Icons.TICK, tone, 14), none);
+            }
+            Label words = Kept.label("Needs you");
             words.setStyle(Palette.words(12, Palette.TEXT_HEAD));
             words.setMinWidth(Region.USE_PREF_SIZE);
-            Label count = new Label(String.valueOf(n));
+            Label count = Kept.label(String.valueOf(n));
             count.setStyle(Fonts.monoSemiBold() + " -fx-font-size: 11px; -fx-text-fill: " + Palette.ON_FILL + ";"
                     + " -fx-background-color: " + tone + "; -fx-background-radius: 9; -fx-padding: 0 6 0 6;");
             count.setMinSize(18, 18);
             count.setAlignment(Pos.CENTER);
-            chip.getChildren().addAll(Pieces.icon(Icons.ALERT, tone, 15), words, count);
-        }
+            return List.<javafx.scene.Node>of(Pieces.icon(Icons.ALERT, tone, 15), words, count);
+        });
+        chip.getChildren().setAll(parts);
         String rest = "-fx-padding: 6 10 6 10; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;";
         restyleNeedsChip = () -> chip.setStyle(rest + " -fx-background-color: "
                 + (drawerOpen ? Palette.PINNED : Palette.RAISED) + "; -fx-border-color: "
@@ -4699,9 +4832,7 @@ public class UserInterface extends Application {
         }
         if (n > 8) said.append("\n...and ").append(n - 8).append(" more");
         said.append("\nClick for the City overview.");
-        Tooltip tip = new Tooltip(said.toString());
-        tip.setShowDelay(Duration.millis(300));
-        Tooltip.install(chip, tip);
+        Kept.tip(chip, said.toString(), 300);
         chip.setOnMouseClicked(e -> {
             drawerOpen = !drawerOpen;
             if (drawerOpen) openOnNeeds();
@@ -5397,37 +5528,58 @@ public class UserInterface extends Application {
         }
     }
 
-    private void refreshTabRail() {
+    /**
+     * The rail, drawn kept (UP2): the twelve destinations, the gap, the minimap and Menu. The buttons are
+     * the ones the last draw made, each in a scope of its own keyed by its tab; the minimap's node is
+     * never taken out and put back.
+     */
+    void refreshTabRail() {
 
         if (tabRail == null) return;
         showIf(tabRail, !isGameMenu(currentScreen));
         // The minimap stays in the rail while its buttons are made again (0.7.134): taken out and put back, its preview
         // would close every month a page is redrawn under the pointer.
         if (miniMap == null) miniMap = new MiniMap(this);
-        tabRail.getChildren().retainAll(miniMap.node());
+        if (railPool.holds()) dropFocusIn(tabRail);
+        Kept.draw(railPool, this::drawTabRail);
+    }
 
+    private void drawTabRail() {
         String active = tabFor(currentScreen);
 
         List<javafx.scene.Node> above = new ArrayList<>();
         for (Tab tab : tabs()) {
             final Tab t = tab;
-            above.add(railButton(t.svg(), t.label(), t.name(), areaOf(t.key()),
-                    t.key().equals(active), () -> goHome(t)));
+            above.add(Kept.scope(t.key(), () -> railButton(t.svg(), t.label(), t.name(), areaOf(t.key()),
+                    t.key().equals(active), () -> goHome(t))));
         }
 
         // Menu sits apart from the destinations because it is not one - it
         // leaves the city rather than moving around inside it. It replaced
         // the gear (0.7.21), which only ever opened this same menu.
-        Region gap = new Region();
-        gap.setMinHeight(0);
-        VBox.setVgrow(gap, Priority.ALWAYS);
+        Region gap = Kept.scope("gap", () -> {
+            Region g = Kept.region();
+            g.setMinHeight(0);
+            VBox.setVgrow(g, Priority.ALWAYS);
+            return g;
+        });
         above.add(gap);
-        tabRail.getChildren().addAll(0, above);
+        VBox menu = Kept.scope("menu", () -> railButton(Icons.MENU, "Menu", "The game menu: save, load, settings, quit  (Esc)",
+                Palette.TEXT_HEAD, "showMainMenu".equals(currentScreen), this::showMainMenu));
+
         // THE MINIMAP (0.7.134, batch MM2; docs/studies/spec-globe.md 8.3): a stamp of the city above Menu, its preview on
         // hover, the land office's map over the window on a click (MiniMap; openMapOn()).
-        if (!tabRail.getChildren().contains(miniMap.node())) tabRail.getChildren().add(miniMap.node());
-        tabRail.getChildren().add(railButton(Icons.MENU, "Menu", "The game menu: save, load, settings, quit  (Esc)",
-                Palette.TEXT_HEAD, "showMainMenu".equals(currentScreen), this::showMainMenu));
+        List<javafx.scene.Node> want = new ArrayList<>(above);
+        want.add(miniMap.node());
+        want.add(menu);
+        javafx.collections.ObservableList<javafx.scene.Node> rail = tabRail.getChildren();
+        if (Kept.same(rail, want)) return;
+        // Changed (the first draw, a tab shown or hidden, a city opened): the minimap node stays where it is while the
+        // buttons about it are put in, as they were before the rail was kept.
+        rail.retainAll(miniMap.node());
+        rail.addAll(0, above);
+        if (!rail.contains(miniMap.node())) rail.add(miniMap.node());
+        rail.add(menu);
     }
 
     /**
@@ -5564,13 +5716,12 @@ public class UserInterface extends Application {
      */
     private VBox railButton(String svg, String label, String name, String area, boolean active, Runnable go) {
 
-        javafx.scene.shape.SVGPath mark = new javafx.scene.shape.SVGPath();
+        javafx.scene.shape.SVGPath mark = Kept.of(javafx.scene.shape.SVGPath.class, javafx.scene.shape.SVGPath::new);
         mark.setContent(svg);
         mark.setFill(null);
         mark.setStrokeWidth(2);
         mark.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
         mark.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
-        mark.setStroke(javafx.scene.paint.Color.web(active ? area : Palette.TEXT_LABEL));
         /*
          * PINNED TO THE 24-GRID, in a Pane of exactly that size.
          *
@@ -5581,33 +5732,36 @@ public class UserInterface extends Application {
          * Pane does not resize or move its children, so each icon draws at the
          * coordinates Lucide gave it inside a box the same size for all of them.
          */
-        javafx.scene.layout.Pane box = new javafx.scene.layout.Pane(mark);
+        javafx.scene.layout.Pane box = Kept.plain(mark);
         box.setPrefSize(24, 24);
         box.setMinSize(24, 24);
         box.setMaxSize(24, 24);
         box.setScaleX(RAIL_ICON / 24);
         box.setScaleY(RAIL_ICON / 24);
 
-        Label word = new Label(label);
+        Label word = Kept.label(label);
         String wordRest = "-fx-font-size: 10.5px; -fx-text-fill: ";
-        word.setStyle(wordRest + (active ? Palette.TEXT_HEAD : Palette.TEXT_MUTED) + ";");
         word.setMinWidth(Region.USE_PREF_SIZE);
 
-        VBox cell = new VBox(1, box, word);
+        VBox cell = Kept.column(1, box, word);
         cell.setAlignment(Pos.CENTER);
         cell.setPrefSize(RAIL_WIDTH, RAIL_BUTTON);
         cell.setMinSize(RAIL_WIDTH, RAIL_BUTTON_MIN);
         cell.setMaxSize(RAIL_WIDTH, RAIL_BUTTON);
+
+        // The look the pointer calls for: a kept button is not entered afresh when it is drawn again under the pointer.
+        boolean lit = !active && cell.isHover();
+        mark.setStroke(javafx.scene.paint.Color.web(active ? area : lit ? Palette.TEXT_HEAD : Palette.TEXT_LABEL));
+        word.setStyle(wordRest + (active ? Palette.TEXT_HEAD : lit ? Palette.TEXT_LABEL : Palette.TEXT_MUTED) + ";");
         // The one showing is raised, with a bar down its outer edge in its
         // area's colour - the page it is showing is that area's.
         String bar = "-fx-border-width: 0 0 0 3; -fx-border-color: transparent transparent transparent ";
         cell.setStyle(active
                 ? "-fx-background-color: " + Palette.RAISED + "; " + bar + area + ";"
+                : lit ? "-fx-background-color: " + Palette.CONTROL + "; " + bar + "transparent; -fx-cursor: hand;"
                 : bar + "transparent; -fx-cursor: hand;");
 
-        Tooltip tip = new Tooltip(name);
-        tip.setShowDelay(Duration.millis(400));
-        Tooltip.install(cell, tip);
+        Kept.tip(cell, name, 400);
 
         cell.setOnMouseClicked(e -> go.run());
         if (!active) {
@@ -5729,27 +5883,32 @@ public class UserInterface extends Application {
      * its corner - red while something urgent is unread, grey otherwise. A
      * click drops the list down at the stage's top right, or puts it away.
      */
-    private void refreshInboxButton() {
+    void refreshInboxButton() {
         if (inboxHolder == null || game.getInbox() == null) return;
+        // Its own pool: the header draws it, and a notice read elsewhere draws it alone (inside the header's draw this is a draw within a draw: Kept.draw).
+        Kept.draw(inboxPool, this::drawInboxButton);
+    }
+
+    private void drawInboxButton() {
         Inbox inbox = game.getInbox();
         Notice urgent = inbox.urgent();
         int unread = inbox.unread();
 
-        javafx.scene.shape.SVGPath mark = new javafx.scene.shape.SVGPath();
+        javafx.scene.shape.SVGPath mark = Kept.of(javafx.scene.shape.SVGPath.class, javafx.scene.shape.SVGPath::new);
         mark.setContent(Icons.MAIL);
         mark.setFill(null);
         mark.setStrokeWidth(2);
         mark.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
         mark.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
         mark.setStroke(javafx.scene.paint.Color.web(urgent != null ? Palette.BAD : Palette.TEXT_LABEL));
-        javafx.scene.layout.Pane glyph = new javafx.scene.layout.Pane(mark);
+        javafx.scene.layout.Pane glyph = Kept.plain(mark);
         glyph.setPrefSize(24, 24);
         glyph.setMinSize(24, 24);
         glyph.setMaxSize(24, 24);
         glyph.setScaleX(.75);
         glyph.setScaleY(.75);
 
-        StackPane envelope = new StackPane(glyph);
+        StackPane envelope = Kept.stack(glyph);
         envelope.setMinSize(40, 40);
         envelope.setPrefSize(40, 40);
         envelope.setMaxSize(40, 40);
@@ -5757,25 +5916,28 @@ public class UserInterface extends Application {
                 + " -fx-background-radius: 8; -fx-border-color: " + (inboxOpen ? Palette.ACCENT : Palette.EDGE) + ";"
                 + " -fx-border-radius: 8; -fx-cursor: hand;");
         if (unread > 0) {
-            Label count = new Label(unread > 99 ? "99+" : String.valueOf(unread));
-            count.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 11px; -fx-text-fill: white;"
-                    + " -fx-background-color: " + (urgent != null ? Palette.BAD : Palette.TEXT_SPENT) + ";"
-                    + " -fx-background-radius: 9; -fx-padding: 0 5 0 5;");
-            count.setMinSize(18, 18);
-            count.setAlignment(Pos.CENTER);
-            StackPane.setAlignment(count, Pos.TOP_RIGHT);
-            count.setTranslateX(6);
-            count.setTranslateY(-6);
-            count.setMouseTransparent(true);
-            envelope.getChildren().add(count);
+            // The count comes and goes: a scope of its own.
+            envelope.getChildren().add(Kept.scope("count", () -> {
+                Label count = Kept.label(unread > 99 ? "99+" : String.valueOf(unread));
+                count.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 11px; -fx-text-fill: white;"
+                        + " -fx-background-color: " + (urgent != null ? Palette.BAD : Palette.TEXT_SPENT) + ";"
+                        + " -fx-background-radius: 9; -fx-padding: 0 5 0 5;");
+                count.setMinSize(18, 18);
+                count.setAlignment(Pos.CENTER);
+                StackPane.setAlignment(count, Pos.TOP_RIGHT);
+                count.setTranslateX(6);
+                count.setTranslateY(-6);
+                count.setMouseTransparent(true);
+                return count;
+            }));
         }
         envelope.setOnMouseClicked(e -> {
             inboxOpen = !inboxOpen;
             refreshInbox();
         });
-        Tooltip.install(envelope, new Tooltip(inbox.size() == 0 ? "The inbox: nothing to report"
-                : "The inbox: " + inbox.size() + (unread > 0 ? ", " + unread + " unread" : "")));
-        inboxHolder.getChildren().setAll(envelope);
+        Kept.tip(envelope, inbox.size() == 0 ? "The inbox: nothing to report"
+                : "The inbox: " + inbox.size() + (unread > 0 ? ", " + unread + " unread" : ""), 1000);
+        Kept.set(inboxHolder.getChildren(), List.of(envelope));
     }
 
     /**
@@ -6338,6 +6500,8 @@ public class UserInterface extends Application {
         pop.setToY(1.25);
         pop.setCycleCount(2);
         pop.setAutoReverse(true);
-        pop.play();
+        // Through Kept.play: a figure that is kept (the clock's month) pops again from rest when a month lands
+        // while the last pop still runs, and not twice over.
+        Kept.play(pip, pop);
     }
 }

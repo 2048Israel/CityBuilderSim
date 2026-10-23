@@ -140,12 +140,24 @@ public final class Kept {
 
     /** A draw in progress. */
     private static final class Draw {
+        /** The draw this one was begun inside, or null (UP2: a draw of another pool within a draw). */
+        final Draw outer;
         final ArrayDeque<Scope> scopes = new ArrayDeque<>();
         final List<Scope> begun = new ArrayList<>();
         final List<Staging> staged = new ArrayList<>();
         final List<Node> handedBack = new ArrayList<>();
         final Set<Node> made = Collections.newSetFromMap(new IdentityHashMap<>());
         final Set<Node> tipped = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        Draw(Draw outer) {
+            this.outer = outer;
+        }
+
+        /** Whether this draw, or any it was begun inside, is drawing this pool. */
+        boolean drawing(Pool pool) {
+            for (Draw d = this; d != null; d = d.outer) if (d.begun.contains(pool.root)) return true;
+            return false;
+        }
     }
 
     /** The draw on now, or null: then every call here makes a new node. Only ever touched on the FX thread. */
@@ -159,14 +171,22 @@ public final class Kept {
     /**
      * Runs a page's code as a kept draw from the pool: every node it asks for here is handed back
      * from the pool's last draw where it can be, and when the code returns each box's children are
-     * set from what the code put in them. A draw inside a draw is part of it.
+     * set from what the code put in them.
+     *
+     * <p>A draw may be called while another is on (UP2: the header's draw reaches the envelope's,
+     * which is also drawn on its own when a notice is read; a page's code may reach a refresh of the
+     * chrome). A draw of ANOTHER pool inside it saves the outer draw, runs and commits as a draw of
+     * its own, and restores the outer, so neither takes the other's nodes: the inner code asks its
+     * own pool, and the outer's scopes are as they were. A draw of the SAME pool inside its own is
+     * part of the outer draw, as it was (a pool is begun once).
      */
     static void draw(Pool pool, Runnable code) {
-        if (drawing != null) {
+        Draw outer = drawing;
+        if (outer != null && outer.drawing(pool)) {
             code.run();
             return;
         }
-        Draw d = new Draw();
+        Draw d = new Draw(outer);
         drawing = d;
         pool.root.begin();
         d.begun.add(pool.root);
@@ -174,17 +194,22 @@ public final class Kept {
         try {
             code.run();
         } finally {
+            // Nothing is being drawn while the boxes are settled: what a children change calls is not this draw's.
             drawing = null;
-            for (Scope s : d.begun) s.end();
-            for (Staging s : d.staged) s.commit();
-            // A tooltip the code gave a node last time and not this time goes.
-            for (Node n : d.handedBack) {
-                Tooltip t = tipOf(n);
-                if (t != null && !d.tipped.contains(n)) Tooltip.uninstall(n, t);
+            try {
+                for (Scope s : d.begun) s.end();
+                for (Staging s : d.staged) s.commit();
+                // A tooltip the code gave a node last time and not this time goes.
+                for (Node n : d.handedBack) {
+                    Tooltip t = tipOf(n);
+                    if (t != null && !d.tipped.contains(n)) Tooltip.uninstall(n, t);
+                }
+                pool.draws++;
+                pool.lastMade = d.made.size();
+                pool.lastKept = d.handedBack.size();
+            } finally {
+                drawing = outer;
             }
-            pool.draws++;
-            pool.lastMade = d.made.size();
-            pool.lastKept = d.handedBack.size();
         }
     }
 
@@ -304,13 +329,20 @@ public final class Kept {
     }
 
     /** The real list made equal to the staged one: untouched when it already is, else in one call. */
-    private static void settle(ObservableList<Node> real, List<Node> want) {
-        if (real.size() == want.size()) {
-            boolean same = true;
-            for (int i = 0; i < want.size() && same; i++) same = real.get(i) == want.get(i);
-            if (same) return;
-        }
-        real.setAll(want);
+    private static void settle(ObservableList<Node> real, List<? extends Node> want) {
+        if (!same(real, want)) real.setAll(want);
+    }
+
+    /** Whether a children list is already these nodes, in this order. */
+    static boolean same(List<? extends Node> real, List<? extends Node> want) {
+        if (real.size() != want.size()) return false;
+        for (int i = 0; i < want.size(); i++) if (real.get(i) != want.get(i)) return false;
+        return true;
+    }
+
+    /** A pane's children made these nodes, in one call and only where they differ (the chrome's boxes are not Kept's own). */
+    static void set(ObservableList<Node> real, List<? extends Node> want) {
+        settle(real, want);
     }
 
     /** A VBox, kept. */
@@ -566,6 +598,11 @@ public final class Kept {
         }
         if (d != null) d.tipped.add(n);
         return t;
+    }
+
+    /** The animation a node was last given through {@link #play}, or null. */
+    static Animation animationOf(Node n) {
+        return n.getProperties().get(ANIMATION) instanceof Animation a ? a : null;
     }
 
     /**
