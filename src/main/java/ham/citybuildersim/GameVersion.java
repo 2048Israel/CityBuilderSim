@@ -7145,8 +7145,21 @@ public final class GameVersion {
      *   - Harness: KeptCheck (new) with ui/KeptBench: the kept page against a
      *     page built new, node for node and pixel for pixel, and its month's
      *     cost; no window (a scene of its own), skipped where JavaFX cannot start.
+     *
+     * 0.8.27 (2026-10-23) - UP3, THE MAP'S MONTH REDRAWS ONLY WHAT MOVED
+     * (docs/queue/UP3-notes.md). The map's alone; the trace is byte-identical
+     * to 0.8.26's.
+     *   - MapTiles.KeptNode: a far node's land, districts and runs layers,
+     *     each redrawn only when its key moved; the same pixels as
+     *     nodePixels(), which stays as the full redraw. nodeKey(): what a far
+     *     node is drawn from, hashed.
+     *   - ui/MiniMap: the stamp and the preview from kept nodes, a picture
+     *     begun at most every STAMP_EVERY_MS (250 ms). ui/MapView: a far node
+     *     re-coloured only when its key moved.
+     *   - CityMap.Link: its stamp worked out once.
+     *   - Harness: MapCheck 18 (new section).
      */
-    public static final String VERSION = "0.8.26";
+    public static final String VERSION = "0.8.27";
 
     /**
      * The save shape.

@@ -14,6 +14,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.27 — UP3, the map's month redraws only what moved — 2026-10-23, ready, see docs/queue/UP3-notes.md
+
+Measured first on copies of Jerus's city grown a month at a time (x 1, x 80 at his 125 districts, 5B): a month moves 1-2
+districts of 125, yet the minimap's stamp and the far view were redrawn whole. A far node now keeps its land, districts
+and runs as layers (MapTiles.KeptNode), each redrawn only when its key moved, and composes the same pixels as the full
+redraw: the stamp fell from 4.6-6.5 ms a month to 0.15-0.8, and is begun at most every 250 ms (STAMP_EVERY_MS), four a
+second at 50x. The far view re-colours a node only when its nodeKey() moved: x 1's screen 11.8 to 2.6 ms, 5B's 29.6 to
+17.8. A link's stamp is worked out once. MapCheck 18 (new) compares the kept pictures with a full redraw over 73 months,
+9.25 million pixels, all equal. Left (UP3-C): the chain's early exit (at x 80 a month re-plans all 121 pictures, 26 ms
+of the FX thread and 1.5 s of the worker) and the L0 screen's band check (32 ms at 5B). The trace is 0.8.26's, so no ensemble.
+
 ### 0.8.26 — UP4, the People page kept — 2026-10-23, ready, see docs/studies/spec-screens-in-place.md
 
 The study UP4 timed every rail screen's redraw at month 4,000 through the pulse's own passes: 29-68 ms, the chrome
