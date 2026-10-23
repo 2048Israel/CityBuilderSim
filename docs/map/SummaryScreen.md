@@ -1,4 +1,4 @@
-# SummaryScreen.java - 1,503 lines · 30 methods · 8 constants · interface
+# SummaryScreen.java - 1,542 lines · 33 methods · 8 constants · interface
 
 `ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -20,9 +20,9 @@
 > model, CityNeeds - the list, its lines and SEATS AGAINST WHO WOULD COME
 > moved there whole - so the Build tab and the chip read the same verdicts.
 
-**Uses:** [CityNeeds](CityNeeds.md) (50), [Palette](Palette.md) (29), [CareType](CareType.md) (14), [BuildScreen](BuildScreen.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [BuildAdvice](BuildAdvice.md) (6), [Health](Health.md) (5), [LandManager](LandManager.md) (5), [Crime](Crime.md) (5), [PolicyScreen](PolicyScreen.md) (4), [Money](Money.md) (3), [PopulationManager](PopulationManager.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [Healthcare](Healthcare.md) (3), [WageBand](WageBand.md) (3), [EducationType](EducationType.md) (3), [UserInterface](UserInterface.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [PeopleScreen](PeopleScreen.md) (2), [EconomyManager](EconomyManager.md) (2), [BuildingManager](BuildingManager.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [LabourMarket](LabourMarket.md) (2), [Currency](Currency.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Pieces](Pieces.md) (1), [FinancesScreen](FinancesScreen.md) (1), [TradeScreen](TradeScreen.md) (1), [Bank](Bank.md) (1), [Game](Game.md) (1)... and 6 more
+**Uses:** [CityNeeds](CityNeeds.md) (50), [Kept](Kept.md) (42), [Palette](Palette.md) (30), [CareType](CareType.md) (14), [BuildScreen](BuildScreen.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [BuildAdvice](BuildAdvice.md) (6), [Health](Health.md) (5), [LandManager](LandManager.md) (5), [Crime](Crime.md) (5), [PolicyScreen](PolicyScreen.md) (4), [UserInterface](UserInterface.md) (3), [Money](Money.md) (3), [PopulationManager](PopulationManager.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [Healthcare](Healthcare.md) (3), [WageBand](WageBand.md) (3), [EducationType](EducationType.md) (3), [InfrastructureManager](InfrastructureManager.md) (2), [PeopleScreen](PeopleScreen.md) (2), [EconomyManager](EconomyManager.md) (2), [BuildingManager](BuildingManager.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [LabourMarket](LabourMarket.md) (2), [Currency](Currency.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Pieces](Pieces.md) (1), [FinancesScreen](FinancesScreen.md) (1), [TradeScreen](TradeScreen.md) (1), [Bank](Bank.md) (1)... and 7 more
 
-**Used by (9):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [ServicesScreen](ServicesScreen.md), [UserInterface](UserInterface.md)
+**Used by (10):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [ServicesScreen](ServicesScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -31,26 +31,26 @@
 | 44 | HEADROOM, NOT SATISFACTION |
 | 124 | CITY OVERVIEW PANEL |
 | 136 | THE LEFT PANEL |
-| 265 | SUMMARY, OR DASHBOARD |
-| 425 | THE SUMMARY IS A PROBLEM LIST NOW. |
-| 696 | · · what needs you |
-| 725 | · · the symptoms |
-| 790 | · ECONOMY |
-| 821 | · BANK |
-| 857 | · TRADE - the city's edge, in one line. |
-| 892 | · THE TWO POCKETS, AND WHICH MONEY EACH IS IN. |
-| 995 | · TAX |
-| 1017 | · LABOUR - and this is the one Jerus asked for by name. |
-| 1110 | · SCHOOLS |
-| 1148 | · PEOPLE |
-| 1166 | · HEALTH |
-| 1195 | · SAFETY (2026-09-11) |
-| 1225 | · RESOURCES |
-| 1256 | · LAND |
-| 1295 | · SECTOR CASH |
-| 1307 | · BUILDINGS, and this is where the folding pays for itself. |
-| 1376 | · THE VITALS, which are never folded away. |
-| 1408 | · AND WHATEVER IS ACTUALLY WRONG. |
+| 274 | SUMMARY, OR DASHBOARD |
+| 445 | THE SUMMARY IS A PROBLEM LIST NOW. |
+| 720 | · · what needs you |
+| 749 | · · the symptoms |
+| 820 | · ECONOMY |
+| 851 | · BANK |
+| 887 | · TRADE - the city's edge, in one line. |
+| 922 | · THE TWO POCKETS, AND WHICH MONEY EACH IS IN. |
+| 1025 | · TAX |
+| 1047 | · LABOUR - and this is the one Jerus asked for by name. |
+| 1140 | · SCHOOLS |
+| 1178 | · PEOPLE |
+| 1196 | · HEALTH |
+| 1225 | · SAFETY (2026-09-11) |
+| 1255 | · RESOURCES |
+| 1286 | · LAND |
+| 1325 | · SECTOR CASH |
+| 1337 | · BUILDINGS, and this is where the folding pays for itself. |
+| 1415 | · THE VITALS, which are never folded away. |
+| 1447 | · AND WHATEVER IS ACTUALLY WRONG. |
 
 ## Constants
 
@@ -62,8 +62,8 @@
 | 164 | `SummaryScreen.PANEL_WARN` | `Palette.WARN` |  |
 | 165 | `SummaryScreen.PANEL_BAD` | `Palette.BAD` |  |
 | 172 | `SummaryScreen.DEBT_GDP_LABEL` | `"Debt/GDP, bonds and bills"` | ECONOMY's debt to GDP, named for what it counts (0.7.129): the city's bonds and bills, DebtManager.getAllPrincipal(). |
-| 411 | `SummaryScreen.PANEL_SECTIONS` | `{ "econ", "bank", "trade", "tax", "labour", "school", "people", "health", "sa...` | Every section key, so open-all does not have to be kept in step by hand. |
-| 505 | `SummaryScreen.WORDS` | `new CityNeeds.Words() { @ Override public String people(double count) { retur...` | The interface's own words for a figure, which the needs are read in (CityNeeds.Words). |
+| 429 | `SummaryScreen.PANEL_SECTIONS` | `{ "econ", "bank", "trade", "tax", "labour", "school", "people", "health", "sa...` | Every section key, so open-all does not have to be kept in step by hand. |
+| 525 | `SummaryScreen.WORDS` | `new CityNeeds.Words() { @ Override public String people(double count) { retur...` | The interface's own words for a figure, which the needs are read in (CityNeeds.Words). |
 
 ## Fields (state)
 
@@ -71,13 +71,13 @@
 |---:|---|---|
 | 40 | `private final UserInterface ui` | The window this screen draws into: its game, its root, its clearMenu(). |
 | 159 | `final java.util.Set<String> panelOpen` | Which sections and rows the player has opened. |
-| 309 | `boolean needsView` | THE CHIP OPENS ON NEEDS YOU (0.7.24, after the PC check). |
+| 318 | `boolean needsView` | THE CHIP OPENS ON NEEDS YOU (0.7.24, after the PC check). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 1467 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - and the problem list that decides what goes red, dr... |
+| 37 | 1506 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - and the problem list that decides what goes red, dr... |
 | 42 | 1 | `SummaryScreen(UserInterface ui)` |  |
 
 ### HEADROOM, NOT SATISFACTION (lines 44-123)
@@ -91,44 +91,47 @@
 
 ### CITY OVERVIEW PANEL (lines 124-135)
 
-### THE LEFT PANEL (lines 136-264)
+### THE LEFT PANEL (lines 136-273)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 167 | 3 | `HBox statLine(String label, String value)` |  |
-| 181 | 19 | `HBox statLine(String label, String value, String tone)` | One row: what it is on the left, what it reads on the right. |
-| 214 | 43 | `VBox panelSection(String key, String heading, String summary, String tone, java.util.function.Supplier<VBox> detail)` | A row that hides something, and says so. |
-| 259 | 5 | `VBox panelBody(javafx.scene.Node...rows)` | A section's detail, built from rows. |
+| 181 | 24 | `HBox statLine(String label, String value, String tone)` | One row: what it is on the left, what it reads on the right. |
+| 219 | 47 | `VBox panelSection(String key, String heading, String summary, String tone, java.util.function.Supplier<VBox> detail)` | A row that hides something, and says so. |
+| 268 | 5 | `VBox panelBody(javafx.scene.Node...rows)` | A section's detail, built from rows. |
 
-### SUMMARY, OR DASHBOARD (lines 265-424)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 312 | 3 | `boolean dashboardShown()` | Whether the panel draws as Dashboard now: the stored mode, unless the chip opened it on NEEDS YOU. |
-| 316 | 10 | `HBox panelModeSwitch()` |  |
-| 327 | 18 | `Label panelModeChip(String text, boolean on, boolean dashboard)` |  |
-| 361 | 22 | `VBox summaryRow(String heading, String value, String tone, Runnable go)` | One row of the summary: what it is, and what it reads. |
-| 385 | 16 | `HBox panelFoldAll()` | Open everything, or close it. |
-| 402 | 7 | `Label foldLink(String text, Runnable act)` |  |
-| 417 | 7 | `Label panelNote(String text)` | A caption inside an open section - a sub-heading, or a note. |
-
-### THE SUMMARY IS A PROBLEM LIST NOW. (lines 425-1503)
+### SUMMARY, OR DASHBOARD (lines 274-444)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 479 | 8 | **type** `record Watch(String label, String reading, int level, double near, Runnable go, String tip, int verdict)` | One thing being watched. |
-| 480 | 3 | `Watch(String label, String reading, int level, double near, Runnable go)` _(in SummaryScreen.Watch)_ |  |
-| 483 | 3 | `Watch(String label, String reading, int level, double near, Runnable go, String tip)` _(in SummaryScreen.Watch)_ |  |
-| 489 | 6 | `void over(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Higher is worse. |
-| 497 | 6 | `void under(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Lower is worse. |
-| 519 | 10 | `java.util.List<Watch> watchAll()` | Everything with a lever, measured against its own line: CityNeeds' list (0.7.24; it was measured here), each need with the door to the screen that answers it. |
-| 536 | 7 | `Runnable financesDoor(CityNeeds.Kind kind)` | Where a Finances row goes (0.7.32, the Finances spec's D17), through FinancesScreen.open() so it lands where it says rather than on the last page the tab had open (its B8): TREASURY on the hub, FALLS DUE on the hub's ... |
-| 550 | 39 | `Runnable goTo(CityNeeds.Go go)` | Where a need's row goes: the Build category that answers it, the land office, the builders' books, Finances, the bank, or the Policy page of the promise, the wage floor or the taxes - the doors watchAll() opened befor... |
-| 598 | 92 | `java.util.List<Watch> citySymptoms()` | The readings with no dial of their own. |
-| 691 | 52 | `void panelSummaryRows(VBox body)` |  |
-| 745 | 16 | `VBox panelHeading(String text)` | A rule and a caption, dividing the panel's two halves. |
-| 770 | 573 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
-| 1344 | 129 | `void refreshCityPanel()` |  |
-| 1486 | 12 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
-| 1500 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
+| 321 | 3 | `boolean dashboardShown()` | Whether the panel draws as Dashboard now: the stored mode, unless the chip opened it on NEEDS YOU. |
+| 325 | 12 | `HBox panelModeSwitch()` |  |
+| 338 | 18 | `Label panelModeChip(String text, boolean on, boolean dashboard)` |  |
+| 372 | 27 | `VBox summaryRow(String heading, String value, String tone, Runnable go)` | One row of the summary: what it is, and what it reads. |
+| 401 | 18 | `HBox panelFoldAll()` | Open everything, or close it. |
+| 420 | 7 | `Label foldLink(String text, Runnable act)` |  |
+| 435 | 9 | `Label panelNote(String text)` | A caption inside an open section - a sub-heading, or a note. |
+
+### THE SUMMARY IS A PROBLEM LIST NOW. (lines 445-1542)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 499 | 8 | **type** `record Watch(String label, String reading, int level, double near, Runnable go, String tip, int verdict)` | One thing being watched. |
+| 500 | 3 | `Watch(String label, String reading, int level, double near, Runnable go)` _(in SummaryScreen.Watch)_ |  |
+| 503 | 3 | `Watch(String label, String reading, int level, double near, Runnable go, String tip)` _(in SummaryScreen.Watch)_ |  |
+| 509 | 6 | `void over(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Higher is worse. |
+| 517 | 6 | `void under(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Lower is worse. |
+| 539 | 10 | `java.util.List<Watch> watchAll()` | Everything with a lever, measured against its own line: CityNeeds' list (0.7.24; it was measured here), each need with the door to the screen that answers it. |
+| 556 | 7 | `Runnable financesDoor(CityNeeds.Kind kind)` | Where a Finances row goes (0.7.32, the Finances spec's D17), through FinancesScreen.open() so it lands where it says rather than on the last page the tab had open (its B8): TREASURY on the hub, FALLS DUE on the hub's ... |
+| 570 | 39 | `Runnable goTo(CityNeeds.Go go)` | Where a need's row goes: the Build category that answers it, the land office, the builders' books, Finances, the bank, or the Policy page of the promise, the wage floor or the taxes - the doors watchAll() opened befor... |
+| 618 | 92 | `java.util.List<Watch> citySymptoms()` | The readings with no dial of their own. |
+| 711 | 3 | `void panelSummaryRows(VBox body)` |  |
+| 715 | 52 | `private void summaryRows(VBox body)` |  |
+| 769 | 18 | `VBox panelHeading(String text)` | A rule and a caption, dividing the panel's two halves. |
+| 796 | 3 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
+| 800 | 573 | `private void dashboardSections(VBox body)` |  |
+| 1379 | 4 | `void refreshCityPanel()` | The city panel, drawn kept (UP2): the nodes the last draw made, this month's figures set on them (ui.cityPool). |
+| 1384 | 128 | `private void drawCityPanel()` |  |
+| 1525 | 12 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
+| 1539 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
 

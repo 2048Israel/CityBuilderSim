@@ -1133,7 +1133,7 @@ public class UserInterface extends Application {
     }
 
     /* =====================================================================
-       A KEPT SCREEN (study UP4, 0.8.25; docs/studies/spec-screens-in-place.md).
+       A KEPT SCREEN (study UP4, 0.8.26; docs/studies/spec-screens-in-place.md).
 
        Every screen above is drawn by emptying the page and building it again,
        which at month 4,000 cost People 57 ms a redraw - most of it the new

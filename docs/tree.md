@@ -591,6 +591,11 @@ adds its line here, not in `CLAUDE.md`.
                                    save, a skip and Quit wait for it; at most one autosave in 30 s of real
                                    time (FLOOR_SECONDS). SaveCopy.java beside it: the lists and maps the
                                    save's setters copy, so the save holds no live object. SaveSlotCheck 7c
+        ClockPace.java             the window clock's arithmetic (batch UP2, 0.8.28): a redraw waits three times
+                                   what the last cost (120 ms at least), a frame stops running months past 40 ms
+                                   and drops what it owed past one, and the speed's reading says when the city
+                                   falls a tenth short of the rung; pure, no JavaFX, ClockCheck drives it on a
+                                   clock of its own
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103);
                                    since 0.7.139 it says what childcare it stands at m1,000 to m4,000, and

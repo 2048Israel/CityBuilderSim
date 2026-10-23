@@ -7158,8 +7158,23 @@ public final class GameVersion {
      *     re-coloured only when its key moved.
      *   - CityMap.Link: its stamp worked out once.
      *   - Harness: MapCheck 18 (new section).
+     *
+     * 0.8.28 (2026-10-23) - UP2, THE CLOCK KEEPS ITS FRAME
+     * (docs/queue/UP2-notes.md). The window's alone; the trace is byte-identical
+     * to 0.8.27's.
+     *   - ClockPace: a redraw waits REDRAW_SPACING (3) times what the last cost,
+     *     120 ms at least; a frame stops running months past MONTH_FRAME_MS
+     *     (40) and drops what it owed past one month; the speed between the
+     *     arrows says when the city falls more than a tenth short ("50× · 39×").
+     *   - The header's tiles read only their last SPARK_MONTHS
+     *     (HistorySave.alignedTail, YearBook.unemploymentTail, realGrowthTail).
+     *   - The chrome kept (ui/Kept): the header, the rail, the city panel, the
+     *     construction panel and the inbox's list, each from a pool of its own;
+     *     HeadlineTile and Sparkline told their figures; Kept.draw re-entrant.
+     *   - ui/UiProbe: the pulse's own passes, the chrome alone, FRAME_P95.
+     *   - Harness: ClockCheck (new); KeptCheck 6-13 (new sections).
      */
-    public static final String VERSION = "0.8.27";
+    public static final String VERSION = "0.8.28";
 
     /**
      * The save shape.
