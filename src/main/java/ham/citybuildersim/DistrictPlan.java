@@ -140,6 +140,17 @@ import java.util.List;
  * so land bought inside a district, full or not, adds room and re-places nothing
  * that stands.
  *
+ * THE RUNS DATED (batch FX7). The city's runs are dated too (Input.fixedLogMonth
+ * and fixedLog: the highways, railway and yards its runs laid or took, a record
+ * for each change of a plot's kind of fixed ground): the plan starts on the runs
+ * of the month the first batch stands on and each month's arrivals find the
+ * records of that month and the months before it laid on it (Builder.growGround(),
+ * with the land), so a yard laid across built ground, a highway arm, a yard gone,
+ * re-places nothing that stands: a box under a run laid later stays and the run is
+ * drawn over it, a free plot the run bars is barred, and the ground a run leaves is
+ * room again. The last growth is today's runs, for the streets, the access roads
+ * and the surface.
+ *
  * AVENUES (batch CL4; Jerus, 2026-10-20: "having some slanted roads and curves"). The city read as a rigid grid at the far
  * view. Now four avenues run out from the founding site at 45 degrees - south-east, south-west, north-west, north-east,
  * ARMS 0 to 3 in CityRuns.diagCode()'s order - laid by every district's plan as street plots of the role ROLE_ARTERIAL
@@ -1320,6 +1331,7 @@ public final class DistrictPlan {
                 Arrays.fill(free[c], 0);
                 Arrays.fill(freeF[c], 0);
             }
+            fixedAtStart();
             avSetup();
             groundAtStart();
             ground();
@@ -1695,7 +1707,8 @@ public final class DistrictPlan {
             batchG = bg;
             batchP = bp;
             batchH = bh;
-            goesOn = active > 0 || Math.abs(bg - in.gravel) > 1e-9 || Math.abs(bp - in.paved) > 1e-9 || Math.abs(bh - in.highway) > 1e-9;
+            // A run laid after the first batch's month goes on too (THE RUNS DATED): the plan is joined and its roads laid on today's runs.
+            goesOn = active > 0 || Math.abs(bg - in.gravel) > 1e-9 || Math.abs(bp - in.paved) > 1e-9 || Math.abs(bh - in.highway) > 1e-9 || fxNext < fxN;
             if (goesOn) {
                 rG = bg;
                 rP = bp;
@@ -2002,25 +2015,29 @@ public final class DistrictPlan {
         /** growGround()'s plots added, kept between calls. */
         int[] grown;
 
+        /**
+         * The month the first batch stands on, the one the plan's ground is dated from (THE GROUND BOUGHT, THE RUNS DATED): its
+         * last record's; with no first batch, the month before the first event (never before month 0, whose ground is the centre's:
+         * it is there for an arrival in month 0). Integer.MIN_VALUE for a plan with no log to date it by, and for a prototype's.
+         */
+        int startMonth() {
+            if (proto || in.logMonth == null || in.logType == null || in.logChange == null) return Integer.MIN_VALUE;
+            int n = Math.min(in.logMonth.length, Math.min(in.logType.length, in.logChange.length));
+            int fb = Math.max(0, Math.min(in.firstBatch, n));
+            if (fb > 0) return in.logMonth[fb - 1];
+            int first = Integer.MAX_VALUE;
+            if (n > 0) first = in.logMonth[0];
+            if (in.carry != null && in.carry.length > 1) first = Math.min(first, in.carry[0]);
+            return first == Integer.MAX_VALUE ? Integer.MIN_VALUE : Math.max(0, first - 1);
+        }
+
         /** owns filled for a new plan (start()): the input's owned ground, less the plots bought after the month the first batch stands on, which the events add; dueMonth set. */
         void groundAtStart() {
             System.arraycopy(in.owned, 0, owns, 0, AREA);
             dueMonth = Integer.MAX_VALUE;
-            if (in.boughtAt == null || proto || in.logMonth == null || in.logType == null || in.logChange == null) return;
-            int n = Math.min(in.logMonth.length, Math.min(in.logType.length, in.logChange.length));
-            int fb = Math.max(0, Math.min(in.firstBatch, n));
-            // The month the first batch stands on: its last record's; with no first batch, the month before the first event (never
-            // before month 0, whose ground is the centre's: it is there for an arrival in month 0).
-            int m0;
-            if (fb > 0) {
-                m0 = in.logMonth[fb - 1];
-            } else {
-                int first = Integer.MAX_VALUE;
-                if (n > 0) first = in.logMonth[0];
-                if (in.carry != null && in.carry.length > 1) first = Math.min(first, in.carry[0]);
-                if (first == Integer.MAX_VALUE) return;
-                m0 = Math.max(0, first - 1);
-            }
+            if (in.boughtAt == null) return;
+            int m0 = startMonth();
+            if (m0 == Integer.MIN_VALUE) return;
             int[] at = in.boughtAt;
             int due = Integer.MAX_VALUE;
             for (int p = 0; p < AREA; p++) {
@@ -2032,30 +2049,47 @@ public final class DistrictPlan {
         }
 
         /**
-         * The plan's ground grown to the month an arrival comes in (Integer.MAX_VALUE: to all of Input.owned): the plots
-         * bought before it added, the ground worked out again, the free rows of the open cells given the new plots, the
-         * cells no pointer has taken ranked again. Nothing when no plot is due: the events are thousands a plan.
+         * The plan's ground grown to the month an arrival comes in (Integer.MAX_VALUE: to all of Input.owned and every
+         * record of Input.fixedLog): the plots bought before it added and the records of its month and the months before it
+         * laid (THE RUNS DATED), the ground worked out again once, the free rows of the open cells given the room the new
+         * ground makes and taken back what it bars, the cells no pointer has taken ranked again. Nothing when nothing is
+         * due: the events are thousands a plan.
          */
         void growGround(int month) {
-            if (month <= dueMonth) return;
+            boolean land = month > dueMonth, runs = fxNext < fxN && in.fixedLogMonth[fxNext] <= month;
+            if (!land && !runs) return;
             if (grown == null) grown = new int[AREA];
-            int[] at = in.boughtAt;
-            int n = 0, due = Integer.MAX_VALUE;
-            for (int p = 0; p < AREA; p++) {
-                if (!in.owned[p] || owns[p]) continue;
-                if (month == Integer.MAX_VALUE || at[p] < month) {
-                    owns[p] = true;
-                    grown[n++] = p;
-                } else {
-                    due = Math.min(due, at[p]);
+            int n = 0;
+            if (land) {
+                int[] at = in.boughtAt;
+                int due = Integer.MAX_VALUE;
+                for (int p = 0; p < AREA; p++) {
+                    if (!in.owned[p] || owns[p]) continue;
+                    if (month == Integer.MAX_VALUE || at[p] < month) {
+                        owns[p] = true;
+                        grown[n++] = p;
+                    } else {
+                        due = Math.min(due, at[p]);
+                    }
+                }
+                dueMonth = due;
+            }
+            // The records due laid on the runs' ground, the room as it was kept to find what they changed by.
+            int laid = 0;
+            if (runs) {
+                System.arraycopy(occStart, 0, occWas, 0, AREA);
+                System.arraycopy(fieldOk, 0, fieldWas, 0, AREA);
+                while (fxNext < fxN && in.fixedLogMonth[fxNext] <= month) {
+                    int r = in.fixedLog[fxNext++];
+                    fx[r >>> 8] = (byte) (r & 15);
+                    laid++;
                 }
             }
-            dueMonth = due;
-            if (n == 0) return;
+            if (n == 0 && laid == 0) return;
             ground();
             // Each new plot is as a build begins; in the interior of a cell that is open it is room (freshCell()'s rule, less
             // streets: a plot just bought holds none), and that cell looks again.
-            boolean[] roomed = new boolean[CELLS];
+            boolean[] roomed = new boolean[CELLS], refree = new boolean[CELLS];
             for (int k = 0; k < n; k++) {
                 int p = grown[k], x = p % FRAME, y = p / FRAME;
                 // A plot a curve's band reaches (CL4) stays free of buildings: bought or not, it is no room.
@@ -2070,14 +2104,16 @@ public final class DistrictPlan {
                 if (((openRows[c][ly] | fieldRows[c][ly]) & bit) != 0) freeF[c][ly] |= bit;
                 roomed[c] = true;
             }
+            if (laid > 0) runsLaid(roomed, refree);
             for (int c = 0; c < CELLS; c++) {
                 if (!roomed[c]) continue;
+                if (refree[c]) refreeCell(c);
                 rescan(c);
                 forgetFails(c);
                 mergeFails[c] = 0;
             }
             // The avenues on the ground just bought (CL4): an open cell lays the staircase plots it could not when it opened.
-            if (avOn) avOnGrown(n);
+            if (avOn && n > 0) avOnGrown(n);
             cutLines.clear();
             // The order: the cells either pointer has taken keep their places; between them the cells of the grown ground in
             // its growth order, then any that stood between and the new order lacks, in their old order.
@@ -2100,6 +2136,76 @@ public final class DistrictPlan {
             bFar = far;
         }
 
+        /* ------------------------------------------------ the runs dated (batch FX7) */
+
+        /*
+         * THE RUNS DATED (batch FX7). The plan read the city's runs - the highways, the railway, the yards, as Input.fixed has
+         * them - as they stand today for the whole of a district's history, so when the runs laid something across ground that
+         * was built (a Rail Depot's yard at the rail hub, a highway arm) or took something away (a yard gone) every arrival was
+         * replayed around today's runs and most of the district's buildings moved: on the playtest's city the founding district's
+         * yard came and went about twenty times, each time moving 100 to 260 of some 300 boxes. Now the runs are dated as the
+         * land is (Input.fixedLogMonth and fixedLog: a record for each change of a plot's kind of fixed ground, at the month it
+         * was made): fx is the runs' ground the plan has so far, Input.fixed less the records dated later than the month the
+         * first batch stands on (fixedAtStart()), and the events of each month find the records of that month and the months
+         * before it laid on it (growGround(), with the land bought: one pass of the ground a call), so what stands never moves.
+         * The records of a month are laid before its arrivals, not after as the land is: the runs are laid inside the month,
+         * the land between the months. The last growth, after the events, is today's runs, for the streets to be joined on, the
+         * access roads and the sidings to be laid and the surface drawn.
+         *
+         * WHAT A RUN LAID LATER DOES TO WHAT STANDS: nothing. A box on a plot a record makes a highway's, a track's or a yard's
+         * stays where it is, the run is drawn over it; a street laid there stays. Only ground nothing stands on is taken: a free
+         * plot the new runs bar, or their verge does, is barred (it leaves its open cell's free rows), and a cell not opened yet
+         * is opened on the runs of the month it opens in. WHAT A RUN THAT LEAVES DOES: its ground is room again, as land bought
+         * is - a plot no longer barred that holds no street, no box and no curve's band is free and joins its open cell's free
+         * rows - and a box that stood on it and leaves frees it. The cells no pointer has taken are ranked again in the new
+         * ground's growth order, the taken ones keeping their places, as for the land bought.
+         */
+
+        /** The runs' ground the plan has so far (THE RUNS DATED): every read of a highway, a railway, a yard or a reserve in a build is of this, never of Input.fixed; with no records it is Input.fixed from the start. */
+        final byte[] fx = new byte[AREA];
+        /** The next record of Input.fixedLog not yet laid on fx, and how many the plan reads (0 for none: no log, no records, or a prototype's). */
+        int fxNext, fxN;
+        /** occStart and fieldOk as they stood before the records growGround() laid: the plots whose room they changed are found by comparing the ground worked out again with them. */
+        final byte[] occWas = new byte[AREA];
+        final boolean[] fieldWas = new boolean[AREA];
+
+        /** fx set for a new plan (start()): Input.fixed less the records dated later than the month the first batch stands on, undone latest first; fxNext the first record growGround() lays. */
+        void fixedAtStart() {
+            System.arraycopy(in.fixed, 0, fx, 0, AREA);
+            fxNext = fxN = 0;
+            if (in.fixedLog == null || in.fixedLogMonth == null) return;
+            int m0 = startMonth();
+            if (m0 == Integer.MIN_VALUE) return;
+            int n = Math.min(in.fixedLog.length, in.fixedLogMonth.length), k = n;
+            while (k > 0 && in.fixedLogMonth[k - 1] > m0) {
+                int r = in.fixedLog[--k];
+                fx[r >>> 8] = (byte) (r >> 4 & 15);
+            }
+            fxN = n;
+            fxNext = k;
+        }
+
+        /**
+         * The room the records just laid (growGround()) made and took, once ground() has worked the runs' ground out again:
+         * where a plot's room changed (occStart: barred or free again, a verge counted) a plot nothing stands on is as a build
+         * begins - a box, a street or a curve's band is left as it is - and the open cell it lies in is flagged to look again;
+         * where only a field's plot changed (fieldOk) the cell is flagged too, since its free rows with fields read it.
+         */
+        void runsLaid(boolean[] roomed, boolean[] refree) {
+            for (int p = 0; p < AREA; p++) {
+                boolean room = occStart[p] != occWas[p];
+                if (!room && fieldOk[p] == fieldWas[p]) continue;
+                if (room && occ[p] != 1 && !str[p] && !under[p] && !cvKeep[p]) occ[p] = occStart[p];
+                int x = p % FRAME, y = p / FRAME;
+                if (x < 1 || y < 1 || x > SIDE || y > SIDE) continue;
+                if ((x - 1) % CELL >= INTERIOR || (y - 1) % CELL >= INTERIOR) continue;
+                int c = cellOfPlot(x, y);
+                if (bOut.cellKind[c] == CLOSED) continue;
+                roomed[c] = true;
+                refree[c] = true;
+            }
+        }
+
         /* ------------------------------------------------ the growth order (spec 2.4) */
 
         int[] growthOrder() {
@@ -2113,7 +2219,7 @@ public final class DistrictPlan {
                     for (int y = y0; y < y0 + INTERIOR; y++) {
                         for (int x = x0; x < x0 + INTERIOR; x++) {
                             int p = y * FRAME + x;
-                            if (dry[p] && in.fixed[p] != FIXED_HIGHWAY && !works(in.fixed[p]) && in.site[p] != SITE_MINED) room++;
+                            if (dry[p] && fx[p] != FIXED_HIGHWAY && !works(fx[p]) && in.site[p] != SITE_MINED) room++;
                         }
                     }
                     usable[c] = room >= CELL_ROOM_LEAST;
@@ -2944,6 +3050,8 @@ public final class DistrictPlan {
         final boolean[] avWet = new boolean[AREA];
         /** One build's state: each staircase plot decided (0 not yet, 1 laid, 2 not laid), the counts (AV_PLOTS...), and the cell-street junctions kept so far as arm << 28 | step. */
         final byte[] avDone = new byte[AREA];
+        /** ...and the kind of fixed ground each laid plot was laid on (THE RUNS DATED: the ground may be another by the time it is taken up, and the counts of what lies beneath and across are given back as they were taken). */
+        final byte[] avFx = new byte[AREA];
         final int[] avN = new int[8];
         int[] avKept = new int[512];
         int avKeptN;
@@ -3042,7 +3150,7 @@ public final class DistrictPlan {
         /** What an avenue makes of staircase plot p, by the ground the plan has now (owns): AVK_OFF to AVK_STREET. */
         int avKind(int p) {
             if (!owns[p] || in.terrain[p] == World.SALT) return AVK_OFF;
-            byte f = in.fixed[p];
+            byte f = fx[p];
             if (works(f) || in.site[p] == SITE_MINED) return AVK_BROKEN;
             if (f == FIXED_HIGHWAY) return AVK_UNDER;
             if (in.terrain[p] == World.FRESH && avWet[p]) return AVK_WATER;
@@ -3081,6 +3189,7 @@ public final class DistrictPlan {
                         continue;
                     }
                     avDone[p] = 1;
+                    avFx[p] = fx[p];
                     avN[AV_PLOTS]++;
                     if (!str[p] && !under[p]) {
                         // Made a street now (not a ring's or a cell street's plot it runs over): avAlone() may take it up again.
@@ -3097,7 +3206,7 @@ public final class DistrictPlan {
                     }
                     if (role[p] < ROLE_ARTERIAL) role[p] = (byte) ROLE_ARTERIAL;
                     if (in.terrain[p] == World.FRESH) avN[AV_BRIDGED]++;
-                    if (in.fixed[p] == FIXED_RAIL) avN[AV_RAIL]++;
+                    if (fx[p] == FIXED_RAIL) avN[AV_RAIL]++;
                 }
             }
             return broke;
@@ -3107,9 +3216,9 @@ public final class DistrictPlan {
         void avUnlay(int p) {
             avDone[p] = 2;
             avN[AV_PLOTS]--;
-            if (in.fixed[p] == FIXED_HIGHWAY) avN[AV_UNDER]--;
+            if (avFx[p] == FIXED_HIGHWAY) avN[AV_UNDER]--;
             if (in.terrain[p] == World.FRESH) avN[AV_BRIDGED]--;
-            if (in.fixed[p] == FIXED_RAIL) avN[AV_RAIL]--;
+            if (avFx[p] == FIXED_RAIL) avN[AV_RAIL]--;
         }
 
         /** Whether step m of arm a is a junction of the ring, by geometry alone: its column or its row is a cell's arterial line (a multiple of CELL in the frame, as every district's are). */
@@ -3261,9 +3370,9 @@ public final class DistrictPlan {
                     role[a] = 0;
                     avDone[a] = 0;
                     avN[AV_PLOTS]--;
-                    if (in.fixed[a] == FIXED_HIGHWAY) avN[AV_UNDER]--;
+                    if (avFx[a] == FIXED_HIGHWAY) avN[AV_UNDER]--;
                     if (in.terrain[a] == World.FRESH) avN[AV_BRIDGED]--;
-                    if (in.fixed[a] == FIXED_RAIL) avN[AV_RAIL]--;
+                    if (avFx[a] == FIXED_RAIL) avN[AV_RAIL]--;
                     any = true;
                 }
             }
@@ -3532,11 +3641,11 @@ public final class DistrictPlan {
          * arc whole (arcWhole()): the comb's three long streets and a quarter-circle cross street (crescentLayout()).
          */
 
-        /** Whether a highway, railway, yard or reserve (in.fixed) has a plot in the cell whose interior starts at (x0, y0), its ring included: such a cell keeps the comb, which crosses them as it always has (CL2). */
+        /** Whether a highway, railway, yard or reserve (the runs' ground the plan has now, fx) has a plot in the cell whose interior starts at (x0, y0), its ring included: such a cell keeps the comb, which crosses them as it always has (CL2). */
         boolean crossed(int x0, int y0) {
             if (avAny(x0, y0, x0 + INTERIOR - 1, y0 + INTERIOR - 1)) return true;
             for (int y = Math.max(0, y0 - 1); y <= Math.min(FRAME - 1, y0 + INTERIOR); y++) {
-                for (int x = Math.max(0, x0 - 1); x <= Math.min(FRAME - 1, x0 + INTERIOR); x++) if (in.fixed[y * FRAME + x] != 0) return true;
+                for (int x = Math.max(0, x0 - 1); x <= Math.min(FRAME - 1, x0 + INTERIOR); x++) if (fx[y * FRAME + x] != 0) return true;
             }
             return false;
         }
@@ -4134,7 +4243,7 @@ public final class DistrictPlan {
                             if (ax < bx0 || ay < by0 || ax > bx1 || ay > by1 || ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
                             int a = ay * FRAME + ax, ai = (ay - by0) * bw + (ax - bx0);
                             if (seen[ai] == st || str[a] || under[a]) continue;
-                            if (!dry[a] || in.fixed[a] != 0 || in.site[a] == SITE_MINED || occ[a] > 0) continue;
+                            if (!dry[a] || fx[a] != 0 || in.site[a] == SITE_MINED || occ[a] > 0) continue;
                             // Beside the cut, across corners.
                             boolean beside = false;
                             for (int dy = -1; dy <= 1 && !beside; dy++) for (int dx = -1; dx <= 1 && !beside; dx++) if (cutAt(ax + dx, ay + dy)) beside = true;
@@ -4217,7 +4326,7 @@ public final class DistrictPlan {
 
         /** Row y of the ground (THE GROUND, A ROW AT A TIME): dry, barred, its lay code from the ground, the runs' plots, the highways' and the parted streets' bits, an anchor. */
         void groundRow(int y) {
-            byte[] terrain = in.terrain, fixed = in.fixed, site = in.site;
+            byte[] terrain = in.terrain, fixed = fx, site = in.site;
             boolean[] owned = owns, partedAnchor = in.partedAnchor, anchor = in.anchor;
             int base = y * WORDS;
             boolean anchors = false;
@@ -4289,7 +4398,7 @@ public final class DistrictPlan {
 
         /** Row y's fields (spec 2.6) and the rest (THE GROUND, A ROW AT A TIME): barred with the verges, occ as a build begins, the field plots, both as bits. */
         void fieldRow(int y) {
-            byte[] fixed = in.fixed, site = in.site;
+            byte[] fixed = fx, site = in.site;
             int base = y * WORDS;
             boolean rowIn = y % CELL != 0 & y < SIDE, field = !proto;
             for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
@@ -4370,10 +4479,10 @@ public final class DistrictPlan {
                 int p = fixedList[k];
                 int code = layCode[p];
                 if (code == LAY_REFUSED) continue;
-                byte f = in.fixed[p];
+                byte f = fx[p];
                 if (works(f)) { layCode[p] = LAY_REFUSED; continue; }
-                if (along(in.fixed, p, true)) code |= H_STREET | H_ARTERIAL;
-                if (along(in.fixed, p, false)) code |= V_STREET | V_ARTERIAL;
+                if (along(fx, p, true)) code |= H_STREET | H_ARTERIAL;
+                if (along(fx, p, false)) code |= V_STREET | V_ARTERIAL;
                 if (f == FIXED_HIGHWAY) code |= LAY_UNDER;
                 layCode[p] = (byte) code;
             }
@@ -5049,12 +5158,12 @@ public final class DistrictPlan {
             int x = a % FRAME, y = a / FRAME;
             if (x % LATTICE != 0 && y % LATTICE != 0) return false;
             if (!owns[a] || in.terrain[a] == World.SALT || occ[a] > 0) return false;
-            byte f = in.fixed[a];
+            byte f = fx[a];
             if (proto) return f != FIXED_HIGHWAY;
             if (in.site[a] == SITE_MINED) return false;
             boolean arterial = horizontal ? y % CELL == 0 : x % CELL == 0;
             if (in.terrain[a] == World.FRESH && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
-            return f == 0 || (!works(f) && !along(in.fixed, a, horizontal));
+            return f == 0 || (!works(f) && !along(fx, a, horizontal));
         }
 
         /** Whether a step onto plot a going horizontally (or not) may be laid off the lattice, where the join's lattice finds no way: as joinable(), on any plot (H2: a street follows the ground where it must). */
@@ -5063,12 +5172,12 @@ public final class DistrictPlan {
             if (!owns[a] || in.terrain[a] == World.SALT || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
             boolean arterial = horizontal ? y % CELL == 0 : x % CELL == 0;
             if (in.terrain[a] == World.FRESH && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
-            return in.fixed[a] == 0 || (!works(in.fixed[a]) && !along(in.fixed, a, horizontal));
+            return fx[a] == 0 || (!works(fx[a]) && !along(fx, a, horizontal));
         }
 
         /** Lays a plot the join or the mines' reach took: a street, or beneath a highway. */
         void layJoin(int a) {
-            if (in.fixed[a] == FIXED_HIGHWAY && !proto) under[a] = true;
+            if (fx[a] == FIXED_HIGHWAY && !proto) under[a] = true;
             else setStr(a, true);
             if (role[a] == 0) role[a] = (byte) ROLE_JOIN;
         }
@@ -5153,7 +5262,7 @@ public final class DistrictPlan {
                 int endRole = blvd[end] ? ROLE_BOULEVARD : role[end], p = end, first = end;
                 while (p >= 0) {
                     first = p;
-                    if (in.fixed[p] != FIXED_HIGHWAY && !str[p]) { setStr(p, true); occ[p] = -1; }
+                    if (fx[p] != FIXED_HIGHWAY && !str[p]) { setStr(p, true); occ[p] = -1; }
                     art[p] = true;
                     role[p] = (byte) ROLE_ACCESS;
                     if (out.accessAt == null) out.accessAt = new boolean[AREA];
@@ -5178,7 +5287,7 @@ public final class DistrictPlan {
             int x = a % FRAME, y = a / FRAME;
             if (x < 1 || y < 1 || x >= SIDE || y >= SIDE) return false;
             if (!groundJoinable(a, horizontal)) return false;
-            return in.fixed[a] != FIXED_HIGHWAY || under[a];
+            return fx[a] != FIXED_HIGHWAY || under[a];
         }
 
         /** Whether plot a is where a road ends: a ramp's (a highway plot carrying a ramp with a street beneath, within reach of the work at (cx, cy)), or an arterial street. */
@@ -5303,7 +5412,7 @@ public final class DistrictPlan {
             boolean rail = false;
             for (int k = 0; k < nFixed && !rail; k++) {
                 int p = fixedList[k], x = p % FRAME, y = p / FRAME;
-                rail = in.fixed[p] == FIXED_RAIL && x >= 1 && y >= 1 && x < SIDE && y < SIDE;
+                rail = fx[p] == FIXED_RAIL && x >= 1 && y >= 1 && x < SIDE && y < SIDE;
             }
             if (!rail) { out.sidingsNoRail = Math.min(in.sidings, nc); return; }
             if (sdDist == null) {
@@ -5360,7 +5469,7 @@ public final class DistrictPlan {
 
         /** Whether plot (x, y) of the frame is a plot of the runs' railway (FIXED_RAIL). */
         boolean railAt(int x, int y) {
-            return x >= 0 && y >= 0 && x < FRAME && y < FRAME && in.fixed[y * FRAME + x] == FIXED_RAIL;
+            return x >= 0 && y >= 0 && x < FRAME && y < FRAME && fx[y * FRAME + x] == FIXED_RAIL;
         }
 
         /** Adds plot (x, y) to the gates, entered going `heading` (0 north, 1 east, 2 south, 3 west: away from the box), if the siding may start there: open ground, not a street. The count. */
@@ -5382,9 +5491,9 @@ public final class DistrictPlan {
         boolean sidingOpen(int a) {
             int x = a % FRAME, y = a / FRAME;
             if (x < SIDING_EDGE || y < SIDING_EDGE || x > SIDE - SIDING_EDGE || y > SIDE - SIDING_EDGE) return false;
-            if (!dry[a] || occ[a] > 0 || in.fixed[a] != 0 || in.site[a] == SITE_MINED || sdLaid[a] != 0) return false;
+            if (!dry[a] || occ[a] > 0 || fx[a] != 0 || in.site[a] == SITE_MINED || sdLaid[a] != 0) return false;
             for (int dy = -1; dy <= 1; dy++) {
-                for (int dx = -1; dx <= 1; dx++) if (in.fixed[a + dy * FRAME + dx] == FIXED_HIGHWAY) return false;
+                for (int dx = -1; dx <= 1; dx++) if (fx[a + dy * FRAME + dx] == FIXED_HIGHWAY) return false;
             }
             return true;
         }
@@ -5452,9 +5561,9 @@ public final class DistrictPlan {
         /** Whether plot b, entered going `heading`, is a plot of the railway the siding may meet: one the frame's own (not its edge row or column), met from the side. */
         boolean sidingEnd(int b, int heading) {
             int x = b % FRAME, y = b / FRAME;
-            if (x < 1 || y < 1 || x >= SIDE || y >= SIDE || in.fixed[b] != FIXED_RAIL) return false;
-            return (heading & 1) == 1 ? in.fixed[b - 1] != FIXED_RAIL && in.fixed[b + 1] != FIXED_RAIL
-                    : in.fixed[b - FRAME] != FIXED_RAIL && in.fixed[b + FRAME] != FIXED_RAIL;
+            if (x < 1 || y < 1 || x >= SIDE || y >= SIDE || fx[b] != FIXED_RAIL) return false;
+            return (heading & 1) == 1 ? fx[b - 1] != FIXED_RAIL && fx[b + 1] != FIXED_RAIL
+                    : fx[b - FRAME] != FIXED_RAIL && fx[b + FRAME] != FIXED_RAIL;
         }
 
         void sdPush(int d, int s) {
@@ -5941,7 +6050,7 @@ public final class DistrictPlan {
             if (blvd[p]) r = ROLE_BOULEVARD;
             code |= r << ROLE_SHIFT;
             if (in.terrain[p] == World.FRESH) code |= BRIDGE;
-            if (in.fixed[p] == FIXED_RAIL || out.siding != null && out.siding[p] != 0) code |= CROSSING;
+            if (fx[p] == FIXED_RAIL || out.siding != null && out.siding[p] != 0) code |= CROSSING;
             out.street[p] = (short) code;
         }
     }
