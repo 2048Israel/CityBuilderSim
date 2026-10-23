@@ -1,6 +1,6 @@
 # Gateways.java - 207 lines · 11 methods · 4 constants · model
 
-`ham/citybuildersim/Gateways.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Gateways.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > The city's two gateways - the highway's and the railway's - as one point on
 > the city's edge: the bearing, every SeaRoutes.BEARING_STEP degrees, with

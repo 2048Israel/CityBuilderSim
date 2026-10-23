@@ -1,6 +1,6 @@
 # MapCheck.java - 8,466 lines · 223 methods · 87 constants · harnesses
 
-`ham/citybuildersim/MapCheck.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MapCheck.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the drawn raster itself is one street network with + junctions apart and every building within reach, the sidecar comes back byte for byte, and a screen costs what the screen holds, never what the city does - at Jerus's size and at five and ten billion people.
 > 

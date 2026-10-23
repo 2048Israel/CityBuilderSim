@@ -1,6 +1,6 @@
 # LandMap.java - 1,266 lines · 67 methods · 33 constants · model
 
-`ham/citybuildersim/LandMap.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandMap.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there), the box the land office opens on, and the hover card's words; pure, so MapCheck holds the hit-testing.
 > 

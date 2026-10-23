@@ -7405,6 +7405,120 @@ public class LongPlaytest {
                 g.getPriceIndex().getPeak());
     }
 
+    /* ===== THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) =====================
+     *
+     * The window's probe grows this run's city and then opens the real
+     * window on it, to time what the interface costs as the city ages. It
+     * lives in ui/, and this run's founding, builds and loop are out of its
+     * reach, so three public methods hand it the city: the founding and the
+     * first builds as main() makes them, the loop to a month, and the mean
+     * model month the loop timed. Nothing here is the playtest's trace: no
+     * finding is kept, nothing is audited, and the game's narration goes
+     * nowhere. The probe's brief is docs/queue/UP1.md.
+     * ===================================================================== */
+
+    private static final PrintStream PROBE_QUIET = new PrintStream(new OutputStream() {
+        @Override public void write(int b) { }
+        @Override public void write(byte[] b, int off, int len) { }
+    });
+
+    /** Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. */
+    private static final long[] PROBE_MONTH_NANOS = new long[20_000];
+
+    private static int probeStop;
+
+    /**
+     * For ui.UiProbe: the city main() founds - Danzik on the flag's preset, or
+     * the real Earth round {@code earthSpot} when it is not null - with the
+     * first builds and six months played, on {@code files}. The game's
+     * narration is discarded.
+     */
+    public static Game probeCity(GameFiles files, String earthSpot) {
+        PrintStream realOut = System.out;
+        PrintStream savedReport = out;
+        out = PROBE_QUIET;
+        System.setOut(PROBE_QUIET);
+        try {
+            resetTheFloat();
+            Game g = new Game(files, earthSpot == null ? founding() : earthFounding(earthSpot));
+            g.run();
+            childcareWhenNeeded(g);
+            g.getDebtManager().setAutopilot(AUTOPILOT);
+            g.setRolloverMode(ROLLOVER);
+            g.getCityMap();
+            g.setRescueMode(RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
+            g.setFundDial(FUND_DIAL);
+            seedMarket(g, 0);
+            villageBuild(g, "House", 40);
+            villageBuild(g, "Convenience Store", 3);
+            villageBuild(g, "Mixed Farm", 2);
+            probeRun(g, 3);
+            villageBuild(g, "House", 20);
+            probeRun(g, 4);
+            villageBuild(g, "Convenience Store", 2);
+            villageBuild(g, "Construction Depot", 1);
+            probeRun(g, 5);
+            advise(g);
+            probeRun(g, 6);
+            ensureSchools(g);
+            return g;
+        } finally {
+            out = savedReport;
+            System.setOut(realOut);
+        }
+    }
+
+    /**
+     * For ui.UiProbe: the playtest's loop (long skips, the advisor's looks and
+     * moves) played on {@code g} until it reaches {@code toMonth}; each month
+     * is timed for probeMonthMs().
+     */
+    public static void probePlay(Game g, int toMonth) {
+        PrintStream realOut = System.out;
+        PrintStream savedReport = out;
+        out = PROBE_QUIET;
+        System.setOut(PROBE_QUIET);
+        try {
+            while (g.getMonth() < toMonth) {
+                probeStop++;
+                int skip = switch (probeStop % 6) {
+                    case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120;
+                };
+                skip = Math.min(skip, longestSkip());
+                probeRun(g, Math.min(skip, Math.max(1, toMonth - g.getMonth())));
+                ensureSchools(g);
+                childcareWhenNeeded(g);
+                for (int move = 0; move < movesPerLook(); move++) {
+                    if (advise(g) == null) break;
+                    probeRun(g, 1);
+                }
+                probeRun(g, 2);
+            }
+        } finally {
+            out = savedReport;
+            System.setOut(realOut);
+        }
+    }
+
+    /** For ui.UiProbe: the mean model month, in milliseconds, over the months from (inclusive) to (exclusive) that probePlay() has timed; NaN when none. */
+    public static double probeMonthMs(int from, int to) {
+        long sum = 0;
+        int n = 0;
+        for (int m = Math.max(0, from); m < to && m < PROBE_MONTH_NANOS.length; m++) {
+            if (PROBE_MONTH_NANOS[m] > 0) { sum += PROBE_MONTH_NANOS[m]; n++; }
+        }
+        return n == 0 ? Double.NaN : sum / 1e6 / n;
+    }
+
+    private static void probeRun(Game g, int months) {
+        for (int i = 0; i < months; i++) {
+            int m = g.getMonth();
+            long t0 = System.nanoTime();
+            run(g, 1);
+            if (m >= 0 && m < PROBE_MONTH_NANOS.length) PROBE_MONTH_NANOS[m] = System.nanoTime() - t0;
+        }
+    }
+
     static String money(double v) {
         double abs = Math.abs(v);
         if (abs >= 1e9) return String.format("$%.1fT", v / 1e9);

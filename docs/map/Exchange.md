@@ -1,6 +1,6 @@
-# Exchange.java - 1,850 lines · 149 methods · 26 constants · model
+# Exchange.java - 1,874 lines · 150 methods · 26 constants · model
 
-`ham/citybuildersim/Exchange.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Exchange.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > The stock exchange: one order book per company, where every share that
 > changes hands meets its buyer, and the price is the last trade.
@@ -64,9 +64,9 @@
 >   - EMIGRANTS sell on the way out: what the households' pool released and
 > ... (60 more lines in the source)
 
-**Uses:** [Equity](Equity.md) (61), [OrderBook](OrderBook.md) (54), [TreasuryFund](TreasuryFund.md) (15), [Household](Household.md) (13), [HouseholdBalance](HouseholdBalance.md) (8), [Bank](Bank.md) (7), [BondMarket](BondMarket.md) (3), [OutwardInvestment](OutwardInvestment.md) (2), [FundLedger](FundLedger.md) (1)
+**Uses:** [Equity](Equity.md) (61), [OrderBook](OrderBook.md) (55), [TreasuryFund](TreasuryFund.md) (15), [Household](Household.md) (13), [HouseholdBalance](HouseholdBalance.md) (8), [Bank](Bank.md) (7), [BondMarket](BondMarket.md) (3), [OutwardInvestment](OutwardInvestment.md) (2), [FundLedger](FundLedger.md) (1), [SaveCopy](SaveCopy.md) (1)
 
-**Used by (21):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [DataSave](DataSave.md), [Equity](Equity.md), [ExchangeCheck](ExchangeCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [TreasuryFund](TreasuryFund.md)
+**Used by (22):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [DataSave](DataSave.md), [Equity](Equity.md), [ExchangeCheck](ExchangeCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [TreasuryFund](TreasuryFund.md)
 
 ## Sections
 
@@ -189,7 +189,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 128 | 1723 | **type** `public class Exchange` | The stock exchange: one order book per company, where every share that changes hands meets its buyer, and the price is the last trade. |
+| 128 | 1747 | **type** `public class Exchange` | The stock exchange: one order book per company, where every share that changes hands meets its buyer, and the price is the last trade. |
 
 ### the dials (lines 130-157)
 
@@ -424,15 +424,16 @@
 | 1683 | 1 | `public double getFundSoldToHouseholds()` |  |
 | 1684 | 1 | `public double getFundSoldAbroad()` |  |
 
-### saving (lines 1686-1850)
+### saving (lines 1686-1874)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1700 | 7 | **type** `public static final class State` | The market in a save (0.7.12, round 2), carried by Gson as it stands: every book with the orders resting on it - a cell's bid posted at the step is what the next month's waterfall sells into - fair value and the split... |
-| 1708 | 21 | `public State toState()` |  |
-| 1731 | 38 | `public boolean restore(State s)` |  |
-| 1778 | 19 | `public boolean restore(String[] keys, double[] saved)` | A save from before the book (0.7.12 round 1 and earlier): the dealer's array, SLOTS a company - its quote, fair value, the demand it carried and the split factor. |
-| 1799 | 4 | `public void reopen(Bank bank)` | After a load: whether the desk posts is the bank's to say, read off the bank as the next step will. |
-| 1804 | 21 | `public void reset()` |  |
-| 1827 | 23 | `public void redenominate(double scale)` | Prices and the month's cash in the new unit; share counts do not move. |
+| 1700 | 31 | **type** `public static final class State implements Cloneable` | The market in a save (0.7.12, round 2), carried by Gson as it stands: every book with the orders resting on it - a cell's bid posted at the step is what the next month's waterfall sells into - fair value and the split... |
+| 1714 | 16 | `State copy()` _(in Exchange.State)_ | A copy that shares nothing with this state (UP1, 2026-10-22): toState() lists the exchange's own books, which the months go on trading into while the autosave is written. |
+| 1732 | 21 | `public State toState()` |  |
+| 1755 | 38 | `public boolean restore(State s)` |  |
+| 1802 | 19 | `public boolean restore(String[] keys, double[] saved)` | A save from before the book (0.7.12 round 1 and earlier): the dealer's array, SLOTS a company - its quote, fair value, the demand it carried and the split factor. |
+| 1823 | 4 | `public void reopen(Bank bank)` | After a load: whether the desk posts is the bank's to say, read off the bank as the next step will. |
+| 1828 | 21 | `public void reset()` |  |
+| 1851 | 23 | `public void redenominate(double scale)` | Prices and the month's cash in the new unit; share counts do not move. |
 

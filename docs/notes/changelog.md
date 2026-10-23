@@ -14,6 +14,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.25 — UP1, the autosave off the clock — 2026-10-23, ready, see docs/queue/UP1-notes.md
+
+The autosave held the window's thread 170 ms every 12 months at month 4,000 (31% of it at 50x), the history two
+thirds of it. Now the save is filled on the FX thread and its snapshot written on one writer thread (SaveWriter)
+while the months go on: the autosave costs the clock 4-5 ms at months 1,000 to 4,000 (it was 50-176 ms), and its
+share of the FX thread at 50x is 0.0%. The save holds no live object (the setters copy: the inbox, the build log,
+the bond market, the exchange, the construction control, the fund, the bank's preferred), the history is written
+compact and streamed, and an autosave comes at most once in 30 s of real time (Jerus's call). A load, a numbered
+save, a skip and Quit wait for the writer. ui/UiProbe is the window's probe, run by hand. SaveSlotCheck 7c new: the
+background files equal the old way's exactly. No save-format change; the trace is byte-identical, so no ensemble.
+
 ### 0.8.24 — FX7, the runs dated — 2026-10-22, ready, see docs/queue/FX7-notes.md
 
 LongPlaytest's one red since AN1, "an old works moved", was the map's: a district's plan replayed its whole history on

@@ -7112,8 +7112,24 @@ public final class GameVersion {
      *     leaves is room again.
      *   - Sidecar FORMAT 11 (the journals); save format unchanged.
      *   - Harness: MapCheck 2d and PlanCheck 15 (new sections).
+     *
+     * 0.8.25 (2026-10-23) - UP1, THE AUTOSAVE OFF THE CLOCK
+     * (docs/queue/UP1-notes.md). The model's month is untouched.
+     *   - SaveWriter: the autosave is filled on the FX thread and written on
+     *     one writer thread from a snapshot (DataSave.snapshot(),
+     *     HistorySave.snapshot()); a newer job for a file replaces the one
+     *     waiting; a load, a numbered save, a skip and Quit wait for it.
+     *   - The setters copy: the save holds no live list, array or state
+     *     (SaveCopy; copy() on the inbox's, the build log's, the bond
+     *     market's, the exchange's, the construction control's, the fund's
+     *     and the bank's records).
+     *   - At most one autosave in SaveWriter.FLOOR_SECONDS (30) of real time.
+     *   - GameFiles streams a write; the history is written compact (format
+     *     unchanged: Gson reads either).
+     *   - ui/UiProbe: the window's probe, run by hand.
+     *   - Harness: SaveSlotCheck 7c (new section).
      */
-    public static final String VERSION = "0.8.24";
+    public static final String VERSION = "0.8.25";
 
     /**
      * The save shape.

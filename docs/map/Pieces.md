@@ -1,6 +1,6 @@
 # Pieces.java - 5,329 lines · 233 methods · 27 constants · interface
 
-`ham/citybuildersim/ui/Pieces.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Pieces.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > The small pieces of text and layout every screen is made from: a sentence,
 > an alert, a sub-heading, a grid and its cells, a chip strip, a vitals bar, a
