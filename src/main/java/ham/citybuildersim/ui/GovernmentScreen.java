@@ -414,10 +414,21 @@ final class GovernmentScreen {
         return year;
     }
 
-    /** ...what was paid out, which History records as what came in less the balance (NationalAccounts.getBalance() is the one less the other): their trailing years' difference, or the month × 12. */
+    /** ...the gain (loss) on debt retired, which the balance carries and spending does not (CD4, CD3's ★5). */
+    static final String RETIRED_GAIN_KEY = "retiredGain";
+
+    /**
+     * ...what was paid out: what came in less the balance, plus the gain on debt retired that the
+     * balance carries (NationalAccounts.getBalance() is revenue less expenses plus that gain) - their
+     * trailing years, or the month × 12. Without the gain a buyback's gain read as less spending for
+     * a year while the month's "Paid out" left it out (CD3's ★5). A month before the gain was
+     * recorded counts as none (recentTotal() skips it).
+     */
     double spendingYear(double monthly) {
         return trailing(REVENUE_KEYS) && trailing(SURPLUS_KEYS)
-                ? yearOf(0, REVENUE_KEYS) - yearOf(0, SURPLUS_KEYS) : monthly * 12;
+                ? yearOf(0, REVENUE_KEYS) - yearOf(0, SURPLUS_KEYS)
+                        + ui.game.getHistorySave().recentTotal(RETIRED_GAIN_KEY, TRAILING_MONTHS)
+                : monthly * 12;
     }
 
     /** A line's share of a year's output, as every "of GDP" on this tab writes it - its trailing year where History records it - or a dash with no year to compare. */

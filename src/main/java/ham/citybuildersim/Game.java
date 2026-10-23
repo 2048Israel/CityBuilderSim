@@ -3659,7 +3659,8 @@ public class Game {
     /**
      * ONE MONTH OF THE TREASURY'S OWN SPENDING: the budget's expenses over the
      * last Rollover.NETTING_MONTHS, as the history keeps them (revenue less
-     * the surplus, month by month), a month's worth. The floor the fund's
+     * the surplus, plus the gain on debt retired that the surplus carries and
+     * spending does not (CD4, CD3's ★5), month by month), a month's worth. The floor the fund's
      * pay-in never takes the treasury under - Canada's Department of Finance
      * holds liquidity for at least one month of net projected cash flows
      * (Debt Management Report 2017-18, Part 1), the rollover's own source -
@@ -3668,13 +3669,16 @@ public class Game {
     public double monthOfSpending() {
         double[] revenue = historySave.aligned("revenue");
         double[] surplus = historySave.aligned("surplus");
+        double[] gain = historySave.aligned("retiredGain");
         int n = Math.min(revenue.length, surplus.length);
         double sum = 0;
         int months = 0;
         for (int i = Math.max(0, n - Rollover.NETTING_MONTHS); i < n; i++) {
             double r = revenue[revenue.length - n + i], s = surplus[surplus.length - n + i];
             if (Double.isNaN(r) || Double.isNaN(s)) continue;
-            sum += r - s;
+            int gi = gain.length - n + i;
+            double g = gi >= 0 && gi < gain.length && !Double.isNaN(gain[gi]) ? gain[gi] : 0;
+            sum += r - s + g;
             months++;
         }
         return months > 0 ? Math.max(0, sum / months) : 0;

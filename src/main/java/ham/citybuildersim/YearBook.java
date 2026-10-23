@@ -111,6 +111,7 @@ public final class YearBook {
         flow(m, "netExports", "NX, exports less imports - negative when the city imports more, in thousands");
         flow(m, "revenue", "every government receipt, in thousands");
         flow(m, "surplus", "revenue less spending - negative is a deficit, in thousands");
+        flow(m, "retiredGain", "the gain (loss) on debt retired, which the surplus carries and spending does not, in thousands");
         flow(m, "births", "people born");
         flow(m, "deaths", "people who died, of all three causes together");
         flow(m, "arrivals", "people who moved in");
