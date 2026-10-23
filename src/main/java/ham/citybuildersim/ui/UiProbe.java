@@ -145,21 +145,23 @@ public final class UiProbe {
 
     /**
      * The 95th-percentile frame on People at 50x at month 4,000 the clock must keep under, ms
-     * (UP2: 49 in the brief's figures and 52 in this probe's before it; the redraw paced, the months
+     * (UP2: 49 in the brief's figures and 42 in this probe's before it; the redraw paced, the months
      * budgeted and the chrome kept).
      */
     public static final double FRAME_P95_MS = 34;
 
     /**
      * Every rail screen's 95th-percentile frame at 50x at month 4,000, ms: its figure before UP2, as
-     * this probe measured it on the PC at 0.8.26 (main 95d02db3, another batch's suite running beside
-     * it; docs/queue/UP2-notes.md), which the clock must not exceed since; People's is FRAME_P95_MS.
+     * this probe measured it on the PC on main f29b9938 (0.8.27) with nothing else running, the run
+     * the batch's own is set beside (docs/queue/UP2-notes.md), which the clock must not exceed since;
+     * People's is FRAME_P95_MS. The PC's load moves these by up to two times between runs (it slows
+     * after a few minutes of work): compare runs whose "model month mean" agrees.
      */
     public static final Map<String, Double> FRAME_P95 = Map.ofEntries(
-            Map.entry("Build", 133.0), Map.entry("Land", 96.0), Map.entry("People", FRAME_P95_MS),
-            Map.entry("Services", 44.0), Map.entry("Infra", 48.0), Map.entry("Sectors", 74.0),
-            Map.entry("Govt", 33.0), Map.entry("Finances", 33.0), Map.entry("Bank", 49.0),
-            Map.entry("Trade", 17.0), Map.entry("Policy", 33.0), Map.entry("History", 54.0));
+            Map.entry("Build", 99.0), Map.entry("Land", 57.0), Map.entry("People", FRAME_P95_MS),
+            Map.entry("Services", 37.0), Map.entry("Infra", 43.0), Map.entry("Sectors", 65.0),
+            Map.entry("Govt", 36.0), Map.entry("Finances", 32.0), Map.entry("Bank", 42.0),
+            Map.entry("Trade", 20.0), Map.entry("Policy", 32.0), Map.entry("History", 60.0));
 
     /** The month from which FRAME_P95 is asserted: the city it was measured on. */
     static final int FRAME_P95_FROM = 4000;
