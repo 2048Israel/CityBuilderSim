@@ -7190,8 +7190,24 @@ public final class GameVersion {
      *     HeadlineTile and Sparkline told their figures; Kept.draw re-entrant.
      *   - ui/UiProbe: the pulse's own passes, the chrome alone, FRAME_P95.
      *   - Harness: ClockCheck (new); KeptCheck 6-13 (new sections).
+     *
+     * 0.8.29 (2026-10-23) - CD3, THE CITY'S BOOKS
+     * spec-city-debt.md section 5 (docs/queue/CD3-notes.md): the city's paper
+     * carried at amortised cost by effective interest. The trace moves with
+     * the budget's interest line.
+     *   - Debt: a carrying value and an effective rate a line, opened at what
+     *     the sale raised, blended at a reopening (D16), stepped every month
+     *     (amortise()) and closed to nothing; dollar paper in its own dollars,
+     *     read in D$ at the month's D$ (D26).
+     *   - The budget: "Interest on the city's paper" is the coupons and the
+     *     discount wearing off; the gain (loss) on debt retired is against
+     *     carrying value; the treasury's bridge has the not-cash row.
+     *   - The screens: the bridge's steps, the debt card, the balance at
+     *     carrying value with the fair-value note, carried and effective on
+     *     the book. SAVE_FORMAT 44 and its floor.
+     *   - Harness: TreasuryCheck 9 (new part), MoneyCheck's paper on its books.
      */
-    public static final String VERSION = "0.8.28";
+    public static final String VERSION = "0.8.29";
 
     /**
      * The save shape.
