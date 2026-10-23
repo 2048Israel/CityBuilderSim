@@ -1168,6 +1168,16 @@ public class UserInterface extends Application {
     void keepMenu(String screen, Runnable again, Kept.Pool pool, Runnable page) {
         boolean kept = pool.holds() && screen.equals(currentScreen) && !railJump;
         if (!kept) pool.forget();
+        // A node on the page that had the focus loses it, as it did when the page was rebuilt under
+        // it: a chip clicked keeps no focus ring, and the keys go where they went (the window's).
+        if (kept && scene != null) {
+            for (javafx.scene.Node n = scene.getFocusOwner(); n != null; n = n.getParent()) {
+                if (n == rootMenu) {
+                    scene.getRoot().requestFocus();
+                    break;
+                }
+            }
+        }
         clearMenu(screen, again, kept);
         // A node a kept draw takes off the page tells nobody the pointer left it, as a page torn down does not (0.7.50).
         tearingDown = true;
