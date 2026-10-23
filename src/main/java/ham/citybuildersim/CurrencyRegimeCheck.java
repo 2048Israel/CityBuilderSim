@@ -65,7 +65,10 @@ import java.util.List;
  *   5. THE DOUBT TAKES THE HOT MONEY HOME. A bare CapitalFlows: setDoubt(h)
  *      takes exactly h of the stock, setDoubt(0) changes nothing to the bit; in
  *      a city under a peg past BREAK_GAP the month's departure is the stock
- *      times the share the last reprice struck, and the audit closes.
+ *      times the share the last reprice struck, and the audit closes. The saved
+ *      array is 19 long (FX8): slot 15 the doubt's lifetime, 16 to 18 the month's
+ *      arrived, departed and doubtDeparted, restored to the bit, and an array
+ *      cut at 16 (as XR2 wrote it) restores with the month's three at 0.
  *   6. A BAND'S EDGES HOLD AND ITS INSIDE IS FREE. A band narrower than the
  *      market's swing, a few hundred months: past the weak edge the rate is the
  *      edge and the vault sold the deficit, past the strong edge it bought the
@@ -83,14 +86,31 @@ import java.util.List;
  *      pegged with a large spread, a surplus at the peg: the central bank's
  *      pays in new money and the treasury's does not, the treasury's pays out of
  *      its cash and the central bank's does not, the audit closes in both, and
- *      the central bank's equity is unmoved by the purchase once settled.
+ *      the central bank's equity is unmoved by the purchase once settled. FX8:
+ *      the central bank keeps nothing, restated with what it paid in new money
+ *      for the vault's dollars, in both cities every month, and the old
+ *      statement misses by exactly that term; in the settlement month the
+ *      vault's record (getLifetimeIntervention()) rises by the whole bill,
+ *      whoever paid it.
  *  10. SAVED AND LOADED MID-PEG. A pegged city with a purchase owed and a doubt
  *      share struck, saved and loaded: the next 12 months equal the twin that
  *      never saved; a bare currency restores every regime field; an array cut
  *      before the regimes restores as Lean with nothing owed.
  *  11. A REAL RUN, COUNTED. A city pegged at founding for 240 months: the months
  *      held, sold, bought, the doubt's departures and the break are counted and
- *      consistent, every figure finite and the audit closing every month.
+ *      consistent, every figure finite and the audit closing every month; the
+ *      central bank, the default payer, keeps nothing (restated, FX8) in every
+ *      one of the 240 and has paid for dollars in new money.
+ *  12. THE HOT MONEY'S MONTH CROSSES A SAVE (FX8). A pegged city in which hot
+ *      money left on doubt this month, saved and loaded: arrived, departed and
+ *      doubtDeparted, and the figure Policy draws from it, equal to the live
+ *      city's to the bit, and one month on the two stay equal to the bit.
+ *  13. LEAVING A PEG TAKES ITS DOUBT WITH IT (FX8). A bare peg with a doubt
+ *      struck, left for Float, Lean or Band: no doubt; kept on a re-press of
+ *      the peg; not revived by leaving and re-entering. In a city: twins from
+ *      section 12's save, one leaving the peg between two presses, the month
+ *      after the one that left loses no hot money on doubt and the one that
+ *      stayed does, the audit closing in both.
  *
  * Numbering is the running order. Money is in thousands, as everywhere.
  *
@@ -216,6 +236,8 @@ public class CurrencyRegimeCheck {
         theTwoPayers();
         savedMidPeg();
         aRealRun();
+        theHotMoneysMonthCrossesASave();
+        leavingAPegTakesItsDoubt();
 
         out.printf("%n(%.0f s)%n", (System.currentTimeMillis() - started) / 1000.0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -709,9 +731,47 @@ public class CurrencyRegimeCheck {
         close("...it is inside what departed: the twin's departure and the doubt's", doubting.getDeparted(), calm.getDeparted() + doubting.getDoubtDeparted(), 1e-9);
         same("...what arrived is untouched", doubting.getArrived(), calm.getArrived());
         close("...and the twin that doubted nothing left nothing on doubt", calm.getDoubtDeparted(), 0, 0);
-        close("...the lifetime of it is saved with it, the array one slot longer", doubting.getDoubtDepartedLifetime(), doubting.getDoubtDeparted(), 1e-12);
-        assertTrue("...the saved array carries the lifetime and restores it", doubting.toSaveArray().length == calm.toSaveArray().length
-                && lastOf(doubting.toSaveArray()) == doubting.getDoubtDepartedLifetime() && restored(doubting).getDoubtDepartedLifetime() == doubting.getDoubtDepartedLifetime());
+        close("...after the one month the lifetime of it is that month's, the same figure", doubting.getDoubtDepartedLifetime(), doubting.getDoubtDeparted(), 1e-12);
+        assertTrue("...the saved array carries the lifetime at slot 15 (XR2's) and restores it", doubting.toSaveArray().length == calm.toSaveArray().length
+                && doubting.toSaveArray()[SLOT_DOUBT_LIFETIME] == doubting.getDoubtDepartedLifetime()
+                && restored(doubting).getDoubtDepartedLifetime() == doubting.getDoubtDepartedLifetime());
+        // FX8: the hot money's month - what arrived, what departed, what of it left on doubt - rides at the end, slots 16 to 18.
+        double[] saved = doubting.toSaveArray();
+        assertTrue("fixture: the month had hot money arrive, depart and leave on doubt (" + String.format("%,.1fk, %,.1fk, %,.1fk",
+                doubting.getArrived(), doubting.getDeparted(), doubting.getDoubtDeparted()) + ")",
+                doubting.getArrived() > 0 && doubting.getDeparted() > 0 && doubting.getDoubtDeparted() > 0);
+        assertTrue("the saved array is 19 slots long: XR2's 16 and the month's three", saved.length == SAVE_SLOTS);
+        assertTrue("...slots 16, 17 and 18 are the month's arrived, departed and doubtDeparted", saved[SLOT_ARRIVED] == doubting.getArrived()
+                && saved[SLOT_DEPARTED] == doubting.getDeparted() && saved[SLOT_DOUBT_DEPARTED] == doubting.getDoubtDeparted());
+        CapitalFlows back = restored(doubting);
+        same("a restored copy reads the month's arrived to the bit", back.getArrived(), doubting.getArrived());
+        same("...the month's departed to the bit", back.getDeparted(), doubting.getDeparted());
+        same("...the month's doubtDeparted to the bit", back.getDoubtDeparted(), doubting.getDoubtDeparted());
+        same("...and the net flow, which is the two of them", back.netFlow(), doubting.netFlow());
+        // ...and a month that sets the three apart: nothing arriving, money leaving of its own accord as well as on doubt (the world's rate
+        // is all the city pays), so slots 17 and 18 are two different numbers and not one figure read twice.
+        CapitalFlows leaving = stocked(60);
+        leaving.setDoubt(share);
+        leaving.setMonth(61);
+        leaving.takeMonth(.02, DebtManager.WORLD_BASE_RATE, DebtManager.WORLD_BASE_RATE, .01, 10_000, 1e9, 0, false, false, 61);
+        double[] savedLeaving = leaving.toSaveArray();
+        assertTrue("fixture: a month with nothing arriving, money leaving of its own accord and money leaving on doubt (" + String.format("%,.1fk, %,.1fk, %,.1fk",
+                leaving.getArrived(), leaving.getDeparted(), leaving.getDoubtDeparted()) + ")",
+                leaving.getArrived() == 0 && leaving.getDoubtDeparted() > 0 && leaving.getDeparted() > leaving.getDoubtDeparted());
+        assertTrue("...slots 16, 17 and 18 are its arrived, its departed and its doubtDeparted, each not the others'", savedLeaving.length == SAVE_SLOTS
+                && savedLeaving[SLOT_ARRIVED] == leaving.getArrived() && savedLeaving[SLOT_DEPARTED] == leaving.getDeparted()
+                && savedLeaving[SLOT_DOUBT_DEPARTED] == leaving.getDoubtDeparted() && savedLeaving[SLOT_DEPARTED] != savedLeaving[SLOT_DOUBT_DEPARTED]);
+        CapitalFlows leavingBack = restored(leaving);
+        assertTrue("...and a restored copy reads that month's three to the bit, the organic departure and the doubt's not swapped",
+                Double.compare(leavingBack.getArrived(), leaving.getArrived()) == 0 && Double.compare(leavingBack.getDeparted(), leaving.getDeparted()) == 0
+                        && Double.compare(leavingBack.getDoubtDeparted(), leaving.getDoubtDeparted()) == 0);
+        // An array cut at 16, as XR2 wrote it, restores with the lifetime kept and the month's flows 0, as a new one has them.
+        CapitalFlows cut = new CapitalFlows();
+        cut.restore(Arrays.copyOf(saved, SLOT_ARRIVED));
+        same("an array cut at 16 (as XR2 wrote it) keeps the doubt's lifetime", cut.getDoubtDepartedLifetime(), doubting.getDoubtDepartedLifetime());
+        assertTrue("...and the month's arrived, departed and doubtDeparted are 0, as a new one has them", cut.getArrived() == 0
+                && cut.getDeparted() == 0 && cut.getDoubtDeparted() == 0 && new CapitalFlows().getArrived() == 0
+                && new CapitalFlows().getDeparted() == 0 && new CapitalFlows().getDoubtDeparted() == 0);
 
         // setDoubt(0) is the same as never having said a word, to the bit, over two years.
         CapitalFlows told = stocked(30), untold = stocked(30);
@@ -776,7 +836,8 @@ public class CurrencyRegimeCheck {
         }
     }
 
-    static double lastOf(double[] a) { return a[a.length - 1]; }
+    /** Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is. */
+    static final int SLOT_DOUBT_LIFETIME = 15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 19;
 
     static CapitalFlows restored(CapitalFlows f) {
         CapitalFlows back = new CapitalFlows();
@@ -1075,8 +1136,12 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: two cities, pegged with a spread of 30 points, and the payer on the toggle is each's",
                 cbFx.getRegime() == PEG && trFx.getRegime() == PEG && cbFx.getEdgePayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK
                         && trFx.getEdgePayer() == ForeignAccounts.EdgePayer.TREASURY);
+        // FX8: the central bank keeps nothing, restated with what it paid in new money for the vault's dollars: asserted in both cities every
+        // month from here, the identity's months and its misses tallied.
+        int[] keptTally = { 0, 0 };
         play(cb, 1);
         play(tr, 1);
+        tallyKept(keptTally, cb, tr);
         double owed = cbFx.getEdgeOwedLocal();
         out.printf("   the month after the peg: the vault bought US$%,.0fk, owed %,.0fk of local money%n", cbFx.getEdgeBoughtUsd(), owed);
         assertTrue("fixture: money arrived and the vault bought dollars at the peg, the same in both cities (a surplus at the peg), and the payer is recorded with it",
@@ -1087,8 +1152,28 @@ public class CurrencyRegimeCheck {
                         && Double.compare(cb.getCash(), tr.getCash()) == 0);
         double m0Before = cb.getCentralBank().m0(), cashCb = cb.getCash(), cashTr = tr.getCash();
         double room = tr.discretionaryRoom();
+        double recordCb = cbFx.getLifetimeIntervention(), recordTr = trFx.getLifetimeIntervention();
         play(cb, 1);
         play(tr, 1);
+        tallyKept(keptTally, cb, tr);
+
+        // The vault's record (FX8): in the settlement month it rises by the whole bill, whoever paid it. The month's other terms are the
+        // treasury's reserve purchases and sales, the defence's sales and the land office's dollars; none of them dealt in the vault.
+        double riseCb = cbFx.getLifetimeIntervention() - recordCb, riseTr = trFx.getLifetimeIntervention() - recordTr;
+        double paidTr = billPaid(tr);
+        out.printf("   the settlement month: the vault's record rose %,.4fk in the central bank's city and %,.4fk in the treasury's, of the %,.4fk owed%n",
+                riseCb, riseTr, owed);
+        assertTrue("fixture: the settlement month's other terms are 0 in the central bank's city: no defence, no reserves bought or sold, no land paid out of the vault",
+                cbFx.getDefenceUsd() == 0 && cbFx.getDefenceLocal() == 0 && cbFx.getBoughtThisMonth() == 0 && cbFx.getSoldThisMonth() == 0
+                        && cbFx.getLandUsdFromVaultThisMonth() == 0 && cbFx.getLandUsdPending() == 0);
+        assertTrue("fixture: ...and in the treasury's city the only purchase is the bill it paid itself (" + String.format("%,.2fk", paidTr)
+                        + "), with no defence, no sales, no land",
+                trFx.getDefenceUsd() == 0 && trFx.getDefenceLocal() == 0 && Math.abs(trFx.getBoughtThisMonth() - paidTr) <= 1e-6 * Math.max(1, paidTr)
+                        && trFx.getSoldThisMonth() == 0 && trFx.getLandUsdFromVaultThisMonth() == 0 && trFx.getLandUsdPending() == 0);
+        close("the vault's record (getLifetimeIntervention()) rose by the whole owed bill in the central bank's city, which paid it in new money", riseCb, owed,
+                1e-6 * Math.max(1, owed));
+        close("...and by the whole owed bill in the treasury's city, which paid what its room allowed and the central bank the rest", riseTr, owed,
+                1e-6 * Math.max(1, owed));
 
         // The central bank pays.
         double issued = cb.getCentralBank().getIssued() - cb.getCentralBank().getRetired();
@@ -1122,6 +1207,7 @@ public class CurrencyRegimeCheck {
         for (int i = 0; i < months; i++) {
             play(cb, 1);
             play(tr, 1);
+            tallyKept(keptTally, cb, tr);
             paidSoFar += billPaid(tr);
             // Equity reads the vault, which already holds the month's purchase before M0 has caught up: the purchase not yet paid for is taken out.
             double settledCb = cb.getCentralBank().equity() - cbFx.getEdgeOwedLocal();
@@ -1135,6 +1221,42 @@ public class CurrencyRegimeCheck {
         assertTrue("equity after the settlement, less the purchase not yet paid for, differs between the cities by what the treasury paid, to the cent: the central bank's own"
                 + " equity is unmoved by the purchases it paid for in new money", worstIdentity < .01);
         assertTrue("the audit closes in both, every month of it", closes == months);
+
+        // The central bank keeps nothing (FX8): equity less the vault, plus what it paid in new money for the vault's dollars, is the
+        // remittance not yet paid less the loss carried, in both cities, in every month this section played.
+        CentralBank cbBank = cb.getCentralBank(), trBank = tr.getCentralBank();
+        out.printf("   the central bank keeps nothing: %d city-months held to it, %d missed; paid in new money for the vault's dollars, lifetime: US$%,.2fk"
+                + " in the central bank's city, %,.2fk in the treasury's%n", keptTally[0], keptTally[1], cbBank.getDollarsBoughtLifetime(), trBank.getDollarsBoughtLifetime());
+        assertTrue("fixture: the central bank's city paid for dollars in new money (lifetime " + String.format("%,.2fk", cbBank.getDollarsBoughtLifetime()) + "), or the term proves nothing",
+                cbBank.getDollarsBoughtLifetime() > 0);
+        int monthsHeld = 2 + months; // the month after the peg, the settlement month, and the loop's
+        assertTrue("fixture: the identity was held to in " + 2 * monthsHeld + " city-months, two cities in each of the " + monthsHeld + " months after the fixture",
+                keptTally[0] == 2 * monthsHeld);
+        assertTrue("equity less the vault plus what the bank paid for the vault's dollars is the remittance due less the loss carried, in both cities, every month ("
+                + keptTally[1] + " missed)", keptTally[1] == 0);
+        double without = cbBank.equity() - cbBank.getVault() - (cbBank.getRemittanceDue() - cbBank.getLossCarried());
+        close("...and the old statement, without the term, misses in the central bank's city by exactly what it paid in new money: the term is what closes it", without,
+                -cbBank.getDollarsBoughtLifetime(), Math.max(.01, 1e-9 * cbBank.m0()));
+        assertTrue("...the miss without it is a real one, not rounding (" + String.format("%,.2fk", without) + ")", Math.abs(without) > .01);
+    }
+
+    /** The central bank keeps nothing, as FX8 states it: equity less the vault, plus what it paid in new money for the vault's dollars, less the remittance due plus the loss carried. 0 when it keeps nothing. */
+    static double kept(CentralBank cb) {
+        return cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime() - (cb.getRemittanceDue() - cb.getLossCarried());
+    }
+
+    /** A miss, as LongPlaytest counts one: past a cent and past a billionth of M0. */
+    static boolean keepsSomething(CentralBank cb) {
+        double kept = kept(cb);
+        return Math.abs(kept) > .01 && Math.abs(kept) > 1e-9 * Math.max(1, cb.m0());
+    }
+
+    /** One more month held to the identity in each of these cities: tally[0] counts the city-months, tally[1] the misses. */
+    static void tallyKept(int[] tally, Game... cities) {
+        for (Game city : cities) {
+            tally[0]++;
+            if (keepsSomething(city.getCentralBank())) tally[1]++;
+        }
     }
 
     /* ================= 10. saved and loaded mid-peg ================= */
@@ -1267,7 +1389,11 @@ public class CurrencyRegimeCheck {
         quietly(() -> g.setCurrencyRegime(PEG));
         ForeignAccounts fx = g.getForeignAccounts();
         CapitalFlows hot = g.getCapitalFlows();
+        CentralBank bank = g.getCentralBank();
         double peg = fx.getPegRate();
+        assertTrue("fixture: the city is pegged and its edge's dollars are paid by the default payer, the central bank, in new money",
+                fx.getRegime() == PEG && fx.getEdgePayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK);
+        int keptSomething = 0;   // the months the central bank missed keeping nothing, FX8's statement
         int months = 240, pegMonths = 0, held = 0, sold = 0, bought = 0, doubted = 0, brokeMonth = 0, notNumbers = 0, unclosed = 0, pegAfterBreak = 0;
         int heldOff = 0, breakMonthsPegged = 0, brokeAndDealt = 0, brokeWhileFloating = 0, heldAndBroke = 0;
         double soldUsd = 0, boughtUsd = 0, doubtedLocal = 0, jump = 0;
@@ -1295,6 +1421,7 @@ public class CurrencyRegimeCheck {
             if (!pegged && fx.getRegime() == PEG) pegAfterBreak++;
             if (ExchangeRateCheck.notANumber(g) != null) notNumbers++;
             if (!ExchangeRateCheck.auditCloses(g)) unclosed++;
+            if (keepsSomething(bank)) keptSomething++;
         }
         out.printf("   a city pegged at founding (%.4f D$ per US$) for %d months: held %d, the vault sold in %d (US$%,.0fk), bought in %d (US$%,.0fk),"
                 + " the hot money left on doubt in %d (%,.0fk)%n", peg, months, held, sold, soldUsd, bought, boughtUsd, doubted, doubtedLocal);
@@ -1313,5 +1440,136 @@ public class CurrencyRegimeCheck {
         assertTrue("what was counted is consistent: the months held and the month that broke are the months pegged, and the vault sold or bought in no more of them than held",
                 held + breakMonthsPegged == pegMonths && sold + bought <= held && doubted <= held + breakMonthsPegged);
         assertTrue("...a month the peg broke sold and bought nothing (its break let the rate go)", brokeAndDealt == 0);
+        out.printf("   the central bank paid US$%,.0fk in new money for the vault's dollars (getDollarsBoughtLifetime(), local), keeping nothing in %d of %d months%n",
+                bank.getDollarsBoughtLifetime(), months - keptSomething, months);
+        assertTrue("the central bank keeps nothing, restated, in every one of the " + months + " months: equity less the vault plus what it paid for the vault's dollars"
+                + " is the remittance due less the loss carried (" + keptSomething + " missed)", keptSomething == 0);
+        assertTrue("the vault bought dollars at the peg (in " + bought + " months), so the central bank paid for some in new money: its lifetime of it is above 0,"
+                + " and the term in the statement mattered", bought == 0 || bank.getDollarsBoughtLifetime() > 0);
+    }
+
+    /* ================= 12. the hot money's month crosses a save (FX8) ================= */
+
+    /** Section 12's city, kept for section 13: saved to slot 2 of its own scratch folder in the month the hot money left on doubt, then played on. */
+    static Game doubtCitySaved;
+
+    static void theHotMoneysMonthCrossesASave() {
+        out.println("\n--- 12. the hot money's month crosses a save ---");
+
+        // A pegged city a fifth under its shadow: a doubt struck by one reprice acts the next month, so two months from the repeg.
+        Game live = null;
+        int tried = 0;
+        for (int attempt = 0; attempt < 6 && live == null; attempt++) {
+            tried++;
+            Game candidate = doubtTown("fx8-hot-" + attempt, attempt == 0 ? 0 : SEED + attempt);
+            play(candidate, 2);
+            ForeignAccounts fx = candidate.getForeignAccounts();
+            CapitalFlows hot = candidate.getCapitalFlows();
+            if (fx.getRegime() == PEG && !fx.brokeThisMonth() && fx.getDoubtShare() > 0 && hot.getDoubtDeparted() > 0) live = candidate;
+        }
+        assertTrue("fixture: a pegged city held two months past its repeg, hot money leaving on doubt this month and a doubt struck for the next (attempt " + tried + ")",
+                live != null);
+        if (live == null) return;
+        doubtCitySaved = live;
+        final Game saved = live;
+        ForeignAccounts fx = live.getForeignAccounts();
+        CapitalFlows hot = live.getCapitalFlows();
+        out.printf("   saved at month %d: hot money arrived %,.1fk, departed %,.1fk of which %,.1fk on doubt (%.2f%% of the stock), the stock %,.0fk%n", live.getMonth(),
+                hot.getArrived(), hot.getDeparted(), hot.getDoubtDeparted(), fx.getDoubtShare() * 100, hot.getStock());
+        assertTrue("fixture: the month it is saved in had hot money arrive, depart, and leave on doubt, and the doubt left is part of what departed",
+                hot.getArrived() > 0 && hot.getDeparted() > 0 && hot.getDoubtDeparted() > 0 && hot.getDeparted() >= hot.getDoubtDeparted());
+        assertTrue("saved to its scratch folder", live.saveGame(2, "hot-money").ok);
+        final Game back = new Game(live.getGameFiles());
+        quietly(() -> back.loadGameSave(2));
+        CapitalFlows loaded = back.getCapitalFlows();
+        ForeignAccounts bfx = back.getForeignAccounts();
+        same("the loaded city reads the month's arrived as the live one does, to the bit", loaded.getArrived(), hot.getArrived());
+        same("...the month's departed", loaded.getDeparted(), hot.getDeparted());
+        same("...the month's doubtDeparted", loaded.getDoubtDeparted(), hot.getDoubtDeparted());
+        same("...the net flow, which is the first two", loaded.netFlow(), hot.netFlow());
+        same("...the doubt's lifetime", loaded.getDoubtDepartedLifetime(), hot.getDoubtDepartedLifetime());
+        same("...the stock", loaded.getStock(), hot.getStock());
+        // The figure Policy draws the month after: "of which ... was hot money leaving on doubt", in US$ (PolicyScreen).
+        double drawn = fx.toUsd(hot.getDoubtDeparted());
+        assertTrue("fixture: the figure Policy draws is a sum of money (US$" + String.format("%,.2fk", drawn) + ")", drawn > 0);
+        same("the figure Policy draws for the doubt's departure, in US$, is the loaded city's as the live one's", bfx.toUsd(loaded.getDoubtDeparted()), drawn);
+        assertTrue("...and the regime's state is as the live city's, to the bit (the doubt that acts next month is saved with it)",
+                sameBits(regimeFields(fx), regimeFields(bfx)));
+
+        // The restore must not change the replay: one more month of each, equal to the bit.
+        quietly(() -> {
+            saved.simulateMonths(1);
+            back.simulateMonths(1);
+        });
+        CapitalFlows hot2 = saved.getCapitalFlows(), loaded2 = back.getCapitalFlows();
+        out.printf("   a month on: the live city's hot money arrived %,.1fk, departed %,.1fk (%,.1fk on doubt); the loaded city's %,.1fk, %,.1fk (%,.1fk)%n", hot2.getArrived(),
+                hot2.getDeparted(), hot2.getDoubtDeparted(), loaded2.getArrived(), loaded2.getDeparted(), loaded2.getDoubtDeparted());
+        assertTrue("a month on, rate, vault, defence, the seven moves, M0, cash and credibility are equal to the bit in both cities", sameBits(figures(saved), figures(back)));
+        assertTrue("...and so are the hot money's arrived, departed, doubtDeparted and its stock", Double.compare(hot2.getArrived(), loaded2.getArrived()) == 0
+                && Double.compare(hot2.getDeparted(), loaded2.getDeparted()) == 0 && Double.compare(hot2.getDoubtDeparted(), loaded2.getDoubtDeparted()) == 0
+                && Double.compare(hot2.getStock(), loaded2.getStock()) == 0 && Double.compare(hot2.getDoubtDepartedLifetime(), loaded2.getDoubtDepartedLifetime()) == 0);
+        assertTrue("...and the audit closes in both (residuals " + String.format("%.4f and %.4f", saved.getLastMoneyAudit().residual, back.getLastMoneyAudit().residual) + ")",
+                ExchangeRateCheck.auditCloses(saved) && ExchangeRateCheck.auditCloses(back));
+    }
+
+    /* ================= 13. leaving a peg takes its doubt with it (FX8) ================= */
+
+    static void leavingAPegTakesItsDoubt() {
+        out.println("\n--- 13. leaving a peg takes its doubt with it ---");
+
+        // Bare: a quiet currency pegged a third under its shadow; the held month strikes the doubt (a quiet market never draws a break).
+        ForeignAccounts pegged = book(TRADE, TRADE, DEEP, 0, PEG);
+        pegged.repeg(pegged.getRate() * Math.exp(-.30));
+        month(pegged, TRADE, TRADE);
+        out.printf("   a peg a third under its shadow, held a month: gap %.3f, the doubt struck %.2f%%%n", pegged.getLastPegGap(), pegged.getDoubtShare() * 100);
+        assertTrue("fixture: the peg held the month and the reprice struck a doubt (BREAK_GAP is " + ForeignAccounts.BREAK_GAP + ")",
+                pegged.getRegime() == PEG && !pegged.brokeThisMonth() && pegged.getLastPegGap() > ForeignAccounts.BREAK_GAP && pegged.getDoubtShare() > 0);
+        double struck = pegged.getDoubtShare();
+        ForeignAccounts.Regime[] left = { FLOAT, LEAN, BAND };
+        for (ForeignAccounts.Regime r : left) {
+            ForeignAccounts copy = new ForeignAccounts();
+            copy.restore(pegged.toSaveArray());
+            assertTrue("fixture: a copy restored from the save is pegged with the same doubt (" + r + ")", copy.getRegime() == PEG && Double.compare(copy.getDoubtShare(), struck) == 0);
+            copy.setRegime(r);
+            assertTrue("leaving the peg for " + r + " leaves the regime " + r + " and no doubt: getDoubtShare() is 0", copy.getRegime() == r && copy.getDoubtShare() == 0);
+        }
+        ForeignAccounts stays = new ForeignAccounts();
+        stays.restore(pegged.toSaveArray());
+        stays.setRegime(PEG);
+        assertTrue("setRegime(PEG) on a peg is no change: the doubt is kept", stays.getRegime() == PEG && Double.compare(stays.getDoubtShare(), struck) == 0);
+        ForeignAccounts back = new ForeignAccounts();
+        back.restore(pegged.toSaveArray());
+        back.setRegime(LEAN);
+        back.setRegime(PEG);
+        assertTrue("leaving the peg and entering it again before any month does not revive the doubt (the new peg is at the rate of the day)",
+                back.getRegime() == PEG && back.getDoubtShare() == 0 && Double.compare(back.getPegRate(), back.getRate()) == 0);
+
+        // In a city: two copies of section 12's save, the month the hot money left on doubt. One leaves the peg between two presses.
+        Game source = doubtCitySaved;
+        assertTrue("fixture: section 12 left a saved city to load twins from", source != null);
+        if (source == null) return;
+        final Game kept = new Game(source.getGameFiles()), gone = new Game(source.getGameFiles());
+        quietly(() -> {
+            kept.loadGameSave(2);
+            gone.loadGameSave(2);
+        });
+        ForeignAccounts keptFx = kept.getForeignAccounts(), goneFx = gone.getForeignAccounts();
+        assertTrue("fixture: the twins are loaded alike - both pegged, the same doubt struck (" + String.format("%.2f%%", keptFx.getDoubtShare() * 100)
+                        + "), hot money in the city - and alike to the bit",
+                keptFx.getRegime() == PEG && goneFx.getRegime() == PEG && keptFx.getDoubtShare() > 0 && kept.getCapitalFlows().getStock() > 0
+                        && sameBits(figures(kept), figures(gone)) && sameBits(regimeFields(keptFx), regimeFields(goneFx))
+                        && Double.compare(kept.getCapitalFlows().getStock(), gone.getCapitalFlows().getStock()) == 0);
+        quietly(() -> gone.setCurrencyRegime(LEAN));
+        assertTrue("the twin that left the peg between two presses has no doubt to hand the hot money; the one that stayed has it still",
+                goneFx.getRegime() == LEAN && goneFx.getDoubtShare() == 0 && keptFx.getRegime() == PEG && keptFx.getDoubtShare() > 0);
+        play(kept, 1);
+        play(gone, 1);
+        double leftOnDoubt = kept.getCapitalFlows().getDoubtDeparted(), goneOnDoubt = gone.getCapitalFlows().getDoubtDeparted();
+        out.printf("   the month after: the twin that stayed pegged lost %,.1fk of hot money on doubt, the twin that left lost %,.1fk (it departed %,.1fk in all)%n",
+                leftOnDoubt, goneOnDoubt, gone.getCapitalFlows().getDeparted());
+        assertTrue("the twin that stayed pegged saw hot money leave on doubt that month (the condition is caused: " + String.format("%,.1fk", leftOnDoubt) + ")", leftOnDoubt > 0);
+        assertTrue("the twin that left the peg saw none leave on doubt: getDoubtDeparted() is 0 that month", goneOnDoubt == 0);
+        assertTrue("...and the audit closes in both (residuals " + String.format("%.4f and %.4f", kept.getLastMoneyAudit().residual, gone.getLastMoneyAudit().residual) + ")",
+                ExchangeRateCheck.auditCloses(kept) && ExchangeRateCheck.auditCloses(gone));
     }
 }

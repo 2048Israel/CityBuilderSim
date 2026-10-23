@@ -982,6 +982,17 @@ public class ReadPathCheck {
         g.getCapitalFlows().getPaper();
         g.getCapitalFlows().getLifetimePaperBought();
         g.getCapitalFlows().getLifetimePaperSold();
+        // ...and FX8's: the hot money's month, saved since slots 16-18, what the central bank paid in new money for the vault's dollars, the vault's record and the peg's doubt
+        g.getCapitalFlows().getArrived();
+        g.getCapitalFlows().getDeparted();
+        g.getCapitalFlows().netFlow();
+        g.getCapitalFlows().getDoubtDeparted();
+        g.getCapitalFlows().getDoubtDepartedLifetime();
+        g.getCapitalFlows().toSaveArray();
+        g.getCentralBank().getDollarsBought();
+        g.getCentralBank().getDollarsBoughtLifetime();
+        g.getForeignAccounts().getLifetimeIntervention();
+        g.getForeignAccounts().getDoubtShare();
         g.getWorldBoughtPaper();
         g.getCouponsToWorld();
         g.getPrincipalToWorld();

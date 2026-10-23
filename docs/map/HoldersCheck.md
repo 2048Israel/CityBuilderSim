@@ -1,4 +1,4 @@
-# HoldersCheck.java - 1,504 lines · 20 methods · 1 constants · harnesses
+# HoldersCheck.java - 1,506 lines · 20 methods · 1 constants · harnesses
 
 `ham/citybuildersim/HoldersCheck.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 1428 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 77 | 1430 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
 | 83 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 88 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 98 | 4 | `static void quietly(Runnable r)` |  |
@@ -130,11 +130,11 @@
 | 696 | 3 | `static void near(String label, double actual, double expected)` | One close() with the tolerance a part in a billion of the figure, or a cent. |
 | 700 | 412 | `static void theBusinesses() throws Exception` |  |
 
-### 11. the world (CD2, slice 5, D7; star 2) (lines 1113-1504)
+### 11. the world (CD2, slice 5, D7; star 2) (lines 1113-1506)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1116 | 5 | `static boolean worldAgrees(Game g)` | The two books of the world's paper agree: CapitalFlows', and the paper's. |
 | 1123 | 12 | `static double auditLine(MoneyAudit.Result r, String label)` | One line of the month's audit by its label, to the cent: 0 when the month has none. |
-| 1139 | 365 | `static void theWorld() throws Exception` |  |
+| 1139 | 367 | `static void theWorld() throws Exception` |  |
 

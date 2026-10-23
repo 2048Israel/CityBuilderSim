@@ -2015,6 +2015,27 @@ public class SaveFileCheck {
         assertTrue("the month is counted after a load of a save that carried it", paidAgain.isMonthCounted());
 
         /*
+         * ...AND THE HOT MONEY'S MONTH (FX8, 2026-10-22): what arrived, what
+         * departed and what of it left on doubt, saved at the end of
+         * CapitalFlows' array (slots 16 to 18) - the Policy tab reads the
+         * doubt's departure the month after, and nothing can rebuild it from
+         * the state the month ended in. This city's month has hot money
+         * arriving and none departing, so the departure and the doubt's read
+         * 0 on both sides; CurrencyRegimeCheck's section 12 causes the
+         * departure and the doubt (a pegged city, a doubt struck) and asserts
+         * all three to the bit across a save.
+         */
+        CapitalFlows hotLive = full.getCapitalFlows(), hotBack = back.getCapitalFlows();
+        System.out.printf("   the hot money's month in the live city: arrived %,.4fk, departed %,.4fk, on doubt %,.4fk, doubt's lifetime %,.4fk%n",
+                hotLive.getArrived(), hotLive.getDeparted(), hotLive.getDoubtDeparted(), hotLive.getDoubtDepartedLifetime());
+        assertTrue("fixture: hot money arrived in the month the city is saved in (" + String.format("%,.4fk", hotLive.getArrived()) + ")", hotLive.getArrived() > 0);
+        assertTrue("a freshly loaded city reads the hot money's month the live one read: arrived, departed, on doubt and the doubt's lifetime, to the bit",
+                Double.compare(hotBack.getArrived(), hotLive.getArrived()) == 0
+                        && Double.compare(hotBack.getDeparted(), hotLive.getDeparted()) == 0
+                        && Double.compare(hotBack.getDoubtDeparted(), hotLive.getDoubtDeparted()) == 0
+                        && Double.compare(hotBack.getDoubtDepartedLifetime(), hotLive.getDoubtDepartedLifetime()) == 0);
+
+        /*
          * ...AND EACH CELL'S INCOME AFTER ITS FIXED BILLS (A4, 0.7.46): struck
          * by the month from that month's disposable income, rent and fees, and
          * read between presses by the food assistance's means test. A reload

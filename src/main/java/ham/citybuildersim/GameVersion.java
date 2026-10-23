@@ -7100,7 +7100,7 @@ public final class GameVersion {
      *     and fxCover (no format bump: an older save loads as Lean).
      *   - Harness: CurrencyRegimeCheck (new); HoldersCheck's fixture restated.
      */
-    public static final String VERSION = "0.8.22";
+    public static final String VERSION = "0.8.23";
 
     /**
      * The save shape.

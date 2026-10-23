@@ -22,7 +22,6 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | FX7 | The map's "an old works moved" on AN1's grown city: of 15 industry boxes at m1001, 4 where they were at m4000; found and fixed, so LongPlaytest is green again (Jerus, 2026-10-22: "Ship, queue a map fix"; to the top with FX8: "FX7 + FX8 now") | [FX7](docs/queue/FX7.md) |
-| FX8 | XR2's loose ends off the default path, from the orchestrator's review: the central bank's "keeps nothing" identity under a new-money edge, doubt kept on leaving a peg, the doubt flows saved, HoldersCheck's length exact, the intervention count | [FX8](docs/queue/FX8.md) |
 | CL5 | Highways and railway that reach the whole city: a stuck net opens its next corridor by a link arm, every island the city builds on grows its own (CL1 §5.6; Jerus, 2026-10-20: "Queue it as CL5") | [CL5](docs/queue/CL5.md) |
 | CD3 | The city's debt: effective interest, carrying value, gain or loss on retirement | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | CD4 | The city's debt: the buyback as a reverse auction, callable lines and the call, with its screen, Close it now and the call; the bank offers at fair (D34) | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
