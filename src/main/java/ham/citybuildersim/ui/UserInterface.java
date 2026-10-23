@@ -280,7 +280,7 @@ public class UserInterface extends Application {
     /** The middle of the window: the blackish blue everything else sits on (Palette.STAGE since 0.7.21). */
     private static final String STAGE = Palette.STAGE;
 
-    private void applyTheme(Scene target) {
+    void applyTheme(Scene target) {
 
         String css =
             ".root {"

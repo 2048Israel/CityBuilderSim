@@ -163,64 +163,71 @@ final class PeopleScreen {
         // The count-up is for a page being watched as the month turns, as the clock's is: arriving, nothing moves.
         if (!"showPopulationInfoMenu".equals(ui.currentScreen)) shownMonth = -1;
         boolean landed = shownMonth >= 0 && shownMonth != ui.game.getMonth();
-        // Kept (study UP4): the page below is drawn over last time's nodes on a redraw, each card in a scope of its own.
-        ui.keepMenu("showPopulationInfoMenu", () -> showPopulationInfoMenu(), pool, () -> {
-            VBox page = widePage();
-            page.getChildren().add(Kept.scope("head", () -> pageHead("People", Palette.PEOPLE, null, null, STILL_FAKED,
-                    pageChips(true))));
-
-            VBox vitals = Kept.scope("vitals", this::vitals);
-            page.getChildren().add(vitals);
-
-            javafx.scene.layout.GridPane rowA = equalColumns(2, TILE_GAP);
-            Pieces.Waterfall[] grow = new Pieces.Waterfall[1];
-            rowA.add(Kept.scope("pyramid", this::pyramidCard), 0, 0);
-            VBox month = Kept.scope("month", () -> monthCard(grow));
-            rowA.add(month, 1, 0);
-            monthCard = month;
-            page.getChildren().add(rowA);
-
-            page.getChildren().addAll(
-                    Kept.scope("why head", () -> sectionHead("WHY PEOPLE COME", WHY_INFO, hint("how big a city this good draws"))),
-                    Kept.scope("bridge", this::bridgeCard),
-                    Kept.scope("care head", () -> sectionHead("CARE", hint("Build's rings: click one to build for it"))),
-                    Kept.scope("care", this::careRow));
-            page.getChildren().addAll(Kept.scope("care alerts", this::careAlerts));
-
-            javafx.scene.layout.GridPane rowD = Kept.grid();
-            rowD.setHgap(TILE_GAP);
-            rowD.setMaxWidth(Double.MAX_VALUE);
-            javafx.scene.layout.ColumnConstraints left = new javafx.scene.layout.ColumnConstraints();
-            left.setPercentWidth(33);
-            left.setFillWidth(true);
-            javafx.scene.layout.ColumnConstraints right = new javafx.scene.layout.ColumnConstraints();
-            right.setPercentWidth(67);
-            right.setFillWidth(true);
-            rowD.getColumnConstraints().addAll(left, right);
-            VBox homes = Kept.scope("homes", this::homesCard);
-            homesCard = homes;
-            rowD.add(homes, 0, 0);
-            rowD.add(Kept.scope("households", this::householdsCard), 1, 0);
-            page.getChildren().addAll(Kept.scope("homes head",
-                    () -> sectionHead("HOMES AND HOUSEHOLDS", hint("who has a door, and who lives behind it"))), rowD);
-
-            page.getChildren().add(Kept.scope("outside head", () -> sectionHead("OUTSIDE THE FAMILIES", OUTSIDE_INFO,
-                    hint("nobody's household, and no wage"))));
-            page.getChildren().addAll(Kept.scope("outside", this::outsideRow));
-
-            VBox work = Kept.scope("work", this::workCard);
-            workCard = work;
-            page.getChildren().addAll(Kept.scope("work head", () -> sectionHead("WORK", hint("is there work, and who can do it"))), work);
-
-            ui.setPage(page);
-
-            // A month that landed while the page was watched: the headcount counts and the month's bars grow.
-            if (landed) {
-                countUp(vitals);
-                if (grow[0] != null) grow[0].animate(COUNT_MILLIS);
-            }
-        });
+        // Kept (study UP4): the page is drawn over last time's nodes on a redraw, each card in a scope of its own.
+        ui.keepMenu("showPopulationInfoMenu", () -> showPopulationInfoMenu(), pool, () -> drawPage(landed));
         shownMonth = ui.game.getMonth();
+    }
+
+    /**
+     * The People page itself, put in the window through setPage(): what keepMenu runs as a kept
+     * draw from the pool, and what KeptBench runs kept and built new for KeptCheck. `landed`: a
+     * month landed while the page was watched, and the headcount counts up and the month's bars grow.
+     */
+    void drawPage(boolean landed) {
+        VBox page = widePage();
+        page.getChildren().add(Kept.scope("head", () -> pageHead("People", Palette.PEOPLE, null, null, STILL_FAKED,
+                pageChips(true))));
+
+        VBox vitals = Kept.scope("vitals", this::vitals);
+        page.getChildren().add(vitals);
+
+        javafx.scene.layout.GridPane rowA = equalColumns(2, TILE_GAP);
+        Pieces.Waterfall[] grow = new Pieces.Waterfall[1];
+        rowA.add(Kept.scope("pyramid", this::pyramidCard), 0, 0);
+        VBox month = Kept.scope("month", () -> monthCard(grow));
+        rowA.add(month, 1, 0);
+        monthCard = month;
+        page.getChildren().add(rowA);
+
+        page.getChildren().addAll(
+                Kept.scope("why head", () -> sectionHead("WHY PEOPLE COME", WHY_INFO, hint("how big a city this good draws"))),
+                Kept.scope("bridge", this::bridgeCard),
+                Kept.scope("care head", () -> sectionHead("CARE", hint("Build's rings: click one to build for it"))),
+                Kept.scope("care", this::careRow));
+        page.getChildren().addAll(Kept.scope("care alerts", this::careAlerts));
+
+        javafx.scene.layout.GridPane rowD = Kept.grid();
+        rowD.setHgap(TILE_GAP);
+        rowD.setMaxWidth(Double.MAX_VALUE);
+        javafx.scene.layout.ColumnConstraints left = new javafx.scene.layout.ColumnConstraints();
+        left.setPercentWidth(33);
+        left.setFillWidth(true);
+        javafx.scene.layout.ColumnConstraints right = new javafx.scene.layout.ColumnConstraints();
+        right.setPercentWidth(67);
+        right.setFillWidth(true);
+        rowD.getColumnConstraints().addAll(left, right);
+        VBox homes = Kept.scope("homes", this::homesCard);
+        homesCard = homes;
+        rowD.add(homes, 0, 0);
+        rowD.add(Kept.scope("households", this::householdsCard), 1, 0);
+        page.getChildren().addAll(Kept.scope("homes head",
+                () -> sectionHead("HOMES AND HOUSEHOLDS", hint("who has a door, and who lives behind it"))), rowD);
+
+        page.getChildren().add(Kept.scope("outside head", () -> sectionHead("OUTSIDE THE FAMILIES", OUTSIDE_INFO,
+                hint("nobody's household, and no wage"))));
+        page.getChildren().addAll(Kept.scope("outside", this::outsideRow));
+
+        VBox work = Kept.scope("work", this::workCard);
+        workCard = work;
+        page.getChildren().addAll(Kept.scope("work head", () -> sectionHead("WORK", hint("is there work, and who can do it"))), work);
+
+        ui.setPage(page);
+
+        // A month that landed while the page was watched: the headcount counts and the month's bars grow.
+        if (landed) {
+            countUp(vitals);
+            if (grow[0] != null) grow[0].animate(COUNT_MILLIS);
+        }
     }
 
     /** How long the headcount counts and the month's bars grow when a month lands (Jerus's "fun": the number moves). */

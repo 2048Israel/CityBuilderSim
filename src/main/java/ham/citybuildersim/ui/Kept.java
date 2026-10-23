@@ -92,6 +92,18 @@ public final class Kept {
         private Scope root = new Scope();
         /** Draws served since the pool last started afresh: 0 means the next draw makes every node new. */
         private int draws;
+        /** At the last draw: the nodes it made new, and the nodes it handed back (what KeptCheck counts). */
+        private int lastMade, lastKept;
+
+        /** The nodes the last draw made new. */
+        int lastMade() {
+            return lastMade;
+        }
+
+        /** The nodes the last draw handed back from the one before. */
+        int lastKept() {
+            return lastKept;
+        }
 
         /** Every node is made new at the next draw: another screen was shown, or another city opened. */
         void forget() {
@@ -171,6 +183,8 @@ public final class Kept {
                 if (t != null && !d.tipped.contains(n)) Tooltip.uninstall(n, t);
             }
             pool.draws++;
+            pool.lastMade = d.made.size();
+            pool.lastKept = d.handedBack.size();
         }
     }
 
@@ -255,20 +269,23 @@ public final class Kept {
         n.setOnMouseDragged(null);
         n.setOnScroll(null);
         if (n instanceof ButtonBase b) b.setOnAction(null);
-        n.setManaged(true);
-        n.setDisable(false);
-        n.setMouseTransparent(false);
+        // Each only where it differs: a set, even of the same value, marks a styleable value as code's.
+        if (!n.isManaged()) n.setManaged(true);
+        if (n.isDisable()) n.setDisable(false);
+        if (n.isMouseTransparent()) n.setMouseTransparent(false);
         resetIfCodeSet(n.cursorProperty(), null);
         resetIfCodeSet(n.visibleProperty(), true);
         resetIfCodeSet(n.opacityProperty(), 1.0);
     }
 
     /**
-     * Back to a new node's value - but only a value code set: one an inline style set belongs to
-     * the style, outranks code, and would not come back until the style changed.
+     * Back to a new node's value where it is not that already - but only a value code set: one an
+     * inline style set belongs to the style, outranks code, and would not come back until the style
+     * changed.
      */
     @SuppressWarnings("unchecked")
     private static <T> void resetIfCodeSet(Property<? extends T> p, T initial) {
+        if (Objects.equals(p.getValue(), initial)) return;
         if (p instanceof StyleableProperty<?> sp && sp.getStyleOrigin() != StyleOrigin.USER) return;
         ((Property<T>) p).setValue(initial);
     }
