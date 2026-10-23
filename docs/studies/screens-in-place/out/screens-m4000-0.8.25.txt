@@ -1,0 +1,46 @@
+month 4005 grown in 63.1 s; people 560,230, buildings 24,592
+
+TODAY: the redraw as the clock makes it (median of 8, ms; the pulse's own passes)
+screen     first |  build    css  layout  sync  settle  idle | chrome alone: build   css  layout | page nodes  labeled  text  region  shape  canvas  control  custom
+Build         41 |   15.6   18.0    4.3   3.9     0.8   0.0 |                 5.7  11.4    1.7 |        580      143     2     216     37       0        3       6
+Land          40 |   24.6   22.4    3.7   4.0     1.0   0.0 |                 7.3  13.1    1.9 |        474      133     0     184     16       1        0       6
+People        67 |   24.7   33.7    6.8   9.0     2.0   0.0 |                 7.1  13.0    2.0 |       1182      260     0     543    103       0        0      19
+Services      30 |    9.8   17.6    3.4   2.7     0.9   0.2 |                 4.8  10.3    1.7 |        447       97     8     184     26       0        1       7
+Infra         29 |    8.6   17.7    3.0   2.3     0.8   0.6 |                 5.1  10.4    1.8 |        394      113     0     118     22       0        1       5
+Sectors       56 |   26.0   24.3    6.7   5.7     2.3   1.4 |                 4.4   9.6    2.9 |        889      158    48     381     52      24        1       0
+Govt          29 |    8.5   19.7    3.0   2.8     1.1   0.3 |                 5.3   8.7    1.7 |        449      125     0     142     26       0        1       2
+Finances      24 |    8.6   18.3    3.2   2.8     0.8   0.2 |                 4.7   9.1    1.5 |        380       86     0     155     17       0        2       9
+Bank          47 |   12.3   24.0    4.5   4.3     1.7   0.6 |                 4.3   7.2    1.8 |        823      171     0     372     51       0        1      23
+Trade         22 |    7.5   12.6    2.2   1.7     0.7   0.2 |                 4.1   6.7    1.1 |        391       85     0     150     29       1        1       5
+Policy        21 |    7.5   13.2    3.1   2.3     1.1   0.6 |                 4.5   6.5    1.9 |        397       90     0     154     24       0        1       5
+History       42 |   18.9   23.0    5.9   6.0     2.3   0.4 |                 4.5   5.9    1.5 |        642      188     0     187     27       4        2       9
+
+SPLIT: where the build's time goes (JFR, 1 ms samples over 32 redraws a screen)
+screen     samples  nodes%  screen-code%  model%  other%
+Build          186      72             3      26       0
+Land           196      91             4       5       0
+People         254      87             4       9       0
+Services       108      79             4      18       0
+Infra           99      82             2      16       0
+Sectors        176      69             2      29       0
+Govt            82      79             4      17       0
+Finances        66      74             0      26       0
+Bank            88      84             3      13       0
+Trade           92      60            20      21       0
+Policy          77      78             5      17       0
+History        179      50            12      38       0
+
+LIVE: the clock at 50x, 4.0 s a screen after 1 s to settle (the FX thread's CPU ms a second, shared out by 5 ms samples)
+screen   months/s  frame p50  p95  max | month  build  pulse  settle  other  | busy
+Build        10.0          6    18    56 |   143     53    129      22      8  |   36%
+Land         10.0         10    38    69 |   111     46     75      10    265  |   51%
+People       10.0          8    58    83 |   102     70    321      23     35  |   55%
+Services     10.0          6    29    59 |   138     29    175      10     27  |   38%
+Infra        10.0          6    33    56 |   167     34    128      15     47  |   39%
+Sectors      10.0          9    65    82 |   129     49    305      25     42  |   55%
+Govt         10.2          6    42    53 |   152     25    139      18     21  |   36%
+Finances     10.2          6    33    59 |   176     32    103       9     11  |   33%
+Bank         10.2          9    49    55 |   142     35    194      23     12  |   41%
+Trade        10.2          7    37    53 |   141     35    138       5     21  |   34%
+Policy       10.2          6    32    46 |   142     24    125       6     20  |   32%
+History      10.0         13    67    88 |   167     63    204      29     67  |   53%

@@ -86,6 +86,17 @@ plans the chrome too, this batch follows UP4's plan for it.
    city opened, a rail tab shown or hidden. If after 1-3 the chrome's build
    and layout together are under 5% of the FX thread at 50x, this item is
    left undone and said so in the notes.
+
+   **UP4 (0.8.26) planned this item; follow its plan** (its ★3 puts it to Jerus):
+   `docs/studies/spec-screens-in-place.md` §7, "UP2's chrome". In short: the
+   chrome was measured at 12-27 ms of every redraw at month 4,000 (build,
+   CSS and layout, on every screen), the largest part of a redraw once the
+   page is kept, so the 5% condition does not hold and the item is done
+   whole: the header, the rail, the city panel, the construction panel and
+   the inbox drawn through `ui/Kept` (each its own pool and scope; the
+   header's tiles and sparklines as pictures told their figures), with
+   `KeptCheck` extended to them. Time the chrome through the pulse's own
+   passes, not `applyCss()` (the study's §9).
 5. **The header reads the window it draws.** Each tile reads the last
    `SPARK_MONTHS` + 13 months, through a `HistorySave` call that copies only a
    tail. The series is computed once per redraw, not once per tile. Same

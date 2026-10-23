@@ -27,7 +27,7 @@
 > holds the mechanism, and holds that no harness compares a figure against a
 > {@code *_MS} or {@code *_NS} dial except through here.
 
-**Used by (11):** [AllChecks](AllChecks.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [WorldCheck](WorldCheck.md)
+**Used by (12):** [AllChecks](AllChecks.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [WorldCheck](WorldCheck.md)
 
 ## Constants
 

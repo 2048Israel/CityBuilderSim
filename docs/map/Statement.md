@@ -11,7 +11,7 @@
 > uses them, so they belong to no screen. Called unqualified through an
 > import static, exactly as they were when they were methods of the window.
 
-**Uses:** [Palette](Palette.md) (79)
+**Uses:** [Palette](Palette.md) (79), [Kept](Kept.md) (1)
 
 **Used by (27):** [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [EconomyManager](EconomyManager.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MonthOrder](MonthOrder.md), [NewGameCheck](NewGameCheck.md), [PeopleScreen](PeopleScreen.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [StatementView](StatementView.md), [TradeScreen](TradeScreen.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
 

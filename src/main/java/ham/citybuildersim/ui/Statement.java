@@ -87,7 +87,7 @@ public final class Statement {
 
     /** The sentence under a line - what it means, or where it comes from. */
     public static Label statementNote(String text) {
-        Label note = new Label(text);
+        Label note = Kept.label(text);
         note.setWrapText(true);
         note.setMaxWidth(STATEMENT - 16);
         note.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)

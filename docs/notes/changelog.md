@@ -14,6 +14,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.26 — UP4, the People page kept — 2026-10-23, ready, see docs/studies/spec-screens-in-place.md
+
+The study UP4 timed every rail screen's redraw at month 4,000 through the pulse's own passes: 29-68 ms, the chrome
+12-27 of it, while 90-99% of a page's nodes show the same thing month to month. Its pattern, ui/Kept, runs a screen's
+own drawing code over the nodes it made last month (by scope and order), its boxes setting their children in one call
+where they differ, so nothing kept is styled, measured or synced again and the scroll never moves. The People page is
+the pilot (keepMenu, drawPage, the Pieces helpers it reaches; Mirror, Strip, Pair, SegmentBar and Waterfall told their
+figures): at month 4,101 its redraw went from 53.0 to 32.1 ms (the page's part 34.7 to 12.8; the rest is the chrome),
+and at 50x the FX thread from 50% to 41% busy, frames p95 51 to 20 ms. Its renders are the same pixels before and after.
+KeptCheck (new, with ui/KeptBench; no window, skipped where JavaFX cannot start) draws the page kept and new for 25
+months and compares them node by node and picture by picture. The rest is KP1-KP7 after UP2, which takes the chrome
+(Pending UP4-C). No model change: the playtest's trace is 0.8.25's but for its run-time lines, so no ensemble.
+
 ### 0.8.25 — UP1, the autosave off the clock — 2026-10-23, ready, see docs/queue/UP1-notes.md
 
 The autosave held the window's thread 170 ms every 12 months at month 4,000 (31% of it at 50x), the history two

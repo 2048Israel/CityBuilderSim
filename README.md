@@ -78,9 +78,9 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **128 harnesses plus the
-4,000-odd-month playtest**, which it counts as 129 run (128 where
-JavaFX is not on the classpath, which skips `BuildMenuCheck`), in about nine minutes.
+`AllChecks` runs the lot, one JVM each — **129 harnesses plus the
+4,000-odd-month playtest**, which it counts as 130 run (128 where
+JavaFX is not on the classpath, which skips `BuildMenuCheck` and `KeptCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
@@ -107,9 +107,12 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   `MoneyCheck` and `BankCheck` and nothing else.
 - The exit status is the number of harnesses that failed, so a build script can
   read it.
-- `BuildMenuCheck` needs JavaFX on the classpath and is skipped without it. It
-  is also the only harness that touches the interface at all; everything on the
-  screen beyond it is checked by opening the game.
+- `BuildMenuCheck` and `KeptCheck` need JavaFX on the classpath and are skipped
+  without it. They are the only harnesses that touch the interface: `KeptCheck`
+  lays the kept People page out on a scene of its own (no window) and compares
+  it with a page built new, and says so in one line and passes where the
+  toolkit cannot start, as in the cloud. Everything else on the screen is
+  checked by opening the game.
 
 **Run `AllChecks` on the tree as it landed - after a pull or a merge - not
 before.** A batch has more than once landed in the Java and not in

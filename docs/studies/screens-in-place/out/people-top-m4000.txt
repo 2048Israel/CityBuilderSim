@@ -1,0 +1,76 @@
+month 4005 grown in 61.4 s; people 560,230, buildings 24,592
+
+TODAY: the redraw as the clock makes it (median of 16, ms; the pulse's own passes)
+screen     first |  build    css  layout  sync  settle  idle | chrome alone: build   css  layout | page nodes  labeled  text  region  shape  canvas  control  custom
+People        55 |   10.2   11.3    4.3   2.6     1.2   0.0 |                 8.5  12.5    1.8 |       1180      260     0     541    103       0        0     245
+
+SPLIT: where the build's time goes (JFR, 1 ms samples over 64 redraws a screen)
+screen     samples  nodes%  screen-code%  model%  other%
+People         190      66            16      18       0
+    leaf frames:
+       34.2%  com.sun.javafx.css.BitSet$1.hasNext
+        5.8%  java.util.HashMap.getNode
+        3.7%  java.util.Collections$UnmodifiableCollection$1.<init>
+        3.2%  ham.citybuildersim.HistorySave.raw
+        2.6%  java.util.Objects.checkIndex
+        2.1%  ham.citybuildersim.HistorySave.yearlyPoints
+        2.1%  javafx.css.CompoundSelector.applies
+        1.6%  javafx.beans.property.ObjectPropertyBase.get
+        1.6%  ham.citybuildersim.HistorySave.back
+        1.6%  java.util.HashMap.putVal
+        1.1%  ham.citybuildersim.ui.Kept.draw
+        1.1%  ham.citybuildersim.YearBook.rollingYear
+        1.1%  javafx.scene.Node.invalidatedScenes
+        1.1%  javafx.scene.Node.focusSetDirty
+        1.1%  javafx.scene.Node.updateTreeVisible
+        1.1%  java.util.WeakHashMap.remove
+        1.1%  java.util.HashMap$HashIterator.nextNode
+        1.1%  javafx.css.SimpleSelector.applies
+        1.1%  ham.citybuildersim.ui.Kept.of
+        0.5%  ham.citybuildersim.ui.PeopleScreen.ladderTable
+        0.5%  java.util.Collections$SetFromMap.add
+        0.5%  ham.citybuildersim.ui.PeopleScreen.homesCard
+        0.5%  java.util.Formatter.parse
+        0.5%  ham.citybuildersim.ui.Pieces$SegmentBar.set
+        0.5%  ham.citybuildersim.ui.Kept$Flow.getChildren
+    our frames, inclusive:
+      100.0%  ham.citybuildersim.ui.PeopleScreen$$Lambda+0x0000018c62457278.1479205728.run
+      100.0%  ham.citybuildersim.ui.InPlaceProbe.lambda$main$6
+      100.0%  ham.citybuildersim.ui.UserInterface.redraw
+      100.0%  ham.citybuildersim.ui.InPlaceProbe$$Lambda+0x0000018c624ba7d8.1807648168.call
+      100.0%  ham.citybuildersim.ui.PeopleScreen.showPopulationInfoMenu
+      100.0%  ham.citybuildersim.ui.UserInterface.keepMenu
+      100.0%  ham.citybuildersim.ui.PeopleScreen.lambda$showPopulationInfoMenu$0
+       74.7%  ham.citybuildersim.ui.UserInterface.clearMenu
+       40.5%  ham.citybuildersim.ui.UserInterface.refreshHeader
+       25.3%  ham.citybuildersim.ui.Kept.draw
+       21.6%  ham.citybuildersim.ui.PeopleScreen.drawPage
+       21.6%  ham.citybuildersim.ui.PeopleScreen$$Lambda+0x0000018c62457498.1244553503.run
+       21.6%  ham.citybuildersim.ui.PeopleScreen.lambda$showPopulationInfoMenu$1
+       21.6%  ham.citybuildersim.ui.Kept.scope
+       17.4%  ham.citybuildersim.ui.UserInterface.refreshTabRail
+       13.7%  ham.citybuildersim.ui.UserInterface.headlines
+       12.1%  ham.citybuildersim.ui.UserInterface.railButton
+        7.4%  ham.citybuildersim.YearBook.realGrowth
+        6.8%  ham.citybuildersim.HistorySave.raw
+        6.8%  ham.citybuildersim.ui.UserInterface.refreshConstructionPanel
+        6.8%  ham.citybuildersim.HistorySave.aligned
+        6.3%  ham.citybuildersim.ui.UserInterface.ratingAndInbox
+        5.8%  ham.citybuildersim.ui.UserInterface.headlineTile
+        5.8%  ham.citybuildersim.ui.HistoryScreen.historyValues
+        5.3%  ham.citybuildersim.YearBook.realGdpYear
+        5.3%  ham.citybuildersim.ui.SummaryScreen.refreshCityPanel
+        5.3%  ham.citybuildersim.ui.PeopleScreen$$Lambda+0x0000018c6245a400.1215561196.get
+        5.3%  ham.citybuildersim.ui.PeopleScreen.vitals
+        4.7%  ham.citybuildersim.ui.Pieces.limitCell
+        4.2%  ham.citybuildersim.ui.UserInterface.needsChip
+        4.2%  ham.citybuildersim.ui.PeopleScreen.outsideRow
+        4.2%  ham.citybuildersim.ui.PeopleScreen$$Lambda+0x0000018c6246a6f0.1101372683.get
+        3.7%  ham.citybuildersim.YearBook.rollingYear
+        3.2%  ham.citybuildersim.ui.UserInterface.placeFrame
+        3.2%  ham.citybuildersim.YearBook.unemployment
+        2.6%  ham.citybuildersim.ui.Kept.label
+        2.6%  ham.citybuildersim.HistorySave.monthsIn
+        2.6%  ham.citybuildersim.ui.UserInterface.moneyBlock
+        2.1%  ham.citybuildersim.ui.PeopleScreen.homesCard
+        2.1%  ham.citybuildersim.ui.PeopleScreen$$Lambda+0x0000018c6245c548.917707318.get
