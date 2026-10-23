@@ -2,7 +2,7 @@
 
 Generated 2026-10-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**133 harness files, 13,313 labelled assertions.** AllChecks runs 133 of them.
+**133 harness files, 13,326 labelled assertions.** AllChecks runs 133 of them.
 
 ## Which harnesses read which class
 
@@ -179,7 +179,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SaveHeader](map/SaveHeader.md) | SaveFileCheck, SaveSlotCheck, ScaleCheck |
 | [SaveWriter](map/SaveWriter.md) | SaveSlotCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, HomeRailCheck, RailCheck, SectorBooksCheck, TruckCheck, VanCheck |
@@ -8928,7 +8928,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L605 ...and those are exactly the ones it could not place
   - L607 nothing is billed as a family let when only studios exist
 
-## InboxCheck.java - 31 labelled assertions
+## InboxCheck.java - 44 labelled assertions
 
 > Verifies the inbox: raising, refreshing, resolving, culling and the round
 > trip. Not part of the game.
@@ -8944,44 +8944,59 @@ _(this harness does not label its checks through a helper - it prints its findin
 >    notice that keeps its wording current, not forty notices saying the same
 > ...
 
-- **L65 1. a new city has an empty inbox**
-  - L71 the inbox starts empty
-  - L72 and nothing is urgent
-  - L73 and the envelope shows no count
-- **L75 2. living raises what is true**
-  - L120 something got raised
-  - L131 no condition has two live notices at once
-  - L134 
-  - L135 
-  - L137 
-- **L141 3. unread, urgent, and then read**
-  - L160 a resolved notice never becomes urgent
-  - L168 it counts toward the envelope
-  - L171 reading it clears its urgency
-  - L172 and takes it off the count
-  - L173 but it is still in the inbox
-  - L174 and it still says what it said
-  - L182 reading it did not resolve it
-- **L185 4. a live notice is refreshed, never re-raised**
-  - L232 the run produced a standing problem to test
-  - L233 a live notice is never raised a second time
-  - L246 and keeps the month it was first raised
-- **L253 5. it survives a save and a reload**
-  - L256 the city saved
-  - L266 every notice came back
-  - L267 and so did what had been read
-  - L283 key, title, body and all three months round-trip
-- **L285 6. resolving and culling**
-  - L299 a fresh notice is urgent
-  - L301 a resolved notice is not urgent any more
-  - L302 but it is still there to read
-  - L303 and it still counts as unread
-  - L304 it knows how long ago it settled
-  - L306 just inside two years, it stays
-  - L320 a stale notice is loaded
-  - L334 and the next month drops it
-- **L336 7. a new game forgets it**
-  - L340 nothing carried over from the old city
+- **L69 1. a new city has an empty inbox**
+  - L75 the inbox starts empty
+  - L76 and nothing is urgent
+  - L77 and the envelope shows no count
+- **L79 2. living raises what is true**
+  - L124 something got raised
+  - L135 no condition has two live notices at once
+  - L138 
+  - L139 
+  - L141 
+- **L145 3. unread, urgent, and then read**
+  - L164 a resolved notice never becomes urgent
+  - L172 it counts toward the envelope
+  - L175 reading it clears its urgency
+  - L176 and takes it off the count
+  - L177 but it is still in the inbox
+  - L178 and it still says what it said
+  - L186 reading it did not resolve it
+- **L189 4. a live notice is refreshed, never re-raised**
+  - L243 the run produced a standing problem to test
+  - L244 a live notice is never raised a second time
+  - L257 and keeps the month it was first raised
+- **L264 5. it survives a save and a reload**
+  - L267 the city saved
+  - L277 every notice came back
+  - L278 and so did what had been read
+  - L294 key, title, body and all three months round-trip
+- **L296 6. resolving and culling**
+  - L310 a fresh notice is urgent
+  - L312 a resolved notice is not urgent any more
+  - L313 but it is still there to read
+  - L314 and it still counts as unread
+  - L315 it knows how long ago it settled
+  - L317 just inside two years, it stays
+  - L331 a stale notice is loaded
+  - L345 and the next month drops it
+- **L347 7. the wait on ground, told again each year (PT1-M2)**
+- **L350 8. a new game forgets it**
+  - L354 nothing carried over from the old city
+- **L388 the wait on ground is told again each year (PT1-M2)**
+  - L407 the fixture made a sector wait on ground
+  - L475 the wait held to the end of the three years (the fixture held)
+  - L477 a wait back inside its year reopens that year's notice
+  - L478 told once a year: the first month and every LANDLOCK_REPEAT_MONTHS after
+  - L483 each new notice settles the one before it the same month
+  - L484 never two notices of the wait standing at once
+  - L485 each names every sector waiting
+  - L486 and the ground each needs, as its refusal gave it
+  - L487 saved mid-wait
+  - L488 and loaded with the standing notice's month
+  - L490 each notice toasted once: not again when reopened, nor on the load
+  - L502 once the ground is bought the standing notice settles
+  - L503 and is not told again for the year after
 
 ## IndustryViewCheck.java - 55 labelled assertions
 
@@ -10582,17 +10597,17 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 _(this harness does not label its checks through a helper - it prints its findings; read its header and its sections)_
 
-- **L1217 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L2937 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L2992 AND EVERYTHING THAT IS A PURCHASE.**
-- **L3337 AND THE BEST OF THEM WINS.**
-- **L5619 founding: a few months at a time, by hand**
-- **L5716 then the real rhythm**
-- **L5864 the report**
-- **L5878 ==**
-- **L5964 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7147 what the advisor tried, and what happened**
-- **L7153 findings**
+- **L1227 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
+- **L2947 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L3002 AND EVERYTHING THAT IS A PURCHASE.**
+- **L3347 AND THE BEST OF THEM WINS.**
+- **L5629 founding: a few months at a time, by hand**
+- **L5726 then the real rhythm**
+- **L5874 the report**
+- **L5888 ==**
+- **L5974 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7159 what the advisor tried, and what happened**
+- **L7165 findings**
 
 ## MainLineCheck.java - 151 labelled assertions
 

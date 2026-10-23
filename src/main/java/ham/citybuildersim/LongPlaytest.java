@@ -681,7 +681,17 @@ public class LongPlaytest {
         Notice live = g.getInbox().live("defaults");
         if (live != null && live != lastDefaultNotice) defaultNotices++;
         lastDefaultNotice = live;
+        // ...and the wait on ground (PT1-M2): the months a sector waited, and
+        // each "nowhere to build" notice raised, the yearly retellings among them.
+        if (!g.getLandBlockedSectors().isEmpty()) landWaitMonths++;
+        Notice wait = g.getInbox().live("landlock");
+        if (wait != null && wait != lastLandWaitNotice) landWaitNotices++;
+        lastLandWaitNotice = wait;
     }
+
+    /** The months a sector waited on ground, and the "nowhere to build" notices raised (PT1-M2). */
+    static int landWaitMonths, landWaitNotices;
+    static Notice lastLandWaitNotice;
 
     /* ---- 0.7.12 round 4: the companies' cash, the desk's excess, and can't pay means default ---- */
     static final java.util.List<Double> companyTillsRun = new java.util.ArrayList<>();
@@ -6608,6 +6618,8 @@ public class LongPlaytest {
                     worstWriteOffMonth, pastWatchMonths, pastTriggerMonths, longestWatchSpell, longestWatchSector,
                     longestWatchMonth, lentPastWatch,
                     runWrittenOff > 0 ? runAllowanceUsed / runWrittenOff * 100 : 0, defaultNotices);
+            out.printf("  the wait on ground over the run: %d month(s) a sector waited, %d \"nowhere to build\" notice(s) raised%n",
+                    landWaitMonths, landWaitNotices);
             // The price and the plant (0.7.8, round 2) - see countPriceAndPlant().
             out.printf("  the price and the plant over the run: %d loan(s) written past the watch line, %d past 1.0"
                     + " ($%,.0fk, %d of them projects; rates averaging %.2f%%, at most %.2f%%) and %d past the default"

@@ -102,6 +102,11 @@ public class Notice implements Cloneable {
         if (resolved <= 0) resolved = Math.max(1, month);
     }
 
+    /** Standing again, as it was raised (PT1-M2: the wait on ground back within its year, Inbox.takeMonth()). */
+    void reopen() {
+        resolved = 0;
+    }
+
     /**
      * How old the resolution is, for the two-year cull.
      *

@@ -7230,8 +7230,17 @@ public final class GameVersion {
      *   - The founding card, People's bridge, the drawer's footnote, the
      *     log's debt-to-GDP and interest lines. The toast's corner: PT1-C.
      *   - Harness: PlaytestFixCheck (new), ChartCheck 9.
+     *
+     * 0.8.32 (2026-10-23) - PT1-M2, THE WAIT ON GROUND TOLD AGAIN
+     * Jerus, 2026-10-12 ("a notice repeated"; docs/queue/PT1-M2-notes.md).
+     *   - Inbox: the "nowhere to build" notice is settled and raised anew
+     *     each LANDLOCK_REPEAT_MONTHS it stands; a wait back inside its year
+     *     reopens it (Notice.reopen()), as dated and not toasted again.
+     *   - Its body names each sector waiting and the ground it asked for
+     *     (Game.getLandBlockedNeeds()); acknowledging it quiets it a year.
+     *   - Harness: InboxCheck 7; LongPlaytest counts the notices.
      */
-    public static final String VERSION = "0.8.31";
+    public static final String VERSION = "0.8.32";
 
     /**
      * The save shape.

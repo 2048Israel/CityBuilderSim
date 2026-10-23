@@ -14,6 +14,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.32 — PT1-M2, the wait on ground told again — 2026-10-23, ready, see docs/queue/PT1-M2-notes.md
+
+Jerus's call on PT1's M2 ("a notice repeated"): the inbox's "Your businesses have nowhere to build" is told again each
+year the wait lasts, a new notice, dated and toasted, naming each sector waiting and the ground it asked for ("Real
+Estate: needs 743 m², 0 m² free"; it printed sector keys and no figures). A month with nobody asking settles it as
+before, and a wait back inside the year reopens that year's notice rather than raising another. The rhythm is the
+notice's own raised month, saved with the inbox: no new field, no format bump. "Go to the land office" quiets it a year,
+not two. InboxCheck section 7 holds a city's ground at what is built for three years with automatic building on: told at
+months 3, 15, 27 and 39 across a save and load, silent once the ground is bought. In the default playtest: 1,790 months
+waiting, 178 notices; the trace byte-identical, so no ensemble.
+
+---
+
 ### 0.8.31 — PT1, eleven fixes from a played city — 2026-10-23, ready, see docs/queue/PT1-notes.md
 
 Ten of the eleven, the model's month untouched. A founded city's bank, standing before its first month opens it, reads
