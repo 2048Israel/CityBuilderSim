@@ -1,0 +1,31 @@
+Buildings loaded from packaged buildings.json (143 definitions)
+x 1: 8,183 buildings, 2 a side, 4 districts, drawn in 2004 ms; runs 1 highway / 1 rail stretches, 0 yards
+   stamp at 15 plots a px (1 node); far view 24 nodes at 2 plots a px (pictures true); L0 screen 112 tiles (level 0)
+   the stamp (frame + node)                     median 2.25 ms, worst 2.41, least 2.10
+   the far view re-coloured                     median 10.98 ms, worst 11.65, least 10.22
+   the L0 screen re-stamped (ready + input)     median 8.12 ms, worst 9.66, least 5.52
+   ...a frame after, ready() alone              median 0.03 ms, worst 0.04, least 0.02
+   the chain's adopt()s                         median 0.13 ms, worst 0.25, least 0.05
+   reconcile (the month)                        median 0.30 ms, worst 1.24, least 0.12
+   ownStamp() of every district                 median 0.07 ms, worst 0.13, least 0.04
+   the worker's runs: 37.7 ms a month, 3 jobs a month; the runs moved in 2 of 8 months; districts moved a month [2, 2, 2, 2, 2, 2, 2, 2] of 4
+x 80: 654,640 buildings, 11 a side, 125 districts, drawn in 1907 ms; runs 5 highway / 1 rail stretches, 0 yards
+   stamp at 78 plots a px (1 node); far view 28 nodes at 8 plots a px (pictures true); L0 screen 112 tiles (level 0)
+   the stamp (frame + node)                     median 2.21 ms, worst 2.69, least 2.10
+   the far view re-coloured                     median 11.34 ms, worst 14.05, least 11.11
+   the L0 screen re-stamped (ready + input)     median 7.61 ms, worst 9.98, least 6.78
+   ...a frame after, ready() alone              median 0.25 ms, worst 1.15, least 0.09
+   the chain's adopt()s                         median 0.11 ms, worst 0.35, least 0.08
+   reconcile (the month)                        median 0.45 ms, worst 0.72, least 0.17
+   ownStamp() of every district                 median 2.64 ms, worst 3.74, least 2.44
+   the worker's runs: 1560.1 ms a month, 132 jobs a month; the runs moved in 2 of 8 months; districts moved a month [26, 26, 1, 1, 1, 1, 1, 1] of 125
+x 9,814: 80,307,962 buildings, 121 a side, 14,661 districts, drawn in 3255 ms; runs 369 highway / 3 rail stretches, 0 yards
+   stamp at 848 plots a px (1 node); far view 54 nodes at 64 plots a px (pictures true); L0 screen 112 tiles (level 0)
+   the stamp (frame + node)                     median 2.77 ms, worst 3.18, least 2.55
+   the far view re-coloured                     median 30.50 ms, worst 30.79, least 29.68
+   the L0 screen re-stamped (ready + input)     median 13.70 ms, worst 16.72, least 13.38
+   ...a frame after, ready() alone              median 0.10 ms, worst 0.11, least 0.10
+   the chain's adopt()s                         median 0.00 ms, worst 0.00, least 0.00
+   reconcile (the month)                        median 0.75 ms, worst 1.21, least 0.60
+   ownStamp() of every district                 median 1506.22 ms, worst 1551.27, least 1491.82
+   the worker's runs: 0.0 ms a month, 0 jobs a month; the runs moved in 2 of 8 months; districts moved a month [593, 576, 574, 575, 470, 319, 277, 249] of 14661

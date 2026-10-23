@@ -35,21 +35,30 @@ import javafx.stage.Popup;
  * pixels and what a click opens on are MiniMapFrame's, which MapCheck 12
  * holds; this is the toolkit's half, checked by eye on the PC.
  *
- * WHEN IT IS DRAWN: whenever the map's version moves (MapTiles.version():
- * a month's end, a purchase), and again when a district it drew without its
- * picture gets one - so a few milliseconds a month, on the screen's thread,
- * a far node at a time (MiniMapFrame.node()), the stamp's one node in one
- * frame, the preview's six over as many frames as FRAME_MS allows, and only
- * while it shows. Nothing slow is done here: the city's map drawn aside
- * the first time (a draft, as the land office's map does, and never both at
- * once: MapView.drafting), the nodes' ground and the pictures it lacks
- * (CityMap.pictureJobs()) on MapView.WORKER, the map's one worker. No boats
- * (Q12). On the real Earth it is the city's plane, never the globe.
+ * WHEN IT IS DRAWN: when the map's version has moved (MapTiles.version():
+ * a month's end, a purchase) and at least STAMP_EVERY_MS of the clock has
+ * passed since its picture was last begun, and again when a district it drew
+ * without its picture gets one. Each far node is drawn from its kept layers
+ * (MapTiles.KeptNode): the districts that moved repainted, the runs and the
+ * land only when they moved - a few hundred microseconds a month at Jerus's
+ * size, on the screen's thread, a node at a time (MiniMapFrame.node()), the
+ * stamp's one node in one frame, the preview's six over as many frames as
+ * FRAME_MS allows, and only while it shows. A month that is not drawn costs
+ * nothing: the frame (MiniMapFrame.frame(), two passes over every district)
+ * is found again only when a picture is about to be begun. Nothing slow is
+ * done here: the city's map drawn aside the first time (a draft, as the land
+ * office's map does, and never both at once: MapView.drafting), the nodes'
+ * ground and the pictures it lacks (CityMap.pictureJobs()) on MapView.WORKER,
+ * the map's one worker. No boats (Q12). On the real Earth it is the city's
+ * plane, never the globe.
  */
 final class MiniMap {
 
     /** The most a frame spends drawing the stamp and the preview, in ms: MapView.FRAME_MS - a node at least, so each finishes. */
     static final double FRAME_MS = MapView.FRAME_MS;
+
+    /** The least a drawing waits between beginning one picture and the next, in ms: the stamp drawn at most four times a second, against ten at 50x (a month every 100 ms), so a highway laid shows within a quarter of a second (batch UP3). */
+    static final double STAMP_EVERY_MS = 250;
 
     /** The gap between the rail's edge and the preview: 6 px (the mockup's). */
     static final double PREVIEW_GAP = 6;
@@ -75,12 +84,17 @@ final class MiniMap {
         MiniMapFrame.View at;
         byte[][] ground;
         boolean groundAsked;
+        /** One kept node per far node of its view, row by row: what each was last drawn from (MapTiles.KeptNode), made when it is aimed at a new view. */
+        MapTiles.KeptNode[] keeps;
         /** The map's version and pictures kept that the image shows, whether it was drawn short of a picture; and the pass under way: its next node, what it is of. */
         long drawnFor = Long.MIN_VALUE, pictures;
         boolean partial;
         int next = -1;
         long passFor, passPictures;
         boolean passPartial;
+        /** When its last pass was begun (System.nanoTime()), and whether any has been since it was aimed at a view: the pace is kept from there. */
+        long startedAt;
+        boolean started;
         /** The built districts its last pass drew without the picture they would sample: asked of WORKER (askPictures()). */
         final Set<CityMap.District> wanted = new LinkedHashSet<>();
 
@@ -94,13 +108,16 @@ final class MiniMap {
             blank();
         }
 
-        /** Aimed at a view: the same view keeps its ground; another asks for its own. Either way drawn again. */
+        /** Aimed at a view: the same view keeps its ground and its kept nodes; another asks for its own ground, makes new kept nodes and is not held to the pace. Either way drawn again. */
         void aim(MiniMapFrame.View v) {
             if (!v.equals(at)) {
                 at = v;
                 ground = null;
                 groundAsked = false;
                 next = -1;
+                started = false;
+                keeps = new MapTiles.KeptNode[v.nodesAcross() * v.nodesDown()];
+                for (int k = 0; k < keeps.length; k++) keeps[k] = new MapTiles.KeptNode();
             }
             drawnFor = Long.MIN_VALUE;
         }
@@ -109,10 +126,17 @@ final class MiniMap {
             at = null;
             ground = null;
             groundAsked = false;
+            keeps = null;
+            started = false;
             drawnFor = Long.MIN_VALUE;
             next = -1;
             wanted.clear();
             blank();
+        }
+
+        /** Whether the pace lets it begin a picture at `now` (System.nanoTime()): none begun since it was aimed at its view, or STAMP_EVERY_MS passed since the last was. */
+        boolean paceOpen(long now) {
+            return !started || now - startedAt >= (long) (STAMP_EVERY_MS * 1e6);
         }
 
         void blank() {
@@ -251,8 +275,9 @@ final class MiniMap {
      * time - a draft on WORKER, unless the land office's map has one there
      * already (MapView.drafting), when it waits for that - a new map (a load)
      * thrown out with what was drawn from it, and when the map's version
-     * moved, the frame found again and both views aimed at it. False while
-     * there is no map to draw from.
+     * moved and the stamp's pace allows a picture to be begun (STAMP_EVERY_MS),
+     * the frame found again and both views aimed at it: a month that is not
+     * drawn finds nothing. False while there is no map to draw from.
      */
     private boolean keepUp(Game g) {
         if (!g.hasCityMap()) {
@@ -285,7 +310,7 @@ final class MiniMap {
             tiles = new MapTiles(m);
         }
         long v = MapTiles.version(m, g.getCityLand());
-        if (v != version) {
+        if (v != version && stamp.paceOpen(System.nanoTime())) {
             version = v;
             frame = MiniMapFrame.frame(m);
             if (frame == null) return false;
@@ -318,10 +343,12 @@ final class MiniMap {
     /**
      * A picture drawn, or a node of it, until the deadline - one node at
      * least: when the version moved, or a district it drew without its
-     * picture has one now (the map's count of pictures kept moved), its
-     * nodes again from the first, each MiniMapFrame.node() from its ground,
-     * and the image written when the last is done. Its ground is asked of
-     * WORKER first, the world's (MiniMapFrame.ground()).
+     * picture has one now (the map's count of pictures kept moved), and at
+     * least STAMP_EVERY_MS has passed since it last began one, its nodes
+     * again from the first, each MiniMapFrame.node() from its ground and its
+     * kept node (only what moved since is redrawn), and the image written
+     * when the last is done. A picture under way runs on whatever the pace.
+     * Its ground is asked of WORKER first, the world's (MiniMapFrame.ground()).
      */
     private void draw(Drawing dr, long deadline) {
         if (dr.at == null) return;
@@ -333,6 +360,10 @@ final class MiniMap {
         if (dr.next < 0) {
             boolean stale = dr.drawnFor != version || (dr.partial && dr.pictures != kept);
             if (!stale) return;
+            long now = System.nanoTime();
+            if (!dr.paceOpen(now)) return;
+            dr.started = true;
+            dr.startedAt = now;
             dr.next = 0;
             dr.passFor = version;
             dr.passPictures = kept;
@@ -341,7 +372,7 @@ final class MiniMap {
         int nodes = dr.at.nodesAcross() * dr.at.nodesDown();
         Set<CityMap.District> lacked = new LinkedHashSet<>();
         do {
-            MiniMapFrame.node(tiles, dr.at, dr.next, dr.ground[dr.next], dr.buf, dr.px, lacked);
+            MiniMapFrame.node(tiles, dr.at, dr.next, dr.ground[dr.next], dr.keeps[dr.next], dr.buf, dr.px, lacked);
             dr.next++;
         } while (dr.next < nodes && System.nanoTime() < deadline);
         if (!lacked.isEmpty()) {

@@ -277,15 +277,29 @@ public final class MiniMapFrame {
      * (CityMap.pictureIfCurrent()) and draws no plan.
      */
     public static int pixels(MapTiles tiles, View v, byte[][] ground, int[] out, Set<CityMap.District> wanted) {
+        return pixels(tiles, v, ground, null, out, wanted);
+    }
+
+    /** ...with a kept node a far node (`keeps`, row by row, the entries made here when null; MapTiles.nodePixels(KeptNode, ...), batch UP3): the same pixels, only what moved since each was drawn redone. Null keeps: every node drawn whole. */
+    public static int pixels(MapTiles tiles, View v, byte[][] ground, MapTiles.KeptNode[] keeps, int[] out, Set<CityMap.District> wanted) {
         int[] buf = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
-        for (int k = 0; k < v.nodesAcross() * v.nodesDown(); k++) node(tiles, v, k, ground[k], buf, out, wanted);
+        for (int k = 0; k < v.nodesAcross() * v.nodesDown(); k++) {
+            if (keeps != null && keeps[k] == null) keeps[k] = new MapTiles.KeptNode();
+            node(tiles, v, k, ground[k], keeps == null ? null : keeps[k], buf, out, wanted);
+        }
         return wanted == null ? 0 : wanted.size();
     }
 
     /** ...one node of it, the k-th row by row (MapTiles.nodePixels() into `buf`, NODE_PX squared, cut into `out`): what the screen paints a frame at a time. */
     public static void node(MapTiles tiles, View v, int k, byte[] ground, int[] buf, int[] out, Set<CityMap.District> wanted) {
+        node(tiles, v, k, ground, null, buf, out, wanted);
+    }
+
+    /** ...from a kept node `keep` (MapTiles.nodePixels(KeptNode, ...), batch UP3: the same pixels, only what moved since it was last drawn redone), or whole where it is null. */
+    public static void node(MapTiles tiles, View v, int k, byte[] ground, MapTiles.KeptNode keep, int[] buf, int[] out, Set<CityMap.District> wanted) {
         int n = MapFrame.NODE_PX, i = k % v.nodesAcross(), j = k / v.nodesAcross();
-        tiles.nodePixels(v.nodeX(i), v.nodeY(j), v.stride(), ground, buf);
+        if (keep == null) tiles.nodePixels(v.nodeX(i), v.nodeY(j), v.stride(), ground, buf);
+        else tiles.nodePixels(keep, v.nodeX(i), v.nodeY(j), v.stride(), ground, buf);
         if (wanted != null) wanted.addAll(tiles.wanted());
         int cw = Math.min(n, v.w() - i * n), ch = Math.min(n, v.h() - j * n);
         for (int y = 0; y < ch; y++) System.arraycopy(buf, y * n, out, (j * n + y) * v.w() + i * n, cw);

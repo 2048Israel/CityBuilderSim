@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -318,6 +320,15 @@ import java.util.Map;
  *      pixel by the curve; on hand-built tiles a crescent alone no junction, the street that crosses it running on across the band,
  *      a crossing beside it the signal it was; the curves' bytes in the plans' Drawn a small share; and the screen over the far
  *      districts, curves across it, within SCREEN_MS.
+ *  18. (batch UP3) A MONTH REDRAWS ONLY WHAT MOVED: on Jerus's city x 1, at his own district count (x 80), at 5B and on the played city, a month
+ *      grown as the game grows one and the screens drawn as ui/MiniMap and ui/MapView draw them, the minimap's stamp and preview from their kept
+ *      nodes (MapTiles.KeptNode) equal a full redraw pixel for pixel and ask the same districts for their pictures; a far node whose key
+ *      (MapTiles.nodeKey()) did not move holds the pixels a fresh one gives; a month that places in one district moves the keys of the far nodes
+ *      over it and its neighbours and no more, fewer than today's every node in view (5B with no pictures; x 80 with them, where the nodes
+ *      over the districts whose pictures the chain re-plans move too, and no others); the stamp's runs
+ *      layer is drawn again in the months the runs moved and in no other, its land layer by a land purchase and by no other month; every link's
+ *      kept stamp is the one worked out afresh after each of 24 months (x 1, x 80); and a month's FX-side map work at 5B - the stamp, the far
+ *      view's screen, an L0 screen re-stamped and the chain's handing out and adopting - is within MAP_MONTH_MS, the median month.
  *
  * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
  * default world's site has no iron within ten kilometres, nor its dry place's
@@ -447,6 +458,7 @@ public class MapCheck {
         materials(sq.seed);
         avenuesDrawn(sq);
         curvesDrawn(sq);
+        redrawsOnlyWhatMoved(city, sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -8462,5 +8474,738 @@ public class MapCheck {
                 TIMES[DENSE], SCREEN_TILES, curveTiles, PX, bestWith, bestWith / SCREEN_TILES, bestWithout);
         check("THE SCREEN: the dense screen over the far districts where curves are thickest, curves across it (tiles with curves about them: " + curveTiles + "), paints and rasters in no more than " + (int) SCREEN_MS + " ms",
                 curveTiles > 0 && Timing.within(bestWith, SCREEN_MS));
+    }
+
+    /* =====================================================================
+       18. A MONTH REDRAWS ONLY WHAT MOVED (batch UP3, docs/queue/UP3.md)
+       ===================================================================== */
+
+    /*
+     * WHY (batch UP3, 2026-10-23; Jerus, 2026-10-22: "the map doesn't
+     * regenerate every single building"). The model does not: reconcile()
+     * places each type's change (section 5 holds it to RECONCILE_MS). What
+     * was redone whole each month was the screens: the minimap's stamp (every
+     * district twice, every highway and rail stretch struck again), every far
+     * node in view, and stampOf() for each tile each frame. UP3 keeps what a
+     * month leaves alone - MapTiles.KeptNode under the stamp, MapTiles
+     * .nodeKey() under the far view, CityMap.Link.stamp() under the chain -
+     * and this section holds it to what matters: the picture is the one a
+     * full redraw gives, only what moved is redrawn, and a month's FX-side
+     * work at 5B is half what it was measured before UP3.
+     *
+     * A month is played on a fixture as the game plays one: reconcile(), the
+     * screens drawn as ui/MiniMap and ui/MapView draw them, the map's
+     * worker's jobs run and adopted, the screens drawn again where the
+     * pictures that came change them (up to CHAIN_ROUNDS), then an L0 screen
+     * re-stamped. The screens are drawn two ways, today's whole on one
+     * MapTiles and now's kept on another, and held equal every time. The FX
+     * thread's work is timed on monthClock() and summed over the stamp, the
+     * far view's screen, the L0 screen and the chain's handing out and
+     * adopting; the worker's run() is not it. The first draw after a month
+     * pays the map's lazily kept checks (CityMap.checkBand()), which today's
+     * way and now's both need, so a pass of today's is made first untimed
+     * (printed as "the lazy checks") and the two timed passes find the same
+     * state. The fixtures are grown here and left grown: this section is
+     * last.
+     */
+
+    /** The copy at Jerus's own district count: x 80, 125 districts, 11 a side (CL3's notes cite 115 for his cities), between x 1's 4 districts and 5B's 14,661. */
+    static final double HIS_TIMES = 80;
+
+    /** The months grown at x 1 and at x 80, and at 5B (its months are slower): 24 and 12. */
+    static final int REDRAW_MONTHS = 24, REDRAW_MONTHS_5B = 12;
+
+    /** The first months of each fixture are drawn, compared and not counted in its figures: 3, the JIT's compiling done before a month is read. */
+    static final int REDRAW_WARM = 3;
+
+    /** A month's growth as a share of each type's count: 1/1,000 (+0.1%) at x 1 and x 80, 1/10,000 (+0.01%) at 5B, as section 5's, at least one building each. */
+    static final int GROW_PER_MILLE = 1000, GROW_PER_TEN_THOUSAND = 10_000;
+
+    /** The runs' types (a highway's, a track's) are grown only in every 4th month, so most months lay no run, as in play. */
+    static final int RUNS_EVERY = 4;
+
+    /** The times a month's screens are drawn: the month's, then again after each round of the chain's jobs (handed out, run, adopted) until none is left, at most 4. */
+    static final int CHAIN_ROUNDS = 4;
+
+    /** The months the played city is grown before its land purchase and after it: 3 and 3. */
+    static final int PLAYED_BEFORE = 3, PLAYED_AFTER = 3;
+
+    /** The side of the block the played city buys, in plots: 32, a hole in its built-up ground's box (the played city's ground is irregular). */
+    static final int PURCHASE_SIDE = 32;
+
+    /** The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting: 58, nine tenths of the 65 this section measured on the PC the old way (today's paths, the median month, the mean of four runs, 63.4 to 67.2: the stamp 2.3, the far screen 29.6, the L0 screen 32.5, the chain 0.2; docs/queue/UP3-notes.md) - the stamp and the far view's unmoved nodes taken off it; the L0 screen's band check, half of what is left, is UP3-C's. */
+    static final double MAP_MONTH_MS = 58;
+
+    /** The kinds of month: the grown one, one built type raised by one, and the first, which only draws. */
+    static final int GROW = 0, ONE = 1, SETTLE = 2;
+
+    /** One far screen of section 18: a MapFrame fitted on the city's frame and zoomed out to FAR (or on to a level that draws no pictures), its nodes, their ground, and what each was last drawn from and as - the way ui/MapView keeps an Img. */
+    static final class FarScreen {
+        final String name;
+        final MapFrame f = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        final long plots, span;
+        final boolean pictures;
+        final int count;
+        final long[] nx, ny;
+        final byte[][] ground;
+        /** Now's: the key each node was drawn from, its pixels, whether it was drawn, and short of a picture. */
+        final long[] key;
+        final int[][] pix;
+        final boolean[] drawn, partial;
+        /** Today's: whether it would be drawn again after a picture came. */
+        final boolean[] todayPartial;
+        /** The nodes held (not drawn again) in the month under way. */
+        final boolean[] held;
+        final int[] buf = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+
+        FarScreen(String name, CityMap m, MiniMapFrame.Box frame, boolean wide) {
+            this.name = name;
+            MiniMapFrame.open(f, frame);
+            for (int i = 0; i < 400 && (f.level() != MapFrame.FAR || wide && World.DISTRICT / f.nodePlots() >= MapTiles.PICTURE_FROM_PX); i++) {
+                double was = f.scale();
+                f.set(f.centreX(), f.centreY(), was / MapFrame.ZOOM_STEP);
+                if (f.scale() == was) break;
+            }
+            plots = f.nodePlots();
+            span = f.nodeSpan();
+            pictures = World.DISTRICT / plots >= MapTiles.PICTURE_FROM_PX;
+            java.util.List<long[]> at = new ArrayList<>();
+            for (long ny = f.nodeY0(); ny <= f.nodeY1(); ny++) for (long nx = f.nodeX0(); nx <= f.nodeX1(); nx++) at.add(new long[] { nx, ny });
+            count = at.size();
+            nx = new long[count];
+            ny = new long[count];
+            ground = new byte[count][];
+            for (int i = 0; i < count; i++) {
+                nx[i] = at.get(i)[0];
+                ny[i] = at.get(i)[1];
+                ground[i] = MapTiles.nodeTerrain(m.worldKey(), nx[i] * span, ny[i] * span, plots);
+            }
+            key = new long[count];
+            pix = new int[count][MapFrame.NODE_PX * MapFrame.NODE_PX];
+            drawn = new boolean[count];
+            partial = new boolean[count];
+            todayPartial = new boolean[count];
+            held = new boolean[count];
+        }
+
+        /** Whether node i lies over any of the box x0 to x1 and y0 to y1 (in plots). */
+        boolean overlaps(int i, long x0, long y0, long x1, long y1) {
+            return nx[i] * span < x1 && (nx[i] + 1) * span > x0 && ny[i] * span < y1 && (ny[i] + 1) * span > y0;
+        }
+    }
+
+    /** What one month did to one fixture's screens, as Redraw.month() found it; times in ms. */
+    static final class RedrawMonth {
+        int kind, number, moved, rounds, astray, kept, built = -1, stale;
+        /** The built districts whose pictures were no longer current right after a one-type month (`stale` of them). */
+        final java.util.List<CityMap.District> staleList = new ArrayList<>();
+        boolean timed, reconciled, viewChanged, runsMoved, settled;
+        CityMap.District onlyMoved;
+        /** The stamp's kept nodes in the month: land layers drawn, runs layers drawn, districts repainted (all 0 when the view changed and they were made anew), and the districts they list. */
+        long lands, runsDrawn, repainted, onStamp;
+        double stampNow, stampToday, farNow, farToday, l0, chain, keys, lazy;
+        /** Per far screen: its nodes drawn this month (the month's round and the rounds after), and the partial ones before it. */
+        int[] recoloured, partialBefore;
+        /** Per far screen: the nodes drawn in the month's own round because the key they were drawn from had moved. */
+        final java.util.List<java.util.List<Integer>> keyMoved = new ArrayList<>();
+
+        double nowSum() { return stampNow + farNow + l0 + chain; }
+        double todaySum() { return stampToday + farToday + l0 + chain; }
+    }
+
+    /** A fixture of section 18: a map grown a month at a time, its screens drawn two ways (today's whole on `tr`, now's kept on `tk`) and held equal. */
+    static final class Redraw {
+        final String name;
+        final CityMap m;
+        final long[] c;
+        final int divisor, mine;
+        final long sites;
+        final BuildingVisual.Type[] tys;
+        final MapTiles tk, tr;
+        final MapFrame l0 = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        final boolean withL0, checkLinks;
+        final java.util.List<FarScreen> fars = new ArrayList<>();
+        final java.util.List<RedrawMonth> all = new ArrayList<>();
+        final TilePainter.Input in = new TilePainter.Input();
+        MiniMapFrame.Box frame;
+        MiniMapFrame.View stampV, previewV;
+        byte[][] stampG, previewG;
+        MapTiles.KeptNode[] stampK, previewK;
+        int[] stampNow, stampToday, previewNow, previewToday;
+        int viewChanges;
+        /** What was compared: stamps and previews drawn two ways (their pixels counted), and far nodes whose key was unmoved against a fresh one (those held in the month among them); whether every one was equal. */
+        int stampsDrawn, previewsDrawn, keyUnmoved, heldCompared;
+        long pixelsCompared;
+        boolean stampEqual = true, previewEqual = true, heldEqual = true, allReconciled = true;
+        double tookS;
+        /** Run before the next month's reconcile (a land purchase). */
+        Runnable beforeReconcile;
+
+        Redraw(String name, CityMap m, long[] counts, int divisor, boolean withFar, boolean wide, boolean withL0, boolean checkLinks) {
+            this.name = name;
+            this.m = m;
+            this.c = counts.clone();
+            this.divisor = divisor;
+            this.tys = m.types();
+            this.withL0 = withL0;
+            this.checkLinks = checkLinks;
+            int mn = -1;
+            for (BuildingVisual.Type t : tys) if (t != null && t.id() == Mining.IRON_MINE) mn = t.id();
+            this.mine = mn;
+            this.sites = mn >= 0 ? mineSites(m, mn) : 0;
+            tk = new MapTiles(m);
+            tr = new MapTiles(m);
+            frame = MiniMapFrame.frame(m);
+            if (withFar) {
+                fars.add(new FarScreen(name + " far", m, frame, false));
+                if (wide) fars.add(new FarScreen(name + " wide", m, frame, true));
+            }
+            l0.set(frame.centreX(), frame.centreY(), 3.3);
+        }
+
+        boolean runType(int t) {
+            return t < tys.length && tys[t] != null && (tys[t].road() == BuildingVisual.HIGHWAY || tys[t].track());
+        }
+
+        /** The built type with the most buildings that is no run's and no mine: the one a single-district month raises. */
+        int biggest() {
+            int one = -1;
+            for (int t = 0; t < c.length; t++) if (c[t] > 0 && !runType(t) && t != mine && (one < 0 || c[t] > c[one])) one = t;
+            return one;
+        }
+
+        static long sum(MapTiles.KeptNode[] keeps, int what) {
+            long s = 0;
+            if (keeps != null) for (MapTiles.KeptNode k : keeps) s += what == 0 ? k.lands() : what == 1 ? k.runsDrawn() : what == 2 ? k.districtsRepainted() : k.districts();
+            return s;
+        }
+
+        /** Plays one month and draws it; `timed` months are the ones whose figures are read. */
+        RedrawMonth month(int kind, int number, boolean timed) {
+            long began = System.nanoTime();
+            RedrawMonth r = new RedrawMonth();
+            r.kind = kind;
+            r.number = number;
+            r.timed = timed;
+            if (kind == GROW) {
+                for (int t = 0; t < c.length; t++) {
+                    if (c[t] <= 0 || runType(t) && number % RUNS_EVERY != RUNS_EVERY - 1) continue;
+                    c[t] += Math.max(1, c[t] / divisor);
+                }
+                if (mine >= 0) c[mine] = Math.min(c[mine], sites);
+            } else if (kind == ONE) {
+                c[biggest()]++;
+            }
+            java.util.Map<CityMap.District, Long> before = new HashMap<>();
+            for (CityMap.District d : m.districts()) before.put(d, d.version);
+            long runsBefore = m.runs().version();
+            if (beforeReconcile != null) {
+                beforeReconcile.run();
+                beforeReconcile = null;
+            }
+            r.reconciled = m.reconcile(c);
+            allReconciled &= r.reconciled;
+            for (CityMap.District d : m.districts()) {
+                Long v0 = before.get(d);
+                if (v0 == null || v0 != d.version) {
+                    r.moved++;
+                    r.onlyMoved = d;
+                }
+            }
+            r.runsMoved = m.runs().version() != runsBefore;
+            // Where the pictures stand right after a month that raised one type (a city of a few districts, as a far view asks for them): how many are no longer current.
+            if (kind == ONE && m.districts().size() <= CityMap.PICTURES_KEPT) {
+                r.built = 0;
+                for (CityMap.District d : m.districts()) {
+                    if (d.usedCells() <= 0) continue;
+                    r.built++;
+                    if (m.pictureIfCurrent(d) == null) {
+                        r.stale++;
+                        r.staleList.add(d);
+                    }
+                }
+            }
+            r.recoloured = new int[fars.size()];
+            r.partialBefore = new int[fars.size()];
+            for (int s = 0; s < fars.size(); s++) {
+                FarScreen fs = fars.get(s);
+                r.keyMoved.add(new ArrayList<>());
+                Arrays.fill(fs.held, false);
+                for (int i = 0; i < fs.count; i++) if (fs.partial[i]) r.partialBefore[s]++;
+            }
+            MapTiles.KeptNode[] k0 = stampK;
+            long lands0 = sum(k0, 0), runs0 = sum(k0, 1), rep0 = sum(k0, 2);
+            long stampNowNs = 0, stampTodayNs = 0, farNowNs = 0, farTodayNs = 0, chainNs = 0;
+            for (int round = 0; round < CHAIN_ROUNDS; round++) {
+                java.util.Set<CityMap.District> wanted = new LinkedHashSet<>();
+                long[] t = drawStamp(r, round, wanted);
+                stampNowNs += t[0];
+                stampTodayNs += t[1];
+                for (int s = 0; s < fars.size(); s++) {
+                    long[] f = drawFar(fars.get(s), s, r, round, wanted);
+                    if (s == 0) {
+                        farNowNs += f[0];
+                        farTodayNs += f[1];
+                    }
+                }
+                r.rounds = round + 1;
+                if (round == CHAIN_ROUNDS - 1) break;
+                // The chain: the L0 screen's tiles whose plans are not drawn, and the pictures the screens lack (when they fit), handed out;
+                // run - the worker's, not timed; adopted.
+                java.util.List<CityMap.Job> jobs = new ArrayList<>();
+                long a0 = monthClock();
+                if (withL0) {
+                    for (long ty = l0.tileY0(); ty <= l0.tileY1(); ty++) for (long tx = l0.tileX0(); tx <= l0.tileX1(); tx++) if (!tk.ready(tx, ty)) jobs.addAll(tk.jobs(tx, ty));
+                }
+                boolean fit = tk.picturesFit(stampV.asMapFrame());
+                for (FarScreen fs : fars) if (fs.pictures) fit &= tk.picturesFit(fs.f);
+                if (fit) for (CityMap.District d : wanted) jobs.addAll(m.pictureJobs(d));
+                chainNs += monthClock() - a0;
+                if (jobs.isEmpty()) {
+                    r.settled = true;
+                    break;
+                }
+                for (CityMap.Job j : jobs) j.run();
+                long b0 = monthClock();
+                for (CityMap.Job j : jobs) m.adopt(j);
+                chainNs += monthClock() - b0;
+            }
+            long s0 = monthClock();
+            if (withL0) {
+                for (long ty = l0.tileY0(); ty <= l0.tileY1(); ty++) for (long tx = l0.tileX0(); tx <= l0.tileX1(); tx++) if (tk.ready(tx, ty)) tk.input(tx, ty, in);
+            }
+            r.l0 = (monthClock() - s0) / 1e6;
+            r.stampNow = stampNowNs / 1e6;
+            r.stampToday = stampTodayNs / 1e6;
+            r.farNow = farNowNs / 1e6;
+            r.farToday = farTodayNs / 1e6;
+            r.chain = chainNs / 1e6;
+            r.viewChanged = stampK != k0;
+            if (!r.viewChanged) {
+                r.lands = sum(stampK, 0) - lands0;
+                r.runsDrawn = sum(stampK, 1) - runs0;
+                r.repainted = sum(stampK, 2) - rep0;
+            }
+            r.onStamp = sum(stampK, 3);
+            for (FarScreen fs : fars) verify(fs);
+            if (checkLinks) {
+                r.astray = m.linksAstray();
+                r.kept = m.linksKept();
+            }
+            all.add(r);
+            tookS += (System.nanoTime() - began) / 1e9;
+            return r;
+        }
+
+        /**
+         * The stamp and the preview drawn two ways, equal or not noted: returns the ns now's took and today's. The first
+         * pass after a month or a round of the chain pays the map's lazily kept checks (CityMap.checkBand(), the runs'
+         * reach), which both ways need and neither changes: so a pass of today's is made first, untimed (r.lazy), and
+         * the two timed passes find the same state - the figures are what UP3 changes, not who asked first.
+         */
+        long[] drawStamp(RedrawMonth r, int round, java.util.Set<CityMap.District> wanted) {
+            long n0 = monthClock();
+            MiniMapFrame.View v;
+            if (round == 0) {
+                frame = MiniMapFrame.frame(m);
+                v = MiniMapFrame.stamp(frame);
+            } else {
+                v = stampV;
+            }
+            long n1 = monthClock();
+            if (!v.equals(stampV)) {
+                // Aimed at a new view, as ui/MiniMap does: its ground, new kept nodes.
+                stampV = v;
+                stampG = MiniMapFrame.ground(m.worldKey(), v);
+                stampK = new MapTiles.KeptNode[v.nodesAcross() * v.nodesDown()];
+                for (int k = 0; k < stampK.length; k++) stampK[k] = new MapTiles.KeptNode();
+                stampNow = new int[v.w() * v.h()];
+                stampToday = new int[v.w() * v.h()];
+                viewChanges++;
+            }
+            long w0 = monthClock();
+            MiniMapFrame.pixels(tr, stampV, stampG, stampToday, new LinkedHashSet<>());
+            r.lazy += (monthClock() - w0) / 1e6;
+            long n2 = monthClock();
+            java.util.Set<CityMap.District> wn = new LinkedHashSet<>();
+            MiniMapFrame.pixels(tk, stampV, stampG, stampK, stampNow, wn);
+            long n3 = monthClock();
+            long u0 = monthClock();
+            if (round == 0) MiniMapFrame.stamp(MiniMapFrame.frame(m));
+            java.util.Set<CityMap.District> wt = new LinkedHashSet<>();
+            MiniMapFrame.pixels(tr, stampV, stampG, stampToday, wt);
+            long u1 = monthClock();
+            stampsDrawn++;
+            pixelsCompared += stampNow.length;
+            if (!Arrays.equals(stampNow, stampToday) || !new ArrayList<>(wn).equals(new ArrayList<>(wt))) {
+                stampEqual = false;
+                out.printf("      FAIL %s month %d round %d: the kept stamp differs from the full one in %d pixels, asks %d districts against %d%n", name, r.number, round,
+                        differ(stampNow, stampToday), wn.size(), wt.size());
+            }
+            wanted.addAll(wn);
+            // The preview, six nodes: compared, not timed.
+            MiniMapFrame.View pv = MiniMapFrame.preview(frame);
+            if (!pv.equals(previewV)) {
+                previewV = pv;
+                previewG = MiniMapFrame.ground(m.worldKey(), pv);
+                previewK = new MapTiles.KeptNode[pv.nodesAcross() * pv.nodesDown()];
+                for (int k = 0; k < previewK.length; k++) previewK[k] = new MapTiles.KeptNode();
+                previewNow = new int[pv.w() * pv.h()];
+                previewToday = new int[pv.w() * pv.h()];
+            }
+            java.util.Set<CityMap.District> pn = new LinkedHashSet<>(), pt = new LinkedHashSet<>();
+            MiniMapFrame.pixels(tk, previewV, previewG, previewK, previewNow, pn);
+            MiniMapFrame.pixels(tr, previewV, previewG, previewToday, pt);
+            previewsDrawn++;
+            pixelsCompared += previewNow.length;
+            if (!Arrays.equals(previewNow, previewToday) || !new ArrayList<>(pn).equals(new ArrayList<>(pt))) {
+                previewEqual = false;
+                out.printf("      FAIL %s month %d round %d: the kept preview differs from the full one in %d pixels%n", name, r.number, round, differ(previewNow, previewToday));
+            }
+            return new long[] { (n1 - n0) + (n3 - n2), u1 - u0 };
+        }
+
+        /** Today's draw of a far screen: every node in the month's round, the partial ones after; ns. A `warm` pass only draws, leaving which nodes are partial as the last timed one found them. */
+        long todayPass(FarScreen fs, int round, boolean warm) {
+            long today = 0;
+            for (int i = 0; i < fs.count; i++) {
+                if (round > 0 && !fs.todayPartial[i]) continue;
+                long t0 = monthClock();
+                boolean shortOfPicture = tr.nodePixels(fs.nx[i] * fs.span, fs.ny[i] * fs.span, fs.plots, fs.ground[i], fs.buf) > 0;
+                if (!warm) fs.todayPartial[i] = shortOfPicture;
+                today += monthClock() - t0;
+            }
+            return today;
+        }
+
+        /**
+         * A far screen drawn two ways, the ns of each: now's as ui/MapView.paintNodes() draws it (nodeKey() for every
+         * node in the month's round and for the partial ones after; drawn when the key moved, or it was drawn partial
+         * and the view asks for pictures - picturesFit()),
+         * today's every node in the month's round and the partial ones after. The first screen is the one the figures are
+         * of: it has a pass of today's first, untimed, as drawStamp() does; the others are drawn for the comparison.
+         */
+        long[] drawFar(FarScreen fs, int s, RedrawMonth r, int round, java.util.Set<CityMap.District> wanted) {
+            if (s == 0) r.lazy += todayPass(fs, round, true) / 1e6;
+            long now = 0;
+            // A partial node is held with the rest where the view asks for no pictures (MapView.paintNodes(): picturesFit() of its frame), found once a pass.
+            Boolean fits = null;
+            for (int i = 0; i < fs.count; i++) {
+                if (round > 0 && !fs.partial[i]) continue;
+                long x0 = fs.nx[i] * fs.span, y0 = fs.ny[i] * fs.span;
+                long t0 = monthClock();
+                long key = tk.nodeKey(x0, y0, fs.plots);
+                if (s == 0) r.keys += (monthClock() - t0) / 1e6;
+                boolean hold = fs.drawn[i] && fs.key[i] == key && !fs.partial[i];
+                if (fs.drawn[i] && fs.key[i] == key && fs.partial[i]) {
+                    if (fits == null) fits = tk.picturesFit(fs.f);
+                    hold = !fits;
+                }
+                if (hold) {
+                    if (round == 0) fs.held[i] = true;
+                    now += monthClock() - t0;
+                    continue;
+                }
+                if (round == 0 && fs.drawn[i] && fs.key[i] != key) r.keyMoved.get(s).add(i);
+                fs.key[i] = key;
+                fs.partial[i] = tk.nodePixels(x0, y0, fs.plots, fs.ground[i], fs.buf) > 0;
+                wanted.addAll(tk.wanted());
+                System.arraycopy(fs.buf, 0, fs.pix[i], 0, fs.buf.length);
+                fs.drawn[i] = true;
+                fs.held[i] = false;
+                r.recoloured[s]++;
+                now += monthClock() - t0;
+            }
+            return new long[] { now, todayPass(fs, round, false) };
+        }
+
+        /** Every node of the screen drawn from the key it has now holds the pixels a fresh nodePixels() gives it: those held through the month are the ones that count. */
+        void verify(FarScreen fs) {
+            int[] fresh = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+            for (int i = 0; i < fs.count; i++) {
+                if (!fs.drawn[i] || fs.key[i] != tk.nodeKey(fs.nx[i] * fs.span, fs.ny[i] * fs.span, fs.plots)) continue;
+                tr.nodePixels(fs.nx[i] * fs.span, fs.ny[i] * fs.span, fs.plots, fs.ground[i], fresh);
+                keyUnmoved++;
+                if (fs.held[i]) heldCompared++;
+                if (!Arrays.equals(fresh, fs.pix[i])) {
+                    heldEqual = false;
+                    out.printf("      FAIL %s node %d (%d, %d) at %d plots a pixel: %s, its key unmoved, differs from a fresh one in %d pixels%n", fs.name, i, fs.nx[i], fs.ny[i], fs.plots,
+                            fs.held[i] ? "held" : "drawn", differ(fresh, fs.pix[i]));
+                }
+            }
+        }
+    }
+
+    static int differ(int[] a, int[] b) {
+        int n = 0;
+        for (int i = 0; i < a.length && i < b.length; i++) if (a[i] != b[i]) n++;
+        return n;
+    }
+
+    static double median18(java.util.List<Double> l) {
+        if (l.isEmpty()) return Double.NaN;
+        java.util.List<Double> s = new ArrayList<>(l);
+        Collections.sort(s);
+        return s.get(s.size() / 2);
+    }
+
+    static double worst18(java.util.List<Double> l) {
+        double w = 0;
+        for (double d : l) w = Math.max(w, d);
+        return w;
+    }
+
+    static int medianInt(java.util.List<Integer> l) {
+        if (l.isEmpty()) return 0;
+        java.util.List<Integer> s = new ArrayList<>(l);
+        Collections.sort(s);
+        return s.get(s.size() / 2);
+    }
+
+    /** Jerus's city at `times` on the design's square city at the dry place, as Squares builds its copies. */
+    static CityMap hisCopy(Squares sq, double times) {
+        long[] c = new long[sq.types.length];
+        for (int t = 0; t < JERUS_COUNTS.length && t < c.length; t++) c[t] = Math.round(JERUS_COUNTS[t] * times);
+        int mine = -1;
+        for (BuildingVisual.Type t : sq.types) if (t != null && t.id() == Mining.IRON_MINE) mine = t.id();
+        long wantMines = mine >= 0 ? c[mine] : 0;
+        if (mine >= 0) c[mine] = 0;
+        int side = (int) Math.ceil(Math.sqrt(groundKm2(sq.types) * times / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
+        int capacity = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
+        CityMap m = CityMap.square(sq.seed, sq.x, sq.y, sq.types, side, capacity, c);
+        if (mine >= 0) {
+            c[mine] = Math.min(wantMines, mineSites(m, mine));
+            m.reconcile(c);
+        }
+        return m;
+    }
+
+    /**
+     * The block of PURCHASE_SIDE plots to buy: wholly inside the box of the city's built-up ground (so the stamp's frame
+     * is the one it was, however the district's owned ground grows), none of it owned, and the most ground owned on the
+     * ring a plot wide about it - next to the built-up ground: {x, y}, or null where there is none.
+     */
+    static long[] purchaseBlock(CityMap m, CityLand land) {
+        MiniMapFrame.Box bu = MiniMapFrame.builtUp(m);
+        long[] best = null;
+        long most = 0;
+        for (long y = bu.y0(); y + PURCHASE_SIDE <= bu.y1(); y += 2) {
+            for (long x = bu.x0(); x + PURCHASE_SIDE <= bu.x1(); x += 2) {
+                if (land.grid().owned(x, y, x + PURCHASE_SIDE, y + PURCHASE_SIDE) != 0) continue;
+                long ring = land.grid().owned(x - 1, y - 1, x + PURCHASE_SIDE + 1, y + PURCHASE_SIDE + 1);
+                if (ring > most) {
+                    most = ring;
+                    best = new long[] { x, y };
+                }
+            }
+        }
+        return best;
+    }
+
+    static void redrawsOnlyWhatMoved(Game city, Squares sq) {
+        out.println("\n--- 18. a month redraws only what moved (batch UP3): the minimap's kept stamp and the far view's kept nodes equal a full redraw,"
+                + " redraw only what moved, and a month's FX-side map work at 5B is within MAP_MONTH_MS ---");
+        long begun = System.nanoTime();
+        CityMap his = hisCopy(sq, HIS_TIMES);
+        Redraw x1 = new Redraw("x 1", sq.maps[0], sq.maps[0].totals(), GROW_PER_MILLE, true, false, true, true);
+        Redraw x80 = new Redraw("x " + (int) HIS_TIMES, his, his.totals(), GROW_PER_MILLE, true, false, true, true);
+        Redraw b5 = new Redraw("5B", sq.maps[1], sq.maps[1].totals(), GROW_PER_TEN_THOUSAND, true, true, true, false);
+        Redraw[] fx = { x1, x80, b5 };
+        RedrawMonth oneX80 = null, oneB5 = null;
+        for (Redraw w : fx) {
+            int months = w == b5 ? REDRAW_MONTHS_5B : REDRAW_MONTHS;
+            w.month(SETTLE, -1, false);
+            for (int i = 0; i < months; i++) w.month(GROW, i, i >= REDRAW_WARM);
+            // A month that raises one built type by one, for check 3: at x 80 its far screen (pictures on, drawn aside by the months before), at 5B the one wide enough to draw none.
+            if (w == x80) oneX80 = w.month(ONE, months, false);
+            if (w == b5) oneB5 = w.month(ONE, months, false);
+        }
+        for (Redraw w : fx) report18(w);
+
+        // ----- The played city: a land purchase inside its stamp's frame -----
+        CityLand copy = city.getCityLand().copy();
+        long[] counts = city.getMapCounts();
+        CityMap far = CityMap.canonical(copy, r -> copy.amountsInOrder(r), city.getMapTypes(), counts);
+        Redraw pl = new Redraw("the played city", far, counts, GROW_PER_MILLE, false, false, false, false);
+        pl.month(SETTLE, -1, false);
+        for (int i = 0; i < PLAYED_BEFORE; i++) pl.month(GROW, i, false);
+        boolean equalBefore = pl.stampEqual && pl.previewEqual;
+        MiniMapFrame.Box frameBefore = MiniMapFrame.frame(far);
+        long[] block = purchaseBlock(far, copy);
+        RedrawMonth bought = null;
+        if (block != null) {
+            pl.beforeReconcile = () -> copy.extend(new LandParcel(-3, 1, 0, 8, block[0], block[1], block[0] + PURCHASE_SIDE, block[1] + PURCHASE_SIDE, null, null, null, 0, 0), city.getMonth(), 0);
+            bought = pl.month(GROW, PLAYED_BEFORE, false);
+        }
+        for (int i = 0; i < PLAYED_AFTER; i++) pl.month(GROW, PLAYED_BEFORE + 1 + i, false);
+        boolean blockOwned = block != null && copy.grid().owned(block[0], block[1], block[0] + PURCHASE_SIDE, block[1] + PURCHASE_SIDE) == (long) PURCHASE_SIDE * PURCHASE_SIDE;
+        out.printf("      the played city: %d districts, the stamp at %d plots a pixel; a block of %d x %d plots bought %s inside the built-up ground's box, the frame %s; the stamp's land layer drawn %s times in its months (the first month made it)%n",
+                far.districts().size(), pl.stampV.stride(), PURCHASE_SIDE, PURCHASE_SIDE, block == null ? "nowhere" : "at (" + block[0] + ", " + block[1] + ")",
+                frameBefore.equals(MiniMapFrame.frame(far)) ? "as before" : "moved", pl.all.stream().map(r -> String.valueOf(r.lands)).toList());
+
+        // ----- 1. The picture after a month equals a full redraw -----
+        long stamps = 0, previews = 0, pixels = 0, monthsCompared = 0;
+        boolean equal = true;
+        for (Redraw w : new Redraw[] { x1, x80, b5, pl }) {
+            stamps += w.stampsDrawn;
+            previews += w.previewsDrawn;
+            pixels += w.pixelsCompared;
+            monthsCompared += w.all.size();
+            equal &= w.stampEqual && w.previewEqual;
+        }
+        out.printf("      compared: %d months, %d stamps and %d previews drawn kept and whole, %,d pixels, every one's asked-for districts as lists%n", monthsCompared, stamps, previews, pixels);
+        check("fixture: every month reconciled (the map was not restated), on x 1, x 80, 5B and the played city", x1.allReconciled && x80.allReconciled && b5.allReconciled && pl.allReconciled);
+        int unsettled = 0;
+        for (Redraw w : new Redraw[] { x1, x80, b5, pl }) for (RedrawMonth r : w.all) if (!r.settled) unsettled++;
+        check("fixture: the chain settled - no job left to hand out - within " + CHAIN_ROUNDS + " rounds in every month, so the screens are drawn with every picture they can have", unsettled == 0);
+        check("the minimap's picture after a month - the stamp and the preview, from the kept nodes - equals a full redraw of the same map, pixel for pixel, asking the same districts"
+                + " for their pictures, in every month of x 1, x 80, 5B and the played city", equal && stamps > 0 && previews > 0);
+        check("...the played city before its land purchase and after it", equalBefore && pl.stampEqual && pl.previewEqual && bought != null);
+
+        // ----- 2. The far view's nodes -----
+        boolean heldEqual = true;
+        int unmoved = 0, held = 0;
+        for (Redraw w : fx) {
+            heldEqual &= w.heldEqual;
+            unmoved += w.keyUnmoved;
+            held += w.heldCompared;
+        }
+        out.printf("      far nodes: %d with a key unmoved since they were drawn compared with a fresh nodePixels(), %d of them held through their month%n", unmoved, held);
+        check("fixture: months left far nodes held (their key unmoved) on x 1, x 80 and 5B, to compare", x1.heldCompared > 0 && x80.heldCompared > 0 && b5.heldCompared > 0);
+        check("the far view's nodes whose key did not move hold the pixels a fresh nodePixels() gives them, every month on x 1, x 80 and 5B", heldEqual);
+
+        // ----- 3. A month that places in one district -----
+        oneDistrict(x80, oneX80, 0, true);
+        oneDistrict(b5, oneB5, 1, false);
+
+        // ----- 4. The stamp's runs layer -----
+        boolean runsOnlyWhenMoved = true;
+        for (Redraw w : fx) {
+            int still = 0, stillDrawn = 0, laid = 0, laidDrawn = 0;
+            for (RedrawMonth r : w.all) {
+                if (r.kind == SETTLE || r.viewChanged) continue;
+                if (r.runsMoved) {
+                    laid++;
+                    if (r.runsDrawn == 1) laidDrawn++;
+                } else {
+                    still++;
+                    if (r.runsDrawn == 0) stillDrawn++;
+                }
+            }
+            out.printf("      %s: %d months added no run, the stamp's runs layer left alone in %d; %d months moved the runs, it was drawn once in %d%n", w.name, still, stillDrawn, laid, laidDrawn);
+            check("fixture: " + w.name + " has months that add no run and months that lay one (the runs' version did not move / did), the stamp's view the same", still > 0 && laid > 0);
+            runsOnlyWhenMoved &= stillDrawn == still && laidDrawn == laid;
+        }
+        check("the stamp's static layer is not redrawn by a month that adds no run, and a month that lays a highway or a stretch of track redraws it once (its pixels equal a full redraw's, 1)", runsOnlyWhenMoved);
+
+        // ----- 5. The land layer -----
+        boolean landOnlyByPurchase = bought != null && !bought.viewChanged && bought.lands == 1;
+        for (RedrawMonth r : pl.all) if (r.kind != SETTLE && r != bought) landOnlyByPurchase &= !r.viewChanged && r.lands == 0;
+        check("fixture: the block lies inside the built-up ground's box, so inside the stamp's frame, the city owns it after its purchase and the frame is the one it was",
+                block != null && blockOwned && frameBefore.equals(MiniMapFrame.frame(far)));
+        check("the land layer is drawn again by a purchase and only then: once in the month of the purchase, never in the " + PLAYED_BEFORE + " before it or the " + PLAYED_AFTER
+                + " after (the pixels equal a full redraw's, 1)", landOnlyByPurchase);
+
+        // ----- 6. The links' kept stamps -----
+        for (Redraw w : new Redraw[] { x1, x80 }) {
+            int grown = 0, astray = 0, noLinks = 0;
+            for (RedrawMonth r : w.all) {
+                if (r.kind == GROW) grown++;
+                astray += r.astray;
+                if (r.kept <= 0) noLinks++;
+            }
+            check("stampOf from the cache equals a fresh one for every link kept after each of " + grown + " months on " + w.name + " (none astray, links kept every month)",
+                    grown == REDRAW_MONTHS && astray == 0 && noLinks == 0);
+        }
+
+        // ----- 7. The budget -----
+        java.util.List<Double> nows = new ArrayList<>(), todays = new ArrayList<>();
+        for (RedrawMonth r : b5.all) {
+            if (!r.timed) continue;
+            nows.add(r.nowSum());
+            todays.add(r.todaySum());
+        }
+        double worstNow = worst18(nows), worstToday = worst18(todays);
+        out.printf("      5B, %d months read: a month's FX-side map work, worst %.1f ms (median %.1f) against today's %.1f (median %.1f) and the budget %.0f ms%n", nows.size(), worstNow, median18(nows), worstToday, median18(todays), MAP_MONTH_MS);
+        // The median month: a month that lays a run moves every far node's key (the runs' key is the city's) and draws the screen whole, as today, plus its keys.
+        check("a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than "
+                + (int) MAP_MONTH_MS + " ms of " + (CPU_TIMED ? "the main thread's CPU" : "the wall clock") + ", the median month", nows.size() == REDRAW_MONTHS_5B - REDRAW_WARM && Timing.within(median18(nows), MAP_MONTH_MS));
+        out.printf("      section 18 took %.1f s%n", (System.nanoTime() - begun) / 1e9);
+    }
+
+    /** Check 3 on one month that raised one built type by one: the far nodes whose key moved against the 3 x 3 districts round the one district that moved, and against every node in view. */
+    static void oneDistrict(Redraw w, RedrawMonth one, int s, boolean picturesOn) {
+        FarScreen fs = w.fars.get(s);
+        CityMap.District d = one.onlyMoved;
+        long D = World.DISTRICT;
+        long x0 = d == null ? 0 : (w.m.baseDX() + d.dx - 1) * D, y0 = d == null ? 0 : (w.m.baseDY() + d.dy - 1) * D, x1 = x0 + 3 * D, y1 = y0 + 3 * D;
+        java.util.List<Integer> moved = one.keyMoved.get(s);
+        int outside = 0, unexplained = 0;
+        for (int i : moved) {
+            if (fs.overlaps(i, x0, y0, x1, y1)) continue;
+            outside++;
+            // ...where the pictures are drawn, a node over a district whose picture the chain no longer holds current moves its key too (it is dithered until the picture comes back).
+            boolean overStale = false;
+            for (CityMap.District sd : one.staleList) {
+                long sx = (w.m.baseDX() + sd.dx) * D, sy = (w.m.baseDY() + sd.dy) * D;
+                overStale |= fs.overlaps(i, sx, sy, sx + D, sy + D);
+            }
+            if (!picturesOn || !overStale) unexplained++;
+        }
+        out.printf("      %s, one built type raised by one: %d district(s) moved%s; the far screen of %d nodes at %d plots a pixel (pictures %s): %d nodes' keys moved, %d of them off the 3 x 3 districts round the one, against today's %d (every node in view)%s%n",
+                w.name, one.moved, d == null ? "" : " (index " + d.index + " of " + w.m.districts().size() + " in the map's order)", fs.count, fs.plots, fs.pictures ? "on" : "off", moved.size(), outside, fs.count,
+                one.built < 0 ? "" : "; the pictures of " + one.stale + " of the " + one.built + " built districts were no longer current after the month (the chain re-plans from the first link that broke)");
+        check("fixture: " + w.name + "'s month moved exactly one district's version, and the far screen's nodes were all settled before it (none drawn short of a picture), pictures "
+                + (picturesOn ? "on" : "off") + " (" + World.DISTRICT + " / " + fs.plots + " plots a pixel " + (picturesOn ? ">=" : "<") + " " + MapTiles.PICTURE_FROM_PX + ")",
+                one.moved == 1 && one.partialBefore[s] == 0 && (World.DISTRICT / fs.plots >= MapTiles.PICTURE_FROM_PX) == picturesOn);
+        if (!picturesOn) {
+            check("a month that places in one district re-colours only the far nodes over that district and its neighbours - at least one, all within the 3 x 3 districts round it, fewer than today's every node in view - on "
+                    + w.name, !moved.isEmpty() && outside == 0 && moved.size() < fs.count);
+        } else {
+            // Where the far view draws the pictures, a month in one district moves the pictures of every district after it in its band
+            // until the chain has re-planned them (CityMap's chain: a band's links hold up to the first that broke; its early exit is
+            // UP3's Pending): what is asserted is that no node moves its key but over the district, its neighbours or a picture gone.
+            out.printf("      ...%s, pictures on: %d of the %d nodes whose keys moved lie off the 3 x 3 districts, every one over a district whose picture the chain no longer holds current but %d%n",
+                    w.name, outside, moved.size(), unexplained);
+            check("...where the pictures are drawn (" + w.name + "), a month in one district re-colours only the nodes over it, its neighbours and the districts whose pictures the chain re-plans - at least one",
+                    !moved.isEmpty() && unexplained == 0);
+        }
+    }
+
+    /** The figures section 18 prints for a fixture. */
+    static void report18(Redraw w) {
+        java.util.List<Double> sn = new ArrayList<>(), st = new ArrayList<>(), fn = new ArrayList<>(), ft = new ArrayList<>(), l0 = new ArrayList<>(), ch = new ArrayList<>(),
+                ns = new ArrayList<>(), ts = new ArrayList<>(), keys = new ArrayList<>(), lazy = new ArrayList<>();
+        java.util.List<Integer> moved = new ArrayList<>(), rep = new ArrayList<>(), recol = new ArrayList<>(), onStamp = new ArrayList<>();
+        int unsettled = 0, runsMoved = 0, runsDrawn = 0;
+        for (RedrawMonth r : w.all) {
+            if (r.kind == SETTLE) continue;
+            if (r.runsMoved) runsMoved++;
+            if (r.runsDrawn > 0) runsDrawn++;
+            if (!r.timed) continue;
+            sn.add(r.stampNow);
+            st.add(r.stampToday);
+            fn.add(r.farNow);
+            ft.add(r.farToday);
+            l0.add(r.l0);
+            ch.add(r.chain);
+            ns.add(r.nowSum());
+            ts.add(r.todaySum());
+            keys.add(r.keys);
+            lazy.add(r.lazy);
+            moved.add(r.moved);
+            rep.add((int) r.repainted);
+            onStamp.add((int) r.onStamp);
+            if (r.recoloured.length > 0) recol.add(r.recoloured[0]);
+            if (!r.settled) unsettled++;
+        }
+        out.printf("      %s (%,d districts, %.0f s): in ms, median and worst of %d months, now's / today's - stamp %.2f (%.2f) / %.2f (%.2f); far screen %.2f (%.2f) / %.2f (%.2f), its %d node keys %.2f; L0 re-stamped %.2f (%.2f); chain %.2f (%.2f);"
+                        + " the month's sum %.2f (%.2f) / %.2f (%.2f); the lazy checks %.2f%n", w.name, w.m.districts().size(), w.tookS, ns.size(), median18(sn), worst18(sn), median18(st), worst18(st),
+                median18(fn), worst18(fn), median18(ft), worst18(ft), w.fars.isEmpty() ? 0 : w.fars.get(0).count, median18(keys), median18(l0), worst18(l0), median18(ch), worst18(ch),
+                median18(ns), worst18(ns), median18(ts), worst18(ts), median18(lazy));
+        out.printf("      %s: far nodes in view %s, drawn a month %s (median; today's every node, and the partial ones again); districts moved a month %d, the stamp's repainted %d of %d on it;"
+                        + " the runs' layer drawn in %d of the %d months the runs moved; %d months not settled in %d rounds; the stamp's view made %d times%n", w.name,
+                w.fars.stream().map(f -> f.count + " at " + f.plots + " plots a px").toList(), recol.isEmpty() ? "-" : String.valueOf(medianInt(recol)), medianInt(moved), medianInt(rep),
+                medianInt(onStamp), runsDrawn, runsMoved, unsettled, CHAIN_ROUNDS, w.viewChanges);
     }
 }
