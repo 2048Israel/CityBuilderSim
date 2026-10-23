@@ -35,7 +35,8 @@ import java.util.Locale;
  * Everything here is a term of the loan, not a description of it - the wording
  * lives in summary(), so the console and the JavaFX screens say the same thing.
  *
- * @param instrument      "Note" (a bill), "Serial" (the amortizing bond) or "Term" (a bond)
+ * @param instrument      "Note" (a bill), "Serial" (the amortizing bond), "Term" (a bond), "Float" (a floating-rate
+ *                        note) or "Linked" (an inflation-linked bond), the last two since CD5
  * @param duration        months for a bill, years for either bond
  * @param requested       what the player asked for: the cash for a bill and
  *                        for the ForCash quotes, the face for a bond sold by face
@@ -53,7 +54,10 @@ import java.util.Locale;
  * @param coupon          the annual coupon the sale sets: the auction's (a
  *                        bond's, rounded down to an eighth of a point; the
  *                        stop itself for an amortizing bond) or the world's
- *                        for a dollar bond; 0 for a bill
+ *                        for a dollar bond; 0 for a bill. For a "Float" the
+ *                        MARGIN over the policy rate, which may be nothing or
+ *                        below (couponRate() would back out the whole coupon
+ *                        instead, so read this); for a "Linked" the real coupon
  * @param callable        true for a bond sold callable (CD4): the coupon
  *                        carries the city's right to call it whole at 100
  * @param firstCallMonth  the game month from which it may be called (a line
@@ -143,6 +147,29 @@ public record DebtQuote(
                     f(faceValue), f(cashReceived), pricePerPar(),
                     couponRate() * 100, f(monthlyInterest),
                     Math.max(1, duration), f(totalCost), duration, sale);
+
+            // CD5 (spec-city-debt.md sections 2.4 and 2.5): the coupon field is the margin over the policy rate,
+            // and the real coupon; the monthly figure is at today's dial, and at an index ratio of 1.
+            case "Float" -> String.format(
+                    "Par value (repay):    $%s%n"
+                    + "Cash received:        $%s   (issued at %.2f of par)%n"
+                    + "Coupon:               policy rate %s %.3f%% (now %.3f%%), reset monthly%n"
+                    + "Monthly payment:      $%s at today's dial%n"
+                    + "Principal:            the WHOLE par value falls due in %d years%n"
+                    + "Total cost of credit: $%s at today's dial%s",
+                    f(faceValue), f(cashReceived), pricePerPar(),
+                    coupon < 0 ? "less" : "+", Math.abs(coupon) * 100, faceValue > 0 ? monthlyInterest * 12 / faceValue * 100 : 0,
+                    f(monthlyInterest), duration, f(totalCost), sale);
+
+            case "Linked" -> String.format(
+                    "Par value (repay):    $%s   (the principal follows the price index)%n"
+                    + "Cash received:        $%s   (issued at %.2f of par)%n"
+                    + "Real coupon:          %.3f%% on a principal that follows the price index; at maturity never under the face%n"
+                    + "Monthly payment:      $%s at today's index%n"
+                    + "Principal:            the face, or the indexed principal if that is more, falls due in %d years%n"
+                    + "Total cost of credit: $%s before any indexation%s",
+                    f(faceValue), f(cashReceived), pricePerPar(),
+                    coupon * 100, f(monthlyInterest), duration, f(totalCost), sale);
 
             default -> String.format(
                     "Par value (repay):    $%s%n"

@@ -997,6 +997,51 @@ public class NationalAccounts {
     /** The gain (below nothing, a loss) on the paper the city retired in the window: the carrying value less the price. */
     public double getRetiredGain()     { return retiredGain; }
 
+    /* ---------------------------------------------------------------------
+       THE INFLATION UPLIFT ON LINKED BONDS (CD5, spec-city-debt.md 5.3-5.4)
+
+       Two more lines the debt's books add to the government's month, set
+       beside the two above:
+
+         inflationUplift  the month's indexation of the linked bonds'
+                          principal, booked: each bond's carrying value
+                          catching up with the price index
+                          (DebtManager.getUpliftBooked()). An expense of
+                          the budget, "Inflation uplift on linked bonds",
+                          beside the interest, and not cash; below nothing
+                          in a month the index fell. In getTotalExpenses(),
+                          at its end.
+         upliftPaid       the uplift paid in cash this month: a linker's
+                          indexed principal over its face, in its last
+                          month (DebtManager.getUpliftPaid()). It reached the
+                          holders through the coupon path, so it is in the
+                          cash the city paid; the strike takes it out of the
+                          interest handed to the budget (the interest line
+                          is the coupons and the discount) and it is taken
+                          off the not-cash row here.
+
+       The budget's "Interest on the city's paper" stays the coupons and the
+       discount. Saved in the government block as slots 35 and 36, read when
+       the block is at least 37 long: an older save holds no linker and reads
+       nothing, which is right.
+       --------------------------------------------------------------------- */
+    private double inflationUplift, upliftPaid;
+
+    /** The month's indexation booked and the uplift paid in cash, as the strike hands them over. */
+    public void setInflationUplift(double inflationUplift, double upliftPaid) {
+        this.inflationUplift = Double.isFinite(inflationUplift) ? inflationUplift : 0;
+        this.upliftPaid = Double.isFinite(upliftPaid) ? upliftPaid : 0;
+    }
+
+    /** The month's inflation uplift on the linked bonds, booked: an expense of the budget, not cash; below nothing in a deflation month. */
+    public double getInflationUplift() { return inflationUplift; }
+
+    /** The uplift the month paid in cash: a linker's last month, the indexed principal over its face. */
+    public double getUpliftPaidInCash() { return upliftPaid; }
+
+    /** The part of the uplift that is not cash: what was booked less what was paid. The treasury bridge adds it back (Game.getTreasuryNotCash()). */
+    public double getUpliftNotCash()    { return inflationUplift - upliftPaid; }
+
     /**
      * THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): a duty a litre on the
      * drivers' petrol at the pump (TaxPolicy, THE FUEL DUTY), a revenue
@@ -1146,11 +1191,14 @@ public class NationalAccounts {
             // ...and the debt's two (CD3): the discount amortised, and the
             // gain on paper retired. The cash coupons stay where they were,
             // slot 7; the budget's interest is the sum of that and the first.
-            interestNotCash, retiredGain };
+            interestNotCash, retiredGain,
+            // ...and the linked bonds' two (CD5): the month's indexation booked, and the uplift paid in cash. An
+            // older save reads zero for both, which is right: it holds no linked bond.
+            inflationUplift, upliftPaid };
     }
 
     void restoreGovernment(double[] saved) {
-        // Thirty-five since the city's paper on amortised cost (CD3); thirty-three
+        // Thirty-seven since the linked bonds' uplift (CD5); thirty-five since the city's paper on amortised cost (CD3); thirty-three
         // since the repairs, the arrears and the reserve's crude (0.7.102);
         // twenty-nine since food assistance; twenty-eight since the city's fund; twenty-seven since the mortgage
         // insurance; twenty-five since the central bank; twenty-three since
@@ -1160,7 +1208,10 @@ public class NationalAccounts {
         if (saved == null || (saved.length != 17 && saved.length != 20
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
                 && saved.length != 25 && saved.length != 27 && saved.length != 28
-                && saved.length != 29 && saved.length != 33 && saved.length != 35)) return;
+                && saved.length != 29 && saved.length != 33 && saved.length != 35
+                && saved.length != 37)) return;
+        inflationUplift       = saved.length >= 37 ? saved[35] : 0;
+        upliftPaid            = saved.length >= 37 ? saved[36] : 0;
         interestNotCash       = saved.length >= 35 ? saved[33] : 0;
         retiredGain           = saved.length >= 35 ? saved[34] : 0;
         fundTransfer          = saved.length >= 28 ? saved[27] : 0;
@@ -1367,7 +1418,9 @@ public class NationalAccounts {
                 + transitSpending
                 // ...and since 0.7.102 (A15) the repairs to its own buildings, the arrears it
                 // paid down and the crude it bought for its reserve: journalled until then.
-                + cityRepairs + arrearsPaid + reserveCrudeBought;
+                + cityRepairs + arrearsPaid + reserveCrudeBought
+                // ...and the linked bonds' indexation, booked (CD5): an expense beside the interest, mostly not cash.
+                + inflationUplift;
     }
 
     /**
@@ -1457,6 +1510,7 @@ public class NationalAccounts {
         reserveCrudeBought *= scale;  reserveCrudeSold *= scale;
         fuelDuty *= scale;  portDues *= scale;
         interestNotCash *= scale;  retiredGain *= scale;
+        inflationUplift *= scale;  upliftPaid *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;

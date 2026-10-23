@@ -337,6 +337,7 @@ public class Game {
         historyGrapher = new HistoryGrapher();
         debtManager = new DebtManager();
         debtManager.setRateVolatility(this::rateVolatility);   // a callable piece is valued at the city's own volatility (CD4)
+        debtManager.setPriceIndexSource(() -> priceIndex.getIndex());   // a linked bond is indexed on the city's price index (CD5)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
 
@@ -8281,7 +8282,30 @@ public class Game {
             fair += CallTree.optionSpread(curve, sigma, months, firstCallAhead);
             pricer = (flows, tail) -> CallTree.price(curve, tail, sigma, flows, firstCallAhead, CallTree.CALL_PRICE);
         }
-        Auction.Ask ask = new Auction.Ask(kind, months, face, fair, lineCoupon, issuanceFee(), pricer);
+        Auction.Ask ask;
+        if (kind == Auction.Kind.FLOATING) {
+            /*
+             * A FLOATING-RATE NOTE (CD5): fair is the nominal par yield the bidders weigh; the paper the city
+             * sells is a margin over the dial, so the ask carries the margin that prices it at 100 on this
+             * curve (fairMargin(), on the dial the market expects) and its payments per 100 as a function of
+             * the margin the sale sets (the fair one and the tail).
+             */
+            final double[] dial = debtManager.expectedPolicyPath();
+            ask = new Auction.Ask(kind, months, face, fair, lineCoupon, issuanceFee(), pricer,
+                    DebtManager.fairMargin(curve, dial, months),
+                    margin -> FloatingRateNote.flowsFor(100, margin, dial, months));
+        } else if (kind == Auction.Kind.LINKED) {
+            /*
+             * AN INFLATION-LINKED BOND (CD5): likewise, the real coupon that prices a new linker (its first
+             * payment on a ratio of 1) at 100 on this curve, on the index the market expects.
+             */
+            final double[] growth = debtManager.expectedInflationGrowth();
+            ask = new Auction.Ask(kind, months, face, fair, lineCoupon, issuanceFee(), pricer,
+                    DebtManager.fairRealCoupon(curve, growth, months),
+                    real -> InflationLinkedBond.flowsFor(100, real, 1.0, growth, months));
+        } else {
+            ask = new Auction.Ask(kind, months, face, fair, lineCoupon, issuanceFee(), pricer);
+        }
         return Auction.run(ask, auctionBidders(months, face), cap == null ? Auction.Cap.DEFAULT : cap);
     }
 
@@ -8722,6 +8746,168 @@ public class Game {
     }
 
     /* =======================================================================
+       THE FLOATING-RATE NOTE AND THE INFLATION-LINKED BOND (CD5,
+       spec-city-debt.md sections 2.4 and 2.5; D1, D25)
+
+       Two more instruments at the auction, quoted and booked as a bond is:
+       the ask is the FACE, in lots of `rounding`, and every figure of the
+       booking comes off the quote. A floating-rate note (2 or 5 years) pays
+       the month's policy rate plus a margin; an inflation-linked bond (10
+       or 30) pays a real coupon on a principal that follows the price index,
+       and never repays under its face. Each is priced on the curve the issue
+       stands on, the margin or the real coupon that prices it at 100 plus
+       the tail the sale cleared at (Auction, couponFor()), on the dial and
+       the index the market expects (DebtManager.expectedPolicyPath(),
+       expectedInflationGrowth()). Nothing sells either unasked: a city that
+       never presses their buttons has every figure it had.
+
+       EACH SALE ITS OWN LINE, never reopened (they are not LongTermBond, so
+       benchmarkLine() never finds one). A linker reopened mid-life would need
+       its index ratio carried into the price of the new face, which is left
+       for Jerus. No dollar floater or linker exists (section 2.7).
+       ======================================================================= */
+
+    /** What a floating-rate note, sold at auction for this face, would cost. Books nothing. The ask is the face, in lots of `rounding`; the coupon field of the quote is the margin over the policy rate. */
+    public DebtQuote quoteFloatingNote(double amount, int duration, double rounding) {
+        return quoteFloatingNote(amount, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. Quoted nothing for any term but 2 or 5 years (handleFloatingNoteLogic() says why). */
+    public DebtQuote quoteFloatingNote(double amount, int duration, double rounding, Auction.Cap cap) {
+
+        priceTheDebtMarket();
+        double before = debtManager.getRate();
+
+        if (amount <= 0 || !FloatingRateNote.isIssuable(duration)) return emptyQuote("Float", duration, before);
+
+        double granule = rounding > 0 ? rounding : 1;
+        return floatingQuote(amount, Math.ceil(amount / granule) * granule, duration, before, cap);
+    }
+
+    /** The floater's quote at a face: the auction run on it, the margin its stop sets, the monthly coupon at today's dial. */
+    private DebtQuote floatingQuote(double requested, double face, int years, double before, Auction.Cap cap) {
+        int months = years * 12;
+        Auction.Result r = runAuction(Auction.Kind.FLOATING, months, face, Double.NaN, cap);
+        if (isTinySale(r)) return tinySaleQuote("Float", years, requested, before, r);
+        double sold = r.sold();
+        double received = cents(r.proceeds());
+        double monthly = sold * Math.max(0, debtManager.getPolicyRate() + r.coupon()) / 12.0;
+        return new DebtQuote("Float", years, requested, r.stop(), before,
+                sold, received, monthly, (sold - received) + monthly * months, r, r.coupon());
+    }
+
+    /** Books a floating-rate note on exactly the terms quoted. */
+    public String handleFloatingNoteLogic(double amount, int duration, double rounding) {
+        return handleFloatingNoteLogic(amount, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's: refused with FloatingRateNote.REFUSAL for any term but 2 or 5 years. */
+    public String handleFloatingNoteLogic(double amount, int duration, double rounding, Auction.Cap cap) {
+
+        if (!FloatingRateNote.isIssuable(duration)) return FloatingRateNote.REFUSAL;
+        DebtQuote quote = quoteFloatingNote(amount, duration, rounding, cap);
+        if (quote.isEmpty()) return "Nothing issued.";
+        return issueFloatingNote(quote);
+    }
+
+    /** The booking a floating-rate note shares with the rollover: a new line at the margin the quote carries, the policy rate now its first index. */
+    private String issueFloatingNote(DebtQuote quote) {
+        int years = quote.duration();
+        bookNewPiece(debtManager.addFloatingRateNote(quote.faceValue(), years * 12, month, quote.coupon(),
+                debtManager.getPolicyRate()), quote);
+        debtManager.updateInterest();
+        decisions.record(DecisionLog.BORROWING, "Borrowed " + DecisionLog.money(quote.faceValue())
+                + ": " + years + "-year floating-rate note");
+        return "Floating-rate note issued.\n" + quote.summary();
+    }
+
+    /** What a floating-rate note whose CASH covers cashNeeded would cost: the quote at the face that brings it (solveForCash()). Books nothing; a short sale comes back short. */
+    public DebtQuote quoteFloatingNoteForCash(double cashNeeded, int duration, double rounding) {
+        return quoteFloatingNoteForCash(cashNeeded, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. */
+    public DebtQuote quoteFloatingNoteForCash(double cashNeeded, int duration, double rounding, Auction.Cap cap) {
+
+        priceTheDebtMarket();
+        double before = debtManager.getRate();
+
+        if (cashNeeded <= 0 || !FloatingRateNote.isIssuable(duration)) return emptyQuote("Float", duration, before);
+
+        return solveForCash(cashNeeded, rounding, face -> floatingQuote(cashNeeded, face, duration, before, cap));
+    }
+
+    /** What an inflation-linked bond, sold at auction for this face, would cost. Books nothing. The ask is the face, in lots of `rounding`; the coupon field of the quote is the real coupon, and its monthly figure is at an index ratio of 1. */
+    public DebtQuote quoteLinkedBond(double amount, int duration, double rounding) {
+        return quoteLinkedBond(amount, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. Quoted nothing for any term but 10 or 30 years (handleLinkedBondLogic() says why). */
+    public DebtQuote quoteLinkedBond(double amount, int duration, double rounding, Auction.Cap cap) {
+
+        priceTheDebtMarket();
+        double before = debtManager.getRate();
+
+        if (amount <= 0 || !InflationLinkedBond.isIssuable(duration)) return emptyQuote("Linked", duration, before);
+
+        double granule = rounding > 0 ? rounding : 1;
+        return linkedQuote(amount, Math.ceil(amount / granule) * granule, duration, before, cap);
+    }
+
+    /** The linker's quote at a face: the auction run on it, the real coupon its stop sets, the monthly coupon on the face as the index stands. */
+    private DebtQuote linkedQuote(double requested, double face, int years, double before, Auction.Cap cap) {
+        int months = years * 12;
+        Auction.Result r = runAuction(Auction.Kind.LINKED, months, face, Double.NaN, cap);
+        if (isTinySale(r)) return tinySaleQuote("Linked", years, requested, before, r);
+        double sold = r.sold();
+        double received = cents(r.proceeds());
+        double monthly = sold * (r.coupon() / 12.0);
+        return new DebtQuote("Linked", years, requested, r.stop(), before,
+                sold, received, monthly, (sold - received) + monthly * months, r, r.coupon());
+    }
+
+    /** Books an inflation-linked bond on exactly the terms quoted. */
+    public String handleLinkedBondLogic(double amount, int duration, double rounding) {
+        return handleLinkedBondLogic(amount, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's: refused with InflationLinkedBond.REFUSAL for any term but 10 or 30 years. */
+    public String handleLinkedBondLogic(double amount, int duration, double rounding, Auction.Cap cap) {
+
+        if (!InflationLinkedBond.isIssuable(duration)) return InflationLinkedBond.REFUSAL;
+        DebtQuote quote = quoteLinkedBond(amount, duration, rounding, cap);
+        if (quote.isEmpty()) return "Nothing issued.";
+        return issueLinkedBond(quote);
+    }
+
+    /** The booking an inflation-linked bond shares with the rollover: a new line at the real coupon the quote carries, the price index now its base. */
+    private String issueLinkedBond(DebtQuote quote) {
+        int years = quote.duration();
+        bookNewPiece(debtManager.addLinkedBond(quote.faceValue(), years * 12, month, quote.coupon(),
+                debtManager.priceIndexLevel()), quote);
+        debtManager.updateInterest();
+        decisions.record(DecisionLog.BORROWING, "Borrowed " + DecisionLog.money(quote.faceValue())
+                + ": " + years + "-year inflation-linked bond");
+        return "Inflation-linked bond issued.\n" + quote.summary();
+    }
+
+    /** What an inflation-linked bond whose CASH covers cashNeeded would cost: the quote at the face that brings it (solveForCash()). Books nothing; a short sale comes back short. */
+    public DebtQuote quoteLinkedBondForCash(double cashNeeded, int duration, double rounding) {
+        return quoteLinkedBondForCash(cashNeeded, duration, rounding, Auction.Cap.DEFAULT);
+    }
+
+    /** ...at a cap of the caller's. */
+    public DebtQuote quoteLinkedBondForCash(double cashNeeded, int duration, double rounding, Auction.Cap cap) {
+
+        priceTheDebtMarket();
+        double before = debtManager.getRate();
+
+        if (cashNeeded <= 0 || !InflationLinkedBond.isIssuable(duration)) return emptyQuote("Linked", duration, before);
+
+        return solveForCash(cashNeeded, rounding, face -> linkedQuote(cashNeeded, face, duration, before, cap));
+    }
+
+    /* =======================================================================
        BORROWING IN SOMEBODY ELSE'S MONEY
        =======================================================================
 
@@ -8888,6 +9074,9 @@ public class Game {
 
         double before = debtManager.foreignRate();
 
+        // Dollar floaters and linkers do not exist (CD5, spec-city-debt.md section 2.7): quoted nothing.
+        if (isFloatOrLinked(type)) return new DebtQuote(type, duration, 0, before, before, 0, 0, 0, 0, null, 0);
+
         // A dollar bond is held to the same six maturities.
         if (requestedUsd <= 0 || !debtManager.foreignWindowOpen()
                 || ("Term".equals(type) && !LongTermBond.isIssuable(duration))) {
@@ -8927,6 +9116,14 @@ public class Game {
             default -> throw new IllegalArgumentException("No such instrument: " + type);
         };
     }
+
+    /** True for the two instruments that are written at home only (CD5): the floating-rate note and the inflation-linked bond. */
+    private static boolean isFloatOrLinked(String type) {
+        return "Float".equals(type) || "Linked".equals(type);
+    }
+
+    /** What the treasury is told when it asks for a dollar floater or linker. */
+    public static final String NO_DOLLAR_FLOAT_OR_LINKED = "Floating-rate notes and inflation-linked bonds are issued at home only.";
 
     /** A dollar bond's coupon on a world curve: its par yield at the term, rounded down to Auction.COUPON_STEP. */
     private static double dollarCoupon(YieldCurve world, int months) {
@@ -8973,6 +9170,7 @@ public class Game {
     public String handleForeignLogic(String type, double requestedUsd, int duration,
                                      double rounding, boolean holdAsReserves) {
 
+        if (isFloatOrLinked(type)) return NO_DOLLAR_FLOAT_OR_LINKED;
         if (!debtManager.foreignWindowOpen()) {
             return "No lender abroad will take this paper: " + debtManager.foreignWindowReason();
         }
@@ -9065,6 +9263,8 @@ public class Game {
             case "Note" -> quoteTBill(amount, duration, rounding, cap);
             case "Serial" -> quoteMediumBond(amount, duration, rounding, cap);
             case "Term" -> quoteLongBond(amount, duration, rounding, cap);
+            case "Float" -> quoteFloatingNote(amount, duration, rounding, cap);
+            case "Linked" -> quoteLinkedBond(amount, duration, rounding, cap);
             // Loudly, rather than handing a screen a null to dereference three
             // frames later where the cause is invisible.
             default -> throw new IllegalArgumentException("No such instrument: " + type);
@@ -9308,6 +9508,14 @@ public class Game {
         if (paper instanceof MediumTermBond) {
             return new RollsInto("Serial", MediumTermBond.nearestYears(years), false, paper.isForeign());
         }
+        // A floater into a floater and a linker into a linker (CD5), at the nearest of their own terms:
+        // each piece rolls into its own instrument, term and currency.
+        if (paper instanceof FloatingRateNote) {
+            return new RollsInto("Float", FloatingRateNote.nearestYears(years), false, false);
+        }
+        if (paper instanceof InflationLinkedBond) {
+            return new RollsInto("Linked", InflationLinkedBond.nearestYears(years), false, false);
+        }
         // A bond into the nearest of the six terms - and so into that term's
         // benchmark line, which the sale reopens (quoteLongBondForCash()).
         return new RollsInto("Term", nearestTermMaturity(years), abroad, atHome);
@@ -9478,6 +9686,8 @@ public class Game {
         return switch (type) {
             case "Note"   -> quoteTBill(cash, term, granule, cap);
             case "Serial" -> quoteMediumBondForCash(cash, term, granule, cap);
+            case "Float"  -> quoteFloatingNoteForCash(cash, term, granule, cap);
+            case "Linked" -> quoteLinkedBondForCash(cash, term, granule, cap);
             default       -> quoteLongBondForCash(cash, term, granule, cap);
         };
     }
@@ -9490,6 +9700,8 @@ public class Game {
         return switch (issue.type()) {
             case "Note"   -> issue.term() + "-month bill";
             case "Serial" -> issue.term() + "-year amortizing bond";
+            case "Float"  -> issue.term() + "-year floating-rate note";
+            case "Linked" -> issue.term() + "-year inflation-linked bond";
             default       -> issue.term() + "-year bond";
         };
     }
@@ -9573,6 +9785,8 @@ public class Game {
             return switch (issue.type()) {
                 case "Note"   -> issueNote(quote);
                 case "Serial" -> issueMediumBond(quote);
+                case "Float"  -> issueFloatingNote(quote);
+                case "Linked" -> issueLinkedBond(quote);
                 default       -> issueLongBond(quote);
             };
         } finally {
@@ -11053,13 +11267,23 @@ public class Game {
          * counted as it happened (retiredGainSoFar), moves into the month and
          * is cleared with the other accumulators below.
          */
+        /*
+         * ...AND THE LINKED BONDS' UPLIFT (CD5). The cash coupons the holders were paid include the uplift
+         * a linker paid in its last month, which goes to them through the coupon path; the budget counts
+         * it on the uplift's line, not the interest's, so it is taken off the interest handed over here and
+         * handed over as the uplift paid. The month's indexation booked is the other figure: an expense
+         * that is not cash, of which the uplift paid is the cash part. Nothing but zero for a city that
+         * holds no linker.
+         */
         economyManager.refreshGovernmentAccounts(
                 landManager.getLandSalesThisMonth(),
                 cityCapitalSpending,
                 landManager.getLandPurchasesThisMonth(),
-                cityInterestPaid + foreignInterestPaidThisMonth,
+                cityInterestPaid + foreignInterestPaidThisMonth - debtManager.getUpliftPaid(),
                 debtManager.getAmortisedBooked(),
-                retiredGainSoFar);
+                retiredGainSoFar,
+                debtManager.getUpliftBooked(),
+                debtManager.getUpliftPaid());
         retiredGainSoFar = 0;
 
         // The month's revenue, filed for the ceiling on the central bank's
@@ -14424,9 +14648,16 @@ public class Game {
                 if (line instanceof LongTermBond bond && Math.abs(bond.couponRate() - r.ask().lineCoupon()) < 1e-12) {
                     line.reopenForCentralBank(a.par(), price, q.marketRate());
                 } else {
-                    Debt paper = "Serial".equals(a.into().type())
-                            ? debtManager.addMediumTermBond(a.par(), a.into().term() * 12, month - 1, q.couponRate())
-                            : debtManager.addLongTermBond(a.par(), q.duration() * 12, month - 1, q.couponRate());
+                    Debt paper = switch (a.into().type()) {
+                        case "Serial" -> debtManager.addMediumTermBond(a.par(), a.into().term() * 12, month - 1, q.couponRate());
+                        // CD5: a floater or a linker the central bank's par rolls into, at the margin or the real
+                        // coupon the quote carries, never a line the sale reopens (they have none).
+                        case "Float"  -> debtManager.addFloatingRateNote(a.par(), q.duration() * 12, month - 1,
+                                q.coupon(), debtManager.getPolicyRate());
+                        case "Linked" -> debtManager.addLinkedBond(a.par(), q.duration() * 12, month - 1,
+                                q.coupon(), debtManager.priceIndexLevel());
+                        default       -> debtManager.addLongTermBond(a.par(), q.duration() * 12, month - 1, q.couponRate());
+                    };
                     paper.markIssued(price, q.marketRate());
                     paper.settled();
                     paper.moveToCentralBank(a.par());
@@ -14593,6 +14824,7 @@ public class Game {
         treasuryRepaid  = cityPrincipalRepaidThisMonth + foreignPrincipalRepaidThisMonth;
         treasurySurplus = economyManager.getNationalAccounts().getBalance();
         treasuryNotCash = economyManager.getNationalAccounts().getInterestNotCash()
+                + economyManager.getNationalAccounts().getUpliftNotCash()
                 - economyManager.getNationalAccounts().getRetiredGain();
         treasuryRecorded = true;
         // Struck with the rest: last month's lines become the ones the bridge
@@ -14749,6 +14981,9 @@ public class Game {
                 // budget's interest and not in EARNED, which is cash; the gain on paper retired is in
                 // the budget's result and not in EARNED either.
                 new TreasuryJournal.Entry("Discount amortised on the city's paper", -na.getInterestNotCash()),
+                // ...and the linked bonds' indexation (CD5): booked in the budget as an expense and not paid
+                // until the bond's last month, when the uplift paid comes off this row.
+                new TreasuryJournal.Entry("Inflation uplift on linked bonds, not yet paid", -na.getUpliftNotCash()),
                 new TreasuryJournal.Entry("Gain (loss) on debt retired", na.getRetiredGain()));
     }
 
@@ -15204,7 +15439,9 @@ public class Game {
                 // D26: dollar paper's only holder is the world; it offers the whole piece, every slice at fair.
                 ? new Buyback.Line(principal, debt.remainingCashFlows(), fair, debt.getCarryingValue(),
                         0, 0, 0, principal, 0, true)
-                : new Buyback.Line(principal, debt.remainingCashFlows(), fair, debt.getCarryingValue(),
+                // At home the holders offer on the schedule the market prices the piece on (CD5): a floater's
+                // and a linker's on the dial and the index it expects; every other piece's own, as before.
+                : new Buyback.Line(principal, debtManager.pricingFlows(debt), fair, debt.getCarryingValue(),
                         debt.bankPrincipal(), debt.householdPrincipal(), debt.firmPrincipal(),
                         debt.worldPrincipal(), debt.centralBankPrincipal(), false);
         double asked = Math.min(Math.max(0, face), buybackOfferable(debt));
@@ -16834,6 +17071,17 @@ public class Game {
                         case "TERM":
                         case "LONG-BOND":           // pre-rename saves
                             loadedDebts.add(gson.fromJson(obj, LongTermBond.class));
+                            break;
+
+                        // CD5: the floating-rate note and the inflation-linked bond. Their ids are as permanent as
+                        // the three above: a save keeps the piece's own fields (margin, index; real coupon, base
+                        // index, ratio), and an old save holds neither kind.
+                        case "FLOAT":
+                            loadedDebts.add(gson.fromJson(obj, FloatingRateNote.class));
+                            break;
+
+                        case "LINKED":
+                            loadedDebts.add(gson.fromJson(obj, InflationLinkedBond.class));
                             break;
 
                         default:

@@ -1,4 +1,4 @@
-# Rollover.java - 375 lines · 34 methods · 2 constants · model
+# Rollover.java - 378 lines · 34 methods · 2 constants · model
 
 `ham/citybuildersim/Rollover.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -87,54 +87,54 @@
 
 | line | field | says |
 |---:|---|---|
-| 211 | `private Mode mode` |  |
-| 214 | `private final List<double[]> ledger` | What each rollover netted, and since 0.7.14 what the city's fund took (noteFundTook()), and the month: {month, netted}, oldest first, only the last NETTING_MONTHS kept. |
-| 217 | `private int lastMonth` | The last rollover, and the run's: what the Finances page and the playtest read, saved (recordToSave()). |
-| 218 | `private double lastDue, lastNetted, lastIssued, lastRaised` |  |
-| 219 | `private double issuedLifetime, raisedLifetime, nettedLifetime` |  |
-| 220 | `private int issuesLifetime, atHomeForDollarsLifetime` |  |
-| 233 | `private Auction.Cap cap` | THE CAP THE ROLLOVER SELLS AT (CD2, D28; Jerus, 2026-10-12: "each its own"): the highest yield its auctions take, fair plus a point by default, another tail or a yield, or Fill it. |
+| 214 | `private Mode mode` |  |
+| 217 | `private final List<double[]> ledger` | What each rollover netted, and since 0.7.14 what the city's fund took (noteFundTook()), and the month: {month, netted}, oldest first, only the last NETTING_MONTHS kept. |
+| 220 | `private int lastMonth` | The last rollover, and the run's: what the Finances page and the playtest read, saved (recordToSave()). |
+| 221 | `private double lastDue, lastNetted, lastIssued, lastRaised` |  |
+| 222 | `private double issuedLifetime, raisedLifetime, nettedLifetime` |  |
+| 223 | `private int issuesLifetime, atHomeForDollarsLifetime` |  |
+| 236 | `private Auction.Cap cap` | THE CAP THE ROLLOVER SELLS AT (CD2, D28; Jerus, 2026-10-12: "each its own"): the highest yield its auctions take, fair plus a point by default, another tail or a yield, or Fill it. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 283 | **type** `public final class Rollover` | What falls due next month, refinanced: the treasury's rollover setting and the ledger of the surplus it has netted (0.7.13). |
+| 93 | 286 | **type** `public final class Rollover` | What falls due next month, refinanced: the treasury's rollover setting and the ledger of the surplus it has netted (0.7.13). |
 | 96 | 8 | **type** `public enum Mode` | The three settings, saved by name. |
-| 121 | 23 | **type** `public record Issue(String type, int term, boolean foreign, double cash, double face, int pieces, int atHom...` | One issue the rollover makes: the instrument by the quote functions' names ("Note", "Serial", "Term": the bill, the amortizing bond and the bond since CD2), its term in their units (months for a bill, years for the re... |
-| 125 | 8 | `public String paper()` _(in Rollover.Issue)_ | The paper, in words: "a 20-year bond in dollars", "a 12-month bill". |
-| 135 | 8 | `public String why(Mode mode)` _(in Rollover.Issue)_ | Why it is this paper, in words. |
-| 165 | 36 | **type** `public record Plan(Mode mode, double due, double dueAbroad, double surplus, double used, double cash, doubl...` | What the rollover does this month, worked out before it does it: the setting; what falls due, and how much of it abroad; the surplus over the last year and what is used of it - what earlier rollovers netted, and since... |
-| 169 | 4 | `public Plan(Mode mode, double due, double dueAbroad, double surplus, double used, double cash, double netted, List<Issue> issues)` _(in Rollover.Plan)_ |  |
-| 175 | 1 | `public double toRoll()` _(in Rollover.Plan)_ | What falls due, less what the central bank rolls itself, less what is netted: the cash the issues must bring between them, before any too small to be worth arranging (Game.minimumIssueSize()). |
-| 177 | 1 | `public double centralBankRunsOff()` _(in Rollover.Plan)_ | What falls due that the central bank holds past its dial: repaid it, and raised from the market or netted with the rest. |
-| 179 | 5 | `public double toRaise()` _(in Rollover.Plan)_ | The cash the issues are sized to bring between them. |
-| 185 | 5 | `public double issued()` _(in Rollover.Plan)_ | The face their quotes give for it, each quoted on the books as they stand: more than the cash, by the paper's discount, premium and costs. |
-| 197 | 3 | `public double fromCash()` _(in Rollover.Plan)_ | What the treasury's cash pays of what falls due (0.7.32, the Finances tab's NEXT MONTH bar): by hand, all of the market's part; rolling, what no issue raises - a share under the smallest deal worth arranging, or all o... |
-| 203 | 7 | `public static String words(Mode mode)` | The setting in words, for the log and the Finances tab: "by hand", "in the same structure", "into 12-month bills". |
-| 222 | 1 | `public Mode getMode()` |  |
-| 223 | 1 | `public void setMode(Mode mode)` |  |
-| 235 | 1 | `public Auction.Cap getCap()` |  |
-| 236 | 1 | `public void setCap(Auction.Cap cap)` |  |
-| 244 | 4 | `public static double netting(double surplusYear, double usedInYear, double cash, double due)` | S: the surplus over the last year less what is already used of it - what earlier rollovers netted in it, and since 0.7.14 the city's fund's part (Game.rolloverPlan()) - never below nothing, never more than the treasur... |
-| 250 | 7 | `public double usedInYear(int month)` | What the rollovers run in the NETTING_MONTHS ending with this month netted between them - and, since 0.7.14, what the city's fund took of the surplus in them (noteFundTook()). |
-| 268 | 4 | `void noteFundTook(int month, double fromSurplus)` | THE CITY'S FUND TOOK PART OF THE YEAR'S SURPLUS (0.7.14): its year-end pay-in's share of the surplus, entered on this ledger in the month it was taken, so the rollover nets only what the fund did not take - the surplu... |
-| 274 | 14 | `void record(int month, double due, double netted, double issued, double raised, int issues, int atHomeForDollars)` | A rollover ran: what fell due, what it netted, the face its issues came to and the cash they raised, in the month it ran in. |
-| 290 | 1 | `public int getLastMonth()` | The month the last rollover ran in, or -1 if none has. |
-| 292 | 1 | `public double getLastDue()` | ...what fell due then, in local money. |
-| 294 | 1 | `public double getLastNetted()` | ...what it netted from the year's surplus. |
-| 296 | 1 | `public double getLastIssued()` | ...the face its issues came to, in local money. |
-| 298 | 1 | `public double getLastRaised()` | ...and the cash they brought: less than their face by their discount and costs. |
-| 300 | 1 | `public double getIssuedLifetime()` | The face the rollover has issued since the setting was first on, in local money. |
-| 302 | 1 | `public double getRaisedLifetime()` | ...and the cash it raised. |
-| 304 | 1 | `public double getNettedLifetime()` | ...and netted from surplus. |
-| 306 | 1 | `public int getIssuesLifetime()` | How many issues it has made. |
-| 308 | 1 | `public int getAtHomeForDollarsLifetime()` | How many of them rolled dollar paper at home because the window abroad was shut. |
-| 311 | 8 | `public double[] ledgerToSave()` | The ledger, for the save: {month, netted} pairs, oldest first. |
-| 321 | 5 | `public void restoreLedger(double[] saved)` | ...and back. |
-| 328 | 4 | `public double[] recordToSave()` | The last rollover and the run's, for the save. |
-| 334 | 14 | `public void restoreRecord(double[] saved)` | ...and back. |
-| 349 | 6 | `private void clearRecord()` |  |
-| 357 | 6 | `public void reset()` | A city founded from nothing: nothing automatic, nothing netted. |
-| 365 | 10 | `public void redenominate(double scale)` | Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM). |
+| 122 | 25 | **type** `public record Issue(String type, int term, boolean foreign, double cash, double face, int pieces, int atHom...` | One issue the rollover makes: the instrument by the quote functions' names ("Note", "Serial", "Term": the bill, the amortizing bond and the bond since CD2; "Float" and "Linked": the floating-rate note and the inflatio... |
+| 126 | 10 | `public String paper()` _(in Rollover.Issue)_ | The paper, in words: "a 20-year bond in dollars", "a 12-month bill". |
+| 138 | 8 | `public String why(Mode mode)` _(in Rollover.Issue)_ | Why it is this paper, in words. |
+| 168 | 36 | **type** `public record Plan(Mode mode, double due, double dueAbroad, double surplus, double used, double cash, doubl...` | What the rollover does this month, worked out before it does it: the setting; what falls due, and how much of it abroad; the surplus over the last year and what is used of it - what earlier rollovers netted, and since... |
+| 172 | 4 | `public Plan(Mode mode, double due, double dueAbroad, double surplus, double used, double cash, double netted, List<Issue> issues)` _(in Rollover.Plan)_ |  |
+| 178 | 1 | `public double toRoll()` _(in Rollover.Plan)_ | What falls due, less what the central bank rolls itself, less what is netted: the cash the issues must bring between them, before any too small to be worth arranging (Game.minimumIssueSize()). |
+| 180 | 1 | `public double centralBankRunsOff()` _(in Rollover.Plan)_ | What falls due that the central bank holds past its dial: repaid it, and raised from the market or netted with the rest. |
+| 182 | 5 | `public double toRaise()` _(in Rollover.Plan)_ | The cash the issues are sized to bring between them. |
+| 188 | 5 | `public double issued()` _(in Rollover.Plan)_ | The face their quotes give for it, each quoted on the books as they stand: more than the cash, by the paper's discount, premium and costs. |
+| 200 | 3 | `public double fromCash()` _(in Rollover.Plan)_ | What the treasury's cash pays of what falls due (0.7.32, the Finances tab's NEXT MONTH bar): by hand, all of the market's part; rolling, what no issue raises - a share under the smallest deal worth arranging, or all o... |
+| 206 | 7 | `public static String words(Mode mode)` | The setting in words, for the log and the Finances tab: "by hand", "in the same structure", "into 12-month bills". |
+| 225 | 1 | `public Mode getMode()` |  |
+| 226 | 1 | `public void setMode(Mode mode)` |  |
+| 238 | 1 | `public Auction.Cap getCap()` |  |
+| 239 | 1 | `public void setCap(Auction.Cap cap)` |  |
+| 247 | 4 | `public static double netting(double surplusYear, double usedInYear, double cash, double due)` | S: the surplus over the last year less what is already used of it - what earlier rollovers netted in it, and since 0.7.14 the city's fund's part (Game.rolloverPlan()) - never below nothing, never more than the treasur... |
+| 253 | 7 | `public double usedInYear(int month)` | What the rollovers run in the NETTING_MONTHS ending with this month netted between them - and, since 0.7.14, what the city's fund took of the surplus in them (noteFundTook()). |
+| 271 | 4 | `void noteFundTook(int month, double fromSurplus)` | THE CITY'S FUND TOOK PART OF THE YEAR'S SURPLUS (0.7.14): its year-end pay-in's share of the surplus, entered on this ledger in the month it was taken, so the rollover nets only what the fund did not take - the surplu... |
+| 277 | 14 | `void record(int month, double due, double netted, double issued, double raised, int issues, int atHomeForDollars)` | A rollover ran: what fell due, what it netted, the face its issues came to and the cash they raised, in the month it ran in. |
+| 293 | 1 | `public int getLastMonth()` | The month the last rollover ran in, or -1 if none has. |
+| 295 | 1 | `public double getLastDue()` | ...what fell due then, in local money. |
+| 297 | 1 | `public double getLastNetted()` | ...what it netted from the year's surplus. |
+| 299 | 1 | `public double getLastIssued()` | ...the face its issues came to, in local money. |
+| 301 | 1 | `public double getLastRaised()` | ...and the cash they brought: less than their face by their discount and costs. |
+| 303 | 1 | `public double getIssuedLifetime()` | The face the rollover has issued since the setting was first on, in local money. |
+| 305 | 1 | `public double getRaisedLifetime()` | ...and the cash it raised. |
+| 307 | 1 | `public double getNettedLifetime()` | ...and netted from surplus. |
+| 309 | 1 | `public int getIssuesLifetime()` | How many issues it has made. |
+| 311 | 1 | `public int getAtHomeForDollarsLifetime()` | How many of them rolled dollar paper at home because the window abroad was shut. |
+| 314 | 8 | `public double[] ledgerToSave()` | The ledger, for the save: {month, netted} pairs, oldest first. |
+| 324 | 5 | `public void restoreLedger(double[] saved)` | ...and back. |
+| 331 | 4 | `public double[] recordToSave()` | The last rollover and the run's, for the save. |
+| 337 | 14 | `public void restoreRecord(double[] saved)` | ...and back. |
+| 352 | 6 | `private void clearRecord()` |  |
+| 360 | 6 | `public void reset()` | A city founded from nothing: nothing automatic, nothing netted. |
+| 368 | 10 | `public void redenominate(double scale)` | Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM). |
 

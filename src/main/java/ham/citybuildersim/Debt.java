@@ -511,6 +511,39 @@ public abstract class Debt {
     }
 
     /**
+     * A FLOATING PIECE'S RATE RESETS WITH ITS COUPON (CD5, spec-city-debt.md
+     * section 5.3): the effective rate is solved again on the schedule as it
+     * now stands, at the carrying value as it now stands. No catch-up - the
+     * carrying value does not move, the rate that accretes it does, as a
+     * floating liability's does. A subclass whose coupon follows an index
+     * calls it when the index has moved (FloatingRateNote.reset()); fixed
+     * paper never does.
+     */
+    protected final void reestimateRate() {
+        ensureBooks();
+        effectiveRate = effectiveRateOf(scheduleOwed(), carryingValue);
+    }
+
+    /**
+     * AN INDEXED PIECE'S BOOKS CATCH UP (CD5, IFRS 9 B5.4.6): the carrying
+     * value becomes the present value of the schedule as it now stands at the
+     * effective rate it has (unchanged), and the change is returned - the
+     * month's indexation, below nothing when the index fell. The field stays
+     * Debt's; an indexed subclass only says when
+     * (InflationLinkedBond.index()). Nothing is owed, nothing moves.
+     *
+     * @return the change in the carrying value, in the piece's own currency
+     */
+    protected final double reestimateCarrying() {
+        ensureBooks();
+        double[] schedule = scheduleOwed();
+        if (schedule.length == 0) return 0;
+        double was = carryingValue;
+        carryingValue = presentValue(schedule, effectiveRate);
+        return carryingValue - was;
+    }
+
+    /**
      * This month's books, once, BEFORE processMonth() pays the month (the
      * payment is read off the schedule as it stands, so the books follow the
      * cash by construction): the interest expense at the effective rate on the

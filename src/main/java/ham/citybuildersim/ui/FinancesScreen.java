@@ -3870,6 +3870,9 @@ final class FinancesScreen {
             case BOND -> couponWords(r.coupon()) + " coupon, " + (r.ask().isNewLine() ? "a new line" : "the line's own")
                     + " · yields " + pct3(r.stop());
             case AMORTIZING -> pct3(r.coupon()) + " coupon, one for the whole schedule · repaid in yearly slices";
+            // CD5 (slice A's stand-in so the switch covers the enum; slice C words these): a floater's coupon is a margin.
+            case FLOATING -> "policy rate " + (r.coupon() < 0 ? "less " : "+ ") + pct3(Math.abs(r.coupon())) + " · yields " + pct3(r.stop());
+            case LINKED -> pct3(r.coupon()) + " real coupon · yields " + pct3(r.stop());
         };
     }
 

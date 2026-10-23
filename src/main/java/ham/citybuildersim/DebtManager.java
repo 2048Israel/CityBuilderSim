@@ -678,6 +678,24 @@ public class DebtManager {
     }
 
     /**
+     * A floating-rate note (CD5, spec-city-debt.md section 2.4): a coupon at the policy
+     * rate plus {@code margin}, the face at the end. {@code index} is the policy rate now,
+     * which the first coupon follows until the first reset (processAllDebts()).
+     */
+    public Debt addFloatingRateNote(double faceValue, int months, int monthStarted, double margin, double index) {
+        return book(new FloatingRateNote(faceValue, months, monthStarted, margin, index));
+    }
+
+    /**
+     * An inflation-linked bond (CD5, section 2.5): a real coupon on a principal that follows
+     * the price index, never under the face at the end. {@code baseIndex} is the price index
+     * now (priceIndexLevel()), which the ratio is the index over.
+     */
+    public Debt addLinkedBond(double faceValue, int months, int monthStarted, double realCoupon, double baseIndex) {
+        return book(new InflationLinkedBond(faceValue, months, monthStarted, realCoupon, baseIndex));
+    }
+
+    /**
      * The one place paper joins the list, so the one place it can be told the
      * rate.
      *
@@ -1251,9 +1269,19 @@ public class DebtManager {
         Iterator<Debt> iterator = debts.iterator();
         accretedForBank = 0;
         interestBooked = amortisedBooked = 0;
+        upliftBooked = upliftPaidBooked = 0;
 
         while (iterator.hasNext()) {
             Debt debt = iterator.next();
+
+            /*
+             * A FLOATER READS THE DIAL AND A LINKER THE PRICE INDEX (CD5),
+             * before the month's books are struck: the floater's effective
+             * rate resets with its coupon, the linker's carrying value
+             * catches up with its index. Nothing else is touched.
+             */
+            if (debt instanceof FloatingRateNote note) note.reset(getPolicyRate());
+            else if (debt instanceof InflationLinkedBond linked) linked.index(priceIndexLevel());
 
             /*
              * THE CITY'S BOOKS FOR THE MONTH (CD3), before the payments: the
@@ -1266,7 +1294,15 @@ public class DebtManager {
              */
             debt.amortise();
             interestBooked += debt.getLastInterestExpense();
-            amortisedBooked += debt.getLastAmortised();
+            if (debt instanceof InflationLinkedBond linked) {
+                // The uplift paid in the last month is the uplift line's, cash, and not the discount wearing
+                // off: the interest line's not-cash part is the discount alone (CD5).
+                amortisedBooked += debt.getLastAmortised() + linked.getLastUpliftPaid();
+                upliftBooked += linked.getLastUplift();
+                upliftPaidBooked += linked.getLastUpliftPaid();
+            } else {
+                amortisedBooked += debt.getLastAmortised();
+            }
 
             /*
              * THE DISCOUNT ACCRETES (0.7.1), a month of it, before the month's
@@ -1309,10 +1345,31 @@ public class DebtManager {
     /** ...and the part of it that is not coupon: the discount amortised, below nothing for a premium. Non-cash. */
     private double amortisedBooked;
 
+    /**
+     * The month's inflation uplift on the linked bonds (CD5): the indexation each booked as its
+     * carrying value caught up with the price index (InflationLinkedBond.index()), summed. An
+     * expense beside the interest, and not cash - below nothing in a month the index fell.
+     */
+    private double upliftBooked;
+
+    /** ...and the uplift the month PAID in cash: a linker's indexed principal over its face, in its last month. The cash is in the coupons paid; here it is the uplift line's, taken off the not-cash row. */
+    private double upliftPaidBooked;
+
     public double getInterestBooked()  { return interestBooked; }
     public double getAmortisedBooked() { return amortisedBooked; }
 
-    /** The coupons the month's books paid: its interest expense less what was amortised. */
+    /** The month's inflation uplift on linked bonds, booked (CD5): an expense, not cash. Nothing for a city that holds none. */
+    public double getUpliftBooked()    { return upliftBooked; }
+
+    /** ...and the part of it the month paid in cash (a linker's last month): in the cash coupons the holders were paid, and the uplift line's, not the interest line's. */
+    public double getUpliftPaid()      { return upliftPaidBooked; }
+
+    /**
+     * The coupons the month's books paid: its interest expense less what was amortised. With a
+     * linked bond in its last month the cash coupons the holders were paid are this plus
+     * getUpliftPaid() (CD5): the uplift paid goes to the holders through the coupon path, and
+     * the books count it on the uplift's line.
+     */
     public double getCouponBooked()    { return interestBooked - amortisedBooked; }
 
     /** What the city's paper is carried at, every piece together, in local money: what the balance sheet shows (face less the unamortised discount, plus the premium). */
@@ -1534,7 +1591,25 @@ public class DebtManager {
      * what the market is actually looking at when it decides what to charge.
      */
     public double getPricedDebt() {
-        return getAllPrincipal() + Math.max(0, overdraft) + advances;
+        double owed = getAllPrincipal() + Math.max(0, overdraft) + advances;
+        // What the market prices the city on is all it owes (CD5): the indexation a linked bond has
+        // accrued past its face, when there is some. A city with no linker has none, and owes what it did.
+        double indexation = getIndexationOwed();
+        return indexation > 0 ? owed + indexation : owed;
+    }
+
+    /**
+     * What the linked bonds owe past their face today (CD5): each one's face times how far its
+     * ratio is over 1 - nothing for a ratio at or under 1, because the deflation floor means the
+     * face is owed whatever the index did. In local money; the principal on the books stays the
+     * face (InflationLinkedBond).
+     */
+    public double getIndexationOwed() {
+        double total = 0;
+        for (Debt d : debts) {
+            if (d instanceof InflationLinkedBond linked) total += linked.getFaceValue() * Math.max(0, linked.getRatio() - 1);
+        }
+        return total;
     }
 
     /**
@@ -1906,7 +1981,9 @@ public class DebtManager {
     public double marketValue(Debt paper) {
         if (paper == null) return 0;
         if (paper.getRemainingMonths() <= 0) return paper.getOustandingPrincipal();
-        double[] flows = paper.remainingCashFlows();
+        // Its own schedule - except a floater's and a linker's, which the market prices on the dial and
+        // the index it expects (CD5, pricingFlows()).
+        double[] flows = pricingFlows(paper);
         if (paper.isForeign()) return worldCurveAt(foreignRate()).pv(flows);
         YieldCurve curve = curve();
         if (paper instanceof LongTermBond bond && bond.isCallable()) return callableValue(bond, curve, flows);
@@ -1969,6 +2046,119 @@ public class DebtManager {
 
     private transient java.util.function.DoubleSupplier rateVolatility;
 
+    /* ----- the price index, and the paths a floater and a linker are priced on (CD5) ----- */
+
+    /**
+     * The city's price index now (PriceIndex.getIndex()), as a linked bond is indexed on it: what
+     * Game hands in with setPriceIndexSource(), read afresh each time so a reloaded index is
+     * the one read. NaN for a manager nobody has handed one - and then nothing is indexed.
+     */
+    public double priceIndexLevel() {
+        java.util.function.DoubleSupplier source = priceIndexSource;
+        return source == null ? Double.NaN : source.getAsDouble();
+    }
+
+    /** Hands the manager the price index, so it can index a linked bond without knowing the city's prices. Not saved: Game hands it in when it builds the manager; a fixture hands its own, to cause a deflation. */
+    public void setPriceIndexSource(java.util.function.DoubleSupplier source) {
+        this.priceIndexSource = source;
+    }
+
+    private transient java.util.function.DoubleSupplier priceIndexSource;
+
+    private transient volatile PathEntry policyPathCache;
+
+    /**
+     * THE DIAL THE MARKET EXPECTS FROM THE POLICY RATE, t = 0 the dial now (CD5): what a
+     * floating-rate note's coupons are priced on - the same expected path the curve is built on
+     * (YieldCurve.expectedPath()), started from the dial and not from the floor. The rule's path
+     * from the struck expectations; the dial held flat when nothing is struck. Cached as
+     * pathFor() caches, and not to be changed.
+     */
+    public double[] expectedPolicyPath() {
+        double dial = getPolicyRate();
+        double inflation = struckInflation, expected = struckExpected;
+        boolean struck = !Double.isNaN(inflation) && !Double.isNaN(expected);
+        if (!struck) inflation = expected = Double.NaN;
+        double target = inflationTarget;
+        Strictness strict = strictness;
+        PathEntry e = policyPathCache;
+        if (e != null && same(e.floor, dial) && same(e.inflation, inflation) && same(e.expected, expected)
+                && same(e.target, target) && e.strictness == strict) {
+            return e.path;
+        }
+        final double now = inflation, settle = expected;
+        double[] path = struck
+                ? YieldCurve.expectedPath(dial, x -> advisedPolicyRate(x), now, settle)
+                : YieldCurve.flatPath(dial);
+        policyPathCache = new PathEntry(dial, inflation, expected, target, strict, path);
+        return path;
+    }
+
+    private static final class GrowthEntry {
+        final double inflation, expected, target;
+        final double[] growth;
+        GrowthEntry(double inflation, double expected, double target, double[] growth) {
+            this.inflation = inflation; this.expected = expected; this.target = target; this.growth = growth;
+        }
+    }
+
+    private transient volatile GrowthEntry growthCache;
+
+    /**
+     * THE PRICE INDEX THE MARKET EXPECTS, month by month (CD5): entry j is the growth of the index
+     * in the month j months ahead, (1 + pi(j))^(1/12), with pi(j) = expected + (now - expected) x
+     * e^(-j / Expectations.ADAPT_MONTHS) from the struck pair - the same path YieldCurve
+     * .expectedPath() expects inflation along - and the inflation target held flat when nothing is
+     * struck. What a linked bond's ratio is projected on (InflationLinkedBond.projectedFlows()).
+     * Cached; not to be changed.
+     */
+    public double[] expectedInflationGrowth() {
+        double inflation = struckInflation, expected = struckExpected;
+        boolean struck = !Double.isNaN(inflation) && !Double.isNaN(expected);
+        if (!struck) inflation = expected = Double.NaN;
+        double target = inflationTarget;
+        GrowthEntry e = growthCache;
+        if (e != null && same(e.inflation, inflation) && same(e.expected, expected) && same(e.target, target)) {
+            return e.growth;
+        }
+        double[] growth = new double[YieldCurve.HORIZON];
+        for (int j = 0; j < growth.length; j++) {
+            double pi = struck
+                    ? expected + (inflation - expected) * Math.exp(-(double) j / Expectations.ADAPT_MONTHS)
+                    : target;
+            growth[j] = Math.pow(1 + pi, 1.0 / 12);
+        }
+        growthCache = new GrowthEntry(inflation, expected, target, growth);
+        return growth;
+    }
+
+    /**
+     * The payments the market prices a piece on (CD5): a floating-rate note's coupons at the dial
+     * it expects (expectedPolicyPath()), a linked bond's on the index it expects
+     * (expectedInflationGrowth(), the next payment on the index now over the base); every other
+     * piece's own remainingCashFlows(), the same array as before.
+     */
+    public double[] pricingFlows(Debt paper) {
+        if (paper instanceof FloatingRateNote note) return note.projectedFlows(expectedPolicyPath());
+        if (paper instanceof InflationLinkedBond linked) {
+            return linked.projectedFlows(linked.ratioAt(priceIndexLevel()), expectedInflationGrowth());
+        }
+        return paper.remainingCashFlows();
+    }
+
+    /**
+     * The real yield of a linked bond at its market value (CD5): the known schedule - the real
+     * coupon on the principal as the index stands now, held flat, and the indexed principal at
+     * the end - solved for the yield that makes it worth what the market pays. The schedule and
+     * the price both scale with the ratio, so the figure is the same on the indexed principal as
+     * on the face: a yield with the inflation taken out. For the screen; yieldOf() is the
+     * nominal one.
+     */
+    public double realYieldOf(InflationLinkedBond paper) {
+        if (paper == null || paper.getRemainingMonths() <= 0) return 0;
+        return Debt.effectiveRateOf(paper.projectedFlows(paper.ratioAt(priceIndexLevel()), null), marketValue(paper));
+    }
+
     /* ----- the call (CD4, spec-city-debt.md section 6.4) ----- */
 
     /**
@@ -2028,6 +2218,12 @@ public class DebtManager {
 
     /** The yield to maturity of a piece on the price a buyback pays: a RESULT of marketValue(), not the rate it was priced at (CD1). */
     public double yieldOf(Debt paper) {
+        // A floater's and a linker's yield is the IRR of the payments the market expects at the price it
+        // pays (CD5, pricingFlows()): the nominal yield the households weigh against deposits. Every
+        // other piece keeps its yield to maturity on its own schedule.
+        if (paper instanceof FloatingRateNote || paper instanceof InflationLinkedBond) {
+            return Debt.effectiveRateOf(pricingFlows(paper), marketValue(paper));
+        }
         return paper.getYieldToMaturity(marketValue(paper));
     }
 
@@ -2546,9 +2742,81 @@ public class DebtManager {
     public static double fairYieldOn(YieldCurve curve, Auction.Kind kind, int months) {
         return switch (kind) {
             case BILL -> curve.zero(months);
-            case BOND -> curve.parYield(months);
+            // A floater and a linker are asked for the nominal yield the bidders weigh (CD5): a par bullet of that
+            // term. The margin and the real coupon that price them at 100 are the coupons (fairMargin(), fairRealCoupon()).
+            case BOND, FLOATING, LINKED -> curve.parYield(months);
             case AMORTIZING -> amortizingParYield(curve, months / 12);
         };
+    }
+
+    /* -----------------------------------------------------------------------
+       FAIR AT THE SALE, FOR A FLOATER AND A LINKER (CD5, spec-city-debt.md
+       sections 2.4 and 2.5)
+
+       The study's frn_margin() and ilb_real_coupon() (debt-model.py) on the
+       game's timing. Static and pure, so the harness can price them itself.
+       ----------------------------------------------------------------------- */
+
+    /**
+     * The margin over the policy rate that prices a floating-rate note of these months at 100 on
+     * this curve: each coupon at the dial the path expects when it is paid
+     * (FloatingRateNote.flowsFor()), the face at the end, found by bisection on [-50%, +50%] a
+     * year - the present value rises with the margin. The curve's term premium, the credit spread
+     * its life carries and the gap between the expected dial and the floor are in it: 18 basis points
+     * at 2 years in a calm city.
+     *
+     * @param policyPath the dial expected t months ahead, t = 0 now (expectedPolicyPath())
+     */
+    public static double fairMargin(YieldCurve curve, double[] policyPath, int months) {
+        double lo = -0.5, hi = 0.5;
+        for (int i = 0; i < FAIR_COUPON_STEPS; i++) {
+            double mid = (lo + hi) / 2;
+            if (curve.pv(FloatingRateNote.flowsFor(100, mid, policyPath, months)) < 100) lo = mid; else hi = mid;
+        }
+        return (lo + hi) / 2;
+    }
+
+    /** The halvings of the bisection above: far past what a double keeps of a bracket of one unit of yield. */
+    private static final int FAIR_COUPON_STEPS = 100;
+
+    /**
+     * The real coupon that prices a NEW inflation-linked bond of these months at 100 on this curve:
+     * the first payment on a ratio of 1, each later month's grown by the growth the market expects
+     * (InflationLinkedBond.ratiosFor()), the last month adding the indexed principal - never under
+     * the face. The present value is linear in the coupon, so it is closed: with A the
+     * coupon's annuity (a twelfth of the sum of each ratio times its month's factor) and P the
+     * principal's present value (the floor in it), the coupon is (100 - P) / A.
+     *
+     * @param growth the index's growth month by month, entry j the month j months ahead (expectedInflationGrowth())
+     */
+    public static double fairRealCoupon(YieldCurve curve, double[] growth, int months) {
+        if (months <= 0) return 0;
+        double[] ratios = InflationLinkedBond.ratiosFor(1.0, growth, months);
+        double annuity = 0;
+        for (int i = 0; i < ratios.length; i++) annuity += 100 * ratios[i] / 12 * curve.factor(i + 1);
+        double principal = 100 * Math.max(1, ratios[ratios.length - 1]) * curve.factor(months);
+        return annuity > 0 ? (100 - principal) / annuity : 0;
+    }
+
+    /** fairMargin() on the curve a sale of `extraFace` is priced on and the dial the market expects now: the Borrow page's term column. */
+    public double fairMargin(int months, double extraFace) {
+        return fairMargin(quoteCurve(Math.max(0, extraFace)), expectedPolicyPath(), months);
+    }
+
+    /** fairRealCoupon() on the curve a sale of `extraFace` is priced on and the index the market expects now. */
+    public double fairRealCoupon(int months, double extraFace) {
+        return fairRealCoupon(quoteCurve(Math.max(0, extraFace)), expectedInflationGrowth(), months);
+    }
+
+    /**
+     * The inflation a linked line prices in (CD5): the nominal par yield of this term less the
+     * real coupon that prices a linked bond at 100 - the breakeven the market's two lines
+     * disagree by. With a flat curve and a steady inflation it is that inflation to a first
+     * approximation.
+     */
+    public double breakevenInflation(int months, double extraFace) {
+        YieldCurve curve = quoteCurve(Math.max(0, extraFace));
+        return curve.parYield(months) - fairRealCoupon(curve, expectedInflationGrowth(), months);
     }
 
     /**
