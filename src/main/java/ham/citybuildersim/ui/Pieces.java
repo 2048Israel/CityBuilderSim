@@ -627,14 +627,14 @@ public final class Pieces {
     }
 
     public static HBox keySwatch(String colour, String name) {
-        Region dot = new Region();
+        Region dot = Kept.region();
         dot.setMinSize(10, 10);
         dot.setPrefSize(10, 10);
         dot.setMaxSize(10, 10);
         dot.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
-        Label text = new Label(name);
+        Label text = Kept.label(name);
         text.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        HBox row = new HBox(5, dot, text);
+        HBox row = Kept.row(5, dot, text);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
@@ -782,31 +782,32 @@ public final class Pieces {
      * @param manual whether the popover ends "More in the manual"
      */
     public static javafx.scene.Node infoButton(String whole, boolean manual) {
-        javafx.scene.shape.SVGPath mark = new javafx.scene.shape.SVGPath();
+        javafx.scene.shape.SVGPath mark = Kept.of(javafx.scene.shape.SVGPath.class, javafx.scene.shape.SVGPath::new);
         mark.setContent(Icons.INFO);
         mark.setFill(null);
         mark.setStrokeWidth(2);
         mark.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
         mark.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
         mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED));
-        javafx.scene.layout.Pane box = new javafx.scene.layout.Pane(mark);
+        javafx.scene.layout.Pane box = Kept.plain(mark);
         box.setPrefSize(24, 24);
         box.setMinSize(24, 24);
         box.setMaxSize(24, 24);
         box.setScaleX(INFO_SIZE / 24);
         box.setScaleY(INFO_SIZE / 24);
-        javafx.scene.layout.StackPane button = new javafx.scene.layout.StackPane(box);
+        javafx.scene.layout.StackPane button = Kept.stack(box);
         button.setMinSize(INFO_SIZE, INFO_SIZE);
         button.setPrefSize(INFO_SIZE, INFO_SIZE);
         button.setMaxSize(INFO_SIZE, INFO_SIZE);
         button.setStyle("-fx-cursor: hand;");
         button.setOnMouseEntered(e -> mark.setStroke(javafx.scene.paint.Color.web(Palette.ACCENT)));
         button.setOnMouseExited(e -> mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED)));
-        button.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, e -> {
+        // Handlers set, not added: a kept (i) is handed back with none, and given this draw's words.
+        button.setOnMouseClicked(e -> {
             e.consume();
             openPopover(button, whole, manual);
         });
-        button.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_PRESSED, javafx.event.Event::consume);
+        button.setOnMousePressed(javafx.event.Event::consume);
         return button;
     }
 
@@ -818,11 +819,11 @@ public final class Pieces {
      * away. The line wraps at `wide`; the (i) sits after its last word.
      */
     public static HBox infoLine(String shown, String whole, boolean manual, int size, String tone, double wide) {
-        Label line = new Label(shown);
+        Label line = Kept.label(shown);
         line.setWrapText(true);
         line.setMaxWidth(wide - INFO_SIZE - Palette.GAP_TIGHT);
         line.setStyle(Palette.words(size, tone));
-        HBox row = new HBox(Palette.GAP_TIGHT, line, infoButton(whole, manual));
+        HBox row = Kept.row(Palette.GAP_TIGHT, line, infoButton(whole, manual));
         row.setAlignment(Pos.CENTER_LEFT);
         row.setMaxWidth(Region.USE_PREF_SIZE);
         return row;
@@ -1060,7 +1061,7 @@ public final class Pieces {
 
     /** A page as wide as the stage, up to PAGE_WIDE, with the room under it every page keeps. */
     public static VBox widePage() {
-        VBox page = new VBox(Palette.GAP_LOOSE);
+        VBox page = Kept.column(Palette.GAP_LOOSE);
         page.setMaxWidth(PAGE_WIDE);
         page.setFillWidth(true);
         page.setPadding(new javafx.geometry.Insets(0, 18, UserInterface.PAGE_FOOT, 18));
@@ -1078,12 +1079,12 @@ public final class Pieces {
      * keeps its width; the gap before the right-hand side gives way first.
      */
     public static HBox sectionHead(String title, String info, javafx.scene.Node right) {
-        Label head = new Label(title);
+        Label head = Kept.label(title);
         head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         head.setMinWidth(Region.USE_PREF_SIZE);
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox row = new HBox(Palette.GAP, head);
+        HBox row = Kept.row(Palette.GAP, head);
         if (info != null) row.getChildren().add(infoButton(info, false));
         row.getChildren().add(gap);
         if (right != null) row.getChildren().add(right);
@@ -1094,14 +1095,14 @@ public final class Pieces {
 
     /** A section heading's quiet words at its right: "tap one to build for it". */
     public static Label hint(String text) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         return l;
     }
 
     /** A grid of equal columns, as wide as its page. */
     public static javafx.scene.layout.GridPane equalColumns(int n, double gap) {
-        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        javafx.scene.layout.GridPane grid = Kept.grid();
         grid.setHgap(gap);
         grid.setVgap(gap);
         grid.setMaxWidth(Double.MAX_VALUE);

@@ -1143,6 +1143,55 @@ public class UserInterface extends Application {
      * is always showing current data no matter which screen you're on.
      */
     void clearMenu(String screen, Runnable again) {
+        clearMenu(screen, again, false);
+    }
+
+    /* =====================================================================
+       A KEPT SCREEN (study UP4, 0.8.25; docs/studies/spec-screens-in-place.md).
+
+       Every screen above is drawn by emptying the page and building it again,
+       which at month 4,000 cost People 57 ms a redraw - most of it the new
+       nodes' CSS, layout and sync, and making them. A kept screen draws
+       through keepMenu() instead: the first time it is shown its page is
+       built as any other, and each redraw of it after that runs the same
+       drawing code over the nodes it made last time (Kept), so what changes
+       is set on the page on show and nothing is torn down. The scroll stays
+       where it was because the content was never replaced; the hold, the
+       settle and the clamp below are for the pages that are.
+       ===================================================================== */
+
+    /**
+     * Draws a kept screen: its page code run as a Kept draw from the screen's pool - over last
+     * time's nodes when the same screen is redrawn, afresh on arrival (the rail's own tab, pressed,
+     * arrives afresh: it goes to the top). The page reaches the window through setPage().
+     */
+    void keepMenu(String screen, Runnable again, Kept.Pool pool, Runnable page) {
+        boolean kept = pool.holds() && screen.equals(currentScreen) && !railJump;
+        if (!kept) pool.forget();
+        clearMenu(screen, again, kept);
+        // A node a kept draw takes off the page tells nobody the pointer left it, as a page torn down does not (0.7.50).
+        tearingDown = true;
+        try {
+            Kept.draw(pool, page);
+        } finally {
+            tearingDown = false;
+        }
+    }
+
+    /** The page's top nodes put in the menu column: left alone when they are already the ones there (a kept redraw). */
+    void setPage(javafx.scene.Node... nodes) {
+        List<javafx.scene.Node> now = rootMenu.getChildren();
+        boolean same = now.size() == nodes.length;
+        for (int i = 0; same && i < nodes.length; i++) same = now.get(i) == nodes[i];
+        if (!same) rootMenu.getChildren().setAll(nodes);
+    }
+
+    /**
+     * clearMenu, and for a kept screen's redraw (keepPage, the same screen again) everything but
+     * the page: the chrome is refreshed and the screen's bookkeeping kept, but nothing is emptied,
+     * held or settled, since the page is not replaced.
+     */
+    private void clearMenu(String screen, Runnable again, boolean keepPage) {
         // See receiptPulse: an animation on a node that is about to be thrown
         // away keeps running forever otherwise.
         if (receiptPulse != null) {
@@ -1187,8 +1236,8 @@ public class UserInterface extends Application {
         boolean sameScreen = screen.equals(currentScreen) && !railJump;
         railJump = false;
         // Anything vvalue does from here until the settle below is the rebuild
-        // clamping, not the player.
-        settlingScroll = true;
+        // clamping, not the player. (A kept page is not rebuilt, so nothing clamps.)
+        if (!keepPage) settlingScroll = true;
         if (!sameScreen) pageScrollAt = 0;
         // The page's position is no longer read off the scroller here - see
         // pageScrollAt, which the player alone writes.
@@ -1252,7 +1301,7 @@ public class UserInterface extends Application {
         boolean heldPage = false;
         // Guarded on the scroller too: the release lives inside its block, so a
         // hold taken without one would never come off.
-        if (sameScreen && menuScroller != null && rootMenu.getHeight() > 0) {
+        if (!keepPage && sameScreen && menuScroller != null && rootMenu.getHeight() > 0) {
             rootMenu.minHeightProperty().unbind();
             rootMenu.setMinHeight(rootMenu.getHeight());
             heldPage = true;
@@ -1279,11 +1328,13 @@ public class UserInterface extends Application {
            runs, whatever that handler would have done. The charts guard
            their own drawing as well (TimeChart.draw()).
            ================================================================= */
-        tearingDown = true;
-        try {
-            rootMenu.getChildren().clear();
-        } finally {
-            tearingDown = false;
+        if (!keepPage) {
+            tearingDown = true;
+            try {
+                rootMenu.getChildren().clear();
+            } finally {
+                tearingDown = false;
+            }
         }
         // The main menu and the founding screen are drawn over the whole window
         // (0.7.21); every other screen takes the layer away. See THE MAIN MENU.
@@ -1300,7 +1351,7 @@ public class UserInterface extends Application {
         refreshInbox();
         placeFrame();
 
-        if (menuScroller != null) {
+        if (menuScroller != null && !keepPage) {
             if (!sameScreen) menuScroller.setVvalue(0);
             /*
              * LAID OUT ALWAYS, AND PUT BACK FROM THE FIELD - which is the

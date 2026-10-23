@@ -150,70 +150,76 @@ final class PeopleScreen {
     /** The cards the vitals' doors scroll to, as last drawn. */
     private Region monthCard, homesCard, workCard;
 
-    /** A new city or a load: nothing has just landed. */
+    /** The People page's kept nodes (Kept; study UP4): the page is drawn over them on each redraw. */
+    final Kept.Pool pool = new Kept.Pool();
+
+    /** A new city or a load: nothing has just landed, and nothing of the last city's page is kept. */
     void forget() {
         shownMonth = -1;
+        pool.forget();
     }
 
     void showPopulationInfoMenu() {
         // The count-up is for a page being watched as the month turns, as the clock's is: arriving, nothing moves.
         if (!"showPopulationInfoMenu".equals(ui.currentScreen)) shownMonth = -1;
         boolean landed = shownMonth >= 0 && shownMonth != ui.game.getMonth();
-        ui.clearMenu("showPopulationInfoMenu", () -> showPopulationInfoMenu());
+        // Kept (study UP4): the page below is drawn over last time's nodes on a redraw, each card in a scope of its own.
+        ui.keepMenu("showPopulationInfoMenu", () -> showPopulationInfoMenu(), pool, () -> {
+            VBox page = widePage();
+            page.getChildren().add(Kept.scope("head", () -> pageHead("People", Palette.PEOPLE, null, null, STILL_FAKED,
+                    pageChips(true))));
 
-        VBox page = widePage();
-        page.getChildren().add(pageHead("People", Palette.PEOPLE, null, null, STILL_FAKED,
-                pageChips(true)));
+            VBox vitals = Kept.scope("vitals", this::vitals);
+            page.getChildren().add(vitals);
 
-        VBox vitals = vitals();
-        page.getChildren().add(vitals);
+            javafx.scene.layout.GridPane rowA = equalColumns(2, TILE_GAP);
+            Pieces.Waterfall[] grow = new Pieces.Waterfall[1];
+            rowA.add(Kept.scope("pyramid", this::pyramidCard), 0, 0);
+            VBox month = Kept.scope("month", () -> monthCard(grow));
+            rowA.add(month, 1, 0);
+            monthCard = month;
+            page.getChildren().add(rowA);
 
-        javafx.scene.layout.GridPane rowA = equalColumns(2, TILE_GAP);
-        Pieces.Waterfall[] grow = new Pieces.Waterfall[1];
-        rowA.add(pyramidCard(), 0, 0);
-        VBox month = monthCard(grow);
-        rowA.add(month, 1, 0);
-        monthCard = month;
-        page.getChildren().add(rowA);
+            page.getChildren().addAll(
+                    Kept.scope("why head", () -> sectionHead("WHY PEOPLE COME", WHY_INFO, hint("how big a city this good draws"))),
+                    Kept.scope("bridge", this::bridgeCard),
+                    Kept.scope("care head", () -> sectionHead("CARE", hint("Build's rings: click one to build for it"))),
+                    Kept.scope("care", this::careRow));
+            page.getChildren().addAll(Kept.scope("care alerts", this::careAlerts));
 
-        page.getChildren().addAll(
-                sectionHead("WHY PEOPLE COME", WHY_INFO, hint("how big a city this good draws")),
-                bridgeCard(),
-                sectionHead("CARE", hint("Build's rings: click one to build for it")),
-                careRow());
-        page.getChildren().addAll(careAlerts());
+            javafx.scene.layout.GridPane rowD = Kept.grid();
+            rowD.setHgap(TILE_GAP);
+            rowD.setMaxWidth(Double.MAX_VALUE);
+            javafx.scene.layout.ColumnConstraints left = new javafx.scene.layout.ColumnConstraints();
+            left.setPercentWidth(33);
+            left.setFillWidth(true);
+            javafx.scene.layout.ColumnConstraints right = new javafx.scene.layout.ColumnConstraints();
+            right.setPercentWidth(67);
+            right.setFillWidth(true);
+            rowD.getColumnConstraints().addAll(left, right);
+            VBox homes = Kept.scope("homes", this::homesCard);
+            homesCard = homes;
+            rowD.add(homes, 0, 0);
+            rowD.add(Kept.scope("households", this::householdsCard), 1, 0);
+            page.getChildren().addAll(Kept.scope("homes head",
+                    () -> sectionHead("HOMES AND HOUSEHOLDS", hint("who has a door, and who lives behind it"))), rowD);
 
-        javafx.scene.layout.GridPane rowD = new javafx.scene.layout.GridPane();
-        rowD.setHgap(TILE_GAP);
-        rowD.setMaxWidth(Double.MAX_VALUE);
-        javafx.scene.layout.ColumnConstraints left = new javafx.scene.layout.ColumnConstraints();
-        left.setPercentWidth(33);
-        left.setFillWidth(true);
-        javafx.scene.layout.ColumnConstraints right = new javafx.scene.layout.ColumnConstraints();
-        right.setPercentWidth(67);
-        right.setFillWidth(true);
-        rowD.getColumnConstraints().addAll(left, right);
-        VBox homes = homesCard();
-        homesCard = homes;
-        rowD.add(homes, 0, 0);
-        rowD.add(householdsCard(), 1, 0);
-        page.getChildren().addAll(sectionHead("HOMES AND HOUSEHOLDS", hint("who has a door, and who lives behind it")), rowD);
+            page.getChildren().add(Kept.scope("outside head", () -> sectionHead("OUTSIDE THE FAMILIES", OUTSIDE_INFO,
+                    hint("nobody's household, and no wage"))));
+            page.getChildren().addAll(Kept.scope("outside", this::outsideRow));
 
-        page.getChildren().add(sectionHead("OUTSIDE THE FAMILIES", OUTSIDE_INFO,
-                hint("nobody's household, and no wage")));
-        page.getChildren().addAll(outsideRow());
+            VBox work = Kept.scope("work", this::workCard);
+            workCard = work;
+            page.getChildren().addAll(Kept.scope("work head", () -> sectionHead("WORK", hint("is there work, and who can do it"))), work);
 
-        VBox work = workCard();
-        workCard = work;
-        page.getChildren().addAll(sectionHead("WORK", hint("is there work, and who can do it")), work);
+            ui.setPage(page);
 
-        ui.rootMenu.getChildren().add(page);
-
-        // A month that landed while the page was watched: the headcount counts and the month's bars grow.
-        if (landed) {
-            countUp(vitals);
-            if (grow[0] != null) grow[0].animate(COUNT_MILLIS);
-        }
+            // A month that landed while the page was watched: the headcount counts and the month's bars grow.
+            if (landed) {
+                countUp(vitals);
+                if (grow[0] != null) grow[0].animate(COUNT_MILLIS);
+            }
+        });
         shownMonth = ui.game.getMonth();
     }
 
@@ -869,7 +875,7 @@ final class PeopleScreen {
 
     /** A card on the Build card ground: RAISED, radius 8, a 1 px EDGE. */
     static VBox card(double gap) {
-        VBox c = new VBox(gap);
+        VBox c = Kept.column(gap);
         c.setMaxWidth(Double.MAX_VALUE);
         c.setStyle(CARD);
         return c;
@@ -881,12 +887,12 @@ final class PeopleScreen {
 
     /** A card's own small heading, in the section heads' grey, and whatever sits at its right. */
     static HBox cardHead(String title, String info, javafx.scene.Node... right) {
-        Label t = new Label(title);
+        Label t = Kept.label(title);
         t.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         t.setMinWidth(Region.USE_PREF_SIZE);
-        HBox row = new HBox(Palette.GAP_TIGHT, t);
+        HBox row = Kept.row(Palette.GAP_TIGHT, t);
         if (info != null) row.getChildren().add(infoButton(info, false));
-        Region gap = new Region();
+        Region gap = Kept.region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         row.getChildren().add(gap);
         for (javafx.scene.Node n : right) if (n != null) row.getChildren().add(n);
@@ -896,7 +902,7 @@ final class PeopleScreen {
 
     /** Words that wrap, at a size, in a colour. */
     static Label words(String text, int size, String colour) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setWrapText(true);
         l.setMinWidth(0);
         l.setStyle(Palette.words(size, colour));
@@ -905,7 +911,7 @@ final class PeopleScreen {
 
     /** A figure, in the mono face, at a size, in a colour. */
     static Label figure(String text, int size, String colour) {
-        Label l = new Label(text);
+        Label l = Kept.label(text);
         l.setStyle(Palette.figure(size, colour));
         l.setMinWidth(Region.USE_PREF_SIZE);
         return l;
@@ -1044,45 +1050,43 @@ final class PeopleScreen {
         for (AgeBand b : AgeBand.values()) {
             widest = Math.max(widest, Math.max(cohorts.share(b), PopulationCohorts.equilibriumShare(b)));
         }
-        VBox rows = new VBox(0);
+        VBox rows = Kept.column(0);
         for (int i = AgeBand.values().length - 1; i >= 0; i--) {
             AgeBand b = AgeBand.values()[i];
             Label name = figure(b.getLabel(), Palette.SIZE_BODY, Palette.TEXT_BODY);
             name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
             Label age = words(ages(b), Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
-            VBox who = new VBox(0, name, age);
+            VBox who = Kept.column(0, name, age);
             who.setMinWidth(96);
             who.setPrefWidth(96);
             who.setAlignment(Pos.CENTER_LEFT);
 
-            Mirror bar = new Mirror(cohorts.share(b), PopulationCohorts.equilibriumShare(b), widest,
-                    bandColour(b));
+            Mirror bar = Kept.of(Mirror.class, Mirror::new);
+            bar.set(cohorts.share(b), PopulationCohorts.equilibriumShare(b), widest, bandColour(b));
             HBox.setHgrow(bar, Priority.ALWAYS);
 
             Label count = figure(people(cohorts.get(b)), Palette.SIZE_BODY, Palette.TEXT_HEAD);
             Label share = figure(String.format("%.1f%%", cohorts.share(b) * 100), Palette.SIZE_CAPTION,
                     Palette.TEXT_MUTED);
-            VBox figures = new VBox(0, count, share);
+            VBox figures = Kept.column(0, count, share);
             figures.setAlignment(Pos.CENTER_RIGHT);
             figures.setMinWidth(86);
             figures.setPrefWidth(86);
 
-            HBox row = new HBox(8, who, bar, figures);
+            HBox row = Kept.row(8, who, bar, figures);
             row.setAlignment(Pos.CENTER_LEFT);
             row.setMinHeight(34);
             row.setPrefHeight(34);
-            Tooltip tip = new Tooltip(String.format(
+            Kept.tip(row, String.format(
                     "%s, %s: %s people, %.1f%% of the city%nA settled city: %.1f%%%n%.0f%% of them off sick"
                     + "%nDied of illness this month: %s",
                     b.getLabel(), ages(b), people(cohorts.get(b)), cohorts.share(b) * 100,
                     PopulationCohorts.equilibriumShare(b) * 100, sickness.share(b) * 100,
-                    flowText(sickness.getLastDeaths(b))));
-            tip.setShowDelay(Duration.millis(250));
-            Tooltip.install(row, tip);
+                    flowText(sickness.getLastDeaths(b))), 250);
             rows.getChildren().add(row);
         }
 
-        HBox key = new HBox(Palette.GAP_LOOSE, keySwatch(Palette.PEOPLE_LIGHT, "children"),
+        HBox key = Kept.row(Palette.GAP_LOOSE, keySwatch(Palette.PEOPLE_LIGHT, "children"),
                 keySwatch(Palette.PEOPLE, "working age"), keySwatch(Palette.PEOPLE_DARK, "retired"),
                 LandScreen.ghostSwatch(Palette.TEXT_MUTED, "a settled city"));
         key.setAlignment(Pos.CENTER_LEFT);
@@ -1104,14 +1108,11 @@ final class PeopleScreen {
 
     /** One band of the pyramid: a bar centred on the axis, `share` of the widest's scale, and the settled share's outline. */
     static final class Mirror extends javafx.scene.layout.Pane {
-        private final double share, settled, widest;
+        private double share, settled, widest;
         private final Region bar = new Region(), ghost = new Region(), axis = new Region();
 
-        Mirror(double share, double settled, double widest, String colour) {
-            this.share = share;
-            this.settled = settled;
-            this.widest = widest;
-            bar.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
+        /** Its three bars, made once in its life (Kept: a kept Mirror is told each month's figures by set()). */
+        Mirror() {
             ghost.setStyle("-fx-border-color: " + Palette.TEXT_MUTED + "; -fx-border-width: 1;"
                     + " -fx-border-radius: 2; -fx-background-color: transparent;");
             ghost.setMouseTransparent(true);
@@ -1121,6 +1122,16 @@ final class PeopleScreen {
             setPrefWidth(2 * PYRAMID_HALF);
             setMinHeight(34);
             setPrefHeight(34);
+        }
+
+        /** This band's share, the settled city's, the widest band's, and its colour: laid out again only when one moved. */
+        void set(double share, double settled, double widest, String colour) {
+            bar.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
+            if (share == this.share && settled == this.settled && widest == this.widest) return;
+            this.share = share;
+            this.settled = settled;
+            this.widest = widest;
+            requestLayout();
         }
 
         @Override protected void layoutChildren() {

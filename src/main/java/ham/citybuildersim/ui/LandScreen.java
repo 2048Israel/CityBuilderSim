@@ -1058,15 +1058,15 @@ final class LandScreen {
 
     /** A key's swatch for a ghost: tinted and outlined as the ghost is drawn. */
     static HBox ghostSwatch(String colour, String name) {
-        Region dot = new Region();
+        Region dot = Kept.region();
         dot.setMinSize(10, 10);
         dot.setPrefSize(10, 10);
         dot.setMaxSize(10, 10);
         dot.setStyle("-fx-background-color: " + colour + "40; -fx-border-color: " + colour + ";"
                 + " -fx-border-width: 1; -fx-background-radius: 2; -fx-border-radius: 2;");
-        Label text = new Label(name);
+        Label text = Kept.label(name);
         text.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        HBox row = new HBox(5, dot, text);
+        HBox row = Kept.row(5, dot, text);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
     }
