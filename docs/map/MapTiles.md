@@ -1,4 +1,4 @@
-# MapTiles.java - 638 lines · 33 methods · 8 constants · model
+# MapTiles.java - 1,031 lines · 46 methods · 10 constants · model
 
 `ham/citybuildersim/MapTiles.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -26,7 +26,7 @@
 > without one it wanted says so (nodePixels()'s count, wanted()), and the
 > view asks CityMap.pictureJobs() for them while picturesFit().
 
-**Uses:** [World](World.md) (56), [TilePainter](TilePainter.md) (36), [MapFrame](MapFrame.md) (36), [CityMap](CityMap.md) (16), [TileRaster](TileRaster.md) (11), [LandGrid](LandGrid.md) (9), [DistrictPicture](DistrictPicture.md) (8), [Kept](Kept.md) (6), [BuildingVisual](BuildingVisual.md) (6), [CityRuns](CityRuns.md) (4), [EarthProj](EarthProj.md) (3), [CityLand](CityLand.md) (2), [CityShore](CityShore.md) (1)
+**Uses:** [World](World.md) (86), [MapFrame](MapFrame.md) (42), [TilePainter](TilePainter.md) (36), [CityMap](CityMap.md) (28), [LandGrid](LandGrid.md) (21), [TileRaster](TileRaster.md) (20), [DistrictPicture](DistrictPicture.md) (18), [BuildingVisual](BuildingVisual.md) (12), [Kept](Kept.md) (6), [CityLand](CityLand.md) (6), [EarthProj](EarthProj.md) (6), [CityRuns](CityRuns.md) (6), [CityShore](CityShore.md) (3)
 
 **Used by (10):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [JunctionCheck](JunctionCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [RailDrawCheck](RailDrawCheck.md)
 
@@ -37,6 +37,7 @@
 | 306 | THE BUDGET (spec-land 2.6: every cache within 48 MB) |
 | 361 | THE FAR NODES |
 | 389 | · the far nodes from the district pictures (0.7.128, batch MM1; docs/studies/spec-globe.md 8.2) |
+| 639 | · a far node kept: redrawn only where it moved (batch UP3) |
 
 ## Constants
 
@@ -50,6 +51,8 @@
 | 392 | `MapTiles.PICTURE_FROM_PX` | `4` | A district is drawn from its picture (DistrictPicture) on a far node where it is at least this many of the node's pixels across: 4 (the study's 8.2) - a node's pixel is shown 1 to 2 screen pixels wide (MapFrame.nodePl... |
 | 395 | `MapTiles.EDGE` | `0xffffffff` | The city's edge over a far node's pixels: white at 0.55, the view's edge's (MapView's EDGE_ALPHA, since 0.7.61), on the inner ring of the pixels drawn as the city's and on any holding ground of it smaller than a pixel... |
 | 398 | `MapTiles.EDGE_ALPHA` | `0.55` | ...its white's alpha: 0.55, the view's own edge's since 0.7.61 - ui/MapView's EDGE_ALPHA reads this one since 0.7.128, so the two are one dial. |
+| 642 | `MapTiles.NO_DISTRICT` | `- 1, VOID_PIXEL = - 2` | KeptNode's district index at a pixel with no district (no city ground there, or ground no district holds), and at one past the planet's rim on Earth, which nodePixels() draws the void. |
+| 645 | `MapTiles.NO_PICTURE` | `0x4E4F504943L, NO_LAND = 0x4C414E44L, NO_RUNS = 0x4E4F52554E53L` | nodeKey()'s fixed marks: a district whose picture is not current, the land's key where the city has no land, the runs' where it has none. |
 
 ## Fields (state)
 
@@ -64,12 +67,29 @@
 | 64 | `private long paints, stamps` | How many tiles have been painted and how many stamps taken: what a harness reads. |
 | 401 | `private final java.util.Set<CityMap.District> wanted` | The districts the last nodePixels() drew at PICTURE_FROM_PX or more with no current picture: what the view asks the pictures of (CityMap.pictureJobs()). |
 | 404 | `private boolean[] lastEdge` | Which of the last nodePixels()'s pixels it drew as the city's edge, and as the far skeleton's - a highway, the railway, a yard or a sea terminal's dot: a harness's. |
+| 667 | `private CityMap map` |  |
+| 668 | `private CityLand land` |  |
+| 669 | `private LandGrid grid` |  |
+| 670 | `private long x0, y0, plots, landKey, runsKey` |  |
+| 671 | `private byte[] ground` |  |
+| 672 | `private boolean runsKept` |  |
+| 674 | `private byte[] cover` | The land layer: the city's cover of each pixel and a ring about the node, whether it owns the pixel's sample, whether the pixel is its edge, and each pixel's district (an index into districts, or NO_DISTRICT, or VOID_... |
+| 675 | `private boolean[] city, edge` |  |
+| 676 | `private int[] district` |  |
+| 677 | `private CityMap.District[] districts` |  |
+| 679 | `private int[] base` | The district layer: each pixel's colour before the runs and the edge, and each district's key as it was drawn. |
+| 680 | `private long[] dVersion, dUsed` |  |
+| 681 | `private int[] dOwned` |  |
+| 682 | `private DistrictPicture[] dPic` |  |
+| 684 | `private int[] runColour` | The runs layer: the colour of each pixel the runs cross, and which they cross. |
+| 685 | `private boolean[] runMask` |  |
+| 686 | `private long lands, runsDrawn, repainted, calls` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 608 | **type** `public final class MapTiles` | The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kep... |
+| 31 | 1001 | **type** `public final class MapTiles` | The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kep... |
 | 49 | 5 | **type** `private static final class Kept` | A tile's painted bytes, kept: its inputs, the picture and the stamp it was painted at. |
 | 66 | 1 | `public MapTiles(CityMap map)` |  |
 | 69 | 1 | `public CityMap map()` | The map these tiles are painted from. |
@@ -119,4 +139,23 @@
 | 592 | 8 | `private void mark(long x, long y, long x0, long y0, long plots, int colour, int[] out)` | Plot (x, y)'s pixel on the node, when it is on it, in a run's colour. |
 | 602 | 13 | `private void dot(double x, double y, long x0, long y0, long plots, int colour, int[] out)` | A yard's or a sea terminal's 2 x 2 pixel dot at its box's middle, in TRANSPORT's fill (spec-freight 4.8). |
 | 624 | 14 | `public boolean picturesFit(MapFrame f)` | Whether a far view asks for the pictures of the built districts it shows (0.7.128): while they are no more than CityMap.PICTURES_KEPT and lie in no more of the map's bands than it keeps the links of (CityMap.BANDS_KEP... |
+
+### a far node kept: redrawn only where it moved (batch UP3) (lines 639-1031)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 666 | 33 | **type** `public static final class KeptNode` | What a far node was last drawn from and its layers, for one node (batch UP3, docs/queue/UP3.md; the minimap's stamp is one - the expanded map's far view has too many nodes to keep layers for, and asks nodeKey() instea... |
+| 689 | 1 | `public long lands()` _(in MapTiles.KeptNode)_ | Times its land layer was drawn. |
+| 691 | 1 | `public long runsDrawn()` _(in MapTiles.KeptNode)_ | Times its runs layer was drawn. |
+| 693 | 1 | `public long districtsRepainted()` _(in MapTiles.KeptNode)_ | Districts whose pixels were repainted, summed over the calls. |
+| 695 | 1 | `public long calls()` _(in MapTiles.KeptNode)_ | Times nodePixels() was called with it. |
+| 697 | 1 | `public int districts()` _(in MapTiles.KeptNode)_ | How many districts it lists now: those it met at a pixel of the city's ground. |
+| 711 | 67 | `public int nodePixels(KeptNode keep, long x0, long y0, long plots, byte[] ground, int[] out)` | A far node's pixels as nodePixels(x0, y0, plots, ground, out) gives them - `out`, wanted(), lastEdge(), lastRun() and the return all equal - redoing only what moved since `keep` was last drawn (batch UP3): the land la... |
+| 788 | 85 | `private void drawLand(KeptNode keep, CityLand land, LandGrid grid)` | The land layer of a kept node: nodePixels()'s first loop (the city's cover a pixel at a time and a ring round the node, and whether it owns each pixel's sample) and last (the edge), and which district each pixel lies ... |
+| 882 | 40 | `private void repaint(KeptNode keep, boolean[] dirty, boolean all)` | The district layer of a kept node: each pixel's colour before the runs and the edge - the terrain's, dimmed where the city does not own it, a built district's picture's pixel or its shares' dither over it - for the pi... |
+| 924 | 19 | `private void drawRuns(KeptNode keep)` | The runs layer of a kept node: nodePixels()'s runs block, drawn into the node's own colours and its mask the pixels they cross (lastRun after it). |
+| 954 | 8 | `private long landKey(long x0, long y0, long plots)` | The land key of the node at (x0, y0) of `plots` a pixel: how many plots the city owns in its box and the ring of a pixel round it - [x0 - plots, x0 + (NODE_PX + 1) plots) each way - folded with the map's district coun... |
+| 964 | 11 | `private long runsKey()` | The runs key: whether the city has runs, their version (CityRuns' stamp of everything laid), whether the highways reach a street, and the shore's works - each one's box and whether it has a quay - in order. |
+| 995 | 23 | `public long nodeKey(long x0, long y0, long plots)` | A hash of everything nodePixels() draws the node at (x0, y0) from but its ground, which is the world's and fixed for the node (batch UP3; the expanded map's far view keeps this and an image a node, redrawing a node wh... |
+| 1020 | 11 | `private long districtKey(CityMap.District d, boolean pictures)` | One district's part of nodeKey(): its place, version, built and owned plots, and (`pictures`) its current picture's stamp or NO_PICTURE. |
 
