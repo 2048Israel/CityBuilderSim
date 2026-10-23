@@ -344,7 +344,7 @@ public class HoldersCheck {
         assertTrue("...and M0 moved by exactly the money made, the redemption among it",
                 Math.abs((cb.m0() - m0) - (cb.getIssued() - cb.getRetired())) <= .005);
         close("the central bank kept nothing: its gain against face is in the month's profit",
-                cb.equity() - cb.getVault(), cb.getRemittanceDue() - cb.getLossCarried(), .01);
+                cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime(), cb.getRemittanceDue() - cb.getLossCarried(), .01);
 
         /* ================= 6. the save ================= */
         out.println("\n--- 6. save and reload, and every holding is where it was ---");
@@ -1385,7 +1385,9 @@ public class HoldersCheck {
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
                 Files.readString(files.saveFile(3))).getAsJsonObject();
         com.google.gson.JsonArray full = json.getAsJsonArray("capitalFlows");
-        assertTrue("fixture: the save carries the world's paper in slots 12-14 of the capital flows array", full != null && full.size() >= 15);   // XR2 appended slot 15, what left on doubt
+        // The array's whole length, not "at least": an append past it (XR2's slot 15, what left on doubt; FX8's 16-18, the month's flows) is
+        // caught here, so whoever appends looks again at whether cutting it at 12 is still a save from before the world held any (FX8).
+        assertTrue("fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 19 slots long", full != null && full.size() == 19);
         com.google.gson.JsonArray cut12 = new com.google.gson.JsonArray();
         for (int i = 0; i < 12; i++) cut12.add(full.get(i));
         json.add("capitalFlows", cut12);

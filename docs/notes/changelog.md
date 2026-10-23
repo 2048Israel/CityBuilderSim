@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.23 — FX8, XR2's loose ends off the default path — 2026-10-22, ready, see docs/queue/FX8-notes.md
+
+Five things the orchestrator's review of XR2 found, none on the default path. The central bank keeps nothing, restated:
+equity less the vault, plus what it paid in new money for the vault's dollars (the strong edge's default payer), is the
+remittance due less the loss carried; the old statement was false by that term under a peg or a band, and never asserted
+under one. Leaving a peg between two presses clears its doubt, so the hot money no longer leaves at the dead peg's hazard
+for one more month. The hot money's month (arrived, departed, on doubt) is saved, so Policy's "of which ... left on doubt"
+survives a load. Trade's "net bought into the vault" counts the central bank's edge purchases, as it counted its defence's
+sales. HoldersCheck pins the capital-flows array at its 19 slots. CurrencyRegimeCheck 5, 9 and 11 restated and extended,
+12 and 13 new, each red on 0.8.22's model. Under Lean all of it is off: the playtest's trace is unchanged but for its run
+time, so no ensemble. Saved, no format bump.
+
 ### 0.8.22 — XR2, the currency's regimes — 2026-10-22, ready, see docs/queue/XR2-notes.md
 
 Policy › Money › The currency chooses how the D$ is held (★3): Float; Lean against falls, XR1's float and the default;

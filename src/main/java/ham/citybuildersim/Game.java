@@ -4032,7 +4032,8 @@ public class Game {
             }
             rest = owed - paid;
         }
-        if (rest > 0) centralBank.buyDollarsForVault(rest);
+        // ...and the central bank's part is on the vault's record, as its defence's sales are (FX8).
+        if (rest > 0) foreign.noteEdgePaidByCentralBank(centralBank.buyDollarsForVault(rest));
     }
 
     /* =======================================================================
