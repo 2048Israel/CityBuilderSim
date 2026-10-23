@@ -7191,7 +7191,7 @@ public final class GameVersion {
      *   - ui/UiProbe: the pulse's own passes, the chrome alone, FRAME_P95.
      *   - Harness: ClockCheck (new); KeptCheck 6-13 (new sections).
      */
-    public static final String VERSION = "0.8.28";
+    public static final String VERSION = "0.8.29";
 
     /**
      * The save shape.

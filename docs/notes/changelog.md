@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.29 — CL5, highways that reach the whole city — 2026-10-23, ready, see docs/queue/CL5-notes.md
+
+A highway net that stops no longer stops for good (CityRuns): when no arm can grow and no corridor line crosses the net, a
+LINK searches the piece's dry ground from the net to the nearest open line (k districts from its hub), straightened into
+straight and 45-degree legs it lays plot by plot; the line's two arms open where it arrives. Every piece of ground the
+water parts that holds buildings (CityMap.MapPieces: 32-plot tiles, eight ways; a purchase only joins its new tiles)
+grows its own net from its hub, its tile nearest the founding site; the model's plots are dealt by built ground, taken
+back only when the model's fall, and a purchase that joins two pieces moves nothing. The sidecar is FORMAT 12. On the
+default playtest's city at month 4,005: 301 of the model's 1,687 highway plots laid before, all 1,687 now, and the
+district on the other island has a highway. IslandNetCheck (new) causes each case. The model's trace is main's but for
+the map's own layout-watch counts (0 boxes moved), so no ensemble. Calls for Jerus: CL5-C (the railway on other pieces).
+
 ### 0.8.28 — UP2, the clock keeps its frame — 2026-10-23, ready, see docs/queue/UP2-notes.md
 
 The window's clock is paced by what it costs (ClockPace, new): a redraw waits three times what the last cost, 120 ms at

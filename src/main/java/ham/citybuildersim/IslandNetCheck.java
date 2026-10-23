@@ -92,7 +92,8 @@ public class IslandNetCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        System.out.printf("%-110s %s%n", label, ok ? "ok" : "FAIL");
+        // Through Timing (TimingCheck 6): a timing miss beside another JVM says SOFT and is not counted.
+        System.out.printf("%-110s %s%n", label, Timing.verdict(ok));
     }
 
     /** The founding site: a highway line crossing, so that the hub is the site itself. */

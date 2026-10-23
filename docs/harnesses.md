@@ -2,7 +2,7 @@
 
 Generated 2026-10-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**131 harness files, 13,068 labelled assertions.** AllChecks runs 131 of them.
+**132 harness files, 13,161 labelled assertions.** AllChecks runs 132 of them.
 
 ## Which harnesses read which class
 
@@ -23,11 +23,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, LandCheck, LongPlaytest, ReadPathCheck, RoadCheck, SectorFlowCheck, WaterCheck |
 | [BuildCard](map/BuildCard.md) | BuildCardCheck, ChildcareCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, SectorFlowCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
-| [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, WellCheck |
+| [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
 | [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
-| [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
+| [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LongPlaytest, RefineryCheck, RoadCheck, SaveFileCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
@@ -43,10 +43,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, ReadPathCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, YearBookCheck |
-| [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, LandCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, WaterCheck, WorldCheck |
-| [CityMap](map/CityMap.md) | EarthTerrainCheck, GatewayCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, TruckRouteCheck |
+| [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, IslandNetCheck, LandCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, WaterCheck, WorldCheck |
+| [CityMap](map/CityMap.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, TruckRouteCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
-| [CityRuns](map/CityRuns.md) | EarthTerrainCheck, GatewayCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
+| [CityRuns](map/CityRuns.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
 | [CityShore](map/CityShore.md) | MapCheck, RailDrawCheck, TruckRouteCheck |
 | [ClockPace](map/ClockPace.md) | ClockCheck |
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck |
@@ -86,7 +86,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Freight](map/Freight.md) | BuildCardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck |
 | [FreightView](map/FreightView.md) | FreightViewCheck, TradeBandCheck |
 | [FuelSplit](map/FuelSplit.md) | OilCheck |
@@ -128,7 +128,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandManager](map/LandManager.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, LandCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck |
-| [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
+| [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
 | [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, CentralBankCheck, CreditCheck, FundCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck |
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
@@ -202,7 +202,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [TimeSkipReport](map/TimeSkipReport.md) | AuctionCheck, HealthCheck, SkipReportCheck |
-| [Timing](map/Timing.md) | EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, KeptCheck, MapCheck, PlanCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck |
+| [Timing](map/Timing.md) | EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandNetCheck, KeptCheck, MapCheck, PlanCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck |
 | [TrackCurves](map/TrackCurves.md) | GatewayCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [TradeBand](map/TradeBand.md) | TradeBandCheck |
@@ -220,7 +220,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ZoningCheck |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
-| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, JunctionCheck, LandCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
+| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, IslandNetCheck, JunctionCheck, LandCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, ReadPathCheck, ScaleCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CurveCheck, LongPlaytest |
@@ -9460,6 +9460,124 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1588 ...and earnings over prime's bar on the whole cost, under the order's, are refused at prime
   - L1600 an order of three, the till paying for one, earning each its share of the bar on all three's cost is
   - L1603 ...and earning half the lower bar, none of it - the slice the till pays for included
+
+## IslandNetCheck.java - 93 labelled assertions
+
+> A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5).
+> 
+> WHAT THIS HAS TO PROVE (the sections below are numbered to match):
+> 
+>   1. A STUCK NET OPENS ITS NEXT CORRIDOR BY A LINK ARM. A ground whose four
+>      spine arms stop at its edges short of APART, no line crossing the net,
+>      and more of the city's dry ground a line away that a link reaches: with
+>      CityRuns.linkArms off the highways stall (highwayShort() > 0: the
+>      premise, the fixture causes it); with it on a LINK corridor opens, its
+>      link leaves the net at its start and stands on its line at its end, the
+>      corridor's two line arms open there, every plot is on owned dry ground,
+>      and the model's plots are all laid. No link is a stub: each stands on
+> ...
+
+- **L247 1. a stuck net opens its next corridor by a link arm**
+  - L263 fixture: without link arms the highways stall short of the model's plots (premise)
+  - L264 fixture: ...with no corridor but the spine's two, and every arm shorter than APART
+  - L265 fixture: ...and no line crosses the net: newCorridor() finds none
+  - L270 a LINK corridor opens
+  - L271 the model's highway plots are all laid: highwayShort() is 0
+  - L273 a link stands on its line
+  - L280 ...it leaves the net at its start (a plot of the net) and stands on the line at its end
+  - L287 ...with an interchange at each
+  - L290 ...and the corridor's two line arms open where it meets the line
+  - L296 ...laid along the line
+  - L297 the link is a planned way, a shortest one: its steps are the plots between its start and its end, none wasted
+  - L298 ...of at most 3 legs (stretches)
+  - L299 ...and it joins the net to its line: every stretch starts where the one before it ended
+  - L301 no link is a stub: each stands on its line or is the piece's newest corridor still growing
+  - L302 every plot is on owned dry ground
+  - L303 plots counted are the plots covered
+- **L305 1b. a link finds its way round water**
+  - L320 fixture: without link arms the highways stall short of the model's plots, in the spine's two corridors (premise)
+  - L322 fixture: ...and no line crosses the net: newCorridor() finds none
+  - L328 two LINK corridors open: the neck's line, then the far square's
+  - L329 the model's highway plots are all laid: highwayShort() is 0
+  - L330 a link stands on its line
+  - L334 the first link's line is the column APART east of the hub
+  - L335 ...it leaves the net at its start (a plot of the net) and stands on the line, in the neck, at its end
+  - L337 ...a shortest way:
+  - L339 ...joined from the net to the line, in at most 3 legs (stretches)
+  - L351 ...every plot of it, and every staircase corner, on dry owned ground
+  - L355 the second link goes on to the column two APART out, in the far square
+  - L357 no link is a stub: each stands on its line or is the piece's newest corridor still growing
+  - L358 every plot is on owned dry ground
+  - L359 plots counted are the plots covered
+  - L362 a link part-grown at the model's plots is the newest corridor still growing: no stub
+  - L371 taken back to
+  - L375 ...grown again to
+- **L379 2. two islands each with buildings get a net each, none across the sea**
+  - L397 the far island has a net of its own: a second piece
+  - L398 each island has highway plots
+  - L399 ...its hub plot laid, drawn with the rest
+  - L400 the plots are dealt by the pieces' weights: the far piece floor(T * 1 / 4), the home piece the rest (within 2 plots)
+  - L402 ...as the pieces count them
+  - L403 no highway plot is on salt or unowned ground
+  - L404 none is across the sea
+  - L405 highwayShort() is 0: the islands hold the model's plots
+  - L406 the far piece's spine is its own: corridors 2 and 3 are SPINE corridors of piece 1
+  - L416 premise: with ONE_PIECE the far island has none and the plots the home island cannot hold are never laid (today's fault)
+  - L422 fixture: the home piece's share is more than its island holds
+  - L423 the home piece, stopped by its ground short of its share, is made up by the far piece: all the plots laid
+- **L425 3. growth and trim are newest-end, piece by piece (H4)**
+  - L440 growing 50 plots a month to 900: every arm of a month is a prefix of the next month's (nothing laid moves)
+  - L441 ...the far piece's hub is laid as soon as it has a plot
+  - L442 ...and the model's plots are all laid
+  - L453 taken back from 900 to nothing in steps: every arm of a month is a prefix of the month before's
+  - L454 ...the far piece's hub plot is the last of its piece to go: laid while the piece has a plot, gone with the last
+  - L455 ...nothing is left of the far piece but its corridors, and the net is reset with the last plot
+- **L457 4. a purchase joining two pieces moves nothing**
+  - L467 the month a purchase joins them, with the same plots: nothing moves (the runs' signature is the same)
+  - L470 as the plots grow, every arm laid before is a prefix of the arm after
+  - L471 the younger net is frozen: its plots are what they were
+  - L479 ...every arm of it exactly as it was
+  - L480 the home net grows on: past what it held, to the plots the model has less the frozen net's
+- **L483 5. the sidecar keeps every piece's net**
+  - L493 written and read at FORMAT
+  - L495 ...with the pieces' hubs
+  - L498 ...the corridors' roles and pieces
+  - L499 ...each piece's plots counted afresh the same
+  - L504 ...and they fill a box alike
+  - L510 fixture: the neck ground's first link is part-grown, with its plan, at the model's
+  - L517 a link part-grown, written and read back, is the same net, its LINK corridor's role kept, and has no plan
+  - L527 ...it grows on to its line: the way planned again, the link whole, the model's plots all laid
+  - L529 ...what was laid before is still there, and no link is a stub, and every plot is on dry owned ground
+  - L540 a net of one piece written at FORMAT 11 and read back is the same (its corridors a spine and crossings, one piece)
+  - L546 ...and at FORMAT
+  - L548 the sidecar writes and reads (
+- **L551 6. nothing else moved**
+  - L562 fixture: the rule never sticks here: crossings open corridors and no link does
+  - L563 layTo() with ONE_PIECE gives the same stretches() with link arms on and off
+  - L564 ...the same signature()
+  - L573 ...and after the plots are taken back to 1,200
+- **L575 7. the map finds its pieces and every built piece has a highway**
+  - L631 fixture: the default world has a strip of 8 x 2 districts, dry at every sample, near its dry place
+  - L677 the map finds three pieces of ground
+  - L678 the home piece, 0, is the middle island's, the founding site's; the others follow by their first tile, west then east
+  - L680 a plot in the unowned ground between two islands, or beyond them, is on no piece
+  - L683 each piece holds its island's tiles: 16 x 16 of them
+  - L684 the ground was read once (a flood) and not again by the
+  - L699 each piece's weight is the plots its buildings stand on, worked again from the districts: every island has some
+  - L714 each piece's hub is its tile nearest the founding site's (the northern, then the western, on a tie), its highway line crossing on dry ground
+  - L718 the runs have a net for each piece: three, each from its piece's hub
+  - L723 every island has highway plots
+  - L724 the model's plots are all laid: highwayShort() is 0
+  - L736 no highway plot is on salt, fresh water or ground the city does not own, and none crosses between the islands
+  - L737 growing a month at a time, every arm of a month is a prefix of the next (nothing laid moves)
+  - L742 premise: the same runs on the same ground with ONE_PIECE lay no highway on the other two islands (today's fault)
+  - L750 a purchase of the ground between the west and the middle islands: the map reads only its tiles (an update, not another flood)
+  - L751 ...they are one piece now, the home piece, and the east island is piece 1
+  - L753 ...the month it joins them nothing moves: the plots and every stretch laid are where they were
+  - L759 as the plots grow every stretch laid before is a prefix of the one after
+  - L760 the west net, no longer its piece's owner, is frozen as it was; the model's plots are all laid
+  - L788 on the city of billions a purchase is an update of the map's pieces, not another flood
+  - L789 ...and the update takes no more than MapCheck's RECONCILE_MS (
 
 ## JunctionCheck.java - 134 labelled assertions
 
