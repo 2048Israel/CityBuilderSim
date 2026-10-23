@@ -14,6 +14,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.28 — UP2, the clock keeps its frame — 2026-10-23, ready, see docs/queue/UP2-notes.md
+
+The window's clock is paced by what it costs (ClockPace, new): a redraw waits three times what the last cost, 120 ms at
+least; a frame stops running months past 40 ms and drops the time it owed past one month instead of paying it back in a
+burst; the speed reads "50× · 39×" when the city falls a tenth short of the rung. The header's tiles read only their last
+ten years of history. The chrome is kept with ui/Kept (UP4's pattern, its §7): the header, the rail, the city panel, the
+construction panel and the inbox's list set their figures on last month's nodes. At month 4,005, against main in the same
+state of the PC: the chrome went from 11-40 ms of every redraw to 2-11, every screen's redraw is 4-34 ms cheaper (People
+39 to 19), and at 50x People's frame p95 went from 42 ms to 26 (FRAME_P95_MS 34). KeptCheck 6-13 compare the kept chrome
+with one built new, node by node and pixel by pixel, over 25 months; renders of the real window are the same pixels as
+0.8.26's at months 1,000 and 4,000. ClockCheck (new) drives the pace on a clock of its own. UiProbe times the pulse's own
+passes. The playtest's trace is 0.8.27's but for its run-time lines, so no ensemble. Calls for Jerus: UP2-C.
+
 ### Docs pass 2026-10-23 — over AN1, XR2, FX8, FX7, UP1, UP4 and UP3 — shipped, no tag
 
 The daily docs pass by a fresh session over the seven batches since the 2026-10-22 pass (0ceac7b6..9f6ece08).

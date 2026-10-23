@@ -56,7 +56,69 @@ screen's redraw, and at month 4,000 holds each screen's frame p95 at 50x to its 
 
 ## 2. Measured
 
-FIGURES_TBD
+`UiProbe 4000` on the PC (i7-13650HX, JDK 21.0.4), the playtest's city grown to month 4,005 (560,230
+people, 24,592 buildings). **The PC's speed is not steady**: after a few minutes of work it runs at about
+half speed (the model's own month, which this batch does not touch, went from 13.4 ms to 31-32 ms between
+runs of the same build), so a figure is compared only with one taken in the same state. Two ways round
+it: the builds alternated, before and after (main f29b9938, 0.8.27, built with this batch's UiProbe, and
+the branch), and pairs taken where the model's month agrees; and the chrome timed kept and built new
+turn and turn about in one JVM (`UiProbe` does both now).
+
+**A redraw** (median of 8, ms: the draw, then the pulse's own CSS and layout), the quiet pair (the model's
+month 13.4 and 13.5 ms); "built new" is the same chrome with its pools forgotten, in the same run:
+
+| screen | redraw before | after | the chrome alone before | after, kept | after, built new |
+|---|---:|---:|---:|---:|---:|
+| Build | 85.5 | 51.7 | 39.9 | 11.2 | 36.0 |
+| Land | 54.9 | 39.0 | 26.5 | 8.3 | 29.5 |
+| People | 39.4 | 18.9 | 25.9 | 7.7 | 22.7 |
+| Services | 33.2 | 21.4 | 20.3 | 6.0 | 18.2 |
+| Infrastructure | 31.1 | 19.2 | 17.7 | 6.0 | 16.3 |
+| Sectors | 53.0 | 41.0 | 19.9 | 6.2 | 16.3 |
+| Government | 30.1 | 18.3 | 16.2 | 3.9 | 14.2 |
+| Finances | 24.6 | 13.0 | 14.9 | 2.3 | 11.7 |
+| Bank | 35.3 | 23.7 | 15.3 | 3.0 | 10.8 |
+| Trade | 26.5 | 16.6 | 14.5 | 2.5 | 11.5 |
+| Policy | 22.0 | 14.3 | 11.9 | 2.4 | 10.5 |
+| History | 40.9 | 36.5 | 12.5 | 2.9 | 13.2 |
+
+So the chrome went from 11-40 ms of every redraw to 2-11 (a quarter; its CSS from 6-18 ms to 0.1-2.8),
+and every screen's redraw is 4-34 ms cheaper; People's, the kept page with the chrome kept, is 18.9 ms
+where it was 39.4 on main (and 53 before UP4, in the study's own run). Build's chrome is the dearest because its construction panel is open there.
+
+**The clock at 50x** (months a second; frame p95 and max, ms; 3-4 s a screen):
+
+| screen | quiet pair: before | after | slow pair (the model's month 32 and 31 ms): before | after |
+|---|---|---|---|---|
+| Build | 9.2/s, 99 (360) | 7.9/s, 194 (331) | 3.3/s, 864 | 4.0/s, 408 |
+| Land | 10.0, 57 (84) | 9.9, 57 (81) | 6.3, 526 | 8.3, 221 |
+| People | 10.0, 42 (94) | 10.0, **26** (43) | 8.7, 309 | 9.9, 110 |
+| Services | 9.9, 37 (58) | 10.0, 28 (33) | 9.9, 123 | 9.8, 83 |
+| Infrastructure | 9.7, 43 (70) | 10.0, 27 (42) | 9.6, 101 | 9.9, 58 |
+| Sectors | 10.0, 65 (81) | 10.0, 41 (68) | 8.7, 318 | 9.3, 135 |
+| Government | 10.0, 36 (54) | 10.0, 21 (33) | 9.8, 161 | 10.2, 62 |
+| Finances | 10.0, 32 (53) | 10.0, 24 (36) | 9.6, 146 | 9.9, 50 |
+| Bank | 10.0, 42 (66) | 9.7, 26 (65) | 9.4, 205 | 9.9, 68 |
+| Trade | 10.0, 20 (48) | 10.0, 21 (58) | 9.9, 95 | 9.8, 44 |
+| Policy | 10.0, 32 (54) | 10.0, 24 (40) | 9.7, 81 | 9.9, 52 |
+| History | 9.9, 60 (74) | 10.0, 36 (66) | 9.3, 176 | 9.9, 101 |
+
+- **People's p95 at 50x is 26 ms, under `FRAME_P95_MS` (34)**; the brief's figure was 49, this probe's
+  before 42. Every screen's p95 is at or under its figure before (`FRAME_P95`, the quiet before run)
+  but two: Trade, 21 against 20, which is the noise of a 3 s window; and Build, 194 against 99. Build is
+  the first screen of the live loop, which also takes the probe's autosave, and its figure moves the
+  most between runs (133 and 99 in two runs before, 136 with the header and rail kept alone, 194 after); in
+  the slow pair
+  it halved (864 to 408). Its page is the dearest still rebuilt (KP3's), and its redraw is 52-116 ms, so
+  every frame that redraws it is long; the spacing makes those frames rarer, not shorter. Not proved
+  either way here; checked by eye on the PC (UP2-C).
+- **Where the PC is slow, the pacing is what holds the clock**: the frames' p95 fell by half or more on
+  every screen and the months a second rose on the slow screens (Land 6.3 to 8.3, People 8.7 to 9.9); a
+  city that still cannot keep up says so on the speed ("50× · 39×").
+- The header's five histories: `HistorySave.aligned` and `raw` were 1.6% each of the FX thread's samples
+  at 50x before (UP1's figure was about 1% for the header's reads); the tiles now read 120 months of each.
+- In KeptCheck's city (600 months): the kept header and rail's month 1.2-1.9 ms against 7.1-10.3 built
+  new; the whole chrome's 3.0-5.3 ms against 13-19.
 
 ## 3. How the kept chrome was proved the same
 
@@ -94,7 +156,20 @@ Three ways, each over a run of months:
 
 ## 4. The checks
 
-CHECKS_TBD
+- **ClockCheck** (new, in the suite; no toolkit): 1, the redraw's gap after redraws of 10, 60 and 200 ms,
+  from both sides; 2, a frame's months under `MONTH_FRAME_MS` from both sides, and a 600-frame run at 50x
+  with months of mixed cost in which the months run, owed and dropped add up to the time; 3, a 2 s stall
+  at 50x with months of 5 and of 50 ms - no burst after it; 4, the reading at the rung, past the tenth and
+  just inside it, at 0.1x, after a restart; 5, the header's five series read the windowed way equal the
+  whole-history reads' last `SPARK_MONTHS` (and the GDP tile's change line), on a young city, an older
+  one, and a hand-grown history past `MONTHLY_KEPT` with folded years.
+- **KeptCheck 6-13** (new sections; section 3), with its budgets `KEPT_CHROME_MS` (4) and
+  `KEPT_ALL_CHROME_MS` (8) through Timing.
+- **The suite** (`batch-check.sh`, the final model): SUITE_TBD
+- **Timing, hard, the timing harnesses alone** (`batch-check.sh --timing`): TIMING_TBD
+- **The trace.** The default playtest traced (`-Dplaytest.trace`) on main 95d02db3 and on this branch: all
+  eight CSVs byte-identical, the report identical but for its run-time lines (70 s and 65 s). UP3 (merged
+  in) left the trace as 0.8.26's, so it is 0.8.27's too. **No ensemble** (EN1's rule).
 
 ## 5. For Jerus (UP2-C)
 
