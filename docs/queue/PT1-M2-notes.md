@@ -62,3 +62,4 @@ one per ten months of waiting.
   0.8.32 after them): `./batch-check.sh` 131 harnesses run, all green; Stale 0
   firm findings; the maps regenerated. Timing soft beside two other batches'
   JVMs.
+- `--timing` hard, the timing harnesses alone (after waiting for another batch's JVM): 10 run, 10 passed.
