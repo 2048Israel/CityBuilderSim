@@ -3737,12 +3737,20 @@ public final class CityRuns {
         boolean[] owner = new boolean[np];
         long[] w = new long[np];
         long total = 0;
+        // The first (oldest) net on each map piece, by the piece's index: one pass, not each net against every older one (a city of billions has
+        // hundreds of nets, and that pass cost MapCheck 5's month a millisecond).
+        int[] first = new int[Math.max(0, pieces.count())];
+        Arrays.fill(first, -1);
+        boolean frozen = false;
         for (int j = 0; j < np; j++) {
             long[] h = hubOf(n, j);
             int m = pieces.pieceOf(h[0], h[1]);
             mp[j] = m >= 0 ? m : -1 - j;
             owner[j] = true;
-            for (int i = 0; i < j; i++) if (mp[i] == mp[j]) owner[j] = false;
+            if (m >= 0 && m < first.length) {
+                if (first[m] >= 0) { owner[j] = false; frozen = true; }
+                else first[m] = j;
+            }
             if (owner[j]) {
                 w[j] = Math.max(j == 0 ? 1 : 0, mp[j] >= 0 ? pieces.weight(mp[j]) : 0);
                 total += w[j];
@@ -3752,15 +3760,18 @@ public final class CityRuns {
         long others = 0;
         for (int j = 1; j < np; j++) {
             if (!owner[j]) continue;
-            share[j] = java.math.BigInteger.valueOf(plots).multiply(java.math.BigInteger.valueOf(w[j])).divide(java.math.BigInteger.valueOf(total)).longValue();
+            share[j] = Math.multiplyHigh(plots, w[j]) == 0 && plots * w[j] >= 0 ? plots * w[j] / total
+                    : java.math.BigInteger.valueOf(plots).multiply(java.math.BigInteger.valueOf(w[j])).divide(java.math.BigInteger.valueOf(total)).longValue();
             others += share[j];
         }
         share[0] = plots - others;
         for (int j = 0; j < np; j++) {
             if (!owner[j]) { tgt[j] = count(n, j); continue; }
-            long held = 0;
-            for (int i = 0; i < np; i++) if (i != j && !owner[i] && mp[i] == mp[j]) held += count(n, i);
-            tgt[j] = Math.max(0, share[j] - held);
+            tgt[j] = share[j];
+        }
+        if (frozen) {
+            // What a piece's frozen nets hold comes off its owner's target.
+            for (int i = 0; i < np; i++) if (!owner[i]) { int o = first[mp[i]]; tgt[o] = Math.max(0, tgt[o] - count(n, i)); }
         }
         if (n.plots < plots) {
             // (a) each owner below its target grown to it, then the rest to the owners the ground has not stopped, in order.

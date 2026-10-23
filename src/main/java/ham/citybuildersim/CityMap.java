@@ -258,6 +258,9 @@ public final class CityMap {
         long version;
         /** Its place in the map's order, nearest first. */
         int index;
+        /** (CL5) What the map's pieces last credited it with: the pieces' build it was weighed in, its piece then, its built cells and the version they were read at (MapPieces.weigh()). */
+        long weighedBuild = Long.MIN_VALUE, weighedAt = Long.MIN_VALUE, weighedCells;
+        int weighedPiece = -1;
 
         /**
          * ITS LOG (batch CL3): the changes to its counts, month by month, in the order they came - a record {month, type,
@@ -3650,6 +3653,9 @@ public final class CityMap {
             if (a.steps <= 0) continue;
             // The railway's branches and sidings end at a yard and a works, never at the world (FR7 slice 3): only its spine meets it.
             if (n.kind == CityRuns.RAILWAY && a.corridor >= CityRuns.BRANCH) continue;
+            // The world line leaves from the home piece's net (CL5): another piece's arms reach no gateway of their own, and walking out from each of
+            // a city of billions' hundreds of nets' ends every month tripled MapCheck 18's L0 screen.
+            if (n.kind == CityRuns.HIGHWAYS && CityRuns.pieceOf(n, a) != 0) continue;
             int dx = CityRuns.DX[a.head], dy = CityRuns.DY[a.head];
             long ex = 0, ey = 0;
             boolean edge = false;
@@ -4487,8 +4493,7 @@ public final class CityMap {
         private boolean[] hubDone = new boolean[0];
         private long buildId;
 
-        private int[] districtPiece = new int[0];
-        private long districtBuild = -1;
+        private long weighedBuild = Long.MIN_VALUE;
         private long[] weights = new long[0];
         private boolean weightsValid;
         private int[] undrawn, undrawnCells;
@@ -4831,18 +4836,23 @@ public final class CityMap {
 
         /** Each piece's built ground this month: the plots its districts' buildings stand on, each district whole to the piece holding most of its 8 x 8 tiles' land. */
         private void weigh() {
-            Arrays.fill(weights, 0);
-            if (districtBuild != buildId || districtPiece.length != districts.size()) {
-                districtPiece = new int[districts.size()];
-                Arrays.fill(districtPiece, -2);
-                districtBuild = buildId;
+            // Kept from month to month (a city of billions has 29,000 districts, and weighing every one cost MapCheck 5's month 1.5 ms): a
+            // district is weighed again only when its counts moved (District.version) or the pieces were worked out again (buildId).
+            if (weighedBuild != buildId) {
+                Arrays.fill(weights, 0);
+                weighedBuild = buildId;
             }
-            for (int i = 0; i < districts.size(); i++) {
-                District d = districts.get(i);
-                long built = builtCells(d);
-                if (built <= 0) continue;
-                if (districtPiece[i] == -2) districtPiece[i] = pieceOfDistrict(d);
-                if (districtPiece[i] >= 0) weights[districtPiece[i]] += built;
+            for (District d : districts) {
+                if (d.weighedBuild == buildId && d.weighedAt == d.version) continue;
+                if (d.weighedBuild != buildId) {
+                    d.weighedBuild = buildId;
+                    d.weighedPiece = pieceOfDistrict(d);
+                    d.weighedCells = 0;
+                }
+                long built = Math.max(0, builtCells(d));
+                if (d.weighedPiece >= 0 && d.weighedPiece < weights.length) weights[d.weighedPiece] += built - d.weighedCells;
+                d.weighedCells = built;
+                d.weighedAt = d.version;
             }
             weightsValid = true;
         }
