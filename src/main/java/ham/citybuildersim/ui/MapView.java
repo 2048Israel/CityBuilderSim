@@ -67,7 +67,10 @@ import static ham.citybuildersim.ui.Pieces.*;
  * the middle out, for at most FRAME_MS; a tile not painted yet shows another
  * level's picture of it meanwhile, the coarser first. A month, or a
  * purchase, changes the map's version (MapTiles.version()); the view then
- * stamps the tiles it shows again, and repaints only those whose stamp moved.
+ * stamps the tiles it shows again, and repaints only those whose stamp moved;
+ * the far nodes, since batch UP3, only those whose key moved
+ * (MapTiles.nodeKey()), and the minimap's stamp at most every
+ * MiniMap.STAMP_EVERY_MS, from its kept layers.
  *
  * OFF THE FX THREAD, ONLY ARITHMETIC (the orchestrator's brief): CityMap is
  * not thread-safe, so the first draw of a city's map is a draft - the land
@@ -243,6 +246,8 @@ final class MapView {
     private int draftsFailed;
     private long version = Long.MIN_VALUE;
     private long fittedFor = Long.MIN_VALUE;
+    /** How many far nodes have been coloured (batch UP3): a node whose version moved but whose key did not (MapTiles.nodeKey()) is not counted. */
+    private long farRecoloured;
     private final TilePainter.Input in = new TilePainter.Input();
     private int[] buffer = new int[0];
 
@@ -778,7 +783,14 @@ final class MapView {
         });
     }
 
-    /** The far nodes nx0 to nx1 across and ny0 to ny1 down at `plots` plots a pixel: their ground asked of WORKER, coloured here until the deadline (0.7.135: the plane's view's, or the globe's near the city). True when there is more to do. */
+    /**
+     * The far nodes nx0 to nx1 across and ny0 to ny1 down at `plots` plots a pixel: their ground asked of WORKER, coloured here until the deadline (0.7.135: the plane's view's, or the globe's near the city). True when there is more to do.
+     *
+     * Since batch UP3 a node whose map version has moved is coloured again only if the key it is drawn from moved
+     * (MapTiles.nodeKey(), kept in Img.stamp: equal keys, equal pixels), so a month that places in one district
+     * colours the nodes over it and no more; a node drawn short of a picture is coloured on every version move, as
+     * that is what asks again for the pictures it lacks. farRecoloured() counts the nodes coloured.
+     */
     private boolean paintNodes(long plots, long nx0, long nx1, long ny0, long ny1, long deadline, long picturesKept) {
         long span = MapFrame.NODE_PX * plots;
         World.Key world = shownMap.worldKey();
@@ -809,6 +821,15 @@ final class MapView {
                 }
                 if (img.version == version && !(img.partial && img.pictures != picturesKept)) continue;
                 if (System.nanoTime() > deadline) return true;
+                // The version moved: coloured again only if what the node is drawn from did (MapTiles.nodeKey()). A node drawn short of
+                // a picture always is - colouring is what asks again for the pictures it lacks.
+                long drawnFrom = tiles.nodeKey(nx * span, ny * span, plots);
+                if (img.image != null && !img.partial && img.stamp == drawnFrom) {
+                    img.version = version;
+                    continue;
+                }
+                img.stamp = drawnFrom;
+                farRecoloured++;
                 img.partial = tiles.nodePixels(nx * span, ny * span, plots, img.ground, buffer) > 0;
                 img.pictures = picturesKept;
                 picturesWanted.addAll(tiles.wanted());
@@ -823,6 +844,9 @@ final class MapView {
         }
         return false;
     }
+
+    /** How many far nodes this view has coloured (batch UP3): the figure a probe reads against the nodes in view. */
+    long farRecoloured() { return farRecoloured; }
 
     /* =====================================================================
        THE DRAWING
