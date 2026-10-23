@@ -89,10 +89,20 @@ import java.util.concurrent.TimeUnit;
  *     three files' sizes, and what a numbered save (g.saveGame(3), written on
  *     the FX thread, as the player's Save still does) costs; then the load;
  *   - 24 months as the clock runs them (toggleNextMonth): median and max;
- *   - each rail screen's first build, and its rebuild and its CSS with layout
- *     per redraw, as the clock makes them;
+ *   - each rail screen's first build, and its redraw as the clock makes it:
+ *     the draw, then the pulse's own CSS and layout passes (Scene.doCSSPass
+ *     and doLayoutPass, which touch only what is dirty - UP2: until then this
+ *     forced applyCss() over every node, which no pulse does, and could not
+ *     see what a kept page saves; the study's section 9); and the chrome alone
+ *     (the header, rail, city panel, construction panel and inbox drawn again
+ *     after a month, then the same passes) - and, where the chrome is kept
+ *     (UP2), the same chrome with its pools forgotten first, turn and turn
+ *     about with the kept one, so the two are timed under the same load:
+ *     "built new" is what every redraw paid before UP2;
  *   - the real clock at 50x on each screen: months a second, frame p50, p95
- *     and max, while JFR samples the FX thread;
+ *     and max, while JFR samples the FX thread; at month 4,000 or later the
+ *     p95 is held to its screen's figure in FRAME_P95 (People's FRAME_P95_MS)
+ *     through Timing, and the verdict printed on its line;
  *   - the FX thread's samples, by inclusive share (the clock, Game.nextMonth,
  *     Game.autosave, the chrome, the history series, the charts, the map, the
  *     pulse), the threads sampled (the save-writer thread appears once the
@@ -132,6 +142,73 @@ public final class UiProbe {
     private static Game g;
     private static Stage stage;
     private static Path out;
+
+    /**
+     * The 95th-percentile frame on People at 50x at month 4,000 the clock must keep under, ms
+     * (UP2: 49 in the brief's figures and 42 in this probe's before it; the redraw paced, the months
+     * budgeted and the chrome kept).
+     */
+    public static final double FRAME_P95_MS = 34;
+
+    /**
+     * Every rail screen's 95th-percentile frame at 50x at month 4,000, ms: its figure before UP2, as
+     * this probe measured it on the PC on main f29b9938 (0.8.27) with nothing else running, the run
+     * the batch's own is set beside (docs/queue/UP2-notes.md), which the clock must not exceed since;
+     * People's is FRAME_P95_MS. The PC's load moves these by up to two times between runs (it slows
+     * after a few minutes of work): compare runs whose "model month mean" agrees.
+     */
+    public static final Map<String, Double> FRAME_P95 = Map.ofEntries(
+            Map.entry("Build", 99.0), Map.entry("Land", 57.0), Map.entry("People", FRAME_P95_MS),
+            Map.entry("Services", 37.0), Map.entry("Infra", 43.0), Map.entry("Sectors", 65.0),
+            Map.entry("Govt", 36.0), Map.entry("Finances", 32.0), Map.entry("Bank", 42.0),
+            Map.entry("Trade", 20.0), Map.entry("Policy", 32.0), Map.entry("History", 60.0));
+
+    /** The month from which FRAME_P95 is asserted: the city it was measured on. */
+    static final int FRAME_P95_FROM = 4000;
+
+    private static Method focusCleanup, doCSSPass, doLayoutPass;
+
+    /**
+     * The pulse's CSS and layout, as a frame runs them (Scene.focusCleanup and doCSSPass, then
+     * doLayoutPass; by reflection, since the toolkit is on the class path): {CSS ms, layout ms}.
+     */
+    static double[] pulse(javafx.scene.Scene sc) throws Exception {
+        if (doCSSPass == null) {
+            focusCleanup = javafx.scene.Scene.class.getDeclaredMethod("focusCleanup");
+            doCSSPass = javafx.scene.Scene.class.getDeclaredMethod("doCSSPass");
+            doLayoutPass = javafx.scene.Scene.class.getDeclaredMethod("doLayoutPass");
+            focusCleanup.setAccessible(true);
+            doCSSPass.setAccessible(true);
+            doLayoutPass.setAccessible(true);
+        }
+        long a = System.nanoTime();
+        focusCleanup.invoke(sc);
+        doCSSPass.invoke(sc);
+        long b = System.nanoTime();
+        doLayoutPass.invoke(sc);
+        long c = System.nanoTime();
+        return new double[]{ms(b - a), ms(c - b)};
+    }
+
+    /** UserInterface.forgetChrome() where the chrome is kept (UP2), or null on a build that rebuilds it. */
+    private static Method forgetChrome() {
+        try {
+            Method m = UserInterface.class.getDeclaredMethod("forgetChrome");
+            m.setAccessible(true);
+            return m;
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    /** The chrome drawn again, as every redraw draws it: the header, the rail, the city panel, the construction panel and the inbox. */
+    private static void chrome() throws Exception {
+        call("refreshHeader");
+        call("refreshTabRail");
+        ui.summaryScreen.refreshCityPanel();
+        call("refreshConstructionPanel");
+        call("refreshInbox");
+    }
 
     /** The window's pump: runs on the FX thread and waits for the answer. */
     private static <T> T fx(Callable<T> c) throws Exception {
@@ -321,31 +398,67 @@ public final class UiProbe {
                                     + " s floor holds the due month back, the probe's own autosave was seconds ago");
 
             // ---- each screen: first build, then redraws as the clock makes them
-            report.println("screen     first  build(med) css+layout(med)  build(max)");
+            Method forget = forgetChrome();
+            report.println("screen     first |  draw    css  layout  redraw | chrome alone: draw   css  layout   all | built new: all"
+                    + "   (median of 8, ms; the pulse's own passes)");
             for (Screen s : screens()) {
                 try {
-                    double[] r = fx(() -> {
-                        javafx.scene.Scene sc = (javafx.scene.Scene) sceneField.get(ui);
+                    javafx.scene.Scene sc = fx(() -> (javafx.scene.Scene) sceneField.get(ui));
+                    double first = fx(() -> {
                         long a = System.nanoTime();
                         s.show().run();
-                        sc.getRoot().applyCss();
-                        sc.getRoot().layout();
-                        double first = ms(System.nanoTime() - a);
-                        List<Double> build = new ArrayList<>(), lay = new ArrayList<>();
-                        for (int i = 0; i < 8; i++) {
+                        pulse(sc);
+                        return ms(System.nanoTime() - a);
+                    });
+                    List<Double> draw = new ArrayList<>(), css = new ArrayList<>(), lay = new ArrayList<>(),
+                            whole = new ArrayList<>(), cDraw = new ArrayList<>(), cCss = new ArrayList<>(),
+                            cLay = new ArrayList<>(), cWhole = new ArrayList<>(), nWhole = new ArrayList<>();
+                    for (int i = 0; i < 8; i++) {
+                        // Each its own task, so the settle a rebuilt page posts runs between them, as on the clock.
+                        fx(() -> {
                             g.toggleNextMonth();
+                            pulse(sc);
                             long b0 = System.nanoTime();
                             ui.redraw();
                             long b1 = System.nanoTime();
-                            sc.getRoot().applyCss();
-                            sc.getRoot().layout();
-                            long b2 = System.nanoTime();
-                            build.add(ms(b1 - b0));
-                            lay.add(ms(b2 - b1));
-                        }
-                        return new double[]{first, median(build), median(lay), Collections.max(build)};
-                    });
-                    report.printf("%-9s %6.0f %10.1f %14.1f %11.1f%n", s.name(), r[0], r[1], r[2], r[3]);
+                            double[] p = pulse(sc);
+                            draw.add(ms(b1 - b0));
+                            css.add(p[0]);
+                            lay.add(p[1]);
+                            whole.add(ms(b1 - b0) + p[0] + p[1]);
+                            return null;
+                        });
+                        fx(() -> {
+                            g.toggleNextMonth();
+                            pulse(sc);
+                            long c0 = System.nanoTime();
+                            chrome();
+                            long c1 = System.nanoTime();
+                            double[] p = pulse(sc);
+                            cDraw.add(ms(c1 - c0));
+                            cCss.add(p[0]);
+                            cLay.add(p[1]);
+                            cWhole.add(ms(c1 - c0) + p[0] + p[1]);
+                            return null;
+                        });
+                        if (forget == null) continue;
+                        // The same chrome with every node made new, as a rebuild made it (the pools forgotten first).
+                        fx(() -> {
+                            g.toggleNextMonth();
+                            pulse(sc);
+                            forget.invoke(ui);
+                            long c0 = System.nanoTime();
+                            chrome();
+                            long c1 = System.nanoTime();
+                            double[] p = pulse(sc);
+                            nWhole.add(ms(c1 - c0) + p[0] + p[1]);
+                            return null;
+                        });
+                    }
+                    report.printf("%-9s %6.0f | %5.1f %6.1f %6.1f %7.1f |              %5.1f %5.1f %6.1f %5.1f |  %s%n",
+                            s.name(), first, median(draw), median(css), median(lay), median(whole),
+                            median(cDraw), median(cCss), median(cLay), median(cWhole),
+                            nWhole.isEmpty() ? "-" : String.format("%5.1f", median(nWhole)));
                 } catch (Exception e) {
                     report.println(s.name() + " FAILED " + e);
                 }
@@ -366,8 +479,13 @@ public final class UiProbe {
                 Thread.sleep((long) (liveSeconds * 1000));
                 int m1 = fx(() -> { probe.stop(); clockRunning.set(ui, false); return g.getMonth(); });
                 double secs = (System.nanoTime() - w0) / 1e9;
-                report.printf("%-9s %9.1f %10.0f %5.0f %6.0f%n", s.name(), (m1 - m0) / secs,
-                        median(frames), pct(frames, .95), frames.isEmpty() ? Double.NaN : Collections.max(frames));
+                double p95 = pct(frames, .95);
+                Double budget = FRAME_P95.get(s.name());
+                String verdict = at < FRAME_P95_FROM || budget == null ? ""
+                        : String.format("   p95 within %.0f: %s", budget,
+                                ham.citybuildersim.Timing.verdict(ham.citybuildersim.Timing.within(p95, budget)));
+                report.printf("%-9s %9.1f %10.0f %5.0f %6.0f%s%n", s.name(), (m1 - m0) / secs,
+                        median(frames), p95, frames.isEmpty() ? Double.NaN : Collections.max(frames), verdict);
             }
             settle();
             rec.stop();

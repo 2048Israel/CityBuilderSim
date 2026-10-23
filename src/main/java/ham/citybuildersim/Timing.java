@@ -62,8 +62,8 @@ public final class Timing {
         return SOFT.equals(System.getProperty(PROPERTY));
     }
 
-    /** A figure in milliseconds within its budget (at most it): {@code figure <= budget}, or soft. */
-    static boolean within(double figure, double budget) {
+    /** A figure in milliseconds within its budget (at most it): {@code figure <= budget}, or soft. Public, with verdict, for ui.UiProbe (UP2). */
+    public static boolean within(double figure, double budget) {
         return within(figure, budget, "ms");
     }
 
@@ -105,7 +105,7 @@ public final class Timing {
      * {@code ok ? "OK" : "FAIL"}. Every verdict clears the misses, so a soft
      * miss is never told on a later assertion's line.
      */
-    static String verdict(boolean ok) {
+    public static String verdict(boolean ok) {
         String words = !ok ? "FAIL" : misses.isEmpty() ? "OK" : "SOFT - " + String.join("; ", misses);
         misses.clear();
         return words;

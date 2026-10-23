@@ -1308,6 +1308,38 @@ public class HistorySave {
         return out;
     }
 
+    /**
+     * The last {@code n} entries of aligned(name), and no more of it (UP2): the same figures
+     * as aligned(name)'s tail, value for value - the front padding as NaN, a folded year's flow
+     * as its monthly average where the tail reaches the fold - read without making the whole
+     * axis. n is cut to months(), so the result is min(n, months()) entries long.
+     *
+     * WHY. The header redraws every few frames and reads the last ten years of five series; at
+     * month 4,000 aligned() rebuilt four thousand entries of each to hand five of them over.
+     * Linear in the months played, and paid again at every redraw.
+     */
+    public double[] alignedTail(String name, int n) {
+        int axis = month.size();
+        int length = Math.max(0, Math.min(n, axis));
+        int first = axis - length;
+        double[] out = new double[length];
+        List<? extends Number> raw = seriesByName().get(name);
+        if (raw == null) {
+            java.util.Arrays.fill(out, Double.NaN);
+            return out;
+        }
+        int offset = axis - raw.size();
+        for (int k = 0; k < length; k++) {
+            int j = first + k - offset;
+            out[k] = (j >= 0 && j < raw.size()) ? raw.get(j).doubleValue() : Double.NaN;
+        }
+        int years = yearlyPoints();
+        if (first < years && YearBook.kindOf(name) == YearBook.Kind.FLOW) {
+            for (int i = first; i < Math.min(years, axis); i++) out[i - first] /= monthsIn(i);
+        }
+        return out;
+    }
+
     /** A series as it is stored, padded at the front as aligned() is: a folded year's flow is the year's sum (0.7.55). */
     public double[] raw(String name) {
         List<? extends Number> raw = seriesByName().get(name);

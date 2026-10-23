@@ -1,4 +1,4 @@
-# HistoryScreen.java - 3,129 lines · 109 methods · 23 constants · interface
+# HistoryScreen.java - 3,134 lines · 109 methods · 23 constants · interface
 
 `ham/citybuildersim/ui/HistoryScreen.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -55,8 +55,8 @@
 | 1762 | THE CHART, REBUILT (0.7.23) |
 | 1872 | FULL SCREEN (0.7.23) |
 | 2066 | WHAT EACH LINE DID (0.7.37) |
-| 2614 | HARD TIMES AND YOUR DECISIONS (0.7.37) |
-| 2928 | PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) |
+| 2619 | HARD TIMES AND YOUR DECISIONS (0.7.37) |
+| 2933 | PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) |
 
 ## Constants
 
@@ -78,13 +78,13 @@
 | 1673 | `HistoryScreen.CONTROLS` | `130` | Room kept at the right of the preset row for "clear all" and "log". |
 | 2251 | `HistoryScreen.MOVE_MILLIS` | `600` | How long a figure takes to slide to a month's new reading, in milliseconds - the range bar's dot; the figure counts on over SectorScreen's own time. |
 | 2430 | `HistoryScreen.AXES_INFO` | `"Lines measured in the same thing are drawn against each other on a real axis...` | PICK WHAT TO DRAW's (i): how the lines share axes. |
-| 2632 | `HistoryScreen.HARD_TIMES_SHOWN` | `5` | At most this many hard times are listed in view; the rest are counted, and in the details. |
-| 2635 | `HistoryScreen.DECISIONS_SHOWN` | `8` | At most this many decisions are listed in view. |
-| 2638 | `HistoryScreen.KINDS` | `{ "recession", "depression", "slump", "epidemic", "financial", "currency", "i...` | The kinds of episode, in the order the details list them. |
-| 2641 | `HistoryScreen.KIND_NAMES` | `{ "Recessions", "Depressions", "Slumps", "Epidemics", "Financial crises", "Cu...` | ...and what the details call each, in that order. |
-| 2951 | `HistoryScreen.AT_END` | `1e-6` | How near an end of its band a price must be to be AT it - a rounding hair of the band (the market strikes an end exactly). |
-| 2954 | `HistoryScreen.BAND_ROOM` | `1.25` | The scale a good's row is drawn on: the band from 0 to 1, and room past its ceiling for the month's trade. |
-| 2957 | `HistoryScreen.GOODS_INFO` | `"What a unit costs here this month, against what the world pays for one and "...` | The section's (i). |
+| 2637 | `HistoryScreen.HARD_TIMES_SHOWN` | `5` | At most this many hard times are listed in view; the rest are counted, and in the details. |
+| 2640 | `HistoryScreen.DECISIONS_SHOWN` | `8` | At most this many decisions are listed in view. |
+| 2643 | `HistoryScreen.KINDS` | `{ "recession", "depression", "slump", "epidemic", "financial", "currency", "i...` | The kinds of episode, in the order the details list them. |
+| 2646 | `HistoryScreen.KIND_NAMES` | `{ "Recessions", "Depressions", "Slumps", "Epidemics", "Financial crises", "Cu...` | ...and what the details call each, in that order. |
+| 2956 | `HistoryScreen.AT_END` | `1e-6` | How near an end of its band a price must be to be AT it - a rounding hair of the band (the market strikes an end exactly). |
+| 2959 | `HistoryScreen.BAND_ROOM` | `1.25` | The scale a good's row is drawn on: the band from 0 to 1, and room past its ceiling for the month's trade. |
+| 2962 | `HistoryScreen.GOODS_INFO` | `"What a unit costs here this month, against what the world pays for one and "...` | The section's (i). |
 
 ## Fields (state)
 
@@ -126,7 +126,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 3070 | **type** `final class HistoryScreen` | City History: the city as a shape over time. |
+| 60 | 3075 | **type** `final class HistoryScreen` | City History: the city as a shape over time. |
 | 65 | 1 | `HistoryScreen(UserInterface ui)` |  |
 
 ### THE HISTORY SCREEN (lines 67-538)
@@ -257,7 +257,7 @@
 | 2031 | 16 | `static String unitName(String unit, Currency money)` | What the y-axis is measured in, when every line agrees - the rate in this city's own money (0.7.10). |
 | 2057 | 8 | `static double plotScale(String unit, double v)` | The stored value, in the units the axis is labelled in. |
 
-### WHAT EACH LINE DID (0.7.37) (lines 2066-2613)
+### WHAT EACH LINE DID (0.7.37) (lines 2066-2618)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -274,46 +274,46 @@
 | 2316 | 40 | `VBox historyPickerRows()` | The chips, one heading per group - each group closed until it is wanted, and a box over them that finds a line by name (0.7.5). |
 | 2358 | 70 | `void fillPicker(VBox groups)` | The groups, as the filter and the player have left them. |
 | 2434 | 4 | `Trace traceFor(String key)` |  |
-| 2450 | 117 | `double[] historyValues(HistorySave h, String key)` | A series, aligned to the month axis, derived ones included. |
-| 2568 | 5 | `double[] minus(double[] a, double[] b)` |  |
-| 2575 | 38 | `String fmtUnit(String unit, double v)` | A value in the units it is actually kept in. |
+| 2455 | 117 | `double[] historyValues(HistorySave h, String key)` | A series, aligned to the month axis, derived ones included. |
+| 2573 | 5 | `double[] minus(double[] a, double[] b)` |  |
+| 2580 | 38 | `String fmtUnit(String unit, double v)` | A value in the units it is actually kept in. |
 
-### HARD TIMES AND YOUR DECISIONS (0.7.37) (lines 2614-2927)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2645 | 8 | `static String hardTimesInfo()` | The section's (i): the rules that name an episode, the year book's own. |
-| 2660 | 15 | `List<YearBook.Episode> hardTimesInView(List<YearBook.Episode> episodes, int lastMonth)` | The hard times touching the window, as this page lists them (pure): those still running first, in RUNNING NOW's order, but a chronic one last of all; then those the history closed, the most recently ended first. |
-| 2677 | 6 | `static List<DecisionLog.Entry> decisionsInView(List<ChartModel.Flag> flags, int from, int to)` | The decisions inside the window, newest first (pure): a founding-month one counts at the history's first month, where its flag stands. |
-| 2685 | 4 | `static String spanWords(YearBook.Episode e, int lastMonth)` | "Jun 2192 – May 2197 · 60 months", or "Aug 2199 – now · 6 months" while it runs. |
-| 2691 | 3 | `static String worstLine(YearBook.Episode e)` | "real output 13.78% below the year before at Feb 2193": the episode's worst, the year book's words. |
-| 2696 | 5 | `String viewWords()` | What the window spans, for an empty list: "these 10 years", "these 18 months", or "the whole history". |
-| 2702 | 56 | `VBox hardTimes(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` |  |
-| 2760 | 10 | `HBox columnHead(String words, int count)` | A column's head: its words, and how many. |
-| 2772 | 6 | `static Label quiet(String text)` | A quiet line: an empty list's words. |
-| 2780 | 6 | `Label showAll()` | "show All ›": the whole history in view. |
-| 2788 | 8 | `void rowGoes(javafx.scene.layout.Pane row, String tipText, Runnable go)` | A row that moves the chart: the pointer's hand, a ground under it, and the click. |
-| 2802 | 26 | `HBox episodeRow(YearBook.Episode e, int lastMonth)` | One hard time: its kind's icon and tag in its colour (the chart's verdict colours, 0.7.23), its name, its span; under it its worst, in the year book's words. |
-| 2830 | 17 | `HBox decisionRow(DecisionLog.Entry d)` | One decision: its icon in its flag's area colour, its month, its words - wrapping, never cut; "this month" when it is. |
-| 2853 | 13 | `VBox fold(String key, String caption, java.util.function.Supplier<javafx.scene.Node> body)` | A fold on this page (Pieces.details()), its toggle held under the pointer as it opens or closes, a chip's way (D7, D8): the page under it changes length and the scroll memory keeps the bottom. |
-| 2868 | 1 | **type** `record KindRow(String kind, String name, int count, int months, List<YearBook.Episode> episodes)` | One kind of episode in the details, as words (pure): its kind, how many, how long all told, and its episodes. |
-| 2870 | 10 | `static List<KindRow> kindRows(List<YearBook.Episode> episodes)` |  |
-| 2882 | 3 | `static String howLong(int months)` | "42 years" all told, or "9 months" under two years. |
-| 2894 | 33 | `javafx.scene.Node byKind(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` | Every named episode since founding, by kind (0.7.37): a row a kind that has happened, its episodes on one scale of the history's months in their colour - each at least two pixels, its name, span and worst on its toolt... |
-
-### PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) (lines 2928-3129)
+### HARD TIMES AND YOUR DECISIONS (0.7.37) (lines 2619-2932)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2963 | 3 | `GoodsMarket market(Good g)` | A good's market, or null. |
-| 2968 | 4 | `Sector seller(Good g)` | The business that sells a seller-priced good: the sector that makes it, or null. |
-| 2974 | 5 | `static String goodPrice(double thousands)` | A good's price, to the cent: "$296.67", "$11,454.16" - tiny ones to the place that shows them. |
-| 2981 | 8 | `static String flowWords(GoodsMarket m)` | "imported 54,201", "exported 87,294", both, or null when nothing crossed; a fraction of a unit is "under 1" (a wagon set's worth read "imported 0"). |
-| 2991 | 3 | `static String units(double v)` | A count of units that crossed: whole ones grouped, or "under 1". |
-| 2996 | 3 | `static String some(int n)` | "1 at", "none at": a count in the summary's words. |
-| 3006 | 17 | `String priceSummary()` | The line over the fold (pure): how many goods trade with the world and where in their bands the both-ways ones stand - at what the world charges, between, at what it pays - how many are open at one end, and how many t... |
-| 3025 | 10 | `VBox prices()` | The section: its head with the (i), the line of counts, and every good behind "details". |
-| 3037 | 1 | **type** `record GoodLine(Good good, String figure, String says, double at, String flow)` | One good as a row of the fold, as words (pure): what the probe reads. |
-| 3040 | 30 | `List<GoodLine> goodLines()` | Every good, as the fold draws it: the both-ways goods with their place in the band, the rest with their words. |
-| 3080 | 49 | `javafx.scene.Node goodsRows()` | The fold: the goods traded both ways on their bands, the world's floor and ceiling a rule through every row; then those open at one end and those their seller prices, in words. |
+| 2650 | 8 | `static String hardTimesInfo()` | The section's (i): the rules that name an episode, the year book's own. |
+| 2665 | 15 | `List<YearBook.Episode> hardTimesInView(List<YearBook.Episode> episodes, int lastMonth)` | The hard times touching the window, as this page lists them (pure): those still running first, in RUNNING NOW's order, but a chronic one last of all; then those the history closed, the most recently ended first. |
+| 2682 | 6 | `static List<DecisionLog.Entry> decisionsInView(List<ChartModel.Flag> flags, int from, int to)` | The decisions inside the window, newest first (pure): a founding-month one counts at the history's first month, where its flag stands. |
+| 2690 | 4 | `static String spanWords(YearBook.Episode e, int lastMonth)` | "Jun 2192 – May 2197 · 60 months", or "Aug 2199 – now · 6 months" while it runs. |
+| 2696 | 3 | `static String worstLine(YearBook.Episode e)` | "real output 13.78% below the year before at Feb 2193": the episode's worst, the year book's words. |
+| 2701 | 5 | `String viewWords()` | What the window spans, for an empty list: "these 10 years", "these 18 months", or "the whole history". |
+| 2707 | 56 | `VBox hardTimes(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` |  |
+| 2765 | 10 | `HBox columnHead(String words, int count)` | A column's head: its words, and how many. |
+| 2777 | 6 | `static Label quiet(String text)` | A quiet line: an empty list's words. |
+| 2785 | 6 | `Label showAll()` | "show All ›": the whole history in view. |
+| 2793 | 8 | `void rowGoes(javafx.scene.layout.Pane row, String tipText, Runnable go)` | A row that moves the chart: the pointer's hand, a ground under it, and the click. |
+| 2807 | 26 | `HBox episodeRow(YearBook.Episode e, int lastMonth)` | One hard time: its kind's icon and tag in its colour (the chart's verdict colours, 0.7.23), its name, its span; under it its worst, in the year book's words. |
+| 2835 | 17 | `HBox decisionRow(DecisionLog.Entry d)` | One decision: its icon in its flag's area colour, its month, its words - wrapping, never cut; "this month" when it is. |
+| 2858 | 13 | `VBox fold(String key, String caption, java.util.function.Supplier<javafx.scene.Node> body)` | A fold on this page (Pieces.details()), its toggle held under the pointer as it opens or closes, a chip's way (D7, D8): the page under it changes length and the scroll memory keeps the bottom. |
+| 2873 | 1 | **type** `record KindRow(String kind, String name, int count, int months, List<YearBook.Episode> episodes)` | One kind of episode in the details, as words (pure): its kind, how many, how long all told, and its episodes. |
+| 2875 | 10 | `static List<KindRow> kindRows(List<YearBook.Episode> episodes)` |  |
+| 2887 | 3 | `static String howLong(int months)` | "42 years" all told, or "9 months" under two years. |
+| 2899 | 33 | `javafx.scene.Node byKind(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` | Every named episode since founding, by kind (0.7.37): a row a kind that has happened, its episodes on one scale of the history's months in their colour - each at least two pixels, its name, span and worst on its toolt... |
+
+### PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) (lines 2933-3134)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2968 | 3 | `GoodsMarket market(Good g)` | A good's market, or null. |
+| 2973 | 4 | `Sector seller(Good g)` | The business that sells a seller-priced good: the sector that makes it, or null. |
+| 2979 | 5 | `static String goodPrice(double thousands)` | A good's price, to the cent: "$296.67", "$11,454.16" - tiny ones to the place that shows them. |
+| 2986 | 8 | `static String flowWords(GoodsMarket m)` | "imported 54,201", "exported 87,294", both, or null when nothing crossed; a fraction of a unit is "under 1" (a wagon set's worth read "imported 0"). |
+| 2996 | 3 | `static String units(double v)` | A count of units that crossed: whole ones grouped, or "under 1". |
+| 3001 | 3 | `static String some(int n)` | "1 at", "none at": a count in the summary's words. |
+| 3011 | 17 | `String priceSummary()` | The line over the fold (pure): how many goods trade with the world and where in their bands the both-ways ones stand - at what the world charges, between, at what it pays - how many are open at one end, and how many t... |
+| 3030 | 10 | `VBox prices()` | The section: its head with the (i), the line of counts, and every good behind "details". |
+| 3042 | 1 | **type** `record GoodLine(Good good, String figure, String says, double at, String flow)` | One good as a row of the fold, as words (pure): what the probe reads. |
+| 3045 | 30 | `List<GoodLine> goodLines()` | Every good, as the fold draws it: the both-ways goods with their place in the band, the rest with their words. |
+| 3085 | 49 | `javafx.scene.Node goodsRows()` | The fold: the goods traded both ways on their bands, the world's floor and ceiling a rule through every row; then those open at one end and those their seller prices, in words. |
 

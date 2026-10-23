@@ -27,7 +27,7 @@
 > holds the mechanism, and holds that no harness compares a figure against a
 > {@code *_MS} or {@code *_NS} dial except through here.
 
-**Used by (12):** [AllChecks](AllChecks.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [WorldCheck](WorldCheck.md)
+**Used by (13):** [AllChecks](AllChecks.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md), [WorldCheck](WorldCheck.md)
 
 ## Constants
 
@@ -47,11 +47,11 @@
 | 36 | 84 | **type** `public final class Timing` | The one helper every timing assertion in the suite goes through: a figure on a clock against its budget, hard as the harness wrote it, or soft while another batch's checks or Jerus's game share the machine. |
 | 38 | 1 | `private Timing()` |  |
 | 61 | 3 | `static boolean soft()` | Whether timing is soft this run: the property read, every time, here and nowhere else. |
-| 66 | 3 | `static boolean within(double figure, double budget)` | A figure in milliseconds within its budget (at most it): {@code figure <= budget}, or soft. |
+| 66 | 3 | `public static boolean within(double figure, double budget)` | A figure in milliseconds within its budget (at most it): {@code figure <= budget}, or soft. |
 | 71 | 3 | `static boolean within(double figure, double budget, String unit)` | A figure within its budget (at most it), in the unit named: {@code figure <= budget}, or soft. |
 | 76 | 3 | `static boolean below(double figure, double budget)` | A figure in milliseconds below its budget (strictly): {@code figure < budget}, or soft. |
 | 86 | 6 | `private static boolean judge(boolean held, double figure, double budget, String unit)` | The timing half of an assertion: true when it held; when it missed, true all the same if timing is soft, the miss kept for the next verdict. |
 | 94 | 6 | `private static String figures(double v)` | A figure as the verdict prints it: a whole number bare (a budget of 80 is "80"), else a tenth from 1 up, whole from 100, and three significant places below 1 ("0.3", "0.000123"), never an exponent. |
-| 108 | 5 | `static String verdict(boolean ok)` | What an assertion's line ends with: FAIL when it failed, SOFT with each timing miss's figure and budget when it held only because timing is soft, OK otherwise. |
+| 108 | 5 | `public static String verdict(boolean ok)` | What an assertion's line ends with: FAIL when it failed, SOFT with each timing miss's figure and budget when it held only because timing is soft, OK otherwise. |
 | 115 | 4 | `static String forwarded()` | The argument a child JVM is given so it times as this one does: {@code -Dcbs.timing=...}, or null when the property is not set here. |
 

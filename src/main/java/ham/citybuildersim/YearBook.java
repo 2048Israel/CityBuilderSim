@@ -372,9 +372,11 @@ public final class YearBook {
      * before, but only where the file has nothing better to offer.
      */
     public static double[] labourForce(HistorySave h) {
-        double[] workforce = h.aligned("workforce");
-        double[] students  = h.aligned("students");
-        double[] prisoners = h.aligned("prisoners");
+        return labourForce(h.aligned("workforce"), h.aligned("students"), h.aligned("prisoners"));
+    }
+
+    /** labourForce() off the three series, whole or a tail of them alike (UP2): one definition. */
+    private static double[] labourForce(double[] workforce, double[] students, double[] prisoners) {
         double[] out = new double[workforce.length];
         for (int i = 0; i < out.length; i++) {
             out[i] = workforce[i]
@@ -409,9 +411,21 @@ public final class YearBook {
 
     /** THE definition of the city's unemployment rate off a history. */
     public static double[] unemployment(HistorySave h) {
-        double[] force = labourForce(h);
-        double[] jobs  = h.aligned("jobs");
-        double[] pool  = h.aligned("outOfWork");
+        return unemployment(labourForce(h), h.aligned("jobs"), h.aligned("outOfWork"));
+    }
+
+    /**
+     * unemployment()'s last {@code n} entries and no more of it (UP2), value for value: every
+     * input is read a month at a time, so the tail of the rate is the rate off the tails of
+     * its inputs. The header's OUT OF WORK tile draws ten years of it.
+     */
+    public static double[] unemploymentTail(HistorySave h, int n) {
+        return unemployment(labourForce(h.alignedTail("workforce", n), h.alignedTail("students", n),
+                h.alignedTail("prisoners", n)), h.alignedTail("jobs", n), h.alignedTail("outOfWork", n));
+    }
+
+    /** unemployment() off the labour force, the posts and the pool, whole or a tail of them alike (UP2): one definition. */
+    private static double[] unemployment(double[] force, double[] jobs, double[] pool) {
         double[] out = new double[force.length];
         for (int i = 0; i < out.length; i++) {
             double whoIsOut = Double.isNaN(pool[i]) ? Math.max(0, force[i] - jobs[i]) : pool[i];
@@ -488,19 +502,32 @@ public final class YearBook {
      * oldest first, as it always was.
      */
     private static double[] rollingYear(double[] monthly, HistorySave h) {
-        double[] out = new double[monthly.length];
-        for (int i = 0; i < monthly.length; i++) {
+        return rollingYear(monthly, 0, 0, h);
+    }
+
+    /**
+     * rollingYear() for the axis entries {@code outFirst} on, off a series that begins at entry
+     * {@code base} (UP2): {@code monthly[x]} is axis entry base + x, and the result's [x] is entry
+     * outFirst + x. The sums are the same sums in the same order, so a tail of the year is the
+     * year's tail value for value, provided {@code base} is where the twelve months behind
+     * entry outFirst begin (realGrowthTail() finds it).
+     */
+    private static double[] rollingYear(double[] monthly, int base, int outFirst, HistorySave h) {
+        int end = base + monthly.length;
+        double[] out = new double[end - outFirst];
+        for (int i = outFirst; i < end; i++) {
             int from = i + 1, covered = 0;
             while (from > 0 && covered < MONTHS_A_YEAR) covered += h.monthsIn(--from);
-            if (covered < MONTHS_A_YEAR) { out[i] = Double.NaN; continue; }
+            if (covered < MONTHS_A_YEAR) { out[i - outFirst] = Double.NaN; continue; }
             double sum = 0;
             boolean clean = true;
             for (int k = from; k <= i; k++) {
-                if (Double.isNaN(monthly[k])) { clean = false; break; }
+                double value = monthly[k - base];
+                if (Double.isNaN(value)) { clean = false; break; }
                 int in = k == from ? h.monthsIn(k) - (covered - MONTHS_A_YEAR) : h.monthsIn(k);
-                sum += in == 1 ? monthly[k] : monthly[k] * in;
+                sum += in == 1 ? value : value * in;
             }
-            out[i] = clean ? sum : Double.NaN;
+            out[i - outFirst] = clean ? sum : Double.NaN;
         }
         return out;
     }
@@ -518,7 +545,11 @@ public final class YearBook {
      * realGdp() is, summed as realGdpYear() is.
      */
     public static double[] real(HistorySave h, String key) {
-        double[] nominal = h.aligned(key), index = h.aligned("priceIndex");
+        return real(h.aligned(key), h.aligned("priceIndex"));
+    }
+
+    /** real() off the two series, whole or a tail of them alike (UP2): one definition. */
+    private static double[] real(double[] nominal, double[] index) {
         double[] out = new double[nominal.length];
         for (int i = 0; i < out.length; i++) {
             out[i] = index[i] > 0 ? nominal[i] / index[i] : Double.NaN;
@@ -1431,6 +1462,38 @@ public final class YearBook {
             int back = h.back(i, MONTHS_A_YEAR);
             double then = back >= 0 ? year[back] : Double.NaN;
             out[i] = then > 0 ? year[i] / then - 1 : Double.NaN;
+        }
+        return out;
+    }
+
+    /**
+     * realGrowth()'s last {@code n} entries and no more of it (UP2), value for value: the header's
+     * GDP tile reads only the last (n = 1), and this reads the months that figure leans on - the
+     * twelve behind the entry and the entry a year back with the twelve behind it - not the whole
+     * history. n is cut to months(), so the result is min(n, months()) entries long.
+     */
+    public static double[] realGrowthTail(HistorySave h, int n) {
+        int axis = h.months();
+        int length = Math.max(0, Math.min(n, axis));
+        double[] out = new double[length];
+        if (length == 0) return out;
+        int first = axis - length;
+        // The entry a year back of each, and the lowest of them: the year there is the first the tail needs.
+        int[] back = new int[length];
+        int low = first;
+        for (int k = 0; k < length; k++) {
+            back[k] = h.back(first + k, MONTHS_A_YEAR);
+            if (back[k] >= 0) low = Math.min(low, back[k]);
+        }
+        // Where the twelve months behind `low` begin: rollingYear()'s own scan. A later entry's year
+        // begins no earlier, so one series from here serves every year the tail needs.
+        int base = low + 1, covered = 0;
+        while (base > 0 && covered < MONTHS_A_YEAR) covered += h.monthsIn(--base);
+        double[] year = rollingYear(real(h.alignedTail("gdp", axis - base), h.alignedTail("priceIndex", axis - base)),
+                base, low, h);
+        for (int k = 0; k < length; k++) {
+            double then = back[k] >= 0 ? year[back[k] - low] : Double.NaN;
+            out[k] = then > 0 ? year[first + k - low] / then - 1 : Double.NaN;
         }
         return out;
     }

@@ -2446,6 +2446,11 @@ final class HistoryScreen {
      * from the aligned series so a month missing from one of the inputs is
      * missing from the result rather than dividing by a zero that was never
      * recorded.
+     *
+     * (UP2) The header's five tiles do not come through here: UserInterface.sparkSeries()
+     * reads their last SPARK_MONTHS straight off HistorySave.alignedTail() and
+     * YearBook.unemploymentTail() - what this returns for those keys, cut to the tail. A case
+     * added below for population, gdp, priceIndex, unemployment or policyRate must be added there.
      */
     double[] historyValues(HistorySave h, String key) {
         switch (key) {
