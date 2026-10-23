@@ -2169,9 +2169,29 @@ public class EconomyManager {
     }
 
     /**
+     * The month's strike, with the debt's two lines (CD3): the discount the
+     * city's paper amortised (DebtManager.getAmortisedBooked()), which is the
+     * non-cash part of the budget's interest, and the gain on paper retired in
+     * the window. `interestPaid` is the cash coupons, as before; the budget's
+     * interest is that and the amortisation together
+     * (NationalAccounts.getInterestExpense()).
+     */
+    public void refreshGovernmentAccounts(double landSales, double capitalSpending,
+                                          double landPurchases, double interestPaid,
+                                          double interestNotCash, double retiredGain) {
+        refreshGovernmentAccounts(landSales, capitalSpending, landPurchases, interestPaid);
+        nationalAccounts.setDebtBooks(interestNotCash, retiredGain);
+    }
+
+    /**
      * Repopulates the government's revenue and expenditure block after a
      * load, and nothing else - running the whole measure would be running
      * a month of the economy with the calendar standing still.
+     *
+     * It leaves the debt's two lines (CD3) alone: the load path's floor has
+     * no month of the paper's books to re-derive them from, and the saved
+     * block that replaces it carries them. The strike is the six-argument
+     * overload above.
      */
     public void refreshGovernmentAccounts(double landSales, double capitalSpending,
                                           double landPurchases, double interestPaid) {

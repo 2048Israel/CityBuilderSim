@@ -12,7 +12,7 @@ package ham.citybuildersim;
  * measured wrongly is worse than the estimate it replaced - it looks
  * authoritative.
  *
- * The eight things it will not let past:
+ * The nine things it will not let past:
  *
  *   1. THE WINDOW CLOSES. Each month's opening balance is the previous month's
  *      closing balance, with no gap. If it ever is not, a month of the player's
@@ -88,6 +88,20 @@ package ham.citybuildersim;
  *      between presses moves EARNED, read at today's rates, and not the
  *      budget, so the residual is exactly the move, struck nowhere (B8), and
  *      the next press takes it away.
+ *
+ *   9. AND THE CITY'S PAPER IS ON ITS BOOKS AT AMORTISED COST (CD3,
+ *      spec-city-debt.md section 5; section 9 below). Jerus's D10: each piece
+ *      carried at what its sale raised and stepped every month by its
+ *      effective interest less its payments, the budget's interest that
+ *      interest, the discount amortised the bridge's not-cash row. The
+ *      study's calm ten-year to its own table; a premium, a bill and an
+ *      amortizing bond each closing to nothing; a reopened line as one
+ *      carrying value and one blended rate; dollar paper in dollars, read in
+ *      D$ at the month's D$ and not the goods' struck rate; a played city
+ *      whose budget's interest is the cash coupons and the discount
+ *      amortised every month with the bridge footing; a buyback that gains
+ *      the carrying value less the price, through a save; and the balance at
+ *      the carrying value with the fair value a note.
  *
  * @author Jerus
  */
@@ -447,7 +461,8 @@ public class TreasuryCheck {
         double explained = 0;
         for (TreasuryJournal.Entry e : journal) explained += e.amount();
         near("the bridge foots through the journal", m,
-                opened.getTreasurySurplus() + opened.getTreasuryRaised() - opened.getTreasuryRepaid()
+                opened.getTreasurySurplus() + opened.getTreasuryNotCash()
+                        + opened.getTreasuryRaised() - opened.getTreasuryRepaid()
                         + explained + opened.getTreasuryResidual(),
                 opened.getTreasuryChange(), treasurySize(opened));
         check("the journal explained more than it left over",
@@ -468,9 +483,14 @@ public class TreasuryCheck {
          * deposits, which no issue could beat; with the quote held to what
          * the bank charges they take a sliver at the settle, and their
          * coupon is not part of the timing.
+         *
+         * ...THE COUPON IN CASH (CD3). The budget's interest is the effective
+         * interest since CD3, the coupon and the discount amortised; the
+         * amortisation is no cash and sits on the bridge's own row
+         * (getTreasuryNotCash()), so the timing is the cash coupon's.
          */
         near("...and what it left over is the first coupon's timing, to the cent: the bank's share of it", m,
-                opened.getTreasuryResidual(), books.getInterestExpense()
+                opened.getTreasuryResidual(), books.getInterestPaidInCash()
                         - opened.getCouponsToHouseholds() - opened.getCouponsToFirms()
                         - opened.getCentralBank().getPaperCoupons());
 
@@ -525,6 +545,9 @@ public class TreasuryCheck {
         /* ============ 8. FROM EARNED TO THE BUDGET (0.7.31) ============ */
         earned();
 
+        /* ============ 9. THE CITY'S PAPER ON AMORTISED COST (CD3) ============ */
+        books();
+
         /* ===================================================================
            THE REPORT.
 
@@ -538,7 +561,8 @@ public class TreasuryCheck {
         System.out.printf("%d of 120 months had a step between EARNED and the budget.%n", monthsWithSteps);
 
         System.out.println(fails == 0
-                ? "\nThe treasury bridge closes, foots, opens and survives a save, and EARNED walks to the budget."
+                ? "\nThe treasury bridge closes, foots, opens and survives a save, EARNED walks to the budget,"
+                        + " and the city's paper is on its books at amortised cost."
                 : "\n" + fails + " FAILED");
 
         if (fails > 0) System.exit(1);
@@ -983,5 +1007,597 @@ public class TreasuryCheck {
         check("...so a bigger dollar face than the one it replaced: its discount borrowed too",
                 rolled != null && rolled.faceInCurrency() > abroad.faceInCurrency());
         check("...and the month closes its audit", audited(same));
+    }
+
+    /* ===================================================================
+       9. THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5).
+
+       Jerus's D10, "effective interest": every piece of the city's paper is
+       carried at what its sale raised and stepped each month by the interest
+       it truly costs less what it pays (Debt, THE CITY'S BOOKS). A bill that
+       pays no coupon used to read as free money in the budget; a bond sold
+       under par as dear as a par one; a buyback gained the face less the
+       price, whatever the books held it at. Seven things the books must now
+       keep, each on a fixture that causes its case:
+
+         a. THE CALM TEN-YEAR, on the study's own table: the effective rate is
+            the yield at which the payments owed are worth what was raised,
+            the first month costs what the table says, and over its life the
+            expenses are the coupons and the discount, no more, the carrying
+            value closing to nothing.
+         b. A PREMIUM, A BILL AND AN AMORTIZING BOND: each closes to nothing;
+            the premium costs less than its coupon every month, the bill's
+            whole cost is its discount, the amortizing bond's carrying value
+            falls with its slices.
+         c. A REOPENED LINE (D16): one carrying value and one rate, between
+            the two sales' own, closing as the one piece it is.
+         d. DOLLAR PAPER keeps its books in dollars and shows them in D$ at
+            the month's D$ - not the goods' struck rate (AN1): the expense
+            does not move when the D$ does, the carrying value does, by the
+            revaluation.
+         e. A PLAYED CITY, month after month: the budget's interest is the
+            cash coupons and the discount amortised, the amortisation is the
+            bridge's not-cash row, and the bridge foots with it.
+         f. A BUYBACK gains the carrying value less the price, not the face
+            less it, and the gain reaches the next month's books through a
+            save.
+         g. THE BALANCE carries the paper at the carrying value; its fair
+            value is a note, and not in the books.
+
+       The pieces of a, b and c are built as the game builds them
+       (DebtManager.add..., markIssued()) on a manager of their own and
+       stepped by the month's own processAllDebts(); a scratch city is only
+       the payer of their coupons. The cities of d to g are played.
+       =================================================================== */
+
+    /** How many things the books part asserted, for its report line. */
+    static int booksAsserted = 0;
+
+    /** One fact of the books, printed either way. */
+    static void books(String what, boolean ok) {
+        booksAsserted++;
+        check(what, ok);
+    }
+
+    /** Two figures of the books that must agree to a tolerance, printed either way with the figures on a failure. */
+    static void booksNear(String what, double actual, double expected, double tolerance) {
+        booksAsserted++;
+        boolean ok = Math.abs(actual - expected) <= tolerance;
+        if (!ok) {
+            fails++;
+            System.out.printf("  %-62s FAIL  %,.9f, expected %,.9f (+/- %g)%n", what, actual, expected, tolerance);
+        } else {
+            System.out.printf("  %-62s OK%n", what);
+        }
+    }
+
+    /**
+     * A piece's months on a manager's books, stepped by the manager's own
+     * processAllDebts() - the books, the accretion and the month's payments
+     * in the game's order - with what each month left: {expense, coupon,
+     * amortised, carrying at the close, carrying at the opening}, in local
+     * money, and the worst gap between the carrying value and what the
+     * payments still owed are worth at the effective rate, and between the
+     * manager's totals and the piece's own figures (the piece is the only
+     * one on its manager).
+     */
+    static final class Life {
+        final DebtManager manager;
+        final Game payer;
+        final Debt piece;
+        final java.util.List<double[]> rows = new java.util.ArrayList<>();
+        int months;
+        double sumExpense, sumCoupon, sumAmortised;
+        double worstPvGap, worstTotalsGap;
+
+        Life(DebtManager manager, Game payer, Debt piece) {
+            this.manager = manager;
+            this.payer = payer;
+            this.piece = piece;
+        }
+
+        /** Steps n months, or to the piece's end when n is negative. */
+        void step(int n) {
+            for (int i = 0; (n < 0 || i < n) && manager.getDebt().contains(piece); i++) {
+                double opening = piece.getCarryingValue();
+                quietly(() -> manager.processAllDebts(payer));
+                months++;
+                double expense = piece.getLastInterestExpense(), coupon = piece.getLastCoupon();
+                double amortised = piece.getLastAmortised(), closing = piece.getCarryingValue();
+                rows.add(new double[] { expense, coupon, amortised, closing, opening });
+                sumExpense += expense;
+                sumCoupon += coupon;
+                sumAmortised += amortised;
+                worstTotalsGap = Math.max(worstTotalsGap, Math.max(Math.abs(manager.getInterestBooked() - expense),
+                        Math.max(Math.abs(manager.getAmortisedBooked() - amortised),
+                                Math.abs(manager.getCouponBooked() - coupon))));
+                if (manager.getDebt().contains(piece)) {
+                    worstPvGap = Math.max(worstPvGap, Math.abs(piece.carryingInCurrency()
+                            - Debt.presentValue(piece.scheduleOwed(), piece.getEffectiveRate())));
+                }
+            }
+        }
+
+        /** The month's row, counted from 1. */
+        double[] month(int m) { return rows.get(m - 1); }
+
+        /** True when the carrying value closed every month from..to lower than it opened. */
+        boolean falls(int from, int to) {
+            for (int m = from; m <= to; m++) if (!(month(m)[3] < month(m)[4])) return false;
+            return true;
+        }
+
+        /** ...and higher. */
+        boolean rises(int from, int to) {
+            for (int m = from; m <= to; m++) if (!(month(m)[3] > month(m)[4])) return false;
+            return true;
+        }
+    }
+
+    static void books() {
+        System.out.println("\n--- 9. the city's paper on amortised cost (CD3) ---");
+        Game payer = founded("treasury-books-payer");
+        payer.setCashForTest(1e12);
+        calmTenYear(payer);
+        premiumBillAmortizing(payer);
+        reopenedLine(payer);
+        dollarPaper();
+        playedCity();
+        buyback();
+        balance();
+        System.out.printf("%n   the books part asserted %d things.%n", booksAsserted);
+    }
+
+    /**
+     * g. The balance (spec-city-debt.md 5.4): the city's paper at face less
+     * the unamortised discount - the carrying value - and, as a note, its
+     * fair value, which a government discloses and does not book. THE FIXTURE
+     * CAUSES BOTH: three pieces sold under par, so there is a discount to be
+     * unamortised and a carrying value under the face, and the policy rate
+     * moved after, so the market's value of them moves and the books' does not.
+     */
+    static void balance() {
+        System.out.println("\n--- 9g. the balance: the paper at its carrying value, the fair value a note ---");
+        Game city = founded("treasury-books-balance");
+        press(city);
+        quietly(() -> {
+            city.handleTBillLogic(10_000, 6, 1000);
+            city.handleMediumBondLogic(20_000, 10, 1000);
+            city.handleLongBondLogic(30_000, 5, 1000);
+        });
+        for (int i = 0; i < 3; i++) press(city);
+        DebtManager manager = city.getDebtManager();
+        NationalAccounts na = city.getEconomyManager().getNationalAccounts();
+        double sumCarrying = 0, sumFair = 0;
+        boolean allUnder = true;
+        for (Debt d : manager.getDebt()) {
+            sumCarrying += d.getCarryingValue();
+            sumFair += manager.marketValue(d);
+            allUnder &= d.getCarryingValue() < d.getOustandingPrincipal();
+        }
+        books("fixture: a bill, an amortizing bond and a term bond on the books, each carried under its face",
+                manager.getDebt().size() == 3 && allUnder);
+        booksNear("the balance carries the city's paper at the sum of each piece's carrying value", manager.getCarryingValue(), sumCarrying, 1e-9);
+        double discount = manager.getAllPrincipal() - manager.getCarryingValue();
+        books("...so the paper's face less its carrying value is the discount not yet amortised, and there is some", discount > 1);
+        double amortisedBefore = manager.getAmortisedBooked();
+        press(city);
+        booksNear("...and a month wears it off by what the month amortised (no piece repaid a slice in it)",
+                manager.getAllPrincipal() - manager.getCarryingValue(), discount - manager.getAmortisedBooked(), 1e-6);
+        books("fixture: the month amortised something, and the discount is still not gone",
+                amortisedBefore > 0 && manager.getAllPrincipal() - manager.getCarryingValue() > 1);
+
+        double fair = manager.getFairValue();
+        double sumFairNow = 0;
+        for (Debt d : manager.getDebt()) sumFairNow += manager.marketValue(d);
+        booksNear("the fair value is the market's value of each piece, summed", fair, sumFairNow, 1e-9);
+        books("fixture: and it is not the carrying value: the market and the books value the paper differently",
+                Math.abs(fair - manager.getCarryingValue()) > 1);
+
+        // Move the curve and nothing else: the dial, repriced as the buyback screen reprices it.
+        double carryingBefore = manager.getCarryingValue(), interestBefore = manager.getInterestBooked();
+        double balanceBefore = na.getBalance(), netBefore = city.getNetPosition();
+        double[] eachBefore = new double[manager.getDebt().size()];
+        for (int i = 0; i < eachBefore.length; i++) eachBefore[i] = manager.getDebt().get(i).getCarryingValue();
+        manager.setPolicyRate(manager.getPolicyRate() + .04);
+        city.quoteRepurchase(manager.getDebt().get(0));
+        books("the fair value moved with the curve: dearer money, less for the paper", manager.getFairValue() < fair - 1);
+        boolean eachSame = true;
+        for (int i = 0; i < eachBefore.length; i++) eachSame &= manager.getDebt().get(i).getCarryingValue() == eachBefore[i];
+        books("...and no piece's carrying value moved", eachSame);
+        booksNear("...nor the carrying value on the balance", manager.getCarryingValue(), carryingBefore, 0);
+        booksNear("...nor the month's interest on the books", manager.getInterestBooked(), interestBefore, 0);
+        booksNear("...nor the budget's result", na.getBalance(), balanceBefore, 0);
+        booksNear("...nor the city's net position, what its cash holds against what it owes", city.getNetPosition(), netBefore, 0);
+    }
+
+    /**
+     * f. A buyback between two presses: the gain the screen quotes is the
+     * piece's carrying value less the price - not its face less the price,
+     * which is the gain only on paper carried at its face - it reaches the
+     * next month's books as the gain on debt retired, the bridge foots, and
+     * it comes back from a save taken between the buyback and the press.
+     * THE FIXTURE CAUSES THE DIFFERENCE: a term bond and a bill, sold under
+     * par and three months old, so the books carry each at less than its face.
+     */
+    static void buyback() {
+        System.out.println("\n--- 9f. a buyback gains the carrying value less the price, through a save ---");
+        Game city = founded("treasury-books-buyback");
+        press(city);
+        quietly(() -> {
+            city.handleLongBondLogic(30_000, 5, 1000);
+            city.handleTBillLogic(10_000, 12, 1000);
+        });
+        for (int i = 0; i < 3; i++) press(city);
+        Debt bond = null, bill = null;
+        for (Debt d : city.getDebtManager().getDebt()) {
+            if (d instanceof LongTermBond) bond = d;
+            if (d instanceof ShortTermTBill) bill = d;
+        }
+        books("fixture: the term bond and the bill are on the books, three months old", bond != null && bill != null);
+        double face = bond.getOustandingPrincipal(), carrying = bond.getCarryingValue();
+        double price = city.quoteRepurchase(bond);
+        double gain = city.repurchaseGain(bond);
+        System.out.printf("   the bond: face %,.2fk, carried at %,.2fk, bought back for %,.2fk; a gain of %,.2fk on the books, %,.2fk on its face%n",
+                face, carrying, price, gain, face - price);
+        books("fixture: the bond is carried under its face, sold away from par: the face and the carrying value differ, and the gain is a gain", face - carrying > 1 && Math.abs(gain) > 1);
+        booksNear("the gain the screen quotes is the carrying value less the price", gain, carrying - price, 1e-9);
+        books("...and not the face less the price, which differs from it by the unamortised discount",
+                Math.abs(gain - (face - price)) > 1 && Math.abs((face - price) - gain - (face - carrying)) < 1e-9);
+
+        double billCarrying = bill.getCarryingValue(), billFace = bill.getOustandingPrincipal();
+        double billPrice = city.quoteRepurchase(bill);
+        double billGain = city.repurchaseGain(bill);
+        books("the bill, sold at a discount, is no different: its gain is its carrying value less its price too",
+                billFace - billCarrying > 1 && Math.abs(billGain - (billCarrying - billPrice)) < 1e-9);
+
+        double paid = city.repurchaseDebt(bond);
+        booksNear("the treasury paid the price the screen quoted", paid, price, 1e-9);
+        books("fixture: the bond is off the books and the bill is not", !city.getDebtManager().getDebt().contains(bond)
+                && city.getDebtManager().getDebt().contains(bill));
+
+        // A save between the buyback and the press: the gain is pending, and has to come back with the city.
+        city.saveGame(2);
+        Game back = new Game(city.getGameFiles());
+        back.loadGame(2);
+        press(city);
+        press(back);
+        for (Game g : new Game[] { city, back }) {
+            String who = g == city ? "the live city" : "the city reloaded between the buyback and the press";
+            NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+            booksNear(who + ": the next month's gain on debt retired is the gain the screen quoted", na.getRetiredGain(), gain, 1e-9);
+            booksNear("...the budget's result carries it, below the operating lines: the totals do not",
+                    na.getBalance() - (na.getTotalRevenue() - na.getTotalExpenses()), na.getRetiredGain(), 1e-9);
+            booksNear("...the bridge's not-cash row takes it out again, with the discount amortised, since the price was the cash",
+                    g.getTreasuryNotCash(), na.getInterestNotCash() - na.getRetiredGain(), 1e-9);
+            double journal = 0;
+            for (TreasuryJournal.Entry e : g.getTreasuryJournal()) journal += e.amount();
+            booksNear("...and the bridge foots with the gain in it", g.getTreasurySurplus() + g.getTreasuryNotCash() + g.getTreasuryRaised()
+                    - g.getTreasuryRepaid() + journal + g.getTreasuryResidual(), g.getTreasuryChange(), MoneyAudit.tolerance(TOLERANCE, treasurySize(g)));
+            booksNear("...the journal names the price paid, not the gain", amount(g.getTreasuryJournal(), "Bought back a bond"), -price, 1e-9);
+        }
+        booksNear("the reloaded city's whole month is the live city's, in the gain and in the bridge's not-cash row", back.getTreasuryNotCash(),
+                city.getTreasuryNotCash(), 1e-6);
+        press(city);
+        booksNear("the month after, the gain is not counted again", city.getEconomyManager().getNationalAccounts().getRetiredGain(), 0, 1e-9);
+    }
+
+    /**
+     * e. A played city, 30 months, selling paper under par all the way (a
+     * bill, an amortizing bond and a term bond to begin with, a bill every
+     * half-year after): every month the budget's interest is the cash
+     * coupons and the discount amortised, the amortisation is the manager's,
+     * it is the bridge's not-cash row, and the bridge foots with it.
+     */
+    static void playedCity() {
+        System.out.println("\n--- 9e. a played city, 30 months of paper sold under par: the interest, the not-cash row, the bridge ---");
+        Game city = founded("treasury-books-played");
+        press(city);
+        quietly(() -> {
+            city.handleTBillLogic(10_000, 6, 1000);
+            city.handleMediumBondLogic(20_000, 10, 1000);
+            city.handleLongBondLogic(30_000, 5, 1000);
+        });
+        int under = 0;
+        for (Debt d : city.getDebtManager().getDebt()) if (d.getCarryingValue() < d.getOustandingPrincipal()) under++;
+        books("fixture: a bill, an amortizing bond and a term bond, all sold under par", city.getDebtManager().getDebt().size() == 3 && under == 3);
+        NationalAccounts na = city.getEconomyManager().getNationalAccounts();
+        DebtManager manager = city.getDebtManager();
+        double worstSplit = 0, worstManager = 0, worstRow = 0, worstBridge = 0, worstTiming = 0, biggestRest = 0;
+        double sumNotCash = 0, bankShareBefore = 0;
+        int monthsAmortising = 0;
+        for (int i = 0; i < 30; i++) {
+            if (i % 6 == 5) quietly(() -> city.handleTBillLogic(10_000, 6, 1000));
+            press(city);
+            int m = city.getMonth();
+            worstSplit = Math.max(worstSplit, Math.abs(na.getInterestExpense() - (na.getInterestPaidInCash() + na.getInterestNotCash())));
+            worstManager = Math.max(worstManager, Math.abs(na.getInterestNotCash() - manager.getAmortisedBooked()));
+            worstRow = Math.max(worstRow, Math.abs(city.getTreasuryNotCash() - (na.getInterestNotCash() - na.getRetiredGain())));
+            double journal = 0;
+            for (TreasuryJournal.Entry e : city.getTreasuryJournal()) journal += e.amount();
+            worstBridge = Math.max(worstBridge, Math.abs(city.getTreasurySurplus() + city.getTreasuryNotCash()
+                    + city.getTreasuryRaised() - city.getTreasuryRepaid() + journal + city.getTreasuryResidual()
+                    - city.getTreasuryChange()) / Math.max(1, treasurySize(city)));
+            // What the residual is, every month: the coupon timing and nothing else. The books charge the coupon in the month
+            // it falls due and the cash pays the bank its share the month after (the existing section 6 measures it in the
+            // issue month), so the residual is the change in the bank's share. The amortisation, which is no cash, is the
+            // bridge's own row and leaves nothing in it.
+            double bankShare = na.getInterestPaidInCash() - city.getCouponsToHouseholds() - city.getCouponsToFirms()
+                    - city.getCouponsToWorld() - city.getCentralBank().getPaperCoupons();
+            worstTiming = Math.max(worstTiming, Math.abs(city.getTreasuryResidual() - (bankShare - bankShareBefore)));
+            bankShareBefore = bankShare;
+            biggestRest = Math.max(biggestRest, Math.abs(city.getTreasuryResidual()));
+            sumNotCash += na.getInterestNotCash();
+            if (na.getInterestNotCash() > 0) monthsAmortising++;
+        }
+        books("fixture: the discount wore off in every month of the 30", monthsAmortising == 30 && sumNotCash > 0);
+        booksNear("every month the budget's interest is the cash coupons and the discount amortised", worstSplit, 0, 1e-6);
+        booksNear("...the discount amortised is the manager's, month by month", worstManager, 0, 1e-6);
+        booksNear("...and the bridge's not-cash row is the budget's amortisation less the gain on debt retired", worstRow, 0, 1e-6);
+        booksNear("...and the bridge foots with the not-cash row in it (the part of a billion of the treasury's size)", worstBridge, 0, 1e-9);
+        booksNear("...and what the bridge leaves over is the bank's coupon timing and nothing else, every month: the amortisation left none", worstTiming, 0, MoneyAudit.tolerance(TOLERANCE, treasurySize(city)));
+        System.out.printf("   %,.2fk of discount amortised over the 30 months; the bridge left over at most %,.4fk, a month's coupon timing%n", sumNotCash, biggestRest);
+    }
+
+    /** The one piece of paper a city owes, or null when it owes none or several. */
+    static Debt onlyPiece(Game g) {
+        return g.getDebtManager().getDebt().size() == 1 ? g.getDebtManager().getDebt().get(0) : null;
+    }
+
+    /**
+     * d. Dollar paper (spec-city-debt.md 5, and the study's currency note): the
+     * books are kept in dollars - the carrying value, the expense, the
+     * amortisation - and read in D$ at the rate the paper is valued at, which
+     * is the month's D$ (DebtManager.setExchangeRate(foreign.getRate())), not
+     * the D$ the goods are struck at (EconomyManager, THE D$ THE GOODS ARE
+     * STRUCK AT, AN1), which follows it at a lag. THE FIXTURE CAUSES BOTH:
+     * two twin cities pin the D$ at the same rate and each borrows the same
+     * dollar bond; one then has its D$ moved by half, and the goods' struck
+     * rate is left behind both D$s by the pin itself. Twins, because the
+     * claim is that the dollar books are THE SAME wherever the D$ is.
+     */
+    static void dollarPaper() {
+        System.out.println("\n--- 9d. dollar paper: the books in dollars, read at the month's D$ and not the struck rate ---");
+        double r0 = 1.25, r1 = r0 * 1.5;
+        Game still = founded("treasury-books-usd-still"), moved = founded("treasury-books-usd-moved");
+        Game[] twins = { still, moved };
+        for (Game g : twins) {
+            press(g);
+            g.getForeignAccounts().pinRate(r0);
+            press(g);
+        }
+        books("fixture: the D$ is pinned at the same rate in both cities, and the window abroad is open in both",
+                still.getForeignAccounts().getRate() == r0 && moved.getForeignAccounts().getRate() == r0
+                        && still.foreignWindowOpen() && moved.foreignWindowOpen());
+        String[] said = new String[2];
+        for (int i = 0; i < 2; i++) {
+            Game g = twins[i];
+            java.util.concurrent.atomic.AtomicReference<String> r = new java.util.concurrent.atomic.AtomicReference<>();
+            quietly(() -> r.set(g.handleForeignLogic("Term", 20_000, 5, 100, false)));
+            said[i] = r.get();
+        }
+        Debt a = onlyPiece(still), b = onlyPiece(moved);
+        books("fixture: each city borrowed the one five-year dollar bond", a != null && b != null && a.isForeign() && b.isForeign()
+                && said[0].startsWith("Issued abroad") && said[1].startsWith("Issued abroad"));
+        books("fixture: the same bond in both, sold away from par, so there is a discount to amortise",
+                a.faceInCurrency() == b.faceInCurrency() && a.carryingInCurrency() == b.carryingInCurrency()
+                        && Math.abs(a.faceInCurrency() - a.carryingInCurrency()) > 1);
+        System.out.printf("   US$%,.2f of face raised US$%,.2f; effective %.4f%%, coupon %.4f%%%n", a.faceInCurrency(),
+                a.carryingInCurrency(), a.getEffectiveRate() * 100, ((LongTermBond) a).couponRate() * 100);
+
+        double usdCarriedAtMove = b.carryingInCurrency(), localCarriedAtMove = b.getCarryingValue();
+        // The D$ moves as the month's reprice moves it, and the debt is told at once with the stock of dollars
+        // owed (Game, the line after repriceCurrency()): the paper is valued at the rate the next month pays at.
+        moved.getForeignAccounts().pinRate(r1);
+        moved.getDebtManager().setExchangeRate(r1);
+        moved.getForeignAccounts().takeForeignDebt(moved.getDebtManager().getForeignPrincipalUsd(), r1);
+        books("fixture: then the D$ moves by half in one city and stays in the other, and the debt is told",
+                still.getForeignAccounts().getRate() == r0 && moved.getForeignAccounts().getRate() == r1
+                        && b.getExchangeRate() == r1 && a.getExchangeRate() == r0);
+        booksNear("the move left the dollar books alone: the carrying value in dollars is what it was", b.carryingInCurrency(), usdCarriedAtMove, 0);
+        booksNear("...and moved the carrying value in D$ by the revaluation, in the ratio of the two D$s", b.getCarryingValue(), localCarriedAtMove * r1 / r0, 1e-9);
+        double worstExpenseGap = 0, worstCarryGap = 0, worstRecurrence = 0, worstRead = 0, worstRatio = 0;
+        double nearestStruck = Double.MAX_VALUE, worstManager = 0;
+        for (int month = 1; month <= 14; month++) {
+            double[] payment = { a.scheduleOwed()[0], b.scheduleOwed()[0] };
+            double[] before = { a.carryingInCurrency(), b.carryingInCurrency() };
+            press(still);
+            press(moved);
+            Debt[] pieces = { a, b };
+            for (int i = 0; i < 2; i++) {
+                Game g = twins[i];
+                Debt d = pieces[i];
+                double rate = g.getForeignAccounts().getRate();
+                // The books in dollars follow the carrying recurrence alone, whatever the D$ did...
+                worstRecurrence = Math.max(worstRecurrence,
+                        Math.abs(d.carryingInCurrency() - (before[i] + d.lastExpenseOwn - payment[i])));
+                // ...and are read in D$ at the month's D$.
+                worstRead = Math.max(worstRead, Math.max(
+                        Math.abs(d.getCarryingValue() - d.carryingInCurrency() * rate),
+                        Math.max(Math.abs(d.getLastInterestExpense() - d.lastExpenseOwn * rate),
+                                Math.abs(d.getExchangeRate() - rate))));
+                worstManager = Math.max(worstManager, Math.abs(g.getDebtManager().getInterestBooked() - d.getLastInterestExpense()));
+                nearestStruck = Math.min(nearestStruck, Math.abs(g.getEconomyManager().getStruckRate() - rate));
+            }
+            worstExpenseGap = Math.max(worstExpenseGap, Math.abs(a.lastExpenseOwn - b.lastExpenseOwn));
+            worstCarryGap = Math.max(worstCarryGap, Math.abs(a.carryingInCurrency() - b.carryingInCurrency()));
+            worstRatio = Math.max(worstRatio, Math.abs(b.getCarryingValue() / a.getCarryingValue() - r1 / r0));
+        }
+        books("fixture: the goods' struck rate stayed away from the D$ in both cities, every month", nearestStruck > 1e-3);
+        booksNear("the expense in dollars is the same wherever the D$ is: the weaker D$ moved none of it", worstExpenseGap, 0, 1e-9);
+        booksNear("...and so is the carrying value in dollars", worstCarryGap, 0, 1e-9);
+        booksNear("the dollar books follow the carrying recurrence alone: carrying + expense - payment, every month", worstRecurrence, 0, 1e-9);
+        booksNear("the D$ books are the dollars read at the month's D$ (the carrying value, the expense, the rate the paper is valued at)",
+                worstRead, 0, 1e-9);
+        booksNear("...so the D$ carrying value moved by the revaluation, in the ratio of the two D$s, every month", worstRatio, 0, 1e-9);
+        double rateNow = moved.getForeignAccounts().getRate(), struckNow = moved.getEconomyManager().getStruckRate();
+        books("...at the D$ and not at the rate the goods are struck at, which would read it differently",
+                Math.abs(b.getCarryingValue() - b.carryingInCurrency() * struckNow) > 1
+                        && Math.abs(b.getCarryingValue() - b.carryingInCurrency() * rateNow) < 1e-6);
+        booksNear("the manager's interest booked for the month is the piece's, in D$", worstManager, 0, 1e-9);
+    }
+
+    /** a. The study's calm ten-year (spec-city-debt.md 5.1): D$300M of 3.5% sold at 99.148 for D$297.4M, effective 3.602%. Units are D$ thousands. */
+    static void calmTenYear(Game payer) {
+        System.out.println("\n--- 9a. the calm ten-year, on the study's table ---");
+        DebtManager manager = new DebtManager();
+        double face = 300_000, price = .99148 * face;
+        LongTermBond bond = (LongTermBond) manager.addLongTermBond(face, 120, 0, .035);
+        bond.markIssued(price, .036);
+        books("fixture: it sold under par, D$297.4M raised of D$300M", price < face && Math.abs(price - 297_444) < 1e-6);
+        booksNear("the books open at what the sale raised", bond.getCarryingValue(), price, 1e-9);
+        booksNear("its effective rate is the yield at which the payments it owes are worth what was raised",
+                Debt.presentValue(bond.scheduleOwed(), bond.getEffectiveRate()), price, 1e-6);
+        booksNear("...and it is the study's 3.602%", bond.getEffectiveRate(), .03602, 5e-6);
+        books("...dearer than the coupon it prints: a bond sold under par costs more than its coupon",
+                bond.getEffectiveRate() > bond.couponRate());
+        double coupon = bond.getMonthlyInterestExpense();
+
+        Life life = new Life(manager, payer, bond);
+        life.step(1);
+        booksNear("month 1 costs the study's D$893k", life.month(1)[0], 893, 1);
+        booksNear("...of which the coupon, D$875k", life.month(1)[1], 875, 1e-9);
+        booksNear("...the coupon the piece owed, to the cent", life.month(1)[1], coupon, 1e-9);
+        booksNear("...and D$18k is the discount wearing off", life.month(1)[2], 18, 1);
+        life.step(23);
+        booksNear("month 24 costs the study's D$894k", life.month(24)[0], 894, 1);
+        booksNear("...and is carried at the study's D$297.9M", life.month(24)[3], 297_900, 50);
+        life.step(36);
+        booksNear("month 60 costs the study's D$896k", life.month(60)[0], 896, 1);
+        booksNear("...and is carried at the study's D$298.6M", life.month(60)[3], 298_600, 50);
+        life.step(59);
+        booksNear("month 119 costs the study's D$900k", life.month(119)[0], 900, 1);
+        booksNear("...and is carried at the study's D$300.0M, the face repaid the next month", life.month(119)[3], 300_000, 50);
+        double beforeLast = life.month(119)[3];
+        booksNear("just before its last payment it is carried at what that payment is worth", beforeLast,
+                Debt.presentValue(new double[] { face + coupon }, bond.getEffectiveRate()), 1e-6);
+        books("...within a coupon of the face", Math.abs(beforeLast - face) <= coupon);
+        life.step(-1);
+        books("it ran its 120 months and came off the books", life.months == 120 && !manager.getDebt().contains(bond));
+        booksNear("after the last payment nothing is carried", bond.carryingInCurrency(), 0, 0);
+        booksNear("over its life the expenses are the coupons and the discount: sum of expenses = sum of coupons + (face - proceeds)",
+                life.sumExpense, life.sumCoupon + (face - price), 1e-6);
+        booksNear("...the discount wore off in full: the amortised sum to face less proceeds", life.sumAmortised, face - price, 1e-6);
+        booksNear("every month the carrying value was what the payments still owed were worth at the effective rate", life.worstPvGap, 0, 1e-6);
+        booksNear("...and the manager's month totals were the piece's, every month", life.worstTotalsGap, 0, 1e-9);
+        books("the carrying value rose every month to the last, as the discount wore off", life.rises(1, 119));
+    }
+
+    /** b. A premium, a bill and an amortizing bond: each closes; the premium's amortised is below nothing, the bill's whole cost its discount, the serial's carrying value falls with its slices. */
+    static void premiumBillAmortizing(Game payer) {
+        System.out.println("\n--- 9b. a premium, a bill and an amortizing bond ---");
+
+        DebtManager premiums = new DebtManager();
+        double pFace = 100_000, pPrice = 104_000;
+        LongTermBond dear = (LongTermBond) premiums.addLongTermBond(pFace, 60, 0, .06);
+        dear.markIssued(pPrice, .045);
+        books("fixture: a 6% bond sold over par, a coupon over the day's yield", pPrice > pFace && dear.getCarryingValue() > pFace);
+        books("its effective rate is under its coupon: a premium costs the city less than it pays", dear.getEffectiveRate() < dear.couponRate());
+        Life dl = new Life(premiums, payer, dear);
+        dl.step(-1);
+        books("it ran its 60 months", dl.months == 60 && !premiums.getDebt().contains(dear));
+        boolean belowNothing = true;
+        for (double[] row : dl.rows) if (!(row[2] < 0 && row[0] < row[1])) belowNothing = false;
+        books("every month its amortised is below nothing: the expense is under the coupon", belowNothing);
+        books("...and the carrying value fell every month, from over par toward the face", dl.falls(1, 59));
+        booksNear("over its life the expenses are the coupons less the premium: sum of expenses = sum of coupons + (face - proceeds)",
+                dl.sumExpense, dl.sumCoupon + (pFace - pPrice), 1e-6);
+        books("...which is less than the coupons it paid", dl.sumExpense < dl.sumCoupon);
+        booksNear("it closes to nothing", dear.carryingInCurrency(), 0, 0);
+        booksNear("every month its carrying value was what the payments still owed were worth", dl.worstPvGap, 0, 1e-6);
+
+        DebtManager bills = new DebtManager();
+        double bFace = 50_000, bPrice = 49_000;
+        ShortTermTBill bill = (ShortTermTBill) bills.addShortTermTBill(bFace, 6, 0);
+        bill.markIssued(bPrice, .03);
+        books("fixture: a six-month bill that pays no coupon and sold under its face",
+                bill.getMonthlyInterestExpense() == 0 && bPrice < bFace);
+        Life bl = new Life(bills, payer, bill);
+        bl.step(1);
+        books("a bill is not free money: its first month costs interest although it pays no coupon",
+                bl.month(1)[0] > 0 && bl.month(1)[1] == 0);
+        bl.step(-1);
+        books("it ran its 6 months", bl.months == 6 && !bills.getDebt().contains(bill));
+        booksNear("its whole cost is its discount: the sum of expenses is face less proceeds", bl.sumExpense, bFace - bPrice, 1e-6);
+        booksNear("...and with no coupon every month's expense is amortised", bl.sumAmortised, bl.sumExpense, 1e-9);
+        books("...the carrying value rose every month toward the face", bl.rises(1, 5));
+        booksNear("it closes to nothing", bill.carryingInCurrency(), 0, 0);
+        booksNear("every month its carrying value was what the payments still owed were worth", bl.worstPvGap, 0, 1e-6);
+
+        DebtManager serials = new DebtManager();
+        double sFace = 120_000, sPrice = 118_800;
+        MediumTermBond serial = (MediumTermBond) serials.addMediumTermBond(sFace, 60, 0, .04);
+        serial.markIssued(sPrice, .042);
+        int slices = serial.getSlicesRemaining();
+        double slice = serial.getPrincipalPerSlice();
+        books("fixture: a five-year amortizing bond of five yearly slices, sold under par",
+                slices == 5 && slice > 0 && sPrice < sFace);
+        Life sl = new Life(serials, payer, serial);
+        sl.step(-1);
+        books("it ran its 60 months", sl.months == 60 && !serials.getDebt().contains(serial));
+        boolean fallsWithSlice = true, risesBetween = true;
+        double worstSliceGap = 0;
+        for (int m = 1; m <= 59; m++) {
+            boolean sliceMonth = m % 12 == 0;
+            double[] row = sl.month(m);
+            if (sliceMonth) {
+                fallsWithSlice &= row[3] < row[4];
+                worstSliceGap = Math.max(worstSliceGap, Math.abs((row[4] - row[3]) - (slice - row[2])));
+            } else {
+                risesBetween &= row[3] > row[4];
+            }
+        }
+        books("its carrying value falls in each month a slice is repaid", fallsWithSlice);
+        booksNear("...by the slice less what the month amortised", worstSliceGap, 0, 1e-6);
+        books("...and rises in every month between, as the discount wears off", risesBetween);
+        booksNear("over its life the expenses are the coupons and the discount: sum of expenses = sum of coupons + (face - proceeds)",
+                sl.sumExpense, sl.sumCoupon + (sFace - sPrice), 1e-6);
+        booksNear("it closes to nothing", serial.carryingInCurrency(), 0, 0);
+        booksNear("every month its carrying value was what the payments still owed were worth", sl.worstPvGap, 0, 1e-6);
+    }
+
+    /** c. A reopened line (D16): one carrying value, one blended rate, closing as the one piece. */
+    static void reopenedLine(Game payer) {
+        System.out.println("\n--- 9c. a reopened line ---");
+        DebtManager ledger = new DebtManager();
+        double face1 = 200_000, price1 = 196_000, face2 = 100_000, price2 = 103_000;
+        LongTermBond line = (LongTermBond) ledger.addLongTermBond(face1, 120, 0, .04);
+        line.markIssued(price1, .042);
+        double rate1 = line.getEffectiveRate();
+        Life life = new Life(ledger, payer, line);
+        life.step(6);
+        double carriedBefore = line.carryingInCurrency();
+        // The second sale on its own: the line's coupon, the months it has left, its own face and what it raised.
+        LongTermBond tranche = new LongTermBond(face2, line.getRemainingMonths(), 0, line.couponRate());
+        double rate2 = Debt.effectiveRateOf(tranche.scheduleOwed(), price2);
+        books("fixture: the first sale was under par and the second over it, so the two sales' own rates differ",
+                rate1 > line.couponRate() && rate2 < line.couponRate());
+
+        line.reopen(face2, price2, .035);
+        double blended = line.getEffectiveRate();
+        booksNear("the carrying value takes in what the second sale raised", line.carryingInCurrency(), carriedBefore + price2, 1e-9);
+        booksNear("the rate is solved again on the whole remaining schedule at the new face, against the old carrying value and the new proceeds",
+                blended, Debt.effectiveRateOf(line.scheduleOwed(), carriedBefore + price2), 1e-12);
+        booksNear("...and it is the yield at which that schedule is worth the carrying value",
+                Debt.presentValue(line.scheduleOwed(), blended), line.carryingInCurrency(), 1e-6);
+        books("...between the two sales' own rates", blended > Math.min(rate1, rate2) && blended < Math.max(rate1, rate2));
+        life.step(-1);
+        books("the line ran its 120 months as one piece", life.months == 120 && !ledger.getDebt().contains(line));
+        booksNear("it closes to nothing", line.carryingInCurrency(), 0, 0);
+        booksNear("over its life the expenses are the coupons and the discount of BOTH sales: sum of expenses = sum of coupons + (total face - total proceeds)",
+                life.sumExpense, life.sumCoupon + (face1 + face2 - price1 - price2), 1e-6);
+        booksNear("every month, before and after the reopening, its carrying value was what the payments still owed were worth",
+                life.worstPvGap, 0, 1e-6);
+
+        // The central bank's add-on rides a sale and takes its price (Debt.addOnForCentralBank()).
+        DebtManager rides = new DebtManager();
+        LongTermBond sold = (LongTermBond) rides.addLongTermBond(face1, 120, 0, .04);
+        sold.markIssued(price1, .042);
+        double addOn = 50_000;
+        sold.addOnForCentralBank(addOn);
+        booksNear("an add-on for the central bank is carried at the price of the sale it rides: its face at that price",
+                sold.carryingInCurrency(), price1 + addOn * price1 / face1, 1e-6);
+        booksNear("...and the rate is solved again on the new face",
+                Debt.presentValue(sold.scheduleOwed(), sold.getEffectiveRate()), sold.carryingInCurrency(), 1e-6);
     }
 }

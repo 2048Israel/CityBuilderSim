@@ -1,4 +1,4 @@
-# GdpCheck.java - 954 lines · 5 methods · 0 constants · harnesses
+# GdpCheck.java - 959 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/GdpCheck.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -30,10 +30,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6 | 949 | **type** `public class GdpCheck` | Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them). |
+| 6 | 954 | **type** `public class GdpCheck` | Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them). |
 | 10 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 17 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 23 | 4 | `static int heldAt(Good g)` | Where a good stands in NationalAccounts.HELD. |
-| 28 | 786 | `public static void main(String[] args)` |  |
-| 837 | 117 | `static void sheds(java.io.PrintStream quiet, java.io.PrintStream out)` | ...AND IN A CITY (0.7.136, batch FX1): a town's bakeries and materials plants retired with their sheds full. |
+| 28 | 791 | `public static void main(String[] args)` |  |
+| 842 | 117 | `static void sheds(java.io.PrintStream quiet, java.io.PrintStream out)` | ...AND IN A CITY (0.7.136, batch FX1): a town's bakeries and materials plants retired with their sheds full. |
 

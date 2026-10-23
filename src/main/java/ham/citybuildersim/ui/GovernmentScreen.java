@@ -589,7 +589,9 @@ final class GovernmentScreen {
             case "Mortgage insurance premiums", "Mortgage insurance claims"
                                               -> new Door("Bank", () -> ui.bankScreen.showBankMenu());
             case "Transfer from the fund"     -> new Door("Finances", () -> openFinances("The city's fund", "Holdings"));
-            case "Debt interest"              -> new Door("Finances", () -> openFinances("The position", "Debt service"));
+            case "Interest on the city's paper", "Discount amortised on the city's paper"
+                                              -> new Door("Finances", () -> openFinances("The position", "Debt service"));
+            case "Gain (loss) on debt retired" -> new Door("Finances", () -> openFinances("The book", "Buy back"));
             case "Police and prisons"         -> new Door("Services", () -> ui.servicesScreen.open("Safety", ServicesScreen.OVERVIEW));
             case "Utility income"             -> new Door("Services", () -> ui.servicesScreen.open("Utilities", ServicesScreen.OVERVIEW));
             case "Transit fares", "Transit"   -> new Door("Infrastructure", () -> ui.infrastructureScreen.open("Transit"));
@@ -619,7 +621,8 @@ final class GovernmentScreen {
             case "Buildings"                         -> Icons.CRANE;
             case "Repairs"                           -> Icons.BUILD;
             case "Utility income"                    -> Icons.UTILITIES;
-            case "Transfer from the fund", "Debt interest" -> Icons.FINANCES;
+            case "Transfer from the fund", "Interest on the city's paper", "Discount amortised on the city's paper",
+                 "Gain (loss) on debt retired"   -> Icons.FINANCES;
             case "Central bank remittance", "Interest to the central bank" -> Icons.BANK;
             case "Mortgage insurance premiums", "Mortgage insurance claims" -> Icons.HOMES;
             case "Subsidies"                         -> Icons.POLICY;
@@ -784,6 +787,9 @@ final class GovernmentScreen {
             line.setAlignment(Pos.CENTER_LEFT);
             block.getChildren().add(line);
         }
+        // The books (CD3): the balance takes the gain on paper retired, which is below the two bars' lines.
+        Node gainLine = retiredGainLine(na, 230);
+        if (gainLine != null) block.getChildren().add(gainLine);
         if (annual > 0) {
             // The last twelve months' balance where History has them (B7): a busy month is not a year.
             double year = yearOf(balance, SURPLUS_KEYS);
@@ -798,6 +804,34 @@ final class GovernmentScreen {
         block.setPrefWidth(254);
         block.setMaxWidth(254);
         return block;
+    }
+
+    /* ----- the books (CD3) ----- */
+
+    /**
+     * The gain (below nothing, a loss) on debt retired as a muted line with its (i), or null at nothing: the
+     * balance takes it and the lines above it do not (NationalAccounts.getRetiredGain()), so a month it is not
+     * zero the balance would not foot to the two bars without it. No colour on a gain or a loss.
+     */
+    static Node retiredGainLine(NationalAccounts na, double wide) {
+        double gain = na.getRetiredGain();
+        if (Math.abs(gain) < .5) return null;
+        return infoLine("Gain (loss) on debt retired " + s(gain) + ", in the balance", RETIRED_GAIN_INFO, true,
+                Palette.SIZE_LABEL, Palette.TEXT_MUTED, wide);
+    }
+
+    /** ...and as a row under the Spending page's total, its own line below the operating lines: the words, an (i), the figure on the right. Null at nothing. */
+    static Node retiredGainRow(NationalAccounts na) {
+        double gain = na.getRetiredGain();
+        if (Math.abs(gain) < .5) return null;
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP,
+                infoLine("Gain (loss) on debt retired", RETIRED_GAIN_INFO, true, Palette.SIZE_BODY, Palette.TEXT_BODY, 300),
+                gap, figure(s(gain), Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 4 6 0 6;");
+        return row;
     }
 
     /**
@@ -859,7 +893,9 @@ final class GovernmentScreen {
             + "did between two presses of the arrow. The steps between them are the money that moved without being "
             + "a budget line: paper raised and repaid, the central bank's advances, reserves, capital put into the "
             + "bank, bonds bought back, the students' loans and the fund's pay-ins - each a loan, a saving or a "
-            + "debt, not spending. "
+            + "debt, not spending. Two steps are the books and not money: the discount wearing off the city's "
+            + "paper, which the budget charges as interest and nobody has been paid yet, and the gain on paper "
+            + "bought back. "
             + "“Not accounted for” is what is left after them - timing between the books and the money, "
             + "such as a coupon booked the month it is charged and paid the month after, and anything not yet "
             + "journalled - printed rather than folded in, because a bridge that hides its own gap is not a bridge.";
@@ -872,6 +908,25 @@ final class GovernmentScreen {
     /** The "not accounted for" step's tooltip. */
     static final String RESIDUAL_INFO = "What the named steps do not explain: timing between the books and the money, "
             + "and anything not yet journalled. Printed, not folded in.";
+
+    /* ----- the books (CD3) ----- */
+
+    /** The not-cash interest step's tooltip: the discount wearing off the city's paper, charged to the budget and paid to nobody yet. */
+    static final String NOT_CASH_INTEREST_INFO = "The budget charges the discount wearing off the city's paper as "
+            + "interest, a little every month, but nobody is paid it until the paper falls due. So the budget is "
+            + "lower than the cash by this much. Paper sold over its face runs the other way: its premium wearing "
+            + "off lowers the interest, and this step takes money off.";
+
+    /** The not-cash gain step's tooltip: the gain on paper bought back, booked against what it was carried at, paid by nobody. */
+    static final String NOT_CASH_GAIN_INFO = "Buying paper back for less than it is carried at books a gain, and for "
+            + "more a loss. No cash came in for it: the price the city paid is in the buyback line below. So the "
+            + "budget is higher than the cash by a gain, and this step takes it off.";
+
+    /** The gain (loss) on debt retired: the line under the budget's operating lines, and what is in the balance. */
+    static final String RETIRED_GAIN_INFO = "Paper bought back before it falls due is booked at what it was carried "
+            + "at less the price paid: a gain when it cost less, a loss when it cost more. It is below the lines "
+            + "above and in the balance, not in what was paid out. It moves no cash; the price paid does, in the "
+            + "buyback line on the bridge.";
 
     /**
      * FROM EARNED TO BANKED: three tiles - the header's figure, the budget,
@@ -945,6 +1000,14 @@ final class GovernmentScreen {
         out.add(BridgeStep.of("Raised by issuing paper", ui.game.getTreasuryRaised(), Icons.FINANCES).go(borrow));
         out.add(BridgeStep.of("Principal repaid", -ui.game.getTreasuryRepaid(), Icons.FINANCES).go(borrow)
                 .tip("Not spending: the money went out and the debt went down by the same amount."));
+        // The books (CD3): the budget charges the discount wearing off the city's paper and books the gain on
+        // paper bought back, and neither moved the cash, so these two bring the budget back to it. Their sum is
+        // Game.getTreasuryNotCash(), which the model's residual already takes off.
+        NationalAccounts na = ui.game.getEconomyManager().getNationalAccounts();
+        out.add(BridgeStep.of("Interest that was no cash", na.getInterestNotCash(), Icons.FINANCES)
+                .tip(NOT_CASH_INTEREST_INFO).go(() -> openFinances("The position", "Debt service")));
+        out.add(BridgeStep.of("Gain (loss) on paper bought back", -na.getRetiredGain(), Icons.FINANCES)
+                .tip(NOT_CASH_GAIN_INFO).go(() -> openFinances("The book", "Buy back")));
         for (TreasuryJournal.Entry e : ui.game.getTreasuryJournal()) {
             BridgeStep step = BridgeStep.of(e.label(), e.amount(), journalIcon(e.label()));
             Runnable go = journalDoor(e.label());
@@ -1018,6 +1081,15 @@ final class GovernmentScreen {
         row = moved(grid, row, booked >= 0 ? "Surplus on the budget" : "Deficit on the budget", booked, false);
         row = moved(grid, row, "Raised by issuing paper", ui.game.getTreasuryRaised(), false);
         row = moved(grid, row, "Principal repaid to lenders", -ui.game.getTreasuryRepaid(), false);
+        // The books (CD3): the two rows the budget carries and the cash does not, so the sum still foots.
+        NationalAccounts na = ui.game.getEconomyManager().getNationalAccounts();
+        if (Math.abs(na.getInterestNotCash()) >= .5) {
+            row = moved(grid, row, "Interest that was no cash (the discount wearing off)", na.getInterestNotCash(), false);
+        }
+        if (Math.abs(na.getRetiredGain()) >= .5) {
+            row = moved(grid, row, "Gain (loss) on paper bought back (no cash: the price is in the buyback line)",
+                    -na.getRetiredGain(), false);
+        }
         row = moved(grid, row, "Everything else the treasury did", ui.game.getTreasuryUnexplained(), false);
         for (TreasuryJournal.Entry e : ui.game.getTreasuryJournal()) row = moved(grid, row, e.label(), e.amount(), true);
         moved(grid, row, "Not accounted for", ui.game.getTreasuryResidual(), true);
@@ -1226,7 +1298,7 @@ final class GovernmentScreen {
      */
     static List<String> spendingNames() {
         return List.of("Pensions", "EI", "Student grants", "Healthcare", "Education",
-                "Police and prisons", "Buildings", "Land bought", "Debt interest",
+                "Police and prisons", "Buildings", "Land bought", "Interest on the city's paper",
                 "Interest to the central bank", "Subsidies", "Mortgage insurance claims", "Food assistance",
                 "Transit", "Repairs", "Arrears paid down", "Crude for the reserve");
     }
@@ -1642,7 +1714,9 @@ final class GovernmentScreen {
 
        So "Debt interest: $0" can be true while the city is paying millions,
        and "Debt interest: $40k" can be true while a $2M slice falls due next
-       month. Neither is visible from one line, and the fix is not a different
+       month. (Since CD3 the line is "Interest on the city's paper" and counts
+       a note's discount wearing off month by month, so a bill is no longer
+       $0; the coupon alone is a cash figure, the line's first part.) Neither is visible from one line, and the fix is not a different
        number - it is showing the paper.
 
        PRINCIPAL IS NOT AN EXPENSE and is not added into this line. It is a
@@ -1652,15 +1726,21 @@ final class GovernmentScreen {
        care which of the two took their money.
        =================================================================== */
 
-    /** One kind of paper, totalled: its pieces, principal, coupons a month, the discounts it was sold at, and the soonest of its maturities. */
+    /**
+     * One kind of paper, totalled: its pieces, principal (face), coupons a month, the discounts it was sold at,
+     * and the soonest of its maturities - and, since CD3, the interest expense its pieces' books last booked
+     * (the carrying value at the effective rate: the coupons and the discount wearing off together) and what
+     * they are carried at.
+     */
     record PaperKind(String name, int count, double principal,
-                             double coupon, String note, double discount, int soonest) { }
+                             double coupon, String note, double discount, int soonest,
+                             double expense, double carried) { }
 
     java.util.List<PaperKind> paperKinds() {
 
         java.util.Map<String, double[]> tally = new java.util.LinkedHashMap<>();
         for (String t : new String[] {"NOTE", "SERIAL", "TERM"}) {
-            tally.put(t, new double[] {0, 0, 0, 0, Integer.MAX_VALUE});
+            tally.put(t, new double[] {0, 0, 0, 0, Integer.MAX_VALUE, 0, 0});
         }
 
         for (Debt d : ui.game.getDebtManager().getDebt()) {
@@ -1671,17 +1751,19 @@ final class GovernmentScreen {
             row[2] += d.getMonthlyInterestExpense();
             row[3] += d.getIssueDiscount();
             row[4] = Math.min(row[4], d.getRemainingMonths());
+            row[5] += d.getLastInterestExpense();
+            row[6] += d.getCarryingValue();
         }
 
         java.util.List<PaperKind> kinds = new java.util.ArrayList<>();
-        kinds.add(kind("Notes", tally.get("NOTE"), "discounted at issue — no coupon"));
+        kinds.add(kind("Notes", tally.get("NOTE"), "discounted at issue — no coupon, the discount wears off as interest"));
         kinds.add(kind("Serial bonds", tally.get("SERIAL"), "coupon monthly, principal yearly"));
         kinds.add(kind("Term loans", tally.get("TERM"), "coupon monthly, face at the end"));
         return kinds;
     }
 
     static PaperKind kind(String name, double[] t, String note) {
-        return new PaperKind(name, (int) t[0], t[1], t[2], note, t[3], t[0] > 0 ? (int) t[4] : 0);
+        return new PaperKind(name, (int) t[0], t[1], t[2], note, t[3], t[0] > 0 ? (int) t[4] : 0, t[5], t[6]);
     }
 
     /** One kind's row, or an empty one. Never null, so callers can just read it. */
@@ -1689,18 +1771,21 @@ final class GovernmentScreen {
         for (PaperKind k : paperKinds()) {
             if (k.name().equals(name)) return k;
         }
-        return new PaperKind(name, 0, 0, 0, "", 0, 0);
+        return new PaperKind(name, 0, 0, 0, "", 0, 0, 0, 0);
     }
 
     /** P24: interest is the only part of debt service that is an expense. */
     String interestInfo(double repaid) {
         return repaid > 0
                 ? String.format("Interest is the only part of debt service that is an expense, so it is the only "
-                        + "part on the list above. %s of principal also left the treasury this month, and that is "
+                        + "part on the list above. It is the coupons paid in cash and the discount wearing off the "
+                        + "paper, which no cash pays until the paper falls due. %s of principal also left the "
+                        + "treasury this month, and that is "
                         + "not spending — the money went out and the debt went down by the same amount. The "
                         + "bridge on Overview is where the two meet.", m(repaid))
                 : "Interest is the only part of debt service that is an expense, so it is the only part on the "
-                        + "list above. No principal fell due this month; when it does, it leaves the treasury "
+                        + "list above. It is the coupons paid in cash and the discount wearing off the paper, which "
+                        + "no cash pays until the paper falls due. No principal fell due this month; when it does, it leaves the treasury "
                         + "without appearing here, and the bridge on Overview is where the two meet.";
     }
 
@@ -1715,10 +1800,20 @@ final class GovernmentScreen {
         List<Payer> who = new ArrayList<>();
         for (PaperKind k : paperKinds()) {
             if (k.count() == 0) continue;
-            who.add(new Payer(k.name() + "  ×" + k.count(), k.coupon(), m(k.principal()) + " owed"));
+            // The interest each kind cost (CD3): the coupons and the discount wearing off, which a note's coupon
+            // alone (nothing) left off this list.
+            who.add(new Payer(k.name() + "  ×" + k.count(), k.expense(),
+                    m(k.principal()) + " owed · carried " + m(k.carried())));
         }
         if (who.isEmpty()) return column(statementNote("The city owes nothing."));
         VBox box = payers("by the paper it is charged on", interestInfo(repaid), who, total, colour);
+        // ...and the line's two parts (CD3), the cash and the books: the coupons paid, the discount wearing off.
+        NationalAccounts na = ui.game.getEconomyManager().getNationalAccounts();
+        box.getChildren().add(payerRow("...of which the coupons, paid in cash", na.getInterestPaidInCash(), total, "left the treasury"));
+        if (Math.abs(na.getInterestNotCash()) >= .5) {
+            box.getChildren().add(payerRow(na.getInterestNotCash() > 0 ? "...and the discount wearing off"
+                    : "...less the premium wearing off", na.getInterestNotCash(), total, "no cash"));
+        }
         /* --------------- and the money that is not on this statement --------------- */
         if (repaid > 0) box.getChildren().add(payerRow("Principal repaid — not an expense", repaid, 0, "left the treasury"));
         double foreignInterest = ui.game.getForeignInterestPaidThisMonth();
@@ -1819,7 +1914,8 @@ final class GovernmentScreen {
         List<Double> amounts = spendingAmounts(na);
         double total = na.getTotalExpenses();
         // "Outside the budget's total: repairs ..." stood here from 0.7.31; a line of the list since 0.7.102 (A15).
-        Node outside = null;
+        // Under the total now stands the gain (loss) on debt retired (CD3), when there is one: in the balance, not in this total.
+        Node outside = retiredGainRow(na);
         listPage(page, "Spending", "paid out", names, amounts, total, na,
                 name -> {
                     double amount = amounts.get(names.indexOf(name));
@@ -1828,14 +1924,14 @@ final class GovernmentScreen {
                         case "Healthcare"    -> () -> healthSpendDetail(amount, c);
                         case "Education"     -> () -> educationSpendDetail(amount, c);
                         case "Pensions"      -> () -> pensionDetail(amount, c);
-                        case "Debt interest" -> () -> debtServiceDetail(amount, c);
+                        case "Interest on the city's paper" -> () -> debtServiceDetail(amount, c);
                         case "Land bought"   -> amount > 0 ? () -> landSpendDetail(amount, c) : null;
                         case "Mortgage insurance claims" -> this::mortgageInsuranceDetail;
                         case "Food assistance" -> amount > 0 ? () -> foodAssistanceDetail(amount, c) : null;
                         default              -> null;
                     };
                 },
-                name -> "Debt interest".equals(name) ? "on what" : "who", "Paid out altogether", outside);
+                name -> "Interest on the city's paper".equals(name) ? "on what" : "who", "Paid out altogether", outside);
 
         javafx.scene.layout.GridPane three = equalColumns(3, TILE_GAP);
         VBox debt = debtCard(na, total), services = servicesCard(em), pensions = pensionsCard(em, all);
@@ -1863,20 +1959,23 @@ final class GovernmentScreen {
             + "both the debt and this interest line shrink on their own as long as nothing new is issued.";
 
     /** P31: notes. */
-    static final String NOTES_INFO = "Notes carry no interest at all - the lender's return was the discount, taken "
-            + "out of the proceeds when the note was issued. So the interest line understates what the borrowing "
-            + "costs, and the whole face falls due as a lump rather than in slices.";
+    static final String NOTES_INFO = "A note pays no coupon. The lender's return is the discount, taken out of the "
+            + "proceeds when the note was issued. The city books that discount as interest, a little every month, "
+            + "so a bill has an interest expense though no cash leaves until it falls due. The whole face falls due "
+            + "as a lump rather than in slices.";
 
     /** P30: the coupon and the budget disagreeing. */
-    static final String COUPON_INFO = "The interest on the budget is struck from what the city actually paid over a "
-            + "completed month, so the paper's coupons and the budget's line part company on the first month after "
+    static final String COUPON_INFO = "The coupons on the budget are struck from what the city actually paid over a "
+            + "completed month, so the paper's coupons and the budget's part company on the first month after "
             + "loading a save, and again in any month a bond was issued or retired part-way through. Advance a month "
             + "and they meet.";
 
     /**
      * THE DEBT: the principal by paper as one bar in the maturity ladder's
-     * three steps, what is owed and what it costs a month, a line a kind -
-     * the notes' "no coupon: the discount was the price" - the principal
+     * three steps, what is owed and what it costs a month (since CD3 the
+     * interest on the city's paper: the coupons and the discount wearing
+     * off), a line a kind - the notes' "no coupon: the discount wears off as
+     * interest" - the principal
      * repaid ("not spending"), and the coupon chip on a month the budget's
      * interest and the paper's disagree. The old grid in its fold, its
      * interest column plain (B4).
@@ -1895,7 +1994,9 @@ final class GovernmentScreen {
             if (kinds[i].principal() > 0) parts.add(new Slice(kinds[i].name(), kinds[i].principal(), Palette.LADDER[i]));
         }
         if (!parts.isEmpty()) card.getChildren().add(keyedBar(parts, 360, v -> m(v)));
-        double booked = na.getInterestExpense();
+        // The coupons the budget paid in cash, which the paper's coupons are compared with (CD3): the interest
+        // line also holds the discount wearing off, and would raise the chip every month a discount amortises.
+        double booked = na.getInterestPaidInCash();
         List<String[]> lines = debtLines(na);
         card.getChildren().add(words(lines.get(0)[0], Palette.SIZE_BODY + 1, Palette.TEXT_HEAD));
         for (String[] line : lines.subList(1, lines.size())) card.getChildren().add(noteLine(line[0], line[1], 360));
@@ -1911,7 +2012,7 @@ final class GovernmentScreen {
          */
         double coupons = notes.coupon() + serial.coupon() + term.coupon();
         if (coupons > 0 && Math.abs(coupons - booked) > coupons * .02) {
-            HBox c = new HBox(4, chip("coupon " + m(coupons) + " a month, booked " + m(booked)
+            HBox c = new HBox(4, chip("coupons " + m(coupons) + " a month, paid " + m(booked)
                     + ": not struck yet", Palette.TEXT_LABEL), infoButton(COUPON_INFO, true));
             c.setAlignment(Pos.CENTER_LEFT);
             card.getChildren().add(c);
@@ -1924,19 +2025,25 @@ final class GovernmentScreen {
     List<String[]> debtLines(NationalAccounts na) {
         PaperKind notes = paperKind("Notes"), serial = paperKind("Serial bonds"), term = paperKind("Term loans");
         List<String[]> out = new ArrayList<>();
+        // The interest on the city's paper (CD3, spec-city-debt.md 5.4): the coupons paid in cash and the discount
+        // wearing off (below nothing for paper sold over its face), the month's effective interest.
+        double cash = na.getInterestPaidInCash(), notCash = na.getInterestNotCash();
+        String parts = Math.abs(notCash) < .5 ? ""
+                : " (coupons " + m(cash) + (notCash > 0 ? " + the discount wearing off " + m(notCash)
+                        : " − the premium wearing off " + m(-notCash)) + ")";
         out.add(new String[] {"owed " + m(notes.principal() + serial.principal() + term.principal())
-                + " · interest " + m(na.getInterestExpense()) + " a month", null});
+                + " · interest on the city's paper " + m(na.getInterestExpense()) + " a month" + parts, null});
         if (notes.count() > 0) {
             out.add(new String[] {"notes " + m(notes.principal()) + " · no coupon: the discount ("
-                    + m(notes.discount()) + ") was the price · " + (notes.count() == 1 ? "falls due whole in "
+                    + m(notes.discount()) + ") wears off as interest · " + (notes.count() == 1 ? "falls due whole in "
                     : "the first falls due whole in ") + notes.soonest() + " mo", NOTES_INFO});
         }
         if (serial.count() > 0) {
-            out.add(new String[] {"serial bonds " + m(serial.principal()) + " · " + m(serial.coupon())
+            out.add(new String[] {"serial bonds " + m(serial.principal()) + " · coupons " + m(serial.coupon())
                     + " a month · a slice every anniversary", SERIAL_INFO});
         }
         if (term.count() > 0) {
-            out.add(new String[] {"term loans " + m(term.principal()) + " · " + m(term.coupon())
+            out.add(new String[] {"term loans " + m(term.principal()) + " · coupons " + m(term.coupon())
                     + " a month · the whole face at the end", TERM_INFO});
         }
         double repaid = ui.game.getCityPrincipalRepaidThisMonth() + ui.game.getForeignPrincipalRepaidThisMonth();
@@ -1944,20 +2051,21 @@ final class GovernmentScreen {
         return out;
     }
 
-    /** S6's grid: pieces, owed, interest a month, of spending - plain figures. */
+    /** S6's grid: pieces, owed (face), carried (CD3), interest a month (the effective interest), of spending - plain figures. */
     Node debtGrid(double spending) {
-        javafx.scene.layout.GridPane table = grid(new double[] {120, 50, 90, 90, 80}, rightAfterFirst(5));
-        gridHead(table, "", "pieces", "owed", "interest /mo", "of spending");
+        javafx.scene.layout.GridPane table = grid(new double[] {120, 50, 90, 90, 90, 80}, rightAfterFirst(6));
+        gridHead(table, "", "pieces", "owed", "carried", "interest /mo", "of spending");
         int line = 1;
         for (PaperKind k : paperKinds()) {
             if (k.count() == 0) continue;
             table.add(gridCell(k.name(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
             table.add(gridCell(String.valueOf(k.count()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, line);
             table.add(gridCell(m(k.principal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
-            table.add(gridCell(m(k.coupon()), k.coupon() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
-                    Palette.SIZE_CAPTION, true), 3, line);
-            table.add(gridCell(spending > 0 ? String.format("%.2f%%", k.coupon() / spending * 100) : "—",
-                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 4, line);
+            table.add(gridCell(m(k.carried()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
+            table.add(gridCell(m(k.expense()), k.expense() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
+                    Palette.SIZE_CAPTION, true), 4, line);
+            table.add(gridCell(spending > 0 ? String.format("%.2f%%", k.expense() / spending * 100) : "—",
+                    Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 5, line);
             line++;
         }
         return table;

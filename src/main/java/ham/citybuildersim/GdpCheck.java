@@ -534,8 +534,13 @@ public class GdpCheck {
         assertTrue("fixture: the city really did issue a coupon bond", coupon > 0);
         assertTrue("THE INTEREST REACHES THE ACCOUNTS AT ALL",
                 played.getInterestExpense() > 0);
+        // Since CD3 the books' interest is the effective interest, the coupon
+        // and the discount amortised (NationalAccounts.getInterestNotCash());
+        // the coupon is its cash part, and the two parts add to the line.
         check("...and it is the coupon, not some other number",
-                played.getInterestExpense(), coupon);
+                played.getInterestPaidInCash(), coupon);
+        check("...and the line is the coupon and the discount amortised",
+                played.getInterestExpense(), coupon + played.getInterestNotCash());
         assertTrue("...so it survives Pieces.topSlices(), which drops a zero slice",
                 played.getInterestExpense() > 0);
 
