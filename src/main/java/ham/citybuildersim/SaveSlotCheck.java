@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
@@ -15,9 +17,12 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Verifies the slot system: ten saves plus an autosave, the version stamp, and
@@ -35,6 +40,24 @@ import java.util.Map;
  * three autosaves - the twelfth month's, the one before a skip and the one on
  * quit - is loaded here and played on: its month is its history's last, and
  * the history has no gap and no month twice.
+ *
+ * AND THE AUTOSAVE IS WRITTEN OFF THE CLOCK (UP1, 2026-10-22). The autosave
+ * is filled on the FX thread and written on SaveWriter's, from a snapshot, and
+ * section 7c holds each half of that on one grown city: 7c.1 that the two
+ * snapshots taken of it share no object a month could change (and 7c.1b the
+ * same of the states the city cannot reach by itself); 7c.2 that the month
+ * which autosaves, on a history of MONTHLY_KEPT months, holds the clock at
+ * most SaveWriter.CLOCK_MS - the one timing assertion in this file, through
+ * Timing; 7c.3 that the files a snapshot writes behind three months are the
+ * files the old way writes on this thread, field for field, and load at the
+ * month asked; 7c.4 that two autosaves asked for back to back write once or
+ * twice, never at once, and the file is whole after each; 7c.5 that a load, a
+ * numbered save, a skip and Quit each wait for an autosave still held in the
+ * writer; 7c.6 that a write which fails is reported on the calling thread,
+ * leaves the earlier autosave whole, and is followed by one that writes; and
+ * 7c.7 that the floor of real time (SaveWriter.FLOOR_SECONDS) holds the
+ * autosaves to one in thirty seconds however fast the months come, on a clock
+ * the check moves and on the real one.
  */
 public class SaveSlotCheck {
 
@@ -305,7 +328,12 @@ public class SaveSlotCheck {
      * The autosave is written on SaveWriter's thread from a snapshot, while the
      * next months run on the FX thread. This section holds that the snapshot is
      * one: nothing in it is an object the model, or the next snapshot, could
-     * change. The subsections are numbered 7c.1, 7c.2... and each prints its
+     * change (7c.1, 7c.1b). The rest holds the writer itself, on that one
+     * city, its history padded to MONTHLY_KEPT months: what it costs the
+     * clock (7c.2), that it writes the old way's files (7c.3), one at a time
+     * and whole (7c.4), that a load, a numbered save, a skip and Quit wait for
+     * it (7c.5), what a failed write does (7c.6) and the floor of real time
+     * (7c.7). The subsections are numbered 7c.1, 7c.2... and each prints its
      * own heading.
      * ====================================================================== */
 
@@ -320,9 +348,12 @@ public class SaveSlotCheck {
     static final int GROWN_MONTHS = 180;
 
     /**
-     * 7c.1: the walk. Two snapshots taken back to back on one grown city share
-     * no mutable object (DataSave, and separately HistorySave), and no class
-     * in them is one the walk cannot see into.
+     * 7c: grows the city and runs the subsections on it. 7c.1 is the walk:
+     * two snapshots taken back to back on one grown city share no mutable
+     * object (DataSave, and separately HistorySave), and no class in them is
+     * one the walk cannot see into. 7c.1b follows it and 7c.2 to 7c.7 after,
+     * each below; they share the city, and 7c.2 pads its history, so they run
+     * in this order.
      */
     static void offTheClock() throws Exception {
 
@@ -399,11 +430,26 @@ public class SaveSlotCheck {
             assertTrue("...what the build log holds (" + b.data().getBuilds().size() + " entries)",
                     !b.data().getBuilds().isEmpty()
                     && gson.toJson(city.getBuildLog().all()).equals(gson.toJson(b.data().getBuilds())));
+
+            copiesOnFilledStates();
+
+            /* ---- 7c.2 to 7c.7: the writer itself, on a city whose history is as long as a kept one ---- */
+            // The city's floor clock, from here on this check's: the real one runs at 1x, and a floor
+            // of 30 s of real time is not something a check waits for. Each subsection says how it moves it.
+            long[] now = { System.nanoTime() };
+            city.useSaveClockForChecks(() -> now[0]);
+
+            clockCost(city, files, now);
+            writtenBehind(city, files);
+            oneAtATimeAlwaysWhole(city, files);
+            theWaits(city, files);
+            aWriteThatFails(city, files);
+            theFloor(city, files, now);
         } finally {
+            // A check that threw halfway must not leave the shared writer held for whatever runs next.
+            SaveWriter.shared().release();
             cleanUp(root);
         }
-
-        copiesOnFilledStates();
     }
 
     /**
@@ -568,6 +614,500 @@ public class SaveSlotCheck {
         for (String u : unseen) {
             if (n++ == 30) { System.out.println("         ... and " + (unseen.size() - 30) + " more"); break; }
             System.out.println("         opaque: " + u);
+        }
+    }
+
+    /* ----- 7c.2 to 7c.7: the writer, on a city whose history is as long as a kept one ----- */
+
+    /** The floor in nanoseconds, as Game.nextMonth() reads it. */
+    static long floorNanos() {
+        return (long) (SaveWriter.FLOOR_SECONDS * 1e9);
+    }
+
+    /** A timing assertion's line: Timing.verdict says OK, FAIL, or SOFT with the figure and its budget. */
+    static void assertTimed(String label, boolean ok) {
+        if (!ok) fails++;
+        System.out.printf("%-58s %s%n", label, Timing.verdict(ok));
+    }
+
+    /** The slot name the autosave file carries, or null when there is no readable autosave. */
+    static String autosaveName(GameFiles files) {
+        SaveHeader header = files.readHeader(GameFiles.AUTOSAVE_SLOT);
+        return header == null ? null : header.getSlotName();
+    }
+
+    /** A file parsed as one JSON object, or null when it is missing or is not whole JSON. */
+    static JsonObject parsed(Path file) {
+        try {
+            JsonElement tree = JsonParser.parseString(Files.readString(file));
+            return tree.isJsonObject() ? tree.getAsJsonObject() : null;
+        } catch (IOException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** The stream the model's per-month printing goes to while 7c steps months: each month prints some forty lines, and nobody reads them here. */
+    private static final PrintStream SILENT = new PrintStream(OutputStream.nullOutputStream());
+
+    /** Runs {@code work} with System.out swallowed, and restores it. The figure 7c.2 times is the month's, not the console's. */
+    static void quietly(Runnable work) {
+        PrintStream real = System.out;
+        System.setOut(SILENT);
+        try {
+            work.run();
+        } finally {
+            System.setOut(real);
+        }
+    }
+
+    /** One month on the clock, as the window's clock steps it (toggleNextMonth(), no wait), the model's printing swallowed. */
+    static void step(Game city) {
+        quietly(city::toggleNextMonth);
+    }
+
+    /** The median of a set of figures. */
+    static double median(double[] figures) {
+        double[] sorted = figures.clone();
+        Arrays.sort(sorted);
+        return sorted[sorted.length / 2];
+    }
+
+    /**
+     * Grows a history to MONTHLY_KEPT months through its own recording path
+     * (HistorySave.appendMonth(), which ends in the fold recordMonth() ends
+     * in), each series given its own last recorded value, or 0 for an empty
+     * one. The months added sit after the city's real ones on the axis: they
+     * are length, not play. Nothing in 7c.2 to 7c.7 reads what the axis says,
+     * only how long it is (7c.4's and 7c.6's read-backs, 7c.3's load); they
+     * time the clock and compare files.
+     */
+    static void padHistory(HistorySave history) {
+        Map<String, Double> last = new HashMap<>();
+        for (Map.Entry<String, List<? extends Number>> series : history.seriesByName().entrySet()) {
+            List<? extends Number> values = series.getValue();
+            double v = values == null || values.isEmpty() ? 0 : values.get(values.size() - 1).doubleValue();
+            last.put(series.getKey(), Double.isFinite(v) ? v : 0.0);
+        }
+        List<Integer> axis = history.getMonth();
+        int next = axis.get(axis.size() - 1) + 1;
+        while (history.months() < HistorySave.MONTHLY_KEPT) {
+            history.appendMonth(next++, name -> last.getOrDefault(name, 0.0));
+        }
+    }
+
+    /**
+     * The autosave on disk, read back: its save and its history both whole
+     * JSON, the save at the city's month, the history as long as the city's
+     * (no month has run since it was asked for).
+     */
+    static void wholeOnDisk(String which, Game city, GameFiles files) {
+        JsonObject save = parsed(files.saveFile(GameFiles.AUTOSAVE_SLOT));
+        JsonObject history = parsed(files.historyFile(GameFiles.AUTOSAVE_SLOT));
+        assertTrue(which + ": the save reads back as whole JSON", save != null);
+        assertTrue(which + ": the history reads back as whole JSON", history != null);
+        assertTrue(which + ": the save holds the city's month " + city.getMonth(),
+                save != null && save.has("month") && save.get("month").getAsInt() == city.getMonth());
+        assertTrue(which + ": the history holds all the city's " + city.getHistorySave().months() + " months",
+                history != null && history.has("month") && history.getAsJsonArray("month").size() == city.getHistorySave().months());
+    }
+
+    /** Lets the held writer go after {@code ms}, on a thread of its own; {@code releasedAt} reads 0 until it has (nanoTime, set just before the release). */
+    static Thread releaseLater(long ms, AtomicLong releasedAt) {
+        Thread thread = new Thread(() -> {
+            try {
+                Thread.sleep(ms);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            releasedAt.set(System.nanoTime());
+            SaveWriter.shared().release();
+        }, "7c-release");
+        thread.setDaemon(true);
+        thread.start();
+        return thread;
+    }
+
+    /**
+     * 7c.2: the clock. A grown city's history is padded to MONTHLY_KEPT
+     * months - the length at which the autosave held the clock longest before
+     * UP1 - and the month that autosaves is timed, the whole
+     * toggleNextMonth() the window's clock calls, five times after two
+     * warm-ups: its median holds the clock at most SaveWriter.CLOCK_MS. Each
+     * measured month is shown to have autosaved, or the figure is the cost of
+     * a month that did not. The clock the floor reads is moved past the floor
+     * before each, so the due month is the one that writes.
+     */
+    static void clockCost(Game city, GameFiles files, long[] now) throws Exception {
+        System.out.println("\n--- the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS ---");
+
+        SaveWriter writer = SaveWriter.shared();
+        HistorySave history = city.getHistorySave();
+        city.awaitSaves();
+
+        int own = history.months();
+        assertTrue("fixture: the city's own history (" + own + " months) is shorter than a kept one", own < HistorySave.MONTHLY_KEPT);
+        assertEquals("fixture: ...and has folded no year", history.yearlyPoints(), 0);
+        history.saveHistory(files, 9);
+        long ownBytes = Files.size(files.historyFile(9));
+
+        padHistory(history);
+        assertEquals("fixture: the history holds MONTHLY_KEPT months", history.months(), HistorySave.MONTHLY_KEPT);
+
+        // The old way, for the figure that is the condition: the whole save written on this thread.
+        long start = System.nanoTime();
+        GameFiles.Result oldWay = city.saveGame(3, "7c old way");
+        double oldMs = (System.nanoTime() - start) / 1e6;
+        long bytes = Files.size(files.historyFile(3));
+        System.out.printf("      the old way, written on this thread: %.0f ms, the history file %.1f MB (informational: this is what the clock held)%n",
+                oldMs, bytes / 1e6);
+        assertTrue("fixture: the old way saved", oldWay.ok);
+        double grewBy = (double) bytes / ownBytes, monthsGrewBy = (double) HistorySave.MONTHLY_KEPT / own;
+        assertTrue(String.format("fixture: the history file is %.1f MB, %.0fx the city's own %.2f MB (its months grew %.0fx)",
+                bytes / 1e6, grewBy, ownBytes / 1e6, monthsGrewBy), grewBy >= monthsGrewBy / 2);
+
+        final int warmUps = 2, measured = 5;
+        double[] dueMs = new double[measured];
+        List<Double> plainMs = new ArrayList<>();
+        boolean eachWrote = true;
+        for (int round = 0; round < warmUps + measured; round++) {
+            city.awaitSaves();
+            // Past the floor, so the month that is due is the month that writes.
+            now[0] += floorNanos() + 1_000_000_000L;
+            while (city.getMonthsUntilAutosave() > 1) {
+                long began = System.nanoTime();
+                step(city);
+                plainMs.add((System.nanoTime() - began) / 1e6);
+            }
+            int writesBefore = writer.writes();
+            long began = System.nanoTime();
+            step(city);
+            double took = (System.nanoTime() - began) / 1e6;
+            city.awaitSaves();
+            eachWrote &= writer.writes() - writesBefore == 1 && ("Autosave - month " + city.getMonth()).equals(autosaveName(files));
+            if (round >= warmUps) dueMs[round - warmUps] = took;
+        }
+
+        double median = median(dueMs);
+        double[] plain = plainMs.stream().mapToDouble(Double::doubleValue).toArray();
+        System.out.printf("      the %d due months, ms: %s; median %.1f ms%n", measured,
+                Arrays.stream(dueMs).mapToObj(v -> String.format("%.1f", v)).collect(java.util.stream.Collectors.joining(", ")), median);
+        System.out.printf("      for comparison, the %d months between them (no autosave): median %.1f ms%n", plain.length, median(plain));
+
+        assertTrue("every due month, warm-ups too, wrote one autosave named for its month", eachWrote);
+        assertTimed(String.format("the median due month, %.1f ms, holds the clock at most CLOCK_MS (%d ms)", median, SaveWriter.CLOCK_MS),
+                Timing.within(median, SaveWriter.CLOCK_MS));
+    }
+
+    /**
+     * 7c.3: what the writer writes is what the old way writes. Slot 3 is the
+     * city saved on this thread from its live objects; the autosave is a
+     * snapshot of the same state taken straight after and held in the writer
+     * while three months change the city. Released, the two sets of files
+     * match - the save in every field but its name and its time, the history
+     * as text and as a tree, the map byte for byte - and the autosave loads
+     * at the month it was asked at. The save clock stands still, so the floor
+     * binds and no month of the three writes anything of its own.
+     */
+    static void writtenBehind(Game city, GameFiles files) throws Exception {
+        System.out.println("\n--- the autosave off the clock: written behind the months, the same files as the old way ---");
+
+        SaveWriter writer = SaveWriter.shared();
+        city.awaitSaves();
+        int writesBefore = writer.writes();
+
+        GameFiles.Result oldWay = city.saveGame(3, "7c.3");
+        assertTrue("the old way saved slot 3 from the live objects", oldWay.ok);
+
+        int monthAsked = city.getMonth();
+        double cashAsked = city.getCash();
+        int historyAsked = city.getHistorySave().months();
+        String nameBefore = autosaveName(files);
+
+        writer.hold();
+        city.autosave("7c.3");
+        for (int i = 0; i < 3; i++) step(city);
+
+        assertEquals("fixture: three months ran while the snapshot waited", city.getMonth(), monthAsked + 3);
+        assertTrue("fixture: and they changed the city (cash " + (long) cashAsked + " to " + (long) city.getCash() + ")", city.getCash() != cashAsked);
+        assertEquals("fixture: the writer was held: the autosave on disk is still the one before", autosaveName(files), nameBefore);
+        assertEquals("fixture: ...and nothing was written meanwhile", writer.writes(), writesBefore);
+
+        writer.release();
+        city.awaitSaves();
+        assertEquals("released, the writer wrote the one snapshot", writer.writes() - writesBefore, 1);
+        assertEquals("...named as it was asked", autosaveName(files), "Autosave - 7c.3");
+
+        JsonObject slot = parsed(files.saveFile(3)), auto = parsed(files.saveFile(GameFiles.AUTOSAVE_SLOT));
+        assertTrue("both saves read back as whole JSON", slot != null && auto != null);
+        if (slot != null && auto != null) {
+            for (String stamp : new String[] { "slotName", "savedAt" }) {
+                slot.remove(stamp);
+                auto.remove(stamp);
+            }
+            java.util.Set<String> keys = new java.util.TreeSet<>(slot.keySet());
+            keys.addAll(auto.keySet());
+            List<String> differ = new ArrayList<>();
+            for (String key : keys) {
+                if (!java.util.Objects.equals(slot.get(key), auto.get(key))) differ.add(key);
+            }
+            assertTrue("the save: all " + keys.size() + " fields match the old way's but its name and its time"
+                    + (differ.isEmpty() ? "" : " - differ: " + differ.subList(0, Math.min(8, differ.size()))), differ.isEmpty());
+            assertTrue("...and the two trees are equal", slot.equals(auto));
+        }
+
+        String slotHistory = Files.readString(files.historyFile(3));
+        String autoHistory = Files.readString(files.historyFile(GameFiles.AUTOSAVE_SLOT));
+        assertTrue(String.format("the history is the same text, %.1f MB written compact by the same code", slotHistory.length() / 1e6),
+                slotHistory.equals(autoHistory));
+        assertTrue("...and the same tree", JsonParser.parseString(slotHistory).equals(JsonParser.parseString(autoHistory)));
+
+        assertTrue("the city map exists beside both", Files.isRegularFile(files.mapFile(3)) && Files.isRegularFile(files.mapFile(GameFiles.AUTOSAVE_SLOT)));
+        assertTrue("...and is the same bytes",
+                Arrays.equals(Files.readAllBytes(files.mapFile(3)), Files.readAllBytes(files.mapFile(GameFiles.AUTOSAVE_SLOT))));
+
+        Game back = new Game(files);
+        back.loadGameSave(GameFiles.AUTOSAVE_SLOT);
+        assertEquals("the autosave loads with no failure", back.getLoadFailure(), null);
+        assertEquals("...at the month it was asked at, not three on", back.getMonth(), monthAsked);
+        assertEquals("...with the cash it was asked at", back.getCash(), cashAsked);
+        assertEquals("...and the history it was asked at", back.getHistorySave().months(), historyAsked);
+    }
+
+    /**
+     * 7c.4: two autosaves asked for back to back. Held, the second replaces
+     * the first before anything is written: one write. Not held, the writer
+     * may have begun the first: one write or two, never two at once, and the
+     * file is the second in both. After each the save and the history are
+     * read back whole.
+     */
+    static void oneAtATimeAlwaysWhole(Game city, GameFiles files) {
+        System.out.println("\n--- the autosave off the clock: back to back, one at a time, always whole ---");
+
+        SaveWriter writer = SaveWriter.shared();
+        city.awaitSaves();
+
+        int writesBefore = writer.writes();
+        writer.hold();
+        city.autosave("a");
+        city.autosave("b");
+        writer.release();
+        city.awaitSaves();
+        assertEquals("held, two autosaves asked for write once", writer.writes() - writesBefore, 1);
+        assertEquals("...and the file holds the second", autosaveName(files), "Autosave - b");
+        wholeOnDisk("held", city, files);
+
+        writesBefore = writer.writes();
+        city.autosave("c");
+        city.autosave("d");
+        city.awaitSaves();
+        int wrote = writer.writes() - writesBefore;
+        assertTrue("not held, two autosaves asked for write once or twice (" + wrote + ")", wrote == 1 || wrote == 2);
+        assertEquals("...and the file holds the second", autosaveName(files), "Autosave - d");
+        assertEquals("...and the writer never wrote two at once, in the whole run", writer.mostAtOnce(), 1);
+        wholeOnDisk("not held", city, files);
+    }
+
+    /**
+     * 7c.5: a load, a numbered save, a skip and Quit each wait for an
+     * autosave still in the writer. Each case holds the writer, asks for an
+     * autosave, and starts a thread that lets it go 300 ms later; the case
+     * then runs on this thread. One that did not wait would see the slot
+     * before the held autosave, or return before the release.
+     */
+    static void theWaits(Game city, GameFiles files) throws Exception {
+        System.out.println("\n--- the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it ---");
+
+        SaveWriter writer = SaveWriter.shared();
+        final long letGoAfterMs = 300;
+        AtomicLong releasedAt = new AtomicLong();
+        city.awaitSaves();
+
+        // The autosave on disk holds an earlier month than the held one, so the two are told apart by month as well as by name.
+        int diskMonth = files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth();
+        quietly(() -> {
+            for (int i = 0; i < 3; i++) city.simulateMonths(1);
+        });
+        assertTrue("fixture: the autosave on disk (month " + diskMonth + ") is earlier than the city (month " + city.getMonth() + ")", diskMonth < city.getMonth());
+
+        /* ---- a load ---- */
+        Game fresh = new Game(files);      // built first: its construction is not what is waited on
+        releasedAt.set(0);
+        writer.hold();
+        city.autosave("7c.5 load");
+        assertEquals("fixture: the held autosave is not on disk yet", files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth(), diskMonth);
+        Thread letGo = releaseLater(letGoAfterMs, releasedAt);
+        fresh.loadGameSave(GameFiles.AUTOSAVE_SLOT);
+        long returnedAt = System.nanoTime();
+        letGo.join();
+        assertTrue("a load straight after an autosave returns after the writer was released", releasedAt.get() != 0 && returnedAt >= releasedAt.get());
+        assertEquals("...and loads that autosave: its month", fresh.getMonth(), city.getMonth());
+        assertEquals("...its name", files.readHeader(GameFiles.AUTOSAVE_SLOT).getSlotName(), "Autosave - 7c.5 load");
+        assertEquals("...with no failure", fresh.getLoadFailure(), null);
+
+        /* ---- a numbered save ---- */
+        releasedAt.set(0);
+        writer.hold();
+        city.autosave("7c.5 numbered");
+        assertEquals("fixture: the held autosave is not on disk yet", autosaveName(files), "Autosave - 7c.5 load");
+        letGo = releaseLater(letGoAfterMs, releasedAt);
+        GameFiles.Result numbered = city.saveGame(4, "7c.5");
+        returnedAt = System.nanoTime();
+        letGo.join();
+        assertTrue("a numbered save returns after the writer was released", releasedAt.get() != 0 && returnedAt >= releasedAt.get());
+        assertTrue("...slot 4 is saved", numbered.ok && "7c.5".equals(files.readHeader(4).getSlotName()));
+        assertEquals("...and the held autosave is on disk", autosaveName(files), "Autosave - 7c.5 numbered");
+
+        /* ---- a skip ---- */
+        // The save clock stands still and a skip's counter starts at its own autosave: no month of the
+        // three is due, so the only writes are the held autosave and the skip's own.
+        releasedAt.set(0);
+        int writesBefore = writer.writes();
+        writer.hold();
+        city.autosave("7c.5 skip");
+        letGo = releaseLater(letGoAfterMs, releasedAt);
+        quietly(() -> city.simulateMonths(3));
+        returnedAt = System.nanoTime();
+        letGo.join();
+        assertTrue("a skip returns after the writer was released", releasedAt.get() != 0 && returnedAt >= releasedAt.get());
+        assertEquals("...the held autosave and the skip's own were both written (without the wait the skip's replaces the held)",
+                writer.writes() - writesBefore, 2);
+        assertEquals("...and the file holds the skip's", autosaveName(files), "Autosave - before skipping 3 months");
+
+        /* ---- Quit ---- */
+        releasedAt.set(0);
+        writer.hold();
+        city.autosave("7c.5 before quit");
+        letGo = releaseLater(letGoAfterMs, releasedAt);
+        city.saveForQuit();
+        returnedAt = System.nanoTime();
+        letGo.join();
+        assertTrue("Quit returns after the writer was released", releasedAt.get() != 0 && returnedAt >= releasedAt.get());
+        assertEquals("...and its autosave is on disk", autosaveName(files), "Autosave - on quit");
+        assertEquals("...at the city's month", files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth(), city.getMonth());
+    }
+
+    /**
+     * 7c.6: a write that fails. The autosave's .tmp - the file GameFiles.write
+     * streams into - is a folder with a file in it, which no write can open
+     * (a read-only folder would not stop one on Windows). The failure is
+     * reported on this thread, the autosave on disk is still the one before,
+     * whole, and the next autosave, with the obstacle gone, writes.
+     */
+    static void aWriteThatFails(Game city, GameFiles files) throws Exception {
+        System.out.println("\n--- the autosave off the clock: a write that fails is reported, and the next one writes ---");
+
+        city.awaitSaves();
+        Path target = files.saveFile(GameFiles.AUTOSAVE_SLOT);
+        Path obstacle = target.resolveSibling(target.getFileName() + ".tmp");
+        Files.createDirectories(obstacle);
+        Files.writeString(obstacle.resolve("in-the-way.txt"), "a folder with something in it cannot be replaced by a file");
+        assertTrue("fixture: the autosave's .tmp is a folder with a file in it", Files.isDirectory(obstacle) && Files.exists(obstacle.resolve("in-the-way.txt")));
+        String nameBefore = autosaveName(files);
+
+        java.io.ByteArrayOutputStream captured = new java.io.ByteArrayOutputStream();
+        PrintStream real = System.out;
+        try {
+            System.setOut(new PrintStream(captured, true, java.nio.charset.StandardCharsets.UTF_8));
+            city.autosave("7c.6 fails");
+            city.awaitSaves();
+        } finally {
+            System.setOut(real);
+        }
+        String said = captured.toString(java.nio.charset.StandardCharsets.UTF_8);
+
+        GameFiles.Result result = city.getLastSaveResult();
+        assertTrue("the failed write is the last save result, not ok", result != null && !result.ok);
+        assertTrue("...naming the autosave file", result != null && target.equals(result.file));
+        assertTrue("...and the calling thread said \"Autosave failed:\"", said.contains("Autosave failed:"));
+        assertEquals("the autosave on disk is still the one before", autosaveName(files), nameBefore);
+        wholeOnDisk("after the failure", city, files);
+
+        try (var walk = Files.walk(obstacle)) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try { Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
+            });
+        }
+        assertTrue("fixture: the obstacle is gone", !Files.exists(obstacle));
+
+        city.autosave("7c.6 writes");
+        city.awaitSaves();
+        assertTrue("with the obstacle gone, the next autosave writes", city.getLastSaveResult() != null && city.getLastSaveResult().ok);
+        assertEquals("...and the file holds it", autosaveName(files), "Autosave - 7c.6 writes");
+        wholeOnDisk("after the next", city, files);
+    }
+
+    /**
+     * 7c.7: the floor of real time. On the 7c city, with a clock this check
+     * moves: after an autosave, 4 * AUTOSAVE_MONTHS months with the clock
+     * still write nothing, each due month starting the counter again; with
+     * the clock just short of the floor the next due month writes nothing;
+     * past it, the next writes exactly one, at its month. Then the real
+     * clock, on a young city whose months are fast: five due months in far
+     * less than the floor write the first and none after it.
+     */
+    static void theFloor(Game city, GameFiles files, long[] now) throws Exception {
+        System.out.println("\n--- the autosave off the clock: the floor of real time ---");
+
+        SaveWriter writer = SaveWriter.shared();
+        city.awaitSaves();
+        city.autosave("7c.7 first");
+        city.awaitSaves();
+        final long base = now[0];      // the clock as the autosave read it: the floor counts from here
+        int writesBefore = writer.writes();
+
+        boolean eachDueCounted = true, eachStartedAgain = true;
+        for (int due = 0; due < 4; due++) {
+            for (int i = 0; i < Game.AUTOSAVE_MONTHS; i++) {
+                if (i == Game.AUTOSAVE_MONTHS - 1) eachDueCounted &= city.getMonthsUntilAutosave() == 1;
+                step(city);
+            }
+            eachStartedAgain &= city.getMonthsUntilAutosave() == Game.AUTOSAVE_MONTHS;
+        }
+        city.awaitSaves();
+        assertTrue("fixture: each of the " + 4 * Game.AUTOSAVE_MONTHS + " months was counted, the last of each twelve due", eachDueCounted);
+        assertEquals("with the clock still, " + 4 * Game.AUTOSAVE_MONTHS + " months write no autosave", writer.writes() - writesBefore, 0);
+        assertTrue("...each due month started its counter again, at " + Game.AUTOSAVE_MONTHS, eachStartedAgain);
+
+        now[0] = base + floorNanos() - 1_000_000_000L;
+        for (int i = 0; i < Game.AUTOSAVE_MONTHS; i++) step(city);
+        city.awaitSaves();
+        assertEquals("one second short of the floor, the next due month writes nothing", writer.writes() - writesBefore, 0);
+        assertEquals("...and its counter starts again", city.getMonthsUntilAutosave(), Game.AUTOSAVE_MONTHS);
+
+        now[0] = base + floorNanos() + 1_000_000_000L;
+        for (int i = 0; i < Game.AUTOSAVE_MONTHS; i++) step(city);
+        city.awaitSaves();
+        assertEquals("one second past the floor, the next due month writes exactly one", writer.writes() - writesBefore, 1);
+        assertEquals("...at its month", files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth(), city.getMonth());
+        assertEquals("...named for it", autosaveName(files), "Autosave - month " + city.getMonth());
+
+        /* ---- the real clock ---- */
+        Path root = TempDirs.create("floorclock");
+        try {
+            GameFiles youngFiles = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
+            Game young = new Game(youngFiles);
+            young.run();
+            young.buildStack(template(young, "House"), 10, false);
+            int startMonth = young.getMonth();
+            int before = writer.writes();
+
+            long began = System.nanoTime();
+            for (int i = 0; i < 5 * Game.AUTOSAVE_MONTHS; i++) step(young);
+            double seconds = (System.nanoTime() - began) / 1e9;
+            young.awaitSaves();
+
+            boolean premise = seconds < SaveWriter.FLOOR_SECONDS;
+            System.out.printf("      %d months on the real clock took %.2f s of real time (the floor is %.0f s)%n",
+                    5 * Game.AUTOSAVE_MONTHS, seconds, SaveWriter.FLOOR_SECONDS);
+            assertTrue("fixture: the five due months came inside one floor of real time"
+                    + (premise ? "" : " - they did not, so the count below proves nothing"), premise);
+            assertEquals("on the real clock, " + 5 * Game.AUTOSAVE_MONTHS + " months wrote exactly one autosave",
+                    writer.writes() - before, premise ? 1 : -1);
+            SaveHeader header = youngFiles.readHeader(GameFiles.AUTOSAVE_SLOT);
+            assertTrue("...the first due month's, month " + (startMonth + Game.AUTOSAVE_MONTHS) + ", none of the four after it",
+                    header != null && header.getMonth() == startMonth + Game.AUTOSAVE_MONTHS);
+        } finally {
+            cleanUp(root);
         }
     }
 
