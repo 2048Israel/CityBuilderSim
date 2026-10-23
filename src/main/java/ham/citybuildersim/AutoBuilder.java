@@ -144,6 +144,15 @@ import java.util.Set;
  * pass ranks anything new, until what it raised and the cash cover the order
  * or it is withdrawn. See THE CAP AND THE OPEN ASKS.
  *
+ * THE ADVICE'S CARD SAYS WHAT THE PAYBACK HELD BACK (PT1-M3, Jerus
+ * 2026-10-12: "yes do rec"): WHAT WOULD HELP MOST offered a Middle School and
+ * a Police Station that the pass held back, and only the inbox said why. Each
+ * building the pass passes over in a measure's ranking as not paying back is
+ * kept with the payback it weighed for one (paybackHolds), and a card of that
+ * measure and building carries the inbox's own words (heldBackWords()).
+ * Neither rule moves: the advice offers what it offers, the pass decides as
+ * it did.
+ *
  * THE PLAYER'S SETTING AT WORK, NOT A DECISION: like the rollover's issues
  * (Game.issueForRollover()), what it orders and borrows is not in the
  * decision log; turning it on or off and moving a slider are.
@@ -228,6 +237,7 @@ public final class AutoBuilder {
             // Off, it orders nothing: its open asks are withdrawn, and what they raised stays (D30).
             for (OpenAsk a : new ArrayList<>(asks)) withdrawAsk(a, "automatic building was turned off", null);
             held.clear();
+            paybackHolds.clear();
             bought.clear();
             asked.clear();
         }
@@ -354,6 +364,59 @@ public final class AutoBuilder {
 
     /** What held it back at the last pass, a line a measure; empty when nothing did. */
     public List<String> held() { return Collections.unmodifiableList(held); }
+
+    /**
+     * A building the last pass held back as not paying back (PT1-M3): its
+     * measure by label (as an ask names it), the building by template id, and
+     * the payback weighed for one, whose figures the inbox's line gives
+     * (paybackWords()). Every one the walk passed over, not only the first
+     * the inbox names: the advice's card may offer any of them. Saved, as the
+     * held lines are: a city loaded mid-month shows what its pass decided.
+     */
+    public static final class PaybackHold {
+        public String measure;
+        public int templateId;
+        public double runs, covered, paid, costs;
+
+        public PaybackHold() { }
+
+        PaybackHold(String measure, int templateId, Payback p) {
+            this.measure = measure;
+            this.templateId = templateId;
+            runs = p.runs();
+            covered = p.covered();
+            paid = p.paid();
+            costs = p.costs();
+        }
+
+        /** The payback it weighed. */
+        public Payback payback() { return new Payback(runs, covered, paid, costs); }
+    }
+
+    /** The last pass's payback holds (PT1-M3), in the order it weighed them. */
+    private final List<PaybackHold> paybackHolds = new ArrayList<>();
+
+    /** What the advice card's line opens with (PT1-M3); the inbox's words for the payback follow. */
+    public static final String HELD_BACK = "Automatic building holds it back; ";
+
+    /**
+     * The payback the last pass weighed for one of a card's building where
+     * it held it back as not paying back (PT1-M3): null where it did not -
+     * off, a paving, or not so for the card's measure and building.
+     */
+    public Payback heldForPayback(BuildAdvice.Suggestion s) {
+        if (s == null || s.paving() || s.template() == null) return null;
+        String m = s.measure().label();
+        int id = s.template().getId();
+        for (PaybackHold h : paybackHolds) if (id == h.templateId && m.equals(h.measure)) return h.payback();
+        return null;
+    }
+
+    /** ...as the advice's card says it: HELD_BACK and the inbox's words (paybackWords()); null where it did not hold it back. */
+    public String heldBackWords(BuildAdvice.Suggestion s) {
+        Payback p = heldForPayback(s);
+        return p == null ? null : HELD_BACK + paybackWords(p);
+    }
 
     public int getLastPass() { return lastPass; }
     public int getOrders() { return orders; }
@@ -1023,6 +1086,7 @@ public final class AutoBuilder {
     public void pass(Game game) {
         if (!on) return;
         held.clear();
+        paybackHolds.clear();
         bought.clear();
         asked.clear();
         steps.clear();
@@ -1133,8 +1197,10 @@ public final class AutoBuilder {
                         if (payback(game, m, s, mid).paysBack()) lo = mid; else hi = mid;
                     }
                     if (lo < 1) {
+                        Payback one = payback(game, m, s, 1);
+                        // ...kept for the advice's card, every one passed over (PT1-M3).
+                        paybackHolds.add(new PaybackHold(m.label(), t.getId(), one));
                         if (first == null) {
-                            Payback one = payback(game, m, s, 1);
                             first = new Refused(s, Cut.PAYBACK, wanted, m.label() + ": " + wanted + " " + name
                                     + " wanted; " + paybackWords(one), one);
                         }
@@ -1966,6 +2032,8 @@ public final class AutoBuilder {
         public CapSetting.Saved cap;
         /** The asks open when it was saved (CD2, D30): each its order, what it raised, what is to raise and the month it opened. */
         public List<OpenAsk> asks;
+        /** What the last pass held back as not paying back (PT1-M3), for the advice's card: a save from before has none, and its cards say nothing until the next pass. */
+        public List<PaybackHold> paybackHolds;
     }
 
     public State toState() {
@@ -1989,6 +2057,8 @@ public final class AutoBuilder {
         s.cap = CapSetting.save(cap);
         s.asks = new ArrayList<>();
         for (OpenAsk a : asks) s.asks.add(copyOf(a));
+        s.paybackHolds = new ArrayList<>();
+        for (PaybackHold h : paybackHolds) s.paybackHolds.add(new PaybackHold(h.measure, h.templateId, h.payback()));
         return s;
     }
 
@@ -2006,12 +2076,17 @@ public final class AutoBuilder {
         return c;
     }
 
-    /** Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM): the open asks'. */
+    /** Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM): the open asks', and (PT1-M3) the payback holds'. */
     public void redenominate(double scale) {
         for (OpenAsk a : asks) {
             a.cost *= scale;
             a.raised *= scale;
             a.toRaise *= scale;
+        }
+        for (PaybackHold h : paybackHolds) {
+            h.runs *= scale;
+            h.paid *= scale;
+            h.costs *= scale;
         }
     }
 
@@ -2019,6 +2094,7 @@ public final class AutoBuilder {
     public void restore(State s) {
         log.clear();
         held.clear();
+        paybackHolds.clear();
         bought.clear();
         asked.clear();
         asks.clear();
@@ -2052,6 +2128,14 @@ public final class AutoBuilder {
         }
         if (s.log != null) for (Entry e : s.log) if (e != null) log.add(e);
         if (s.held != null) for (String h : s.held) if (h != null) held.add(h);
+        // ...and what the payback held back (PT1-M3); one with no measure or a figure that is not a number is dropped.
+        if (s.paybackHolds != null) {
+            for (PaybackHold h : s.paybackHolds) {
+                if (h == null || h.measure == null || !Double.isFinite(h.runs) || !Double.isFinite(h.covered)
+                        || !Double.isFinite(h.paid) || !Double.isFinite(h.costs)) continue;
+                paybackHolds.add(new PaybackHold(h.measure, h.templateId, h.payback()));
+            }
+        }
         lastPass = s.lastPass;
         orders = s.orders;
         buildings = s.buildings;
