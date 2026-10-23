@@ -79,6 +79,8 @@ import java.util.zip.InflaterInputStream;
  * city's Elevated Highways and railway are laid city-wide, month by month,
  * on corridors from the founding site's lines (CityRuns) - never moved, the
  * newest end taken first - and each district's plan is drawn round them.
+ * Since 0.8.24 (batch FX7, THE RUNS DATED) each district keeps a journal of
+ * what the runs laid on its plots month by month, which its plan is handed.
  *
  * THE PYRAMID sums ten classes, used plots and owned plots two by two up to
  * one node, built when the map is, each district's ancestors updated as it
@@ -208,8 +210,8 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 10 since FX5 (0.8.18, its slice Y1), each railway yard's box in the runs followed by the footprint it was laid for (CityRuns.yardAsked(): a yard is laid YARD_LONG along its line or shorter where the ground allows, so its box is no longer the size it was asked for; a sidecar of FORMAT 9 or older reads each yard's footprint as its box's own width and height, as it was laid then); 9 since CL3 (0.8.14), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
-    static final int FORMAT = 10;
+    /** The sidecar's format: 11 since FX7 (0.8.24), each district's journal of its runs after the logs (THE RUNS DATED: a record for each plot of its own box whose kind of fixed ground a month changed, its month, plot and the kind before and after; a sidecar of FORMAT 10 or older has none, and its plans draw today's runs throughout, as before); 10 since FX5 (0.8.18, its slice Y1), each railway yard's box in the runs followed by the footprint it was laid for (CityRuns.yardAsked(): a yard is laid YARD_LONG along its line or shorter where the ground allows, so its box is no longer the size it was asked for; a sidecar of FORMAT 9 or older reads each yard's footprint as its box's own width and height, as it was laid then); 9 since CL3 (0.8.14), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 11;
 
     /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
     static final int OLDEST_READ = 4;
@@ -274,6 +276,18 @@ public final class CityMap {
         /** A hash of its log, kept with it: what its plan's stamp folds, so a plan is drawn again when its log moved and its counts did not. */
         long logHash;
 
+        /**
+         * ITS JOURNAL OF THE RUNS (batch FX7, THE RUNS DATED): a record {month, plot, before, after} for each plot of its own
+         * DISTRICT x DISTRICT box whose kind of fixed ground a month changed - the plot's index in the box, row by row; the kinds 0,
+         * FIXED_HIGHWAY, FIXED_RAIL and FIXED_YARD (runs' or the shore's) - in months ascending, one record to a plot and month, in
+         * plot order within a month. jRec holds `plot << 8 | before << 4 | after`. Saved in the sidecar (FORMAT 11).
+         */
+        int[] jMonth = NO_LOG, jRec = NO_LOG;
+        /** How many records its journal holds. */
+        int jN;
+        /** Hashes of its journal, kept with it: of every record, of those on its first column, of those on its first row, and of the one on its first plot - what the plans of it and of its west, north and north-west neighbours (whose frames hold that column, row and plot of it) are stamped by. */
+        long jHash, jHashCol, jHashRow, jHashCorner;
+
         District(int dx, int dy, int types, double order) {
             this.dx = dx;
             this.dy = dy;
@@ -303,6 +317,9 @@ public final class CityMap {
 
         /** How many records its log holds. */
         public int logSize()     { return logN; }
+
+        /** How many records its journal of the runs holds (batch FX7). */
+        public int journalSize() { return jN; }
 
         /**
          * Adds a change of type t, made in a month, to its log: a record at the end, or - when the month's records after the
@@ -357,6 +374,67 @@ public final class CityMap {
                 if (logMonth[k] != b.logMonth[k] || logType[k] != b.logType[k] || logChange[k] != b.logChange[k]) return false;
             }
             return true;
+        }
+
+        /** Whether its journal of the runs and b's are the same: the count of records and every record. */
+        boolean sameJournal(District b) {
+            if (jN != b.jN) return false;
+            for (int k = 0; k < jN; k++) if (jMonth[k] != b.jMonth[k] || jRec[k] != b.jRec[k]) return false;
+            return true;
+        }
+
+        /**
+         * Adds the change of a plot's kind from `before` to `after`, made in a month, to its journal (batch FX7): a record at the end -
+         * the month never falls, one before the journal's last is the last's - or, when the plot has a record of the month already, into
+         * that one (one record to a plot and month; gone when the two cancel).
+         */
+        void jAdd(int month, int plot, int before, int after) {
+            if (before == after) return;
+            if (jN > 0 && month < jMonth[jN - 1]) month = jMonth[jN - 1];
+            for (int k = jN - 1; k >= 0 && jMonth[k] == month; k--) {
+                if (jRec[k] >>> 8 != plot) continue;
+                int was = (jRec[k] >> 4) & 15;
+                if (was == after) {
+                    int tail = jN - k - 1;
+                    System.arraycopy(jMonth, k + 1, jMonth, k, tail);
+                    System.arraycopy(jRec, k + 1, jRec, k, tail);
+                    jN--;
+                } else {
+                    jRec[k] = plot << 8 | was << 4 | after;
+                }
+                jRehash();
+                return;
+            }
+            jAppend(month, plot, before, after);
+        }
+
+        /** ...a record at the end, for a month later than the journal's last (a month's first records need no look for a plot's own). */
+        void jAppend(int month, int plot, int before, int after) {
+            if (jN == jMonth.length) {
+                int n = Math.max(8, jN * 2);
+                jMonth = Arrays.copyOf(jMonth, n);
+                jRec = Arrays.copyOf(jRec, n);
+            }
+            jMonth[jN] = month;
+            jRec[jN] = plot << 8 | before << 4 | after;
+            jN++;
+            jFold(month, plot << 8 | before << 4 | after);
+        }
+
+        /** Folds one record into its journal's hashes. */
+        private void jFold(int month, int rec) {
+            long step = World.mix((month * 0x9E3779B97F4A7C15L) ^ rec);
+            int plot = rec >>> 8;
+            jHash = World.mix(jHash + step);
+            if ((plot & (DISTRICT - 1)) == 0) jHashCol = World.mix(jHashCol + step);
+            if (plot < DISTRICT) jHashRow = World.mix(jHashRow + step);
+            if (plot == 0) jHashCorner = World.mix(jHashCorner + step);
+        }
+
+        /** Its journal's hashes worked out again from its records. */
+        void jRehash() {
+            jHash = jHashCol = jHashRow = jHashCorner = 0;
+            for (int k = 0; k < jN; k++) jFold(jMonth[k], jRec[k]);
         }
     }
 
@@ -859,11 +937,20 @@ public final class CityMap {
         placeSited(model);
         advanceCursors();
         // The highways and railway to the month's counts (0.7.89): grown from their newest end, or taken back from it.
-        long r0 = System.nanoTime();
-        layRuns(model);
-        lastRunsMs = (System.nanoTime() - r0) / 1e6;
-        // ...and its works on the shore to the month's counts (0.7.97): laid at the water, or the newest taken.
-        layShore(model);
+        // ...each district they change is read before the first change reaches it, so the month's changes to the plots' kinds are
+        // journalled (THE RUNS DATED, batch FX7) once the shore has been laid too.
+        beginJournal();
+        try {
+            long r0 = System.nanoTime();
+            layRuns(model);
+            lastRunsMs = (System.nanoTime() - r0) / 1e6;
+            // ...and its works on the shore to the month's counts (0.7.97): laid at the water, or the newest taken.
+            layShore(model);
+        } finally {
+            journalling = false;
+            runs.setWitness(null);
+        }
+        endJournal();
         // The month's changes to every district's counts, into their logs (CL3), now that everything that moves them has.
         logChanges();
         lastTouched = touched;
@@ -2634,6 +2721,8 @@ public final class CityMap {
         }
         // ...and its log (CL3): the order its buildings came in places them, so a log that moved moves its plan, its counts moved or not.
         if (d.logN > 0) h = World.mix(h ^ d.logHash ^ ((long) d.firstBatch << 40) ^ d.logN);
+        // ...and the journal of the runs over its frame (batch FX7): its own and the first column, row and plot of its east, south and south-east neighbours'; nothing with none.
+        h = journalStamp(d, h);
         long fx1 = x0 + DistrictPlan.FRAME - 1, fy1 = y0 + DistrictPlan.FRAME - 1;
         for (int b = -1; b <= 1; b++) {
             for (int a = -1; a <= 1; a++) {
@@ -4760,7 +4849,18 @@ public final class CityMap {
         boolean moved = false;
         for (int t : st) {
             long want = t < model.length ? Math.max(0, model[t]) : 0;
-            while (shore.count(t) > want && shore.removeNewest(t)) {
+            while (shore.count(t) > want) {
+                // (batch FX7) the districts the newest work of the type lies in are read before it goes.
+                if (journalling) {
+                    List<CityShore.Work> laid = shore.works();
+                    for (int i = laid.size() - 1; i >= 0; i--) {
+                        if (laid.get(i).type() != t) continue;
+                        CityShore.Work w = laid.get(i);
+                        CityRuns.sawBox(witness, w.x0(), w.y0(), w.w(), w.h());
+                        break;
+                    }
+                }
+                if (!shore.removeNewest(t)) break;
                 moved = true;
                 shoreShortAt = Long.MIN_VALUE;
             }
@@ -4780,6 +4880,7 @@ public final class CityMap {
                     shoreShortAt = groundKey();
                     break;
                 }
+                if (journalling) CityRuns.sawBox(witness, w.x0(), w.y0(), w.w(), w.h());
                 shore.add(w);
                 have++;
                 moved = true;
@@ -5609,6 +5710,231 @@ public final class CityMap {
     }
 
     /* =====================================================================
+       THE RUNS DATED (batch FX7, 0.8.24)
+
+       WHY THIS EXISTS. A district's plan keeps a building where it was put
+       because it replays the arrivals in the order its log has them (CL3),
+       on the ground the city had bought by each month (FX6). The ground of
+       the runs it had whole, as it stands today: the frame's highway,
+       railway, yard and reserve plots from CityRuns, with the shore's works
+       laid over them. When the runs laid something new across built ground
+       (a Rail Depot's yard at the railway's hub, a highway arm growing
+       through, the highways first drawn once they reach a street) or took
+       something away (a yard gone), the plan replayed every arrival around
+       today's runs and most of the district's buildings moved: on the default
+       playtest the founding district's yard came and went a dozen times
+       between months 1,128 and 3,934, each time moving 100 to 260 of some 300
+       boxes, and LongPlaytest's one red, "an old works moved", was this.
+
+       Here the runs are dated as the land is. Each district keeps a JOURNAL
+       of the plots of its own box whose kind of fixed ground a month changed
+       - 0, a highway's, the railway's, a yard's (the runs' or the shore's) -
+       a record {month, plot, before, after}; the map writes it in reconcile()
+       and the sidecar keeps it (FORMAT 11), and planInputHere() hands each
+       plan the records of its frame (Input.fixedLog) - its own district's and
+       the first column, row and plot of its east, south and south-east
+       neighbours', which its frame holds. A flow cannot be got back from the
+       ground a month ended in, so it is saved. The plan's half (it replays
+       its history on the fixed ground of each month) is the Builder's.
+
+       HOW. The runs know which districts a month reaches before they reach
+       them and the map cannot work that out afterwards (a stretch taken
+       back, an arm dropped, a yard unlaid are gone when the month is over),
+       so reconcile() sets a witness on the runs for the length of the
+       month's layRuns() and layShore() (CityRuns, THE WITNESS): told that a
+       district is about to change, it reads the district's kinds then, one
+       fill of its whole box with the highways drawn as they were when the
+       month began. When the month is done each district read is read again
+       and a record made of every plot whose kind differs. The highways are
+       drawn only once they reach a street (highwaysReach()): when that
+       changes in a month every district they lie in changes, so those not
+       read are read, with the highways as they were drawn at the month's
+       start, before the records are made. A month in which the runs do not
+       change reads nothing and costs nothing; a month that changes them
+       costs two fills of a district's box for each district it reaches.
+
+       WHAT IS NOT DATED. An interchange's reserve (FIXED_RESERVE) is derived
+       from the runs, the ground and the works about it and found when asked
+       (CityRuns.reservesIn()): it is neither read nor journalled, and the
+       frame's records read as if it were laid wherever the runs leave a plot
+       at 0, as the plan's input has it today. A district the map does not
+       hold is not journalled: the runs lie on the city's ground. A journal
+       that does not end on the runs as they stand (a month the runs changed
+       outside reconcile(): the canonical deal, a sidecar older than FORMAT
+       11 read, a square city) gives its plan no record for that plot, and is
+       counted in journalDropped(): MapCheck holds it at none.
+       ===================================================================== */
+
+    /** The kinds a journal's record holds: 0, a highway's, the railway's and a yard's. */
+    private static boolean journalKind(int k) {
+        return k == 0 || k == DistrictPlan.FIXED_HIGHWAY || k == DistrictPlan.FIXED_RAIL || k == DistrictPlan.FIXED_YARD;
+    }
+
+    /** Whether the month's runs are being journalled: only inside reconcile()'s layRuns() and layShore(), never the canonical deal, a square city, a sidecar's read or a harness's own laying. */
+    private boolean journalling;
+
+    /** highwaysReach() as the month began: the districts the month changes are read as the highways were drawn then. */
+    private boolean reachAtStart;
+
+    /** The districts the month has read so far, by key: each one's kinds as they were before the month's first change to it. */
+    private final Map<Long, byte[]> journalWas = new HashMap<>();
+
+    /** The key of the district the witness was told of last: a stretch is told of one district plot by plot. */
+    private long lastWitnessed = Long.MIN_VALUE;
+
+    /** The witness set on the runs for the length of a month's laying. */
+    private final CityRuns.Witness witness = this::witnessed;
+
+    /** How many plots' records a plan's input has left out because the journal did not end on the runs as they stand (rule (b) of fixedLogInto()): a journal that disagrees with today's runs is a bug, and MapCheck holds this at 0. */
+    private long journalDropped;
+
+    /** How many plots' records the plans' inputs have left out because the journal did not end on the runs as they stand: 0. */
+    public long journalDropped() { return journalDropped; }
+
+    /** Starts a month's journalling: the witness set on the runs, the highways' reach noted. */
+    private void beginJournal() {
+        journalWas.clear();
+        lastWitnessed = Long.MIN_VALUE;
+        reachAtStart = runs.highwaysReach();
+        journalling = true;
+        runs.setWitness(witness);
+    }
+
+    /** The runs tell the map that world district (wx, wy) is about to change: its kinds are read, once a month, as they are now. */
+    private void witnessed(long wx, long wy) {
+        long dx = wx - baseDX, dy = wy - baseDY;
+        if (dx != (int) dx || dy != (int) dy) return;
+        long k = key((int) dx, (int) dy);
+        if (k == lastWitnessed) return;
+        lastWitnessed = k;
+        if (journalWas.containsKey(k)) return;
+        District d = byKey.get(k);
+        if (d == null) return;
+        journalWas.put(k, kindsOf(d, reachAtStart));
+    }
+
+    /**
+     * What a district's own DISTRICT x DISTRICT plots carry in a plan's input, the interchanges' reserves left out: the runs as
+     * runsInto() maps them (a railway over a highway is a highway's) with the shore's works over them as yards, the highways
+     * drawn as if highwaysReach() were `reach`. Row by row; 0 or a FIXED_ code.
+     */
+    byte[] kindsOf(District d, boolean reach) {
+        long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
+        byte[] fixed = new byte[DISTRICT * DISTRICT];
+        runs.fill(x0, y0, DISTRICT, DISTRICT, fixed, null, true, false, reach);
+        for (int i = 0; i < fixed.length; i++) if (fixed[i] == CityRuns.F_RAIL_OVER) fixed[i] = DistrictPlan.FIXED_HIGHWAY;
+        if (!shore.isEmpty()) shore.fill(x0, y0, DISTRICT, DISTRICT, fixed, DistrictPlan.FIXED_YARD);
+        return fixed;
+    }
+
+    /** Ends a month's journalling, the runs and the shore laid: each district read is read again, and a record made of every plot whose kind differs, at the map's month. */
+    private void endJournal() {
+        boolean reach = runs.highwaysReach();
+        if (reach != reachAtStart) for (long[] hd : runs.highwayDistricts()) witnessed(hd[0], hd[1]);
+        for (Map.Entry<Long, byte[]> e : journalWas.entrySet()) {
+            District d = byKey.get(e.getKey());
+            byte[] was = e.getValue(), now = kindsOf(d, reach);
+            // A month's first records need no look for a plot's own among the month's.
+            boolean fresh = d.jN == 0 || d.jMonth[d.jN - 1] < month;
+            int from = 0, i;
+            while ((i = Arrays.mismatch(was, from, was.length, now, from, now.length)) >= 0) {
+                int p = from + i;
+                if (fresh) d.jAppend(month, p, was[p], now[p]);
+                else d.jAdd(month, p, was[p], now[p]);
+                from = p + 1;
+            }
+        }
+        journalWas.clear();
+    }
+
+    /** `h` with district d's journal over its frame folded in (ownStamp()): its own, and its east neighbour's first column, its south neighbour's first row and its south-east neighbour's first plot - nothing where there is none. */
+    private long journalStamp(District d, long h) {
+        long j = d.jHash;
+        District east = byKey.get(key(d.dx + 1, d.dy)), south = byKey.get(key(d.dx, d.dy + 1)), corner = byKey.get(key(d.dx + 1, d.dy + 1));
+        if (east != null && east.jHashCol != 0) j = World.mix(j ^ east.jHashCol ^ 0x45L);
+        if (south != null && south.jHashRow != 0) j = World.mix(j ^ south.jHashRow ^ 0x53L);
+        if (corner != null && corner.jHashCorner != 0) j = World.mix(j ^ corner.jHashCorner ^ 0x43L);
+        return j == 0 ? h : World.mix(h ^ j ^ 0x4A524E4CL ^ ((long) d.jN << 40));
+    }
+
+    /**
+     * District d's frame's records for its plan's input (Input.fixedLogMonth and fixedLog): its own journal's, and its east
+     * neighbour's records on its first column (the frame's last), its south neighbour's on its first row and its south-east
+     * neighbour's on its first plot, merged by month (a month's own district's first), each `framePlot << 8 | before << 4 | after`.
+     * Two rules. (a) Where in.fixed holds an interchange's reserve the plot's records read 0 as FIXED_RESERVE (a reserve is
+     * laid wherever the runs leave a plot at 0), and a record whose kinds are then the same is dropped. (b) A plot whose records,
+     * replayed forward from its first record's before, do not end on in.fixed (nor chain: each record's before the one before's
+     * after) is left without any, and counted (journalDropped()). Left null for none. Called with in.fixed filled.
+     */
+    private void fixedLogInto(District d, DistrictPlan.Input in) {
+        District[] src = { d, byKey.get(key(d.dx + 1, d.dy)), byKey.get(key(d.dx, d.dy + 1)), byKey.get(key(d.dx + 1, d.dy + 1)) };
+        int total = 0;
+        for (District s : src) if (s != null) total += s.jN;
+        if (total == 0) return;
+        int f = DistrictPlan.FRAME, area = f * f;
+        int[] month = new int[total], rec = new int[total];
+        int[] at = new int[4];
+        int n = 0;
+        while (true) {
+            int best = -1, bm = Integer.MAX_VALUE;
+            for (int k = 0; k < 4; k++) {
+                District s = src[k];
+                if (s == null) continue;
+                // Its records on the frame's part of it: all of its own, the first column, the first row, the first plot.
+                while (at[k] < s.jN) {
+                    int p = s.jRec[at[k]] >>> 8;
+                    if (k == 0 || (k == 1 && (p & (DISTRICT - 1)) == 0) || (k == 2 && p < DISTRICT) || (k == 3 && p == 0)) break;
+                    at[k]++;
+                }
+                if (at[k] < s.jN && s.jMonth[at[k]] < bm) { bm = s.jMonth[at[k]]; best = k; }
+            }
+            if (best < 0) break;
+            int r = src[best].jRec[at[best]++];
+            int p = r >>> 8, y = p / DISTRICT, x = p & (DISTRICT - 1);
+            int fp = best == 0 ? y * f + x : best == 1 ? y * f + DISTRICT : best == 2 ? DISTRICT * f + x : area - 1;
+            month[n] = bm;
+            rec[n] = fp << 8 | (r & 255);
+            n++;
+        }
+        byte[] fixed = in.fixed;
+        // (a) a reserve is laid where the runs leave 0.
+        for (int i = 0; i < n; i++) {
+            int fp = rec[i] >>> 8, b = (rec[i] >> 4) & 15, a = rec[i] & 15;
+            if (fixed[fp] != DistrictPlan.FIXED_RESERVE) continue;
+            if (b == 0) b = DistrictPlan.FIXED_RESERVE;
+            if (a == 0) a = DistrictPlan.FIXED_RESERVE;
+            rec[i] = a == b ? -1 : fp << 8 | b << 4 | a;
+        }
+        // (b) a plot whose records do not chain and end on today's kind has none.
+        byte[] state = new byte[area];
+        Arrays.fill(state, (byte) 15);
+        boolean[] bad = new boolean[area];
+        for (int i = 0; i < n; i++) {
+            if (rec[i] < 0) continue;
+            int fp = rec[i] >>> 8, b = (rec[i] >> 4) & 15, a = rec[i] & 15;
+            if (state[fp] != 15 && state[fp] != b) bad[fp] = true;
+            state[fp] = (byte) a;
+        }
+        int dropped = 0;
+        for (int p = 0; p < area; p++) {
+            if (state[p] == 15 || (!bad[p] && state[p] == fixed[p])) continue;
+            bad[p] = true;
+            dropped++;
+        }
+        journalDropped += dropped;
+        int kept = 0;
+        for (int i = 0; i < n; i++) {
+            if (rec[i] < 0 || bad[rec[i] >>> 8]) continue;
+            month[kept] = month[i];
+            rec[kept] = rec[i];
+            kept++;
+        }
+        if (kept == 0) return;
+        in.fixedLogMonth = Arrays.copyOf(month, kept);
+        in.fixedLog = Arrays.copyOf(rec, kept);
+    }
+
+    /* =====================================================================
        THE DISTRICT PLAN'S INPUTS (0.7.87, batch RD1; the project's
        spec-roads-and-ports.md 2.9)
 
@@ -5726,6 +6052,8 @@ public final class CityMap {
         if (spurCount > 0) in.sidingPlots = (int) Math.min(Integer.MAX_VALUE, spurTrack / spurCount);
         // The works on the shore over its frame (0.7.97): fixed as a yard's ground is - no street across, no building on it.
         if (!shore.isEmpty()) shore.fill(x0, y0, f, f, in.fixed, DistrictPlan.FIXED_YARD);
+        // ...and what the runs and the shore laid on the frame's plots, month by month (batch FX7, THE RUNS DATED).
+        fixedLogInto(d, in);
         in.gravel = kind[BuildingVisual.GRAVEL];
         in.paved = kind[BuildingVisual.PAVED];
         in.highway = 0;
@@ -5987,7 +6315,12 @@ public final class CityMap {
      * and its first batch (int32 each), then each record as unsigned varints -
      * the month as its step from the record before (the first from 0), the
      * type, the change zig-zagged. A map's log is brought up to its counts
-     * before it is written (logChanges()), so what is written adds up.
+     * before it is written (logChanges()), so what is written adds up. Since
+     * FORMAT 11 (batch FX7, THE RUNS DATED) each district's journal of the
+     * runs follows the logs, in the same order: its record count, then each
+     * record as unsigned varints - the month as its step from the record
+     * before, the plot in the district's own box, the kinds before and after
+     * as before << 4 | after.
      * The stamp is a hash of every other byte, so the same map always writes
      * the same file.
      */
@@ -6050,6 +6383,19 @@ public final class CityMap {
                         before = d.logMonth[k];
                         writeVarint(out, d.logType[k]);
                         writeVarint(out, (d.logChange[k] << 1) ^ (d.logChange[k] >> 31));
+                    }
+                }
+            }
+            // Each district's journal of the runs (FORMAT 11, FX7), in the map's order: its record count, then each record as unsigned varints - the month as its step from the record before, the plot, the kinds (before << 4 | after).
+            if (format >= 11) {
+                for (District d : districts) {
+                    writeVarint(out, d.jN);
+                    int before = 0;
+                    for (int k = 0; k < d.jN; k++) {
+                        writeVarint(out, d.jMonth[k] - before);
+                        before = d.jMonth[k];
+                        writeVarint(out, d.jRec[k] >>> 8);
+                        writeVarint(out, d.jRec[k] & 255);
                     }
                 }
             }
@@ -6245,6 +6591,28 @@ public final class CityMap {
                     d.logDirty = false;
                 }
             }
+            // Each district's journal of the runs (FORMAT 11, FX7): a record whose plot or kinds are out of range makes the sidecar unread; an older sidecar's journals are empty.
+            if (format >= 11) {
+                for (District d : m.districts) {
+                    int jN = readVarint(in);
+                    if (jN < 0 || jN > raw.length) return null;
+                    d.jMonth = jN == 0 ? NO_LOG : new int[jN];
+                    d.jRec = jN == 0 ? NO_LOG : new int[jN];
+                    int at = 0;
+                    for (int k = 0; k < jN; k++) {
+                        int step = readVarint(in), plot = readVarint(in), kinds = readVarint(in);
+                        if (step < 0 || plot < 0 || plot >= DISTRICT * DISTRICT || kinds < 0 || kinds > 255) return null;
+                        int before = kinds >> 4, after = kinds & 15;
+                        if (before == after || !journalKind(before) || !journalKind(after)) return null;
+                        at += step;
+                        if (at < 0) return null;
+                        d.jMonth[k] = at;
+                        d.jRec[k] = plot << 8 | kinds;
+                    }
+                    d.jN = jN;
+                    d.jRehash();
+                }
+            }
             m.runs.setDoubleMain(m.hasFreightLine(m.have));
             m.purchasesSeen = bought;
             m.centreSeen = land.centreStamp();
@@ -6286,7 +6654,7 @@ public final class CityMap {
         for (int i = 0; i < districts.size(); i++) {
             District a = districts.get(i), b = o.districts.get(i);
             if (a.dx != b.dx || a.dy != b.dy || a.owned != b.owned || a.usedHalf != b.usedHalf || !Arrays.equals(a.counts, b.counts)) return false;
-            if (withLogs && !a.sameLog(b)) return false;
+            if (withLogs && (!a.sameLog(b) || !a.sameJournal(b))) return false;
         }
         return true;
     }
