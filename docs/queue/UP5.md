@@ -21,7 +21,12 @@ does not move.
 3. **A runs key per far node** (`CityRuns.frameHash()` over the node), so a
    month that lays a run re-colours only the nodes it crosses (3.5 ms at 5B
    today, every node).
-4. **`MAP_MONTH_MS`**: re-measure MapCheck 18's 5B month after 1-3 and set
+4. **FX7's ★2 and ★3** (Jerus, 2026-10-23: "Fix in UP5"; `FX7-notes.md`
+   §6). An interchange's reserve is undated, so one that appears in a built
+   district places its plan again: date it. A plan pays one pass of its
+   ground for each month of runs records it replays (the founding district
+   at m4,000: 12 ms a plan, 24 at worst): replay from a kept state.
+5. **`MAP_MONTH_MS`**: re-measure MapCheck 18's 5B month after 1-4 and set
    the dial to nine tenths of the new median, as UP3 set 58.
 
 Done when MapCheck 18 holds the kept pictures equal to a full redraw with

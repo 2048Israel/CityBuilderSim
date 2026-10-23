@@ -15,11 +15,16 @@ eye check.
 1. **Highways drawn over buildings.** A highway runs straight across standing
    works and blocks: a Blast Furnace's block cut in two (shot 2), industry
    under the highway (8, 12), a highway ending in a field past a street (8).
-   A highway goes round what stands, or what it crosses is cleared (FX7 holds
-   that old works stay put; the run must give way, not the works).
+   This is FX7's ★1 (`FX7-notes.md` §6): since 0.8.24 a run laid across
+   standing buildings leaves them standing and both are drawn. His call
+   (2026-10-23, "Buildings move off"): the buildings under a new run leave
+   and are built again on free ground nearby in the district, the same
+   business, and the run gets clean ground. The layout watch then flags the
+   old works a run lands on, a restatement of its premise (FX7 named it); a
+   building that is not under a run still never moves.
 2. **Works on the rail yard** (shot 13, the land office's map): industry
-   drawn over the freight yard's tracks and platform. The yard's ground is
-   the yard's.
+   drawn over the freight yard's tracks and platform. The same call as 1:
+   what stands on a yard's ground moves off it.
 3. **A half roundabout** (shot 11): the tree-circle roundabout where the
    diagonal avenue meets a street is cut flat on one side (a district's or a
    tile's edge clipping it).
@@ -35,7 +40,9 @@ eye check.
    still turns at right angles along the streets and has stubs that end
    nowhere. Find why FX5's curves do not show there; a stub with no traffic
    is not drawn or is taken up. (CL5 grows the nets; this is the drawing and
-   the spurs.)
+   the spurs.) With it, FX7's ★4 ("Into MF1"): the founding district's yard
+   is taken up and laid again on the same spot eleven times over the
+   playtest's run; trace why and stop it.
 7. **The outer rim** (shot 6; the desert in 3): small buildings dotted on an
    even grid over the city's far, empty land. He: "i understand mines and
    wells, but these werent either". Likely the buildings the key counts as
