@@ -2,7 +2,8 @@
 
 *0.8.28, 2026-10-23. [The brief](UP2.md), from the plan "plan/ui-perf" (Jerus, 2026-10-22: "only loads
 the screen you're at"); its item 4 as the study UP4 planned it (`docs/studies/spec-screens-in-place.md` §7,
-"UP2's chrome"). Built from main 95d02db3 (0.8.26), main 9f6ece08 (UP3, 0.8.27) merged in at the end. The model's month is untouched and the save format is
+"UP2's chrome"). Built from main 95d02db3 (0.8.26); main f29b9938 (UP3's
+0.8.27 and the day's docs pass) merged in at the end. The model's month is untouched and the save format is
 unchanged. The slices went to Sonnet subagents (section 6).*
 
 ## 1. What was built
@@ -51,7 +52,8 @@ reaches the envelope's, which is also drawn alone when a notice is read.
 
 **UiProbe** times the redraw through the pulse's own passes (`Scene.doCSSPass`/`doLayoutPass`, the
 study's §9: `applyCss()` restyled every node, which no pulse does), prints the chrome alone beside each
-screen's redraw, and at month 4,000 holds each screen's frame p95 at 50x to its figure before this batch
+screen's redraw and, where the chrome is kept, the same chrome with its pools forgotten (built new, as
+before), turn and turn about in one run; and at month 4,000 it holds each screen's frame p95 at 50x to its figure before this batch
 (`FRAME_P95`; People's is `FRAME_P95_MS`, 34) through `Timing`.
 
 ## 2. Measured
@@ -165,8 +167,11 @@ Three ways, each over a run of months:
   one, and a hand-grown history past `MONTHLY_KEPT` with folded years.
 - **KeptCheck 6-13** (new sections; section 3), with its budgets `KEPT_CHROME_MS` (4) and
   `KEPT_ALL_CHROME_MS` (8) through Timing.
-- **The suite** (`batch-check.sh`, the final model): SUITE_TBD
-- **Timing, hard, the timing harnesses alone** (`batch-check.sh --timing`): TIMING_TBD
+- **The suite** (`batch-check.sh`, the final model, after main f29b9938 merged in): 131 run, all green, timed
+  hard (no other JVM at its start); Stale 0 firm findings. KeptCheck's months in that run, median of 9: the page 5.8 ms
+  kept against 20.9 built new, the header and rail 1.4 against 5.9, the whole chrome 4.8 against 19.0.
+- **Timing, hard, the timing harnesses alone** (`batch-check.sh --timing`): 10 of 10 green,
+  KeptCheck among them (its three budgets: `KEPT_MONTH_MS` 12, `KEPT_CHROME_MS` 4, `KEPT_ALL_CHROME_MS` 8).
 - **The trace.** The default playtest traced (`-Dplaytest.trace`) on main 95d02db3 and on this branch: all
   eight CSVs byte-identical, the report identical but for its run-time lines (70 s and 65 s). UP3 (merged
   in) left the trace as 0.8.26's, so it is 0.8.27's too. **No ensemble** (EN1's rule).
