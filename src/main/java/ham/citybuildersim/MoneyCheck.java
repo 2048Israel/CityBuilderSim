@@ -449,6 +449,121 @@ public class MoneyCheck {
                 Math.abs(copperBought - copperHouseholds - copperSectors) < .01
                         && refiners.getLastMoneyAudit().detail.contains("- sectors OldMetalToHouseholds"));
 
+        /* ==================================================================
+           THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;
+           TreasuryCheck 9 asserts the books themselves).
+
+           Since CD3 the city carries each piece of its paper at amortised
+           cost: its interest is the effective interest, the coupon in cash
+           and the discount wearing off, and a buyback gains the carrying
+           value less the price. The discount wearing off is an ACCOUNTING
+           figure - no pool pays it and no pool receives it - so the audit,
+           which counts cash, must not see it, and neither must the cash
+           coupons fall short of it. The proof is two facts together:
+
+             - every month's audit closes, with paper sold under and over par,
+               reopened, and bought back: no double count and no leak, the
+               amortisation having moved no pool the audit could miss;
+             - and the books' interest less the books' amortisation is the
+               coupons the month paid in cash, holder by holder: the
+               households', the businesses', the world's, the central bank's
+               and the bank's share - the one the cash pays the month after
+               and the economy accrues (EconomyManager.getInterestAccrued()).
+               The cash part of the books is the cash, to the cent.
+
+           THE FIXTURE CAUSES EACH CASE. A bill and an amortizing bond are
+           sold under par; a ten-year line is opened with the dial high and
+           reopened with it low, so the coupon the line prints is over the
+           day's yield and the reopening sells over par; and a month on the
+           amortizing bond is bought back, at a gain or a loss against its
+           carrying value.
+           ================================================================== */
+        System.out.println("\n--- the city's paper on its books: the amortisation is no money, and the audit closes ---");
+        Game paperCity = new Game(GameFiles.scratch("moneycheck-paper"));
+        quietly(paperCity::run);
+        paperCity.setCashForTest(Founding.WEALTHY_CASH);
+        paperCity.getLandManager().setOwnedSqFt(paperCity.getLandManager().getOwnedSqFt() + 400_000_000L);
+        quietly(() -> {
+            paperCity.buildStack(t(paperCity, "House"), 400, true);
+            paperCity.buildStack(t(paperCity, "Small Grocery Store"), 4, true);
+            paperCity.buildStack(t(paperCity, "Coal Power Plant"), 1, true);
+            paperCity.buildStack(t(paperCity, "Water Treatment Plant"), 1, true);
+            paperCity.buildStack(t(paperCity, "Paved Road"), 10, true);
+        });
+        DebtManager ledger = paperCity.getDebtManager();
+        NationalAccounts paperBooks = paperCity.getEconomyManager().getNationalAccounts();
+        // Paper sold under par: a bill, an amortizing bond, and a ten-year line at a high dial.
+        ledger.setPolicyRate(.06);
+        quietly(() -> {
+            paperCity.handleTBillLogic(20_000, 6, 1000);
+            paperCity.handleMediumBondLogic(30_000, 10, 1000);
+            paperCity.handleLongBondLogic(50_000, 10, 1000);
+        });
+        Debt line = ledger.benchmarkLine(10);
+        Debt serial = null;
+        for (Debt d : ledger.getDebt()) if (d instanceof MediumTermBond) serial = d;
+        boolean allUnderPar = ledger.getDebt().size() == 3 && line != null && serial != null;
+        for (Debt d : ledger.getDebt()) allUnderPar &= d.getCarryingValue() < d.getOustandingPrincipal();
+        assertTrue("fixture: a bill, an amortizing bond and a ten-year line, each sold under par", allUnderPar);
+        final Debt serialBond = serial;
+
+        MoneyAudit.Result worstPaper = MoneyAudit.Result.NONE;
+        double worstPaperDrift = 0, worstCouponGap = 0, worstCashGap = 0;
+        double sumAmortised = 0, boughtBackFor = 0, gainQuoted = 0, gainBooked = 0;
+        boolean reopenedOverPar = false, sawPremiumMonth = false, sawDiscountMonth = false, boughtBack = false;
+        int amortisingMonths = 0;
+        for (int month = 0; month < 36; month++) {
+            if (month == 3) {
+                // The dial down: the line's coupon is over the day's yield, and a reopening sells over par.
+                ledger.setPolicyRate(.01);
+                double carryBefore = line.carryingInCurrency(), faceBefore = line.faceInCurrency();
+                int pieces = ledger.getDebt().size();
+                quietly(() -> paperCity.handleLongBondLogic(20_000, 10, 1000));
+                reopenedOverPar = ledger.getDebt().size() == pieces && ledger.benchmarkLine(10) == line
+                        && line.carryingInCurrency() - carryBefore > line.faceInCurrency() - faceBefore + 1;
+            }
+            if (month == 8) quietly(() -> paperCity.handleTBillLogic(10_000, 6, 1000));
+            if (month == 14 && ledger.getDebt().contains(serialBond)) {
+                gainQuoted = paperCity.repurchaseGain(serialBond);
+                boughtBackFor = paperCity.repurchaseDebt(serialBond);
+                boughtBack = boughtBackFor > 0;
+            }
+            final Game stepped = paperCity;
+            quietly(() -> stepped.simulateMonths(1));
+            MoneyAudit.Result r = paperCity.getLastMoneyAudit();
+            if (r.relative() > worstPaper.relative()) worstPaper = r;
+            worstPaperDrift = Math.max(worstPaperDrift, Math.abs(paperCity.getPostAuditDrift()));
+            // The books' interest less the books' amortisation, against the coupons the month paid in cash, holder by holder.
+            double booked = ledger.getInterestBooked() - ledger.getAmortisedBooked();
+            double paidInCash = paperCity.getCouponsToHouseholds() + paperCity.getCouponsToFirms() + paperCity.getCouponsToWorld()
+                    + paperCity.getCentralBank().getPaperCoupons() + paperCity.getEconomyManager().getInterestAccrued()
+                    + paperCity.getForeignInterestPaidThisMonth();
+            worstCouponGap = Math.max(worstCouponGap, Math.abs(booked - paidInCash));
+            worstCashGap = Math.max(worstCashGap, Math.abs(paperBooks.getInterestPaidInCash() - paidInCash));
+            sumAmortised += ledger.getAmortisedBooked();
+            if (Math.abs(ledger.getAmortisedBooked()) > 0) amortisingMonths++;
+            for (Debt d : ledger.getDebt()) {
+                if (d.getLastAmortised() < 0) sawPremiumMonth = true;
+                if (d.getLastAmortised() > 0) sawDiscountMonth = true;
+            }
+            if (month == 14 && boughtBack) gainBooked = paperBooks.getRetiredGain();
+        }
+        System.out.printf("   36 months: worst audit %s; %,.2fk of discount amortised; the buyback paid %,.2fk for a quoted gain of %,.2fk%n",
+                worstPaper, sumAmortised, boughtBackFor, gainQuoted);
+        assertTrue("fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added", reopenedOverPar);
+        assertTrue("fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another",
+                amortisingMonths >= 30 && sawDiscountMonth && sawPremiumMonth);
+        assertTrue("fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value",
+                boughtBack && Math.abs(gainQuoted) > 1);
+        assertTrue("the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear",
+                Math.abs(gainBooked - gainQuoted) < 1e-6 && gainQuoted < 0);
+        assertTrue("a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month",
+                worstPaper.relative() < 1e-4);
+        assertTrue("...and nothing moved a pool after any month's audit struck", worstPaperDrift < .01);
+        assertTrue("the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool",
+                worstCouponGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));
+        assertTrue("...and it is the cash coupons the budget calls its cash interest", worstCashGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

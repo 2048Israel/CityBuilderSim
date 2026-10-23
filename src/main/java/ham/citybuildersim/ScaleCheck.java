@@ -817,9 +817,11 @@ public class ScaleCheck {
             miss("the treasury's closing balance is its cash (TreasuryCheck)", TreasuryCheck.TOLERANCE,
                     TreasuryCheck.TOLERANCE, g.getTreasuryClosing() - g.getCash(), cashSize);
             double bridgeSize = cashSize + Math.abs(g.getTreasurySurplus()) + Math.abs(g.getTreasuryRaised())
-                    + Math.abs(g.getTreasuryRepaid());
+                    + Math.abs(g.getTreasuryRepaid()) + Math.abs(g.getTreasuryNotCash());
+            // Since CD3 the bridge has a not-cash row: the discount the city's paper amortised, less any gain
+            // on paper retired (Game.getTreasuryNotCash()).
             miss("the treasury's bridge foots (TreasuryCheck)", TreasuryCheck.TOLERANCE, TreasuryCheck.TOLERANCE,
-                    g.getTreasurySurplus() + g.getTreasuryRaised() - g.getTreasuryRepaid()
+                    g.getTreasurySurplus() + g.getTreasuryNotCash() + g.getTreasuryRaised() - g.getTreasuryRepaid()
                             + g.getTreasuryUnexplained() - g.getTreasuryChange(), bridgeSize);
             // ...and what the journal leaves unnamed, read but not held: the copy's bank is resolved in
             // its first month at this size, because the registers the copy leaves unscaled hold the

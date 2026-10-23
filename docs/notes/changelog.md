@@ -14,6 +14,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.29 — CD3, the city's books — 2026-10-23, ready, see docs/queue/CD3-notes.md
+
+The city's paper is carried at amortised cost by effective interest (spec-city-debt §5, D10, D16, D26): each line opens
+at what its sale raised, solves the rate its payments are worth that at, books carrying x rate / 12 a month and closes to
+nothing; a reopening blends the rate; dollar paper keeps its books in dollars, read at the month's D$ (not the goods'
+struck rate). The budget's "Interest on the city's paper" is the coupons and the discount wearing off; the gain or loss on
+debt retired is against carrying value; the treasury's bridge has a not-cash row, so it still foots. The screens show it:
+the bridge's steps, the debt card's two parts, the balance at carrying value with the fair value as a note, carried and
+effective on the book. The money closes: the new figures are no cash, and MoneyCheck holds the interest less the
+amortisation equal to the cash coupons, holder by holder, every month. TreasuryCheck 9 (new, 113 assertions). The bank's
+straight-line accretion is unchanged. SAVE_FORMAT 44 and its floor. Ensemble 24/26, 0.8.21's score and its two reds (A2,
+S1). Calls for Jerus: CD3-C.
+
 ### 0.8.28 — UP2, the clock keeps its frame — 2026-10-23, ready, see docs/queue/UP2-notes.md
 
 The window's clock is paced by what it costs (ClockPace, new): a redraw waits three times what the last cost, 120 ms at

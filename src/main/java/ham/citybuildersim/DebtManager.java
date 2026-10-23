@@ -1245,9 +1245,23 @@ public class DebtManager {
 
         Iterator<Debt> iterator = debts.iterator();
         accretedForBank = 0;
+        interestBooked = amortisedBooked = 0;
 
         while (iterator.hasNext()) {
             Debt debt = iterator.next();
+
+            /*
+             * THE CITY'S BOOKS FOR THE MONTH (CD3), before the payments: the
+             * piece's interest expense at its effective rate, the coupon
+             * part of the payment it is about to make, and its carrying value
+             * stepped. Summed in local money at the rate the paper is valued
+             * at, which is the rate the coupon is paid at, so the month's
+             * expense less its amortisation is the coupons the month paid.
+             * See Debt, THE CITY'S BOOKS.
+             */
+            debt.amortise();
+            interestBooked += debt.getLastInterestExpense();
+            amortisedBooked += debt.getLastAmortised();
 
             /*
              * THE DISCOUNT ACCRETES (0.7.1), a month of it, before the month's
@@ -1273,14 +1287,47 @@ public class DebtManager {
         updateInterest();
     }
 
+    /* -----------------------------------------------------------------------
+       THE CITY'S BOOKS, IN TOTAL (CD3, spec-city-debt.md section 5)
+
+       Struck in processAllDebts() from each piece's amortise(), in local
+       money at the rate each paper is valued at, and read until the next
+       month's strike. Not saved: the month's government block carries the
+       amortisation (NationalAccounts.getInterestNotCash()) and each piece
+       carries its own last expense, so a loaded city has both; these totals
+       read nothing until the first month ticks.
+       ----------------------------------------------------------------------- */
+
+    /** This month's interest expense on the city's paper: every piece's carrying value at its effective rate, a month. The coupons and the discount wearing off together. */
+    private double interestBooked;
+
+    /** ...and the part of it that is not coupon: the discount amortised, below nothing for a premium. Non-cash. */
+    private double amortisedBooked;
+
+    public double getInterestBooked()  { return interestBooked; }
+    public double getAmortisedBooked() { return amortisedBooked; }
+
+    /** The coupons the month's books paid: its interest expense less what was amortised. */
+    public double getCouponBooked()    { return interestBooked - amortisedBooked; }
+
+    /** What the city's paper is carried at, every piece together, in local money: what the balance sheet shows (face less the unamortised discount, plus the premium). */
+    public double getCarryingValue() {
+        double total = 0;
+        for (Debt d : debts) total += d.getCarryingValue();
+        return total;
+    }
+
+    /** What the city's paper is worth on the market today, every piece together: the note a government discloses and does not book (getTotalMarketValue()). */
+    public double getFairValue() { return getTotalMarketValue(); }
+
     /**
      * Face value of the discount notes outstanding.
      *
-     * The screens need it because a note is the one instrument whose interest
-     * is not a monthly expense - it was taken out of the proceeds at issue - so
-     * a city financed entirely on notes shows a Debt Interest line of zero
-     * while plainly owing money. That reads as a bug, and the honest answer is
-     * a sentence rather than a number. See ShortTermTBill.
+     * The screens need it because a note is the one instrument with no
+     * coupon: its interest is its discount, which since CD3 wears off on the
+     * budget month by month as effective interest (Debt.amortise()) though no
+     * cash leaves until it falls due - a sentence the screen says beside the
+     * number. See ShortTermTBill.
      */
     public double getNotePrincipal() {
         double total = 0;
