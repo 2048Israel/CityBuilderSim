@@ -1,4 +1,4 @@
-# CityRuns.java - 4,242 lines · 214 methods · 48 constants · model
+# CityRuns.java - 4,254 lines · 214 methods · 48 constants · model
 
 `ham/citybuildersim/CityRuns.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -240,7 +240,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 133 | 4110 | **type** `public final class CityRuns` | The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with the railway's yards on its track nearest the mines - what the city map... |
+| 133 | 4122 | **type** `public final class CityRuns` | The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with the railway's yards on its track nearest the mines - what the city map... |
 
 ### THE DIALS (lines 135-209)
 
@@ -550,14 +550,14 @@
 | 4042 | 5 | `public byte at(long x, long y)` | What the runs carry at world plot (x, y): F_YARD, F_RAIL_OVER, F_HIGHWAY, F_RAIL, or 0 - no highway while the net reaches no street (highwaysReach(), FX2). |
 | 4054 | 7 | `public List<long[]> highwayDistricts()` | The districts the highways' stretches are filed under (batch FX7, THE RUNS DATED), each {world column, world row} (plot / CityMap.DISTRICT, rounded down): every district a highway plot lies in, and - after a net was t... |
 
-### THE SIDECAR (lines 4062-4242)
+### THE SIDECAR (lines 4062-4254)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 4067 | 3 | `public int runs()` | The sidecar's count of runs: the arms of both nets, and one for the yards (0: none laid). |
 | 4072 | 3 | `void write(DataOutputStream out) throws IOException` | Writes the runs after their count (CityMap's FORMAT 5): each net's hub, corridors, arms stretch by stretch and interchanges; the yards (and since FORMAT 10 the footprints they were laid for); what was short. |
-| 4082 | 46 | `void write(DataOutputStream out, int format) throws IOException` | ...in the sidecar format given: from FORMAT 10 (FX5 Y1) each yard's box is followed, after all the boxes, by the footprint it was laid for, two ints (w, h) each - the size it was asked for, which a box laid long or sh... |
-| 4130 | 3 | `static CityRuns read(DataInputStream in) throws IOException` | The runs write() wrote, read back; null when they do not add up. |
-| 4135 | 80 | `static CityRuns read(DataInputStream in, int format) throws IOException` | ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then; before FORMAT 12 the net is one piece (CL5). |
-| 4217 | 25 | `public boolean same(CityRuns o)` | Whether two cities' runs are the same: the gateway, each net's hub, plots, corridors and arms stretch for stretch, and the yards. |
+| 4082 | 49 | `void write(DataOutputStream out, int format) throws IOException` | ...in the sidecar format given: from FORMAT 10 (FX5 Y1) each yard's box is followed, after all the boxes, by the footprint it was laid for, two ints (w, h) each - the size it was asked for, which a box laid long or sh... |
+| 4133 | 3 | `static CityRuns read(DataInputStream in) throws IOException` | The runs write() wrote, read back; null when they do not add up. |
+| 4138 | 89 | `static CityRuns read(DataInputStream in, int format) throws IOException` | ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then; before FORMAT 12 the net is one piece (CL5). |
+| 4229 | 25 | `public boolean same(CityRuns o)` | Whether two cities' runs are the same: the gateway, each net's hub, plots, corridors and arms stretch for stretch, and the yards. |
 

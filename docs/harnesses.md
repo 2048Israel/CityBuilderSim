@@ -9542,7 +9542,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L494 written and read at FORMAT
   - L496 ...with the pieces' hubs
   - L499 ...the corridors' roles and pieces
-  - L500 ...each piece's plots counted afresh the same
+  - L500 ...each piece's plots read back as they were kept
   - L505 ...and they fill a box alike
   - L511 fixture: the neck ground's first link is part-grown, with its plan, at the model's
   - L518 a link part-grown, written and read back, is the same net, its LINK corridor's role kept, and has no plan

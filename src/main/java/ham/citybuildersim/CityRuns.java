@@ -4089,6 +4089,9 @@ public final class CityRuns {
             if (format >= 12) {
                 out.writeInt(Math.max(0, n.pieceHubs.size() - 1));
                 for (int j = 1; j < n.pieceHubs.size(); j++) { out.writeLong(n.pieceHubs.get(j)[0]); out.writeLong(n.pieceHubs.get(j)[1]); }
+                // Each piece's plots as kept (count()), home first, when there are other pieces: counting them again plot by plot on a
+                // load cost a city of billions 200 ms and more of SIDECAR_MS (MapCheck 4).
+                if (n.pieceHubs.size() > 1) for (int j = 0; j < n.pieceHubs.size(); j++) out.writeLong(count(n, j));
             }
             out.writeInt(n.corridors.size());
             for (long[] c : n.corridors) {
@@ -4143,10 +4146,18 @@ public final class CityRuns {
             // The pieces' hubs after the home piece's, and (from FORMAT 12, CL5) each corridor's piece and role; an older sidecar's net is one piece, its corridors 0 and 1 the spine.
             int extra = 0;
             List<long[]> hubs = new ArrayList<>();
+            long[] kept = null;
             if (format >= 12) {
                 extra = in.readInt();
                 if (extra < 0 || extra > 1 << 20 || (extra > 0 && !n.started)) return null;
                 for (int k = 0; k < extra; k++) hubs.add(new long[] { in.readLong(), in.readLong() });
+                if (extra > 0) {
+                    kept = new long[extra + 1];
+                    for (int k = 0; k <= extra; k++) {
+                        kept[k] = in.readLong();
+                        if (kept[k] < 0) return null;
+                    }
+                }
             }
             int nc = in.readInt();
             if (nc < 0 || nc > 1 << 20) return null;
@@ -4194,7 +4205,8 @@ public final class CityRuns {
             }
             n.pieceStuck = new long[n.pieces()];
             Arrays.fill(n.pieceStuck, Long.MIN_VALUE);
-            recountPieces(n);
+            if (kept != null && kept.length == n.pieces()) n.piecePlots = kept;
+            else recountPieces(n);
         }
         int ny = in.readInt();
         if (ny < 0 || ny > 1 << 20) return null;

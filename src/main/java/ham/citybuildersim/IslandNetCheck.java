@@ -497,7 +497,7 @@ public class IslandNetCheck {
                 boolean roles = back.highways.corridors.size() == kept.highways.corridors.size();
                 for (int i = 0; roles && i < kept.highways.corridors.size(); i++) roles = CityRuns.corridorRole(back.highways.corridors.get(i)) == CityRuns.corridorRole(kept.highways.corridors.get(i)) && CityRuns.corridorPiece(back.highways.corridors.get(i)) == CityRuns.corridorPiece(kept.highways.corridors.get(i));
                 check("...the corridors' roles and pieces", roles);
-                check("...each piece's plots counted afresh the same", back.highways.piecePlots(0) == kept.highways.piecePlots(0) && back.highways.piecePlots(1) == kept.highways.piecePlots(1));
+                check("...each piece's plots read back as they were kept", back.highways.piecePlots(0) == kept.highways.piecePlots(0) && back.highways.piecePlots(1) == kept.highways.piecePlots(1));
                 int w = (int) (sea2.x1 - sea2.x0 + 1), h = (int) (sea2.y1 - sea2.y0 + 1);
                 byte[] f1 = new byte[w * h], f2 = new byte[w * h], m1 = new byte[w * h], m2 = new byte[w * h];
                 kept.fill(sea2.x0, sea2.y0, w, h, f1, m1, false);
