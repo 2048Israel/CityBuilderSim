@@ -25,7 +25,7 @@ figures): at month 4,101 its redraw went from 53.0 to 32.1 ms (the page's part 3
 and at 50x the FX thread from 50% to 41% busy, frames p95 51 to 20 ms. Its renders are the same pixels before and after.
 KeptCheck (new, with ui/KeptBench; no window, skipped where JavaFX cannot start) draws the page kept and new for 25
 months and compares them node by node and picture by picture. The rest is KP1-KP7 after UP2, which takes the chrome
-(Pending UP4-C). No model change; TRACE_LINE
+(Pending UP4-C). No model change: the playtest's trace is 0.8.25's but for its run-time lines, so no ensemble.
 
 ### 0.8.25 — UP1, the autosave off the clock — 2026-10-23, ready, see docs/queue/UP1-notes.md
 
