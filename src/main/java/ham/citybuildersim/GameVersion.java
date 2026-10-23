@@ -7099,8 +7099,21 @@ public final class GameVersion {
      *     slot each, DataSave policyAim and pegSpread, HistorySave fxShadow
      *     and fxCover (no format bump: an older save loads as Lean).
      *   - Harness: CurrencyRegimeCheck (new); HoldersCheck's fixture restated.
+     *
+     * 0.8.24 (2026-10-22) - FX7, THE RUNS DATED: A RUN LAID ACROSS A
+     * DISTRICT'S BUILDINGS MOVES NONE OF THEM (docs/queue/FX7-notes.md). The
+     * map's alone; the trace is byte-identical to 0.8.23's.
+     *   - CityRuns tells a witness of each district a month's layTo() is
+     *     about to change; CityMap journals each plot whose kind of fixed
+     *     ground changed, by month (reconcile() only), and hands each plan
+     *     its frame's records (DistrictPlan.Input.fixedLog).
+     *   - DistrictPlan: the plan replays its history on the runs of each
+     *     month; what stands under a run laid later stays, ground a run
+     *     leaves is room again.
+     *   - Sidecar FORMAT 11 (the journals); save format unchanged.
+     *   - Harness: MapCheck 2d and PlanCheck 15 (new sections).
      */
-    public static final String VERSION = "0.8.23";
+    public static final String VERSION = "0.8.24";
 
     /**
      * The save shape.

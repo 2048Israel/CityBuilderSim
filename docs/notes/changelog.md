@@ -14,6 +14,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.24 — FX7, the runs dated — 2026-10-22, ready, see docs/queue/FX7-notes.md
+
+LongPlaytest's one red since AN1, "an old works moved", was the map's: a district's plan replayed its whole history on
+the city's runs as they stood today, so when the runs laid something across built ground (the founding district's Rail
+Depot yard came and went a dozen times from m1,128, a highway arm from m2,131) or took it away, every arrival was
+placed again and 100-260 of its ~300 boxes moved. Now the runs are dated as the land is: the map journals each plot
+whose highway, track or yard kind changed, month by month, and keeps it in the sidecar (FORMAT 11); a plan replays its
+history on the runs of each month, a box under a run laid later stays where it stands (both are drawn), and
+ground a run leaves is room again. The playtest's watch: 14 of 14 old works stand, no finding. MapCheck 2d and PlanCheck
+15 new. The trace is byte-identical, so no ensemble. Interchange reserves stay undated; Jerus's calls in the notes.
+
 ### 0.8.23 — FX8, XR2's loose ends off the default path — 2026-10-22, ready, see docs/queue/FX8-notes.md
 
 Five things the orchestrator's review of XR2 found, none on the default path. The central bank keeps nothing, restated:

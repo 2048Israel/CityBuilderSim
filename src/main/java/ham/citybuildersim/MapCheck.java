@@ -1277,7 +1277,7 @@ public class MapCheck {
      * CityMap.layRuns() inside reconcile), and the shore's works. So when the runs lay something new across a district that already has buildings -
      * a Rail Depot's yard at the rail hub, a highway arm growing through, the highways first drawn once they reach a street - the plan replays every
      * arrival since its log began round the new plots: the growth order, the cells' free rows and the first fits all change, and most of the
-     * district's buildings move (on the default playtest the founding district's Rail Depot yard, 8 x 7 plots, came and went about twenty times
+     * district's buildings move (on the default playtest the founding district's Rail Depot yard, 8 x 7 plots, came and went a dozen times
      * between months 1,128 and 3,934, each time moving 100 to 260 of its 300 boxes; the highway plots laid at months 2,131 and 2,485 to 2,834 moved
      * 10 to 100 each; the last month's fixed swapped into this month's input removed every move). What is right is the other way, as for the
      * ground: what the plan placed stands, and a run laid later takes only the ground nothing stands on. 2d is that, on the real map and the real

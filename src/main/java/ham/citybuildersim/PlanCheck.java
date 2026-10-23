@@ -3768,7 +3768,7 @@ public class PlanCheck {
         check("(a) the fixture: the yard lies across boxes the plan of the months before it has built, and the months after it bring buildings", under >= 3 && after.buildings > before.buildings);
         check("(a) a yard laid across built ground moves none of the boxes standing: each of month " + (laid - 1) + "'s " + before.buildings + " stands in the plan of the log through month " + last,
                 missing(before, after) == 0);
-        check("(a) ...the boxes under the yard stay where they are, the run is drawn over them", boxesIn(after, null, yx, yy, yw, yh) >= under);
+        check("(a) ...the boxes under the yard stay where they are", boxesIn(after, null, yx, yy, yw, yh) >= under);
         check("(b) the arrivals after the yard stand on none of its plots: a free plot a run is laid on is barred", boxesIn(after, before, yx, yy, yw, yh) == 0);
         check("(a) where the same yard is there from the start, with no dates, the plan moves boxes (the fault this section stands against)", missing(before, moved) > 0);
 

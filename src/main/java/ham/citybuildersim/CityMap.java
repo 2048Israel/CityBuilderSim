@@ -5722,7 +5722,7 @@ public final class CityMap {
        through, the highways first drawn once they reach a street) or took
        something away (a yard gone), the plan replayed every arrival around
        today's runs and most of the district's buildings moved: on the default
-       playtest the founding district's yard came and went about twenty times
+       playtest the founding district's yard came and went a dozen times
        between months 1,128 and 3,934, each time moving 100 to 260 of some 300
        boxes, and LongPlaytest's one red, "an old works moved", was this.
 

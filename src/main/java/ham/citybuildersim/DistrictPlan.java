@@ -146,8 +146,8 @@ import java.util.List;
  * of the month the first batch stands on and each month's arrivals find the
  * records of that month and the months before it laid on it (Builder.growGround(),
  * with the land), so a yard laid across built ground, a highway arm, a yard gone,
- * re-places nothing that stands: a box under a run laid later stays and the run is
- * drawn over it, a free plot the run bars is barred, and the ground a run leaves is
+ * re-places nothing that stands: a box under a run laid later stays and both are
+ * drawn, a free plot the run bars is barred, and the ground a run leaves is
  * room again. The last growth is today's runs, for the streets, the access roads
  * and the surface.
  *
@@ -2143,7 +2143,7 @@ public final class DistrictPlan {
          * them - as they stand today for the whole of a district's history, so when the runs laid something across ground that
          * was built (a Rail Depot's yard at the rail hub, a highway arm) or took something away (a yard gone) every arrival was
          * replayed around today's runs and most of the district's buildings moved: on the playtest's city the founding district's
-         * yard came and went about twenty times, each time moving 100 to 260 of some 300 boxes. Now the runs are dated as the
+         * yard came and went a dozen times, each time moving 100 to 260 of some 300 boxes. Now the runs are dated as the
          * land is (Input.fixedLogMonth and fixedLog: a record for each change of a plot's kind of fixed ground, at the month it
          * was made): fx is the runs' ground the plan has so far, Input.fixed less the records dated later than the month the
          * first batch stands on (fixedAtStart()), and the events of each month find the records of that month and the months
@@ -2153,7 +2153,7 @@ public final class DistrictPlan {
          * access roads and the sidings to be laid and the surface drawn.
          *
          * WHAT A RUN LAID LATER DOES TO WHAT STANDS: nothing. A box on a plot a record makes a highway's, a track's or a yard's
-         * stays where it is, the run is drawn over it; a street laid there stays. Only ground nothing stands on is taken: a free
+         * stays where it is and both are drawn; a street laid there stays. Only ground nothing stands on is taken: a free
          * plot the new runs bar, or their verge does, is barred (it leaves its open cell's free rows), and a cell not opened yet
          * is opened on the runs of the month it opens in. WHAT A RUN THAT LEAVES DOES: its ground is room again, as land bought
          * is - a plot no longer barred that holds no street, no box and no curve's band is free and joins its open cell's free
