@@ -837,6 +837,9 @@ public class Game {
     }
     public void loadGameSave(int slot){
 
+        // The writer first (UP1): a load straight after an autosave reads that autosave.
+        awaitSaves();
+
         /*
          * REBUILD THE WORLD FIRST, exactly as newGame() does.
          *
@@ -933,8 +936,18 @@ public class Game {
     public void toggleQuit(){
         // Before the window goes, not after. This is the accident that actually
         // costs people cities.
-        autosave("on quit");
+        saveForQuit();
         System.exit(0);
+    }
+
+    /**
+     * The quit's autosave (UP1): asked for, and on disk when this returns -
+     * System.exit does not wait for the writer's thread, so quitting waits
+     * for it here.
+     */
+    public void saveForQuit(){
+        autosave("on quit");
+        awaitSaves();
     }
 
     /** Why the last load did not happen, or null. Read by the UI. */
@@ -5997,6 +6010,8 @@ public class Game {
          * meaningless.
          */
         if (months > 1) {
+            // The writer first (UP1): an autosave still being written is whole before this one is asked for.
+            awaitSaves();
             autosave("before skipping " + months + " months");
         }
 
@@ -6068,6 +6083,11 @@ public class Game {
             // In the finally block so a skip that stops early - or throws - still
             // produces a readable summary rather than a half-filled one.
             captureSkipSnapshot(false);
+
+            // A skip ends with its autosaves on disk (UP1), so the player - and every
+            // harness that steps with simulateMonths() - finds the files as they were
+            // before the writer left the clock.
+            awaitSaves();
         }
 
         return completed;
@@ -10365,8 +10385,14 @@ public class Game {
          * put back, so it loads at its month with that month gone from its
          * history.
          */
+        reportSaves();
         if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {
-            autosave("month " + month);
+            if (!autosavedYet || saveClock.getAsLong() - lastAutosaveAt >= (long) (SaveWriter.FLOOR_SECONDS * 1e9)) {
+                autosave("month " + month);
+            } else {
+                // Due inside the floor (UP1): it waits for the next due month past it; no save is queued for later.
+                monthsSinceAutosave = 0;
+            }
         }
     }
     
@@ -12736,21 +12762,114 @@ public class Game {
      * Failures are reported and swallowed. An autosave that cannot write must
      * not stop a month advancing or a player quitting - it is a safety net, and
      * a safety net that throws is worse than none.
+     *
+     * Returns before the file is written (UP1): see THE AUTOSAVE OFF THE
+     * CLOCK, below. A failure is printed on the writer's thread and reported
+     * here, on the calling thread, by reportSaves() - the next autosave, the
+     * next month's end, or awaitSaves().
      */
     public void autosave(String reason) {
 
         if (!initialized) return;
 
-        GameFiles.Result result = saveGame(GameFiles.AUTOSAVE_SLOT, "Autosave - " + reason);
-        monthsSinceAutosave = 0;
+        reportSaves();
 
-        if (!result.ok) {
-            System.out.println("Autosave failed: " + result.error);
+        SaveWriter.shared().submit(prepareSave(GameFiles.AUTOSAVE_SLOT, "Autosave - " + reason, true),
+                result -> {
+                    System.out.println(GameFiles.slotLabel(GameFiles.AUTOSAVE_SLOT) + ": " + result.message());
+                    savesWritten.add(result);
+                });
+
+        // The floor paces real time and lives as long as the window does: not buildWorld()'s to reset.
+        lastAutosaveAt = saveClock.getAsLong();
+        autosavedYet = true;
+        monthsSinceAutosave = 0;
+    }
+
+    /* ===== THE AUTOSAVE OFF THE CLOCK (UP1, 2026-10-22) =====================
+     *
+     * At month 4,000 of a long game the autosave held the FX thread 170 ms
+     * every twelve months: turning the save and the history into JSON (the
+     * history alone is 13 MB) and writing three files, inside the month. What
+     * is slow now happens on SaveWriter's one thread; what stays on the FX
+     * thread is what is only safe there, reading the model: prepareSave()
+     * fills DataSave, takes the map's bytes and snapshots the history, and the
+     * writer is handed copies - never a live object, so the next month can
+     * change the city while the last one is written.
+     *
+     * The writer is waited for wherever a file must be whole: a numbered-slot
+     * save() (the player's own Save, written on his thread with the live
+     * objects as it always was), a load, Quit and a skip each awaitSaves()
+     * first. A skip waits again at its end, so a caller that stepped with
+     * simulateMonths() finds its files as they were before UP1.
+     *
+     * The floor: an autosave comes every AUTOSAVE_MONTHS months but never
+     * sooner than SaveWriter.FLOOR_SECONDS of real time after the last one
+     * (Jerus, 2026-10-22: "At most every 30 s"), which at 50x holds the
+     * writer to once in 30 s instead of once in 1.2 s. A month due inside it
+     * is not queued: its counter starts again, and the next due month past
+     * the floor writes. The skip's and Quit's autosaves ignore the floor.
+     * ====================================================================== */
+
+    /** Results the writer's thread has finished, waiting for the FX thread to take them: see reportSaves(). */
+    private final java.util.concurrent.ConcurrentLinkedQueue<GameFiles.Result> savesWritten =
+            new java.util.concurrent.ConcurrentLinkedQueue<>();
+
+    /** The clock the floor is measured on (nanoseconds); checks give a city their own. */
+    private java.util.function.LongSupplier saveClock = System::nanoTime;
+
+    /** When the last autosave was asked for, on saveClock; meaningless until autosavedYet. */
+    private long lastAutosaveAt;
+
+    private boolean autosavedYet;
+
+    void useSaveClockForChecks(java.util.function.LongSupplier nanos) {
+        this.saveClock = nanos;
+    }
+
+    /**
+     * Takes what the writer has finished onto the calling thread: each result
+     * becomes the last save result, and a failed one is said as an autosave
+     * has always said it.
+     */
+    private void reportSaves() {
+        GameFiles.Result result;
+        while ((result = savesWritten.poll()) != null) {
+            lastSaveResult = result;
+            if (!result.ok) {
+                System.out.println("Autosave failed: " + result.error);
+            }
         }
     }
 
+    /**
+     * Waits for the save writer, then reports what it wrote. Every save asked
+     * for so far is on disk when this returns - or has failed and been
+     * reported.
+     */
+    public void awaitSaves() {
+        SaveWriter.shared().awaitIdle();
+        reportSaves();
+    }
+
+    /**
+     * Saves to a slot, now, on the calling thread: the live objects, after
+     * any background write has finished. The numbered slots and every caller
+     * that wants the files on disk when this returns come through here.
+     */
     public void save(int slot, String slotName){
-        
+        awaitSaves();
+        lastSaveResult = prepareSave(slot, slotName, false).write();
+    }
+
+    /**
+     * Fills the save from the city as it stands, asks the map for its bytes
+     * and stamps it; everything save() did before it wrote anything. With
+     * {@code snapshot} the job holds copies of the save and the history (the
+     * autosave's, written on another thread); without, the live objects.
+     */
+    private SaveWriter.Job prepareSave(int slot, String slotName, boolean snapshot){
+
         sendBuildingSave();
         // NOTE: cash wasn't explicitly set here - it only ended up correct because
         // nextMonth() happens to call dataSave.setCash(cash) as a side effect on
@@ -13052,20 +13171,12 @@ public class Game {
         dataSave.stamp(GameVersion.VERSION, GameVersion.SAVE_FORMAT,
                 System.currentTimeMillis());
 
-        lastSaveResult = dataSave.saveGame(gameFiles, slot);
-        if (mapBytes != null && lastSaveResult.ok) {
-            GameFiles.Result map = gameFiles.write(gameFiles.mapFile(slot), mapBytes);
-            if (!map.ok) System.out.println(map.message());
-        }
-
-        // The history is written even when the save failed, on purpose: the two
-        // files are independent, and one of them landing is strictly better
-        // than neither. The reported outcome is the save's, because that is the
-        // file the player would actually mourn.
-        GameFiles.Result history = historySave.saveHistory(gameFiles, slot);
-        if (!history.ok) {
-            System.out.println(history.message());
-        }
+        // The writing itself is SaveWriter.Job.write(): the save, its map, then the history.
+        // A snapshot is taken here, on the FX thread, because this is the only place the model is safe to read.
+        return new SaveWriter.Job(gameFiles, slot,
+                snapshot ? dataSave.snapshot() : dataSave,
+                snapshot ? historySave.snapshot() : historySave,
+                mapBytes);
     }
 
     /**
@@ -13082,7 +13193,12 @@ public class Game {
         return failure;
     }
 
-    /** What the last write attempt did. Null until something has been saved. */
+    /**
+     * What the last write attempt did. Null until something has been saved.
+     * A numbered slot's save is here at once; an autosave's once reportSaves()
+     * has collected it from the writer (the next month's end, the next save,
+     * awaitSaves()).
+     */
     private GameFiles.Result lastSaveResult;
 
     public GameFiles.Result getLastSaveResult() { return lastSaveResult; }

@@ -1,7 +1,6 @@
 package ham.citybuildersim;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
@@ -1198,10 +1197,35 @@ public class HistorySave {
      * The graph history. Written the same guarded way as the save itself: this
      * file is every month the city has ever lived, so losing it to a half-write
      * costs more than the save does.
+     *
+     * Streamed and compact since UP1 (2026-10-22): nobody reads 13 MB of
+     * numbers by eye, and pretty printing was a third of its cost. Gson and
+     * tools.SaveDump read it either way, so a pretty file from an older build
+     * still loads.
      */
     public GameFiles.Result saveHistory(GameFiles files, int slot) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return files.write(files.historyFile(slot), gson.toJson(this));
+        Gson gson = new Gson();
+        return files.write(files.historyFile(slot), out -> {
+            try {
+                gson.toJson(this, out);
+            } catch (com.google.gson.JsonIOException e) {
+                // Gson wraps the Writer's IOException; GameFiles reports that one.
+                if (e.getCause() instanceof java.io.IOException io) throw io;
+                throw e;
+            }
+        });
+    }
+
+    /**
+     * A copy of this history for the writer thread (UP1, 2026-10-22): every
+     * series copied into new lists, whose entries are immutable numbers, by
+     * restoreFrom() - the one place every series is listed, so a series added
+     * later is in the snapshot the moment it is in the load.
+     */
+    public HistorySave snapshot() {
+        HistorySave copy = new HistorySave();
+        copy.restoreFrom(this);
+        return copy;
     }
 
     /* ==================================================================

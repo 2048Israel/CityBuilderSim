@@ -391,28 +391,72 @@ public final class GameFiles {
             // that runs out of disk, the existing save has not been touched.
             Files.write(tmp, contents);
 
-            if (Files.exists(file)) {
-                Files.copy(file, file.resolveSibling(file.getFileName() + ".bak"),
-                        StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            try {
-                Files.move(tmp, file,
-                        StandardCopyOption.REPLACE_EXISTING,
-                        StandardCopyOption.ATOMIC_MOVE);
-            } catch (AtomicMoveNotSupportedException e) {
-                // Some filesystems (and moves across devices) cannot do it
-                // atomically. A plain replace is still better than writing the
-                // target directly, because the content is already known good.
-                Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            return Result.succeeded(file);
+            return swapIn(file, tmp);
 
         } catch (IOException | RuntimeException e) {
             deleteQuietly(tmp);
             return Result.failed(file, e);
         }
+    }
+
+    /** What a streamed write puts in the file, written to {@code out} (which the caller closes). */
+    @FunctionalInterface
+    public interface Body {
+        void writeTo(java.io.Writer out) throws IOException;
+    }
+
+    /**
+     * The same, streamed (UP1, 2026-10-22): the body writes straight into the
+     * .tmp through a buffered UTF-8 writer instead of being built whole as a
+     * String first - a 13 MB history was a String of 13 MB on the FX thread,
+     * and a copy of it as bytes. The .tmp is closed before anything else
+     * happens; then the rule is the byte version's: the .bak, then the swap.
+     * A body that throws, of whatever kind, leaves no .tmp and the old file
+     * untouched.
+     */
+    public Result write(Path file, Body body) {
+
+        Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
+
+        try {
+            Files.createDirectories(file.getParent());
+
+            try (java.io.Writer out = new java.io.BufferedWriter(new java.io.OutputStreamWriter(
+                    Files.newOutputStream(tmp), java.nio.charset.StandardCharsets.UTF_8))) {
+                body.writeTo(out);
+            }
+
+            return swapIn(file, tmp);
+
+        } catch (IOException | RuntimeException e) {
+            deleteQuietly(tmp);
+            return Result.failed(file, e);
+        }
+    }
+
+    /**
+     * The tail both writes share: the existing file copied to .bak, then the
+     * finished .tmp moved over it. The rule is stated once, here.
+     */
+    private static Result swapIn(Path file, Path tmp) throws IOException {
+
+        if (Files.exists(file)) {
+            Files.copy(file, file.resolveSibling(file.getFileName() + ".bak"),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        try {
+            Files.move(tmp, file,
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            // Some filesystems (and moves across devices) cannot do it
+            // atomically. A plain replace is still better than writing the
+            // target directly, because the content is already known good.
+            Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        return Result.succeeded(file);
     }
 
     private static void deleteQuietly(Path path) {

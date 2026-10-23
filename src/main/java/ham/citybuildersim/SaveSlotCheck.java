@@ -202,6 +202,11 @@ public class SaveSlotCheck {
                 autoRoot.resolve("no-legacy"));
 
         Game auto = new Game(autoFiles);
+        // The floor (UP1) has passed at every look, as 30 s of play would pass it: the city gets a
+        // save clock that runs past it each time it is read, so the months that are due write (the
+        // skip's periodic autosaves below, the twelfth month's in 7b), and each holds a whole month.
+        long[] now = { System.nanoTime() };
+        auto.useSaveClockForChecks(() -> now[0] += (long) (SaveWriter.FLOOR_SECONDS * 1e9) + 1);
         auto.run();
         auto.buildStack(template(auto, "House"), 10, false);
 
@@ -255,7 +260,7 @@ public class SaveSlotCheck {
         auto.simulateMonths(5);
         wholeMonth("the one before a skip", auto, autoFiles, auto.getMonth() - 5);
         // ...and quitting writes it where the city stands (toggleQuit() then exits).
-        auto.autosave("on quit");
+        auto.saveForQuit();
         wholeMonth("the one on quit", auto, autoFiles);
 
         /* ==================== 8. histories are per slot ==================== */

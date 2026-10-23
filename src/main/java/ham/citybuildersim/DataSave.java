@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @author Jerus
  */
-public class DataSave {
+public class DataSave implements Cloneable {
 
     /*
      * The save path used to live here as a literal, and in three other places
@@ -781,22 +781,59 @@ public class DataSave {
      * the numbers leave what a double can hold. That underlying spiral is a
      * design question and is written up separately. THIS is not: whatever state
      * the city gets into, failing to save is a message, not a crash.
+     *
+     * Streamed since UP1 (2026-10-22): Gson writes through the file's own
+     * buffered stream instead of building the whole text as a String first,
+     * and this may run on the save writer's thread (SaveWriter) on a snapshot()
+     * of the save. The text is the same, byte for byte. A number JSON cannot
+     * hold still comes back as the failure above; the .tmp is gone and the old
+     * save untouched.
      */
     public GameFiles.Result saveGame(GameFiles files, int slot) {
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String json;
+        RuntimeException[] unwritable = new RuntimeException[1];
 
-        try {
-            json = gson.toJson(this);
-        } catch (RuntimeException e) {
+        GameFiles.Result written = files.write(files.saveFile(slot), out -> {
+            try {
+                gson.toJson(this, out);
+            } catch (com.google.gson.JsonIOException e) {
+                // Gson wraps the Writer's IOException: that is the disk's failure,
+                // not the city's numbers.
+                if (e.getCause() instanceof java.io.IOException io) throw io;
+                throw e;
+            } catch (RuntimeException e) {
+                unwritable[0] = e;
+                throw e;
+            }
+        });
+
+        if (unwritable[0] != null) {
             return GameFiles.Result.failed(files.saveFile(slot),
                     "the city's numbers cannot be written down"
                     + describeUnwritable()
-                    + " (" + e.getClass().getSimpleName() + ")");
+                    + " (" + unwritable[0].getClass().getSimpleName() + ")");
         }
 
-        return files.write(files.saveFile(slot), json);
+        return written;
+    }
+
+    /**
+     * A copy of this save for the writer thread (UP1, 2026-10-22): the object
+     * itself, shallow, plus a copy of every array or list DataSave mutates in
+     * place. That is only buildings[] (setBuildingQuantity writes it element by
+     * element); every other field is replaced whole by its setter on the next
+     * save, so the clone can share what the original held when it was taken.
+     * UP1's harness checks that two snapshots share nothing mutable.
+     */
+    public DataSave snapshot() {
+        try {
+            DataSave copy = (DataSave) super.clone();
+            if (buildings != null) copy.buildings = buildings.clone();
+            return copy;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
