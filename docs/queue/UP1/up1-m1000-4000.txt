@@ -1,0 +1,404 @@
+founded in 1.4 s
+
+=== month 1002 (grown in 7.3 s; model month mean 7.0 ms over the last stretch) ===
+people 11,859, buildings 378, history months 1001, districts 3, decisions 19, heap used 119 MB
+autosave on the clock 5 ms (fill and snapshot), written by the writer in 61 ms more; save 1.0 MB, history 1.5 MB, map 0.0 MB
+numbered save 46 ms on the FX thread (slot 3 of the scratch folder; the Save button)
+load 137 ms (month 1002)
+clock month: median 9.2 ms, max 14 ms (no autosave in it: the 30 s floor holds the due month back, the probe's own autosave was seconds ago)
+screen     first  build(med) css+layout(med)  build(max)
+Build        126       37.5           44.0        43.4
+Land         109       20.8           22.4        30.4
+People       155       23.0           26.2        34.0
+Services      52       11.0           18.7        12.6
+Infra         55        9.2           17.3        10.2
+Sectors       85       23.8           25.8        34.8
+Govt          34        8.8           17.3        10.2
+Finances      38        8.4           20.8        12.3
+Bank          62       12.3           22.8        29.2
+Trade         41        9.4           14.1        10.4
+Policy        33        7.1           15.4         9.8
+History       79       17.3           23.5        22.1
+live 50x   months/s  frame p50  p95   max (ms)   (opens with one autosave, the floor then holds the next 30 s)
+Build           9.7          6   101    251
+Land           10.0          8    51     80
+People         10.0          7    51     83
+Services        9.9          6    27     55
+Infra          10.0          6    28     47
+Sectors         9.9          7    52     67
+Govt           10.0          6    32     59
+Finances       10.0          6    31     54
+Bank            9.7          8    38     65
+Trade          10.0          6    17     49
+Policy         10.0          6    32     66
+History        10.0         10    48     80
+JFR: FX-thread samples 763 (truncated 0); GC 16 pauses, 263 ms total
+threads: JavaFX Application Thread=763 city-map=70 QuantumRenderer-0=63 save-writer=5 Reference Handler=1 Thread-1=1
+save-writer samples: 5
+inclusive share of FX-thread samples:
+   44.0%  ham.citybuildersim.ui.UserInterface$
+   23.1%  ham.citybuildersim.Game.nextMonth
+    0.0%  ham.citybuildersim.Game.autosave
+    0.0%  ham.citybuildersim.Game.prepareSave
+    0.0%  ham.citybuildersim.HistorySave.snapshot
+    0.1%  ham.citybuildersim.Game.reconcileMap
+    7.5%  ham.citybuildersim.ui.UserInterface.clearMenu
+    3.4%  ham.citybuildersim.ui.UserInterface.refreshHeader
+    0.4%  ham.citybuildersim.ui.UserInterface.refreshConstructionPanel
+    0.4%  ham.citybuildersim.ui.UserInterface.refreshInbox
+    1.6%  ham.citybuildersim.ui.UserInterface.refreshTabRail
+    0.4%  ham.citybuildersim.ui.SummaryScreen.refreshCityPanel
+    0.8%  ham.citybuildersim.HistorySave.aligned
+    0.8%  ham.citybuildersim.HistorySave.raw
+    0.4%  ham.citybuildersim.HistorySave.seriesByName
+    0.5%  ham.citybuildersim.YearBook.
+    0.1%  ham.citybuildersim.ChartModel.
+    0.0%  ham.citybuildersim.ui.TimeChart.setData
+    0.3%  ham.citybuildersim.ui.TimeChart.draw
+    0.3%  ham.citybuildersim.ui.TimeChart.
+    1.2%  ham.citybuildersim.ui.MiniMap.tick
+    0.3%  ham.citybuildersim.ui.MapView.tick
+    1.4%  ham.citybuildersim.MapTiles.
+    0.1%  ham.citybuildersim.CityMap.
+    1.2%  ham.citybuildersim.MiniMapFrame.
+   53.5%  javafx.scene.Scene$ScenePulseListener.pulse
+   29.9%  javafx.scene.Parent.layout
+   22.3%  javafx.scene.Node.processCSS
+    3.1%  javafx.scene.Node.applyCss
+   28.7%  javafx.scene.Parent$
+    2.5%  javafx.scene.text.
+    9.8%  com.sun.javafx.text.
+    0.3%  javafx.scene.canvas.
+    0.9%  ham.citybuildersim.ui.BankScreen.showBankMenu
+    0.3%  ham.citybuildersim.ui.BuildScreen.showBuildMenu
+    1.3%  ham.citybuildersim.ui.BuildScreen.showOverview
+    0.8%  ham.citybuildersim.ui.FinancesScreen.showFinanceMenu
+    0.7%  ham.citybuildersim.ui.GovernmentScreen.showGovernmentMenu
+    2.0%  ham.citybuildersim.ui.HistoryScreen.showHistoryMenu
+    0.8%  ham.citybuildersim.ui.InfrastructureScreen.showInfrastructureMenu
+    1.7%  ham.citybuildersim.ui.LandScreen.showLandMenu
+    2.1%  ham.citybuildersim.ui.PeopleScreen.showPopulationInfoMenu
+    0.5%  ham.citybuildersim.ui.PolicyScreen.showPolicyMenu
+    1.0%  ham.citybuildersim.ui.SectorScreen.showSectorMenu
+    0.9%  ham.citybuildersim.ui.ServicesScreen.showServicesStatsMenu
+    0.9%  ham.citybuildersim.ui.TradeScreen.showForeignMenu
+top ham frames (self within our code):
+    4.1%  ham.citybuildersim.Household.recountBonds
+    4.1%  ham.citybuildersim.ui.UserInterface.lambda$clearMenu$8
+    3.0%  ham.citybuildersim.ui.UserInterface.lambda$restoreScroll$13
+    2.0%  ham.citybuildersim.HouseholdBalance.cellByKey
+    1.3%  ham.citybuildersim.BuildingManager.totalBySector
+    1.2%  ham.citybuildersim.Household.putBondFace
+    1.2%  ham.citybuildersim.BondMarket.postHouseholds
+    1.0%  ham.citybuildersim.ui.UserInterface.railButton
+    1.0%  ham.citybuildersim.ui.UserInterface.refreshHeader
+    1.0%  ham.citybuildersim.LandGrid.ownedRec
+    1.0%  ham.citybuildersim.ui.UserInterface.clearMenu
+    0.9%  ham.citybuildersim.HouseholdBalance.stocks
+    0.8%  ham.citybuildersim.ui.UserInterface.headlineTile
+    0.8%  ham.citybuildersim.ui.PeopleScreen.showPopulationInfoMenu
+
+=== month 2005 (grown in 5.4 s; model month mean 10.2 ms over the last stretch) ===
+people 71,491, buildings 2,344, history months 2004, districts 4, decisions 39, heap used 196 MB
+autosave on the clock 4 ms (fill and snapshot), written by the writer in 86 ms more; save 2.7 MB, history 3.3 MB, map 0.0 MB
+numbered save 81 ms on the FX thread (slot 3 of the scratch folder; the Save button)
+load 147 ms (month 2005)
+clock month: median 9.1 ms, max 15 ms (no autosave in it: the 30 s floor holds the due month back, the probe's own autosave was seconds ago)
+screen     first  build(med) css+layout(med)  build(max)
+Build         52       12.9           22.9        19.0
+Land          29       10.5           19.1        11.2
+People        55       17.1           26.3        40.6
+Services      26        7.3           18.4         8.3
+Infra         26        7.2           18.9        23.6
+Sectors       41       21.3           28.3        26.9
+Govt          28        6.8           17.9        26.4
+Finances      24        6.5           16.9         7.9
+Bank          37        9.7           24.0        10.6
+Trade         25        6.4           14.8         7.9
+Policy        20        6.1           14.3         6.6
+History       35       11.0           21.4        12.3
+live 50x   months/s  frame p50  p95   max (ms)   (opens with one autosave, the floor then holds the next 30 s)
+Build          10.0          6    25     65
+Land           10.0          6    17     40
+People         10.0          6    48     81
+Services       10.0          6    29     55
+Infra           9.7          6    33     68
+Sectors        10.0          9    55     87
+Govt           10.0          6    32     57
+Finances       10.0          6    33     53
+Bank           10.0          8    44     68
+Trade          10.0          6    17     58
+Policy          9.9          6    34     46
+History        10.0          8    51     71
+JFR: FX-thread samples 866 (truncated 0); GC 14 pauses, 196 ms total
+threads: JavaFX Application Thread=866 city-map=91 QuantumRenderer-0=56 save-writer=8 Reference Handler=2 InvokeLaterDispatcher=1
+save-writer samples: 8
+inclusive share of FX-thread samples:
+   53.1%  ham.citybuildersim.ui.UserInterface$
+   33.0%  ham.citybuildersim.Game.nextMonth
+    0.0%  ham.citybuildersim.Game.autosave
+    0.0%  ham.citybuildersim.Game.prepareSave
+    0.0%  ham.citybuildersim.HistorySave.snapshot
+    0.1%  ham.citybuildersim.Game.reconcileMap
+    6.9%  ham.citybuildersim.ui.UserInterface.clearMenu
+    3.2%  ham.citybuildersim.ui.UserInterface.refreshHeader
+    0.1%  ham.citybuildersim.ui.UserInterface.refreshConstructionPanel
+    0.1%  ham.citybuildersim.ui.UserInterface.refreshInbox
+    1.8%  ham.citybuildersim.ui.UserInterface.refreshTabRail
+    0.2%  ham.citybuildersim.ui.SummaryScreen.refreshCityPanel
+    1.2%  ham.citybuildersim.HistorySave.aligned
+    1.2%  ham.citybuildersim.HistorySave.raw
+    0.6%  ham.citybuildersim.HistorySave.seriesByName
+    1.4%  ham.citybuildersim.YearBook.
+    0.1%  ham.citybuildersim.ChartModel.
+    0.6%  ham.citybuildersim.ui.TimeChart.setData
+    1.2%  ham.citybuildersim.ui.TimeChart.draw
+    1.3%  ham.citybuildersim.ui.TimeChart.
+    1.2%  ham.citybuildersim.ui.MiniMap.tick
+    0.2%  ham.citybuildersim.ui.MapView.tick
+    0.7%  ham.citybuildersim.MapTiles.
+    1.0%  ham.citybuildersim.CityMap.
+    0.6%  ham.citybuildersim.MiniMapFrame.
+   45.6%  javafx.scene.Scene$ScenePulseListener.pulse
+   25.6%  javafx.scene.Parent.layout
+   18.8%  javafx.scene.Node.processCSS
+    3.2%  javafx.scene.Node.applyCss
+   23.8%  javafx.scene.Parent$
+    2.1%  javafx.scene.text.
+    7.3%  com.sun.javafx.text.
+    0.6%  javafx.scene.canvas.
+    0.5%  ham.citybuildersim.ui.BankScreen.showBankMenu
+    0.1%  ham.citybuildersim.ui.BuildScreen.showBuildMenu
+    1.4%  ham.citybuildersim.ui.BuildScreen.showOverview
+    0.7%  ham.citybuildersim.ui.FinancesScreen.showFinanceMenu
+    0.9%  ham.citybuildersim.ui.GovernmentScreen.showGovernmentMenu
+    1.7%  ham.citybuildersim.ui.HistoryScreen.showHistoryMenu
+    1.0%  ham.citybuildersim.ui.InfrastructureScreen.showInfrastructureMenu
+    1.3%  ham.citybuildersim.ui.LandScreen.showLandMenu
+    2.4%  ham.citybuildersim.ui.PeopleScreen.showPopulationInfoMenu
+    0.9%  ham.citybuildersim.ui.PolicyScreen.showPolicyMenu
+    1.4%  ham.citybuildersim.ui.SectorScreen.showSectorMenu
+    0.9%  ham.citybuildersim.ui.ServicesScreen.showServicesStatsMenu
+    0.8%  ham.citybuildersim.ui.TradeScreen.showForeignMenu
+top ham frames (self within our code):
+    4.7%  ham.citybuildersim.Household.recountBonds
+    3.9%  ham.citybuildersim.BuildingManager.totalBySector
+    3.1%  ham.citybuildersim.ui.UserInterface.lambda$clearMenu$8
+    2.7%  ham.citybuildersim.ui.UserInterface.lambda$restoreScroll$13
+    1.6%  ham.citybuildersim.CorporateBond.priceAtYield
+    1.5%  ham.citybuildersim.ui.UserInterface.railButton
+    1.5%  ham.citybuildersim.Household.bondFace
+    1.2%  ham.citybuildersim.BuildingManager.getPostsWithheld
+    1.2%  ham.citybuildersim.ui.PeopleScreen.showPopulationInfoMenu
+    1.0%  ham.citybuildersim.BusinessDebtManager.getLoanPrincipal
+    0.9%  ham.citybuildersim.BondMarket$Settle.capacity
+    0.9%  ham.citybuildersim.ui.UserInterface.clearMenu
+    0.8%  ham.citybuildersim.CorporateBond.company
+    0.8%  ham.citybuildersim.HouseholdBalance.cellByKey
+
+=== month 3005 (grown in 6.9 s; model month mean 13.2 ms over the last stretch) ===
+people 164,012, buildings 6,788, history months 3004, districts 7, decisions 48, heap used 321 MB
+autosave on the clock 4 ms (fill and snapshot), written by the writer in 90 ms more; save 3.4 MB, history 5.3 MB, map 0.0 MB
+numbered save 87 ms on the FX thread (slot 3 of the scratch folder; the Save button)
+load 104 ms (month 3005)
+clock month: median 14.3 ms, max 91 ms (no autosave in it: the 30 s floor holds the due month back, the probe's own autosave was seconds ago)
+screen     first  build(med) css+layout(med)  build(max)
+Build         36       11.5           20.7        12.4
+Land          29        9.9           18.8        10.6
+People        43       15.4           26.1        20.3
+Services      26        7.5           18.4         7.8
+Infra         27        7.5           21.0         8.2
+Sectors       48       18.9           32.4        24.2
+Govt          28        7.0           21.0         7.2
+Finances      23        5.6           15.2         6.9
+Bank          51        9.2           22.9         9.7
+Trade         19        6.1           11.9         6.4
+Policy        19        5.8           13.7         6.4
+History       42       10.7           20.9        11.4
+live 50x   months/s  frame p50  p95   max (ms)   (opens with one autosave, the floor then holds the next 30 s)
+Build          10.0          6    26     57
+Land           10.0          9    38     65
+People         10.0          7    50     80
+Services        9.8          6    31     83
+Infra           9.7          6    56     85
+Sectors        10.0         11   103    125
+Govt           10.0          6    88    102
+Finances       10.0          6    39    100
+Bank           10.0          9    49     70
+Trade          10.0          7    27     56
+Policy          9.9          6    39     69
+History         9.7          7    51     78
+JFR: FX-thread samples 1172 (truncated 0); GC 13 pauses, 153 ms total
+threads: JavaFX Application Thread=1172 city-map=255 QuantumRenderer-0=65 save-writer=8 Thread-1=1
+save-writer samples: 8
+inclusive share of FX-thread samples:
+   53.5%  ham.citybuildersim.ui.UserInterface$
+   39.4%  ham.citybuildersim.Game.nextMonth
+    0.0%  ham.citybuildersim.Game.autosave
+    0.0%  ham.citybuildersim.Game.prepareSave
+    0.0%  ham.citybuildersim.HistorySave.snapshot
+    0.1%  ham.citybuildersim.Game.reconcileMap
+    4.5%  ham.citybuildersim.ui.UserInterface.clearMenu
+    2.0%  ham.citybuildersim.ui.UserInterface.refreshHeader
+    0.2%  ham.citybuildersim.ui.UserInterface.refreshConstructionPanel
+    0.1%  ham.citybuildersim.ui.UserInterface.refreshInbox
+    1.3%  ham.citybuildersim.ui.UserInterface.refreshTabRail
+    0.4%  ham.citybuildersim.ui.SummaryScreen.refreshCityPanel
+    1.0%  ham.citybuildersim.HistorySave.aligned
+    1.0%  ham.citybuildersim.HistorySave.raw
+    0.3%  ham.citybuildersim.HistorySave.seriesByName
+    0.7%  ham.citybuildersim.YearBook.
+    0.3%  ham.citybuildersim.ChartModel.
+    0.2%  ham.citybuildersim.ui.TimeChart.setData
+    0.3%  ham.citybuildersim.ui.TimeChart.draw
+    0.4%  ham.citybuildersim.ui.TimeChart.
+    2.7%  ham.citybuildersim.ui.MiniMap.tick
+    2.5%  ham.citybuildersim.ui.MapView.tick
+    4.5%  ham.citybuildersim.MapTiles.
+    2.7%  ham.citybuildersim.CityMap.
+    2.2%  ham.citybuildersim.MiniMapFrame.
+   40.6%  javafx.scene.Scene$ScenePulseListener.pulse
+   22.0%  javafx.scene.Parent.layout
+   18.3%  javafx.scene.Node.processCSS
+    1.9%  javafx.scene.Node.applyCss
+   21.4%  javafx.scene.Parent$
+    2.5%  javafx.scene.text.
+    6.1%  com.sun.javafx.text.
+    0.1%  javafx.scene.canvas.
+    0.4%  ham.citybuildersim.ui.BankScreen.showBankMenu
+    0.7%  ham.citybuildersim.ui.BuildScreen.showOverview
+    0.7%  ham.citybuildersim.ui.FinancesScreen.showFinanceMenu
+    0.9%  ham.citybuildersim.ui.GovernmentScreen.showGovernmentMenu
+    0.9%  ham.citybuildersim.ui.HistoryScreen.showHistoryMenu
+    0.7%  ham.citybuildersim.ui.InfrastructureScreen.showInfrastructureMenu
+    0.7%  ham.citybuildersim.ui.LandScreen.showLandMenu
+    0.9%  ham.citybuildersim.ui.PeopleScreen.showPopulationInfoMenu
+    0.1%  ham.citybuildersim.ui.Pieces.showIf
+    0.7%  ham.citybuildersim.ui.PolicyScreen.showPolicyMenu
+    1.5%  ham.citybuildersim.ui.SectorScreen.showSectorMenu
+    0.3%  ham.citybuildersim.ui.ServicesScreen.showServicesStatsMenu
+    0.6%  ham.citybuildersim.ui.TradeScreen.showForeignMenu
+top ham frames (self within our code):
+    8.8%  ham.citybuildersim.Household.recountBonds
+    3.6%  ham.citybuildersim.BuildingManager.totalBySector
+    3.1%  ham.citybuildersim.ui.UserInterface.lambda$clearMenu$8
+    2.3%  ham.citybuildersim.Household.bondFace
+    2.0%  ham.citybuildersim.ui.UserInterface.lambda$restoreScroll$13
+    1.4%  ham.citybuildersim.CityMap.stampOf
+    1.4%  ham.citybuildersim.LandGrid.ownedRec
+    1.2%  ham.citybuildersim.ui.UserInterface.railButton
+    1.2%  ham.citybuildersim.HouseholdBalance.cellByKey
+    1.1%  ham.citybuildersim.BondMarket.strikeCoupons
+    1.1%  ham.citybuildersim.BondMarket.postHouseholds
+    1.0%  ham.citybuildersim.BuildingManager.getPostsWithheld
+    0.9%  ham.citybuildersim.HouseholdBalance.stocks
+    0.9%  ham.citybuildersim.BondMarket$Settle.settle
+
+=== month 4005 (grown in 9.2 s; model month mean 17.6 ms over the last stretch) ===
+people 323,246, buildings 19,383, history months 4004, districts 7, decisions 56, heap used 625 MB
+autosave on the clock 4 ms (fill and snapshot), written by the writer in 112 ms more; save 5.1 MB, history 7.5 MB, map 0.0 MB
+numbered save 119 ms on the FX thread (slot 3 of the scratch folder; the Save button)
+load 126 ms (month 4005)
+clock month: median 9.2 ms, max 215 ms (no autosave in it: the 30 s floor holds the due month back, the probe's own autosave was seconds ago)
+screen     first  build(med) css+layout(med)  build(max)
+Build         34       12.3           22.1        19.1
+Land          29        9.5           18.2        10.3
+People        46       15.1           27.2        15.7
+Services      29        7.9           20.1        11.0
+Infra         28        7.1           19.3         8.3
+Sectors       41       15.0           27.6        18.3
+Govt          31        7.4           22.2         8.7
+Finances      27        6.5           18.7         7.1
+Bank          36        9.6           27.6        10.1
+Trade         26        6.9           18.3         7.1
+Policy        25        6.6           18.9         7.3
+History       43       12.1           27.5        12.9
+live 50x   months/s  frame p50  p95   max (ms)   (opens with one autosave, the floor then holds the next 30 s)
+Build          10.0          6    27     80
+Land           10.0          8    36     51
+People         10.0          7    49     75
+Services       10.0          6    29     49
+Infra          10.0          6    30     64
+Sectors        10.0          7    53    124
+Govt           10.0          6    33     45
+Finances        9.9          6    32     64
+Bank            9.7          9    69    100
+Trade          10.0          8    36     70
+Policy         10.0          6    32     73
+History        10.0          9    51     60
+JFR: FX-thread samples 974 (truncated 0); GC 14 pauses, 204 ms total
+threads: JavaFX Application Thread=974 city-map=403 QuantumRenderer-0=69 save-writer=10 Reference Handler=1
+save-writer samples: 10
+inclusive share of FX-thread samples:
+   46.0%  ham.citybuildersim.ui.UserInterface$
+   28.4%  ham.citybuildersim.Game.nextMonth
+    0.0%  ham.citybuildersim.Game.autosave
+    0.0%  ham.citybuildersim.Game.prepareSave
+    0.0%  ham.citybuildersim.HistorySave.snapshot
+    0.2%  ham.citybuildersim.Game.reconcileMap
+    5.1%  ham.citybuildersim.ui.UserInterface.clearMenu
+    2.2%  ham.citybuildersim.ui.UserInterface.refreshHeader
+    0.2%  ham.citybuildersim.ui.UserInterface.refreshConstructionPanel
+    0.2%  ham.citybuildersim.ui.UserInterface.refreshInbox
+    1.2%  ham.citybuildersim.ui.UserInterface.refreshTabRail
+    0.5%  ham.citybuildersim.ui.SummaryScreen.refreshCityPanel
+    1.2%  ham.citybuildersim.HistorySave.aligned
+    1.2%  ham.citybuildersim.HistorySave.raw
+    0.3%  ham.citybuildersim.HistorySave.seriesByName
+    0.8%  ham.citybuildersim.YearBook.
+    0.4%  ham.citybuildersim.ChartModel.
+    0.2%  ham.citybuildersim.ui.TimeChart.setData
+    0.2%  ham.citybuildersim.ui.TimeChart.draw
+    0.2%  ham.citybuildersim.ui.TimeChart.
+    2.8%  ham.citybuildersim.ui.MiniMap.tick
+    2.3%  ham.citybuildersim.ui.MapView.tick
+    4.1%  ham.citybuildersim.MapTiles.
+    2.8%  ham.citybuildersim.CityMap.
+    1.8%  ham.citybuildersim.MiniMapFrame.
+   48.8%  javafx.scene.Scene$ScenePulseListener.pulse
+   26.6%  javafx.scene.Parent.layout
+   22.3%  javafx.scene.Node.processCSS
+    3.2%  javafx.scene.Node.applyCss
+   27.7%  javafx.scene.Parent$
+    1.5%  javafx.scene.text.
+    7.9%  com.sun.javafx.text.
+    0.1%  javafx.scene.canvas.
+    0.5%  ham.citybuildersim.ui.BankScreen.showBankMenu
+    0.1%  ham.citybuildersim.ui.BuildScreen.showBuildMenu
+    1.1%  ham.citybuildersim.ui.BuildScreen.showOverview
+    0.5%  ham.citybuildersim.ui.FinancesScreen.showFinanceMenu
+    0.7%  ham.citybuildersim.ui.GovernmentScreen.showGovernmentMenu
+    1.4%  ham.citybuildersim.ui.HistoryScreen.showHistoryMenu
+    0.5%  ham.citybuildersim.ui.InfrastructureScreen.showInfrastructureMenu
+    0.8%  ham.citybuildersim.ui.LandScreen.showLandMenu
+    1.4%  ham.citybuildersim.ui.PeopleScreen.showPopulationInfoMenu
+    0.2%  ham.citybuildersim.ui.PolicyScreen.showPolicyMenu
+    1.0%  ham.citybuildersim.ui.SectorScreen.showSectorMenu
+    0.8%  ham.citybuildersim.ui.ServicesScreen.showServicesStatsMenu
+    1.1%  ham.citybuildersim.ui.TradeScreen.showForeignMenu
+top ham frames (self within our code):
+    4.5%  ham.citybuildersim.BuildingManager.totalBySector
+    3.7%  ham.citybuildersim.ui.UserInterface.lambda$clearMenu$8
+    3.4%  ham.citybuildersim.ui.UserInterface.lambda$restoreScroll$13
+    2.4%  ham.citybuildersim.Household.recountBonds
+    1.8%  ham.citybuildersim.CityMap.stampOf
+    1.8%  ham.citybuildersim.LandGrid.ownedRec
+    1.2%  ham.citybuildersim.ui.UserInterface.railButton
+    1.1%  ham.citybuildersim.Household.bondFace
+    1.0%  ham.citybuildersim.BuildingManager.getPostsWithheld
+    0.9%  ham.citybuildersim.HistorySave.raw
+    0.8%  ham.citybuildersim.ui.UserInterface.refreshHeader
+    0.8%  ham.citybuildersim.HouseholdBalance.cellByKey
+    0.7%  ham.citybuildersim.BondMarket.strikeCoupons
+    0.7%  ham.citybuildersim.ui.UserInterface.clearMenu
+
+model month mean by stretch (ms):
+  0-500: 8.3
+  500-1000: 6.5
+  1000-1500: 11.3
+  1500-2000: 10.2
+  2000-2500: 11.5
+  2500-3000: 13.3
+  3000-3500: 13.8
+  3500-4000: 17.8
+  4000-4484: 12.2

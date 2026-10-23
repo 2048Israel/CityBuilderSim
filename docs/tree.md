@@ -568,8 +568,11 @@ adds its line here, not in `CLAUDE.md`.
                                    arithmetic), and CapChips.java (0.8.17, batch CD2: the highest yield a
                                    sale takes as three chips and a yield box - fair plus a point, a yield
                                    named, or Fill it - one for each cap: Borrow's, the rollover's,
-                                   automatic building's and the build screen's funding card's). The model
-                                   never imports it.
+                                   automatic building's and the build screen's funding card's), and
+                                   UiProbe.java (0.8.25, batch UP1: the window's probe - each rail screen's
+                                   build and layout, the clock at 50x, the FX thread's shares under JFR, on
+                                   the playtest's city grown to the months it is given; a main() run by hand
+                                   on the PC, not in AllChecks). The model never imports it.
         *Check.java                127 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
@@ -582,6 +585,12 @@ adds its line here, not in `CLAUDE.md`.
                                    when the JVM exits, and the next JVM's first call sweeping the folders
                                    of processes that are gone; in place of Files.createTempDirectory,
                                    whose folders nothing deleted (37 GB of the PC's disk)
+        SaveWriter.java            the one thread saves are written on (batch UP1, 0.8.25): the autosave is
+                                   filled on the FX thread and its snapshot written behind the months, one
+                                   file at a time, a newer job replacing the one waiting; a load, a numbered
+                                   save, a skip and Quit wait for it; at most one autosave in 30 s of real
+                                   time (FLOOR_SECONDS). SaveCopy.java beside it: the lists and maps the
+                                   save's setters copy, so the save holds no live object. SaveSlotCheck 7c
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103);
                                    since 0.7.139 it says what childcare it stands at m1,000 to m4,000, and
