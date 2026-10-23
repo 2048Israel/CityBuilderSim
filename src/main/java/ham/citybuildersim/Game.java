@@ -8550,6 +8550,23 @@ public class Game {
         return bondQuote(amount, Math.ceil(amount / granule) * granule, duration, before, cap, callable);
     }
 
+    /**
+     * What the call adds to a callable sale's yield (CD4, spec-city-debt.md
+     * section 2.6): the price of the option on the tree, which runAuction()
+     * puts on the fair yield of the same bullet without it - read off the
+     * quote's own auction as that fair less the non-call fair on the curve the
+     * issue stands on, so the Borrow page's "the call adds 34 bp to the
+     * coupon" is the sale's own figure and not a second tree. Nothing (0) for
+     * a quote of paper that cannot be called, or that has no auction.
+     */
+    public double callSpread(DebtQuote quote) {
+        if (quote == null || !quote.callable() || quote.auction() == null) return 0;
+        Auction.Ask ask = quote.auction().ask();
+        priceTheDebtMarket();
+        YieldCurve curve = debtManager.quoteCurve(Math.max(0, ask.face()));
+        return Math.max(0, ask.fair() - DebtManager.fairYieldOn(curve, ask.kind(), ask.months()));
+    }
+
     /** The bond's quote at a face: the benchmark line it reopens, or the new line it opens, and what the auction made of it. */
     private DebtQuote bondQuote(double requested, double face, int years, double before, Auction.Cap cap) {
         return bondQuote(requested, face, years, before, cap, false);
@@ -15121,8 +15138,8 @@ public class Game {
         return quoteBuyback(debt, buybackOfferable(debt), Double.NaN).gainOnCarrying();
     }
 
-    /** The face of a piece its holders can offer: the principal less the central bank's, which does not sell (D18); a dollar piece's all of it, the world's alone (D26). */
-    private double buybackOfferable(Debt debt) {
+    /** The face of a piece its holders can offer: the principal less the central bank's, which does not sell (D18); a dollar piece's all of it, the world's alone (D26). The Close it now page's default face. */
+    public double buybackOfferable(Debt debt) {
         if (debt == null) return 0;
         double principal = debt.getOustandingPrincipal();
         return debt.isForeign() ? principal : Math.max(0, principal - debt.centralBankPrincipal());

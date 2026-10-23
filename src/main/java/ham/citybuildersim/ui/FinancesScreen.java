@@ -85,8 +85,9 @@ final class FinancesScreen {
          THE POSITION   can the city carry it, and does the market mind?
                         Overview, Debt service, Home & abroad, Your rate.
          THE BOOK       what is each piece, and what would it cost to retire?
-                        One page: a card a piece, Buy back on each.
-         BORROW         what would this paper cost, and what would it do to
+                        One page: a card a piece, Close it now on each (CD4),
+                        which opens a page of its own for the piece.
+         BORROW        what would this paper cost, and what would it do to
                         the ladder? At home, Abroad.
          MONEY          who made the money, and how much is there (0.7.0)?
          THE BOND       who borrows on the market, and who lends to them
@@ -114,8 +115,14 @@ final class FinancesScreen {
     static final String[] POSITION_PAGES = {"Overview", "Debt service", "Home & abroad", "Your rate"};
     /** ...and their icons on the chips. */
     static final String[] POSITION_ICONS = {Icons.OVERVIEW, Icons.COIN, Icons.TRADE, Icons.POLICY};
-    /** The book is one page since 0.7.32: Buy back is on each piece's card. */
+    /**
+     * The book is one page since 0.7.32, and Close it now is on each piece's
+     * card (CD4: it was Buy back). The piece's own page, CLOSE_PAGE, is no
+     * chip's: it is open while its piece is on the books (closeOpen()).
+     */
     static final String[] BOOK_PAGES   = {"Every piece"};
+    /** The page Close it now opens on, under The book (CD4): one piece's reverse auction, its ticket, its ladder and its call. */
+    static final String CLOSE_PAGE     = "Close it now";
     /** Borrow's two pages: the city's own paper at home, and dollars from the world. */
     static final String[] BORROW_PAGES = {"At home", "Abroad"};
     /** ...and their icons on the chips. */
@@ -255,6 +262,15 @@ final class FinancesScreen {
     double borrowAsk = 0;
     boolean borrowHold = false;
     /**
+     * Whether the bond is asked callable (CD4, spec-city-debt.md 2.6): off by
+     * default, kept through the clock's redraw like borrowAsk, and in force
+     * only where it can be - a home bond of ten years or more
+     * (callableAsked()).
+     */
+    boolean borrowCallable = false;
+    /** What a callable quote says of its call (CD4), struck once a redraw by borrowPage(): "from Jan 2216 · the call adds 34 bp to the coupon"; null for paper that cannot be called. */
+    private String callWords;
+    /**
      * The highest yield the sale will take (CD2, spec-city-debt.md 4.1): fair plus a point
      * by default, a yield the player names, or Fill it. Kept through the clock's
      * redraw like borrowAsk; the quote runs at it and the button books at it.
@@ -272,6 +288,14 @@ final class FinancesScreen {
     /** The ask's box, and whether it had the focus when the page was last redrawn - a month landing rebuilds it under the typing (FundScreen's search box). */
     private javafx.scene.control.TextField askField;
     private boolean askTyping;
+
+    /** The piece the Close it now page is on (CD4), by identity: the page is open while it is on the books. */
+    private Debt closing;
+    /** What is typed in the Close it now page's two boxes and not yet drawn on (CD4), kept through a month's redraw: the face to buy back, and the most to pay per 100. Empty reads as everything on offer, and no limit. */
+    private String closeFaceText = "", closeMaxText = "";
+    /** The two boxes, and which had the focus when the page was last redrawn (0 neither, 1 the face, 2 the most to pay) - a month landing rebuilds them under the typing. */
+    private javafx.scene.control.TextField closeFaceField, closeMaxField;
+    private int closeTyping;
 
     /**
      * What is standing open - a "details" fold, by key. Kept on the screen
@@ -321,6 +345,11 @@ final class FinancesScreen {
         fundScreen.here = ui.isShowing("showFinanceMenu");
         // ...and whether the player was typing an ask, so the new box takes the focus back (0.7.40).
         askTyping = askField != null && askField.isFocused();
+        // ...and in the Close it now page's boxes (CD4).
+        closeTyping = closeFaceField != null && closeFaceField.isFocused() ? 1
+                : closeMaxField != null && closeMaxField.isFocused() ? 2 : 0;
+        closeFaceField = null;
+        closeMaxField = null;
         borrowChips.noteFocus();
         rolloverChips.noteFocus();
         ui.clearMenu("showFinanceMenu", () -> showFinanceMenu());
@@ -341,6 +370,8 @@ final class FinancesScreen {
         String[] pages = pagesOf(financeArea);
         boolean onPage = false;
         for (String p : pages) if (p.equals(financePage)) onPage = true;
+        // Close it now is no chip's (CD4): it stays open while its piece is on the books, and falls back to The book's page when it is gone.
+        if (closeOpen()) onPage = true;
         if (!onPage && pages.length > 0) financePage = pages[0];
 
         List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
@@ -351,7 +382,10 @@ final class FinancesScreen {
             hubPage(page, all);
         } else {
             switch (financeArea) {
-                case "The book" -> bookPage(page);
+                case "The book" -> {
+                    if (closeOpen()) closePage(page);
+                    else             bookPage(page);
+                }
                 case "Borrow"   -> borrowPage(page, "Abroad".equals(financePage));
                 case "Money"    -> moneyPage(page);
                 case "The bond market" -> {
@@ -444,7 +478,7 @@ final class FinancesScreen {
     static final String[] AREA_INFO = {
         "What the city holds, what it owes, and why the rate is the rate: the balance and the credit band, what "
                 + "the paper costs against the take, who holds it, and the rate taken apart.",
-        "Every piece of paper, and what each would cost to retire - Buy back is on each piece's card.",
+        "Every piece of paper, and what each would cost to retire - Close it now is on each piece's card.",
         "Bills, bonds and amortizing bonds sold at auction at home, bills and bonds in dollars abroad - the "
                 + "auction run on the city as it stands on every click, and the ladder it would build.",
         "The central bank's books, and how much money the city has.",
@@ -2276,6 +2310,13 @@ final class FinancesScreen {
        rate while Game.repurchaseDebt() charged the world's curve, and
        painted a price under par green under a sentence saying it was "not
        the bargain it looks like" (the spec's B6): the price is plain now.
+
+       SINCE CD4 BUY BACK IS CLOSE IT NOW, and worth today is the floor of
+       what closing costs, not the cost: a buyback is a reverse auction that
+       pays each holder what its own rule asks, never under fair
+       (Game.fairValueOf()). The card's button opens the piece's own page
+       (CLOSE IT NOW, below); its foot reads the whole line's quote
+       (Game.quoteBuyback()) for the gain and for whether the cash is there.
        ===================================================================== */
 
     /** The book's (i): the spec's T32 and T34. */
@@ -2312,6 +2353,17 @@ final class FinancesScreen {
             + "rates have risen. Over its face, a premium: this piece pays more than the city could borrow at today. "
             + "The gain or loss the books show is against what the piece is carried at, which is not its face while "
             + "a discount is still wearing off.";
+
+    /** A callable line's (i) on its card (CD4, spec-city-debt.md 2.6 and 6.4). */
+    static final String CALLABLE_INFO = "The city sold this line with the right to call it: from its first call date "
+            + "it can pay every holder 100 for each 100 of face, whole, and be done with it. The coupon was set "
+            + "higher at the sale to pay for that right. Close it now has the call.";
+
+    /** "Worth calling"'s (i) (D24). */
+    static final String WORTH_CALLING_INFO = "The present value the call would save: what this line's remaining payments "
+            + "are worth today, as a bond that cannot be called, less the 100 the call pays and less what selling the "
+            + "paper again costs. It is worth calling when that passes " + pc(CallTree.WORTH_CALLING) + " of the face, the "
+            + "rule municipal refunding goes by. Whether it can be called yet is the call date's.";
 
     void bookPage(VBox page) {
         Game g = ui.game;
@@ -2416,48 +2468,65 @@ final class FinancesScreen {
         Node booksLine = infoLine("carried " + d(debt.getCarryingValue()) + " · effective " + pct2(debt.getEffectiveRate()),
                 CARRIED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
 
-        Node holders;
-        if (debt.isForeign()) {
-            holders = muted("held abroad");
-        } else {
-            double p = debt.getOustandingPrincipal();
-            holders = segmentBar(List.of(
-                    seg(debt.householdPrincipal(), Palette.PEOPLE, "households " + d(debt.householdPrincipal())),
-                    seg(debt.bankPrincipal(), Palette.MONEY, "the bank " + d(debt.bankPrincipal())),
-                    seg(debt.centralBankPrincipal(), Palette.MONEY_DARK, "the central bank " + d(debt.centralBankPrincipal())),
-                    seg(debt.firmPrincipal(), Palette.BUSINESS_DARK, "the businesses " + d(debt.firmPrincipal())),
-                    seg(debt.worldPrincipal(), Palette.BUILDING_DARK, "the world " + d(debt.worldPrincipal()))),
-                    p > 0 ? p : 1, null, 0, 6);
+        Node holders = holdersBar(debt);
+
+        // A line that can be called (CD4): from when, and whether calling it would pay.
+        Node callableNote = null, worthCallingLine = null;
+        if (debt instanceof LongTermBond bond && bond.isCallable()) {
+            callableNote = infoLine("callable at " + String.format("%.0f", CallTree.CALL_PRICE) + " from "
+                            + CityCalendar.formatShort(bond.getFirstCallMonth())
+                            + (g.canCall(debt) ? " · callable now" : ""),
+                    CALLABLE_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
+            if (g.worthCalling(debt)) {
+                worthCallingLine = infoLine("Worth calling: saves " + d(g.callSaving(debt)),
+                        WORTH_CALLING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
+            }
         }
 
-        double worth = ledger.marketValue(debt);
+        // What the piece is worth today is the FLOOR of what it costs (fairValueOf()); what closing it costs is the
+        // reverse auction's price for everything its holders offer (CD4), which a holder never sells under fair.
+        double worth = g.fairValueOf(debt);
         double under = ledger.underFace(debt);
         String price = String.format("worth today %s · %.1f of par · yields %s", d(worth),
                 ledger.priceOfPar(debt), pct2(ledger.yieldOf(debt)));
         String against = Math.abs(under) < .5 ? "at its face" : under > 0 ? d(under) + " under face" : "a premium of " + d(-under);
-        // The gain the books would show (Game.repurchaseGain(): what the piece is carried at less the price).
-        double gain = g.repurchaseGain(debt);
-        String gainWords = Math.abs(gain) < .5 ? "no gain or loss against what it is carried at"
+        // The whole line's quote: the gain the books would show and the price (Buyback.Result).
+        Buyback.Result whole = g.quoteBuyback(debt, g.buybackOfferable(debt), Double.NaN);
+        double gain = whole.gainOnCarrying();
+        String gainWords = whole.takenFace() <= 0 ? "nothing: no holder offers any of it"
+                : Math.abs(gain) < .5 ? "no gain or loss against what it is carried at"
                 : (gain > 0 ? "a gain of " : "a loss of ") + d(Math.abs(gain)) + " against what it is carried at";
-        boolean affordable = worth > 0 && worth <= g.getCash();
-        Button buy = new Button(affordable ? "Buy back" : "Too dear");
+        // The old test, worth <= cash, is wrong now: the auction pays at or over fair. The page's button reads the same price.
+        boolean affordable = whole.takenFace() > 0 && whole.paid() > 0 && whole.paid() <= g.getCash();
+        Button buy = new Button("Close it now");
         buy.setMinWidth(Region.USE_PREF_SIZE);
-        buy.setDisable(!affordable);
         if (affordable) buy.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
-        buy.setOnAction(e -> {
-            ui.game.repurchaseDebt(debt);
-            // A freshly built page: retiring paper moves the rate, so every other card's price is now stale.
-            open("The book", null, null);
-        });
+        else buy.setTooltip(new Tooltip(whole.takenFace() <= 0
+                ? "Nothing is on offer now: the central bank does not sell (D18), and a piece sold lately can only be bought back whole."
+                : "Closing all of it costs " + d(whole.paid()) + "; the treasury has " + d(g.getCash()) + ". The page can close part of it."));
+        buy.setOnAction(e -> openClose(debt));
         Region g3 = new Region();
         HBox.setHgrow(g3, Priority.ALWAYS);
         VBox says = new VBox(2, words(price, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
                 infoLine("clears " + d(debt.getOustandingPrincipal()) + " for " + d(worth) + " · " + against,
                         PREMIUM_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_MUTED, 420),
-                muted("buying it back books " + gainWords));
+                muted("closing all of it now books " + gainWords));
         HBox foot = new HBox(Palette.GAP, says, g3, buy);
         foot.setAlignment(Pos.CENTER_LEFT);
-        return card(head, face, lifeBar, ends, couponLine, booksLine, holders, foot);
+        return card(head, face, lifeBar, ends, couponLine, booksLine, callableNote, worthCallingLine, holders, foot);
+    }
+
+    /** Who holds a piece, one bar (the card's, and the Close it now page's): the households, the bank, the central bank, the businesses and the world; "held abroad" for a dollar piece. */
+    Node holdersBar(Debt debt) {
+        if (debt.isForeign()) return muted("held abroad");
+        double p = debt.getOustandingPrincipal();
+        return segmentBar(List.of(
+                seg(debt.householdPrincipal(), Palette.PEOPLE, "households " + d(debt.householdPrincipal())),
+                seg(debt.bankPrincipal(), Palette.MONEY, "the bank " + d(debt.bankPrincipal())),
+                seg(debt.centralBankPrincipal(), Palette.MONEY_DARK, "the central bank " + d(debt.centralBankPrincipal())),
+                seg(debt.firmPrincipal(), Palette.BUSINESS_DARK, "the businesses " + d(debt.firmPrincipal())),
+                seg(debt.worldPrincipal(), Palette.BUILDING_DARK, "the world " + d(debt.worldPrincipal()))),
+                p > 0 ? p : 1, null, 0, 6);
     }
 
     /** The book as the old page's table, in the fold: kind, owed (face), carried and effective rate (CD3), coupon a month, when it matures, how far off. */
@@ -2486,6 +2555,582 @@ final class FinancesScreen {
         return column(t, statementTotal("On the book altogether", dFull(ledger.getAllPrincipal()), Palette.TEXT_HEAD),
                 statementLine("Carried on the books", dFull(ledger.getCarryingValue())),
                 statementLine("Coupon a month", dFull(ledger.getMonthlyCoupon())));
+    }
+
+    /* =====================================================================
+       CLOSE IT NOW (CD4, 2026-10-23)
+
+       WHAT IT WAS: a button on each piece's card, "Buy back", that paid the
+       piece's whole worth in one press - one price, no say in how much and
+       none in what to pay, and a gain figured against the face.
+
+       WHAT IT IS (spec-city-debt.md 6.2 to 6.4, board 3; D31, each CD batch
+       ships with its own screen): the card's button opens a page of its own
+       for the piece, as The book and Borrow are pages.
+
+         THE TICKET   the face to buy back (everything on offer when the box
+                      is empty) and the most to pay per 100 (no limit when
+                      it is empty), and under them what the reverse auction
+                      makes of it: offered and its cover, taken from each
+                      holder, the stop and the average, fair, the price, and
+                      the button. Game.quoteBuyback() is the quote and
+                      Game.buyBack() the booking, struck on the same city.
+         THE OFFERS   a row a slice, the cheapest first, a colour a holder;
+                      what the ticket takes filled, the rest outlined as the
+                      ghost segments are; the stop and the most to pay drawn.
+         THE THREE    against carrying value (the one the books keep),
+         COMPARISONS  against face (what the debt-to-GDP measure sees) and
+                      over fair (what the auction cost), and the journal.
+         THE HONEST   what it stops a month of coupon and what the price
+         LINE         borrowed again would cost a month.
+         THE CALL     a callable line only: from when, what it costs, the
+                      gain or loss against carrying value, what it saves, and
+                      Call it (Game.callLine()).
+
+       Every figure is the model's (Buyback.Result, Game.fairValueOf(),
+       callCost(), callSaving(), worthCalling(), DebtManager.curveRate()); the
+       page prices nothing. The sums it does are the spec's own: a coupon
+       scaled to the face taken, a price times a rate over twelve, the
+       carrying value less the face. No colour on a gain or a loss (the
+       0.7.32 spec's B6). The two boxes keep their typing through a month's
+       redraw as the ask's does (askBox()).
+       ===================================================================== */
+
+    /** THE TICKET's (i): the spec's 6.2. */
+    static final String CLOSE_INFO = "Closing a piece early is a reverse auction, not one price. Name the face you want "
+            + "back and, if you like, the most you will pay for each 100 of it. Every holder but the central bank offers "
+            + "what it holds in slices, each at the price where its own buying rule would stop wanting it - never under "
+            + "what the piece is worth today. You take the cheapest offers first, up to the face, skipping any dearer "
+            + "than your limit, and pay each its own price. The stop is the dearest offer taken; the average is what you "
+            + "paid over the face. The central bank's holdings follow its own dial and are not for sale (D18). It is "
+            + "paid in cash: the treasury does not borrow to buy its own paper back.";
+
+    /** THE OFFERS' (i). */
+    static final String OFFERS_INFO = "Each bar is one slice a holder offers: its length is the slice's face, the number "
+            + "at the left its price for each 100 of face. Filled is what your ticket takes; outlined is offered and "
+            + "left. Fair is what the piece is worth today, and nobody offers under it. The stop is the dearest offer "
+            + "taken; the most to pay is your limit, and nothing over it is taken.";
+
+    /** THE THREE COMPARISONS' (i): the spec's 6.3. */
+    static final String COMPARE_INFO = "One buyback, read three ways. Against carrying value is the figure the books keep, "
+            + "the statement's Gain (loss) on debt retired: what the face taken is carried at, less what it cost. Against "
+            + "face is what the debt-to-GDP measure sees: the face that comes off, less the cash that goes. Over fair is "
+            + "what the auction cost: what you paid over what the same face is worth today. The journal is the entry the "
+            + "first of them books. A buyback at fair moves nothing in present value; it changes when the city pays and "
+            + "what its measures say.";
+
+    /** THE CALL's (i): the spec's 6.4 and D22 to D24. */
+    static final String CALL_INFO = "From its first call date the city can pay every holder 100 for each 100 of face, "
+            + "whole, and close the line - the right it paid for in the coupon when it sold it. The cash goes at once to "
+            + "every holder, the central bank's too. The gain or loss is the line's carrying value less the face. It is "
+            + "worth calling when the present value it saves passes " + pc(CallTree.WORTH_CALLING) + " of the face.";
+
+    /** The colour a holder has on the Close it now page: the same as on the card's holders bar. */
+    static String holderColour(Buyback.Holder holder) {
+        return switch (holder) {
+            case HOUSEHOLDS -> Palette.PEOPLE;
+            case BANK       -> Palette.MONEY;
+            case FIRMS      -> Palette.BUSINESS_DARK;
+            case WORLD      -> Palette.BUILDING_DARK;
+        };
+    }
+
+    /** ...and its name. */
+    static String holderName(Buyback.Holder holder) {
+        return switch (holder) {
+            case HOUSEHOLDS -> "households";
+            case BANK       -> "the bank";
+            case FIRMS      -> "the businesses";
+            case WORLD      -> "the world";
+        };
+    }
+
+    /** A most-to-pay typed: dollars for each 100 of face, "98.5" (a comma may stand for the point); NaN when it is not a number above nothing and under a thousand. Pure. */
+    static double perHundredFromWords(String typed) {
+        if (typed == null || typed.isBlank()) return Double.NaN;
+        try {
+            double v = Double.parseDouble(typed.trim().replace(',', '.'));
+            return v > 0 && v < 1000 ? v : Double.NaN;
+        } catch (NumberFormatException e) {
+            return Double.NaN;
+        }
+    }
+
+    /** A term of this many months in words, as the honest line names the rate: "6-month", "10-year", "7.5-year". Pure. */
+    static String termWords(int months) {
+        if (months < 24) return Math.max(1, months) + "-month";
+        return (months % 12 == 0 ? String.valueOf(months / 12) : String.format("%.1f", months / 12.0)) + "-year";
+    }
+
+    /** True while the Close it now page is open on a piece that is still on the books. */
+    boolean closeOpen() {
+        return "The book".equals(financeArea) && CLOSE_PAGE.equals(financePage) && closing != null
+                && ui.game.getDebtManager().getDebt().contains(closing);
+    }
+
+    /** The card's Close it now: the page opened on this piece, its boxes empty (everything on offer, no limit). */
+    void openClose(Debt debt) {
+        closing = debt;
+        closeFaceText = "";
+        closeMaxText = "";
+        open("The book", CLOSE_PAGE, null);
+    }
+
+    /** One of the two boxes set to this, or emptied, and the page drawn on it. */
+    private void setCloseBox(int which, String text) {
+        if (which == 1) closeFaceText = text;
+        else            closeMaxText = text;
+        closeFaceField = null;
+        closeMaxField = null;
+        showFinanceMenu();
+    }
+
+    /**
+     * One of the Close it now page's boxes (1 the face, 2 the most to pay):
+     * the house's search box, its text kept on the screen as it is typed so a
+     * month's redraw puts it back, and the focus with it. Enter draws the
+     * page on what is typed; so does leaving the box, once the leaving is
+     * over (UserInterface.redrawSoon()), if the text changed.
+     */
+    private javafx.scene.control.TextField closeBox(int which, String prompt) {
+        String shown = which == 1 ? closeFaceText : closeMaxText;
+        javafx.scene.control.TextField box = searchBox(shown, prompt, 260, typed -> {
+            if (which == 1) closeFaceText = typed;
+            else            closeMaxText = typed;
+        }, null);
+        box.setOnAction(e -> showFinanceMenu());
+        box.focusedProperty().addListener((o, was, now) -> {
+            if (now) return;
+            javafx.application.Platform.runLater(() -> {
+                if (box.getScene() != null && !box.isFocused() && !(box.getText() == null ? "" : box.getText()).equals(shown)) {
+                    ui.redrawSoon();
+                }
+            });
+        });
+        if (closeTyping == which) {
+            closeTyping = 0;
+            javafx.application.Platform.runLater(() -> {
+                box.requestFocus();
+                box.positionCaret(box.getText().length());
+            });
+        }
+        if (which == 1) closeFaceField = box;
+        else            closeMaxField = box;
+        return box;
+    }
+
+    /** A face as a box takes it back: whole dollars with commas ("1,250,000,000"), so a chip that fills the box says it exactly. */
+    static String boxAmount(double thousands) {
+        return String.format("%,.0f", Money.toDollars(thousands));
+    }
+
+    /**
+     * Why a ticket takes nothing, in a sentence (null when it takes something):
+     * nothing on offer, nothing asked, a sale not yet settled that can only go
+     * whole, or a limit under the cheapest offer.
+     */
+    String closeWhyNot(Buyback.Result q, Debt debt, double offerable, double asked, double typedMax) {
+        if (q.takenFace() > 0) return null;
+        if (!(offerable > 0)) {
+            return "The central bank holds all of this piece and does not sell (D18): there is nothing to buy back.";
+        }
+        if (!(asked > 0)) return "Nothing is asked for: type a face, or clear the box for everything on offer.";
+        if (q.ladder().isEmpty()) {
+            if (debt.unsettledFace() > 0 || debt.getSettleDue() > 0) {
+                return "This piece was sold lately and its buyers have not paid for it yet, so it can be bought back "
+                        + "whole or not at all" + (debt.centralBankPrincipal() > 0
+                        ? ", and the central bank holds part of it, which does not sell (D18)."
+                        : ": ask for everything on offer.");
+            }
+            return "No holder offers any of it.";
+        }
+        if (!Double.isNaN(typedMax)) {
+            return String.format("No holder offers anything at or under %.3f for each 100: the cheapest offer is %.3f. "
+                    + "Raise the most to pay, or clear it.", typedMax, q.ladder().get(0).per100());
+        }
+        return "Nothing is taken.";
+    }
+
+    /** The Close it now page (CD4): one piece's ticket, its offers, the three comparisons and the journal, the honest line and, on a callable line, the call. */
+    void closePage(VBox page) {
+        Game g = ui.game;
+        DebtManager ledger = g.getDebtManager();
+        Debt debt = closing;
+        int month = g.getMonth();
+        int due = debt.getMaturityMonth();
+        double principal = debt.getOustandingPrincipal();
+        double offerable = g.buybackOfferable(debt);
+        double cash = g.getCash();
+
+        // The ticket as typed: an empty box is everything on offer, and no limit; one that cannot be read is said, and read as empty.
+        double typedFace = closeFaceText.isBlank() ? Double.NaN : askFromWords(closeFaceText);
+        boolean faceUnread = !closeFaceText.isBlank() && Double.isNaN(typedFace);
+        final double face = Double.isNaN(typedFace) ? offerable : typedFace;
+        double maxRead = closeMaxText.isBlank() ? Double.NaN : perHundredFromWords(closeMaxText);
+        boolean maxUnread = !closeMaxText.isBlank() && Double.isNaN(maxRead);
+        final double typedMax = maxRead;
+        Buyback.Result q = g.quoteBuyback(debt, face, typedMax);
+        double asked = Math.min(Math.max(0, face), offerable);
+        boolean taken = q.takenFace() > 0 && q.paid() > 0;
+
+        // ----- the piece -----
+        String colour = instrumentColour(debt.getType());
+        Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
+        name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox head = new HBox(Palette.GAP, tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), colour), name, gap,
+                figure(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due), Palette.SIZE_LABEL + 1,
+                        urgency(due - month)));
+        head.setAlignment(Pos.CENTER_LEFT);
+        double coupon = debt.getMonthlyInterestExpense();
+        Node facts = muted(String.format("%s owed · %s carried · %s · worth today %s · %.3f for each 100", d(principal),
+                d(debt.getCarryingValue()), coupon >= .5 ? d(coupon) + " a month of coupon" : "no coupon",
+                d(g.fairValueOf(debt)), ledger.priceOfPar(debt)));
+        Node held = holdersBar(debt);
+        Node central = debt.isForeign()
+                ? muted("Dollar paper: the world holds all of it, and offers every slice at fair (D26).")
+                : debt.centralBankPrincipal() > 0
+                ? muted("The central bank holds " + d(debt.centralBankPrincipal()) + " of it and does not sell (D18): "
+                        + d(offerable) + " is on offer.")
+                : null;
+        page.getChildren().add(card(backDoor("The book", () -> open("The book", null, closing)), head, facts, held, central));
+
+        // ----- the ticket -----
+        VBox ticket = card(caption("THE TICKET", CLOSE_INFO, hint("a reverse auction, struck on the city as it stands")));
+        ticket.getChildren().add(caption("HOW MUCH FACE TO BUY BACK", null));
+        javafx.scene.layout.FlowPane faceChips = new javafx.scene.layout.FlowPane(6, 6);
+        faceChips.getChildren().addAll(
+                stepChip("everything on offer", () -> setCloseBox(1, ""), true),
+                stepChip("half", () -> setCloseBox(1, boxAmount(offerable / 2)), false),
+                stepChip("a tenth", () -> setCloseBox(1, boxAmount(offerable / 10)), false));
+        HBox faceRow = new HBox(Palette.GAP, closeBox(1, "everything on offer: " + d(offerable)),
+                words("Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        faceRow.setAlignment(Pos.CENTER_LEFT);
+        ticket.getChildren().addAll(faceRow, faceChips);
+        // The default, in words: everything on offer is the principal less the central bank's face, which does not sell (D18).
+        ticket.getChildren().add(muted(debt.isForeign()
+                ? "Everything on offer is " + d(offerable) + ": dollar paper is the world's alone (D26)."
+                : "Everything on offer is " + d(offerable) + ": the principal less the central bank's face - the central bank does not sell (D18)."));
+        if (faceUnread) {
+            ticket.getChildren().add(words("“" + closeFaceText.trim() + "” is not an amount: digits, then k, M, B or T - "
+                    + "500M, 2.5B, 12,000,000. Everything on offer is asked for instead.", Palette.SIZE_LABEL, Palette.BAD));
+        } else if (!Double.isNaN(typedFace) && typedFace > offerable + .5) {
+            ticket.getChildren().add(muted("Only " + d(offerable) + " is on offer; that is what the ticket asks for."));
+        }
+        ticket.getChildren().add(caption("THE MOST TO PAY, FOR EACH 100 OF FACE", null));
+        javafx.scene.layout.FlowPane maxChips = new javafx.scene.layout.FlowPane(6, 6);
+        maxChips.getChildren().add(stepChip("no limit", () -> setCloseBox(2, ""), true));
+        HBox maxRow = new HBox(Palette.GAP, closeBox(2, "no limit · type 98.5"),
+                words("Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        maxRow.setAlignment(Pos.CENTER_LEFT);
+        ticket.getChildren().addAll(maxRow, maxChips);
+        if (maxUnread) {
+            ticket.getChildren().add(words("“" + closeMaxText.trim() + "” is not a price: dollars for each 100 of face, "
+                    + "98.5. There is no limit instead.", Palette.SIZE_LABEL, Palette.BAD));
+        }
+
+        VBox result = new VBox(6);
+        result.getChildren().add(caption("WHAT IT BUYS", null));
+        result.getChildren().add(cardLine("Offered by the holders", d(q.offeredFace())
+                + (asked > 0 && q.offeredFace() > 0 ? String.format(" · %.2f× the face asked", q.cover()) : ""),
+                q.offeredFace() > 0 ? null : Palette.TEXT_MUTED));
+        for (Buyback.Holder h : Buyback.Holder.values()) {
+            double hf = switch (h) {
+                case BANK -> q.bankFace();
+                case HOUSEHOLDS -> q.householdFace();
+                case FIRMS -> q.firmFace();
+                case WORLD -> q.worldFace();
+            };
+            double hp = switch (h) {
+                case BANK -> q.bankPaid();
+                case HOUSEHOLDS -> q.householdPaid();
+                case FIRMS -> q.firmPaid();
+                case WORLD -> q.worldPaid();
+            };
+            if (hf > 0) result.getChildren().add(takenLine(holderName(h), holderColour(h), hf, hp));
+        }
+        if (taken) {
+            result.getChildren().add(cardLine("The stop · the average, for each 100",
+                    String.format("%.3f · %.3f", q.stopPer100(), q.averagePer100()), null));
+        }
+        if (q.fairPer100() > 0) result.getChildren().add(cardLine("Fair, for each 100", String.format("%.3f", q.fairPer100()), null));
+        result.getChildren().add(cardLine("The price", taken ? d(q.paid()) : "nothing", taken ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
+        result.getChildren().add(cardLine("In the treasury", d(cash), null));
+
+        String why = closeWhyNot(q, debt, offerable, asked, typedMax);
+        boolean afford = q.paid() <= cash;
+        Button buy = new Button(taken ? "Buy back " + d(q.takenFace()) + " · pay " + d(q.paid()) : "Buy back");
+        buy.setMinWidth(Region.USE_PREF_SIZE);
+        buy.setDisable(!taken || !afford);
+        if (taken && afford) buy.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
+        buy.setOnAction(e -> {
+            ui.game.buyBack(debt, face, typedMax);
+            // A freshly built page: retiring paper moves the rate, so every other card's price is now stale.
+            open("The book", null, debt);
+        });
+        ticket.getChildren().add(result);
+        if (why != null) {
+            ticket.getChildren().add(words(why, Palette.SIZE_LABEL, Palette.BAD_SOFT));
+        } else if (!afford) {
+            ticket.getChildren().add(words("The treasury has " + d(cash) + "; this costs " + d(q.paid())
+                    + ". A buyback is paid in cash, never by borrowing: ask for less, or limit the price.",
+                    Palette.SIZE_LABEL, Palette.BAD_SOFT));
+        }
+        ticket.getChildren().add(buy);
+        page.getChildren().add(ticket);
+
+        // ----- the offers -----
+        VBox offers = card(caption("THE OFFERS", OFFERS_INFO, hint("cheapest first, a bar a slice")));
+        if (q.ladder().isEmpty()) {
+            offers.getChildren().add(muted("No offers to draw: the ticket takes none."));
+        } else {
+            offers.getChildren().add(new BuybackLadder(q, typedMax, this::d));
+            offers.getChildren().add(keyRow(swatch(holderColour(Buyback.Holder.BANK), "the bank", false),
+                    swatch(holderColour(Buyback.Holder.HOUSEHOLDS), "households", false),
+                    swatch(holderColour(Buyback.Holder.FIRMS), "the businesses", false),
+                    swatch(holderColour(Buyback.Holder.WORLD), "the world", false),
+                    swatch(Palette.TEXT_MUTED, "offered and not taken, outlined", true)));
+        }
+        page.getChildren().add(offers);
+
+        // ----- the three comparisons, and the journal -----
+        if (taken) {
+            VBox compare = card(caption("THE THREE COMPARISONS", COMPARE_INFO),
+                    cardLine("Against carrying value · the statement's Gain (loss) on debt retired", signedD(q.gainOnCarrying()), null),
+                    cardLine("Against face · what the debt-to-GDP measure sees", signedD(q.gainOnFace()), null),
+                    cardLine("Over fair · what the auction cost", d(q.overFair()), null));
+            double sideways = q.carriedTaken() - q.takenFace();
+            double gain = q.gainOnCarrying();
+            VBox journal = card(caption("THE JOURNAL", null, hint("what the first of them books")),
+                    cardLine("Dr  City paper payable", d(q.takenFace()), null),
+                    sideways > .5 ? cardLine("Dr  Unamortised premium", d(sideways), null)
+                                  : cardLine("Cr  Unamortised discount", d(Math.max(0, -sideways)), null),
+                    cardLine("Cr  Cash", d(q.paid()), null),
+                    gain >= 0 ? cardLine("Cr  Gain on debt retired", d(gain), null)
+                              : cardLine("Dr  Loss on debt retired", d(-gain), null));
+            page.getChildren().add(pair(compare, journal));
+
+            // ----- the honest line -----
+            int left = Math.max(1, debt.getRemainingMonths());
+            double rate = debt.isForeign() ? ledger.foreignCurveRate(left) : ledger.curveRate(left);
+            double stopped = coupon * (principal > 0 ? q.takenFace() / principal : 0);
+            double again = q.paid() * rate / 12;
+            String stops = stopped >= .5 ? "It stops " + d(stopped) + " a month of coupon; "
+                    : "It has no coupon to stop - a bill's interest is the discount wearing off; ";
+            String honest = stops + d(q.paid()) + " borrowed again at today's " + termWords(left) + " rate, "
+                    + pct2(rate) + ", would cost " + d(again) + " a month."
+                    + (stopped >= .5 && Math.abs(again - stopped) >= .5
+                    ? " So it books " + (gain >= 0 ? "a gain" : "a loss") + " and "
+                            + (again > stopped ? "raises" : "lowers") + " the city's interest by "
+                            + d(Math.abs(again - stopped)) + " a month." : "");
+            page.getChildren().add(card(caption("THE HONEST LINE", null),
+                    words(honest, Palette.SIZE_BODY + 1, Palette.TEXT_BODY),
+                    muted("A buyback at fair moves nothing in present value; it changes when the city pays and what the "
+                            + "measures say. This page says both.")));
+        }
+
+        // ----- the call -----
+        if (debt instanceof LongTermBond bond && bond.isCallable()) page.getChildren().add(callCard(bond));
+    }
+
+    /** One holder's line on the ticket: its swatch and name, what was taken from it, and what it is paid. */
+    HBox takenLine(String who, String colour, double face, double paid) {
+        HBox name = keySwatch(colour, "Taken from " + who);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP, name, gap, figure(d(face) + " for " + d(paid), Palette.SIZE_BODY, Palette.TEXT_BODY));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /**
+     * THE CALL (spec-city-debt.md 6.4, D22 to D24), on a callable line's
+     * page: from when it can be called, what it costs, the gain or loss
+     * against carrying value (carrying less the face), what it saves in
+     * present value and whether that passes the rule, and Call it.
+     */
+    VBox callCard(LongTermBond bond) {
+        Game g = ui.game;
+        int month = g.getMonth();
+        int first = bond.getFirstCallMonth();
+        boolean now = bond.isCallableNow(month);
+        double cash = g.getCash();
+        double cost = g.callCost(bond);
+        double carried = bond.getCarryingValue();
+        double saving = g.callSaving(bond);
+        boolean worth = g.worthCalling(bond);
+
+        VBox card = card(caption("THE CALL", CALL_INFO));
+        card.getChildren().add(words(String.format("Callable at %.0f from %s", CallTree.CALL_PRICE, CityCalendar.format(first))
+                + (now ? "." : " - not yet callable: " + CityCalendar.until(month, first) + "."),
+                Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
+        card.getChildren().add(cardLine("What the call costs · every holder paid in full", d(cost), null));
+        card.getChildren().add(cardLine("Gain (loss) against carrying value · " + d(carried) + " carried, less the face",
+                signedD(carried - cost), null));
+        card.getChildren().add(cardLine("What calling saves, in present value", signedD(saving), null));
+        card.getChildren().add(worth
+                ? infoLine("Worth calling: it saves " + d(saving) + ", over " + pc(CallTree.WORTH_CALLING) + " of the face.",
+                        WORTH_CALLING_INFO, true, Palette.SIZE_BODY + 1, Palette.TEXT_BODY, 560)
+                : infoLine("Not worth calling yet: the saving is under " + pc(CallTree.WORTH_CALLING) + " of the face.",
+                        WORTH_CALLING_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_MUTED, 560));
+
+        boolean can = g.canCall(bond);
+        boolean afford = cost <= cash;
+        Button call = new Button(can ? "Call it · pay " + d(cost) : "Call it");
+        call.setMinWidth(Region.USE_PREF_SIZE);
+        call.setDisable(!can || !afford);
+        if (can && afford) call.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
+        call.setOnAction(e -> {
+            ui.game.callLine(bond);
+            open("The book", null, null);
+        });
+        String why = !now ? "It cannot be called until " + CityCalendar.format(first) + "."
+                : bond.unsettledFace() > 0 || bond.getSettleDue() > 0
+                ? "This line was sold lately and its buyers have not paid for it yet: it can be called once they have."
+                : !can ? "This line cannot be called now."
+                : !afford ? "The treasury has " + d(cash) + "; the call costs " + d(cost)
+                        + ". A call is paid in cash, never by borrowing."
+                : null;
+        if (why != null) card.getChildren().add(words(why, Palette.SIZE_LABEL, Palette.BAD_SOFT));
+        card.getChildren().add(call);
+        return card;
+    }
+
+    /**
+     * The reverse auction's offers, drawn (board 3): a row a slice, the
+     * cheapest first, the price for each 100 at the left and the slice's face
+     * after its bar; a colour a holder, the slice outlined and faintly filled
+     * as a ghost segment is, and filled where the ticket takes it (the last
+     * one taken in part). Three dashed lines across the plot: fair at the top
+     * (nobody offers under it), the stop under the dearest slice taken, and
+     * the most to pay between the last slice at or under it and the first
+     * over; the last two named at the right. A fixed row height and the
+     * card's width: it is drawn again when it is given another.
+     */
+    static final class BuybackLadder extends javafx.scene.layout.Pane {
+        /** The margins, in pixels: the prices at the left; at the right the room for a slice's face (FACE_ROOM) and for the marks' names (MARKS). */
+        static final double LEFT = 74, FACE_ROOM = 76, MARKS = 134, TOP = 26, FOOT = 10, FIRST_W = 720, LEAST_W = 440;
+
+        private final Buyback.Result q;
+        private final double maxPer100;
+        private final java.util.function.DoubleFunction<String> money;
+        /** A row's pitch, and the width it is drawn at now (0 before the first). */
+        private final double row;
+        private double drawnAt;
+
+        BuybackLadder(Buyback.Result q, double maxPer100, java.util.function.DoubleFunction<String> money) {
+            this.q = q;
+            this.maxPer100 = maxPer100;
+            this.money = money;
+            int n = q.ladder().size();
+            this.row = n > 24 ? 13 : 18;
+            double h = TOP + n * row + FOOT;
+            setMinSize(LEAST_W, h);
+            setPrefSize(FIRST_W, h);
+            setMaxSize(Double.MAX_VALUE, h);
+            draw(FIRST_W);
+        }
+
+        @Override protected void layoutChildren() {
+            double w = Math.max(LEAST_W, getWidth());
+            if (Math.abs(w - drawnAt) > .5) draw(w);
+            super.layoutChildren();
+        }
+
+        /** The ladder at a width: everything in it, drawn again from the quote. */
+        private void draw(double w) {
+            drawnAt = w;
+            getChildren().clear();
+            List<Buyback.Offer> ladder = q.ladder();
+            int n = ladder.size();
+            double biggest = 0;
+            for (Buyback.Offer o : ladder) biggest = Math.max(biggest, o.face());
+            final double barMax = Math.max(60, w - LEFT - FACE_ROOM - MARKS);
+            final double plotRight = w - MARKS;
+            double barH = Math.max(6, row - 5);
+
+            int lastTaken = -1, lastWithin = -1;
+            double left = q.takenFace();
+            for (int i = 0; i < n; i++) {
+                Buyback.Offer o = ladder.get(i);
+                double y = TOP + i * row;
+                double len = biggest > 0 ? barMax * o.face() / biggest : 0;
+                double took = Math.min(o.face(), Math.max(0, left));
+                left -= took;
+                if (took > 0) lastTaken = i;
+                if (Double.isNaN(maxPer100) || o.per100() <= maxPer100) lastWithin = i;
+                String colour = holderColour(o.holder());
+
+                // The whole slice as a ghost; what the ticket takes of it, solid over it.
+                javafx.scene.shape.Rectangle ghost = new javafx.scene.shape.Rectangle(LEFT, y + 2.5, Math.max(2, len), barH);
+                ghost.setFill(javafx.scene.paint.Color.web(colour, .25));
+                ghost.setStroke(javafx.scene.paint.Color.web(colour));
+                ghost.setArcWidth(4);
+                ghost.setArcHeight(4);
+                Tooltip tip = new Tooltip(holderName(o.holder()) + " offers " + money.apply(o.face()) + String.format(" at %.3f", o.per100())
+                        + " for each 100" + (took > 0 ? "; " + money.apply(took) + " of it is taken." : "; none of it is taken."));
+                tip.setShowDelay(Duration.millis(150));
+                Tooltip.install(ghost, tip);
+                getChildren().add(ghost);
+                if (took > 0) {
+                    javafx.scene.shape.Rectangle solid = new javafx.scene.shape.Rectangle(LEFT, y + 2.5,
+                            Math.max(2, biggest > 0 ? barMax * took / biggest : 0), barH);
+                    solid.setFill(javafx.scene.paint.Color.web(colour));
+                    solid.setArcWidth(4);
+                    solid.setArcHeight(4);
+                    Tooltip.install(solid, tip);
+                    getChildren().add(solid);
+                }
+                label(String.format("%.3f", o.per100()), LEFT - 8, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_RIGHT, LEFT - 10,
+                        took > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED);
+                label(money.apply(o.face()), LEFT + len + 6, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_LEFT, FACE_ROOM - 6,
+                        Palette.TEXT_MUTED);
+            }
+
+            // Fair, at the top: every offer is at or over it.
+            horizontal(TOP, plotRight, Palette.TEXT_MUTED);
+            label(String.format("fair %.3f", q.fairPer100()), plotRight + 8, TOP - 15, javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.TEXT_LABEL);
+            label("price for each 100 of face", LEFT - 8, 2, javafx.geometry.Pos.CENTER_LEFT, 200, Palette.TEXT_MUTED);
+
+            // The stop, under the dearest slice taken: the name above its line, in the right-hand room.
+            if (lastTaken >= 0) {
+                double y = TOP + (lastTaken + 1) * row;
+                horizontal(y, plotRight, Palette.WARN);
+                label(String.format("stop %.3f", ladder.get(lastTaken).per100()), plotRight + 8, y - 14,
+                        javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.WARN);
+            }
+            // The most to pay, between the last slice at or under it and the first over: its name below the line.
+            if (!Double.isNaN(maxPer100)) {
+                double y = TOP + (lastWithin + 1) * row;
+                horizontal(y, plotRight, Palette.BAD);
+                label(String.format("most to pay %.3f", maxPer100), plotRight + 8, y + 1,
+                        javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.BAD_SOFT);
+            }
+        }
+
+        /** A dashed horizontal line across the plot at a height, in a colour. */
+        private void horizontal(double y, double right, String colour) {
+            javafx.scene.shape.Line line = new javafx.scene.shape.Line(LEFT - 8, y, right, y);
+            line.setStroke(javafx.scene.paint.Color.web(colour));
+            line.setStrokeWidth(1.2);
+            line.getStrokeDashArray().addAll(4.0, 3.0);
+            getChildren().add(line);
+        }
+
+        /** A label: `x` is where the text starts, ends or centres by `align`, in a box `wide` pixels across (AuctionChart's). */
+        private void label(String text, double x, double y, javafx.geometry.Pos align, double wide, String colour) {
+            Label l = new Label(text);
+            l.setStyle(Palette.figure(Palette.SIZE_CAPTION, colour));
+            l.setAlignment(align);
+            l.setMinWidth(wide);
+            l.setPrefWidth(wide);
+            l.setMaxWidth(wide);
+            double at = align == javafx.geometry.Pos.CENTER_RIGHT ? x - wide : align == javafx.geometry.Pos.CENTER ? x - wide / 2 : x;
+            l.relocate(at, y);
+            l.setMouseTransparent(true);
+            getChildren().add(l);
+        }
     }
 
     /* =====================================================================
@@ -2598,9 +3243,17 @@ final class FinancesScreen {
         borrowTerm = nearestTerm(kit, borrowTerm);
 
         // At home the quote is the auction at the player's highest yield; abroad it is the world's price.
+        // ...a bond asked callable (CD4) goes through the callable overload of the same quote.
+        boolean callable = callableAsked(kit, foreign);
         DebtQuote quote = borrowAsk > 0
                 ? (foreign ? g.quoteForeign(kit.key(), borrowAsk, borrowTerm, kit.rounding())
+                   : callable ? g.quoteLongBond(borrowAsk, borrowTerm, kit.rounding(), borrowCap, true)
                            : g.quoteDebt(kit.key(), borrowAsk, borrowTerm, kit.rounding(), borrowCap))
+                : null;
+        // What the call adds to the coupon, read once off the model for the three places that say it.
+        callWords = quote != null && quote.callable()
+                ? "from " + CityCalendar.formatShort(quote.firstCallMonth()) + " · the call adds "
+                        + bp(g.callSpread(quote)) + " to the coupon"
                 : null;
         Auction.Result sale = foreign || quote == null ? null : quote.auction();
         // Fair for this paper, with the ask on the books: what the cap's chips are read against.
@@ -2608,7 +3261,7 @@ final class FinancesScreen {
                 : ledger.fairYield(auctionKind(kit), termMonths(kit, borrowTerm), Math.max(0, borrowAsk));
         page.getChildren().add(pair(askCard(kit, foreign, quote, fair), quoteCard(kit, quote, foreign)));
         if (!foreign) {
-            page.getChildren().add(auctionCard(kit, sale));
+            page.getChildren().add(auctionCard(kit, sale, quote));
             Node red = shortCard(sale);
             if (red != null) page.getChildren().add(red);
         }
@@ -2647,6 +3300,7 @@ final class FinancesScreen {
                 : "FOR HOW LONG, IN " + kit.unit().toUpperCase() + " · TODAY'S FAIR YIELD", TERMS_INFO));
         card.getChildren().add(foreign ? termChips(kit) : termColumns(kit, quote));
         if (!foreign) card.getChildren().add(muted(lineNote(kit)));
+        if (callableOffered(kit, foreign)) card.getChildren().add(callableSwitch(quote));
 
         double minimum = g.minimumIssueSize();
         card.getChildren().add(caption(foreign ? "HOW MANY " + Currency.FOREIGN_CODE
@@ -2712,15 +3366,63 @@ final class FinancesScreen {
                 return "Each amortizing sale is its own line: one coupon, the auction's yield itself, prices the "
                         + "whole schedule at 100 and the face is repaid in yearly slices.";
             default:
-                Debt line = ui.game.getDebtManager().benchmarkLine(borrowTerm);
+                boolean callable = callableAsked(kit, false);
+                Debt line = ui.game.getDebtManager().benchmarkLine(borrowTerm, callable);
                 if (line == null) {
-                    return String.format("This opens a new %d-year line: its coupon is the stop, rounded down to an "
-                            + "eighth of a point, so it sells just under 100.", borrowTerm);
+                    return String.format("This opens a new %d-year %sline: its coupon is the stop, rounded down to an "
+                            + "eighth of a point, so it sells just under 100.", borrowTerm, callable ? "callable " : "");
                 }
-                return String.format("This reopens the %s, the %d-year line: same coupon, same date, sold at today's "
+                return String.format("This reopens the %s%s, the %d-year line: same coupon, same date, sold at today's "
                         + "price. It is the line until it has under %s of its %d years left.",
-                        pieceName(line), borrowTerm, pc(Auction.BENCHMARK_LIFE), borrowTerm);
+                        callable ? "callable " : "", pieceName(line), borrowTerm, pc(Auction.BENCHMARK_LIFE), borrowTerm);
         }
+    }
+
+    /** The CALLABLE switch's (i) (CD4, spec-city-debt.md 2.6 and D22 to D24). */
+    static final String CALLABLE_SALE_INFO = "A bond of ten years or more can be sold callable: from its first call date "
+            + "(five years on a 10-year bond, ten on a 20, 30 or 50) the city may pay every holder 100 for each 100 of "
+            + "face, whole, and close the line. The buyers are paid for the right it keeps - the sale's fair yield is "
+            + "the non-call fair plus the option's price, worked out on a rate tree fitted to the curve at the "
+            + "volatility the city's own rate has shown, never under "
+            + String.format("%.2f", CallTree.RATE_VOL_FLOOR * 100) + " points a year - so the coupon you see already "
+            + "carries it. A callable sale reopens only a callable line of the same call terms. Nothing sells callable "
+            + "unless it is asked.";
+
+    /** True when the Borrow page's bond may be sold callable (CD4): a bond at home of ten years or more. */
+    boolean callableOffered(Instrument kit, boolean foreign) {
+        return !foreign && "Term".equals(kit.key()) && CallTree.canBeCallable(borrowTerm);
+    }
+
+    /** True when the switch is on and the paper may be callable: the quote, the booking and the line note all read this. */
+    boolean callableAsked(Instrument kit, boolean foreign) {
+        return borrowCallable && callableOffered(kit, foreign);
+    }
+
+    /**
+     * The CALLABLE switch (CD4), beside the bond's term: two chips, off by
+     * default, kept across the clock's redraw in borrowCallable. On, it says
+     * from when the call is and what it adds to the coupon - the quote's own
+     * (callWords, Game.callSpread()) - or, with nothing asked yet, that the
+     * quote will.
+     */
+    VBox callableSwitch(DebtQuote quote) {
+        String[] names = {"Not callable", "Callable"};
+        String on = quote != null && quote.callable() && callWords != null
+                ? "Callable at " + String.format("%.0f", CallTree.CALL_PRICE) + " " + callWords + "."
+                : "Callable at " + String.format("%.0f", CallTree.CALL_PRICE) + " from year "
+                        + CallTree.firstCallYears(borrowTerm) + " on: the coupon pays for the right. Ask for something and "
+                        + "the quote says what it adds.";
+        return setting("CALLABLE", CALLABLE_SALE_INFO, names, borrowCallable ? names[1] : names[0],
+                new String[] {"The city cannot call it before it falls due.", on}, null, pick -> {
+                    borrowCallable = pick.equals(names[1]);
+                    showFinanceMenu();
+                });
+    }
+
+    /** A callable sale's line on the auction card (CD4): from when it can be called and what the call adds to the coupon. Called only for a callable quote. */
+    HBox callableLine() {
+        return cardLine("Callable at " + String.format("%.0f", CallTree.CALL_PRICE), callWords == null ? "" : callWords,
+                null, CALLABLE_SALE_INFO);
     }
 
     /* ----------------------------- the highest yield (CD2) ----------------------------- */
@@ -2959,9 +3661,11 @@ final class FinancesScreen {
         boolean reopening = false;
         for (int t : kit.terms()) {
             final int chosen = t;
-            Debt line = "Term".equals(kit.key()) ? ledger.benchmarkLine(t) : null;
+            // A callable ask (CD4) reopens a callable line, and the columns stay the curve's own yields: the quote's fair is the chosen one's only when the paper cannot be called (its fair carries the option).
+            boolean option = callableAsked(kit, false) && CallTree.canBeCallable(t);
+            Debt line = "Term".equals(kit.key()) ? ledger.benchmarkLine(t, option) : null;
             int months = line != null ? line.getRemainingMonths() : termMonths(kit, t);
-            double fair = t == borrowTerm && sale != null && !sale.isEmpty() ? sale.ask().fair()
+            double fair = t == borrowTerm && sale != null && !sale.isEmpty() && !option ? sale.ask().fair()
                     : ledger.fairYield(kind, months, Math.max(0, borrowAsk));
             double comp = ledger.compression(months);
             String sub = line == null ? null : "reopens\n" + pieceName(line);
@@ -3010,7 +3714,7 @@ final class FinancesScreen {
         String what = switch (kit.key()) {
             case "Note"   -> borrowTerm + "-month bill";
             case "Serial" -> borrowTerm + "-year amortizing bond";
-            default       -> borrowTerm + "-year bond";
+            default       -> borrowTerm + "-year " + (callableAsked(kit, foreign) ? "callable " : "") + "bond";
         };
         return what + (foreign ? " in dollars" : "");
     }
@@ -3103,7 +3807,15 @@ final class FinancesScreen {
         how.setWrapText(true);
         how.setStyle(Palette.words(Palette.SIZE_LABEL, tailTone(sale)) + " -fx-font-weight: bold;");
 
-        VBox card = new VBox(6, head, settles, figures, end, how);
+        VBox card = new VBox(6, head, settles);
+        // A callable sale says from when, and what the call adds to the coupon (CD4).
+        if (quote.callable() && callWords != null) {
+            Label call = new Label(String.format("Callable at %.0f ", CallTree.CALL_PRICE) + callWords);
+            call.setWrapText(true);
+            call.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+            card.getChildren().add(call);
+        }
+        card.getChildren().addAll(figures, end, how);
         if (sale.shortSale()) {
             // A bill's ask is the cash, and its face the lot that would bring it: a short bill says it in cash.
             Label sells = new Label("Note".equals(kit.key())
@@ -3127,13 +3839,14 @@ final class FinancesScreen {
         int term = borrowTerm;
         double ask = borrowAsk;
         Auction.Cap cap = borrowCap;
+        boolean callable = quote.callable();
         Button go = new Button((sale.shortSale() ? "Sell what the bids cover · raise " : "Hold the auction · raise ")
                 + w.apply(quote.cashReceived()));
         go.setWrapText(true);
         go.setMaxWidth(Double.MAX_VALUE);
         go.setStyle(Palette.words(Palette.SIZE_LABEL, "white") + " -fx-background-color: " + Palette.CONFIRM + ";");
         go.setOnAction(e -> {
-            String summary = executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap);
+            String summary = executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap, callable);
             borrowAsk = 0;
             showDebtResultMenu(booked, false, summary);
         });
@@ -3181,9 +3894,10 @@ final class FinancesScreen {
      * THE AUCTION: the four bids against yield with the issue, fair and the
      * highest yield drawn (AuctionChart), then the result line by line, and
      * the bank's room. Run on the city as it stands; with nothing asked, the
-     * bank's room alone. `r` is the quote's own result.
+     * bank's room alone. `r` is the quote's own result, and `quote` the quote
+     * (null: none): a callable one adds its line to the result (CD4).
      */
-    VBox auctionCard(Instrument kit, Auction.Result r) {
+    VBox auctionCard(Instrument kit, Auction.Result r, DebtQuote quote) {
         Game g = ui.game;
         String info = String.format(BUYERS_INFO, pc(Bank.RISK_CITY));
         VBox card = card(caption("THE AUCTION", info, hint("run on the city as it stands")));
@@ -3228,6 +3942,8 @@ final class FinancesScreen {
                 cardLine("The central bank", "none · it bids only to roll its own", Palette.TEXT_MUTED),
                 cardLine("You raise", d(r.proceeds()), Palette.GOOD, "The price per 100 times the face sold, less the "
                         + "fixed cost of " + d(r.ask().fee()) + " a sale."));
+        // A callable sale says from when, and what the call adds to the coupon (CD4): after the coupon's line.
+        if (quote != null && quote.callable()) result.getChildren().add(3, callableLine());
         if (!r.shortSale() && r.tail() > Auction.MAX_TAIL + 1e-9) {
             result.getChildren().add(muted(String.format("The tail costs the city %s a year: %s sold, %s over fair.",
                     d(r.sold() * r.tail()), d(r.sold()), bp(r.tail()))));
@@ -4091,10 +4807,15 @@ final class FinancesScreen {
 
     /** Books the sale the page quoted, at the highest yield it was quoted at (CD2): the handler struck on the same city at the same cap. */
     String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap) {
+        return executeDebtLogic(type, amount, duration, rounding, cap, false);
+    }
+
+    /** ...a bond sold callable if the quote was (CD4): the handler struck on the same city, at the same cap, with the same option. */
+    String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap, boolean callable) {
         return switch (type) {
             case "Note" -> ui.game.handleTBillLogic(amount, duration, rounding, cap);
             case "Serial" -> ui.game.handleMediumBondLogic(amount, duration, rounding, cap);
-            case "Term" -> ui.game.handleLongBondLogic(amount, duration, rounding, cap);
+            case "Term" -> ui.game.handleLongBondLogic(amount, duration, rounding, cap, callable);
             default -> "Unknown instrument.";
         };
     }
