@@ -7206,8 +7206,21 @@ public final class GameVersion {
      *     carrying value with the fair-value note, carried and effective on
      *     the book. SAVE_FORMAT 44 and its floor.
      *   - Harness: TreasuryCheck 9 (new part), MoneyCheck's paper on its books.
+     *
+     * 0.8.30 (2026-10-23) - PT1, ELEVEN FIXES FROM A PLAYED CITY
+     * docs/queue/PT1-notes.md: screens, words and the log; the trace does
+     * not move.
+     *   - A standing bank no month has opened reads "opens with the first
+     *     month" and is not in NEEDS YOU; the bank's door lands on its card.
+     *   - A served share from five times what is asked prints "30x"
+     *     (CityNeeds.SERVED_AS_MULTIPLE); a chart never floors a series that
+     *     cannot go under zero below it; no toast on load for a notice the
+     *     save already held (Inbox.toToast, markAllToasted).
+     *   - The founding card, People's bridge, the drawer's footnote, the
+     *     log's debt-to-GDP and interest lines. The toast's corner: PT1-C.
+     *   - Harness: PlaytestFixCheck (new), ChartCheck 9.
      */
-    public static final String VERSION = "0.8.29";
+    public static final String VERSION = "0.8.30";
 
     /**
      * The save shape.
