@@ -60,12 +60,14 @@ import java.util.PriorityQueue;
  *             whose arms stop at the sea or the city's edge before they are
  *             APART long has no line crossing it: Jerus's Bergen laid 8% of its
  *             highways. Where no line crosses, the HIGHWAYS open a LINK
- *             corridor all the same: one arm, the link, from the net's plot
- *             nearest the nearest line, perpendicular to it, laid by the arms'
- *             own rules and cost (straight, 45 degrees at the water, a bridge
- *             where the arms bridge); where it meets the line the corridor's
- *             two arms open, along the line, as any corridor's do. The
- *             highways' alone: the railway grows no corridors (WAYS below);
+ *             corridor all the same: one arm, the link, over a PLANNED way -
+ *             a search of the piece's dry ground, from its net to the nearest
+ *             plot on a line it has no corridor on, straightened into a few
+ *             legs of the eight headings and laid plot by plot (openLink();
+ *             the first version ran straight from the net toward the line
+ *             and left a stub at every sea); where it stands on the line the
+ *             corridor's two arms open, along the line, as any corridor's do.
+ *             The highways' alone: the railway grows no corridors (WAYS below);
  *   PIECES    (CL5) the city's ground the water parts is in pieces (Pieces),
  *             and an arm crosses no sea, so the founding site's net never
  *             reached another island the city built on. Each piece that holds
@@ -263,6 +265,13 @@ public final class CityRuns {
      */
     static boolean linkArms = true;
 
+    /**
+     * The most plots a link's search visits (CL5, linkWay()): 1 << 21, about 2 million, the net's own plots among them - its visited
+     * table holds up to twice that many slots, an index of 4 bytes each, and the plots found 9 bytes apiece, about 34 MB at most, freed
+     * when the search ends; a search that reaches it finds no way, and the piece waits for the ground to move.
+     */
+    public static final int LINK_SEARCH = 1 << 21;
+
     /* =====================================================================
        THE WITNESS (batch FX7)
 
@@ -378,6 +387,14 @@ public final class CityRuns {
         long knownAt = Long.MIN_VALUE, waitAt = Long.MIN_VALUE;
         /** What stopped it the last time it waited with no way along (transient): OPEN (nothing, or another reason), EDGE or SEA. The railway's main line goes on to the next arm only where this is SEA (growMainLine()). */
         int stoppedBy;
+        /**
+         * A link arm's way (CL5, openLink()): its legs as {heading, steps} each, the leg it is on and the step it is at in it, and the
+         * ground's version it was last known to hold at (transient, never saved: a link read back from a sidecar or taken back by a
+         * trim plans again). Null for any other arm.
+         */
+        int[][] plan;
+        int planLeg, planStep;
+        long planAt = Long.MIN_VALUE;
 
         Arm(int corridor, int home, long sx, long sy) {
             this.corridor = corridor; this.home = home; this.sx = sx; this.sy = sy;
@@ -1082,8 +1099,8 @@ public final class CityRuns {
      * the arms of that piece's corridors, its lines measured from its hub, its
      * wait on the ground its own (stuckAt()). When no arm of the piece can
      * grow and no line crosses its net, the highways open a LINK corridor
-     * (openLink()) and grow its link; a link that reaches its line opens the
-     * corridor's two arms there (openLine()).
+     * (openLink()) and grow its link along its plan; a link that reaches its
+     * line opens the corridor's two arms there (openLine()).
      */
     static boolean growPiece(Net n, Net other, int p, long target, Ground g, long ax, long ay, int gateway) {
         if (target <= count(n, p)) return false;
@@ -1120,7 +1137,7 @@ public final class CityRuns {
             if (live.isEmpty()) {
                 if (newCorridor(n, g, p)) {
                     for (int i = n.arms.size() - 2; i < n.arms.size(); i++) live.add(i);
-                } else if (linkArms && n.kind == HIGHWAYS && openLink(n, g, p)) {
+                } else if (linkArms && n.kind == HIGHWAYS && openLink(n, other, g, p)) {
                     live.add(n.arms.size() - 1);
                 } else {
                     setStuck(n, p, ver);
@@ -1212,13 +1229,16 @@ public final class CityRuns {
      * the other net's run along its way); JOINED (it met the net running its
      * own way, or ran beside another arm); HELD (a 45-degree step lays two
      * plots and the model has one more). (CL5) `target` is the plots of the
-     * arm's piece, which the HELD rule counts against count().
+     * arm's piece, which the HELD rule counts against count(); a link arm
+     * (LINK corridors' first) steps along its plan instead (stepLink()).
      */
     static int step(Net n, Net other, int i, Arm a, Ground g, long target, int[] why) {
         long x = a.x, y = a.y;
         int home = a.home;
         long ver = g.version();
         a.stoppedBy = OPEN;
+        // A link arm goes by its plan, not by the rules below (CL5, stepLink()).
+        if (a.corridor < n.corridors.size() && corridorRole(n.corridors.get(a.corridor)) == LINK && isLink(n, i)) return stepLink(n, other, i, a, g, target);
         // A piece's hub arm, its first step: the hub's plot itself, laid whatever the ground beyond it (openPiece()).
         if (a.steps == 0 && hubArm(n, a)) {
             long hx = x + 1;
@@ -1425,44 +1445,362 @@ public final class CityRuns {
     /**
      * The next corridor, where no line crosses piece p's net (CL5; the
      * highways': growPiece() calls it when newCorridor() finds none): a LINK
-     * corridor. The candidates are the lines newCorridor() considers (k
-     * districts out from the piece's hub, both ways, k from 1), not yet a
-     * corridor of the piece; each has a start, linkStart(); the least k comes
-     * first, then the shortest link (the plots from its start to the line),
-     * then hw.py's order (before()). The corridor opens with an interchange
-     * at the start and one arm, the link, which step() grows as any arm; when
-     * it stands on the line, openLine() opens the corridor's two. False where
-     * no candidate has a start.
+     * corridor, over a way planned by linkWay() from the piece's net to the
+     * nearest plot on a line it has no corridor on (the candidates are the
+     * lines newCorridor() considers: k districts out from the piece's hub,
+     * both ways, k from 1). The corridor opens with an interchange at the
+     * way's start, a plot of the net, and one arm, the link, whose home
+     * heading is the plan's first leg's and which stepLink() grows along the
+     * plan; when it stands on the line, openLine() opens the corridor's two.
+     * False where the piece has a link still on its way (a link waits for the
+     * ground to move; it does not open another corridor beside it, which left
+     * a stub for each: Jerus's coast, 44 of them) or no way is found.
      */
-    static boolean openLink(Net n, Ground g, int p) {
+    static boolean openLink(Net n, Net other, Ground g, int p) {
+        for (int ci = 0; ci < n.corridors.size(); ci++) {
+            long[] c = n.corridors.get(ci);
+            if (corridorRole(c) == LINK && corridorPiece(c) == p && !linkReaches(n, linkArm(n, ci))) return false;
+        }
         long[] hub = hubOf(n, p);
         long[] box = g.box();
         long reach = Math.max(Math.max(Math.abs(box[0] - hub[0]), Math.abs(box[2] - hub[0])), Math.max(Math.abs(box[1] - hub[1]), Math.abs(box[3] - hub[1])));
-        long most = reach / APART + 1;
-        long[][] plots = null;
-        int[] why = new int[1];
-        for (long k = 1; k <= most; k++) {
-            long[] best = null;
-            int bkind = 0;
-            long bv = 0;
-            for (int sgn = 1; sgn >= -1; sgn -= 2) {
-                for (int kind = 0; kind < 2; kind++) {
-                    long v = (kind == 0 ? hub[1] : hub[0]) + sgn * k * APART;
-                    if (hasLine(n, p, kind, v)) continue;
-                    if (plots == null) plots = plotsOf(n, p);
-                    long[] st = linkStart(n, g, plots, hub, kind, v, why);
-                    if (st == null) continue;
-                    if (best == null || before(st[3], kind, v, st, best[3], bkind, bv, best)) { best = st; bkind = kind; bv = v; }
+        LinkWay w = linkWay(n, other, g, p, plotsOf(n, p), -1, 0, hub, reach / APART + 1);
+        if (w == null) return false;
+        int ci = n.corridors.size();
+        n.corridors.add(new long[] { w.kind(), w.v(), p, LINK });
+        n.interchanges.add(new Interchange(w.sx(), w.sy(), ci));
+        Arm link = new Arm(ci, w.legs()[0][0], w.sx(), w.sy());
+        link.plan = w.legs();
+        link.planAt = g.version();
+        n.arms.add(link);
+        return true;
+    }
+
+    /** A planned way for a link: where it starts (a plot of the net), the line it ends on (a row, kind 0, or a column, kind 1, at v) and its legs, {heading, steps} each. */
+    record LinkWay(long sx, long sy, int kind, long v, int[][] legs) { }
+
+    /**
+     * The way a link takes (CL5): a search of the piece's dry ground, from
+     * `from` (every plot of the piece's net, or the end of one link arm
+     * replanning) to the nearest plot on a line; the way then straightened
+     * into legs. The ground it walks is the city's dry ground (not water,
+     * fresh water included: no bridging, a link that must cross water waits
+     * for the ground to move) that the highways net does not cover, in eight
+     * ways, a 45-degree move only where its staircase corner is dry too; a
+     * move along the other net (the railway) is not made, a crossing of it is.
+     * It is a breadth-first search from all its sources at once, so the first
+     * goal it reaches is the nearest, ties to the search's own order; capped
+     * at LINK_SEARCH plots, after which it finds no way. The goal is a plot on
+     * a candidate line (goalKind -1: a row or column k districts, 1 to `most`
+     * of them, from the piece's hub, not yet a corridor of the piece) or on
+     * the one line a replanning link is for (goalKind 0 a row, 1 a column, at
+     * goalV). Null where there is no way.
+     */
+    static LinkWay linkWay(Net n, Net other, Ground g, int p, long[][] from, int goalKind, long goalV, long[] hub, long most) {
+        LinkSearch s = new LinkSearch(n, other, g, p, goalKind, goalV, hub, most);
+        return s.run(from[0], from[1]);
+    }
+
+    /**
+     * One search for a link's way (linkWay()): its visited plots in a table of
+     * open addressing - the plots found in order, each a long key (x in the
+     * high word, y in the low) and a byte for the move that found it, the
+     * order they are searched in, and an index of 4-byte slots over them -
+     * not a map of boxed keys: this runs on a city of billions. The ground is
+     * read once for each plot (a byte for each plot of a tile it has touched).
+     */
+    private static final class LinkSearch {
+        /** The move of a plot the search began from; the others hold 1 + the heading that found them. */
+        static final byte SOURCE = 9;
+        /** The order a plot's neighbours are tried in: straight ways, then the 45-degree ones. */
+        static final int[] ORDER = { 0, 2, 4, 6, 1, 3, 5, 7 };
+
+        final Net n, other;
+        final Ground g;
+        final int p, goalKind;
+        final long goalV, hubX, hubY, most;
+        long[] ekey = new long[1 << 10];
+        byte[] emove = new byte[1 << 10];
+        int used;
+        int[] slot = new int[1 << 11];
+        final Map<Long, byte[]> tiles = new HashMap<>();
+        long lastTile = Long.MIN_VALUE;
+        byte[] lastDry;
+        /** The line the goal found is on. */
+        int foundKind;
+        long foundV;
+
+        LinkSearch(Net n, Net other, Ground g, int p, int goalKind, long goalV, long[] hub, long most) {
+            this.n = n; this.other = other; this.g = g; this.p = p;
+            this.goalKind = goalKind; this.goalV = goalV;
+            this.hubX = hub == null ? 0 : hub[0];
+            this.hubY = hub == null ? 0 : hub[1];
+            this.most = most;
+        }
+
+        static long key(long x, long y) {
+            return (x << 32) | (y & 0xffffffffL);
+        }
+
+        /** The slot key hashes to, probing on: the one holding it, or the empty one it would go in. */
+        int probe(long key) {
+            int m = slot.length - 1;
+            int h = (int) ((key * 0x9E3779B97F4A7C15L) >>> 32) & m;
+            while (slot[h] != 0 && ekey[slot[h] - 1] != key) h = (h + 1) & m;
+            return h;
+        }
+
+        /** Enters key at the empty slot h (from probe()) with its move, growing the table at half full. */
+        void insertAt(int h, long key, byte move) {
+            if (used == ekey.length) {
+                ekey = Arrays.copyOf(ekey, used * 2);
+                emove = Arrays.copyOf(emove, used * 2);
+            }
+            ekey[used] = key;
+            emove[used] = move;
+            slot[h] = ++used;
+            if (used * 2L > slot.length) {
+                slot = new int[slot.length * 2];
+                int m = slot.length - 1;
+                for (int e = 0; e < used; e++) {
+                    int k = (int) ((ekey[e] * 0x9E3779B97F4A7C15L) >>> 32) & m;
+                    while (slot[k] != 0) k = (k + 1) & m;
+                    slot[k] = e + 1;
                 }
             }
-            if (best == null) continue;
-            int ci = n.corridors.size();
-            n.corridors.add(new long[] { bkind, bv, p, LINK });
-            n.interchanges.add(new Interchange(best[0], best[1], ci));
-            n.arms.add(new Arm(ci, (int) best[2], best[0], best[1]));
+        }
+
+        /** Whether plot (x, y) is the city's dry ground, read once. */
+        boolean dry(long x, long y) {
+            long tx = Math.floorDiv(x, World.TILE), ty = Math.floorDiv(y, World.TILE);
+            long tk = (tx << 32) | (ty & 0xffffffffL);
+            if (tk != lastTile) {
+                byte[] t = tiles.get(tk);
+                if (t == null) {
+                    t = new byte[World.TILE * World.TILE];
+                    tiles.put(tk, t);
+                }
+                lastTile = tk;
+                lastDry = t;
+            }
+            int i = (int) Math.floorMod(y, World.TILE) * World.TILE + (int) Math.floorMod(x, World.TILE);
+            byte v = lastDry[i];
+            if (v == 0) {
+                v = CityRuns.dry(g.at(x, y, -1)) ? (byte) 1 : 2;
+                lastDry[i] = v;
+            }
+            return v == 1;
+        }
+
+        /** Whether a move from (x, y) to (nx, ny) runs along the other net: both plots are its. */
+        boolean alongOther(long x, long y, long nx, long ny) {
+            return other != null && other.started && covered(other, nx, ny) && covered(other, x, y);
+        }
+
+        /** Whether plot (x, y), popped, is a goal: sets foundKind and foundV. */
+        boolean goal(long x, long y) {
+            if (goalKind >= 0) {
+                if ((goalKind == 0 ? y : x) != goalV) return false;
+                foundKind = goalKind;
+                foundV = goalV;
+                return true;
+            }
+            // hw.py's order: a column before a row.
+            long dx = x - hubX, dy = y - hubY;
+            if (dx != 0 && dx % APART == 0 && Math.abs(dx / APART) <= most && !hasLine(n, p, 1, x)) { foundKind = 1; foundV = x; return true; }
+            if (dy != 0 && dy % APART == 0 && Math.abs(dy / APART) <= most && !hasLine(n, p, 0, y)) { foundKind = 0; foundV = y; return true; }
+            return false;
+        }
+
+        LinkWay run(long[] xs, long[] ys) {
+            for (int i = 0; i < xs.length; i++) {
+                long k = key(xs[i], ys[i]);
+                int h = probe(k);
+                if (slot[h] != 0) continue;
+                if (used >= LINK_SEARCH) return null;
+                insertAt(h, k, SOURCE);
+            }
+            int found = -1;
+            for (int e = 0; e < used && found < 0; e++) {
+                long k = ekey[e];
+                long x = k >> 32, y = (int) k;
+                if (emove[e] != SOURCE && goal(x, y)) { found = e; break; }
+                for (int o = 0; o < 8; o++) {
+                    int d = ORDER[o], dx = DX[d], dy = DY[d];
+                    long nx = x + dx, ny = y + dy;
+                    long nk = key(nx, ny);
+                    int h = probe(nk);
+                    if (slot[h] != 0) continue;
+                    boolean diag = dx != 0 && dy != 0;
+                    if (!dry(nx, ny) || (diag && !dry(nx, y))) continue;
+                    if (covered(n, nx, ny) || alongOther(x, y, nx, ny)) continue;
+                    if (used >= LINK_SEARCH) return null;
+                    insertAt(h, nk, (byte) (d + 1));
+                }
+            }
+            if (found < 0) return null;
+            // The path, source to goal: back from the goal by the moves that found each plot.
+            int len = 0;
+            for (int e = found; emove[e] != SOURCE; e = parent(e)) len++;
+            long[] px = new long[len + 1], py = new long[len + 1];
+            int e = found;
+            for (int i = len; i >= 0; i--) {
+                long k = ekey[e];
+                px[i] = k >> 32;
+                py[i] = (int) k;
+                if (i > 0) e = parent(e);
+            }
+            return new LinkWay(px[0], py[0], foundKind, foundV, legs(px, py, len));
+        }
+
+        /** The entry that found entry e: the plot one step back along its move. */
+        int parent(int e) {
+            int d = emove[e] - 1;
+            long k = ekey[e];
+            return slot[probe(key((k >> 32) - DX[d], (int) k - DY[d]))] - 1;
+        }
+
+        /**
+         * The path px[0..m], py[0..m] straightened into legs {heading, steps}:
+         * from the plot it is at, the farthest later plot of the path that one
+         * or two legs reach - an octile way, the 45-degree leg of
+         * min(|dx|, |dy|) steps and the straight rest, in either order, the
+         * order the path itself begins in tried first - with every plot of
+         * them, and each 45-degree step's corner, dry and not covered by the
+         * net and not along the other; failing all, the path's own next step
+         * (the search found it, and a source's first step may have the net's
+         * plot for its corner). Legs of one heading run on as one.
+         */
+        int[][] legs(long[] px, long[] py, int m) {
+            List<int[]> out = new ArrayList<>();
+            int cur = 0;
+            while (cur < m) {
+                int first = heading((int) Long.signum(px[cur + 1] - px[cur]), (int) Long.signum(py[cur + 1] - py[cur]));
+                int next = cur + 1;
+                int[][] take = { { first, 1 } };
+                for (int j = m; j > cur + 1; j--) {
+                    long dx = px[j] - px[cur], dy = py[j] - py[cur];
+                    // The search is shortest: only a way as long as the path between can be free.
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) != j - cur) continue;
+                    int[][] way = octile(px[cur], py[cur], dx, dy, first);
+                    if (way != null) { next = j; take = way; break; }
+                }
+                for (int[] leg : take) {
+                    if (!out.isEmpty() && out.get(out.size() - 1)[0] == leg[0]) out.get(out.size() - 1)[1] += leg[1];
+                    else out.add(new int[] { leg[0], leg[1] });
+                }
+                cur = next;
+            }
+            return out.toArray(new int[0][]);
+        }
+
+        /** The heading of the move (sx, sy), each -1, 0 or 1 and not both 0. */
+        static int heading(int sx, int sy) {
+            for (int d = 0; d < 8; d++) if (DX[d] == sx && DY[d] == sy) return d;
+            return -1;
+        }
+
+        /** The octile way from (x, y) by (dx, dy) as one or two legs, or null where neither order is free; `first` is the path's heading there. */
+        int[][] octile(long x, long y, long dx, long dy, int first) {
+            long adx = Math.abs(dx), ady = Math.abs(dy);
+            int sx = (int) Long.signum(dx), sy = (int) Long.signum(dy);
+            int diag = (int) Math.min(adx, ady), rest = (int) (Math.max(adx, ady) - diag);
+            int hd = diag > 0 ? heading(sx, sy) : -1;
+            int hs = rest > 0 ? (adx > ady ? heading(sx, 0) : heading(0, sy)) : -1;
+            if (diag == 0) return free(x, y, hs, rest) ? new int[][] { { hs, rest } } : null;
+            if (rest == 0) return free(x, y, hd, diag) ? new int[][] { { hd, diag } } : null;
+            boolean diagFirst = first == hd;
+            for (int pass = 0; pass < 2; pass++) {
+                if ((pass == 0) == diagFirst) {
+                    if (free(x, y, hd, diag) && free(x + (long) sx * diag, y + (long) sy * diag, hs, rest)) return new int[][] { { hd, diag }, { hs, rest } };
+                } else {
+                    if (free(x, y, hs, rest) && free(x + (long) DX[hs] * rest, y + (long) DY[hs] * rest, hd, diag)) return new int[][] { { hs, rest }, { hd, diag } };
+                }
+            }
+            return null;
+        }
+
+        /** Whether `steps` steps along heading h from (x, y) are all free: each plot, and a 45-degree step's corner, dry and not covered by the net, and no move along the other net. */
+        boolean free(long x, long y, int h, int steps) {
+            int dx = DX[h], dy = DY[h];
+            boolean diag = dx != 0 && dy != 0;
+            for (int k = 0; k < steps; k++) {
+                long nx = x + dx, ny = y + dy;
+                if (!dry(nx, ny) || covered(n, nx, ny)) return false;
+                if (diag && (!dry(nx, y) || covered(n, nx, y))) return false;
+                if (alongOther(x, y, nx, ny)) return false;
+                x = nx;
+                y = ny;
+            }
             return true;
         }
-        return false;
+    }
+
+    /**
+     * Link arm i's next step along its plan (CL5): one plot a step, laid as
+     * step() lays it - the witness first, push(), lay() of a 45-degree step's
+     * corner and its plot - and HELD where a 45-degree step needs two plots
+     * and the model has one. It skips step()'s turning, its twin rule and its
+     * T and crossing rules: the plan walked round the net, and a plot that
+     * has become covered since is laid over (lay() counts it once). A plan
+     * the ground no longer holds (the plots ahead stopped being dry: a work
+     * on the shore), or none (read back from a sidecar, or taken back by a
+     * trim), is made again from the arm's end to its own line (replan()); with
+     * no way, the link WAITS until the ground moves.
+     */
+    static int stepLink(Net n, Net other, int i, Arm a, Ground g, long target) {
+        long ver = g.version();
+        if (a.plan != null && a.planAt != ver) {
+            if (planHolds(g, a)) a.planAt = ver;
+            else a.plan = null;
+        }
+        if (a.plan == null && !replan(n, other, g, a)) return WAITS;
+        int[] leg = a.plan[a.planLeg];
+        int d = leg[0], dx = DX[d], dy = DY[d];
+        long y = a.y, nx = a.x + dx, ny = y + dy;
+        boolean diag = dx != 0 && dy != 0;
+        if (diag && count(n, pieceOf(n, a)) + 1 == target && coverer(n, nx, y, i) == -1 && coverer(n, nx, ny, i) == -1) return HELD;
+        saw(n, nx, ny);
+        if (diag) saw(n, nx, y);
+        a.push(d);
+        int s = a.segs - 1;
+        a.steps++;
+        if (diag) lay(n, i, s, nx, y);
+        lay(n, i, s, nx, ny);
+        a.x = nx;
+        a.y = ny;
+        a.head = d;
+        if (++a.planStep == leg[1]) {
+            a.planStep = 0;
+            if (++a.planLeg == a.plan.length) a.plan = null;
+        }
+        return STEPPED;
+    }
+
+    /** Whether every plot left of arm a's plan, and each 45-degree step's corner, is still the city's dry ground. */
+    static boolean planHolds(Ground g, Arm a) {
+        long x = a.x, y = a.y;
+        for (int l = a.planLeg; l < a.plan.length; l++) {
+            int d = a.plan[l][0], dx = DX[d], dy = DY[d];
+            for (int k = l == a.planLeg ? a.planStep : 0; k < a.plan[l][1]; k++) {
+                if (!dry(g.at(x + dx, y + dy, -1)) || (dx != 0 && dy != 0 && !dry(g.at(x + dx, y, -1)))) return false;
+                x += dx;
+                y += dy;
+            }
+        }
+        return true;
+    }
+
+    /** Plans link arm a's way again, from its end to its own corridor's line (the search of linkWay(), one source, the one line); false where it finds none. */
+    static boolean replan(Net n, Net other, Ground g, Arm a) {
+        long[] c = n.corridors.get(a.corridor);
+        LinkWay w = linkWay(n, other, g, corridorPiece(c), new long[][] { { a.x }, { a.y } }, (int) c[0], c[1], null, 0);
+        if (w == null) return false;
+        a.plan = w.legs();
+        a.planLeg = 0;
+        a.planStep = 0;
+        a.planAt = g.version();
+        return true;
     }
 
     /** Piece p's plots as {xs, ys}: its hub's if laid (the home piece's) and every step of its arms and each 45-degree step's corner, in arm order. */
@@ -1483,38 +1821,6 @@ public final class CityRuns {
             }
         }
         return new long[][] { Arrays.copyOf(xs, c), Arrays.copyOf(ys, c) };
-    }
-
-    /**
-     * Where a link to the row (kind 0) or column (1) at v leaves the piece's
-     * net, as {x, y, heading, length}, or null: of the plots from which a
-     * straight heading perpendicular to the line, toward it (south or north
-     * for a row, east or west for a column), runs at least LOOK plots clear()
-     * and whose first LOOK plots ahead the net does not cover (a link never
-     * runs along its own net), the nearest the line; ties to the nearest the
-     * piece's hub, then x, then y. The length is the plots to the line: each
-     * of the link's steps moves it one nearer.
-     */
-    static long[] linkStart(Net n, Ground g, long[][] plots, long[] hub, int kind, long v, int[] why) {
-        long[] xs = plots[0], ys = plots[1];
-        long bx = 0, by = 0, bd = Long.MAX_VALUE;
-        double bh = 0;
-        int bhead = -1;
-        for (int i = 0; i < xs.length; i++) {
-            long x = xs[i], y = ys[i];
-            long d = kind == 0 ? v - y : v - x, ad = Math.abs(d);
-            if (ad < 1 || ad > bd) continue;
-            double dh = Math.hypot(x - hub[0], y - hub[1]);
-            boolean better = bhead < 0 || ad < bd || dh < bh || (dh == bh && (x < bx || (x == bx && y < by)));
-            if (!better) continue;
-            int head = kind == 0 ? (d > 0 ? 2 : 6) : (d > 0 ? 0 : 4);
-            if (clear(n, g, x, y, head, LOOK, why) < LOOK) continue;
-            boolean free = true;
-            for (int s = 1; s <= LOOK && free; s++) free = !covered(n, x + (long) DX[head] * s, y + (long) DY[head] * s);
-            if (!free) continue;
-            bx = x; by = y; bd = ad; bh = dh; bhead = head;
-        }
-        return bhead < 0 ? null : new long[] { bx, by, bhead, bd };
     }
 
     /**
@@ -1658,6 +1964,7 @@ public final class CityRuns {
             a.joined = false;
             a.known = 0;
             a.waitAt = Long.MIN_VALUE;
+            a.plan = null;   // a link taken back plans its way again (CL5)
             if (!covered(n, x, y)) { n.plots--; debit(n, p, 1); }
             if (diag && !covered(n, x, y - dy)) { n.plots--; debit(n, p, 1); }
             while (!a.crossings.isEmpty() && a.crossings.get(a.crossings.size() - 1)[2] > a.steps) a.crossings.remove(a.crossings.size() - 1);

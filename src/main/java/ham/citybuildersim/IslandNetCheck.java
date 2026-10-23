@@ -21,7 +21,16 @@ import java.util.Map;
  *      premise, the fixture causes it); with it on a LINK corridor opens, its
  *      link leaves the net at its start and stands on its line at its end, the
  *      corridor's two line arms open there, every plot is on owned dry ground,
- *      and the model's plots are all laid.
+ *      and the model's plots are all laid. No link is a stub: each stands on
+ *      its line, or is the piece's newest corridor still growing.
+ *
+ *   1b. A LINK FINDS ITS WAY ROUND WATER. Two dry squares joined by a neck a
+ *      few plots wide that is on neither the hub's row nor its column, sea
+ *      round them all: with link arms off the highways stall (the premise);
+ *      with them on the link leaves the net, runs through the neck in a few
+ *      legs and stands on the line beyond it, the second link goes on to the
+ *      far square, every plot is on dry owned ground, nothing is a stub, and
+ *      the model's plots are all laid.
  *
  *   2. TWO ISLANDS EACH WITH BUILDINGS GET A NET EACH, NONE ACROSS THE SEA.
  *      Two dry squares parted by sea (SALT, which no arm crosses) and a Pieces
@@ -46,7 +55,9 @@ import java.util.Map;
  *   5. THE SIDECAR KEEPS EVERY PIECE'S NET. Written and read at the current
  *      FORMAT it is same() and fills a box alike, with its pieces' hubs,
  *      corridors' pieces and roles and piece counts; a net of one piece
- *      written at FORMAT 11 and read back is same() as it was.
+ *      written at FORMAT 11 and read back is same() as it was. A net with a
+ *      link part-grown, written and read back, plans its way again (the plan
+ *      is never saved) and grows on to its line.
  *
  *   6. NOTHING ELSE MOVED. On a ground where the rule never sticks (a large
  *      square) layTo() with ONE_PIECE gives the same stretches() and
@@ -237,9 +248,10 @@ public class IslandNetCheck {
         System.out.println("--- a stuck net opens its next corridor by a link arm ---");
         // S1: an owned dry square of 100 plots each way round the hub, everything else unowned (the city's edge). S2: dry ground against its east
         // edge whose rows end one above the hub's row, 150 rows high: the east arm's row ends at S1's edge, and the 45 degrees beyond it run 150
-        // plots, short of JUNCTION_COST; every arm waits at S1's edge, none reaches APART, no line crosses the net. A link from the hub's
-        // neighbour on the row above runs east along S2 to the column APART out.
-        long half = 100, s2Rows = 150, s2Reach = 700;
+        // plots, short of JUNCTION_COST; every arm waits at S1's edge, none reaches APART, no line crosses the net. A link from the east arm's
+        // end steps up to the row above and runs east along S2 to the column APART out; S2 reaches past the third column, so that the
+        // model's plots, 1,100, fit the ground the links and their lines reach.
+        long half = 100, s2Rows = 150, s2Reach = 800;
         Land stuck = new Land(SITE - half, SITE - s2Rows, SITE + s2Reach, SITE + half, false)
                 .add(Land.rect(SITE - half, SITE - half, SITE + half, SITE + half))
                 .add(Land.rect(SITE + half - 10, SITE - s2Rows, SITE + s2Reach, SITE - 1));
@@ -282,10 +294,87 @@ public class IslandNetCheck {
                 for (int s = 0; s < a.segs; s++) along &= c[0] == 0 ? (CityRuns.DY[a.segHead[s]] == 0 && a.segY[s] == c[1]) : (CityRuns.DX[a.segHead[s]] == 0 && a.segX[s] == c[1]);
             }
             check("...laid along the line", along);
-            check("the link grew by the arms' own rules: every step moved it a plot nearer its line", linkNearer(link, c));
+            check("the link is a planned way, a shortest one: its steps are the plots between its start and its end, none wasted", linkDirect(link));
+            check("...of at most 3 legs (stretches)", link.segs <= 3);
+            check("...and it joins the net to its line: every stretch starts where the one before it ended", linkJoined(hw, link));
         }
+        check("no link is a stub: each stands on its line or is the piece's newest corridor still growing", stubs(hw) == 0);
         check("every plot is on owned dry ground", offGround(hw, stuck) == 0);
         check("plots counted are the plots covered", hw.plots == CityRuns.countPlots(hw));
+
+        /* ============ 1b. a link finds its way round water ============ */
+        System.out.println("\n--- a link finds its way round water ---");
+        // Two dry squares of 201 plots each way joined by a neck 6 plots wide, 300 long, that leaves the first square's east edge 60 plots
+        // south of the hub's row and enters the second's west edge there: the hub's row and column meet the sea at both squares' edges, the
+        // neck is on neither, the sea round it all. Every arm of the spine stops short of APART; the column APART out crosses the neck, the
+        // one two APART out the second square. A link has to go round the sea: south-east to the neck's mouth, then along it.
+        long neckTop = 60, neckRows = 6, sqHalf = 100, farFrom = 400, farTo = 600;
+        Land neckLand = new Land(SITE - sqHalf - 50, SITE - sqHalf - 50, SITE + farTo + 50, SITE + sqHalf + 50, true)
+                .add(Land.rect(SITE - sqHalf, SITE - sqHalf, SITE + sqHalf, SITE + sqHalf))
+                .add(Land.rect(SITE + farFrom, SITE - sqHalf, SITE + farTo, SITE + sqHalf))
+                .add(Land.rect(SITE + sqHalf, SITE + neckTop, SITE + farFrom, SITE + neckTop + neckRows - 1));
+        long neckTarget = 1000;
+        CityRuns.linkArms = false;
+        CityRuns neckOff = lay(neckLand, neckTarget, CityRuns.ONE_PIECE);
+        CityRuns.linkArms = true;
+        check("fixture: without link arms the highways stall short of the model's plots, in the spine's two corridors (premise)",
+                neckOff.highwayShort() > 0 && neckOff.highways.corridors() == 2 && neckOff.highways.plots < 4L * CityRuns.APART);
+        check("fixture: ...and no line crosses the net: newCorridor() finds none", !CityRuns.newCorridor(neckOff.highways, neckLand));
+        CityRuns neckOn = lay(neckLand, neckTarget, CityRuns.ONE_PIECE);
+        CityRuns.Net nh = neckOn.highways;
+        int nci = corridorOf(nh, CityRuns.LINK, true);
+        System.out.printf("  target %,d plots: highwayShort %,d without link arms (%,d laid), %,d with (%,d laid, %d corridors, %d of them links)%n",
+                neckTarget, neckOff.highwayShort(), neckOff.highways.plots, neckOn.highwayShort(), nh.plots, nh.corridors(), corridorsOf(nh, CityRuns.LINK));
+        check("two LINK corridors open: the neck's line, then the far square's", corridorsOf(nh, CityRuns.LINK) == 2);
+        check("the model's highway plots are all laid: highwayShort() is 0", neckOn.highwayShort() == 0 && nh.plots == neckTarget);
+        check("a link stands on its line", nci >= 0);
+        if (nci >= 0) {
+            CityRuns.Arm link = nh.arms.get(CityRuns.linkArm(nh, nci));
+            long[] c = nh.corridors.get(nci);
+            check("the first link's line is the column APART east of the hub", c[0] == 1 && c[1] == SITE + CityRuns.APART);
+            check("...it leaves the net at its start (a plot of the net) and stands on the line, in the neck, at its end",
+                    CityRuns.covered(nh, link.sx, link.sy) && link.x == c[1] && link.y >= SITE + neckTop && link.y < SITE + neckTop + neckRows && link.steps > 0);
+            check("...a shortest way: " + (neckTop + CityRuns.APART - sqHalf) + " steps (the neck's mouth is " + neckTop + " plots from the hub's row, the line " + (CityRuns.APART - sqHalf) + " beyond it)",
+                    link.steps == neckTop + CityRuns.APART - sqHalf);
+            check("...joined from the net to the line, in at most 3 legs (stretches)", linkJoined(nh, link) && link.segs <= 3);
+            System.out.printf("  the first link: %,d steps in %d legs, from (%d, %d) to (%d, %d) (relative to the hub)%n",
+                    link.steps, link.segs, link.sx - SITE, link.sy - SITE, link.x - SITE, link.y - SITE);
+            boolean wet = false;
+            for (int s = 0; s < link.segs; s++) {
+                int h = link.segHead[s];
+                for (int k = 1; k <= link.segSteps[s]; k++) {
+                    long px = link.segX[s] + (long) CityRuns.DX[h] * k, py = link.segY[s] + (long) CityRuns.DY[h] * k;
+                    wet |= !CityRuns.dry(neckLand.at(px, py, -1));
+                    if (CityRuns.DX[h] != 0 && CityRuns.DY[h] != 0) wet |= !CityRuns.dry(neckLand.at(px, py - CityRuns.DY[h], -1));
+                }
+            }
+            check("...every plot of it, and every staircase corner, on dry owned ground", !wet);
+        }
+        int nci2 = -1;
+        for (int ci2 = 0; ci2 < nh.corridors.size(); ci2++) if (CityRuns.corridorRole(nh.corridors.get(ci2)) == CityRuns.LINK && ci2 != nci) nci2 = ci2;
+        check("the second link goes on to the column two APART out, in the far square", nci2 >= 0 && nh.corridors.get(nci2)[1] == SITE + 2L * CityRuns.APART
+                && CityRuns.linkReaches(nh, CityRuns.linkArm(nh, nci2)) && nh.arms.get(CityRuns.linkArm(nh, nci2)).y >= SITE + neckTop);
+        check("no link is a stub: each stands on its line or is the piece's newest corridor still growing", stubs(nh) == 0);
+        check("every plot is on owned dry ground", offGround(nh, neckLand) == 0);
+        check("plots counted are the plots covered", nh.plots == CityRuns.countPlots(nh));
+        // The same ground, the target cut so that the second link is part-grown: it is the newest corridor still growing, no stub.
+        CityRuns cut = lay(neckLand, 800, CityRuns.ONE_PIECE);
+        check("a link part-grown at the model's plots is the newest corridor still growing: no stub", stubs(cut.highways) == 0 && cut.highways.plots == 800
+                && corridorsOf(cut.highways, CityRuns.LINK) == 2 && !CityRuns.linkReaches(cut.highways, CityRuns.linkArm(cut.highways, cut.highways.corridors.size() - 1)));
+        // Taken back through the first link and grown again: nothing laid moves, the link loses its plan with its steps and plans again.
+        long inLink = neckOff.highways.plots + 150;
+        CityRuns trimmed = lay(neckLand, neckTarget, CityRuns.ONE_PIECE);
+        Map<String, List<long[]>> whole = armsOf(trimmed.highways);
+        again(trimmed, neckLand, inLink, CityRuns.ONE_PIECE);
+        int tli = CityRuns.linkArm(trimmed.highways, corridorOf(trimmed.highways, CityRuns.LINK, false));
+        Map<String, List<long[]>> afterTrim = armsOf(trimmed.highways);
+        check("taken back to " + inLink + " plots, inside the first link: every arm is a prefix of what it was, the link is part-grown with no plan, no stub, the second link closed",
+                prefix(afterTrim, whole) && trimmed.highways.plots == inLink && trimmed.highways.arms.get(tli).steps > 0 && !CityRuns.linkReaches(trimmed.highways, tli)
+                        && trimmed.highways.arms.get(tli).plan == null && corridorsOf(trimmed.highways, CityRuns.LINK) == 1 && stubs(trimmed.highways) == 0);
+        again(trimmed, neckLand, neckTarget, CityRuns.ONE_PIECE);
+        check("...grown again to " + neckTarget + ": the link plans its way again and reaches its line, the second link opens, every plot laid on dry ground, what was laid is kept",
+                prefix(afterTrim, armsOf(trimmed.highways)) && trimmed.highwayShort() == 0 && trimmed.highways.plots == neckTarget && corridorsOf(trimmed.highways, CityRuns.LINK) == 2
+                        && CityRuns.linkReaches(trimmed.highways, tli) && stubs(trimmed.highways) == 0 && offGround(trimmed.highways, neckLand) == 0);
 
         /* ============ 2. two islands each with buildings get a net each, none across the sea ============ */
         System.out.println("\n--- two islands each with buildings get a net each, none across the sea ---");
@@ -406,13 +495,40 @@ public class IslandNetCheck {
                 check("...with the pieces' hubs", back.highways.pieces() == 2 && java.util.Arrays.equals(back.highways.pieceHub(1), kept.highways.pieceHub(1)));
                 boolean roles = back.highways.corridors.size() == kept.highways.corridors.size();
                 for (int i = 0; roles && i < kept.highways.corridors.size(); i++) roles = CityRuns.corridorRole(back.highways.corridors.get(i)) == CityRuns.corridorRole(kept.highways.corridors.get(i)) && CityRuns.corridorPiece(back.highways.corridors.get(i)) == CityRuns.corridorPiece(kept.highways.corridors.get(i));
-                check("...the corridors' roles and pieces, with a link among them", roles && corridorsOf(kept.highways, CityRuns.LINK) >= 1);
+                check("...the corridors' roles and pieces", roles);
                 check("...each piece's plots counted afresh the same", back.highways.piecePlots(0) == kept.highways.piecePlots(0) && back.highways.piecePlots(1) == kept.highways.piecePlots(1));
                 int w = (int) (sea2.x1 - sea2.x0 + 1), h = (int) (sea2.y1 - sea2.y0 + 1);
                 byte[] f1 = new byte[w * h], f2 = new byte[w * h], m1 = new byte[w * h], m2 = new byte[w * h];
                 kept.fill(sea2.x0, sea2.y0, w, h, f1, m1, false);
                 back.fill(sea2.x0, sea2.y0, w, h, f2, m2, false);
                 check("...and they fill a box alike", java.util.Arrays.equals(f1, f2) && java.util.Arrays.equals(m1, m2) && kept.highwaysReach());
+            }
+            // A link part-grown, written and read back: the plan is never saved, so the link plans its way again and grows on.
+            CityRuns part = lay(neckLand, neckOff.highways.plots + 150, CityRuns.ONE_PIECE);
+            int pci = corridorOf(part.highways, CityRuns.LINK, false);
+            int pli = pci >= 0 ? CityRuns.linkArm(part.highways, pci) : -1;
+            check("fixture: the neck ground's first link is part-grown, with its plan, at the model's " + part.highways.plots + " plots",
+                    pli >= 0 && part.highways.arms.get(pli).steps > 0 && !CityRuns.linkReaches(part.highways, pli) && part.highways.arms.get(pli).plan != null);
+            if (pli >= 0) {
+                ByteArrayOutputStream pbytes = new ByteArrayOutputStream();
+                part.write(new DataOutputStream(pbytes), CityMap.FORMAT);
+                CityRuns pb = CityRuns.read(new DataInputStream(new ByteArrayInputStream(pbytes.toByteArray())), CityMap.FORMAT);
+                if (pb != null) pb.setGateway(part.gateway());
+                check("a link part-grown, written and read back, is the same net, its LINK corridor's role kept, and has no plan",
+                        pb != null && part.same(pb) && corridorsOf(pb.highways, CityRuns.LINK) == corridorsOf(part.highways, CityRuns.LINK) && corridorsOf(pb.highways, CityRuns.LINK) >= 1
+                                && pb.highways.arms.get(pli).plan == null);
+                if (pb != null) {
+                    Map<String, List<long[]>> beforeRead = armsOf(pb.highways);
+                    int stepsAtRead = pb.highways.arms.get(pli).steps;
+                    again(pb, neckLand, neckTarget, CityRuns.ONE_PIECE);
+                    CityRuns.Net pn = pb.highways;
+                    System.out.printf("  a link read back at %d steps (of %d plots laid) grew on to %d steps; the model's %,d plots: %,d laid, %d links%n",
+                            stepsAtRead, part.highways.plots, pn.arms.get(pli).steps, neckTarget, pn.plots, corridorsOf(pn, CityRuns.LINK));
+                    check("...it grows on to its line: the way planned again, the link whole, the model's plots all laid",
+                            pb.highwayShort() == 0 && pn.plots == neckTarget && pn.arms.get(pli).steps > stepsAtRead && CityRuns.linkReaches(pn, pli) && linkJoined(pn, pn.arms.get(pli)));
+                    check("...what was laid before is still there, and no link is a stub, and every plot is on dry owned ground",
+                            prefix(beforeRead, armsOf(pn)) && stubs(pn) == 0 && offGround(pn, neckLand) == 0);
+                }
             }
             // A net of one piece, written at FORMAT 11 (no pieces, no roles) and read back, is as it was.
             Land flat = new Land(SITE - 400, SITE - 400, SITE + 400, SITE + 400, false).add(Land.rect(SITE - 400, SITE - 400, SITE + 400, SITE + 400));
@@ -679,19 +795,39 @@ public class IslandNetCheck {
         return n;
     }
 
-    /** Whether every step of the link moved it a plot nearer its line: its coordinate across the line's moved by one each step. */
-    static boolean linkNearer(CityRuns.Arm link, long[] corridor) {
-        long across = corridor[0] == 0 ? link.sy : link.sx;
-        long end = corridor[0] == 0 ? link.y : link.x;
-        long perStep = Math.abs(end - across);
-        // Along the link's own heading each step moves one plot toward the line when the line is ahead: the distance covered is the steps along it.
-        long sum = 0;
+    /** Whether the link wasted no step: its steps are the plots between its start and its end, the larger of its two distances (a step moves one plot each way at most). */
+    static boolean linkDirect(CityRuns.Arm link) {
+        return link.steps == Math.max(Math.abs(link.x - link.sx), Math.abs(link.y - link.sy));
+    }
+
+    /** Whether the link is one unbroken way: it starts on a plot of the net that is not its own, every stretch starts where the one before it ended, and the last ends where the arm stands. */
+    static boolean linkJoined(CityRuns.Net n, CityRuns.Arm link) {
+        if (link.segs < 1 || CityRuns.coverer(n, link.sx, link.sy, n.arms.indexOf(link)) == -1) return false;
+        long x = link.sx, y = link.sy;
         for (int s = 0; s < link.segs; s++) {
-            int h = link.segHead[s];
-            int d = corridor[0] == 0 ? CityRuns.DY[h] : CityRuns.DX[h];
-            if (Math.signum(d) != Math.signum(end - across) || d == 0) return false;
-            sum += link.segSteps[s];
+            if (link.segX[s] != x || link.segY[s] != y) return false;
+            x += (long) CityRuns.DX[link.segHead[s]] * link.segSteps[s];
+            y += (long) CityRuns.DY[link.segHead[s]] * link.segSteps[s];
         }
-        return sum == perStep;
+        return x == link.x && y == link.y;
+    }
+
+    /**
+     * How many LINK corridors are stubs: a link that does not stand on its line and is not the newest corridor of its piece (still
+     * growing), or has no step and is not the newest. Zero is the rule.
+     */
+    static int stubs(CityRuns.Net n) {
+        int bad = 0;
+        for (int ci = 0; ci < n.corridors.size(); ci++) {
+            long[] c = n.corridors.get(ci);
+            if (CityRuns.corridorRole(c) != CityRuns.LINK) continue;
+            int newest = -1;
+            for (int k = 0; k < n.corridors.size(); k++) if (CityRuns.corridorPiece(n.corridors.get(k)) == CityRuns.corridorPiece(c)) newest = k;
+            int li = CityRuns.linkArm(n, ci);
+            boolean reaches = CityRuns.linkReaches(n, li);
+            if (!reaches && ci != newest) bad++;
+            else if (n.arms.get(li).steps == 0 && ci != newest) bad++;
+        }
+        return bad;
     }
 }
