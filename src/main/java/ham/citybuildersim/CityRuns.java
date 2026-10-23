@@ -56,7 +56,27 @@ import java.util.PriorityQueue;
  *             corridor opens only when no arm can grow. The prototype's rule -
  *             45 degrees at the sea alone, waiting at every edge - is this
  *             one's stiffest case;
- *   DRAWN     a diagonal is laid as a staircase so the run stays joined, and
+ *   LINKS     (CL5) a corridor opens where its line crosses the net, and a net
+ *             whose arms stop at the sea or the city's edge before they are
+ *             APART long has no line crossing it: Jerus's Bergen laid 8% of its
+ *             highways. Where no line crosses, the HIGHWAYS open a LINK
+ *             corridor all the same: one arm, the link, from the net's plot
+ *             nearest the nearest line, perpendicular to it, laid by the arms'
+ *             own rules and cost (straight, 45 degrees at the water, a bridge
+ *             where the arms bridge); where it meets the line the corridor's
+ *             two arms open, along the line, as any corridor's do. The
+ *             highways' alone: the railway grows no corridors (WAYS below);
+ *   PIECES    (CL5) the city's ground the water parts is in pieces (Pieces),
+ *             and an arm crosses no sea, so the founding site's net never
+ *             reached another island the city built on. Each piece that holds
+ *             buildings has a net of its own, the HIGHWAYS' alone, from its own
+ *             hub - its SPINE, its corridors, its link arms, all measured from
+ *             that hub - and the model's highway plots are dealt between the
+ *             pieces by their built weight, the home piece (the founding
+ *             site's) first, each piece's share grown and taken back from its
+ *             newest end as the one net's was. Nothing laid moves: two pieces
+ *             a purchase joins keep their nets, and the younger is frozen;
+ *   DRAWN    a diagonal is laid as a staircase so the run stays joined, and
  *             drawn smooth; a highway is elevated - streets pass beneath, the
  *             railway bridges over it, it passes over a mine standing on its
  *             site - with RAMPS where it crosses every other arterial
@@ -203,6 +223,45 @@ public final class CityRuns {
     static boolean dry(int g) {
         return World.dry(g);
     }
+
+    /**
+     * The city's ground in pieces the water parts (CL5): the map's, worked
+     * out again when its ground moves. Each piece that holds buildings has a
+     * highway net of its own (layTo()); with none, ONE_PIECE, the founding
+     * site's net alone.
+     */
+    public interface Pieces {
+        /** The pieces: piece 0 is the home piece, the founding site's. */
+        int count();
+        /** The piece of world plot (x, y), -1 for none. */
+        int pieceOf(long x, long y);
+        /** Piece p's built weight (the map: the buildings drawn on it); 0 for none. */
+        long weight(int p);
+        /** Piece p's hub {x, y}: a highway line crossing (both coordinates HIGHWAY_AT mod CELL) on its dry ground, nearest the founding site; null for none. */
+        long[] hub(int p);
+    }
+
+    /** The city as one piece (what a caller with no pieces passes): the founding site's net alone, as before CL5. */
+    public static final Pieces ONE_PIECE = new Pieces() {
+        @Override public int count() { return 1; }
+        @Override public int pieceOf(long x, long y) { return 0; }
+        @Override public long weight(int p) { return 1; }
+        @Override public long[] hub(int p) { return null; }
+    };
+
+    /** A corridor's role (CL5), in its fourth entry: a piece's SPINE, the row and the column through its hub (a home net's corridors 0 and 1)... */
+    public static final int SPINE = 0;
+    /** ...a CROSSING, a line one district out that crosses the net already laid (newCorridor(); and the railway's placeholder corridors, which run along no line of their own)... */
+    public static final int CROSSING = 1;
+    /** ...or a LINK, a line opened by a link arm from the net's plot nearest it, where no line crosses the net (openLink()). */
+    public static final int LINK = 2;
+
+    /**
+     * Whether the highways grow link arms (CL5, openLink()): true; a harness
+     * turns it off to show its fixture stalls without one (the premise: a
+     * net whose arms stop short of APART opens no corridor).
+     */
+    static boolean linkArms = true;
 
     /* =====================================================================
        THE WITNESS (batch FX7)
@@ -351,14 +410,31 @@ public final class CityRuns {
         /** Its hub chosen, and whether the hub's plot is laid (a railway may stand for its yards with no track). */
         boolean started, hubLaid;
         long hubX, hubY;
-        /** Its corridors, {0 a row | 1 a column, the line's coordinate}, in the order opened. */
+        /**
+         * Its corridors, {0 a row | 1 a column, the line's coordinate, the piece, the role (SPINE, CROSSING or LINK)}, in the
+         * order opened (CL5: the piece and the role; an entry a harness adds with two entries is piece 0, a CROSSING).
+         */
         final List<long[]> corridors = new ArrayList<>();
         final List<Arm> arms = new ArrayList<>();
         final List<Interchange> interchanges = new ArrayList<>();
         /** Plots laid: the union of its arms' plots and its hub's. */
         long plots;
-        /** The ground's version at which it last could lay no more (transient): it waits until the ground moves. */
+        /**
+         * Its pieces' hubs (CL5), {x, y} each, piece 0's first (the net's own, hubX and hubY, kept as start() and the sidecar set it):
+         * a net on another piece of the city's ground is opened by layTo(), the highways' alone, from its own hub.
+         */
+        final List<long[]> pieceHubs = new ArrayList<>();
+        /**
+         * The plots laid by each piece's arms (CL5): credited in lay() to the piece of the arm that lays a plot nothing of the net
+         * covered yet, debited in trim() to the piece of the arm taken back, never below 0. Their sum can drift from `plots` by a plot
+         * where two pieces' arms meet after their ground has joined; `plots`, the union, stays the authority for the total. Read back
+         * from a sidecar by recounting, each plot to the lowest-index arm covering it. A net of one piece has `plots` for its count (count()).
+         */
+        long[] piecePlots = new long[1];
+        /** The ground's version at which it last could lay no more (transient): it waits until the ground moves. Piece 0's; the other pieces' are pieceStuck. */
         long stuckAt = Long.MIN_VALUE;
+        /** ...for each piece but piece 0 (CL5, transient). */
+        long[] pieceStuck = { Long.MIN_VALUE };
         /** Its stretches by district: district key -> {arm << 24 | stretch} entries, and how many. */
         final Map<Long, long[]> buckets = new HashMap<>();
         final Map<Long, Integer> bucketN = new HashMap<>();
@@ -413,8 +489,122 @@ public final class CityRuns {
             }
             started = false; hubLaid = false; corridors.clear(); arms.clear(); interchanges.clear(); plots = 0;
             hubX = hubY = 0;
+            pieceHubs.clear(); piecePlots = new long[1]; pieceStuck = new long[] { Long.MIN_VALUE };
             buckets.clear(); bucketN.clear(); stuckAt = Long.MIN_VALUE;
         }
+
+        /** The pieces: one for a net not opened on another piece of the ground (CL5). */
+        public int pieces() { return Math.max(1, pieceHubs.size()); }
+
+        /** Piece p's hub {x, y}: the net's own for piece 0; null for a piece the net has not got. */
+        public long[] pieceHub(int p) {
+            if (p == 0) return started ? new long[] { hubX, hubY } : null;
+            return p > 0 && p < pieceHubs.size() ? pieceHubs.get(p).clone() : null;
+        }
+
+        /** The plots piece p's arms laid (CL5; piecePlots): a net of one piece's are all of them. */
+        public long piecePlots(int p) { return count(this, p); }
+    }
+
+    /* ----- pieces: whose a corridor, an arm and a plot is (CL5) ----- */
+
+    /** The piece of corridor entry c: its third entry; an entry a harness adds with two is piece 0. */
+    static int corridorPiece(long[] c) {
+        return c.length > 2 ? (int) c[2] : 0;
+    }
+
+    /** The role of corridor entry c: its fourth entry; an entry a harness adds with two is a CROSSING. */
+    static int corridorRole(long[] c) {
+        return c.length > 3 ? (int) c[3] : CROSSING;
+    }
+
+    /** The piece arm a belongs to: its corridor's (0 for an arm whose corridor the net does not list). */
+    static int pieceOf(Net n, Arm a) {
+        return a.corridor < n.corridors.size() ? corridorPiece(n.corridors.get(a.corridor)) : 0;
+    }
+
+    /** Whether corridor ci is a SPINE: corridors 0 and 1, the home piece's, or one a piece opened with its hub. */
+    static boolean isSpine(Net n, int ci) {
+        return ci <= 1 || (ci < n.corridors.size() && corridorRole(n.corridors.get(ci)) == SPINE);
+    }
+
+    /** The plots piece p has: the net's own for a net of one piece (every plot is its), else the count piecePlots keeps. */
+    static long count(Net n, int p) {
+        if (n.pieceHubs.size() <= 1) return n.plots;
+        return p >= 0 && p < n.piecePlots.length ? n.piecePlots[p] : 0;
+    }
+
+    /** Credits piece p with d plots newly laid. */
+    static void credit(Net n, int p, long d) {
+        if (p >= n.piecePlots.length) n.piecePlots = Arrays.copyOf(n.piecePlots, p + 1);
+        n.piecePlots[p] += d;
+    }
+
+    /** Debits piece p of d plots taken back, never below 0 (the drift at a meeting of two pieces' arms: piecePlots). */
+    static void debit(Net n, int p, long d) {
+        if (p < n.piecePlots.length) n.piecePlots[p] = Math.max(0, n.piecePlots[p] - d);
+    }
+
+    /** Piece p's hub {x, y}: the net's own for piece 0. */
+    static long[] hubOf(Net n, int p) {
+        return p == 0 ? new long[] { n.hubX, n.hubY } : n.pieceHubs.get(p);
+    }
+
+    /** The ground's version at which piece p last could lay no more. */
+    static long stuckAt(Net n, int p) {
+        return p == 0 ? n.stuckAt : n.pieceStuck[p];
+    }
+
+    /** ...set. */
+    static void setStuck(Net n, int p, long v) {
+        if (p == 0) n.stuckAt = v;
+        else n.pieceStuck[p] = v;
+    }
+
+    /**
+     * Whether arm a is the arm that lays its piece's hub plot, a piece but the home piece: the first arm of the piece's row spine,
+     * east from the plot before the hub, so that its first step lays the hub (openPiece()) and the piece's plots are arms' alone.
+     */
+    static boolean hubArm(Net n, Arm a) {
+        if (a.corridor <= 1 || a.home != 0 || a.corridor >= n.corridors.size()) return false;
+        long[] c = n.corridors.get(a.corridor);
+        int p = corridorPiece(c);
+        if (corridorRole(c) != SPINE || c[0] != 0 || p < 1 || p >= n.pieceHubs.size()) return false;
+        long[] h = n.pieceHubs.get(p);
+        return a.sx == h[0] - 1 && a.sy == h[1];
+    }
+
+    /** The link arm of LINK corridor ci: the first arm of that corridor, which openLink() laid before the line's two; -1 for none. */
+    static int linkArm(Net n, int ci) {
+        for (int i = 0; i < n.arms.size(); i++) if (n.arms.get(i).corridor == ci) return i;
+        return -1;
+    }
+
+    /** Whether arm i is the link arm of a LINK corridor. */
+    static boolean isLink(Net n, int i) {
+        Arm a = n.arms.get(i);
+        return a.corridor < n.corridors.size() && corridorRole(n.corridors.get(a.corridor)) == LINK && linkArm(n, a.corridor) == i;
+    }
+
+    /** Whether the link arm at index link stands on its corridor's line: it has stepped, and its row (or column) is the line's. */
+    static boolean linkReaches(Net n, int link) {
+        if (link < 0) return false;
+        Arm a = n.arms.get(link);
+        if (a.steps <= 0) return false;
+        long[] c = n.corridors.get(a.corridor);
+        return (c[0] == 0 ? a.y : a.x) == c[1];
+    }
+
+    /**
+     * Whether arm i is not grown now (CL5): a LINK corridor's link once it stands on its line, and the corridor's two line arms
+     * while it does not (a link taken back is grown again first).
+     */
+    static boolean dormant(Net n, int i) {
+        Arm a = n.arms.get(i);
+        if (a.corridor >= n.corridors.size() || corridorRole(n.corridors.get(a.corridor)) != LINK) return false;
+        int link = linkArm(n, a.corridor);
+        boolean reaches = linkReaches(n, link);
+        return i == link ? reaches : !reaches;
     }
 
     final Net highways = new Net(HIGHWAYS, HIGHWAY_AT, TilePainter.MAX_BRIDGE[BuildingVisual.HIGHWAY]);
@@ -654,7 +844,7 @@ public final class CityRuns {
         boolean reach = false;
         if (highways.started) {
             for (Arm a : highways.arms) {
-                reach = (a.corridor == 0 || a.corridor == 1) && firstLineStep(a) > 0;
+                reach = isSpine(highways, a.corridor) && firstLineStep(a) > 0;
                 for (int s = 0; s < a.segs && !reach; s++) reach = onRampLine(a, s);
                 if (reach) break;
             }
@@ -753,12 +943,15 @@ public final class CityRuns {
         return s;
     }
 
-    /** Lays net n's plot (x, y) on arm a's stretch s: counted where nothing else of the net covers it yet (an arm never covers its own new plot: it never turns back). */
+    /** Lays net n's plot (x, y) on arm a's stretch s: counted where nothing else of the net covers it yet (an arm never covers its own new plot: it never turns back), and credited to the piece of the arm. */
     static void lay(Net n, int a, int s, long x, long y) {
         saw(n, x, y);
         boolean was = coverer(n, x, y, a) != -1;
         file(n, a, s, x, y);
-        if (!was) n.plots++;
+        if (!was) {
+            n.plots++;
+            credit(n, pieceOf(n, n.arms.get(a)), 1);
+        }
     }
 
     /**
@@ -795,9 +988,10 @@ public final class CityRuns {
             s = Math.sin(r);
             rowFirst = !(Math.abs(s) > Math.abs(c));
         }
+        n.pieceHubs.add(new long[] { bx, by });
         if (rowFirst) {
-            n.corridors.add(new long[] { 0, by });
-            n.corridors.add(new long[] { 1, bx });
+            n.corridors.add(new long[] { 0, by, 0, SPINE });
+            n.corridors.add(new long[] { 1, bx, 0, SPINE });
             int east = gateway >= 0 && c < 0 ? 4 : 0;
             int south = gateway >= 0 && s < 0 ? 6 : 2;
             n.arms.add(new Arm(0, east, bx, by));
@@ -805,8 +999,8 @@ public final class CityRuns {
             n.arms.add(new Arm(1, south, bx, by));
             n.arms.add(new Arm(1, south == 2 ? 6 : 2, bx, by));
         } else {
-            n.corridors.add(new long[] { 1, bx });
-            n.corridors.add(new long[] { 0, by });
+            n.corridors.add(new long[] { 1, bx, 0, SPINE });
+            n.corridors.add(new long[] { 0, by, 0, SPINE });
             int south = s >= 0 ? 2 : 6;
             int east = c >= 0 ? 0 : 4;
             n.arms.add(new Arm(0, south, bx, by));
@@ -843,45 +1037,71 @@ public final class CityRuns {
      * still grow - the gateway's arm (gateArm()) before the rest of its
      * corridor - a new corridor when none can. An arm waiting on the ground
      * is not tried again until the ground moves. True when it laid any.
+     * (CL5) This is piece 0's, the net as one piece: growPiece().
      */
     static boolean grow(Net n, Net other, long target, Ground g, long ax, long ay, int gateway) {
-        if (target <= n.plots) return false;
-        if (!n.started && !start(n, g, ax, ay, gateway)) return false;
+        return growPiece(n, other, 0, target, g, ax, ay, gateway);
+    }
+
+    /**
+     * ...piece p's net grown to `target` plots of its own (CL5; count()): only
+     * the arms of that piece's corridors, its lines measured from its hub, its
+     * wait on the ground its own (stuckAt()). When no arm of the piece can
+     * grow and no line crosses its net, the highways open a LINK corridor
+     * (openLink()) and grow its link; a link that reaches its line opens the
+     * corridor's two arms there (openLine()).
+     */
+    static boolean growPiece(Net n, Net other, int p, long target, Ground g, long ax, long ay, int gateway) {
+        if (target <= count(n, p)) return false;
+        if (p == 0 && !n.started && !start(n, g, ax, ay, gateway)) return false;
+        if (!n.started || p >= n.pieces()) return false;
         long before = n.plots;
-        if (!n.hubLaid) {
+        if (p == 0 && !n.hubLaid) {
             boolean was = coverer(n, n.hubX, n.hubY, -1) != -1;
             saw(n, n.hubX, n.hubY);
             n.hubLaid = true;
-            if (!was) n.plots++;
+            if (!was) {
+                n.plots++;
+                credit(n, 0, 1);
+            }
         }
         long ver = g.version();
-        if (n.stuckAt == ver || n.plots >= target) return n.plots != before;
-        int gate = gateArm(n, gateway);
-        PriorityQueue<Integer> live = new PriorityQueue<>((p, q) -> {
-            Arm a = n.arms.get(p), b = n.arms.get(q);
+        if (stuckAt(n, p) == ver || count(n, p) >= target) return n.plots != before;
+        int gate = p == 0 ? gateArm(n, gateway) : -1;
+        PriorityQueue<Integer> live = new PriorityQueue<>((x, y) -> {
+            Arm a = n.arms.get(x), b = n.arms.get(y);
             if (a.corridor != b.corridor) return Integer.compare(a.corridor, b.corridor);
-            boolean ga = p == gate, gb = q == gate;
+            boolean ga = x == gate, gb = y == gate;
             if (ga != gb) return ga ? -1 : 1;
             if (a.steps != b.steps) return Integer.compare(a.steps, b.steps);
-            return Integer.compare(p, q);
+            return Integer.compare(x, y);
         });
         for (int i = 0; i < n.arms.size(); i++) {
             Arm a = n.arms.get(i);
-            if (!a.joined && a.waitAt != ver) live.add(i);
+            if (!a.joined && a.waitAt != ver && pieceOf(n, a) == p && !dormant(n, i)) live.add(i);
         }
         int[] why = new int[1];
-        long guard = 50 * (target - n.plots) + 1000;
-        while (n.plots < target && guard-- > 0) {
+        long guard = 50 * (target - count(n, p)) + 1000;
+        while (count(n, p) < target && guard-- > 0) {
             if (live.isEmpty()) {
-                if (!newCorridor(n, g)) { n.stuckAt = ver; break; }
-                for (int i = n.arms.size() - 2; i < n.arms.size(); i++) live.add(i);
+                if (newCorridor(n, g, p)) {
+                    for (int i = n.arms.size() - 2; i < n.arms.size(); i++) live.add(i);
+                } else if (linkArms && n.kind == HIGHWAYS && openLink(n, g, p)) {
+                    live.add(n.arms.size() - 1);
+                } else {
+                    setStuck(n, p, ver);
+                    break;
+                }
                 continue;
             }
             int i = live.poll();
             Arm a = n.arms.get(i);
             int r = step(n, other, i, a, g, target, why);
-            if (r == STEPPED) live.add(i);
-            else if (r == WAITS) a.waitAt = ver;
+            if (r == STEPPED) {
+                // A link that has reached its line stops, and the line's two arms open there.
+                if (a.corridor < n.corridors.size() && corridorRole(n.corridors.get(a.corridor)) == LINK && isLink(n, i) && linkReaches(n, i)) openLine(n, i, live);
+                else live.add(i);
+            } else if (r == WAITS) a.waitAt = ver;
             else if (r == HELD) break;
         }
         return n.plots != before;
@@ -930,7 +1150,7 @@ public final class CityRuns {
             boolean was = coverer(n, n.hubX, n.hubY, -1) != -1;
             saw(n, n.hubX, n.hubY);
             n.hubLaid = true;
-            if (!was) n.plots++;
+            if (!was) { n.plots++; credit(n, 0, 1); }
         }
         long ver = g.version();
         if (n.stuckAt == ver || n.plots >= target) return n.plots != before;
@@ -957,13 +1177,26 @@ public final class CityRuns {
      * (the city's edge, the sea with no way along it, a T it does not cross,
      * the other net's run along its way); JOINED (it met the net running its
      * own way, or ran beside another arm); HELD (a 45-degree step lays two
-     * plots and the model has one more).
+     * plots and the model has one more). (CL5) `target` is the plots of the
+     * arm's piece, which the HELD rule counts against count().
      */
     static int step(Net n, Net other, int i, Arm a, Ground g, long target, int[] why) {
         long x = a.x, y = a.y;
         int home = a.home;
         long ver = g.version();
         a.stoppedBy = OPEN;
+        // A piece's hub arm, its first step: the hub's plot itself, laid whatever the ground beyond it (openPiece()).
+        if (a.steps == 0 && hubArm(n, a)) {
+            long hx = x + 1;
+            if (!dry(g.at(hx, y, 0))) return WAITS;
+            saw(n, hx, y);
+            a.push(0);
+            a.steps++;
+            lay(n, i, a.segs - 1, hx, y);
+            a.x = hx;
+            a.known = 0;
+            return STEPPED;
+        }
         if (a.knownAt != ver) { a.known = 0; a.knownAt = ver; }
         // Back onto its heading where the way home runs clear for TURN_COST plots.
         if (a.head != home && clear(n, g, x, y, home, TURN_COST, why) >= TURN_COST) { a.head = home; a.known = 0; }
@@ -1017,7 +1250,7 @@ public final class CityRuns {
                 }
             }
         }
-        if (diag && n.plots + 1 == target && coverer(n, nx, y, i) == -1 && coverer(n, nx, ny, i) == -1) return HELD;
+        if (diag && count(n, pieceOf(n, a)) + 1 == target && coverer(n, nx, y, i) == -1 && coverer(n, nx, ny, i) == -1) return HELD;
         if (cov != -1 && a.steps > 2) a.crossings.add(new long[] { nx, ny, a.steps + 1 });
         // The witness first (batch FX7): push() lengthens a stretch every district it is filed under reads at once.
         saw(n, nx, ny);
@@ -1038,11 +1271,18 @@ public final class CityRuns {
      * districts out, k from 1, that crosses the net already laid on the city's
      * ground - at its plot there nearest the hub, an interchange - the nearest
      * of those at the least k (a column before a row on a tie, hw.py's order);
-     * two arms from it, both ways. False where none is left.
+     * two arms from it, both ways. False where none is left. (CL5) Piece 0's:
+     * newCorridor(n, g, p).
      */
     static boolean newCorridor(Net n, Ground g) {
+        return newCorridor(n, g, 0);
+    }
+
+    /** ...piece p's: the lines measured from its hub, the net those of its corridors' arms, a line "had" when a corridor of this piece is on it. */
+    static boolean newCorridor(Net n, Ground g, int p) {
+        long[] hub = hubOf(n, p);
         long[] box = g.box();
-        long reach = Math.max(Math.max(Math.abs(box[0] - n.hubX), Math.abs(box[2] - n.hubX)), Math.max(Math.abs(box[1] - n.hubY), Math.abs(box[3] - n.hubY)));
+        long reach = Math.max(Math.max(Math.abs(box[0] - hub[0]), Math.abs(box[2] - hub[0])), Math.max(Math.abs(box[1] - hub[1]), Math.abs(box[3] - hub[1])));
         long most = reach / APART + 1;
         for (long k = 1; k <= most; k++) {
             long[] bp = null;
@@ -1051,19 +1291,17 @@ public final class CityRuns {
             long bv = 0;
             for (int sgn = 1; sgn >= -1; sgn -= 2) {
                 for (int kind = 0; kind < 2; kind++) {
-                    long v = (kind == 0 ? n.hubY : n.hubX) + sgn * k * APART;
-                    boolean have = false;
-                    for (long[] c : n.corridors) if (c[0] == kind && c[1] == v) { have = true; break; }
-                    if (have) continue;
-                    long[] p = nearestOnLine(n, g, kind, v);
-                    if (p == null) continue;
-                    double dd = Math.hypot(p[0] - n.hubX, p[1] - n.hubY);
-                    if (bp == null || before(dd, kind, v, p, bd, bkind, bv, bp)) { bp = p; bd = dd; bkind = kind; bv = v; }
+                    long v = (kind == 0 ? hub[1] : hub[0]) + sgn * k * APART;
+                    if (hasLine(n, p, kind, v)) continue;
+                    long[] q = nearestOnLine(n, g, kind, v, p);
+                    if (q == null) continue;
+                    double dd = Math.hypot(q[0] - hub[0], q[1] - hub[1]);
+                    if (bp == null || before(dd, kind, v, q, bd, bkind, bv, bp)) { bp = q; bd = dd; bkind = kind; bv = v; }
                 }
             }
             if (bp == null) continue;
             int ci = n.corridors.size();
-            n.corridors.add(new long[] { bkind, bv });
+            n.corridors.add(new long[] { bkind, bv, p, CROSSING });
             n.interchanges.add(new Interchange(bp[0], bp[1], ci));
             if (bkind == 0) {
                 n.arms.add(new Arm(ci, 0, bp[0], bp[1]));
@@ -1086,11 +1324,18 @@ public final class CityRuns {
         return p[1] < p2[1];
     }
 
-    /** The plot of net n on the row (kind 0) or column (1) at v, on the city's ground, nearest its hub; null for none. */
+    /** The plot of net n on the row (kind 0) or column (1) at v, on the city's ground, nearest its hub; null for none. Piece 0's (CL5). */
     static long[] nearestOnLine(Net n, Ground g, int kind, long v) {
+        return nearestOnLine(n, g, kind, v, 0);
+    }
+
+    /** ...among piece p's arms, nearest its hub (CL5). */
+    static long[] nearestOnLine(Net n, Ground g, int kind, long v, int piece) {
         long[] best = null;
         double bd = Double.MAX_VALUE;
+        long[] hubAt = hubOf(n, piece);
         for (Arm a : n.arms) {
+            if (pieceOf(n, a) != piece) continue;
             for (int s = 0; s < a.segs; s++) {
                 int h = a.segHead[s], m = a.segSteps[s], dx = DX[h], dy = DY[h];
                 long x0 = a.segX[s], y0 = a.segY[s];
@@ -1100,17 +1345,17 @@ public final class CityRuns {
                 if (along == 0) {
                     if (start != v) continue;
                     // Along the line: every step's plot; the one nearest the hub, or the nearest owned.
-                    long hub = kind == 0 ? n.hubX : n.hubY, from = kind == 0 ? x0 : y0;
+                    long hub = kind == 0 ? hubAt[0] : hubAt[1], from = kind == 0 ? x0 : y0;
                     long kStar = Math.max(1, Math.min(m, (hub - from) * across));
                     for (long k : new long[] { kStar }) {
                         long px = x0 + dx * k, py = y0 + dy * k;
                         if (g.at(px, py, -1) >= 0) {
-                            double d = Math.hypot(px - n.hubX, py - n.hubY);
+                            double d = Math.hypot(px - hubAt[0], py - hubAt[1]);
                             if (d < bd) { bd = d; best = new long[] { px, py }; }
                         } else {
                             for (long q = 1; q <= m; q++) {
                                 long qx = x0 + dx * q, qy = y0 + dy * q;
-                                double d = Math.hypot(qx - n.hubX, qy - n.hubY);
+                                double d = Math.hypot(qx - hubAt[0], qy - hubAt[1]);
                                 if (d < bd && g.at(qx, qy, -1) >= 0) { bd = d; best = new long[] { qx, qy }; }
                             }
                         }
@@ -1126,7 +1371,7 @@ public final class CityRuns {
                         long px = x0 + dx * k, py = y0 + dy * (k - (kind == 0 ? c : corner));
                         if (kind == 0 && py != v) continue;
                         if (kind == 1 && px != v) continue;
-                        double d = Math.hypot(px - n.hubX, py - n.hubY);
+                        double d = Math.hypot(px - hubAt[0], py - hubAt[1]);
                         if (d < bd && g.at(px, py, -1) >= 0) { bd = d; best = new long[] { px, py }; }
                     }
                 }
@@ -1135,31 +1380,231 @@ public final class CityRuns {
         return best;
     }
 
+    /* ----- links: a corridor that opens where no line crosses the net (CL5) ----- */
+
+    /** Whether piece p of net n has a corridor on the row (kind 0) or column (1) at v already. */
+    static boolean hasLine(Net n, int p, int kind, long v) {
+        for (long[] c : n.corridors) if (c[0] == kind && c[1] == v && corridorPiece(c) == p) return true;
+        return false;
+    }
+
+    /**
+     * The next corridor, where no line crosses piece p's net (CL5; the
+     * highways': growPiece() calls it when newCorridor() finds none): a LINK
+     * corridor. The candidates are the lines newCorridor() considers (k
+     * districts out from the piece's hub, both ways, k from 1), not yet a
+     * corridor of the piece; each has a start, linkStart(); the least k comes
+     * first, then the shortest link (the plots from its start to the line),
+     * then hw.py's order (before()). The corridor opens with an interchange
+     * at the start and one arm, the link, which step() grows as any arm; when
+     * it stands on the line, openLine() opens the corridor's two. False where
+     * no candidate has a start.
+     */
+    static boolean openLink(Net n, Ground g, int p) {
+        long[] hub = hubOf(n, p);
+        long[] box = g.box();
+        long reach = Math.max(Math.max(Math.abs(box[0] - hub[0]), Math.abs(box[2] - hub[0])), Math.max(Math.abs(box[1] - hub[1]), Math.abs(box[3] - hub[1])));
+        long most = reach / APART + 1;
+        long[][] plots = null;
+        int[] why = new int[1];
+        for (long k = 1; k <= most; k++) {
+            long[] best = null;
+            int bkind = 0;
+            long bv = 0;
+            for (int sgn = 1; sgn >= -1; sgn -= 2) {
+                for (int kind = 0; kind < 2; kind++) {
+                    long v = (kind == 0 ? hub[1] : hub[0]) + sgn * k * APART;
+                    if (hasLine(n, p, kind, v)) continue;
+                    if (plots == null) plots = plotsOf(n, p);
+                    long[] st = linkStart(n, g, plots, hub, kind, v, why);
+                    if (st == null) continue;
+                    if (best == null || before(st[3], kind, v, st, best[3], bkind, bv, best)) { best = st; bkind = kind; bv = v; }
+                }
+            }
+            if (best == null) continue;
+            int ci = n.corridors.size();
+            n.corridors.add(new long[] { bkind, bv, p, LINK });
+            n.interchanges.add(new Interchange(best[0], best[1], ci));
+            n.arms.add(new Arm(ci, (int) best[2], best[0], best[1]));
+            return true;
+        }
+        return false;
+    }
+
+    /** Piece p's plots as {xs, ys}: its hub's if laid (the home piece's) and every step of its arms and each 45-degree step's corner, in arm order. */
+    static long[][] plotsOf(Net n, int p) {
+        long[] xs = new long[64], ys = new long[64];
+        int c = 0;
+        if (p == 0 && n.hubLaid) { xs[0] = n.hubX; ys[0] = n.hubY; c = 1; }
+        for (Arm a : n.arms) {
+            if (pieceOf(n, a) != p) continue;
+            for (int s = 0; s < a.segs; s++) {
+                int h = a.segHead[s], dx = DX[h], dy = DY[h];
+                for (int k = 1; k <= a.segSteps[s]; k++) {
+                    if (c + 2 > xs.length) { xs = Arrays.copyOf(xs, xs.length * 2); ys = Arrays.copyOf(ys, ys.length * 2); }
+                    xs[c] = a.segX[s] + (long) dx * k;
+                    ys[c++] = a.segY[s] + (long) dy * k;
+                    if (dx != 0 && dy != 0) { xs[c] = xs[c - 1]; ys[c++] = ys[c - 2] - dy; }
+                }
+            }
+        }
+        return new long[][] { Arrays.copyOf(xs, c), Arrays.copyOf(ys, c) };
+    }
+
+    /**
+     * Where a link to the row (kind 0) or column (1) at v leaves the piece's
+     * net, as {x, y, heading, length}, or null: of the plots from which a
+     * straight heading perpendicular to the line, toward it (south or north
+     * for a row, east or west for a column), runs at least LOOK plots clear()
+     * and whose first LOOK plots ahead the net does not cover (a link never
+     * runs along its own net), the nearest the line; ties to the nearest the
+     * piece's hub, then x, then y. The length is the plots to the line: each
+     * of the link's steps moves it one nearer.
+     */
+    static long[] linkStart(Net n, Ground g, long[][] plots, long[] hub, int kind, long v, int[] why) {
+        long[] xs = plots[0], ys = plots[1];
+        long bx = 0, by = 0, bd = Long.MAX_VALUE;
+        double bh = 0;
+        int bhead = -1;
+        for (int i = 0; i < xs.length; i++) {
+            long x = xs[i], y = ys[i];
+            long d = kind == 0 ? v - y : v - x, ad = Math.abs(d);
+            if (ad < 1 || ad > bd) continue;
+            double dh = Math.hypot(x - hub[0], y - hub[1]);
+            boolean better = bhead < 0 || ad < bd || dh < bh || (dh == bh && (x < bx || (x == bx && y < by)));
+            if (!better) continue;
+            int head = kind == 0 ? (d > 0 ? 2 : 6) : (d > 0 ? 0 : 4);
+            if (clear(n, g, x, y, head, LOOK, why) < LOOK) continue;
+            boolean free = true;
+            for (int s = 1; s <= LOOK && free; s++) free = !covered(n, x + (long) DX[head] * s, y + (long) DY[head] * s);
+            if (!free) continue;
+            bx = x; by = y; bd = ad; bh = dh; bhead = head;
+        }
+        return bhead < 0 ? null : new long[] { bx, by, bhead, bd };
+    }
+
+    /**
+     * The link arm i stands on its line: the link stops (growPiece() does not
+     * grow it again while it stands there) and the corridor's two arms open,
+     * both ways along the line, with an interchange at the meeting. The
+     * corridor of a link taken back and grown again has its two arms already:
+     * with no steps (nothing laid moves; they had no plots) they are replaced
+     * in place at the new meeting, else left as they are. The arms go into
+     * `live`.
+     */
+    static void openLine(Net n, int i, PriorityQueue<Integer> live) {
+        Arm link = n.arms.get(i);
+        int ci = link.corridor;
+        long[] c = n.corridors.get(ci);
+        int h0 = c[0] == 0 ? 0 : 2, h1 = c[0] == 0 ? 4 : 6;
+        long mx = link.x, my = link.y;
+        int e0 = -1, e1 = -1;
+        for (int j = 0; j < n.arms.size(); j++) {
+            if (j == i || n.arms.get(j).corridor != ci) continue;
+            if (e0 < 0) e0 = j;
+            else e1 = j;
+        }
+        dropMeeting(n, ci);
+        n.interchanges.add(new Interchange(mx, my, ci));
+        if (e0 < 0) {
+            n.arms.add(new Arm(ci, h0, mx, my));
+            n.arms.add(new Arm(ci, h1, mx, my));
+            live.add(n.arms.size() - 2);
+            live.add(n.arms.size() - 1);
+            return;
+        }
+        if (e1 >= 0 && n.arms.get(e0).steps == 0 && n.arms.get(e1).steps == 0) {
+            n.arms.set(e0, new Arm(ci, h0, mx, my));
+            n.arms.set(e1, new Arm(ci, h1, mx, my));
+        }
+        live.add(e0);
+        if (e1 >= 0) live.add(e1);
+    }
+
+    /** Takes off the interchanges of LINK corridor ci past its first (its start's): the meeting with the line, once its link is taken back off the line. */
+    static void dropMeeting(Net n, int ci) {
+        boolean first = true;
+        for (int k = 0; k < n.interchanges.size(); k++) {
+            if (n.interchanges.get(k).corridor() != ci) continue;
+            if (first) first = false;
+            else n.interchanges.remove(k--);
+        }
+    }
+
+    /**
+     * Opens a net on another piece of the city's ground (CL5), from its hub
+     * (hx, hy) - a highway line crossing on dry ground: two SPINE corridors of
+     * the new piece, the row y = hy and the column x = hx, four arms, and an
+     * interchange at the hub. The first row arm starts one plot west of the hub
+     * heading east, so that its first step lays the hub (step()) and the
+     * piece's plots are its arms' alone, drawn and counted with no reader
+     * changed; the other three start on the hub. Returns the piece's index.
+     */
+    static int openPiece(Net n, long hx, long hy) {
+        if (n.pieceHubs.isEmpty()) n.pieceHubs.add(new long[] { n.hubX, n.hubY });
+        int p = n.pieceHubs.size();
+        n.pieceHubs.add(new long[] { hx, hy });
+        n.piecePlots = Arrays.copyOf(n.piecePlots, p + 1);
+        n.pieceStuck = Arrays.copyOf(n.pieceStuck, p + 1);
+        n.pieceStuck[p] = Long.MIN_VALUE;
+        // The first piece besides the home piece: the home piece's count was the net's, now it is kept.
+        if (p == 1) n.piecePlots[0] = n.plots;
+        int row = n.corridors.size();
+        n.corridors.add(new long[] { 0, hy, p, SPINE });
+        n.corridors.add(new long[] { 1, hx, p, SPINE });
+        n.arms.add(new Arm(row, 0, hx - 1, hy));
+        n.arms.add(new Arm(row, 4, hx, hy));
+        n.arms.add(new Arm(row + 1, 2, hx, hy));
+        n.arms.add(new Arm(row + 1, 6, hx, hy));
+        n.interchanges.add(new Interchange(hx, hy, row));
+        return p;
+    }
+
     /* =====================================================================
        TAKING FROM THE NEWEST END
        ===================================================================== */
 
-    /** Takes net n back to `target` plots, each from the newest end - the latest corridor's longest arm, the gateway's arm after the rest of its corridor, its last step (the reverse of grow()'s order); the hub last. */
+    /**
+     * Takes net n back to `target` plots, each from the newest end - the latest corridor's longest arm, the gateway's arm after the rest of its corridor, its last step (the reverse of grow()'s order); the hub last.
+     * (CL5) Piece 0's: trimPiece().
+     */
     static boolean trim(Net n, long target, int gateway) {
-        if (!n.started || n.plots <= target) return false;
+        return trimPiece(n, 0, target, gateway);
+    }
+
+    /**
+     * ...piece p's net taken back to `target` plots of its own (CL5; count()):
+     * only its arms, in the reverse of growPiece()'s order - the latest
+     * corridor first, in it the longest arm, and the arm that grew first last
+     * of its corridor: the home piece's gate arm, a LINK corridor's link (its
+     * line's two arms go first: the plot they start on is its end), the arm
+     * that lays another piece's hub (the piece's other arms go first: it is the
+     * plot they start on). The net's last corridor, all its arms back at
+     * nothing, is closed unless it is a SPINE, and so on back; a corridor in
+     * the middle stays with arms of no steps, which grow again first
+     * (newCorridor() sees it as had).
+     */
+    static boolean trimPiece(Net n, int p, long target, int gateway) {
+        if (!n.started || count(n, p) <= target) return false;
         long before = n.plots;
         boolean dropped = false;
-        int gate = gateArm(n, gateway);
-        PriorityQueue<Integer> newest = new PriorityQueue<>((p, q) -> {
-            Arm a = n.arms.get(p), b = n.arms.get(q);
-            if (a.corridor != b.corridor) return Integer.compare(b.corridor, a.corridor);
-            boolean ga = p == gate, gb = q == gate;
-            if (ga != gb) return ga ? 1 : -1;
-            if (a.steps != b.steps) return Integer.compare(b.steps, a.steps);
-            return Integer.compare(q, p);
-        });
-        for (int i = 0; i < n.arms.size(); i++) if (n.arms.get(i).steps > 0) newest.add(i);
-        while (n.plots > target) {
+        int gate = p == 0 ? gateArm(n, gateway) : -1;
+        boolean[] late = lateArms(n, gate);
+        PriorityQueue<Integer> newest = newestQueue(n, p, late);
+        while (count(n, p) > target) {
             if (newest.isEmpty()) {
-                // Only the hub's plot is left.
-                if (n.hubLaid) saw(n, n.hubX, n.hubY);
-                n.hubLaid = false;
-                n.plots = 0;
+                // Only the hub's plot is left (the home piece's; another piece's is its first arm's first step, gone with it).
+                if (p == 0) {
+                    boolean hub = n.hubLaid;
+                    if (hub) saw(n, n.hubX, n.hubY);
+                    n.hubLaid = false;
+                    if (n.pieceHubs.size() > 1) {
+                        if (hub && !covered(n, n.hubX, n.hubY)) n.plots--;
+                    } else {
+                        n.plots = 0;
+                    }
+                    n.piecePlots[0] = 0;
+                }
                 break;
             }
             int pick = newest.poll();
@@ -1179,29 +1624,74 @@ public final class CityRuns {
             a.joined = false;
             a.known = 0;
             a.waitAt = Long.MIN_VALUE;
-            if (!covered(n, x, y)) n.plots--;
-            if (diag && !covered(n, x, y - dy)) n.plots--;
+            if (!covered(n, x, y)) { n.plots--; debit(n, p, 1); }
+            if (diag && !covered(n, x, y - dy)) { n.plots--; debit(n, p, 1); }
             while (!a.crossings.isEmpty() && a.crossings.get(a.crossings.size() - 1)[2] > a.steps) a.crossings.remove(a.crossings.size() - 1);
             if (a.steps > 0) newest.add(pick);
-            // The newest corridor, all its arms back at its start, is closed.
-            int ci = n.corridors.size() - 1;
-            if (ci >= 2 && a.corridor == ci && a.steps == 0) {
-                boolean empty = true;
-                for (Arm b : n.arms) if (b.corridor == ci && b.steps > 0) { empty = false; break; }
-                if (empty) {
-                    n.corridors.remove(ci);
-                    for (int i = n.arms.size() - 1; i >= 0; i--) if (n.arms.get(i).corridor == ci) n.arms.remove(i);
-                    for (int k = n.interchanges.size() - 1; k >= 0; k--) if (n.interchanges.get(k).corridor() == ci) n.interchanges.remove(k);
-                    newest.removeIf(i -> i >= n.arms.size());
+            // A link taken back off its line: its meeting with the line is no interchange now.
+            if (late[pick] && a.corridor < n.corridors.size() && corridorRole(n.corridors.get(a.corridor)) == LINK && !linkReaches(n, pick)) dropMeeting(n, a.corridor);
+            // The net's newest corridor, all its arms back at its start, is closed; and the one before it, if that is empty too.
+            int last = n.corridors.size() - 1;
+            if (a.steps == 0 && a.corridor == last && !isSpine(n, last)) {
+                boolean closed = false;
+                while (last >= 0 && !isSpine(n, last) && corridorPiece(n.corridors.get(last)) == p && corridorEmpty(n, last)) {
+                    closeCorridor(n, last);
+                    closed = true;
+                    last = n.corridors.size() - 1;
+                }
+                if (closed) {
                     dropped = true;
+                    late = lateArms(n, gate);
+                    newest = newestQueue(n, p, late);
                 }
             }
         }
         if (dropped) rebuildBuckets(n);
         // The arms taken back may grow again (each its wait cleared as it was taken back); the others wait as they did - what
         // stops an arm is the ground, which a demolition does not move.
-        n.stuckAt = Long.MIN_VALUE;
+        setStuck(n, p, Long.MIN_VALUE);
         return n.plots != before;
+    }
+
+    /** The arms taken back after the rest of their corridor (trimPiece()): the gate arm, a piece's hub arm and a LINK corridor's link, which grew first. */
+    static boolean[] lateArms(Net n, int gate) {
+        boolean[] late = new boolean[n.arms.size()];
+        boolean[] seen = new boolean[n.corridors.size()];
+        for (int i = 0; i < late.length; i++) {
+            Arm a = n.arms.get(i);
+            if (i == gate || hubArm(n, a)) late[i] = true;
+            if (a.corridor < seen.length && !seen[a.corridor]) {
+                seen[a.corridor] = true;
+                if (corridorRole(n.corridors.get(a.corridor)) == LINK) late[i] = true;
+            }
+        }
+        return late;
+    }
+
+    /** Piece p's arms that have steps, the newest end first: the latest corridor, in it the late arm last, then the longest, then the higher index. */
+    static PriorityQueue<Integer> newestQueue(Net n, int p, boolean[] late) {
+        PriorityQueue<Integer> q = new PriorityQueue<>((x, y) -> {
+            Arm a = n.arms.get(x), b = n.arms.get(y);
+            if (a.corridor != b.corridor) return Integer.compare(b.corridor, a.corridor);
+            if (late[x] != late[y]) return late[x] ? 1 : -1;
+            if (a.steps != b.steps) return Integer.compare(b.steps, a.steps);
+            return Integer.compare(y, x);
+        });
+        for (int i = 0; i < n.arms.size(); i++) if (n.arms.get(i).steps > 0 && pieceOf(n, n.arms.get(i)) == p) q.add(i);
+        return q;
+    }
+
+    /** Whether every arm of corridor ci has no steps. */
+    static boolean corridorEmpty(Net n, int ci) {
+        for (Arm b : n.arms) if (b.corridor == ci && b.steps > 0) return false;
+        return true;
+    }
+
+    /** Closes the net's last corridor ci: its arms (not always the net's last: a link's two line arms are laid after the corridors opened since), and its interchanges. */
+    static void closeCorridor(Net n, int ci) {
+        n.corridors.remove(ci);
+        for (int i = n.arms.size() - 1; i >= 0; i--) if (n.arms.get(i).corridor == ci) n.arms.remove(i);
+        for (int k = n.interchanges.size() - 1; k >= 0; k--) if (n.interchanges.get(k).corridor() == ci) n.interchanges.remove(k);
     }
 
     /** Files every stretch of net n again (after a corridor is closed, or the runs read back). */
@@ -1744,6 +2234,7 @@ public final class CityRuns {
         if (!any) return;
         rebuildBuckets(rail);
         rail.plots = countPlots(rail);
+        rail.piecePlots[0] = rail.plots;
         rail.stuckAt = Long.MIN_VALUE;
     }
 
@@ -1791,9 +2282,40 @@ public final class CityRuns {
         return seen.size();
     }
 
+    /**
+     * Counts each piece's plots afresh (CL5; piecePlots): the hub's to piece 0,
+     * each other plot to the piece of the lowest-index arm covering it. What a
+     * sidecar read back does, as it keeps no piece's count; a net of one piece's
+     * is the net's own count.
+     */
+    static void recountPieces(Net n) {
+        int np = n.pieces();
+        n.piecePlots = new long[np];
+        if (np <= 1) {
+            n.piecePlots[0] = n.plots;
+            return;
+        }
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+        if (n.hubLaid) {
+            seen.add((n.hubX << 32) ^ (n.hubY & 0xffffffffL));
+            n.piecePlots[0]++;
+        }
+        for (Arm a : n.arms) {
+            int p = Math.min(pieceOf(n, a), np - 1);
+            for (int s = 0; s < a.segs; s++) {
+                int h = a.segHead[s], dx = DX[h], dy = DY[h];
+                for (int k = 1; k <= a.segSteps[s]; k++) {
+                    long px = a.segX[s] + (long) dx * k, py = a.segY[s] + (long) dy * k;
+                    if (seen.add((px << 32) ^ (py & 0xffffffffL))) n.piecePlots[p]++;
+                    if (dx != 0 && dy != 0 && seen.add((px << 32) ^ ((py - dy) & 0xffffffffL))) n.piecePlots[p]++;
+                }
+            }
+        }
+    }
+
     /** The corridors a branch and a siding belong to, there once a way is laid: placeholders after the spine's two (they run along no line of their own). */
     private void wayCorridors() {
-        while (rail.corridors.size() < 4) rail.corridors.add(new long[] { 0, 0 });
+        while (rail.corridors.size() < 4) rail.corridors.add(new long[] { 0, 0, 0, CROSSING });
     }
 
     /** Lays a way from the net's plot (sx, sy) as an arm of `corridor`: each leg's plots, one by one, counted where nothing else of the net has them; the arm's index. */
@@ -2496,17 +3018,24 @@ public final class CityRuns {
      * (locate() of its start plot), ending on an arm of corridor 0 or 1.
      * Null when that last arm does not start at the hub, when the walk stops
      * early (nothing under an arm's start, the same arm, a corridor not
-     * earlier than this one) or when it runs past n.arms.size() entries. The
-     * way in from an arm to the hub: mainLine() and wayTo() walk it.
+     * earlier than this one - but (CL5) a LINK corridor's line arm may start
+     * on its own link, the same corridor's first arm) or when it runs past
+     * n.arms.size() entries; and (CL5) when it ends on the spine of a piece
+     * but the home piece, whose hub is not the net's: the way across the sea
+     * is not one. The way in from an arm to the hub: mainLine() and wayTo()
+     * walk it.
      */
     static List<int[]> chain(Net n, int a, int k) {
         List<int[]> out = new ArrayList<>();
         for (int guard = 0; guard < n.arms.size(); guard++) {
             out.add(new int[] { a, k });
             Arm arm = n.arms.get(a);
-            if (arm.corridor == 0 || arm.corridor == 1) return arm.sx == n.hubX && arm.sy == n.hubY ? out : null;
+            if (isSpine(n, arm.corridor)) return arm.corridor <= 1 && arm.sx == n.hubX && arm.sy == n.hubY ? out : null;
             int[] prev = locate(n, arm.sx, arm.sy);
-            if (prev == null || prev[0] == a || n.arms.get(prev[0]).corridor >= arm.corridor) return null;
+            if (prev == null || prev[0] == a) return null;
+            Arm before = n.arms.get(prev[0]);
+            boolean ownLink = before.corridor == arm.corridor && corridorRole(n.corridors.get(arm.corridor)) == LINK && isLink(n, prev[0]);
+            if (before.corridor >= arm.corridor && !ownLink) return null;
             a = prev[0];
             k = prev[1];
         }
@@ -2806,9 +3335,19 @@ public final class CityRuns {
      */
     public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, int spurs, Ground g,
                          long fx, long fy, long rx, long ry, List<long[]> mines, List<long[]> works) {
+        return layTo(highwayPlots, trackPlots, yardSizes, spurs, g, fx, fy, rx, ry, mines, works, ONE_PIECE);
+    }
+
+    /**
+     * ...with the city's ground in pieces (CL5; ONE_PIECE for none): the
+     * highways are dealt between the pieces that hold buildings, each
+     * with a net of its own from its own hub (layHighways()). The railway is
+     * the home piece's alone, as before.
+     */
+    public boolean layTo(long highwayPlots, long trackPlots, List<int[]> yardSizes, int spurs, Ground g,
+                         long fx, long fy, long rx, long ry, List<long[]> mines, List<long[]> works, Pieces pieces) {
         long v0 = signature();
-        if (highwayPlots < highways.plots) trim(highways, highwayPlots, gateway);
-        else grow(highways, rail, highwayPlots, g, fx, fy, gateway);
+        layHighways(highwayPlots, g, fx, fy, pieces);
         layRail(trackPlots, yardSizes, spurs, g, rx, ry, mines, works);
         if (highwayPlots == 0 && highways.plots == 0 && highways.started) highways.reset();
         layReserves(g);
@@ -2819,6 +3358,117 @@ public final class CityRuns {
         return v1 != v0;
     }
 
+    /**
+     * The highways to the model's `plots`, dealt between the city's pieces of
+     * ground (CL5). A net is opened on each map piece that has weight and a hub
+     * and none yet (openPieces()); each map piece's OWNER is the oldest net
+     * whose hub lies on it, and a net that is not its piece's owner (two
+     * pieces a purchase joined) is frozen: its target is what it has, it is
+     * never grown, and nothing of it moves. The pieces' shares: the plots
+     * dealt by built weight (the home piece counted at least 1), each owned
+     * piece floor(plots * weight / total), the home piece the rest; an owner's
+     * target is its share less what its piece's frozen nets hold. Then, in this
+     * order, so that a month with nothing new moves nothing:
+     * (a) each owner below its target is grown to it, the home piece first;
+     * (b) D is the sum of what (a) left short (a piece the ground has stopped);
+     * (c) each owner above its target keeps up to D of the excess (D falls by
+     * what it keeps), then each owner the ground has not stopped is grown by
+     * what D has left; (d) any net still above what it was allotted is
+     * trimmed to it, newest end first. With one piece and no net but the
+     * home piece's, the plots are the home net's: grown or trimmed as before CL5.
+     */
+    private void layHighways(long plots, Ground g, long fx, long fy, Pieces pieces) {
+        Net n = highways;
+        if (!n.started && plots > 0 && pieces.count() > 1) start(n, g, fx, fy, gateway);
+        if (n.started && plots > 0) openPieces(n, g, pieces);
+        int np = n.pieceHubs.size();
+        if (np <= 1) {
+            if (plots < n.plots) trim(n, plots, gateway);
+            else grow(n, rail, plots, g, fx, fy, gateway);
+            return;
+        }
+        long ver = g.version();
+        // The map piece each net's hub lies on, and the owner of each map piece: the oldest net on it.
+        int[] mp = new int[np];
+        boolean[] owner = new boolean[np];
+        long[] w = new long[np];
+        long total = 0;
+        for (int j = 0; j < np; j++) {
+            long[] h = hubOf(n, j);
+            int m = pieces.pieceOf(h[0], h[1]);
+            mp[j] = m >= 0 ? m : -1 - j;
+            owner[j] = true;
+            for (int i = 0; i < j; i++) if (mp[i] == mp[j]) owner[j] = false;
+            if (owner[j]) {
+                w[j] = Math.max(j == 0 ? 1 : 0, mp[j] >= 0 ? pieces.weight(mp[j]) : 0);
+                total += w[j];
+            }
+        }
+        long[] share = new long[np], tgt = new long[np], allot = new long[np];
+        long others = 0;
+        for (int j = 1; j < np; j++) {
+            if (!owner[j]) continue;
+            share[j] = java.math.BigInteger.valueOf(plots).multiply(java.math.BigInteger.valueOf(w[j])).divide(java.math.BigInteger.valueOf(total)).longValue();
+            others += share[j];
+        }
+        share[0] = plots - others;
+        for (int j = 0; j < np; j++) {
+            if (!owner[j]) { tgt[j] = count(n, j); continue; }
+            long held = 0;
+            for (int i = 0; i < np; i++) if (i != j && !owner[i] && mp[i] == mp[j]) held += count(n, i);
+            tgt[j] = Math.max(0, share[j] - held);
+        }
+        // (a) each owner below its target is grown to it.
+        for (int j = 0; j < np; j++) {
+            if (owner[j] && count(n, j) < tgt[j]) growPiece(n, rail, j, tgt[j], g, fx, fy, gateway);
+        }
+        // (b) what (a) left short.
+        long d = 0;
+        for (int j = 0; j < np; j++) {
+            allot[j] = tgt[j];
+            if (owner[j]) d += Math.max(0, tgt[j] - count(n, j));
+        }
+        // (c) the excess some owner already holds is kept, up to D; then the owners the ground has not stopped take what D has left.
+        for (int j = 0; j < np && d > 0; j++) {
+            long over = count(n, j) - tgt[j];
+            if (owner[j] && over > 0) {
+                long keep = Math.min(over, d);
+                allot[j] += keep;
+                d -= keep;
+            }
+        }
+        for (int j = 0; j < np && d > 0; j++) {
+            if (!owner[j] || stuckAt(n, j) == ver) continue;
+            long c0 = count(n, j);
+            growPiece(n, rail, j, Math.max(allot[j], c0 + d), g, fx, fy, gateway);
+            d -= Math.min(d, count(n, j) - c0);
+            allot[j] = Math.max(allot[j], count(n, j));
+        }
+        // (d) what is still above its allotment is taken back, newest end first.
+        for (int j = 0; j < np; j++) {
+            if (count(n, j) > allot[j]) trimPiece(n, j, allot[j], gateway);
+        }
+    }
+
+    /**
+     * Opens a net for each map piece but the home piece (piece 0) that has
+     * weight and a hub on dry ground of its own, and none yet: no net's hub
+     * lies on it already (openPiece()).
+     */
+    private static void openPieces(Net n, Ground g, Pieces pieces) {
+        for (int m = 1; m < pieces.count(); m++) {
+            if (pieces.weight(m) <= 0) continue;
+            long[] h = pieces.hub(m);
+            if (h == null || pieces.pieceOf(h[0], h[1]) != m || !dry(g.at(h[0], h[1], -1))) continue;
+            boolean held = false;
+            for (int j = 0; j < n.pieceHubs.size() && !held; j++) {
+                long[] hj = hubOf(n, j);
+                held = pieces.pieceOf(hj[0], hj[1]) == m;
+            }
+            if (!held) openPiece(n, h[0], h[1]);
+        }
+    }
+
     /** A hash of everything laid. */
     long signature() {
         long h = World.mix(0x52554E53L ^ gateway);
@@ -2826,6 +3476,7 @@ public final class CityRuns {
             h = World.mix(h ^ n.plots ^ (n.started ? n.hubX * 31 + n.hubY : 7) ^ (n.hubLaid ? 1L << 62 : 0));
             for (Arm a : n.arms) h = World.mix(h ^ a.steps ^ ((long) a.head << 40) ^ (a.x << 20) ^ a.y);
             h = World.mix(h ^ n.corridors.size());
+            for (int j = 1; j < n.pieceHubs.size(); j++) h = World.mix(h ^ n.pieceHubs.get(j)[0] * 0x9E3779B97F4A7C15L ^ n.pieceHubs.get(j)[1] ^ ((long) j << 56));
         }
         for (long[] y : yards) h = World.mix(h ^ y[0] * 0x9E3779B97F4A7C15L ^ y[1] ^ (y[2] << 24) ^ (y[3] << 44));
         h = World.mix(h ^ (doubleMain ? 1L : 0L));
@@ -3013,7 +3664,7 @@ public final class CityRuns {
         int diagMark = diag ? (M_DIAG | (diagCode(hd) << M_DIAG_SHIFT)) : 0;
         // An arm of the spine's first step on a cell line is a ramp too (FX2): its stretch's step there, or none.
         long firstK = -1;
-        if (!diag && marks != null && n.kind == HIGHWAYS && (a.corridor == 0 || a.corridor == 1)) {
+        if (!diag && marks != null && n.kind == HIGHWAYS && isSpine(n, a.corridor)) {
             long first = firstLineStep(a), before = 0;
             for (int t = 0; t < s; t++) before += a.segSteps[t];
             if (first > before && first <= before + m) firstK = first - before;
@@ -3080,6 +3731,8 @@ public final class CityRuns {
     /**
      * ...in the sidecar format given: from FORMAT 10 (FX5 Y1) each yard's box is followed, after all the boxes, by the footprint it was laid
      * for, two ints (w, h) each - the size it was asked for, which a box laid long or short by the ground is not. An older format has none.
+     * From FORMAT 12 (CL5) each net writes, after its plots, the hubs of its pieces after the home piece's (a count, then x and y each) and with each
+     * corridor its piece (int) and role (byte): an older format has one piece, the spine the corridors 0 and 1.
      */
     void write(DataOutputStream out, int format) throws IOException {
         for (Net n : new Net[] { highways, rail }) {
@@ -3088,8 +3741,16 @@ public final class CityRuns {
             out.writeLong(n.hubX);
             out.writeLong(n.hubY);
             out.writeLong(n.plots);
+            if (format >= 12) {
+                out.writeInt(Math.max(0, n.pieceHubs.size() - 1));
+                for (int j = 1; j < n.pieceHubs.size(); j++) { out.writeLong(n.pieceHubs.get(j)[0]); out.writeLong(n.pieceHubs.get(j)[1]); }
+            }
             out.writeInt(n.corridors.size());
-            for (long[] c : n.corridors) { out.writeByte((int) c[0]); out.writeLong(c[1]); }
+            for (long[] c : n.corridors) {
+                out.writeByte((int) c[0]);
+                out.writeLong(c[1]);
+                if (format >= 12) { out.writeInt(corridorPiece(c)); out.writeByte(corridorRole(c)); }
+            }
             out.writeInt(n.arms.size());
             for (Arm a : n.arms) {
                 out.writeInt(a.corridor);
@@ -3125,7 +3786,7 @@ public final class CityRuns {
         return read(in, CityMap.FORMAT);
     }
 
-    /** ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then. */
+    /** ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then; before FORMAT 12 the net is one piece (CL5). */
     static CityRuns read(DataInputStream in, int format) throws IOException {
         CityRuns r = new CityRuns();
         for (Net n : new Net[] { r.highways, r.rail }) {
@@ -3134,9 +3795,25 @@ public final class CityRuns {
             n.hubX = in.readLong();
             n.hubY = in.readLong();
             long plots = in.readLong();
+            // The pieces' hubs after the home piece's, and (from FORMAT 12, CL5) each corridor's piece and role; an older sidecar's net is one piece, its corridors 0 and 1 the spine.
+            int extra = 0;
+            List<long[]> hubs = new ArrayList<>();
+            if (format >= 12) {
+                extra = in.readInt();
+                if (extra < 0 || extra > 1 << 20 || (extra > 0 && !n.started)) return null;
+                for (int k = 0; k < extra; k++) hubs.add(new long[] { in.readLong(), in.readLong() });
+            }
             int nc = in.readInt();
             if (nc < 0 || nc > 1 << 20) return null;
-            for (int i = 0; i < nc; i++) { long kind = in.readByte(); n.corridors.add(new long[] { kind, in.readLong() }); }
+            for (int i = 0; i < nc; i++) {
+                long kind = in.readByte(), v = in.readLong(), piece = 0, role = i < 2 ? SPINE : CROSSING;
+                if (format >= 12) {
+                    piece = in.readInt();
+                    role = in.readByte();
+                    if (piece < 0 || piece > extra || role < SPINE || role > LINK) return null;
+                }
+                n.corridors.add(new long[] { kind, v, piece, role });
+            }
             int na = in.readInt();
             if (na < 0 || na > 1 << 20) return null;
             for (int i = 0; i < na; i++) {
@@ -3166,6 +3843,13 @@ public final class CityRuns {
             for (int i = 0; i < ni; i++) { long x = in.readLong(), y = in.readLong(); n.interchanges.add(new Interchange(x, y, in.readInt())); }
             rebuildBuckets(n);
             n.plots = plots;
+            if (n.started) {
+                n.pieceHubs.add(new long[] { n.hubX, n.hubY });
+                n.pieceHubs.addAll(hubs);
+            }
+            n.pieceStuck = new long[n.pieces()];
+            Arrays.fill(n.pieceStuck, Long.MIN_VALUE);
+            recountPieces(n);
         }
         int ny = in.readInt();
         if (ny < 0 || ny > 1 << 20) return null;
@@ -3193,7 +3877,12 @@ public final class CityRuns {
             Net p = a[k], q = b[k];
             if (p.started != q.started || p.hubLaid != q.hubLaid || p.plots != q.plots || p.hubX != q.hubX || p.hubY != q.hubY) return false;
             if (p.corridors.size() != q.corridors.size() || p.arms.size() != q.arms.size() || p.interchanges() != q.interchanges()) return false;
-            for (int i = 0; i < p.corridors.size(); i++) if (!Arrays.equals(p.corridors.get(i), q.corridors.get(i))) return false;
+            for (int i = 0; i < p.corridors.size(); i++) {
+                long[] c = p.corridors.get(i), d = q.corridors.get(i);
+                if (c[0] != d[0] || c[1] != d[1] || corridorPiece(c) != corridorPiece(d) || corridorRole(c) != corridorRole(d)) return false;
+            }
+            if (p.pieces() != q.pieces()) return false;
+            for (int j = 1; j < p.pieces(); j++) if (!Arrays.equals(p.pieceHubs.get(j), q.pieceHubs.get(j))) return false;
             for (int i = 0; i < p.arms.size(); i++) {
                 Arm x = p.arms.get(i), y = q.arms.get(i);
                 if (x.corridor != y.corridor || x.home != y.home || x.head != y.head || x.steps != y.steps || x.segs != y.segs || x.joined != y.joined
