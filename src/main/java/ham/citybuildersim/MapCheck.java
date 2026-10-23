@@ -1340,9 +1340,13 @@ public class MapCheck {
         final java.util.Set<PlanBox> boxes;
         final byte[] fixed, runs;
         final boolean[] ramp;
+        /** The map's month when the snapshot was taken, and how many records the district's journal of the runs held then. */
+        final int month, journal;
 
         Snap(CityMap m, CityMap.District d) {
             DistrictPlan.Input in = m.planInput(d);
+            month = m.month();
+            journal = d.journalSize();
             fixed = in.fixed.clone();
             ramp = in.ramp == null ? null : in.ramp.clone();
             runs = new byte[DistrictPlan.AREA];
@@ -1397,6 +1401,23 @@ public class MapCheck {
             for (int x = Math.max(0, b.x() - reach); x < Math.min(DistrictPlan.FRAME, b.x() + b.w() + reach); x++) if (test.test(y * DistrictPlan.FRAME + x)) return true;
         }
         return false;
+    }
+
+    /**
+     * How many plots of `later`'s fixed ground, worked back through its frame's records (Input.fixedLog) dated after the snapshot's month, differ from the
+     * fixed ground the snapshot's input held (the interchanges' reserves, undated, read as 0 on both sides): the journal's own check, THE RUNS DATED.
+     */
+    static int journalDiffers(DistrictPlan.Input later, Snap s) {
+        byte[] back = later.fixed.clone();
+        if (later.fixedLog != null) {
+            for (int i = later.fixedLog.length - 1; i >= 0 && later.fixedLogMonth[i] > s.month; i--) back[later.fixedLog[i] >>> 8] = (byte) ((later.fixedLog[i] >> 4) & 15);
+        }
+        int n = 0;
+        for (int p = 0; p < back.length; p++) {
+            byte a = back[p] == DistrictPlan.FIXED_RESERVE ? 0 : back[p], b = s.fixed[p] == DistrictPlan.FIXED_RESERVE ? 0 : s.fixed[p];
+            if (a != b) n++;
+        }
+        return n;
     }
 
     /** The kinds of fixed plot the runs lay, in the order a line prints them. */
@@ -1543,6 +1564,24 @@ public class MapCheck {
         java.util.Set<PlanBox> read = same == null ? null : boxesOf(back.plan(same));
         int readDiffer = read == null ? -1 : movedOf(s6.boxes, read) + movedOf(read, s6.boxes);
 
+        // ----- the journal of the runs (THE RUNS DATED): the frame's fixed ground worked back from today's to each stage's month; the sidecar's copy -----
+        DistrictPlan.Input lastIn = m.planInput(d);
+        List<Snap> stages = new ArrayList<>(List.of(s1, s2, s2b, s3, s3b, s4, s4b));
+        if (s5 != null) stages.add(s5);
+        stages.add(s6);
+        int plotsDiffer = 0, stagesDiffer = 0;
+        StringBuilder counts = new StringBuilder();
+        for (Snap sn : stages) {
+            int diff = journalDiffers(lastIn, sn);
+            plotsDiffer += diff;
+            if (diff > 0) stagesDiffer++;
+            counts.append(counts.length() > 0 ? ", " : "").append(sn.journal);
+        }
+        DistrictPlan.Input writtenIn = m.planInputHere(d), readIn = same == null ? null : back.planInputHere(same);
+        boolean journalRead = readIn != null && writtenIn.fixedLog != null && Arrays.equals(readIn.fixedLogMonth, writtenIn.fixedLogMonth)
+                && Arrays.equals(readIn.fixedLog, writtenIn.fixedLog) && same.journalSize() == d.journalSize();
+        int frameRecords = lastIn.fixedLog == null ? 0 : lastIn.fixedLog.length;
+
         out.printf("      the founding site's district (%d,%d): %,d owned plots, a room of %,d cells, %d houses a month (a house takes %d) and one of %d kinds of building (%d to %d cells) from month %d;"
                 + " the founding site at (%d,%d) in its frame, no mine on the map%n", d.dx, d.dy, d.owned(), roomAtFirst, step, each, mix.length, cellsMin(types, mix), cellsMax(types, mix), firstMonth,
                 land.siteX() - frame.x0, land.siteY() - frame.y0);
@@ -1556,6 +1595,8 @@ public class MapCheck {
         out.printf("      the highways (hub (%s), %d more Elevated Highways a month, laid in the district in the month %d of them, month %d): %,d plots, reaching a street: %b; %,d of the %,d boxes lie under them,"
                 + " %,d within %d plot, %,d moved (%,d with the fixed ground before)%n", hubText(highwayHub, frame), HIGHWAY_STEP, hwMonths, hwMonth, hwNew, reached, hwUnder, hwBoxes, hwNear,
                 HIGHWAY_CLEAR, hwMoved, hwControl);
+        out.printf("      the journal of the runs: %,d records in the district's after the stages (%s), %,d in its frame's, %,d plots of the stages' fixed ground differ when worked back,"
+                + " %,d plots' records left out%n", d.journalSize(), counts, frameRecords, plotsDiffer, m.journalDropped());
 
         check("fixture: the founding site's district found, and no run, mine or highway on the map before the fixture's months", d != null && frame != null && h.reconciled && noRunsYet);
         check("fixture: the district holds houses and every kind of the mix, uses half its room and has room left, and its plan places every one of them",
@@ -1578,6 +1619,11 @@ public class MapCheck {
                 hwMoved == 0 && hwBoxes > 0);
         check("the arrivals after a run stand on none of its plots: " + onRuns + " of the boxes the later plans hold that the earlier did not lie on a plot fixed in the input or among the runs", onRuns == 0);
         check("...every district's log still sums to its counts after the runs came and went", adds);
+        check("the journal dates the runs: the frame's fixed ground worked back from today's to each stage's month is what the plan's input held that month ("
+                + stages.size() + " stages from the one of month " + s1.month + ", " + frameRecords + " records, " + plotsDiffer + " plots differ in " + stagesDiffer + ")",
+                plotsDiffer == 0 && frameRecords > 0 && d.journalSize() > 0);
+        check("...and no plot's records were left out for ending on other than the runs as they stand (" + m.journalDropped() + " left out)", m.journalDropped() == 0);
+        check("the sidecar read back carries the same journal: the district's records and its plan's input frame's records are the written map's (" + frameRecords + " of them)", journalRead);
         check("the sidecar written after them and read back plans the district box for box as the map it was written from (" + s6.boxes.size() + " boxes, " + readDiffer + " differ)",
                 back != null && same != null && readDiffer == 0 && s6.boxes.size() > 0);
     }

@@ -556,6 +556,18 @@ public final class DistrictPlan {
         public final boolean[] owned = new boolean[AREA];
         /** Per plot of the frame (AREA, row by row), the month the city bought it (0 for the centre's ground, and for any plot it does not own), or null when it bought none of the frame's ground (or for a harness's input): with it the plan's ground grows month by month (THE GROUND BOUGHT, batch FX6); without it every owned plot is ground from the start, as before. */
         public int[] boughtAt;
+        /**
+         * THE RUNS DATED (batch FX7): what the city's runs laid on the frame's plots, month by month - a record for each change of a plot's
+         * kind of fixed ground, `fixedLog[i] = plot << 8 | before << 4 | after` (the plot's index in the frame, row by row; before and after
+         * 0 or one of the FIXED_ codes), the month it was made in `fixedLogMonth[i]`, the months never falling; null when the frame has no
+         * record (a harness's fixture, a map whose runs never changed in a month it dated, a sidecar of FORMAT 10 or older). Replayed
+         * forward from each plot's first record's `before` it ends on `fixed` as it stands; a plot with no record has its `fixed` throughout.
+         * With it the plan's ground of runs grows month by month, as its ground bought does with `boughtAt`: what a plan placed stands, a run
+         * laid later takes only ground nothing stands on, and ground a run leaves is room again (THE RUNS DATED: CityMap keeps the journal
+         * and hands each plan its frame's records, the plan replays its history on them). An interchange's reserve (FIXED_RESERVE) is today's and undated: where `fixed` holds one, its plot's records read 0 as
+         * the reserve, a reserve being laid wherever the runs leave a plot at 0.
+         */
+        public int[] fixedLogMonth, fixedLog;
         /** The city's highway and railway plots: FIXED_HIGHWAY, FIXED_RAIL or a yard's FIXED_YARD, and (batch FR7) an interchange's reserve FIXED_RESERVE, laid before the plan (the city's runs since 0.7.89, CityRuns; CityMap's network's plan's until 0.7.88). */
         public final byte[] fixed = new byte[AREA];
         /** The resource sites: SITE_FIELD, or SITE_MINED where a mine or well stands. */

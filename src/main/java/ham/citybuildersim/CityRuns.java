@@ -205,6 +205,98 @@ public final class CityRuns {
     }
 
     /* =====================================================================
+       THE WITNESS (batch FX7)
+
+       The city map dates what the runs lay (CityMap's THE RUNS DATED): a
+       record for each plot of a district whose kind of fixed ground a month
+       changed. The runs know which districts a month reaches before they
+       reach them, and the map cannot work that out afterwards - a stretch
+       taken back, an arm dropped, a yard unlaid is gone from the runs by
+       the time the month is over - so the map is told first. A WITNESS is
+       told, for a district (its world column and row), that something in it
+       is about to change which plots a net covers or which yard boxes
+       stand: before the first plot of the month in it goes, the map reads
+       the district's ground as it is. A district may be told of more than
+       once; the map keeps the first. Nothing is set but for the length of
+       one month's layTo() in CityMap.reconcile(), so a map drawn
+       canonically, read back from a sidecar or laid by a harness is told of
+       nothing and pays nothing.
+
+       WHERE IT IS TOLD, every place the runs change which plots a net covers
+       or which yard boxes stand: step() and layWay() before a stretch is
+       lengthened (push() is at once to every district the stretch is filed
+       under, so the told district is the new plot's, and a 45-degree step's
+       corner's); trim() before a step is taken back, and before the hub's
+       plot goes; grow() and growMainLine() before the hub is laid; dropWays()
+       and cleanSpine() before an arm that has steps is dropped; Net.reset()
+       before a net is cleared; addYard() before a yard is laid and keepYards()
+       before the newest are taken. A change anywhere else is a bug the map's
+       journal shows (CityMap.journalDropped()).
+       ===================================================================== */
+
+    /** Told, before a change, which district it reaches. */
+    public interface Witness {
+        /** District (districtX, districtY) in the world's districts (plot / CityMap.DISTRICT, rounded down) is about to change. */
+        void before(long districtX, long districtY);
+    }
+
+    /** The witness of the month being laid, or null for none (the default): the map sets it for the length of layTo() and clears it. */
+    private Witness witness;
+
+    /** Sets the witness for the runs' nets and yards (null for none). */
+    public void setWitness(Witness w) {
+        witness = w;
+        highways.witness = w;
+        rail.witness = w;
+    }
+
+    /** Tells net n's witness, if it has one, that plot (x, y) is about to change. */
+    static void saw(Net n, long x, long y) {
+        Witness w = n.witness;
+        if (w != null) w.before(Math.floorDiv(x, CityMap.DISTRICT), Math.floorDiv(y, CityMap.DISTRICT));
+    }
+
+    /** ...that every district the w x h plots from (x0, y0) touch is about to change. */
+    static void sawBox(Witness wit, long x0, long y0, long w, long h) {
+        if (wit == null) return;
+        for (long dy = Math.floorDiv(y0, CityMap.DISTRICT); dy <= Math.floorDiv(y0 + h - 1, CityMap.DISTRICT); dy++) {
+            for (long dx = Math.floorDiv(x0, CityMap.DISTRICT); dx <= Math.floorDiv(x0 + w - 1, CityMap.DISTRICT); dx++) wit.before(dx, dy);
+        }
+    }
+
+    /** ...that every district stretch s of arm a lies in is about to change (its plots, and a 45-degree step's corners). A straight stretch is told of a district once, by the step it enters it at. */
+    static void sawStretch(Net n, Arm a, int s) {
+        Witness w = n.witness;
+        if (w == null) return;
+        int h = a.segHead[s], dx = DX[h], dy = DY[h], m = a.segSteps[s];
+        boolean diag = dx != 0 && dy != 0;
+        long lastX = Long.MIN_VALUE, lastY = Long.MIN_VALUE;
+        for (int k = 1; k <= m; ) {
+            long px = a.segX[s] + (long) dx * k, py = a.segY[s] + (long) dy * k;
+            long ex = Math.floorDiv(px, CityMap.DISTRICT), ey = Math.floorDiv(py, CityMap.DISTRICT);
+            if (ex != lastX || ey != lastY) { w.before(ex, ey); lastX = ex; lastY = ey; }
+            if (diag) {
+                // The corner beside the step: (px, py - dy).
+                long cy = Math.floorDiv(py - dy, CityMap.DISTRICT);
+                if (cy != ey) w.before(ex, cy);
+                k++;
+                continue;
+            }
+            // Straight: the steps left in this district along the heading are in it too.
+            long at = dx != 0 ? px : py;
+            int way = dx != 0 ? dx : dy;
+            long left = way > 0 ? CityMap.DISTRICT - Math.floorMod(at, CityMap.DISTRICT) : Math.floorMod(at, CityMap.DISTRICT) + 1;
+            k += (int) Math.min(left, (long) m - k + 1);
+        }
+    }
+
+    /** ...that everything of arm a (all its stretches) is about to go. */
+    static void sawArm(Net n, Arm a) {
+        if (n.witness == null) return;
+        for (int s = 0; s < a.segs; s++) sawStretch(n, a, s);
+    }
+
+    /* =====================================================================
        A NET: ITS HUB, CORRIDORS AND ARMS
        ===================================================================== */
 
@@ -270,6 +362,8 @@ public final class CityRuns {
         /** Its stretches by district: district key -> {arm << 24 | stretch} entries, and how many. */
         final Map<Long, long[]> buckets = new HashMap<>();
         final Map<Long, Integer> bucketN = new HashMap<>();
+        /** The witness told of each change to its plots (THE WITNESS, batch FX7), or null: set by CityRuns.setWitness() for the length of a month's layTo(), never saved. */
+        Witness witness;
 
         Net(int kind, int at, int bridge) { this.kind = kind; this.at = at; this.bridge = bridge; }
 
@@ -313,6 +407,10 @@ public final class CityRuns {
          * after its last Rail Depot went).
          */
         void reset() {
+            if (witness != null) {
+                if (hubLaid) saw(this, hubX, hubY);
+                for (Arm a : arms) sawArm(this, a);
+            }
             started = false; hubLaid = false; corridors.clear(); arms.clear(); interchanges.clear(); plots = 0;
             hubX = hubY = 0;
             buckets.clear(); bucketN.clear(); stuckAt = Long.MIN_VALUE;
@@ -657,6 +755,7 @@ public final class CityRuns {
 
     /** Lays net n's plot (x, y) on arm a's stretch s: counted where nothing else of the net covers it yet (an arm never covers its own new plot: it never turns back). */
     static void lay(Net n, int a, int s, long x, long y) {
+        saw(n, x, y);
         boolean was = coverer(n, x, y, a) != -1;
         file(n, a, s, x, y);
         if (!was) n.plots++;
@@ -751,6 +850,7 @@ public final class CityRuns {
         long before = n.plots;
         if (!n.hubLaid) {
             boolean was = coverer(n, n.hubX, n.hubY, -1) != -1;
+            saw(n, n.hubX, n.hubY);
             n.hubLaid = true;
             if (!was) n.plots++;
         }
@@ -828,6 +928,7 @@ public final class CityRuns {
         long before = n.plots;
         if (!n.hubLaid) {
             boolean was = coverer(n, n.hubX, n.hubY, -1) != -1;
+            saw(n, n.hubX, n.hubY);
             n.hubLaid = true;
             if (!was) n.plots++;
         }
@@ -918,6 +1019,9 @@ public final class CityRuns {
         }
         if (diag && n.plots + 1 == target && coverer(n, nx, y, i) == -1 && coverer(n, nx, ny, i) == -1) return HELD;
         if (cov != -1 && a.steps > 2) a.crossings.add(new long[] { nx, ny, a.steps + 1 });
+        // The witness first (batch FX7): push() lengthens a stretch every district it is filed under reads at once.
+        saw(n, nx, ny);
+        if (diag) saw(n, nx, y);
         a.push(d);
         int s = a.segs - 1;
         a.steps++;
@@ -1053,6 +1157,7 @@ public final class CityRuns {
         while (n.plots > target) {
             if (newest.isEmpty()) {
                 // Only the hub's plot is left.
+                if (n.hubLaid) saw(n, n.hubX, n.hubY);
                 n.hubLaid = false;
                 n.plots = 0;
                 break;
@@ -1062,6 +1167,9 @@ public final class CityRuns {
             int s = a.segs - 1, h = a.segHead[s], dx = DX[h], dy = DY[h];
             long x = a.x, y = a.y;
             boolean diag = dx != 0 && dy != 0;
+            // The witness first (batch FX7): the step's plot, and a 45-degree step's corner, are about to go.
+            saw(n, x, y);
+            if (diag) saw(n, x, y - dy);
             a.segSteps[s]--;
             if (a.segSteps[s] == 0) a.segs--;
             a.steps--;
@@ -1204,6 +1312,7 @@ public final class CityRuns {
 
     /** Lays a yard: its box, and the footprint it was asked for. */
     private void addYard(long[] box, int[] asked) {
+        sawBox(witness, box[0], box[1], box[2], box[3]);
         while (yardAsked.size() < yards.size()) yardAsked.add(yardAsked(yardAsked.size()));
         yards.add(box);
         yardAsked.add(new int[] { asked[0], asked[1] });
@@ -1230,6 +1339,7 @@ public final class CityRuns {
             if (asked[0] != now[0] || asked[1] != now[1]) break;
             keep++;
         }
+        for (int i = keep; i < yards.size(); i++) sawBox(witness, yards.get(i)[0], yards.get(i)[1], yards.get(i)[2], yards.get(i)[3]);
         while (yards.size() > keep) yards.remove(yards.size() - 1);
         while (yardAsked.size() > keep) yardAsked.remove(yardAsked.size() - 1);
         yardsShort = 0;
@@ -1626,7 +1736,7 @@ public final class CityRuns {
     private void dropWays() {
         boolean any = false;
         for (int i = rail.arms.size() - 1; i >= 0; i--) {
-            if (rail.arms.get(i).corridor >= BRANCH) { rail.arms.remove(i); any = true; }
+            if (rail.arms.get(i).corridor >= BRANCH) { sawArm(rail, rail.arms.get(i)); rail.arms.remove(i); any = true; }
         }
         while (rail.corridors.size() > 2) { rail.corridors.remove(rail.corridors.size() - 1); any = true; }
         if (rail.interchanges.removeIf(c -> c.corridor() >= BRANCH)) any = true;
@@ -1651,14 +1761,14 @@ public final class CityRuns {
         List<Integer> order = spineOrder(rail, gateArm(rail, gateway));
         for (int i : order) {
             Arm a = rail.arms.get(i);
-            if (ended && a.steps > 0) { rail.arms.set(i, new Arm(a.corridor, a.home, a.sx, a.sy)); any = true; }
+            if (ended && a.steps > 0) { sawArm(rail, a); rail.arms.set(i, new Arm(a.corridor, a.home, a.sx, a.sy)); any = true; }
             if (a.stoppedBy != SEA) ended = true;
         }
         if (order.isEmpty()) {
             // No gateway: the hub alone.
             for (int i = 0; i < rail.arms.size(); i++) {
                 Arm a = rail.arms.get(i);
-                if (a.corridor <= 1 && a.steps > 0) { rail.arms.set(i, new Arm(a.corridor, a.home, a.sx, a.sy)); any = true; }
+                if (a.corridor <= 1 && a.steps > 0) { sawArm(rail, a); rail.arms.set(i, new Arm(a.corridor, a.home, a.sx, a.sy)); any = true; }
             }
         }
         return any;
@@ -1695,6 +1805,9 @@ public final class CityRuns {
         for (int[] leg : legs) {
             for (int k = 0; k < leg[1]; k++) {
                 long nx = a.x + DX[leg[0]], ny = a.y + DY[leg[0]];
+                // The witness first (batch FX7), as step() does: push() lengthens a stretch at once.
+                saw(rail, nx, ny);
+                if (DX[leg[0]] != 0 && DY[leg[0]] != 0) saw(rail, nx, a.y);
                 a.push(leg[0]);
                 a.steps++;
                 lay(rail, ai, a.segs - 1, nx, ny);
@@ -2734,10 +2847,28 @@ public final class CityRuns {
      * railway always.
      */
     public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver) {
+        return fill(x0, y0, w, h, fixed, marks, yardsOver, true, highwaysReach());
+    }
+
+    /**
+     * ...with or without the interchanges' reserves (F_RESERVE; THE RUNS DATED,
+     * batch FX7): the reserves are derived from the runs, the ground and the works
+     * about them and found when asked, so the map's dated record of what the runs
+     * laid leaves them out.
+     */
+    public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver, boolean reserves) {
+        return fill(x0, y0, w, h, fixed, marks, yardsOver, reserves, highwaysReach());
+    }
+
+    /**
+     * ...and with the highways filled in as if highwaysReach() were `reach`
+     * (batch FX7): what the runs lay today, as they were drawn the month before
+     * the highways first reached a street, or the month they ceased to.
+     */
+    public long fill(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean yardsOver, boolean reserves, boolean reach) {
         Arrays.fill(fixed, 0, w * h, (byte) 0);
         if (marks != null) Arrays.fill(marks, 0, w * h, (byte) 0);
         long hash = World.mix(0x46494C4CL);
-        boolean reach = highwaysReach();
         for (Net n : new Net[] { highways, rail }) {
             if (!n.started || (n.kind == HIGHWAYS && !reach)) continue;
             byte code = n.kind == HIGHWAYS ? F_HIGHWAY : F_RAIL;
@@ -2790,7 +2921,7 @@ public final class CityRuns {
             }
             hash = World.mix(hash ^ y[0] * 31 ^ y[1] ^ (y[2] << 40));
         }
-        if (yardsOver && reach) {
+        if (yardsOver && reserves && reach) {
             // The interchanges' reserves (batch FR7, D19): street ground over every plot of a box the runs left open - a plan's
             // ground alone; a tile's loops are drawn from reservesIn().
             for (InterchangeGround.Site s : reservesIn(x0, y0, w, h)) {
@@ -2916,6 +3047,20 @@ public final class CityRuns {
         for (long[] yd : yards) if (x >= yd[0] && y >= yd[1] && x < yd[0] + yd[2] && y < yd[1] + yd[3]) return F_YARD;
         boolean hw = highwaysReach() && covered(highways, x, y), rl = covered(rail, x, y);
         return hw && rl ? F_RAIL_OVER : hw ? F_HIGHWAY : rl ? F_RAIL : 0;
+    }
+
+    /**
+     * The districts the highways' stretches are filed under (batch FX7, THE RUNS DATED), each {world column, world
+     * row} (plot / CityMap.DISTRICT, rounded down): every district a highway plot lies in, and - after a net was taken
+     * back - some a stretch has left. What the map reads when the highways first reach a street, or cease to: then
+     * every one of their districts changes at once.
+     */
+    public List<long[]> highwayDistricts() {
+        List<long[]> out = new ArrayList<>();
+        for (Map.Entry<Long, Integer> e : highways.bucketN.entrySet()) {
+            if (e.getValue() > 0) out.add(new long[] { e.getKey() >> 32, (int) (long) e.getKey() });
+        }
+        return out;
     }
 
     /* =====================================================================
