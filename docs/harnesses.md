@@ -9477,107 +9477,107 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      and the model's plots are all laid. No link is a stub: each stands on
 > ...
 
-- **L247 1. a stuck net opens its next corridor by a link arm**
-  - L263 fixture: without link arms the highways stall short of the model's plots (premise)
-  - L264 fixture: ...with no corridor but the spine's two, and every arm shorter than APART
-  - L265 fixture: ...and no line crosses the net: newCorridor() finds none
-  - L270 a LINK corridor opens
-  - L271 the model's highway plots are all laid: highwayShort() is 0
-  - L273 a link stands on its line
-  - L280 ...it leaves the net at its start (a plot of the net) and stands on the line at its end
-  - L287 ...with an interchange at each
-  - L290 ...and the corridor's two line arms open where it meets the line
-  - L296 ...laid along the line
-  - L297 the link is a planned way, a shortest one: its steps are the plots between its start and its end, none wasted
-  - L298 ...of at most 3 legs (stretches)
-  - L299 ...and it joins the net to its line: every stretch starts where the one before it ended
-  - L301 no link is a stub: each stands on its line or is the piece's newest corridor still growing
-  - L302 every plot is on owned dry ground
-  - L303 plots counted are the plots covered
-- **L305 1b. a link finds its way round water**
-  - L320 fixture: without link arms the highways stall short of the model's plots, in the spine's two corridors (premise)
-  - L322 fixture: ...and no line crosses the net: newCorridor() finds none
-  - L328 two LINK corridors open: the neck's line, then the far square's
-  - L329 the model's highway plots are all laid: highwayShort() is 0
-  - L330 a link stands on its line
-  - L334 the first link's line is the column APART east of the hub
-  - L335 ...it leaves the net at its start (a plot of the net) and stands on the line, in the neck, at its end
-  - L337 ...a shortest way:
-  - L339 ...joined from the net to the line, in at most 3 legs (stretches)
-  - L351 ...every plot of it, and every staircase corner, on dry owned ground
-  - L355 the second link goes on to the column two APART out, in the far square
-  - L357 no link is a stub: each stands on its line or is the piece's newest corridor still growing
-  - L358 every plot is on owned dry ground
-  - L359 plots counted are the plots covered
-  - L362 a link part-grown at the model's plots is the newest corridor still growing: no stub
-  - L371 taken back to
-  - L375 ...grown again to
-- **L379 2. two islands each with buildings get a net each, none across the sea**
-  - L397 the far island has a net of its own: a second piece
-  - L398 each island has highway plots
-  - L399 ...its hub plot laid, drawn with the rest
-  - L400 the plots are dealt by the pieces' weights: the far piece floor(T * 1 / 4), the home piece the rest (within 2 plots)
-  - L402 ...as the pieces count them
-  - L403 no highway plot is on salt or unowned ground
-  - L404 none is across the sea
-  - L405 highwayShort() is 0: the islands hold the model's plots
-  - L406 the far piece's spine is its own: corridors 2 and 3 are SPINE corridors of piece 1
-  - L416 premise: with ONE_PIECE the far island has none and the plots the home island cannot hold are never laid (today's fault)
-  - L422 fixture: the home piece's share is more than its island holds
-  - L423 the home piece, stopped by its ground short of its share, is made up by the far piece: all the plots laid
-- **L425 3. growth and trim are newest-end, piece by piece (H4)**
-  - L440 growing 50 plots a month to 900: every arm of a month is a prefix of the next month's (nothing laid moves)
-  - L441 ...the far piece's hub is laid as soon as it has a plot
-  - L442 ...and the model's plots are all laid
-  - L453 taken back from 900 to nothing in steps: every arm of a month is a prefix of the month before's
-  - L454 ...the far piece's hub plot is the last of its piece to go: laid while the piece has a plot, gone with the last
-  - L455 ...nothing is left of the far piece but its corridors, and the net is reset with the last plot
-- **L457 4. a purchase joining two pieces moves nothing**
-  - L467 the month a purchase joins them, with the same plots: nothing moves (the runs' signature is the same)
-  - L470 as the plots grow, every arm laid before is a prefix of the arm after
-  - L471 the younger net is frozen: its plots are what they were
-  - L479 ...every arm of it exactly as it was
-  - L480 the home net grows on: past what it held, to the plots the model has less the frozen net's
-- **L483 5. the sidecar keeps every piece's net**
-  - L493 written and read at FORMAT
-  - L495 ...with the pieces' hubs
-  - L498 ...the corridors' roles and pieces
-  - L499 ...each piece's plots counted afresh the same
-  - L504 ...and they fill a box alike
-  - L510 fixture: the neck ground's first link is part-grown, with its plan, at the model's
-  - L517 a link part-grown, written and read back, is the same net, its LINK corridor's role kept, and has no plan
-  - L527 ...it grows on to its line: the way planned again, the link whole, the model's plots all laid
-  - L529 ...what was laid before is still there, and no link is a stub, and every plot is on dry owned ground
-  - L540 a net of one piece written at FORMAT 11 and read back is the same (its corridors a spine and crossings, one piece)
-  - L546 ...and at FORMAT
-  - L548 the sidecar writes and reads (
-- **L551 6. nothing else moved**
-  - L562 fixture: the rule never sticks here: crossings open corridors and no link does
-  - L563 layTo() with ONE_PIECE gives the same stretches() with link arms on and off
-  - L564 ...the same signature()
-  - L573 ...and after the plots are taken back to 1,200
-- **L575 7. the map finds its pieces and every built piece has a highway**
-  - L631 fixture: the default world has a strip of 8 x 2 districts, dry at every sample, near its dry place
-  - L677 the map finds three pieces of ground
-  - L678 the home piece, 0, is the middle island's, the founding site's; the others follow by their first tile, west then east
-  - L680 a plot in the unowned ground between two islands, or beyond them, is on no piece
-  - L683 each piece holds its island's tiles: 16 x 16 of them
-  - L684 the ground was read once (a flood) and not again by the
-  - L699 each piece's weight is the plots its buildings stand on, worked again from the districts: every island has some
-  - L714 each piece's hub is its tile nearest the founding site's (the northern, then the western, on a tie), its highway line crossing on dry ground
-  - L718 the runs have a net for each piece: three, each from its piece's hub
-  - L723 every island has highway plots
-  - L724 the model's plots are all laid: highwayShort() is 0
-  - L736 no highway plot is on salt, fresh water or ground the city does not own, and none crosses between the islands
-  - L737 growing a month at a time, every arm of a month is a prefix of the next (nothing laid moves)
-  - L742 premise: the same runs on the same ground with ONE_PIECE lay no highway on the other two islands (today's fault)
-  - L750 a purchase of the ground between the west and the middle islands: the map reads only its tiles (an update, not another flood)
-  - L751 ...they are one piece now, the home piece, and the east island is piece 1
-  - L753 ...the month it joins them nothing moves: the plots and every stretch laid are where they were
-  - L759 as the plots grow every stretch laid before is a prefix of the one after
-  - L760 the west net, no longer its piece's owner, is frozen as it was; the model's plots are all laid
-  - L788 on the city of billions a purchase is an update of the map's pieces, not another flood
-  - L789 ...and the update takes no more than MapCheck's RECONCILE_MS (
+- **L248 1. a stuck net opens its next corridor by a link arm**
+  - L264 fixture: without link arms the highways stall short of the model's plots (premise)
+  - L265 fixture: ...with no corridor but the spine's two, and every arm shorter than APART
+  - L266 fixture: ...and no line crosses the net: newCorridor() finds none
+  - L271 a LINK corridor opens
+  - L272 the model's highway plots are all laid: highwayShort() is 0
+  - L274 a link stands on its line
+  - L281 ...it leaves the net at its start (a plot of the net) and stands on the line at its end
+  - L288 ...with an interchange at each
+  - L291 ...and the corridor's two line arms open where it meets the line
+  - L297 ...laid along the line
+  - L298 the link is a planned way, a shortest one: its steps are the plots between its start and its end, none wasted
+  - L299 ...of at most 3 legs (stretches)
+  - L300 ...and it joins the net to its line: every stretch starts where the one before it ended
+  - L302 no link is a stub: each stands on its line or is the piece's newest corridor still growing
+  - L303 every plot is on owned dry ground
+  - L304 plots counted are the plots covered
+- **L306 1b. a link finds its way round water**
+  - L321 fixture: without link arms the highways stall short of the model's plots, in the spine's two corridors (premise)
+  - L323 fixture: ...and no line crosses the net: newCorridor() finds none
+  - L329 two LINK corridors open: the neck's line, then the far square's
+  - L330 the model's highway plots are all laid: highwayShort() is 0
+  - L331 a link stands on its line
+  - L335 the first link's line is the column APART east of the hub
+  - L336 ...it leaves the net at its start (a plot of the net) and stands on the line, in the neck, at its end
+  - L338 ...a shortest way:
+  - L340 ...joined from the net to the line, in at most 3 legs (stretches)
+  - L352 ...every plot of it, and every staircase corner, on dry owned ground
+  - L356 the second link goes on to the column two APART out, in the far square
+  - L358 no link is a stub: each stands on its line or is the piece's newest corridor still growing
+  - L359 every plot is on owned dry ground
+  - L360 plots counted are the plots covered
+  - L363 a link part-grown at the model's plots is the newest corridor still growing: no stub
+  - L372 taken back to
+  - L376 ...grown again to
+- **L380 2. two islands each with buildings get a net each, none across the sea**
+  - L398 the far island has a net of its own: a second piece
+  - L399 each island has highway plots
+  - L400 ...its hub plot laid, drawn with the rest
+  - L401 the plots are dealt by the pieces' weights: the far piece floor(T * 1 / 4), the home piece the rest (within 2 plots)
+  - L403 ...as the pieces count them
+  - L404 no highway plot is on salt or unowned ground
+  - L405 none is across the sea
+  - L406 highwayShort() is 0: the islands hold the model's plots
+  - L407 the far piece's spine is its own: corridors 2 and 3 are SPINE corridors of piece 1
+  - L417 premise: with ONE_PIECE the far island has none and the plots the home island cannot hold are never laid (today's fault)
+  - L423 fixture: the home piece's share is more than its island holds
+  - L424 the home piece, stopped by its ground short of its share, is made up by the far piece: all the plots laid
+- **L426 3. growth and trim are newest-end, piece by piece (H4)**
+  - L441 growing 50 plots a month to 900: every arm of a month is a prefix of the next month's (nothing laid moves)
+  - L442 ...the far piece's hub is laid as soon as it has a plot
+  - L443 ...and the model's plots are all laid
+  - L454 taken back from 900 to nothing in steps: every arm of a month is a prefix of the month before's
+  - L455 ...the far piece's hub plot is the last of its piece to go: laid while the piece has a plot, gone with the last
+  - L456 ...nothing is left of the far piece but its corridors, and the net is reset with the last plot
+- **L458 4. a purchase joining two pieces moves nothing**
+  - L468 the month a purchase joins them, with the same plots: nothing moves (the runs' signature is the same)
+  - L471 as the plots grow, every arm laid before is a prefix of the arm after
+  - L472 the younger net is frozen: its plots are what they were
+  - L480 ...every arm of it exactly as it was
+  - L481 the home net grows on: past what it held, to the plots the model has less the frozen net's
+- **L484 5. the sidecar keeps every piece's net**
+  - L494 written and read at FORMAT
+  - L496 ...with the pieces' hubs
+  - L499 ...the corridors' roles and pieces
+  - L500 ...each piece's plots counted afresh the same
+  - L505 ...and they fill a box alike
+  - L511 fixture: the neck ground's first link is part-grown, with its plan, at the model's
+  - L518 a link part-grown, written and read back, is the same net, its LINK corridor's role kept, and has no plan
+  - L528 ...it grows on to its line: the way planned again, the link whole, the model's plots all laid
+  - L530 ...what was laid before is still there, and no link is a stub, and every plot is on dry owned ground
+  - L541 a net of one piece written at FORMAT 11 and read back is the same (its corridors a spine and crossings, one piece)
+  - L547 ...and at FORMAT
+  - L549 the sidecar writes and reads (
+- **L552 6. nothing else moved**
+  - L563 fixture: the rule never sticks here: crossings open corridors and no link does
+  - L564 layTo() with ONE_PIECE gives the same stretches() with link arms on and off
+  - L565 ...the same signature()
+  - L574 ...and after the plots are taken back to 1,200
+- **L576 7. the map finds its pieces and every built piece has a highway**
+  - L632 fixture: the default world has a strip of 8 x 2 districts, dry at every sample, near its dry place
+  - L678 the map finds three pieces of ground
+  - L679 the home piece, 0, is the middle island's, the founding site's; the others follow by their first tile, west then east
+  - L681 a plot in the unowned ground between two islands, or beyond them, is on no piece
+  - L684 each piece holds its island's tiles: 16 x 16 of them
+  - L685 the ground was read once (a flood) and not again by the
+  - L700 each piece's weight is the plots its buildings stand on, worked again from the districts: every island has some
+  - L715 each piece's hub is its tile nearest the founding site's (the northern, then the western, on a tie), its highway line crossing on dry ground
+  - L719 the runs have a net for each piece: three, each from its piece's hub
+  - L724 every island has highway plots
+  - L725 the model's plots are all laid: highwayShort() is 0
+  - L737 no highway plot is on salt, fresh water or ground the city does not own, and none crosses between the islands
+  - L738 growing a month at a time, every arm of a month is a prefix of the next (nothing laid moves)
+  - L743 premise: the same runs on the same ground with ONE_PIECE lay no highway on the other two islands (today's fault)
+  - L751 a purchase of the ground between the west and the middle islands: the map reads only its tiles (an update, not another flood)
+  - L752 ...they are one piece now, the home piece, and the east island is piece 1
+  - L754 ...the month it joins them nothing moves: the plots and every stretch laid are where they were
+  - L760 as the plots grow every stretch laid before is a prefix of the one after
+  - L761 the west net, no longer its piece's owner, is frozen as it was; the model's plots are all laid
+  - L789 on the city of billions a purchase is an update of the map's pieces, not another flood
+  - L790 ...and the update takes no more than MapCheck's RECONCILE_MS (
 
 ## JunctionCheck.java - 134 labelled assertions
 
