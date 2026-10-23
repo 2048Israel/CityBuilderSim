@@ -1,0 +1,109 @@
+month 4005 grown in 101.0 s; people 560,230, buildings 24,592
+
+TODAY: the redraw as the clock makes it (median of 8, ms; the pulse's own passes)
+screen     first |  build    css  layout  sync  settle  idle | chrome alone: build   css  layout | page nodes  labeled  text  region  shape  canvas  control  custom
+Build         44 |   23.8   29.4    7.2   6.3     1.0   0.0 |                 8.9  16.3    2.2 |        580      143     2     216     37       0        3       6
+Land          39 |   14.1   18.6    3.7   3.4     0.7   0.0 |                 5.9  11.5    1.8 |        474      133     0     184     16       1        0       6
+People        47 |   19.7   25.4    5.6   5.3     1.2   0.0 |                 4.8  10.8    1.4 |       1182      260     0     543    103       0        0      19
+Services      28 |    9.6   17.7    3.2   2.9     0.8   0.2 |                 5.7  11.8    2.3 |        447       97     8     184     26       0        1       7
+Infra         31 |    9.2   18.0    3.3   2.7     1.0   0.3 |                 4.8   9.7    1.7 |        394      113     0     118     22       0        1       5
+Sectors       52 |   20.5   21.4    5.9   4.5     2.0   1.3 |                 4.9  10.4    2.8 |        889      158    48     381     52      24        1       0
+Govt          30 |    8.7   19.7    2.9   3.4     1.2   0.4 |                 5.6  10.0    1.9 |        449      125     0     142     26       0        1       2
+Finances      28 |    8.9   20.7    3.7   2.9     1.0   0.2 |                 5.3   9.8    1.7 |        380       86     0     155     17       0        2       9
+Bank          38 |   11.3   21.8    3.9   3.2     1.6   0.5 |                 4.5   7.8    1.8 |        823      171     0     372     51       0        1      23
+Trade         24 |    8.7   14.3    2.7   2.1     0.8   0.2 |                 5.0   7.3    1.4 |        391       85     0     150     29       1        1       5
+Policy        30 |    7.9   14.1    3.3   2.7     1.2   0.7 |                 5.0   7.2    1.8 |        397       90     0     154     24       0        1       5
+History       48 |   18.7   22.5    5.0   5.0     1.7   0.5 |                 4.4   5.9    1.5 |        642      188     0     187     27       4        2       9
+
+KEPT: the page kept, the month's build made off the scene and only what differs set on it (median of 8, ms; counts per month)
+screen     build  chrome-pulse  patch  page-css  page-layout | per month: text  style  set  handlers  swapped(nodes)  rows+(nodes)  rows-(nodes)  untouched | words differ
+Build       15.2           9.2    6.1       1.5          3.8 |           14      1    9        26       3(    3)       0(    0)       0(    0)       403 | 0 of 8
+    pictures kept: 1 a month; swapped by class: Slider=16  TextField=8
+    changes by card:  5:Power_82%_served=113  3:Utilities=51  7:Spare_margin=24  9:Homes=13  4:WHAT_WOULD_HELP_MO=9
+    swaps:            Slider(opaque)@HBox[]=16  TextField(opaque)@HBox[]=8
+    set by property:  tooltip text=40  setLength=32
+Land        11.5          10.0    3.0       3.4          2.0 |           13      0    8        30       1(   12)       1(  103)       0(    1)       213 | 0 of 8
+    pictures kept: 5 a month; swapped by class: StackPane=8
+    changes by card:  5:Margin=87  3:GROUND_FREE=67  1:Drawing_the_city's=16  0:Land_office=8  2:THE_BEST_OFFERS_·_=7
+    swaps:            VBox>StackPane@HBox[Drawing_the_city]=8
+    set by property:  tooltip text=53  visibility=8
+People      15.5           8.4    6.1       0.0          3.5 |           64      0   56        69       0(    0)       0(    0)       0(    0)       819 | 0 of 8
+    pictures kept: 19 a month; swapped by class: 
+    changes by card:  2:WHO_LIVES_HERE=317  8:HOMES=269  15:WORKERS=80  6:37%=78  10:Out_of_work=71  1:LIVING_HERE__›=48  11:THE_POOL_THIS_MONT=44  4:jobs_394,339_×_1.7=11
+    swaps:            
+    set by property:  tooltip text=236  setStartY=40  setEndX=40  setEndY=40  setStartX=32  setLength=28  setAll=24  -fx-stroke-line-cap=4
+Services    10.2           9.4    2.0       0.0          1.6 |            8      0    6        44       0(    0)       0(    0)       0(    0)       314 | 0 of 8
+    pictures kept: 7 a month; swapped by class: 
+    changes by card:  top=164  2:OFF_SICK__›=33
+    swaps:            
+    set by property:  setLength=24  tooltip text=24
+Infra        7.8           9.3    1.8       0.0          1.3 |            5      0   24        37       0(    0)       0(    0)       0(    0)       244 | 0 of 8
+    pictures kept: 5 a month; swapped by class: 
+    changes by card:  top=448  1:SERVED__›=10
+    swaps:            
+    set by property:  tooltip text=63  setStartY=32  setEndX=32  setStartX=24  setEndY=24  setCenterX=8  setCenterY=8
+Sectors     21.3           8.8    3.4       0.2          3.8 |           39      6    5        30      24(   24)       0(    0)       0(    0)       645 | 0 of 8
+    pictures kept: 0 a month; swapped by class: Canvas=192
+    changes by card:  top=890  1:KEPT=46
+    swaps:            Canvas(opaque)@HBox[]=192
+    set by property:  tooltip text=21  setContent=6  -fx-fill=5  -fx-stroke=5
+Govt         7.4           9.5    1.4       0.1          1.6 |           36      0   39        44       0(    0)       0(    4)       0(    5)       252 | 0 of 8
+    pictures kept: 2 a month; swapped by class: 
+    changes by card:  top=1138  1:EARNED__›=36
+    swaps:            
+    set by property:  tooltip text=113  setLength=96  setStartAngle=93  setLayoutX=8  setContent=4
+Finances     7.5           8.9    1.2       0.7          1.2 |            6      0    0        32       1(    1)       0(    0)       0(    0)       258 | 0 of 8
+    pictures kept: 9 a month; swapped by class: TextField=8
+    changes by card:  top=92  1:TREASURY__›=9
+    swaps:            TextField(opaque)@HBox[]=8
+    set by property:  
+Bank         9.7           9.5    2.3       0.3          2.3 |           31      1   17        59       1(    7)       0(    0)       0(    0)       573 | 0 of 8
+    pictures kept: 22 a month; swapped by class: SegmentBar=5
+    changes by card:  top=801
+    swaps:            SegmentBar(shape)@HBox[]=5
+    set by property:  tooltip text=139
+Trade        8.1           9.3    1.4       0.0          1.3 |           27      0    6        32       1(    1)       0(    0)       0(    0)       252 | 0 of 8
+    pictures kept: 4 a month; swapped by class: Canvas=8
+    changes by card:  top=384  2:SOLD_ABROAD__›=80
+    swaps:            Canvas(opaque)@StackPane[]=8
+    set by property:  tooltip text=51
+Policy       7.4           9.6    0.9       0.0          1.9 |           15      0    5        19       0(    0)       0(    0)       0(    0)       267 | 0 of 8
+    pictures kept: 5 a month; swapped by class: 
+    changes by card:  top=250  1:TAX_A_MONTH__›=32
+    swaps:            
+    set by property:  tooltip text=37
+History     16.2           9.3    4.1       8.8          2.4 |            9      5   14        27      14(  269)      13(   47)       4(   24)        84 | 0 of 8
+    pictures kept: 0 a month; swapped by class: Label=40  Region=24  RangeBar=16  TimeChart=8  HBox=8  GridPane=8  VBox=8
+    changes by card:  top=676  1:THE_CITY=8
+    swaps:            Label>Region@HBox[]=16  Region>Label@HBox[over_the_chart's]=8  VBox>TimeChart@VBox[Borrowing_rate__]=8  HBox>RangeBar@VBox[]=8  Label>RangeBar@VBox[]=8  Label>VBox@VBox[?__MONEY]=8
+    set by property:  -fx-spacing=56  tooltip text=16  -fx-wrap-text=16  properties remove=8  -fx-alignment=8  setAll=8
+
+SPLIT: where the build's time goes (JFR, 1 ms samples over 32 redraws a screen)
+screen     samples  nodes%  screen-code%  model%  other%
+Build          176      75             5      20       0
+Land           162      84             3      13       0
+People         201      88             2      10       0
+Services        89      79             3      18       0
+Infra           94      82             1      17       0
+Sectors        190      59             4      36       0
+Govt            89      67             4      28       0
+Finances        96      72             8      20       0
+Bank            87      75             2      23       0
+Trade           95      61            16      23       0
+Policy          76      78             7      16       0
+History        152      50            13      38       0
+
+LIVE: the clock at 50x, 4.0 s a screen after 1 s to settle (the FX thread's CPU ms a second, shared out by 5 ms samples)
+screen   months/s  frame p50  p95  max | month  build  pulse  settle  other  | busy
+Build        10.0          6    40   293 |   308     56    107      15     30  |   52%
+Land          9.7         12    62   321 |   299     41     78       9    278  |   71%
+People        9.2          8    61   358 |   314     63    208      19     17  |   62%
+Services      9.5          6    42   336 |   322     26    115      12     24  |   50%
+Infra         9.5          6    43   341 |   340     29    122       4     25  |   52%
+Sectors       9.5          9    60   326 |   318     43    217      18     21  |   62%
+Govt          9.7          6    39   297 |   310     30    125       6      6  |   48%
+Finances      9.5          6    36   308 |   351     23    100       4     18  |   50%
+Bank          9.7          9    48   313 |   337     34    145      12     20  |   55%
+Trade         9.5          8    43   335 |   399     20    129       8     20  |   58%
+Policy        9.5          6    52   361 |   388     33    135       8     49  |   61%
+History      10.0         14    76   376 |   374     57    161      12     55  |   66%

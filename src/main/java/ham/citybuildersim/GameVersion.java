@@ -7128,8 +7128,25 @@ public final class GameVersion {
      *     unchanged: Gson reads either).
      *   - ui/UiProbe: the window's probe, run by hand.
      *   - Harness: SaveSlotCheck 7c (new section).
+     *
+     * 0.8.26 (2026-10-23) - UP4, THE PEOPLE PAGE KEPT: A MONTH'S REDRAW SETS
+     * WHAT CHANGED ON THE PAGE ON SHOW INSTEAD OF BUILDING ANOTHER
+     * (docs/studies/spec-screens-in-place.md). The study's pilot; the other
+     * screens are drawn as before.
+     *   - ui/Kept: the page's own drawing code run over the nodes it made last
+     *     time (by scope and order); its boxes stage their children and set
+     *     them in one call where they differ; a node handed back loses the
+     *     handlers, cursor, visibility and tooltip code gives only sometimes.
+     *   - UserInterface.keepMenu()/setPage(): a kept screen's redraw empties,
+     *     pins and settles nothing, so its scroll never moves.
+     *   - PeopleScreen's People page (drawPage()) and the Pieces helpers it
+     *     reaches drawn through Kept; Mirror, Strip, Pair, SegmentBar and
+     *     Waterfall told their figures by set().
+     *   - Harness: KeptCheck (new) with ui/KeptBench: the kept page against a
+     *     page built new, node for node and pixel for pixel, and its month's
+     *     cost; no window (a scene of its own), skipped where JavaFX cannot start.
      */
-    public static final String VERSION = "0.8.25";
+    public static final String VERSION = "0.8.26";
 
     /**
      * The save shape.

@@ -1,0 +1,19 @@
+month 4005 grown in 58.8 s; people 560,230, buildings 24,592
+
+PEOPLE at month 4117, 32 redraws each way in 4 alternating turns (median, ms):
+way        draw    css  layout  sync  settle | total | nodes made  handed back
+afresh     16.3   22.3    5.3   4.6     1.2 |  51.6 |        863            0
+kept       11.9   11.7    4.5   2.2     0.0 |  30.2 |          0          863
+(the chrome - header, rail, panels, inbox - is rebuilt by both ways: UP2's)
+chrome alone: build 4.9, css 10.3, layout 1.4, sync 1.1 ms
+
+LIVE: the clock at 50x on People, 4.0 s a stretch after 1 s to settle, alternating
+way      months/s  frame p50  p95  max | month  build  pulse  settle  other | busy
+kept         10.5         12   175   369 |   248     87    262       0    136 |   73%
+afresh       10.0          9    69   128 |   171     48    302      27     25 |   57%
+kept         10.0          7    23    64 |   188     20    262       0      5 |   48%
+afresh       10.0          8    55    72 |   177     39    238      26     35 |   52%
+kept         10.0          6    38    61 |   171     25    189       0     29 |   41%
+afresh       10.0          8    59    80 |   171     44    264      18     38 |   53%
+kept         10.2          6    29    52 |   156     17    226       0     11 |   41%
+afresh       10.2          7    46    53 |   100     47    261      23      6 |   44%
