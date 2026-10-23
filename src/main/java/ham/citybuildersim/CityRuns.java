@@ -435,6 +435,10 @@ public final class CityRuns {
         long stuckAt = Long.MIN_VALUE;
         /** ...for each piece but piece 0 (CL5, transient). */
         long[] pieceStuck = { Long.MIN_VALUE };
+        /** armsOf()'s index of the arms by piece, and the arms' count and last arm it was built at (transient, never saved). */
+        int[][] byPiece;
+        int byPieceSize = -1;
+        Arm byPieceLast;
         /** Its stretches by district: district key -> {arm << 24 | stretch} entries, and how many. */
         final Map<Long, long[]> buckets = new HashMap<>();
         final Map<Long, Integer> bucketN = new HashMap<>();
@@ -526,6 +530,36 @@ public final class CityRuns {
     /** Whether corridor ci is a SPINE: corridors 0 and 1, the home piece's, or one a piece opened with its hub. */
     static boolean isSpine(Net n, int ci) {
         return ci <= 1 || (ci < n.corridors.size() && corridorRole(n.corridors.get(ci)) == SPINE);
+    }
+
+    /**
+     * The indexes of piece p's arms, in index order (CL5): kept on the net and
+     * built again when its arms change (their count, or the last arm). A
+     * piece's growth and its trim read its own arms alone: a city of billions
+     * has hundreds of pieces, and a pass over every arm of the net for each
+     * piece a month cost more than the month's budget (MapCheck's RECONCILE_MS).
+     */
+    static int[] armsOf(Net n, int p) {
+        int size = n.arms.size(), np = Math.max(1, n.pieceHubs.size());
+        Arm last = size > 0 ? n.arms.get(size - 1) : null;
+        if (n.byPiece == null || n.byPieceSize != size || n.byPieceLast != last || n.byPiece.length != np) {
+            int[] c = new int[np];
+            for (int i = 0; i < size; i++) {
+                int q = pieceOf(n, n.arms.get(i));
+                if (q >= 0 && q < np) c[q]++;
+            }
+            int[][] by = new int[np][];
+            for (int q = 0; q < np; q++) by[q] = new int[c[q]];
+            Arrays.fill(c, 0);
+            for (int i = 0; i < size; i++) {
+                int q = pieceOf(n, n.arms.get(i));
+                if (q >= 0 && q < np) by[q][c[q]++] = i;
+            }
+            n.byPiece = by;
+            n.byPieceSize = size;
+            n.byPieceLast = last;
+        }
+        return p >= 0 && p < n.byPiece.length ? n.byPiece[p] : new int[0];
     }
 
     /** The plots piece p has: the net's own for a net of one piece (every plot is its), else the count piecePlots keeps. */
@@ -1076,9 +1110,9 @@ public final class CityRuns {
             if (a.steps != b.steps) return Integer.compare(a.steps, b.steps);
             return Integer.compare(x, y);
         });
-        for (int i = 0; i < n.arms.size(); i++) {
+        for (int i : armsOf(n, p)) {
             Arm a = n.arms.get(i);
-            if (!a.joined && a.waitAt != ver && pieceOf(n, a) == p && !dormant(n, i)) live.add(i);
+            if (!a.joined && a.waitAt != ver && !dormant(n, i)) live.add(i);
         }
         int[] why = new int[1];
         long guard = 50 * (target - count(n, p)) + 1000;
@@ -1589,7 +1623,7 @@ public final class CityRuns {
         long before = n.plots;
         boolean dropped = false;
         int gate = p == 0 ? gateArm(n, gateway) : -1;
-        boolean[] late = lateArms(n, gate);
+        boolean[] late = lateArms(n, p, gate);
         PriorityQueue<Integer> newest = newestQueue(n, p, late);
         while (count(n, p) > target) {
             if (newest.isEmpty()) {
@@ -1641,7 +1675,7 @@ public final class CityRuns {
                 }
                 if (closed) {
                     dropped = true;
-                    late = lateArms(n, gate);
+                    late = lateArms(n, p, gate);
                     newest = newestQueue(n, p, late);
                 }
             }
@@ -1654,10 +1688,10 @@ public final class CityRuns {
     }
 
     /** The arms taken back after the rest of their corridor (trimPiece()): the gate arm, a piece's hub arm and a LINK corridor's link, which grew first. */
-    static boolean[] lateArms(Net n, int gate) {
+    static boolean[] lateArms(Net n, int p, int gate) {
         boolean[] late = new boolean[n.arms.size()];
         boolean[] seen = new boolean[n.corridors.size()];
-        for (int i = 0; i < late.length; i++) {
+        for (int i : armsOf(n, p)) {
             Arm a = n.arms.get(i);
             if (i == gate || hubArm(n, a)) late[i] = true;
             if (a.corridor < seen.length && !seen[a.corridor]) {
@@ -1677,7 +1711,7 @@ public final class CityRuns {
             if (a.steps != b.steps) return Integer.compare(b.steps, a.steps);
             return Integer.compare(y, x);
         });
-        for (int i = 0; i < n.arms.size(); i++) if (n.arms.get(i).steps > 0 && pieceOf(n, n.arms.get(i)) == p) q.add(i);
+        for (int i : armsOf(n, p)) if (n.arms.get(i).steps > 0) q.add(i);
         return q;
     }
 
@@ -3367,14 +3401,17 @@ public final class CityRuns {
      * never grown, and nothing of it moves. The pieces' shares: the plots
      * dealt by built weight (the home piece counted at least 1), each owned
      * piece floor(plots * weight / total), the home piece the rest; an owner's
-     * target is its share less what its piece's frozen nets hold. Then, in this
-     * order, so that a month with nothing new moves nothing:
-     * (a) each owner below its target is grown to it, the home piece first;
-     * (b) D is the sum of what (a) left short (a piece the ground has stopped);
-     * (c) each owner above its target keeps up to D of the excess (D falls by
-     * what it keeps), then each owner the ground has not stopped is grown by
-     * what D has left; (d) any net still above what it was allotted is
-     * trimmed to it, newest end first. With one piece and no net but the
+     * target is its share less what its piece's frozen nets hold. A share
+     * only steers where plots go: a month whose weights moved and whose plots
+     * did not moves nothing (the map once took a piece's plots back and laid
+     * them on another as the weights drifted, every month, and a city of
+     * billions paid for it). So: (a) while the net has fewer plots than the
+     * model, each owner below its target is grown to it, the home piece
+     * first, and what is left goes to the owners in order the ground has not
+     * stopped (a piece its ground stops gives way to the others); (b) while
+     * it has more, plots are taken back from the owner furthest above its
+     * target, newest end first, to its target at the least, and then from the
+     * last net back. With one piece and no net but the
      * home piece's, the plots are the home net's: grown or trimmed as before CL5.
      */
     private void layHighways(long plots, Ground g, long fx, long fy, Pieces pieces) {
@@ -3404,7 +3441,7 @@ public final class CityRuns {
                 total += w[j];
             }
         }
-        long[] share = new long[np], tgt = new long[np], allot = new long[np];
+        long[] share = new long[np], tgt = new long[np];
         long others = 0;
         for (int j = 1; j < np; j++) {
             if (!owner[j]) continue;
@@ -3418,35 +3455,32 @@ public final class CityRuns {
             for (int i = 0; i < np; i++) if (i != j && !owner[i] && mp[i] == mp[j]) held += count(n, i);
             tgt[j] = Math.max(0, share[j] - held);
         }
-        // (a) each owner below its target is grown to it.
-        for (int j = 0; j < np; j++) {
-            if (owner[j] && count(n, j) < tgt[j]) growPiece(n, rail, j, tgt[j], g, fx, fy, gateway);
-        }
-        // (b) what (a) left short.
-        long d = 0;
-        for (int j = 0; j < np; j++) {
-            allot[j] = tgt[j];
-            if (owner[j]) d += Math.max(0, tgt[j] - count(n, j));
-        }
-        // (c) the excess some owner already holds is kept, up to D; then the owners the ground has not stopped take what D has left.
-        for (int j = 0; j < np && d > 0; j++) {
-            long over = count(n, j) - tgt[j];
-            if (owner[j] && over > 0) {
-                long keep = Math.min(over, d);
-                allot[j] += keep;
-                d -= keep;
+        if (n.plots < plots) {
+            // (a) each owner below its target grown to it, then the rest to the owners the ground has not stopped, in order.
+            for (int j = 0; j < np && n.plots < plots; j++) {
+                if (owner[j] && count(n, j) < tgt[j]) growPiece(n, rail, j, Math.min(tgt[j], count(n, j) + plots - n.plots), g, fx, fy, gateway);
             }
-        }
-        for (int j = 0; j < np && d > 0; j++) {
-            if (!owner[j] || stuckAt(n, j) == ver) continue;
-            long c0 = count(n, j);
-            growPiece(n, rail, j, Math.max(allot[j], c0 + d), g, fx, fy, gateway);
-            d -= Math.min(d, count(n, j) - c0);
-            allot[j] = Math.max(allot[j], count(n, j));
-        }
-        // (d) what is still above its allotment is taken back, newest end first.
-        for (int j = 0; j < np; j++) {
-            if (count(n, j) > allot[j]) trimPiece(n, j, allot[j], gateway);
+            for (int j = 0; j < np && n.plots < plots; j++) {
+                if (!owner[j] || stuckAt(n, j) == ver) continue;
+                growPiece(n, rail, j, count(n, j) + plots - n.plots, g, fx, fy, gateway);
+            }
+        } else if (n.plots > plots) {
+            // (b) taken back from the owner furthest above its target, to its target at the least; then from the last net back.
+            while (n.plots > plots) {
+                int far = -1;
+                long most = 0;
+                for (int j = 0; j < np; j++) {
+                    long over = count(n, j) - tgt[j];
+                    if (owner[j] && over > most) { most = over; far = j; }
+                }
+                if (far < 0) break;
+                long before = n.plots;
+                trimPiece(n, far, Math.max(tgt[far], count(n, far) - (n.plots - plots)), gateway);
+                if (n.plots == before) break;
+            }
+            for (int j = np - 1; j >= 0 && n.plots > plots; j--) {
+                if (count(n, j) > 0) trimPiece(n, j, Math.max(0, count(n, j) - (n.plots - plots)), gateway);
+            }
         }
     }
 
@@ -3456,16 +3490,20 @@ public final class CityRuns {
      * lies on it already (openPiece()).
      */
     private static void openPieces(Net n, Ground g, Pieces pieces) {
+        // The map pieces some net's hub lies on, worked out once (a city of billions has hundreds of nets: a pass over them for each piece, and a read of
+        // each piece's hub tile's terrain every month, took 20 ms of the month at 5 billion people; MapCheck's RECONCILE_MS is 5).
+        boolean[] held = new boolean[pieces.count()];
+        for (int j = 0; j < n.pieceHubs.size(); j++) {
+            long[] hj = hubOf(n, j);
+            int mj = pieces.pieceOf(hj[0], hj[1]);
+            if (mj >= 0 && mj < held.length) held[mj] = true;
+        }
         for (int m = 1; m < pieces.count(); m++) {
-            if (pieces.weight(m) <= 0) continue;
+            if (held[m] || pieces.weight(m) <= 0) continue;
             long[] h = pieces.hub(m);
             if (h == null || pieces.pieceOf(h[0], h[1]) != m || !dry(g.at(h[0], h[1], -1))) continue;
-            boolean held = false;
-            for (int j = 0; j < n.pieceHubs.size() && !held; j++) {
-                long[] hj = hubOf(n, j);
-                held = pieces.pieceOf(hj[0], hj[1]) == m;
-            }
-            if (!held) openPiece(n, h[0], h[1]);
+            openPiece(n, h[0], h[1]);
+            held[m] = true;
         }
     }
 

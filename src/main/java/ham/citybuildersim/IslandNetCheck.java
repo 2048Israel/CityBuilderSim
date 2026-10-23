@@ -52,6 +52,22 @@ import java.util.Map;
  *      square) layTo() with ONE_PIECE gives the same stretches() and
  *      signature() with the link arms on and off.
  *
+ *   7. THE MAP FINDS ITS PIECES AND EVERY BUILT PIECE HAS A HIGHWAY. A real
+ *      CityMap (CityMap.canonical()) on a land of three islands of 2 x 2
+ *      districts, dry in the default world and a district of unowned ground
+ *      apart, buildings dealt over them: its MapPieces finds three pieces, the
+ *      home one (the founding site's) 0 and the others by their first tile;
+ *      their weights are the plots the buildings stand on, worked again from
+ *      the districts; their hubs the tile nearest the site; the ground is
+ *      read once and a month never reads it again. Month by month the runs
+ *      lay a net on each (highway plots on every island, none in the gaps or
+ *      on salt, fresh water or unowned ground, every stretch a prefix of the
+ *      next month's; with ONE_PIECE the other islands have none: the fault).
+ *      A purchase between two islands is an update of the pieces, not
+ *      another flood, joins them and moves nothing; the younger net is
+ *      frozen. On MapCheck's 5-billion copy the first flood and a purchase's
+ *      update are timed, the update against MapCheck.RECONCILE_MS.
+ *
  * WHY THIS EXISTS: Jerus's Bergen (1.7M) laid 603 of its 7,602 highway plots
  * and drew highways on 3 of its 35 built districts: the spine arms stopped at
  * its fjords before APART, so no corridor line crossed the net and none
@@ -440,8 +456,227 @@ public class IslandNetCheck {
         CityRuns.linkArms = true;
         check("...and after the plots are taken back to 1,200", a1.signature() == a2.signature() && a1.highways.plots == 1200 && a1.same(a2));
 
+        /* ============ 7. the map finds its pieces and every built piece has a highway ============ */
+        System.out.println("\n--- the map finds its pieces and every built piece has a highway ---");
+        mapPieces();
+
         System.out.println(fails == 0 ? "\nThe islands have their highways." : "\n" + fails + " FAILED");
         System.exit(fails);
+    }
+
+    /** The highway line crossing of tile (tx, ty). */
+    static long[] crossingOf(long tx, long ty) {
+        return new long[] { tx * World.TILE + CityRuns.HIGHWAY_AT, ty * World.TILE + CityRuns.HIGHWAY_AT };
+    }
+
+    /** Whether the district (dx, dy) of the world is dry at every plot of a stride of 8 (the plots 8 and 24 into each tile among them: the tile rule's samples). */
+    static boolean dryDistrict(World world, long dx, long dy, Map<Long, Boolean> seen) {
+        Long key = (dx << 32) ^ (dy & 0xffffffffL);
+        Boolean known = seen.get(key);
+        if (known != null) return known;
+        boolean dry = true;
+        for (int j = 0; j < CityMap.DISTRICT && dry; j += 8) {
+            for (int i = 0; i < CityMap.DISTRICT && dry; i += 8) dry = World.dry(world.terrainAt(dx * CityMap.DISTRICT + i, dy * CityMap.DISTRICT + j));
+        }
+        seen.put(key, dry);
+        return dry;
+    }
+
+    /** The north-west district {column, row} of a strip of w x h dry districts nearest the district of `place`, or null. */
+    static long[] dryStrip(World world, long[] place, int w, int h) {
+        long bx = Math.floorDiv(place[0], CityMap.DISTRICT), by = Math.floorDiv(place[1], CityMap.DISTRICT);
+        Map<Long, Boolean> seen = new HashMap<>();
+        for (int ring = 0; ring <= 40; ring++) {
+            for (long dy = -ring; dy <= ring; dy++) {
+                for (long dx = -ring; dx <= ring; dx++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) != ring) continue;
+                    boolean all = true;
+                    for (int j = 0; j < h && all; j++) for (int i = 0; i < w && all; i++) all = dryDistrict(world, bx + dx + i, by + dy + j, seen);
+                    if (all) return new long[] { bx + dx, by + dy };
+                }
+            }
+        }
+        return null;
+    }
+
+    /** The highway plots the net covers on an island {x0, y0, x1, y1} (exclusive upper ends), counted plot by plot. */
+    static long coveredOn(CityRuns.Net n, long[] box) {
+        return coveredIn(n, box[0], box[1], box[2] - 1, box[3] - 1);
+    }
+
+    /** Section 7: a CityMap on a land of three islands, the pieces it finds, the nets the runs lay on them, a purchase that joins two, and what the pieces cost. */
+    static void mapPieces() {
+        BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
+        long seed = Founding.DEFAULT_WORLD_SEED;
+        World world = World.of(seed);
+        long[] place = MapCheck.dryPlace(world);
+        int dist = CityMap.DISTRICT;
+        long[] strip = dryStrip(world, place, 8, 2);
+        check("fixture: the default world has a strip of 8 x 2 districts, dry at every sample, near its dry place", strip != null);
+        if (strip == null) return;
+        long bx = strip[0], by = strip[1];
+        // Three islands of 2 x 2 districts a district of unowned ground apart: the west one, the middle one (the founding site's) and the east one.
+        long[][] isle = {
+            { bx * dist, by * dist, (bx + 2) * dist, (by + 2) * dist },
+            { (bx + 3) * dist, by * dist, (bx + 5) * dist, (by + 2) * dist },
+            { (bx + 6) * dist, by * dist, (bx + 8) * dist, (by + 2) * dist } };
+        long sx = (bx + 4) * dist + CityRuns.HIGHWAY_AT, sy = (by + 1) * dist + CityRuns.HIGHWAY_AT;
+        double[] centre = new double[CityLand.CENTRE_FIELDS];
+        centre[CityLand.CENTRE_FIELDS - 5] = -1;
+        centre[CityLand.CENTRE_FIELDS - 4] = -1;
+        centre[CityLand.CENTRE_FIELDS - 2] = sx;
+        centre[CityLand.CENTRE_FIELDS - 1] = sy;
+        double[][] rects = new double[3][];
+        for (int i = 0; i < 3; i++) rects[i] = new double[] { isle[i][0], isle[i][1], isle[i][2], isle[i][3] };
+        CityLand land = CityLand.restore(World.Key.generated(seed), centre, rects, null, null, null);
+        int hwType = GatewayCheck.highwayType(types);
+        long[] counts = new long[types.length];
+        for (int t = 0; t < MapCheck.JERUS_COUNTS.length && t < counts.length; t++) {
+            if (types[t] == null || types[t].site() != null || types[t].track() || types[t].sea() || types[t].road() != BuildingVisual.NOT_A_ROAD) continue;
+            counts[t] = Math.round(MapCheck.JERUS_COUNTS[t] * 5);
+        }
+        int cellsPer = BuildingVisual.cells(types[hwType]);
+        counts[hwType] = 50;
+        CityMap map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, counts);
+        CityMap.MapPieces mp = map.pieces();
+        long buildings = 0;
+        for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].drawn()) buildings += counts[t];
+        System.out.printf("  three islands of 2 x 2 districts at district (%d, %d), a district of unowned ground between; %,d buildings, %d districts; the founding site (%d, %d)%n",
+                bx, by, buildings, map.districts().size(), sx, sy);
+        Map<String, List<long[]>> last = armsOf(map.runs().highways);
+        boolean growing = true;
+        int month = 1;
+        for (; month <= 7; month++) {
+            counts[hwType] += 50;
+            map.reconcile(counts, month);
+            Map<String, List<long[]>> now = armsOf(map.runs().highways);
+            growing &= prefix(last, now);
+            last = now;
+        }
+        CityRuns runs = map.runs();
+        CityRuns.Net hw = runs.highways;
+        long model = counts[hwType] * cellsPer;
+
+        // The pieces.
+        check("the map finds three pieces of ground", mp.count() == 3);
+        check("the home piece, 0, is the middle island's, the founding site's; the others follow by their first tile, west then east",
+                mp.pieceOf(sx, sy) == 0 && mp.pieceOf(isle[0][0] + 100, isle[0][1] + 100) == 1 && mp.pieceOf(isle[2][0] + 100, isle[2][1] + 100) == 2);
+        check("a plot in the unowned ground between two islands, or beyond them, is on no piece",
+                mp.pieceOf(isle[0][2] + 100, isle[0][1] + 100) == -1 && mp.pieceOf(isle[2][2] + 100, isle[2][1] + 100) == -1 && mp.pieceOf(sx, isle[0][1] - 100) == -1);
+        int tilesAcross = 2 * dist / World.TILE;
+        check("each piece holds its island's tiles: 16 x 16 of them", mp.tiles(0) == (long) tilesAcross * tilesAcross && mp.tiles(1) == mp.tiles(0) && mp.tiles(2) == mp.tiles(0) && mp.landTiles() == 3 * mp.tiles(0));
+        check("the ground was read once (a flood) and not again by the " + (month - 1) + " months since", mp.floods == 1 && mp.updates == 0);
+        // The weights, worked again from the districts' counts.
+        long[] expect = new long[3];
+        for (CityMap.District d : map.districts()) {
+            long x0 = (map.baseDX() + d.dx) * dist, y0 = (map.baseDY() + d.dy) * dist;
+            int island = -1;
+            for (int i = 0; i < 3; i++) if (x0 >= isle[i][0] && x0 < isle[i][2] && y0 >= isle[i][1] && y0 < isle[i][3]) island = i;
+            if (island < 0) continue;
+            for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].drawn()) expect[island] += d.count(t) * (long) BuildingVisual.cells(types[t]);
+        }
+        // Island i is piece 1, 0, 2.
+        int[] pieceOfIsle = { 1, 0, 2 };
+        boolean weights = true;
+        for (int i = 0; i < 3; i++) weights &= mp.weight(pieceOfIsle[i]) == expect[i] && expect[i] > 0;
+        System.out.printf("  built ground by piece: %,d (home), %,d, %,d plots (the buildings' cells, not the roads', highways' or track's)%n", mp.weight(0), mp.weight(1), mp.weight(2));
+        check("each piece's weight is the plots its buildings stand on, worked again from the districts: every island has some", weights);
+        // The hubs: the tile nearest the founding site's, by brute force.
+        boolean hubs = true;
+        long stx = Math.floorDiv(sx, World.TILE), sty = Math.floorDiv(sy, World.TILE);
+        for (int i = 0; i < 3; i++) {
+            long best = Long.MAX_VALUE, bt = 0;
+            for (long ty = isle[i][1] / World.TILE; ty < isle[i][3] / World.TILE; ty++) {
+                for (long tx = isle[i][0] / World.TILE; tx < isle[i][2] / World.TILE; tx++) {
+                    long k = (((tx - stx) * (tx - stx) + (ty - sty) * (ty - sty)) << 30) | (ty << 15) | tx;
+                    if (k < best) { best = k; bt = (ty << 32) | tx; }
+                }
+            }
+            long[] want = crossingOf(bt & 0xffffffffL, bt >>> 32), got = mp.hub(pieceOfIsle[i]);
+            hubs &= got != null && got[0] == want[0] && got[1] == want[1] && mp.pieceOf(got[0], got[1]) == pieceOfIsle[i] && CityRuns.dry(map.runGround().at(got[0], got[1], -1));
+        }
+        check("each piece's hub is its tile nearest the founding site's (the northern, then the western, on a tie), its highway line crossing on dry ground", hubs);
+
+        // The runs.
+        System.out.printf("  %,d highway plots (the model's) over %d months: %d nets, laid %,d, short %,d%n", model, month - 1, hw.pieces(), hw.plots, runs.highwayShort());
+        check("the runs have a net for each piece: three, each from its piece's hub", hw.pieces() == 3 && hw.hubX == sx && hw.hubY == sy
+                && java.util.Arrays.equals(hw.pieceHub(1), mp.hub(1)) && java.util.Arrays.equals(hw.pieceHub(2), mp.hub(2)));
+        long[] on = new long[3];
+        for (int i = 0; i < 3; i++) on[i] = coveredOn(hw, isle[i]);
+        System.out.printf("  highway plots on the west island %,d, the middle (home) %,d, the east %,d%n", on[0], on[1], on[2]);
+        check("every island has highway plots", on[0] > 0 && on[1] > 0 && on[2] > 0);
+        check("the model's plots are all laid: highwayShort() is 0", runs.highwayShort() == 0 && hw.plots == model && on[0] + on[1] + on[2] == model);
+        long off = 0, gaps = 0;
+        for (long y = isle[0][1]; y < isle[0][3]; y++) {
+            for (long x = isle[0][0]; x < isle[2][2]; x++) {
+                if (!CityRuns.covered(hw, x, y)) continue;
+                int c = map.runGround().at(x, y, -1);
+                if (c < 0 || !CityRuns.dry(c) || c == World.SALT || c == World.FRESH) off++;
+                boolean inIsle = false;
+                for (int i = 0; i < 3; i++) inIsle |= x >= isle[i][0] && x < isle[i][2];
+                if (!inIsle) gaps++;
+            }
+        }
+        check("no highway plot is on salt, fresh water or ground the city does not own, and none crosses between the islands", off == 0 && gaps == 0);
+        check("growing a month at a time, every arm of a month is a prefix of the next (nothing laid moves)", growing);
+        // The premise: the runs handed no pieces lay on the home island alone.
+        CityRuns blind = new CityRuns();
+        blind.setGateway(map.gateway());
+        blind.layTo(model, 0, new ArrayList<>(), 0, map.runGround(), sx, sy, sx, sy, new ArrayList<>(), new ArrayList<>());
+        check("premise: the same runs on the same ground with ONE_PIECE lay no highway on the other two islands (today's fault)",
+                coveredOn(blind.highways, isle[0]) == 0 && coveredOn(blind.highways, isle[2]) == 0 && coveredOn(blind.highways, isle[1]) > 0);
+
+        // A purchase between the west and the middle islands joins them.
+        Map<String, List<long[]>> beforeBuy = armsOf(hw);
+        long plotsBefore = hw.plots, westHeld = hw.piecePlots(1), eastBefore = hw.piecePlots(2);
+        land.extend(new LandParcel(-5, 1, 0, land.level(), isle[0][2], isle[0][1], isle[1][0], isle[0][3], null, null, null, 0, 0), month, 0);
+        map.reconcile(counts, month++);
+        check("a purchase of the ground between the west and the middle islands: the map reads only its tiles (an update, not another flood)", mp.floods == 1 && mp.updates == 1);
+        check("...they are one piece now, the home piece, and the east island is piece 1", mp.count() == 2 && mp.pieceOf(isle[0][0] + 100, isle[0][1] + 100) == 0 && mp.pieceOf(sx, sy) == 0
+                && mp.pieceOf(isle[2][0] + 100, isle[2][1] + 100) == 1);
+        check("...the month it joins them nothing moves: the plots and every stretch laid are where they were", hw.plots == plotsBefore && prefix(beforeBuy, armsOf(hw)) && prefix(armsOf(hw), beforeBuy));
+        counts[hwType] += 100;
+        map.reconcile(counts, month++);
+        Map<String, List<long[]>> afterBuy = armsOf(hw);
+        System.out.printf("  after the purchase and %d more plots: home net %,d, the west net %,d (held at %,d), the east net %,d (was %,d); laid %,d, short %,d%n",
+                100 * cellsPer, hw.piecePlots(0), hw.piecePlots(1), westHeld, hw.piecePlots(2), eastBefore, hw.plots, runs.highwayShort());
+        check("as the plots grow every stretch laid before is a prefix of the one after", prefix(beforeBuy, afterBuy));
+        check("the west net, no longer its piece's owner, is frozen as it was; the model's plots are all laid", hw.piecePlots(1) == westHeld && runs.highwayShort() == 0 && hw.plots == counts[hwType] * cellsPer);
+
+        timePieces(types, seed);
+    }
+
+    /** What the pieces cost on a city of billions (MapCheck section 5's copy, 5 billion people): the first flood and one purchase's update. */
+    static void timePieces(BuildingVisual.Type[] types, long seed) {
+        double k = MapCheck.TIMES[1];
+        World w = World.of(seed);
+        long[] place = MapCheck.dryPlace(w);
+        long[] c = new long[types.length];
+        for (int t = 0; t < MapCheck.JERUS_COUNTS.length && t < c.length; t++) c[t] = Math.round(MapCheck.JERUS_COUNTS[t] * k);
+        for (BuildingVisual.Type t : types) if (t != null && t.site() != null && t.sites() > 0) c[t.id()] = 0;
+        int side = (int) Math.ceil(Math.sqrt(MapCheck.groundKm2(types) * k / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
+        int capacity = (int) Math.round(MapCheck.JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
+        CityMap m = CityMap.square(seed, place[0], place[1], types, side, capacity, c);
+        CityMap.MapPieces mp = m.pieces();
+        mp.count();
+        double flood = mp.lastMs;
+        long tiles = mp.landTiles();
+        // One purchase: a district of ground beside the square's east edge, then the month.
+        long[] box = m.runGround().box();
+        long px = box[2] + 1, py = Math.floorDiv(box[1] + box[3], 2L * CityMap.DISTRICT) * CityMap.DISTRICT;
+        m.land().extend(new LandParcel(-5, 1, 0, m.land().level(), px, py, px + CityMap.DISTRICT, py + CityMap.DISTRICT, null, null, null, 0, 0), 1, 0);
+        m.reconcile(c, 1);
+        double update = mp.lastMs;
+        System.out.printf("  on the 5-billion-people copy (%d districts a side, %,d land tiles, %d pieces, %,d of them with buildings): the first flood %.0f ms (the terrain read, each tile's samples kept);"
+                + " one purchase's update %.2f ms (floods %d, updates %d)%n", side, tiles, mp.count(), countWeighted(mp), flood, update, mp.floods, mp.updates);
+        check("on the city of billions a purchase is an update of the map's pieces, not another flood", mp.floods == 1 && mp.updates == 1);
+        check("...and the update takes no more than MapCheck's RECONCILE_MS (" + (int) MapCheck.RECONCILE_MS + " ms) of the month", Timing.within(update, MapCheck.RECONCILE_MS));
+    }
+
+    private static int countWeighted(CityMap.MapPieces mp) {
+        int n = 0;
+        for (int p = 0; p < mp.count(); p++) if (mp.weight(p) > 0) n++;
+        return n;
     }
 
     /** Whether every step of the link moved it a plot nearer its line: its coordinate across the line's moved by one each step. */
