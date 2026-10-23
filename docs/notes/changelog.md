@@ -17,7 +17,7 @@ never came, and were moved here on 2026-10-20.
 ### 0.8.26 — UP4, the People page kept — 2026-10-23, ready, see docs/studies/spec-screens-in-place.md
 
 The study UP4 timed every rail screen's redraw at month 4,000 through the pulse's own passes: 29-68 ms, the chrome
-12-27 of it, while 95-99% of a page's nodes show the same thing month to month. Its pattern, ui/Kept, runs a screen's
+12-27 of it, while 90-99% of a page's nodes show the same thing month to month. Its pattern, ui/Kept, runs a screen's
 own drawing code over the nodes it made last month (by scope and order), its boxes setting their children in one call
 where they differ, so nothing kept is styled, measured or synced again and the scroll never moves. The People page is
 the pilot (keepMenu, drawPage, the Pieces helpers it reaches; Mirror, Strip, Pair, SegmentBar and Waterfall told their

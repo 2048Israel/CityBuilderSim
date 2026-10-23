@@ -29,8 +29,8 @@ its style helpers as it is added: CSS selector matching happens *inside* `getChi
 styled in the pulse's CSS pass, laid out with its text measured, and given a peer for the
 renderer. At month 4,000 a redraw costs 29-68 ms on the FX thread (§1); the chrome - header,
 rail, city panel, construction panel, inbox - is 12-27 ms of it on every screen, the page the
-rest. Month to month, **95-99% of a page's nodes show exactly what they showed** (§2): People
-changes 64 of 1,182, Bank 31 of 823, Finances 6 of 380.
+rest. Month to month, **90-99% of a page's nodes show exactly what they showed** (§2): People
+changes 64 words and 56 other values on 1,182 nodes, Bank 49 on 823, Finances 6 on 380.
 
 **The pattern: the page's own code, run over last month's nodes (§3).** A kept screen draws
 through `Kept`: every node its code makes comes through `Kept.label(...)`, `Kept.column(...)`,
@@ -139,8 +139,8 @@ own (a slider, a text field) was swapped whole. Per month, on average (0.8.24's 
 | Policy | 397 | 15 | 0 | 5 | 0 | 0 | 0 | 267 |
 | History | 642 | 9 | 5 | 14 | 14 (269) | 13 (47) | 4 (24) | 84 |
 
-\* of the nodes the code made (a label's skin is not counted), out of roughly two thirds of the
-nodes column; "other values" are sizes, geometry, visibility and the like.
+\* of the nodes the page's code made: a label's skin, counted in the nodes column, is not. "Other
+values" are sizes, geometry, visibility and the like.
 
 So, by kind:
 - **Figures** change: 5 to 64 labels a month on a page of 400 to 1,200 nodes. Their text is set;
@@ -154,12 +154,12 @@ So, by kind:
   Government's ranked lines, History's - whose 13 "rows" a month are the patch's positions sliding
   past a line that appeared near the top, which a keyed scope turns into one row coming.
 - **Fixed**: the headings, captions, keys, (i) buttons, chip strips, the cards' frames and their
-  layout - everything else, 95-99% of the page.
+  layout - everything else, 90-99% of the page.
 
 What a page with only those changes set on it then pays is the patch's estimate: **0.0 to 1.5 ms
 of CSS and 1.2 to 3.8 ms of layout** a month (History 8.8 ms of CSS, from the slid rows), where a
-rebuilt page paid 12 to 34 ms of CSS. It is an estimate made on a page not written to be kept;
-the pilot (§4) measures the real thing.
+rebuilt page paid 7 to 17 ms of CSS (the chrome's left out). It is an estimate made on a page not
+written to be kept; the pilot (§4) measures the real thing.
 
 ## 3. The pattern
 
@@ -182,7 +182,7 @@ converted the `Pieces` helpers the People page reaches and every other screen st
   draw's own, so the code adds children exactly as it does now; when the draw ends each box's real
   children are set from that list **in one call, and only where it differs**. That is the whole
   trick, and measured (`ReaddProbe`, People at month 1,000): the same nodes cleared and added back
-  in two steps cost 19.5 ms and 5.9 ms of CSS; set in one call, 2.1 ms and no CSS; left alone, 0.
+  in two steps cost 19.5 ms, 5.9 of it CSS; set in one call, 2.1 ms and no CSS; left alone, 0.
 - **A node handed back loses what code gives only sometimes:** its click, hover, press and scroll
   handlers, its action, its cursor, visibility, opacity, managed, disable, mouse-transparency and
   tooltip, where code set them (a value an inline style set is the style's and is left alone). So
@@ -190,7 +190,7 @@ converted the `Pieces` helpers the People page reaches and every other screen st
 - **Rows that come and go** are a scope each, keyed by what they show: `Kept.scope(sector, () ->
   row(sector))`. A row that goes takes its nodes with it; the rows after it keep theirs. A card is
   a scope too, so a chip that appears in one card does not shift every label after it onto a
-  neighbour's node. The People page has 22 card scopes and keys its table rows by
+  neighbour's node. The People page has 16 card scopes, 56 in all, and keys its table rows by
   `FamilyStructure`, `EducationType`, `JobType` and `WageBand`.
 - **A picture takes new figures without new nodes.** The game's own pictures (`Mirror`, `Strip`,
   `Pair`, `SegmentBar`, `Waterfall`: a `Pane` with its own `layoutChildren()`) make their parts
@@ -260,19 +260,22 @@ still paid in full, too.
 
 ## 4. The pilot
 
-**Why People.** It cost the most a redraw in UP1's table and in this study's (§1), and it has
-the most nodes (1,182), the most pictures (19 a month to tell) and the only animations on the
-clock, so it exercises every part of the pattern.
+**Why People.** It cost the most a redraw in UP1's table, its page is one of the four dearest in
+this study's (§1, with History, Build and Sectors, all within 5 ms), and it has the most nodes
+(1,182), the most pictures (19 a month to tell) and the only animations on the clock, so it
+exercises every part of the pattern.
 
 **What changed in the code** (0.8.26): `ui/Kept.java` (new, 580 lines with its javadoc);
 `UserInterface.keepMenu()`/`setPage()` and `clearMenu()`'s kept branch (60 lines);
 `PeopleScreen`: the People page moved into `drawPage(landed)` with each card in a scope, every
 node made through `Kept` (115 sites), `Mirror`, `Strip` and `Pair` told their figures by `set()`,
-the count-up through `Kept.play`; `Pieces`: the 23 helpers and 2 pictures (`SegmentBar`,
+the count-up through `Kept.play`; `Pieces`: the 26 helpers and 2 pictures (`SegmentBar`,
 `Waterfall`) the page reaches (83 sites), the (i) button's and door pill's handlers set or added
 once. Household money, the popovers and every other screen are drawn as before. No model change.
-The conversion itself was a Sonnet slice on a brief of §3.3's rules, reviewed here; its review
-found nothing to change, and the renders and `KeptCheck` found nothing either.
+The conversion itself was a Sonnet slice on a brief of §3.3's rules, reviewed here, and the
+review changed nothing in it. What `KeptCheck`'s first runs found was in `Kept` itself: its reset
+set values already at their defaults, which changed nothing on screen but marked them as code's
+(fixed: it resets only what differs).
 
 **It looks exactly as it did.** `RenderProbe` wrote the People page whole (the page's box, not
 the viewport) as a PNG at its first draw and after eight months redrawn on the clock, on 0.8.25
@@ -292,8 +295,9 @@ on both (median ms):
 | the chrome alone, in both | 4.9 | 10.5 | 1.5 | 1.2 | - | 18.1 | |
 | **the page alone** | afresh 11.9 → kept 6.3 | 13.1 → 1.8 | 4.2 → 3.2 | 4.2 → 1.5 | 1.3 → 0 | **34.7 → 12.8** | |
 
-The page's own redraw is **2.7 times cheaper: 22 ms less, every redraw** (the sums of its parts; the medians of the totals say 34.9 and 14.0). Its CSS is gone (13.1
-ms to 1.8), its sync nearly, its settle wholly; its layout is little changed, because the figures
+The page's own redraw is **2.7 times cheaper: 22 ms less, every redraw** (the sums of its parts;
+the medians of the totals say 34.9 and 14.0). Its CSS is gone (13.1 ms to 1.8), its sync nearly,
+its settle wholly; its layout is little changed, because the figures
 that changed are measured again and their cards laid out again. What is left is the draw itself,
 6.3 ms: the page's code still runs in full every month - every figure read and formatted, every
 value set (unchanged ones are free in JavaFX, but the call and the comparison are not) - plus
@@ -378,7 +382,13 @@ exits 0. On a city played to `CITY_MONTHS` (600) months it proves:
    every node's class, words, inline style, the values code set on it, its handlers, its tooltip's
    words and where layout put it - equals the signature of the page built new at the same month,
    line for line (the first difference is printed with both lines);
-3. **and looks it**: at three of those months the two pages are the same pixels;
+3. **and looks it**: at three of those months the two pages are the same picture - no pixel more
+   than `SHADE_LEVELS` (64 of 255) apart in a channel and at most one in a thousand apart at all:
+   the renderer shades the edge of a small shape a kept picture moved a level or two apart from
+   one drawn there new (People's household tiles, reused by shape wherever the sort puts them:
+   114 and 110 edge pixels, up to 58 levels, at two months of 25; the third month was the very
+   same pixels). Then the comparison is shown to see: one figure on the kept page made wrong by
+   hand parts both the signature and the picture, and the next kept draw sets it right;
 4. **what reshapes the page keeps it right**: a details fold opened and closed, the waterfall's
    year view on and off - the redraw after each change and the one after that equal a page built new;
 5. **it is cheap**: the kept page's month - its draw, then the pulse's CSS and layout - is within
