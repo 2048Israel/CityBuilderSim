@@ -981,63 +981,51 @@ public final class MapTiles {
      * square overlaps the node's box [x0, x0 + NODE_PX plots) each way - its
      * place, version, built plots, owned plots and, where the node draws
      * pictures, the stamp of its current picture (a fixed mark for none).
-     * Equal keys, equal pixels. The districts are folded in the map's order
-     * however they were found, so the key does not depend on the walk: by
-     * map.district() for each column and row the box spans when that is no
-     * more lookups than the map has districts, else by one pass over
-     * map.districts() (a node of 1,024 plots a pixel spans 512 x 512 squares,
-     * the 5B copy has 15,000 districts). The cost is the grid's one box count,
-     * the runs' shore works, and a few hundred lookups at most - against the
-     * 16,384 pixels nodePixels() computes - plus pictureIfCurrent() for each
-     * built district where the node draws pictures, as nodePixels() asks.
+     * Equal keys, equal pixels. The districts' hashes are summed, so the key
+     * does not depend on the order they are met in, and none is sorted or
+     * listed: they are found by map.district() for each column and row the
+     * box spans when that is no more lookups than the map has districts, else
+     * by one pass over map.districts() (a node of 1,024 plots a pixel spans
+     * 512 x 512 squares, the 5B copy has 15,000 districts). The cost is the
+     * grid's one box count, the runs' shore works and those lookups - about
+     * a thousand at 5B's 64 plots a pixel, against the 16,384 pixels
+     * nodePixels() computes - plus pictureIfCurrent() for each built district
+     * where the node draws pictures, as nodePixels() asks.
      */
     public long nodeKey(long x0, long y0, long plots) {
-        int n = MapFrame.NODE_PX;
         boolean pictures = World.DISTRICT / plots >= PICTURE_FROM_PX;
+        long span = MapFrame.NODE_PX * plots, bdx = map.baseDX(), bdy = map.baseDY();
+        long fx0 = Math.floorDiv(x0, World.DISTRICT), fx1 = Math.floorDiv(x0 + span - 1, World.DISTRICT);
+        long fy0 = Math.floorDiv(y0, World.DISTRICT), fy1 = Math.floorDiv(y0 + span - 1, World.DISTRICT);
+        long sum = 0;
+        if ((fx1 - fx0 + 1) * (fy1 - fy0 + 1) <= map.districts().size()) {
+            for (long fy = fy0; fy <= fy1; fy++) {
+                for (long fx = fx0; fx <= fx1; fx++) {
+                    CityMap.District d = map.district((int) (fx - bdx), (int) (fy - bdy));
+                    if (d != null) sum += districtKey(d, pictures);
+                }
+            }
+        } else {
+            for (CityMap.District d : map.districts()) {
+                long fx = bdx + d.dx, fy = bdy + d.dy;
+                if (fx >= fx0 && fx <= fx1 && fy >= fy0 && fy <= fy1) sum += districtKey(d, pictures);
+            }
+        }
         long h = World.mix(landKey(x0, y0, plots) ^ 0x4B4559L);
         h = World.mix(h ^ runsKey());
-        long across = Math.floorDiv(x0 + n * plots - 1, World.DISTRICT) - Math.floorDiv(x0, World.DISTRICT) + 1;
-        long down = Math.floorDiv(y0 + n * plots - 1, World.DISTRICT) - Math.floorDiv(y0, World.DISTRICT) + 1;
-        java.util.List<CityMap.District> found = across * down <= map.districts().size() ? overByWalk(x0, y0, plots) : overByPass(x0, y0, plots);
-        for (CityMap.District d : found) {
-            long used = d.usedCells();
-            h = World.mix(h ^ ((long) d.dx << 32) ^ (d.dy & 0xffffffffL));
-            h = World.mix(h ^ d.version);
-            h = World.mix(h ^ used * 0x9E3779B97F4A7C15L ^ d.owned());
-            if (pictures && used > 0) {
-                DistrictPicture pic = map.pictureIfCurrent(d);
-                h = World.mix(h ^ (pic == null ? NO_PICTURE : pic.stamp));
-            }
+        return World.mix(h ^ sum);
+    }
+
+    /** One district's part of nodeKey(): its place, version, built and owned plots, and (`pictures`) its current picture's stamp or NO_PICTURE. */
+    private long districtKey(CityMap.District d, boolean pictures) {
+        long used = d.usedCells();
+        long h = World.mix(((long) d.dx << 32) ^ (d.dy & 0xffffffffL) ^ 0x44495354L);
+        h = World.mix(h ^ d.version);
+        h = World.mix(h ^ used * 0x9E3779B97F4A7C15L ^ d.owned());
+        if (pictures && used > 0) {
+            DistrictPicture pic = map.pictureIfCurrent(d);
+            h = World.mix(h ^ (pic == null ? NO_PICTURE : pic.stamp));
         }
         return h;
-    }
-
-    /** The districts whose squares overlap the node's box, in the map's order: by map.district() for each column and row of squares the box spans (nodeKey()'s walk when that is the fewer lookups). */
-    java.util.List<CityMap.District> overByWalk(long x0, long y0, long plots) {
-        long span = MapFrame.NODE_PX * plots, bdx = map.baseDX(), bdy = map.baseDY();
-        long fx0 = Math.floorDiv(x0, World.DISTRICT), fx1 = Math.floorDiv(x0 + span - 1, World.DISTRICT);
-        long fy0 = Math.floorDiv(y0, World.DISTRICT), fy1 = Math.floorDiv(y0 + span - 1, World.DISTRICT);
-        java.util.List<CityMap.District> found = new java.util.ArrayList<>();
-        for (long fy = fy0; fy <= fy1; fy++) {
-            for (long fx = fx0; fx <= fx1; fx++) {
-                CityMap.District d = map.district((int) (fx - bdx), (int) (fy - bdy));
-                if (d != null) found.add(d);
-            }
-        }
-        found.sort(java.util.Comparator.comparingInt((CityMap.District d) -> d.index));
-        return found;
-    }
-
-    /** ...the same districts in the same order, by one pass over map.districts() (nodeKey()'s when the box spans more squares than the map has districts). */
-    java.util.List<CityMap.District> overByPass(long x0, long y0, long plots) {
-        long span = MapFrame.NODE_PX * plots, bdx = map.baseDX(), bdy = map.baseDY();
-        long fx0 = Math.floorDiv(x0, World.DISTRICT), fx1 = Math.floorDiv(x0 + span - 1, World.DISTRICT);
-        long fy0 = Math.floorDiv(y0, World.DISTRICT), fy1 = Math.floorDiv(y0 + span - 1, World.DISTRICT);
-        java.util.List<CityMap.District> found = new java.util.ArrayList<>();
-        for (CityMap.District d : map.districts()) {
-            long fx = bdx + d.dx, fy = bdy + d.dy;
-            if (fx >= fx0 && fx <= fx1 && fy >= fy0 && fy <= fy1) found.add(d);
-        }
-        return found;
     }
 }

@@ -8533,8 +8533,8 @@ public class MapCheck {
     /** The side of the block the played city buys, in plots: 32, a hole in its built-up ground's box (the played city's ground is irregular). */
     static final int PURCHASE_SIDE = 32;
 
-    /** The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting: 56, nine tenths of the 63 this section measured before UP3 on the PC (today's paths, the median month: 2.2, 28.7, 32.2 and 0.1; docs/queue/UP3-notes.md) - the stamp and the far view's unmoved nodes taken off it; the L0 screen's band check, half of what is left, is UP3-C's. */
-    static final double MAP_MONTH_MS = 56;
+    /** The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting: 58, nine tenths of the 65 this section measured on the PC the old way (today's paths, the median month, the mean of four runs, 63.4 to 67.2: the stamp 2.3, the far screen 29.6, the L0 screen 32.5, the chain 0.2; docs/queue/UP3-notes.md) - the stamp and the far view's unmoved nodes taken off it; the L0 screen's band check, half of what is left, is UP3-C's. */
+    static final double MAP_MONTH_MS = 58;
 
     /** The kinds of month: the grown one, one built type raised by one, and the first, which only draws. */
     static final int GROW = 0, ONE = 1, SETTLE = 2;

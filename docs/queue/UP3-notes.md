@@ -53,17 +53,18 @@ moved the counts of 2 of x 1's 4 districts, 1-2 of x 80's 125, and 250-590 of
 
 ## 3. Before and after
 
-From MapCheck 18, on the PC's wall clock (its CPU clock steps 15.6 ms): the
-median month of 21 at x 1 and x 80 and of 9 at 5B. Each cell reads today's /
+From MapCheck 18's last run on the final model, on the PC's wall clock (its CPU
+clock steps 15.6 ms): the median month of 21 at x 1 and x 80 and of 9 at 5B.
+Across the section's runs the figures moved by about 5%. Each cell reads today's /
 now's, in ms a month.
 
 | | x 1 | x 80 | 5B |
 |---|---|---|---|
-| the stamp (frame and node) | 4.57 / **0.15** | 6.48 / **0.24** | 2.30 / **0.79** |
-| the far view's screen, fitted on the city | 11.84 / **2.56** (24 nodes, 4 re-coloured) | 19.84 / **17.58** (28 nodes, 32 draws) | 29.58 / **17.79** (54 nodes, 14 re-coloured; keys 4.4) |
-| an L0 screen re-stamped (ready, input) | 5.12 | 6.38 | 32.51 |
-| the chain's FX side (jobs handed out, adopted) | 0.71 | 26.19 | 0.18 |
-| **the month's FX-side map work** | 22.50 / **8.72** | 59.10 / **51.47** | 64.58 / **51.58** |
+| the stamp (frame and node) | 4.47 / **0.15** | 6.24 / **0.23** | 2.32 / **0.78** |
+| the far view's screen, fitted on the city | 12.01 / **2.76** (24 nodes, 4 re-coloured) | 19.84 / **19.97** (28 nodes, 32 draws: the chain, ★1) | 29.57 / **18.24** (54 nodes, 14 re-coloured; their keys 3.5) |
+| an L0 screen re-stamped (ready, input) | 5.31 | 6.71 | 33.53 |
+| the chain's FX side (jobs handed out, adopted) | 0.71 | 23.50 | 0.11 |
+| **the month's FX-side map work** | 22.52 / **8.96** | 56.29 / **50.76** | 65.67 / **52.80** |
 
 - **The stamp.** It repaints 4 of x 1's 4 districts, 2 of x 80's 125 and 35 of
   the 1,296 on 5B's stamp. The runs layer was drawn in exactly the months the
@@ -76,7 +77,7 @@ now's, in ms a month.
 - **The far view at x 80** gains little, because of the chain. A month that
   places in district 0 leaves all 121 built districts' pictures not current
   until the chain has re-planned them. The worker then runs about 130 jobs, about
-  1.5 s a month. The FX thread spends 26 ms a month handing them out and
+  1.5 s a month. The FX thread spends 23-28 ms a month handing them out and
   adopting them. Meanwhile every node over a stale picture is dithered and
   re-coloured twice. This is the brief's item 5, the chain's early exit: ★1.
 - **The L0 screen** is not this batch's, and is now half of 5B's month. The
@@ -121,8 +122,8 @@ equal. Slice A's probe (`UP3/probe/KeptProbe.java`) did the same at 32, 8 and
 - *The land layer.* It is drawn again by the purchase and in no other month.
 - *Stamps.* `linksAstray()` is 0 after each of 24 months on x 1 and x 80, with
   links kept.
-- *`MAP_MONTH_MS`* (56): the median month at 5B is 51.6 ms against today's
-  64.6 (★3).
+- *`MAP_MONTH_MS`* (58): the median month at 5B is 51.6 to 54.2 ms in the
+  section's runs, against today's 63.4 to 67.2 (★3).
 
 PlanCheck and LongPlaytest's layout watch are unchanged and green.
 
@@ -146,7 +147,7 @@ His calls:
   "under Pending if 1 shows pictures arriving late at his size"). Step 1 shows
   exactly that. At x 80, a month in one district re-plans every district after
   it in its band. That is about 130 jobs and 1.5 s on the worker, so at 50x the
-  pictures never catch up. It also costs the FX thread 26 ms a month. The fix:
+  pictures never catch up. It also costs the FX thread 23-28 ms a month. The fix:
   stop re-planning when a district's carry out equals its old link's and its
   edges did not move. Queue it as its own batch?
 - **★2 The L0 screen's month.**
@@ -157,12 +158,13 @@ His calls:
     would take most of it. Neither was in the brief.
 - **★3 MAP_MONTH_MS.** The first figure was 24, half the 47 ms the probe
   measured at 5B. But that probe's 5B had no mines, and the section's own step
-  1, on the 5B copy with its 153,533 mines, measured 63 ms. So the dial is 56,
-  nine tenths of that, read on the median month: a month that lays a run moves
+  1, on the 5B copy with its 153,533 mines, measured 63.4 to 67.2 ms in four
+  runs (mean 65). So the dial is 58, nine tenths of that, read on the median
+  month: a month that lays a run moves
   every far node's key, as today. The L0 screen's 32 ms is the floor until ★2.
   Setting it otherwise is his call.
 - **★4 The far view's runs key is the city's.** A month that lays a run
-  re-colours every far node, as today, plus the keys (4.4 ms at 5B). A runs key
+  re-colours every far node, as today, plus the keys (3.5 ms at 5B). A runs key
   for each node (`CityRuns.frameHash()` over it) would keep that to the nodes
   the run crosses.
 - **Minor:** `MapCheck -q` prints no FAIL line on Windows. It filters on

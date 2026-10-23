@@ -7,6 +7,8 @@ import ham.citybuildersim.sectors.Mining;
  * UP3 slice A's scratch check: the kept far node (MapTiles.nodePixels(KeptNode, ...)) against nodePixels() on a second MapTiles of the same map,
  * pixel for pixel, wanted() as a list, lastEdge(), lastRun() - after each of 24 months of growth, on square copies of Jerus's city at x 1 and x 80.
  * And nodeKey(): never equal where the node's pixels differ.
+ * As run against slice A (d463bd59), where nodeKey() listed its districts by overByWalk() or overByPass(); since the batch's
+ * last commit it sums them unlisted, and those two are gone, so this compiles against d463bd59 only.
  */
 public class KeptProbe {
     static final int N = MapFrame.NODE_PX;
