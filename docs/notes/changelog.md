@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.33 — CD4, closing early — 2026-10-23, ready, see docs/queue/CD4-notes.md
+
+The city closes its paper early as a treasury does (spec-city-debt §6, §2.6): a buyback is a reverse auction in which each
+holder offers its paper in slices at the price where its own rule stops wanting it, never under fair; the bank offers at
+fair (D34), the central bank does not offer (D18), and the city takes the cheapest and pays each its own price (D19), any
+part of a line. Bonds of 10 years and more may be sold callable (D22), the option priced on a Ho-Lee tree fitted to the
+curve at the city's rate volatility, floored at 0.75 points (D23), and called whole at 100 from year 5 or 10; "worth
+calling" past 3% of face (D24). Finances' Close it now shows the offers as a ladder, the ticket, the three comparisons,
+the journal and the call card; Borrow has a callable switch. CD3's ★5: History keeps the gain on debt retired, so the
+year's "Paid out" and monthOfSpending no longer net it into spending. The money closes (BuybackCheck, CallCheck); the
+default playtest never buys back or calls, so its trace does not move and the ensemble was not run.
+
 ### 0.8.32 — PT1-M2, the wait on ground told again — 2026-10-23, ready, see docs/queue/PT1-M2-notes.md
 
 Jerus's call on PT1's M2 ("a notice repeated"): the inbox's "Your businesses have nowhere to build" is told again each

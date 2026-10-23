@@ -326,10 +326,13 @@ public final class MoneyAudit {
         /*
          * THE TREASURY, PLUS WHAT A BUYBACK HAS PAID OUT OF THE POOLS AND THE
          * MONTH HAS NOT YET DECLARED (0.7.1): the households' share, the
-         * dollar holders' and the central bank's, paid between two presses
-         * and seen leaving in the next month's window - the treasury's end of
-         * the shape the bank's unsettled paper has below. See
-         * Game.repurchaseDebt().
+         * world's and the dollar holders', paid between two presses and seen
+         * leaving in the next month's window - the treasury's end of the
+         * shape the bank's unsettled paper has below. (The central bank's was
+         * here too, as its redemption, until CD4: a buyback pays it nothing,
+         * D18. A call does pay it, through CentralBank.paperBoughtBack(), and
+         * the redemption is carried here again, by getBuybackUnsettled().)
+         * See Game.buyBack() and Game.callLine().
          */
         pools[i++] = g.getCash() + g.getBuybackUnsettled();
         for (Sector s : sectors.all()) pools[i++] = s.getCash();

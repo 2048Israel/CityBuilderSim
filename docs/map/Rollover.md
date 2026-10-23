@@ -66,7 +66,7 @@
 
 **Uses:** [Auction](Auction.md) (6)
 
-**Used by (15):** [AuctionCheck](AuctionCheck.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityNeeds](CityNeeds.md), [DataSave](DataSave.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Game](Game.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (16):** [AuctionCheck](AuctionCheck.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityNeeds](CityNeeds.md), [DataSave](DataSave.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Game](Game.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Enum constants
 

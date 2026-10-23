@@ -7239,8 +7239,24 @@ public final class GameVersion {
      *   - Its body names each sector waiting and the ground it asked for
      *     (Game.getLandBlockedNeeds()); acknowledging it quiets it a year.
      *   - Harness: InboxCheck 7; LongPlaytest counts the notices.
+     *
+     * 0.8.33 (2026-10-23) - CD4, CLOSING EARLY
+     * spec-city-debt.md sections 6 and 2.6 (docs/queue/CD4-notes.md): the
+     * buyback as a reverse auction and callable lines with the call. The
+     * default playtest never buys back or calls, so its trace does not move.
+     *   - Buyback: each holder offers in slices at the price where its own
+     *     rule stops wanting the bond, never under fair; the bank at fair
+     *     (D34); the central bank out (D18); the cheapest taken, each paid its
+     *     own price (D19); part of a piece retired (Debt.retirePart()).
+     *   - CallTree: Ho-Lee, monthly, fitted to the curve, at the city's rate
+     *     volatility floored at 0.75 points (D23); callable 10-50 year bonds
+     *     (D22); the call at 100 to every holder; worth calling at 3% (D24).
+     *   - History's retiredGain: the year's spending and monthOfSpending add
+     *     back the gain the surplus carries (CD3's star 5).
+     *   - Screens: Finances' Close it now and the call card; Borrow's switch.
+     *   - Harness: BuybackCheck, CallCheck (new).
      */
-    public static final String VERSION = "0.8.32";
+    public static final String VERSION = "0.8.33";
 
     /**
      * The save shape.

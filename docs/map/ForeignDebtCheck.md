@@ -47,7 +47,7 @@
 
 **Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (14), [Debt](Debt.md) (9), [CityCalendar](CityCalendar.md) (6), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [Rollover](Rollover.md) (3), [ChartModel](ChartModel.md) (3), [DecisionLog](DecisionLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Ladder](Ladder.md) (2), [MoneyAudit](MoneyAudit.md) (1)
 
-**Used by (2):** [CurveCheck](CurveCheck.md), [RestructureCheck](RestructureCheck.md)
+**Used by (3):** [BuybackCheck](BuybackCheck.md), [CurveCheck](CurveCheck.md), [RestructureCheck](RestructureCheck.md)
 
 ## Sections
 

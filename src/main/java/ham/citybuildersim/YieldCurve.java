@@ -232,6 +232,18 @@ public final class YieldCurve {
         return total;
     }
 
+    /**
+     * The factor a payment m months away is discounted by with a spread added
+     * to its zero rate: (1 + (zero(m) + spread)/12)^(-m); 1 now. At a spread
+     * of nothing it is factor(m) to the bit (the same zero rate through the
+     * same discount), and it is the factor pvAtSpread() multiplies each flow by.
+     * What CallTree fits to when a sale cleared a tail over fair (CD4).
+     */
+    public double factorAtSpread(int m, double spread) {
+        if (m <= 0) return 1;
+        return discount(zero(m) + spread, m);
+    }
+
     /** The spread the forward actually carries this month: the two credit spreads, or the room under the ceiling if less. The floor of rates is not a spread. */
     public double effectiveSpread() {
         return effectiveSpread;

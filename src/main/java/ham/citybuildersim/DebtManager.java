@@ -672,6 +672,11 @@ public class DebtManager {
         return book(new LongTermBond(faceValue, months, monthStarted, rate, foreign));
     }
 
+    /** A bond sold callable (CD4): the right to call it whole at 100 from the game month firstCallMonth on, its coupon the caller's, option included. */
+    public Debt addCallableBond(double faceValue, int months, int monthStarted, double rate, int firstCallMonth) {
+        return book(LongTermBond.callable(faceValue, months, monthStarted, rate, firstCallMonth));
+    }
+
     /**
      * The one place paper joins the list, so the one place it can be told the
      * rate.
@@ -1903,7 +1908,89 @@ public class DebtManager {
         if (paper.getRemainingMonths() <= 0) return paper.getOustandingPrincipal();
         double[] flows = paper.remainingCashFlows();
         if (paper.isForeign()) return worldCurveAt(foreignRate()).pv(flows);
-        return curve().pv(flows);
+        YieldCurve curve = curve();
+        if (paper instanceof LongTermBond bond && bond.isCallable()) return callableValue(bond, curve, flows);
+        return curve.pv(flows);
+    }
+
+    /**
+     * A callable bond's value (CD4): what the tree prices its remaining
+     * payments at on today's curve, with the city's right to call it at its
+     * principal from the first call month on (LongTermBond.monthsToFirstCall()),
+     * at the volatility of the city's own rate (rateVolatility()). Never more
+     * than a non-call bond with the same payments is worth, and never more than
+     * the principal once it can be called.
+     */
+    private double callableValue(LongTermBond bond, YieldCurve curve, double[] flows) {
+        CallTree tree = treeOn(curve, rateVolatility(), flows.length);
+        return tree.price(flows, bond.monthsToFirstCall(), bond.getOustandingPrincipal());
+    }
+
+    private static final class TreeEntry {
+        final YieldCurve curve;
+        final double sigma;
+        final CallTree tree;
+        TreeEntry(YieldCurve curve, double sigma, CallTree tree) { this.curve = curve; this.sigma = sigma; this.tree = tree; }
+    }
+
+    private transient volatile TreeEntry treeCache;
+
+    /**
+     * The tree fitted to this curve at this volatility, long enough for a
+     * schedule of this many months: built once and kept while the curve (one
+     * object while its inputs stand, curveAt()) and the volatility stand, and
+     * refitted longer when a longer schedule is asked for. A callable piece is
+     * valued several times a month, and a fit is the dear part.
+     */
+    private CallTree treeOn(YieldCurve curve, double sigma, int months) {
+        TreeEntry e = treeCache;
+        if (e != null && e.curve == curve && same(e.sigma, sigma) && e.tree.steps() >= months) return e.tree;
+        CallTree made = CallTree.fit(curve, sigma, months);
+        treeCache = new TreeEntry(curve, sigma, made);
+        return made;
+    }
+
+    /**
+     * The volatility of the city's short rate, a year, that a callable piece
+     * is valued at: Game's measure of its own history (Game.rateVolatility(),
+     * handed in with setRateVolatility()), the floor (CallTree.RATE_VOL_FLOOR)
+     * for a manager nobody has handed one.
+     */
+    public double rateVolatility() {
+        java.util.function.DoubleSupplier source = rateVolatility;
+        return source == null ? CallTree.RATE_VOL_FLOOR : source.getAsDouble();
+    }
+
+    /** Hands the manager the city's volatility, so it can value a callable piece without knowing the city's history. Not saved: Game hands it in when it builds the manager. */
+    public void setRateVolatility(java.util.function.DoubleSupplier source) {
+        this.rateVolatility = source;
+        this.treeCache = null;
+    }
+
+    private transient java.util.function.DoubleSupplier rateVolatility;
+
+    /* ----- the call (CD4, spec-city-debt.md section 6.4) ----- */
+
+    /**
+     * The present value a call would save, per the study: the line's remaining
+     * payments at this curve, as a bond that cannot be called, less what the
+     * call pays (its principal) and less what selling the paper again costs
+     * (the auction's fee, the caller's). Below nothing when the line is worth
+     * less than it costs to call.
+     */
+    public static double callSavingOn(YieldCurve curve, Debt paper, double fee) {
+        if (paper == null) return 0;
+        return curve.pv(paper.remainingCashFlows()) - paper.getOustandingPrincipal() * CallTree.CALL_PRICE / 100 - fee;
+    }
+
+    /** callSavingOn() the city's curve. */
+    public double callSaving(Debt paper, double fee) {
+        return callSavingOn(curve(), paper, fee);
+    }
+
+    /** True when a saving passes CallTree.WORTH_CALLING of the principal called (D24). */
+    public static boolean worthCalling(double saving, double principal) {
+        return saving > CallTree.WORTH_CALLING * principal;
     }
 
     private static final class WorldEntry {
@@ -2484,18 +2571,31 @@ public class DebtManager {
 
     /**
      * The bond line a sale at this term goes into (spec-city-debt.md section
-     * 2.2, D6, D14): the city's own LongTermBond - not dollar paper - whose
-     * original term is these years and which still has at least nine tenths of
+     * 2.2, D6, D14): the city's own LongTermBond - not dollar paper, and not a
+     * callable one (CD4: a sale that is not callable never reopens a line that
+     * is) - whose original term is these years and which still has at least nine tenths of
      * it left (Auction.BENCHMARK_LIFE: 22 months of a 2-year, 54 of a 5-year,
      * 108, 216, 324 and 540 of the rest); the one with the most months left if
      * two qualify. Null when there is none, and the sale opens a new line.
      */
     public Debt benchmarkLine(int years) {
+        return benchmarkLine(years, false);
+    }
+
+    /**
+     * ...of a callable sale (CD4): a callable sale reopens only a callable line
+     * of the same term whose first call sits as far from its start as the
+     * sale's would (CallTree.firstCallYears()), and a sale that is not callable
+     * never reopens a callable line - the paper is not the same paper.
+     */
+    public Debt benchmarkLine(int years, boolean callable) {
         int term = years * 12;
         int need = (int) Math.ceil(Auction.BENCHMARK_LIFE * term - 1e-9);
         Debt best = null;
         for (Debt d : debts) {
-            if (d.isForeign() || !(d instanceof LongTermBond) || d.getDuration() != term) continue;
+            if (d.isForeign() || !(d instanceof LongTermBond bond) || d.getDuration() != term) continue;
+            if (bond.isCallable() != callable) continue;
+            if (callable && bond.callTermMonths() != CallTree.firstCallYears(years) * 12) continue;
             if (d.getRemainingMonths() < need) continue;
             if (best == null || d.getRemainingMonths() > best.getRemainingMonths()) best = d;
         }

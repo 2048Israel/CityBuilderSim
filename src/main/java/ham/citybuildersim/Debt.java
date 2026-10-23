@@ -866,4 +866,67 @@ public abstract class Debt {
      */
     protected void redenominateSchedule(double scale) { }
 
+    /**
+     * PART OF THE PIECE BOUGHT BACK (CD4, spec-city-debt.md section 6.2): this
+     * much face taken off it, by holder. Each holder's principal falls by its
+     * own face (the bank's is the remainder, so it has no field to move), and
+     * everything else that scales with the piece is multiplied by
+     * {@code k = 1 - taken / outstanding}: the face and the outstanding
+     * principal, the issue discount and what is left of it, the carrying
+     * value, the month's booked expense and coupon, and the schedule
+     * ({@link #shrinkSchedule}). The effective rate and the issue yield are
+     * rates and do not move - a piece bought back in part is the same piece,
+     * smaller, so its books close to the cent at its end as they did.
+     *
+     * The unaccreted discount that rides on the bank's face is the caller's to
+     * strike BEFORE this (unaccretedOn(bankFace)): after it the discount is
+     * the remaining piece's. Dollar paper is bought back in dollars at the
+     * piece's rate: the faces are local money, {@code k} is their ratio to the
+     * local principal, and the own-currency figures scale by it; its holder
+     * fields read zero (it is the world's) and are not touched, and its
+     * exchange rate is not a quantity of the piece.
+     *
+     * Only a piece with nothing unsettled: a sale not yet settled has holders
+     * who have not paid and a settle that is owed in proportion, and neither
+     * is scaled here. Taking all of it leaves an empty piece, which the caller
+     * removes (DebtManager.retire()).
+     *
+     * @throws IllegalStateException for a piece with an unsettled sale
+     */
+    void retirePart(double bankFace, double householdFace, double firmFace, double worldFace) {
+        if (unsettledFace > 0 || settleDue > 0) {
+            throw new IllegalStateException("a piece with an unsettled sale cannot be bought back in part");
+        }
+        double out = getOustandingPrincipal();
+        double bank = Math.max(0, bankFace), hh = Math.max(0, householdFace),
+               firms = Math.max(0, firmFace), world = Math.max(0, worldFace);
+        double taken = bank + hh + firms + world;
+        if (!(taken > 0) || !(out > 0)) return;
+        double k = Math.max(0, 1 - taken / out);
+        if (!foreign) {
+            householdPrincipal = Math.max(0, householdPrincipal - hh);
+            firmPrincipal = Math.max(0, firmPrincipal - firms);
+            worldPrincipal = Math.max(0, worldPrincipal - world);
+            // the central bank does not sell (D18): its principal stays; the bank's is what is left
+        }
+        faceValue *= k;
+        outstandingPrincipal *= k;
+        issueDiscount *= k;
+        discountLeft *= k;
+        carryingValue *= k;
+        lastExpenseOwn *= k;
+        lastCouponOwn *= k;
+        shrinkSchedule(k);
+    }
+
+    /**
+     * What a subclass carries in its own currency that scales with the piece
+     * when part of it is bought back (retirePart()): a serial bond's slice. A
+     * bullet's and a bill's schedules are read off the face, which has
+     * scaled. The default is a change of unit's, redenominateSchedule(); a
+     * subclass whose redenominating leaves a dollar piece alone (a dollar
+     * piece does not change unit, but it does lose face) overrides this.
+     */
+    protected void shrinkSchedule(double k) { redenominateSchedule(k); }
+
 }

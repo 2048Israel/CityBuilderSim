@@ -223,4 +223,10 @@ public class MediumTermBond extends Debt {
         if (!isForeign()) principalPerSlice *= scale;
     }
 
+    /** Part of the piece bought back (CD4, Debt.retirePart()): the slice shrinks with the balance, a dollar piece's too - it is not a change of unit. The number of slices and the coupon RATE do not move. */
+    @Override
+    protected void shrinkSchedule(double k) {
+        principalPerSlice *= k;
+    }
+
 }

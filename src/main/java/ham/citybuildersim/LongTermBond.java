@@ -14,6 +14,11 @@ package ham.citybuildersim;
  * (Debt.reopen(), DebtManager.benchmarkLine()). The class keeps its name
  * (spec-city-debt.md, star 3): it is any bond of 2 to 50 years.
  *
+ * CALLABLE (CD4): a bond of ten years or more may be sold with the city's
+ * right to call the whole line at 100 from a first call date (callable(),
+ * isCallableNow()); the coupon carries the right (CallTree prices it) and the
+ * flag and the date ride through the save with the piece.
+ *
  * @author Jerus
  */
 public class LongTermBond extends Debt {
@@ -41,7 +46,13 @@ public class LongTermBond extends Debt {
     }
 
     private double monthlyCouponRate;
-    
+
+    /** True for a bond sold callable (CD4, D22): the city may call it whole at 100 from firstCallMonth on. Saved with the piece. */
+    private boolean callable;
+
+    /** The game month from which a callable bond may be called; -1 when it is not callable. Saved with the piece. */
+    private int firstCallMonth = -1;
+
     public LongTermBond(double faceValue, int months, int monthStarted, double couponRate) {
         this(faceValue, months, monthStarted, couponRate, false);
     }
@@ -57,6 +68,56 @@ public class LongTermBond extends Debt {
         this.monthlyCouponRate = couponRate / 12;
         this.outstandingPrincipal = faceValue;
         this.type = "TERM";
+    }
+
+    /**
+     * A bond sold callable (CD4, spec-city-debt.md section 2.6): the same bond,
+     * with the right to call it whole at 100 from the game month
+     * firstCallMonth on. Its coupon is the caller's to set with the option in
+     * it (Game.quoteLongBond()).
+     */
+    public static LongTermBond callable(double faceValue, int months, int monthStarted, double couponRate, int firstCallMonth) {
+        LongTermBond bond = new LongTermBond(faceValue, months, monthStarted, couponRate);
+        bond.callable = true;
+        bond.firstCallMonth = firstCallMonth;
+        return bond;
+    }
+
+    /** True for a bond sold callable. */
+    public boolean isCallable() {
+        return callable;
+    }
+
+    /** The game month from which a callable bond may be called; -1 for a bond that is not callable. */
+    public int getFirstCallMonth() {
+        return callable ? firstCallMonth : -1;
+    }
+
+    /** True when this bond may be called in this game month: callable, and the month is its first call month or later. */
+    public boolean isCallableNow(int month) {
+        return callable && month >= firstCallMonth;
+    }
+
+    /**
+     * Months from now to the first call, read off the paper's own schedule -
+     * the months its call date sits after its start, less the months it has
+     * run (its term less what is left) - so a valuation needs no clock; 0 once
+     * it may be called; -1 for a bond that is not callable. What
+     * DebtManager.marketValue() hands the tree.
+     */
+    public int monthsToFirstCall() {
+        if (!callable) return -1;
+        return Math.max(0, (firstCallMonth - monthStarted) - (duration - remainingMonths));
+    }
+
+    /** Months from the day it was sold to its first call date, as the sale set them: what two lines must share to be one line (DebtManager.benchmarkLine()); -1 for a bond that is not callable. */
+    public int callTermMonths() {
+        return callable ? firstCallMonth - monthStarted : -1;
+    }
+
+    /** A fixture's: moves the first call month, so the call can be exercised without playing years to reach it. */
+    void moveFirstCallForTest(int month) {
+        if (callable) firstCallMonth = month;
     }
 
     /** A coupon on the whole face, every month; the face in the last. */

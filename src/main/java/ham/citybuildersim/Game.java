@@ -336,6 +336,7 @@ public class Game {
         healthcare = new Healthcare();
         historyGrapher = new HistoryGrapher();
         debtManager = new DebtManager();
+        debtManager.setRateVolatility(this::rateVolatility);   // a callable piece is valued at the city's own volatility (CD4)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
 
@@ -3660,7 +3661,8 @@ public class Game {
     /**
      * ONE MONTH OF THE TREASURY'S OWN SPENDING: the budget's expenses over the
      * last Rollover.NETTING_MONTHS, as the history keeps them (revenue less
-     * the surplus, month by month), a month's worth. The floor the fund's
+     * the surplus, plus the gain on debt retired that the surplus carries and
+     * spending does not (CD4, CD3's ★5), month by month), a month's worth. The floor the fund's
      * pay-in never takes the treasury under - Canada's Department of Finance
      * holds liquidity for at least one month of net projected cash flows
      * (Debt Management Report 2017-18, Part 1), the rollover's own source -
@@ -3669,13 +3671,16 @@ public class Game {
     public double monthOfSpending() {
         double[] revenue = historySave.aligned("revenue");
         double[] surplus = historySave.aligned("surplus");
+        double[] gain = historySave.aligned("retiredGain");
         int n = Math.min(revenue.length, surplus.length);
         double sum = 0;
         int months = 0;
         for (int i = Math.max(0, n - Rollover.NETTING_MONTHS); i < n; i++) {
             double r = revenue[revenue.length - n + i], s = surplus[surplus.length - n + i];
             if (Double.isNaN(r) || Double.isNaN(s)) continue;
-            sum += r - s;
+            int gi = gain.length - n + i;
+            double g = gi >= 0 && gi < gain.length && !Double.isNaN(gain[gi]) ? gain[gi] : 0;
+            sum += r - s + g;
             months++;
         }
         return months > 0 ? Math.max(0, sum / months) : 0;
@@ -8242,6 +8247,23 @@ public class Game {
 
     /** The auction for this paper, now: fair with the issue on the books, the bidders as they stand, the cap given (the default if none). */
     private Auction.Result runAuction(Auction.Kind kind, int months, double face, double lineCoupon, Auction.Cap cap) {
+        return runAuction(kind, months, face, lineCoupon, cap, -1);
+    }
+
+    /**
+     * ...of a bond that may be called (CD4): firstCallAhead is the month,
+     * counted from now, the city may first call it - under 0 for paper that
+     * cannot be. A callable ask is a bullet whose fair yield is the non-call
+     * fair plus what the option costs (CallTree.optionSpread() on the curve
+     * the issue stands on, at the city's own volatility), and the sale prices
+     * the paper on the tree fitted to that curve with the tail over fair as a
+     * spread on it - as the non-call paper is priced on the curve - so the
+     * bidders see a bullet at fair plus the spread, the coupon is set from the
+     * clearing yield exactly as for any bond, and a sale with no tail is worth
+     * what the tree values the paper at (DebtManager.marketValue()).
+     */
+    private Auction.Result runAuction(Auction.Kind kind, int months, double face, double lineCoupon, Auction.Cap cap,
+                                      int firstCallAhead) {
         /*
          * PRICED ON THE CURVE THE ISSUE STANDS ON (CD2, slice 3's finding): the
          * same curve fair is read off, with the issue priced in, and the tail
@@ -8252,8 +8274,14 @@ public class Game {
          * gained on an upward curve, by the coupon's rounding down.
          */
         YieldCurve curve = debtManager.quoteCurve(Math.max(0, face));
-        Auction.Ask ask = new Auction.Ask(kind, months, face,
-                DebtManager.fairYieldOn(curve, kind, months), lineCoupon, issuanceFee(), curve::pvAtSpread);
+        double fair = DebtManager.fairYieldOn(curve, kind, months);
+        Auction.Pricer pricer = curve::pvAtSpread;
+        if (firstCallAhead >= 0 && kind == Auction.Kind.BOND) {
+            final double sigma = rateVolatility();
+            fair += CallTree.optionSpread(curve, sigma, months, firstCallAhead);
+            pricer = (flows, tail) -> CallTree.price(curve, tail, sigma, flows, firstCallAhead, CallTree.CALL_PRICE);
+        }
+        Auction.Ask ask = new Auction.Ask(kind, months, face, fair, lineCoupon, issuanceFee(), pricer);
         return Auction.run(ask, auctionBidders(months, face), cap == null ? Auction.Cap.DEFAULT : cap);
     }
 
@@ -8516,6 +8544,21 @@ public class Game {
 
     /** ...at a cap of the caller's. */
     public DebtQuote quoteLongBond(double amount, int duration, double rounding, Auction.Cap cap) {
+        return quoteLongBond(amount, duration, rounding, cap, false);
+    }
+
+    /**
+     * ...sold callable if asked (CD4, spec-city-debt.md section 2.6): a bond of
+     * ten years or more with the city's right to call it whole at 100 from its
+     * first call date (CallTree.firstCallYears()). The coupon carries the
+     * right - the auction's fair yield is the non-call fair plus the option's
+     * price on the tree (runAuction()) - and a callable sale reopens only a
+     * callable line of the same call terms (DebtManager.benchmarkLine()).
+     * Refused - quoted nothing - for a term under CallTree.CALLABLE_MIN_YEARS
+     * and for any that is not one of the six. Nothing sells callable paper
+     * unasked: every other path sells paper that cannot be called.
+     */
+    public DebtQuote quoteLongBond(double amount, int duration, double rounding, Auction.Cap cap, boolean callable) {
 
         priceTheDebtMarket();
         double before = debtManager.getRate();
@@ -8523,23 +8566,56 @@ public class Game {
         // Only the six: any other term is quoted nothing, and
         // handleLongBondLogic() says why. See LongTermBond.MATURITIES.
         if (amount <= 0 || !LongTermBond.isIssuable(duration)) return emptyQuote("Term", duration, before);
+        if (callable && !CallTree.canBeCallable(duration)) return emptyQuote("Term", duration, before);
 
         double granule = rounding > 0 ? rounding : 1;
-        return bondQuote(amount, Math.ceil(amount / granule) * granule, duration, before, cap);
+        return bondQuote(amount, Math.ceil(amount / granule) * granule, duration, before, cap, callable);
+    }
+
+    /**
+     * What the call adds to a callable sale's yield (CD4, spec-city-debt.md
+     * section 2.6): the price of the option on the tree, which runAuction()
+     * puts on the fair yield of the same bullet without it - read off the
+     * quote's own auction as that fair less the non-call fair on the curve the
+     * issue stands on, so the Borrow page's "the call adds 34 bp to the
+     * coupon" is the sale's own figure and not a second tree. Nothing (0) for
+     * a quote of paper that cannot be called, or that has no auction.
+     */
+    public double callSpread(DebtQuote quote) {
+        if (quote == null || !quote.callable() || quote.auction() == null) return 0;
+        Auction.Ask ask = quote.auction().ask();
+        priceTheDebtMarket();
+        YieldCurve curve = debtManager.quoteCurve(Math.max(0, ask.face()));
+        return Math.max(0, ask.fair() - DebtManager.fairYieldOn(curve, ask.kind(), ask.months()));
     }
 
     /** The bond's quote at a face: the benchmark line it reopens, or the new line it opens, and what the auction made of it. */
     private DebtQuote bondQuote(double requested, double face, int years, double before, Auction.Cap cap) {
-        Debt line = debtManager.benchmarkLine(years);
+        return bondQuote(requested, face, years, before, cap, false);
+    }
+
+    /** ...of paper that may be called, if it is (CD4): priced from the months the line, or the new line, has to its first call. */
+    private DebtQuote bondQuote(double requested, double face, int years, double before, Auction.Cap cap, boolean callable) {
+        Debt line = debtManager.benchmarkLine(years, callable);
         int months = line != null ? line.getRemainingMonths() : years * 12;
         double lineCoupon = line instanceof LongTermBond bond ? bond.couponRate() : Double.NaN;
-        Auction.Result r = runAuction(Auction.Kind.BOND, months, face, lineCoupon, cap);
+        int firstCallMonth = -1, firstCallAhead = -1;
+        if (callable) {
+            if (line instanceof LongTermBond bond) {
+                firstCallMonth = bond.getFirstCallMonth();
+                firstCallAhead = bond.monthsToFirstCall();
+            } else {
+                firstCallAhead = CallTree.firstCallYears(years) * 12;
+                firstCallMonth = month + firstCallAhead;
+            }
+        }
+        Auction.Result r = runAuction(Auction.Kind.BOND, months, face, lineCoupon, cap, firstCallAhead);
         if (isTinySale(r)) return tinySaleQuote("Term", years, requested, before, r);
         double sold = r.sold();
         double received = cents(r.proceeds());
         double monthly = sold * (r.coupon() / 12.0);
         return new DebtQuote("Term", years, requested, r.stop(), before,
-                sold, received, monthly, (sold - received) + monthly * months, r, r.coupon());
+                sold, received, monthly, (sold - received) + monthly * months, r, r.coupon(), callable, firstCallMonth);
     }
 
     /** Books a bond on exactly the terms quoted. */
@@ -8549,9 +8625,15 @@ public class Game {
 
     /** ...at a cap of the caller's. */
     public String handleLongBondLogic(double amount, int duration, double rounding, Auction.Cap cap) {
+        return handleLongBondLogic(amount, duration, rounding, cap, false);
+    }
+
+    /** ...sold callable if asked (quoteLongBond()): refused with CallTree.REFUSAL for a term that may not be. */
+    public String handleLongBondLogic(double amount, int duration, double rounding, Auction.Cap cap, boolean callable) {
 
         if (!LongTermBond.isIssuable(duration)) return LongTermBond.REFUSAL;
-        DebtQuote quote = quoteLongBond(amount, duration, rounding, cap);
+        if (callable && !CallTree.canBeCallable(duration)) return CallTree.REFUSAL;
+        DebtQuote quote = quoteLongBond(amount, duration, rounding, cap, callable);
         if (quote.isEmpty()) return "Nothing issued.";
         return issueLongBond(quote);
     }
@@ -8566,18 +8648,21 @@ public class Game {
 
         int years = quote.duration();
         Auction.Result r = quote.auction();
-        Debt line = r != null && !r.ask().isNewLine() ? debtManager.benchmarkLine(years) : null;
+        Debt line = r != null && !r.ask().isNewLine() ? debtManager.benchmarkLine(years, quote.callable()) : null;
         if (line instanceof LongTermBond bond && Math.abs(bond.couponRate() - r.ask().lineCoupon()) < 1e-12) {
             line.reopen(quote.faceValue(), quote.cashReceived(), quote.marketRate());
             line.allot(r.fills(), quote.faceValue(), quote.cashReceived());
             bookProceeds(quote);
+        } else if (quote.callable()) {
+            bookNewPiece(debtManager.addCallableBond(quote.faceValue(), years * 12, month, quote.couponRate(),
+                    quote.firstCallMonth()), quote);
         } else {
             bookNewPiece(debtManager.addLongTermBond(quote.faceValue(), years * 12, month, quote.couponRate()), quote);
         }
 
         debtManager.updateInterest();
         decisions.record(DecisionLog.BORROWING, "Borrowed " + DecisionLog.money(quote.faceValue())
-                + ": " + years + "-year term bond");
+                + ": " + years + "-year " + (quote.callable() ? "callable " : "") + "term bond");
         return "Term bond issued.\n" + quote.summary();
     }
 
@@ -14386,12 +14471,15 @@ public class Game {
     /* ----------------------- a buyback's holders outside the pools ----------------------- */
 
     /**
-     * What a buyback between two presses paid the households and the holders
-     * of a dollar bond, carried in the treasury's pool until the next month
-     * declares it leaving (MoneyAudit.pools()) - the shape the bank's unsettled
-     * paper has on the other side. The central bank's share is carried as its
-     * own redemption (CentralBank.getRedemptionDue()). Saved under their own
-     * keys; an old save owes nothing.
+     * What a buyback between two presses paid the households and the world
+     * (the holders of a dollar bond among them), carried in the treasury's
+     * pool until the next month declares it leaving (MoneyAudit.pools()) -
+     * the shape the bank's unsettled paper has on the other side. A buyback
+     * pays the central bank nothing (CD4, D18); what it is paid for paper
+     * bought back from it (a call, CD4's next slice, through
+     * CentralBank.paperBoughtBack()) is carried as its own redemption
+     * (CentralBank.getRedemptionDue()), which getBuybackUnsettled() adds.
+     * Saved under their own keys; an old save owes nothing.
      */
     private double buybackToHouseholdsUnsettled, buybackAbroadUnsettled;
     /** ...and declared this month. */
@@ -15034,11 +15122,15 @@ public class Game {
        ===================================================================== */
 
     /**
-     * What one bond would cost to clear right now: at the curve's rate for the
-     * months it has left (0.7.1) - DebtManager.marketValue(), the same curve
-     * it was issued on, which is what keeps a round trip neutral.
+     * What one piece is worth to somebody who does not care to hold it, right
+     * now: at the curve's rate for the months it has left (0.7.1) -
+     * DebtManager.marketValue(), the same curve it was issued on. It was what
+     * clearing the piece cost until CD4 (quoteRepurchase() below); a buyback
+     * is a reverse auction now and pays each holder what its own rule asks,
+     * which is never under this, so this is the FLOOR of the price and the
+     * screen's "worth today", not the cost.
      */
-    public double quoteRepurchase(Debt debt) {
+    public double fairValueOf(Debt debt) {
         if (debt == null) return 0;
         priceTheDebtMarket();
         debtManager.updateInterest();
@@ -15046,19 +15138,91 @@ public class Game {
     }
 
     /**
-     * What the city would book as a gain (positive) or loss (negative): the
-     * piece's carrying value less the price (CD3) - what the books hold it at
-     * against what buying it back costs. It was the face less the price, which
-     * is the gain only on paper carried at its face; a piece sold under par
-     * carries less than its face until the discount has worn off.
+     * What clearing the whole of one piece that can be cleared would cost
+     * right now (CD4): the reverse auction's price for everything its holders
+     * offer, the central bank's face excepted (D18), at any price - the sum of
+     * the offers' own prices, never under fair (fairValueOf()), so a round trip
+     * is neutral or worse. A piece with a sale not yet settled is quoted only
+     * when the whole of it can be taken (quoteBuyback()): nothing if the
+     * central bank holds part of it.
+     * The thin form of quoteBuyback(), which names a face and a highest price.
      */
-    public double repurchaseGain(Debt debt) {
-        if (debt == null) return 0;
-        return debt.getCarryingValue() - quoteRepurchase(debt);
+    public double quoteRepurchase(Debt debt) {
+        return quoteBuyback(debt, buybackOfferable(debt), Double.NaN).paid();
     }
 
     /**
-     * Buys one bond back and takes it off the books.
+     * What the city would book as a gain (positive) or loss (negative) from
+     * clearing what quoteRepurchase() clears: the carrying value of that face
+     * less the price (CD3) - what the books hold it at against what buying it
+     * back costs. It was the face less the price, which is the gain only on
+     * paper carried at its face; a piece sold under par carries less than its
+     * face until the discount has worn off.
+     */
+    public double repurchaseGain(Debt debt) {
+        return quoteBuyback(debt, buybackOfferable(debt), Double.NaN).gainOnCarrying();
+    }
+
+    /** The face of a piece its holders can offer: the principal less the central bank's, which does not sell (D18); a dollar piece's all of it, the world's alone (D26). The Close it now page's default face. */
+    public double buybackOfferable(Debt debt) {
+        if (debt == null) return 0;
+        double principal = debt.getOustandingPrincipal();
+        return debt.isForeign() ? principal : Math.max(0, principal - debt.centralBankPrincipal());
+    }
+
+    /**
+     * THE REVERSE AUCTION, QUOTED (CD4, spec-city-debt.md section 6.2): what
+     * buying back this much face of one piece, at no more than this per 100,
+     * would take and cost, struck once on the market as it stands - nothing is
+     * moved. Every holder but the central bank offers in slices, each at the
+     * price where its own buying rule stops wanting it (Buyback); the bidders
+     * are the auction's (auctionBidders()), so the buyback and the sale see
+     * the same city.
+     *
+     * The face asked is held to what can be offered (buybackOfferable()). A
+     * piece with a sale not yet settled can be bought back WHOLE and not in
+     * part: its buyers have not paid for it, and the settle cannot be split
+     * between what stays and what goes, so a whole piece goes off the books as
+     * it always did (the settle does not see a piece that is not on the list,
+     * and the bank, which was to pay for it, keeps what the treasury paid it)
+     * and a part of it quotes nothing. Whole means every offer taken and none
+     * of the piece the central bank's; a highest price that leaves some
+     * behind makes it a part. Its holders are the ones it has now: a new
+     * piece is the bank's, a reopening has its older part with the others.
+     *
+     * @param face      the face wanted, local money
+     * @param maxPer100 the most to pay per 100 of face, or NaN for any price
+     */
+    public Buyback.Result quoteBuyback(Debt debt, double face, double maxPer100) {
+        if (debt == null) return Buyback.Result.none(face);
+        priceTheDebtMarket();
+        debtManager.updateInterest();
+        double principal = debt.getOustandingPrincipal();
+        if (!(principal > 0)) return Buyback.Result.none(face);
+        double fair = debtManager.marketValue(debt) / principal * 100;
+        Buyback.Line line = debt.isForeign()
+                // D26: dollar paper's only holder is the world; it offers the whole piece, every slice at fair.
+                ? new Buyback.Line(principal, debt.remainingCashFlows(), fair, debt.getCarryingValue(),
+                        0, 0, 0, principal, 0, true)
+                : new Buyback.Line(principal, debt.remainingCashFlows(), fair, debt.getCarryingValue(),
+                        debt.bankPrincipal(), debt.householdPrincipal(), debt.firmPrincipal(),
+                        debt.worldPrincipal(), debt.centralBankPrincipal(), false);
+        double asked = Math.min(Math.max(0, face), buybackOfferable(debt));
+        Buyback.Result quote = Buyback.run(line, auctionBidders(), new Buyback.Ask(asked, maxPer100));
+        // A sale not yet settled: the whole piece or nothing (see above).
+        boolean unsettled = debt.unsettledFace() > 0 || debt.getSettleDue() > 0;
+        if (unsettled && !takesTheWholePiece(quote.takenFace(), principal)) return Buyback.Result.none(face);
+        return quote;
+    }
+
+    /** True when this much face is the whole of a piece's principal: all of it but the dust that slices of a holding leave. */
+    private static boolean takesTheWholePiece(double taken, double principal) {
+        return taken >= principal - 1e-9 * Math.max(1, principal);
+    }
+
+    /**
+     * Buys one bond back, in whole or in part, and takes what it bought off
+     * the books: the reverse auction of quoteBuyback(), struck and paid.
      *
      * PAID FOR IN CASH, AND ONLY IN CASH. A city that cannot afford this is
      * refused rather than allowed to go overdrawn for it, and that is a rule
@@ -15075,100 +15239,239 @@ public class Game {
      * paying it - the exact "asking the price changes the price" bug that
      * calculateTotalCost() had.
      *
-     * @return what it cost, or 0 if nothing happened
+     * @param face      the face wanted; held to what the holders offer (the central bank's face stays)
+     * @param maxPer100 the most to pay per 100 of face, or NaN for any price
+     * @return what was bought and what it cost; nothing taken (takenFace() 0) when the piece is not on
+     *         the books, has a sale unsettled and only a part of it was asked, the highest price leaves
+     *         nothing to take, or the cash cannot pay for it - never null, and nothing has moved then
      */
-    public double repurchaseDebt(Debt debt) {
+    public Buyback.Result buyBack(Debt debt, double face, double maxPer100) {
 
-        if (debt == null) return 0;
+        if (debt == null || !debtManager.getDebt().contains(debt)) return Buyback.Result.none(face);
 
-        double price = quoteRepurchase(debt);
+        Buyback.Result deal = quoteBuyback(debt, face, maxPer100);
 
-        if (price <= 0 || price > cash) {
-            return 0;
+        if (!(deal.takenFace() > 0) || !(deal.paid() > 0) || deal.paid() > cash) {
+            return Buyback.Result.none(face);
         }
 
         double principal = debt.getOustandingPrincipal();
-        // Who holds it, struck before it comes off the list (0.7.1).
+        // The unearned discount that rides on the bank's face goes with it (strike before the piece shrinks).
+        double bankUnearned = debt.unaccretedOn(deal.bankFace());
+        double price = deal.paid();
+        // The whole piece: nothing is left of it but dust. (The central bank's face, which does not sell, keeps it on the books.)
+        boolean whole = takesTheWholePiece(deal.takenFace(), principal);
+        if (whole) {
+            if (!debtManager.retire(debt)) {
+                return Buyback.Result.none(face);   // not on the books; do not charge for it
+            }
+        } else {
+            debt.retirePart(deal.bankFace(), deal.householdFace(), deal.firmFace(), deal.worldFace());
+        }
+
+        treasuryPays(TreasuryLine.BUYBACKS, price);
+        // The gain on the books (CD3): what the face taken was carried at, less what it cost to clear. Not cash:
+        // the price is what the cash paid. The next strike moves it into the month (strikeGovernmentBooks()).
+        retiredGainSoFar += deal.gainOnCarrying();
+        decisions.record(DecisionLog.BORROWING, "Bought back " + DecisionLog.money(deal.takenFace()) + " of "
+                + debt.getType() + " paper for " + DecisionLog.money(price)
+                + String.format(" (%.2f per 100 on average, stop %.2f)", deal.averagePer100(), deal.stopPer100()));
+        // Not a repayment - retire() takes it off the books without touching
+        // cityPrincipalRepaidThisMonth - so the bridge names it here.
+        treasuryJournal.record("Bought back a bond", -price);
+        /*
+         * ...AND EVERY HOLDER IS PAID FOR WHAT IT SOLD (0.7.0, by holder since
+         * 0.7.1, and since CD4 each at the price of its own slices, not a
+         * pro rata share of one price). A buyback used to pay nobody: the cash
+         * left the treasury, the bond came off the list, and the bank's book
+         * fell by the principal at the next refresh with nothing arriving. Now
+         * each holder that offered is paid the sum of its own slices' prices
+         * for the face it sold (Buyback):
+         *
+         *   - the BANK's goes to its cash and its book drops by its face now,
+         *     with the discount it had not yet earned on it; the difference is
+         *     its gain or loss (Bank.sellPaperBack());
+         *   - the HOUSEHOLDS' goes to their savings with their paper down by
+         *     their face;
+         *   - the BUSINESSES' goes to their tills with their paper down by
+         *     their face (CD2, slice 4), at once: the tills are inside the
+         *     pools, so nothing waits to be declared;
+         *   - the WORLD's leaves the country (CD2, slice 5), its paper down by
+         *     its face: carried with the dollar bond's price to the next
+         *     month's window as '- city BuybackAbroad', a financial outflow;
+         *   - the CENTRAL BANK is not paid and does not sell (D18): its face
+         *     stays on the piece, and its book is not touched;
+         *   - and a DOLLAR bond's whole price leaves the country (as the
+         *     world's share of the city's own does).
+         *
+         * The households', the world's and a dollar holder's are paid out of
+         * the pools between two presses, so the treasury's pool carries what
+         * it paid them (getBuybackUnsettled()) until the next month declares it
+         * leaving, which is where the audit sees it, rather than cash leaving
+         * the treasury for nowhere (the dollar case until 0.7.1:
+         * the-central-bank-opens.md section 4). A second buyback in the same
+         * window adds to what is carried; the audit reads the sum.
+         */
+        if (debt.isForeign()) {
+            buybackAbroadUnsettled += deal.worldPaid();
+            // The stock the world is owed moves now, as it does when one is
+            // issued (handleForeignLogic()); same rate, so no revaluation.
+            foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
+        } else {
+            if (deal.bankFace() > 0 || deal.bankPaid() > 0) bank.sellPaperBack(deal.bankPaid(), deal.bankFace(), bankUnearned);
+            if (deal.householdFace() > 0) {
+                householdBalance.creditPaperBuyback(deal.householdFace(), deal.householdPaid());
+                buybackToHouseholdsUnsettled += deal.householdPaid();
+            }
+            // The businesses' share goes straight into their tills: a pool paid by a pool,
+            // so nothing is carried to the next month's window.
+            if (deal.firmFace() > 0) outward.creditPaperBuyback(deal.firmFace(), deal.firmPaid(), economyManager);
+            // The world's share leaves the country, its paper down by its face (CD2, slice 5).
+            if (deal.worldFace() > 0) {
+                hotMoney.paperRepaid(deal.worldFace());
+                buybackAbroadUnsettled += deal.worldPaid();
+            }
+        }
+
+        // Both sides moved - less paper, and less cash - so the market has
+        // to be told before anything reads the rate again.
+        priceTheDebtMarket();
+        debtManager.updateInterest();
+
+        return deal;
+    }
+
+    /**
+     * Buys back everything the holders offer of one bond, at any price: the
+     * thin form of buyBack() the buttons before CD4 knew.
+     *
+     * @return what it cost, or 0 if nothing happened
+     */
+    public double repurchaseDebt(Debt debt) {
+        return buyBack(debt, buybackOfferable(debt), Double.NaN).paid();
+    }
+
+    /* ----- the call (CD4, spec-city-debt.md section 6.4; D22, D23, D24) ----- */
+
+    /**
+     * The volatility of the city's own short rate, a year (D23): the standard
+     * deviation of the monthly changes of History's "interestRate" series over
+     * the last CallTree.VOL_MONTHS, times the square root of twelve, never
+     * under CallTree.RATE_VOL_FLOOR, and the floor while the city has under
+     * thirteen months of it. The series is the city's quoted short rate
+     * (DebtManager.getRate(), recorded each month), the nearest the history
+     * keeps to the spec's 1-year rate. What a callable sale's option is priced
+     * at (runAuction()) and what a callable piece is valued at
+     * (DebtManager.marketValue()).
+     */
+    public double rateVolatility() {
+        return CallTree.volatility(historySave.alignedTail("interestRate", CallTree.VOL_MONTHS + 1));
+    }
+
+    /**
+     * True when this piece can be called now: a callable bond of the city's
+     * own, on the books, whose first call month has come (LongTermBond
+     * .isCallableNow()) and which has nothing unsettled - a line sold last
+     * month has buyers who have not paid for it, and a call cannot be split
+     * between what has settled and what has not.
+     */
+    public boolean canCall(Debt debt) {
+        return debt instanceof LongTermBond bond && bond.isCallable() && !bond.isForeign()
+                && debtManager.getDebt().contains(debt)
+                && bond.isCallableNow(month)
+                && bond.getOustandingPrincipal() > 0
+                && bond.unsettledFace() <= 0 && bond.getSettleDue() <= 0;
+    }
+
+    /** What calling this piece costs: its outstanding principal, 100 per 100 (CallTree.CALL_PRICE), paid to every holder, the central bank's too. */
+    public double callCost(Debt debt) {
+        return debt == null ? 0 : debt.getOustandingPrincipal() * CallTree.CALL_PRICE / 100;
+    }
+
+    /**
+     * The present value a call would save (D24): the line's remaining payments
+     * at today's curve, as a bond that cannot be called, less what the call
+     * pays and less what selling the paper again costs - the auction's fee
+     * (issuanceFee(); the fee is fixed, whatever the face). Below nothing when
+     * the line is worth less than 100 net of that.
+     */
+    public double callSaving(Debt debt) {
+        if (debt == null) return 0;
+        priceTheDebtMarket();
+        return debtManager.callSaving(debt, issuanceFee());
+    }
+
+    /**
+     * True when calling this callable line is worth it (D24): the saving
+     * (callSaving()) passes CallTree.WORTH_CALLING of the face, 3%. Whether it
+     * can be called yet is canCall()'s question; this is the card's "worth
+     * calling", which a line shows from the day it is sold.
+     */
+    public boolean worthCalling(Debt debt) {
+        return debt instanceof LongTermBond bond && bond.isCallable()
+                && DebtManager.worthCalling(callSaving(debt), debt.getOustandingPrincipal());
+    }
+
+    /**
+     * Calls one line whole at 100 (CD4): every holder is paid its face -
+     * the bank, the households, the businesses, the world and the central
+     * bank, which has no say in it (a call is the paper's own term, not a sale
+     * a holder chooses, so D18's "the central bank does not sell" does not
+     * apply) - the line comes off the books, and the gain or loss is its
+     * carrying value less the face, booked as a buyback's is (retiredGainSoFar).
+     *
+     * Refused, and nothing changes, unless canCall() and the treasury has the
+     * cash: the same rule as buyBack() (a call is discretionary, so it is not
+     * paid by borrowing). It runs on TreasuryLine.BUYBACKS, the line a buyback
+     * is paid on - closing a line early is one discretionary act, and a CALLS
+     * line would be a second name for it in every reader of the enum - and the
+     * journal names it "Called a bond". The holders are settled as buyBack()
+     * settles them, each at its face: the households' and the world's money is
+     * carried in getBuybackUnsettled() to the next month's window, and the
+     * central bank's through CentralBank.paperBoughtBack() to the top of the
+     * next month (settleRedemptions()), where the audit sees the money
+     * destroyed.
+     *
+     * @return what the treasury paid - the principal - or 0 when refused
+     */
+    public double callLine(Debt debt) {
+
+        if (!canCall(debt)) return 0;
+        double principal = debt.getOustandingPrincipal();
+        double price = callCost(debt);
+        if (!(price > 0) || price > cash) return 0;
+
+        // Who holds it and what it is carried at, struck before it leaves the list.
         double hhFace = debt.householdPrincipal(), cbFace = debt.centralBankPrincipal();
         double firmFace = debt.firmPrincipal(), worldFace = debt.worldPrincipal();
         double bankFace = debt.bankPrincipal();
         double bankUnearned = debt.unaccretedOn(bankFace);
         double carried = debt.getCarryingValue();
-        if (!debtManager.retire(debt)) {
-            return 0;   // not on the books; do not charge for it
-        }
+        if (!debtManager.retire(debt)) return 0;   // not on the books; do not charge for it
 
         treasuryPays(TreasuryLine.BUYBACKS, price);
-        // The gain on the books (CD3): what the piece was carried at, less what it cost to clear. Not cash:
-        // the price is what the cash paid. The next strike moves it into the month (strikeGovernmentBooks()).
+        // The gain on the books (CD3): what the line was carried at, less what the call cost. Not cash.
         retiredGainSoFar += carried - price;
-        decisions.record(DecisionLog.BORROWING, "Bought back " + DecisionLog.money(principal) + " of "
-                + debt.getType() + " paper for " + DecisionLog.money(price));
-        // Not a repayment - retire() takes it off the books without touching
-        // cityPrincipalRepaidThisMonth - so the bridge names it here.
-        treasuryJournal.record("Bought back a bond", -price);
-        /*
-         * ...AND EVERY HOLDER IS PAID ITS SHARE (0.7.0, and by holder since
-         * 0.7.1). A buyback used to pay nobody: the cash left the treasury,
-         * the bond came off the list, and the bank's book fell by the
-         * principal at the next refresh with nothing arriving. Now the price
-         * is split by who held the paper, pro rata to principal:
-         *
-         *   - the BANK's share goes to its cash and its book drops by its face
-         *     now, with the discount it had not yet earned on it; the
-         *     difference is its gain or loss (Bank.sellPaperBack());
-         *   - the HOUSEHOLDS' share goes to their savings with their paper
-         *     down by their face;
-         *   - the BUSINESSES' share goes to their tills with their paper
-         *     down by their face (CD2, slice 4), at once: the tills are
-         *     inside the pools, so nothing waits to be declared;
-         *   - the WORLD's share leaves the country (CD2, slice 5), its paper down
-         *     by its face: carried with the dollar bond's price to the next
-         *     month's window as '- city BuybackAbroad', a financial outflow;
-         *   - the CENTRAL BANK's share comes off its book at face, and the
-         *     price - money destroyed, the treasury having paid the boundary -
-         *     settles at the top of next month with its gain against face;
-         *   - and a DOLLAR bond's whole price leaves the country (as the world's
-         *     share of the city's own does).
-         *
-         * The last four are paid out of the pools between two presses, so the
-         * treasury's pool carries what it paid them (getBuybackUnsettled())
-         * until the next month declares it leaving - households, abroad, the
-         * central bank's money destroyed - which is where the audit sees it,
-         * rather than cash leaving the treasury for nowhere (the dollar case
-         * until 0.7.1: the-central-bank-opens.md section 4).
-         */
-        if (debt.isForeign()) {
-            buybackAbroadUnsettled += price;
-            // The stock the world is owed moves now, as it does when one is
-            // issued (handleForeignLogic()); same rate, so no revaluation.
-            foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
-        } else {
-            double hhPrice = principal > 0 ? price * hhFace / principal : 0;
-            double cbPrice = principal > 0 ? price * cbFace / principal : 0;
-            double firmPrice = principal > 0 ? price * firmFace / principal : 0;
-            double worldPrice = principal > 0 ? price * worldFace / principal : 0;
-            bank.sellPaperBack(price - hhPrice - cbPrice - firmPrice - worldPrice, bankFace, bankUnearned);
-            if (hhFace > 0) {
-                householdBalance.creditPaperBuyback(hhFace, hhPrice);
-                buybackToHouseholdsUnsettled += hhPrice;
-            }
-            if (cbFace > 0) centralBank.paperBoughtBack(cbPrice, cbFace);
-            // The businesses' share goes straight into their tills: a pool paid by a pool,
-            // so nothing is carried to the next month's window.
-            if (firmFace > 0) outward.creditPaperBuyback(firmFace, firmPrice, economyManager);
-            // The world's share leaves the country, its paper down by its face (CD2, slice 5).
-            if (worldFace > 0) {
-                hotMoney.paperRepaid(worldFace);
-                buybackAbroadUnsettled += worldPrice;
-            }
+        decisions.record(DecisionLog.BORROWING, "Called " + DecisionLog.money(principal) + " of "
+                + debt.getType() + " paper at " + String.format("%.0f", CallTree.CALL_PRICE));
+        treasuryJournal.record("Called a bond", -price);
+
+        // Each holder is paid its face; the bank's is what is left of the price (the faces add up to the principal).
+        double bankPaid = price - hhFace - cbFace - firmFace - worldFace;
+        if (bankFace > 0 || bankPaid > 0) bank.sellPaperBack(bankPaid, bankFace, bankUnearned);
+        if (hhFace > 0) {
+            householdBalance.creditPaperBuyback(hhFace, hhFace);
+            buybackToHouseholdsUnsettled += hhFace;
+        }
+        if (cbFace > 0) centralBank.paperBoughtBack(cbFace, cbFace);
+        if (firmFace > 0) outward.creditPaperBuyback(firmFace, firmFace, economyManager);
+        if (worldFace > 0) {
+            hotMoney.paperRepaid(worldFace);
+            buybackAbroadUnsettled += worldFace;
         }
 
-        // Both sides moved - one bond fewer, and less cash - so the market has
-        // to be told before anything reads the rate again.
         priceTheDebtMarket();
         debtManager.updateInterest();
-
         return price;
     }
 

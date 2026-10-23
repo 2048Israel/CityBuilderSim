@@ -1,4 +1,4 @@
-# Debt.java - 869 lines · 73 methods · 2 constants · model
+# Debt.java - 932 lines · 75 methods · 2 constants · model
 
 `ham/citybuildersim/Debt.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -28,7 +28,7 @@
 
 **Uses:** [Game](Game.md) (3), [Auction](Auction.md) (1)
 
-**Used by (30):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityNeeds](CityNeeds.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [HoldersCheck](HoldersCheck.md), [LongPlaytest](LongPlaytest.md), [LongTermBond](LongTermBond.md), [MediumTermBond](MediumTermBond.md), [MoneyCheck](MoneyCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [ShortTermTBill](ShortTermTBill.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (33):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityNeeds](CityNeeds.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [HoldersCheck](HoldersCheck.md), [LongPlaytest](LongPlaytest.md), [LongTermBond](LongTermBond.md), [MediumTermBond](MediumTermBond.md), [MoneyCheck](MoneyCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SectorStatements](SectorStatements.md), [ShortTermTBill](ShortTermTBill.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Sections
 
@@ -84,7 +84,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 842 | **type** `public abstract class Debt` | One piece of city paper. |
+| 28 | 905 | **type** `public abstract class Debt` | One piece of city paper. |
 
 ### WHICH MONEY THIS PAPER IS WRITTEN IN (lines 37-94)
 
@@ -186,7 +186,7 @@
 | 630 | 4 | `public final double principalDueNextMonthInCurrency()` | The principal the next month's payment repays, in the currency written on the paper: the first payment of its own schedule less that month's coupon - a note's or a term bond's whole face in its last month, a serial bo... |
 | 636 | 1 | `public final double principalDueNextMonth()` | ...and in local money, at the rate the paper is valued at. |
 
-### paying for it (lines 638-869)
+### paying for it (lines 638-932)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -203,4 +203,6 @@
 | 818 | 5 | `public double getPriceAsPercentOfPar(double annualMarketRate)` | Where this bond trades against par, as a percentage of face. |
 | 833 | 29 | `public void redenominate(double scale)` | The instrument in the new unit. |
 | 867 | 1 | `protected void redenominateSchedule(double scale)` | Anything a subclass carries in its own currency - a coupon, an amortisation schedule - in the new unit. |
+| 896 | 25 | `void retirePart(double bankFace, double householdFace, double firmFace, double worldFace)` | PART OF THE PIECE BOUGHT BACK (CD4, spec-city-debt.md section 6.2): this much face taken off it, by holder. |
+| 930 | 1 | `protected void shrinkSchedule(double k)` | What a subclass carries in its own currency that scales with the piece when part of it is bought back (retirePart()): a serial bond's slice. |
 

@@ -95,6 +95,9 @@ public class HistorySave {
     /** Government revenue and what it kept, both monthly. */
     private List<Double> revenue = new ArrayList<>();
     private List<Double> surplus = new ArrayList<>();
+    /** The gain (loss) on debt retired, monthly (CD4, CD3's ★5): the surplus carries it and spending does not, so a year's
+     *  spending is revenue less the surplus PLUS this - without it the year netted a buyback's gain into spending. */
+    private List<Double> retiredGain = new ArrayList<>();
 
     /* --------------------------- people --------------------------- */
     private List<Long> jobs = new ArrayList<>();
@@ -617,6 +620,7 @@ public class HistorySave {
         interestRate.add(Math.round(game.getDebtManager().getRate() * 10000.0) / 10000.0);
         revenue.add(round2(accounts.getTotalRevenue()));
         surplus.add(round2(accounts.getBalance()));
+        retiredGain.add(round2(accounts.getRetiredGain()));
 
         jobs.add(people.getTotalJobs());
         workforce.add(people.getWorkforce());
@@ -1038,6 +1042,7 @@ public class HistorySave {
         interestRate = copy(loaded.interestRate);
         revenue = copy(loaded.revenue);
         surplus = copy(loaded.surplus);
+        retiredGain = copy(loaded.retiredGain);
 
         jobs = copy(loaded.jobs);
         workforce = copy(loaded.workforce);
@@ -1518,6 +1523,7 @@ public class HistorySave {
         map.put("interestRate", interestRate);
         map.put("revenue", revenue);
         map.put("surplus", surplus);
+        map.put("retiredGain", retiredGain);
         map.put("jobs", jobs);
         map.put("workforce", workforce);
         map.put("outOfWork", outOfWork);
@@ -1704,7 +1710,7 @@ public class HistorySave {
      * sick rate are the same numbers in any currency - and so are headcounts.
      */
     public void redenominate(double scale) {
-        scaleAll(scale, cash, gdp, debt, revenue, surplus,
+        scaleAll(scale, cash, gdp, debt, revenue, surplus, retiredGain,
                 totalWage, minimumWage, schoolBill,
                 foodPrice, materialsPrice, orePrice);
         // NOT landPrice, since 0.7.6: it is the world's dollar price of ground,
