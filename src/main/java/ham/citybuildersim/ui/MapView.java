@@ -736,7 +736,7 @@ final class MapView {
     private boolean paintNodes(MapFrame f, long deadline) {
         picturesWanted.clear();
         try {
-            return paintNodes(f.nodePlots(), f.nodeX0(), f.nodeX1(), f.nodeY0(), f.nodeY1(), deadline, shownMap.picturesKept());
+            return paintNodes(f.nodePlots(), f.nodeX0(), f.nodeX1(), f.nodeY0(), f.nodeY1(), deadline, shownMap.picturesKept(), f);
         } finally {
             askPictures(f);
         }
@@ -789,13 +789,17 @@ final class MapView {
      * Since batch UP3 a node whose map version has moved is coloured again only if the key it is drawn from moved
      * (MapTiles.nodeKey(), kept in Img.stamp: equal keys, equal pixels), so a month that places in one district
      * colours the nodes over it and no more; a node drawn short of a picture is coloured on every version move, as
-     * that is what asks again for the pictures it lacks. farRecoloured() counts the nodes coloured.
+     * that is what asks again for the pictures it lacks - while the view asks for pictures at all (MapTiles.picturesFit()
+     * of `asker`, the frame askPictures() is handed): past that, a city of thousands of districts seen wide, it would ask
+     * nothing, and is held with the rest. farRecoloured() counts the nodes coloured.
      */
-    private boolean paintNodes(long plots, long nx0, long nx1, long ny0, long ny1, long deadline, long picturesKept) {
+    private boolean paintNodes(long plots, long nx0, long nx1, long ny0, long ny1, long deadline, long picturesKept, MapFrame asker) {
         long span = MapFrame.NODE_PX * plots;
         World.Key world = shownMap.worldKey();
         int n = MapFrame.NODE_PX;
         if (buffer.length < n * n) buffer = new int[n * n];
+        // Whether the view asks for the pictures its nodes lack (MapTiles.picturesFit()): found once a call, when a partial node's key held.
+        Boolean fits = null;
         for (long ny = ny0; ny <= ny1; ny++) {
             for (long nx = nx0; nx <= nx1; nx++) {
                 long key = nodeKey(plots, nx, ny);
@@ -824,9 +828,16 @@ final class MapView {
                 // The version moved: coloured again only if what the node is drawn from did (MapTiles.nodeKey()). A node drawn short of
                 // a picture always is - colouring is what asks again for the pictures it lacks.
                 long drawnFrom = tiles.nodeKey(nx * span, ny * span, plots);
-                if (img.image != null && !img.partial && img.stamp == drawnFrom) {
-                    img.version = version;
-                    continue;
+                if (img.image != null && img.stamp == drawnFrom) {
+                    boolean hold = !img.partial;
+                    if (!hold) {
+                        if (fits == null) fits = tiles.picturesFit(asker);
+                        hold = !fits;
+                    }
+                    if (hold) {
+                        img.version = version;
+                        continue;
+                    }
                 }
                 img.stamp = drawnFrom;
                 farRecoloured++;
@@ -1709,7 +1720,7 @@ final class MapView {
         pf.set(globe.planeX(), globe.planeY(), globe.planeScale());
         picturesWanted.clear();
         try {
-            return paintNodes(r[0], r[1], r[2], r[3], r[4], deadline, shownMap.picturesKept());
+            return paintNodes(r[0], r[1], r[2], r[3], r[4], deadline, shownMap.picturesKept(), pf);
         } finally {
             askPictures(pf);
         }
