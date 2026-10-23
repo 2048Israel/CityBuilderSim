@@ -133,7 +133,7 @@ fund's pay-in (`surplusThisYearSoFar()`) for the year; the fund's floor
 - **The suite:** baseline on main 131 of 131. On the final model merged with
   main (`./batch-check.sh`, beside other batches' JVMs, timing soft): 133 run,
   132 passed; the one red StaleCheck's README count (130 harnesses), fixed and
-  Stale then 0 firm findings. The maps are regenerated. TIMING.
+  Stale then 0 firm findings. The maps are regenerated. **`--timing`, alone and hard: 10 of 10 passed** in 226 s.
 
 ## 5. Who wrote what
 
