@@ -132,4 +132,9 @@ lines, fixed `getNotePrincipal()`'s comment, and wrote the record.
 
 ## 6. The final checks
 
-See the commit that adds this line's figures.
+`./batch-check.sh` on the final model (beside CL5, timing soft): 131 run,
+130 passed. The one red was ScaleCheck's "the treasury's bridge foots" at 5
+and 10 billion people: its own copy of the bridge had no not-cash row. It was
+restated with its premise kept, and ScaleCheck alone is now green. Stale
+reports 0 firm findings and the maps are regenerated. **`--timing`, alone and
+hard: 10 of 10 passed** in 227 s. Main had no reds.
