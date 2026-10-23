@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @author Jerus
  */
-public class DataSave {
+public class DataSave implements Cloneable {
 
     /*
      * The save path used to live here as a literal, and in three other places
@@ -751,7 +751,8 @@ public class DataSave {
      * yet", and next month whatever is still wrong says it again.
      */
     public void setNotices(java.util.List<Notice> notices){
-        this.notices = notices;
+        // UP1: copies, not the live inbox - markRead() changes a Notice after it is saved.
+        this.notices = SaveCopy.list(notices, Notice::copy);
     }
     public void setGraphs(boolean graphs){
         this.graphs = graphs;
@@ -781,22 +782,69 @@ public class DataSave {
      * the numbers leave what a double can hold. That underlying spiral is a
      * design question and is written up separately. THIS is not: whatever state
      * the city gets into, failing to save is a message, not a crash.
+     *
+     * Streamed since UP1 (2026-10-22): Gson writes through the file's own
+     * buffered stream instead of building the whole text as a String first,
+     * and this may run on the save writer's thread (SaveWriter) on a snapshot()
+     * of the save. The text is the same, byte for byte. A number JSON cannot
+     * hold still comes back as the failure above; the .tmp is gone and the old
+     * save untouched.
      */
     public GameFiles.Result saveGame(GameFiles files, int slot) {
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String json;
+        RuntimeException[] unwritable = new RuntimeException[1];
 
-        try {
-            json = gson.toJson(this);
-        } catch (RuntimeException e) {
+        GameFiles.Result written = files.write(files.saveFile(slot), out -> {
+            try {
+                gson.toJson(this, out);
+            } catch (com.google.gson.JsonIOException e) {
+                // Gson wraps the Writer's IOException: that is the disk's failure,
+                // not the city's numbers.
+                if (e.getCause() instanceof java.io.IOException io) throw io;
+                throw e;
+            } catch (RuntimeException e) {
+                unwritable[0] = e;
+                throw e;
+            }
+        });
+
+        if (unwritable[0] != null) {
             return GameFiles.Result.failed(files.saveFile(slot),
                     "the city's numbers cannot be written down"
                     + describeUnwritable()
-                    + " (" + e.getClass().getSimpleName() + ")");
+                    + " (" + unwritable[0].getClass().getSimpleName() + ")");
         }
 
-        return files.write(files.saveFile(slot), json);
+        return written;
+    }
+
+    /**
+     * A copy of this save for the writer thread (UP1, 2026-10-22): the object
+     * itself, shallow, plus a copy of every array or list DataSave mutates in
+     * place. That is only buildings[] (setBuildingQuantity writes it element by
+     * element); every other field is replaced whole by its setter on the next
+     * save, so the clone can share what the original held when it was taken.
+     *
+     * That is safe because of what the setters guarantee: a setter keeps no
+     * reference to anything the model still holds. One that takes an array,
+     * list, map or state object keeps a copy of it (a clone for an array,
+     * SaveCopy for a list or map, copy() on a state class whose lists or
+     * records the model changes in place), or is handed a fresh object by its
+     * producer (a toSaveArray(), a toState() that builds one). A new setter
+     * follows the same rule. SaveSlotCheck's section 7c holds it: it walks two
+     * snapshots of a grown city, taken back to back, the way Gson would, and
+     * finds no mutable object in both (7c.1), and fills the states a city does
+     * not reach by itself and finds the same of their setters (7c.1b).
+     */
+    public DataSave snapshot() {
+        try {
+            DataSave copy = (DataSave) super.clone();
+            if (buildings != null) copy.buildings = buildings.clone();
+            return copy;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
@@ -870,7 +918,8 @@ public class DataSave {
     /** Null on a save from before 0.7.19. */
     public java.util.List<BuildingManager.ContractRecord> getContractRecords() { return contractRecords; }
 
-    public void setConstructionControl(ConstructionControl.State state) { this.constructionControl = state; }
+    // UP1: a copy - toState() is the control's own live state.
+    public void setConstructionControl(ConstructionControl.State state) { this.constructionControl = state == null ? null : state.copy(); }
     /** Null on a save from before 0.7.22 (format 27 and older). */
     public ConstructionControl.State getConstructionControl() { return constructionControl; }
 
@@ -1242,7 +1291,8 @@ public class DataSave {
 
     /** The exchange on its order books (0.7.12 round 2): every company's book with its resting orders, fair value, the split factors and the record. See Exchange.State. Absent from an older save, which reads the dealer's array above. */
     private Exchange.State exchangeState;
-    public void setExchangeState(Exchange.State state) { this.exchangeState = state; }
+    // UP1: a copy - toState() lists the exchange's own books.
+    public void setExchangeState(Exchange.State state) { this.exchangeState = state == null ? null : state.copy(); }
     public Exchange.State getExchangeState()           { return exchangeState; }
 
     /**
@@ -1412,8 +1462,9 @@ public class DataSave {
     private double[] bankPreferredRecord;
 
     public void setBankPreferred(java.util.List<Bank.Preferred> blocks, double[] record) {
-        this.bankPreferred = blocks;
-        this.bankPreferredRecord = record;
+        // UP1: copies - the blocks are the bank's own, and their arrears and par change in place.
+        this.bankPreferred = SaveCopy.list(blocks, Bank.Preferred::copy);
+        this.bankPreferredRecord = record == null ? null : record.clone();
     }
     public java.util.List<Bank.Preferred> getBankPreferred() { return bankPreferred; }
     public double[] getBankPreferredRecord()                 { return bankPreferredRecord; }
@@ -1427,7 +1478,8 @@ public class DataSave {
      */
     private TreasuryFund.State fund;
 
-    public void setFund(TreasuryFund.State state) { this.fund = state; }
+    // UP1: a copy - toState() lists the fund's own resolutions and orders.
+    public void setFund(TreasuryFund.State state) { this.fund = state == null ? null : state.copy(); }
     public TreasuryFund.State getFund()           { return fund; }
 
     /** The city's debt market as it last struck its rate (0.7.14): DebtManager.marketToSave(). Null on an older save, whose load re-strikes it. */
@@ -1708,7 +1760,8 @@ public class DataSave {
     private double householdBondRatio;
     private java.util.Map<String, java.util.Map<String, Double>> householdBondsByCell;
 
-    public void setBondMarket(BondMarket.State state) { this.bondMarket = state; }
+    // UP1: a copy - toState() lists the market's own bonds and books.
+    public void setBondMarket(BondMarket.State state) { this.bondMarket = state == null ? null : state.copy(); }
     public BondMarket.State getBondMarket()           { return bondMarket; }
     public void setBondWrittenOff(java.util.Map<String, Double> totals) { this.bondWrittenOff = totals; }
     public java.util.Map<String, Double> getBondWrittenOff()           { return bondWrittenOff; }
@@ -2027,14 +2080,16 @@ public class DataSave {
     private double[] licences;
     private double[] education;
 
-    public void setLicences(double[] a)  { this.licences = a; }
+    // UP1: a copy, not the live head counts - PopulationManager hands out its own arrays.
+    public void setLicences(double[] a)  { this.licences = a == null ? null : a.clone(); }
     public double[] getLicences()        { return licences; }
     public void setEducation(double[] a) { this.education = a; }
     public double[] getEducation()       { return education; }
 
     public void setLabour(double[] a)           { this.labour = a; }
     public double[] getLabour()                 { return labour; }
-    public void setSkilledWorkforce(double[] a) { this.skilledWorkforce = a; }
+    // UP1: a copy, not the live head counts.
+    public void setSkilledWorkforce(double[] a) { this.skilledWorkforce = a == null ? null : a.clone(); }
     public double[] getSkilledWorkforce()       { return skilledWorkforce; }
 
     public void setCohorts(double[] a)  { this.cohorts = a; }
@@ -2171,7 +2226,8 @@ public class DataSave {
     public double[] getHouseholdStatement(){ return householdStatement; }
 
     public void setBuilds(java.util.List<BuildLog.Entry> entries) {
-        this.builds = entries;
+        // UP1: copies - an Entry's quantity grows when the same building completes again in its month.
+        this.builds = SaveCopy.list(entries, BuildLog.Entry::copy);
     }
     public java.util.List<BuildLog.Entry> getBuilds() { return builds; }
 

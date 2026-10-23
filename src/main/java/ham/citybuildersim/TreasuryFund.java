@@ -191,13 +191,22 @@ public final class TreasuryFund {
      * capital to reopen; the shares it took, and from whom, at the price
      * they last traded; the preferred and the warrants the hole took.
      */
-    public static final class Resolution {
+    public static final class Resolution implements Cloneable {
         int month;
         double paid, fromCash, advanced, shortfall, exitCapital;
         double shares, householdsShares, householdsValue, worldShares, worldValue, fundShares, fundValue;
         double preferredCancelled, warrantsCancelled;
 
         Resolution() { }
+
+        /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
+        Resolution copy() {
+            try {
+                return (Resolution) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
 
         public int month()                 { return month; }
         public double paid()               { return paid; }
@@ -232,7 +241,7 @@ public final class TreasuryFund {
      * posted it carries what it asked for at what price, and what of it has
      * filled, until the step after withdraws it (getPosted()).
      */
-    public static final class HandOrder {
+    public static final class HandOrder implements Cloneable {
         boolean bond;
         int company = -1;
         int bondId = -1;
@@ -246,6 +255,15 @@ public final class TreasuryFund {
         double units, price, filled, spent;
 
         HandOrder() { }
+
+        /** A copy that shares nothing with this one: the autosave's (UP1) - `filled` and `spent` grow as the order fills. A clone, so a field added later is in it. */
+        HandOrder copy() {
+            try {
+                return (HandOrder) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
 
         HandOrder(boolean bond, int company, int bondId, boolean buy, double amount, int month) {
             this(bond, company, bondId, buy, amount, month, 0);
@@ -888,7 +906,7 @@ public final class TreasuryFund {
     /* ============================== save and load ============================== */
 
     /** Everything the fund carries from one month to the next, by name. */
-    public static final class State {
+    public static final class State implements Cloneable {
         double cash, dial;
         /** The withdrawal dial's steps (0.7.48, C1): null in an older save, which reads Norway's rule. */
         Integer withdrawalSteps;
@@ -907,6 +925,27 @@ public final class TreasuryFund {
         double[] life;
         /** The month just closed: its transfer due and paid, and what came in and went out; slots 7 and 8 (0.7.48) what it sells for to pay next month, and what this month paid late. */
         double[] month;
+
+        /**
+         * A copy that shares nothing with this state (UP1, 2026-10-22):
+         * toState() lists the fund's own resolutions and orders and holds a
+         * copy of its ledger. A clone, so a field added later is in it; each
+         * list with what it holds, the ledger and the arrays are copied.
+         */
+        State copy() {
+            try {
+                State c = (State) super.clone();
+                c.resolutions = SaveCopy.list(resolutions, Resolution::copy);
+                c.hand = SaveCopy.list(hand, HandOrder::copy);
+                c.posted = SaveCopy.list(posted, HandOrder::copy);
+                c.ledger = ledger == null ? null : ledger.copy();
+                c.life = life == null ? null : life.clone();
+                c.month = month == null ? null : month.clone();
+                return c;
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
     }
 
     public State toState() {

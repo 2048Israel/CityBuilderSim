@@ -70,7 +70,7 @@ import java.util.Map;
  * plus the issuer's expected loss for a bondholder - BondMarket.modelYield().
  * What it trades at is the order book's.
  */
-public class CorporateBond {
+public class CorporateBond implements Cloneable {
 
     /** The term every bond is issued at: ten years, the benchmark tenor of investment-grade corporate issuance, and the term the model already prices at (the insured mortgage's, Mortgage.MORTGAGE_TERM_MONTHS). */
     public static final int TERM_MONTHS = Mortgage.MORTGAGE_TERM_MONTHS;
@@ -103,6 +103,22 @@ public class CorporateBond {
     double writtenOff;
 
     CorporateBond() { }
+
+    /**
+     * A copy that shares nothing with this bond (UP1, 2026-10-22): the
+     * autosave's, written while the months go on paying, trading in and
+     * writing down the live one. A clone, so a field added later is in it;
+     * the holdings by sector are the one map.
+     */
+    CorporateBond copy() {
+        try {
+            CorporateBond c = (CorporateBond) super.clone();
+            c.companies = SaveCopy.map(companies);
+            return c;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+    }
 
     CorporateBond(int id, String issuer, double face, double coupon, int issueMonth, int termMonths) {
         this.id = id;

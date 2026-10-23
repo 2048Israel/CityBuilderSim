@@ -371,7 +371,7 @@ public final class ConstructionControl {
        --------------------------------------------------------------------- */
 
     /** A site put on overtime, and how many months in a row it has been worked on it. */
-    public static final class Rush {
+    public static final class Rush implements Cloneable {
         public String key;
         /** Whether the player has it on; off until the next month passes, so a stop and a restart between two presses keep the count. */
         public boolean on;
@@ -379,10 +379,19 @@ public final class ConstructionControl {
         public int months;
         public Rush() { }
         Rush(String key) { this.key = key; this.on = true; }
+
+        /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
+        Rush copy() {
+            try {
+                return (Rush) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
     }
 
     /** A stopped site: what an order cancelled left standing. One per building type. */
-    public static final class Shell {
+    public static final class Shell implements Cloneable {
         public int templateId;
         public String building;
         public int buildings;
@@ -395,10 +404,19 @@ public final class ConstructionControl {
         /** The month it stopped. */
         public int month;
         public Shell() { }
+
+        /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
+        Shell copy() {
+            try {
+                return (Shell) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
     }
 
     /** A demolition on site: the city's own building, a shell, or a building it bought. */
-    public static final class Demolition {
+    public static final class Demolition implements Cloneable {
         public int id;
         public int templateId;
         public String building;
@@ -424,6 +442,15 @@ public final class ConstructionControl {
         public double groundPaid;
         public Demolition() { }
 
+        /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
+        Demolition copy() {
+            try {
+                return (Demolition) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
+
         public String key() { return "D" + id; }
         /** Points still to do. */
         public double owed() { return Math.max(0, points - progress); }
@@ -435,7 +462,7 @@ public final class ConstructionControl {
      * history; the demolition log's line says whom the buildings were bought
      * from (Game.closeDemolished()) - and the harness and the save do.
      */
-    public static final class Expropriation {
+    public static final class Expropriation implements Cloneable {
         public int month;
         public int templateId;
         public String building;
@@ -447,15 +474,34 @@ public final class ConstructionControl {
         /** The months a replacement would have taken, which the business loss was paid for. */
         public double months;
         public Expropriation() { }
+
+        /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
+        Expropriation copy() {
+            try {
+                return (Expropriation) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
+
         public double total() { return buildingValue + ground + businessLoss; }
     }
 
     /** One stack's run since it last stood empty: how many of it have opened, and what its orders cost. For the panel's "done of total" and "paid". */
-    public static final class Run {
+    public static final class Run implements Cloneable {
         public int templateId;
         public int built;
         public double billed;
         public Run() { }
+
+        /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
+        Run copy() {
+            try {
+                return (Run) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
     }
 
     /**
@@ -464,17 +510,26 @@ public final class ConstructionControl {
      * before it and not yet open. The gravel roads stand, and carry their
      * traffic, until their own Paved Roads open.
      */
-    public static final class Paving {
+    public static final class Paving implements Cloneable {
         public int roads;
         /** Paved Roads on the site ahead of this paving, which open first. */
         public int ahead;
         /** The month it was ordered. */
         public int month;
         public Paving() { }
+
+        /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
+        Paving copy() {
+            try {
+                return (Paving) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
     }
 
     /** Everything above, under one key in the save. */
-    public static final class State {
+    public static final class State implements Cloneable {
         public boolean prioritySet;
         public java.util.List<String> order = new java.util.ArrayList<>();
         public java.util.List<Rush> rushes = new java.util.ArrayList<>();
@@ -486,6 +541,29 @@ public final class ConstructionControl {
         public java.util.List<Run> runs = new java.util.ArrayList<>();
         /** F. The pavings on the Paved Road site (0.7.70); none in an older save. */
         public java.util.List<Paving> paving = new java.util.ArrayList<>();
+
+        /**
+         * A copy that shares nothing with this state (UP1, 2026-10-22): toState()
+         * hands out the live one, which the month and the player go on changing
+         * while the autosave is written. A clone, so a field added later is in
+         * it; each list and what it holds are copied.
+         */
+        State copy() {
+            try {
+                State c = (State) super.clone();
+                c.order = SaveCopy.list(order);
+                c.rushes = SaveCopy.list(rushes, Rush::copy);
+                c.cancelling = SaveCopy.list(cancelling);
+                c.shells = SaveCopy.list(shells, Shell::copy);
+                c.demolitions = SaveCopy.list(demolitions, Demolition::copy);
+                c.expropriations = SaveCopy.list(expropriations, Expropriation::copy);
+                c.runs = SaveCopy.list(runs, Run::copy);
+                c.paving = SaveCopy.list(paving, Paving::copy);
+                return c;
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
     }
 
     private State state = new State();

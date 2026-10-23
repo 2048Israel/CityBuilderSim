@@ -3518,6 +3518,7 @@ public class UserInterface extends Application {
     }
 
     private void showLoadMenu() {
+        game.awaitSaves();   // UP1: the menu shows the autosave on disk, so it waits for a write in flight
         clearMenu("showLoadMenu", () -> showLoadMenu());
         VBox page = menuPage();
 

@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-10-22 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**129 harness files, 12,898 labelled assertions.** AllChecks runs 129 of them.
+**129 harness files, 12,990 labelled assertions.** AllChecks runs 129 of them.
 
 ## Which harnesses read which class
 
@@ -14,15 +14,15 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, LongPlaytest, ZoningCheck |
 | [Auction](map/Auction.md) | AuctionCheck, HoldersCheck, NewGameCheck, RestructureCheck, SaveFileCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
-| [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, LongPlaytest |
+| [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, LongPlaytest, SaveSlotCheck |
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
-| [Bank](map/Bank.md) | AuctionCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MortgageCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, WoodProductsCheck |
+| [Bank](map/Bank.md) | AuctionCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MortgageCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, WoodProductsCheck |
 | [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PortCheck, ReadPathCheck |
-| [BondMarket](map/BondMarket.md) | BondCheck, CurveCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
+| [BondMarket](map/BondMarket.md) | BondCheck, CurveCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, LandCheck, LongPlaytest, ReadPathCheck, RoadCheck, SectorFlowCheck, WaterCheck |
 | [BuildCard](map/BuildCard.md) | BuildCardCheck, ChildcareCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, SectorFlowCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningViewCheck |
-| [BuildLog](map/BuildLog.md) | CalendarCheck |
+| [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
 | [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
@@ -50,14 +50,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityShore](map/CityShore.md) | MapCheck, RailDrawCheck, TruckRouteCheck |
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck |
 | [Construction](map/Construction.md) | BankCheck, BuildersFirstCheck, ConstructionControlCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, RobustnessCheck, SaveFileCheck, SectorBooksCheck |
-| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, DeathCareFirstCheck, LongPlaytest, RoadCheck |
+| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, DeathCareFirstCheck, LongPlaytest, RoadCheck, SaveSlotCheck |
 | [Consumption](map/Consumption.md) | ConsumptionCheck, ForeignCheck |
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, IndustryViewCheck |
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, MoneyCheck, ReadPathCheck |
 | [CorporateBond](map/CorporateBond.md) | BondCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest |
 | [Currency](map/Currency.md) | DenominationCheck, HistoryCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
-| [DataSave](map/DataSave.md) | EarthTerrainCheck, MapCheck, PopulationCheck, SaveFileCheck |
+| [DataSave](map/DataSave.md) | EarthTerrainCheck, MapCheck, PopulationCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, CentralBankCheck, ChartCheck, CreditCheck, CurveCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SectorStatementCheck, TreasuryCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, ForeignDebtCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PolicyPreviewCheck, ReadPathCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, CreditCheck, CurveCheck, ForeignDebtCheck, FundCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, RestructureCheck |
@@ -75,7 +75,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorStatementCheck, WoodProductsCheck |
-| [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
+| [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck |
 | [FamilyModel](map/FamilyModel.md) | CrimeCheck, EducationCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, LongPlaytest, OutsideCheck, PopulationCheck |
@@ -109,7 +109,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Healthcare](map/Healthcare.md) | BuildAdviceCheck, ChildcareCheck, DeathCareFirstCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, FreightViewCheck, GdpCheck, HaulageCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, PolicyPreviewCheck, PortCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
 | [HistoryGrapher](map/HistoryGrapher.md) | **none** |
-| [HistorySave](map/HistorySave.md) | ChartCheck, DeathRecordCheck, HistoryCheck, HouseholdMemoryCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, YearBookCheck |
+| [HistorySave](map/HistorySave.md) | ChartCheck, DeathRecordCheck, HistoryCheck, HouseholdMemoryCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, YearBookCheck |
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyPreviewCheck, ReadPathCheck |
 | [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, WoodProductsCheck |
@@ -145,7 +145,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Mortgage](map/Mortgage.md) | BooksCheck, CreditCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
 | [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperMiningCheck, EducationCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WoodProductsCheck |
-| [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, ConstructionControlCheck, InboxCheck, LongPlaytest |
+| [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, ConstructionControlCheck, InboxCheck, LongPlaytest, SaveSlotCheck |
 | [Offending](map/Offending.md) | **none** |
 | [Oil](map/Oil.md) | BuildingDataCheck, EarthFoundingCheck, LongPlaytest, MapCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryViewCheck, SaveFileCheck, WellCheck |
 | [OilView](map/OilView.md) | EarthFoundingCheck, OilViewCheck, ReadPathCheck |
@@ -174,7 +174,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Rollover](map/Rollover.md) | AuctionCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, LongPlaytest, NewGameCheck, SaveFileCheck, TreasuryCheck |
 | [SafetyType](map/SafetyType.md) | BuildAdviceCheck, BuildingDataCheck, CrimeCheck |
 | [SalesTaxLedger](map/SalesTaxLedger.md) | PolicyCheck |
+| [SaveCopy](map/SaveCopy.md) | SaveSlotCheck |
 | [SaveHeader](map/SaveHeader.md) | SaveFileCheck, SaveSlotCheck, ScaleCheck |
+| [SaveWriter](map/SaveWriter.md) | SaveSlotCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck |
 | [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
@@ -199,14 +201,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [TimeSkipReport](map/TimeSkipReport.md) | AuctionCheck, HealthCheck, SkipReportCheck |
-| [Timing](map/Timing.md) | EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, MapCheck, PlanCheck, ScaleCheck, TimingCheck, WorldCheck |
+| [Timing](map/Timing.md) | EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, MapCheck, PlanCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck |
 | [TrackCurves](map/TrackCurves.md) | GatewayCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [TradeBand](map/TradeBand.md) | TradeBandCheck |
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckCheck, VanCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, RailCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TrainShapes](map/TrainShapes.md) | ReadPathCheck |
-| [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, HomeRailCheck, LongPlaytest, MapCheck, OrderSearchCheck, PlanCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, SectorStatementCheck |
+| [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, HomeRailCheck, LongPlaytest, MapCheck, OrderSearchCheck, PlanCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck |
 | [TreasuryJournal](map/TreasuryJournal.md) | CentralBankCheck, ConstructionControlCheck, CurrencyRegimeCheck, EducationCheck, FundCheck, LandCheck, OilCheck, SaveFileCheck, TreasuryCheck |
 | [TreasuryLine](map/TreasuryLine.md) | BankCheck, CentralBankCheck, FundCheck, GroceryCheck, LongPlaytest |
 | [TruckSchedule](map/TruckSchedule.md) | TruckCheck, TruckRouteCheck |
@@ -14844,7 +14846,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2979 a save with
   - L2981 ...nothing of it applied, and every file as it was
 
-## SaveSlotCheck.java - 54 labelled assertions
+## SaveSlotCheck.java - 146 labelled assertions
 
 > Verifies the slot system: ten saves plus an autosave, the version stamp, and
 > the labels the menu is drawn from.
@@ -14860,69 +14862,170 @@ _(this harness does not label its checks through a helper - it prints its findin
 > history ended at N - 1, and a city loaded from it never ran N. Each of the
 > ...
 
-- **L55 1. eleven distinct files**
-  - L63 22 distinct paths, no two slots sharing
-  - L65 the autosave is named for what it is
-  - L70 slot 2 sorts before slot 10
-  - L74 slot 0 is valid
-  - L75 slot 10 is valid
-  - L76 slot 11 is not
-  - L77 slot -1 is not
-- **L79 2. empty means empty**
-  - L89 and an empty slot has no header
-- **L91 3. three cities that do not touch**
-  - L99 saved to slot 1
-  - L107 saved to slot 7
-  - L112 saved to slot 10
-  - L114 slot 1 exists
-  - L115 slot 7 exists
-  - L116 slot 10 exists
-  - L117 slot 4 is still empty
-  - L118 slot 2 is too, for now
-  - L125 slot 1 still holds the month it was saved at
-  - L127 slot 7 holds its own
-  - L128 and slot 10 is later still
-  - L130 slot 1's population is its own
-- **L132 4. names**
-  - L135 the name was kept
-  - L136 ...and reported as present
-  - L137 an unnamed slot says so
-  - L149 re-saving keeps the existing name
-- **L152 5. the version stamp**
-  - L155 the build that wrote it
-  - L156 the save format
-  - L157 and when
-  - L158 this build is not from the future
-  - L161 a save from a newer build is recognised
-  - L163 an older one is not - those still load
-  - L172 the header sees it
-  - L176 and the load path refuses it
-  - L177 with nothing loaded
-- **L179 6. each slot round-trips into its own city**
-  - L184 slot 1 loads the early city
-  - L185 ...with its own population
-  - L187 ...and no failure
-  - L191 slot 10 loads a later city
-  - L194 loading one slot does not touch another
-- **L197 7. the autosave**
-  - L208 nothing autosaved yet
-  - L209 twelve months to go
-  - L216 still nothing at month
-  - L218 one month to go
-  - L221 the twelfth month writes it
-  - L223 and the counter starts again
-  - L227 it says it is an autosave
-  - L229 ...and holds the month it fired at
-  - L236 a multi-month skip autosaves on the way in
-- **L247 7b. the autosave holds a whole month (0.7.52)**
-- **L261 8. histories are per slot**
-  - L264 slot 1 has a history
-  - L265 slot 10 has its own
-  - L266 ...and they are different files
-  - L268 ...with different contents
-  - L294 ...and its history ends at it
-  - L304 ...two months on, its history ends at the city's
-  - L305 ...with no month missing (
+- **L94 1. eleven distinct files**
+  - L102 22 distinct paths, no two slots sharing
+  - L104 the autosave is named for what it is
+  - L109 slot 2 sorts before slot 10
+  - L113 slot 0 is valid
+  - L114 slot 10 is valid
+  - L115 slot 11 is not
+  - L116 slot -1 is not
+- **L118 2. empty means empty**
+  - L128 and an empty slot has no header
+- **L130 3. three cities that do not touch**
+  - L138 saved to slot 1
+  - L146 saved to slot 7
+  - L151 saved to slot 10
+  - L153 slot 1 exists
+  - L154 slot 7 exists
+  - L155 slot 10 exists
+  - L156 slot 4 is still empty
+  - L157 slot 2 is too, for now
+  - L164 slot 1 still holds the month it was saved at
+  - L166 slot 7 holds its own
+  - L167 and slot 10 is later still
+  - L169 slot 1's population is its own
+- **L171 4. names**
+  - L174 the name was kept
+  - L175 ...and reported as present
+  - L176 an unnamed slot says so
+  - L188 re-saving keeps the existing name
+- **L191 5. the version stamp**
+  - L194 the build that wrote it
+  - L195 the save format
+  - L196 and when
+  - L197 this build is not from the future
+  - L200 a save from a newer build is recognised
+  - L202 an older one is not - those still load
+  - L211 the header sees it
+  - L215 and the load path refuses it
+  - L216 with nothing loaded
+- **L218 6. each slot round-trips into its own city**
+  - L223 slot 1 loads the early city
+  - L224 ...with its own population
+  - L226 ...and no failure
+  - L230 slot 10 loads a later city
+  - L233 loading one slot does not touch another
+- **L236 7. the autosave**
+  - L252 nothing autosaved yet
+  - L253 twelve months to go
+  - L260 still nothing at month
+  - L262 one month to go
+  - L265 the twelfth month writes it
+  - L267 and the counter starts again
+  - L271 it says it is an autosave
+  - L273 ...and holds the month it fired at
+  - L280 a multi-month skip autosaves on the way in
+- **L291 7b. the autosave holds a whole month (0.7.52)**
+- **L305 7c. the autosave off the clock (UP1, 2026-10-22)**
+- **L308 8. histories are per slot**
+  - L311 slot 1 has a history
+  - L312 slot 10 has its own
+  - L313 ...and they are different files
+  - L315 ...with different contents
+- **L369 the autosave off the clock: two snapshots share nothing a month could change**
+  - L371 fixture: the grown city has a map (the save carries its stamp)
+  - L377 fixture: both jobs carry the city map's bytes
+  - L384 fixture: the walk reaches the save's lists and books, and the history's series
+  - L386 every class in the save is one the walk can see into
+  - L387 ...and in the history
+  - L388 the save: no mutable object is in both snapshots
+  - L389 the history: no mutable object is in both snapshots
+  - L394 the walk sees sharing: a snapshot shares
+  - L398 ...a snapshot of a snapshot shares all but the two objects it makes: itself and its buildings array (
+  - L403 ...and the history walked twice shares every one of its
+  - L413 ...and one list held by both saves is named by its field
+  - L419 the save holds what the bond market writes
+  - L421 ...what the exchange writes
+  - L423 ...what the construction control writes
+  - L425 ...what the fund writes
+  - L427 ...what the inbox holds (
+  - L430 ...what the build log holds (
+- **L464 the setters that copy, on states filled in every field**
+  - L471 the construction control's state (setConstructionControl)
+  - L475 the bond market's state, its bonds and books (setBondMarket)
+  - L479 the exchange's state, its books (setExchangeState)
+  - L483 the fund's state, its resolutions, orders and ledger (setFund)
+  - L487 the bank's preferred blocks (setBankPreferred)
+  - L491 the inbox's notices (setNotices)
+  - L495 the build log's entries (setBuilds)
+  - L500 the licensed heads (setLicences)
+  - L501 the skilled heads (setSkilledWorkforce)
+  - L504 the automatic builder's log, as its toState() copies it
+  - L508 a state held uncopied is caught: all
+  - L511 every field of every class above was given a value (
+  - L524 ...and writes what the source writes
+- **L741 the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS**
+  - L748 fixture: the city's own history (
+  - L749 fixture: ...and has folded no year
+  - L754 fixture: the history holds MONTHLY_KEPT months
+  - L763 fixture: the old way saved
+  - L796 every due month, warm-ups too, wrote one autosave named for its month
+- **L812 the autosave off the clock: written behind the months, the same files as the old way**
+  - L819 the old way saved slot 3 from the live objects
+  - L830 fixture: three months ran while the snapshot waited
+  - L831 fixture: and they changed the city (cash
+  - L832 fixture: the writer was held: the autosave on disk is still the one before
+  - L833 fixture: ...and nothing was written meanwhile
+  - L837 released, the writer wrote the one snapshot
+  - L838 ...named as it was asked
+  - L841 both saves read back as whole JSON
+  - L853 the save: all
+  - L855 ...and the two trees are equal
+  - L862 ...and the same tree
+  - L864 the city map exists beside both
+  - L865 ...and is the same bytes
+  - L870 the autosave loads with no failure
+  - L871 ...at the month it was asked at, not three on
+  - L872 ...with the cash it was asked at
+  - L873 ...and the history it was asked at
+- **L884 the autosave off the clock: back to back, one at a time, always whole**
+  - L895 held, two autosaves asked for write once
+  - L896 ...and the file holds the second
+  - L904 not held, two autosaves asked for write once or twice (
+  - L905 ...and the file holds the second
+  - L906 ...and the writer never wrote two at once, in the whole run
+- **L918 the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it**
+  - L930 fixture: the autosave on disk (month
+  - L937 fixture: the held autosave is not on disk yet
+  - L942 a load straight after an autosave returns after the writer was released
+  - L943 ...and loads that autosave: its month
+  - L944 ...its name
+  - L945 ...with no failure
+  - L951 fixture: the held autosave is not on disk yet
+  - L956 a numbered save returns after the writer was released
+  - L957 ...slot 4 is saved
+  - L958 ...and the held autosave is on disk
+  - L971 a skip returns after the writer was released
+  - L972 ...the held autosave and the skip's own were both written (without the wait the skip's replaces the held)
+  - L974 ...and the file holds the skip's
+  - L984 Quit returns after the writer was released
+  - L985 ...and its autosave is on disk
+  - L986 ...at the city's month
+- **L997 the autosave off the clock: a write that fails is reported, and the next one writes**
+  - L1004 fixture: the autosave's .tmp is a folder with a file in it
+  - L1019 the failed write is the last save result, not ok
+  - L1020 ...naming the autosave file
+  - L1021 ...and the calling thread said \"Autosave failed:\"
+  - L1022 the autosave on disk is still the one before
+  - L1030 fixture: the obstacle is gone
+  - L1034 with the obstacle gone, the next autosave writes
+  - L1035 ...and the file holds it
+- **L1049 the autosave off the clock: the floor of real time**
+  - L1067 fixture: each of the
+  - L1068 with the clock still,
+  - L1069 ...each due month started its counter again, at
+  - L1074 one second short of the floor, the next due month writes nothing
+  - L1075 ...and its counter starts again
+  - L1080 one second past the floor, the next due month writes exactly one
+  - L1081 ...at its month
+  - L1082 ...named for it
+  - L1102 fixture: the five due months came inside one floor of real time
+  - L1104 on the real clock,
+  - L1107 ...the first due month's, month
+  - L1374 ...and its history ends at it
+  - L1384 ...two months on, its history ends at the city's
+  - L1385 ...with no month missing (
 
 ## ScaleCheck.java - 83 labelled assertions
 

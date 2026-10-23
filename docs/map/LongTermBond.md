@@ -1,6 +1,6 @@
 # LongTermBond.java - 136 lines · 13 methods · 2 constants · model
 
-`ham/citybuildersim/LongTermBond.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LongTermBond.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > A bond: a fixed coupon every month on the whole face, and the face at the
 > end - at 2, 5, 10, 20, 30 or 50 years, sold in lines that reopen (CD2).

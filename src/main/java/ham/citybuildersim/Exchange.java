@@ -1697,12 +1697,36 @@ public class Exchange {
      * the split factor, what the leavers and the companies' buybacks still
      * have on offer, and the record the screens read.
      */
-    public static final class State {
+    public static final class State implements Cloneable {
         String[] keys;
         List<OrderBook> books;
         double[] fair, splitFactor, emigrantShares, buybackBudget;
         double[] life;
         double[] last;
+
+        /**
+         * A copy that shares nothing with this state (UP1, 2026-10-22):
+         * toState() lists the exchange's own books, which the months go on
+         * trading into while the autosave is written. A clone, so a field
+         * added later is in it; each book with its resting orders and each
+         * array are copied.
+         */
+        State copy() {
+            try {
+                State c = (State) super.clone();
+                c.keys = keys == null ? null : keys.clone();
+                c.books = SaveCopy.list(books, OrderBook::copy);
+                c.fair = fair == null ? null : fair.clone();
+                c.splitFactor = splitFactor == null ? null : splitFactor.clone();
+                c.emigrantShares = emigrantShares == null ? null : emigrantShares.clone();
+                c.buybackBudget = buybackBudget == null ? null : buybackBudget.clone();
+                c.life = life == null ? null : life.clone();
+                c.last = last == null ? null : last.clone();
+                return c;
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
     }
 
     public State toState() {

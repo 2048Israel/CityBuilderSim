@@ -1,6 +1,6 @@
 # CityRuns.java - 3,208 lines · 156 methods · 41 constants · model
 
-`ham/citybuildersim/CityRuns.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityRuns.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with the railway's yards on its track nearest the mines - what the city map draws them from and keeps in its sidecar.
 > 

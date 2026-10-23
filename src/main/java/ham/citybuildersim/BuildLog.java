@@ -37,7 +37,7 @@ public class BuildLog {
     /** Hard cap, so a city building constantly cannot grow this without limit. */
     private static final int MAX_ENTRIES = 40;
 
-    public static class Entry {
+    public static class Entry implements Cloneable {
 
         public final String building;
         public final int month;
@@ -49,6 +49,19 @@ public class BuildLog {
             this.building = building;
             this.quantity = quantity;
             this.month = month;
+        }
+
+        /**
+         * A copy to hand the autosave's writer thread (UP1, 2026-10-22): the
+         * live entry's quantity grows when the same building completes again
+         * in its month. A clone, so a field added later is in the copy.
+         */
+        Entry copy() {
+            try {
+                return (Entry) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
         }
 
         /** How long ago, in months. Never negative, however the clock moved. */

@@ -1,6 +1,6 @@
 # CapSetting.java - 78 lines · 8 methods · 0 constants · model
 
-`ham/citybuildersim/CapSetting.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CapSetting.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > A cap on the yield an automatic sale takes, saved and said (D28).
 > 
