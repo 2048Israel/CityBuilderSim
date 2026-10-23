@@ -77,6 +77,7 @@ stuff".
 | R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| MF1 | The map's faults in his "For Claude" city: highways over buildings, works on the rail yard, a half roundabout, the four-ring interchange, wide paved roads drawn as three, square rail and dead ends, the outer rim's grid of overflow buildings, the coast all piers with hundreds of lanes (Jerus, 2026-10-23: "One batch for all", "At the end") | [MF1](docs/queue/MF1.md) |
 
 ## Pending
 
