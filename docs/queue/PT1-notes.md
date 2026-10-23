@@ -38,7 +38,7 @@ its usage is at its top); the befores from 0.8.29's classes.
 
 - **Baseline** on main (5b67eafc, 0.8.29): 131 harnesses, all green.
 - **The batch** (main had not moved): `./batch-check.sh` 132 harnesses run, 132 passed; Stale 0 firm findings;
-  the maps regenerated. Timing soft beside Jerus's game; `--timing` alone and hard: see the last line.
+  the maps regenerated. Timing soft beside Jerus's game; `--timing` hard, the timing harnesses alone (Jerus's game open): 10 run, 10 passed.
 - **The trace.** Main (5b67eafc) built apart from its own sources, and the batch, the default playtest traced on
   each (`-Dplaytest.trace`): all eight CSVs byte-identical, the report identical but for its run-time lines (66 s
   and 64 s, the layout watch's timing). So no ensemble (EN1).
