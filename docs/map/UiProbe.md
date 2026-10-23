@@ -1,4 +1,4 @@
-# UiProbe.java - 607 lines · 20 methods · 3 constants · interface
+# UiProbe.java - 608 lines · 20 methods · 3 constants · interface
 
 `ham/citybuildersim/ui/UiProbe.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -78,7 +78,7 @@
 |---:|---|---|---|
 | 129 | `UiProbe.report` | `System.out` | Where the probe's own lines go: the console, as it was when the class loaded. |
 | 475 | `UiProbe.KEYS` | `{ "ham.citybuildersim.ui.UserInterface$", "ham.citybuildersim.Game.nextMonth"...` | The prefixes of "type.method" an FX-thread sample is counted under, if any frame of its stack starts with one: inclusive shares, so a sample counts once for each key it is under. |
-| 511 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` |  |
+| 512 | `UiProbe.FX_THREAD` | `"JavaFX Application Thread"` | The JavaFX thread's name, as the recording names it: the only thread whose samples analyse() reads. |
 
 ## Fields (state)
 
@@ -96,7 +96,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 119 | 489 | **type** `public final class UiProbe` | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on it, and times every rail screen, the real clock at 50x and the save. |
+| 119 | 490 | **type** `public final class UiProbe` | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on it, and times every rail screen, the real clock at 50x and the save. |
 | 121 | 1 | `private UiProbe()` |  |
 | 137 | 5 | `private static<T> T fx(Callable<T> c) throws Exception` | The window's pump: runs on the FX thread and waits for the answer. |
 | 143 | 1 | **type** `private record Screen(String name, Runnable show)` |  |
@@ -118,10 +118,10 @@
 | 430 | 31 | `private static void saveAndLoad(GameFiles files) throws Exception` | The save as UP1 made it, then the load. |
 | 462 | 5 | `private static int buildings()` |  |
 
-### reading the recording (lines 468-607)
+### reading the recording (lines 468-608)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 513 | 49 | `private static void analyse(Path jfr) throws Exception` |  |
-| 569 | 38 | `private static void callers(String[] a) throws Exception` | {@code --callers file.jfr method-prefix [rows]}: for the FX-thread samples with a method starting with the prefix in their stack, the ham.* frames from there up (six at most), most common path first. |
+| 514 | 49 | `private static void analyse(Path jfr) throws Exception` |  |
+| 570 | 38 | `private static void callers(String[] a) throws Exception` | {@code --callers file.jfr method-prefix [rows]}: for the FX-thread samples with a method starting with the prefix in their stack, the ham.* frames from there up (six at most), most common path first. |
 

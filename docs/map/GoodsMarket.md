@@ -100,7 +100,7 @@
 |---:|---:|---|---|
 | 108 | 4 | `public GoodsMarket(Good good)` |  |
 | 113 | 1 | `public Good good()` |  |
-| 116 | 3 | `public void setExchangeRate(double rate)` | City money per dollar. |
+| 116 | 3 | `public void setExchangeRate(double rate)` | City money per dollar, times the world's price level - since AN1 the D$ the goods are struck at (EconomyManager, THE D$ THE GOODS ARE STRUCK AT), not the D$ itself. |
 | 120 | 1 | `public double getExchangeRate()` |  |
 
 ### WHAT IT COSTS TO MOVE ONE, THIS MONTH (2026-09-16) (lines 122-216)

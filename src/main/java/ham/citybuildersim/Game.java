@@ -6084,9 +6084,12 @@ public class Game {
             // produces a readable summary rather than a half-filled one.
             captureSkipSnapshot(false);
 
-            // A skip ends with its autosaves on disk (UP1), so the player - and every
-            // harness that steps with simulateMonths() - finds the files as they were
-            // before the writer left the clock.
+            // A skip ends with every autosave it queued written (UP1), so the player -
+            // and every harness that steps with simulateMonths() - finds whole files.
+            // Not always a late one: the "before skipping" autosave above starts the
+            // floor again, so a skip that runs inside SaveWriter.FLOOR_SECONDS queues
+            // no twelve-monthly autosave and ends with the one from before it on disk
+            // (UP1-C, star 4).
             awaitSaves();
         }
 
@@ -10219,7 +10222,8 @@ public class Game {
          */
         foreign.setRealRateDifferential(realRateDifferential());
         // The rate follows parity's trend, the real gap's level, the balance, the cover,
-        // the market and the interventions felt (ForeignAccounts, THE FLOAT).
+        // the market and the interventions felt (ForeignAccounts, THE FLOAT), and since
+        // XR2 the regime holds it where it says (THE REGIMES).
         double rateBeforeReprice = foreign.getRate();
         foreign.repriceCurrency();
         /*
@@ -12801,14 +12805,17 @@ public class Game {
      * save() (the player's own Save, written on his thread with the live
      * objects as it always was), a load, Quit and a skip each awaitSaves()
      * first. A skip waits again at its end, so a caller that stepped with
-     * simulateMonths() finds its files as they were before UP1.
+     * simulateMonths() finds every autosave it queued whole on disk - which,
+     * for a skip inside the floor, is the one from before it (below).
      *
      * The floor: an autosave comes every AUTOSAVE_MONTHS months but never
      * sooner than SaveWriter.FLOOR_SECONDS of real time after the last one
      * (Jerus, 2026-10-22: "At most every 30 s"), which at 50x holds the
      * writer to once in 30 s instead of once in 1.2 s. A month due inside it
      * is not queued: its counter starts again, and the next due month past
-     * the floor writes. The skip's and Quit's autosaves ignore the floor.
+     * the floor writes. The skip's and Quit's autosaves ignore the floor, and
+     * like every autosave start it again: a skip that runs inside it writes
+     * none of its twelve-monthly ones (UP1-C, star 4).
      * ====================================================================== */
 
     /** Results the writer's thread has finished, waiting for the FX thread to take them: see reportSaves(). */

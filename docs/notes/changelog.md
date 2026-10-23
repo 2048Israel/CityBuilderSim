@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### Docs pass 2026-10-23 — over AN1, XR2, FX8, FX7, UP1, UP4 and UP3 — shipped, no tag
+
+The daily docs pass by a fresh session over the seven batches since the 2026-10-22 pass (0ceac7b6..9f6ece08).
+Comments, indexes and the record only. UP1's skip comments said a skip leaves its files "as they were before" UP1;
+they now say what the floor does: the "before skipping" autosave starts it again, so a skip inside 30 s ends with that
+one on disk (UP1-C star 4). GameVersion's history had no 0.8.23: FX8's entry is written. ForeignAccounts' header names
+the regimes; Expectations.pegBroke() is priced by the same month's takeMonth(), not the next; GoodsMarket's and Markets'
+rate is the D$ the goods are struck at (AN1); ui/Kept said 0.8.25 for UP4's 0.8.26; PeopleScreen's and Pieces' headers
+say the People page is kept; ten constants got their sentence. docs/tree.md: 129 harnesses, Game's 45 banners, FX7's
+dated runs, UP3's kept nodes, ui/Kept and KeptBench. ui/UserInterface.java was left for tomorrow's pass (UP2 is in it).
+Suite on its tree 130 of 130 in 892 s, beside another batch's JVM (MapCheck 1's timing SOFT, not counted); Stale 0 firm.
+
 ### 0.8.27 — UP3, the map's month redraws only what moved — 2026-10-23, ready, see docs/queue/UP3-notes.md
 
 Measured first on copies of Jerus's city grown a month at a time (x 1; x 80, 125 districts to his 115; 5B): a month moves 1-2

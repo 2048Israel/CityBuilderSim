@@ -1,4 +1,4 @@
-# KeptBench.java - 255 lines · 17 methods · 2 constants · interface
+# KeptBench.java - 256 lines · 17 methods · 2 constants · interface
 
 `ham/citybuildersim/ui/KeptBench.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -22,7 +22,7 @@
 | line | constant | value | says |
 |---:|---|---|---|
 | 49 | `KeptBench.WIDTH` | `1456` | The width the page is laid out at: the menu column's in a 1600-pixel window (the study's renders). |
-| 201 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` |  |
+| 202 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
 
 ## Fields (state)
 
@@ -38,7 +38,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 210 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
+| 46 | 211 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
 | 57 | 12 | `public KeptBench(Game game)` | The bench on a city: the window's object with no stage, its menu column in a scene of its own. |
 | 71 | 5 | `public double drawKept()` | People's page drawn kept from its pool (the first draw makes every node): the draw's own milliseconds. |
 | 78 | 3 | `public int lastMade()` | The nodes the last kept draw made new. |
@@ -53,7 +53,7 @@
 | 155 | 22 | `public double[] passes() throws Exception` | The scene's CSS and layout, as a frame's pulse runs them (Scene.doCSSPass and doLayoutPass, which touch only what is dirty): {CSS ms, layout ms}. |
 | 179 | 9 | `public int[] pixels()` | The page as pixels, ARGB, row by row: the menu column's snapshot, with its width and height first. |
 | 195 | 5 | `public List<String> signature()` | The page as it is now, a line a node in the order its code made them: the node's class; its words; its inline style; the values code set on it (the styleable ones whose origin is code); whether it has a click, a hover... |
-| 203 | 22 | `private static void sign(Node n, String path, List<String> out)` |  |
-| 232 | 12 | `private static String codeSet(Styleable n)` | Every styleable value a node has now, by property, where it is not the property's initial value: what code set and what its style made of it, both pages styled and laid out alike. |
-| 246 | 9 | `private static String shape(Node n)` | A shape's own geometry, which no style sets. |
+| 204 | 22 | `private static void sign(Node n, String path, List<String> out)` |  |
+| 233 | 12 | `private static String codeSet(Styleable n)` | Every styleable value a node has now, by property, where it is not the property's initial value: what code set and what its style made of it, both pages styled and laid out alike. |
+| 247 | 9 | `private static String shape(Node n)` | A shape's own geometry, which no style sets. |
 

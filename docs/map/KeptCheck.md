@@ -1,4 +1,4 @@
-# KeptCheck.java - 342 lines · 11 methods · 6 constants · harnesses
+# KeptCheck.java - 343 lines · 11 methods · 6 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -44,9 +44,9 @@
 | 60 | `KeptCheck.CITY_MONTHS` | `600` | The months the city is played to before the page is watched: a city with a history, households of every shape, a full ladder. |
 | 63 | `KeptCheck.MONTHS` | `25` | The months watched, kept against new: two years and a month, so a January and a year's turn are among them. |
 | 66 | `KeptCheck.KEPT_MONTH_MS` | `12` | The budget for the kept People page's month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC. |
-| 68 | `KeptCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 130 | `KeptCheck.SHADE_LEVELS` | `64` | The most a pixel of the kept page may differ from the new page's, in any channel, out of 255: the edge of a small shape a kept picture moved to another place on the page is shaded by the renderer's cached outline a le... |
-| 133 | `KeptCheck.SHADED_SHARE` | `0.001` | ...and at most this share of the page's pixels may differ at all (114 and 110 of 2.8 million measured). |
+| 69 | `KeptCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Where a month's log goes while month() runs it: nowhere. |
+| 131 | `KeptCheck.SHADE_LEVELS` | `64` | The most a pixel of the kept page may differ from the new page's, in any channel, out of 255: the edge of a small shape a kept picture moved to another place on the page is shaded by the renderer's cached outline a le... |
+| 134 | `KeptCheck.SHADED_SHARE` | `0.001` | ...and at most this share of the page's pixels may differ at all (114 and 110 of 2.8 million measured). |
 
 ## Fields (state)
 
@@ -58,16 +58,16 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 293 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 50 | 294 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 54 | 4 | `static void check(String label, boolean ok)` |  |
-| 70 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
-| 77 | 13 | `static String startJavaFx()` | The toolkit started, or why not (then this harness has nothing to run on). |
-| 92 | 9 | `static void month(Game g)` | A month, as the clock runs it, its log kept off this harness's output. |
-| 103 | 10 | `static String firstDifference(List<String> kept, List<String> fresh)` | The first line where two signatures part, or null when they are the same. |
-| 115 | 6 | `static void png(int[] px, java.nio.file.Path to) throws java.io.IOException` | A snapshot (width, height, then ARGB) written as a PNG, for -Dkeptcheck.out=DIR: the two pages a pixel check found apart. |
-| 136 | 10 | `static boolean alike(int[] a, int[] b)` | Whether two snapshots are the same picture: the same size, no pixel past SHADE_LEVELS, few past none. |
-| 148 | 16 | `static String pixelDifference(int[] a, int[] b)` | Where two snapshots part: their sizes, or how many pixels differ and the box round them. |
-| 165 | 3 | `static String clip(String s)` |  |
-| 169 | 5 | `static double median(List<Double> v)` |  |
-| 175 | 167 | `public static void main(String[] args) throws Exception` |  |
+| 71 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
+| 78 | 13 | `static String startJavaFx()` | The toolkit started, or why not (then this harness has nothing to run on). |
+| 93 | 9 | `static void month(Game g)` | A month, as the clock runs it, its log kept off this harness's output. |
+| 104 | 10 | `static String firstDifference(List<String> kept, List<String> fresh)` | The first line where two signatures part, or null when they are the same. |
+| 116 | 6 | `static void png(int[] px, java.nio.file.Path to) throws java.io.IOException` | A snapshot (width, height, then ARGB) written as a PNG, for -Dkeptcheck.out=DIR: the two pages a pixel check found apart. |
+| 137 | 10 | `static boolean alike(int[] a, int[] b)` | Whether two snapshots are the same picture: the same size, no pixel past SHADE_LEVELS, few past none. |
+| 149 | 16 | `static String pixelDifference(int[] a, int[] b)` | Where two snapshots part: their sizes, or how many pixels differ and the box round them. |
+| 166 | 3 | `static String clip(String s)` |  |
+| 170 | 5 | `static double median(List<Double> v)` |  |
+| 176 | 167 | `public static void main(String[] args) throws Exception` |  |
 

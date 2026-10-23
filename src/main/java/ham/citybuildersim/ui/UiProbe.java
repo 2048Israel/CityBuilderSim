@@ -508,6 +508,7 @@ public final class UiProbe {
             "javafx.scene.canvas.",
     };
 
+    /** The JavaFX thread's name, as the recording names it: the only thread whose samples analyse() reads. */
     private static final String FX_THREAD = "JavaFX Application Thread";
 
     private static void analyse(Path jfr) throws Exception {
