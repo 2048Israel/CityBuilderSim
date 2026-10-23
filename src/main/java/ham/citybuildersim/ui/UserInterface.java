@@ -445,25 +445,28 @@ public class UserInterface extends Application {
 
     private int speedIndex = NORMAL_SPEED;
     private boolean clockRunning;
-    private double monthProgress;
     private long lastFrame;
+
+    /**
+     * The clock's arithmetic (UP2): the share of the month run, the months a
+     * frame may take, how long a redraw has to wait and the speed achieved. The
+     * timer below calls it; ClockPace says what it does and why.
+     */
+    private final ClockPace pace = new ClockPace();
 
     /*
      * HOW OFTEN THE SCREEN MAY BE REBUILT WHILE TIME RUNS.
      *
-     * The clock redraws the open screen once per frame in which a month landed,
-     * which was free at 10x: a month arrives every 500ms there, so the limit
-     * never bound. At 50x one lands every 100ms, and a heavy page - the
+     * The clock redraws the open screen at most once per ClockPace.REDRAW_EVERY
+     * (120ms), which was free at 10x: a month arrives every 500ms there, so the
+     * limit never bound. At 50x one lands every 100ms, and a heavy page - the
      * property tax screen is a ten-row grid and ten dials - rebuilt ten times a
-     * second is a page that stutters and fights the pointer.
-     *
-     * So the SIMULATION runs free and the REDRAW is capped. 120ms is under the
-     * gap at 20x, so nothing below the top rung behaves any differently, and at
-     * 50x the screen lags the city by at most a tenth of a second - which is
-     * one frame's worth of figures on a screen advancing ten months a second.
+     * second is a page that stutters and fights the pointer. So the SIMULATION
+     * runs free and the REDRAW is capped - since UP2 by what the last redraw
+     * cost as well (ClockPace.REDRAW_SPACING), so a page that takes 55 ms to
+     * build and lay out is drawn every 165 ms and not every 120. A redraw that
+     * is wanted waits here (redrawPending) until its gap has passed.
      */
-    private static final double REDRAW_EVERY = .12;
-    private double sinceRedraw;
     private boolean redrawPending;
     private javafx.animation.AnimationTimer clock;
 
@@ -1065,6 +1068,7 @@ public class UserInterface extends Application {
                         + (e.getCode() == javafx.scene.input.KeyCode.RIGHT ? 1 : -1)));
                 if (pick != speedIndex) {
                     speedIndex = pick;
+                    pace.restart();     // the speed's window starts again (UP2)
                     redrawScreen.run();
                 }
                 e.consume();
@@ -1926,7 +1930,7 @@ public class UserInterface extends Application {
     static final double DATE_SIZE = 17;
 
     /** How many months a tile's sparkline draws: ten years, or everything recorded if less. */
-    static final int SPARK_MONTHS = 120;
+    public static final int SPARK_MONTHS = 120;
 
     /** A tile's sparkline at full size: on the label's row since 0.7.24, as the mockups draw it (it was 84 by 30, beside the words). */
     static final double SPARK_WIDTH = 72;
@@ -1994,6 +1998,20 @@ public class UserInterface extends Application {
      */
     private static String[] words(String... longestFirst) { return longestFirst; }
 
+    /**
+     * The series a header tile's sparkline draws (UP2): the last SPARK_MONTHS months of the
+     * line City History draws for the tile's key, and no more of the history than that.
+     * Unemployment is YearBook's one definition and the rest are the stored series, as
+     * HistoryScreen.historyValues() reads them for these five keys - keep the two in step if a
+     * key there is ever given a case of its own (ClockCheck asserts the header's five against
+     * the whole read).
+     *
+     * @return the last min(SPARK_MONTHS, months recorded) entries, the front padding NaN
+     */
+    public static double[] sparkSeries(HistorySave h, String key) {
+        return "unemployment".equals(key) ? YearBook.unemploymentTail(h, SPARK_MONTHS) : h.alignedTail(key, SPARK_MONTHS);
+    }
+
     /** The five, in the mockups' order: people, output, prices, work, the price of money - TREASURY is its own block since 0.7.24 (moneyBlock()). */
     private List<Headline> headlines() {
         List<Headline> out = new ArrayList<>();
@@ -2039,13 +2057,14 @@ public class UserInterface extends Application {
         }
         peopleTip.append("\n").append(click);
         out.add(new Headline("POPULATION", Palette.PEOPLE, formatter.format(population), Palette.TEXT_HEAD,
-                netLine, netTone, historyScreen.historyValues(h, "population"),
+                netLine, netTone, sparkSeries(h, "population"),
                 peopleTip.toString(), null, new String[] {"population"}));
 
         /* ------------- GDP, annualised from month 1, and real growth ------------- */
         NationalAccounts na = game.getEconomyManager().getNationalAccounts();
         int recorded = na.getMonthsRecorded();
-        double[] growth = YearBook.realGrowth(h);
+        // Only the last month of the growth is read (UP2): the months it leans on, not the history.
+        double[] growth = YearBook.realGrowthTail(h, 1);
         double grew = growth.length == 0 ? Double.NaN : growth[growth.length - 1];
         String[] gdpLine;
         String gdpTone = Palette.TEXT_MUTED;
@@ -2064,7 +2083,7 @@ public class UserInterface extends Application {
             gdpTone = grew > 0 ? Palette.GOOD : Palette.BAD;
         }
         out.add(new Headline("GDP", Palette.BUSINESS, money(annualGdp(na)) + " / yr", Palette.TEXT_HEAD,
-                gdpLine, gdpTone, historyScreen.historyValues(h, "gdp"),
+                gdpLine, gdpTone, sparkSeries(h, "gdp"),
                 String.format("What the city made in a year: the last twelve months of output%s.%n"
                         + "Under it, real growth: the last twelve months against the twelve before,"
                         + " with prices taken out%s.%nThe sparkline is the month's output. %s",
@@ -2117,7 +2136,7 @@ public class UserInterface extends Application {
          */
         out.add(new Headline("INFLATION", Palette.MONEY, inflValue,
                 prices.hasRate() ? inflTone : Palette.TEXT_HEAD, anchorLine(game), anchorTone(game),
-                historyScreen.historyValues(h, "priceIndex"),
+                sparkSeries(h, "priceIndex"),
                 inflationTip(game, prices.hasRate() ? inflLine[0] : null),
                 inflationMore(game),
                 new String[] {"inflation", "priceIndex"}));
@@ -2135,7 +2154,7 @@ public class UserInterface extends Application {
                 : words("healthy slack", "slack");
         out.add(new Headline("OUT OF WORK", Palette.PEOPLE,
                 String.format("%.1f%%", unsigned0(jobless * 100, 1)), workTone, workLine, workTone,
-                historyScreen.historyValues(h, "unemployment"),
+                sparkSeries(h, "unemployment"),
                 String.format("%s people out of work%s.%nAmber under %.0f%% - nobody spare, so new jobs"
                         + " go unfilled - and over %.0f%%; red over %.0f%%.%n%s",
                         people(pm.getUnemployed()),
@@ -2154,7 +2173,7 @@ public class UserInterface extends Application {
         String perDollar = here + (rate < .1 ? fxRate(rate) : String.format("%,.2f", rate));
         out.add(new Headline("RATE · " + here, Palette.MONEY, pct2(market.getPolicyRate()), Palette.TEXT_HEAD,
                 words(perDollar + " per " + Currency.FOREIGN_SYMBOL, perDollar + "/" + Currency.FOREIGN_SYMBOL),
-                rateColour(fx), historyScreen.historyValues(h, "policyRate"),
+                rateColour(fx), sparkSeries(h, "policyRate"),
                 String.format("The central bank's policy rate - your dial on the Policy tab - and what a"
                         + " US dollar costs in %s.%n%s, and the city borrows at %s.%n"
                         + "Click for both lines in City History.",
@@ -2365,8 +2384,10 @@ public class UserInterface extends Application {
             changes.add(change);
         }
 
+        // The series is the last months only (sparkSeries()), so the axis is cut to the same months.
+        List<Integer> axis = game.getHistorySave().getMonth();
         HeadlineTile tile = new HeadlineTile(labelRow, figure, changes,
-                new Sparkline(t.series(), game.getHistorySave().getMonth(), t.area()));
+                new Sparkline(t.series(), axis.subList(Math.max(0, axis.size() - t.series().length), axis.size()), t.area()));
         // 6 and 10 (0.7.24; 8 and 12 until then): the five, the money block and the clock in 1,280 px.
         String rest = "-fx-padding: 6 10 6 10; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 1; -fx-cursor: hand;";
@@ -2670,7 +2691,7 @@ public class UserInterface extends Application {
          * must not rebuild the screen to do it - see paintDay(). Held at
          * DATE_WIDTH so the tiles beside it do not shift as the day changes.
          */
-        Label date = new Label(CityCalendar.formatDay(month, monthProgress));
+        Label date = new Label(CityCalendar.formatDay(month, pace.progress()));
         date.setStyle(Fonts.sansSemiBold() + " -fx-font-size: " + DATE_SIZE + "px; -fx-text-fill: " + Palette.TEXT_MAX + ";");
         date.setMinWidth(DATE_WIDTH);
         date.setPrefWidth(DATE_WIDTH);
@@ -2686,7 +2707,9 @@ public class UserInterface extends Application {
         monthFigure = new Label("month " + formatter.format(month));
         monthFigure.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
-        speedReading = new Label(speedLabel(speedIndex));
+        // The reading is the rung, and the speed achieved after it when the months fall short (UP2);
+        // it may grow to hold both, and never under 34.
+        speedReading = new Label(speedText());
         speedReading.setMinWidth(34);
         speedReading.setAlignment(Pos.CENTER);
         speedReading.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
@@ -2741,7 +2764,8 @@ public class UserInterface extends Application {
             int pick = Math.max(0, Math.min(SPEEDS.length - 1, speedIndex + step));
             if (pick == speedIndex) return;
             speedIndex = pick;
-            if (speedReading != null) speedReading.setText(speedLabel(pick));
+            pace.restart();     // months at the old rung say nothing of the new (UP2)
+            paintSpeed();
         });
         return arrow;
     }
@@ -3656,6 +3680,7 @@ public class UserInterface extends Application {
      */
     private void anotherCity() {
         cityOpen = true;
+        pace.restart();     // the speed's window is the old city's (UP2)
         toasted.clear();
         if (toastStack != null) toastStack.getChildren().clear();
         buildScreen.forgetReceipts();
@@ -5999,15 +6024,28 @@ public class UserInterface extends Application {
      * smoothly and the MONTH has to land exactly: a Timeline firing every
      * frame would do the same job with a KeyFrame in the way, and one firing
      * every month could not draw a day at all.
+     *
+     * PACED BY WHAT IT COSTS (UP2). The arithmetic is ClockPace's: a frame
+     * runs the months that are due until they have taken MONTH_FRAME_MS (the
+     * first always runs) and drops the time it could not run instead of
+     * banking it; a redraw is measured from the draw to the end of the layout
+     * pulse after it (the scene's post-layout listener below), and the next
+     * waits REDRAW_SPACING times that, whether or not a month lands in the
+     * frame; and the header's speed says when the months landed fall short of
+     * the rung (paintSpeed()). The press rule (0.7.40) is untouched: nothing
+     * is drawn while a button is down, and the first frame after the release
+     * draws what is pending at once.
      */
     private void startClock() {
         if (clock != null) return;
+        // A redraw's cost ends with the layout pass of the pulse it was made in (the timer's
+        // handle runs inside the pulse, before its CSS and layout). Added once.
+        scene.addPostLayoutPulseListener(pace::redrawEnded);
         clock = new javafx.animation.AnimationTimer() {
             @Override public void handle(long now) {
                 if (lastFrame == 0) { lastFrame = now; return; }
                 double dt = (now - lastFrame) / 1e9;
                 lastFrame = now;
-                sinceRedraw += dt;
                 // The first frame after a release (0.7.40): it draws what the press held back.
                 boolean released = letGo;
                 letGo = false;
@@ -6015,54 +6053,39 @@ public class UserInterface extends Application {
                 // ...and while a dialog is up (0.7.22): a confirmation's figures
                 // are the ones its action will meet.
                 if (!clockRunning || game == null || isGameMenu(currentScreen) || quitDialog != null) {
+                    pace.idle(dt);
                     // A month landed and its redraw was throttled away; the
                     // clock has since stopped, so nothing else will draw it.
                     if (redrawPending && game != null && !isGameMenu(currentScreen) && !pressHeld) {
                         redrawPending = false;
-                        sinceRedraw = 0;
-                        redrawScreen.run();
+                        drawPaced();
                     }
                     return;
                 }
 
-                /*
-                 * CLAMPED, because a stalled frame is not elapsed game time.
-                 * Dragging the window, opening a menu or a long garbage
-                 * collection can hand this a dt of several seconds, and at 10x
-                 * that would silently run a year while the player was not
-                 * looking at the screen. A quarter of a second is the most any
-                 * single frame is allowed to be worth.
-                 */
-                /*
-                 * AND THE FRAME CLAMP EARNS ITS KEEP AT THE TOP OF THE LADDER.
-                 * A quarter of a second is the most any single frame is worth,
-                 * which at 50x is 2.5 months - so a dragged window or a long
-                 * collection costs a couple of months rather than a couple of
-                 * years. It was written for 10x and it is what makes 20x and
-                 * 50x safe to offer.
-                 */
-                monthProgress += Math.min(dt, .25) * SPEEDS[speedIndex] / SECONDS_PER_MONTH;
-
-                boolean landed = false;
-                while (monthProgress >= 1) {
-                    monthProgress -= 1;
+                // The frame clamp, and why it is there, are ClockPace.FRAME_CLAMP's now.
+                int landed = pace.frame(dt, SPEEDS[speedIndex], SECONDS_PER_MONTH, () -> {
                     game.toggleNextMonth();
-                    landed = true;
-                    if (stopIfSomethingHappened()) { monthProgress = 0; break; }
-                }
-                if (!pressHeld && ((landed && sinceRedraw >= REDRAW_EVERY) || (released && redrawPending))) {
-                    sinceRedraw = 0;
+                    return stopIfSomethingHappened();
+                });
+                if (landed > 0) redrawPending = true;
+                if (!pressHeld && redrawPending && (released || pace.redrawDue())) {
                     redrawPending = false;
-                    redrawScreen.run();
+                    drawPaced();
                 } else {
                     // The day still moves every frame - it is one label's text
                     // and it is what makes a paused-looking screen look alive.
-                    if (landed) redrawPending = true;
                     paintDay();
                 }
             }
         };
         clock.start();
+    }
+
+    /** The clock's redraw of the open screen: begun for the pace, which takes its cost when the layout pass after it is done. */
+    private void drawPaced() {
+        pace.redrawStarted();
+        redrawScreen.run();
     }
 
     /**
@@ -6129,8 +6152,27 @@ public class UserInterface extends Application {
      */
     private void paintDay() {
         if (chartFullClock != null) chartFullClock.setText(clockWords());
+        paintSpeed();
         if (dayLabel == null) return;
-        dayLabel.setText(CityCalendar.formatDay(game.getMonth(), monthProgress));
+        dayLabel.setText(CityCalendar.formatDay(game.getMonth(), pace.progress()));
+    }
+
+    /**
+     * The speed's reading between the arrows (UP2): the rung, and after it the
+     * speed the months landed over the last two seconds add up to when that is
+     * more than a tenth under the rung - "50× · 31×". The rung alone while the
+     * clock is stopped, because nothing is being achieved then.
+     */
+    private String speedText() {
+        String rung = speedLabel(speedIndex);
+        return clockRunning ? pace.reading(rung, SPEEDS[speedIndex]) : rung;
+    }
+
+    /** The reading, repainted in place and only when its words change: no rebuild, and no layout for a figure that is the same. */
+    private void paintSpeed() {
+        if (speedReading == null) return;
+        String text = speedText();
+        if (!text.equals(speedReading.getText())) speedReading.setText(text);
     }
 
     /* =====================================================================
@@ -6206,12 +6248,12 @@ public class UserInterface extends Application {
      * (MapView.BOAT_GAME_MONTHS). It stands while the clock is paused.
      */
     double clockMonths() {
-        return game == null ? 0 : game.getMonth() + monthProgress;
+        return game == null ? 0 : game.getMonth() + pace.progress();
     }
 
     /** The date and what the clock is doing, for a line that stands in for the header: "14 February 2151 · paused". */
     String clockWords() {
-        return CityCalendar.formatDay(game.getMonth(), monthProgress) + "  ·  "
+        return CityCalendar.formatDay(game.getMonth(), pace.progress()) + "  ·  "
                 + (clockRunning ? "running at " + speedLabel(speedIndex) : "paused");
     }
 
@@ -6256,6 +6298,7 @@ public class UserInterface extends Application {
         if (run) {
             pausedBecause = null;
             lastFrame = 0;          // do not bank the time spent paused
+            pace.restart();         // ...nor the months it ran before (UP2)
         }
     }
 
