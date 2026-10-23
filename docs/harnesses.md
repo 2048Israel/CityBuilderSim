@@ -2,7 +2,7 @@
 
 Generated 2026-10-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**136 harness files, 13,866 labelled assertions.** AllChecks runs 136 of them.
+**136 harness files, 13,867 labelled assertions.** AllChecks runs 136 of them.
 
 ## Which harnesses read which class
 
@@ -6361,7 +6361,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L557 ...its month's move in credibility at nothing (0.7.45)
   - L558 ...and the level at 1, so nothing jumps: its constants are at founding money
 
-## FloatLinkCheck.java - 249 labelled assertions
+## FloatLinkCheck.java - 250 labelled assertions
 
 > The floating-rate note and the inflation-linked bond (CD5, spec-city-debt.md
 > sections 2.4, 2.5, 5.3 and 5.4; D25): a floater pays the month's policy rate
@@ -6377,264 +6377,265 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 1. Fair prices it at 100: on a calm, a hiking and a flat curve, with a flat and
 > ...
 
-- **L602 1. fair prices it at 100: the margin and the real coupon that make the payments worth the face on the curve**
-  - L617 ...a basis point less is worth under 100 (
-  - L623 ...and the piece's own projectedFlows() on that path are those payments, tenfold for a face of 1,000
-  - L624 ...a path nobody gives is the known schedule: today's coupon flat and the face at the end
-  - L627 ...on a flat dial and a curve with no shape the fair margin is nothing
-  - L639 ...a basis point less is worth under 100 and a basis point more over
-  - L640 ...and the piece's own flowsFor() are those payments
-  - L645 ...a ratio that never moves is a bullet: the real coupon is the curve's par yield
-  - L647 ...the index rises, so the floor never bites: the coupon is the one without a floor
-  - L650 ...the index falls, so the ratio at the end is under 1 (
-  - L652 ...the floor binds: the last payment is the original face and the coupon on the indexed one
-  - L654 ...the floor is worth something to the lender, so the real coupon is under what it would be without it (
-  - L659 ...the index at 2% asks a lower real coupon than the index at 0% (
-  - L681 a floater is issued at 2 and 5 years and at no other
-  - L683 a linker is issued at 10 and 30 years and at no other
-  - L718 a
-  - L744 a
-- **L764 2. a sale: the margin is fair plus the tail, the real coupon fair plus the tail rounded down; the index is the dial, the base the price i...**
-  - L778 ...its margin is the fair margin plus the tail
-  - L779 ...the fair margin is DebtManager.fairMargin() on the curve the issue stands on
-  - L781 ...and prices a floater at 100 on that curve and the dial the market expects
-  - L790 ...its real coupon is the fair one plus the tail rounded down to Auction.COUPON_STEP: a multiple of it, at most that, within one step of it (
-  - L793 ...the fair real coupon is DebtManager.fairRealCoupon() on the curve the issue stands on
-  - L795 ...and prices a new linker at 100 on that curve and the index the market expects
-  - L800 a sale the bids cover clears at fair, with no tail, and its real coupon is under fair by less than a step (
-  - L806 a quote says what the paper is: the floater's coupon as the policy rate plus a margin, the linker's as a real coupon
-  - L810 a floater quoted for the cash it must bring covers it, by less than a lot of 100 (
-  - L812 ...and so does a linker (
-  - L823 a 3-year floater and a 10-year one are refused in the instrument's words
-  - L825 a 20-year linker and a 5-year one are refused in the instrument's words
-  - L827 a dollar floater and a dollar linker are refused: they are written at home only
-  - L830 ...and the quotes for those terms are empty
-  - L831 ...and none of the refusals moved the cash, the pieces or the principal
-  - L841 a second sale of the same term opens a second line: two floaters of
-  - L846 ...and the same for a linker: two of
-  - L849 every sale: the margin or real coupon is the quote's, the quote's fair plus its tail
-  - L850 ...a linker's real coupon is that fair plus the tail rounded down to Auction.COUPON_STEP: a multiple of it, within a step under
-  - L851 ...a floater's index is the dial it was sold at and the linker's base the price index
-  - L852 ...a linker is sold at a ratio of 1
-  - L853 ...the treasury received what the quote said
-  - L854 ...the books opened with what it raised, on the face it sold
-  - L855 ...a floater's effective rate is its coupon's, plus the fee's share (under 5 basis points)
-  - L856 ...a sale with no tail is worth what the buyback values it at (per 100)
-  - L897 fixture: the default city (the rollover on, each piece into its own kind) held paper all the while:
-  - L899 ...and not one piece in it was a floating-rate note or an inflation-linked bond:
-- **L907 3. the floater's coupon follows the dial: face x (dial + margin) / 12, the rate reset with it, the books holding**
-  - L916 fixture: a fixed 2-year bond is on the books beside the floaters, for the comparison
-  - L919 ...it opened a line of its own: no floater and no linker took any of its face (a bond's benchmark line is a bond's)
-  - L938 a move of the dial takes a fixed bond of the same term down by more than half a point (
-  - L939 ...and leaves the floater near par: within a quarter of a point of 100 (
-  - L940 ...so the floater moves under a quarter as much as the fixed bond (
-  - L945 fixture: the dial script moved the dial five times and the floaters reset on it
-  - L946 every month, every floater's coupon is its face x (the dial + its margin, never under nothing) / 12
-  - L947 ...and the index it reads is the dial of the month
-  - L948 a month the dial did not move leaves the effective rate where it was, to the bit
-  - L949 a month it moved re-solves the effective rate on the known schedule (today's coupon flat, the face) at the carrying value
-  - L950 every piece's interest expense is its carrying value x its effective rate / 12
-  - L951 ...and the carrying value is the last one plus the expense less the coupon
-  - L952 fixture: the floaters were among the pieces pressed, and the debt book did not change under them
-  - L971 a floater of 1,000 at a margin of +0.5 point on a dial at 3% has a coupon rate of 3.5% and owes 1000 x 3.5% / 12 a month
-  - L972 ...its known schedule is that coupon every month and the face in the last
-  - L975 ...a dial that is no number leaves it where it was
-  - L977 ...a dial at nothing takes the margin alone
-  - L979 a margin of -1 point on a dial at 3% leaves 2%
-  - L981 ...on a dial at half a point it leaves nothing, never under
-  - L982 ...and owes no coupon (the face alone in the last month)
-  - L985 a floater built through addFloatingRateNote() with a margin of -1 point pays no coupon in the month the dial is at nothing
-  - L986 ...nor in the month it is at half a point (the coupon is never under nothing)
-  - L987 ...and with the dial at two points it pays the point that is left: 10,000 x 1% / 12
-  - L988 ...it is a floater whose margin is under nothing, and the books carried it all the while
-- **L996 4. the linker's uplift: the ratio follows the index, the carrying value catches up, the statements and the bridge carry it**
-  - L1027 a month the index did not move books no uplift at all
-  - L1028 ...and the statements' line says nothing
-  - L1031 every month, every linker's ratio is the price index over the index it was sold at
-  - L1032 ...each month's uplift is the carrying value's catch-up: the present value of the known schedule at the unchanged real rate, less what it was
-  - L1033 ...the real effective rate stays what the sale made it
-  - L1034 ...the coupon is the face x the ratio x the real coupon / 12
-  - L1035 ...a month the ratio did not move books nothing
-  - L1036 ...nothing of the uplift is paid in cash before the last month
-  - L1037 every piece's interest expense is its (caught-up) carrying value x its effective rate / 12
-  - L1038 ...and the carrying value is the caught-up one plus the expense less the coupon
-  - L1039 the index falling books a negative uplift on every linker, in each of its
-  - L1041 ...and rising books a positive one: the total booked over the
-  - L1043 the debt manager's month and the statements' lines (interest, uplift booked and paid, coupons) are the pieces' sums, every pressed month of 3-4
-  - L1049 the statements' total expenses carry the uplift (500 set on a fresh account)
-  - L1050 ...so the month's result falls by it
-  - L1051 ...of which 200 was paid in cash and 300 is not
-  - L1054 the treasury bridge's not-cash row is the expense the cash never paid: the discount amortised and the uplift not yet paid, less the gain on paper retired
-  - L1055 ...the bridge foots: change = surplus + not-cash + raised - repaid + journal + residual
-  - L1056 ...and its residual is the bank's coupon timing, to the cent: the uplift is not in it
-  - L1057 the walk from EARNED to the budget leaves what EARNED never counted - the coupons paid beyond the bank - and none of the uplift
-  - L1066 the walk from EARNED to the budget has a row for the inflation uplift on linked bonds, not yet paid
-  - L1067 ...and it takes the uplift not yet paid off the walk: minus the month's uplift not in cash (
-  - L1072 the indexation the linkers owe past their face is each face x how far its ratio is over 1 (
-  - L1073 ...and it is something, and part of the debt the curve is priced on
-  - L1081 a price index that is no number, or not above nothing, books nothing and leaves the ratio at 1
-  - L1082 a linker handed a base that is no price level is taken at a base of 1
-  - L1083 the next ratio at a level that is no number is the ratio as it stands
-  - L1085 the index at 1.1 over a base of 1 books an uplift (
-  - L1086 ...and it owes at maturity the indexed face: 1,100
-  - L1087 ...its indexed principal is the same
-  - L1089 the index back at 0.9 books a negative uplift (
-  - L1090 ...and it owes at maturity the face, never under: the floor
-  - L1091 ...though its indexed principal is 900
-  - L1092 ...and its known schedule ends on the face, with the coupon on the 900: the last payment is 1,000 + 1,000 x 0.9 x 2% / 12
-  - L1119 ...and it ends carried at nothing
-- **L1190 5. to maturity: the indexed face under inflation, the original face under deflation, the books closing to the cent**
-  - L1197 every month, the fixture floaters' and linkers' coupons are what their terms say
-  - L1198 ...a dial that did not move left the floaters' effective rates where they were, to the bit
-  - L1199 ...one that moved re-solved them on the known schedule
-  - L1200 ...the linkers' uplifts are their carrying values' catch-ups
-  - L1201 ...the carrying values roll by the expense and the coupon
-  - L1202 fixture: the up-twin's ratio at the end is above 1 (
-  - L1204 the linker under a rising index paid, in the coupon of its last month, the indexed face less the face: 20,000 x (ratio - 1)
-  - L1205 the twin under a ratio of less than 1 paid no uplift: the floor
-  - L1206 ...and the bridge's repaid row of that month is the three faces, the indexed one's included at its original face
-  - L1208 the statements' uplift paid in cash that month is the up-twin's alone
-  - L1209 the up-twin ended carried at nothing and its face was repaid whole: all three pieces are off the books
-  - L1211 mid-life, with the twin's ratio at
-  - L1212 ...the twin's ratio was under 1 then and the up-twin's indexation was something (
-  - L1213 ...and the debt the market prices the city on is its principal and that indexation
-  - L1214 the walk from EARNED to the budget leaves nothing in any month - the uplift months, the margin under nothing, the maturity - when the bank holds the paper
-  - L1215 fixtures
-  - L1240 fixture: households, the bank and the central bank hold the linker before it is shortened
-  - L1266 the real linker repaid, in its last month, the face through the principal row: the bridge's repaid row
-  - L1267 ...and the uplift through the coupons: the indexed face less the face
-  - L1268 ...the coupon it paid is the real coupon on the indexed face and the uplift
-  - L1276 the households and the central bank were both repaid a part of the principal, and so both got a part of the uplift
-  - L1279 the statements' uplift paid in cash is the same
-  - L1280 ...and the interest line excludes it: the cash interest plus the uplift paid is the coupons of the month (the linker's and the floater's)
-  - L1282 ...and the debt manager's uplift paid is the same, and the coupon booked is the coupons less it
-  - L1287 the principal either piece's next payment repays is nothing until the last month, and then its face - the linker's not indexed: the rollover refinances the f...
-  - L1288 every month the real floater's coupon is its face x (the dial + margin) / 12 and the linker's the real coupon on the indexed face
-  - L1289 ...the floater's rate reset on both moves of the dial
-  - L1290 ...the linker's carrying value caught up with the index every month
-  - L1291 ...the carrying values roll by the expense and the coupon
-  - L1292 each holder was paid, of the linker's last coupon (the uplift in it), the share it was repaid of the face - the households, the central bank, the businesses
-  - L1293 real city
-  - L1294 fixture: the floater played to maturity moved the dial twice and rolled nothing (the rollover is off)
-  - L1315 fixture: households and the central bank hold the linker before it is shortened
-  - L1324 the index fell every month, so the ratio ended at
-  - L1325 ...each month booked a negative uplift:
-  - L1326 at the last payment the face was repaid whole through the principal row: the bridge's repaid row
-  - L1327 ...and no uplift was paid: the floor is the original face, not the indexed one
-  - L1328 ...the last coupon is the real coupon on the indexed face and nothing added
-  - L1329 ...the statements' uplift paid in cash is nothing
-  - L1330 ...and it is off the books, carried at nothing
-  - L1331 every month the linker's coupon is the real coupon on the (falling) indexed face
-  - L1332 ...its carrying value caught up with the index every month
-  - L1333 ...the carrying value rolls by the expense and the coupon
-  - L1334 falling city
-- **L1342 6. the money closes: every month of 3-5 audited, the holders paid their shares, nothing counted twice**
-  - L1344 the audit closed every month pressed (
-  - L1354 ...among them the month of:
-  - L1356 every holder - households, businesses, the world, the central bank - was paid its share of every coupon, the uplift's in the last
-  - L1357 the cash coupons the pieces paid are what the treasury paid on its interest line, with the uplift paid beside it - nothing counted twice
-  - L1358 the debt manager's month and the statements' lines are the pieces' sums, across every pressed month
-  - L1359 the bridge's not-cash row is the expense the cash never paid, across every pressed month
-  - L1360 the bridge foots, across every pressed month
-  - L1361 the bridge's residual is the bank's coupon timing and nothing else - holders of every kind, the maturity months among them
-  - L1362 the walk from EARNED to the budget leaves only the coupons EARNED never counted, across every pressed month
-  - L1417 ...every offer is at or over fair (
-  - L1419 ...quoting moves nothing
-  - L1424 ...the principal fell by it
-  - L1425 ...the face with it
-  - L1426 ...and the carrying value
-  - L1427 ...the effective rate did not move
-  - L1429 ...nor did the margin or the index
-  - L1431 ...nor did the real coupon, the base or the ratio
-  - L1432 ...and the indexed principal fell with the face
-  - L1433 ...and so did the month's uplift it last booked: the same bond, smaller
-  - L1435 the bank's principal fell by exactly what it sold
-  - L1436 ...the households'
-  - L1437 ...the businesses'
-  - L1438 ...the world's
-  - L1439 ...and the central bank's did not move: it is never asked
-  - L1440 the treasury's cash fell by what was paid
-  - L1441 the bank was paid its own slices' prices
-  - L1442 ...its book of the city's paper fell by the face it sold
-  - L1443 the households' savings rose by their own slices' prices
-  - L1444 the world's book of the paper fell by the face it sold
-  - L1445 the businesses' tills rose by their own slices' prices, at once
-  - L1446 ...and their paper fell by the face they sold
-  - L1448 the gain on debt retired the month booked is the carrying value of the face taken less the price
-  - L1450 the audit closes the month the payments are declared in, and the month after
-- **L1455 7. the buyback: every offer at or over fair on the dial and index the market expects, a part of a floater and of a linker bought back**
-  - L1466 fixture: a floater and a linker are on the books, unsettled, and a part of either quotes nothing
-  - L1472 fixture: both settled, and the households and the bank hold part of each, the central bank none
-  - L1480 ...the piece is still on the books, at half its principal
-  - L1498 fixture: a
-  - L1504 the
-  - L1512 the
-  - L1518 a
-  - L1520 the audit still closes after the round trips
-  - L1526 the rest of the
-  - L1527 ...and the piece leaves the books
-  - L1529 ...and the audit closes that month and the next
-- **L1537 8. the rollover: a floater into a floater and a linker into a linker, each of the nearest of its own terms; a bill under TWELVE_MONTH_BILL**
-  - L1539 a floater of 1 or 3 years rolls into the 2-year, of 4 into the 5-year, of 7 or more into the 5-year; the shorter on a tie
-  - L1542 a linker of 5 years rolls into the 10-year, of 20 (a tie) into the 10-year, of 25 into the 30-year
-  - L1549 fixture: the city rolls each piece into its own kind
-  - L1558 the plan before the press rolls each into its own kind, by the nearest term of its own:
-  - L1569 the pieces falling due are gone from the books
-  - L1573 a
-  - L1579 a
-  - L1583 ...four new pieces and no other kind:
-  - L1585 the audit closes the month it rolled
-  - L1586 ...and the next, with the new pieces settled
-  - L1595 the plan under TWELVE_MONTH_BILL is bills alone:
-  - L1601 ...and the press rolled them into 12-month bills, with no floater or linker among the new pieces:
-  - L1603 ...the pieces falling due are gone, and the audit closes
-  - L1620 fixture: the central bank, on its dial, holds part of the floater and of the linker
-  - L1638 the floater and the linker the central bank held fell due and were rolled into a floater and a linker:
-  - L1644 ...and the central bank holds part of each of the new pieces: its par was rolled, not repaid
-  - L1645 ...the central bank's book of the city's paper is what the pieces say it holds
-  - L1647 the audit closes the month it rolled, and the next
-- **L1661 9. the save: a floater and a linker mid-life keep their terms, books and market value, and the month after a load books what the same mon...**
-  - L1682 fixture: the floater's dial moved (index
-  - L1687 fixture: the city saved to slot 10 of its scratch root
-  - L1691 the loaded manager is handed the city's price index, not nothing
-  - L1693 fixture: the loaded city has the same pieces
-  - L1700 ...a floater of type FLOAT and a linker of type LINKED among them, read back as their own classes
-  - L1702 the floater keeps its margin
-  - L1703 ...its index (the dial it last read)
-  - L1704 ...its carrying value
-  - L1705 ...its effective rate
-  - L1706 ...its remaining months and its holders
-  - L1708 ...and its market value, to the bit
-  - L1709 the linker keeps its real coupon
-  - L1710 ...its base index
-  - L1711 ...its ratio
-  - L1712 ...its last uplift
-  - L1713 ...its carrying value
-  - L1714 ...its effective rate
-  - L1715 ...and its market value, to the bit
-  - L1717 the government block keeps the month's uplift booked
-  - L1718 ...the uplift paid in cash
-  - L1719 ...and the not-cash part, which the bridge adds back
-  - L1720 ...and the bridge's not-cash row itself
-  - L1721 fixture: the uplift saved is something (
-  - L1727 the month after the load books the same uplift on the linker
-  - L1728 ...the same coupon on it
-  - L1729 ...the same interest expense
-  - L1730 ...the same coupon on the floater
-  - L1731 ...the same interest expense on it
-  - L1732 ...the statements' uplift is the same
-  - L1733 ...the debt manager's uplift booked is the same
-  - L1734 ...and the carrying values it leaves
-  - L1735 the loaded city's month closed its audit, as the original's did
-  - L1746 a change of unit by a hundred takes the linker's face to a hundredth
-  - L1747 ...its carrying value
-  - L1748 ...the uplift it last booked
-  - L1749 ...its indexed principal and what it owes at maturity
-  - L1750 ...every payment it still owes
-  - L1751 ...but not its real coupon, its base index, its ratio or its effective rate
-  - L1753 ...and the floater's face, carrying value and last coupon
-  - L1755 ...every payment it still owes
-  - L1756 ...but not its margin, its index or its effective rate
+- **L615 1. fair prices it at 100: the margin and the real coupon that make the payments worth the face on the curve**
+  - L630 ...a basis point less is worth under 100 (
+  - L636 ...and the piece's own projectedFlows() on that path are those payments, tenfold for a face of 1,000
+  - L637 ...a path nobody gives is the known schedule: today's coupon flat and the face at the end
+  - L640 ...on a flat dial and a curve with no shape the fair margin is nothing
+  - L652 ...a basis point less is worth under 100 and a basis point more over
+  - L653 ...and the piece's own flowsFor() are those payments
+  - L655 ...and so are its projectedFlows() from a ratio of 1, tenfold for a face of 1,000
+  - L659 ...a ratio that never moves is a bullet: the real coupon is the curve's par yield
+  - L661 ...the index rises, so the floor never bites: the coupon is the one without a floor
+  - L664 ...the index falls, so the ratio at the end is under 1 (
+  - L666 ...the floor binds: the last payment is the original face and the coupon on the indexed one
+  - L668 ...the floor is worth something to the lender, so the real coupon is under what it would be without it (
+  - L673 ...the index at 2% asks a lower real coupon than the index at 0% (
+  - L695 a floater is issued at 2 and 5 years and at no other
+  - L697 a linker is issued at 10 and 30 years and at no other
+  - L735 a
+  - L761 a
+- **L781 2. a sale: the margin is fair plus the tail, the real coupon fair plus the tail rounded down; the index is the dial, the base the price i...**
+  - L795 ...its margin is the fair margin plus the tail
+  - L796 ...the fair margin is DebtManager.fairMargin() on the curve the issue stands on
+  - L798 ...and prices a floater at 100 on that curve and the dial the market expects
+  - L807 ...its real coupon is the fair one plus the tail rounded down to Auction.COUPON_STEP: a multiple of it, at most that, within one step of it (
+  - L810 ...the fair real coupon is DebtManager.fairRealCoupon() on the curve the issue stands on
+  - L812 ...and prices a new linker at 100 on that curve and the index the market expects
+  - L817 a sale the bids cover clears at fair, with no tail, and its real coupon is under fair by less than a step (
+  - L823 a quote says what the paper is: the floater's coupon as the policy rate plus a margin, the linker's as a real coupon
+  - L827 a floater quoted for the cash it must bring covers it, by less than a lot of 100 (
+  - L829 ...and so does a linker (
+  - L840 a 3-year floater and a 10-year one are refused in the instrument's words
+  - L842 a 20-year linker and a 5-year one are refused in the instrument's words
+  - L844 a dollar floater and a dollar linker are refused: they are written at home only
+  - L848 ...and the quotes for those terms are empty
+  - L849 ...and none of the refusals moved the cash, the pieces or the principal
+  - L859 a second sale of the same term opens a second line: two floaters of
+  - L864 ...and the same for a linker: two of
+  - L867 every sale: the margin or real coupon is the quote's, the quote's fair plus its tail
+  - L868 ...a linker's real coupon is that fair plus the tail rounded down to Auction.COUPON_STEP: a multiple of it, within a step under
+  - L869 ...a floater's index is the dial it was sold at and the linker's base the price index
+  - L870 ...a linker is sold at a ratio of 1
+  - L871 ...the treasury received what the quote said
+  - L872 ...the books opened with what it raised, on the face it sold
+  - L873 ...a floater's effective rate is its coupon's, plus the fee's share (under 5 basis points)
+  - L874 ...a sale with no tail is worth what the buyback values it at (per 100)
+  - L915 fixture: the default city (the rollover on, each piece into its own kind) held paper all the while:
+  - L917 ...and not one piece in it was a floating-rate note or an inflation-linked bond:
+- **L925 3. the floater's coupon follows the dial: face x (dial + margin) / 12, the rate reset with it, the books holding**
+  - L934 fixture: a fixed 2-year bond is on the books beside the floaters, for the comparison
+  - L937 ...it opened a line of its own: no floater and no linker took any of its face (a bond's benchmark line is a bond's)
+  - L956 a move of the dial takes a fixed bond of the same term down by more than half a point (
+  - L957 ...and leaves the floater near par: within a quarter of a point of 100 (
+  - L958 ...so the floater moves under a quarter as much as the fixed bond (
+  - L963 fixture: the dial script moved the dial five times and the floaters reset on it
+  - L964 every month, every floater's coupon is its face x (the dial + its margin, never under nothing) / 12
+  - L965 ...and the index it reads is the dial of the month
+  - L966 a month the dial did not move leaves the effective rate where it was, to the bit
+  - L967 a month it moved re-solves the effective rate on the known schedule (today's coupon flat, the face) at the carrying value
+  - L968 every piece's interest expense is its carrying value x its effective rate / 12
+  - L969 ...and the carrying value is the last one plus the expense less the coupon
+  - L970 fixture: the floaters were among the pieces pressed, and the debt book did not change under them
+  - L990 a floater of 1,000 at a margin of +0.5 point on a dial at 3% has a coupon rate of 3.5% and owes 1000 x 3.5% / 12 a month
+  - L991 ...its known schedule is that coupon every month and the face in the last
+  - L994 ...a dial that is no number leaves it where it was
+  - L996 ...a dial at nothing takes the margin alone
+  - L998 a margin of -1 point on a dial at 3% leaves 2%
+  - L1000 ...on a dial at half a point it leaves nothing, never under
+  - L1001 ...and owes no coupon (the face alone in the last month)
+  - L1004 a floater built through addFloatingRateNote() with a margin of -1 point pays no coupon in the month the dial is at nothing
+  - L1005 ...nor in the month it is at half a point (the coupon is never under nothing)
+  - L1006 ...and with the dial at two points it pays the point that is left: 10,000 x 1% / 12
+  - L1007 ...it is a floater whose margin is under nothing, and the books carried it all the while
+- **L1015 4. the linker's uplift: the ratio follows the index, the carrying value catches up, the statements and the bridge carry it**
+  - L1046 a month the index did not move books no uplift at all
+  - L1047 ...and the statements' line says nothing
+  - L1050 every month, every linker's ratio is the price index over the index it was sold at
+  - L1051 ...each month's uplift is the carrying value's catch-up: the present value of the known schedule at the unchanged real rate, less what it was
+  - L1052 ...the real effective rate stays what the sale made it
+  - L1053 ...the coupon is the face x the ratio x the real coupon / 12
+  - L1054 ...a month the ratio did not move books nothing
+  - L1055 ...nothing of the uplift is paid in cash before the last month
+  - L1056 every piece's interest expense is its (caught-up) carrying value x its effective rate / 12
+  - L1057 ...and the carrying value is the caught-up one plus the expense less the coupon
+  - L1058 the index falling books a negative uplift on every linker, in each of its
+  - L1060 ...and rising books a positive one: the total booked over the
+  - L1062 the debt manager's month and the statements' lines (interest, uplift booked and paid, coupons) are the pieces' sums, every pressed month of 3-4
+  - L1068 the statements' total expenses carry the uplift (500 set on a fresh account)
+  - L1069 ...so the month's result falls by it
+  - L1070 ...of which 200 was paid in cash and 300 is not
+  - L1073 the treasury bridge's not-cash row is the expense the cash never paid: the discount amortised and the uplift not yet paid, less the gain on paper retired
+  - L1074 ...the bridge foots: change = surplus + not-cash + raised - repaid + journal + residual
+  - L1075 ...and its residual is the bank's coupon timing, to the cent: the uplift is not in it
+  - L1076 the walk from EARNED to the budget leaves what EARNED never counted - the coupons paid beyond the bank - and none of the uplift
+  - L1085 the walk from EARNED to the budget has a row for the inflation uplift on linked bonds, not yet paid
+  - L1086 ...and it takes the uplift not yet paid off the walk: minus the month's uplift not in cash (
+  - L1091 the indexation the linkers owe past their face is each face x how far its ratio is over 1 (
+  - L1092 ...and it is something, and part of the debt the curve is priced on
+  - L1100 a price index that is no number, or not above nothing, books nothing and leaves the ratio at 1
+  - L1101 a linker handed a base that is no price level is taken at a base of 1
+  - L1102 the next ratio at a level that is no number is the ratio as it stands
+  - L1104 the index at 1.1 over a base of 1 books an uplift (
+  - L1105 ...and it owes at maturity the indexed face: 1,100
+  - L1106 ...its indexed principal is the same
+  - L1108 the index back at 0.9 books a negative uplift (
+  - L1109 ...and it owes at maturity the face, never under: the floor
+  - L1110 ...though its indexed principal is 900
+  - L1111 ...and its known schedule ends on the face, with the coupon on the 900: the last payment is 1,000 + 1,000 x 0.9 x 2% / 12
+  - L1138 ...and it ends carried at nothing
+- **L1208 5. to maturity: the indexed face under inflation, the original face under deflation, the books closing to the cent**
+  - L1215 every month, the fixture floaters' and linkers' coupons are what their terms say
+  - L1216 ...a dial that did not move left the floaters' effective rates where they were, to the bit
+  - L1217 ...one that moved re-solved them on the known schedule
+  - L1218 ...the linkers' uplifts are their carrying values' catch-ups
+  - L1219 ...the carrying values roll by the expense and the coupon
+  - L1220 fixture: the up-twin's ratio at the end is above 1 (
+  - L1222 the linker under a rising index paid, in the coupon of its last month, the indexed face less the face: 20,000 x (ratio - 1)
+  - L1223 the twin under a ratio of less than 1 paid no uplift: the floor
+  - L1224 ...and the bridge's repaid row of that month is the three faces, the indexed one's included at its original face
+  - L1226 the statements' uplift paid in cash that month is the up-twin's alone
+  - L1227 the up-twin ended carried at nothing and its face was repaid whole: all three pieces are off the books
+  - L1229 mid-life, with the twin's ratio at
+  - L1230 ...the twin's ratio was under 1 then and the up-twin's indexation was something (
+  - L1231 ...and the debt the market prices the city on is its principal and that indexation
+  - L1232 the walk from EARNED to the budget leaves nothing in any month - the uplift months, the margin under nothing, the maturity - when the bank holds the paper
+  - L1233 fixtures
+  - L1258 fixture: households, the bank and the central bank hold the linker before it is shortened
+  - L1284 the real linker repaid, in its last month, the face through the principal row: the bridge's repaid row
+  - L1285 ...and the uplift through the coupons: the indexed face less the face
+  - L1286 ...the coupon it paid is the real coupon on the indexed face and the uplift
+  - L1294 the households and the central bank were both repaid a part of the principal, and so both got a part of the uplift
+  - L1297 the statements' uplift paid in cash is the same
+  - L1298 ...and the interest line excludes it: the cash interest plus the uplift paid is the coupons of the month (the linker's and the floater's)
+  - L1300 ...and the debt manager's uplift paid is the same, and the coupon booked is the coupons less it
+  - L1305 the principal either piece's next payment repays is nothing until the last month, and then its face - the linker's not indexed: the rollover refinances the f...
+  - L1306 every month the real floater's coupon is its face x (the dial + margin) / 12 and the linker's the real coupon on the indexed face
+  - L1307 ...the floater's rate reset on both moves of the dial
+  - L1308 ...the linker's carrying value caught up with the index every month
+  - L1309 ...the carrying values roll by the expense and the coupon
+  - L1310 each holder was paid, of the linker's last coupon (the uplift in it), the share it was repaid of the face - the households, the central bank, the businesses
+  - L1311 real city
+  - L1312 fixture: the floater played to maturity moved the dial twice and rolled nothing (the rollover is off)
+  - L1333 fixture: households and the central bank hold the linker before it is shortened
+  - L1342 the index fell every month, so the ratio ended at
+  - L1343 ...each month booked a negative uplift:
+  - L1344 at the last payment the face was repaid whole through the principal row: the bridge's repaid row
+  - L1345 ...and no uplift was paid: the floor is the original face, not the indexed one
+  - L1346 ...the last coupon is the real coupon on the indexed face and nothing added
+  - L1347 ...the statements' uplift paid in cash is nothing
+  - L1348 ...and it is off the books, carried at nothing
+  - L1349 every month the linker's coupon is the real coupon on the (falling) indexed face
+  - L1350 ...its carrying value caught up with the index every month
+  - L1351 ...the carrying value rolls by the expense and the coupon
+  - L1352 falling city
+- **L1360 6. the money closes: every month of 3-5 audited, the holders paid their shares, nothing counted twice**
+  - L1362 the audit closed every month pressed (
+  - L1376 ...among them the month of:
+  - L1378 every holder - households, businesses, the world, the central bank - was paid its share of every coupon, the uplift's in the last
+  - L1379 the cash coupons the pieces paid are what the treasury paid on its interest line, with the uplift paid beside it - nothing counted twice
+  - L1380 the debt manager's month and the statements' lines are the pieces' sums, across every pressed month
+  - L1381 the bridge's not-cash row is the expense the cash never paid, across every pressed month
+  - L1382 the bridge foots, across every pressed month
+  - L1383 the bridge's residual is the bank's coupon timing and nothing else - holders of every kind, the maturity months among them
+  - L1384 the walk from EARNED to the budget leaves only the coupons EARNED never counted, across every pressed month
+  - L1439 ...every offer is at or over fair (
+  - L1441 ...quoting moves nothing
+  - L1446 ...the principal fell by it
+  - L1447 ...the face with it
+  - L1448 ...and the carrying value
+  - L1449 ...the effective rate did not move
+  - L1451 ...nor did the margin or the index
+  - L1453 ...nor did the real coupon, the base or the ratio
+  - L1454 ...and the indexed principal fell with the face
+  - L1455 ...and so did the month's uplift it last booked: the same bond, smaller
+  - L1457 the bank's principal fell by exactly what it sold
+  - L1458 ...the households'
+  - L1459 ...the businesses'
+  - L1460 ...the world's
+  - L1461 ...and the central bank's did not move: it is never asked
+  - L1462 the treasury's cash fell by what was paid
+  - L1463 the bank was paid its own slices' prices
+  - L1464 ...its book of the city's paper fell by the face it sold
+  - L1465 the households' savings rose by their own slices' prices
+  - L1466 the world's book of the paper fell by the face it sold
+  - L1467 the businesses' tills rose by their own slices' prices, at once
+  - L1468 ...and their paper fell by the face they sold
+  - L1470 the gain on debt retired the month booked is the carrying value of the face taken less the price
+  - L1472 the audit closes the month the payments are declared in, and the month after
+- **L1477 7. the buyback: every offer at or over fair on the dial and index the market expects, a part of a floater and of a linker bought back**
+  - L1488 fixture: a floater and a linker are on the books, unsettled, and a part of either quotes nothing
+  - L1494 fixture: both settled, the households hold most of each (the bank D$
+  - L1503 ...the piece is still on the books, at half its principal
+  - L1521 fixture: a
+  - L1527 the
+  - L1535 the
+  - L1541 a
+  - L1543 the audit still closes after the round trips
+  - L1549 the rest of the
+  - L1550 ...and the piece leaves the books
+  - L1552 ...and the audit closes that month and the next
+- **L1560 8. the rollover: a floater into a floater and a linker into a linker, each of the nearest of its own terms; a bill under TWELVE_MONTH_BILL**
+  - L1562 a floater of 1 or 3 years rolls into the 2-year, of 4 into the 5-year, of 7 or more into the 5-year; the shorter on a tie
+  - L1565 a linker of 5 years rolls into the 10-year, of 20 (a tie) into the 10-year, of 25 into the 30-year
+  - L1572 fixture: the city rolls each piece into its own kind
+  - L1581 the plan before the press rolls each into its own kind, by the nearest term of its own:
+  - L1592 the pieces falling due are gone from the books
+  - L1596 a
+  - L1602 a
+  - L1606 ...four new pieces and no other kind:
+  - L1608 the audit closes the month it rolled
+  - L1609 ...and the next, with the new pieces settled
+  - L1618 the plan under TWELVE_MONTH_BILL is bills alone:
+  - L1624 ...and the press rolled them into 12-month bills, with no floater or linker among the new pieces:
+  - L1626 ...the pieces falling due are gone, and the audit closes
+  - L1643 fixture: the central bank, on its dial, holds part of the floater and of the linker
+  - L1661 the floater and the linker the central bank held fell due and were rolled into a floater and a linker:
+  - L1667 ...and the central bank holds part of each of the new pieces: its par was rolled, not repaid
+  - L1668 ...the central bank's book of the city's paper is what the pieces say it holds
+  - L1670 the audit closes the month it rolled, and the next
+- **L1684 9. the save: a floater and a linker mid-life keep their terms, books and market value, and the month after a load books what the same mon...**
+  - L1705 fixture: the floater's dial moved (index
+  - L1710 fixture: the city saved to slot 10 of its scratch root
+  - L1714 the loaded manager is handed the city's price index, not nothing
+  - L1716 fixture: the loaded city has the same pieces
+  - L1723 ...a floater of type FLOAT and a linker of type LINKED among them, read back as their own classes
+  - L1725 the floater keeps its margin
+  - L1726 ...its index (the dial it last read)
+  - L1727 ...its carrying value
+  - L1728 ...its effective rate
+  - L1729 ...its remaining months and its holders
+  - L1731 ...and its market value, to the bit
+  - L1732 the linker keeps its real coupon
+  - L1733 ...its base index
+  - L1734 ...its ratio
+  - L1735 ...its last uplift
+  - L1736 ...its carrying value
+  - L1737 ...its effective rate
+  - L1738 ...and its market value, to the bit
+  - L1740 the government block keeps the month's uplift booked
+  - L1741 ...the uplift paid in cash
+  - L1742 ...and the not-cash part, which the bridge adds back
+  - L1743 ...and the bridge's not-cash row itself
+  - L1744 fixture: the uplift saved is something (
+  - L1750 the month after the load books the same uplift on the linker
+  - L1751 ...the same coupon on it
+  - L1752 ...the same interest expense
+  - L1753 ...the same coupon on the floater
+  - L1754 ...the same interest expense on it
+  - L1755 ...the statements' uplift is the same
+  - L1756 ...the debt manager's uplift booked is the same
+  - L1757 ...and the carrying values it leaves
+  - L1758 the loaded city's month closed its audit, as the original's did
+  - L1769 a change of unit by a hundred takes the linker's face to a hundredth
+  - L1770 ...its carrying value
+  - L1771 ...the uplift it last booked
+  - L1772 ...its indexed principal and what it owes at maturity
+  - L1773 ...every payment it still owes
+  - L1774 ...but not its real coupon, its base index, its ratio or its effective rate
+  - L1776 ...and the floater's face, carrying value and last coupon
+  - L1778 ...every payment it still owes
+  - L1779 ...but not its margin, its index or its effective rate
 
 ## FoodProcessingCheck.java - 21 labelled assertions
 

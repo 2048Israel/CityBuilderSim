@@ -41,7 +41,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (3):** [DebtManager](DebtManager.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md)
+**Used by (4):** [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md)
 
 ## Constants
 

@@ -106,7 +106,7 @@ Generated 2026-10-23 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 73. **L10124** `bank.takeLoanFees(lender.getFeesThisMonth());` → [Bank.takeLoanFees](map/Bank.md) (L3141)  
    _...and the fee on what it lent the businesses, which they were handed their loans net of (0.7.7): pool to pool, so it cancels._
 74. **L10125** `bank.takeRepayment(lender.getRepaidThisMonth() + bankPrincipalRepaidThisMonth);` → [Bank.takeRepayment](map/Bank.md) (L2977)
-75. **L10141** `bank.takeDiscount(debtManager.getAccretedForBank() + legacyDiscountDue);` → [Bank.takeDiscount](map/Bank.md) (L2806), [DebtManager.getAccretedForBank](map/DebtManager.md) (L2421)  
+75. **L10141** `bank.takeDiscount(debtManager.getAccretedForBank() + legacyDiscountDue);` → [Bank.takeDiscount](map/Bank.md) (L2806), [DebtManager.getAccretedForBank](map/DebtManager.md) (L2433)  
    _THE DISCOUNT ACCRETES (0.7.1)._
 76. **L10142** `legacyDiscountDue = 0;`
 77. **L10146** `cityDebtRaisedForBank = 0;`  
@@ -148,7 +148,7 @@ Generated 2026-10-23 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _...and the central bank's: its profit struck, to be remitted at the top of next month, or its loss carried._
 102. **L10310** `pushCostOfFundsToTheDebtMarket();` → [Game.pushCostOfFundsToTheDebtMarket](map/Game.md) (L11204)  
    _...AND THE PRICE OF MONEY IS FINAL WITH IT._
-103. **L10311** `debtManager.updateInterest();` → [DebtManager.updateInterest](map/DebtManager.md) (L2611)
+103. **L10311** `debtManager.updateInterest();` → [DebtManager.updateInterest](map/DebtManager.md) (L2623)
 104. **L10321** `householdBalance.creditDepositInterest(bank.getDepositInterestToHouseholds());` → [HouseholdBalance.creditDepositInterest](map/HouseholdBalance.md) (L3876), [Bank.getDepositInterestToHouseholds](map/Bank.md) (L3255)  
    _...AND THE SAVERS ARE PAID._
 105. **L10322** `double sectorInterest = bank.getDepositInterestToSectors();` → [Bank.getDepositInterestToSectors](map/Bank.md) (L3256)
@@ -163,12 +163,12 @@ Generated 2026-10-23 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 111. **L10382** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1140), [Exchange.cityMarketValue](map/Exchange.md) (L1245)  
    _...AND THE BONDS TRADE (0.7.12): the month's coupons paid to their holders, last month's orders withdrawn, every bond valued and every participant's orders posted again - after the shares, and befo..._
 112. **L10383** `strikeBankBonds();` → [Game.strikeBankBonds](map/Game.md) (L3174)
-113. **L10388** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L405), [DebtManager.firmBookRatio](map/DebtManager.md) (L2362), [DebtManager.firmBookYield](map/DebtManager.md) (L2368)  
+113. **L10388** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L405), [DebtManager.firmBookRatio](map/DebtManager.md) (L2374), [DebtManager.firmBookYield](map/DebtManager.md) (L2380)  
    _The businesses' paper at today's curve, struck here as the households' book yield is a few lines below, so paper bought at this month's settle is read at its own yield and not at the short rate it ..._
 114. **L10389** `outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE,` → [OutwardInvestment.takeMonth](map/OutwardInvestment.md) (L181), [Bank.depositRate](map/Bank.md) (L3248), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L991)
 115. **L10393** `householdBalance.investAbroad(bank.depositRate(), DebtManager.WORLD_BASE_RATE, foreign.getRate());` → [HouseholdBalance.investAbroad](map/HouseholdBalance.md) (L3023), [Bank.depositRate](map/Bank.md) (L3248), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L991)  
    _...and the households, by the same rule, with what the owners were just paid._
-116. **L10396** `householdBalance.sellPaperForSpread(debtManager.householdBookYield(), bank.depositRate());` → [HouseholdBalance.sellPaperForSpread](map/HouseholdBalance.md) (L3359), [DebtManager.householdBookYield](map/DebtManager.md) (L2391), [Bank.depositRate](map/Bank.md) (L3248)  
+116. **L10396** `householdBalance.sellPaperForSpread(debtManager.householdBookYield(), bank.depositRate());` → [HouseholdBalance.sellPaperForSpread](map/HouseholdBalance.md) (L3359), [DebtManager.householdBookYield](map/DebtManager.md) (L2403), [Bank.depositRate](map/Bank.md) (L3248)  
    _...and the city's paper, when the spread that brought them in has gone (0.7.1): home to the bank's desk, a little a month._
 117. **L10414** `bank.resolveIfFailed();` → [Bank.resolveIfFailed](map/Bank.md) (L1896)  
    _...AND IF WHAT LANDED AFTER THE CLOSE BROKE IT, IT HAS FAILED THIS MONTH (0.7.8)._

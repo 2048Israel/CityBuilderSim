@@ -1429,6 +1429,18 @@ public class DebtManager {
     }
 
     /**
+     * Principal outstanding of one kind as the ladder draws it (CD5; LADDER_KINDS' index, 0 the notes, 1
+     * the serial bonds, 2 the bonds): a floating-rate note's face and an inflation-linked bond's are the
+     * bonds', as ladderKind() sorts them, which getPrincipalOf("TERM") leaves out. At home and abroad, in
+     * local money. The Finances hub's bar of the principal by kind reads it.
+     */
+    public double getPrincipalOfLadderKind(int kind) {
+        double total = 0;
+        for (Debt d : debts) if (ladderKind(d.getType()) == kind) total += d.getOustandingPrincipal();
+        return total;
+    }
+
+    /**
      * Everything the city's paper asks of it over the next `months` months,
      * coupons and principal together, in local money - the first `months` of
      * every piece's remainingCashFlows(), the ladder's own read: the Debt

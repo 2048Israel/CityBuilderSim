@@ -89,7 +89,12 @@ public class FloatingRateNote extends Debt {
 
     /** The coupon, a year, at the dial as the last reset read it: the index and the margin, never under nothing. */
     public double couponRate() {
-        return Math.max(0, index + margin);
+        return couponAt(index, margin);
+    }
+
+    /** A floater's coupon, a year, at a dial and a margin: their sum, never under nothing. What a sale's card says it pays at today's dial (the margin the auction set; the policy rate now). */
+    public static double couponAt(double policyRate, double margin) {
+        return Math.max(0, policyRate + margin);
     }
 
     /** ...the same figure under the name LongTermBond's gives it. */

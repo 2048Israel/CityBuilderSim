@@ -189,9 +189,16 @@ final class FinancesScreen {
                               String unit, String blurb, String colour, String range, String line) { }
 
     /**
-     * The three kinds of paper CD2 sells, in the board's tile order: bills,
-     * bonds, the amortizing bond (floating and linked bonds are CD5's, so no
-     * tile). The ladder's order is KIND_NAMES' and Palette.LADDER's.
+     * The five kinds of paper the city sells, in the board's tile order:
+     * bills, bonds, the amortizing bond (CD2), then the floating-rate note
+     * and the inflation-linked bond (CD5, spec-city-debt.md 2.4 and 2.5).
+     * The ladder's order is KIND_NAMES' and Palette.LADDER's, and it draws a
+     * floater and a linker as bonds (DebtManager.ladderKind()); their tiles
+     * are cousins of the bonds' blue - the ramp's fourth step and the accent
+     * fill, neither on the ladder - and tell the ghost of "this issue" from
+     * the bonds already on it. The amortizing bond, the floater and the
+     * linker are home paper only (homeOnly(): there are none in dollars,
+     * spec 2.7).
      */
     static final Instrument[] INSTRUMENTS = {
         new Instrument("Note", "Bills", "BILL", ShortTermTBill.TERMS, 1000, "months",
@@ -210,7 +217,63 @@ final class FinancesScreen {
                 + "monthly on what is left, so the debt and the coupon shrink together and nothing falls due in a "
                 + "lump. Sold at 5 to 30 years in fives, each sale its own line, never reopened.",
                 Palette.LADDER[1], "5–30 years", "Repaid in yearly slices, on one coupon."),
+        // CD5: the floating-rate note and the inflation-linked bond. The ladder draws both as bonds, so their tiles
+        // are cousins of the bonds' blue (not Palette.LADDER's, which stays three) and differ from every other tile.
+        new Instrument("Float", "Floating", "FLOATING", FloatingRateNote.MATURITIES, 100000, "years",
+                "A coupon every month on the whole face and the whole face at the end, as a bond's - but the coupon "
+                + "is the policy rate of the month plus a margin the sale fixes, never under nothing. The margin is "
+                + "what prices the note at 100 on today's curve, plus the tail the auction cleared at, so a note "
+                + "sells near 100 whatever the dial does; and the city carries the dial's risk: a rise in the dial "
+                + "costs it more every month, a fall costs it less. Sold at 2 or 5 years, each sale its own line, "
+                + "never reopened, at home only.",
+                Palette.REVENUE_RAMP[3], "2 or 5 years", "The dial each month, plus a fixed margin."),
+        new Instrument("Linked", "Linked", "LINKED", InflationLinkedBond.MATURITIES, 100000, "years",
+                "A real coupon every month on a principal that follows the city's price index, and at the end the "
+                + "indexed principal - never less than the face: if prices end lower than they began, the city still "
+                + "repays what it borrowed. The real coupon is what prices the bond at 100 on the inflation the "
+                + "market expects, plus the tail the auction cleared at, rounded down to an eighth of a point; and "
+                + "the city carries the inflation. What the index adds to the principal is booked as an expense "
+                + "every month, and paid with the last coupon. Sold at 10 or 30 years, each sale its own line, "
+                + "never reopened, at home only.",
+                Palette.ACCENT_FILL, "10 or 30 years", "A real coupon; the principal follows prices."),
     };
+
+    /* ----- the floating-rate note and the inflation-linked bond on the screens (CD5, spec-city-debt.md 2.4, 2.5, 5.4 and 7) -----
+       Two more tiles on Borrow after the amortizing bond (home only, as it is), their term columns in the margin
+       that prices a floater at 100 and the real coupon that prices a linker (the model's fairMargin(),
+       fairRealCoupon() and breakevenInflation()), the auction card's and the quote card's coupon words (settlesAt(),
+       monthlyWords(), totalWords()), the receipt's coupon line, a piece's name and its card (pieceName(),
+       pieceCard()), the hub's bar of principal by kind (DebtManager.getPrincipalOfLadderKind(): the ladder draws
+       both as bonds), and Debt service's line for the uplift. The Government tab carries the rest (its spending
+       list, its bridge, its debt card). The coupon field of a floater's quote is the MARGIN and of a linker's the
+       real coupon: never couponRate(), which backs out the whole coupon at today's dial and index. */
+
+    /**
+     * Whether an instrument is home paper only (spec-city-debt.md 2.7): the amortizing bond, the floating-rate
+     * note and the inflation-linked bond have no dollar twin, so abroad their tiles are not drawn and a page that
+     * was on one is sent back to a bond.
+     */
+    static boolean homeOnly(Instrument kit) {
+        return "Serial".equals(kit.key()) || "Float".equals(kit.key()) || "Linked".equals(kit.key());
+    }
+
+    /** How many of the kinds are on offer abroad: the ones that are not home paper only. */
+    static int abroadKinds() {
+        int n = 0;
+        for (Instrument i : INSTRUMENTS) if (!homeOnly(i)) n++;
+        return n;
+    }
+
+    /** A floater's margin over the policy rate in words (CD5): "policy + 18 bp", "policy − 15 bp", "policy flat" under half a basis point either way. */
+    static String marginWords(double margin) {
+        if (Math.round(margin * 10_000) == 0) return "policy flat";
+        return "policy " + (margin < 0 ? "− " : "+ ") + bp(Math.abs(margin));
+    }
+
+    /** A floater's coupon laid out as it is made (CD5): "3.00% + 0.18%", the dial it follows and the margin over it; "3.00% − 0.15%" for a margin below nothing. */
+    static String dialPlusMargin(double dial, double margin) {
+        return pct2(dial) + (margin < 0 ? " − " : " + ") + pct2(Math.abs(margin));
+    }
 
     /** The one of an instrument's terms nearest this. */
     static int nearestTerm(Instrument kit, int term) {
@@ -230,6 +293,8 @@ final class FinancesScreen {
         return switch (kit.key()) {
             case "Note"   -> Auction.Kind.BILL;
             case "Serial" -> Auction.Kind.AMORTIZING;
+            case "Float"  -> Auction.Kind.FLOATING;
+            case "Linked" -> Auction.Kind.LINKED;
             default       -> Auction.Kind.BOND;
         };
     }
@@ -252,6 +317,8 @@ final class FinancesScreen {
         return switch (type) {
             case "NOTE"   -> "BILL";
             case "SERIAL" -> "AMORTIZING";
+            case "FLOAT"  -> "FLOATING";
+            case "LINKED" -> "LINKED";
             default       -> "BOND";
         };
     }
@@ -479,8 +546,9 @@ final class FinancesScreen {
         "What the city holds, what it owes, and why the rate is the rate: the balance and the credit band, what "
                 + "the paper costs against the take, who holds it, and the rate taken apart.",
         "Every piece of paper, and what each would cost to retire - Close it now is on each piece's card.",
-        "Bills, bonds and amortizing bonds sold at auction at home, bills and bonds in dollars abroad - the "
-                + "auction run on the city as it stands on every click, and the ladder it would build.",
+        "Bills, bonds, amortizing bonds, floating-rate notes and inflation-linked bonds sold at auction at home, "
+                + "bills and bonds in dollars abroad - the auction run on the city as it stands on every click, and "
+                + "the ladder it would build.",
         "The central bank's books, and how much money the city has.",
         "The businesses' bonds: every issue, who holds it, and its order book. Not the city's paper.",
         "Its shares and bonds, the bank's rescue, the dial, and the share of its worth it pays the treasury "
@@ -1563,9 +1631,10 @@ final class FinancesScreen {
             case 0 -> segmentBar(List.of(Segment.of(ledger.baseComponent(), Palette.MONEY_DARK),
                             Segment.of(ledger.gdpSpread(), Palette.MONEY), Segment.of(ledger.revenueSpread(), Palette.MONEY_LIGHT)),
                     ledger.ceilingRate(), List.of(new Tick(g.getInterestRate(), Palette.TEXT_HEAD, 2, null, null)), 0, 6);
-            case 1 -> segmentBar(List.of(Segment.of(ledger.getPrincipalOf("NOTE"), Palette.LADDER[0]),
-                    Segment.of(ledger.getPrincipalOf("SERIAL"), Palette.LADDER[1]),
-                    Segment.of(ledger.getPrincipalOf("TERM"), Palette.LADDER[2])), 0, null, 0, 6);
+            // By the ladder's kinds (CD5): a floating-rate note's face and an inflation-linked bond's are the bonds'.
+            case 1 -> segmentBar(List.of(Segment.of(ledger.getPrincipalOfLadderKind(0), Palette.LADDER[0]),
+                    Segment.of(ledger.getPrincipalOfLadderKind(1), Palette.LADDER[1]),
+                    Segment.of(ledger.getPrincipalOfLadderKind(2), Palette.LADDER[2])), 0, null, 0, 6);
             case 2 -> {
                 Bank bank = g.getBank();
                 double room = bank.capacity();
@@ -1880,8 +1949,15 @@ final class FinancesScreen {
             + "The interest is the coupon paid in cash and the discount wearing off the paper, which no cash pays "
             + "until the paper falls due (paper sold over its face runs the other way). The coupon and the principal "
             + "leave the treasury, which is why both are on the ladder, and separated on the Government spending "
-            + "page. What fell due was netted from last year's surplus, raised again as new paper by the rollover, or "
-            + "paid from the cash.";
+            + "page. A linked bond's indexation is an expense beside the interest, listed under it. What fell due "
+            + "was netted from last year's surplus, raised again as new paper by the rollover, or paid from the cash.";
+
+    /** The inflation uplift line's (i) on LAST MONTH (CD5, spec-city-debt.md 5.4). */
+    static final String UPLIFT_INFO = "A linked bond's principal follows the price index, and the books catch up with "
+            + "it every month: what the index added to what the city will owe is charged as an expense, beside the "
+            + "interest and not part of it. It is not cash until the bond falls due: that month the city pays all the "
+            + "uplift its months have booked, with the face, so the cash line can be more than the month's expense. In "
+            + "a month the index fell it is below nothing, and the face is still owed whole.";
 
     /** LAST MONTH: the interest on the city's paper (the coupon paid and the discount wearing off), and the principal that fell due at the last press split as the rollover booked it. */
     VBox lastMonthCard() {
@@ -1896,6 +1972,13 @@ final class FinancesScreen {
         if (Math.abs(na.getInterestNotCash()) >= .5) {
             card.getChildren().add(cardLine(na.getInterestNotCash() > 0 ? "...the discount wearing off (no cash)"
                     : "...less the premium wearing off (no cash)", d(na.getInterestNotCash()), Palette.TEXT_LABEL));
+        }
+        // The linked bonds' indexation (CD5): an expense beside the interest and not part of it, mostly not cash.
+        if (Math.abs(na.getInflationUplift()) >= .5) {
+            card.getChildren().add(cardLine("Inflation uplift on linked bonds", d(na.getInflationUplift()), null, UPLIFT_INFO));
+            if (na.getUpliftPaidInCash() >= .5) {
+                card.getChildren().add(cardLine("...paid in cash at maturity (earlier months' too)", d(na.getUpliftPaidInCash()), Palette.TEXT_LABEL));
+            }
         }
         double repaid = g.hasTreasuryMonth() ? g.getTreasuryRepaid() : 0;
         card.getChildren().add(cardLine("Principal that fell due last month", d(repaid), null));
@@ -2359,6 +2442,20 @@ final class FinancesScreen {
             + "it can pay every holder 100 for each 100 of face, whole, and be done with it. The coupon was set "
             + "higher at the sale to pay for that right. Close it now has the call.";
 
+    /** A floating-rate note's coupon line's (i) on its card (CD5, spec-city-debt.md 2.4). */
+    static final String FLOATING_INFO = "The coupon is the policy rate plus the margin the sale fixed, a twelfth of it "
+            + "every month on the whole face, and it moves with the dial: the first figure is the dial the coupon now "
+            + "follows, the second the margin, which never changes. The coupon is never under nothing: a margin "
+            + "below nothing, on a dial that falls far enough, leaves it at nothing. The note is carried at what "
+            + "the sale raised, and the rate that charges it is solved again whenever the dial moves.";
+
+    /** An inflation-linked bond's coupon line's (i) on its card (CD5, spec-city-debt.md 2.5). */
+    static final String INDEXED_INFO = "The real coupon is paid every month on the principal as the price index has "
+            + "moved it since the sale, so the coupon grows with prices. The index is the city's own price level now "
+            + "over what it was at the sale. The books catch up with it every month and charge the change as an "
+            + "inflation uplift, an expense that is not cash; the last month pays it, with the face - and the face is "
+            + "paid whatever happened, so prices that fell cost the lender nothing and the city nothing less.";
+
     /** "Worth calling"'s (i) (D24). */
     static final String WORTH_CALLING_INFO = "The present value the call would save: what this line's remaining payments "
             + "are worth today, as a bond that cannot be called, less the 100 the call pays and less what selling the "
@@ -2413,7 +2510,10 @@ final class FinancesScreen {
      * 2211" - its coupon in eighths and the month and year it falls due, as
      * a treasury names a line -; a bill "6-month bill"; an amortizing bond
      * "20-year amortizing bond at 4.21%"; dollar paper "10-year bond in
-     * dollars".
+     * dollars". A floating-rate note (CD5) is "floating, policy + 18 bp, Jan
+     * 2205": its margin over the dial and the month it falls due; an
+     * inflation-linked bond "1⅝% linked Jan 2215": its real coupon and its
+     * date, as a line is named.
      */
     static String pieceName(Debt debt) {
         int months = debt.getDuration();
@@ -2421,10 +2521,18 @@ final class FinancesScreen {
         if (!debt.isForeign() && debt instanceof LongTermBond line) {
             return couponWords(line.couponRate()) + " " + CityCalendar.formatShort(debt.getMaturityMonth());
         }
+        if (!debt.isForeign() && debt instanceof FloatingRateNote note) {
+            return "floating, " + marginWords(note.getMargin()) + ", " + CityCalendar.formatShort(debt.getMaturityMonth());
+        }
+        if (!debt.isForeign() && debt instanceof InflationLinkedBond linked) {
+            return couponWords(linked.getRealCoupon()) + " linked " + CityCalendar.formatShort(debt.getMaturityMonth());
+        }
         String what = switch (debt.getType()) {
             case "NOTE"   -> months + "-month bill";
             case "SERIAL" -> years + "-year amortizing bond"
                     + (!debt.isForeign() && debt instanceof MediumTermBond slices ? " at " + pct2(slices.couponRate()) : "");
+            case "FLOAT"  -> years + "-year floating-rate note";
+            case "LINKED" -> years + "-year inflation-linked bond";
             default       -> years + "-year bond";
         };
         return what + (debt.isForeign() ? " in dollars" : "");
@@ -2464,6 +2572,18 @@ final class FinancesScreen {
         double coupon = debt.getMonthlyInterestExpense();
         Node couponLine = coupon >= .5 ? line("coupon " + d(coupon) + " a month")
                 : noteLine("no coupon - the discount wears off as interest", NOTE_INFO, 560);
+        // A floater's coupon follows the dial and a linker's follows the index (CD5): the card says what each is made of.
+        Node followsLine = null;
+        if (debt instanceof FloatingRateNote note) {
+            couponLine = infoLine("coupon " + d(coupon) + " a month · the policy rate " + dialPlusMargin(note.getIndex(), note.getMargin())
+                            + ", reset monthly", FLOATING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
+        } else if (debt instanceof InflationLinkedBond linked) {
+            couponLine = infoLine("coupon " + d(coupon) + " a month · real " + couponWords(linked.getRealCoupon()) + " on "
+                            + d(linked.getIndexedPrincipal()) + " indexed (the index ×" + String.format("%.3f", linked.getRatio())
+                            + " since the sale)", INDEXED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
+            followsLine = line("uplift last month " + d(linked.getLastUplift()) + " · repays " + d(linked.owedAtMaturity())
+                    + " at today's index");
+        }
         // The piece's books (CD3): what it is carried at and the rate it is charged at.
         Node booksLine = infoLine("carried " + d(debt.getCarryingValue()) + " · effective " + pct2(debt.getEffectiveRate()),
                 CARRIED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
@@ -2488,7 +2608,8 @@ final class FinancesScreen {
         double worth = g.fairValueOf(debt);
         double under = ledger.underFace(debt);
         String price = String.format("worth today %s · %.1f of par · yields %s", d(worth),
-                ledger.priceOfPar(debt), pct2(ledger.yieldOf(debt)));
+                ledger.priceOfPar(debt), pct2(ledger.yieldOf(debt)))
+                + (debt instanceof InflationLinkedBond linked ? " (real " + pct2(ledger.realYieldOf(linked)) + ")" : "");
         String against = Math.abs(under) < .5 ? "at its face" : under > 0 ? d(under) + " under face" : "a premium of " + d(-under);
         // The whole line's quote: the gain the books would show and the price (Buyback.Result).
         Buyback.Result whole = g.quoteBuyback(debt, g.buybackOfferable(debt), Double.NaN);
@@ -2513,7 +2634,7 @@ final class FinancesScreen {
                 muted("closing all of it now books " + gainWords));
         HBox foot = new HBox(Palette.GAP, says, g3, buy);
         foot.setAlignment(Pos.CENTER_LEFT);
-        return card(head, face, lifeBar, ends, couponLine, booksLine, callableNote, worthCallingLine, holders, foot);
+        return card(head, face, lifeBar, ends, couponLine, followsLine, booksLine, callableNote, worthCallingLine, holders, foot);
     }
 
     /** Who holds a piece, one bar (the card's, and the Close it now page's): the households, the bank, the central bank, the businesses and the world; "held abroad" for a dollar piece. */
@@ -3137,7 +3258,7 @@ final class FinancesScreen {
        BORROW (0.7.32)
 
        What would this paper cost, and what would it do to the ladder?
-       THE ASK beside THE QUOTE: the three instruments as tiles, the terms
+       THE ASK beside THE QUOTE: the instruments as tiles, the terms
        as columns of their rate - each re-struck for the amount once there
        is one - and the amount; the quote as the land office's offer card,
        which books exactly what it shows. Under them THE LADDER THIS WOULD
@@ -3153,10 +3274,12 @@ final class FinancesScreen {
 
        AND AN AUCTION SINCE CD2 (board 4 of docs/studies/city-debt/, the
        spec's section 7): the city's paper is sold at auction, so the page
-       is the auction's. THE ASK has three kinds as tiles (bills, bonds, the
-       amortizing bond; floating and linked bonds are CD5's), the terms as
-       columns of today's FAIR yield (a bond term whose line is still open
-       says which it would reopen), the face, and THE HIGHEST YIELD the city
+       is the auction's. THE ASK has five kinds as tiles (bills, bonds, the
+       amortizing bond, and since CD5 the floating-rate note and the
+       inflation-linked bond), the terms as columns of today's FAIR yield (a
+       bond term whose line is still open says which it would reopen; a
+       floater's column is its fair margin, a linker's its fair real coupon),
+       the face, and THE HIGHEST YIELD the city
        will take as three chips - fair + a point, a yield, Fill it. THE QUOTE
        is the auction run on the city as it stands at that cap (Game's
        quoteDebt(..., cap)), and its button books that same quote at that
@@ -3164,7 +3287,8 @@ final class FinancesScreen {
        the four bids against yield with the issue and the highest yield
        drawn, then the result line by line. A sale the bids would not cover
        says so in red before the button. Abroad is as it was, less the
-       dollar serial: dollar paper is the world's, not an auction.
+       dollar serial, floater and linker: dollar paper is the world's, not an
+       auction.
 
        Every figure is the model's: Auction.Result for the sale, Auction.
        bidsAt() on a grid of yields for the chart (the arithmetic that
@@ -3177,8 +3301,9 @@ final class FinancesScreen {
             + "under it, and the sale clears at it or a little over. The short end is the floor - the dial, or what "
             + "the bank's money costs it, whichever is higher - plus what the city's own debt adds; longer money "
             + "carries a term premium on top, less whatever the central bank's holdings of term paper take off it. "
-            + "A bond term whose line is still open says which one it would reopen. Abroad, the world lends on its "
-            + "own curve.";
+            + "A bond term whose line is still open says which one it would reopen. A floating note's column is the "
+            + "margin over the policy rate that prices it at 100 at that term, and a linked bond's the real coupon "
+            + "that does, with the inflation the term prices in. Abroad, the world lends on its own curve.";
 
     /** THE HIGHEST YIELD's (i): the spec's 4.1 and 4.3 in two sentences. */
     static final String CAP_INFO = "The most the city will pay to sell this: fair plus a point, a yield you name, or "
@@ -3233,8 +3358,8 @@ final class FinancesScreen {
             return;
         }
 
-        // There is no dollar serial since CD2 (spec-city-debt.md 2.7): abroad, a bond.
-        if (foreign && "Serial".equals(borrowType)) {
+        // There is no dollar serial since CD2, and no dollar floater or linker since CD5 (spec-city-debt.md 2.7): abroad, a bond.
+        if (foreign && homeOnly(instrument(borrowType))) {
             borrowType = "Term";
             borrowTerm = LongTermBond.MATURITIES[2];
         }
@@ -3285,11 +3410,11 @@ final class FinancesScreen {
     VBox askCard(Instrument kit, boolean foreign, DebtQuote quote, double fair) {
         Game g = ui.game;
         VBox card = card(caption(foreign ? "THE ASK, ABROAD, IN " + Currency.FOREIGN_CODE : "THE ASK, AT HOME", null));
-        GridPane tiles = equalColumns(foreign ? INSTRUMENTS.length - 1 : INSTRUMENTS.length, TILE_GAP);
+        GridPane tiles = equalColumns(foreign ? abroadKinds() : INSTRUMENTS.length, TILE_GAP);
         int column = 0;
         for (int i = 0; i < INSTRUMENTS.length; i++) {
-            // No dollar serial since CD2: abroad the amortizing bond is not on offer (spec-city-debt.md 2.7).
-            if (foreign && "Serial".equals(INSTRUMENTS[i].key())) continue;
+            // Abroad the home paper is not on offer: no dollar amortizing bond since CD2, no dollar floater or linker since CD5 (spec-city-debt.md 2.7).
+            if (foreign && homeOnly(INSTRUMENTS[i])) continue;
             VBox t = instrumentTile(INSTRUMENTS[i], INSTRUMENTS[i] == kit, foreign);
             GridPane.setFillHeight(t, true);
             tiles.add(t, column++, 0);
@@ -3297,7 +3422,7 @@ final class FinancesScreen {
         card.getChildren().add(tiles);
 
         card.getChildren().add(caption(foreign ? "FOR HOW LONG, IN " + kit.unit().toUpperCase()
-                : "FOR HOW LONG, IN " + kit.unit().toUpperCase() + " · TODAY'S FAIR YIELD", TERMS_INFO));
+                : "FOR HOW LONG, IN " + kit.unit().toUpperCase() + " · TODAY'S FAIR " + fairWord(kit), TERMS_INFO));
         card.getChildren().add(foreign ? termChips(kit) : termColumns(kit, quote));
         if (!foreign) card.getChildren().add(muted(lineNote(kit)));
         if (callableOffered(kit, foreign)) card.getChildren().add(callableSwitch(quote));
@@ -3354,8 +3479,8 @@ final class FinancesScreen {
     /**
      * What the term's line is, in a sentence, under the columns (the board's
      * bw-line): a bond sold into the line it reopens, or opening a new one; a
-     * bill or an amortizing bond is always its own. Every figure the model's
-     * (DebtManager.benchmarkLine(), Auction.BENCHMARK_LIFE).
+     * bill, an amortizing bond, a floater or a linker is always its own. Every
+     * figure the model's (DebtManager.benchmarkLine(), Auction.BENCHMARK_LIFE).
      */
     String lineNote(Instrument kit) {
         switch (kit.key()) {
@@ -3365,6 +3490,13 @@ final class FinancesScreen {
             case "Serial":
                 return "Each amortizing sale is its own line: one coupon, the auction's yield itself, prices the "
                         + "whole schedule at 100 and the face is repaid in yearly slices.";
+            // CD5 (spec-city-debt.md 2.4 and 2.5): neither is a line that reopens.
+            case "Float":
+                return "Each floating sale is its own line: its coupon is the policy rate of the month plus the "
+                        + "margin fixed at the sale, so it sells near 100 and the city carries the dial's risk.";
+            case "Linked":
+                return "Each linked sale is its own line: its real coupon is paid on a principal that follows the "
+                        + "price index, and at maturity it repays the indexed principal, never under the face.";
             default:
                 boolean callable = callableAsked(kit, false);
                 Debt line = ui.game.getDebtManager().benchmarkLine(borrowTerm, callable);
@@ -3617,20 +3749,26 @@ final class FinancesScreen {
                         + "world at its price for the term, not at auction, and never reopened.";
     }
 
-    /** One instrument as a tile: its swatch-tinted icon, its name and (i), the range it is issued over, its line; picked, its ground and edge lit. */
+    /**
+     * One instrument as a tile: its swatch-tinted icon, its name and (i), the range it is issued over, its line;
+     * picked, its ground and edge lit. At home there are five of them in a half-width card (CD5), so the tile is
+     * drawn a size down - a smaller icon, a name a point smaller, less padding - and "Amortizing" does not break.
+     */
     VBox instrumentTile(Instrument kit, boolean on, boolean foreign) {
+        boolean compact = !foreign;
         Label name = new Label(kit.name());
-        name.setStyle(Palette.strong(Palette.SIZE_BODY + 1, Palette.TEXT_HEAD));
+        name.setStyle(Palette.strong(compact ? Palette.SIZE_BODY : Palette.SIZE_BODY + 1, Palette.TEXT_HEAD));
         name.setMinWidth(0);
         name.setWrapText(true);
-        HBox top = new HBox(6, iconSquare(Icons.PAPER, kit.colour(), 24, 13), name,
+        HBox top = new HBox(compact ? 4 : 6, iconSquare(Icons.PAPER, kit.colour(), compact ? 20 : 24, compact ? 11 : 13), name,
                 infoButton(foreign ? abroadBlurb(kit) : kit.blurb(), true));
         top.setAlignment(Pos.CENTER_LEFT);
         VBox t = new VBox(4, top, muted(kit.range()),
                 words(foreign ? abroadLine(kit) : kit.line(), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         t.setMaxWidth(Double.MAX_VALUE);
         t.setMaxHeight(Double.MAX_VALUE);
-        String rest = "-fx-padding: 8 10 8 10; -fx-background-radius: 6; -fx-border-radius: 6; -fx-cursor: hand;";
+        String rest = (compact ? "-fx-padding: 8 6 8 8;" : "-fx-padding: 8 10 8 10;")
+                + " -fx-background-radius: 6; -fx-border-radius: 6; -fx-cursor: hand;";
         String ground = on ? " -fx-background-color: " + Palette.PINNED + "; -fx-border-color: " + Palette.ACCENT + ";"
                 : " -fx-background-color: " + Palette.PANEL + "; -fx-border-color: " + Palette.EDGE + ";";
         t.setStyle(rest + ground);
@@ -3657,33 +3795,73 @@ final class FinancesScreen {
         DebtManager ledger = ui.game.getDebtManager();
         Auction.Kind kind = auctionKind(kit);
         Auction.Result sale = quote == null ? null : quote.auction();
+        boolean floating = kind == Auction.Kind.FLOATING, linked = kind == Auction.Kind.LINKED;
         List<Column> cols = new ArrayList<>();
         boolean reopening = false;
+        // The tallest bar a floater's margin is drawn against: never under 25 basis points, so a margin near nothing stays low.
+        double marginScale = 0;
+        if (floating) {
+            for (int t : kit.terms()) marginScale = Math.max(marginScale, ledger.fairMargin(termMonths(kit, t), Math.max(0, borrowAsk)));
+            marginScale = Math.max(marginScale, 0.0025);
+        }
         for (int t : kit.terms()) {
             final int chosen = t;
             // A callable ask (CD4) reopens a callable line, and the columns stay the curve's own yields: the quote's fair is the chosen one's only when the paper cannot be called (its fair carries the option).
             boolean option = callableAsked(kit, false) && CallTree.canBeCallable(t);
             Debt line = "Term".equals(kit.key()) ? ledger.benchmarkLine(t, option) : null;
             int months = line != null ? line.getRemainingMonths() : termMonths(kit, t);
-            double fair = t == borrowTerm && sale != null && !sale.isEmpty() && !option ? sale.ask().fair()
-                    : ledger.fairYield(kind, months, Math.max(0, borrowAsk));
             double comp = ledger.compression(months);
+            String off = comp > 1e-6 ? String.format(", %.2f points off for the central bank", comp * 100) : "";
+            Runnable pick = () -> { borrowTerm = chosen; showFinanceMenu(); };
+            boolean thisOne = t == borrowTerm && sale != null && !sale.isEmpty();
+            if (floating || linked) {
+                // CD5 (spec-city-debt.md 2.4 and 2.5): the figure is what prices the paper at 100 - a floater's margin over
+                // the dial, a linker's real coupon and the inflation it prices - and the chosen term's is the sale's own.
+                double face = thisOne ? sale.ask().face() : Math.max(0, borrowAsk);
+                String colour = t == borrowTerm ? Palette.MONEY : Palette.TEXT_SPENT;
+                String when = t + " " + kit.unit() + ": fair ";
+                if (floating) {
+                    double margin = thisOne ? sale.ask().fairCoupon() : ledger.fairMargin(months, face);
+                    cols.add(new Column(t + " y", null, marginWords(margin),
+                            List.of(Segment.of(Math.max(0, margin), colour)), false, null, null,
+                            when + marginWords(margin) + " (the policy rate is " + pct2(ledger.getPolicyRate())
+                                    + " today)" + (borrowAsk > 0 ? ", for this amount" : "") + off, pick));
+                } else {
+                    double real = thisOne ? sale.ask().fairCoupon() : ledger.fairRealCoupon(months, face);
+                    double inflation = ledger.breakevenInflation(months, face);
+                    cols.add(new Column(t + " y", "prices " + pc1(inflation) + " inflation", "real " + pct2(real),
+                            List.of(Segment.of(Math.max(0, real), colour)), false, null, null,
+                            when + "real coupon " + pct3(real) + ", pricing in " + pc1(inflation) + " a year of inflation"
+                                    + (borrowAsk > 0 ? ", for this amount" : "") + off, pick));
+                }
+                continue;
+            }
+            double fair = thisOne && !option ? sale.ask().fair()
+                    : ledger.fairYield(kind, months, Math.max(0, borrowAsk));
             String sub = line == null ? null : "reopens\n" + pieceName(line);
             reopening |= line != null;
             cols.add(new Column(t + ("Note".equals(kit.key()) ? " mo" : " y"), sub, pct2(fair),
                     List.of(Segment.of(fair, t == borrowTerm ? Palette.MONEY : Palette.TEXT_SPENT)), false, null, null,
                     t + " " + kit.unit() + ": fair " + pct3(fair) + (borrowAsk > 0 ? " for this amount" : " today")
-                            + (line != null ? ", reopening the " + pieceName(line) : "")
-                            + (comp > 1e-6 ? String.format(", %.2f points off for the central bank", comp * 100) : ""),
-                    () -> { borrowTerm = chosen; showFinanceMenu(); }));
+                            + (line != null ? ", reopening the " + pieceName(line) : "") + off,
+                    pick));
         }
-        Node picture = columns(cols, 0, 0, 120);
+        Node picture = columns(cols, floating ? marginScale : 0, 0, 120);
         if (!reopening) return picture;
         // The line's name takes a second line under the label, which the columns' foot has no room for.
         Region room = new Region();
         room.setMinHeight(14);
         room.setPrefHeight(14);
         return new VBox(0, picture, room);
+    }
+
+    /** What the term columns' fair figure is called, by kind (CD5): a yield for a bill and the bonds, a margin for a floater, a real coupon for a linker. */
+    static String fairWord(Instrument kit) {
+        return switch (kit.key()) {
+            case "Float"  -> "MARGIN";
+            case "Linked" -> "REAL COUPON";
+            default       -> "YIELD";
+        };
     }
 
     /** The terms abroad as chips, each with the world's rate for it in its tooltip. */
@@ -3709,11 +3887,13 @@ final class FinancesScreen {
         return chips;
     }
 
-    /** What the quoted paper is called on its card: "10-year bond", "6-month bill", "20-year amortizing bond", "... in dollars". */
+    /** What the quoted paper is called on its card: "10-year bond", "6-month bill", "20-year amortizing bond", "5-year floating-rate note", "30-year inflation-linked bond", "... in dollars". */
     String quoteName(Instrument kit, boolean foreign) {
         String what = switch (kit.key()) {
             case "Note"   -> borrowTerm + "-month bill";
             case "Serial" -> borrowTerm + "-year amortizing bond";
+            case "Float"  -> borrowTerm + "-year floating-rate note";
+            case "Linked" -> borrowTerm + "-year inflation-linked bond";
             default       -> borrowTerm + "-year " + (callableAsked(kit, foreign) ? "callable " : "") + "bond";
         };
         return what + (foreign ? " in dollars" : "");
@@ -3794,12 +3974,14 @@ final class FinancesScreen {
                 offerLine("Face - what the city owes", w.apply(quote.faceValue()), Palette.TEXT_BODY),
                 offerLine("Cash it brings", w.apply(quote.cashReceived()), Palette.GOOD),
                 offerLine("Monthly cost", quote.monthlyInterest() > 0 ? w.apply(quote.monthlyInterest()) + " a month"
-                        : "none - it pays no coupon", Palette.TEXT_BODY),
-                offerLine("Cost of the credit, all in", w.apply(quote.totalCost()), Palette.TEXT_BODY));
+                        + monthlyWords(kit) : "none - it pays no coupon", Palette.TEXT_BODY),
+                offerLine(totalWords(kit), w.apply(quote.totalCost()), Palette.TEXT_BODY));
 
         int due = g.getMonth() + sale.ask().months();
         Label end = new Label("Serial".equals(kit.key())
                 ? "a slice of the face falls due every year, the last in " + CityCalendar.formatShort(due)
+                : "Linked".equals(kit.key())
+                ? "the face, or the indexed principal if that is more, falls due in " + CityCalendar.formatShort(due)
                 : "the whole face falls due in " + CityCalendar.formatShort(due));
         end.setWrapText(true);
         end.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
@@ -3863,16 +4045,41 @@ final class FinancesScreen {
         return card;
     }
 
-    /** What a sale settles at, in a line: a bill's yield and its price for 100; a bond's coupon, line and yield; the amortizing bond's one coupon. */
+    /** What the monthly cost is read at (CD5): a floater's at today's dial, a linker's at today's index; nothing to add for the rest. */
+    static String monthlyWords(Instrument kit) {
+        return switch (kit.key()) {
+            case "Float"  -> " at today's dial";
+            case "Linked" -> " at today's index";
+            default       -> "";
+        };
+    }
+
+    /** The cost of the credit's label (CD5): a floater's is at today's dial, a linker's before any indexation; the rest, all in. */
+    static String totalWords(Instrument kit) {
+        return switch (kit.key()) {
+            case "Float"  -> "Cost of the credit, at today's dial";
+            case "Linked" -> "Cost of the credit, before any indexation";
+            default       -> "Cost of the credit, all in";
+        };
+    }
+
+    /**
+     * What a sale settles at, in a line: a bill's yield and its price for 100; a bond's coupon, line and yield; the
+     * amortizing bond's one coupon; a floater's margin over the policy rate, reset monthly, and the coupon it makes
+     * at today's dial; a linker's real coupon on the indexed principal and the inflation its term prices in (CD5).
+     */
     String settlesAt(Instrument kit, Auction.Result r) {
         return switch (r.ask().kind()) {
             case BILL -> String.format("yields %s · %.3f for 100 of face", pct3(r.stop()), r.pricePer100());
             case BOND -> couponWords(r.coupon()) + " coupon, " + (r.ask().isNewLine() ? "a new line" : "the line's own")
                     + " · yields " + pct3(r.stop());
             case AMORTIZING -> pct3(r.coupon()) + " coupon, one for the whole schedule · repaid in yearly slices";
-            // CD5 (slice A's stand-in so the switch covers the enum; slice C words these): a floater's coupon is a margin.
-            case FLOATING -> "policy rate " + (r.coupon() < 0 ? "less " : "+ ") + pct3(Math.abs(r.coupon())) + " · yields " + pct3(r.stop());
-            case LINKED -> pct3(r.coupon()) + " real coupon · yields " + pct3(r.stop());
+            // CD5: a floater's coupon field is the margin, not the coupon; the coupon is the dial now and the margin, never under nothing.
+            case FLOATING -> "policy rate " + (r.coupon() < 0 ? "− " : "+ ") + pct2(Math.abs(r.coupon()))
+                    + " margin, reset monthly · now "
+                    + pct2(FloatingRateNote.couponAt(ui.game.getDebtManager().getPolicyRate(), r.coupon()));
+            case LINKED -> couponWords(r.coupon()) + " real coupon on an indexed principal · prices "
+                    + pc1(ui.game.getDebtManager().breakevenInflation(r.ask().months(), r.ask().face())) + " inflation";
         };
     }
 
@@ -3928,6 +4135,15 @@ final class FinancesScreen {
             }
             case BOND -> coupon = (r.ask().isNewLine() ? couponWords(r.coupon()) : "the line's " + couponWords(r.coupon()))
                     + String.format(" · %.3f", r.pricePer100());
+            // CD5: the sale's coupon is a floater's margin over the dial and a linker's real coupon.
+            case FLOATING -> {
+                couponLabel = "Margin over the dial · price";
+                coupon = marginWords(r.coupon()) + String.format(" · %.3f", r.pricePer100());
+            }
+            case LINKED -> {
+                couponLabel = "Real coupon · price";
+                coupon = couponWords(r.coupon()) + String.format(" · %.3f", r.pricePer100());
+            }
             default -> coupon = pct3(r.coupon()) + String.format(" · %.3f", r.pricePer100());
         }
         // The result line by line at the left, and what the bank has to bid with at the right.
@@ -4819,6 +5035,9 @@ final class FinancesScreen {
             case "Note" -> ui.game.handleTBillLogic(amount, duration, rounding, cap);
             case "Serial" -> ui.game.handleMediumBondLogic(amount, duration, rounding, cap);
             case "Term" -> ui.game.handleLongBondLogic(amount, duration, rounding, cap, callable);
+            // CD5: the floating-rate note and the inflation-linked bond, at the page's cap, never callable.
+            case "Float" -> ui.game.handleFloatingNoteLogic(amount, duration, rounding, cap);
+            case "Linked" -> ui.game.handleLinkedBondLogic(amount, duration, rounding, cap);
             default -> "Unknown instrument.";
         };
     }
@@ -4853,12 +5072,17 @@ final class FinancesScreen {
                     cardLine("Coupon", quote.monthlyInterest() > 0
                             ? w.apply(quote.monthlyInterest()) + " a month"
                                     + ("Term".equals(quote.instrument()) ? ", " + couponWords(quote.couponRate()) + " on the face"
-                                            : "Serial".equals(quote.instrument()) ? ", " + pct3(quote.couponRate()) + " on what is left" : "")
+                                            : "Serial".equals(quote.instrument()) ? ", " + pct3(quote.couponRate()) + " on what is left"
+                                            // CD5: a floater's coupon field is its margin, a linker's its real coupon (never couponRate(), which backs out the whole coupon at today's dial and index).
+                                            : "Float".equals(quote.instrument()) ? " at today's dial, " + marginWords(quote.coupon()) + ", reset monthly"
+                                            : "Linked".equals(quote.instrument()) ? " at today's index, " + couponWords(quote.coupon()) + " real, on an indexed principal" : "")
                             : "none - the discount is the lender's return", null),
                     "Serial".equals(quote.instrument())
                             ? cardLine("Principal", "repaid in " + Math.max(1, quote.duration()) + " annual slices", null)
+                            : "Linked".equals(quote.instrument())
+                            ? cardLine("Falls due, the indexed principal", CityCalendar.format(month + months) + " · never under the face", null)
                             : cardLine("Falls due, the whole face", CityCalendar.format(month + months), null),
-                    cardLine("Cost of the credit, all in", w.apply(quote.totalCost()), null),
+                    cardLine(totalWords(instrument(quote.instrument())), w.apply(quote.totalCost()), null),
                     foreign ? line("In dollars, at " + perUsd(ledger.getExchangeRate()) + ".") : null,
                     // A dollar quote's rates are the world's for this paper, not the city's own.
                     line(foreign ? String.format("Priced at %s on the world's curve (%s before this issue); the city's "

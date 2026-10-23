@@ -1,4 +1,4 @@
-# FloatingRateNote.java - 202 lines · 18 methods · 2 constants · model
+# FloatingRateNote.java - 207 lines · 19 methods · 2 constants · model
 
 `ham/citybuildersim/FloatingRateNote.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -33,7 +33,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (3):** [DebtManager](DebtManager.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md)
+**Used by (4):** [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md)
 
 ## Constants
 
@@ -53,23 +53,24 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 168 | **type** `public class FloatingRateNote extends Debt` | A floating-rate note: a coupon every month on the whole face, the month's policy rate plus a margin fixed at the sale, and the face at the end - at 2 or 5 years, each sale its own line (CD5, spec-city-debt.md section ... |
+| 35 | 173 | **type** `public class FloatingRateNote extends Debt` | A floating-rate note: a coupon every month on the whole face, the month's policy rate plus a margin fixed at the sale, and the face at the end - at 2 or 5 years, each sale its own line (CD5, spec-city-debt.md section ... |
 | 44 | 4 | `public static boolean isIssuable(int years)` | True for one of the two. |
 | 50 | 7 | `public static int nearestYears(int years)` | The one of MATURITIES nearest this many years; the shorter on a tie. |
 | 68 | 11 | `public FloatingRateNote(double faceValue, int months, int monthStarted, double margin, double index)` |  |
 | 81 | 3 | `public double getMargin()` | The margin over the policy rate, a year. |
 | 86 | 3 | `public double getIndex()` | The policy rate, a year, as the last reset read it. |
 | 91 | 3 | `public double couponRate()` | The coupon, a year, at the dial as the last reset read it: the index and the margin, never under nothing. |
-| 96 | 3 | `public double getCouponRate()` | ...the same figure under the name LongTermBond's gives it. |
-| 106 | 5 | `void reset(double policyRate)` | The month's dial, handed in by DebtManager every month BEFORE amortise(): when it has moved, the coupon with it, and the effective rate is solved again on the new known schedule at the carrying value as it stands (Deb... |
-| 114 | 8 | `public void processMonth(Game game)` | A coupon on the whole face at the month's dial, every month; the face in the last. |
-| 124 | 3 | `public double getIssuePrice()` |  |
-| 129 | 3 | `protected double principalOwed()` |  |
-| 134 | 3 | `public int getMaturityMonth()` |  |
-| 139 | 3 | `public boolean isMatured()` |  |
-| 144 | 3 | `public String getType()` |  |
-| 150 | 3 | `protected double couponOwed()` | This month's coupon: the face at the coupon rate the last reset read, a twelfth. |
-| 161 | 9 | `protected double[] scheduleOwed()` | THE KNOWN SCHEDULE: today's coupon held flat every month, and the face in the last. |
-| 180 | 4 | `public double[] projectedFlows(double[] policyPath)` | THE MARKET'S SCHEDULE: each coupon at the dial the market expects when it is paid, the face added to the last. |
-| 191 | 11 | `public static double[] flowsFor(double face, double margin, double[] policyPath, int months)` | A floater's payments on a path of the dial: {@code face} of it, at this margin, for this many months - the one arithmetic projectedFlows(), DebtManager.fairMargin() and the auction's schedule share. |
+| 96 | 3 | `public static double couponAt(double policyRate, double margin)` | A floater's coupon, a year, at a dial and a margin: their sum, never under nothing. |
+| 101 | 3 | `public double getCouponRate()` | ...the same figure under the name LongTermBond's gives it. |
+| 111 | 5 | `void reset(double policyRate)` | The month's dial, handed in by DebtManager every month BEFORE amortise(): when it has moved, the coupon with it, and the effective rate is solved again on the new known schedule at the carrying value as it stands (Deb... |
+| 119 | 8 | `public void processMonth(Game game)` | A coupon on the whole face at the month's dial, every month; the face in the last. |
+| 129 | 3 | `public double getIssuePrice()` |  |
+| 134 | 3 | `protected double principalOwed()` |  |
+| 139 | 3 | `public int getMaturityMonth()` |  |
+| 144 | 3 | `public boolean isMatured()` |  |
+| 149 | 3 | `public String getType()` |  |
+| 155 | 3 | `protected double couponOwed()` | This month's coupon: the face at the coupon rate the last reset read, a twelfth. |
+| 166 | 9 | `protected double[] scheduleOwed()` | THE KNOWN SCHEDULE: today's coupon held flat every month, and the face in the last. |
+| 185 | 4 | `public double[] projectedFlows(double[] policyPath)` | THE MARKET'S SCHEDULE: each coupon at the dial the market expects when it is paid, the face added to the last. |
+| 196 | 11 | `public static double[] flowsFor(double face, double margin, double[] policyPath, int months)` | A floater's payments on a path of the dial: {@code face} of it, at this margin, for this many months - the one arithmetic projectedFlows(), DebtManager.fairMargin() and the auction's schedule share. |
 

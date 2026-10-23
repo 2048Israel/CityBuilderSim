@@ -600,7 +600,8 @@ final class GovernmentScreen {
             case "Mortgage insurance premiums", "Mortgage insurance claims"
                                               -> new Door("Bank", () -> ui.bankScreen.showBankMenu());
             case "Transfer from the fund"     -> new Door("Finances", () -> openFinances("The city's fund", "Holdings"));
-            case "Interest on the city's paper", "Discount amortised on the city's paper"
+            case "Interest on the city's paper", "Discount amortised on the city's paper", "Inflation uplift on linked bonds",
+                 "Inflation uplift on linked bonds, not yet paid"
                                               -> new Door("Finances", () -> openFinances("The position", "Debt service"));
             case "Gain (loss) on debt retired" -> new Door("Finances", () -> openFinances("The book", "Buy back"));
             case "Police and prisons"         -> new Door("Services", () -> ui.servicesScreen.open("Safety", ServicesScreen.OVERVIEW));
@@ -633,7 +634,8 @@ final class GovernmentScreen {
             case "Repairs"                           -> Icons.BUILD;
             case "Utility income"                    -> Icons.UTILITIES;
             case "Transfer from the fund", "Interest on the city's paper", "Discount amortised on the city's paper",
-                 "Gain (loss) on debt retired"   -> Icons.FINANCES;
+                 "Gain (loss) on debt retired", "Inflation uplift on linked bonds",
+                 "Inflation uplift on linked bonds, not yet paid" -> Icons.FINANCES;
             case "Central bank remittance", "Interest to the central bank" -> Icons.BANK;
             case "Mortgage insurance premiums", "Mortgage insurance claims" -> Icons.HOMES;
             case "Subsidies"                         -> Icons.POLICY;
@@ -933,6 +935,13 @@ final class GovernmentScreen {
             + "more a loss. No cash came in for it: the price the city paid is in the buyback line below. So the "
             + "budget is higher than the cash by a gain, and this step takes it off.";
 
+    /** The not-cash uplift step's tooltip (CD5): the indexation of the linked bonds, charged to the budget and paid in the bond's last month. */
+    static final String NOT_CASH_UPLIFT_INFO = "A linked bond's principal follows the price index, and the budget "
+            + "charges what the index added every month as an inflation uplift - but the city pays it in the bond's "
+            + "last month, with the face. So the budget is lower than the cash by the uplift not yet paid, month after "
+            + "month; the month a linked bond falls due the city pays all its months' uplift and this step takes "
+            + "it back. In a month the index fell it runs the other way.";
+
     /** The gain (loss) on debt retired: the line under the budget's operating lines, and what is in the balance. */
     static final String RETIRED_GAIN_INFO = "Paper bought back before it falls due is booked at what it was carried "
             + "at less the price paid: a gain when it cost less, a loss when it cost more. It is below the lines "
@@ -1019,6 +1028,10 @@ final class GovernmentScreen {
                 .tip(NOT_CASH_INTEREST_INFO).go(() -> openFinances("The position", "Debt service")));
         out.add(BridgeStep.of("Gain (loss) on paper bought back", -na.getRetiredGain(), Icons.FINANCES)
                 .tip(NOT_CASH_GAIN_INFO).go(() -> openFinances("The book", "Buy back")));
+        // ...and the linked bonds' indexation (CD5): charged to the budget every month and paid in the bond's last, so the cash
+        // is higher than the budget by what has not been paid yet. With the two above it is Game.getTreasuryNotCash().
+        out.add(BridgeStep.of("Inflation uplift not yet paid", na.getUpliftNotCash(), Icons.FINANCES)
+                .tip(NOT_CASH_UPLIFT_INFO).go(() -> openFinances("The position", "Debt service")));
         for (TreasuryJournal.Entry e : ui.game.getTreasuryJournal()) {
             BridgeStep step = BridgeStep.of(e.label(), e.amount(), journalIcon(e.label()));
             Runnable go = journalDoor(e.label());
@@ -1100,6 +1113,10 @@ final class GovernmentScreen {
         if (Math.abs(na.getRetiredGain()) >= .5) {
             row = moved(grid, row, "Gain (loss) on paper bought back (no cash: the price is in the buyback line)",
                     -na.getRetiredGain(), false);
+        }
+        if (Math.abs(na.getUpliftNotCash()) >= .5) {
+            row = moved(grid, row, "Inflation uplift not yet paid (the linked bonds' indexation, no cash until they fall due)",
+                    na.getUpliftNotCash(), false);
         }
         row = moved(grid, row, "Everything else the treasury did", ui.game.getTreasuryUnexplained(), false);
         for (TreasuryJournal.Entry e : ui.game.getTreasuryJournal()) row = moved(grid, row, e.label(), e.amount(), true);
@@ -1311,7 +1328,9 @@ final class GovernmentScreen {
         return List.of("Pensions", "EI", "Student grants", "Healthcare", "Education",
                 "Police and prisons", "Buildings", "Land bought", "Interest on the city's paper",
                 "Interest to the central bank", "Subsidies", "Mortgage insurance claims", "Food assistance",
-                "Transit", "Repairs", "Arrears paid down", "Crude for the reserve");
+                "Transit", "Repairs", "Arrears paid down", "Crude for the reserve",
+                // ...and the linked bonds' indexation (CD5), on the end for the same reason: in getTotalExpenses() beside the interest.
+                "Inflation uplift on linked bonds");
     }
 
     List<Double> spendingAmounts(NationalAccounts na) {
@@ -1346,7 +1365,9 @@ final class GovernmentScreen {
                 // the repairs to its own buildings, the arrears it paid down, the reserve's crude.
                 na.getCityRepairs(),
                 na.getArrearsPaid(),
-                na.getReserveCrudeBought());
+                na.getReserveCrudeBought(),
+                // ...and the month's indexation of the linked bonds (CD5, spec-city-debt.md 5.4): in getTotalExpenses() at its end.
+                na.getInflationUplift());
     }
 
     /** The column heads' widths: a month, of the budget, of GDP. */
@@ -1750,7 +1771,8 @@ final class GovernmentScreen {
     java.util.List<PaperKind> paperKinds() {
 
         java.util.Map<String, double[]> tally = new java.util.LinkedHashMap<>();
-        for (String t : new String[] {"NOTE", "SERIAL", "TERM"}) {
+        // ...and the floating-rate notes and the inflation-linked bonds (CD5), each its own row: neither is a term loan.
+        for (String t : new String[] {"NOTE", "SERIAL", "TERM", "FLOAT", "LINKED"}) {
             tally.put(t, new double[] {0, 0, 0, 0, Integer.MAX_VALUE, 0, 0});
         }
 
@@ -1770,6 +1792,8 @@ final class GovernmentScreen {
         kinds.add(kind("Notes", tally.get("NOTE"), "discounted at issue — no coupon, the discount wears off as interest"));
         kinds.add(kind("Serial bonds", tally.get("SERIAL"), "coupon monthly, principal yearly"));
         kinds.add(kind("Term loans", tally.get("TERM"), "coupon monthly, face at the end"));
+        kinds.add(kind("Floating-rate notes", tally.get("FLOAT"), "coupon monthly at the dial, face at the end"));
+        kinds.add(kind("Inflation-linked bonds", tally.get("LINKED"), "real coupon monthly, indexed face at the end"));
         return kinds;
     }
 
@@ -1824,6 +1848,12 @@ final class GovernmentScreen {
         if (Math.abs(na.getInterestNotCash()) >= .5) {
             box.getChildren().add(payerRow(na.getInterestNotCash() > 0 ? "...and the discount wearing off"
                     : "...less the premium wearing off", na.getInterestNotCash(), total, "no cash"));
+        }
+        // The linked bonds' indexation (CD5) is a line of its own on this list, beside the interest; named here where the interest is split.
+        double uplift = na.getInflationUplift();
+        if (Math.abs(uplift) >= .5) {
+            box.getChildren().add(payerRow("Inflation uplift — its own line", uplift, 0,
+                    na.getUpliftPaidInCash() >= .5 ? "at maturity" : "no cash"));
         }
         /* --------------- and the money that is not on this statement --------------- */
         if (repaid > 0) box.getChildren().add(payerRow("Principal repaid — not an expense", repaid, 0, "left the treasury"));
@@ -1969,6 +1999,18 @@ final class GovernmentScreen {
     static final String SERIAL_INFO = "Serial bonds amortise - a slice of principal falls due every anniversary, so "
             + "both the debt and this interest line shrink on their own as long as nothing new is issued.";
 
+    /** Floating-rate notes (CD5, spec-city-debt.md 2.4). */
+    static final String FLOATING_INFO = "A floating-rate note pays the policy rate of the month plus a margin fixed at "
+            + "the sale, on the whole face, and the whole face at the end. The city carries the dial's risk: when "
+            + "the dial rises this line rises with it, month by month, and when it falls so does the line. The "
+            + "coupon shown is today's.";
+
+    /** Inflation-linked bonds (CD5, spec-city-debt.md 2.5). */
+    static final String LINKED_INFO = "An inflation-linked bond pays a real coupon on a principal that follows the "
+            + "price index, and at the end the indexed principal, never under the face. The city carries the "
+            + "inflation: the coupon grows with prices, and what the index adds to the principal is charged "
+            + "every month as an inflation uplift, listed beside the interest. The coupon shown is today's.";
+
     /** P31: notes. */
     static final String NOTES_INFO = "A note pays no coupon. The lender's return is the discount, taken out of the "
             + "proceeds when the note was issued. The city books that discount as interest, a little every month, "
@@ -1994,15 +2036,19 @@ final class GovernmentScreen {
     VBox debtCard(NationalAccounts na, double spending) {
         VBox card = card(cardHead(Icons.FINANCES, Palette.MONEY, "THE DEBT", null,
                 door("Finances", Palette.ACCENT, () -> openFinances("The book", "Every piece"))));
-        PaperKind notes = paperKind("Notes"), serial = paperKind("Serial bonds"), term = paperKind("Term loans");
-        if (notes.count() + serial.count() + term.count() == 0) {
+        PaperKind notes = paperKind("Notes"), serial = paperKind("Serial bonds"), term = paperKind("Term loans"),
+                floating = paperKind("Floating-rate notes"), linked = paperKind("Inflation-linked bonds");
+        if (notes.count() + serial.count() + term.count() + floating.count() + linked.count() == 0) {
             card.getChildren().add(words("The city owes nothing.", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL));
             return card;
         }
         List<Slice> parts = new ArrayList<>();
-        PaperKind[] kinds = {notes, serial, term};
+        PaperKind[] kinds = {notes, serial, term, floating, linked};
+        // The ladder's three steps, and the two kinds the ladder draws as bonds in their tiles' colours on the Borrow page (CD5).
+        String[] colours = {Palette.LADDER[0], Palette.LADDER[1], Palette.LADDER[2],
+                FinancesScreen.instrument("Float").colour(), FinancesScreen.instrument("Linked").colour()};
         for (int i = 0; i < kinds.length; i++) {
-            if (kinds[i].principal() > 0) parts.add(new Slice(kinds[i].name(), kinds[i].principal(), Palette.LADDER[i]));
+            if (kinds[i].principal() > 0) parts.add(new Slice(kinds[i].name(), kinds[i].principal(), colours[i]));
         }
         if (!parts.isEmpty()) card.getChildren().add(keyedBar(parts, 360, v -> m(v)));
         // The coupons the budget paid in cash, which the paper's coupons are compared with (CD3): the interest
@@ -2021,7 +2067,7 @@ final class GovernmentScreen {
          * screen, and the honest answer is to say which is which rather
          * than to quietly print the larger one.
          */
-        double coupons = notes.coupon() + serial.coupon() + term.coupon();
+        double coupons = notes.coupon() + serial.coupon() + term.coupon() + floating.coupon() + linked.coupon();
         if (coupons > 0 && Math.abs(coupons - booked) > coupons * .02) {
             HBox c = new HBox(4, chip("coupons " + m(coupons) + " a month, paid " + m(booked)
                     + ": not struck yet", Palette.TEXT_LABEL), infoButton(COUPON_INFO, true));
@@ -2034,7 +2080,8 @@ final class GovernmentScreen {
 
     /** THE DEBT card's lines, {words, (i)} each, the first the total with no (i) (pure: the probe reads them). */
     List<String[]> debtLines(NationalAccounts na) {
-        PaperKind notes = paperKind("Notes"), serial = paperKind("Serial bonds"), term = paperKind("Term loans");
+        PaperKind notes = paperKind("Notes"), serial = paperKind("Serial bonds"), term = paperKind("Term loans"),
+                floating = paperKind("Floating-rate notes"), linked = paperKind("Inflation-linked bonds");
         List<String[]> out = new ArrayList<>();
         // The interest on the city's paper (CD3, spec-city-debt.md 5.4): the coupons paid in cash and the discount
         // wearing off (below nothing for paper sold over its face), the month's effective interest.
@@ -2042,8 +2089,14 @@ final class GovernmentScreen {
         String parts = Math.abs(notCash) < .5 ? ""
                 : " (coupons " + m(cash) + (notCash > 0 ? " + the discount wearing off " + m(notCash)
                         : " − the premium wearing off " + m(-notCash)) + ")";
-        out.add(new String[] {"owed " + m(notes.principal() + serial.principal() + term.principal())
-                + " · interest on the city's paper " + m(na.getInterestExpense()) + " a month" + parts, null});
+        // ...and the linked bonds' indexation (CD5), beside the interest and not part of it: a month the index fell takes it off.
+        double uplift = na.getInflationUplift();
+        String upliftWords = Math.abs(uplift) < .5 ? ""
+                : (uplift > 0 ? " · inflation uplift on linked bonds " : " · less the index's fall on linked bonds ") + m(Math.abs(uplift))
+                        + (na.getUpliftPaidInCash() >= .5 ? " (" + m(na.getUpliftPaidInCash()) + " paid at maturity)" : " (no cash)");
+        out.add(new String[] {"owed " + m(notes.principal() + serial.principal() + term.principal() + floating.principal()
+                + linked.principal())
+                + " · interest on the city's paper " + m(na.getInterestExpense()) + " a month" + parts + upliftWords, null});
         if (notes.count() > 0) {
             out.add(new String[] {"notes " + m(notes.principal()) + " · no coupon: the discount ("
                     + m(notes.discount()) + ") wears off as interest · " + (notes.count() == 1 ? "falls due whole in "
@@ -2056,6 +2109,14 @@ final class GovernmentScreen {
         if (term.count() > 0) {
             out.add(new String[] {"term loans " + m(term.principal()) + " · coupons " + m(term.coupon())
                     + " a month · the whole face at the end", TERM_INFO});
+        }
+        if (floating.count() > 0) {
+            out.add(new String[] {"floating-rate notes " + m(floating.principal()) + " · coupons " + m(floating.coupon())
+                    + " a month at today's dial · the whole face at the end", FLOATING_INFO});
+        }
+        if (linked.count() > 0) {
+            out.add(new String[] {"inflation-linked bonds " + m(linked.principal()) + " · coupons " + m(linked.coupon())
+                    + " a month on the indexed principal · the face or more at the end", LINKED_INFO});
         }
         double repaid = ui.game.getCityPrincipalRepaidThisMonth() + ui.game.getForeignPrincipalRepaidThisMonth();
         if (repaid > 0) out.add(new String[] {"principal repaid this month " + m(repaid) + ": not spending", PRINCIPAL_INFO});
