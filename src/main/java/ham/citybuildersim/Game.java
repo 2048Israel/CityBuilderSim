@@ -10702,7 +10702,7 @@ public class Game {
             debtManager.printDebtInfo(month);
         }
         printCityStats();
-        System.out.println("Interest Rate: %" + formatter.format(debtManager.getRate()*100));
+        System.out.println("Interest Rate: " + formatter.format(debtManager.getRate()*100) + "%");
         if(graphs){
             historyGrapher.printLineGraph(historySave.getDebt(),historySave.getMonth(), "DEBT");
             historyGrapher.printLineGraph(historySave.getInterestRate(),historySave.getMonth(), "INTEREST RATE");
@@ -12483,6 +12483,9 @@ public class Game {
      */
     private final Bank bank = new Bank();
     public Bank getBank() { return bank; }
+
+    /** Commercial Banks standing now, counted from the buildings: a founded city has one before its first month opens it (bank.getBranches() is 0 until the month runs). */
+    public int getBankBranchesStanding() { return buildingManager.countByName("Commercial Bank"); }
 
     /**
      * The central bank - the balance sheet money is made on (0.7.0).

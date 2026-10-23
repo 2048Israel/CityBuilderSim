@@ -747,15 +747,18 @@ final class FoundingScreen {
         boolean on = p == preset;
         Label name = new Label(p.label());
         name.setStyle(Palette.strong(Palette.SIZE_SECTION + 1, Palette.TEXT_HEAD));
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox top = new HBox(6, name, gap);
+        // The title has the row to itself and is never ellipsized: on Earth the four cards share 520 px, about
+        // 90 of text each, and "Standard" beside its chip read "Stan..." (PT1, 2026-10-23).
+        name.setMinWidth(Region.USE_PREF_SIZE);
+        VBox top = new VBox(3, name);
         top.setAlignment(Pos.CENTER_LEFT);
         if (p == Founding.Preset.STANDARD) {
+            // The chip has its own line under the title, for the same reason.
             Label chip = new Label("default");
             chip.setStyle(Palette.words(Palette.SIZE_BODY, Palette.ACCENT)
                     + " -fx-border-color: " + Palette.ACCENT + "; -fx-border-radius: 10;"
                     + " -fx-padding: 0 7 0 7;");
+            chip.setMinWidth(Region.USE_PREF_SIZE);
             top.getChildren().add(chip);
         }
 

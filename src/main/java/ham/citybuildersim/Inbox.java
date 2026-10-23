@@ -304,6 +304,33 @@ public class Inbox {
         return n;
     }
 
+    /** What the window's toasts remember a notice by: its key and the month it was raised (PT1: here, where a harness can hold it). */
+    public static String toastKey(Notice n) {
+        return n.getKey() + "@" + n.getRaised();
+    }
+
+    /**
+     * The urgent notices not yet toasted, oldest first, each added to
+     * `toasted` as it is returned: the window shows these and nothing else, so
+     * a notice is toasted once. Read or settled ones are never toasted.
+     */
+    public List<Notice> toToast(java.util.Set<String> toasted) {
+        List<Notice> out = new ArrayList<>();
+        for (Notice notice : notices) {
+            if (notice.isUrgent() && toasted.add(toastKey(notice))) out.add(notice);
+        }
+        return out;
+    }
+
+    /**
+     * Every notice now in the inbox counts as toasted (PT1): what a load calls,
+     * so a notice raised before the save is not toasted again at once. It stays
+     * unread, and the envelope stays red.
+     */
+    public void markAllToasted(java.util.Set<String> toasted) {
+        for (Notice notice : notices) toasted.add(toastKey(notice));
+    }
+
     /** The live notice for a condition, or null if there is not one. */
     public Notice live(String key) {
         for (int i = notices.size() - 1; i >= 0; i--) {

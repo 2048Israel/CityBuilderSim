@@ -14,6 +14,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.31 — PT1, eleven fixes from a played city — 2026-10-23, ready, see docs/queue/PT1-notes.md
+
+Ten of the eleven, the model's month untouched. A founded city's bank, standing before its first month opens it, reads
+"opens with the first month" and is not in NEEDS YOU, and the Bank page's door to build one is gone till then; that door
+lands on the bank's card in Build › Shops. A served share from five times what is asked prints as a multiple, "30×", not
+"13333%". A chart of a series that never goes under zero never floors under it. A notice raised before a save does not
+toast on load. The founding card's "Standard" and its chip are no longer cut; People's bridge says "room for 634 people";
+the drawer's footnote closes NEEDS YOU. The log prints a dash for debt-to-GDP with no GDP, and "3.92%". The two money
+signs are Jerus's convention, kept. The toast over a page's controls waits on Jerus (PT1-C). PlaytestFixCheck is new.
+
 ### 0.8.30 — CL5, highways that reach the whole city — 2026-10-23, ready, see docs/queue/CL5-notes.md
 
 A highway net that stops no longer stops for good (CityRuns): when no arm can grow and no corridor line crosses the net, a

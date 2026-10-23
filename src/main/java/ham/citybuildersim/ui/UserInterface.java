@@ -2281,7 +2281,8 @@ public class UserInterface extends Application {
                         + " US dollar costs in %s.%n%s, and the city borrows at %s.%n"
                         + "Click for both lines in City History.",
                         game.getCurrency().plural(),
-                        game.getBank().getBranches() <= 0 ? "There is no bank yet"
+                        game.getBank().getBranches() <= 0 ? (game.getBankBranchesStanding() > 0
+                                        ? "The bank opens with the first month" : "There is no bank yet")
                                 : game.getBank().isInsolvent() ? "The bank has failed"
                                 : "The bank lends at " + pct2(game.getBank().lendingRate(market.getPolicyRate()))
                                         + " (its prime)",
@@ -2425,6 +2426,7 @@ public class UserInterface extends Application {
         Bank lender = game.getBank();
         double policy = market.getPolicyRate();
         boolean noBank = lender.getBranches() <= 0;
+        boolean unopened = noBank && game.getBankBranchesStanding() > 0; // PT1: standing, not yet opened by a month
         boolean bankFailed = !noBank && lender.isInsolvent();
         double oneLocal = fx.toUsd(1);
         double rate = fx.getRate();
@@ -2436,9 +2438,11 @@ public class UserInterface extends Application {
                 + "%s1 = %s%s, and %s. Parity - where a basket costs the same here and abroad - is"
                 + " %s%.2f; the rate is %s.",
                 pct2(policy),
-                noBank ? "none yet" : bankFailed ? "failed" : pct2(lender.lendingRate(policy)),
+                unopened ? "opens next month" : noBank ? "none yet" : bankFailed ? "failed" : pct2(lender.lendingRate(policy)),
                 pct2(market.getRate()),
-                noBank ? String.format("%nThere is no bank in this city yet: what it borrows is lent from"
+                unopened ? String.format("%nThe bank opens with the first month: until then what the city"
+                        + " borrows is lent from outside it, priced as the central bank's window money.")
+                : noBank ? String.format("%nThere is no bank in this city yet: what it borrows is lent from"
                         + " outside it, priced as the central bank's window money.")
                 : bankFailed ? String.format("%nThe bank has failed: it may lend nothing until it is"
                         + " recapitalised or earns its way back.") : "",
@@ -3823,6 +3827,8 @@ public class UserInterface extends Application {
 
         // A load replaces the city - Continue's autosave on a cold start included.
         anotherCity();
+        // ...and what it was already saying before the save is not toasted again (PT1).
+        game.getInbox().markAllToasted(toasted);
         openCity();
     }
 
@@ -3851,7 +3857,9 @@ public class UserInterface extends Application {
      * which is also how the player gets back to the SAME city - the time
      * skip's Cancel and Done, and Continue with no screen to go back to - where
      * clearing them toasted every unread urgent notice again and forgot the
-     * session's purchases.
+     * session's purchases. The set is empty after it, so a notice raised
+     * before a loaded save would toast at once: the load path marks the
+     * save's notices toasted right after (PT1); a founded city has none.
      */
     private void anotherCity() {
         cityOpen = true;
@@ -6231,9 +6239,12 @@ public class UserInterface extends Application {
        red, with its count, for as long as anything urgent is unread - a toast
        is the interruption, not the record.
 
-       A notice is toasted once, by its key and the month it was raised; the
-       set is emptied when another city is founded or loaded (anotherCity()),
-       and not when the player returns to the same one.
+       A notice is toasted once, by its key and the month it was raised
+       (Inbox.toToast()); the set is emptied when another city is founded or
+       loaded (anotherCity()), and not when the player returns to the same
+       one. A LOAD then counts every notice the save holds as toasted
+       (Inbox.markAllToasted(), PT1): one raised before the save does not
+       toast on load - it stays unread in the inbox, the envelope still red.
        ===================================================================== */
 
     /** How long a toast stays before it fades, in seconds. */
@@ -6255,9 +6266,7 @@ public class UserInterface extends Application {
         if (game.getInbox() == null) return;
         toastStack.getChildren().removeIf(n ->
                 n.getUserData() instanceof Notice was && !was.isUrgent());
-        for (Notice notice : game.getInbox().all()) {          // oldest first: the newest lands lowest, in the corner
-            if (!notice.isUrgent()) continue;
-            if (!toasted.add(notice.getKey() + "@" + notice.getRaised())) continue;
+        for (Notice notice : game.getInbox().toToast(toasted)) {   // oldest first: the newest lands lowest, in the corner
             toastStack.getChildren().add(toast(notice));
         }
         while (toastStack.getChildren().size() > TOAST_MAX) toastStack.getChildren().remove(0);

@@ -1,4 +1,4 @@
-# Inbox.java - 649 lines · 24 methods · 2 constants · model
+# Inbox.java - 676 lines · 27 methods · 2 constants · model
 
 `ham/citybuildersim/Inbox.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -28,9 +28,9 @@
 > produced no words at all. Built here, they are written the month the
 > condition is true, and the screen's only job is to draw them.
 
-**Uses:** [Notice](Notice.md) (12), [Game](Game.md) (12), [Healthcare](Healthcare.md) (6), [ConstructionControl](ConstructionControl.md) (5), [Bank](Bank.md) (5), [Crime](Crime.md) (5), [CareType](CareType.md) (5), [Health](Health.md) (4), [AgeBand](AgeBand.md) (4), [TreasuryFund](TreasuryFund.md) (2), [BuildingManager](BuildingManager.md) (2), [LandManager](LandManager.md) (2), [Sickness](Sickness.md) (2), [Migration](Migration.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [PopulationCohorts](PopulationCohorts.md) (1)
+**Uses:** [Notice](Notice.md) (17), [Game](Game.md) (12), [Healthcare](Healthcare.md) (6), [ConstructionControl](ConstructionControl.md) (5), [Bank](Bank.md) (5), [Crime](Crime.md) (5), [CareType](CareType.md) (5), [Health](Health.md) (4), [AgeBand](AgeBand.md) (4), [TreasuryFund](TreasuryFund.md) (2), [BuildingManager](BuildingManager.md) (2), [LandManager](LandManager.md) (2), [Sickness](Sickness.md) (2), [Migration](Migration.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [PopulationCohorts](PopulationCohorts.md) (1)
 
-**Used by (3):** [Game](Game.md), [InboxCheck](InboxCheck.md), [UserInterface](UserInterface.md)
+**Used by (4):** [Game](Game.md), [InboxCheck](InboxCheck.md), [PlaytestFixCheck](PlaytestFixCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -38,8 +38,8 @@
 |---:|---|
 | 47 | THE MONTH |
 | 267 | READING |
-| 320 | SAVE AND LOAD |
-| 341 | WHAT EACH ONE SAYS |
+| 347 | SAVE AND LOAD |
+| 368 | WHAT EACH ONE SAYS |
 
 ## Constants
 
@@ -58,7 +58,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 614 | **type** `public class Inbox` | Everything the city has had to say for itself, newest first. |
+| 36 | 641 | **type** `public class Inbox` | Everything the city has had to say for itself, newest first. |
 
 ### THE MONTH (lines 47-266)
 
@@ -71,7 +71,7 @@
 | 246 | 14 | `static List<String> wrapped(String text, int columns)` | A sentence broken at spaces into lines of at most `columns` characters (a longer word on a line of its own). |
 | 262 | 4 | `private void cull(int month)` | Drop what has been settled longer than anybody needs to remember. |
 
-### READING (lines 267-319)
+### READING (lines 267-346)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -80,27 +80,30 @@
 | 281 | 1 | `public int size()` |  |
 | 293 | 6 | `public Notice urgent()` | The one that interrupts: newest unread notice whose condition still holds. |
 | 301 | 5 | `public int unread()` | What goes on the envelope. |
-| 308 | 7 | `public Notice live(String key)` | The live notice for a condition, or null if there is not one. |
-| 316 | 3 | `public void markRead(Notice notice, int month)` |  |
+| 308 | 3 | `public static String toastKey(Notice n)` | What the window's toasts remember a notice by: its key and the month it was raised (PT1: here, where a harness can hold it). |
+| 317 | 7 | `public List<Notice> toToast(java.util.Set<String> toasted)` | The urgent notices not yet toasted, oldest first, each added to `toasted` as it is returned: the window shows these and nothing else, so a notice is toasted once. |
+| 330 | 3 | `public void markAllToasted(java.util.Set<String> toasted)` | Every notice now in the inbox counts as toasted (PT1): what a load calls, so a notice raised before the save is not toasted again at once. |
+| 335 | 7 | `public Notice live(String key)` | The live notice for a condition, or null if there is not one. |
+| 343 | 3 | `public void markRead(Notice notice, int month)` |  |
 
-### SAVE AND LOAD (lines 320-340)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 334 | 4 | `public void restoreFrom(List<Notice> loaded)` | Takes over a loaded inbox wholesale. |
-| 339 | 1 | `public void reset()` |  |
-
-### WHAT EACH ONE SAYS (lines 341-649)
+### SAVE AND LOAD (lines 347-367)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 350 | 21 | `private static List<String> sheddingBody(Game game)` |  |
-| 372 | 22 | `private static List<String> landLockBody(Game game)` |  |
-| 395 | 27 | `private static List<String> bankBody(Game game)` |  |
-| 424 | 20 | `private static List<String> resolvedBody(Game game, TreasuryFund.Resolution r)` | The month the city resolved the bank (0.7.14): the log's sentence, with its figures. |
-| 446 | 22 | `private static List<String> preferredBody(Game game)` | The bank's offer (0.7.14): the popup's sentence, TARP's terms. |
-| 477 | 37 | `private static List<String> defaultsBody(Game game)` | FIRMS GOING BUST (0.7.8). |
-| 516 | 8 | `private static String money(double thousands)` | Thousands - the unit the model counts in - as a player reads money: $1.3M, $450k. |
-| 531 | 33 | `private static List<String> crimeBody(Game game)` | Crime at one and a half times Canada's rate or worse, or people the police caught with no cell to hold them (2026-09-11). |
-| 577 | 72 | `private static List<String> healthcareBody(Game game)` | The three things healthcare is silently costing the city, when they apply. |
+| 361 | 4 | `public void restoreFrom(List<Notice> loaded)` | Takes over a loaded inbox wholesale. |
+| 366 | 1 | `public void reset()` |  |
+
+### WHAT EACH ONE SAYS (lines 368-676)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 377 | 21 | `private static List<String> sheddingBody(Game game)` |  |
+| 399 | 22 | `private static List<String> landLockBody(Game game)` |  |
+| 422 | 27 | `private static List<String> bankBody(Game game)` |  |
+| 451 | 20 | `private static List<String> resolvedBody(Game game, TreasuryFund.Resolution r)` | The month the city resolved the bank (0.7.14): the log's sentence, with its figures. |
+| 473 | 22 | `private static List<String> preferredBody(Game game)` | The bank's offer (0.7.14): the popup's sentence, TARP's terms. |
+| 504 | 37 | `private static List<String> defaultsBody(Game game)` | FIRMS GOING BUST (0.7.8). |
+| 543 | 8 | `private static String money(double thousands)` | Thousands - the unit the model counts in - as a player reads money: $1.3M, $450k. |
+| 558 | 33 | `private static List<String> crimeBody(Game game)` | Crime at one and a half times Canada's rate or worse, or people the police caught with no cell to hold them (2026-09-11). |
+| 604 | 72 | `private static List<String> healthcareBody(Game game)` | The three things healthcare is silently costing the city, when they apply. |
 
