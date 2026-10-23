@@ -1,6 +1,6 @@
-# Notice.java - 98 lines · 15 methods · 0 constants · model
+# Notice.java - 114 lines · 16 methods · 0 constants · model
 
-`ham/citybuildersim/Notice.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Notice.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > One thing the city needs told about, and whether anybody has looked at it.
 > 
@@ -26,7 +26,7 @@
 > resolved - when the condition stopped being true. 0 while it still is. A
 >            resolved notice stays in the list, greyed, for two years.
 
-**Used by (9):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [DataSave](DataSave.md), [Inbox](Inbox.md), [InboxCheck](InboxCheck.md), [LongPlaytest](LongPlaytest.md), [UserInterface](UserInterface.md)
+**Used by (10):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [DataSave](DataSave.md), [Inbox](Inbox.md), [InboxCheck](InboxCheck.md), [LongPlaytest](LongPlaytest.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md)
 
 ## Fields (state)
 
@@ -43,20 +43,21 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 66 | **type** `public class Notice` | One thing the city needs told about, and whether anybody has looked at it. |
+| 33 | 82 | **type** `public class Notice implements Cloneable` | One thing the city needs told about, and whether anybody has looked at it. |
 | 48 | 1 | `Notice()` | Gson needs it. |
 | 50 | 6 | `Notice(String key, String title, List<String> body, int month)` |  |
-| 57 | 1 | `public String getKey()` |  |
-| 58 | 1 | `public String getTitle()` |  |
-| 61 | 4 | `public List<String> getBody()` | Never null, even on a notice from a save written before the field existed. |
-| 66 | 1 | `public int getRaised()` |  |
-| 67 | 1 | `public int getRead()` |  |
-| 68 | 1 | `public int getResolved()` |  |
-| 70 | 1 | `public boolean isRead()` |  |
-| 71 | 1 | `public boolean isResolved()` |  |
-| 74 | 1 | `public boolean isUrgent()` | Unread AND still true: the only state that interrupts the player. |
-| 76 | 4 | `void refresh(String title, List<String> body)` |  |
-| 81 | 3 | `void markRead(int month)` |  |
-| 85 | 3 | `void markResolved(int month)` |  |
-| 95 | 3 | `int monthsSinceResolved(int month)` | How old the resolution is, for the two-year cull. |
+| 63 | 9 | `Notice copy()` | A copy that shares nothing with this notice (UP1, 2026-10-22): the autosave is written on another thread while markRead(), markResolved() and refresh() go on changing the live ones. |
+| 73 | 1 | `public String getKey()` |  |
+| 74 | 1 | `public String getTitle()` |  |
+| 77 | 4 | `public List<String> getBody()` | Never null, even on a notice from a save written before the field existed. |
+| 82 | 1 | `public int getRaised()` |  |
+| 83 | 1 | `public int getRead()` |  |
+| 84 | 1 | `public int getResolved()` |  |
+| 86 | 1 | `public boolean isRead()` |  |
+| 87 | 1 | `public boolean isResolved()` |  |
+| 90 | 1 | `public boolean isUrgent()` | Unread AND still true: the only state that interrupts the player. |
+| 92 | 4 | `void refresh(String title, List<String> body)` |  |
+| 97 | 3 | `void markRead(int month)` |  |
+| 101 | 3 | `void markResolved(int month)` |  |
+| 111 | 3 | `int monthsSinceResolved(int month)` | How old the resolution is, for the two-year cull. |
 

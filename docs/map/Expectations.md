@@ -1,6 +1,6 @@
 # Expectations.java - 286 lines · 16 methods · 11 constants · model
 
-`ham/citybuildersim/Expectations.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Expectations.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > What the city expects prices to do, and how far it believes the central bank.
 > 

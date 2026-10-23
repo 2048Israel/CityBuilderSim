@@ -1,6 +1,6 @@
-# BondMarket.java - 2,065 lines · 171 methods · 8 constants · model
+# BondMarket.java - 2,091 lines · 172 methods · 8 constants · model
 
-`ham/citybuildersim/BondMarket.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BondMarket.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > The corporate bond market: every bond the city's businesses have issued,
 > who holds each, the order book each trades on, and the rule each
@@ -44,9 +44,9 @@
 > where the return is, the bank by its own loan price. The term is
 > CorporateBond.TERM_MONTHS.
 
-**Uses:** [CorporateBond](CorporateBond.md) (74), [OrderBook](OrderBook.md) (38), [BusinessDebtManager](BusinessDebtManager.md) (21), [OutwardInvestment](OutwardInvestment.md) (18), [Bank](Bank.md) (12), [Household](Household.md) (12), [CapitalFlows](CapitalFlows.md) (11), [HouseholdBalance](HouseholdBalance.md) (9), [TreasuryFund](TreasuryFund.md) (5), [Game](Game.md) (4), [EconomyManager](EconomyManager.md) (2), [Sectors](Sectors.md) (2), [FundLedger](FundLedger.md) (1)
+**Uses:** [CorporateBond](CorporateBond.md) (75), [OrderBook](OrderBook.md) (39), [BusinessDebtManager](BusinessDebtManager.md) (21), [OutwardInvestment](OutwardInvestment.md) (18), [Bank](Bank.md) (12), [Household](Household.md) (12), [CapitalFlows](CapitalFlows.md) (11), [HouseholdBalance](HouseholdBalance.md) (9), [SaveCopy](SaveCopy.md) (7), [TreasuryFund](TreasuryFund.md) (5), [Game](Game.md) (4), [EconomyManager](EconomyManager.md) (2), [Sectors](Sectors.md) (2), [FundLedger](FundLedger.md) (1)
 
-**Used by (19):** [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [CurveCheck](CurveCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [Exchange](Exchange.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (20):** [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [CurveCheck](CurveCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [Exchange](Exchange.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -167,7 +167,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 2015 | **type** `public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtManager.BondDesk` | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participant trades by. |
+| 51 | 2041 | **type** `public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtManager.BondDesk` | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participant trades by. |
 
 ### THE PARTICIPANTS (lines 53-152)
 
@@ -426,15 +426,16 @@
 | 1865 | 26 | `public List<Issuer> byIssuer()` | Every issuer with a bond outstanding, biggest face first. |
 | 1893 | 8 | `public double valueHeld(java.util.function.ToDoubleFunction<CorporateBond> holding, int month)` | What a holder class's bonds are worth at the bonds' value this month. |
 
-### save and load (lines 1902-2065)
+### save and load (lines 1902-2091)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1905 | 10 | **type** `public static final class State` | Everything the market carries from one month to the next, as the save writes it. |
-| 1916 | 30 | `public State toState()` |  |
-| 1948 | 51 | `public void restore(State s)` | Puts a saved market back. |
-| 2001 | 1 | `private static double finite(double v)` | A save carries no NaN: nothing where there was none. |
-| 2003 | 5 | `private static void putAll(Map<String, Double> into, Map<String, Double> from)` |  |
-| 2010 | 25 | `public void reset()` | No bonds, no books, nothing over the city's life: a new city. |
-| 2037 | 28 | `public void redenominate(double scale)` | Every money figure in the new unit: the bonds' faces and holdings, the orders' quantities, the month's flows. |
+| 1905 | 36 | **type** `public static final class State implements Cloneable` | Everything the market carries from one month to the next, as the save writes it. |
+| 1922 | 18 | `State copy()` _(in BondMarket.State)_ | A copy that shares nothing with this state (UP1, 2026-10-22): toState() lists the market's own bonds and books, which the months go on changing while the autosave is written. |
+| 1942 | 30 | `public State toState()` |  |
+| 1974 | 51 | `public void restore(State s)` | Puts a saved market back. |
+| 2027 | 1 | `private static double finite(double v)` | A save carries no NaN: nothing where there was none. |
+| 2029 | 5 | `private static void putAll(Map<String, Double> into, Map<String, Double> from)` |  |
+| 2036 | 25 | `public void reset()` | No bonds, no books, nothing over the city's life: a new city. |
+| 2063 | 28 | `public void redenominate(double scale)` | Every money figure in the new unit: the bonds' faces and holdings, the orders' quantities, the month's flows. |
 

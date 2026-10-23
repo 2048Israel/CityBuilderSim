@@ -1,6 +1,6 @@
-# BuildLog.java - 149 lines · 9 methods · 2 constants · model
+# BuildLog.java - 162 lines · 10 methods · 2 constants · model
 
-`ham/citybuildersim/BuildLog.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildLog.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > What the city has gained, and when. The other half of DemolitionLog.
 > 
@@ -28,7 +28,7 @@
 
 **Uses:** [DemolitionLog](DemolitionLog.md) (1)
 
-**Used by (4):** [CalendarCheck](CalendarCheck.md), [DataSave](DataSave.md), [Game](Game.md), [UserInterface](UserInterface.md)
+**Used by (5):** [CalendarCheck](CalendarCheck.md), [DataSave](DataSave.md), [Game](Game.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md)
 
 ## Constants
 
@@ -44,21 +44,22 @@
 | 42 | `public final String building` |  |
 | 43 | `public final int month` |  |
 | 46 | `public int quantity` | Not final: completions of the same building in the same month merge. |
-| 68 | `private final List<Entry> entries` |  |
+| 81 | `private final List<Entry> entries` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 32 | 118 | **type** `public class BuildLog` | What the city has gained, and when. |
-| 40 | 27 | **type** `public static class Entry` |  |
+| 32 | 131 | **type** `public class BuildLog` | What the city has gained, and when. |
+| 40 | 40 | **type** `public static class Entry implements Cloneable` |  |
 | 48 | 5 | `Entry(String building, int quantity, int month)` _(in BuildLog.Entry)_ |  |
-| 55 | 3 | `public int monthsAgo(int currentMonth)` _(in BuildLog.Entry)_ | How long ago, in months. |
-| 60 | 6 | `public String when(int currentMonth)` _(in BuildLog.Entry)_ | "this month", "last month", "3 months ago". |
-| 70 | 25 | `public void record(String building, int quantity, int month)` |  |
-| 102 | 13 | `public List<Entry> recent(int currentMonth)` | What to show right now: everything within KEEP_MONTHS, newest first. |
-| 117 | 5 | `public List<Entry> all()` | Every entry ever kept, newest first. |
-| 131 | 10 | `public void restore(List<Entry> saved)` | Puts a saved log back, in the order it was written. |
-| 142 | 3 | `public int size()` |  |
-| 146 | 3 | `public void clear()` |  |
+| 59 | 7 | `Entry copy()` _(in BuildLog.Entry)_ | A copy to hand the autosave's writer thread (UP1, 2026-10-22): the live entry's quantity grows when the same building completes again in its month. |
+| 68 | 3 | `public int monthsAgo(int currentMonth)` _(in BuildLog.Entry)_ | How long ago, in months. |
+| 73 | 6 | `public String when(int currentMonth)` _(in BuildLog.Entry)_ | "this month", "last month", "3 months ago". |
+| 83 | 25 | `public void record(String building, int quantity, int month)` |  |
+| 115 | 13 | `public List<Entry> recent(int currentMonth)` | What to show right now: everything within KEEP_MONTHS, newest first. |
+| 130 | 5 | `public List<Entry> all()` | Every entry ever kept, newest first. |
+| 144 | 10 | `public void restore(List<Entry> saved)` | Puts a saved log back, in the order it was written. |
+| 155 | 3 | `public int size()` |  |
+| 159 | 3 | `public void clear()` |  |
 

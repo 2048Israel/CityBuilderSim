@@ -1,6 +1,6 @@
 # ConstructionScreen.java - 1,121 lines · 39 methods · 7 constants · interface
 
-`ham/citybuildersim/ui/ConstructionScreen.java` - generated 2026-10-22 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ConstructionScreen.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
 > The construction page (0.7.22): the builders' gauge, every site with its
 > order, its crews, its time and its money and the player's hand on it -
