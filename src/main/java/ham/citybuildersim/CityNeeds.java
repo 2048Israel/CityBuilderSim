@@ -308,12 +308,21 @@ public final class CityNeeds {
     }
 
     /**
-     * A served share as a whole per cent, "62%", or a dash for one that is
-     * not a finite number (nothing asked of it). A share just under 100%
-     * prints as 99%, never 100%: the word beside it says "short".
+     * From this served share up (5 = five times what is asked) a share prints
+     * as a multiple, "30×", not a per cent: in a town of 40 a power plant
+     * read 13333% served (PT1).
+     */
+    static final double SERVED_AS_MULTIPLE = 5;
+
+    /**
+     * A served share as a whole per cent, "62%", or from SERVED_AS_MULTIPLE
+     * up as a multiple, "30×", or a dash for one that is not a finite number
+     * (nothing asked of it). A share just under 100% prints as 99%, never
+     * 100%: the word beside it says "short".
      */
     public static String servedPct(double share) {
         if (!Double.isFinite(share)) return "—";
+        if (share >= SERVED_AS_MULTIPLE) return String.format("%.0f×", share);
         if (share < 1 && share >= .995) return "99%";
         return String.format("%.0f%%", share * 100);
     }
@@ -570,13 +579,18 @@ public final class CityNeeds {
 
         // Until 0.7.7 the warning was the strain premium on every rate; with the
         // premium gone, a bank past its capacity is the thing worth a glance.
+        // PT1: a founded city has its bank standing before its first month opens it (getBranches() is
+        // 0 until the month runs). That is not "none": it reads as opening, and the row is not counted.
+        boolean unopened = bank.getBranches() <= 0 && game.getBankBranchesStanding() > 0;
+        boolean noBank = bank.getBranches() <= 0 && !unopened;
         flag(out, "THE BANK", bank.isInsolvent() ? "failed"
-                        : bank.getBranches() <= 0 ? "there is none"
+                        : unopened ? "opens with the first month"
+                        : noBank ? "there is none"
                         : bank.strain() > 1
                                 ? String.format("%.0f%% lent", bank.strain() * 100)
                                 : "lending",
-                bank.isInsolvent() || bank.getBranches() <= 0 || bank.strain() > 1,
-                bank.isInsolvent() || bank.getBranches() <= 0, Kind.BANK, Go.BANK, bank.strain());
+                bank.isInsolvent() || noBank || bank.strain() > 1,
+                bank.isInsolvent() || noBank, Kind.BANK, Go.BANK, bank.strain());
         // The model counts its branches by this name (Game: bank.openBranches(...countByName(...))).
         onTheWay(game, w, out, t -> "Commercial Bank".equals(t.getName()));
 

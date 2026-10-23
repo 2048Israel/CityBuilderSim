@@ -1,4 +1,4 @@
-# ChartModel.java - 715 lines · 49 methods · 11 constants · model
+# ChartModel.java - 717 lines · 49 methods · 11 constants · model
 
 `ham/citybuildersim/ChartModel.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -41,8 +41,8 @@
 | 266 | WHAT A CHART DRAWS FROM: ONE SNAPSHOT, FIXED WHEN IT IS HANDED OVER |
 | 378 | THE TIME AXIS |
 | 440 | A VALUE AXIS |
-| 503 | WHAT IS LAID OVER THE LINES |
-| 646 | · the basket's links (0.7.45) |
+| 505 | WHAT IS LAID OVER THE LINES |
+| 648 | · the basket's links (0.7.45) |
 
 ## Constants
 
@@ -74,7 +74,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 679 | **type** `public final class ChartModel` | What a time chart shows, as numbers: the window of months it looks at and how a drag, a wheel, a range button and the overview move it; the ticks on its two axes; and the bands, the episodes and the decisions it lays ... |
+| 37 | 681 | **type** `public final class ChartModel` | What a time chart shows, as numbers: the window of months it looks at and how a drag, a wheel, a range button and the overview move it; the ticks on its two axes; and the bands, the episodes and the decisions it lays ... |
 
 ### THE WINDOW (lines 72-220)
 
@@ -127,7 +127,7 @@
 | 389 | 1 | **type** `public record Tick(double month, String label, boolean year)` | One tick on the time axis: the month it marks, its label, and whether it is a year's. |
 | 392 | 47 | `public static List<Tick> timeTicks(double lo, double hi, double pixels)` | The ticks for a window lo..hi drawn `pixels` wide, in order. |
 
-### A VALUE AXIS (lines 440-502)
+### A VALUE AXIS (lines 440-504)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -135,33 +135,33 @@
 | 456 | 7 | `public List<Double> ticks()` _(in ChartModel.Scale)_ | The gridlines, bottom to top. |
 | 464 | 3 | `public double y(double v, double bottom, double height)` _(in ChartModel.Scale)_ | Where a value falls on a plot `height` tall whose bottom is at `bottom` (pixels grow down). |
 | 470 | 6 | `public static double niceStep(double raw)` | One, two or five times a power of ten, at least `raw`. |
-| 482 | 12 | `public static Scale niceScale(double low, double high, int ticks, boolean fromZero)` | A nice scale over low..high, about `ticks` gridlines, from zero when asked and nothing is negative. |
-| 496 | 6 | `public static Scale logScale(double lowLog, double highLog)` | A log axis over these LOGARITHMS: whole powers of ten, a gridline each. |
+| 484 | 12 | `public static Scale niceScale(double low, double high, int ticks, boolean fromZero)` | A nice scale over low..high, about `ticks` gridlines, from zero when asked and nothing is negative. |
+| 498 | 6 | `public static Scale logScale(double lowLog, double highLog)` | A log axis over these LOGARITHMS: whole powers of ten, a gridline each. |
 
-### WHAT IS LAID OVER THE LINES (lines 503-645)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 508 | 1 | `public static List<YearBook.Band> bands(HistorySave h)` | The recession bands, exactly YearBook.recessions(), each with its depth and the episode whose name it carries. |
-| 511 | 1 | `public static List<YearBook.Episode> episodes(HistorySave h)` | The spans on the episode lane, exactly YearBook.episodes(), oldest first. |
-| 518 | 12 | `public static int[] lanes(List<YearBook.Episode> episodes)` | Which row of the episode lane each episode sits on: the first row whose last span ended before this one began, so two that overlap - a treasury crisis inside a recession - never share a row. |
-| 532 | 5 | `public static int laneCount(int[] rows)` | How many rows lanes() used. |
-| 539 | 3 | **type** `public record Flag(int month, List<DecisionLog.Entry> entries)` | One flag on the decision lane: a month and everything decided in it, in the order it was decided. |
-| 540 | 1 | `public int count()` _(in ChartModel.Flag)_ |  |
-| 544 | 10 | `public static List<Flag> flags(DecisionLog log)` | The log's entries as flags: one a month, many decisions in one month one flag with a count; oldest first. |
-| 561 | 12 | `public static List<Flag> flags(DecisionLog log, String kind)` | ...of one kind only (0.7.32): the Finances tab's chart of what the city owes and its rate carries the BORROWING decisions alone - an issue, a buyback, the rollover's setting, a default abroad. |
-| 581 | 13 | `public static List<Flag> flagsOf(DecisionLog log, String...kinds)` | ...of several kinds, one flag a month (0.7.33): the Bank tab's rates carry the CENTRAL_BANK decisions that move the policy rate under them and the BANK ones - a rescue, the preferred offer - in one lane, so a month wi... |
-| 603 | 10 | `public static List<Flag> onAxis(List<Flag> flags, int firstMonth)` | The flags as the lane can draw them (0.7.37): a flag from before the axis's first month - the founding month's, which the history does not record, so no window reaches it - is moved onto that first month and merged wi... |
-| 615 | 7 | **type** `public record Cluster(int month, List<Flag> flags)` | Flags drawn as one: at the first one's month, so many months packed under one pixel read as one count. |
-| 616 | 5 | `public int count()` _(in ChartModel.Cluster)_ |  |
-| 629 | 16 | `public static List<Cluster> clusters(List<Flag> flags, double lo, double hi, double pixels, double gapPx)` | The flags inside the window, each month's one flag, and a flag that would sit within `gapPx` of the FIRST flag of the group before it drawn in that group, as one: the decision lane of a long city zoomed out is a row o... |
-
-### the basket's links (0.7.45) (lines 646-715)
+### WHAT IS LAID OVER THE LINES (lines 505-647)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 655 | 1 | **type** `public record Mark(int month, String words)` | One mark over the plot: its month and what it says. |
-| 666 | 33 | `public static List<Mark> basketLinks(HistorySave h, PriceIndex px)` | The months the basket was linked, oldest first, each with what it says: every link the history's basketLinkedAt names (recorded since 0.7.45), at its own month while that month is on the axis, and the link in force (P... |
-| 701 | 11 | `static String linkWords(double[] weights, double level, boolean first)` | What a link's mark says: the weights it struck and the level it opened at. |
-| 714 | 1 | `public ChartModel()` | A fresh window: no data yet; the first setData() opens it on DEFAULT_RANGE. |
+| 510 | 1 | `public static List<YearBook.Band> bands(HistorySave h)` | The recession bands, exactly YearBook.recessions(), each with its depth and the episode whose name it carries. |
+| 513 | 1 | `public static List<YearBook.Episode> episodes(HistorySave h)` | The spans on the episode lane, exactly YearBook.episodes(), oldest first. |
+| 520 | 12 | `public static int[] lanes(List<YearBook.Episode> episodes)` | Which row of the episode lane each episode sits on: the first row whose last span ended before this one began, so two that overlap - a treasury crisis inside a recession - never share a row. |
+| 534 | 5 | `public static int laneCount(int[] rows)` | How many rows lanes() used. |
+| 541 | 3 | **type** `public record Flag(int month, List<DecisionLog.Entry> entries)` | One flag on the decision lane: a month and everything decided in it, in the order it was decided. |
+| 542 | 1 | `public int count()` _(in ChartModel.Flag)_ |  |
+| 546 | 10 | `public static List<Flag> flags(DecisionLog log)` | The log's entries as flags: one a month, many decisions in one month one flag with a count; oldest first. |
+| 563 | 12 | `public static List<Flag> flags(DecisionLog log, String kind)` | ...of one kind only (0.7.32): the Finances tab's chart of what the city owes and its rate carries the BORROWING decisions alone - an issue, a buyback, the rollover's setting, a default abroad. |
+| 583 | 13 | `public static List<Flag> flagsOf(DecisionLog log, String...kinds)` | ...of several kinds, one flag a month (0.7.33): the Bank tab's rates carry the CENTRAL_BANK decisions that move the policy rate under them and the BANK ones - a rescue, the preferred offer - in one lane, so a month wi... |
+| 605 | 10 | `public static List<Flag> onAxis(List<Flag> flags, int firstMonth)` | The flags as the lane can draw them (0.7.37): a flag from before the axis's first month - the founding month's, which the history does not record, so no window reaches it - is moved onto that first month and merged wi... |
+| 617 | 7 | **type** `public record Cluster(int month, List<Flag> flags)` | Flags drawn as one: at the first one's month, so many months packed under one pixel read as one count. |
+| 618 | 5 | `public int count()` _(in ChartModel.Cluster)_ |  |
+| 631 | 16 | `public static List<Cluster> clusters(List<Flag> flags, double lo, double hi, double pixels, double gapPx)` | The flags inside the window, each month's one flag, and a flag that would sit within `gapPx` of the FIRST flag of the group before it drawn in that group, as one: the decision lane of a long city zoomed out is a row o... |
+
+### the basket's links (0.7.45) (lines 648-717)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 657 | 1 | **type** `public record Mark(int month, String words)` | One mark over the plot: its month and what it says. |
+| 668 | 33 | `public static List<Mark> basketLinks(HistorySave h, PriceIndex px)` | The months the basket was linked, oldest first, each with what it says: every link the history's basketLinkedAt names (recorded since 0.7.45), at its own month while that month is on the axis, and the link in force (P... |
+| 703 | 11 | `static String linkWords(double[] weights, double level, boolean first)` | What a link's mark says: the weights it struck and the level it opened at. |
+| 716 | 1 | `public ChartModel()` | A fresh window: no data yet; the first setData() opens it on DEFAULT_RANGE. |
 

@@ -234,6 +234,43 @@ final class BuildScreen {
     }
 
     /**
+     * A category opened on one building's card (PT1): the Bank page's "Build a Commercial Bank" landed at the top of
+     * Shops while the bank's card is the last on the page, two scrolls down. Opened as openCategory() opens it, then
+     * the page is scrolled so the card sits at the top, once the page has been laid out (the clock's settle in
+     * UserInterface.clearMenu() queues its own run first, so this one runs after it and the position it leaves is the
+     * one the monthly redraws keep). A building no card on the page is named for leaves the page where it opened.
+     */
+    void openOnBuilding(String category, String buildingName) {
+        landOn = buildingName;
+        landCard = null;
+        try {
+            openCategory(category);
+        } finally {
+            landOn = null;
+        }
+        StackPane target = landCard;
+        landCard = null;
+        if (target != null) javafx.application.Platform.runLater(() -> bringToTop(target));
+    }
+
+    /** The building openOnBuilding() is landing on while the page is drawn, and its card once card() has made it. */
+    private String landOn;
+    private StackPane landCard;
+
+    /** The page brought to a card: the menu's scroller set so the card sits near the top (LandScreen's way). */
+    private void bringToTop(javafx.scene.Node target) {
+        javafx.scene.control.ScrollPane scroller = ui.menuScroller;
+        if (scroller == null || target.getScene() == null || scroller.getContent() == null) return;
+        scroller.applyCss();
+        scroller.layout();
+        javafx.scene.Node content = scroller.getContent();
+        javafx.geometry.Bounds at = content.sceneToLocal(target.localToScene(target.getBoundsInLocal()));
+        double span = content.getBoundsInLocal().getHeight() - scroller.getViewportBounds().getHeight();
+        if (at == null || span <= 0) return;
+        scroller.setVvalue(Math.max(0, Math.min(1, (at.getMinY() - 12) / span)));
+    }
+
+    /**
      * A city category opened on one ring (0.7.28): the Services screen's
      * "Build for it ›" doors - opened as openCategory() opens it, with this
      * measure picked rather than its worst. The burial plots are the death
@@ -784,6 +821,7 @@ final class BuildScreen {
 
         pageCards.add(new PageCard(template, order.reprice()));
         order.reprice().run();
+        if (key.equals(landOn)) landCard = card;
         return card;
     }
 

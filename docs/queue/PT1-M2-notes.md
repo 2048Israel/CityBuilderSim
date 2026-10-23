@@ -58,8 +58,13 @@ one per ten months of waiting.
   playtest traced on each (`-Dplaytest.trace`): all eight CSVs byte-identical;
   the report differs only in its run-time lines and the new tally line. So no
   ensemble (EN1).
-- The batch (main had not moved; CL5 and PT1 not yet landed, so numbered
-  0.8.32 after them): `./batch-check.sh` 131 harnesses run, all green; Stale 0
+- The batch (before main moved; numbered
+  0.8.32 after CL5 and PT1): `./batch-check.sh` 131 harnesses run, all green; Stale 0
   firm findings; the maps regenerated. Timing soft beside two other batches'
   JVMs.
 - `--timing` hard, the timing harnesses alone (after waiting for another batch's JVM): 10 run, 10 passed.
+- Merged main a699124a (CL5 0.8.30, PT1 0.8.31); kept 0.8.32. Section 7 now
+  also keeps the window's toasts through PT1's `toToast` and `markAllToasted`
+  on the load: 4 toasts for its 4 notices, none for the reopened one or on the
+  load. `--fast` green; PlaytestFixCheck, SaveFileCheck, ReadPathCheck and
+  InboxCheck green; the maps regenerated.

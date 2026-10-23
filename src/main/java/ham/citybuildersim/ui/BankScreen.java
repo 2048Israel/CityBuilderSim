@@ -503,6 +503,24 @@ final class BankScreen {
         };
     }
 
+    /** A Commercial Bank stands that the first month has not opened yet (PT1): Bank itself still counts no branch. */
+    boolean bankNotOpenYet(Bank bank) {
+        return bank.getBranches() <= 0 && ui.game.getBankBranchesStanding() > 0;
+    }
+
+    /** The stance's chip, "NOT OPEN YET" while a standing bank waits for the first month, else stanceWord(). */
+    String stanceNow(Bank bank) {
+        return bankNotOpenYet(bank) ? "NOT OPEN YET" : stanceWord(bank);
+    }
+
+    /** The overview's sentence under the stance, the same swap. */
+    String statusNow(Bank bank) {
+        return bankNotOpenYet(bank)
+                ? "A Commercial Bank is standing and opens with the first month. Until then every loan in the city is"
+                        + " funded at the central bank's window and priced as a bank would price it."
+                : bank.status();
+    }
+
     /** The stance in a word or three, on its chip (the spec's D18). */
     static String stanceWord(Bank bank) {
         return switch (bank.payoutStance()) {
@@ -542,7 +560,7 @@ final class BankScreen {
         if (fresh && cells[0].getChildren().size() > 1 && cells[0].getChildren().get(1) instanceof Region r) {
             UserInterface.popPip(r);
         }
-        Label stance = chip(stanceWord(bank), stanceTone(bank));
+        Label stance = chip(stanceNow(bank), stanceTone(bank));
         HBox strip = new HBox(Palette.GAP_LOOSE, stance, vitalsBar(cells));
         strip.setAlignment(Pos.CENTER_LEFT);
         return strip;
@@ -595,7 +613,7 @@ final class BankScreen {
 
     /**
      * What the player must act on or know of first, at the top of every page:
-     * no bank; a failed bank and its rescue; a bank under its minimum; the
+     * no bank, or one that has not opened yet; a failed bank and its rescue; a bank under its minimum; the
      * bank asking the city for preferred; money from abroad (on Funding); a
      * sheet that does not foot. Each a card on the raised ground with a 3 px
      * edge at its top in its verdict's colour (the spec's section 3).
@@ -603,9 +621,17 @@ final class BankScreen {
     List<Node> actionCards() {
         Bank bank = ui.game.getBank();
         List<Node> out = new ArrayList<>();
-        if (bank.getBranches() <= 0) {
+        if (bank.getBranches() <= 0 && ui.game.getBankBranchesStanding() > 0) {
+            // PT1: a founded city's bank stands before its first month opens it; nothing to build.
+            out.add(actionCard(Icons.BANK, Palette.TEXT_MUTED, "The bank opens with the first month",
+                    "A Commercial Bank is standing; its owners' capital arrives when the month opens it.",
+                    "A Commercial Bank is standing. Until the first month runs it has not opened, so every borrower "
+                            + "is lent money from the central bank, priced as a bank would price it. Its owners' capital "
+                            + "arrives and its savers' deposits start funding the city's loans when the month opens it.",
+                    null));
+        } else if (bank.getBranches() <= 0) {
             HBox build = doorPill("Build a Commercial Bank", Icons.BUILD, Palette.BUILDING,
-                    () -> ui.buildScreen.openCategory(BuildAdvice.SHOPS));
+                    () -> ui.buildScreen.openOnBuilding(BuildAdvice.SHOPS, "Commercial Bank"));
             out.add(actionCard(Icons.BANK, Palette.BAD, "There is no bank in this city",
                     "Every borrower is lent money from the central bank, priced as a bank would price it.",
                     "Every borrower is lent money from the central bank, priced as a bank would price it. Build a "
@@ -884,7 +910,7 @@ final class BankScreen {
     void overviewPage(VBox page, boolean fresh) {
         Bank bank = ui.game.getBank();
         List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
-        page.getChildren().add(statusBanner(stanceWord(bank), stanceTone(bank), bank.status(), Icons.BANK));
+        page.getChildren().add(statusBanner(stanceNow(bank), stanceTone(bank), statusNow(bank), Icons.BANK));
         VBox capital = capitalCard(bank, fresh);
         capital.setMinWidth(380);
         capital.setPrefWidth(452);
@@ -998,7 +1024,8 @@ final class BankScreen {
         double costs = bank.costShareOverYear();
         int need = -1;
         for (CityNeeds.Need n : all) if (n.kind() == CityNeeds.Kind.BANK) need = n.level();
-        String full = bank.isInsolvent() ? "failed" : bank.getBranches() <= 0 ? "none"
+        String full = bank.isInsolvent() ? "failed"
+                : bank.getBranches() <= 0 ? (ui.game.getBankBranchesStanding() > 0 ? "not open" : "none")
                 : String.format("%.0f%% lent", bank.strain() * 100);
         return List.of(
                 new Cell("PROFIT", m(bank.getNetIncome()),
@@ -3508,7 +3535,7 @@ final class BankScreen {
                 muted((branch != null ? "another costs " + m(ui.game.quoteBuild(branch, 1).total) + " · " : "")
                         + "its owners put in " + m(bank.getPaidInPerBranch())));
         HBox build = doorPill("Build a Commercial Bank", Icons.BUILD, Palette.BUILDING,
-                () -> ui.buildScreen.openCategory(BuildAdvice.SHOPS));
+                () -> ui.buildScreen.openOnBuilding(BuildAdvice.SHOPS, "Commercial Bank"));
         answer.getChildren().add(build);
         answer.setMinWidth(300);
         answer.setPrefWidth(420);

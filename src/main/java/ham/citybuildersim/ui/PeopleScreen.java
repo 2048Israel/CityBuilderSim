@@ -1427,10 +1427,12 @@ final class PeopleScreen {
                                 + String.format("%.2f", b.perJob()) + " people a post at this city's ages, "
                                 + "weighted three parts in four. Click for the Work card."),
                 op("+"),
-                bridgeBox("homes for " + people(b.homesFor()) + " · ¼", people(b.homeDraw()), null,
+                // PT1: the box said "homes for 634" beside the tile "SPARE HOMES 0": 634 is people (the jobs box beside it
+                // is in people too), the tile counts homes.
+                bridgeBox("room for " + people(b.homesFor()) + " people · ¼", people(b.homeDraw()), null,
                         Palette.TEXT_HEAD, () -> ui.buildScreen.openCategory(BuildAdvice.HOMES),
-                        "The people the city's homes comfortably hold, weighted one part in four. Click for "
-                                + "Build › Homes."),
+                        "The people the city's homes comfortably hold - people, not homes - weighted one part in "
+                                + "four. Click for Build › Homes."),
                 op("="),
                 bridgeBox("jobs and homes", people(b.beforePulls()), null, Palette.TEXT_LABEL, null, null),
                 op("×"),

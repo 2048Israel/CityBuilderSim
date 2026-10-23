@@ -394,10 +394,15 @@ public class InboxCheck {
         quietly(noGround);
 
         // Up to ten years for a sector to want ground it cannot have.
+        // The window's toasts, as it keeps them (PT1): toToast each month, and
+        // a load marks all it read toasted.
+        java.util.Set<String> toasted = new java.util.HashSet<>();
+        int landToasts = 0;
         int first = -1;
         for (int m = 0; m < 120 && first < 0; m++) {
             quietly(() -> { g[0].simulateMonths(1); noGround.run(); });
             if (g[0].getInbox().live("landlock") != null) first = g[0].getMonth();
+            for (Notice t : g[0].getInbox().toToast(toasted)) if (t.getKey().equals("landlock")) landToasts++;
         }
         assertTrue("the fixture made a sector wait on ground", first > 0);
         if (first < 0) return;
@@ -421,12 +426,15 @@ public class InboxCheck {
                 Notice was = g[0].getInbox().live("landlock"), now = back.getInbox().live("landlock");
                 loaded = back.getMonth() == g[0].getMonth()
                         && was != null && now != null && now.getRaised() == was.getRaised();
+                toasted = new java.util.HashSet<>();
+                back.getInbox().markAllToasted(toasted);
                 g[0] = back;
             }
             quietly(() -> { g[0].simulateMonths(1); noGround.run(); });
             Game city = g[0];
             int month = city.getMonth();
             Inbox inbox = city.getInbox();
+            for (Notice t : inbox.toToast(toasted)) if (t.getKey().equals("landlock")) landToasts++;
 
             int live = 0;
             for (Notice n : inbox.all()) if (n.getKey().equals("landlock") && !n.isResolved()) live++;
@@ -478,6 +486,8 @@ public class InboxCheck {
         assertTrue("and the ground each needs, as its refusal gave it", needless == 0);
         assertTrue("saved mid-wait", saved);
         assertTrue("and loaded with the standing notice's month", loaded);
+        System.out.printf("  %d toast(s) of the wait for %d notice(s)%n", landToasts, raised.size());
+        assertTrue("each notice toasted once: not again when reopened, nor on the load", landToasts == raised.size());
 
         // The ground bought: many times what is built, and no more held back.
         Game city = g[0];

@@ -26,7 +26,7 @@
 > resolved - when the condition stopped being true. 0 while it still is. A
 >            resolved notice stays in the list, greyed, for two years.
 
-**Used by (11):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [DataSave](DataSave.md), [Inbox](Inbox.md), [InboxCheck](InboxCheck.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md)
+**Used by (12):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [DataSave](DataSave.md), [Inbox](Inbox.md), [InboxCheck](InboxCheck.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [PlaytestFixCheck](PlaytestFixCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md)
 
 ## Fields (state)
 
