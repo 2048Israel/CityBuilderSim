@@ -30,7 +30,7 @@ The plan read `Input.fixed` as it stood that month for its whole history. CL3 re
 | ...the ring at m4000 (km from the founding site: homes / industry / outer) | 13.73 / 7.48 / 12.36 | 13.69 / 7.43 / 12.35 |
 | MapCheck 2d, the founding district's boxes moved: the yard laid, gone, laid again; highways | 120, 133, 155; 111 | 0, 0, 0; 0 |
 | PlanCheck 15, boxes moved: a yard over 35 boxes; a highway's verge over 57 | 51; 127 (with no records) | 0; 0 |
-| the 10B copy's month change, the bounded worst (MapCheck 5) | 3.31 ms | 2.23 ms (noise; RECONCILE_MS 5) |
+| the 10B copy's month change (MapCheck 5, the two builds run alone one after the other): the bounded worst; the -0.05% month; the +0.05% month (not bounded) | 2.56; 0.82; 4.72 ms | 2.97; 1.45; 9.26 ms (RECONCILE_MS 5) |
 | the 10B copy's sidecar, deflated | 333,774 bytes | 333,856 |
 | a plan's time: MapCheck 2d's founding district (252 records, 4 months) | 3.05 ms | 6.2 ms |
 | ...the playtest's founding district at m4000 (1,396 records in its frame) | | 12.1 ms mean over the run, 23.7 at worst |
@@ -38,7 +38,7 @@ The plan read `Input.fixed` as it stood that month for its whole history. CL3 re
 - **What the watch said has stopped.** Nothing in the founding district moves in 3,000 months, and the old works stand where they stood at m1001. That includes the Vehicle Works a highway was laid across at m2,831.
 - **The plans differ from 0.8.23's all through the run**, as FX6's did. Each arrival is placed on the runs of its month, not today's, so the playtest's plans hold more boxes (323,399 compared against 316,469). The ring keeps its shape.
 - **The journal is exact on the playtest's path.** Slice AB's audit drew every district's kinds afresh every month of the 4,000 and compared them with the records: 0 differences, 0 plots left out, one reach flip (m2,131), 2,645 records city-wide at m4000. On MapCheck's coastal city, with terminals, tank farms, yards and 2,000 highways laid and taken away and the reach flipping both ways, the audit found 0 differences in 9,152 records.
-- **What it costs.** A plan pays one pass over its ground (about 0.7 ms) for each arrival month with runs records due. A district a highway grows through, or whose yard comes and goes, takes longer to plan (★3). PlanCheck's dense screen has no records and is as fast as before. The 5B and 10B sidecars grow by 66 and 82 bytes.
+- **What it costs.** A plan pays one pass over its ground (about 0.7 ms) for each arrival month with runs records due. A district a highway grows through, or whose yard comes and goes, takes longer to plan (★3). PlanCheck's dense screen has no records and is as fast as before. The 5B and 10B sidecars grow by 66 and 82 bytes. A month pays two reads of a district's box for each district its runs reach: on the 10B copy 0.1 to 0.6 ms a month more, and the bounded worst 2.97 ms against the 5 ms bound (4.41 in the gate's own hard run, the machine's noise on a 2.6 ms month).
 
 ## 4. The checks
 
@@ -94,4 +94,6 @@ Claude did the rest:
 
 ## 8. The suite
 
-(Filled in below after the final checks.)
+- **`./batch-check.sh`** on the merge with main (0.8.23), alone: 129 harnesses in 962 s, all 129 passed, the Earth harnesses' full-file sections with them. On main the one red was LongPlaytest's watch; it is green. Stale: 0 firm findings. The maps regenerated.
+- **`--timing`, hard and alone**: 8 harnesses in 181 s, all green.
+- **The trace**: main (121a74e) built apart from its own sources and the batch, the default playtest traced on each: all eight CSVs byte-identical. So no ensemble.
