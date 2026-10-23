@@ -2,7 +2,7 @@
 
 Generated 2026-10-23 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**131 harness files, 13,185 labelled assertions.** AllChecks runs 131 of them.
+**132 harness files, 13,220 labelled assertions.** AllChecks runs 132 of them.
 
 ## Which harnesses read which class
 
@@ -29,7 +29,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LongPlaytest, RefineryCheck, RoadCheck, SaveFileCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | BankCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RestaurantsCheck, ScaleCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
@@ -45,7 +45,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, LandCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | EarthTerrainCheck, GatewayCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, TruckRouteCheck |
-| [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
+| [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
 | [CityRuns](map/CityRuns.md) | EarthTerrainCheck, GatewayCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
 | [CityShore](map/CityShore.md) | MapCheck, RailDrawCheck, TruckRouteCheck |
 | [ClockPace](map/ClockPace.md) | ClockCheck |
@@ -72,7 +72,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GlobeCheck, MapCheck |
 | [EarthSite](map/EarthSite.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck |
 | [EarthTerrain](map/EarthTerrain.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorStatementCheck, WoodProductsCheck |
@@ -92,8 +92,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FuelSplit](map/FuelSplit.md) | OilCheck |
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
-| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
 | [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -114,7 +114,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyPreviewCheck, ReadPathCheck |
 | [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, WoodProductsCheck |
-| [Inbox](map/Inbox.md) | InboxCheck |
+| [Inbox](map/Inbox.md) | InboxCheck, PlaytestFixCheck |
 | [IndustryPicture](map/IndustryPicture.md) | IndustryViewCheck |
 | [IndustryView](map/IndustryView.md) | IndustryViewCheck |
 | [InfrastructureManager](map/InfrastructureManager.md) | BuildCardCheck, CarCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LongPlaytest, PortCheck, RailCheck, ReadPathCheck, RoadCheck, SaveFileCheck, TradeCostCheck, TruckCheck |
@@ -146,7 +146,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Mortgage](map/Mortgage.md) | BooksCheck, CreditCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
 | [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperMiningCheck, EducationCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WoodProductsCheck |
-| [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, ConstructionControlCheck, InboxCheck, KeptCheck, LongPlaytest, SaveSlotCheck |
+| [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, ConstructionControlCheck, InboxCheck, KeptCheck, LongPlaytest, PlaytestFixCheck, SaveSlotCheck |
 | [Offending](map/Offending.md) | **none** |
 | [Oil](map/Oil.md) | BuildingDataCheck, EarthFoundingCheck, LongPlaytest, MapCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryViewCheck, SaveFileCheck, WellCheck |
 | [OilView](map/OilView.md) | EarthFoundingCheck, OilViewCheck, ReadPathCheck |
@@ -198,7 +198,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
-| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
+| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [TimeSkipReport](map/TimeSkipReport.md) | AuctionCheck, HealthCheck, SkipReportCheck |
@@ -2960,7 +2960,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1904 a save without it reads Standard
   - L1906 ...as does a name this build does not know
 
-## ChartCheck.java - 103 labelled assertions
+## ChartCheck.java - 111 labelled assertions
 
 > The charts (0.7.23): the player's decisions as the model records them,
 > and the arithmetic City History's charts are drawn by - the window, the
@@ -2976,117 +2976,126 @@ _(this harness does not label its checks through a helper - it prints its findin
 > is checked here.
 > ...
 
-- **L200 1. the decision log: each kind once, at its month, with its label**
-  - L204 a new city's own settings - the rule's dial, the rollover, the rescue - are not decisions
-  - L209 a city built, ordered and played two years by the fixture's hand records nothing -
-  - L256 fixture: the University and the Middle Schools are the city's sites, the University first
-  - L279 every decision of the first month is dated that month, the next one the next
-  - L283 every kind recorded
-  - L300 fixture: the treasury emptied and a note falling due, the rollover issued
-  - L302 ...and the log has the player's note and none of the rollover's
-  - L303 ...nor anything else from the months
-- **L310 2. the log survives a save and a load; a format-28 save loads with none**
-  - L313 saved
-  - L318 as many decisions back as were written
-  - L319 ...each with its month, its kind and its label, in order
-  - L321 ...and the load's own settings - every dial put back through its setter - added none
-  - L325 a loaded city records the next decision
-  - L330 the save says this build's format,
-  - L332 ...the format the log came in, 29, or later
-  - L346 a save without the log loads
-  - L347 ...with an empty log
-  - L349 ...which records from then on
-  - L356 ...and a format-28 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
-- **L385 3. the bands are recessions(), named for the recession that holds them; the lane is episodes()**
-  - L403 fixture: four recession runs
-  - L408 the chart's bands are exactly recessions(), one for one, in order
-  - L412 the episode lane is exactly episodes(), one for one, in order
-  - L415 fixture: the four runs make two recessions, each joined across four months of relief
-  - L432 every band carries the name of the recession that holds it - both bands of a joined one
-  - L433 ...the first two \"Recession of
-  - L435 ...and its depth is the year book's real growth at its worst inside it, at its month
-  - L442 an episode's worst reading is the series at its worst month
-  - L453 fixture: the bank's crisis overlaps the first recession
-  - L455 no two episodes that overlap share a row of the lane
-  - L456 ...so the lane has two rows
-  - L463 every kind the table names says the rule that named it, and its worst in words
-  - L464 ...from the table's own thresholds: the slump's says
-  - L494 fixture: a financial crisis closed at month 120, and four kinds held to the last month
-  - L498 a running episode is one the history has not closed: the four that end at its last month
-  - L501 ...a crisis before a watch, the newest start first, and the chronic one last
-  - L503 ...the epidemic, as old as the city, is chronic at CHRONIC_MONTHS; the ten-month slump is not
-  - L506 ...and read from a list already in hand, the same four in the same order
-  - L508 the months a kind ran, all told: the two financial crises' twenty and thirty
-  - L510 a crisis is the kinds the chart draws red: financial, currency, treasury, depression
-- **L519 4. years on every axis, months when they fit; nice steps on the value axis**
-  - L554 every window has a year in a label - none is left without one
-  - L555 a year's tick is on its January, and says its year
-  - L556 every tick is inside its window
-  - L557 ticks run left to right, at least MONTH_LABEL_PX apart
-  - L558 months are labelled in some windows - zoomed in - and not in all
-  - L562 ten years across the page: a tick a year, no months
-  - L564 one year across the page: its months labelled
-  - L581 4,000 scales: every step one, two or five times a power of ten
-  - L582 ...every scale holds what is drawn on it
-  - L583 ...its bottom and top on a step
-  - L584 ...and a per cent with nothing negative starts at zero
-  - L592 a new city's flat rate and flat price level, each on its own scale, no longer lie on each other
-  - L594 ...the rate's from zero, the price level's around its 1.000
-- **L601 5. pan and zoom stop at the data; the month under the pointer stays; the window follows**
-  - L604 a new window opens on DEFAULT_RANGE, ending at the newest month
-  - L607 a drag past the start stops at the first month, the span kept
-  - L610 ...and past the end at the last
-  - L612 a wheel all the way in stops at MIN_SPAN
-  - L614 ...all the way out at the whole history
-  - L618 a notch in keeps the month under the pointer under it
-  - L619 ...and shows ZOOM_STEP of the months it did
-  - L621 a window set past the start is moved inside, its span kept
-  - L623 ...and one narrower than MIN_SPAN is widened to it
-  - L627 a window on the newest month follows the month that lands
-  - L631 ...one dragged back stays where it was put
-  - L634 ...and one showing everything shows everything still
-  - L636 the double-click goes back to the range last picked
-  - L641 a history shorter than MIN_SPAN is shown whole, and a wheel cannot narrow it
-  - L644 ...nor a drag move it
-- **L650 6. the flags: one a month with its count; flags too close drawn as one**
-  - L663 a held log records nothing
-  - L665 five decisions in three months are three flags
-  - L666 ...the first month's carries its three, in the order made
-  - L667 ...the first of them first
-  - L669 zoomed in, the flags a month apart are drawn apart
-  - L671 zoomed out, the two a month apart are drawn as one
-  - L672 ...counting four decisions
-  - L673 a window that holds none draws none
-  - L686 fixture: on an axis from month 2, the founding month's two decisions were on no lane
-  - L688 a decision in the founding month is on the lane: at the axis's first month, with that month's own
-  - L690 ...each keeping its own month, the founding month's first
-  - L695 ...so the whole history drawn shows every decision in the log
-- **L701 7. a young city's window grows into its range, and stays on it**
-  - L704 a city first opened at month 30 shows all of its thirty months, on its range (10Y lit)
-  - L713 ...and month by month to 600 it is all of it while younger than ten years, the last ten after
-  - L715 ...on its range the whole way, so 10Y stays lit
-  - L716 ...at month 600 the window opens at month 481
-  - L722 50Y pressed at month 40 is the last fifty years at month 700
-  - L729 a header tile's ten years asked before the page has drawn: the last ten years once there are
-  - L737 a window the player zoomed on the newest month follows it at the width he left it
-  - L741 ...and one he zoomed out to everything stays everything
-  - L744 a double-click puts it back on its range, which it then follows
-- **L815 8. a chart draws from what it was handed: a month landing under it changes nothing it reads**
-  - L834 fixture: a city played two years has its months and its GDP's layers,
-  - L847 fixture: the month lands in the list the chart was handed:
-  - L850 fixture: 0.7.49's walk over that list now reads past the layers (Jerus's \"Index 384 out of bounds for length 384\")
-  - L853 the chart's own months are still the handover's:
-  - L858 ...and every layer and line it holds is exactly as long
-  - L865 so even 0.7.49's walk, over what the chart holds, reads nothing past it
-  - L877 a frame, a hover on the newest month and on the one that landed, and the redraw as the pointer leaves: no throw
-  - L879 the stack the chart fills is 0.7.49's, point for point, as it was handed:
-  - L885 the hover reads the handover's newest month, every line and layer as it was handed
-  - L887 ...and so does a hover on the month that landed since: the chart has no such month
-  - L900 handed the growing list itself, the stack's runs and reach read nothing past either
-  - L903 ...the month the layers do not reach is not drawn
-  - L904 ...and the reach is the handover's
-  - L908 a series shorter than the months is held as long, the rest not recorded; a longer one is cut
-  - L911 ...and a value off either end of a series reads as not recorded
+- **L207 1. the decision log: each kind once, at its month, with its label**
+  - L211 a new city's own settings - the rule's dial, the rollover, the rescue - are not decisions
+  - L216 a city built, ordered and played two years by the fixture's hand records nothing -
+  - L263 fixture: the University and the Middle Schools are the city's sites, the University first
+  - L286 every decision of the first month is dated that month, the next one the next
+  - L290 every kind recorded
+  - L307 fixture: the treasury emptied and a note falling due, the rollover issued
+  - L309 ...and the log has the player's note and none of the rollover's
+  - L310 ...nor anything else from the months
+- **L317 2. the log survives a save and a load; a format-28 save loads with none**
+  - L320 saved
+  - L325 as many decisions back as were written
+  - L326 ...each with its month, its kind and its label, in order
+  - L328 ...and the load's own settings - every dial put back through its setter - added none
+  - L332 a loaded city records the next decision
+  - L337 the save says this build's format,
+  - L339 ...the format the log came in, 29, or later
+  - L353 a save without the log loads
+  - L354 ...with an empty log
+  - L356 ...which records from then on
+  - L363 ...and a format-28 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
+- **L392 3. the bands are recessions(), named for the recession that holds them; the lane is episodes()**
+  - L410 fixture: four recession runs
+  - L415 the chart's bands are exactly recessions(), one for one, in order
+  - L419 the episode lane is exactly episodes(), one for one, in order
+  - L422 fixture: the four runs make two recessions, each joined across four months of relief
+  - L439 every band carries the name of the recession that holds it - both bands of a joined one
+  - L440 ...the first two \"Recession of
+  - L442 ...and its depth is the year book's real growth at its worst inside it, at its month
+  - L449 an episode's worst reading is the series at its worst month
+  - L460 fixture: the bank's crisis overlaps the first recession
+  - L462 no two episodes that overlap share a row of the lane
+  - L463 ...so the lane has two rows
+  - L470 every kind the table names says the rule that named it, and its worst in words
+  - L471 ...from the table's own thresholds: the slump's says
+  - L501 fixture: a financial crisis closed at month 120, and four kinds held to the last month
+  - L505 a running episode is one the history has not closed: the four that end at its last month
+  - L508 ...a crisis before a watch, the newest start first, and the chronic one last
+  - L510 ...the epidemic, as old as the city, is chronic at CHRONIC_MONTHS; the ten-month slump is not
+  - L513 ...and read from a list already in hand, the same four in the same order
+  - L515 the months a kind ran, all told: the two financial crises' twenty and thirty
+  - L517 a crisis is the kinds the chart draws red: financial, currency, treasury, depression
+- **L526 4. years on every axis, months when they fit; nice steps on the value axis**
+  - L561 every window has a year in a label - none is left without one
+  - L562 a year's tick is on its January, and says its year
+  - L563 every tick is inside its window
+  - L564 ticks run left to right, at least MONTH_LABEL_PX apart
+  - L565 months are labelled in some windows - zoomed in - and not in all
+  - L569 ten years across the page: a tick a year, no months
+  - L571 one year across the page: its months labelled
+  - L588 4,000 scales: every step one, two or five times a power of ten
+  - L589 ...every scale holds what is drawn on it
+  - L590 ...its bottom and top on a step
+  - L591 ...and a per cent with nothing negative starts at zero
+  - L599 a new city's flat rate and flat price level, each on its own scale, no longer lie on each other
+  - L601 ...the rate's from zero, the price level's around its 1.000
+- **L608 5. pan and zoom stop at the data; the month under the pointer stays; the window follows**
+  - L611 a new window opens on DEFAULT_RANGE, ending at the newest month
+  - L614 a drag past the start stops at the first month, the span kept
+  - L617 ...and past the end at the last
+  - L619 a wheel all the way in stops at MIN_SPAN
+  - L621 ...all the way out at the whole history
+  - L625 a notch in keeps the month under the pointer under it
+  - L626 ...and shows ZOOM_STEP of the months it did
+  - L628 a window set past the start is moved inside, its span kept
+  - L630 ...and one narrower than MIN_SPAN is widened to it
+  - L634 a window on the newest month follows the month that lands
+  - L638 ...one dragged back stays where it was put
+  - L641 ...and one showing everything shows everything still
+  - L643 the double-click goes back to the range last picked
+  - L648 a history shorter than MIN_SPAN is shown whole, and a wheel cannot narrow it
+  - L651 ...nor a drag move it
+- **L657 6. the flags: one a month with its count; flags too close drawn as one**
+  - L670 a held log records nothing
+  - L672 five decisions in three months are three flags
+  - L673 ...the first month's carries its three, in the order made
+  - L674 ...the first of them first
+  - L676 zoomed in, the flags a month apart are drawn apart
+  - L678 zoomed out, the two a month apart are drawn as one
+  - L679 ...counting four decisions
+  - L680 a window that holds none draws none
+  - L693 fixture: on an axis from month 2, the founding month's two decisions were on no lane
+  - L695 a decision in the founding month is on the lane: at the axis's first month, with that month's own
+  - L697 ...each keeping its own month, the founding month's first
+  - L702 ...so the whole history drawn shows every decision in the log
+- **L708 7. a young city's window grows into its range, and stays on it**
+  - L711 a city first opened at month 30 shows all of its thirty months, on its range (10Y lit)
+  - L720 ...and month by month to 600 it is all of it while younger than ten years, the last ten after
+  - L722 ...on its range the whole way, so 10Y stays lit
+  - L723 ...at month 600 the window opens at month 481
+  - L729 50Y pressed at month 40 is the last fifty years at month 700
+  - L736 a header tile's ten years asked before the page has drawn: the last ten years once there are
+  - L744 a window the player zoomed on the newest month follows it at the width he left it
+  - L748 ...and one he zoomed out to everything stays everything
+  - L751 a double-click puts it back on its range, which it then follows
+- **L822 8. a chart draws from what it was handed: a month landing under it changes nothing it reads**
+  - L841 fixture: a city played two years has its months and its GDP's layers,
+  - L854 fixture: the month lands in the list the chart was handed:
+  - L857 fixture: 0.7.49's walk over that list now reads past the layers (Jerus's \"Index 384 out of bounds for length 384\")
+  - L860 the chart's own months are still the handover's:
+  - L865 ...and every layer and line it holds is exactly as long
+  - L872 so even 0.7.49's walk, over what the chart holds, reads nothing past it
+  - L884 a frame, a hover on the newest month and on the one that landed, and the redraw as the pointer leaves: no throw
+  - L886 the stack the chart fills is 0.7.49's, point for point, as it was handed:
+  - L892 the hover reads the handover's newest month, every line and layer as it was handed
+  - L894 ...and so does a hover on the month that landed since: the chart has no such month
+  - L907 handed the growing list itself, the stack's runs and reach read nothing past either
+  - L910 ...the month the layers do not reach is not drawn
+  - L911 ...and the reach is the handover's
+  - L915 a series shorter than the months is held as long, the rest not recorded; a longer one is cut
+  - L918 ...and a value off either end of a series reads as not recorded
+- **L925 9. a series that never goes under zero is never given an axis floor under it**
+  - L940 the fixture reaches the old fault: AXIS_PAD of every population range is more than its low
+  - L941 a population from its founding to thousands, not asked to start at zero, has a floor of 0 or more
+  - L942 ...and the scale still holds the series, its top above the largest
+  - L944 ...so a population of 0 sits on the bottom gridline, 0
+  - L946 a small series whose padding would cross zero is held at 0 too
+  - L952 a series with a negative low still gets its air below it, as before
+  - L955 ...and one that crosses zero is not floored at it
+  - L957 the from-zero path is unchanged: floor 0, top over the largest
 
 ## ChildcareCheck.java - 33 labelled assertions
 
@@ -12839,6 +12848,54 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3841 (f) a run laid after the log's last month moves nothing, and the plan is drawn on today's runs: its streets cross the railway
   - L3843 (f) ...so does one laid after the first batch of a log that is one batch and no more
   - L3846 (g) a plan is a pure function of its input: the plans with the yard and with the highway laid, each made twice, are the same plan box for box and street for ...
+
+## PlaytestFixCheck.java - 27 labelled assertions
+
+> Verifies the small fixes of a played city (PT1): words and the log, nothing
+> the month does. Not part of the game.
+> 
+> WHY THIS EXISTS
+> 
+> Jerus played a city and wrote down what read wrongly: a bank "that is none"
+> while one stood, a power plant "13333% served", a notice toasted again on a
+> load, two lines of the log. Each is a sentence, so none of them changes a
+> figure in the model, and a sentence that is wrong is only found by someone
+> reading it. Each is held here by a fixture that causes it and asserts
+> against the model's own constant.
+> 
+> ...
+
+- **L101 1. a bank that stands before it has opened**
+  - L108 premise: a founded city has a Commercial Bank standing, and the bank has opened no branch
+  - L111 NEEDS YOU's bank row reads that it opens with the first month, not that there is none
+  - L113 ...and the row is not counted: no level, and not among NEEDS YOU's rows
+  - L118 premise for a city with no bank: the standing branches are scrapped, none open, none standing
+  - L121 a city with no bank standing keeps today's words: \"there is none\"
+  - L122 ...red, and listed in NEEDS YOU
+  - L127 once the first month has run, the bank has opened its branches and the row says neither
+- **L131 2. served as a multiple**
+  - L136 just under the dial (
+  - L138 at the dial (
+  - L142 the brief's town, a plant of 4,000 for a demand of 30, reads
+  - L144 a share well under the dial is as it was, \"56%\" and \"100%\"; just under 100% is still 99%
+  - L147 ...and a share nobody asks of is still a dash
+- **L150 3. a notice does not toast again on load**
+  - L157 premise: the loaded inbox holds one unread notice that is still true, and the envelope is red
+  - L161 without the load's marking, an emptied set would toast it at once (the fault)
+  - L165 after markAllToasted(), nothing is to be toasted
+  - L166 ...the notice is still unread and urgent, and the envelope is still red
+  - L168 ...its key is the key and the month it was raised:
+  - L174 a notice raised after the load is toasted once
+  - L175 ...and not twice, the next time the window asks
+  - L180 a notice already read is never toasted
+  - L187 two raised together come oldest first, the newest last, for the corner it lands in
+- **L190 4. two lines of the log**
+  - L196 with no GDP and no debt the line has a dash and no NaN:
+  - L198 with debt and no GDP it has a dash and no Infinity:
+  - L200 with a GDP it prints the per cent:
+  - L205 premise: a founded city has no GDP before its first month
+  - L210 month 1's log prints a debt-to-GDP line, and it is not NaN:
+  - L212 month 1's log prints the interest rate with its sign after the figure:
 
 ## PolicyCheck.java - 81 labelled assertions
 
