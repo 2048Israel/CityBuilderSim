@@ -4900,6 +4900,9 @@ public class UserInterface extends Application {
         summaryScreen.needsView = true;
         panelScrollAt.put("city", 0.0);
         panelScrollAt.remove("city:bottom");
+        // The drawer is kept since UP2, and a kept scroller keeps its own place: the 0 above is put back only on a
+        // new one (keptScroller()), so the chip lets the city panel go and this one draw makes it new, at the top.
+        cityPool.forget();
         summaryScreen.refreshCityPanel();
     }
 
