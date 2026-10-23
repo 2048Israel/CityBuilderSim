@@ -171,7 +171,7 @@ public abstract class Debt {
     public double getIssueDiscount()  { return issueDiscount; }
     public double getDiscountLeft()   { return discountLeft; }
 
-    /** Told at issue what it raised and at what yield. See Game's handle*Logic(). */
+    /** Told at issue what it raised and at what yield. See Game's handle*Logic(). The city's books open with what it raised (openBooks()); a dollar piece's are opened by Game.handleForeignLogic(). */
     void markIssued(double received, double yield) {
         if (foreign) return;
         settleDue = Math.max(0, received);
@@ -179,6 +179,7 @@ public abstract class Debt {
         issueDiscount = Math.max(0, getOustandingPrincipal() - received);
         discountLeft = issueDiscount;
         unsettledFace = getOustandingPrincipal();
+        openBooks(received);
     }
 
     /**
@@ -197,9 +198,15 @@ public abstract class Debt {
      * So the discount stays at nothing or more here too: the premium first
      * eats what the line has left to accrete, and the rest is the buyers'
      * loss when they pay it, never carried. Domestic paper only.
+     *
+     * THE CITY'S BOOKS (CD3) are not so held: what the sale raised, premium
+     * or not, joins the carrying value, and the effective rate is solved
+     * again on the whole remaining schedule at the new face - one blended
+     * rate a line.
      */
     void reopen(double face, double proceeds, double yield) {
         if (foreign || !(face > 0)) return;
+        ensureBooks();
         double was = Math.max(0, outstandingPrincipal);
         faceValue += face;
         outstandingPrincipal += face;
@@ -209,6 +216,8 @@ public abstract class Debt {
         issueDiscount = Math.max(0, issueDiscount + discount);
         discountLeft = Math.max(0, discountLeft + discount);
         issueYield = was + face > 0 ? (issueYield * was + yield * face) / (was + face) : yield;
+        carryingValue += Math.max(0, proceeds);
+        effectiveRate = effectiveRateOf(scheduleOwed(), carryingValue);
     }
 
     /**
@@ -341,10 +350,15 @@ public abstract class Debt {
      * reopened the same month has older face that is not in the sale). What
      * the market still owes for its own part (settleDue) and the households'
      * holding do not move. Domestic paper only.
+     *
+     * The city's books (CD3) take it on as a reopening: the carrying value
+     * grows by what the add-on raised, its face at that price, and the
+     * effective rate is solved again on the whole schedule.
      */
     void addOnForCentralBank(double face) {
         double out = outstandingPrincipal;
         if (foreign || !(face > 0) || !(out > 0)) return;
+        ensureBooks();
         double sale = unsettledFace > 0 ? unsettledFace : out;
         double price = settleDue > 0 ? settleDue / sale : 1;
         double discount = Math.max(0, face * (1 - price));
@@ -355,6 +369,8 @@ public abstract class Debt {
         discountLeft += discount;
         redenominateSchedule(k);
         centralBankPrincipal += face;
+        carryingValue += face * price;
+        effectiveRate = effectiveRateOf(scheduleOwed(), carryingValue);
     }
 
     /**
@@ -379,6 +395,173 @@ public abstract class Debt {
         discountLeft = Math.max(0, discountLeft - step);
         return step;
     }
+
+    /* =======================================================================
+       THE CITY'S BOOKS (CD3, spec-city-debt.md section 5)
+
+       Jerus's call D10, "effective interest": the city carries each piece of
+       its paper at AMORTISED COST - what the sale raised, net of the fixed
+       cost, stepped every month by the interest the piece truly costs less
+       what it pays. IFRS 9's amortised cost and ASPE 3856's.
+
+           at the sale     carrying value = what the treasury received
+                           effective rate = the yield that equates that with
+                                            the payments the piece still owes
+           every month     expense        = carrying value x effective rate / 12
+                           amortised      = expense - coupon (the discount
+                                            wearing off; below nothing for a
+                                            premium)
+                           carrying value += expense - the month's payment
+           at the end      carrying value = 0 once the face is repaid, and it
+                           equals the face just before
+
+       THE CONVENTION is presentValue()'s - an annual nominal rate,
+       compounded monthly, the first payment next month - so the recurrence
+       above lands on nothing after the last payment by construction. What
+       rounding is left goes into the last month's expense, which closes the
+       piece to the cent (amortise()).
+
+       WHAT THIS REPLACES. The budget's "interest" was the coupon alone, so a
+       bill - a piece with no coupon, which costs its whole discount - read
+       as free money, and a bond sold under par read as dear as a par one.
+       The bank's side is NOT this: accrete() above is the bank's straight-
+       line discount income (Bank.takeDiscount()), and stays as it was; the
+       bank's books are another study's (spec section 10). These fields sit
+       beside issueDiscount and discountLeft and read neither.
+
+       ONE CARRYING VALUE AND ONE EFFECTIVE RATE A LINE (D16): a reopening
+       adds what the new sale raised to the carrying value and solves the
+       blended rate again on the whole remaining schedule (reopen(),
+       addOnForCentralBank()). Fungible paper is one liability.
+
+       IN ITS OWN CURRENCY, as the schedule is. A dollar piece's carrying
+       value is dollars, and its figures in D$ go through inLocal() at the
+       rate the paper is valued at - DebtManager.setExchangeRate(), the
+       month's actual D$ - like every other figure it gives the city. What
+       the carrying value gains or loses in D$ when the currency moves is a
+       revaluation, not interest, and does not enter the expense: the
+       expense is booked in dollars and converted, the same as the coupon,
+       so expense less coupon is the amortisation and nothing else.
+
+       SAVED WITH THE PIECE, as the holders are: Gson takes every field of
+       the hierarchy.
+       ======================================================================= */
+
+    /** The lowest effective rate effectiveRateOf() will report: a premium so deep it costs the issuer less than nothing, a year. */
+    static final double EFFECTIVE_RATE_FLOOR = -0.5;
+
+    /** The highest, as getYieldToMaturity()'s bracket always was: 500% a year. */
+    static final double EFFECTIVE_RATE_CEILING = 5.0;
+
+    /** What the piece is carried at, in the currency it is written in: what it raised, stepped by the effective interest less the payments. Read carryingInCurrency(), which says par for paper whose books were never opened. */
+    protected double carryingValue;
+
+    /** The yield, a year, compounded monthly, at which the payments still owed are worth carryingValue: the piece's effective rate. Solved again when the line is reopened. */
+    protected double effectiveRate;
+
+    /** True once openBooks() has run: what a sold piece's books are opened with, and what a piece built without a sale (a fixture, the founding's land bond) is given at par by its first month. */
+    protected boolean booksOpen;
+
+    /** The month's interest expense and coupon as amortise() last booked them, in the currency the piece is written in. */
+    protected double lastExpenseOwn, lastCouponOwn;
+
+    /**
+     * The yield, a year compounded monthly, at which these payments are worth
+     * this price: the bisection getYieldToMaturity() always made, on a bracket
+     * that reaches below nothing so that a piece sold well over par (a coupon
+     * over today's yield) has the negative rate it truly costs. PV falls as the
+     * rate rises, so it cannot get lost. Nothing owed or nothing raised has no
+     * rate: 0. The one place an effective rate is solved: openBooks(),
+     * reopen() and addOnForCentralBank() all call it. getYieldToMaturity() is
+     * left as it was (its bracket stops at nothing, and the buyback screens
+     * read it).
+     */
+    static double effectiveRateOf(double[] flows, double price) {
+        if (flows == null || flows.length == 0 || !(price > 0)) return 0;
+        double low = EFFECTIVE_RATE_FLOOR, high = EFFECTIVE_RATE_CEILING;
+        for (int i = 0; i < 100; i++) {
+            double mid = (low + high) / 2;
+            if (presentValue(flows, mid) > price) {
+                low = mid;      // still worth more than was raised: the cost is higher
+            } else {
+                high = mid;
+            }
+        }
+        return (low + high) / 2;
+    }
+
+    /**
+     * The books are opened with what the sale raised, in the currency the
+     * piece is written in (the treasury's cash, net of the fixed cost): that is
+     * the carrying value, and the effective rate is solved on the payments the
+     * piece still owes. Called by markIssued() for paper at home and by
+     * Game.handleForeignLogic() for a dollar piece. A sale that raised nothing
+     * is no sale: the piece is carried at par.
+     */
+    void openBooks(double proceedsOwn) {
+        carryingValue = proceedsOwn > 0 && Double.isFinite(proceedsOwn) ? proceedsOwn : principalOwed();
+        effectiveRate = effectiveRateOf(scheduleOwed(), carryingValue);
+        lastExpenseOwn = lastCouponOwn = 0;
+        booksOpen = true;
+    }
+
+    /** A piece that was never sold through the treasury (a fixture's, the founding's land bond) is carried at par before anything is added to it or booked on it: its effective rate is its coupon's. */
+    private void ensureBooks() {
+        if (!booksOpen) openBooks(principalOwed());
+    }
+
+    /**
+     * This month's books, once, BEFORE processMonth() pays the month (the
+     * payment is read off the schedule as it stands, so the books follow the
+     * cash by construction): the interest expense at the effective rate on the
+     * carrying value, the coupon part of the payment, and the carrying value
+     * stepped by the one less the whole payment. In the piece's last month the
+     * expense is what closes the carrying value to nothing - the payment less
+     * what is carried - so the rounding of a solved rate is in that month and
+     * the piece closes to the cent.
+     *
+     * @return what the discount wore off this month (the expense less the
+     *         coupon; below nothing for a premium), in the piece's own currency
+     */
+    double amortise() {
+        double[] schedule = scheduleOwed();
+        if (schedule.length == 0) {
+            lastExpenseOwn = lastCouponOwn = 0;
+            return 0;
+        }
+        ensureBooks();
+        double payment = schedule[0];
+        double coupon = couponOwed();
+        double expense;
+        if (schedule.length == 1) {
+            expense = payment - carryingValue;
+            carryingValue = 0;
+        } else {
+            expense = carryingValue * effectiveRate / 12;
+            carryingValue += expense - payment;
+        }
+        lastExpenseOwn = expense;
+        lastCouponOwn = coupon;
+        return expense - coupon;
+    }
+
+    /** What the piece is carried at, in the currency written on it; par for a piece whose books were never opened. */
+    public final double carryingInCurrency() { return booksOpen ? carryingValue : principalOwed(); }
+
+    /** ...and in local money, at the rate the paper is valued at (inLocal()). */
+    public final double getCarryingValue() { return inLocal(carryingInCurrency()); }
+
+    /** The effective rate, a year: the yield the piece's sale made of its payments. Zero before the books are opened. */
+    public final double getEffectiveRate() { return effectiveRate; }
+
+    /** This month's interest expense as amortise() booked it, in local money: the carrying value at the effective rate, a month. */
+    public final double getLastInterestExpense() { return inLocal(lastExpenseOwn); }
+
+    /** ...the coupon that month paid, likewise. */
+    public final double getLastCoupon() { return inLocal(lastCouponOwn); }
+
+    /** ...and the part of the expense that is not coupon: the discount wearing off, below nothing for a premium. */
+    public final double getLastAmortised() { return inLocal(lastExpenseOwn - lastCouponOwn); }
 
     public abstract void processMonth(Game game);
 
@@ -667,6 +850,11 @@ public abstract class Debt {
             allotWorldCash *= scale;
             issueDiscount *= scale;
             discountLeft *= scale;
+            // The city's books (CD3): the carrying value and the month's booked figures, in the new unit
+            // like the face; the effective rate is a rate and does not move.
+            carryingValue *= scale;
+            lastExpenseOwn *= scale;
+            lastCouponOwn *= scale;
         }
         exchangeRate *= scale;
         redenominateSchedule(scale);

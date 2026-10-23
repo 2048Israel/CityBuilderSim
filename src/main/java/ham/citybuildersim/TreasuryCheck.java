@@ -447,7 +447,8 @@ public class TreasuryCheck {
         double explained = 0;
         for (TreasuryJournal.Entry e : journal) explained += e.amount();
         near("the bridge foots through the journal", m,
-                opened.getTreasurySurplus() + opened.getTreasuryRaised() - opened.getTreasuryRepaid()
+                opened.getTreasurySurplus() + opened.getTreasuryNotCash()
+                        + opened.getTreasuryRaised() - opened.getTreasuryRepaid()
                         + explained + opened.getTreasuryResidual(),
                 opened.getTreasuryChange(), treasurySize(opened));
         check("the journal explained more than it left over",
@@ -468,9 +469,14 @@ public class TreasuryCheck {
          * deposits, which no issue could beat; with the quote held to what
          * the bank charges they take a sliver at the settle, and their
          * coupon is not part of the timing.
+         *
+         * ...THE COUPON IN CASH (CD3). The budget's interest is the effective
+         * interest since CD3, the coupon and the discount amortised; the
+         * amortisation is no cash and sits on the bridge's own row
+         * (getTreasuryNotCash()), so the timing is the cash coupon's.
          */
         near("...and what it left over is the first coupon's timing, to the cent: the bank's share of it", m,
-                opened.getTreasuryResidual(), books.getInterestExpense()
+                opened.getTreasuryResidual(), books.getInterestPaidInCash()
                         - opened.getCouponsToHouseholds() - opened.getCouponsToFirms()
                         - opened.getCentralBank().getPaperCoupons());
 

@@ -622,6 +622,15 @@ public class DataSave implements Cloneable {
     private double treasuryRaisedPending;
 
     /**
+     * The gain on paper the treasury has retired since the last strike -
+     * Game.retiredGainSoFar (CD3), the carrying value less the price paid -
+     * carried for the same reason: a city saved between two presses, after a
+     * buyback, has already retired what the next strike counts. Zero on a
+     * save with none.
+     */
+    private double retiredGainPending;
+
+    /**
      * The city's own paper its bank has taken and not yet paid for, with the
      * discount on it - Game.getCityPaperUnsettled() - carried since 2026-09-21
      * because the bank now PAYS for the paper at the settle after the issue,
@@ -653,6 +662,8 @@ public class DataSave implements Cloneable {
     public double[] getTreasuryJournalPendingAmounts() { return treasuryJournalPendingAmounts; }
     public void setTreasuryRaisedPending(double v)     { this.treasuryRaisedPending = v; }
     public double getTreasuryRaisedPending()           { return treasuryRaisedPending; }
+    public void setRetiredGainPending(double v)        { this.retiredGainPending = v; }
+    public double getRetiredGainPending()              { return retiredGainPending; }
 
     /**
      * The government's own month: twenty-three revenue and spending lines, saved

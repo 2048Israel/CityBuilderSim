@@ -7932,8 +7932,26 @@ public final class GameVersion {
      *     THE FLOOR RISES TO 43 WITH IT (the rule): a save of format 42 or
      *     older is refused, naming the build that still opens it. Jerus,
      *     2026-10-18: "my saves never matter".
+     *
+     * 44 - THE CITY'S PAPER ON AMORTISED COST (batch CD3, slice 1;
+     *     docs/studies/spec-city-debt.md 5): every piece of the city's paper
+     *     carries a carrying value (what it raised, net of the fixed cost,
+     *     stepped each month by the effective interest less the payment) and
+     *     the effective rate that brings it to nothing at maturity (Debt, THE
+     *     CITY'S BOOKS), and the budget's interest is that expense, the
+     *     discount wearing off in it, not the coupon alone. A save's pieces
+     *     carry no carrying value and would book their interest wrongly - the
+     *     first month's expense nothing, the carrying value running negative
+     *     under the coupon - and its government block has no line for the
+     *     non-cash part, so its treasury bridge would not foot. Gson leaves a
+     *     missing key alone, so the new fields alone would not have needed a
+     *     bump.
+     *
+     *     THE FLOOR RISES TO 44 WITH IT (the rule): a save of format 43 or
+     *     older is refused, naming the build that still opens it. No
+     *     conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 43;
+    public static final int SAVE_FORMAT = 44;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -7943,7 +7961,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 43 since batch XR1 (THE FLOAT above: a save's currency would load
+     * 44 since batch CD3 (THE CITY'S PAPER ON AMORTISED COST above: a save's
+     * pieces carry no carrying value and would book their interest wrongly).
+     * 43 from batch XR1 (THE FLOAT above: a save's currency would load
      * wrongly). 42 from batch CD2 (THE LINEUP AND THE AUCTION above: a save's term
      * loan would load wrongly), and 40 before it, from 0.8.5 (batch FR2,
      * THE FREIGHT SECTOR above: a format-39
@@ -7969,7 +7989,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 43;
+    public static final int OLDEST_LOADABLE_FORMAT = 44;
 
     public static final String NAME = "CityBuilderSim";
 
