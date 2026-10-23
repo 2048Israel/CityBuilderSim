@@ -144,4 +144,8 @@ wrote the record.
 
 ## 6. The final checks
 
-See the batch's report: `./batch-check.sh` on the final model merged with main.
+`./batch-check.sh` on the final model merged with main (758ac9e6), beside
+another batch's JVM, timing soft: **136 of 136 passed** in 927 s, Stale 0 firm
+findings, the maps regenerated and committed. The default playtest on that
+model is byte-identical to main's but for its two run-time lines. `--timing`
+was left for the ship gate, alone and hard.
