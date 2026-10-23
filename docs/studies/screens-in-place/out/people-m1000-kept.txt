@@ -1,0 +1,5 @@
+month 1002 grown in 15.2 s; people 11,859, buildings 378
+
+TODAY: the redraw as the clock makes it (median of 8, ms; the pulse's own passes)
+screen     first |  build    css  layout  sync  settle  idle | chrome alone: build   css  layout | page nodes  labeled  text  region  shape  canvas  control  custom
+People        52 |   15.2    7.5    4.2   2.8     1.8   0.0 |                 5.4   7.6    1.1 |       1152      253     0     529    101       0        0     243

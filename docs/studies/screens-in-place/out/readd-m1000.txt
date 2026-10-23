@@ -1,0 +1,13 @@
+month 1002 grown in 12.6 s; people 11,859, buildings 378
+People   218 panes:
+    nothing touched        css   0.0  layout   0.0  touch+pulse   0.0 ms
+    clear then addAll      css   5.9  layout   1.9  touch+pulse  19.5 ms
+    setAll the same        css   0.0  layout   1.6  touch+pulse   2.1 ms
+    setAll reversed twice  css   0.0  layout   1.6  touch+pulse   2.2 ms
+    rebuilt                css  17.3  layout   4.5  touch+pulse  26.4 ms
+Policy    11 panes:
+    nothing touched        css   0.0  layout   0.6  touch+pulse   1.1 ms
+    clear then addAll      css   0.3  layout   0.6  touch+pulse   1.9 ms
+    setAll the same        css   0.0  layout   0.6  touch+pulse   1.2 ms
+    setAll reversed twice  css   0.0  layout   0.6  touch+pulse   1.2 ms
+    rebuilt                css  12.5  layout   2.7  touch+pulse  17.3 ms
