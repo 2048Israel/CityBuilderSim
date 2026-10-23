@@ -27,7 +27,6 @@ stuff".
 | CD6 | The city's debt: the rest of the screens - the book as a desk, a line's page, Your rate - and the manual - and CD3's ★4: the Debt service page and the hub read the cash coupon, and the debt grid's "interest /mo" differs from the budget line in a month the D$ moved (Jerus, 2026-10-23: "★4 to CD6") | [spec-city-debt §8](docs/studies/spec-city-debt.md#8-batches) |
 | HY1 | Hydro Station, a template that needs a river and a drop on the Earth's map; not research, it goes with the electricity run | [research-1900 §4](docs/studies/research-1900.md#4-new-mechanics-a-1900-city-needs) |
 | PT1 | Eleven small fixes to screens, words and the log, from a played city | [PT1](docs/queue/PT1.md#pt1) |
-| PT1-M2 | The "nowhere to build" notice again each year the businesses wait on ground (Jerus, 2026-10-12: "a notice repeated") | [M2](docs/queue/PT1.md#m2) |
 | PT1-M3 | The advice card carries automatic building's payback verdict in its own words (Jerus, 2026-10-12: "yes do rec") | [M3](docs/queue/PT1.md#m3) |
 | PT1-M4 | The works department's free 400 points retired for a starting depot, so Construction earns only for work its people do (Jerus, 2026-10-12) | [M4](docs/queue/PT1.md#m4) |
 | ET1 | Earth 2 in the game, and drawn: earth-2.bin read, slope's greys, snow and the shallow sea on the map, real depth for E4's guess | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |

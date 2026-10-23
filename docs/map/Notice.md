@@ -1,4 +1,4 @@
-# Notice.java - 114 lines · 16 methods · 0 constants · model
+# Notice.java - 119 lines · 17 methods · 0 constants · model
 
 `ham/citybuildersim/Notice.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -43,7 +43,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 82 | **type** `public class Notice implements Cloneable` | One thing the city needs told about, and whether anybody has looked at it. |
+| 33 | 87 | **type** `public class Notice implements Cloneable` | One thing the city needs told about, and whether anybody has looked at it. |
 | 48 | 1 | `Notice()` | Gson needs it. |
 | 50 | 6 | `Notice(String key, String title, List<String> body, int month)` |  |
 | 63 | 9 | `Notice copy()` | A copy that shares nothing with this notice (UP1, 2026-10-22): the autosave is written on another thread while markRead(), markResolved() and refresh() go on changing the live ones. |
@@ -59,5 +59,6 @@
 | 92 | 4 | `void refresh(String title, List<String> body)` |  |
 | 97 | 3 | `void markRead(int month)` |  |
 | 101 | 3 | `void markResolved(int month)` |  |
-| 111 | 3 | `int monthsSinceResolved(int month)` | How old the resolution is, for the two-year cull. |
+| 106 | 3 | `void reopen()` | Standing again, as it was raised (PT1-M2: the wait on ground back within its year, Inbox.takeMonth()). |
+| 116 | 3 | `int monthsSinceResolved(int month)` | How old the resolution is, for the two-year cull. |
 
