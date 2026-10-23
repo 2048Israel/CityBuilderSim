@@ -31,7 +31,7 @@ Before is the plan's run (`UP1/default-m1000-4000.txt`, main before UP1); after 
 - The player's own Save (a numbered slot, on the clock by design) is 119 ms at month 4,000, where the autosave was 176 ms: the history is compact and streamed on that path too.
 - The `save-writer` thread shows 5-10 JFR samples a run. Each live run opens with one autosave the probe asks for; the floor then holds back the due months for 30 s, so the share at 50x is now the floor's as much as the writer's.
 - The FX thread at 50x is now the screens' (the pulse 49-54%, layout and CSS) and the month (`nextMonth` 23-39%): UP2's and UP4's.
-- In SaveSlotCheck 7c.2, on a city whose history holds `MONTHLY_KEPT` (6,000) months: the old way wrote it in 238-280 ms; the month that autosaves now costs the clock 10-19 ms (median of 5; a plain month there is about 9 ms), against `CLOCK_MS` 25.
+- In SaveSlotCheck 7c.2, on a city whose history holds `MONTHLY_KEPT` (6,000) months: the old way wrote it in 151-280 ms across runs; the month that autosaves now costs the clock 7-19 ms (the median of 5, the whole month; a plain month there is 5-9 ms), against `CLOCK_MS` 25.
 
 ## 3. How the save was proved exact
 
@@ -44,8 +44,8 @@ Before is the plan's run (`UP1/default-m1000-4000.txt`, main before UP1); after 
 
 - **SaveSlotCheck 7c** (new), in its header's words: 7c.1 and 7c.1b above; 7c.2 the month that autosaves within `CLOCK_MS` through `Timing` (SaveSlotCheck joins `Timing.HARNESSES`); 7c.3 above; 7c.4 two autosaves back to back write once held, once or twice free, never two at once (`mostAtOnce() == 1`), the files whole after each; 7c.5 a load, a numbered save, a skip and Quit each return only after a held autosave is written (the skip's writes are 2, where without the wait its own would have replaced the held one); 7c.6 a write that cannot open its `.tmp` (a folder in its place) is reported (`Autosave failed:`, `getLastSaveResult()`), the earlier autosave untouched, and the next writes; 7c.7 the floor - 48 months on a still clock write nothing, a second short of the floor nothing, a second past it one, and on the real clock 60 months of a young city in 0.4 s write exactly one, the first due month. SaveSlotCheck takes about 20 s.
 - **Section 7 and 7b**, the cadence and the whole month: the city gets a save clock that passes the floor at every look (as 30 s of play would), so the twelfth month and the skip's months write as they did. 7b's quit is `saveForQuit()`.
-- SUITE_LINE
-- TIMING_LINE
+- **The suite** (`batch-check.sh`, the final model): 129 harnesses, 127 passed. MapCheck 5 missed "at 10 billion a month's change takes no more than 5 ms" by 0.08 ms (5.08), the map's own figure (MapCheck steps with `simulateMonths`, which waits for the writer, so no write ran beside it), counted hard because no other batch's JVM ran at the suite's start; alone and hard it passes. StaleCheck: CLAUDE.md line 50 says the interface is "thirty files", and `ui/` holds 31 with UiProbe. CLAUDE.md is the session's instructions, which this batch does not edit: the merge (or Jerus) changes "thirty" to "thirty-one". Stale has no other firm finding.
+- **Timing, hard, the timing harnesses alone** (`batch-check.sh --timing`): 9 of 9 green, SaveSlotCheck among them (7c.2's median 6.8 ms against 25; the old way 151 ms on its 8.2 MB history), MapCheck 5 OK.
 
 ## 5. The trace
 
