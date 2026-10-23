@@ -2,7 +2,7 @@
 
 Generated 2026-10-23 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**3,963 constants in 402 files.**
+**3,977 constants in 403 files.**
 
 ## model (2007 constants)
 
@@ -4134,7 +4134,7 @@ Generated 2026-10-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (832 constants)
+## harnesses (846 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -4543,6 +4543,25 @@ Generated 2026-10-23 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 109 | `ExpectationsCheck.TARGET` | `.03` | The target the bare fixtures aim at: not the default, so nothing reads the default by accident. |
+
+### FloatLinkCheck.java ([map](map/FloatLinkCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 188 | `FloatLinkCheck.audits` | `new Tally()` |  |
+| 203 | `FloatLinkCheck.X_HOLDERS` | `new Worst()` | Each holder was paid its share of every coupon: households, businesses, the world, the central bank. |
+| 205 | `FloatLinkCheck.X_TREASURY` | `new Worst()` | The cash coupons the pieces paid are what the treasury paid on its interest line, the uplift paid beside it. |
+| 207 | `FloatLinkCheck.X_BOOKS` | `new Worst()` | The debt manager's month and the statements' lines are the sums of the pieces' months. |
+| 209 | `FloatLinkCheck.X_NOTCASH` | `new Worst()` | The bridge's not-cash row is the expense the cash never paid. |
+| 211 | `FloatLinkCheck.X_FOOTS` | `new Worst()` | The bridge foots through its journal and its residual. |
+| 213 | `FloatLinkCheck.X_BRIDGE` | `new Worst()` | The bridge's residual is the bank's coupon timing and nothing else: the uplift is not in it. |
+| 215 | `FloatLinkCheck.X_EARNED` | `new Worst()` | The walk from EARNED to the budget leaves what EARNED never counted - the coupons paid beyond the bank - and nothing of the uplift. |
+| 700 | `FloatLinkCheck.floaters` | `new ArrayList<>()` |  |
+| 701 | `FloatLinkCheck.linkers` | `new ArrayList<>()` |  |
+| 705 | `FloatLinkCheck.CAP_TAIL` | `.0025` | A tail the harness caps the sale at, to cause one: a sale far past the bids stops at the cap. |
+| 707 | `FloatLinkCheck.SALE_MARGIN` | `new Worst(), SALE_INDEX = new Worst(), SALE_CASH = new Worst(), SALE_BOOKS = new Worst(...` |  |
+| 1123 | `FloatLinkCheck.M_SHARES` | `new Worst()` |  |
+| 1124 | `FloatLinkCheck.FX_ZERO` | `new Worst()` |  |
 
 ### FoodProcessingCheck.java ([map](map/FoodProcessingCheck.md))
 
