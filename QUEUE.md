@@ -78,6 +78,9 @@ stuff".
 | R3 | Research: posts and discoveries | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R4 | Research: prizes and the Research Lab | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
 | R5 | Research: the screens | [research-design §9](docs/studies/research-design.md#9-for-the-implementer) |
+| UP1 | The autosave off the clock: the save and the history written on a background thread from a snapshot, the history compact and streamed (at month 4,000 it held the FX thread 170 ms every 12 months, 31% of the thread at 50x); the window's probe `ui/UiProbe` (Jerus, 2026-10-22: the game sluggish after long play, "whatever you think") | [UP1](docs/queue/UP1.md) |
+| UP2 | The clock keeps its frame: redraws paced by their own cost, a budget for months in a frame, the speed reading when the city falls short, the header and rail kept and updated in place (Jerus, 2026-10-22: "only loads the screen you're at") | [UP2](docs/queue/UP2.md) |
+| UP3 | The map's month redraws only what moved: measured on his city's size first, then the minimap's static layer and pace, far nodes re-coloured where a district moved, `stampOf` kept by version; after FX7 (Jerus, 2026-10-22: "the map doesn't regenerate every single building") | [UP3](docs/queue/UP3.md) |
 
 ## Pending
 
