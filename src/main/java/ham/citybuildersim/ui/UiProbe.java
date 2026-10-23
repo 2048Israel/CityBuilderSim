@@ -95,7 +95,10 @@ import java.util.concurrent.TimeUnit;
  *     forced applyCss() over every node, which no pulse does, and could not
  *     see what a kept page saves; the study's section 9); and the chrome alone
  *     (the header, rail, city panel, construction panel and inbox drawn again
- *     after a month, then the same passes);
+ *     after a month, then the same passes) - and, where the chrome is kept
+ *     (UP2), the same chrome with its pools forgotten first, turn and turn
+ *     about with the kept one, so the two are timed under the same load:
+ *     "built new" is what every redraw paid before UP2;
  *   - the real clock at 50x on each screen: months a second, frame p50, p95
  *     and max, while JFR samples the FX thread; at month 4,000 or later the
  *     p95 is held to its screen's figure in FRAME_P95 (People's FRAME_P95_MS)
@@ -183,6 +186,17 @@ public final class UiProbe {
         doLayoutPass.invoke(sc);
         long c = System.nanoTime();
         return new double[]{ms(b - a), ms(c - b)};
+    }
+
+    /** UserInterface.forgetChrome() where the chrome is kept (UP2), or null on a build that rebuilds it. */
+    private static Method forgetChrome() {
+        try {
+            Method m = UserInterface.class.getDeclaredMethod("forgetChrome");
+            m.setAccessible(true);
+            return m;
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
     }
 
     /** The chrome drawn again, as every redraw draws it: the header, the rail, the city panel, the construction panel and the inbox. */
@@ -382,7 +396,8 @@ public final class UiProbe {
                                     + " s floor holds the due month back, the probe's own autosave was seconds ago");
 
             // ---- each screen: first build, then redraws as the clock makes them
-            report.println("screen     first |  draw    css  layout  redraw | chrome alone: draw   css  layout   all"
+            Method forget = forgetChrome();
+            report.println("screen     first |  draw    css  layout  redraw | chrome alone: draw   css  layout   all | built new: all"
                     + "   (median of 8, ms; the pulse's own passes)");
             for (Screen s : screens()) {
                 try {
@@ -395,7 +410,7 @@ public final class UiProbe {
                     });
                     List<Double> draw = new ArrayList<>(), css = new ArrayList<>(), lay = new ArrayList<>(),
                             whole = new ArrayList<>(), cDraw = new ArrayList<>(), cCss = new ArrayList<>(),
-                            cLay = new ArrayList<>(), cWhole = new ArrayList<>();
+                            cLay = new ArrayList<>(), cWhole = new ArrayList<>(), nWhole = new ArrayList<>();
                     for (int i = 0; i < 8; i++) {
                         // Each its own task, so the settle a rebuilt page posts runs between them, as on the clock.
                         fx(() -> {
@@ -424,10 +439,24 @@ public final class UiProbe {
                             cWhole.add(ms(c1 - c0) + p[0] + p[1]);
                             return null;
                         });
+                        if (forget == null) continue;
+                        // The same chrome with every node made new, as a rebuild made it (the pools forgotten first).
+                        fx(() -> {
+                            g.toggleNextMonth();
+                            pulse(sc);
+                            forget.invoke(ui);
+                            long c0 = System.nanoTime();
+                            chrome();
+                            long c1 = System.nanoTime();
+                            double[] p = pulse(sc);
+                            nWhole.add(ms(c1 - c0) + p[0] + p[1]);
+                            return null;
+                        });
                     }
-                    report.printf("%-9s %6.0f | %5.1f %6.1f %6.1f %7.1f |              %5.1f %5.1f %6.1f %5.1f%n",
+                    report.printf("%-9s %6.0f | %5.1f %6.1f %6.1f %7.1f |              %5.1f %5.1f %6.1f %5.1f |  %s%n",
                             s.name(), first, median(draw), median(css), median(lay), median(whole),
-                            median(cDraw), median(cCss), median(cLay), median(cWhole));
+                            median(cDraw), median(cCss), median(cLay), median(cWhole),
+                            nWhole.isEmpty() ? "-" : String.format("%5.1f", median(nWhole)));
                 } catch (Exception e) {
                     report.println(s.name() + " FAILED " + e);
                 }
