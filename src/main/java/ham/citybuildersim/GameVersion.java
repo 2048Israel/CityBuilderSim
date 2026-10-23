@@ -7255,8 +7255,33 @@ public final class GameVersion {
      *     back the gain the surplus carries (CD3's star 5).
      *   - Screens: Finances' Close it now and the call card; Borrow's switch.
      *   - Harness: BuybackCheck, CallCheck (new).
+     *
+     * 0.8.34 (2026-10-23) - PT1-M3, THE ADVICE CARD SAYS WHAT AUTOMATIC
+     * BUILDING HOLDS BACK (docs/queue/PT1-M3-notes.md; Jerus, 2026-10-12: "yes
+     * do rec"). Neither rule changes; the month is untouched.
+     *   - AutoBuilder: every building a pass holds back as not paying back is
+     *     kept with the payback weighed for one (PaybackHold, saved);
+     *     heldBackWords() is the card's line, HELD_BACK and the inbox's words.
+     *   - Build overview: a card of that measure and building carries it.
+     *   - Harness: AutoBuildCheck 6.
+     *
+     * 0.8.35 (2026-10-23) - CD5, FLOATING AND LINKED PAPER
+     * (docs/queue/CD5-notes.md; spec-city-debt.md sections 2.4, 2.5 and 5.3,
+     * D25, D31). Nothing sells either unasked; the month is untouched.
+     *   - FloatingRateNote (2 or 5 years): the policy rate plus a margin fixed
+     *     at the sale; its effective rate resets with the coupon.
+     *   - InflationLinkedBond (10 or 30 years): a real coupon on a principal
+     *     that follows the price index, the face at least at maturity; its
+     *     carrying value catches up with each indexation, booked as the
+     *     inflation uplift (NationalAccounts, government slots 35 and 36).
+     *   - Both sold at auction on the dial and the index the market expects
+     *     (DebtManager.pricingFlows()), bought back on them, rolled into
+     *     their own kind.
+     *   - Screens: Borrow's Floating and Linked tiles; the uplift on Finances
+     *     and the Government tab.
+     *   - Harness: FloatLinkCheck (new).
      */
-    public static final String VERSION = "0.8.33";
+    public static final String VERSION = "0.8.35";
 
     /**
      * The save shape.

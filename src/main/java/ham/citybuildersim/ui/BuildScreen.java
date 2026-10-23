@@ -2138,6 +2138,9 @@ final class BuildScreen {
          charges, Show and the button (Show and Order until 0.7.34: a pill
          now, and Build's action button saying the order); over them what the
          run charges and "Build all three", read off the run the model places;
+         and (PT1-M3) under a building automatic building's last pass held
+         back as not paying back, that verdict in the inbox's own words
+         (AutoBuilder.heldBackWords());
          AUTOMATIC BUILDING (0.7.73) - its two dials and what it has done,
          and the switch: see that section below;
          THE MARKET BUILDS THESE - the nine the investors build, quieter, with
@@ -2625,6 +2628,23 @@ final class BuildScreen {
         land.setStyle(wordsAt(10.5, s.landShort() > 0 ? Palette.WARN : Palette.TEXT_LABEL));
         Tooltip.install(land, new Tooltip(cw.landTip()));
         VBox words = new VBox(2, what, line, sized, land);
+        // AUTOMATIC BUILDING'S VERDICT (PT1-M3, Jerus 2026-10-12: "yes do rec"): a building its last pass held back as
+        // not paying back says so under the card, in the inbox's words - the model's line, never worked out here.
+        if (cw.heldBack() != null) {
+            Label held = new Label(cw.heldBack());
+            held.setWrapText(true);
+            held.setMinWidth(0);
+            held.setStyle(wordsAt(10.5, Palette.WARN));
+            HBox.setHgrow(held, Priority.ALWAYS);
+            HBox heldRow = new HBox(5, icon(Icons.COIN, Palette.WARN, 12), held);
+            heldRow.setAlignment(Pos.TOP_LEFT);
+            heldRow.setStyle("-fx-padding: 3 0 0 0;");
+            Tooltip.install(heldRow, new Tooltip("Automatic building orders a school, a police station, a prison or a"
+                    + " transit line only as far as it pays back over its life. The advice ranks by the cheapest per "
+                    + BuildCard.perWords(s.measure()) + "; the order is still yours to place, and the inbox has the same"
+                    + " line."));
+            words.getChildren().add(heldRow);
+        }
         HBox.setHgrow(words, Priority.ALWAYS);
         words.setMinWidth(0);
         HBox middle = new HBox(10, iconSquare(Icons.ofCategory(s.measure().category()), CITY_DOT, 34, 18), words);
@@ -2675,9 +2695,12 @@ final class BuildScreen {
      * how much the cash the cards before leave falls short; when it opens
      * and what it is sized for; and its ground - what it is worth, any of
      * it to buy first, and with more than one, why so many - with the
-     * ranking behind the choice in the land line's tooltip.
+     * ranking behind the choice in the land line's tooltip. And (PT1-M3)
+     * where automatic building's last pass held its building back as not
+     * paying back, the model's line saying so in the inbox's words
+     * (AutoBuilder.heldBackWords()); null where it did not.
      */
-    record CardWords(String does, String sized, String land, String landTip) { }
+    record CardWords(String does, String sized, String land, String landTip, String heldBack) { }
 
     CardWords cardWords(BuildAdvice.Suggestion s) {
         String name = s.template().getName();
@@ -2732,7 +2755,7 @@ final class BuildScreen {
                 };
         String tip = "Cheapest per " + per + priced + which + ": " + money(s.pricePerUnit()) + next
                 + ". Land at the land office's " + groundPrice(ui.game.getLandManager().getOfficePricePerSqFt()) + "/m².";
-        return new CardWords(does, sized, land, tip);
+        return new CardWords(does, sized, land, tip, ui.game.getAutoBuilder().heldBackWords(s));
     }
 
     /** A suggestion's building as its card names it (0.7.70): its own name, or the gravel roads a paving paves. */

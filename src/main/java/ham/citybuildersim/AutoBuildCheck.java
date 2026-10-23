@@ -90,6 +90,12 @@ import java.util.Map;
  *      its first, the next ordered; and in a town whose buildings stand on
  *      more ground than it owns, no ground bought - only an order's own is
  *      bought, and there it could not be placed - the inbox saying so.
+ *   6. THE ADVICE'S CARD CARRIES THE PAYBACK'S VERDICT (PT1-M3): where the
+ *      advice offers a school the pass holds back as not paying back, the
+ *      card's line is the inbox's own words for it, with the figures the
+ *      pass weighed - the same after a save and a load, gone when it is
+ *      switched off - and once given room the next pass orders that school,
+ *      and its card carries none.
  *
  * Every fixture causes its condition.
  */
@@ -132,6 +138,7 @@ public class AutoBuildCheck {
         savedAndLoaded(root, decades);
         groundSavedAndLoaded(root);
         whatHoldsIt(root);
+        theCardsVerdict(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -953,6 +960,93 @@ public class AutoBuildCheck {
 
         theWalk(root);
         overFull(root);
+    }
+
+    /* ---------------------------------------------------------------- 6 */
+
+    /**
+     * THE ADVICE'S CARD CARRIES THE PAYBACK'S VERDICT (PT1-M3; Jerus,
+     * 2026-10-12: "yes do rec"). At month 304 of his city WHAT WOULD HELP
+     * MOST offered a Middle School and a Police Station that automatic
+     * building held back, and only the inbox said why. Section 5's town with
+     * no elementary school is the fixture: its first school would not pay
+     * back, so the pass holds it while the advice offers it - the
+     * disagreement, caused; given room (withRoom()) the next month, it pays
+     * back and is ordered.
+     */
+    static void theCardsVerdict(Path root) {
+        out.println("\n--- 6. the advice's card carries the payback's verdict, in the inbox's words (PT1-M3) ---");
+        BuildAdvice.Measure elementary = BuildAdvice.Measure.school(EducationType.ELEMENTARY);
+        Game g = noElementary(root, "card-held");
+        AutoBuilder ab = g.getAutoBuilder();
+        ab.setOn(true, null);
+        quietly(() -> g.simulateMonths(1));
+        AutoBuilder.Step st = stepFor(ab, elementary);
+        AutoBuilder.Payback pb = st == null ? null : st.payback();
+        BuildAdvice.Suggestion card = cardFor(g, elementary);
+        assertTrue(String.format("fixture: the pass held the town's first elementary school for the payback, and the advice offers"
+                        + " %s", card == null ? "no school" : card.count() + " " + card.template().getName()),
+                st != null && st.outcome() == AutoBuilder.Outcome.HELD && st.cut() == AutoBuilder.Cut.PAYBACK
+                        && pb != null && !pb.paysBack() && card != null && !card.paving()
+                        && card.template().getName().equals(st.building()));
+        String line = card == null ? null : ab.heldBackWords(card);
+        String words = pb == null ? "" : AutoBuilder.paybackWords(pb);
+        out.println("    the card's line: " + line);
+        assertTrue("the card carries a line, and it is the appraisal's own words: what it opens with, then paybackWords() of the"
+                + " payback the pass weighed for one", line != null && line.equals(AutoBuilder.HELD_BACK + words));
+        assertTrue(pb == null ? "...with the pass's figures (none weighed)"
+                        : String.format("...with the pass's figures: %,.0f residents covered over its %d years, paying the city %s a"
+                        + " month each and costing it %s, against the %s a month it runs at", pb.covered(), BuildAdvice.LIFE_YEARS,
+                        DecisionLog.money(pb.paid()), DecisionLog.money(pb.costs()), DecisionLog.money(pb.runs())),
+                pb != null && line != null && pb.equals(ab.heldForPayback(card))
+                        && line.contains(String.format("the %,.0f residents it would cover over its %d years", pb.covered(),
+                        BuildAdvice.LIFE_YEARS))
+                        && line.contains(DecisionLog.money(pb.paid()) + " a month each and cost it " + DecisionLog.money(pb.costs())
+                        + " each") && line.contains(DecisionLog.money(pb.runs())));
+        Notice n = g.getInbox().live("autobuild");
+        String body = n == null ? "" : String.join(" ", n.getBody());
+        assertTrue("...the very words the inbox's notice gives for it", !words.isEmpty() && body.contains(words));
+
+        // Saved mid-month and loaded, the card says the same: the pass that decided it does not run again until the next month.
+        boolean[] saved = new boolean[1];
+        quietly(() -> saved[0] = g.saveGame(10, "autobuildcheck-card").ok);
+        Game back = new Game(new GameFiles(root.resolve("card-held"), root.resolve("card-held-no-legacy")));
+        quietly(() -> back.loadGameSave(10));
+        assertTrue("saved and loaded before the next month, the card carries the same line", saved[0]
+                && back.getLoadFailure() == null && line != null && line.equals(back.getAutoBuilder().heldBackWords(card)));
+        // ...and switched off, automatic building holds nothing back: no line.
+        ab.setOn(false, null);
+        assertTrue("switched off, it holds nothing back, and the card carries no line", ab.heldBackWords(card) == null);
+
+        // A building automatic building builds: the same town switched on again and given room (withRoom()) - the next pass
+        // weighs the school the card offered as paying back and orders it, and the card it was carries no line.
+        withRoom(g);
+        ab.setOn(true, null);
+        quietly(() -> g.simulateMonths(1));
+        AutoBuilder.Step sr = stepFor(ab, elementary);
+        assertTrue(String.format("fixture: given room, the next pass weighs the card's %s as paying back and orders it",
+                        card == null ? "school" : card.template().getName()),
+                card != null && sr != null && sr.outcome() == AutoBuilder.Outcome.ORDERED && sr.payback() != null
+                        && sr.payback().paysBack() && sr.building().equals(card.template().getName()));
+        assertTrue("a building automatic building builds carries no such line", card != null
+                && ab.heldForPayback(card) == null && ab.heldBackWords(card) == null);
+    }
+
+    /** ChildcareCheck's town with its elementary schools retired: its first school one that would not pay back (section 5). */
+    static Game noElementary(Path root, String name) {
+        Game g = ChildcareCheck.town(root, name);
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (t.getTeaches() != EducationType.ELEMENTARY) continue;
+            int had = g.getBuildingManager().getQuantity(t.getId());
+            if (had > 0) quietly(() -> g.getBuildingManager().retire(t, had));
+        }
+        return g;
+    }
+
+    /** The advice's card for a measure, as WHAT WOULD HELP MOST offers it now; null where it offers none. */
+    static BuildAdvice.Suggestion cardFor(Game g, BuildAdvice.Measure m) {
+        for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) if (s.measure().equals(m)) return s;
+        return null;
     }
 
     /** A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). */
