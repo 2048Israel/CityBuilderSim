@@ -68,7 +68,8 @@ import static ham.citybuildersim.ui.Levers.*;
  * AND EVERY DIAL IS STILL A PROPOSAL UNTIL IT IS APPLIED (the spec's D4,
  * unchanged): the taxes' and the schools' dials stage into the tray at the
  * foot of the stage and one press applies them; the wage floor, the policy
- * rate and the promises' dials keep an Apply on their own card; the target
+ * rate and the promises' dials keep an Apply on their own card, as since XR2
+ * (0.8.22) does each card of Money's currency page; the target
  * and since 0.7.52 how strictly the rule holds it, the central bank's
  * holdings and ceiling, the hand on the dial and the subsidies apply at
  * once; and a page change throws the staged set away.

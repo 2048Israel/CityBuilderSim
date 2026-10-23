@@ -10222,7 +10222,8 @@ public class Game {
          */
         foreign.setRealRateDifferential(realRateDifferential());
         // The rate follows parity's trend, the real gap's level, the balance, the cover,
-        // the market and the interventions felt (ForeignAccounts, THE FLOAT).
+        // the market and the interventions felt (ForeignAccounts, THE FLOAT), and since
+        // XR2 the regime holds it where it says (THE REGIMES).
         double rateBeforeReprice = foreign.getRate();
         foreign.repriceCurrency();
         /*
