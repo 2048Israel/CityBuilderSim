@@ -179,23 +179,28 @@ final class SummaryScreen {
      *             changes colour, because the label is never the news.
      */
     HBox statLine(String label, String value, String tone) {
-        Label name = new Label(label);
-        name.setStyle("-fx-font-size: 10px; -fx-text-fill: " + PANEL_LABEL + ";");
+        // A scope of its own for every kind of row (UP2, the panel kept): the rows of one kind are handed the
+        // nodes of rows of that kind, wherever a row that comes and goes falls among them.
+        return Kept.scope("statLine", () -> {
+            Label name = Kept.label(label);
+            name.setStyle("-fx-font-size: 10px; -fx-text-fill: " + PANEL_LABEL + ";");
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label figure = new Label(value);
-        figure.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
-                + " -fx-font-weight: bold; -fx-text-fill: "
-                + (tone == null ? PANEL_VALUE : tone) + ";");
+            Label figure = Kept.label(value);
+            figure.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                    + " -fx-font-weight: bold; -fx-text-fill: "
+                    + (tone == null ? PANEL_VALUE : tone) + ";");
+            // A row whose pair is never cut sets it after this; a kept one starts from the default each time.
+            figure.setMinWidth(Region.USE_COMPUTED_SIZE);
 
-        HBox row = new HBox(6);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setMaxWidth(Double.MAX_VALUE);
-        row.setStyle("-fx-padding: 1 2 1 4;");
-        row.getChildren().addAll(name, gap, figure);
-        return row;
+            HBox row = Kept.row(6, name, gap, figure);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setMaxWidth(Double.MAX_VALUE);
+            row.setStyle("-fx-padding: 1 2 1 4;");
+            return row;
+        });
     }
 
     /**
@@ -214,50 +219,54 @@ final class SummaryScreen {
     VBox panelSection(String key, String heading, String summary,
                               String tone, java.util.function.Supplier<VBox> detail) {
 
-        boolean open = panelOpen.contains(key);
+        // A scope of its own, keyed by the section: its nodes stay its own whether it is open or folded.
+        return Kept.scope(key, () -> {
+            boolean open = panelOpen.contains(key);
 
-        Label caret = new Label(open ? "\u25be" : "\u25b8");
-        caret.setStyle("-fx-font-size: 9px; -fx-text-fill: " + PANEL_LABEL + ";");
+            Label caret = Kept.label(open ? "\u25be" : "\u25b8");
+            caret.setStyle("-fx-font-size: 9px; -fx-text-fill: " + PANEL_LABEL + ";");
 
-        Label name = new Label(heading);
-        name.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: "
-                + (open ? Palette.ACCENT : Palette.TEXT_LABEL) + ";");
+            Label name = Kept.label(heading);
+            name.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: "
+                    + (open ? Palette.ACCENT : Palette.TEXT_LABEL) + ";");
 
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
+            Region gap = Kept.region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
 
-        Label figure = new Label(summary == null ? "" : summary);
-        figure.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
-                + " -fx-font-weight: bold; -fx-text-fill: "
-                + (tone == null ? PANEL_VALUE : tone) + ";");
+            Label figure = Kept.label(summary == null ? "" : summary);
+            figure.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                    + " -fx-font-weight: bold; -fx-text-fill: "
+                    + (tone == null ? PANEL_VALUE : tone) + ";");
 
-        HBox header = new HBox(5);
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.setMaxWidth(Double.MAX_VALUE);
-        header.setStyle("-fx-padding: 4 2 4 0; -fx-cursor: hand;"
-                + (open ? " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;" : ""));
-        header.getChildren().addAll(caret, name, gap, figure);
-        header.setOnMouseClicked(e -> {
-            if (!panelOpen.remove(key)) panelOpen.add(key);
-            refreshCityPanel();
+            HBox header = Kept.row(5, caret, name, gap, figure);
+            header.setAlignment(Pos.CENTER_LEFT);
+            header.setMaxWidth(Double.MAX_VALUE);
+            header.setStyle("-fx-padding: 4 2 4 0; -fx-cursor: hand;"
+                    + (open ? " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;" : ""));
+            header.setOnMouseClicked(e -> {
+                if (!panelOpen.remove(key)) panelOpen.add(key);
+                refreshCityPanel();
+            });
+
+            VBox box = Kept.column(0, header);
+            box.setMaxWidth(Double.MAX_VALUE);
+
+            if (open) {
+                // The detail in a scope of its own: a section folded lets its rows go, one opened makes them.
+                box.getChildren().add(Kept.scope("detail", () -> {
+                    VBox body = detail.get();
+                    body.setStyle("-fx-padding: 2 0 6 8; -fx-border-color: " + Palette.EDGE + ";"
+                            + " -fx-border-width: 0 0 0 1;");
+                    return body;
+                }));
+            }
+            return box;
         });
-
-        VBox box = new VBox(0);
-        box.setMaxWidth(Double.MAX_VALUE);
-        box.getChildren().add(header);
-
-        if (open) {
-            VBox body = detail.get();
-            body.setStyle("-fx-padding: 2 0 6 8; -fx-border-color: " + Palette.EDGE + ";"
-                    + " -fx-border-width: 0 0 0 1;");
-            box.getChildren().add(body);
-        }
-        return box;
     }
 
     /** A section's detail, built from rows. Sugar, to keep the sections short. */
     VBox panelBody(javafx.scene.Node... rows) {
-        VBox body = new VBox(0);
+        VBox body = Kept.column(0);
         body.getChildren().addAll(rows);
         return body;
     }
@@ -315,18 +324,20 @@ final class SummaryScreen {
 
     HBox panelModeSwitch() {
 
-        HBox row = new HBox(4);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setStyle("-fx-padding: 0 0 8 2;");
-        row.getChildren().addAll(
-                panelModeChip("Summary",   !dashboardShown(), false),
-                panelModeChip("Dashboard",  dashboardShown(), true));
-        return row;
+        return Kept.scope("modeSwitch", () -> {
+            HBox row = Kept.row(4);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setStyle("-fx-padding: 0 0 8 2;");
+            row.getChildren().addAll(
+                    panelModeChip("Summary",   !dashboardShown(), false),
+                    panelModeChip("Dashboard",  dashboardShown(), true));
+            return row;
+        });
     }
 
     Label panelModeChip(String text, boolean on, boolean dashboard) {
 
-        Label chip = new Label(text);
+        Label chip = Kept.label(text);
         chip.setStyle("-fx-font-size: 9px; -fx-padding: 2 8 3 8; -fx-cursor: hand;"
                 + " -fx-background-radius: 3;"
                 + " -fx-background-color: " + (on ? Palette.RAISED : "transparent") + ";"
@@ -360,47 +371,54 @@ final class SummaryScreen {
      */
     VBox summaryRow(String heading, String value, String tone, Runnable go) {
 
-        Label name = new Label(heading);
-        name.setStyle("-fx-font-size: 9px; -fx-font-weight: bold;"
-                + " -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        // Keyed by what it is called: a row that comes or goes takes its own nodes with it.
+        return Kept.scope("row:" + heading, () -> {
+            Label name = Kept.label(heading);
+            name.setStyle("-fx-font-size: 9px; -fx-font-weight: bold;"
+                    + " -fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
-        Label figure = new Label(value);
-        figure.setWrapText(true);
-        figure.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
-                + " -fx-font-weight: bold; -fx-text-fill: "
-                + (tone == null ? PANEL_VALUE : tone) + ";");
+            Label figure = Kept.label(value);
+            figure.setWrapText(true);
+            figure.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                    + " -fx-font-weight: bold; -fx-text-fill: "
+                    + (tone == null ? PANEL_VALUE : tone) + ";");
 
-        VBox row = new VBox(-1, name, figure);
-        row.setMaxWidth(Double.MAX_VALUE);
-        String rest = "-fx-padding: 4 2 5 4; -fx-cursor: hand;";
-        row.setStyle(rest);
-        row.setOnMouseClicked(e -> go.run());
-        row.setOnMouseEntered(e -> row.setStyle(rest
-                + " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;"));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        return row;
+            VBox row = Kept.column(-1, name, figure);
+            row.setMaxWidth(Double.MAX_VALUE);
+            String rest = "-fx-padding: 4 2 5 4; -fx-cursor: hand;";
+            // The look the pointer calls for: a kept row is not entered afresh when it is drawn again under the pointer.
+            row.setStyle(row.isHover()
+                    ? rest + " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;" : rest);
+            row.setOnMouseClicked(e -> go.run());
+            row.setOnMouseEntered(e -> row.setStyle(rest
+                    + " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;"));
+            row.setOnMouseExited(e -> row.setStyle(rest));
+            return row;
+        });
     }
 
     /** Open everything, or close it. Dashboard only - Summary has no folds. */
     HBox panelFoldAll() {
 
-        HBox row = new HBox(8);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setStyle("-fx-padding: 6 0 2 4;");
-        row.getChildren().addAll(
-                foldLink("open all", () -> {
-                    panelOpen.addAll(java.util.Arrays.asList(PANEL_SECTIONS));
-                    refreshCityPanel();
-                }),
-                foldLink("close all", () -> {
-                    panelOpen.clear();
-                    refreshCityPanel();
-                }));
-        return row;
+        return Kept.scope("foldAll", () -> {
+            HBox row = Kept.row(8);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setStyle("-fx-padding: 6 0 2 4;");
+            row.getChildren().addAll(
+                    foldLink("open all", () -> {
+                        panelOpen.addAll(java.util.Arrays.asList(PANEL_SECTIONS));
+                        refreshCityPanel();
+                    }),
+                    foldLink("close all", () -> {
+                        panelOpen.clear();
+                        refreshCityPanel();
+                    }));
+            return row;
+        });
     }
 
     Label foldLink(String text, Runnable act) {
-        Label link = new Label(text);
+        Label link = Kept.label(text);
         link.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.ACCENT + "; -fx-cursor: hand;"
                 + " -fx-underline: true;");
         link.setOnMouseClicked(e -> act.run());
@@ -415,11 +433,13 @@ final class SummaryScreen {
 
     /** A caption inside an open section - a sub-heading, or a note. */
     Label panelNote(String text) {
-        Label note = new Label(text);
-        note.setWrapText(true);
-        note.setMaxWidth(240);
-        note.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.TEXT_MUTED + "; -fx-padding: 3 0 1 4;");
-        return note;
+        return Kept.scope("note", () -> {
+            Label note = Kept.label(text);
+            note.setWrapText(true);
+            note.setMaxWidth(240);
+            note.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.TEXT_MUTED + "; -fx-padding: 3 0 1 4;");
+            return note;
+        });
     }
 
     /* =====================================================================
@@ -689,8 +709,12 @@ final class SummaryScreen {
     }
 
     void panelSummaryRows(VBox body) {
+        Kept.scope("summary", () -> summaryRows(body));
+    }
 
-        VBox rows = new VBox(0);
+    private void summaryRows(VBox body) {
+
+        VBox rows = Kept.column(0);
         rows.setStyle("-fx-padding: 4 0 0 0;");
 
         /* ----------------------------- what needs you ----------------------------- */
@@ -728,7 +752,7 @@ final class SummaryScreen {
             VBox row = summaryRow(w.label(), w.reading(),
                     w.level() >= 2 ? PANEL_BAD : w.level() == 1 ? PANEL_WARN : null,
                     w.go());
-            if (w.tip() != null) javafx.scene.control.Tooltip.install(row, new javafx.scene.control.Tooltip(w.tip()));
+            if (w.tip() != null) Kept.tip(row, w.tip(), 1000);
             rows.getChildren().add(row);
         }
 
@@ -744,19 +768,21 @@ final class SummaryScreen {
     /** A rule and a caption, dividing the panel's two halves. */
     VBox panelHeading(String text) {
 
-        Label head = new Label(text);
-        head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold;"
-                + " -fx-text-fill: " + Palette.TEXT_LABEL + ";");
+        return Kept.scope("heading", () -> {
+            Label head = Kept.label(text);
+            head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold;"
+                    + " -fx-text-fill: " + Palette.TEXT_LABEL + ";");
 
-        Region rule = new Region();
-        rule.setMinHeight(1);
-        rule.setPrefHeight(1);
-        rule.setMaxHeight(1);
-        rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
+            Region rule = Kept.region();
+            rule.setMinHeight(1);
+            rule.setPrefHeight(1);
+            rule.setMaxHeight(1);
+            rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
 
-        VBox box = new VBox(2, head, rule);
-        box.setStyle("-fx-padding: 10 2 4 4;");
-        return box;
+            VBox box = Kept.column(2, head, rule);
+            box.setStyle("-fx-padding: 10 2 4 4;");
+            return box;
+        });
     }
 
     /**
@@ -768,6 +794,10 @@ final class SummaryScreen {
      * without checking, for a method with exactly one caller.
      */
     void panelDashboardSections(VBox body) {
+        Kept.scope("dashboard", () -> dashboardSections(body));
+    }
+
+    private void dashboardSections(VBox body) {
 
         EconomyManager economy = ui.game.getEconomyManager();
         PopulationManager people = ui.game.getPopulationManager();
@@ -1341,8 +1371,17 @@ final class SummaryScreen {
                 }));
     }
 
+    /**
+     * The city panel, drawn kept (UP2): the nodes the last draw made, this month's figures set on them
+     * (ui.cityPool). Every kind of row, section and note is a scope of its own, so a row that comes and
+     * goes - an alert, a folded section's detail, a biting watch - takes its own nodes with it.
+     */
     void refreshCityPanel() {
-        ui.cityPanel.getChildren().clear();
+        if (ui.cityPool.holds()) UserInterface.dropFocusIn(ui.cityPanel);
+        Kept.draw(ui.cityPool, this::drawCityPanel);
+    }
+
+    private void drawCityPanel() {
 
         EconomyManager economy = ui.game.getEconomyManager();
         PopulationManager people = ui.game.getPopulationManager();
@@ -1358,16 +1397,16 @@ final class SummaryScreen {
         double annualGdp = economy.getYearGdp();
         double debt = ui.game.getDebtManager().getAllPrincipal();
 
-        Label title = new Label("CITY OVERVIEW");
+        Label title = Kept.label("CITY OVERVIEW");
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
                 + " -fx-text-fill: " + Palette.TEXT_HEAD + "; -fx-padding: 0 0 1 2;");
 
-        Label subtitle = new Label(CityCalendar.format(ui.game.getMonth())
+        Label subtitle = Kept.label(CityCalendar.format(ui.game.getMonth())
                 + "   ·   month " + ui.game.getMonth());
         subtitle.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 9px;"
                 + " -fx-text-fill: " + Palette.TEXT_MUTED + "; -fx-padding: 0 0 6 2;");
 
-        VBox body = new VBox(0);
+        VBox body = Kept.column(0);
         // The ScrollPane's viewport paints its own ground, and on a dark panel
         // an unpainted one shows through as a white sliver down the side of
         // every section. Cheaper to state it than to fight the skin.
@@ -1396,7 +1435,7 @@ final class SummaryScreen {
          * something else. Pinned above the scroller they are always on screen,
          * and the sections below them can be as long as they like.
          */
-        VBox vitals = new VBox(0);
+        VBox vitals = Kept.column(0);
         vitals.getChildren().addAll(
                 statLine("Cash", money(cash), cash < 0 ? PANEL_BAD : null),
                 statLine("Earned", money(income), income < 0 ? PANEL_BAD : PANEL_GOOD),
@@ -1413,7 +1452,7 @@ final class SummaryScreen {
            of which used to be a row indistinguishable from the forty around it -
            an outbreak read exactly like the store stock.
            ============================================================= */
-        VBox alerts = new VBox(0);
+        VBox alerts = Kept.column(0);
 
         if (health.isOutbreak()) {
             alerts.getChildren().add(statLine("OUTBREAK",
@@ -1448,7 +1487,7 @@ final class SummaryScreen {
             alerts.setStyle("-fx-padding: 4 2 4 4; -fx-background-color: " + Palette.ALERT_GROUND + ";"
                     + " -fx-background-radius: 3; -fx-border-color: " + Palette.ALERT_EDGE + ";"
                     + " -fx-border-width: 0 0 0 2;");
-            VBox spacer = new VBox(alerts);
+            VBox spacer = Kept.column(0, alerts);
             spacer.setStyle("-fx-padding: 6 0 2 0;");
             body.getChildren().add(spacer);
         }
@@ -1467,8 +1506,8 @@ final class SummaryScreen {
         VBox.setVgrow(scroller, Priority.ALWAYS);
         scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
 
-        ui.cityPanel.getChildren().addAll(title, subtitle, panelModeSwitch(),
-                vitals, scroller);
+        Kept.set(ui.cityPanel.getChildren(), List.of(title, subtitle, panelModeSwitch(),
+                vitals, scroller));
     }
 
     /**

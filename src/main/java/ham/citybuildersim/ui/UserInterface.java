@@ -183,7 +183,7 @@ public class UserInterface extends Application {
     /** The middle of the window, with the City overview's drawer and the construction panel (both since 0.7.24), the inbox's list and the toasts on top of it. */
     private StackPane stagePane;
     /** The inbox's list, dropped down at the stage's top right while it is open (its envelope is the header's since 0.7.21). */
-    private VBox inboxCorner;
+    VBox inboxCorner;
     /** The toasts, stacked at the stage's bottom right (0.7.20); see TOASTS. */
     private VBox toastStack;
     /** The whole window, with a dialog laid over it when one is open (0.7.20). */
@@ -201,7 +201,7 @@ public class UserInterface extends Application {
     /** The middle column's scroller. A field, so clearMenu can put it back. */
     javafx.scene.control.ScrollPane menuScroller;
     /** The construction panel: over the stage's right edge while open, folded to constructionTab otherwise (0.7.24). */
-    private VBox constructionPanel;
+    VBox constructionPanel;
     /** The slim tab on the stage's right edge the construction panel folds to (0.7.24). */
     private VBox constructionTab;
     /** The City overview's content, drawn by SummaryScreen. */
@@ -209,7 +209,7 @@ public class UserInterface extends Application {
     /** The drawer the City overview opens in, over the stage's left (0.7.24); see THE FRAME FOLDS AWAY. */
     private VBox drawer;
     /** Whether the drawer is open. Not saved: the pin is (GamePrefs.isDrawerPinned()). */
-    private boolean drawerOpen;
+    boolean drawerOpen;
 
     /* =====================================================================
        THE RECEIPT INDICATOR
@@ -411,6 +411,10 @@ public class UserInterface extends Application {
     Kept.Pool headerPool = new Kept.Pool();
     Kept.Pool inboxPool = new Kept.Pool();
     Kept.Pool railPool = new Kept.Pool();
+    /** The city panel's nodes (SummaryScreen.refreshCityPanel()), the construction panel's, and the inbox's list's. */
+    Kept.Pool cityPool = new Kept.Pool();
+    Kept.Pool sitesPool = new Kept.Pool();
+    Kept.Pool listPool = new Kept.Pool();
 
     /** The minimap's node in the rail, or null before the rail is first drawn (KeptBench keeps it off the picture). */
     javafx.scene.Node miniMapNode() {
@@ -422,6 +426,9 @@ public class UserInterface extends Application {
         headerPool.forget();
         inboxPool.forget();
         railPool.forget();
+        cityPool.forget();
+        sitesPool.forget();
+        listPool.forget();
     }
 
     /* =====================================================================
@@ -560,46 +567,11 @@ public class UserInterface extends Application {
         // swaps the contents of rootMenu constantly, so the panel lives outside it
         // and survives every screen change. Since 0.7.24 it is folded to a tab
         // on the stage's right edge and opens over the stage (THE FRAME FOLDS AWAY).
-        this.constructionPanel = new VBox(8);
-        this.constructionPanel.setPrefWidth(280);
-        this.constructionPanel.setMaxWidth(Region.USE_PREF_SIZE);
-        /*
-         * The right-hand strip, dressed to match the left.
-         *
-         * Same ground, same border weight, mirrored - so the two read as one
-         * frame around the stage rather than as two unrelated sidebars. Jerus:
-         * "the right tab make it match the other two".
-         */
-        this.constructionPanel.setStyle(
-                "-fx-padding: 12 12 12 10; -fx-background-color: " + Palette.PANEL + ";"
-                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 0 1;"
-                + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 16, 0, -3, 0);");
+        this.constructionPanel = constructionPanelBox();
 
         // City overview down the left. Same reasoning as the construction panel:
         // it lives outside rootMenu so the menu system can't clear it away.
-        this.cityPanel = new VBox(8);
-        /*
-         * WIDER THAN IT WAS, because health went in it.
-         *
-         * 250 was set when every row here was a label and a short number.
-         * Health's rows carry two figures apiece - coverage AND what it buys,
-         * places AND the people who need them - and at 250 they wrapped or got
-         * cut by shorten(). Thirty pixels buys the whole section.
-         */
-        this.cityPanel.setPrefWidth(290);
-        /*
-         * DARK, and the same dark as the top strip.
-         *
-         * The panel was #f4f4f4 with #333 text, which is a document. It is not
-         * a document - it is an instrument cluster (on screen at all times
-         * until 0.7.24, a drawer the header's chip opens since), and the thing
-         * it most needs to do is let a figure that has gone wrong catch the
-         * eye of somebody who is looking at something else. Red on light grey
-         * does not; red on near-black does.
-         */
-        this.cityPanel.setStyle(
-                "-fx-padding: 4 10 12 12; -fx-background-color: " + Palette.PANEL + ";");
-        VBox.setVgrow(cityPanel, Priority.ALWAYS);
+        this.cityPanel = cityPanelBox();
         // A drawer since 0.7.24: the header's "Needs you" chip opens it over
         // the left of the stage. See THE FRAME FOLDS AWAY.
         this.drawer = new VBox(0, drawerBar(), cityPanel);
@@ -799,8 +771,7 @@ public class UserInterface extends Application {
          * always, it is opened deliberately (the envelope in the header), and
          * while it is open covering the top corner of the screen is the point.
          */
-        this.inboxCorner = new VBox(0);
-        this.inboxCorner.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        this.inboxCorner = inboxCornerBox();
         StackPane.setAlignment(inboxCorner, Pos.TOP_RIGHT);
         StackPane.setMargin(inboxCorner, new javafx.geometry.Insets(6, 14, 0, 0));
         this.stagePane.getChildren().add(inboxCorner);
@@ -1525,7 +1496,8 @@ public class UserInterface extends Application {
 
     /** A scroller in one of the side panels, which always remembers. */
     javafx.scene.control.ScrollPane keptPanelScroller(String key, javafx.scene.Node content) {
-        return remembering(panelScrollAt, key, content, false);
+        // Inside a panel's kept draw (UP2) the scroller is the one the last draw made.
+        return keptScroller(panelScrollAt, key, content);
     }
 
     /**
@@ -1541,6 +1513,30 @@ public class UserInterface extends Application {
 
         javafx.scene.control.ScrollPane scroller =
                 new javafx.scene.control.ScrollPane(content);
+        remember(scroller, where, key, fromBottom);
+        return scroller;
+    }
+
+    /**
+     * A scroller in a panel that is drawn kept (UP2): the one the last draw made, given its content - which
+     * is the same node when its box is kept too, so it keeps its position by itself - and the position of
+     * the map put on only a scroller that is new, as remembering() puts it on every one.
+     */
+    javafx.scene.control.ScrollPane keptScroller(
+            java.util.Map<String, Double> where, String key, javafx.scene.Node content) {
+        if (!Kept.drawing()) return remembering(where, key, content, false);
+        javafx.scene.control.ScrollPane scroller =
+                Kept.of(javafx.scene.control.ScrollPane.class, javafx.scene.control.ScrollPane::new);
+        boolean fresh = Kept.isNew(scroller);
+        // A new scroller has its content before its position is asked for, as remembering() has it.
+        if (scroller.getContent() != content) scroller.setContent(content);
+        if (fresh) remember(scroller, where, key, false);
+        return scroller;
+    }
+
+    /** The position under a name: written as the scroller moves, and put back on a new one. */
+    private void remember(javafx.scene.control.ScrollPane scroller, java.util.Map<String, Double> where,
+                          String key, boolean fromBottom) {
         double was = where.getOrDefault(key, 0.0);
         // ...and the same position in pixels up from the bottom, read now for the
         // same reason: the layout below writes a clamped value over it
@@ -1561,7 +1557,6 @@ public class UserInterface extends Application {
         } else {
             restoreScroll(scroller, was);
         }
-        return scroller;
     }
 
     /** How far a scroller's content can travel, in pixels, as laid out right now. */
@@ -1970,6 +1965,49 @@ public class UserInterface extends Application {
     /** Where the inbox's envelope is drawn in the header, so a notice read elsewhere can redraw its count. */
     private StackPane inboxHolder;
 
+    /**
+     * The construction panel's box, empty and styled.
+     *
+     * The right-hand strip, dressed to match the left: same ground, same border weight, mirrored - so
+     * the two read as one frame around the stage rather than as two unrelated sidebars. Jerus: "the
+     * right tab make it match the other two".
+     */
+    static VBox constructionPanelBox() {
+        VBox box = new VBox(8);
+        box.setPrefWidth(280);
+        box.setMaxWidth(Region.USE_PREF_SIZE);
+        box.setStyle(
+                "-fx-padding: 12 12 12 10; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 0 1;"
+                + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 16, 0, -3, 0);");
+        return box;
+    }
+
+    /**
+     * The city panel's box, empty and styled.
+     *
+     * WIDER THAN IT WAS, because health went in it: 250 was set when every row here was a label and a
+     * short number, and at 250 health's rows wrapped or got cut by shorten(). DARK, and the same dark as
+     * the top strip: it is an instrument cluster (a drawer the header's chip opens since 0.7.24), and
+     * the thing it most needs to do is let a figure that has gone wrong catch the eye of somebody who is
+     * looking at something else.
+     */
+    static VBox cityPanelBox() {
+        VBox box = new VBox(8);
+        box.setPrefWidth(290);
+        box.setStyle(
+                "-fx-padding: 4 10 12 12; -fx-background-color: " + Palette.PANEL + ";");
+        VBox.setVgrow(box, Priority.ALWAYS);
+        return box;
+    }
+
+    /** The box the inbox's list is dropped into, empty: start() puts it at the stage's top right. */
+    static VBox inboxCornerBox() {
+        VBox box = new VBox(0);
+        box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        return box;
+    }
+
     /** The header's box, empty and styled: start() puts it across the window's top and KeptBench in a scene of its own. */
     static HBox headerBox() {
         HBox box = new HBox(10);
@@ -2000,7 +2038,7 @@ public class UserInterface extends Application {
      * it: a play button, a speed arrow or a tile clicked keeps no focus ring now that its node
      * survives the redraw, and the keys go where they went (the window's).
      */
-    private static void dropFocusIn(javafx.scene.Node container) {
+    static void dropFocusIn(javafx.scene.Node container) {
         javafx.scene.Scene s = container == null ? null : container.getScene();
         if (s == null) return;
         for (javafx.scene.Node n = s.getFocusOwner(); n != null; n = n.getParent()) {
@@ -2740,7 +2778,9 @@ public class UserInterface extends Application {
             canvas.setWidth(w);
             canvas.setHeight(h);
             javafx.scene.canvas.GraphicsContext g = canvas.getGraphicsContext2D();
-            g.clearRect(0, 0, w, h);
+            // To the next whole pixel (UP2): a kept line is drawn over what it drew last, and a clear to a
+            // fractional width left the edge column half of last month's (9 pixels in a header, by up to 21 levels).
+            g.clearRect(0, 0, Math.ceil(w) + 1, Math.ceil(h) + 1);
             int n = points.length;
             if (n < 2 || w < 4) return;
             double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
@@ -4977,10 +5017,26 @@ public class UserInterface extends Application {
        building(s)" line and each site's months make that legible.
        ===================================================================== */
 
-    private void refreshConstructionPanel() {
-        constructionPanel.getChildren().clear();
+    /**
+     * The construction panel, drawn kept (UP2): the nodes the last draw made, with this month's sites set
+     * on them (sitesPool). Each part is a scope of its own - the head, the output line, a site keyed by the
+     * building it shows, the logs - so a site that finishes takes its own nodes with it.
+     */
+    void refreshConstructionPanel() {
+        if (sitesPool.holds()) dropFocusIn(constructionPanel);
+        Kept.draw(sitesPool, this::drawConstructionPanel);
+    }
 
-        Label header = new Label("UNDER CONSTRUCTION");
+    private void drawConstructionPanel() {
+        List<javafx.scene.Node> into = new ArrayList<>();
+
+        into.add(Kept.scope("head", this::constructionHead));
+        constructionBody(into, game.getBuildingManager());
+        Kept.set(constructionPanel.getChildren(), into);
+    }
+
+    private HBox constructionHead() {
+        Label header = Kept.label("UNDER CONSTRUCTION");
         header.setGraphic(areaSwatch(Palette.BUILDING, 8));
         header.setGraphicTextGap(8);
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
@@ -4990,17 +5046,19 @@ public class UserInterface extends Application {
          * and the page behind it has every site's order, crews, time and
          * money, and the player's hand on them (ConstructionScreen).
          */
-        Label open = new Label("Open ›");
+        Label open = Kept.label("Open ›");
         open.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 0 2 4 0;");
         open.setOnMouseClicked(e -> constructionScreen.show());
-        Region headGap = new Region();
+        Region headGap = Kept.region();
         HBox.setHgrow(headGap, Priority.ALWAYS);
-        HBox headRow = new HBox(4, header, headGap, open);
+        HBox headRow = Kept.row(4, header, headGap, open);
         headRow.setAlignment(Pos.CENTER_LEFT);
         headRow.setMaxWidth(PANEL_TEXT + 8);
-        constructionPanel.getChildren().add(headRow);
+        return headRow;
+    }
 
-        BuildingManager buildingManager = game.getBuildingManager();
+    /** ...and what is under the head: the output, the sites or the idle line, the logs. */
+    private void constructionBody(List<javafx.scene.Node> into, BuildingManager buildingManager) {
         List<BuildingsStacks> sites = buildingManager.getStacksUnderConstruction();
 
         int output = game.getConstructionOutput();
@@ -5017,10 +5075,10 @@ public class UserInterface extends Application {
         // (sectors.Construction, THE CREWS THE WORK NEEDS).
         ham.citybuildersim.sectors.Construction builders = game.getSectors().construction();
         long postsStanding = builders.getPostsStanding(), postsKept = builders.getPostsOffered();
-        Label capacity = monoLabel("Output: " + formatter.format(output) + " pts/mo"
+        Label capacity = Kept.scope("capacity", () -> monoLabel("Output: " + formatter.format(output) + " pts/mo"
                 + (postsStanding > 0 && postsKept < postsStanding
                         ? " (crews kept on: " + formatter.format(postsKept) + " of " + formatter.format(postsStanding) + " posts)"
-                        : ""));
+                        : "")));
         capacity.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
         // Wrapped, not cut (0.7.20): the panel is narrower than these lines.
         capacity.setWrapText(true);
@@ -5028,43 +5086,86 @@ public class UserInterface extends Application {
         // Its full height, or the panel squeezes it back to one cut line once
         // the build log below needs the room (0.7.20, seen on the PC at month 5).
         capacity.setMinHeight(Region.USE_PREF_SIZE);
-        constructionPanel.getChildren().add(capacity);
+        into.add(capacity);
 
         if (sites.isEmpty()) {
             ConstructionControl idleHand = buildingManager.getControl();
             boolean handOnIt = !idleHand.demolitions().isEmpty() || !idleHand.shells().isEmpty();
-            Label idle = new Label(handOnIt
-                    ? String.format("Nothing being built. %d demolition(s) on site, %d shell(s) stopped.",
-                            idleHand.demolitions().size(), idleHand.shells().size())
-                    : "Nothing being built.");
-            idle.setWrapText(true);
-            idle.setMaxWidth(PANEL_TEXT);
-            idle.setStyle("-fx-text-fill: " + Palette.TEXT_FAINT + "; -fx-padding: 8 0 0 0;");
-            if (handOnIt) {
-                idle.setStyle(idle.getStyle() + " -fx-cursor: hand;");
-                idle.setOnMouseClicked(e -> constructionScreen.show());
-            }
-            constructionPanel.getChildren().add(idle);
-            addBuildLog();
-            addDemolitionLog();
+            Label idle = Kept.scope("idle", () -> {
+                Label l = Kept.label(handOnIt
+                        ? String.format("Nothing being built. %d demolition(s) on site, %d shell(s) stopped.",
+                                idleHand.demolitions().size(), idleHand.shells().size())
+                        : "Nothing being built.");
+                l.setWrapText(true);
+                l.setMaxWidth(PANEL_TEXT);
+                l.setStyle("-fx-text-fill: " + Palette.TEXT_FAINT + "; -fx-padding: 8 0 0 0;");
+                if (handOnIt) {
+                    l.setStyle(l.getStyle() + " -fx-cursor: hand;");
+                    l.setOnMouseClicked(e -> constructionScreen.show());
+                }
+                return l;
+            });
+            into.add(idle);
+            addBuildLog(into);
+            addDemolitionLog(into);
             return;
         }
 
-        Label split = monoLabel(siteCount + " site(s), " + formatter.format(buildingsOnSite)
-                + " building(s): " + formatter.format(forSites) + " after repairs, crews by what each building can use");
+        final int sitesOnShow = siteCount, onSite = buildingsOnSite;
+        Label split = Kept.scope("split", () -> monoLabel(sitesOnShow + " site(s), " + formatter.format(onSite)
+                + " building(s): " + formatter.format(forSites) + " after repairs, crews by what each building can use"));
         split.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
         split.setWrapText(true);
         split.setMaxWidth(PANEL_TEXT);
         split.setMinHeight(Region.USE_PREF_SIZE);
-        constructionPanel.getChildren().add(split);
+        into.add(split);
 
-        VBox list = new VBox(12);
+        // The sites, their hand and their scroller: a scope, so the idle line and this do not trade nodes.
+        Kept.scope("sites", () -> constructionSites(into, buildingManager, sites, forSites));
+        addBuildLog(into);
+        addDemolitionLog(into);
+    }
+
+    private void constructionSites(List<javafx.scene.Node> into, BuildingManager buildingManager,
+                                   List<BuildingsStacks> sites, int forSites) {
+        VBox list = Kept.column(12);
         list.setStyle("-fx-padding: 10 0 0 0;");
 
         // This month's crews, site by site, as the month will apply them (0.7.22).
         BuildingManager.Plan sitePlan = buildingManager.plan(forSites);
 
         for (BuildingsStacks site : sites) {
+            // Keyed by the building it shows: a site that finishes takes its nodes with it, the others keep theirs.
+            list.getChildren().add(Kept.scope("site:" + ConstructionControl.keyOf(site.getBuilding()),
+                    () -> siteRow(site, sitePlan, forSites)));
+        }
+
+        // ...and the player's own hand on the queue, in a line (0.7.22): the
+        // demolitions on site and the shells stopped, which the page lists.
+        ConstructionControl control = buildingManager.getControl();
+        if (!control.demolitions().isEmpty() || !control.shells().isEmpty()) {
+            list.getChildren().add(Kept.scope("hand", () -> {
+                Label hand = monoLabel(String.format("%d demolition(s) on site, %d shell(s) stopped",
+                        control.demolitions().size(), control.shells().size()));
+                hand.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px; -fx-text-fill: "
+                        + Palette.TEXT_MUTED + "; -fx-cursor: hand;");
+                hand.setWrapText(true);
+                hand.setMaxWidth(PANEL_TEXT);
+                hand.setOnMouseClicked(e -> constructionScreen.show());
+                return hand;
+            }));
+        }
+
+        javafx.scene.control.ScrollPane scroller = keptPanelScroller("construction", list);
+        scroller.setFitToWidth(true);
+        scroller.setPrefHeight(560);
+        scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
+        into.add(scroller);
+    }
+
+    /** One site's row: its name, its bar, and its months. */
+    private VBox siteRow(BuildingsStacks site, BuildingManager.Plan sitePlan, int forSites) {
+        {
 
             int remaining = site.getUnderConstruction();
             int built = site.getQuantity();
@@ -5076,7 +5177,7 @@ public class UserInterface extends Application {
                     ? Math.max(0, Math.min(progress / pointsEach, 1.0))
                     : 0;
 
-            Label name = new Label(site.getName());
+            Label name = Kept.label(site.getName());
             // The site's name in the text's colour, its bar in the building
             // area's (the stylesheet's progress bar) since 0.7.21 - and a
             // click opens the construction page at it (0.7.22).
@@ -5085,7 +5186,8 @@ public class UserInterface extends Application {
             String siteKey = ConstructionControl.keyOf(site.getBuilding());
             name.setOnMouseClicked(e -> constructionScreen.showSite(siteKey));
 
-            ProgressBar bar = new ProgressBar(fraction);
+            ProgressBar bar = Kept.of(ProgressBar.class, ProgressBar::new);
+            bar.setProgress(fraction);
             bar.setPrefWidth(240);
 
             // Stalled when the site gets nothing this month - this month's
@@ -5128,38 +5230,15 @@ public class UserInterface extends Application {
             detail.setWrapText(true);
             detail.setMaxWidth(PANEL_TEXT);
 
-            VBox row = new VBox(3);
+            VBox row = Kept.column(3);
             row.getChildren().addAll(name, bar, detail);
-            list.getChildren().add(row);
+            return row;
         }
-
-        // ...and the player's own hand on the queue, in a line (0.7.22): the
-        // demolitions on site and the shells stopped, which the page lists.
-        ConstructionControl control = buildingManager.getControl();
-        if (!control.demolitions().isEmpty() || !control.shells().isEmpty()) {
-            Label hand = monoLabel(String.format("%d demolition(s) on site, %d shell(s) stopped",
-                    control.demolitions().size(), control.shells().size()));
-            hand.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px; -fx-text-fill: "
-                    + Palette.TEXT_MUTED + "; -fx-cursor: hand;");
-            hand.setWrapText(true);
-            hand.setMaxWidth(PANEL_TEXT);
-            hand.setOnMouseClicked(e -> constructionScreen.show());
-            list.getChildren().add(hand);
-        }
-
-        javafx.scene.control.ScrollPane scroller = keptPanelScroller("construction", list);
-        scroller.setFitToWidth(true);
-        scroller.setPrefHeight(560);
-        scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
-        constructionPanel.getChildren().add(scroller);
-
-        addBuildLog();
-        addDemolitionLog();
     }
 
     /** A small square in an area's colour, before a heading (0.7.21): the pages' titles' swatch, smaller. */
     static Region areaSwatch(String colour, double size) {
-        Region swatch = new Region();
+        Region swatch = Kept.region();
         swatch.setMinSize(size, size);
         swatch.setPrefSize(size, size);
         swatch.setMaxSize(size, size);
@@ -5180,7 +5259,7 @@ public class UserInterface extends Application {
      * otherwise has to reconstruct what happened from a building count that went
      * down while they were not looking.
      */
-    private void addDemolitionLog() {
+    private void addDemolitionLog(List<javafx.scene.Node> into) {
 
         java.util.List<DemolitionLog.Entry> lost =
                 game.getDemolitionLog().recent(game.getMonth());
@@ -5189,16 +5268,21 @@ public class UserInterface extends Application {
             return;
         }
 
-        Label header = new Label("RECENTLY DEMOLISHED");
+        into.add(Kept.scope("demolished", () -> demolishedLog(into, lost)));
+    }
+
+    private javafx.scene.Node demolishedLog(List<javafx.scene.Node> into, java.util.List<DemolitionLog.Entry> lost) {
+        Label header = Kept.label("RECENTLY DEMOLISHED");
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
                 + " -fx-text-fill: " + Palette.BAD + "; -fx-padding: 14 0 2 0;");
-        constructionPanel.getChildren().add(header);
+        into.add(header);
 
-        VBox list = new VBox(6);
+        VBox list = Kept.column(6);
 
         for (DemolitionLog.Entry entry : lost) {
+          list.getChildren().add(Kept.scope("entry", () -> {
 
-            Label what = new Label(String.format("%,d x %s", entry.quantity, entry.building));
+            Label what = Kept.label(String.format("%,d x %s", entry.quantity, entry.building));
             what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Palette.BAD_SOFT + ";");
 
             // Fading with age, so the eye goes to what just happened without the
@@ -5223,16 +5307,17 @@ public class UserInterface extends Application {
             how.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
                     + " -fx-text-fill: " + Palette.TEXT_FAINT + ";");
 
-            VBox row = new VBox(1);
+            VBox row = Kept.column(1);
             row.getChildren().addAll(what, when, how);
-            list.getChildren().add(row);
+            return row;
+          }));
         }
 
         javafx.scene.control.ScrollPane scroller = keptPanelScroller("demolition", list);
         scroller.setFitToWidth(true);
         scroller.setPrefHeight(Math.min(190, 62 * lost.size() + 8));
         scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
-        constructionPanel.getChildren().add(scroller);
+        return scroller;
     }
 
     /**
@@ -5247,7 +5332,7 @@ public class UserInterface extends Application {
      * more expected one, so it reads in the order the eye already travels -
      * under construction, then opened, then lost.
      */
-    private void addBuildLog() {
+    private void addBuildLog(List<javafx.scene.Node> into) {
 
         java.util.List<BuildLog.Entry> built =
                 game.getBuildLog().recent(game.getMonth());
@@ -5258,16 +5343,21 @@ public class UserInterface extends Application {
 
         // In the building colour since 0.7.21: a building opening is a log
         // entry, not a verdict, and green is for a verdict.
-        Label header = new Label("RECENTLY BUILT");
+        into.add(Kept.scope("built", () -> builtLog(into, built)));
+    }
+
+    private javafx.scene.Node builtLog(List<javafx.scene.Node> into, java.util.List<BuildLog.Entry> built) {
+        Label header = Kept.label("RECENTLY BUILT");
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
                 + " -fx-text-fill: " + Palette.BUILDING + "; -fx-padding: 14 0 2 0;");
-        constructionPanel.getChildren().add(header);
+        into.add(header);
 
-        VBox list = new VBox(6);
+        VBox list = Kept.column(6);
 
         for (BuildLog.Entry entry : built) {
+          list.getChildren().add(Kept.scope("entry", () -> {
 
-            Label what = new Label(String.format("%,d x %s", entry.quantity, entry.building));
+            Label what = Kept.label(String.format("%,d x %s", entry.quantity, entry.building));
             what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Palette.TEXT_HEAD + ";");
 
             // Fading with age, same as demolitions, so the eye goes to what just
@@ -5280,16 +5370,17 @@ public class UserInterface extends Application {
             when.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
                     + " -fx-text-fill: " + shade + ";");
 
-            VBox row = new VBox(1);
+            VBox row = Kept.column(1);
             row.getChildren().addAll(what, when);
-            list.getChildren().add(row);
+            return row;
+          }));
         }
 
         javafx.scene.control.ScrollPane scroller = keptPanelScroller("build", list);
         scroller.setFitToWidth(true);
         scroller.setPrefHeight(Math.min(190, 44 * built.size() + 8));
         scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
-        constructionPanel.getChildren().add(scroller);
+        return scroller;
     }
 
 
@@ -5803,20 +5894,29 @@ public class UserInterface extends Application {
        ===================================================================== */
 
     /** See refreshInbox: sized to the notice bodies, not to the corner. */
-    private static final double INBOX_WIDTH = 530;
+    static final double INBOX_WIDTH = 530;
 
     /** Whether the list is dropped down. Not saved: it is about this window. */
-    private boolean inboxOpen = false;
+    boolean inboxOpen = false;
 
     /** Which notice's body is unfolded, by key. Empty for none. */
-    private String inboxExpanded = "";
+    String inboxExpanded = "";
 
-    private void refreshInbox() {
+    /**
+     * The envelope, the toasts and the list under the envelope when it is open. The list is drawn kept
+     * (UP2, listPool): each notice a scope keyed by its key, the unfolded one's body in a scope of its
+     * own. Closed, it draws nothing, and its nodes are let go.
+     */
+    void refreshInbox() {
 
         refreshInboxButton();
+        refreshInboxList();
+    }
+
+    /** ...the part of it under the envelope: the toasts and the list. */
+    void refreshInboxList() {
         if (inboxCorner == null) return;
         showIf(inboxCorner, !isGameMenu(currentScreen) && inboxOpen);
-        inboxCorner.getChildren().clear();
         inboxCorner.setAlignment(Pos.TOP_RIGHT);
 
         /* ----------------- what an urgent notice gets -----------------
@@ -5827,10 +5927,18 @@ public class UserInterface extends Application {
          */
         refreshToasts();
 
-        if (!inboxOpen) return;
+        if (listPool.holds()) dropFocusIn(inboxCorner);
+        Kept.draw(listPool, this::drawInboxList);
+    }
+
+    private void drawInboxList() {
+        if (!inboxOpen) {
+            inboxCorner.getChildren().clear();
+            return;
+        }
 
         /* --------------------------- the list --------------------------- */
-        VBox list = new VBox(3);
+        VBox list = Kept.column(3);
         list.setStyle("-fx-background-color: " + Palette.FIELD + "; -fx-background-radius: 4;"
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 4;"
                 + " -fx-padding: 8 8 8 8;");
@@ -5853,27 +5961,30 @@ public class UserInterface extends Application {
         list.setPrefWidth(INBOX_WIDTH);
         list.setMaxWidth(INBOX_WIDTH);
 
-        Label heading = new Label("INBOX");
+        Label heading = Kept.label("INBOX");
         heading.setStyle("-fx-font-size: 11px; -fx-font-weight: bold;"
                 + " -fx-text-fill: " + Palette.TEXT_MUTED + "; -fx-padding: 0 0 4 2;");
         list.getChildren().add(heading);
 
         if (game.getInbox().size() == 0) {
-            Label none = new Label("Nothing has gone wrong yet.");
-            none.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Palette.TEXT_FAINT + "; -fx-padding: 2 0 2 2;");
-            list.getChildren().add(none);
+            list.getChildren().add(Kept.scope("none", () -> {
+                Label none = Kept.label("Nothing has gone wrong yet.");
+                none.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Palette.TEXT_FAINT + "; -fx-padding: 2 0 2 2;");
+                return none;
+            }));
         }
 
         for (Notice notice : game.getInbox().newestFirst()) {
-            list.getChildren().add(noticeRow(notice));
+            list.getChildren().add(Kept.scope("notice:" + notice.getKey(), () -> noticeRow(notice)));
         }
 
-        javafx.scene.control.ScrollPane scroller =
-                new javafx.scene.control.ScrollPane(list);
+        javafx.scene.control.ScrollPane scroller = Kept.of(javafx.scene.control.ScrollPane.class,
+                javafx.scene.control.ScrollPane::new);
+        if (scroller.getContent() != list) scroller.setContent(list);
         scroller.setFitToWidth(true);
         scroller.setMaxHeight(460);
         scroller.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
-        inboxCorner.getChildren().add(scroller);
+        Kept.set(inboxCorner.getChildren(), List.of(scroller));
     }
 
     /* ------------------------- the envelope -------------------------
@@ -5958,21 +6069,21 @@ public class UserInterface extends Application {
         boolean open = notice.getKey().equals(inboxExpanded);
         boolean done = notice.isResolved();
 
-        Label title = new Label((done ? "✓  " : notice.isRead() ? "     " : "[!]  ")
+        Label title = Kept.label((done ? "✓  " : notice.isRead() ? "     " : "[!]  ")
                 + notice.getTitle());
         title.setWrapText(true);
         title.setMaxWidth(INBOX_WIDTH - 40);
         title.setStyle("-fx-font-size: 12.5px; -fx-font-weight: bold; -fx-text-fill: "
                 + (done ? Palette.TEXT_SPENT : notice.isRead() ? Palette.TEXT_BODY : Palette.BAD_SOFT) + ";");
 
-        Label when = new Label(done
+        Label when = Kept.label(done
                 ? CityCalendar.format(notice.getRaised()) + "  ·  settled "
                         + CityCalendar.format(notice.getResolved())
                 : CityCalendar.format(notice.getRaised()));
         when.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
                 + " -fx-text-fill: " + Palette.TEXT_SPENT + ";");
 
-        VBox head = new VBox(1, title, when);
+        VBox head = Kept.column(1, title, when);
         head.setStyle("-fx-padding: 5 4 5 4; -fx-cursor: hand;"
                 + (open ? " -fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: 3;" : ""));
         head.setOnMouseClicked(e -> {
@@ -5981,34 +6092,42 @@ public class UserInterface extends Application {
             refreshInbox();
         });
 
-        VBox row = new VBox(0, head);
+        VBox row = Kept.column(0, head);
         row.setStyle(done ? "" : "-fx-border-color: "
                 + (notice.isRead() ? Palette.EDGE : Palette.ALERT_EDGE)
                 + "; -fx-border-width: 0 0 0 2;");
 
         if (!open) return row;
 
-        VBox body = new VBox(0);
-        body.setStyle("-fx-padding: 2 4 8 10;");
-        for (String line : notice.getBody()) {
-            Label text = new Label(line.isEmpty() ? " " : line);
-            text.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11.5px;"
-                    + " -fx-text-fill: " + (done ? Palette.TEXT_SPENT : Palette.TEXT_BODY) + ";");
-            body.getChildren().add(text);
-        }
+        // The unfolded body in a scope of its own: folded, its lines and its button are let go.
+        row.getChildren().add(Kept.scope("body", () -> {
+            VBox body = Kept.column(0);
+            body.setStyle("-fx-padding: 2 4 8 10;");
+            for (String line : notice.getBody()) {
+                Label text = Kept.scope("line", () -> {
+                    Label l = Kept.label(line.isEmpty() ? " " : line);
+                    l.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11.5px;"
+                            + " -fx-text-fill: " + (done ? Palette.TEXT_SPENT : Palette.TEXT_BODY) + ";");
+                    return l;
+                });
+                body.getChildren().add(text);
+            }
 
-        // A settled notice gets no button. There is nothing to deal with, and
-        // an enabled button that fixes something already fixed is a lie.
-        if (!done) {
-            Button act = new Button(dealLabel(notice.getKey()));
-            act.setStyle("-fx-font-size: 11px; -fx-background-color: " + Palette.CONFIRM + ";"
-                    + " -fx-text-fill: white;");
-            act.setOnAction(e -> deal(notice));
-            VBox.setMargin(act, new javafx.geometry.Insets(6, 0, 0, 0));
-            body.getChildren().add(act);
-        }
-
-        row.getChildren().add(body);
+            // A settled notice gets no button. There is nothing to deal with, and
+            // an enabled button that fixes something already fixed is a lie.
+            if (!done) {
+                body.getChildren().add(Kept.scope("act", () -> {
+                    Button act = Kept.of(Button.class, Button::new);
+                    act.setText(dealLabel(notice.getKey()));
+                    act.setStyle("-fx-font-size: 11px; -fx-background-color: " + Palette.CONFIRM + ";"
+                            + " -fx-text-fill: white;");
+                    act.setOnAction(e -> deal(notice));
+                    VBox.setMargin(act, new javafx.geometry.Insets(6, 0, 0, 0));
+                    return act;
+                }));
+            }
+            return body;
+        }));
         return row;
     }
 

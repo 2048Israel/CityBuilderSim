@@ -281,7 +281,7 @@ public final class Pieces {
     }
 
     public static Label monoLabel(String text) {
-        Label label = new Label(text);
+        Label label = Kept.label(text);
         label.setStyle("-fx-font-family: " + Palette.mono() + ";");
         return label;
     }
