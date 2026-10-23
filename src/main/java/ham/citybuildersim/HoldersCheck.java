@@ -319,26 +319,35 @@ public class HoldersCheck {
         double hhFace = bond.householdPrincipal(), cbFace = bond.centralBankPrincipal();
         double bFace = bond.bankPrincipal(), bUnearned = bond.unaccretedOn(bFace);
         city.setCashForTest(city.getCash() + 2 * principal);
+        // CD4: the buyback is a reverse auction, each holder paid the price of its own slices, not a pro rata share of one
+        // price; the quote struck before the buy says what each is paid and the face each sells (the premise stands: it pays
+        // every holder what it is owed, and the central bank, which does not sell, is owed nothing - D18).
+        Buyback.Result deal = city.quoteBuyback(bond, principal, Double.NaN);
         double price = city.quoteRepurchase(bond);
         double sBefore = savings(city), bCash = bank.getCash(), bEquity = bank.equity();
         double cbHeld = cb.getPaperHeld(), m0 = cb.m0();
         double paidBack = city.repurchaseDebt(bond);
         close("fixture: the buyback was at the quoted price", paidBack, price, 1e-9);
+        close("fixture: the quote took the households' and the bank's whole holding, and not the central bank's",
+                deal.householdFace() + deal.bankFace(), hhFace + bFace, 1e-6);
         close("the households' share of the price went to their savings", savings(city) - sBefore,
-                price * hhFace / principal, 1e-6);
-        close("...and their paper is gone with the bond", hb.totalPaper(), 0, 1e-9);
-        close("the bank's share to its cash", bank.getCash() - bCash, price * bFace / principal, 1e-6);
+                deal.householdPaid(), 1e-6);   // CD4: their own slices' prices, not price x face / principal
+        close("...and their paper is gone", hb.totalPaper(), 0, 1e-9);
+        close("the bank's share to its cash", bank.getCash() - bCash, deal.bankPaid(), 1e-6);   // CD4: its own slices' prices
         close("...its gain against what it carried its face at",
-                bank.equity() - bEquity, price * bFace / principal - (bFace - bUnearned), 1e-6);
-        close("the central bank's face came off its book", cbHeld - cb.getPaperHeld(), cbFace, 1e-9);
-        close("...and its share of the price waits for the month to destroy it", cb.getRedemptionDue(),
-                price * cbFace / principal, 1e-6);
-        close("...held in the treasury's pool until then, with the households'",
-                city.getBuybackUnsettled(), price * (hhFace + cbFace) / principal, 1e-6);
+                bank.equity() - bEquity, deal.bankPaid() - (bFace - bUnearned), 1e-6);
+        // CD4: the central bank does not sell (D18): its face stays on its book and on the piece, and it is owed no price.
+        close("the central bank's face stays on its book", cbHeld - cb.getPaperHeld(), 0, 1e-9);
+        close("...and on the piece, which stays on the books carrying it", bond.centralBankPrincipal(), cbFace, 0);
+        assertTrue("...the piece is still there, at the central bank's face",
+                city.getDebtManager().getDebt().contains(bond) && Math.abs(bond.getOustandingPrincipal() - cbFace) <= 1e-6);
+        close("...and no price waits for the month to destroy", cb.getRedemptionDue(), 0, 0);
+        close("the treasury's pool carries only the households' share of the price until the month declares it leaving",
+                city.getBuybackUnsettled(), deal.householdPaid() + deal.worldPaid(), 1e-6);   // CD4: no central bank share
         MoneyAudit.Result after = play(city);
         close("the next month declares what the households were paid", city.getBuybackToHouseholds(),
-                price * hhFace / principal, 1e-6);
-        close("...and the central bank destroys its share", cb.getBoughtBack(), price * cbFace / principal, 1e-6);
+                deal.householdPaid(), 1e-6);   // CD4: their own slices' prices
+        close("...and the central bank destroys nothing", cb.getBoughtBack(), 0, 1e-9);   // CD4: it was not paid (D18)
         close("...so nothing is carried any more", city.getBuybackUnsettled(), 0, 1e-9);
         assertTrue("the audit closes on it", Math.abs(after.residual) <= MoneyAudit.tolerance(after.moved()));
         assertTrue("...and M0 moved by exactly the money made, the redemption among it",
@@ -986,11 +995,14 @@ public class HoldersCheck {
         assertTrue("fixture: the businesses still hold some of the thirty-year bond", firmFace > 0);
         city.setCashForTest(city.getCash() + 2 * principal2);
         double price2 = city.quoteRepurchase(bond2);
+        // CD4: each holder is paid the price of its own slices (the quote struck before the buy), not price x face / principal.
+        Buyback.Result deal2 = city.quoteBuyback(bond2, principal2, Double.NaN);
         double[] hb4 = holdings(city), tl4 = tills(city);
         double tot4 = outward.totalPaper(), bankCash4 = bank.getCash();
         double paid2 = city.repurchaseDebt(bond2);
         near("fixture: the buyback was at the quoted price", paid2, price2);
-        double firmPrice = price2 * firmFace / principal2;
+        near("fixture: the quote took the businesses' whole holding", deal2.firmFace(), firmFace);
+        double firmPrice = deal2.firmPaid();
         double[] ha = holdings(city), ta = tills(city);
         boolean buybackTills = true, buybackPaper = true;
         for (int i = 0; i < n; i++) {
@@ -999,7 +1011,7 @@ public class HoldersCheck {
         }
         assertTrue("the businesses' share of the price went into their tills, in proportion to the paper each holds", buybackTills);
         assertTrue("...and their paper is down by the face they held of it, in the same proportion", buybackPaper);
-        near("the bank's share of the price went to its cash", bank.getCash() - bankCash4, price2 * bankFace2 / principal2);
+        near("the bank's share of the price went to its cash", bank.getCash() - bankCash4, deal2.bankPaid());   // CD4: its own slices' prices
         assertTrue("the two books still agree", firmsAgree(city));
         MoneyAudit.Result buyMonth = play(city);
         assertTrue("the audit closes on the month after: the businesses are paid between two pools, nothing is carried",
@@ -1307,19 +1319,22 @@ public class HoldersCheck {
         double heldBefore = hot.getPaper();
         city.setCashForTest(city.getCash() + 2 * principal);
         double price = city.quoteRepurchase(bond);
+        // CD4: each holder is paid the price of its own slices (the quote struck before the buy), not price x face / principal;
+        // the central bank does not sell (D18), so nothing is carried for it.
+        Buyback.Result deal = city.quoteBuyback(bond, principal, Double.NaN);
         double carried = city.getBuybackUnsettled();
         double paid = city.repurchaseDebt(bond);
         near("fixture: the buyback was at the quoted price", paid, price);
         near("the world's paper is down by the face it held of it", heldBefore - hot.getPaper(), worldFace);
+        near("...and it sold exactly that face", deal.worldFace(), worldFace);
         near("...and the treasury's pool carries its share of the price until the month declares it leaving",
-                city.getBuybackUnsettled() - carried, price * worldFace / principal
-                        + price * bond.householdPrincipal() / principal + price * bond.centralBankPrincipal() / principal);
+                city.getBuybackUnsettled() - carried, deal.worldPaid() + deal.householdPaid());   // CD4: own slices' prices, no central bank share
         assertTrue("the two books still agree", worldAgrees(city));
         MoneyAudit.Result buyMonth = play(city);
         assertTrue("the month after, the audit closes: the world's share left the country, declared as a financial outflow",
                 Math.abs(buyMonth.residual) <= MoneyAudit.tolerance(buyMonth.moved()));
         assertTrue("...and the financial account carries at least that share",
-                buyMonth.financialOut >= price * worldFace / principal - CENT);
+                buyMonth.financialOut >= deal.worldPaid() - CENT);   // CD4: its own slices' prices
 
         /* ---- the principal, at maturity ---- */
         out.println("   -- the principal, at maturity: a two-year bond held to the end");

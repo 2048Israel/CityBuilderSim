@@ -489,8 +489,11 @@ public class CentralBankCheck {
         city.setCashForTest(2 * principal);
         double bankCash = bank.getCash(), bankBook = bank.getCityBook(), bankEquity = bank.equity();
         double price = city.quoteRepurchase(bond);
+        // CD4: the bank is paid the price of its own slices (the quote struck before the buy; it offers at fair, D34),
+        // not a pro rata share of one price over every holder's face.
+        Buyback.Result deal = city.quoteBuyback(bond, principal, Double.NaN);
         double paid = city.repurchaseDebt(bond);
-        double bankPrice = paid * bankFace / principal;
+        double bankPrice = deal.bankPaid();
         close("a buyback: the bank's share of the price goes to its cash", bank.getCash() - bankCash,
                 bankPrice, 1e-6);
         close("...its book drops by its share of the principal", bankBook - bank.getCityBook(),
