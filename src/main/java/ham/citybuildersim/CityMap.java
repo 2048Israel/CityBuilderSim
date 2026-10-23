@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -210,8 +211,8 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 11 since FX7 (0.8.24), each district's journal of its runs after the logs (THE RUNS DATED: a record for each plot of its own box whose kind of fixed ground a month changed, its month, plot and the kind before and after; a sidecar of FORMAT 10 or older has none, and its plans draw today's runs throughout, as before); 10 since FX5 (0.8.18, its slice Y1), each railway yard's box in the runs followed by the footprint it was laid for (CityRuns.yardAsked(): a yard is laid YARD_LONG along its line or shorter where the ground allows, so its box is no longer the size it was asked for; a sidecar of FORMAT 9 or older reads each yard's footprint as its box's own width and height, as it was laid then); 9 since CL3 (0.8.14), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
-    static final int FORMAT = 11;
+    /** The sidecar's format: 12 since CL5, each net of the runs' pieces of ground after the home piece's (CityRuns.Net.pieceHubs: a count and each hub) and each corridor's piece and role (a SPINE, a CROSSING or a LINK; a sidecar of FORMAT 11 or older reads one piece, the spine corridors 0 and 1, every other corridor a CROSSING); 11 since FX7 (0.8.24), each district's journal of its runs after the logs (THE RUNS DATED: a record for each plot of its own box whose kind of fixed ground a month changed, its month, plot and the kind before and after; a sidecar of FORMAT 10 or older has none, and its plans draw today's runs throughout, as before); 10 since FX5 (0.8.18, its slice Y1), each railway yard's box in the runs followed by the footprint it was laid for (CityRuns.yardAsked(): a yard is laid YARD_LONG along its line or shorter where the ground allows, so its box is no longer the size it was asked for; a sidecar of FORMAT 9 or older reads each yard's footprint as its box's own width and height, as it was laid then); 9 since CL3 (0.8.14), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 12;
 
     /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
     static final int OLDEST_READ = 4;
@@ -257,6 +258,9 @@ public final class CityMap {
         long version;
         /** Its place in the map's order, nearest first. */
         int index;
+        /** (CL5) What the map's pieces last credited it with: the pieces' build it was weighed in, its piece then, its built cells and the version they were read at (MapPieces.weigh()). */
+        long weighedBuild = Long.MIN_VALUE, weighedAt = Long.MIN_VALUE, weighedCells;
+        int weighedPiece = -1;
 
         /**
          * ITS LOG (batch CL3): the changes to its counts, month by month, in the order they came - a record {month, type,
@@ -3649,6 +3653,9 @@ public final class CityMap {
             if (a.steps <= 0) continue;
             // The railway's branches and sidings end at a yard and a works, never at the world (FR7 slice 3): only its spine meets it.
             if (n.kind == CityRuns.RAILWAY && a.corridor >= CityRuns.BRANCH) continue;
+            // The world line leaves from the home piece's net (CL5): another piece's arms reach no gateway of their own, and walking out from each of
+            // a city of billions' hundreds of nets' ends every month tripled MapCheck 18's L0 screen.
+            if (n.kind == CityRuns.HIGHWAYS && CityRuns.pieceOf(n, a) != 0) continue;
             int dx = CityRuns.DX[a.head], dy = CityRuns.DY[a.head];
             long ex = 0, ey = 0;
             boolean edge = false;
@@ -4411,6 +4418,487 @@ public final class CityMap {
     /** The ground the runs read: a harness's, to lay runs of its own on the city's ground. */
     CityRuns.Ground runGround() { return runGround; }
 
+    /* =====================================================================
+       THE CITY'S GROUND IN PIECES (batch CL5, slice B)
+
+       The runs lay a highway net on each piece of the city's owned dry
+       ground that the water (or the city's own edge) parts and that holds
+       buildings (CityRuns.Pieces, layHighways()); this is the map's answer to
+       what the pieces are. The ground is read at TILES (World.TILE, 32
+       plots): a tile is LAND when one of its four samples - the plots 8 and
+       24 in, each way, the centres of its quarters - is owned, dry ground the
+       works on the shore do not block (RunGround's rule; IslandProbe's, which
+       measured Jerus's cities), and a piece is a set of land tiles joined
+       eight ways. Piece 0 is the HOME piece, the founding site's tile's (else
+       the nearest within PIECE_HOME_REACH tiles, ring by ring; a vacant slot
+       when there is none); the others follow in the row-major order of their
+       first tile, so the same ground always gives the same indices.
+
+       WORKED OUT AGAIN WHEN THE GROUND MOVES, never every month: the runs'
+       ground version (a purchase, the centre, a work on the shore) is what it
+       is kept against. A purchase only ADDS owned ground, so the tiles of the
+       new rectangles alone are read and joined to the pieces they touch
+       (union-find; the first time, a restatement or a work on the shore reads
+       the whole box the same way); a tile's terrain verdict, the only
+       expensive thing, is kept for ever (the terrain does not change). A tile
+       is a label in a chunk of 64 x 64 tiles, a chunk only where there is
+       land, so a city of billions (14,000 districts, 900,000 tiles) keeps
+       about 4 MB and a box that spans the world no more than its land.
+
+       WEIGHT of a piece: the plots its districts' BUILDINGS stand on -
+       District.usedCells less the cells of the types that are not buildings
+       drawn on a district's ground (roads, highways, track and the works at
+       sea) - each district credited whole to the piece holding most of its
+       8 x 8 tiles' land. Taken at the month's first ask, so a city of one
+       piece (which never asks) pays nothing for it. HUB of a piece: among its
+       tiles the nearest the founding site's tile (ties: the northern, then
+       the western) whose highway line crossing is owned dry ground, found on
+       the first ask and kept until the ground moves.
+       ===================================================================== */
+
+    /** Tiles a side of a chunk of the pieces' tables (CL5): 2^6 = 64, a table of 4,096 per chunk, and a district (8 tiles) is never split by one. */
+    static final int PIECE_CHUNK_SHIFT = 6;
+
+    private static final long PIECE_CHUNK_MASK = (1L << PIECE_CHUNK_SHIFT) - 1;
+
+    /** Where in a tile its four samples lie (CL5; IslandProbe's tile rule): the first 8 plots in and each of the others 16 further, the centres of its four quarters. */
+    static final int PIECE_SAMPLE_AT = 8, PIECE_SAMPLE_EVERY = 16;
+
+    /** How many tiles from the founding site's tile the home piece is looked for, ring by ring, when its own tile is not land (CL5). */
+    static final int PIECE_HOME_REACH = 8;
+
+    /** The city's ground in pieces (CL5): what CityRuns.layTo() is handed so that a net is laid on every piece of ground the city builds on. */
+    final class MapPieces implements CityRuns.Pieces {
+        private final Map<Long, byte[]> terrain = new HashMap<>();
+        private final Map<Long, int[]> labels = new HashMap<>();
+        private final HashSet<Long> blocked = new HashSet<>();
+        private World world;
+        private int[] lastChunk;
+        private long lastKey = Long.MIN_VALUE;
+        private int[] parent = new int[64], size = new int[64];
+        private long[] first = new long[64];
+        private int nLabels;
+
+        private boolean built;
+        private long builtVer;
+        private CityLand seenLand;
+        private CityShore seenShore;
+        private long seenShoreVer, seenCentre;
+        private int seenPurchases;
+
+        private int count;
+        private int[] pieceOfLabel = new int[0];
+        private long[] tilesOf = new long[0];
+        private long[][] hubs = new long[0][];
+        private boolean[] hubDone = new boolean[0];
+        private long buildId;
+
+        private long weighedBuild = Long.MIN_VALUE;
+        private long[] weights = new long[0];
+        private boolean weightsValid;
+        private int[] undrawn, undrawnCells;
+
+        /** How many times the whole ground was read (the first time, a restatement, a work on the shore), how many times only a purchase's was, and the last of either in ms: what a harness times. */
+        int floods, updates;
+        double lastMs;
+
+        /** A month's runs are about to ask: the weights are worked out again at the first ask. */
+        void begin() {
+            weightsValid = false;
+        }
+
+        @Override public int count() {
+            ensure();
+            return count;
+        }
+
+        @Override public int pieceOf(long x, long y) {
+            ensure();
+            if (x < 0 || y < 0) return -1;
+            int l = labAt(x >> 5, y >> 5);
+            return l < 0 ? -1 : pieceOfLabel[l];
+        }
+
+        @Override public long weight(int p) {
+            ensure();
+            if (p < 0 || p >= count) return 0;
+            if (!weightsValid) weigh();
+            return weights[p];
+        }
+
+        @Override public long[] hub(int p) {
+            ensure();
+            if (p < 0 || p >= count) return null;
+            if (!hubDone[p]) {
+                hubs[p] = findHub(p);
+                hubDone[p] = true;
+            }
+            return hubs[p];
+        }
+
+        /** The land tiles piece p holds. */
+        long tiles(int p) {
+            ensure();
+            return p >= 0 && p < count ? tilesOf[p] : 0;
+        }
+
+        /** The land tiles of every piece. */
+        long landTiles() {
+            ensure();
+            long n = 0;
+            for (long t : tilesOf) n += t;
+            return n;
+        }
+
+        // ----- keeping it against the ground -----
+
+        private void ensure() {
+            long ver = runGround.version();
+            if (built && ver == builtVer) return;
+            long t0 = System.nanoTime();
+            world = World.of(worldKey);
+            List<CityLand.Purchase> bought = land.purchases();
+            long centre = land.centreStamp();
+            // A purchase only adds owned ground; anything else that moves the ground (the land drawn again, another land or shore, a work laid
+            // or taken) is read from the start.
+            boolean more = built && seenLand == land && seenShore == shore && seenShoreVer == shore.version() && seenCentre == centre && bought.size() >= seenPurchases;
+            if (more) {
+                for (int k = seenPurchases; k < bought.size(); k++) {
+                    LandParcel o = bought.get(k).offer();
+                    if (o.getX1() <= o.getX0() || o.getY1() <= o.getY0()) continue;
+                    scan(Math.floorDiv(o.getX0(), World.TILE), Math.floorDiv(o.getY0(), World.TILE),
+                            Math.floorDiv(o.getX1() - 1, World.TILE), Math.floorDiv(o.getY1() - 1, World.TILE));
+                }
+                updates++;
+            } else {
+                labels.clear();
+                lastChunk = null;
+                lastKey = Long.MIN_VALUE;
+                nLabels = 0;
+                indexShore();
+                long[] box = runGround.box();
+                scan(Math.floorDiv(box[0], World.TILE), Math.floorDiv(box[1], World.TILE), Math.floorDiv(box[2], World.TILE), Math.floorDiv(box[3], World.TILE));
+                floods++;
+            }
+            finish();
+            seenLand = land;
+            seenShore = shore;
+            seenShoreVer = shore.version();
+            seenCentre = centre;
+            seenPurchases = bought.size();
+            builtVer = ver;
+            built = true;
+            buildId++;
+            lastMs = (System.nanoTime() - t0) / 1e6;
+        }
+
+        /** The tiles a work on the shore may block a sample of: its box and clear verge and its quay, tile by tile (a few; blocks() is asked of a sample in none of them never). */
+        private void indexShore() {
+            blocked.clear();
+            for (CityShore.Work w : shore.works()) {
+                long x0 = w.x0() - CityShore.CLEAR, y0 = w.y0() - CityShore.CLEAR, x1 = w.x0() + w.w() + CityShore.CLEAR, y1 = w.y0() + w.h() + CityShore.CLEAR;
+                if (w.quay() > 0) {
+                    long[] s = w.shorePlot(), e = w.quayPlot(w.quay());
+                    x0 = Math.min(x0, Math.min(s[0], e[0]) - 1);
+                    y0 = Math.min(y0, Math.min(s[1], e[1]) - 1);
+                    x1 = Math.max(x1, Math.max(s[0], e[0]) + 1);
+                    y1 = Math.max(y1, Math.max(s[1], e[1]) + 1);
+                }
+                for (long ty = Math.floorDiv(y0, World.TILE); ty <= Math.floorDiv(y1, World.TILE); ty++) {
+                    for (long tx = Math.floorDiv(x0, World.TILE); tx <= Math.floorDiv(x1, World.TILE); tx++) blocked.add((ty << 32) | (tx & 0xffffffffL));
+                }
+            }
+        }
+
+        // ----- reading land tiles and joining them -----
+
+        /** Reads the tiles tx0..tx1 by ty0..ty1 (inclusive) that are not yet land, a district's block of them at a time so ground the city owns none of is passed over whole. */
+        private void scan(long tx0, long ty0, long tx1, long ty1) {
+            LandGrid g = land.grid();
+            tx0 = Math.max(0, tx0);
+            ty0 = Math.max(0, ty0);
+            for (long by = ty0 >> 3; by <= ty1 >> 3; by++) {
+                for (long bx = tx0 >> 3; bx <= tx1 >> 3; bx++) {
+                    int c8 = g.cover(8, bx, by);
+                    if (c8 == LandGrid.NONE) continue;
+                    long ya = Math.max(ty0, by << 3), yb = Math.min(ty1, (by << 3) + 7), xa = Math.max(tx0, bx << 3), xb = Math.min(tx1, (bx << 3) + 7);
+                    for (long ty = ya; ty <= yb; ty++) {
+                        for (long tx = xa; tx <= xb; tx++) {
+                            if (labAt(tx, ty) >= 0 || !isLand(g, tx, ty, c8)) continue;
+                            join(tx, ty);
+                        }
+                    }
+                }
+            }
+        }
+
+        /** Whether tile (tx, ty) is land: one of its four samples owned, dry (the terrain's verdict, kept) and not blocked by a work on the shore. `c8` is the cover of its district's block, ALL when the whole block is owned. */
+        private boolean isLand(LandGrid g, long tx, long ty, int c8) {
+            int c = c8 == LandGrid.ALL ? LandGrid.ALL : g.cover(5, tx, ty);
+            if (c == LandGrid.NONE) return false;
+            boolean mayBlock = !blocked.isEmpty() && blocked.contains((ty << 32) | (tx & 0xffffffffL));
+            byte[] t = null;
+            int ti = (int) (((ty & PIECE_CHUNK_MASK) << PIECE_CHUNK_SHIFT) | (tx & PIECE_CHUNK_MASK));
+            for (int s = 0; s < 4; s++) {
+                long x = (tx << 5) + PIECE_SAMPLE_AT + PIECE_SAMPLE_EVERY * (s & 1), y = (ty << 5) + PIECE_SAMPLE_AT + PIECE_SAMPLE_EVERY * (s >> 1);
+                if (c != LandGrid.ALL && g.owner(x, y) < 0) continue;
+                if (mayBlock && shore.blocks(x, y)) continue;
+                if (t == null) t = terrainChunk(tx, ty);
+                int b = t[ti], bit = 1 << s;
+                if ((b & (bit << 4)) == 0) {
+                    b |= (bit << 4) | (World.dry(world.terrainAt(x, y)) ? bit : 0);
+                    t[ti] = (byte) b;
+                }
+                if ((b & bit) != 0) return true;
+            }
+            return false;
+        }
+
+        /** A chunk of the kept terrain verdicts: per tile a byte, the four samples' dryness in its low bits and, in its high bits, which of them have been read. */
+        private byte[] terrainChunk(long tx, long ty) {
+            long key = ((ty >> PIECE_CHUNK_SHIFT) << 32) | ((tx >> PIECE_CHUNK_SHIFT) & 0xffffffffL);
+            byte[] c = terrain.get(key);
+            if (c == null) {
+                c = new byte[1 << (2 * PIECE_CHUNK_SHIFT)];
+                terrain.put(key, c);
+            }
+            return c;
+        }
+
+        /** The label of tile (tx, ty), -1 where it is not land. */
+        private int labAt(long tx, long ty) {
+            if (tx < 0 || ty < 0) return -1;
+            long key = ((ty >> PIECE_CHUNK_SHIFT) << 32) | ((tx >> PIECE_CHUNK_SHIFT) & 0xffffffffL);
+            int[] c;
+            if (key == lastKey) c = lastChunk;
+            else {
+                c = labels.get(key);
+                if (c == null) return -1;
+                lastKey = key;
+                lastChunk = c;
+            }
+            return c[(int) (((ty & PIECE_CHUNK_MASK) << PIECE_CHUNK_SHIFT) | (tx & PIECE_CHUNK_MASK))];
+        }
+
+        private void setLab(long tx, long ty, int l) {
+            long key = ((ty >> PIECE_CHUNK_SHIFT) << 32) | ((tx >> PIECE_CHUNK_SHIFT) & 0xffffffffL);
+            int[] c = labels.get(key);
+            if (c == null) {
+                c = new int[1 << (2 * PIECE_CHUNK_SHIFT)];
+                Arrays.fill(c, -1);
+                labels.put(key, c);
+            }
+            lastKey = key;
+            lastChunk = c;
+            c[(int) (((ty & PIECE_CHUNK_MASK) << PIECE_CHUNK_SHIFT) | (tx & PIECE_CHUNK_MASK))] = l;
+        }
+
+        private int find(int l) {
+            while (parent[l] != l) {
+                parent[l] = parent[parent[l]];
+                l = parent[l];
+            }
+            return l;
+        }
+
+        /** A land tile joins the pieces round it: the labels of its eight neighbours that are land, merged into one (the smaller joined to the larger), or a new label when it has none. */
+        private void join(long tx, long ty) {
+            int r = -1;
+            for (int dj = -1; dj <= 1; dj++) {
+                for (int di = -1; di <= 1; di++) {
+                    if (di == 0 && dj == 0) continue;
+                    int l = labAt(tx + di, ty + dj);
+                    if (l < 0) continue;
+                    int root = find(l);
+                    if (r < 0) r = root;
+                    else if (root != r) {
+                        int big = size[r] >= size[root] ? r : root, small = big == r ? root : r;
+                        parent[small] = big;
+                        size[big] += size[small];
+                        first[big] = Math.min(first[big], first[small]);
+                        r = big;
+                    }
+                }
+            }
+            long key = (ty << 32) | tx;
+            if (r < 0) {
+                if (nLabels == parent.length) {
+                    parent = Arrays.copyOf(parent, nLabels * 2);
+                    size = Arrays.copyOf(size, nLabels * 2);
+                    first = Arrays.copyOf(first, nLabels * 2);
+                }
+                r = nLabels++;
+                parent[r] = r;
+                size[r] = 0;
+                first[r] = key;
+            }
+            size[r]++;
+            first[r] = Math.min(first[r], key);
+            setLab(tx, ty, r);
+        }
+
+        // ----- the pieces: their indices -----
+
+        /** The pieces from the labels: the home piece 0, the others by their first tile (row by row); every label's piece. */
+        private void finish() {
+            int[] root = new int[nLabels];
+            for (int l = 0; l < nLabels; l++) root[l] = find(l);
+            long stx = Math.floorDiv(siteX, World.TILE), sty = Math.floorDiv(siteY, World.TILE);
+            int home = -1;
+            for (int r = 0; r <= PIECE_HOME_REACH && home < 0; r++) {
+                for (int dj = -r; dj <= r && home < 0; dj++) {
+                    for (int di = -r; di <= r && home < 0; di++) {
+                        if (Math.max(Math.abs(di), Math.abs(dj)) != r) continue;
+                        int l = labAt(stx + di, sty + dj);
+                        if (l >= 0) home = root[l];
+                    }
+                }
+            }
+            int others = 0;
+            for (int l = 0; l < nLabels; l++) if (root[l] == l && l != home) others++;
+            long[] firsts = new long[others];
+            int k = 0;
+            for (int l = 0; l < nLabels; l++) if (root[l] == l && l != home) firsts[k++] = first[l];
+            Arrays.sort(firsts);
+            count = 1 + others;
+            pieceOfLabel = new int[nLabels];
+            tilesOf = new long[count];
+            for (int l = 0; l < nLabels; l++) {
+                int p = root[l] == home ? 0 : 1 + Arrays.binarySearch(firsts, first[root[l]]);
+                pieceOfLabel[l] = p;
+                if (root[l] == l) tilesOf[p] += size[l];
+            }
+            hubs = new long[count][];
+            hubDone = new boolean[count];
+            nearestKey = null;
+            weights = new long[count];
+            weightsValid = false;
+        }
+
+        // ----- a piece's hub -----
+
+        /**
+         * The first tile of piece p, nearest the founding site's tile (ties: the northern, then the western), whose highway line crossing is owned dry
+         * ground by the runs' own ground; null when none is. Every piece's nearest tile is found in one pass over the land (the first ask after the
+         * ground moves); only when a piece's nearest tile has a wet crossing are its tiles sorted.
+         */
+        private long[] findHub(int p) {
+            if (tilesOf[p] <= 0 || tilesOf[p] > Integer.MAX_VALUE) return null;
+            if (nearestKey == null) {
+                nearestKey = new long[count];
+                Arrays.fill(nearestKey, Long.MAX_VALUE);
+                eachTile(-1, (k, q) -> { if (k < nearestKey[q]) nearestKey[q] = k; });
+            }
+            long[] h = hubAt(nearestKey[p]);
+            if (h != null) return h;
+            long[] keys = new long[(int) tilesOf[p]];
+            int[] n = { 0 };
+            eachTile(p, (k, q) -> { if (n[0] < keys.length) keys[n[0]++] = k; });
+            Arrays.sort(keys, 0, n[0]);
+            for (int i = 0; i < n[0]; i++) {
+                h = hubAt(keys[i]);
+                if (h != null) return h;
+            }
+            return null;
+        }
+
+        /** Each piece's nearest tile's key, once found: nearest the site's tile first, then the northern, then the western; Long.MAX_VALUE for a piece with no tile. */
+        private long[] nearestKey;
+
+        private interface TileSink { void at(long key, int piece); }
+
+        /** Gives the sink each land tile's hub key (squared distance from the founding site's tile << 30 | row << 15 | column: tile coordinates are under 2^15, the world being 23,552 tiles a side, the squared distance under 2^31) and piece; of piece `only`'s tiles alone unless it is -1. */
+        private void eachTile(int only, TileSink sink) {
+            long stx = Math.floorDiv(siteX, World.TILE), sty = Math.floorDiv(siteY, World.TILE);
+            for (Map.Entry<Long, int[]> e : labels.entrySet()) {
+                long cx = e.getKey() & 0xffffffffL, cy = e.getKey() >>> 32;
+                int[] c = e.getValue();
+                for (int i = 0; i < c.length; i++) {
+                    if (c[i] < 0) continue;
+                    int q = pieceOfLabel[c[i]];
+                    if (only >= 0 && q != only) continue;
+                    long tx = (cx << PIECE_CHUNK_SHIFT) | (i & PIECE_CHUNK_MASK), ty = (cy << PIECE_CHUNK_SHIFT) | (i >> PIECE_CHUNK_SHIFT);
+                    long dx = tx - stx, dy = ty - sty;
+                    sink.at(((dx * dx + dy * dy) << 30) | (ty << 15) | tx, q);
+                }
+            }
+        }
+
+        /** The highway line crossing of the tile a hub key names if it is owned dry ground by the runs' own ground, else null. */
+        private long[] hubAt(long key) {
+            long tx = key & 0x7fff, ty = (key >> 15) & 0x7fff;
+            long x = tx * World.TILE + CityRuns.HIGHWAY_AT, y = ty * World.TILE + CityRuns.HIGHWAY_AT;
+            int c = runGround.at(x, y, -1);
+            return c >= 0 && CityRuns.dry(c) ? new long[] { x, y } : null;
+        }
+
+        // ----- the weights -----
+
+        /** Each piece's built ground this month: the plots its districts' buildings stand on, each district whole to the piece holding most of its 8 x 8 tiles' land. */
+        private void weigh() {
+            // Kept from month to month (a city of billions has 29,000 districts, and weighing every one cost MapCheck 5's month 1.5 ms): a
+            // district is weighed again only when its counts moved (District.version) or the pieces were worked out again (buildId).
+            if (weighedBuild != buildId) {
+                Arrays.fill(weights, 0);
+                weighedBuild = buildId;
+            }
+            for (District d : districts) {
+                if (d.weighedBuild == buildId && d.weighedAt == d.version) continue;
+                if (d.weighedBuild != buildId) {
+                    d.weighedBuild = buildId;
+                    d.weighedPiece = pieceOfDistrict(d);
+                    d.weighedCells = 0;
+                }
+                long built = Math.max(0, builtCells(d));
+                if (d.weighedPiece >= 0 && d.weighedPiece < weights.length) weights[d.weighedPiece] += built - d.weighedCells;
+                d.weighedCells = built;
+                d.weighedAt = d.version;
+            }
+            weightsValid = true;
+        }
+
+        /** The plots a district's buildings stand on: its used cells less those of its roads, highways, track and works at sea (the types a district does not draw on its ground). */
+        long builtCells(District d) {
+            if (undrawn == null) {
+                int n = 0;
+                int[] u = new int[types.length];
+                for (int t = 0; t < types.length; t++) if (types[t] != null && !types[t].drawn()) u[n++] = t;
+                undrawn = Arrays.copyOf(u, n);
+                undrawnCells = new int[n];
+                for (int i = 0; i < n; i++) undrawnCells[i] = BuildingVisual.cells(types[undrawn[i]]);
+            }
+            long u = d.usedCells;
+            for (int i = 0; i < undrawn.length; i++) u -= d.counts[undrawn[i]] * (long) undrawnCells[i];
+            return u;
+        }
+
+        /** The piece holding most of the land tiles of a district's 8 x 8 (ties: the lower index), -1 for none. */
+        int pieceOfDistrict(District d) {
+            int side = DISTRICT / World.TILE;
+            long tx0 = (baseDX + d.dx) * side, ty0 = (baseDY + d.dy) * side;
+            int[] ps = new int[side * side], ns = new int[side * side];
+            int m = 0;
+            for (int j = 0; j < side; j++) {
+                for (int i = 0; i < side; i++) {
+                    int l = labAt(tx0 + i, ty0 + j);
+                    if (l < 0) continue;
+                    int p = pieceOfLabel[l], k = 0;
+                    while (k < m && ps[k] != p) k++;
+                    if (k == m) ps[m++] = p;
+                    ns[k]++;
+                }
+            }
+            int best = -1, bestN = 0;
+            for (int k = 0; k < m; k++) if (ns[k] > bestN || (ns[k] == bestN && ps[k] < best)) { best = ps[k]; bestN = ns[k]; }
+            return best;
+        }
+    }
+
+    private final MapPieces pieces = new MapPieces();
+
+    /** The city's ground in pieces (CL5): what the runs are laid on. */
+    MapPieces pieces() { return pieces; }
+
     /** The founding site, {x, y} in plots. */
     long[] site() { return new long[] { siteX, siteY }; }
 
@@ -4432,7 +4920,9 @@ public final class CityMap {
      * so a depot added never moves a terminal's yard) and laid as long as a unit
      * train along its line where the ground allows (FX5 Y1, CityRuns.YARD_LONG), its Rail Spurs as
      * sidings into the bulk mined sites - the highways from the founding
-     * site, the railway from the city's mine nearest it (the founding site
+     * site, and (CL5) from the hub of every other piece of the city's ground
+     * the water parts that holds buildings (MapPieces, which the runs are
+     * handed), the railway from the city's mine nearest it (the founding site
      * with none). True, and the map's changes bumped, when they moved.
      */
     boolean layRuns(long[] model) {
@@ -4482,7 +4972,9 @@ public final class CityMap {
             runs.setGateway(g == null ? CityRuns.NO_GATEWAY : g.bearing());
         }
         runs.setDoubleMain(hasFreightLine(model));
-        boolean moved = runs.layTo(highway, track, yardSizes, spurs, runGround, siteX, siteY, rx, ry, mines, works);
+        // CL5: the city's ground in pieces, worked out again only when the ground has moved (MapPieces), and asked only when the highways have plots to lay.
+        pieces.begin();
+        boolean moved = runs.layTo(highway, track, yardSizes, spurs, runGround, siteX, siteY, rx, ry, mines, works, pieces);
         if (moved) {
             changes++;
             yardShare = null;

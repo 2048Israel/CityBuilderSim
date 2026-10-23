@@ -7206,8 +7206,19 @@ public final class GameVersion {
      *     carrying value with the fair-value note, carried and effective on
      *     the book. SAVE_FORMAT 44 and its floor.
      *   - Harness: TreasuryCheck 9 (new part), MoneyCheck's paper on its books.
+     *
+     * 0.8.30 (2026-10-23) - CL5, HIGHWAYS THAT REACH THE WHOLE CITY
+     * spec-city-layout.md section 5.6 (docs/queue/CL5-notes.md): the map's
+     * highways laid over all the city's ground. The model's trace does not
+     * move.
+     *   - The runs: a stuck net opens its next corridor by a link that
+     *     searches its way over the piece's dry ground (CityRuns).
+     *   - Every piece of ground the water parts that holds buildings grows its
+     *     own net (CityMap's pieces), the model's plots dealt by built ground.
+     *   - The map's sidecar FORMAT 12.
+     *   - Harness: IslandNetCheck (new).
      */
-    public static final String VERSION = "0.8.29";
+    public static final String VERSION = "0.8.30";
 
     /**
      * The save shape.
