@@ -31,6 +31,10 @@ import java.util.List;
  * 4. NEVER CULLED. Resolved notices are kept for two years and then dropped. A
  *    cull that never fires makes a four-hundred-year city carry four hundred
  *    years of settled complaints.
+ * 5. TOLD ONCE AND NEVER AGAIN (PT1-M2). The wait on ground is the one
+ *    standing condition told again: a new notice each year it lasts, naming
+ *    the sectors and the ground each needs, on a rhythm a save and a load
+ *    keep, and silent once the ground is bought (section 7).
  *
  * The awkward part of testing this is that the four conditions are hard to
  * cause on purpose - a bank does not fail when you ask it to. So the lifecycle
@@ -204,7 +208,7 @@ public class InboxCheck {
                 standing.getLandManager().getAllocatedSqFt()));
 
         java.util.Map<String, Integer> liveSince = new java.util.HashMap<>();
-        int refreshes = 0, reRaised = 0, liveMonths = 0;
+        int refreshes = 0, reRaised = 0, retold = 0, liveMonths = 0;
 
         for (int m = 0; m < 130; m++) {
             quietly(() -> standing.simulateMonths(1));
@@ -217,7 +221,14 @@ public class InboxCheck {
                 if (known == null) {
                     liveSince.put(notice.getKey(), notice.getRaised());
                 } else if (known != notice.getRaised()) {
-                    reRaised++;
+                    // The one re-raise allowed (PT1-M2): the wait on ground told
+                    // again a year on, its last notice settled the same month.
+                    if (yearlyRetell(standing.getInbox(), notice, known)) {
+                        liveSince.put(notice.getKey(), notice.getRaised());
+                        retold++;
+                    } else {
+                        reRaised++;
+                    }
                 } else {
                     refreshes++;
                 }
@@ -226,8 +237,8 @@ public class InboxCheck {
             liveSince.keySet().retainAll(seen);
         }
 
-        System.out.printf("  %d month(s) with something live, %d of them a refresh%n",
-                liveMonths, refreshes);
+        System.out.printf("  %d month(s) with something live, %d of them a refresh, %d yearly retelling(s) of the wait on ground%n",
+                liveMonths, refreshes, retold);
 
         assertTrue("the run produced a standing problem to test", refreshes > 0);
         assertTrue("a live notice is never raised a second time", reRaised == 0);
@@ -333,7 +344,10 @@ public class InboxCheck {
         }
         assertTrue("and the next month drops it", !stillThere);
 
-        /* ============ 7. a new game forgets it ============ */
+        /* ============ 7. the wait on ground, told again each year (PT1-M2) ============ */
+        landWaitRetold(files);
+
+        /* ============ 8. a new game forgets it ============ */
         System.out.println("\n--- and a new game starts with a clean inbox ---");
 
         quietly(reloaded::newGame);
@@ -343,6 +357,145 @@ public class InboxCheck {
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /**
+     * Whether `notice` is the wait on ground told again a year on (PT1-M2):
+     * the "landlock" notice raised Inbox.LANDLOCK_REPEAT_MONTHS after the one
+     * raised in `previous`, which was settled the month this one was raised.
+     */
+    static boolean yearlyRetell(Inbox inbox, Notice notice, int previous) {
+        if (!notice.getKey().equals("landlock")) return false;
+        if (notice.getRaised() - previous != Inbox.LANDLOCK_REPEAT_MONTHS) return false;
+        for (Notice n : inbox.all()) {
+            if (n.getKey().equals("landlock") && n.getRaised() == previous) {
+                return n.getResolved() == notice.getRaised();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Section 7 (PT1-M2, Jerus 2026-10-12, "a notice repeated"). The fixture
+     * causes the wait: a city whose owned ground is held at what is already
+     * built on (no ground free, every month), with automatic building on, as
+     * Jerus's city in the PT1 playtest had it. Walked month by month for three
+     * years from the first notice, with a save and a load in the middle and
+     * the walk carried on in the loaded city; then the ground is bought, many
+     * times what is built, and the notice must settle and not come back.
+     */
+    static void landWaitRetold(GameFiles files) {
+        System.out.println("\n--- the wait on ground is told again each year (PT1-M2) ---");
+
+        Game[] g = { new Game(files) };
+        quietly(g[0]::newGame);
+        g[0].getAutoBuilder().setOn(true, g[0].getDecisions());
+        Runnable noGround = () -> g[0].getLandManager().setOwnedSqFt(g[0].getLandManager().getAllocatedSqFt());
+        quietly(noGround);
+
+        // Up to ten years for a sector to want ground it cannot have.
+        int first = -1;
+        for (int m = 0; m < 120 && first < 0; m++) {
+            quietly(() -> { g[0].simulateMonths(1); noGround.run(); });
+            if (g[0].getInbox().live("landlock") != null) first = g[0].getMonth();
+        }
+        assertTrue("the fixture made a sector wait on ground", first > 0);
+        if (first < 0) return;
+
+        int span = 3 * Inbox.LANDLOCK_REPEAT_MONTHS;
+        int saveAt = first + Inbox.LANDLOCK_REPEAT_MONTHS + Inbox.LANDLOCK_REPEAT_MONTHS / 2;
+        List<Integer> raised = new java.util.ArrayList<>();
+        raised.add(first);
+        int lockedMonths = 1, twoLive = 0, misnamed = 0, needless = 0, notRetold = 0;
+        int lapses = 0, returns = 0, reopened = 0;
+        boolean wasLive = true;
+        boolean saved = false, loaded = false;
+
+        while (g[0].getMonth() < first + span) {
+            if (!saved && g[0].getMonth() >= saveAt) {
+                // Mid-wait, half a year into the second notice: save, load into
+                // a new game, and walk on in the loaded one.
+                saved = g[0].saveGame(2, "inbox-land").ok;
+                Game back = new Game(files);
+                quietly(() -> back.loadGameSave(2));
+                Notice was = g[0].getInbox().live("landlock"), now = back.getInbox().live("landlock");
+                loaded = back.getMonth() == g[0].getMonth()
+                        && was != null && now != null && now.getRaised() == was.getRaised();
+                g[0] = back;
+            }
+            quietly(() -> { g[0].simulateMonths(1); noGround.run(); });
+            Game city = g[0];
+            int month = city.getMonth();
+            Inbox inbox = city.getInbox();
+
+            int live = 0;
+            for (Notice n : inbox.all()) if (n.getKey().equals("landlock") && !n.isResolved()) live++;
+            if (live > 1) twoLive++;
+            Notice now = inbox.live("landlock");
+            if (now == null) { lapses++; wasLive = false; continue; }
+            lockedMonths++;
+            // Back after a month with nobody asking, inside its year: the
+            // year's notice reopened, not a new one dated this month.
+            if (!wasLive && month - raised.get(raised.size() - 1) < Inbox.LANDLOCK_REPEAT_MONTHS) {
+                returns++;
+                if (now.getRaised() == raised.get(raised.size() - 1)) reopened++;
+            }
+            wasLive = true;
+
+            if (now.getRaised() == month) {
+                raised.add(month);
+                if (!yearlyRetell(inbox, now, raised.get(raised.size() - 2))) notRetold++;
+                // The new notice names this month's waiting sectors and the ground
+                // each asked for, in its refusal's own words.
+                String body = String.join(" ", now.getBody());
+                java.util.Set<String> blocked = city.getLandBlockedSectors();
+                java.util.Map<String, String> needs = city.getLandBlockedNeeds();
+                if (!needs.keySet().equals(blocked)) needless++;
+                for (String key : blocked) {
+                    Sector s = city.getSectors().byKey(key);
+                    String need = needs.getOrDefault(key, "");
+                    if (s == null || !body.contains(s.label())) misnamed++;
+                    if (!need.startsWith("needs ") || !body.contains(need)) needless++;
+                }
+                System.out.printf("  month %d: told again, %d waiting: %s%n", month, blocked.size(),
+                        String.join("; ", blocked.stream().map(k -> k + " " + needs.get(k)).toList()));
+            }
+        }
+
+        System.out.printf("  first told month %d; told at %s; the wait held %d of %d months, %d month(s) with nobody asking, %d return(s) inside the year%n",
+                first, raised, lockedMonths, span + 1, lapses, returns);
+        assertTrue("the wait held to the end of the three years (the fixture held)",
+                waitStanding(g[0]) && lockedMonths > span / 2);
+        assertTrue("a wait back inside its year reopens that year's notice", reopened == returns);
+        assertTrue("told once a year: the first month and every LANDLOCK_REPEAT_MONTHS after",
+                raised.size() == 4
+                        && raised.get(1) - raised.get(0) == Inbox.LANDLOCK_REPEAT_MONTHS
+                        && raised.get(2) - raised.get(1) == Inbox.LANDLOCK_REPEAT_MONTHS
+                        && raised.get(3) - raised.get(2) == Inbox.LANDLOCK_REPEAT_MONTHS);
+        assertTrue("each new notice settles the one before it the same month", notRetold == 0);
+        assertTrue("never two notices of the wait standing at once", twoLive == 0);
+        assertTrue("each names every sector waiting", misnamed == 0);
+        assertTrue("and the ground each needs, as its refusal gave it", needless == 0);
+        assertTrue("saved mid-wait", saved);
+        assertTrue("and loaded with the standing notice's month", loaded);
+
+        // The ground bought: many times what is built, and no more held back.
+        Game city = g[0];
+        quietly(() -> city.getLandManager().setOwnedSqFt(city.getLandManager().getAllocatedSqFt() * 10 + 1e7));
+        int boughtAt = city.getMonth();
+        int retoldAfter = 0;
+        for (int m = 0; m < Inbox.LANDLOCK_REPEAT_MONTHS + 2; m++) {
+            quietly(() -> city.simulateMonths(1));
+            Notice n = city.getInbox().live("landlock");
+            if (n != null && n.getRaised() > boughtAt) retoldAfter++;
+        }
+        assertTrue("once the ground is bought the standing notice settles", city.getInbox().live("landlock") == null);
+        assertTrue("and is not told again for the year after", retoldAfter == 0);
+    }
+
+    /** Whether the city has the wait on ground standing now. */
+    static boolean waitStanding(Game city) {
+        return city.getInbox().live("landlock") != null;
     }
 
     /** A notice settled longer ago than the inbox keeps them. */

@@ -2075,6 +2075,7 @@ public class Game {
         // consider() because consider() runs once per sector - clearing it there
         // would leave only whichever sector planned last.
         landBlockedSectors.clear();
+        landBlockedNeeds.clear();
         refusedOnPrice.clear();
         refusedByLender.clear();
         heldForDownPayment.clear();
@@ -4578,6 +4579,26 @@ public class Game {
     }
 
     /**
+     * The ground each waiting sector asked for this month (PT1-M2): sector key
+     * to "needs 743 m², 301 m² free", the numbers its own refusal gave,
+     * kept beside landBlockedSectors and cleared with it, so the inbox's yearly
+     * notice can say what each one needs and not only who waits.
+     */
+    private final java.util.Map<String, String> landBlockedNeeds = new java.util.LinkedHashMap<>();
+
+    /** Sector key to the ground it asked for this month, for every sector in getLandBlockedSectors(). */
+    public java.util.Map<String, String> getLandBlockedNeeds(){
+        return java.util.Collections.unmodifiableMap(landBlockedNeeds);
+    }
+
+    /** A sector waiting on ground, and what it needs: a land refusal's reason less its "no land - " (BusinessInvestment.landReason()). */
+    private void blockOnLand(String sector, String needs){
+        landBlockedSectors.add(sector);
+        String n = needs == null ? "" : needs.startsWith("no land - ") ? needs.substring("no land - ".length()) : needs;
+        landBlockedNeeds.putIfAbsent(sector, n);
+    }
+
+    /**
      * The sectors whose plan this month was declined on its price (0.7.8):
      * not one of it would carry its interest at the rate the loan would be
      * written at, where it would have at prime and its record alone - so what
@@ -4610,7 +4631,9 @@ public class Game {
         if (landBlockedSectors.isEmpty()) {
             return false;
         }
-        return landWarningAcknowledged < 0 || month - landWarningAcknowledged > 24;
+        // Quiet for a year once acknowledged, and asked again then (PT1-M2: the
+        // notice comes again each year the wait lasts; it was two years).
+        return landWarningAcknowledged < 0 || month - landWarningAcknowledged >= Inbox.LANDLOCK_REPEAT_MONTHS;
     }
 
     /** The player has seen it. */
@@ -4681,7 +4704,7 @@ public class Game {
 
         if (decision == null || !decision.build) {
             if (decision != null && decision.landBlocked) {
-                landBlockedSectors.add(decision.sector);
+                blockOnLand(decision.sector, decision.reason);
             }
             lastInvestment.put(slot, decision == null ? "" : "Holding: " + decision.reason);
             return;
@@ -4847,16 +4870,15 @@ public class Game {
             // The plan cleared every test and the build still did not happen,
             // which now has exactly one cause: the land went between planning
             // and buying. Saying so beats the silence this used to leave.
-            landBlockedSectors.add(decision.sector);
             // ...the ground its sector may build on, and since 0.7.109 (Z2) what the others' zones hold, as landReason() says it.
             String sector = decision.template.getSector();
             double others = landManager.heldByZones() - landManager.heldBy(sector);
-            lastInvestment.put(slot,
-                    String.format("Could not build %s - needs %s, %s free%s",
-                            decision.template.getName(),
-                            LandManager.areaWords(decision.template.getLandSqFt() * (double) quantity),
-                            LandManager.areaWords(landManager.freeFor(sector)),
-                            others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : ""));
+            String needs = String.format("needs %s, %s free%s",
+                    LandManager.areaWords(decision.template.getLandSqFt() * (double) quantity),
+                    LandManager.areaWords(landManager.freeFor(sector)),
+                    others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "");
+            blockOnLand(decision.sector, needs);
+            lastInvestment.put(slot, "Could not build " + decision.template.getName() + " - " + needs);
         }
     }
 
@@ -5337,14 +5359,14 @@ public class Game {
                         t.getName(), refusal[0]);
             });
         } else {
-            landBlockedSectors.add(decision.sector);
             // ...the ground its sector may build on, and since 0.7.109 (Z2) what the others' zones hold, as landReason() says it.
             double others = landManager.heldByZones() - landManager.heldBy(t.getSector());
-            lastInvestment.put(slot,
-                    String.format("Could not build %s - needs %s, %s free%s",
-                            t.getName(), LandManager.areaWords(t.getLandSqFt() * (double) quantity),
-                            LandManager.areaWords(landManager.freeFor(t.getSector())),
-                            others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : ""));
+            String needs = String.format("needs %s, %s free%s",
+                    LandManager.areaWords(t.getLandSqFt() * (double) quantity),
+                    LandManager.areaWords(landManager.freeFor(t.getSector())),
+                    others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "");
+            blockOnLand(decision.sector, needs);
+            lastInvestment.put(slot, "Could not build " + t.getName() + " - " + needs);
         }
     }
 
