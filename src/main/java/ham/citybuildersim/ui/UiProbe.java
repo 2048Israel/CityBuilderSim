@@ -142,19 +142,21 @@ public final class UiProbe {
 
     /**
      * The 95th-percentile frame on People at 50x at month 4,000 the clock must keep under, ms
-     * (UP2: 49 before it, with the redraw paced, the months budgeted and the chrome kept).
+     * (UP2: 49 in the brief's figures and 52 in this probe's before it; the redraw paced, the months
+     * budgeted and the chrome kept).
      */
     public static final double FRAME_P95_MS = 34;
 
     /**
-     * Every rail screen's 95th-percentile frame at 50x at month 4,000, ms: its figure before UP2
-     * (People's is FRAME_P95_MS), which the clock must not exceed since.
+     * Every rail screen's 95th-percentile frame at 50x at month 4,000, ms: its figure before UP2, as
+     * this probe measured it on the PC at 0.8.26 (main 95d02db3, another batch's suite running beside
+     * it; docs/queue/UP2-notes.md), which the clock must not exceed since; People's is FRAME_P95_MS.
      */
     public static final Map<String, Double> FRAME_P95 = Map.ofEntries(
-            Map.entry("Build", 70.0), Map.entry("Land", 70.0), Map.entry("People", FRAME_P95_MS),
-            Map.entry("Services", 70.0), Map.entry("Infra", 70.0), Map.entry("Sectors", 70.0),
-            Map.entry("Govt", 70.0), Map.entry("Finances", 70.0), Map.entry("Bank", 70.0),
-            Map.entry("Trade", 70.0), Map.entry("Policy", 70.0), Map.entry("History", 70.0));
+            Map.entry("Build", 133.0), Map.entry("Land", 96.0), Map.entry("People", FRAME_P95_MS),
+            Map.entry("Services", 44.0), Map.entry("Infra", 48.0), Map.entry("Sectors", 74.0),
+            Map.entry("Govt", 33.0), Map.entry("Finances", 33.0), Map.entry("Bank", 49.0),
+            Map.entry("Trade", 17.0), Map.entry("Policy", 33.0), Map.entry("History", 54.0));
 
     /** The month from which FRAME_P95 is asserted: the city it was measured on. */
     static final int FRAME_P95_FROM = 4000;
