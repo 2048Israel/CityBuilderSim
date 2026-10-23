@@ -53,10 +53,12 @@ do for it; and the railway on other pieces is not built (CL5-C).
   are byte-identical, so **no ensemble** (EN1).
 - **On the playtest's city** at month 4,005: highway plots laid 1,687 of 1,687 (never laid 0), 10 corridors;
   built districts with a highway 9 of 13 (3 of 13 on main); the other island's district has one.
-- **The suite**: 132 harnesses, green but for timing (beside CD3's JVM and Jerus's game: MapCheck 5 and 18 soft). **Timing
-  hard** (alone, the game running): MapCheck 5 at 10B (6.2 ms of 5) and 18 red, both red on main's own baseline
-  too (with KeptCheck 5 and 13, green here). The sidecar keeps each piece's plots: counting them again on a load
-  had cost 5B and 10B their SIDECAR_MS (read 537 and 826 ms; 252 and 287 now).
+- **The suite**: green. **Timing, run hard** (after the merge of CD3, the game closed): MapCheck green - a month's
+  change at 5B and 10B 1.62 and 3.62 ms worst (main 1.53 and 3.07; RECONCILE_MS 5), section 18's month 52.5 ms median
+  (main 51.4; MAP_MONTH_MS 58). Three costs were found and taken out on the way: the world line walked out from every
+  net's arm ends every month (now the home net's alone: MapCheck 18's L0 screen 89 ms back to 32); the pieces' weights
+  were summed over every district every month (now a district is weighed again only when its counts move: 1.5 ms at
+  10B to none); and counting each piece's plots on a load (the sidecar keeps them: SIDECAR_MS, read 826 ms to 287).
 
 ## Renders
 
