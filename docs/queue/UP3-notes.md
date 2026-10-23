@@ -186,4 +186,5 @@ and was reviewed as a stranger's diff.
 
 ## 9. The suite and the timing
 
-SUITE
+- **The suite** (`batch-check.sh`, the final model with main merged, the Earth file named): 130 harnesses, 130 passed (main's baseline before the batch: 129 of 129). MapCheck 18 took 56 s of MapCheck's run. Stale: 0 firm findings. The maps are regenerated.
+- **`--timing`, hard** (the timing harnesses alone): 10 of 10. MapCheck 18's month at 5B: the median 53.9 ms against `MAP_MONTH_MS` 58 (today's way 67.0); MapCheck 5's 10B month and 12's stamp within their bounds.
