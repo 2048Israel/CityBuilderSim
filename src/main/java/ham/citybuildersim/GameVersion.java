@@ -7255,8 +7255,17 @@ public final class GameVersion {
      *     back the gain the surplus carries (CD3's star 5).
      *   - Screens: Finances' Close it now and the call card; Borrow's switch.
      *   - Harness: BuybackCheck, CallCheck (new).
+     *
+     * 0.8.34 (2026-10-23) - PT1-M3, THE ADVICE CARD SAYS WHAT AUTOMATIC
+     * BUILDING HOLDS BACK (docs/queue/PT1-M3-notes.md; Jerus, 2026-10-12: "yes
+     * do rec"). Neither rule changes; the month is untouched.
+     *   - AutoBuilder: every building a pass holds back as not paying back is
+     *     kept with the payback weighed for one (PaybackHold, saved);
+     *     heldBackWords() is the card's line, HELD_BACK and the inbox's words.
+     *   - Build overview: a card of that measure and building carries it.
+     *   - Harness: AutoBuildCheck 6.
      */
-    public static final String VERSION = "0.8.33";
+    public static final String VERSION = "0.8.34";
 
     /**
      * The save shape.
