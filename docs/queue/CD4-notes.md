@@ -1,6 +1,6 @@
 # CD4 - closing early: notes
 
-*0.8.30, 2026-10-23. The batch is `docs/studies/spec-city-debt.md` §8's CD4
+*0.8.33, 2026-10-23. The batch is `docs/studies/spec-city-debt.md` §8's CD4
 row and the sections it points to: the buyback as a reverse auction (§6.2,
 §6.3), callable lines and the call (§2.6, §6.4), "worth calling", and its
 screen, Close it now and the call card (§7 board 3, D31). Jerus put CD3's ★5
@@ -106,6 +106,20 @@ fund's pay-in (`surplusThisYearSoFar()`) for the year; the fund's floor
    fund pays in from; only spending (the year's "Paid out", the fund's floor)
    adds it back.
 5. **★5 The honest line is a month's**, where §6.3 writes a year's.
+6. **★6 A line callable now is offered at its non-call value** (Buyback.java
+   ~227), so households or the world can ask over 100 while the city could
+   call it at 100. Cap such a line's offers at the call price, or leave it
+   (the call card is beside the ticket).
+
+**From the orchestrator's review (ship):** for CD6, FinancesScreen works out
+the gain (~2970), the journal's premium or discount (~2903) and the honest
+line (~2917) itself rather than through getters. Follow-ups: CentralBankCheck
+~492 could assert D34 directly (`fairValueOf x bankFace / principal`);
+CallTree's sigma has no ceiling (the bottom nodes degenerate past about 7% on
+a 600-month tree, the price stays capped); no harness saves and loads a
+part-retired piece; the bridge's one-month residual after a buyback is
+main's by design (the bank's coupon booked a month before it is paid,
+TreasuryCheck 9e), a journal line at most.
 
 ## 4. The checks, the trace and the ensemble
 

@@ -69,6 +69,12 @@ import java.util.Locale;
  *      stack's arithmetic, handed the history's own growing list, still
  *      reads nothing past either. The fixture is Jerus's 0.7.49 freeze:
  *      the same month, under that version's walk, reads past the layers.
+ *   9. A SERIES THAT CANNOT GO UNDER ZERO NEVER GETS AN AXIS FLOOR UNDER IT
+ *      (PT1): City History's population chart read -100 at the bottom with
+ *      the founding in view, because the scale pads below the series' low
+ *      and the founding's low is near 0. The fixture is that population,
+ *      from 0 and from a few, up to thousands, on a scale not asked to
+ *      start at zero; a series that does go negative still pads below it.
  *
  * Every fixture causes its condition.
  */
@@ -149,6 +155,7 @@ public class ChartCheck {
         theFlags();
         aYoungCitysWindow();
         aChartDrawsFromItsSnapshot(root);
+        aSeriesThatCannotGoUnderZero();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -910,5 +917,43 @@ public class ChartCheck {
                         && longSeries.length == 4 && longSeries[3] == 4);
         assertTrue("...and a value off either end of a series reads as not recorded",
                 Double.isNaN(ChartModel.at(longSeries, -1)) && Double.isNaN(ChartModel.at(longSeries, 4)) && ChartModel.at(longSeries, 0) == 1);
+    }
+
+    /* ============================ 9. NO AXIS FLOOR UNDER A SERIES THAT STAYS OVER ZERO ============================ */
+
+    static void aSeriesThatCannotGoUnderZero() {
+        out.println("\n--- 9. a series that never goes under zero is never given an axis floor under it ---");
+        // A city's population from its founding: 0, then a few, then thousands. The padding is
+        // AXIS_PAD of the range, so any range over 100 or so reaches under a low of 0 or a few.
+        double[][] populations = { { 0, 3_000 }, { 0, 12_000 }, { 2, 4_500 }, { 40, 40_000 }, { 0, 150 }, { 5, 1_000_000 } };
+        boolean cleared = true, hold = true, wasUnder = true;
+        for (double[] p : populations) {
+            for (int ticks : new int[] { 3, 5, 8 }) {
+                ChartModel.Scale s = ChartModel.niceScale(p[0], p[1], ticks, false);
+                cleared &= s.low() >= 0;
+                hold &= s.low() <= p[0] && s.high() >= p[1] && s.high() > s.low();
+                // What the old padding did, by the model's own constant: a floor under zero.
+                double padded = p[0] - (p[1] - p[0]) * ChartModel.AXIS_PAD;
+                wasUnder &= padded < 0;
+            }
+        }
+        assertTrue("the fixture reaches the old fault: AXIS_PAD of every population range is more than its low", wasUnder);
+        assertTrue("a population from its founding to thousands, not asked to start at zero, has a floor of 0 or more", cleared);
+        assertTrue("...and the scale still holds the series, its top above the largest", hold);
+        ChartModel.Scale founding = ChartModel.niceScale(0, 3_000, 5, false);
+        assertTrue("...so a population of 0 sits on the bottom gridline, 0", founding.low() == 0);
+        ChartModel.Scale small = ChartModel.niceScale(0.01, 0.6, 5, false);
+        assertTrue("a small series whose padding would cross zero is held at 0 too",
+                0.01 - 0.59 * ChartModel.AXIS_PAD < 0 && small.low() >= 0);
+
+        // The other half: a series that does go under zero keeps its padding below.
+        ChartModel.Scale negative = ChartModel.niceScale(-500, 3_000, 5, false);
+        double below = -500 - 3_500 * ChartModel.AXIS_PAD;
+        assertTrue("a series with a negative low still gets its air below it, as before",
+                negative.low() < -500 && negative.low() <= below + 1e-9);
+        ChartModel.Scale zeroLow = ChartModel.niceScale(-0.5, 0.5, 5, false);
+        assertTrue("...and one that crosses zero is not floored at it", zeroLow.low() < -0.5);
+        ChartModel.Scale fromZero = ChartModel.niceScale(0, 3_000, 5, true);
+        assertTrue("the from-zero path is unchanged: floor 0, top over the largest", fromZero.low() == 0 && fromZero.high() >= 3_000);
     }
 }

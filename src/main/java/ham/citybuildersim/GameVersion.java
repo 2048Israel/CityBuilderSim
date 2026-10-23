@@ -7207,7 +7207,40 @@ public final class GameVersion {
      *     the book. SAVE_FORMAT 44 and its floor.
      *   - Harness: TreasuryCheck 9 (new part), MoneyCheck's paper on its books.
      *
-     * 0.8.30 (2026-10-23) - CD4, CLOSING EARLY
+     * 0.8.30 (2026-10-23) - CL5, HIGHWAYS THAT REACH THE WHOLE CITY
+     * spec-city-layout.md section 5.6 (docs/queue/CL5-notes.md): the map's
+     * highways laid over all the city's ground. The model's trace does not
+     * move.
+     *   - The runs: a stuck net opens its next corridor by a link that
+     *     searches its way over the piece's dry ground (CityRuns).
+     *   - Every piece of ground the water parts that holds buildings grows its
+     *     own net (CityMap's pieces), the model's plots dealt by built ground.
+     *   - The map's sidecar FORMAT 12.
+     *   - Harness: IslandNetCheck (new).
+     *
+     * 0.8.31 (2026-10-23) - PT1, ELEVEN FIXES FROM A PLAYED CITY
+     * docs/queue/PT1-notes.md: screens, words and the log; the trace does
+     * not move.
+     *   - A standing bank no month has opened reads "opens with the first
+     *     month" and is not in NEEDS YOU; the bank's door lands on its card.
+     *   - A served share from five times what is asked prints "30x"
+     *     (CityNeeds.SERVED_AS_MULTIPLE); a chart never floors a series that
+     *     cannot go under zero below it; no toast on load for a notice the
+     *     save already held (Inbox.toToast, markAllToasted).
+     *   - The founding card, People's bridge, the drawer's footnote, the
+     *     log's debt-to-GDP and interest lines. The toast's corner: PT1-C.
+     *   - Harness: PlaytestFixCheck (new), ChartCheck 9.
+     *
+     * 0.8.32 (2026-10-23) - PT1-M2, THE WAIT ON GROUND TOLD AGAIN
+     * Jerus, 2026-10-12 ("a notice repeated"; docs/queue/PT1-M2-notes.md).
+     *   - Inbox: the "nowhere to build" notice is settled and raised anew
+     *     each LANDLOCK_REPEAT_MONTHS it stands; a wait back inside its year
+     *     reopens it (Notice.reopen()), as dated and not toasted again.
+     *   - Its body names each sector waiting and the ground it asked for
+     *     (Game.getLandBlockedNeeds()); acknowledging it quiets it a year.
+     *   - Harness: InboxCheck 7; LongPlaytest counts the notices.
+     *
+     * 0.8.33 (2026-10-23) - CD4, CLOSING EARLY
      * spec-city-debt.md sections 6 and 2.6 (docs/queue/CD4-notes.md): the
      * buyback as a reverse auction and callable lines with the call. The
      * default playtest never buys back or calls, so its trace does not move.
@@ -7223,7 +7256,7 @@ public final class GameVersion {
      *   - Screens: Finances' Close it now and the call card; Borrow's switch.
      *   - Harness: BuybackCheck, CallCheck (new).
      */
-    public static final String VERSION = "0.8.30";
+    public static final String VERSION = "0.8.33";
 
     /**
      * The save shape.

@@ -38,6 +38,9 @@ public class Inbox {
     /** How long a resolved notice stays readable. Jerus asked for two years. */
     public static final int KEEP_MONTHS = 24;
 
+    /** How long the "nowhere to build" notice stands before the wait is told again in a new one (PT1-M2): a year. */
+    public static final int LANDLOCK_REPEAT_MONTHS = 12;
+
     /*
      * Newest LAST, because that is the order they happened in and appending is
      * the honest way to record a sequence. The screen reverses it.
@@ -64,8 +67,22 @@ public class Inbox {
                 "Your builders are being laid off",
                 sheddingBody(game));
 
+        // The wait on ground says so again each year it lasts (PT1-M2, Jerus
+        // 2026-10-12: "a notice repeated"): a year after the standing notice
+        // was raised it is settled and a new one raised, dated this month,
+        // with this month's sectors and ground. A month with nobody asking
+        // settles it, and a wait back within that year reopens it, as dated
+        // and not toasted again, so a lapse does not restart the year. The
+        // rhythm is the notice's own raised month, which the save keeps with
+        // the inbox.
+        boolean landLocked = game.isPrivateInvestmentLandLocked();
+        Notice waiting = latest("landlock");
+        if (landLocked && waiting != null) {
+            if (month - waiting.getRaised() >= LANDLOCK_REPEAT_MONTHS) waiting.markResolved(month);
+            else if (waiting.isResolved()) waiting.reopen();
+        }
         take(game, month, "landlock",
-                game.isPrivateInvestmentLandLocked(),
+                landLocked,
                 "Your businesses have nowhere to build",
                 landLockBody(game));
 
@@ -304,6 +321,41 @@ public class Inbox {
         return n;
     }
 
+    /** What the window's toasts remember a notice by: its key and the month it was raised (PT1: here, where a harness can hold it). */
+    public static String toastKey(Notice n) {
+        return n.getKey() + "@" + n.getRaised();
+    }
+
+    /**
+     * The urgent notices not yet toasted, oldest first, each added to
+     * `toasted` as it is returned: the window shows these and nothing else, so
+     * a notice is toasted once. Read or settled ones are never toasted.
+     */
+    public List<Notice> toToast(java.util.Set<String> toasted) {
+        List<Notice> out = new ArrayList<>();
+        for (Notice notice : notices) {
+            if (notice.isUrgent() && toasted.add(toastKey(notice))) out.add(notice);
+        }
+        return out;
+    }
+
+    /**
+     * Every notice now in the inbox counts as toasted (PT1): what a load calls,
+     * so a notice raised before the save is not toasted again at once. It stays
+     * unread, and the envelope stays red.
+     */
+    public void markAllToasted(java.util.Set<String> toasted) {
+        for (Notice notice : notices) toasted.add(toastKey(notice));
+    }
+
+    /** The newest notice for a condition, live or settled, or null if there is not one. */
+    Notice latest(String key) {
+        for (int i = notices.size() - 1; i >= 0; i--) {
+            if (notices.get(i).getKey().equals(key)) return notices.get(i);
+        }
+        return null;
+    }
+
     /** The live notice for a condition, or null if there is not one. */
     public Notice live(String key) {
         for (int i = notices.size() - 1; i >= 0; i--) {
@@ -379,17 +431,30 @@ public class Inbox {
         double used = game.getLandManager().getUtilisation() * 100;
 
         lines.add(blocked.size() == 1
-                ? String.format("%s wants to expand and cannot -", blocked.iterator().next())
+                ? String.format("%s wants to expand and cannot -", sectorLabel(game, blocked.iterator().next()))
                 : String.format("%d sectors want to expand and cannot -", blocked.size()));
         lines.add("there is no land left to build on.");
         lines.add("");
-        lines.add(String.format("Waiting:            %s", String.join(", ", blocked)));
+        // Each sector waiting and the ground it asked for (PT1-M2), in its own refusal's numbers.
+        java.util.Map<String, String> needs = game.getLandBlockedNeeds();
+        for (String key : blocked) {
+            String need = needs.getOrDefault(key, "");
+            lines.addAll(wrapped(sectorLabel(game, key) + (need.isEmpty() ? "" : ": " + need), BODY_COLUMNS));
+        }
+        lines.add("");
         lines.add("Land free:          " + LandManager.areaWords(free));
         lines.add(String.format("Land in use:        %.0f%%", used));
         lines.add("");
-        lines.add("They will keep asking every month and keep being refused.");
+        lines.add("They will keep asking every month and keep being refused,");
+        lines.add("and this notice comes again each year the wait lasts.");
         lines.add("Nothing else is wrong, and nothing will fix itself.");
         return lines;
+    }
+
+    /** A sector's name from its key, as the land office's Waiting card names it (the key when there is no such sector). */
+    private static String sectorLabel(Game game, String key) {
+        Sector s = game.getSectors().byKey(key);
+        return s == null ? key : s.label();
     }
 
     private static List<String> bankBody(Game game) {

@@ -14,7 +14,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.30 — CD4, closing early — 2026-10-23, ready, see docs/queue/CD4-notes.md
+### 0.8.33 — CD4, closing early — 2026-10-23, ready, see docs/queue/CD4-notes.md
 
 The city closes its paper early as a treasury does (spec-city-debt §6, §2.6): a buyback is a reverse auction in which each
 holder offers its paper in slices at the price where its own rule stops wanting it, never under fair; the bank offers at
@@ -26,6 +26,40 @@ the journal and the call card; Borrow has a callable switch. CD3's ★5: History
 year's "Paid out" and monthOfSpending no longer net it into spending. The money closes (BuybackCheck, CallCheck); the
 default playtest never buys back or calls, so its trace does not move and the ensemble was not run.
 
+### 0.8.32 — PT1-M2, the wait on ground told again — 2026-10-23, ready, see docs/queue/PT1-M2-notes.md
+
+Jerus's call on PT1's M2 ("a notice repeated"): the inbox's "Your businesses have nowhere to build" is told again each
+year the wait lasts, a new notice, dated and toasted, naming each sector waiting and the ground it asked for ("Real
+Estate: needs 743 m², 0 m² free"; it printed sector keys and no figures). A month with nobody asking settles it as
+before, and a wait back inside the year reopens that year's notice rather than raising another. The rhythm is the
+notice's own raised month, saved with the inbox: no new field, no format bump. "Go to the land office" quiets it a year,
+not two. InboxCheck section 7 holds a city's ground at what is built for three years with automatic building on: told at
+months 3, 15, 27 and 39 across a save and load, silent once the ground is bought. In the default playtest: 1,790 months
+waiting, 178 notices; the trace byte-identical, so no ensemble.
+
+---
+
+### 0.8.31 — PT1, eleven fixes from a played city — 2026-10-23, ready, see docs/queue/PT1-notes.md
+
+Ten of the eleven, the model's month untouched. A founded city's bank, standing before its first month opens it, reads
+"opens with the first month" and is not in NEEDS YOU, and the Bank page's door to build one is gone till then; that door
+lands on the bank's card in Build › Shops. A served share from five times what is asked prints as a multiple, "30×", not
+"13333%". A chart of a series that never goes under zero never floors under it. A notice raised before a save does not
+toast on load. The founding card's "Standard" and its chip are no longer cut; People's bridge says "room for 634 people";
+the drawer's footnote closes NEEDS YOU. The log prints a dash for debt-to-GDP with no GDP, and "3.92%". The two money
+signs are Jerus's convention, kept. The toast over a page's controls waits on Jerus (PT1-C). PlaytestFixCheck is new.
+
+### 0.8.30 — CL5, highways that reach the whole city — 2026-10-23, ready, see docs/queue/CL5-notes.md
+
+A highway net that stops no longer stops for good (CityRuns): when no arm can grow and no corridor line crosses the net, a
+LINK searches the piece's dry ground from the net to the nearest open line (k districts from its hub), straightened into
+straight and 45-degree legs it lays plot by plot; the line's two arms open where it arrives. Every piece of ground the
+water parts that holds buildings (CityMap.MapPieces: 32-plot tiles, eight ways; a purchase only joins its new tiles)
+grows its own net from its hub, its tile nearest the founding site; the model's plots are dealt by built ground, taken
+back only when the model's fall, and a purchase that joins two pieces moves nothing. The sidecar is FORMAT 12. On the
+default playtest's city at month 4,005: 301 of the model's 1,687 highway plots laid before, all 1,687 now, and the
+district on the other island has a highway. IslandNetCheck (new) causes each case. The model's trace is main's but for
+the map's own layout-watch counts (0 boxes moved), so no ensemble. Calls for Jerus: CL5-C (the railway on other pieces).
 ### 0.8.29 — CD3, the city's books — 2026-10-23, ready, see docs/queue/CD3-notes.md
 
 The city's paper is carried at amortised cost by effective interest (spec-city-debt §5, D10, D16, D26): each line opens

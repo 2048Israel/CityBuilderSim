@@ -476,15 +476,17 @@ public final class ChartModel {
 
     /**
      * A nice scale over low..high, about `ticks` gridlines, from zero when
-     * asked and nothing is negative. Low above high - nothing drawn - is
-     * 0..1, unlabelled by the caller.
+     * asked and nothing is negative. A series that never goes under zero
+     * never gets a floor under it, asked or not (PT1: a city's population
+     * from its founding read -100 at the bottom of the axis). Low above high
+     * - nothing drawn - is 0..1, unlabelled by the caller.
      */
     public static Scale niceScale(double low, double high, int ticks, boolean fromZero) {
         if (!(high >= low) || !Double.isFinite(low) || !Double.isFinite(high)) return new Scale(0, 1, .25);
         boolean zeroFloor = fromZero && low >= 0;
         if (zeroFloor) low = 0;
         double pad = high > low ? (high - low) * AXIS_PAD : (low != 0 ? Math.abs(low) * .1 : 1);
-        double a = zeroFloor ? 0 : low - pad, b = high + pad;
+        double a = zeroFloor ? 0 : low >= 0 ? Math.max(0, low - pad) : low - pad, b = high + pad;
         double step = niceStep((b - a) / Math.max(1, ticks));
         a = Math.floor(a / step + 1e-9) * step;
         b = Math.ceil(b / step - 1e-9) * step;
