@@ -2471,12 +2471,22 @@ public final class CityMap {
         double[] leftover;
         /** Its plan's picture's stamp (0.7.128, batch MM1; DistrictPicture.stampOf()): the picture kept for it is current when it bears this. */
         long picture;
+        /** Its plan's stamp, worked out once (batch UP3): `own` and `in` are final and a carry is never written after it is made (a job's carry on is its overflow log's clone), so the stamp cannot move - where stampOf() folds every {month, code} pair of the carry, which lengthens with the months played, and planned() asked it for every tile a frame drew. */
+        private final long stamp;
         Link(long own, int[] in, int[] out, long[] free, byte[][] margins, District[] earlier, long[] read, double surplus, long serial) {
             this.own = own; this.in = in; this.out = out; this.free = free; this.margins = margins;
             this.earlier = earlier; this.read = read; this.surplus = surplus; this.serial = serial;
+            this.stamp = stampOf(own, in);
         }
         /** Its plan's stamp: its own inputs and what came in. */
-        long stamp() { return stampOf(own, in); }
+        long stamp() { return stamp; }
+    }
+
+    /** How many of the links kept bear a stamp other than stampOf()'s of their own inputs and carry worked out afresh: none (batch UP3; MapCheck 18's - Link.stamp() is kept, not worked out each time it is asked). */
+    int linksAstray() {
+        int n = 0;
+        for (Link l : links.values()) if (l.stamp() != stampOf(l.own, l.in)) n++;
+        return n;
     }
 
     /** A plan's stamp: its own inputs' and the carry in's, {month, code} pairs (CL3): the list's length and every entry folded, zeros included, in order - so two different lists never stamp alike, a list of none and no list neither. */

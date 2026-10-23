@@ -1,4 +1,4 @@
-# MiniMapFrame.java - 302 lines · 30 methods · 6 constants · model
+# MiniMapFrame.java - 316 lines · 32 methods · 6 constants · model
 
 `ham/citybuildersim/MiniMapFrame.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -35,7 +35,7 @@
 > 
 > Pure: the same map and land give the same frame and the same pixels.
 
-**Uses:** [MapFrame](MapFrame.md) (13), [CityMap](CityMap.md) (8), [World](World.md) (5), [LandGrid](LandGrid.md) (4), [CityLand](CityLand.md) (3), [MapTiles](MapTiles.md) (3)
+**Uses:** [MapFrame](MapFrame.md) (13), [CityMap](CityMap.md) (10), [MapTiles](MapTiles.md) (8), [World](World.md) (5), [LandGrid](LandGrid.md) (4), [CityLand](CityLand.md) (3)
 
 **Used by (6):** [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [UserInterface](UserInterface.md)
 
@@ -46,7 +46,7 @@
 | 65 | THE FRAME: THE BUILT-UP GROUND AND ITS MARGIN |
 | 192 | A VIEW: W x H PIXELS AT A WHOLE NUMBER OF PLOTS A PIXEL |
 | 258 | ITS PIXELS: THE FAR NODES, FROM THE DISTRICT PICTURES |
-| 294 | A CLICK |
+| 308 | A CLICK |
 
 ## Constants
 
@@ -63,7 +63,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 264 | **type** `public final class MiniMapFrame` | The minimap's arithmetic without the toolkit: what the stamp at the rail's foot and its hover preview frame - the city's built-up ground, the ground it owns in its districts with buildings, with its centre and a margi... |
+| 39 | 278 | **type** `public final class MiniMapFrame` | The minimap's arithmetic without the toolkit: what the stamp at the rail's foot and its hover preview frame - the city's built-up ground, the ground it owns in its districts with buildings, with its centre and a margi... |
 | 41 | 1 | `private MiniMapFrame()` |  |
 | 56 | 8 | **type** `public record Box(long x0, long y0, long x1, long y1)` | A box of plots, [x0, x1) x [y0, y1). |
 | 57 | 1 | `public long width()` _(in MiniMapFrame.Box)_ |  |
@@ -103,17 +103,19 @@
 | 253 | 1 | `public static View stamp(Box frame)` | The stamp's view of a frame (STAMP_W x STAMP_H)... |
 | 256 | 1 | `public static View preview(Box frame)` | ...and the preview's (PREVIEW_W x PREVIEW_H), at its own stride, the same frame. |
 
-### ITS PIXELS: THE FAR NODES, FROM THE DISTRICT PICTURES (lines 258-293)
+### ITS PIXELS: THE FAR NODES, FROM THE DISTRICT PICTURES (lines 258-307)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 263 | 6 | `public static byte[][] ground(World.Key world, View v)` | The ground of each of a view's far nodes, row by row (MapTiles.nodeTerrain() at its stride, from its corner): the world's, so any thread - the map's worker's. |
-| 279 | 5 | `public static int pixels(MapTiles tiles, View v, byte[][] ground, int[] out, Set<CityMap.District> wanted)` | A view's pixels into `out` (w x h, row by row, 0xAARRGGBB): each far node's (MapTiles.nodePixels() at the view's stride, from its ground) cut to the view. |
-| 286 | 7 | `public static void node(MapTiles tiles, View v, int k, byte[] ground, int[] buf, int[] out, Set<CityMap.District> wanted)` | ...one node of it, the k-th row by row (MapTiles.nodePixels() into `buf`, NODE_PX squared, cut into `out`): what the screen paints a frame at a time. |
+| 279 | 3 | `public static int pixels(MapTiles tiles, View v, byte[][] ground, int[] out, Set<CityMap.District> wanted)` | A view's pixels into `out` (w x h, row by row, 0xAARRGGBB): each far node's (MapTiles.nodePixels() at the view's stride, from its ground) cut to the view. |
+| 284 | 8 | `public static int pixels(MapTiles tiles, View v, byte[][] ground, MapTiles.KeptNode[] keeps, int[] out, Set<CityMap.District> w...` | ...with a kept node a far node (`keeps`, row by row, the entries made here when null; MapTiles.nodePixels(KeptNode, ...), batch UP3): the same pixels, only what moved since each was drawn redone. |
+| 294 | 3 | `public static void node(MapTiles tiles, View v, int k, byte[] ground, int[] buf, int[] out, Set<CityMap.District> wanted)` | ...one node of it, the k-th row by row (MapTiles.nodePixels() into `buf`, NODE_PX squared, cut into `out`): what the screen paints a frame at a time. |
+| 299 | 8 | `public static void node(MapTiles tiles, View v, int k, byte[] ground, MapTiles.KeptNode keep, int[] buf, int[] out, Set<CityMap...` | ...from a kept node `keep` (MapTiles.nodePixels(KeptNode, ...), batch UP3: the same pixels, only what moved since it was last drawn redone), or whole where it is null. |
 
-### A CLICK (lines 294-302)
+### A CLICK (lines 308-316)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 299 | 3 | `public static void open(MapFrame big, Box frame)` | What a click on the stamp opens: the expanded map fitted on the stamp's frame (MapFrame.fit(), FIT_MARGIN of it) - the built-up ground it shows, bigger (star MM2-4). |
+| 313 | 3 | `public static void open(MapFrame big, Box frame)` | What a click on the stamp opens: the expanded map fitted on the stamp's frame (MapFrame.fit(), FIT_MARGIN of it) - the built-up ground it shows, bigger (star MM2-4). |
 

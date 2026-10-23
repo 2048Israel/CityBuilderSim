@@ -635,4 +635,397 @@ public final class MapTiles {
         }
         return true;
     }
+
+    /* ----- a far node kept: redrawn only where it moved (batch UP3) ----- */
+
+    /** KeptNode's district index at a pixel with no district (no city ground there, or ground no district holds), and at one past the planet's rim on Earth, which nodePixels() draws the void. */
+    private static final int NO_DISTRICT = -1, VOID_PIXEL = -2;
+
+    /** nodeKey()'s fixed marks: a district whose picture is not current, the land's key where the city has no land, the runs' where it has none. */
+    private static final long NO_PICTURE = 0x4E4F504943L, NO_LAND = 0x4C414E44L, NO_RUNS = 0x4E4F52554E53L;
+
+    /**
+     * What a far node was last drawn from and its layers, for one node (batch
+     * UP3, docs/queue/UP3.md; the minimap's stamp is one - the expanded map's
+     * far view has too many nodes to keep layers for, and asks nodeKey()
+     * instead): nodePixels(KeptNode, ...) redraws only what moved since, and
+     * composes the same pixels nodePixels() would. It is called with the same
+     * x0, y0, plots and ground (the same array) from call to call; another
+     * redraws everything. The counters are what a harness reads.
+     *
+     * Three layers, each redone when its key moved. The LAND: the city's
+     * cover and ownership a pixel at a time, which district each pixel lies in
+     * (the node's districts listed in the order nodePixels() first meets them)
+     * and the city's edge - redone when what is owned under the node and its
+     * ring of a pixel round it changes, or a district is added. The DISTRICTS:
+     * each pixel's colour before the runs and the edge, repainted only for the
+     * districts whose version, built plots, owned plots or picture moved. The
+     * RUNS: the highways, railway, yards and sea terminals' dots a pixel at a
+     * time - redone when the runs or the shore's works change.
+     */
+    public static final class KeptNode {
+        private CityMap map;
+        private CityLand land;
+        private LandGrid grid;
+        private long x0, y0, plots, landKey, runsKey;
+        private byte[] ground;
+        private boolean runsKept;
+        /** The land layer: the city's cover of each pixel and a ring about the node, whether it owns the pixel's sample, whether the pixel is its edge, and each pixel's district (an index into districts, or NO_DISTRICT, or VOID_PIXEL). Null before the first call. */
+        private byte[] cover;
+        private boolean[] city, edge;
+        private int[] district;
+        private CityMap.District[] districts = new CityMap.District[0];
+        /** The district layer: each pixel's colour before the runs and the edge, and each district's key as it was drawn. */
+        private int[] base;
+        private long[] dVersion, dUsed;
+        private int[] dOwned;
+        private DistrictPicture[] dPic;
+        /** The runs layer: the colour of each pixel the runs cross, and which they cross. */
+        private int[] runColour;
+        private boolean[] runMask;
+        private long lands, runsDrawn, repainted, calls;
+
+        /** Times its land layer was drawn. */
+        public long lands() { return lands; }
+        /** Times its runs layer was drawn. */
+        public long runsDrawn() { return runsDrawn; }
+        /** Districts whose pixels were repainted, summed over the calls. */
+        public long districtsRepainted() { return repainted; }
+        /** Times nodePixels() was called with it. */
+        public long calls() { return calls; }
+        /** How many districts it lists now: those it met at a pixel of the city's ground. */
+        public int districts() { return districts.length; }
+    }
+
+    /**
+     * A far node's pixels as nodePixels(x0, y0, plots, ground, out) gives
+     * them - `out`, wanted(), lastEdge(), lastRun() and the return all equal -
+     * redoing only what moved since `keep` was last drawn (batch UP3): the land
+     * layer if its key moved (or keep is new, or for another node), the
+     * districts' keys and the repaint of those that moved, the runs layer if
+     * its key moved; then `out` composed from them every call, the order
+     * nodePixels() writes them in - the district pass's colour, the runs over
+     * it, the edge blended over both. It is an optimisation and not a new look:
+     * MapCheck 18 holds it equal to nodePixels(), which stays as it was.
+     */
+    public int nodePixels(KeptNode keep, long x0, long y0, long plots, byte[] ground, int[] out) {
+        int n = MapFrame.NODE_PX;
+        CityLand land = map.land();
+        LandGrid grid = land == null ? null : land.grid();
+        boolean pictures = World.DISTRICT / plots >= PICTURE_FROM_PX;
+        keep.calls++;
+        boolean fresh = keep.district == null || keep.map != map || keep.x0 != x0 || keep.y0 != y0 || keep.plots != plots || keep.ground != ground;
+        long landKey = landKey(x0, y0, plots);
+        boolean landMoved = fresh || keep.land != land || keep.grid != grid || keep.landKey != landKey;
+        if (fresh) {
+            keep.map = map;
+            keep.x0 = x0;
+            keep.y0 = y0;
+            keep.plots = plots;
+            keep.ground = ground;
+            keep.runsKept = false;
+        }
+        if (landMoved) {
+            drawLand(keep, land, grid);
+            keep.land = land;
+            keep.grid = grid;
+            keep.landKey = landKey;
+            keep.lands++;
+        }
+        // The districts: each one's key as it stands, against the key it was last drawn at; wanted() in the order nodePixels() meets them.
+        CityMap.District[] ds = keep.districts;
+        boolean[] dirty = new boolean[ds.length];
+        boolean any = landMoved;
+        wanted.clear();
+        for (int q = 0; q < ds.length; q++) {
+            CityMap.District d = ds[q];
+            long used = d.usedCells();
+            DistrictPicture pic = null;
+            if (pictures && used > 0) {
+                pic = map.pictureIfCurrent(d);
+                if (pic == null) wanted.add(d);
+            }
+            if (landMoved || d.version != keep.dVersion[q] || used != keep.dUsed[q] || d.owned() != keep.dOwned[q] || pic != keep.dPic[q]) {
+                dirty[q] = true;
+                any = true;
+                keep.repainted++;
+                keep.dVersion[q] = d.version;
+                keep.dUsed[q] = used;
+                keep.dOwned[q] = d.owned();
+                keep.dPic[q] = pic;
+            }
+        }
+        if (any) repaint(keep, dirty, landMoved);
+        if (lastRun.length != n * n) { lastRun = new boolean[n * n]; lastEdge = new boolean[n * n]; }
+        long runsKey = runsKey();
+        if (!keep.runsKept || keep.runsKey != runsKey) {
+            drawRuns(keep);
+            keep.runsKey = runsKey;
+            keep.runsKept = true;
+            keep.runsDrawn++;
+        }
+        // Composed in the order nodePixels() writes: the district pass, the runs over it, the edge over both.
+        System.arraycopy(keep.runMask, 0, lastRun, 0, n * n);
+        System.arraycopy(keep.edge, 0, lastEdge, 0, n * n);
+        for (int k = 0; k < n * n; k++) {
+            int c = keep.base[k];
+            if (keep.runMask[k]) c = keep.runColour[k];
+            if (keep.edge[k]) c = TileRaster.blend(c, EDGE, EDGE_ALPHA);
+            out[k] = c;
+        }
+        return wanted.size();
+    }
+
+    /**
+     * The land layer of a kept node: nodePixels()'s first loop (the city's
+     * cover a pixel at a time and a ring round the node, and whether it owns
+     * each pixel's sample) and last (the edge), and which district each pixel
+     * lies in, met in nodePixels()'s order - every district at a pixel of the
+     * city's ground, built or not, the pixels past the Earth's rim none of
+     * them. Its sizes are allocated on the first draw. The expressions are
+     * nodePixels()'s: the two must move together (MapCheck 18 holds them equal).
+     */
+    private void drawLand(KeptNode keep, CityLand land, LandGrid grid) {
+        int n = MapFrame.NODE_PX, w = n + 2;
+        long x0 = keep.x0, y0 = keep.y0, plots = keep.plots;
+        boolean earth = map.worldKey().earth();
+        int level = Long.numberOfTrailingZeros(plots);
+        boolean aligned = Long.bitCount(plots) == 1 && Math.floorMod(x0, plots) == 0 && Math.floorMod(y0, plots) == 0;
+        if (keep.district == null) {
+            keep.cover = new byte[w * w];
+            keep.city = new boolean[w * w];
+            keep.edge = new boolean[n * n];
+            keep.district = new int[n * n];
+            keep.base = new int[n * n];
+            keep.runColour = new int[n * n];
+            keep.runMask = new boolean[n * n];
+        }
+        byte[] cover = keep.cover;
+        boolean[] city = keep.city;
+        for (int j = -1; j <= n; j++) {
+            for (int i = -1; i <= n; i++) {
+                int cv = LandGrid.NONE, at = (j + 1) * w + i + 1;
+                if (grid != null) {
+                    long ax = x0 + i * plots, ay = y0 + j * plots;
+                    if (aligned) cv = grid.cover(level, Math.floorDiv(ax, plots), Math.floorDiv(ay, plots));
+                    else {
+                        long o = grid.owned(ax, ay, ax + plots, ay + plots);
+                        cv = o == 0 ? LandGrid.NONE : o == plots * plots ? LandGrid.ALL : LandGrid.SOME;
+                    }
+                }
+                cover[at] = (byte) cv;
+                city[at] = cv == LandGrid.ALL || (cv == LandGrid.SOME && land.ownsPlot(x0 + i * plots + plots / 2, y0 + j * plots + plots / 2));
+            }
+        }
+        // Which district each pixel lies in: nodePixels()'s second loop's lookups, the districts listed as it first meets them.
+        java.util.List<CityMap.District> met = new java.util.ArrayList<>();
+        Map<CityMap.District, Integer> index = new java.util.HashMap<>();
+        long lastKey = Long.MIN_VALUE;
+        int di = NO_DISTRICT;
+        for (int j = 0; j < n; j++) {
+            long y = y0 + j * plots + plots / 2;
+            for (int i = 0; i < n; i++) {
+                long x = x0 + i * plots + plots / 2;
+                int k = j * n + i;
+                if (earth && !EarthProj.onPlanet(EarthProj.metresX(x0 + (i + 0.5) * plots), EarthProj.metresY(y0 + (j + 0.5) * plots))) {
+                    keep.district[k] = VOID_PIXEL;
+                    continue;
+                }
+                int cv = cover[(j + 1) * w + i + 1];
+                if (cv == LandGrid.NONE) {
+                    keep.district[k] = NO_DISTRICT;
+                    continue;
+                }
+                long ddx = Math.floorDiv(x, World.DISTRICT), ddy = Math.floorDiv(y, World.DISTRICT), key = (ddx << 32) ^ (ddy & 0xffffffffL);
+                if (key != lastKey) {
+                    lastKey = key;
+                    CityMap.District d = map.districtOfTile(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE));
+                    if (d == null) di = NO_DISTRICT;
+                    else {
+                        Integer q = index.get(d);
+                        if (q == null) {
+                            q = met.size();
+                            index.put(d, q);
+                            met.add(d);
+                        }
+                        di = q;
+                    }
+                }
+                keep.district[k] = di;
+            }
+        }
+        keep.districts = met.toArray(new CityMap.District[0]);
+        int nd = keep.districts.length;
+        keep.dVersion = new long[nd];
+        keep.dUsed = new long[nd];
+        keep.dOwned = new int[nd];
+        keep.dPic = new DistrictPicture[nd];
+        // The city's edge, nodePixels()'s last loop's test.
+        for (int j = 0; j < n; j++) {
+            for (int i = 0; i < n; i++) {
+                int a = (j + 1) * w + i + 1;
+                keep.edge[j * n + i] = city[a] ? !city[a - 1] || !city[a + 1] || !city[a - w] || !city[a + w]
+                        : cover[a] == LandGrid.SOME && !city[a - 1] && !city[a + 1] && !city[a - w] && !city[a + w]
+                                && !city[a - w - 1] && !city[a - w + 1] && !city[a + w - 1] && !city[a + w + 1];
+            }
+        }
+    }
+
+    /**
+     * The district layer of a kept node: each pixel's colour before the runs
+     * and the edge - the terrain's, dimmed where the city does not own it, a
+     * built district's picture's pixel or its shares' dither over it - for the
+     * pixels of the districts marked dirty, or every pixel (`all`, after a
+     * land redraw). The colour rule is nodePixels()'s, expression for
+     * expression, and the two must move together (MapCheck 18 holds them equal).
+     */
+    private void repaint(KeptNode keep, boolean[] dirty, boolean all) {
+        int n = MapFrame.NODE_PX, w = n + 2;
+        long x0 = keep.x0, y0 = keep.y0, plots = keep.plots;
+        int level = Long.numberOfTrailingZeros(plots);
+        BuildingVisual.Type[] types = map.types();
+        double[][] shares = new double[dirty.length][];
+        for (int j = 0; j < n; j++) {
+            long y = y0 + j * plots + plots / 2;
+            for (int i = 0; i < n; i++) {
+                int k = j * n + i, di = keep.district[k];
+                if (di == VOID_PIXEL) {
+                    if (all) keep.base[k] = TileRaster.VOID;
+                    continue;
+                }
+                if (!all && !(di >= 0 && dirty[di])) continue;
+                long x = x0 + i * plots + plots / 2;
+                byte g = keep.ground[k];
+                int c = TileRaster.GROUND[g];
+                boolean owned = keep.city[(j + 1) * w + i + 1];
+                if (!owned) c = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
+                if (di >= 0 && keep.dUsed[di] > 0) {
+                    long dx0 = Math.floorDiv(x, World.DISTRICT) * World.DISTRICT, dy0 = Math.floorDiv(y, World.DISTRICT) * World.DISTRICT;
+                    int code = DistrictPicture.GROUND;
+                    DistrictPicture pic = keep.dPic[di];
+                    if (pic != null) code = pic.codeAtPlot((int) (x - dx0), (int) (y - dy0));
+                    else if (owned && World.dry(g)) {
+                        double[] s = shares[di];
+                        if (s == null) {
+                            s = DistrictPicture.shares(keep.districts[di], types);
+                            shares[di] = s;
+                        }
+                        code = DistrictPicture.pick(s, World.unit(World.mix(World.mix(map.seed() ^ 0x444954484552L ^ level
+                                ^ Math.floorDiv(x, plots) * 0x9E3779B97F4A7C15L) ^ Math.floorDiv(y, plots) * 0xC2B2AE3D27D4EB4FL)));
+                    }
+                    if (code != DistrictPicture.GROUND) c = DistrictPicture.colour(code);
+                }
+                keep.base[k] = c;
+            }
+        }
+    }
+
+    /** The runs layer of a kept node: nodePixels()'s runs block, drawn into the node's own colours and its mask the pixels they cross (lastRun after it). */
+    private void drawRuns(KeptNode keep) {
+        int n = MapFrame.NODE_PX;
+        long x0 = keep.x0, y0 = keep.y0, plots = keep.plots;
+        int[] out = keep.runColour;
+        java.util.Arrays.fill(lastRun, false);
+        CityRuns runs = map.runs();
+        if (runs != null) {
+            int highway = TileRaster.blend(TileRaster.ROAD[BuildingVisual.HIGHWAY], 0xffffffff, FAR_HIGHWAY_LIGHTEN);
+            if (runs.highwaysReach()) stroke(runs.highways(), highway, x0, y0, plots, out);
+            stroke(runs.rail(), TileRaster.RAIL_DARK, x0, y0, plots, out);
+            for (long[] yard : runs.yards()) dot(yard[0] + yard[2] / 2.0, yard[1] + yard[3] / 2.0, x0, y0, plots,
+                    BuildingVisual.FILL[BuildingVisual.TRANSPORT], out);
+            for (CityShore.Work work : map.shore().works()) {
+                if (work.quay() > 0) dot(work.x0() + work.w() / 2.0, work.y0() + work.h() / 2.0, x0, y0, plots,
+                        BuildingVisual.FILL[BuildingVisual.TRANSPORT], out);
+            }
+        }
+        System.arraycopy(lastRun, 0, keep.runMask, 0, n * n);
+    }
+
+    /**
+     * The land key of the node at (x0, y0) of `plots` a pixel: how many plots
+     * the city owns in its box and the ring of a pixel round it - [x0 - plots,
+     * x0 + (NODE_PX + 1) plots) each way - folded with the map's district
+     * count (a new district changes districtOfTile()). Ownership only grows
+     * (as CityMap.ownStamp() argues: a restatement draws the map again), so
+     * the count moves whenever what is owned there does. One LandGrid.owned()
+     * over a box: a walk of the grid's blocks the box cuts, not a pixel's
+     * worth of queries. A fixed key where the city has no land.
+     */
+    private long landKey(long x0, long y0, long plots) {
+        CityLand land = map.land();
+        LandGrid grid = land == null ? null : land.grid();
+        if (grid == null) return NO_LAND;
+        int n = MapFrame.NODE_PX;
+        long owned = grid.owned(x0 - plots, y0 - plots, x0 + (n + 1) * plots, y0 + (n + 1) * plots);
+        return World.mix(World.mix(NO_LAND ^ owned) ^ map.districts().size());
+    }
+
+    /** The runs key: whether the city has runs, their version (CityRuns' stamp of everything laid), whether the highways reach a street, and the shore's works - each one's box and whether it has a quay - in order. What nodePixels()'s runs block draws from. */
+    private long runsKey() {
+        CityRuns runs = map.runs();
+        if (runs == null) return NO_RUNS;
+        long h = World.mix(NO_RUNS ^ runs.version());
+        h = World.mix(h ^ (runs.highwaysReach() ? 1L : 0L));
+        for (CityShore.Work work : map.shore().works()) {
+            h = World.mix(h ^ work.x0() * 0x9E3779B97F4A7C15L ^ work.y0() ^ ((long) work.w() << 40) ^ ((long) work.h() << 48)
+                    ^ (work.quay() > 0 ? 1L << 62 : 0L));
+        }
+        return h;
+    }
+
+    /**
+     * A hash of everything nodePixels() draws the node at (x0, y0) from but
+     * its ground, which is the world's and fixed for the node (batch UP3; the
+     * expanded map's far view keeps this and an image a node, redrawing a node
+     * when its key moved): the land key, the runs key, and each district whose
+     * square overlaps the node's box [x0, x0 + NODE_PX plots) each way - its
+     * place, version, built plots, owned plots and, where the node draws
+     * pictures, the stamp of its current picture (a fixed mark for none).
+     * Equal keys, equal pixels. The districts' hashes are summed, so the key
+     * does not depend on the order they are met in, and none is sorted or
+     * listed: they are found by map.district() for each column and row the
+     * box spans when that is no more lookups than the map has districts, else
+     * by one pass over map.districts() (a node of 1,024 plots a pixel spans
+     * 512 x 512 squares, the 5B copy has 15,000 districts). The cost is the
+     * grid's one box count, the runs' shore works and those lookups - about
+     * a thousand at 5B's 64 plots a pixel, against the 16,384 pixels
+     * nodePixels() computes - plus pictureIfCurrent() for each built district
+     * where the node draws pictures, as nodePixels() asks.
+     */
+    public long nodeKey(long x0, long y0, long plots) {
+        boolean pictures = World.DISTRICT / plots >= PICTURE_FROM_PX;
+        long span = MapFrame.NODE_PX * plots, bdx = map.baseDX(), bdy = map.baseDY();
+        long fx0 = Math.floorDiv(x0, World.DISTRICT), fx1 = Math.floorDiv(x0 + span - 1, World.DISTRICT);
+        long fy0 = Math.floorDiv(y0, World.DISTRICT), fy1 = Math.floorDiv(y0 + span - 1, World.DISTRICT);
+        long sum = 0;
+        if ((fx1 - fx0 + 1) * (fy1 - fy0 + 1) <= map.districts().size()) {
+            for (long fy = fy0; fy <= fy1; fy++) {
+                for (long fx = fx0; fx <= fx1; fx++) {
+                    CityMap.District d = map.district((int) (fx - bdx), (int) (fy - bdy));
+                    if (d != null) sum += districtKey(d, pictures);
+                }
+            }
+        } else {
+            for (CityMap.District d : map.districts()) {
+                long fx = bdx + d.dx, fy = bdy + d.dy;
+                if (fx >= fx0 && fx <= fx1 && fy >= fy0 && fy <= fy1) sum += districtKey(d, pictures);
+            }
+        }
+        long h = World.mix(landKey(x0, y0, plots) ^ 0x4B4559L);
+        h = World.mix(h ^ runsKey());
+        return World.mix(h ^ sum);
+    }
+
+    /** One district's part of nodeKey(): its place, version, built and owned plots, and (`pictures`) its current picture's stamp or NO_PICTURE. */
+    private long districtKey(CityMap.District d, boolean pictures) {
+        long used = d.usedCells();
+        long h = World.mix(((long) d.dx << 32) ^ (d.dy & 0xffffffffL) ^ 0x44495354L);
+        h = World.mix(h ^ d.version);
+        h = World.mix(h ^ used * 0x9E3779B97F4A7C15L ^ d.owned());
+        if (pictures && used > 0) {
+            DistrictPicture pic = map.pictureIfCurrent(d);
+            h = World.mix(h ^ (pic == null ? NO_PICTURE : pic.stamp));
+        }
+        return h;
+    }
 }
