@@ -67,6 +67,8 @@ import java.util.List;
  *   buyForeignCurrency()      JOURNALLED  "Bought reserves" - no budget line
  *   sellForeignCurrency()     JOURNALLED  "Sold reserves" - no budget line
  *   repurchaseDebt()          JOURNALLED  "Bought back a bond" - retire() is not a repayment
+ *   callLine()                JOURNALLED  "Called a bond" (CD4) - the same shape as a buyback:
+ *                                         retire() is not a repayment
  *   syncHouseholdAccounts()   JOURNALLED  "Lent to students, net of repayments" - the
  *                                         grant is a budget line, the loans are not;
  *                                         the interest on them (2026-09-21) is a budget

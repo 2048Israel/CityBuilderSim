@@ -330,8 +330,9 @@ public final class MoneyAudit {
          * leaving in the next month's window - the treasury's end of the
          * shape the bank's unsettled paper has below. (The central bank's was
          * here too, as its redemption, until CD4: a buyback pays it nothing,
-         * D18. A call will, through CentralBank.paperBoughtBack(), and the
-         * redemption is carried here again.) See Game.buyBack().
+         * D18. A call does pay it, through CentralBank.paperBoughtBack(), and
+         * the redemption is carried here again, by getBuybackUnsettled().)
+         * See Game.buyBack() and Game.callLine().
          */
         pools[i++] = g.getCash() + g.getBuybackUnsettled();
         for (Sector s : sectors.all()) pools[i++] = s.getCash();

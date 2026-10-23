@@ -54,6 +54,10 @@ import java.util.Locale;
  *                        bond's, rounded down to an eighth of a point; the
  *                        stop itself for an amortizing bond) or the world's
  *                        for a dollar bond; 0 for a bill
+ * @param callable        true for a bond sold callable (CD4): the coupon
+ *                        carries the city's right to call it whole at 100
+ * @param firstCallMonth  the game month from which it may be called (a line
+ *                        reopened keeps its own); -1 when not callable
  */
 public record DebtQuote(
         String instrument,
@@ -66,7 +70,17 @@ public record DebtQuote(
         double monthlyInterest,
         double totalCost,
         Auction.Result auction,
-        double coupon) {
+        double coupon,
+        boolean callable,
+        int firstCallMonth) {
+
+    /** A quote of paper that cannot be called: every sale before CD4, and every one that does not ask for the option. */
+    public DebtQuote(String instrument, int duration, double requested, double marketRate, double rateBefore,
+                     double faceValue, double cashReceived, double monthlyInterest, double totalCost,
+                     Auction.Result auction, double coupon) {
+        this(instrument, duration, requested, marketRate, rateBefore, faceValue, cashReceived,
+                monthlyInterest, totalCost, auction, coupon, false, -1);
+    }
 
     /** Years for a bond, months for a bill - the unit the duration is in. */
     public String timeUnit() {
@@ -157,6 +171,9 @@ public record DebtQuote(
             out.append(String.format("%nCoupon and price:     %.3f%%, %.3f per 100", auction.coupon() * 100, auction.pricePer100()));
         } else {
             out.append(String.format("%nPrice:                %.3f per 100", auction.pricePer100()));
+        }
+        if (callable) {
+            out.append(String.format("%nCallable:              at 100, from month %d - the coupon carries the option", firstCallMonth));
         }
         if (auction.shortSale()) {
             out.append(String.format("%nSOLD SHORT:           sold $%s of $%s - the bids did not reach the issue at %.3f%%, the highest yield the city took",
