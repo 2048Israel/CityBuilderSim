@@ -14,6 +14,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.34 — PT1-M3, the advice card says what automatic building holds back — 2026-10-23, ready, see docs/queue/PT1-M3-notes.md
+
+WHAT WOULD HELP MOST offered a Middle School and a Police Station that automatic building held back, and only the inbox
+said why (Jerus, 2026-10-12: "yes do rec"). A card whose building the last pass held back as not paying back now carries
+that verdict under it, in amber, in the inbox's own words: "Automatic building holds it back; it would not pay back: the
+6,720 residents it would cover over its 20 years pay the city $914.63 a month each and cost it $3,821 each, which leaves
+nothing for the $382,036 a month it runs at." The line is the model's (AutoBuilder.heldBackWords()), kept for every
+building the pass passed over and saved with its state; neither rule moves. AutoBuildCheck 6 causes the disagreement.
+The default playtest's trace is byte-identical, so the ensemble was not run.
+
 ### 0.8.33 — CD4, closing early — 2026-10-23, ready, see docs/queue/CD4-notes.md
 
 The city closes its paper early as a treasury does (spec-city-debt §6, §2.6): a buyback is a reverse auction in which each
