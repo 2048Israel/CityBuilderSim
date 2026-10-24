@@ -1833,6 +1833,14 @@ final class PeopleScreen {
         private final Label moreLabel = new Label();
         private final Tooltip moreTip = new Tooltip();
 
+        /**
+         * What the "+n more" label says while nothing folds: a space, never nothing (PT1-M4). A Label
+         * set to no words at all keeps its Text's wrapping width from the words it last had, so the
+         * label of a kept strip that once folded stuck out of its box 34 pixels wide while one built
+         * new did not (KeptCheck, the playtest's month 613); a space is laid out afresh each time.
+         */
+        private static final String UNUSED = " ";
+
         /** The "+n more" tile and the strip's size, made once in its life (Kept: a kept Strip is told each month's households by set()). */
         Strip() {
             moreLabel.setWrapText(true);
@@ -1887,7 +1895,7 @@ final class PeopleScreen {
             if (moved || built) {
                 // What a new strip's "+n more" starts as: the layout fills it in where tiles fold.
                 more.setVisible(true);
-                String idle = pieces.isEmpty() ? "nobody" : "";
+                String idle = pieces.isEmpty() ? "nobody" : UNUSED;
                 if (!idle.equals(moreLabel.getText())) moreLabel.setText(idle);
                 if (!moreTip.getText().isEmpty()) moreTip.setText("");
                 requestLayout();
@@ -1967,7 +1975,7 @@ final class PeopleScreen {
                 more.resizeRelocate(x, 0, Math.max(0, Math.min(TILE_MIN, w - x) - 3), h);
             } else {
                 // ...and with its words gone, as a strip built new has none there to lay out.
-                if (!moreLabel.getText().isEmpty()) moreLabel.setText("");
+                if (!UNUSED.equals(moreLabel.getText())) moreLabel.setText(UNUSED);
                 if (!moreTip.getText().isEmpty()) moreTip.setText("");
                 more.resizeRelocate(0, 0, 0, 0);
             }
