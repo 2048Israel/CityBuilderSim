@@ -5893,6 +5893,12 @@ public class LongPlaytest {
                     + EarthSite.latLonWords(g.getFounding().getEarthLat(), g.getFounding().getEarthLon()) + ", the site "
                     + String.format("%.0f m", Math.hypot(g.getCityLand().siteX() + 0.5 - World.SIDE / 2.0, g.getCityLand().siteY() + 0.5 - World.SIDE / 2.0) * World.PLOT_M)
                     + " from it; data " + EarthSite.shortId(g.getFounding().getEarthData()));
+            // ...and the ground it owns at the end by relief, and what the works stand on of the steep (ET2, BUILDABLE BY SLOPE): a generated world's is all flat, and prints none of this.
+            LandManager ground = g.getLandManager();
+            out.printf("  ITS GROUND AT THE END: flat %.3f km2, foothill %.3f, steep %.3f (of it very steep %.3f); works on the steep %.3f km2, steep ground no works stands on %.3f%n",
+                    LandManager.km2(ground.getFlatSqFt()), LandManager.km2(ground.getFoothillSqFt()), LandManager.km2(ground.getSlopeSqFt()),
+                    g.getCityLand().totalReliefKm2(CityLand.RELIEF_VERY_STEEP), LandManager.km2(ground.getWorksOnSlopeSqFt()),
+                    LandManager.km2(ground.idleSlopeSqFt()));
         }
         out.println("=================================================================\n");
 
@@ -6995,6 +7001,13 @@ public class LongPlaytest {
         out.printf("  ...room to grow past the ground-ahead line (0.7.67, M3b): %,d offer(s) bought by the move; %,d Bus"
                 + " Network(s), %,d Light Rail Line(s), %,d Metro Line(s) standing at the end%n", roomMovesBought,
                 qty(g, "Bus Network"), qty(g, "Light Rail Line"), qty(g, "Metro Line"));
+        // ...and the foothill prepared for buildings (ET2, SitePreparation): only when the city prepared any - a generated world is all flat, and its trace is what it was.
+        if (g.getLandManager().getPreparedSqFt() > 0) {
+            double billedAll = g.getSectors().construction().getBilledPoints();
+            out.printf("  ...foothill prepared (ET2): %.3f km2, %,.1f points (%.2f%% of the %,.1f points billed), $%,.0fk before the builders' tax, in %,d order(s)%n",
+                    LandManager.km2(g.getLandManager().getPreparedSqFt()), g.preparationPointsBilled(),
+                    billedAll > 0 ? 100 * g.preparationPointsBilled() / billedAll : 0, billedAll, g.preparationMoneyBilled(), g.preparationOrders());
+        }
         out.printf("  ...the road by its life (0.7.70, N1): %,d Gravel Road(s), %,d Paved Road(s), %,d Elevated Highway(s)"
                 + " standing at the end; %,d paving(s) of %,d gravel road(s) ordered, %,d being paved%n",
                 qty(g, "Gravel Road"), qty(g, "Paved Road"), qty(g, "Elevated Highway"), pavings, roadsPaved,

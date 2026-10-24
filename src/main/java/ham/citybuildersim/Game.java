@@ -6598,6 +6598,30 @@ public class Game {
         return house == null ? 0 : points * buildingManager.nonMaterialCost(house) / (double) house.getConstructionPoints();
     }
 
+    /**
+     * The foothill preparation billed over this game's life (ET2, SlopeCheck 9 and LongPlaytest's summary): the orders that
+     * carried one, the points they owed, and their money before the builders' tax (BuildQuote.prepCost). Counted where the
+     * order puts its preparation on the site (notePreparation()), the city's and a business's alike. Not saved - a
+     * reading of a run, which no screen and no month reads - so a game loaded from a save counts from nothing.
+     */
+    private int preparationOrders;
+    private double preparationPointsBilled, preparationMoneyBilled;
+
+    private void notePreparation(BuildQuote quote) {
+        preparationOrders++;
+        preparationPointsBilled += quote.prepPoints;
+        preparationMoneyBilled += quote.prepCost;
+    }
+
+    /** How many orders carried a foothill preparation over this game's life: counted from this game's start, not saved. */
+    public int preparationOrders() { return preparationOrders; }
+
+    /** ...the construction points they owed. */
+    public double preparationPointsBilled() { return preparationPointsBilled; }
+
+    /** ...and their money, before the builders' tax. */
+    public double preparationMoneyBilled() { return preparationMoneyBilled; }
+
     /* ---------------------------------------------------------------------
        BITUMEN FOR THE PAVING (0.7.83, batch O6; docs/studies/spec-oil.md 2.5)
 
@@ -7620,7 +7644,10 @@ public class Game {
             if (!noConstruction) {
                 // ...a foothill site's preparation, owed by the stack before its first building finishes (ET2); it is
                 // in the price and billed below. An instant build has none: it charges and owes none.
-                if (quote.prepPoints > 0) buildingManager.addPreparation(selected, quote.prepPoints);
+                if (quote.prepPoints > 0) {
+                    buildingManager.addPreparation(selected, quote.prepPoints);
+                    notePreparation(quote);
+                }
                 double fromYard = deliverYardToSites(selected, totalMaterialsRequired);
                 // ...and a paved road's bitumen, bought by the builders with the
                 // yard's material and billed in the quote (0.7.83; drawBitumen()).
@@ -8082,7 +8109,10 @@ public class Game {
 
         buildingManager.addStack(template, quantity, false);
         // ...a foothill site's preparation, owed by the stack before its first building finishes (ET2); it is in the quote.
-        if (quote.prepPoints > 0) buildingManager.addPreparation(template, quote.prepPoints);
+        if (quote.prepPoints > 0) {
+            buildingManager.addPreparation(template, quote.prepPoints);
+            notePreparation(quote);
+        }
         double fromYard = deliverYardToSites(template, quote.materialsNeeded);
         // ...and a paved road's bitumen, should a business ever order one (0.7.83; drawBitumen()).
         drawBitumen(quote.bitumenNeeded);
