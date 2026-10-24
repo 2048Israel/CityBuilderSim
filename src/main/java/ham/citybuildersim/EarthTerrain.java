@@ -2402,11 +2402,19 @@ public final class EarthTerrain {
         }
         if (!data.hasRelief()) throw new IllegalStateException("this data has no depth layer; earth-2.bin does (" + data.identity() + ")");
         double[] ll = new double[2];
-        double depth = proj.latLonOfPlot(x + 0.5, y + 0.5, ll)
-                ? Math.max(SEA_LEAST_DEPTH_M, data.depthM(ll[0], ll[1]))
-                : EarthData.DEPTH_DEEPEST_M;
+        double depth = proj.latLonOfPlot(x + 0.5, y + 0.5, ll) ? depthOf(ll[0], ll[1]) : EarthData.DEPTH_DEEPEST_M;
         synchronized (depths) { depths.put(k, depth); }
         return depth;
+    }
+
+    /**
+     * The depth layer's metres at a point of the planet (ET1 slice D; the globe's hover, which has a point and no plot): what
+     * depthAt() gives the plot there if it is sea - at least SEA_LEAST_DEPTH_M - whether or not the point is sea. Needs
+     * data with the depth layer (an earth-1 file throws).
+     */
+    public double depthOf(double lat, double lon) {
+        if (!data.hasRelief()) throw new IllegalStateException("this data has no depth layer; earth-2.bin does (" + data.identity() + ")");
+        return Math.max(SEA_LEAST_DEPTH_M, data.depthM(lat, lon));
     }
 
     /**

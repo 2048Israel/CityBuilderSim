@@ -1333,7 +1333,7 @@ final class FoundingScreen {
 
     /* ------------------------------------------------------- the close tier's ground */
 
-    /** The ground close: the city's own far view (MapTiles.nodeTerrain()) on an Earth world centred on the view - the spot's own when it is there - a whole number of plots a pixel; the void past the planet's rim. Since 0.7.135 the globe's wide views are the map's (GlobePicture.view()), and this is the founding globe's own arithmetic alone. */
+    /** The ground close: the city's own far view (MapTiles.nodeTerrain()) on an Earth world centred on the view - the spot's own when it is there - a whole number of plots a pixel, each pixel's colour by its cover and relief as the map's far nodes are (ET1 slice D); the void past the planet's rim. Since 0.7.135 the globe's wide views are the map's (GlobePicture.view()), and this is the founding globe's own arithmetic alone. */
     static int[] groundPixels(World.Key spot, double lat0, double lon0, double kmPx) {
         World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, lat0, lon0, EarthData.EARTH_2);
         long s = Math.max(1, Math.round(kmPx * 1000 / World.PLOT_M));
@@ -1342,12 +1342,12 @@ final class FoundingScreen {
         int[] out = new int[w * h];
         for (int ny = 0; ny * n < h; ny++) {
             for (int nx = 0; nx * n < w; nx++) {
-                byte[] node = MapTiles.nodeTerrain(key, x0 + (long) nx * n * s, y0 + (long) ny * n * s, s);
+                byte[] relief = new byte[n * n], node = MapTiles.nodeTerrain(key, x0 + (long) nx * n * s, y0 + (long) ny * n * s, s, relief);
                 for (int v = 0; v < n && ny * n + v < h; v++) {
                     for (int u = 0; u < n && nx * n + u < w; u++) {
                         int i = nx * n + u, j = ny * n + v;
                         double mx = EarthProj.metresX(x0 + (i + 0.5) * s), my = EarthProj.metresY(y0 + (j + 0.5) * s);
-                        out[j * w + i] = EarthProj.onPlanet(mx, my) ? TileRaster.GROUND[node[v * n + u]] : TileRaster.VOID;
+                        out[j * w + i] = EarthProj.onPlanet(mx, my) ? TileRaster.colour(node[v * n + u], relief[v * n + u]) : TileRaster.VOID;
                     }
                 }
             }

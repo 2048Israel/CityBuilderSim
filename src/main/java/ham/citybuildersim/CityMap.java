@@ -5776,13 +5776,16 @@ public final class CityMap {
      * drawn that the model does not have.
      */
     public void tileInput(long tx, long ty, TilePainter.Input in) {
-        World.of(worldKey).tileTerrain(tx, ty, in.terrain);
+        World w = World.of(worldKey);
+        w.tileTerrain(tx, ty, in.terrain);
+        w.tileRelief(tx, ty, in.relief);
         fillInput(tx, ty, in);
     }
 
     /** ...with the tile's ground given (a view keeps it: MapTiles.terrain(), batch J4) rather than read from the world. */
     public void tileInput(long tx, long ty, TilePainter.Input in, byte[] terrain) {
         System.arraycopy(terrain, 0, in.terrain, 0, TilePainter.PLOTS);
+        World.of(worldKey).tileRelief(tx, ty, in.relief);   // the Earth keeps its tiles' relief itself (EarthTerrain.tileRelief()); a generated world's is FLAT
         fillInput(tx, ty, in);
     }
 

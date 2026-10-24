@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * The planet's picture: a World class a texel on a latitude-longitude grid at ARCMIN, made from the Earth's data by the far rule through the grid's camera - ice and desert, the forest dithered, the rivers wide enough for a texel - and a frame of the globe drawn from it, each pixel's orthographic inverse then its texel.
+ * The planet's picture: a code a texel on a latitude-longitude grid at ARCMIN - a World class and, since ET1, its relief - made from the Earth's data by the far rule through the grid's camera - ice and desert, the forest dithered, the rivers wide enough for a texel - and a frame of the globe drawn from it, each pixel's orthographic inverse then its texel.
  *
  * WHY THIS EXISTS (0.7.132, batch E8; docs/studies/spec-globe.md 3.6,
  * Jerus's Q5). The globe's widest views (GlobeFrame's PICTURE tier) show the
@@ -44,6 +44,19 @@ import java.util.concurrent.Future;
  * is drawn by view(), the picture and then the far rule through the camera,
  * so both screens draw the same planet in the same colours (spec-globe 3.8,
  * Jerus's Q7) - MapCheck 13 holds it.
+ *
+ * THE RELIEF (ET1 slice D; spec-earth2-terrain 9.3): the picture's byte is a
+ * CODE, the texel's World class in its low CLASS_BITS bits and its relief
+ * (World.FLAT to VERY_STEEP, the far rule's: the shares of the 4' blocks
+ * under the texel against the camera's dither, so a range is grey in as many
+ * texels as the data's shares say) above them: relief x World.CLASSES +
+ * class, 0 to CODES - 1, the order TileRaster's colour table is in
+ * (TileRaster.codeColours()), so a frame colours a texel by one lookup and
+ * mountains read grey from orbit while snow stays white (ice has no relief:
+ * its code is its class). WHY NOT MORE CLASSES: World's classes are what
+ * every reader that counts them knows; a code is this picture's own, and
+ * texel(), at() and the class counts read the class alone, as they did. An
+ * earth-1 file or a generated world has all FLAT: its codes are its classes.
  */
 public final class GlobePicture {
 
@@ -58,6 +71,28 @@ public final class GlobePicture {
 
     /** A texel's height on the ground, km: its arc on the sphere (EarthTerrain.M_A_DEGREE). */
     public static double texelKm(int arcmin) { return arcmin / 60.0 * EarthTerrain.M_A_DEGREE / 1000; }
+
+    /** The bits of a texel's code that hold its World class: 3 (World.CLASSES is 8, 1 << CLASS_BITS - checked below); its relief is above them. */
+    public static final int CLASS_BITS = 3;
+
+    /** A code's class: its low CLASS_BITS bits. */
+    public static final int CLASS_MASK = (1 << CLASS_BITS) - 1;
+
+    /** How many codes there are: World.RELIEFS x World.CLASSES, 32 - the length of a table of colours a texel indexes (TileRaster.codeColours()). */
+    public static final int CODES = World.RELIEFS << CLASS_BITS;
+
+    static {
+        if (World.CLASSES != 1 << CLASS_BITS) throw new IllegalStateException("the picture's code holds " + CLASS_BITS + " bits of class; World has " + World.CLASSES);
+    }
+
+    /** The code of a texel of World class `cover` and relief `relief`: relief x World.CLASSES + class (the class alone at FLAT). */
+    public static byte code(int cover, int relief) { return (byte) (relief << CLASS_BITS | cover); }
+
+    /** A code's World class. */
+    public static int classOf(int code) { return code & CLASS_MASK; }
+
+    /** A code's relief (World.FLAT to VERY_STEEP). */
+    public static int reliefOf(int code) { return code >> CLASS_BITS; }
 
     private final int arcmin, cols, rows;
     private final double perDeg;
@@ -87,15 +122,28 @@ public final class GlobePicture {
     /** What it holds, bytes: a byte a texel. */
     public long bytes() { return texels.length; }
 
-    /** Texel (row, col)'s class. */
-    public byte texel(int row, int col) { return texels[row * cols + col]; }
+    /** Texel (row, col)'s World class (its code without the relief). */
+    public byte texel(int row, int col) { return (byte) (texels[row * cols + col] & CLASS_MASK); }
 
-    /** Its texels, row by row from the north: shared, do not write into it (GlobeCheck's). */
+    /** Texel (row, col)'s code: its class and relief (code()). */
+    public byte texelCode(int row, int col) { return texels[row * cols + col]; }
+
+    /** Its texels' codes, row by row from the north: shared, do not write into it (GlobeCheck's); classOf() reads a code's class. */
     byte[] texels() { return texels; }
 
-    /** The class of the texel (lat, lon) lies in. */
+    /** The World class of the texel (lat, lon) lies in. */
     public byte at(double lat, double lon) {
+        return (byte) (texels[row(lat) * cols + col(lon)] & CLASS_MASK);
+    }
+
+    /** The code of the texel (lat, lon) lies in: its class and its relief. */
+    public byte codeAt(double lat, double lon) {
         return texels[row(lat) * cols + col(lon)];
+    }
+
+    /** The relief of the texel (lat, lon) lies in: World.FLAT to VERY_STEEP. */
+    public int reliefAt(double lat, double lon) {
+        return reliefOf(texels[row(lat) * cols + col(lon)]);
     }
 
     private int row(double lat) {
@@ -122,8 +170,9 @@ public final class GlobePicture {
         for (int b = 0; b < bands; b++) {
             int row0 = b * bandRows;
             jobs.add(() -> {
-                byte[] band = new byte[cols * bandRows];
-                e.farTerrain(e.grid(arcmin, row0, bandRows), band);
+                byte[] band = new byte[cols * bandRows], relief = new byte[cols * bandRows];
+                e.farTerrain(e.grid(arcmin, row0, bandRows), band, relief);
+                for (int k = 0; k < band.length; k++) band[k] = code(band[k], relief[k]);
                 System.arraycopy(band, 0, texels, row0 * cols, band.length);
             });
         }
@@ -178,10 +227,14 @@ public final class GlobePicture {
     /**
      * Rows j0 to j1 - 1 of a frame of the view `f` into out (width x height,
      * a pixel an int): each pixel's centre through the view's orthographic
-     * inverse to its texel, the texel's class's colour from `colours`
-     * (TileRaster.GROUND, or the screen's dimmed), `space` off the disc.
+     * inverse to its texel, the texel's colour from `colours` - by its code
+     * from a table of CODES (colours(): TileRaster.codeColours(), or the
+     * screen's dimmed), by its class alone from one of World.CLASSES
+     * (TileRaster.GROUND: the cover without its relief, as before ET1) -
+     * `space` off the disc.
      */
     public void frame(GlobeFrame f, int[] colours, int space, int[] out, int j0, int j1) {
+        int mask = colours.length >= CODES ? 0xff : CLASS_MASK;
         EarthProj.Ortho o = f.ortho();
         int w = (int) f.width();
         double m = f.kmPx() * 1000, cx = f.width() / 2, cy = f.height() / 2;
@@ -194,7 +247,7 @@ public final class GlobePicture {
                     out[row + i] = space;
                     continue;
                 }
-                out[row + i] = colours[texels[row(ll[0]) * cols + col(ll[1])]];
+                out[row + i] = colours[texels[row(ll[0]) * cols + col(ll[1])] & mask];
             }
         }
     }
@@ -267,9 +320,9 @@ public final class GlobePicture {
 
     /* ----- what both screens draw it with ----- */
 
-    /** The ground's colours as the globe draws them: TileRaster.GROUND, or (`dimmed`) the world off the city's land as the expanded map dims it (TileRaster.UNOWNED_DIM; spec-globe 3.7) - the far nodes' own. */
+    /** The ground's colours as the globe draws them, by code (CODES of them: a class and its relief, TileRaster.codeColours(), whose FLAT row is TileRaster.GROUND), or (`dimmed`) the world off the city's land as the expanded map dims it (TileRaster.UNOWNED_DIM; spec-globe 3.7) - the far nodes' own. */
     public static int[] colours(boolean dimmed) {
-        int[] c = TileRaster.GROUND.clone();
+        int[] c = TileRaster.codeColours();
         if (dimmed) for (int k = 0; k < c.length; k++) c[k] = TileRaster.blend(c[k], TileRaster.VOID, TileRaster.UNOWNED_DIM);
         return c;
     }
@@ -282,7 +335,7 @@ public final class GlobePicture {
      * view's width a row), on the calling thread and the pool - the founding
      * screen's globe (0.7.135, spec-globe 3.8): in the PICTURE tier this
      * picture's frame; wider than the handoff closer, the far rule through
-     * the camera (GlobeFrame.groundPiece()) on the Earth world `key` names,
+     * the camera (GlobeFrame.groundCodes()) on the Earth world `key` names,
      * a piece a band; `space` off the disc. Closer than the handoff the
      * founding screen draws the ground round the view's centre itself.
      */
@@ -294,7 +347,7 @@ public final class GlobePicture {
         }
         double m = f.kmPx() * 1000, cx = f.width() / 2, cy = f.height() / 2;
         bands(h, cores(), (j0, j1) -> {
-            byte[] g = f.groundPiece(key, 0, j0, w, j1 - j0);
+            byte[] g = f.groundCodes(key, 0, j0, w, j1 - j0);
             for (int j = j0; j < j1; j++) {
                 double y = (cy - j - 0.5) * m;
                 for (int i = 0; i < w; i++) {

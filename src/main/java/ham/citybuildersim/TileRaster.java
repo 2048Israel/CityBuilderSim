@@ -135,6 +135,53 @@ public final class TileRaster {
     public static final int[] GROUND = { 0xffa8c47e, 0xff527c45, 0xff78b4dc, 0xff2f5d88, 0xffe6daaa, 0xffdfe7ee, 0xffd2b48c, 0xff4f87b5 };
 
     /**
+     * The grey each relief paints on open dry ground (ET1 slice D; spec-earth2-terrain 9.3; Jerus 2026-10-12, D4),
+     * by World's relief (FLAT, FOOTHILL, STEEP, VERY_STEEP): FLAT none - flat ground keeps its cover's colour
+     * - and foothill the lightest, 0xc8c3b8 (buildable ground), steep 0x9b968c, very steep the darkest,
+     * 0x6c6862 (the study's mockup, earth2/mockups.py). Drawn on grass, the beach and the desert; ice is white
+     * whatever the slope (it has no relief), and water none.
+     */
+    public static final int[] RELIEF_GREY = { 0, 0xffc8c3b8, 0xff9b968c, 0xff6c6862 };
+
+    /**
+     * How far forest on a slope is shaded toward its slope's grey (D5, the study's way B; the mockup's
+     * mixes, estimated by eye on Medellin): FLAT none, foothill and steep half the way, very steep
+     * 0.60 - forest stays forest green, so the forest the law and Forestry count reads, and the slope
+     * under it still does: sage on a foothill, greyer on steep ground, darkest on very steep.
+     */
+    public static final double[] FOREST_MIX = { 0, 0.50, 0.50, 0.60 };
+
+    /** Every cover's colour at every relief, by relief x CLASSES + cover: the table colour() reads - GROUND on the FLAT row, built once. */
+    private static final int[] COVER_RELIEF = new int[World.RELIEFS * World.CLASSES];
+    static {
+        for (int r = 0; r < World.RELIEFS; r++) {
+            for (int c = 0; c < World.CLASSES; c++) {
+                int k = GROUND[c];
+                if (r != World.FLAT && World.dry(c)) k = c == World.FOREST ? blend(k, RELIEF_GREY[r], FOREST_MIX[r]) : RELIEF_GREY[r];
+                COVER_RELIEF[r * World.CLASSES + c] = k;
+            }
+        }
+    }
+
+    /**
+     * A plot's ground colour from its cover (a World class) and its relief (World.FLAT to VERY_STEEP): GROUND[cover]
+     * on flat ground, on water, on ice and for a generated world (which has no relief); on dry open ground (grass, the
+     * beach, the desert) its slope's RELIEF_GREY; on forest its green shaded toward that grey by FOREST_MIX. A cover or
+     * relief outside the classes is GROUND's (the cover's, or 0 for a cover that is not one).
+     */
+    public static int colour(int cover, int relief) {
+        if (cover < 0 || cover >= World.CLASSES) return 0;
+        return relief <= 0 || relief >= World.RELIEFS ? GROUND[cover] : COVER_RELIEF[relief * World.CLASSES + cover];
+    }
+
+    /**
+     * Every cover-and-relief code's colour, a copy of the table colour() reads: code = relief x World.CLASSES + cover
+     * (World.RELIEFS x World.CLASSES = 32 entries, the FLAT row GROUND). What the globe draws a texel by: its picture
+     * holds a code a texel (GlobePicture.code()).
+     */
+    public static int[] codeColours() { return COVER_RELIEF.clone(); }
+
+    /**
      * Each road kind's colour (gravel, paved, highway): the mockup's MAP, but
      * gravel's. GRAVEL IS GREY (FR7 2.3, 2026-10-18; Jerus: "i think gravel isnt
      * brown, it should be grey"): the mockup's tan #cdb07c read as earth, and
@@ -3865,7 +3912,7 @@ public final class TileRaster {
     static int groundColour(TilePainter.Input in, TilePainter.Painted p, int i) {
         byte ground = in.terrain[i];
         if (ground == World.FOREST && p.use[i] == TilePainter.BUILDING) ground = World.GRASS;
-        int c = GROUND[ground];
+        int c = colour(ground, in.relief[i]);
         int s = p.site[i] - 1;
         boolean wet = World.salt(ground) || ground == World.FRESH;
         if (s >= 0 && (!wet || in.siteKind[s] == Resource.OIL.ordinal())) c = siteTint(in, i, s, c);
