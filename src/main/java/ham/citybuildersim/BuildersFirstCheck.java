@@ -265,10 +265,13 @@ public class BuildersFirstCheck {
                 weight, total, weight / total * 100, output * weight / total, output);
         close("...at its crew's weight: its points to CREW_SCALE_EXPONENT", weight,
                 Math.pow(depot.getConstructionPoints(), BuildingManager.CREW_SCALE_EXPONENT), 1e-12);
+        // The queue's total is a sum over the sites, and the two twins shared the month's points among them by different
+        // rules, so the two sums differ in the last bit (75,109.99999999999 against 75,110, PT1-M4: the founding depot
+        // moved the rounding): the twins stand alike to 1e-9 of the queue, not to the bit.
+        double owedWith = bm.getRemainingConstructionPoints(), owedWithout = without.getBuildingManager().getRemainingConstructionPoints();
         assertTrue("the twins stand alike", with.getMonth() == without.getMonth()
                 && with.getBuildingOutput() == without.getBuildingOutput()
-                && Double.doubleToLongBits(bm.getRemainingConstructionPoints())
-                == Double.doubleToLongBits(without.getBuildingManager().getRemainingConstructionPoints())
+                && Math.abs(owedWith - owedWithout) <= 1e-9 * Math.max(owedWith, owedWithout)
                 && without.getLastInvestment(BUILDERS).equals(g.getLastInvestment(BUILDERS)));
         return new Game[] { without, with };
     }

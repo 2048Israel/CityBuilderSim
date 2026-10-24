@@ -591,18 +591,20 @@ public class SaveFileCheck {
 
         Game brandNew = new Game(freshFiles);
         brandNew.run();
-        brandNew.buildStack(depot, 1, false);
+        // A store, not a depot (PT1-M4): the founding now stands a depot, so a depot is no template that exists only on site.
+        BuildingsTemplate onlyOnSite = template(brandNew, "Convenience Store");
+        brandNew.buildStack(onlyOnSite, 1, false);
 
         assertEquals("nothing is finished yet",
-                brandNew.getBuildingManager().getQuantity(depot.getId()), 0);
+                brandNew.getBuildingManager().getQuantity(onlyOnSite.getId()), 0);
         assertEquals("but one is being built",
-                brandNew.getBuildingManager().getUnderConstructionById()[depot.getId()], 1);
+                brandNew.getBuildingManager().getUnderConstructionById()[onlyOnSite.getId()], 1);
         assertTrue("saved", brandNew.saveGame(2).ok);
 
         Game reopened = new Game(freshFiles);
         reopened.loadGameSave(2);
         assertEquals("it did not vanish",
-                reopened.getBuildingManager().getUnderConstructionById()[depot.getId()], 1);
+                reopened.getBuildingManager().getUnderConstructionById()[onlyOnSite.getId()], 1);
 
         /* ============ 8b. a stack emptied keeps its place (0.7.103) ============ */
         System.out.println("\n--- and a building whose last one went keeps its place in the queue ---");
@@ -1153,7 +1155,8 @@ public class SaveFileCheck {
         full.getGovernmentInvestor().spend(-2_000_000);
         full.getLandManager().setOwnedSqFt(full.getLandManager().getOwnedSqFt() + 200_000_000L);
         for (String[] order : new String[][] {
-                {"House", "400"}, {"Convenience Store", "2"}, {"Construction Depot", "6"},
+                // Five depots and the founding's one (PT1-M4): the city's six depots as ever, now without the works department's free points.
+                {"House", "400"}, {"Convenience Store", "2"}, {"Construction Depot", "5"},
                 {"Coal Power Plant", "2"}, {"Water Treatment Plant", "2"},
                 {"Industrial Bakery", "4"}, {"Mixed Farm", "4"}, {LongPlaytest.nameOf(full, Mining.IRON_MINE), "2"},
                 {LongPlaytest.nameOf(full, HeavyIndustry.ARC_FURNACE), "2"},
