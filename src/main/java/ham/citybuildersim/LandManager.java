@@ -413,9 +413,25 @@ public class LandManager {
         return freeForAnyone();
     }
 
-    /** How full the city is. 1.0 means every square foot is spoken for. */
+    /** How full the city is. 1.0 means every square foot is spoken for - since ET2 every square foot a building may use (getUsedShare()). */
     public double getUtilisation() {
-        return (ownedSqFt > 0) ? Math.min(allocatedSqFt / ownedSqFt, 1) : 1;
+        return (ownedSqFt > 0) ? Math.min(getUsedShare(), 1) : 1;
+    }
+
+    /**
+     * The share of the city's ground built on, unclamped (ET2): allocated over owned, as it always was - and where
+     * the city owns steep ground, the share of the ground a building may use, the built ground less the works on the
+     * steep over the owned less the steep (BUILDABLE BY SLOPE). WHY: the steep ground no works stands on is not room
+     * for a building, and counting it as room told the land buyers a city was 89% full while no building could stand
+     * anywhere - the Medellín playtest stopped buying for a thousand months and ended at half its people. 1 with no
+     * ground; on a generated world (no steep) allocated over owned, to the bit.
+     */
+    public double getUsedShare() {
+        if (!(ownedSqFt > 0)) return 1;
+        double slope = slopeSqFt();
+        if (!(slope > 0)) return allocatedSqFt / ownedSqFt;
+        double room = ownedSqFt - slope;
+        return room > 0 ? (allocatedSqFt - split().worksOnSlope()) / room : 1;
     }
 
     public double getAvailableBlocks()  { return getAvailableSqFt() / BLOCK_SQ_FT; }

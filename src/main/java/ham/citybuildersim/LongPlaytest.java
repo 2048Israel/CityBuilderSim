@@ -3859,7 +3859,8 @@ public class LongPlaytest {
      */
     static double roomToGrow(Game g) {
         LandManager land = g.getLandManager();
-        double used = land.getOwnedSqFt() > 0 ? land.getAllocatedSqFt() / land.getOwnedSqFt() : 1;
+        // ...of the ground a building may use since ET2 (LandManager.getUsedShare(): the steep is not room).
+        double used = land.getUsedShare();
         double line = groundAheadUtilisation(g);
         if (!(used > line)) return 0;
         return Math.max(1, g.getEconomyManager().getMonthGdp()) * Math.min(1, (used - line) / (1 - line));
@@ -3880,7 +3881,7 @@ public class LongPlaytest {
         double most = groundAheadUtilisation(g);
         double budget = Math.max(0, g.getCash()) * GROUND_AHEAD_CASH_SHARE;
         int guard = 0;
-        while (land.getOwnedSqFt() > 0 && land.getAllocatedSqFt() / land.getOwnedSqFt() > most
+        while (land.getOwnedSqFt() > 0 && land.getUsedShare() > most
                 && guard++ < 60) {
             LandParcel best = g.bestOffer(Game.LandNeed.room());
             if (best == null) break;

@@ -7337,8 +7337,23 @@ public final class GameVersion {
      *   - Save: landCentreRelief, landHoldingsRelief, landOffersRelief (a
      *     missing key reads flat); SAVE_FORMAT 45 unchanged, every earth-1
      *     city refused by its identity.
+     *
+     * 0.8.42 (2026-10-24) - ET2, BUILDABLE BY SLOPE
+     * (docs/queue/ET2-notes.md; docs/studies/spec-earth2-terrain.md 3.2,
+     * 3.4, 4.1, 4.2, 4.4; D6, D7, D9, D21; E7 star 10).
+     *   - LandManager, BUILDABLE BY SLOPE: buildings on flat then foothill,
+     *     steep and very steep refused them; works (Game.standsAnywhere())
+     *     take steep first, then foothill, then flat.
+     *   - SitePreparation: a foothill pad's cut, fill and wall priced from
+     *     sourced rates on the House's price a point; in the quote, owed on
+     *     the site (BuildingsStacks.addPreparation()), billed to Construction.
+     *   - The map: buildings and streets off steep ground and ice, flat cells
+     *     first; the founding snap and its refusal on buildable ground.
+     *   - Save: landWorksSqFt, landPreparedSqFt; SAVE_FORMAT 46, the Earth
+     *     floor (EarthSite.SLOPE_FORMAT) 46, OLDEST_LOADABLE_FORMAT 45.
+     *   - Harness: SlopeCheck (new); SlopeRenders, docs/queue/ET2/.
      */
-    public static final String VERSION = "0.8.41";
+    public static final String VERSION = "0.8.42";
 
     /**
      * The save shape.
