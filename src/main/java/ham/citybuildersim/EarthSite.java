@@ -41,6 +41,14 @@ import java.util.Locale;
  * plot's class (onIce()), so the snap never finds a site on it, and a spot
  * on an ice sheet is refused on its own plot.
  *
+ * THE CARD'S THREE LINES OF ET1 (the project's spec-earth2-terrain.md 3.4;
+ * Jerus 2026-10-12, D21): the dry ground within 5 km by relief (the same
+ * plots the walk counts, read beside the cover: flat, foothill, steep, very
+ * steep kept apart in the Card's numbers and folded in its words), the
+ * nearest shallow water with how deep the sea gets within 5 km, and the
+ * landmass the site stands on, by its place's name and its area. The snap and
+ * the refusal on ground no building may stand on are ET2's.
+ *
  * RANDOM SPOT (randomPlace()): the seed picks among the data's places that
  * pass the site test - a site within the snap and not on ice - trying them in
  * an order its hash gives, so the same seed picks the same place.
@@ -382,12 +390,17 @@ public final class EarthSite {
      * @param icePlots    the disc's plots of ice (0.7.127), neither dry nor water: dry, fresh, sea and icePlots add up to plots
      * @param ironWay     which way the nearest iron lies from the site, of the eight
      * @param refusal     why the city cannot be founded here, or null
+     * @param reliefPlots the disc's dry plots by relief (ET1), World.RELIEFS of them, FLAT to VERY_STEEP: they add up to dry
+     * @param shallowKm   how far the nearest shallow sea (World.SHALLOW) lies from the site's centre, km; NaN where none lies within reach
+     * @param seaDepthMaxM the deepest the sea is within reach, metres: the depth layer's 1' cell under each sea plot of the disc (EarthData.depthM(), as World.depthAt() reads it: a metre at least), the greatest; NaN where there is no sea within reach
+     * @param landmass    the landmass the site stands on (EarthData.landmassAt()); null where the data has no landmass layer or none lies about the site
      * @param warnings    what to know before founding here; empty for nothing
      */
     public record Card(World.Key key, boolean hasSite, long siteX, long siteY, double siteLat, double siteLon,
                        double snappedM, String near, long plots, long dry, long fresh, long sea, long icePlots, double freshKm,
                        double seaKm, int provinceRow, String provinceName, Geology.Kind kind, double[] multipliers,
                        double ironKm, String ironWay, boolean ice, boolean desert, String refusal,
+                       long[] reliefPlots, double shallowKm, double seaDepthMaxM, EarthData.Landmass landmass,
                        List<String> warnings) {
 
         /** Whether a city can be founded on it. */
@@ -407,7 +420,96 @@ public final class EarthSite {
 
         /** A resource's deposit multiplier under the site (Geology.multiplierAt(), at the site's point: an iron district's shows, EG1), NaN for one not in fields. */
         public double multiplier(Resource r) { return multipliers[r.ordinal()]; }
+
+        /** One relief's share of the disc's dry ground (ET1): World.FLAT, FOOTHILL, STEEP or VERY_STEEP; 0 where there is no dry ground. */
+        public double reliefShare(int relief) { return dry == 0 ? 0 : reliefPlots[relief] / (double) dry; }
+
+        /** The share of the dry ground that is steep or very steep (ET1): the card's words fold the two. */
+        public double steepShare() { return reliefShare(World.STEEP) + reliefShare(World.VERY_STEEP); }
     }
+
+    /**
+     * THE CARD'S THREE LINES OF ET1 (spec-earth2-terrain 3.4; Jerus 2026-10-12, D21: relief, water and landmass).
+     * The ground within 5 km by relief as shares of its dry ground - flat, foothill and steep, very steep folded
+     * into steep, a class with no plot left out ("Dry ground within 5 km: flat 62% · foothill 30% · steep 8%").
+     */
+    public static String reliefWords(Card c) {
+        if (c.dry() == 0) return "No dry ground within " + reachWords();
+        StringBuilder out = new StringBuilder("Dry ground within ").append(reachWords());
+        String sep = ": ";
+        long steep = c.reliefPlots()[World.STEEP] + c.reliefPlots()[World.VERY_STEEP];
+        String[] names = { "flat", "foothill", "steep" };
+        long[] plots = { c.reliefPlots()[World.FLAT], c.reliefPlots()[World.FOOTHILL], steep };
+        for (int i = 0; i < names.length; i++) {
+            if (plots[i] == 0) continue;
+            double share = plots[i] / (double) c.dry();
+            out.append(sep).append(names[i]).append(' ').append(share < 0.005 ? "under 1%" : String.format(Locale.ROOT, "%.0f%%", 100 * share));
+            sep = " · ";
+        }
+        return out.toString();
+    }
+
+    /** ...the nearest shallow water and how deep the sea gets in reach: "Shallow water 0.4 km away · the sea is up to 34 m deep within 5 km", or none within the reach (the mockup's "deepest 1' cell", the depth layer's). */
+    public static String shallowWords(Card c) {
+        String shallow = Double.isNaN(c.shallowKm()) ? "No shallow water within " + reachWords() : "Shallow water " + distanceWords(c.shallowKm()) + " away";
+        String depth = Double.isNaN(c.seaDepthMaxM()) ? "no sea within " + reachWords()
+                : String.format(Locale.ROOT, "the sea is up to %,.0f m deep within %s", Math.rint(c.seaDepthMaxM()), reachWords());
+        return shallow + " · " + depth;
+    }
+
+    /** The depth layer's metres under a sea plot (World.depthAt()'s rule, read here without the world's plot cache): a metre at least, and the layer's deepest past the planet's rim. */
+    private static double plotDepth(EarthTerrain e, EarthData d, long x, long y, double[] ll) {
+        if (!e.projection().latLonOfPlot(x + 0.5, y + 0.5, ll)) return EarthData.DEPTH_DEEPEST_M;
+        return Math.max(EarthTerrain.SEA_LEAST_DEPTH_M, d.depthM(ll[0], ll[1]));
+    }
+
+    /**
+     * ...and the landmass: its place's name (the data's most populous place on it) and its area ("Its landmass: New
+     * York's, 36.8 million km² (id 2)"), or null where the data has none to say.
+     */
+    public static String landmassWords(Card c) {
+        EarthData.Landmass l = c.landmass();
+        if (l == null) return null;
+        String area = l.areaKm2() >= 1e6 ? String.format(Locale.ROOT, "%.1f million km²", l.areaKm2() / 1e6)
+                : l.areaKm2() >= 10 ? String.format(Locale.ROOT, "%,.0f km²", l.areaKm2()) : String.format(Locale.ROOT, "%.1f km²", l.areaKm2());
+        return "Its landmass: " + (l.name().isBlank() ? "unnamed" : l.name().trim() + "'s") + ", " + area + " (id " + l.id() + ")";
+    }
+
+    /** The card's reach as it writes it: "5 km". */
+    private static String reachWords() { return String.format(Locale.ROOT, "%.0f km", CARD_PLOTS * World.PLOT_M / 1000.0); }
+
+    /** A distance as the card writes it: a tenth of a km under ten, whole km from there (the founding screen's). */
+    private static String distanceWords(double km) {
+        return km < 10 ? String.format(Locale.ROOT, "%.1f km", km) : String.format(Locale.ROOT, "%,.0f km", km);
+    }
+
+    /**
+     * The landmass a site stands on (ET1): the data's at the site's point, or - when the point's 15" cell is not
+     * land by the landmass layer's rule (a coast the game draws dry where the data says half water) - the one most of
+     * the nearest ring of cells about it holds, within LANDMASS_RINGS rings; null for none, or for data with no
+     * landmass layer (an earth-1 file).
+     */
+    static EarthData.Landmass landmassNear(EarthData d, double lat, double lon) {
+        if (!d.hasRelief()) return null;
+        int id = d.landmassAt(lat, lon);
+        double step = 1.0 / 240, lonStep = step / Math.max(0.05, Math.cos(Math.toRadians(lat)));
+        for (int k = 1; id == 0 && k <= LANDMASS_RINGS; k++) {
+            java.util.Map<Integer, Integer> seen = new java.util.TreeMap<>();
+            for (int j = -k; j <= k; j++) {
+                for (int i = -k; i <= k; i++) {
+                    if (Math.max(Math.abs(i), Math.abs(j)) != k) continue;
+                    int near = d.landmassAt(Math.max(-90, Math.min(90, lat + j * step)), lon + i * lonStep);
+                    if (near != 0) seen.merge(near, 1, Integer::sum);
+                }
+            }
+            int most = 0;
+            for (java.util.Map.Entry<Integer, Integer> en : seen.entrySet()) if (en.getValue() > most) { most = en.getValue(); id = en.getKey(); }
+        }
+        return d.landmass(id);
+    }
+
+    /** How many rings of 15" cells (about 460 m each) landmassNear() looks through for land when the site's own cell has none: 8, 3.7 km. */
+    static final int LANDMASS_RINGS = 8;
 
     /** The card's words for a spot with no site. */
     public static final String NO_SITE_WORDS = "No dry ground within 5 km to found a city on: the spot is in the sea, or on an island too small.";
@@ -448,7 +550,8 @@ public final class EarthSite {
             long spot = EarthTerrain.spotPlot();
             if (!onIce(e, spot, spot)) {
                 return new Card(key, false, -1, -1, Double.NaN, Double.NaN, Double.NaN, null, 0, 0, 0, 0, 0, Double.NaN,
-                        Double.NaN, 0, null, null, multipliers, Double.NaN, null, false, false, NO_SITE_WORDS, List.of());
+                        Double.NaN, 0, null, null, multipliers, Double.NaN, null, false, false, NO_SITE_WORDS,
+                        new long[World.RELIEFS], Double.NaN, Double.NaN, null, List.of());
             }
             // On an ice sheet with no dry ground within reach (0.7.127): the card is the spot's own plot's, refused on ice.
             s = new long[] { spot, spot };
@@ -462,11 +565,15 @@ public final class EarthSite {
 
         // The ground within the reach, plot by plot from the tiles it is drawn in.
         long r = CARD_PLOTS, r2 = r * r, plots = 0, dry = 0, fresh = 0, sea = 0, icePlots = 0;
-        long fresh2 = Long.MAX_VALUE, sea2 = Long.MAX_VALUE;
+        long fresh2 = Long.MAX_VALUE, sea2 = Long.MAX_VALUE, shallow2 = Long.MAX_VALUE;
+        boolean deep = d.hasRelief();                  // an earth-1 file has no depth layer to read
+        double deepest = 0;
+        double[] ll2 = new double[2];
+        long[] reliefPlots = new long[World.RELIEFS];
         int n = World.TILE;
         for (long ty = Math.floorDiv(sy - r, n); ty <= Math.floorDiv(sy + r, n); ty++) {
             for (long tx = Math.floorDiv(sx - r, n); tx <= Math.floorDiv(sx + r, n); tx++) {
-                byte[] t = null;
+                byte[] t = null, rt = null;
                 for (int py = 0; py < n; py++) {
                     long y = ty * n + py, dy = y - sy;
                     if (dy * dy > r2) continue;
@@ -479,11 +586,17 @@ public final class EarthSite {
                         if (World.salt(g)) {
                             sea++;
                             sea2 = Math.min(sea2, d2);
+                            if (g == World.SHALLOW) shallow2 = Math.min(shallow2, d2);
+                            // The deepest the sea is in reach (ET1): the depth layer's 1' cell under each sea plot, at least a metre as the world's own depth is.
+                            if (deep) deepest = Math.max(deepest, plotDepth(e, d, x, y, ll2));
                         } else if (g == World.FRESH) {
                             fresh++;
                             fresh2 = Math.min(fresh2, d2);
                         } else if (World.dry(g)) {
                             dry++;
+                            // Its relief beside its cover (ET1), from the tile kept for it: the same plots, no second walk.
+                            if (rt == null) rt = e.keptRelief(tx, ty);
+                            reliefPlots[rt[py * n + px]]++;
                         } else {
                             icePlots++;
                         }
@@ -493,6 +606,8 @@ public final class EarthSite {
         }
         double freshKm = fresh2 == Long.MAX_VALUE ? Double.NaN : Math.sqrt(fresh2) * World.PLOT_M / 1000;
         double seaKm = sea2 == Long.MAX_VALUE ? Double.NaN : Math.sqrt(sea2) * World.PLOT_M / 1000;
+        double shallowKm = shallow2 == Long.MAX_VALUE ? Double.NaN : Math.sqrt(shallow2) * World.PLOT_M / 1000;
+        double seaDepthMaxM = sea2 == Long.MAX_VALUE || !deep ? Double.NaN : deepest;
 
         // The province under the site and its multipliers (E3), at the site's point so an iron district shows (EG1).
         Geology geo = w.geology();
@@ -517,7 +632,7 @@ public final class EarthSite {
         }
         return new Card(key, true, sx, sy, ll[0], ll[1], snapped, near, plots, dry, fresh, sea, icePlots, freshKm, seaKm, row,
                 prov == null ? null : prov.name().trim(), geo.kindOf(row), multipliers, ironKm, ironWay, ice, desert,
-                ice ? ICE_WORDS : null, List.copyOf(warnings));
+                ice ? ICE_WORDS : null, reliefPlots, shallowKm, seaDepthMaxM, landmassNear(d, ll[0], ll[1]), List.copyOf(warnings));
     }
 
     /**

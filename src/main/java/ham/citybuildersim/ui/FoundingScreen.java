@@ -101,7 +101,9 @@ import static ham.citybuildersim.ui.Pieces.*;
  *   - the card (EarthSite.measure(), on a worker): the site the snap found
  *     and how far from the spot, the ground within 5 km - dry, rivers and
  *     lakes, sea and (0.7.127) ice - and the nearest fresh water and sea, the province and its
- *     deposit multipliers, the nearest iron; a refusal (the sea, ice) in the
+ *     deposit multipliers, the nearest iron, and since ET1 the ground by relief, the nearest shallow
+ *     water with the sea's depth, and the landmass (D21: EarthSite.reliefWords(), shallowWords(),
+ *     landmassWords()); a refusal (the sea, ice) in the
  *     bad colour, which keeps Found dark, and a warning (a desert, no water
  *     near) in the warning colour, which does not.
  * The seed decides an Earth city's detail below the data, its fields and its
@@ -651,6 +653,11 @@ final class FoundingScreen {
         cardBox.getChildren().add(cardLine(waterWords(c), Palette.TEXT_BODY));
         cardBox.getChildren().add(cardLine(geologyWords(c), Palette.TEXT_BODY));
         cardBox.getChildren().add(cardLine(ironWords(c), Palette.TEXT_BODY));
+        // ET1 (D21): the ground by relief, the shallow water and the sea's depth, and the landmass, the words EarthSite writes.
+        cardBox.getChildren().add(cardLine(EarthSite.reliefWords(c), Palette.TEXT_BODY));
+        cardBox.getChildren().add(cardLine(EarthSite.shallowWords(c), Palette.TEXT_BODY));
+        String landmass = EarthSite.landmassWords(c);
+        if (landmass != null) cardBox.getChildren().add(cardLine(landmass, Palette.TEXT_BODY));
         for (String w : c.warnings()) cardBox.getChildren().add(cardLine(w, Palette.WARN));
         Long seed = seed();
         Label seedLine = cardLine(seedWords(seed == null ? 0 : seed), Palette.TEXT_MUTED);

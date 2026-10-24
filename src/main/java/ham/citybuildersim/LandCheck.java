@@ -54,7 +54,12 @@ import ham.citybuildersim.sectors.Mining;
  * since 0.7.138 (batch I9), where Forestry's cut and the clearing meet - the
  * clearing taking the crews' cut-over ground first, the salvage the standing
  * wood alone and taken once, cleared ground never grown back by the planted
- * stands, W exact (27).
+ * stands, W exact (27); and, since ET1, the books by relief - a holding's,
+ * an offer's and the centre's dry ground split flat, foothill, steep and very
+ * steep, and its shallow sea, counted in the same pass as the five areas and
+ * adding up to them plot for plot, all flat on a generated world, on Perth's
+ * window of the Earth's fixture and, where the file is named, on Medellin and
+ * Halifax (28).
  */
 public class LandCheck {
 
@@ -825,6 +830,7 @@ public class LandCheck {
         zonesOnTheLedger();
         byType();
         cutAndCleared();
+        byRelief();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -2084,6 +2090,8 @@ public class LandCheck {
         LandParcel bought = live.getLandManager().getMarket().bestValue();
         java.util.List<LandParcel> others = live.getLandListing();
         assertTrue("fixture: the city buys an offer", live.buyLandParcel(bought.getId()));
+        // ET1: the purchase's ground by relief, given by hand (a generated world has none), crosses the save in keys of its own.
+        live.getCityLand().setPurchaseRelief(0, ReadPathCheck.handRelief(bought.getDryKm2()));
         quietly(() -> live.saveGame(4, "land on the world"));
         Game[] back = new Game[1];
         quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
@@ -2091,6 +2099,9 @@ public class LandCheck {
         assertTrue("fixture: it loads", loaded.getLoadFailure() == null);
         CityLand a = live.getCityLand(), b = loaded.getCityLand();
         assertTrue("the centre, its blocks and the purchase come back field for field, the grid node for node", a.same(b));
+        assertTrue("...the purchase's ground by relief as given, foothill, steep, very steep and shallow sea (ET1)", b.purchases().size() == 1
+                && java.util.Arrays.equals(b.purchases().get(0).offer().reliefRow(), ReadPathCheck.handRelief(bought.getDryKm2()))
+                && b.totalReliefKm2(CityLand.RELIEF_FOOTHILL) == a.totalReliefKm2(CityLand.RELIEF_FOOTHILL) && b.totalReliefKm2(CityLand.RELIEF_FOOTHILL) > 0);
         boolean offers = live.getLandListing().size() == loaded.getLandListing().size();
         for (int i = 0; offers && i < live.getLandListing().size(); i++) {
             offers = live.getLandListing().get(i).same(loaded.getLandListing().get(i));
@@ -2807,6 +2818,206 @@ public class LandCheck {
         assertTrue("...which never grows back: C still the three square kilometres' wood, W exact",
                 cut2 == 5 * km2Wood && lm.getForestClearedM3() == 3 * km2Wood
                 && Math.abs(lm.getUnowned(f) + lm.getRemaining(f) + lm.getExtracted(f) - lm.getWorldTotal(f)) <= 1e-9 * lm.getWorldTotal(f));
+    }
+
+
+    /* ==================================================================
+       28. THE BOOKS BY RELIEF (ET1, spec-earth2-terrain 3.3)
+
+       A holding's five areas stay what they were; beside them its dry
+       ground splits by relief - flat, foothill, steep, very steep - and its
+       shallow sea has a figure, counted in the same pass over the same
+       plots (CityLand.tally()), for the centre, every offer standing and
+       every purchase. The four reliefs add up to the dry ground and the
+       shallow sea is a part of the sea. Each is counted again here plot by
+       plot, by another road: World.reliefAt() and terrainAt() a plot at a
+       time, over a rectangle's plots or the plots the grid says a holding
+       owns; the figures are held to the bit, the sum of four products
+       against one to a part in a billion. A generated world has no slope:
+       all flat, and nothing shallow. The Earth's window of Perth, in the
+       fixture, has foothill and a shallow coast, so the condition is caused
+       with no file at all; Medellin (hills, steep ground) and Halifax (a
+       shallow coast) where earth-2.bin is named. The holdings on the Earth
+       are bought by hand, rectangles chosen for the relief in them
+       (CityLand.extend(), as IslandNetCheck buys its islands), since a
+       land office's offers a block wide would take a hundred rounds to reach
+       the hills.
+       ================================================================== */
+
+    /** Plots by relief counted by another road: {flat, foothill, steep, very steep, shallow sea, dry, sea} over the plots of [x0, x1) x [y0, y1) that `counted` takes - World.terrainAt() and reliefAt() a plot at a time. */
+    static long[] reliefCounted(CityLand land, long x0, long y0, long x1, long y1, java.util.function.BiPredicate<Long, Long> counted) {
+        World w = World.of(land.key());
+        long[] n = new long[CityLand.RELIEF_AREAS + 2];
+        for (long y = Math.max(0, y0); y < Math.min(World.SIDE, y1); y++) {
+            for (long x = Math.max(0, x0); x < Math.min(World.SIDE, x1); x++) {
+                if (!counted.test(x, y)) continue;
+                byte c = w.terrainAt(x, y);
+                if (World.dry(c)) {
+                    n[w.reliefAt(x, y)]++;
+                    n[CityLand.RELIEF_AREAS]++;
+                }
+                if (c == World.SHALLOW) n[CityLand.RELIEF_SHALLOW]++;
+                if (World.salt(c)) n[CityLand.RELIEF_AREAS + 1]++;
+            }
+        }
+        return n;
+    }
+
+    /** Whether a record's relief figures (flat to shallow, km2) are the plots counted again, to the bit, add up to its dry area, and its shallow sea lies in its sea. */
+    static boolean booked(double[] relief, double dryKm2, double seaKm2, long[] counted) {
+        double sum = 0;
+        boolean exact = true;
+        for (int i = 0; i < CityLand.RELIEF_AREAS; i++) exact &= relief[i] == counted[i] * World.KM2_PER_PLOT;
+        for (int i = 0; i < World.RELIEFS; i++) sum += relief[i];
+        return exact && Math.abs(sum - dryKm2) <= 1e-9 * Math.max(1, dryKm2) && relief[CityLand.RELIEF_SHALLOW] <= seaKm2 + 1e-12
+                && dryKm2 == counted[CityLand.RELIEF_AREAS] * World.KM2_PER_PLOT && seaKm2 == counted[CityLand.RELIEF_AREAS + 1] * World.KM2_PER_PLOT;
+    }
+
+    /** 1 where a relief record holds foothill or steeper ground. */
+    static int hilly(double[] relief) {
+        return relief[CityLand.RELIEF_FOOTHILL] + relief[CityLand.RELIEF_STEEP] + relief[CityLand.RELIEF_VERY_STEEP] > 0 ? 1 : 0;
+    }
+
+    /**
+     * One city's books by relief held to the plots: the centre's, each purchase's (over the plots the grid gives that holding), the
+     * total's, and each of `offers` (over the plots of its rectangle no holding owns). Returns {purchases with foothill or steeper
+     * ground, purchases with shallow sea, steep or very steep ground in the city's total as a 0 or 1}.
+     */
+    static int[] reliefBooks(String name, CityLand land, java.util.List<LandParcel> offers) {
+        boolean centre = booked(land.centreReliefState(), land.centreKm2(CityLand.DRY), land.centreKm2(CityLand.SEA),
+                reliefCounted(land, land.grid().minX(), land.grid().minY(), land.grid().maxX(), land.grid().maxY(), (x, y) -> land.holdingOf(x, y) == CityLand.CENTRE));
+        assertTrue(name + ": the centre's dry ground by relief and its shallow sea are its plots', and its four reliefs add up to its dry ground", centre);
+        int hills = 0, shallow = 0;
+        boolean holdings = true;
+        double[] sum = land.centreReliefState();
+        for (int k = 0; k < land.purchases().size(); k++) {
+            LandParcel p = land.purchases().get(k).offer();
+            final int holding = k + 1;
+            holdings &= booked(p.reliefRow(), p.getDryKm2(), p.getKm2(CityLand.SEA),
+                    reliefCounted(land, p.getX0(), p.getY0(), p.getX1(), p.getY1(), (x, y) -> land.holdingOf(x, y) == holding));
+            hills += hilly(p.reliefRow());
+            shallow += p.getReliefKm2(CityLand.RELIEF_SHALLOW) > 0 ? 1 : 0;
+            for (int i = 0; i < CityLand.RELIEF_AREAS; i++) sum[i] += p.getReliefKm2(i);
+        }
+        if (!land.purchases().isEmpty()) assertTrue(name + ": ...so are each of its " + land.purchases().size() + " purchases'", holdings);
+        boolean total = true;
+        for (int i = 0; i < CityLand.RELIEF_AREAS; i++) total &= Math.abs(land.totalReliefKm2(i) - sum[i]) <= 1e-9 * Math.max(1, sum[i]);
+        double four = 0;
+        for (int i = 0; i < World.RELIEFS; i++) four += land.totalReliefKm2(i);
+        assertTrue(name + ": ...the city's total is the centre's and the purchases' added, its four reliefs its dry ground and its shallow sea within its sea",
+                total && Math.abs(four - land.totalKm2(CityLand.DRY)) <= 1e-9 * Math.max(1, four)
+                        && land.totalReliefKm2(CityLand.RELIEF_SHALLOW) <= land.totalKm2(CityLand.SEA) + 1e-12);
+        boolean standing = true;
+        for (LandParcel p : offers) {
+            standing &= booked(p.reliefRow(), p.getDryKm2(), p.getKm2(CityLand.SEA),
+                    reliefCounted(land, p.getX0(), p.getY0(), p.getX1(), p.getY1(), (x, y) -> !land.ownsPlot(x, y)));
+        }
+        if (!offers.isEmpty()) assertTrue(name + ": ...and each of its " + offers.size() + " offers', over the plots it holds", standing);
+        return new int[] { hills, shallow, land.totalReliefKm2(CityLand.RELIEF_STEEP) + land.totalReliefKm2(CityLand.RELIEF_VERY_STEEP) > 0 ? 1 : 0 };
+    }
+
+    /**
+     * Holdings bought by hand on the Earth: windows of 16 x 16 plots round the founding site that hold the most foothill or steeper
+     * ground (`hills`) or the most shallow sea (`shallow`), the best that leave the ground they take unowned, each bought as the offer
+     * it would have been (counted as the market counts it: CityLand.groundWithRelief()).
+     */
+    static void handBuy(CityLand land, int hills, int shallow) {
+        World w = World.of(land.key());
+        long reach = 2 * EarthSite.CARD_PLOTS, win = 16;
+        java.util.List<long[]> byHills = new java.util.ArrayList<>(), byShallow = new java.util.ArrayList<>();
+        for (long y0 = land.siteY() - reach; y0 < land.siteY() + reach; y0 += win) {
+            for (long x0 = land.siteX() - reach; x0 < land.siteX() + reach; x0 += win) {
+                long steepish = 0, shallowPlots = 0;
+                for (long y = y0; y < y0 + win; y++) {
+                    for (long x = x0; x < x0 + win; x++) {
+                        byte c = w.terrainAt(x, y);
+                        if (World.dry(c) && w.reliefAt(x, y) != World.FLAT) steepish++;
+                        if (c == World.SHALLOW) shallowPlots++;
+                    }
+                }
+                byHills.add(new long[] { x0, y0, steepish });
+                byShallow.add(new long[] { x0, y0, shallowPlots });
+            }
+        }
+        byHills.sort((a, b) -> Long.compare(b[2], a[2]));
+        byShallow.sort((a, b) -> Long.compare(b[2], a[2]));
+        int id = 1;
+        for (int pass = 0; pass < 2; pass++) {
+            java.util.List<long[]> from = pass == 0 ? byHills : byShallow;
+            int want = pass == 0 ? hills : shallow, got = 0;
+            for (long[] c : from) {
+                if (got >= want || c[2] == 0) break;
+                if (land.grid().unowned(c[0], c[1], c[0] + win, c[1] + win) != win * win) continue;
+                CityLand.Ground g = land.groundWithRelief(c[0], c[1], c[0] + win, c[1] + win);
+                land.extend(new LandParcel(id++, 1, 0, land.level(), c[0], c[1], c[0] + win, c[1] + win, g.km2(), g.relief(), null, null, 0, 0), 1, 0);
+                got++;
+            }
+        }
+    }
+
+    static void byRelief() throws Exception {
+        System.out.println("\n--- the books by relief (ET1): flat, foothill, steep, very steep and the shallow sea, beside the five areas ---");
+
+        // A generated world has no slope and no shallow sea: all flat, in the centre, each purchase and each offer.
+        LandManager gen = new LandManager();
+        gen.updateMarket(0);
+        gen.buyParcel(gen.getMarket().bestValue().getId(), 1e12, 0);
+        gen.updateMarket(0);
+        CityLand generated = gen.getCityLand();
+        boolean flat = generated.centreReliefKm2(CityLand.RELIEF_FLAT) == generated.centreKm2(CityLand.DRY)
+                && generated.totalReliefKm2(CityLand.RELIEF_FLAT) == generated.totalKm2(CityLand.DRY);
+        for (int i = CityLand.RELIEF_FOOTHILL; i < CityLand.RELIEF_AREAS; i++) flat &= generated.centreReliefKm2(i) == 0 && generated.totalReliefKm2(i) == 0;
+        java.util.List<LandParcel> everyParcel = new java.util.ArrayList<>(gen.getMarket().getListing());
+        for (CityLand.Purchase p : generated.purchases()) everyParcel.add(p.offer());
+        for (LandParcel p : everyParcel) {
+            flat &= p.getReliefKm2(CityLand.RELIEF_FLAT) == p.getDryKm2();
+            for (int i = CityLand.RELIEF_FOOTHILL; i < CityLand.RELIEF_AREAS; i++) flat &= p.getReliefKm2(i) == 0;
+        }
+        assertTrue("a generated city is all flat: the centre's, the total's, every purchase's and every offer's dry ground flat, nothing steep, nothing shallow",
+                flat && !generated.purchases().isEmpty() && everyParcel.size() > 1);
+        reliefBooks("a generated city", generated, gen.getMarket().getListing());
+
+        // An Earth holding: Perth's window of the fixture always (hills at its edge, a shallow coast), Medellin and Halifax on the full file.
+        byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE), expect = EarthCheck.resource(EarthCheck.EXPECT);
+        assertTrue("fixture: EarthCheck's fixture and its expected figures are beside the classes", fixture != null && expect != null);
+        if (fixture == null || expect == null) return;
+        String id = EarthTerrain.use(EarthData.of(fixture));
+        double[] perth = null;
+        for (String line : new String(expect, java.nio.charset.StandardCharsets.UTF_8).split("\n")) {
+            String[] f = line.split("\t", -1);
+            if (f.length > 4 && f[1].equals("window") && f[2].equals("Perth")) perth = new double[] { Double.parseDouble(f[3]), Double.parseDouble(f[4]) };
+        }
+        assertTrue("fixture: Perth's window", perth != null);
+        if (perth == null) return;
+        earthRelief("Perth (the fixture)", World.Key.earth(Founding.DEFAULT_WORLD_SEED, perth[0], perth[1], id), true, false);
+        java.nio.file.Path file = EarthData.locate();
+        if (file == null || !java.nio.file.Files.isRegularFile(file)) {
+            System.out.println("earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>): Medellin's hills and Halifax's shallow coast, whole, were not counted;"
+                    + " the fixture's Perth held foothill and a shallow coast");
+            return;
+        }
+        earthRelief("Medellin", World.Key.earth(Founding.DEFAULT_WORLD_SEED, 6.25, -75.57, EarthData.EARTH_2), false, true);
+        earthRelief("Halifax", World.Key.earth(Founding.DEFAULT_WORLD_SEED, 44.65, -63.57, EarthData.EARTH_2), true, false);
+    }
+
+    /**
+     * An Earth city's books by relief held to the plots: a land office's centre and its twenty-four offers as it lists them, then a
+     * city founded the same way with holdings bought by hand where the ground has hills (and shallow sea where `coast`, steep ground
+     * where `steep`).
+     */
+    static void earthRelief(String name, World.Key key, boolean coast, boolean steep) {
+        LandManager office = new LandManager(null, null, () -> key, () -> 0);
+        office.updateMarket(0);
+        reliefBooks(name + " (the office)", office.getCityLand(), office.getMarket().getListing());
+        CityLand land = LandManager.foundingLand(key);
+        handBuy(land, 3, coast ? 3 : 0);
+        int[] held = reliefBooks(name + " (bought)", land, java.util.List.of());
+        System.out.printf("   %s: %.3f km2 dry in the city - flat %.3f, foothill %.3f, steep %.3f, very steep %.3f; shallow sea %.3f of its %.3f sea; %d purchases with hills, %d with shallow sea%n",
+                name, land.totalKm2(CityLand.DRY), land.totalReliefKm2(CityLand.RELIEF_FLAT), land.totalReliefKm2(CityLand.RELIEF_FOOTHILL),
+                land.totalReliefKm2(CityLand.RELIEF_STEEP), land.totalReliefKm2(CityLand.RELIEF_VERY_STEEP), land.totalReliefKm2(CityLand.RELIEF_SHALLOW),
+                land.totalKm2(CityLand.SEA), held[0], held[1]);
+        assertTrue(name + ": fixture: the ground holds what the check is for - foothill in a purchase" + (coast ? ", shallow sea in a purchase" : "")
+                + (steep ? ", steep ground in the city" : ""), held[0] > 0 && (!coast || held[1] > 0) && (!steep || held[2] > 0));
     }
 
 }

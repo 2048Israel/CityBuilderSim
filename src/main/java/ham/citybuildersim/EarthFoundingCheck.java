@@ -48,6 +48,12 @@ import java.util.Map;
  *      a recorded iron district shows); the nearest iron is the nearest of
  *      every field in the cells round it; printed against the study's
  *      figures (spec-earth 2).
+ *      Since ET1 (D21) the card's three lines are held the same way, on the windows and
+ *      on the full file: the dry ground within 5 km by relief, the nearest shallow water and
+ *      how deep the sea gets within reach, and the landmass, each counted again by another
+ *      road (reliefChecks()); on the full file Medellin reads hills, Halifax has shallow water
+ *      near and a sea well over a metre deep, Valparaiso a deep one, Prince Edward Island is a landmass of its own and
+ *      Rotterdam is flat (reliefCards()).
  *   3. A SPOT IN THE SEA IS REFUSED: the card says NO_SITE_WORDS, the
  *      founding's problem() the same, and the game will not found it; on the
  *      full file, Greenland's sheet is refused ICE_WORDS and the Sahara warned
@@ -127,6 +133,7 @@ public class EarthFoundingCheck {
 
         EarthData file = theData(id);
         theCard(id, spots);
+        reliefCards(file, spots);
         refused(id, spots, file);
         search(data, id);
         depth(id, spots.get("Rotterdam"), file);
@@ -230,6 +237,7 @@ public class EarthFoundingCheck {
             report(name + ": the nearest iron is the nearest of every field in the cells round it, and its way the compass's", iron != null
                             && iron[0] * World.PLOT_M / 1000 == c.ironKm() && c.ironWay() != null,
                     String.format("%.1f km %s", c.ironKm(), c.ironWay()));
+            reliefChecks(name, w, c);
             double[] study = STUDY.get(name);
             out.printf("      %s: %.0f m from the spot, %s; %.1f%% dry, %.1f%% river and lake, %.1f%% sea within 5 km (the study %s / %s / %s);"
                             + " fresh water %s km, the sea %s km (the study %s / %s); %s, a %s: iron x%.2f, oil x%.2f, coal x%.2f; iron %.1f km %s; %.0f ms%n",
@@ -258,6 +266,118 @@ public class EarthFoundingCheck {
             }
         }
         return Double.isInfinite(best) ? null : new double[] { best };
+    }
+
+    /**
+     * THE CARD'S THREE LINES OF ET1 (D21), counted again by another road: the disc's dry plots by World.reliefAt(), the nearest
+     * shallow plot, the deepest the sea is under any sea plot of the disc - read two ways, World.depthAt() and the depth layer's
+     * raw code at the plot - and the landmass the data says the site stands on. Prints the lines as the founding card says them.
+     */
+    static void reliefChecks(String name, World w, EarthSite.Card c) {
+        EarthTerrain et = w.earthTerrain();
+        EarthData data = et.data();
+        long r = EarthSite.CARD_PLOTS, rel[] = new long[World.RELIEFS], sh2 = Long.MAX_VALUE, sea2 = Long.MAX_VALUE, dry = 0;
+        double deepWorld = 0, deepLayer = 0;
+        for (long dy = -r; dy <= r; dy++) {
+            for (long dx = -r; dx <= r; dx++) {
+                long d2 = dx * dx + dy * dy;
+                if (d2 > r * r) continue;
+                long x = c.siteX() + dx, y = c.siteY() + dy;
+                byte g = w.terrainAt(x, y);
+                if (World.salt(g)) {
+                    sea2 = Math.min(sea2, d2);
+                    if (data.hasRelief()) {
+                        deepWorld = Math.max(deepWorld, w.depthAt(x, y));
+                        deepLayer = Math.max(deepLayer, layerDepth(et, data, x, y));
+                    }
+                    if (g == World.SHALLOW) sh2 = Math.min(sh2, d2);
+                } else if (World.dry(g)) {
+                    rel[w.reliefAt(x, y)]++;
+                    dry++;
+                }
+            }
+        }
+        check(name + ": the disc's dry ground counted again by relief, plot by plot, is the card's, and its four reliefs add up to its dry ground",
+                java.util.Arrays.equals(rel, c.reliefPlots()) && dry == c.dry() && rel[0] + rel[1] + rel[2] + rel[3] == c.dry());
+        boolean near = sh2 == Long.MAX_VALUE ? Double.isNaN(c.shallowKm()) : c.shallowKm() == Math.sqrt(sh2) * World.PLOT_M / 1000;
+        check(name + ": ...the nearest shallow water is the nearest shallow plot (none within reach: none)", near);
+        boolean depth = !data.hasRelief() ? Double.isNaN(c.seaDepthMaxM()) : sea2 == Long.MAX_VALUE ? Double.isNaN(c.seaDepthMaxM())
+                : c.seaDepthMaxM() == deepWorld && c.seaDepthMaxM() == deepLayer && c.seaDepthMaxM() >= EarthTerrain.SEA_LEAST_DEPTH_M;
+        check(name + ": ...and the deepest the sea is in reach is the greatest of the depth layer's under its sea plots, a metre at least (no sea within reach: none)", depth);
+        int id = data.hasRelief() ? data.landmassAt(c.siteLat(), c.siteLon()) : 0;
+        boolean land = !data.hasRelief() ? c.landmass() == null : id != 0 ? c.landmass() != null && c.landmass().equals(data.landmass(id)) && c.landmass().id() == id : c.landmass() != null;
+        check(name + ": ...and the landmass is the one the data says the site stands on" + (data.hasRelief() ? "" : " (none: this data has no landmass layer)"), land);
+        out.printf("      %s: %s | %s | %s%n", name, EarthSite.reliefWords(c), EarthSite.shallowWords(c), EarthSite.landmassWords(c));
+    }
+
+    /**
+     * 2b. THE CARD'S RELIEF, WATER AND LANDMASS ON THE REAL EARTH (ET1, D21), on the full file where it is named: Medellin, in the
+     * cordillera, reads hills and no sea, on the Americas' landmass; Halifax finds shallow water near and the layer's depth, on the
+     * same landmass; Prince Edward Island is a landmass of its own; Rotterdam, on Afro-Eurasia, is flat. Every figure counted
+     * again by reliefChecks(); the landmass's id and name are the data's, not a guess.
+     */
+    static void reliefCards(EarthData file, Map<String, Spot> spots) {
+        out.println("\n--- 2b. the card's relief, shallow water and landmass on the real Earth (ET1, D21) ---");
+        if (file == null) {
+            out.println("earth-2.bin not named: Medellin's hills, Halifax's shallow water, Prince Edward Island's own landmass and Rotterdam's flat ground were not read");
+            return;
+        }
+        Spot rot = spots.get("Rotterdam");
+        EarthSite.Card med = fullCard("Medellin", 6.25, -75.57), hal = fullCard("Halifax", 44.65, -63.57),
+                pei = fullCard("Prince Edward Island", 46.25, -63.13), rotFull = fullCard("Rotterdam", rot.lat(), rot.lon());
+        report("Medellin: mostly hills - flat under 60% of its dry ground, foothill over 30%, steep and very steep over 3% (the mockup: 42 / 45 / 12)",
+                med.reliefShare(World.FLAT) < 0.6 && med.reliefShare(World.FOOTHILL) > 0.3 && med.steepShare() > 0.03,
+                String.format("%.0f%% / %.0f%% / %.0f%% (very steep %.1f%%)", 100 * med.reliefShare(World.FLAT), 100 * med.reliefShare(World.FOOTHILL),
+                        100 * med.steepShare(), 100 * med.reliefShare(World.VERY_STEEP)));
+        check("...its words fold very steep into steep and keep the order flat, foothill, steep", EarthSite.reliefWords(med).matches("Dry ground within 5 km: flat \\d+% · foothill \\d+% · steep \\d+%"));
+        check("...inland: no shallow water and no sea within 5 km, said so", Double.isNaN(med.shallowKm()) && Double.isNaN(med.seaDepthMaxM())
+                && EarthSite.shallowWords(med).equals("No shallow water within 5 km · no sea within 5 km"));
+        int americas = file.landmassAt(med.siteLat(), med.siteLon());
+        EarthData.Landmass am = file.landmass(americas);
+        report("...its landmass is the data's at the site, with the data's own name and area, the Americas' (over ten million km2)",
+                am != null && med.landmass() != null && med.landmass().equals(am) && am.areaKm2() > 1e7 && !am.name().isBlank()
+                        && EarthSite.landmassWords(med).equals("Its landmass: " + am.name().trim() + "'s, " + String.format("%.1f million km²", am.areaKm2() / 1e6) + " (id " + am.id() + ")"),
+                EarthSite.landmassWords(med));
+        report("Halifax: shallow water within a kilometre, and the sea within 5 km is well over a metre deep - 10 m or more, the harbour's and the Atlantic's (the mockup: 19 m)",
+                !Double.isNaN(hal.shallowKm()) && hal.shallowKm() < 1 && hal.seaDepthMaxM() >= 10,
+                String.format("%.2f km, up to %.0f m", hal.shallowKm(), hal.seaDepthMaxM()));
+        check("...its words say how far the shallow water is and how deep the sea is", EarthSite.shallowWords(hal).startsWith("Shallow water ")
+                && EarthSite.shallowWords(hal).matches(".*away · the sea is up to [\\d,]+ m deep within 5 km"));
+        check("...on the same landmass as Medellin's, the Americas'", hal.landmass() != null && am != null && hal.landmass().id() == am.id());
+        report("Prince Edward Island: a landmass of its own - not Halifax's, a few thousand km2 (the study: 5,611 and the island's real 5,660)",
+                pei.landmass() != null && hal.landmass() != null && pei.landmass().id() != hal.landmass().id()
+                        && pei.landmass().areaKm2() > 5_000 && pei.landmass().areaKm2() < 6_000,
+                EarthSite.landmassWords(pei));
+        check("...its words name the data's place and area, whole km2", EarthSite.landmassWords(pei).contains(pei.landmass().name().trim())
+                && EarthSite.landmassWords(pei).contains(String.format("%,.0f km²", pei.landmass().areaKm2())));
+        // A deep sea: Valparaiso, where the shelf is narrow and the study found hundreds of metres 20 km out.
+        EarthSite.Card valpo = fullCard("Valparaiso", -33.03, -71.63);
+        report("Valparaiso: the sea within 5 km runs deep - well past Halifax's, over 50 m, said in the card's words",
+                !Double.isNaN(valpo.seaDepthMaxM()) && valpo.seaDepthMaxM() > 50 && valpo.seaDepthMaxM() > hal.seaDepthMaxM()
+                        && EarthSite.shallowWords(valpo).endsWith(String.format("the sea is up to %,.0f m deep within 5 km", Math.rint(valpo.seaDepthMaxM()))),
+                EarthSite.shallowWords(valpo));
+        // Very steep ground is kept apart in the card's numbers and folded into steep in its words (the Himalaya: no building stands there, and ET2 refuses it).
+        World.Key everestKey = World.Key.earth(SEED, 27.84, 86.76, EarthData.EARTH_2);
+        EarthSite.Card high = EarthSite.measure(everestKey);
+        reliefChecks("Tengboche", World.of(everestKey), high);
+        long[] hp = high.reliefPlots();
+        report("Tengboche, in the Himalaya: very steep ground is a number of its own on the card, and its words fold it into steep (most of its ground)",
+                high.hasSite() && hp[World.VERY_STEEP] > 0 && hp[World.STEEP] > 0 && hp[World.VERY_STEEP] + hp[World.STEEP] > high.dry() / 2
+                        && EarthSite.reliefWords(high).contains(String.format("steep %.0f%%", 100.0 * (hp[World.STEEP] + hp[World.VERY_STEEP]) / high.dry())),
+                EarthSite.reliefWords(high) + String.format(" (steep %.0f%%, very steep %.0f%% of the dry ground)", 100 * high.reliefShare(World.STEEP),
+                        100 * high.reliefShare(World.VERY_STEEP)));
+        report("Rotterdam: flat - all but a hair of its dry ground flat, on Afro-Eurasia (landmass 1, over seventy million km2)",
+                rotFull.reliefShare(World.FLAT) >= 0.99 && rotFull.landmass() != null && rotFull.landmass().id() == 1 && rotFull.landmass().areaKm2() > 7e7,
+                EarthSite.reliefWords(rotFull) + " | " + EarthSite.landmassWords(rotFull));
+    }
+
+    /** A card on the full file, its relief and landmass counted again (reliefChecks()). */
+    static EarthSite.Card fullCard(String name, double lat, double lon) {
+        World.Key key = World.Key.earth(SEED, lat, lon, EarthData.EARTH_2);
+        EarthSite.Card c = EarthSite.measure(key);
+        check(name + ": a site on the full file, foundable", c.hasSite() && c.foundable());
+        reliefChecks(name, World.of(key), c);
+        return c;
     }
 
     /* =====================================================================

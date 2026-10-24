@@ -52,6 +52,19 @@ import java.util.Map;
  * sites go a site at a time to the holding whose ground holds each site's
  * plot (siteHolding()).
  *
+ * THE BOOKS BY RELIEF (ET1; the project's spec-earth2-terrain.md 3.3). The
+ * five areas stay as they are. Beside them each holding - the centre, each
+ * purchase, each offer - keeps its dry ground split by relief, flat, foothill,
+ * steep and very steep, and its shallow sea, in square kilometres
+ * (RELIEF_FLAT to RELIEF_SHALLOW), counted in the same pass over the same
+ * plots (tally(): World.tileRelief() read beside tileTerrain()), so the four
+ * reliefs are its dry ground and the shallow sea part of its sea, plot for
+ * plot. A generated world has no slope and no shallow sea: all flat, with
+ * nothing to measure. They are saved in keys of their own, parallel to the
+ * land's (DataSave's landCentreRelief, landHoldingsRelief and
+ * landOffersRelief), never in its rows, which a save from before would refuse
+ * for their width; a save without the keys reads all flat.
+ *
  * NOTHING ROLLS INTO THE CENTRE. The centre is the land the city was founded
  * or converted with, fixed; the purchases are kept in the order they were
  * made, which is the order the ground is worked out in (LandManager's
@@ -87,6 +100,27 @@ public final class CityLand {
     /** How many resources a record keeps the sites and amounts of: Resource's seven, in its order. */
     public static final int KINDS = Resource.values().length;
 
+    /**
+     * Where a record keeps its dry ground by relief, in square kilometres (ET1, spec-earth2-terrain 3.3), beside
+     * the five areas, which stay as they are: its flat ground (World.FLAT; all of a generated world's)...
+     */
+    public static final int RELIEF_FLAT = World.FLAT;
+
+    /** ...its foothill (World.FOOTHILL)... */
+    public static final int RELIEF_FOOTHILL = World.FOOTHILL;
+
+    /** ...its steep ground (World.STEEP)... */
+    public static final int RELIEF_STEEP = World.STEEP;
+
+    /** ...its very steep (World.VERY_STEEP): these four add up to the DRY area, plot for plot... */
+    public static final int RELIEF_VERY_STEEP = World.VERY_STEEP;
+
+    /** ...and its shallow sea (World.SHALLOW), a part of its SEA. */
+    public static final int RELIEF_SHALLOW = World.RELIEFS;
+
+    /** How many figures a relief record keeps: flat, foothill, steep, very steep and shallow sea, 5 - the width of landCentreRelief and of a row of landHoldingsRelief and landOffersRelief. */
+    public static final int RELIEF_AREAS = World.RELIEFS + 1;
+
     /** The centre's holding on the grid: 0; the k-th purchase is holding k. */
     public static final int CENTRE = 0;
 
@@ -101,6 +135,8 @@ public final class CityLand {
     private LandGrid grid = new LandGrid();
     private final List<LandGrid.Fill> centreRects = new ArrayList<>();
     private final double[] centreKm2 = new double[AREAS];
+    /** The centre's dry ground by relief and its shallow sea (RELIEF_FLAT to RELIEF_SHALLOW), km2: counted with the five areas, or all flat where a save has none. */
+    private final double[] centreRelief = new double[RELIEF_AREAS];
     private final int[] centreSites = new int[KINDS];
     private final double[] centreAmounts = new double[KINDS];
     private long legacyX = -1, legacyY = -1;
@@ -114,6 +150,7 @@ public final class CityLand {
 
     /* What the whole holds, kept in step: the centre's and every purchase's, added in acquisition order. */
     private final double[] totalKm2 = new double[AREAS];
+    private final double[] totalRelief = new double[RELIEF_AREAS];
     private final long[] totalSites = new long[KINDS];
     private final double[] totalAmounts = new double[KINDS];
 
@@ -336,8 +373,10 @@ public final class CityLand {
 
     /** The centre's books from its plots drawn (GridConversion.drawnClasses()), and every field whose centre plot is on it, whole. */
     private void drawnBooks(World world) {
-        double[] k = GridConversion.km2Of(GridConversion.drawnClasses(world, grid));
+        long[] relief = new long[RELIEF_AREAS];
+        double[] k = GridConversion.km2Of(GridConversion.drawnClasses(world, grid, relief));
         System.arraycopy(k, 0, centreKm2, 0, AREAS);
+        for (int i = 0; i < RELIEF_AREAS; i++) centreRelief[i] = relief[i] * World.KM2_PER_PLOT;
         Arrays.fill(centreSites, 0);
         Arrays.fill(centreAmounts, 0);
         for (Resource r : Resource.values()) {
@@ -379,6 +418,7 @@ public final class CityLand {
         centreRects.clear();
         centreRects.addAll(r.fills());
         for (int a = 0; a < AREAS; a++) centreKm2[a] = r.km2(a);
+        for (int i = 0; i < RELIEF_AREAS; i++) centreRelief[i] = r.relief(i);
         for (Resource res : Resource.values()) {
             centreSites[res.ordinal()] = (int) Math.min(Integer.MAX_VALUE, r.sites(res));
             centreAmounts[res.ordinal()] = r.amount(res);
@@ -400,6 +440,20 @@ public final class CityLand {
         partIndex.put(new FieldKey(p.kind().ordinal(), p.cell(), p.index()), p);
     }
 
+    /** Sets one purchase's ground by relief by fiat (ET1): the k-th, from 0, its offer kept but for RELIEF_AREAS figures in square kilometres - a fixture's hills; a row of another width reads it flat, as a save's does. */
+    void setPurchaseRelief(int k, double[] relief) {
+        Purchase p = purchases.get(k);
+        purchases.set(k, new Purchase(LandParcel.fromOfferRow(p.offer().offerRow(), relief), p.month(), p.paidLocal()));
+        recount();
+    }
+
+    /** Sets the centre's ground by relief by fiat (ET1): a fixture's hills - RELIEF_AREAS figures in square kilometres, ignored when of another width. The five areas are not touched, so a fixture keeps its four reliefs adding up to its DRY area. */
+    void setCentreRelief(double[] relief) {
+        if (relief == null || relief.length != RELIEF_AREAS) return;
+        System.arraycopy(relief, 0, centreRelief, 0, RELIEF_AREAS);
+        recount();
+    }
+
     /** Sets what the centre holds of one resource - a restatement keeping the city's, or a fixture's ore (LandManager.restoreSites()). */
     void setCentre(Resource r, int sites, double amount) {
         centreSites[r.ordinal()] = Math.max(0, sites);
@@ -410,6 +464,7 @@ public final class CityLand {
     /** Adds the totals up again, in acquisition order. */
     private void recount() {
         System.arraycopy(centreKm2, 0, totalKm2, 0, AREAS);
+        System.arraycopy(centreRelief, 0, totalRelief, 0, RELIEF_AREAS);
         for (int k = 0; k < KINDS; k++) {
             totalSites[k] = centreSites[k];
             totalAmounts[k] = centreAmounts[k];
@@ -419,6 +474,7 @@ public final class CityLand {
 
     private void add(LandParcel o) {
         for (int a = 0; a < AREAS; a++) totalKm2[a] += o.getKm2(a);
+        for (int i = 0; i < RELIEF_AREAS; i++) totalRelief[i] += o.getReliefKm2(i);
         for (Resource r : Resource.values()) {
             totalSites[r.ordinal()] += o.getSites(r);
             totalAmounts[r.ordinal()] += o.getAmount(r);
@@ -463,6 +519,9 @@ public final class CityLand {
 
     /** One of the centre's areas, in square kilometres (TOTAL, DRY, FRESH, SEA or FOREST). */
     public double centreKm2(int area)   { return centreKm2[area]; }
+
+    /** The centre's dry ground by relief, or its shallow sea, in square kilometres (RELIEF_FLAT, RELIEF_FOOTHILL, RELIEF_STEEP, RELIEF_VERY_STEEP; RELIEF_SHALLOW): the four reliefs add up to centreKm2(DRY). */
+    public double centreReliefKm2(int relief) { return centreRelief[relief]; }
 
     /** The centre's sites of a resource. */
     public int centreSites(Resource r)  { return centreSites[r.ordinal()]; }
@@ -512,6 +571,9 @@ public final class CityLand {
 
     /** One of the whole city's areas, centre and purchases, in square kilometres. */
     public double totalKm2(int area)    { return totalKm2[area]; }
+
+    /** ...and one of the whole city's reliefs, or its shallow sea: the four reliefs add up to totalKm2(DRY). */
+    public double totalReliefKm2(int relief) { return totalRelief[relief]; }
 
     /** The whole city's sites of a resource. */
     public long totalSites(Resource r)  { return totalSites[r.ordinal()]; }
@@ -936,16 +998,36 @@ public final class CityLand {
         }
     };
 
-    /** A whole tile's plots by World's classes, kept. */
+    /**
+     * How wide a count of plots is (ET1): World.CLASSES plots by class, then RELIEF_AREAS more - the dry plots by
+     * relief (World.dry() classes, FLAT to VERY_STEEP) and the shallow sea's (SHALLOW), counted in the same pass.
+     */
+    private static final int WIDE = World.CLASSES + RELIEF_AREAS;
+
+    /**
+     * Counts one plot: its class into `cls`, then - on dry ground - its relief into relief[from + relief], or - on
+     * the shallow sea - into relief[from + RELIEF_SHALLOW]. `r` is the tile's relief beside its cover `t`; a wide
+     * count (WIDE) is its own relief array, from World.CLASSES. The one rule every counting of the books reads by.
+     */
+    static void tally(byte[] t, byte[] r, int at, long[] cls, long[] relief, int from) {
+        byte c = t[at];
+        cls[c]++;
+        if (World.dry(c)) relief[from + r[at]]++;
+        else if (c == World.SHALLOW) relief[from + RELIEF_SHALLOW]++;
+    }
+
+    /** A whole tile's plots by World's classes, and its dry ground by relief and shallow sea after them (WIDE), kept. */
     static long[] tileCounts(World world, long tx, long ty) {
         TileKey key = new TileKey(world.key(), tx, ty);
         long[] got;
         synchronized (TILE_COUNTS) { got = TILE_COUNTS.get(key); }
         if (got != null) return got;
         byte[] t = new byte[World.TILE * World.TILE];
+        byte[] r = new byte[World.TILE * World.TILE];
         world.tileTerrain(tx, ty, t);
-        long[] c = new long[World.CLASSES];
-        for (byte b : t) c[b]++;
+        world.tileRelief(tx, ty, r);
+        long[] c = new long[WIDE];
+        for (int at = 0; at < t.length; at++) tally(t, r, at, c, c, World.CLASSES);
         synchronized (TILE_COUNTS) { TILE_COUNTS.put(key, c); }
         return c;
     }
@@ -955,9 +1037,30 @@ public final class CityLand {
         return GridConversion.km2Of(unownedClasses(x0, y0, x1, y1));
     }
 
+    /** What a rectangle's unowned plots hold: the five areas (groundOf()) and the dry ground by relief with the shallow sea (RELIEF_FLAT to RELIEF_SHALLOW), in square kilometres, counted plot by plot in one pass. */
+    public record Ground(double[] km2, double[] relief) { }
+
+    /** The five areas and the relief of the plots of [x0, x1) x [y0, y1) no holding owns (ET1, spec-earth2-terrain 3.3): groundOf() and what it splits, from the same plots. */
+    public Ground groundWithRelief(long x0, long y0, long x1, long y1) {
+        long[] wide = unownedCounts(x0, y0, x1, y1);
+        return new Ground(GridConversion.km2Of(Arrays.copyOf(wide, World.CLASSES)), reliefKm2(wide, World.CLASSES));
+    }
+
+    /** A count's relief plots from index `from` on (RELIEF_AREAS of them), in square kilometres. */
+    static double[] reliefKm2(long[] counts, int from) {
+        double[] km2 = new double[RELIEF_AREAS];
+        for (int i = 0; i < RELIEF_AREAS; i++) km2[i] = counts[from + i] * World.KM2_PER_PLOT;
+        return km2;
+    }
+
     /** ...as plots by World's classes (GRASS, FOREST, FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT and since ET1 SHALLOW), World.CLASSES of them. */
     long[] unownedClasses(long x0, long y0, long x1, long y1) {
-        long[] cls = new long[World.CLASSES];
+        return Arrays.copyOf(unownedCounts(x0, y0, x1, y1), World.CLASSES);
+    }
+
+    /** ...and the same count with the dry ground's relief and the shallow sea after the classes (WIDE of them, ET1). */
+    private long[] unownedCounts(long x0, long y0, long x1, long y1) {
+        long[] cls = new long[WIDE];
         x0 = Math.max(0, x0);
         y0 = Math.max(0, y0);
         x1 = Math.min(World.SIDE, x1);
@@ -973,20 +1076,20 @@ public final class CityLand {
             long[][] byRow = new long[(int) rows][];
             java.util.stream.IntStream.range(0, (int) rows).parallel()
                     .forEach(j -> byRow[j] = rowClasses(world, ty0 + j, tx0, tx1, fx0, fy0, fx1, fy1));
-            for (long[] r : byRow) for (int c = 0; c < World.CLASSES; c++) cls[c] += r[c];
+            for (long[] r : byRow) for (int c = 0; c < WIDE; c++) cls[c] += r[c];
         } else {
             for (long ty = ty0; ty <= ty1; ty++) {
                 long[] r = rowClasses(world, ty, tx0, tx1, x0, y0, x1, y1);
-                for (int c = 0; c < World.CLASSES; c++) cls[c] += r[c];
+                for (int c = 0; c < WIDE; c++) cls[c] += r[c];
             }
         }
         return cls;
     }
 
-    /** One row of tiles' unowned plots of the rectangle, by class. */
+    /** One row of tiles' unowned plots of the rectangle, by class and by relief (WIDE). */
     private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1) {
-        long[] cls = new long[World.CLASSES];
-        byte[] t = null;
+        long[] cls = new long[WIDE];
+        byte[] t = null, rel = null;
         boolean[] owned = null;
         int n = World.TILE;
         for (long tx = tx0; tx <= tx1; tx++) {
@@ -996,14 +1099,16 @@ public final class CityLand {
             boolean whole = px0 >= x0 && py0 >= y0 && px0 + n <= x1 && py0 + n <= y1;
             if (whole && cov == LandGrid.NONE) {
                 long[] c = tileCounts(world, tx, ty);
-                for (int k = 0; k < World.CLASSES; k++) cls[k] += c[k];
+                for (int k = 0; k < WIDE; k++) cls[k] += c[k];
                 continue;
             }
             if (t == null) {
                 t = new byte[n * n];
+                rel = new byte[n * n];
                 owned = new boolean[n * n];
             }
             world.tileTerrain(tx, ty, t);
+            world.tileRelief(tx, ty, rel);
             if (cov == LandGrid.SOME) grid.tileFlags(tx, ty, owned);
             else Arrays.fill(owned, false);
             int i0 = (int) (Math.max(x0, px0) - px0), i1 = (int) (Math.min(x1, px0 + n) - px0);
@@ -1011,7 +1116,7 @@ public final class CityLand {
             for (int j = j0; j < j1; j++) {
                 for (int i = i0; i < i1; i++) {
                     int at = j * n + i;
-                    if (!owned[at]) cls[t[at]]++;
+                    if (!owned[at]) tally(t, rel, at, cls, cls, World.CLASSES);
                 }
             }
         }
@@ -1020,7 +1125,8 @@ public final class CityLand {
 
     /* =====================================================================
        SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings,
-       landPartFields and landConverted; SAVE_FORMAT 32)
+       landPartFields and landConverted; SAVE_FORMAT 32; since ET1 landCentreRelief and
+       landHoldingsRelief beside them, and landOffersRelief the market's)
        ===================================================================== */
 
     /** The centre's record: its five areas, its sites and amounts, the legacy field's plot and sites, and the site's plot - CENTRE_FIELDS doubles. */
@@ -1064,6 +1170,20 @@ public final class CityLand {
         return rows;
     }
 
+    /**
+     * The centre's dry ground by relief and its shallow sea (ET1, spec-earth2-terrain 3.3), RELIEF_AREAS km2 in
+     * the order RELIEF_FLAT to RELIEF_SHALLOW: DataSave's landCentreRelief, a key of its own beside landCentre
+     * (a wider landCentre would refuse every save, and a save without it reads all flat).
+     */
+    public double[] centreReliefState() { return centreRelief.clone(); }
+
+    /** The purchases' relief, a record each in the order they were made (LandParcel.reliefRow(), RELIEF_AREAS wide): landHoldingsRelief, parallel to holdingsState(). */
+    public double[][] holdingsReliefState() {
+        double[][] rows = new double[purchases.size()][];
+        for (int i = 0; i < rows.length; i++) rows[i] = purchases.get(i).offer().reliefRow();
+        return rows;
+    }
+
     /** The fields held in part, a record each: {kind, cell, index, then each owned site's index}. */
     public double[][] partFieldsState() {
         double[][] rows = new double[parts.size()][];
@@ -1095,9 +1215,20 @@ public final class CityLand {
         return restore(World.Key.generated(seed), centre, rects, holdings, partRows, history);
     }
 
-    /** ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). */
+    /** ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). Its ground by relief reads all flat (restore() with no relief rows). */
     public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows,
                                    double[][] history) {
+        return restore(key, centre, rects, holdings, partRows, history, null, null);
+    }
+
+    /**
+     * ...with the ground by relief a save kept beside them (ET1, spec-earth2-terrain 3.3; DataSave's landCentreRelief
+     * and landHoldingsRelief): the centre's RELIEF_AREAS figures, and a row of them for each row of `holdings`, by its
+     * place in it. A key a save has not (null), or a row of the wrong width or not a figure, reads as ground
+     * all flat - its dry ground flat, no shallow sea: what every generated city is, and an older save's.
+     */
+    public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows,
+                                   double[][] history, double[] centreRelief, double[][] holdingsRelief) {
         if (centre == null || centre.length != CENTRE_FIELDS) return null;
         CityLand land = new CityLand(key, (long) centre[CENTRE_FIELDS - 2], (long) centre[CENTRE_FIELDS - 1]);
         int i = 0;
@@ -1107,6 +1238,8 @@ public final class CityLand {
         land.legacyX = (long) centre[i++];
         land.legacyY = (long) centre[i++];
         land.legacySites = (int) centre[i];
+        double[] kept = LandParcel.keptRelief(centreRelief);
+        System.arraycopy(kept != null ? kept : LandParcel.flatRelief(land.centreKm2[DRY]), 0, land.centreRelief, 0, RELIEF_AREAS);
         if (rects != null) {
             for (double[] r : rects) {
                 if (r == null || r.length != RECT_FIELDS) continue;
@@ -1116,8 +1249,9 @@ public final class CityLand {
             }
         }
         if (holdings != null) {
-            for (double[] row : holdings) {
-                LandParcel offer = LandParcel.fromPurchaseRow(row);
+            for (int h = 0; h < holdings.length; h++) {
+                double[] row = holdings[h];
+                LandParcel offer = LandParcel.fromPurchaseRow(row, holdingsRelief != null && h < holdingsRelief.length ? holdingsRelief[h] : null);
                 if (offer == null) continue;
                 land.grid.fill(offer.getX0(), offer.getY0(), offer.getX1(), offer.getY1(), land.purchases.size() + 1);
                 land.purchases.add(new Purchase(offer, LandParcel.purchaseMonth(row), LandParcel.purchasePaid(row)));
@@ -1138,7 +1272,8 @@ public final class CityLand {
 
     /** A copy, field for field: restore() of its own records and its old world's holdings - what the map's draft is drawn on (Game.MapDraft). */
     public CityLand copy() {
-        CityLand c = restore(key, centreState(), centreRectsState(), holdingsState(), partFieldsState(), convertedState());
+        CityLand c = restore(key, centreState(), centreRectsState(), holdingsState(), partFieldsState(), convertedState(),
+                centreReliefState(), holdingsReliefState());
         if (c != null) c.setOldWorldHoldings(oldWorldHoldings);
         return c;
     }
@@ -1148,6 +1283,7 @@ public final class CityLand {
         return o != null && key.equals(o.key) && siteX == o.siteX && siteY == o.siteY && oldWorldHoldings == o.oldWorldHoldings
                 && Arrays.equals(centreState(), o.centreState()) && Arrays.deepEquals(centreRectsState(), o.centreRectsState())
                 && Arrays.deepEquals(holdingsState(), o.holdingsState()) && Arrays.deepEquals(partFieldsState(), o.partFieldsState())
+                && Arrays.equals(centreRelief, o.centreRelief) && Arrays.deepEquals(holdingsReliefState(), o.holdingsReliefState())
                 && Arrays.deepEquals(convertedState(), o.convertedState()) && grid.sameAs(o.grid);
     }
 
