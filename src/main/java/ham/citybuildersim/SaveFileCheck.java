@@ -1031,6 +1031,13 @@ public class SaveFileCheck {
                 Math.round(dInterest * 10000));
         assertEquals("...so next month's income still shows the deficit",
                 Math.round(paidUp.getIncome() * 10000), Math.round(dIncome * 10000));
+        // ...and the interest the month booked on each kind of paper (CD6): a flow the list of paper cannot give
+        // back, which the Government tab's grid reads after the month; DataSave.interestBookedByKind, out and in.
+        assertTrue("fixture: the bond really booked some interest in the month",
+                indebted.getDebtManager().getInterestBookedOf("TERM") > 0);
+        assertEquals("...and each kind's interest booked came back with the save",
+                java.util.Arrays.toString(paidUp.getDebtManager().interestByKindToSave()),
+                java.util.Arrays.toString(indebted.getDebtManager().interestByKindToSave()));
 
         // The half that actually costs money: the bill has to be PAID, once.
         // Restoring the figure and then not charging it would look right on the

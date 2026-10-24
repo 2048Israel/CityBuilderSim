@@ -636,7 +636,9 @@ final class FinancesScreen {
                 : "no output to compare";
 
         int band = revenue > 0 ? CityNeeds.serviceLevel(coupon / revenue) : 0;
-        String couponNote = "a month · " + (revenue > 0
+        // The coupon is the cash the paper pays NEXT month, not the interest the budget charged last month (CD6): the
+        // note says so, and the tooltip puts the budget's line beside it.
+        String couponNote = "in cash next month · " + (revenue > 0
                 ? String.format("%.1f%% of a month's take", coupon / revenue * 100) : "nothing came in")
                 + (notes > 0 ? " · " + d(notes) + " more pays at maturity" : "");
 
@@ -670,7 +672,9 @@ final class FinancesScreen {
                         "Go to the policy rate, which this one is built on", null),
                 new Kpi("COUPON", d(coupon), couponNote,
                         band >= 2 ? Palette.BAD : band == 1 ? Palette.WARN : Palette.TEXT_HEAD,
-                        "Debt service: what the paper costs against what the city takes in", null),
+                        "Debt service: what the paper costs against what the city takes in. The coupon is the cash the paper pays "
+                                + "next month; the budget charged " + d(na.getInterestExpense()) + " of interest last month, "
+                                + "the coupons and the discount wearing off.", null),
                 new Kpi("NEXT DUE", dueValue, dueNote, dueTone,
                         "When it falls due: the ladder", null));
     }
@@ -1590,7 +1594,7 @@ final class FinancesScreen {
                                 : annual > 0 ? pc(principal / annual) + " of GDP" : d(principal) + " owed"),
                         Palette.TEXT_LABEL, null),
                 new AreaCard("The book", pieces == 0 ? "nothing" : pieces + (pieces == 1 ? " piece" : " pieces"),
-                        coupon >= .5 ? d(coupon) + " coupon a month"
+                        coupon >= .5 ? d(coupon) + " coupon a month in cash"
                                 : pieces > 0 ? "no coupon: bills pay at maturity" : "nothing outstanding",
                         Palette.TEXT_LABEL, null),
                 new AreaCard("Borrow", pct2(g.getInterestRate()),
@@ -1920,7 +1924,7 @@ final class FinancesScreen {
         double lead = Math.max(month, year);
         int level = CityNeeds.serviceLevel(lead);
         String tone = BuildScreen.verdict(level);
-        VBox left = new VBox(4, words(year >= month ? "THE NEXT 12 MONTHS" : "A MONTH'S COUPON", Palette.SIZE_LABEL + 1,
+        VBox left = new VBox(4, words(year >= month ? "THE NEXT 12 MONTHS" : "A MONTH'S COUPON, IN CASH", Palette.SIZE_LABEL + 1,
                         Palette.TEXT_LABEL),
                 figure(pc1(lead), 28, tone), words(SERVICE_WORDS[level], Palette.SIZE_BODY + 1, tone),
                 words("of the take", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
@@ -1931,16 +1935,19 @@ final class FinancesScreen {
                                 "felt: " + pc(CityNeeds.SERVICE_FELT) + " to " + pc(CityNeeds.SERVICE_CONSTRAINED)),
                         ghost(top - CityNeeds.SERVICE_CONSTRAINED, Palette.BAD, null,
                                 "constrained: past " + pc(CityNeeds.SERVICE_CONSTRAINED))), top,
-                List.of(new Tick(Math.min(month, top), Palette.TEXT_HEAD, 3, null, "a month's coupon " + pc1(month)),
+                List.of(new Tick(Math.min(month, top), Palette.TEXT_HEAD, 3, null, "a month's coupon in cash " + pc1(month)),
                         new Tick(Math.min(year, top), Palette.ACCENT, 3, null, "the next 12 months " + pc1(year))), 0, 14);
-        javafx.scene.layout.FlowPane marks = keyRow(keySwatch(Palette.TEXT_HEAD, "a month's coupon " + pc1(month)
+        javafx.scene.layout.FlowPane marks = keyRow(keySwatch(Palette.TEXT_HEAD, "a month's coupon in cash " + pc1(month)
                                 + (month > top ? " (past the end)" : "")),
                 keySwatch(Palette.ACCENT, "the next 12 months " + pc1(year) + (year > top ? " (past the end)" : "")),
                 words("comfortable to " + pc(CityNeeds.SERVICE_FELT) + " · felt to " + pc(CityNeeds.SERVICE_CONSTRAINED)
                         + " · constrained past it, to " + pc(top) + " drawn", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         VBox right = new VBox(8, caption("WHAT THE PAPER ASKS, AGAINST THE TAKE", SERVICE_INFO), gauge, marks,
                 line(String.format("%s due in the next twelve months, coupons and principal, against twelve months of "
-                        + "this month's take, %s a month; the coupon alone is %s a month.", d(next12), d(revenue), d(coupon))));
+                        + "this month's take, %s a month; the coupon alone is %s a month, in cash. The budget charged %s of "
+                        + "interest last month: the coupons and the discount wearing off (LAST MONTH, below).",
+                        d(next12), d(revenue), d(coupon),
+                        d(g.getEconomyManager().getNationalAccounts().getInterestExpense()))));
         return heroCard(left, 220, right);
     }
 
@@ -2430,6 +2437,13 @@ final class FinancesScreen {
             + "so the figure climbs to the face by the day it falls due. Paper sold over its face runs down to it "
             + "instead. The effective rate is the yield the sale made of the piece's payments, not its coupon.";
 
+    /** The same line on an inflation-linked bond's card (CD6): its rate is a real rate. */
+    static final String LINKED_BOOKS_INFO = "What the books hold the piece at, and the rate they charge it at. The books "
+            + "follow the bond's schedule at today's index held flat: the real coupon on the principal as the index has "
+            + "moved it, and at the end the face, or the indexed principal when that is more. So the effective rate is "
+            + "a real rate, the yield over the index, and not a nominal one. What the index adds to what the city will "
+            + "owe is booked beside it, as the inflation uplift, and is not in this rate.";
+
     /** A price against face, in words (the spec's T33, D16). */
     static final String PREMIUM_INFO = "Buying a piece back pays its holders what it is worth today. Under its face, "
             + "the city clears more debt than it pays - because its credit has got worse since the piece was sold, or "
@@ -2472,7 +2486,7 @@ final class FinancesScreen {
                     door("Borrow", Palette.ACCENT, () -> open("Borrow", "At home", null))));
             return;
         }
-        String head = String.format("%d %s · %s owed · %s carried · %s coupon a month · cleared today for %s · %s in the treasury",
+        String head = String.format("%d %s · %s owed · %s carried · %s coupon a month in cash · cleared today for %s · %s in the treasury",
                 paper.size(), paper.size() == 1 ? "piece" : "pieces", d(ledger.getAllPrincipal()),
                 d(ledger.getCarryingValue()), d(ledger.getMonthlyCoupon()),
                 d(ledger.getTotalMarketValue()), d(g.getCash()));
@@ -2569,7 +2583,7 @@ final class FinancesScreen {
         HBox ends = new HBox(muted("issued " + CityCalendar.formatShort(started)), g2,
                 words("falls due " + CityCalendar.formatShort(due), Palette.SIZE_LABEL, when));
 
-        double coupon = debt.getMonthlyInterestExpense();
+        double coupon = debt.getMonthlyCoupon();
         Node couponLine = coupon >= .5 ? line("coupon " + d(coupon) + " a month")
                 : noteLine("no coupon - the discount wears off as interest", NOTE_INFO, 560);
         // A floater's coupon follows the dial and a linker's follows the index (CD5): the card says what each is made of.
@@ -2582,11 +2596,17 @@ final class FinancesScreen {
                             + d(linked.getIndexedPrincipal()) + " indexed (the index ×" + String.format("%.3f", linked.getRatio())
                             + " since the sale)", INDEXED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
             followsLine = line("uplift last month " + d(linked.getLastUplift()) + " · repays " + d(linked.owedAtMaturity())
-                    + " at today's index");
+                    + " at today's index"
+                    // The last month pays the uplift in cash, with the face (CD6): said where the coupon is, and not counted in it.
+                    + (linked.getUpliftDue() >= .5 ? " · next month pays the uplift, " + d(linked.getUpliftDue()) + ", with the face" : ""));
         }
-        // The piece's books (CD3): what it is carried at and the rate it is charged at.
-        Node booksLine = infoLine("carried " + d(debt.getCarryingValue()) + " · effective " + pct2(debt.getEffectiveRate()),
-                CARRIED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
+        // The piece's books (CD3): what it is carried at and the rate it is charged at. A linker's books follow its
+        // schedule at today's index held flat, so its rate is a real rate, and it says so (CD6).
+        Node booksLine = debt instanceof InflationLinkedBond
+                ? infoLine("carried " + d(debt.getCarryingValue()) + " · effective " + pct2(debt.getEffectiveRate()) + " real",
+                        LINKED_BOOKS_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420)
+                : infoLine("carried " + d(debt.getCarryingValue()) + " · effective " + pct2(debt.getEffectiveRate()),
+                        CARRIED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
 
         Node holders = holdersBar(debt);
 
@@ -2662,8 +2682,8 @@ final class FinancesScreen {
             t.add(kind, 0, line);
             t.add(gridCell(d(debt.getOustandingPrincipal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
             t.add(gridCell(d(debt.getCarryingValue()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 2, line);
-            t.add(gridCell(debt.getMonthlyInterestExpense() > 0 ? d(debt.getMonthlyInterestExpense()) : "none",
-                    debt.getMonthlyInterestExpense() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
+            t.add(gridCell(debt.getMonthlyCoupon() > 0 ? d(debt.getMonthlyCoupon()) : "none",
+                    debt.getMonthlyCoupon() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
                     Palette.SIZE_CAPTION, true), 3, line);
             t.add(gridCell(pct2(debt.getEffectiveRate()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 4, line);
             t.add(gridCell(CityCalendar.formatShort(debt.getMaturityMonth()), Palette.TEXT_MUTED,
@@ -2673,9 +2693,12 @@ final class FinancesScreen {
             line++;
         }
         DebtManager ledger = ui.game.getDebtManager();
+        // The linked bonds' uplift, which the last coupon pays with the face (CD6), is cash beside the coupon and not in it.
+        Node uplift = ledger.getUpliftDueNextMonth() >= .5
+                ? statementLine("Uplift paid next month", dFull(ledger.getUpliftDueNextMonth())) : null;
         return column(t, statementTotal("On the book altogether", dFull(ledger.getAllPrincipal()), Palette.TEXT_HEAD),
                 statementLine("Carried on the books", dFull(ledger.getCarryingValue())),
-                statementLine("Coupon a month", dFull(ledger.getMonthlyCoupon())));
+                statementLine("Coupon a month", dFull(ledger.getMonthlyCoupon())), uplift);
     }
 
     /* =====================================================================
@@ -2904,7 +2927,7 @@ final class FinancesScreen {
                 figure(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due), Palette.SIZE_LABEL + 1,
                         urgency(due - month)));
         head.setAlignment(Pos.CENTER_LEFT);
-        double coupon = debt.getMonthlyInterestExpense();
+        double coupon = debt.getMonthlyCoupon();
         Node facts = muted(String.format("%s owed · %s carried · %s · worth today %s · %.3f for each 100", d(principal),
                 d(debt.getCarryingValue()), coupon >= .5 ? d(coupon) + " a month of coupon" : "no coupon",
                 d(g.fairValueOf(debt)), ledger.priceOfPar(debt)));
@@ -3021,7 +3044,7 @@ final class FinancesScreen {
                     cardLine("Against carrying value · the statement's Gain (loss) on debt retired", signedD(q.gainOnCarrying()), null),
                     cardLine("Against face · what the debt-to-GDP measure sees", signedD(q.gainOnFace()), null),
                     cardLine("Over fair · what the auction cost", d(q.overFair()), null));
-            double sideways = q.carriedTaken() - q.takenFace();
+            double sideways = q.unamortisedTaken();
             double gain = q.gainOnCarrying();
             VBox journal = card(caption("THE JOURNAL", null, hint("what the first of them books")),
                     cardLine("Dr  City paper payable", d(q.takenFace()), null),
@@ -3033,10 +3056,11 @@ final class FinancesScreen {
             page.getChildren().add(pair(compare, journal));
 
             // ----- the honest line -----
-            int left = Math.max(1, debt.getRemainingMonths());
-            double rate = debt.isForeign() ? ledger.foreignCurveRate(left) : ledger.curveRate(left);
-            double stopped = coupon * (principal > 0 ? q.takenFace() / principal : 0);
-            double again = q.paid() * rate / 12;
+            Buyback.HonestLine hl = g.honestLine(debt, q);
+            int left = hl.months();
+            double rate = hl.rate();
+            double stopped = hl.couponStopped();
+            double again = hl.costAgain();
             String stops = stopped >= .5 ? "It stops " + d(stopped) + " a month of coupon; "
                     : "It has no coupon to stop - a bill's interest is the discount wearing off; ";
             String honest = stops + d(q.paid()) + " borrowed again at today's " + termWords(left) + " rate, "
@@ -3088,7 +3112,7 @@ final class FinancesScreen {
                 Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
         card.getChildren().add(cardLine("What the call costs · every holder paid in full", d(cost), null));
         card.getChildren().add(cardLine("Gain (loss) against carrying value · " + d(carried) + " carried, less the face",
-                signedD(carried - cost), null));
+                signedD(g.callGain(bond)), null));
         card.getChildren().add(cardLine("What calling saves, in present value", signedD(saving), null));
         card.getChildren().add(worth
                 ? infoLine("Worth calling: it saves " + d(saving) + ", over " + pc(CallTree.WORTH_CALLING) + " of the face.",

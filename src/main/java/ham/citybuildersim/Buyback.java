@@ -143,6 +143,15 @@ public final class Buyback {
             return carriedTaken - paid;
         }
 
+        /**
+         * The premium still on the books for the face taken (CD6): the carrying value of the face taken
+         * less the face - the journal's "Unamortised premium", which the buyback takes off with the paper;
+         * below nothing it is the discount still on the books, the journal's "Unamortised discount".
+         */
+        public double unamortisedTaken() {
+            return carriedTaken - takenFace;
+        }
+
         /** What the debt-to-GDP measure sees: the face taken less what was paid. */
         public double gainOnFace() {
             return takenFace - paid;
@@ -164,6 +173,23 @@ public final class Buyback {
                 left -= f;
             }
             return out;
+        }
+    }
+
+    /**
+     * THE HONEST LINE's four figures (CD6; spec-city-debt section 6.3): a buyback's gain is real on the
+     * statement, but the cash to pay for it costs today's rate. Game.honestLine() strikes them from a quote.
+     *
+     * @param months        the months the piece has left, one at least: the term the city would borrow again for
+     * @param rate          the curve's rate for that term, a year (the dollar curve for dollar paper)
+     * @param couponStopped the coupon a month the buyback stops: the piece's coupon in the share of its principal taken
+     * @param costAgain     what borrowing the price again would cost a month, at that rate
+     */
+    public record HonestLine(int months, double rate, double couponStopped, double costAgain) {
+
+        /** What the city's interest does a month if it borrows the price again: above nothing it rises, below it falls. */
+        public double change() {
+            return costAgain - couponStopped;
         }
     }
 

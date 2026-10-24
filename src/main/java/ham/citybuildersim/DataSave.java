@@ -631,6 +631,15 @@ public class DataSave implements Cloneable {
     private double retiredGainPending;
 
     /**
+     * The month's interest expense on each kind of paper, in DebtManager.BOOK_KINDS' order -
+     * DebtManager.interestByKind (CD6), the rows of the budget's interest line the Government tab's
+     * grid reads after the month. A flow the list of paper cannot give back (a bill that fell due,
+     * a dollar piece struck at the month's rate), so it is carried. Null on a save without it,
+     * which reads as zeros.
+     */
+    private double[] interestBookedByKind;
+
+    /**
      * The city's own paper its bank has taken and not yet paid for, with the
      * discount on it - Game.getCityPaperUnsettled() - carried since 2026-09-21
      * because the bank now PAYS for the paper at the settle after the issue,
@@ -664,6 +673,8 @@ public class DataSave implements Cloneable {
     public double getTreasuryRaisedPending()           { return treasuryRaisedPending; }
     public void setRetiredGainPending(double v)        { this.retiredGainPending = v; }
     public double getRetiredGainPending()              { return retiredGainPending; }
+    public void setInterestBookedByKind(double[] v)    { this.interestBookedByKind = v; }
+    public double[] getInterestBookedByKind()          { return interestBookedByKind; }
 
     /**
      * The government's own month: twenty-three revenue and spending lines, saved

@@ -13525,6 +13525,7 @@ public class Game {
                 treasuryJournal.pendingLabels(), treasuryJournal.pendingAmounts());
         dataSave.setTreasuryRaisedPending(treasuryRaisedSoFar);
         dataSave.setRetiredGainPending(retiredGainSoFar);
+        dataSave.setInterestBookedByKind(debtManager.interestByKindToSave());
         dataSave.setCityPaperUnsettled(getCityPaperUnsettled(), cityDiscountThisMonth + cityDiscountForBank);
         dataSave.setGovernmentMonth(economyManager.governmentMonthToSave());
         dataSave.setReports(reports);
@@ -15452,6 +15453,21 @@ public class Game {
         return quote;
     }
 
+    /**
+     * THE HONEST LINE (CD6, spec-city-debt.md section 6.3), struck from a quote: a buyback's gain is real
+     * on the statement, but the cash to pay for it costs today's rate. The months the piece has left (one
+     * at least), the curve's rate for them (the dollar curve for dollar paper), the coupon a month the
+     * buyback stops - the piece's coupon in the share of its principal taken - and what borrowing the
+     * price again at that rate would cost a month. A pure read: the quote has priced the market.
+     */
+    public Buyback.HonestLine honestLine(Debt debt, Buyback.Result q) {
+        int months = Math.max(1, debt.getRemainingMonths());
+        double rate = debt.isForeign() ? debtManager.foreignCurveRate(months) : debtManager.curveRate(months);
+        double principal = debt.getOustandingPrincipal();
+        double stopped = debt.getMonthlyCoupon() * (principal > 0 ? q.takenFace() / principal : 0);
+        return new Buyback.HonestLine(months, rate, stopped, q.paid() * rate / 12);
+    }
+
     /** True when this much face is the whole of a piece's principal: all of it but the dust that slices of a holding leave. */
     private static boolean takesTheWholePiece(double taken, double principal) {
         return taken >= principal - 1e-9 * Math.max(1, principal);
@@ -15623,6 +15639,16 @@ public class Game {
     /** What calling this piece costs: its outstanding principal, 100 per 100 (CallTree.CALL_PRICE), paid to every holder, the central bank's too. */
     public double callCost(Debt debt) {
         return debt == null ? 0 : debt.getOustandingPrincipal() * CallTree.CALL_PRICE / 100;
+    }
+
+    /**
+     * What calling the line books as a gain (a loss below nothing) against its carrying value (CD6): what
+     * it is carried at less callCost() - the figure callLine() adds to the month's gain on debt retired
+     * (NationalAccounts.getRetiredGain()), which is not cash. Nothing for no line. A read; the Finances
+     * tab's call card prints it.
+     */
+    public double callGain(Debt debt) {
+        return debt == null ? 0 : debt.getCarryingValue() - callCost(debt);
     }
 
     /**
@@ -16751,6 +16777,8 @@ public class Game {
                     loaded.getTreasuryJournalPendingLabels(), loaded.getTreasuryJournalPendingAmounts());
             treasuryRaisedSoFar = loaded.getTreasuryRaisedPending();
             retiredGainSoFar = loaded.getRetiredGainPending();
+            // ...and the interest the month booked on each kind of paper (CD6), which the paper left on the list cannot give back.
+            debtManager.restoreInterestByKind(loaded.getInterestBookedByKind());
             // ...and the paper its bank has not yet paid for, which the next
             // settle pays (THE BANK PAYS FOR THE CITY'S PAPER). Zero from an
             // older save, which is what its bank would have paid.

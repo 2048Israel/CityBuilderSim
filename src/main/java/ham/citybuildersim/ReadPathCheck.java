@@ -1027,6 +1027,17 @@ public class ReadPathCheck {
         // and sums, what every business owes, the net position, M0's move,
         // what a buyback saves against face and the service band
         debt.getMonthlyCoupon();
+        // ...and CD6's: the uplift due next month, the interest booked on each kind of paper (and the copy a save
+        // takes of it), each piece's coupon without its uplift, the call's gain and the honest line's four figures
+        debt.getUpliftDueNextMonth();
+        for (String kind : DebtManager.BOOK_KINDS) debt.getInterestBookedOf(kind);
+        debt.interestByKindToSave();
+        for (Debt paper : debt.getDebt()) {
+            paper.getMonthlyCoupon();
+            paper.getUpliftDue();
+            g.callGain(paper);
+            g.honestLine(paper, Buyback.Result.none(paper.getOustandingPrincipal()));
+        }
         for (String kind : DebtManager.LADDER_KINDS) debt.getPrincipalOf(kind);
         debt.ladder(g.getMonth());
         debt.ladder(g.getMonth(), g.quoteDebt("Serial", 1_000, 3, 100).schedule(1));

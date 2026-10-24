@@ -630,6 +630,20 @@ public abstract class Debt {
     /** This month's coupon, in local money. Zero for a discount instrument. */
     public final double getMonthlyInterestExpense() { return inLocal(couponOwed()); }
 
+    /**
+     * The part of couponOwed() that is a linked bond's inflation uplift, in
+     * the piece's own currency: nothing for every other piece. (CD6: the
+     * uplift is not coupon - the budget books it on its own line - but it is
+     * cash, and the coupon path pays it with the last coupon.)
+     */
+    protected double upliftOwed() { return 0; }
+
+    /** This month's coupon in local money, without the uplift a linked bond pays with its last: the coupon proper. getMonthlyInterestExpense() is this and getUpliftDue(). */
+    public final double getMonthlyCoupon() { return inLocal(couponOwed() - upliftOwed()); }
+
+    /** The inflation uplift the coupon path pays this month, in local money: a linked bond's last month, nothing in any other piece or month. */
+    public final double getUpliftDue() { return inLocal(upliftOwed()); }
+
     public final double[] remainingCashFlows() {
         double[] own = scheduleOwed();
         if (!foreign) return own;

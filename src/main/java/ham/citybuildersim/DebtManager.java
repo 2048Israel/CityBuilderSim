@@ -1270,6 +1270,7 @@ public class DebtManager {
         accretedForBank = 0;
         interestBooked = amortisedBooked = 0;
         upliftBooked = upliftPaidBooked = 0;
+        java.util.Arrays.fill(interestByKind, 0);
 
         while (iterator.hasNext()) {
             Debt debt = iterator.next();
@@ -1294,6 +1295,7 @@ public class DebtManager {
              */
             debt.amortise();
             interestBooked += debt.getLastInterestExpense();
+            interestByKind[bookKind(debt.getType())] += debt.getLastInterestExpense();
             if (debt instanceof InflationLinkedBond linked) {
                 // The uplift paid in the last month is the uplift line's, cash, and not the discount wearing
                 // off: the interest line's not-cash part is the discount alone (CD5).
@@ -1333,10 +1335,15 @@ public class DebtManager {
 
        Struck in processAllDebts() from each piece's amortise(), in local
        money at the rate each paper is valued at, and read until the next
-       month's strike. Not saved: the month's government block carries the
-       amortisation (NationalAccounts.getInterestNotCash()) and each piece
-       carries its own last expense, so a loaded city has both; these totals
-       read nothing until the first month ticks.
+       month's strike. The totals are not saved: the month's government block
+       carries the amortisation (NationalAccounts.getInterestNotCash()) and
+       each piece carries its own last expense, so a loaded city has both;
+       these totals read nothing until the first month ticks. THE INTEREST BY
+       KIND (CD6) IS SAVED, though: the Government tab's grid reads it after
+       the month, and it is a flow the state the month ended in cannot give
+       back - a bill that matured in the month is gone from the list, and a
+       dollar piece's expense, struck at the rate of that month, is not what
+       its last expense reads at the new rate. A save without it reads zeros.
        ----------------------------------------------------------------------- */
 
     /** This month's interest expense on the city's paper: every piece's carrying value at its effective rate, a month. The coupons and the discount wearing off together. */
@@ -1357,6 +1364,36 @@ public class DebtManager {
 
     public double getInterestBooked()  { return interestBooked; }
     public double getAmortisedBooked() { return amortisedBooked; }
+
+    /**
+     * THE INTEREST BOOKED, BY KIND (CD6): the month's interest expense on each kind of paper, in
+     * BOOK_KINDS' order, struck in processAllDebts() beside interestBooked from the same figures, so
+     * the five add up to getInterestBooked() - the budget's line (NationalAccounts.getInterestExpense())
+     * - including the interest of a piece that fell due in the month and is no longer on the list, and
+     * a dollar piece's, booked at the month's rate and not read again at a new one. Saved.
+     */
+    private final double[] interestByKind = new double[5];
+
+    /** The kinds of paper the interest is booked by, as Debt.getType() calls them: the notes, the serial bonds, the bonds, the floaters, the linkers. */
+    public static final String[] BOOK_KINDS = {"NOTE", "SERIAL", "TERM", "FLOAT", "LINKED"};
+
+    /** A type's place in BOOK_KINDS; a type that is none of them is a term loan's, as ladderKind() reads it. */
+    static int bookKind(String type) {
+        for (int i = 0; i < BOOK_KINDS.length; i++) if (BOOK_KINDS[i].equals(type)) return i;
+        return 2;
+    }
+
+    /** The month's interest expense on one kind of paper (a BOOK_KINDS entry), in local money: the Government tab's row of the budget's interest line. A type that is none of them reads as a term loan's. */
+    public double getInterestBookedOf(String type) { return interestByKind[bookKind(type)]; }
+
+    /** The interest by kind as a save carries it: a copy, in BOOK_KINDS' order. */
+    double[] interestByKindToSave() { return interestByKind.clone(); }
+
+    /** ...and put back by a load; null or the wrong length (an older save) reads as zeros. */
+    void restoreInterestByKind(double[] saved) {
+        java.util.Arrays.fill(interestByKind, 0);
+        if (saved != null && saved.length == interestByKind.length) System.arraycopy(saved, 0, interestByKind, 0, saved.length);
+    }
 
     /** The month's inflation uplift on linked bonds, booked (CD5): an expense, not cash. Nothing for a city that holds none. */
     public double getUpliftBooked()    { return upliftBooked; }
@@ -1409,15 +1446,26 @@ public class DebtManager {
        ----------------------------------------------------------------------- */
 
     /**
-     * What the city is charged in coupon a month, every piece together, in
-     * local money: the bonds' own getMonthlyInterestExpense(), summed - the
-     * Finances tab's COUPON. A note charges none (its cost was its discount),
-     * so a city owing only notes reads nothing here; getNotePrincipal() is
-     * what pays at maturity instead.
+     * What the paper pays in coupon next month, in cash, every piece together,
+     * in local money: the pieces' own getMonthlyCoupon(), summed - the
+     * Finances tab's COUPON. A forward cash measure, which is not the budget's
+     * interest line (that is the carrying value at the effective rate, struck
+     * last month: getInterestBooked()). A note pays none (its cost was its
+     * discount), so a city owing only notes reads nothing here;
+     * getNotePrincipal() is what pays at maturity instead. A linked bond's
+     * inflation uplift, which it pays with its last coupon, is not in it: that
+     * is getUpliftDueNextMonth().
      */
     public double getMonthlyCoupon() {
         double total = 0;
-        for (Debt d : debts) total += d.getMonthlyInterestExpense();
+        for (Debt d : debts) total += d.getMonthlyCoupon();
+        return total;
+    }
+
+    /** The inflation uplift the linked bonds pay next month, with their last coupon, every piece together, in local money (CD6): cash beside getMonthlyCoupon(), and the uplift line's in the budget. */
+    public double getUpliftDueNextMonth() {
+        double total = 0;
+        for (Debt d : debts) total += d.getUpliftDue();
         return total;
     }
 
