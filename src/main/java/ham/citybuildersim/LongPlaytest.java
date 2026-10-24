@@ -4096,17 +4096,18 @@ public class LongPlaytest {
     }
 
     /**
-     * Whether two carries in are the same {month, code} pairs in the same order (none is an empty list). Not the same counts by type, as
-     * this was before PT1-M4: the carry is append-only only while the districts before keep their log and their plan's counts - the
-     * squaring of an upstream log with its plan's counts changes it in its middle (DistrictPlan, OVERFLOW LOG) - and a re-deal of the
-     * works on their sites (a Large Open-Pit Mine opening at m3991 took 12 Iron Mines from district (2,0) to (1,0)) puts back 12 arrivals
-     * at the months they came in and takes them away at the deal's: the counts by type are as they were, the log is not, and a district
-     * after it replays a different history.
+     * Whether two carries in leave a district the same history (none is an empty list): the same {month, code} pairs in the same
+     * order, or the one the other with pairs appended - CL3's promise is that an arrival appended moves no box already drawn, so a
+     * move beside an append is a move. Only a rewrite inside the pairs the two have in common is a different history, whose moves
+     * are the spill's. Not the counts by type, as this was before PT1-M4: the squaring of an upstream log with its plan's counts
+     * changes it in its middle (DistrictPlan, OVERFLOW LOG), and a re-deal of the works on their sites (a Large Open-Pit Mine opening
+     * at m3991 took 12 Iron Mines from district (2,0) to (1,0)) puts back 12 arrivals at the months they came in and takes them away
+     * at the deal's: the counts by type are as they were, the log is not, and a district after it replays a different history.
      */
     static boolean layoutSameCarry(int[] a, int[] b) {
         int na = a == null ? 0 : a.length, nb = b == null ? 0 : b.length;
-        if (na != nb) return false;
-        for (int i = 0; i < na; i++) if (a[i] != b[i]) return false;
+        int common = Math.min(na, nb);
+        for (int i = 0; i < common; i++) if (a[i] != b[i]) return false;
         return true;
     }
 

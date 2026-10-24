@@ -1978,8 +1978,6 @@ public class MapCheck {
         final int w, h;
         final byte[] use, road, width, role, run;
         final boolean[] owned, sea, wet, bridge, beneath, mined;
-        /** The plots of the plans' own buildings (PT1-M4): a building the plan placed, not one packed at the city's edge after the plans were made (the map's packing fills ground the plan had laid its joins over) - what DistrictPlan.joinable() bars with occ[a] > 0. */
-        final boolean[] built;
         /** Each building: {x0, y0, w, h, type, site (or -1), packed (1 or 0)} in the box's plots. */
         final List<int[]> boxes = new ArrayList<>();
         long rail, crossings, packed, siding;
@@ -2004,7 +2002,6 @@ public class MapCheck {
             bridge = new boolean[w * h];
             beneath = new boolean[w * h];
             mined = new boolean[w * h];
-            built = new boolean[w * h];
             buildings = new long[map.types().length];
             TilePainter.Input in = new TilePainter.Input();
             TilePainter.Painted p = new TilePainter.Painted();
@@ -2022,7 +2019,6 @@ public class MapCheck {
                     for (int k = 0; k < TilePainter.PLOTS; k++) {
                         int g = (oy + k / World.TILE) * w + ox + k % World.TILE;
                         use[g] = p.use[k];
-                        built[g] = p.use[k] == TilePainter.BUILDING && !p.bpacked[p.bld[k] - 1];
                         road[g] = p.road[k];
                         width[g] = p.width[k];
                         role[g] = p.role[k];
@@ -2110,26 +2106,13 @@ public class MapCheck {
          * The road's pieces and those the city's own ground joins to the
          * largest: {pieces, plots of the largest, pieces the ground joins to
          * it} - from the largest piece, four ways over owned ground that is not
-         * the sea, a mine's site or a building the plans placed, fresh water as
-         * far as an arterial's bridge (ARTERIAL_BRIDGE) spans it along the way,
-         * the buildings packed at the city's edge among the ground (the plans
-         * made their joins before the packing filled it): another piece reached
-         * is one the ground does not part. Unmined field ground is ground, as
-         * DistrictPlan.joinable() has it. PT1-M4: the plans' own buildings are
-         * no ground - the plan's join never lays a street over one
-         * (joinable() and groundJoinable(), occ[a] > 0), so a piece they wall
-         * in is parted, as the plan marks it (markPartedPiece()); network(true)
-         * counts what they wall in.
+         * the sea or a mine's site, fresh water as far as an arterial's bridge
+         * (ARTERIAL_BRIDGE) spans it along the way, a building's plots among
+         * the ground (a piece buildings wall in is the plans' to join, as
+         * PlanCheck's rule has it): another piece reached is one the ground
+         * does not part.
          */
         int[] network() {
-            return network(false);
-        }
-
-        /**
-         * ...and with `acrossBuildings` the plans' own buildings' plots among the ground, as the check read them before PT1-M4: the
-         * pieces reached then that network() does not reach are the ones the plans' own houses wall in (a figure the check prints).
-         */
-        int[] network(boolean acrossBuildings) {
             int[] piece = pieces(this::isRoad);
             int n = piece[0];
             if (n <= 1) return new int[] { n, n == 0 ? 0 : (int) count(this::isRoad), 0 };
@@ -2150,7 +2133,7 @@ public class MapCheck {
                     int v = ay * w + ax;
                     if (seen[v]) continue;
                     if (piece[v + 1] != 0 && piece[v + 1] != main) { reached.add(piece[v + 1]); seen[v] = true; continue; }
-                    if (!owned[v] || sea[v] || mined[v] || (built[v] && !acrossBuildings)) continue;
+                    if (!owned[v] || sea[v] || mined[v]) continue;
                     if (wet[v]) {
                         int run = 1;
                         for (int k = 1; k <= DistrictPlan.ARTERIAL_BRIDGE; k++) {
@@ -2320,8 +2303,6 @@ public class MapCheck {
     static void networkOn(CityMap m, long[] model, String what, boolean crosses) {
         Raster r = Raster.of(m);
         int[] net = r.network();
-        // PT1-M4: the pieces the plans' own houses wall in (reached only across them), apart from the pieces the ground joins.
-        int walled = r.network(true)[2] - net[2];
         long roadPlots = r.count(r::isRoad), alone = r.alone();
         long[] cr = r.crossings(TilePainter.JUNCTION_APART);
         int[] dist = r.reach(TilePainter.REACH);
@@ -2350,18 +2331,15 @@ public class MapCheck {
         }
         int[] pk = m.packedCounts();
         out.printf("      %s, %d districts, every tile and a tile round them: %,d road plots in %d piece(s) (the largest %,d), %d of them the city's"
-                + " own ground joins to it, %d more only across the plans' own buildings; %,d alone; %,d + junctions, %d pairs nearer than %d%n", what,
-                m.districts().size(), roadPlots, net[0], net[1], net[2], walled, alone, cr[0], cr[1], TilePainter.JUNCTION_APART);
+                + " own ground joins to it; %,d alone; %,d + junctions, %d pairs nearer than %d%n", what, m.districts().size(), roadPlots, net[0], net[1],
+                net[2], alone, cr[0], cr[1], TilePainter.JUNCTION_APART);
         out.printf("      ...%,d buildings, %,d within %d plots of a street, %d farther; %d mines on their sites, %d packed at the city's edge (%d drawn"
                 + " smaller, %d with no ground); surface: %s; %,d buildings drawn of the model's %,d%n", near + far, near, TilePainter.REACH, far, mines,
                 packed, pk[1], pk[2], sf, drawnN, modelN);
         if (!crosses) out.printf("      (%s: %,d + junctions - its cells opened while its road was short, so its junctions are T's: the + rule bites on Jerus's city x 1)%n", what, cr[0]);
         check(what + ": fixture: the city has streets" + (crosses ? " and + junctions" : ""), roadPlots > 0 && (cr[0] > 0 || !crosses));
-        // (PT1-M4) The ground is the plan's own (DistrictPlan.joinable(), groundJoinable(): occ[a] > 0 bars a plot it placed a building on), so
-        // a piece the plans' houses wall in - the played city's has one - is parted, as the plan marks it, and is the figure above's, not
-        // this line's; a piece the free ground (the packed buildings' too) joins to the largest and the plan did not join is.
         check("...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an"
-                + " arterial's bridge, ground it does not own, the plans' own buildings)", net[2] == 0);
+                + " arterial's bridge, ground it does not own)", net[2] == 0);
         check("...no plot of road alone, no stray road", alone == 0);
         check("...no two + junctions of drawn street nearer than JUNCTION_APART plots, either way: about eight houses' length apart", cr[1] == 0);
         check("...every building within REACH plots of a street, but those packed at the city's edge and the mines on their sites", far == 0);

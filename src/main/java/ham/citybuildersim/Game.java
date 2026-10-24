@@ -7050,12 +7050,17 @@ public class Game {
                 && t.makes(Good.BUILDING_WORK) > 0;
     }
 
-    /** How many builders' depots of any other Construction template stand. */
+    /**
+     * How many builders' yards and depots of any other Construction template stand and are not closing: one
+     * bought out and ordered demolished this month still stands until the month starts (closeDemolished()), and
+     * counting it let the city buy out the depot and then the yard in the same window and leave no builders.
+     */
     private int otherBuildersDepotsStanding(BuildingsTemplate t) {
         int standing = 0;
         for (BuildingsTemplate d : buildingManager.getTemplatesBySector(getSectors().construction().key())) {
             if (d.getId() != t.getId() && d.makes(Good.BUILDING_WORK) > 0) {
-                standing += buildingManager.getQuantity(d.getId());
+                standing += Math.max(0, buildingManager.getQuantity(d.getId())
+                        - buildingManager.getControl().closingOf(d.getId()));
             }
         }
         return standing;

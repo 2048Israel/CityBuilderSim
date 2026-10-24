@@ -119,26 +119,40 @@ round, 2026-10-24), none by loosening:
   till; main hid it because only two sectors held dollars there. Only the land's
   slots and the float's money are scaled now, and the fixture asserts the
   copy's rate stays within ten times the city's.
-- **MapCheck 8**: the check's walk crossed the plans' own buildings, which the
-  plan never streets over (`DistrictPlan.joinable()`, `groundJoinable()`); it
-  bars them now and prints what is reachable only across them: one piece in the
-  played city, a 22-plot boulevard remnant walled in by the plan's own houses on
-  later-bought ground (FX6's dated ground). That remnant is a map fault the plan
-  would need a larger change to avoid - ★8.
+- **MapCheck 8: red, a known red pinned to FW11.** Its walk crosses the plans'
+  own buildings on purpose ("a piece buildings wall in is the plans' to join",
+  as PlanCheck's one-network rule), and so reaches a 22-plot boulevard remnant
+  of the played city that the plan cannot join: it stands on later-bought ground
+  (FX6's dated ground) in an iron-field blob, walled in by the plan's own houses,
+  and `join()` never streets over a building (`DistrictPlan.joinable()`,
+  `groundJoinable()` bar buildings and mined sites only - the unmined field
+  sites are not what parts it). That is FW11's class, a street piece walled in
+  by buildings; the case is added to `docs/queue/FW11.md` so FW11's fix catches
+  it. A first try barred buildings in the walk and printed the piece instead;
+  a review found that moved the check's premise, and it was undone.
 - **LongPlaytest's finding**: the watch's. A Large Open-Pit Mine at m3991
   re-dealt 12 Iron Mines between districts, and the overflow log's squaring (CL3,
   documented in `DistrictPlan`'s OVERFLOW LOG) rewrote six downstream districts'
   carry logs mid-list with the same net by type; FX7's journal promises nothing
-  about the carry. The watch compared only the net; it compares the log pair by
-  pair now (`CityMap.carriedLog()`, a copy), so the box counts as the spill's.
-  Nothing else in the report moved. A departure of sited mines reviving
+  about the carry. The watch compared only the net; it compares the log now
+  (`CityMap.carriedLog()`, a copy), and excuses a move only where the two logs
+  differ inside the pairs they share - a rewrite - never for pairs appended,
+  which CL3 promises move nothing. The box counts as the spill's. Nothing else
+  in the report moved. A departure of sited mines reviving
   excluded instances is the squaring's quirk - ★9.
 - **BuildersFirstCheck 6**: T1-C's trap was the free points multiplied by a
   first depot's fill. A city's fill is a job type's, the same for every
   employer, so a depot opened early adds posts the builders fill at it: their
-  output rises and cannot collapse. Its six collapse assertions (three red, three
-  passing because both twins stall alike on the yard) are retired with a note;
-  the gate's own assertions stay - ★6.
+  output rises and cannot collapse. The trap's three assertions ("the builders'
+  fill falls under MIN_STAFFABLE_TO_ORDER", "the sites get nothing", "no home is
+  built") are retired with a note - ★6. The gate's three stay ("without the
+  test a depot opens early", "with the test the sites get work every month",
+  "the town builds its homes"), re-caused: the town stands three depots beside
+  its yard (`landlordCity(..., 3)`) and plays three founding months before the
+  twins are compared, until the twin without the test opens a depot (at most 12
+  months: the window's own javadoc, "long enough for its first depot to open").
+  With the test: 75 homes from 59, the sites at least 39 points a month; without
+  it: a fifth depot open, 59 homes.
 HealthCheck passes on a window one depot wide (3 standing). Timing ran soft
 beside other batches' JVMs; `--timing` is the gate's.
 
@@ -170,17 +184,18 @@ T1 16/16 seeds reach 40,000 people (month 1,189); T2 AUTO2's final population
   world prices) outlives the free points. Retire it too?
 - ★4 **The laid-off reservation** (0.7.17): posts never filled count as spoken
   for. Left; counting only crews that worked cut the playtest's end by 62%.
-- ★5 **The last builder is never sold.** Is a city allowed to lose all its
-  builders?
-- ★6 **BuildersFirstCheck 6**: its collapse assertions are retired with the
-  works department (the trap cannot happen); keep it so, or assert something new
-  of the gate (with 3+ depots standing the gated town builds more homes)?
+- ★5 **The last builder is never sold** - nor bought out in the same window as
+  the other (FoundingYardCheck 7: the count is of those standing and not
+  closing). Is a city allowed to lose all its builders?
+- ★6 **BuildersFirstCheck 6**: the trap's three assertions are retired with
+  the works department (it cannot happen); the gate's three stay, on a town with
+  three depots standing. Keep it so?
 - ★7 **The young city's tax take** leaned on Construction's profit from free
   points; fixture towns that order at founding now grow slowly unless they stand
   builders. In play the city grows faster (the player buys depots sooner).
-- ★8 **A street remnant walled in by houses** (MapCheck 8): the plan cannot
-  join it; lay or keep a street when a cell grows into bought ground, or drop
-  such remnants?
+- ★8 **A street remnant walled in by houses** (MapCheck 8, red, pinned to
+  FW11): FW11's fix (move the closing building, a building-free way round, or
+  drop the remnant) should clear it; its case is in `docs/queue/FW11.md`.
 - ★9 **The overflow squaring** revives a district's excluded sited mines as
   past arrivals when they depart; harmless here, it would shift a district with
   room.

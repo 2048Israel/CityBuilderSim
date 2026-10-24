@@ -55,7 +55,16 @@ import java.util.Locale;
  *      posts back; its twin, founded the same way with a Construction Depot
  *      in the yard's place, holds more posts back in its idle months and opens
  *      none in the same months.
- *   7. MONEY IS CONSERVED: the money audit every month played here.
+ *   7. THE LAST BUILDER IS NOT BOUGHT OUT IN ONE WINDOW: a yard or depot the
+ *      city has bought out to demolish stands until the next month starts,
+ *      and counted as standing it let the city buy out the depot and then the
+ *      yard in the same window and leave no builders. With a yard and a
+ *      depot standing, in either order the first buy-out is taken; in the
+ *      same window the other is not demolishable, its buy-out is refused and
+ *      pays nothing, and the builders may not retire it; after the month the
+ *      first is gone and the other stands, the builders' capacity its
+ *      nameplate.
+ *   8. MONEY IS CONSERVED: the money audit every month played here.
  *
  * Every fixture causes its condition and says so in an assertion labelled
  * "fixture:". How a real run goes is LongPlaytest's.
@@ -98,7 +107,7 @@ public class FoundingYardCheck {
     /** The builders' yard: what every city is founded with. */
     static final String YARD = Game.FOUNDING_YARD;
 
-    /** The builders' depot: the village's own order, and the second builders' building of sections 5 and 6. */
+    /** The builders' depot: the village's own order, and the second builders' building of sections 5, 6 and 7. */
     static final String DEPOT = "Construction Depot";
 
     /** The founding bank, whose ground the yard's is added to. */
@@ -191,6 +200,7 @@ public class FoundingYardCheck {
         town(root);
         lastYard(root);
         handsForShops(root);
+        lastBuilderWindow(root);
         conserved();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -522,10 +532,64 @@ public class FoundingYardCheck {
                 depot.firstShop() < 0);
     }
 
-    /* ============================ 7. MONEY IS CONSERVED ============================ */
+    /* ============================ 7. THE LAST BUILDER IS NOT BOUGHT OUT IN ONE WINDOW ============================ */
+
+    /**
+     * A yard or depot the city has bought out to demolish stands until the next month starts (Game.closeDemolished()),
+     * so a count that took it for standing left the city a window in which it could buy out the depot and then the
+     * yard - each "the other one stands" - and have no builders left (PT1-M4, found in review). Both orders are tried
+     * in a city with the yard and one depot.
+     */
+    static void lastBuilderWindow(Path root) {
+        out.println("\n--- 7. the last builder is not bought out in the same window, in either order ---");
+        buyOutWindow(root, "window-depot-first", true);
+        buyOutWindow(root, "window-yard-first", false);
+    }
+
+    /** One order: the first building is bought out, then the other, the builders' last, is tried in the same window. */
+    static void buyOutWindow(Path root, String name, boolean depotFirst) {
+        City c = founded(root, name, false);
+        Game g = c.game();
+        BuildingManager bm = g.getBuildingManager();
+        Construction builders = g.getSectors().construction();
+        BuildingsTemplate yard = template(g, YARD), depot = template(g, DEPOT);
+        BuildingsTemplate first = depotFirst ? depot : yard, last = depotFirst ? yard : depot;
+        String order = name + ": the " + first.getName() + " bought out, then the " + last.getName();
+        quietly(() -> bm.addStack(depot, 1, true));
+        // ...the ground goes with it, as the land office would have it had the city been founded so.
+        g.getLandManager().allocate(depot.getLandSqFt());
+        // ...and a treasury the buy-out's price (ground, building and the business's loss: about a Wealthy treasury) cannot empty.
+        g.setCashForTest(10 * Founding.WEALTHY_CASH);
+        assertTrue("fixture: " + order + " - two builders' buildings stand, each one the city may buy out while the other stands",
+                bm.countByName(YARD) == 1 && bm.countByName(DEPOT) == 1
+                        && g.demolishable(first) == 1 && g.demolishable(last) == 1);
+
+        boolean[] taken = new boolean[1];
+        quietly(() -> taken[0] = g.buyOutAndDemolish(first, 1));
+        boolean bought = taken[0];
+        assertTrue("fixture: the city buys the " + first.getName() + " out and orders it demolished"
+                + (bought ? "" : " (refused: " + g.getLastHandRefusal() + ")"), bought);
+        assertTrue("...it stands until the month starts, closing", bm.countByName(first.getName()) == 1
+                && bm.getControl().closingOf(first.getId()) == 1);
+        double cash = g.getCash();
+        check("in the same window the " + last.getName() + ", the one left that builds, is not demolishable", g.demolishable(last), 0);
+        boolean again = g.buyOutAndDemolish(last, 1);
+        assertTrue("...a buy-out of it is refused (" + g.getLastHandRefusal() + ")", !again && g.getLastHandRefusal() != null);
+        assertTrue("...and nothing was paid for it", g.getCash() == cash && bm.getControl().closingOf(last.getId()) == 0);
+        assertTrue("...nor may the builders retire it: mayRetire() says no", !builders.mayRetire(last));
+
+        month(g);
+        assertTrue("after the month starts the " + first.getName() + " is gone and the " + last.getName() + " stands",
+                bm.countByName(first.getName()) == 0 && bm.countByName(last.getName()) == 1);
+        check("...the builders' capacity is the " + last.getName() + "'s nameplate, not nothing",
+                bm.getTotalConstructionCapacity(), (long) last.makes(Good.BUILDING_WORK));
+        check("...and the one left that builds is still not for the city to buy out", g.demolishable(last), 0);
+    }
+
+    /* ============================ 8. MONEY IS CONSERVED ============================ */
 
     static void conserved() {
-        out.println("\n--- 7. money is conserved ---");
+        out.println("\n--- 8. money is conserved ---");
         out.printf("  %d months audited; the worst residual %.3g, the worst drift after the audit %.3g%n",
                 monthsAudited, worstResidual, worstDrift);
         assertTrue("every month played here was audited", monthsAudited > 0);

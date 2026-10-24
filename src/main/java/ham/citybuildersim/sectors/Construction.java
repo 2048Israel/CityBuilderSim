@@ -766,9 +766,13 @@ public final class Construction extends Sector {
     @Override
     public boolean mayRetire(BuildingsTemplate t) {
         if (t == null || !(t.makes(Good.BUILDING_WORK) > 0) || buildings == null) return true;
+        // ...standing and not closing: a yard or depot the city has bought out to demolish is gone at the
+        // month's start (Game.closeDemolished()), so it is not the one that would be left.
         int depots = 0;
         for (BuildingsTemplate d : buildings.getTemplatesBySector(key())) {
-            if (d.makes(Good.BUILDING_WORK) > 0) depots += buildings.getQuantity(d.getId());
+            if (d.makes(Good.BUILDING_WORK) > 0) {
+                depots += Math.max(0, buildings.getQuantity(d.getId()) - buildings.getControl().closingOf(d.getId()));
+            }
         }
         return depots > 1;
     }
