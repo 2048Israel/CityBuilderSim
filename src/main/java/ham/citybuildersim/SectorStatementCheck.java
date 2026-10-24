@@ -553,19 +553,49 @@ public class SectorStatementCheck {
     /** The row the last comparison missed worst on, for the message. */
     static String worstRow = "";
 
-    /** The rows R2 splits the debt into, which a load does not keep. */
-    static final Set<String> SPLIT_ROWS = Set.of(SectorStatements.SOON_HEAD, SectorStatements.DEBT_SOON, SectorStatements.SOON,
-            SectorStatements.LATER_HEAD, SectorStatements.LATER, SectorStatements.laterId(0), SectorStatements.laterId(1),
-            SectorStatements.laterId(2), SectorStatements.laterId(3), SectorStatements.DEBT_WHOLE);
+    /** Two of R1 and R2's records the same to the cent, field by field: both null, or every array alike. */
+    static boolean sameDebt(SectorBooks.Debt x, SectorBooks.Debt y) {
+        if (x == null || y == null) return x == y;
+        return near(x.interest(), y.interest()) && near(x.owed(), y.owed()) && near(x.withinYear(), y.withinYear())
+                && near(x.withinFive(), y.withinFive()) && near(x.rate(), y.rate()) && near(x.runsTo(), y.runsTo())
+                && near(x.moved(), y.moved()) && near(x.movedAtClose(), y.movedAtClose());
+    }
+
+    static boolean near(double[][] x, double[][] y) {
+        if (x == null || y == null) return x == y;
+        if (x.length != y.length) return false;
+        for (int i = 0; i < x.length; i++) if (!near(x[i], y[i])) return false;
+        return true;
+    }
+
+    static boolean near(double[] x, double[] y) {
+        if (x == null || y == null) return x == y;
+        if (x.length != y.length) return false;
+        for (int i = 0; i < x.length; i++) if (!(Math.abs(x[i] - y[i]) <= CENT)) return false;
+        return true;
+    }
 
     static void savedAndLoaded(Path root, Game g) {
         out.println("\n--- 6. a save and a load keep every comparative ---");
         quietly(() -> g.saveGame(10));
         Game back = new Game(g.getGameFiles());
-        quietly(() -> back.loadGame(10));
+        /*
+         * THROUGH THE GAME'S OWN LOAD (FW2, 2026-10-24): loadGameSave(), the
+         * world rebuilt and then the save read, as Continue and the load menu
+         * do. Until FW2 this read the save alone (loadGame()) into a game that
+         * was never built: no building stood in it, its bank had no branch
+         * and so gathered only what was parked from abroad, and part of
+         * F-S1-1's split was that. A load the player cannot make proves
+         * nothing about the one they can.
+         */
+        quietly(() -> back.loadGameSave(10));
+        assertTrue("fixture: the loaded city stands on its buildings, its bank's branches with them ("
+                + back.getBankBranchesStanding() + " of " + g.getBankBranchesStanding() + ")",
+                back.getLoadFailure() == null && back.getBankBranchesStanding() == g.getBankBranchesStanding()
+                        && back.getBuildingManager().getStackCount() == g.getBuildingManager().getStackCount());
         SectorBooks a = g.getSectorBooks(), b = back.getSectorBooks();
         double worstIncome = 0, worstCash = 0, worstSheet = 0, worstEquity = 0;
-        boolean whole = true, notCounted = true;
+        boolean debtKept = true, sharesNot = true, split = false;
         int compared = 0;
         for (Sector s : g.getSectors().all()) {
             Sector t = back.getSectors().byKey(s.key());
@@ -580,15 +610,17 @@ public class SectorStatementCheck {
                     rows(SectorStatements.equity(n2, p2)), Set.of()));
             SectorStatements.Table loaded = SectorStatements.sheet(n2, p2, b.debt(t.key()), b.debtBefore(t.key()));
             worstSheet = Math.max(worstSheet, compare(rows(SectorStatements.sheet(n1, p1, a.debt(s.key()), a.debtBefore(s.key()))),
-                    rows(loaded), SPLIT_ROWS));
-            whole &= loaded.row(SectorStatements.DEBT_WHOLE) != null
-                    && Math.abs(loaded.now(SectorStatements.DEBT_WHOLE) - n1.bondsPayable()) <= CENT;
-            notCounted &= b.debt(t.key()) == null && b.debtBefore(t.key()) == null && b.shares(t.key()) == null;
+                    rows(loaded), Set.of()));
+            debtKept &= sameDebt(a.debt(s.key()), b.debt(t.key())) && sameDebt(a.debtBefore(s.key()), b.debtBefore(t.key()));
+            split |= a.debt(s.key()) != null && a.debt(s.key()).owedTotal() > 0 && loaded.row(SectorStatements.DEBT_SOON) != null;
+            sharesNot &= b.shares(t.key()) == null;
         }
         assertTrue(String.format("every sector's income statement, both months, is the same after a load (%d sectors; worst %.2g)",
                 compared, worstIncome), compared > 0 && worstIncome <= CENT);
         assertTrue(String.format("...its cash flow (worst %.2g)", worstCash), worstCash <= CENT);
-        assertTrue(String.format("...its sheet, every line but R2's split (worst %.2g)", worstSheet), worstSheet <= CENT);
+        // FW2 (2026-10-24): every line, R2's split with them - until FW2 a load kept the debt as one line.
+        assertTrue(String.format("...its sheet, every line, R2's split of its debt with them (worst %.2g%s)", worstSheet,
+                worstSheet > CENT ? ", " + worstRow : ""), worstSheet <= CENT);
         assertTrue(String.format("...and its equity statement, both its columns (worst %.2g)", worstEquity), worstEquity <= CENT);
         // ...and the register's paid-in (0.7.75, R3: SAVE_FORMAT 33), every company.
         double worstPaidIn = 0;
@@ -602,58 +634,77 @@ public class SectorStatementCheck {
         assertTrue(String.format("the register's founders' books and what its buybacks paid, every company, the same after a"
                 + " load (worst %.2g), and none derived (format %d)", worstPaidIn, GameVersion.SAVE_FORMAT),
                 worstPaidIn <= CENT && flags && GameVersion.SAVE_FORMAT >= Equity.PAID_IN_FORMAT);
-        assertTrue("R1, R2 and the shares are not saved: after a load they read not counted, and the sheet's debt is one line,"
-                + " the debt the books saved", notCounted && whole);
+        assertTrue("fixture: a sector owes, and its sheet splits the debt by when it falls due", split);
+        assertTrue("R1 and R2 are saved (FW2): after a load every sector's interest and debt by kind, both months, read the"
+                + " saved city's to the cent; the shares are not saved, and read not counted", debtKept && sharesNot);
         double worstBank = compare(rows(SectorStatements.bankIncome(g.getBank())), rows(SectorStatements.bankIncome(back.getBank())), Set.of());
         assertTrue(String.format("the bank's income statement, both columns, is the same after a load (worst %.2g%s)",
                 worstBank, worstBank > CENT ? ", " + worstRow : ""), worstBank <= CENT);
         /*
-         * ...AND ITS SHEET, BUT FOR WHAT A LOAD RE-READS. The bank's deposits
-         * (the memorandum's two lines) are read again from the city at a load,
-         * and its borrowings' split between what its deposits fund and the
-         * window follows them: in the test player's city at 364 months $131.9M
-         * moved from the one to the other. Its totals do not move, and a year
-         * ago's column does not. A finding of this batch (runs/fixS1-notes.md),
-         * not of the statements, which print the bank's own lines: pinned here
-         * to those four, so anything else that moves is news.
+         * ...AND ITS SHEET, EVERY LINE (FW2, 2026-10-24; F-S1-1). Until FW2
+         * a load re-read the bank's deposits off the city as it stood after
+         * the month, and its borrowings' split between what its deposits fund
+         * and the window followed them: in the test player's city at 364
+         * months $131.9M moved from the one to the other, and this section
+         * pinned the four lines as the exception. The deposit book is saved
+         * now (Bank.restoreDeposits()), and nothing is excepted.
          */
         Map<String, double[]> sheetBefore = rows(SectorStatements.bankSheet(g.getBank())),
                 sheetAfter = rows(SectorStatements.bankSheet(back.getBank()));
-        Set<String> reread = Set.of(SectorStatements.sheetId(Bank.Sheet.DEPOSIT_FUNDING), SectorStatements.sheetId(Bank.Sheet.WINDOW),
-                SectorStatements.sheetId(Bank.Sheet.HOUSEHOLD_DEPOSITS), SectorStatements.sheetId(Bank.Sheet.SECTOR_DEPOSITS));
-        double worstSheetBank = compare(sheetBefore, sheetAfter, reread);
-        String rest = worstRow;
-        double yearAgo = 0;
-        for (String id : reread) yearAgo = Math.max(yearAgo, Math.abs(sheetBefore.get(id)[1] - sheetAfter.get(id)[1]));
-        assertTrue(String.format("...and its sheet, both columns, but this month's deposit funding, window and deposits, which a"
-                        + " load re-reads (worst %.2g%s; those four a year ago %.2g)", worstSheetBank,
-                worstSheetBank > CENT ? ", " + rest : "", yearAgo), worstSheetBank <= CENT && yearAgo <= CENT);
+        double worstSheetBank = compare(sheetBefore, sheetAfter, Set.of());
+        assertTrue(String.format("...and its sheet, both columns, every line: its deposits, and its borrowings' split between"
+                        + " them and the window, with the rest (worst %.2g%s)", worstSheetBank,
+                worstSheetBank > CENT ? ", " + worstRow : ""), worstSheetBank <= CENT);
+        Bank bx = g.getBank(), by = back.getBank();
+        assertTrue(String.format("...its deposit book the one the month set, to the cent: the families' %,.2f and %,.2f, the"
+                        + " businesses' %,.2f and %,.2f", bx.getHouseholdDeposits(), by.getHouseholdDeposits(),
+                bx.getSectorDeposits(), by.getSectorDeposits())
+                        + String.format("; gathered %,.2f and %,.2f, owed %,.2f and %,.2f, from abroad %,.2f and %,.2f",
+                        bx.depositsGathered(), by.depositsGathered(), bx.borrowings(), by.borrowings(),
+                        bx.getForeignDeposits(), by.getForeignDeposits())
+                        + String.format(", branches %.0f and %.0f (standing %d and %d)", bx.getBranches(), by.getBranches(),
+                        g.getBankBranchesStanding(), back.getBankBranchesStanding()),
+                Math.abs(bx.getHouseholdDeposits() - by.getHouseholdDeposits()) <= CENT
+                        && Math.abs(bx.getSectorDeposits() - by.getSectorDeposits()) <= CENT
+                        && Math.abs(bx.depositFunding() - by.depositFunding()) <= CENT);
 
         quietly(() -> back.toggleNextMonth());
-        boolean counted = true, thenUnknown = true, totalsKnown = true;
+        boolean counted = true, thenKnown = true, totalsKnown = true;
         for (Sector t : back.getSectors().all()) {
             SectorBooks.SectorMonth n = back.getSectorBooks().get(t), p = back.getSectorBooks().previous(t);
             if (n.isEmpty()) continue;
             SectorBooks.Debt d = back.getSectorBooks().debt(t.key());
             counted &= d != null && d.interest() != null && d.owed() != null;
             SectorStatements.Table sh = SectorStatements.sheet(n, p, d, back.getSectorBooks().debtBefore(t.key()));
-            thenUnknown &= Double.isNaN(sh.then(SectorStatements.DEBT_SOON)) && Double.isNaN(sh.then(SectorStatements.SOON));
+            // ...last month's column the saved city's split (FW2): the debt due within a year as the saved books read it.
+            SectorBooks.Debt saved = g.getSectorBooks().debt(t.key());
+            thenKnown &= saved == null || saved.owed() == null
+                    || Math.abs(sh.then(SectorStatements.DEBT_SOON) - saved.withinYearTotal()) <= CENT;
             totalsKnown &= Math.abs(sh.then(SectorStatements.TOTAL_LIABILITIES) - p.totalLiabilities()) <= CENT
                     && Math.abs(sh.then(SectorStatements.TOTAL_CLAIMS) - p.totalAssets()) <= CENT;
         }
-        assertTrue("a month on, R1 and R2 are counted again, the split's last month reads not counted, and the sheet's"
-                + " totals still have last month's figures", counted && thenUnknown && totalsKnown);
-        // R7 needs both sheets: not a month on, two.
-        boolean noSchedule = true;
-        for (Sector t : back.getSectors().all()) {
-            noSchedule &= SectorStatements.schedule(back.getSectorBooks().debt(t.key()), back.getSectorBooks().debtBefore(t.key())) == null;
-        }
-        quietly(() -> back.toggleNextMonth());
+        assertTrue("a month on, R1 and R2 are counted, the split's last month is the saved city's (FW2), and the sheet's"
+                + " totals still have last month's figures", counted && thenKnown && totalsKnown);
+        /*
+         * R7 NEEDS BOTH SHEETS, AND A MONTH AFTER THE LOAD HAS THEM (FW2):
+         * last month's is the saved one, and the running totals it
+         * differences carry on from the saved city's
+         * (BusinessDebtManager.restoreMoved()), so the roll-forward foots: a
+         * total that restarted from nothing at the load would read the
+         * month's borrowing as everything ever repaid. Until FW2 it read not
+         * counted for two months.
+         */
         boolean schedule = false;
+        double worstRest = 0;
         for (Sector t : back.getSectors().all()) {
-            schedule |= SectorStatements.schedule(back.getSectorBooks().debt(t.key()), back.getSectorBooks().debtBefore(t.key())) != null;
+            SectorStatements.Schedule r = SectorStatements.schedule(back.getSectorBooks().debt(t.key()),
+                    back.getSectorBooks().debtBefore(t.key()));
+            if (r == null) continue;
+            schedule = true;
+            for (double v : r.rest()) worstRest = Math.max(worstRest, Math.abs(v));
         }
-        assertTrue("R7's schedule reads not counted a month after the load, and is counted the month after", noSchedule && schedule);
+        assertTrue(String.format("R7's schedule is counted a month after the load, and every kind's roll-forward foots"
+                + " (worst not accounted for %.2g)", worstRest), schedule && worstRest <= CENT);
         int missed = 0, after = 0;
         for (Tally x : tallies.values()) missed += x.missed;
         bondsSoonBefore.clear();

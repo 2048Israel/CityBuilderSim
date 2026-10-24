@@ -451,9 +451,9 @@ public final class SectorStatements {
        kind, less that); its owners' equity in two parts since 0.7.75 (R3,
        D11): its share capital, paid in - derived at the load of a save from
        before it was kept, and saying so - and what it kept and the model
-       revalued, the remainder. Without R2 - the month after a load - the
-       debt is one line and the sheet says when it falls due is not counted
-       yet.
+       revalued, the remainder. Without R2 - the month after the load of a
+       save from before FW2, which kept none - the debt is one line and the
+       sheet says when it falls due is not counted yet.
        ===================================================================== */
 
     /** The balance sheet's row ids, which the screens and SectorStatementCheck look a row up by. */
@@ -745,8 +745,9 @@ public final class SectorStatements {
        month's close (Game.recordMonth()), so the window is the calendar
        month, close to close, and `after` is nothing. A kind's residual is
        NOT ACCOUNTED FOR, which the harness holds at nothing. Null when either
-       month's R2 or totals are not counted: the month after a load, and the
-       month after that for last month's.
+       month's R2 or totals are not counted: since FW2 a save keeps both
+       months' and the running totals, so only after the load of an older
+       save, that month and the next.
        ===================================================================== */
 
     /** One sector's debt schedule: each in DEBT_KINDS' order. */

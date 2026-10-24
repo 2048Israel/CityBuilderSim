@@ -6356,6 +6356,22 @@ public class Bank {
     /** ...and what the businesses hold in credit. getDeposits() is these two and getForeignDeposits(). */
     public double getSectorDeposits()    { return sectorDeposits; }
 
+    /**
+     * The deposit book as the month last set it, put back by the load path
+     * (FW2, 2026-10-24; F-S1-1). The load ends with Game.refreshBank(), which
+     * re-reads the families' savings and the businesses' tills as they stand
+     * after the month, not as they stood when the month last set the book: in
+     * the test player's city at month 364 the families' deposits read $344.5M
+     * before the save and $358.1M after, and the borrowings' split between
+     * the deposits and the window moved $131.9M with them. The two figures are
+     * saved, and put back over the re-read; the next month sets its own.
+     */
+    public void restoreDeposits(double household, double sector) {
+        this.householdDeposits = Math.max(0, household);
+        this.sectorDeposits = Math.max(0, sector);
+        this.deposits = this.householdDeposits + this.sectorDeposits + this.foreignDeposits;
+    }
+
     /** What its owners put up when a branch opens, in today's money: PAID_IN_PER_BRANCH, reformed, and struck at the expected price level since 0.7.42 (seedConstants()). */
     public double getPaidInPerBranch()   { return paidInPerBranch; }
 
