@@ -912,6 +912,14 @@ public class Game {
         // The writer first (UP1): a load straight after an autosave reads that autosave.
         awaitSaves();
 
+        // A save that will be refused is refused here, before the rebuild, so
+        // the city in play is left exactly as it was (FW1; refusalBeforeRebuild()).
+        String refused = refusalBeforeRebuild(slot);
+        if (refused != null) {
+            loadFailure = refused;
+            return;
+        }
+
         /*
          * REBUILD THE WORLD FIRST, exactly as newGame() does.
          *
@@ -16328,6 +16336,87 @@ public class Game {
     
     
     
+    /**
+     * Why a save would not load, or null when it would: the three refusals
+     * below, each logged, its file untouched. loadGame() asks it after
+     * parsing, and loadGameSave() asks it (through refusalBeforeRebuild())
+     * before buildWorld(), so a refused save leaves the city in play alone.
+     *
+     * Stop here rather than half-reading it. An older build silently ignores
+     * fields it does not recognise, so a save from a newer one loads looking
+     * fine and is missing whatever that build added - and the player finds
+     * out later, having played on top of it.
+     *
+     * ...AND FROM A FORMAT OLDER THAN THIS BUILD LOADS (0.7.108, batch P7),
+     * the same way. Until the game is published a change that would make an
+     * older save load wrongly bumps SAVE_FORMAT and raises
+     * GameVersion.OLDEST_LOADABLE_FORMAT to it, so that save stops here:
+     * nothing of it applied, its file untouched, and the player told which
+     * build saved it and still opens it.
+     *
+     * ...AND A CITY ON THE REAL EARTH WHOSE EARTH IS NOT HERE (0.7.121, batch
+     * E4; spec-earth 6: the data is frozen per version, and a save names its
+     * own). Drawn on other data, its coasts and rivers would move under it;
+     * with the file missing, there is no ground to draw (EarthSite.loadProblem()).
+     */
+    private static String refusal(int slot, DataSave loaded) {
+        if (GameVersion.isNoLongerReadable(loaded.getSaveFormat())) {
+            String why = GameVersion.noLongerReadable(loaded.getGameVersion());
+            System.out.println(GameFiles.slotLabel(slot) + " not loaded (save format "
+                    + loaded.getSaveFormat() + "; this build reads formats " + GameVersion.OLDEST_LOADABLE_FORMAT
+                    + " to " + GameVersion.SAVE_FORMAT + "), its file left as it was. " + why);
+            return why;
+        }
+        if (GameVersion.isFromNewerBuild(loaded.getSaveFormat())) {
+            String why = GameVersion.fromNewerBuild(loaded.getGameVersion());
+            System.out.println(GameFiles.slotLabel(slot)
+                    + " was written by a newer version of the game ("
+                    + loaded.getGameVersion() + ", save format "
+                    + loaded.getSaveFormat() + "; this build reads up to "
+                    + GameVersion.SAVE_FORMAT + "). Not loaded. " + why);
+            return why;
+        }
+        String earth = loaded.earthProblem();
+        if (earth != null) {
+            System.out.println(GameFiles.slotLabel(slot) + " not loaded (" + loaded.getWorldKind() + ", data "
+                    + EarthSite.shortId(loaded.getEarthData()) + "; this build reads " + EarthSite.shortId(EarthData.EARTH_1)
+                    + "), its file left as it was. " + earth);
+            return earth;
+        }
+        return null;
+    }
+
+    /**
+     * Why loadGameSave() must not rebuild the world for this slot, or null
+     * when it may (FW1, 0.8.37). loadGameSave() rebuilt first and read second,
+     * so a save refused on reading - an empty slot, a damaged file, a format
+     * below the floor or from a newer build, a missing Earth - replaced the
+     * city in play with a blank one though nothing loaded. This reads the
+     * file once before the rebuild and asks the same questions loadGame()
+     * does, so a refusal leaves the city exactly as it was.
+     */
+    private String refusalBeforeRebuild(int slot) {
+        Path path = gameFiles.saveFile(slot);
+        if (!Files.exists(path)) {
+            System.out.println(GameFiles.slotLabel(slot) + " is empty.");
+            return "This save slot is empty.";
+        }
+        try {
+            DataSave loaded = new Gson().fromJson(Files.readString(path), DataSave.class);
+            if (loaded == null) {
+                GameLog.note(GameFiles.slotLabel(slot) + " is empty or unreadable: " + path);
+                return "This save file is empty.";
+            }
+            return refusal(slot, loaded);
+        } catch (IOException e) {
+            GameLog.failure("Could not read " + GameFiles.slotLabel(slot), e);
+            return "The save file could not be read: " + e.getMessage();
+        } catch (RuntimeException e) {
+            GameLog.failure("Corrupt save in " + GameFiles.slotLabel(slot), e);
+            return "This save file is damaged and could not be read.";
+        }
+    }
+
     // Load game
     public void loadGame(int slot) {
         // Every dial the load puts back goes through its setter, and none of
@@ -16515,53 +16604,11 @@ public class Game {
                 return;
             }
 
-            /*
-             * Stop here rather than half-reading it. An older build silently
-             * ignores fields it does not recognise, so a save from a newer one
-             * loads looking fine and is missing whatever that build added -
-             * and the player finds out later, having played on top of it.
-             */
-            /*
-             * ...AND FROM A FORMAT OLDER THAN THIS BUILD LOADS (0.7.108, batch
-             * P7), the same way. Until the game is published a change that
-             * would make an older save load wrongly bumps SAVE_FORMAT and
-             * raises GameVersion.OLDEST_LOADABLE_FORMAT to it, so that save
-             * stops here: nothing of it applied, its file untouched, and
-             * the player told which build saved it and still opens it. At 21
-             * the floor is the sector template's clean break (Jerus: "clean
-             * break"), whose own check this replaces: a save older than that
-             * carries nothing a sector can be read out of.
-             */
-            if (GameVersion.isNoLongerReadable(loaded.getSaveFormat())) {
-                loadFailure = GameVersion.noLongerReadable(loaded.getGameVersion());
-                System.out.println(GameFiles.slotLabel(slot) + " not loaded (save format "
-                        + loaded.getSaveFormat() + "; this build reads formats " + GameVersion.OLDEST_LOADABLE_FORMAT
-                        + " to " + GameVersion.SAVE_FORMAT + "), its file left as it was. " + loadFailure);
-                return;
-            }
-            if (GameVersion.isFromNewerBuild(loaded.getSaveFormat())) {
-                System.out.println(GameFiles.slotLabel(slot)
-                        + " was written by a newer version of the game ("
-                        + loaded.getGameVersion() + ", save format "
-                        + loaded.getSaveFormat() + "; this build reads up to "
-                        + GameVersion.SAVE_FORMAT + "). Not loaded.");
-                loadFailure = "This save is from a newer version of the game.";
-                return;
-            }
-            /*
-             * ...AND A CITY ON THE REAL EARTH WHOSE EARTH IS NOT HERE (0.7.121,
-             * batch E4; spec-earth 6: the data is frozen per version, and a
-             * save names its own). Drawn on other data, its coasts and rivers
-             * would move under it; with the file missing, there is no ground
-             * to draw. Refused the same way, its file untouched, in words that
-             * say which (EarthSite.loadProblem()).
-             */
-            String earth = loaded.earthProblem();
-            if (earth != null) {
-                loadFailure = earth;
-                System.out.println(GameFiles.slotLabel(slot) + " not loaded (" + loaded.getWorldKind() + ", data "
-                        + EarthSite.shortId(loaded.getEarthData()) + "; this build reads " + EarthSite.shortId(EarthData.EARTH_1)
-                        + "), its file left as it was. " + loadFailure);
+            // Stop here rather than half-reading it: see refusal(). A save of a
+            // format below the floor, from a newer build or on a missing Earth.
+            String refused = refusal(slot, loaded);
+            if (refused != null) {
+                loadFailure = refused;
                 return;
             }
             loadFailure = null;

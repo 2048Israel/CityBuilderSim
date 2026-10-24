@@ -7302,7 +7302,7 @@ public final class GameVersion {
      *   - Close it now's journal, honest line and call gain behind getters.
      *   - Harness: DeskCheck (new). The manual's text: docs/queue/CD6-manual.md.
      *
-     * 0.8.37 (2026-10-24) - PT1-M4, THE WORKS DEPARTMENT RETIRED
+     * 0.8.38 (2026-10-24) - PT1-M4, THE WORKS DEPARTMENT RETIRED
      * (docs/queue/PT1-M4-notes.md; Jerus, 2026-10-12: "not meant ... perhaps
      * a starting depot or something instead"). Construction earns only for
      * work its own crews do.
@@ -7319,7 +7319,7 @@ public final class GameVersion {
      *   - Save: SAVE_FORMAT 45, OLDEST_LOADABLE_FORMAT 45.
      *   - Harness: FoundingYardCheck (new); twenty harnesses re-caused.
      */
-    public static final String VERSION = "0.8.37";
+    public static final String VERSION = "0.8.38";
 
     /**
      * The save shape.
@@ -8163,6 +8163,18 @@ public final class GameVersion {
      */
     public static boolean isNoLongerReadable(int saveFormat) {
         return saveFormat < OLDEST_LOADABLE_FORMAT;
+    }
+
+    /**
+     * What the player is told about a save from a newer build (FW1): which
+     * build wrote it, so they know the build that opens it, as
+     * noLongerReadable() names the older one.
+     */
+    public static String fromNewerBuild(String savedBy) {
+        boolean named = savedBy != null && !savedBy.isBlank();
+        return "This save is from a newer version of the game"
+                + (named ? ", build " + savedBy : "") + ", and build " + VERSION + " cannot read it."
+                + (named ? " Build " + savedBy + " opens it." : "");
     }
 
     /**

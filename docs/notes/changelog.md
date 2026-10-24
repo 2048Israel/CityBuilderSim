@@ -14,7 +14,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.37 — PT1-M4, the works department retired — 2026-10-24, ready with 6 harnesses red, see docs/queue/PT1-M4-notes.md
+### 0.8.38 — PT1-M4, the works department retired — 2026-10-24, ready, see docs/queue/PT1-M4-notes.md
 
 Construction was paid for 400 points a month nobody worked (PT1's month 183: a 72% margin with 0 workers; Jerus: *"not
 meant ... perhaps a starting depot or something instead"*). The free points are gone: the builders' capacity is their yards'
@@ -23,8 +23,19 @@ template, id 143: the Construction Depot at two fifths, 20 posts, 160 points), b
 spoken for, left a hands-off village no hands for a shop in 240 months; and the builders' last yard or depot is never sold.
 The default playtest moved: 8,601 / 44,440 / 765,819 people near m600 / m1060 / the end (main 3,934 / 16,288 / 625,815),
 prices 3.2 / 9.8 / 712 (8.2 / 62 / 13,374), the village's homes by month 17 where main's stood by 5. The ensemble passes 23
-of 25 against 0.8.29's 24 of 26, no new red (A2 and S1 better, H2 vacuous). Twenty harnesses re-caused; six left red,
-each a played trajectory or a retired premise (PT1-M4-C). Save format 45.
+of 25 against 0.8.29's 24 of 26, no new red (A2 and S1 better, H2 vacuous). Twenty-four harnesses re-caused, the map's two
+watches made to read the plan's own rules, and T1-C's trap retired with the free points (PT1-M4-C). Save format 45.
+
+### 0.8.37 — FW1, a refused load leaves the city in play alone — 2026-10-24, ready, see docs/queue/FW1-notes.md
+
+`loadGameSave()` rebuilt the world before it read the save, so a save it then refused (below the format floor, from a
+newer build, on a missing Earth, empty or damaged) replaced the city in play with a blank one though nothing loaded:
+reachable from the pause menu by code only, the load list's button being off for such a slot. The refusals are now
+asked first (`Game.refusalBeforeRebuild()`, the checks themselves one method, `refusal()`, which `loadGame()` asks too),
+and a refused load returns before `buildWorld()`. A newer build's save is now refused in words naming the build that
+wrote it and opens it (`GameVersion.fromNewerBuild()`), as an older one's are. SaveFileCheck's new section loads both
+into a running city: same managers, month and cash, and its save key for key the same; red on main, green here. The
+month is untouched; the default playtest's trace is byte-identical to main's, so no ensemble.
 
 ### 0.8.36 — CD6, the rest of the debt's screens — 2026-10-23, ready, see docs/queue/CD6-notes.md
 
