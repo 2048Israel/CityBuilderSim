@@ -2790,6 +2790,8 @@ public class SaveFileCheck {
         assertTrue("...and loads, at the month it was saved",
                 atFloor.getLoadFailure() == null && atFloor.getMonth() == savedMonth && savedMonth > 1);
 
+        refusedIntoARunningCity(oldest, atFloor, olderBuild, newer);
+
         onEarth(root);
         everyIdCrossesASave(root);
 
@@ -2998,6 +3000,64 @@ public class SaveFileCheck {
             assertTrue("...nothing of it applied, and every file as it was", turned.getMonth() == 1 && untouched);
             slot++;
         }
+    }
+
+    /**
+     * A REFUSED LOAD LEAVES THE CITY IN PLAY ALONE (FW1, 0.8.37). Until FW1
+     * loadGameSave() rebuilt the world before it read the save, so a save it
+     * then refused - below the floor, or from a newer build - replaced the
+     * city in play with a blank one though nothing loaded: from the pause
+     * menu, the player's city gone. The fixture is a city loaded and running
+     * (month past 1, its own managers); it is handed both refused saves, and
+     * what it would write before and after must be the same, its managers
+     * the same objects, and the refusal the words naming the build that
+     * opens the save.
+     */
+    static void refusedIntoARunningCity(GameFiles files, Game running, String olderBuild,
+                                        com.google.gson.JsonObject newerSave) throws IOException {
+        System.out.println("\n--- and a refused save loaded into a running city leaves that city as it was ---");
+
+        String newerBuild = "FW1-future";
+        com.google.gson.JsonObject future = newerSave.deepCopy();
+        future.addProperty("gameVersion", newerBuild);
+        Files.writeString(files.saveFile(5), new com.google.gson.Gson().toJson(future));
+
+        BuildingManager managerBefore = running.getBuildingManager();
+        EconomyManager economyBefore = running.getEconomyManager();
+        int monthBefore = running.getMonth();
+        double cashBefore = running.getCash();
+        assertTrue("fixture: the city is loaded and running, past month 1", monthBefore > 1 && running.getLoadFailure() == null);
+        assertTrue("fixture: slot 2 is below the floor and slot 5 from a newer build",
+                files.readHeader(2).isNoLongerReadable() && files.readHeader(5).isFromNewerBuild());
+
+        quietly(() -> running.saveGame(6, "before"));
+        running.awaitSaves();
+        String before = Files.readString(files.saveFile(6));
+
+        quietly(() -> running.loadGameSave(2));
+        assertEquals("the save below the floor is refused, naming the build that still opens it",
+                running.getLoadFailure(), GameVersion.noLongerReadable(olderBuild));
+        assertTrue("...and the city in play is the same city: its managers the same objects, its month and cash",
+                running.getBuildingManager() == managerBefore && running.getEconomyManager() == economyBefore
+                        && running.getMonth() == monthBefore && running.getCash() == cashBefore);
+
+        quietly(() -> running.loadGameSave(5));
+        assertEquals("the newer build's save is refused, naming the build that opens it",
+                running.getLoadFailure(), GameVersion.fromNewerBuild(newerBuild));
+        assertTrue("...words that name that build and this one",
+                running.getLoadFailure() != null && running.getLoadFailure().contains(newerBuild)
+                        && running.getLoadFailure().contains(GameVersion.VERSION));
+        assertTrue("...and the city in play is still the same city",
+                running.getBuildingManager() == managerBefore && running.getEconomyManager() == economyBefore
+                        && running.getMonth() == monthBefore && running.getCash() == cashBefore);
+
+        quietly(() -> running.saveGame(7, "before"));
+        running.awaitSaves();
+        String after = Files.readString(files.saveFile(7));
+        java.util.List<String> moved = jsonDiff(com.google.gson.JsonParser.parseString(before).getAsJsonObject(),
+                com.google.gson.JsonParser.parseString(after).getAsJsonObject(), java.util.Set.of("savedAt"));
+        assertTrue("...and what it saves after both refusals is what it saved before them, key for key"
+                + (moved.isEmpty() ? "" : " (moved: " + moved + ")"), moved.isEmpty());
     }
 
     /** The keys two saves differ on, by name and value, but those left out. */

@@ -2,7 +2,7 @@
 
 Generated 2026-10-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**137 harness files, 14,111 labelled assertions.** AllChecks runs 137 of them.
+**137 harness files, 14,119 labelled assertions.** AllChecks runs 137 of them.
 
 ## Which harnesses read which class
 
@@ -15499,7 +15499,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L411 ...and no more than GameLog.FAILURE_BYTES of failures go in past the cap
   - L416 ...after which the file takes nothing more
 
-## SaveFileCheck.java - 531 labelled assertions
+## SaveFileCheck.java - 539 labelled assertions
 
 > Verifies where saves go and how they are written.
 > 
@@ -16041,34 +16041,43 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2780 every refused save byte for byte as it was, and nothing written beside it
   - L2786 a save at the floor is loadable
   - L2790 ...and loads, at the month it was saved
-- **L2820 every id crosses a save, the highest past a gap in the ids too**
-  - L2838 fixture: the highest id,
-  - L2840 fixture: two of it stand
-  - L2843 fixture: the city saved
-  - L2848 the highest id's buildings came back
-  - L2853 ...and every id's count is the one saved
-- **L2878 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
-  - L2895 fixture: a generated city saved
-  - L2899 a generated city writes none of the four Earth fields
-  - L2911 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
-  - L2915 ...its land and map the city's that wrote it
-  - L2917 saved again
-  - L2920 ...and writes its own bytes back, but for this build's stamp: its format, version and time
-  - L2923 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
-  - L2930 fixture: EarthCheck's fixture is beside the classes
-  - L2946 fixture: a city founded on the real Earth, played four months
-  - L2948 saved
-  - L2950 the save carries its kind, its spot and its data, and its seed (0.7.121)
-  - L2955 ...read back as the same key
-  - L2959 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
-  - L2962 saved again
-  - L2965 ...and writes the same bytes but its time
-  - L2968 two months on: the treasury
-  - L2969 ...the households' savings
-  - L2972 ...and every sector's till
-  - L2973 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
-  - L2996 a save with
-  - L2998 ...nothing of it applied, and every file as it was
+- **L2822 every id crosses a save, the highest past a gap in the ids too**
+  - L2840 fixture: the highest id,
+  - L2842 fixture: two of it stand
+  - L2845 fixture: the city saved
+  - L2850 the highest id's buildings came back
+  - L2855 ...and every id's count is the one saved
+- **L2880 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
+  - L2897 fixture: a generated city saved
+  - L2901 a generated city writes none of the four Earth fields
+  - L2913 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
+  - L2917 ...its land and map the city's that wrote it
+  - L2919 saved again
+  - L2922 ...and writes its own bytes back, but for this build's stamp: its format, version and time
+  - L2925 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
+  - L2932 fixture: EarthCheck's fixture is beside the classes
+  - L2948 fixture: a city founded on the real Earth, played four months
+  - L2950 saved
+  - L2952 the save carries its kind, its spot and its data, and its seed (0.7.121)
+  - L2957 ...read back as the same key
+  - L2961 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
+  - L2964 saved again
+  - L2967 ...and writes the same bytes but its time
+  - L2970 two months on: the treasury
+  - L2971 ...the households' savings
+  - L2974 ...and every sector's till
+  - L2975 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
+  - L2998 a save with
+  - L3000 ...nothing of it applied, and every file as it was
+- **L3018 and a refused save loaded into a running city leaves that city as it was**
+  - L3029 fixture: the city is loaded and running, past month 1
+  - L3030 fixture: slot 2 is below the floor and slot 5 from a newer build
+  - L3038 the save below the floor is refused, naming the build that still opens it
+  - L3040 ...and the city in play is the same city: its managers the same objects, its month and cash
+  - L3045 the newer build's save is refused, naming the build that opens it
+  - L3047 ...words that name that build and this one
+  - L3050 ...and the city in play is still the same city
+  - L3059 ...and what it saves after both refusals is what it saved before them, key for key
 
 ## SaveSlotCheck.java - 146 labelled assertions
 

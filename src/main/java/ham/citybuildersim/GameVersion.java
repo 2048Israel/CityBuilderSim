@@ -7302,7 +7302,7 @@ public final class GameVersion {
      *   - Close it now's journal, honest line and call gain behind getters.
      *   - Harness: DeskCheck (new). The manual's text: docs/queue/CD6-manual.md.
      */
-    public static final String VERSION = "0.8.36";
+    public static final String VERSION = "0.8.37";
 
     /**
      * The save shape.
@@ -8128,6 +8128,18 @@ public final class GameVersion {
      */
     public static boolean isNoLongerReadable(int saveFormat) {
         return saveFormat < OLDEST_LOADABLE_FORMAT;
+    }
+
+    /**
+     * What the player is told about a save from a newer build (FW1): which
+     * build wrote it, so they know the build that opens it, as
+     * noLongerReadable() names the older one.
+     */
+    public static String fromNewerBuild(String savedBy) {
+        boolean named = savedBy != null && !savedBy.isBlank();
+        return "This save is from a newer version of the game"
+                + (named ? ", build " + savedBy : "") + ", and build " + VERSION + " cannot read it."
+                + (named ? " Build " + savedBy + " opens it." : "");
     }
 
     /**
