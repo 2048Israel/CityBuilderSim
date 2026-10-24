@@ -1,4 +1,4 @@
-# Construction.java - 987 lines · 54 methods · 1 constants · sectors
+# Construction.java - 991 lines · 54 methods · 1 constants · sectors
 
 `ham/citybuildersim/sectors/Construction.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -47,8 +47,8 @@
 | 482 | WHAT IT COSTS TO STAND |
 | 511 | MATERIALS ARE DRAWN, NOT BID FOR |
 | 579 | PLANNING - off the order book |
-| 783 | THE SCREEN |
-| 901 | SAVE |
+| 787 | THE SCREEN |
+| 905 | SAVE |
 
 ## Constants
 
@@ -81,7 +81,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 940 | **type** `public final class Construction extends Sector` | The builders. |
+| 48 | 944 | **type** `public final class Construction extends Sector` | The builders. |
 | 151 | 13 | `public void strikeCrews(double work, double depots)` | Strikes the month's crews. |
 | 166 | 1 | `public double getPostsOfferedShare()` | The share of the depots' posts on offer this month. |
 | 169 | 1 | `public double getCrewsNeeded()` | The work over the depots' full-staffing output, as struck - above 1 when the work is more than they can do. |
@@ -143,32 +143,32 @@
 | 563 | 11 | `public double takeSalvage(double units)` | Draws from the stock, up to what it holds, and books what the units drawn cost - their share of the cost basis - as this month's input. |
 | 577 | 1 | `public double getInventoryValue()` | Its stock of scrapped plant's material at today's price; the yard is the city's and the plant is the plant's. |
 
-### PLANNING - off the order book (lines 579-782)
+### PLANNING - off the order book (lines 579-786)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 618 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Everyone else's lead times are its output, so when the queue gets long it is the constraint on the whole city. |
 | 707 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
 | 743 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
-| 767 | 8 | `public boolean mayRetire(BuildingsTemplate t)` | THE LAST DEPOT IS NOT FOR SALE (PT1-M4). |
-| 778 | 4 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything: the builders have the one depot. |
+| 767 | 12 | `public boolean mayRetire(BuildingsTemplate t)` | THE LAST DEPOT IS NOT FOR SALE (PT1-M4). |
+| 782 | 4 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything: the builders have the one depot. |
 
-### THE SCREEN (lines 783-900)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 789 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
-| 792 | 1 | `public String inputLabel()` |  |
-| 808 | 11 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
-| 821 | 1 | `public boolean hasPlantBlock()` |  |
-| 824 | 76 | `public List<Line> ownLines(Game game)` |  |
-
-### SAVE (lines 901-987)
+### THE SCREEN (lines 787-904)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 906 | 28 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 936 | 27 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 965 | 10 | `protected void resetExtras()` |  |
-| 978 | 9 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
+| 793 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
+| 796 | 1 | `public String inputLabel()` |  |
+| 812 | 11 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
+| 825 | 1 | `public boolean hasPlantBlock()` |  |
+| 828 | 76 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE (lines 905-991)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 910 | 28 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 940 | 27 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 969 | 10 | `protected void resetExtras()` |  |
+| 982 | 9 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
 

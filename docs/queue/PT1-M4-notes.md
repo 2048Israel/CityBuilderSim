@@ -87,9 +87,11 @@ counts the 400).
 
 ## The suite
 
-137 harnesses and the playtest, on the merged main (FW1, 0.8.37): **all 138 green**
-(MapCheck's two timing lines soft beside another batch's JVM). On the way, 23 harnesses' fixtures were re-caused, each with a
-dated comment and a `fixture:` assertion: a town that ordered its works and
+137 harnesses and the playtest, on the merged main (FW2, 0.8.38): **137 of 138
+green**, MapCheck 8 the known red pinned to FW11 (below). Two of MapCheck's
+timing lines read over budget in one full run and passed on the rerun alone;
+`--timing` is the gate's. On the way, 23 harnesses' fixtures were re-caused,
+each with a dated comment and a `fixture:` assertion: a town that ordered its works and
 houses at founding grew on the free 400 and on the yard's 160 stays a fraction
 of its old size, so the fixtures stand depots (`MortgageCheck.landlordCity(...,
 depotsStanding)`, `ForeignDebtCheck.tradingCity(dir, depots)`, CallCheck's and
