@@ -7280,8 +7280,25 @@ public final class GameVersion {
      *   - Screens: Borrow's Floating and Linked tiles; the uplift on Finances
      *     and the Government tab.
      *   - Harness: FloatLinkCheck (new).
+     *
+     * 0.8.36 (2026-10-24) - PT1-M4, THE WORKS DEPARTMENT RETIRED
+     * (docs/queue/PT1-M4-notes.md; Jerus, 2026-10-12: "not meant ... perhaps
+     * a starting depot or something instead"). Construction earns only for
+     * work its own crews do.
+     *   - BuildingManager.BASE_CONSTRUCTION (400 free points a month) is gone:
+     *     the builders' capacity is their yards' and depots' nameplate, and
+     *     Game.getConstructionOutput() the posts kept on at their fill.
+     *   - A city founds with a Builders' Yard (id 143, the depot at two
+     *     fifths: 20 posts, 160 points; Game.foundingYard()): the depot's 50
+     *     posts, laid off idle and counted as spoken for, left a village no
+     *     hands for a shop.
+     *   - The builders' last yard or depot is never retired, sold in distress
+     *     or bought out (Construction.mayRetire(), Game.demolishable()).
+     *   - The People strip's unused fold keeps no words' width (KeptCheck).
+     *   - Save: SAVE_FORMAT 45, OLDEST_LOADABLE_FORMAT 45.
+     *   - Harness: FoundingYardCheck (new); forty fixtures re-caused.
      */
-    public static final String VERSION = "0.8.35";
+    public static final String VERSION = "0.8.36";
 
     /**
      * The save shape.
