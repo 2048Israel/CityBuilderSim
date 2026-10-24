@@ -1,0 +1,40 @@
+ET2 slice E: the founding card's words (FoundingScreen), measured on earth-2.bin by EarthSite.measure(), at each spot.
+A refusal is the card's last line in the bad colour; a site's lines are those the screen draws in this order.
+
+== Medellin (6.25° N, 75.57° W)
+3.1 km south of Medellín · 6.25° N, 75.57° W
+Within 5 km: 99% dry · 1% rivers and lakes · 0% sea
+Fresh water 1.0 km away · no sea within 5 km
+Geology: West-Central Cordillera, a fold belt · deposits iron ore ×0.10, oil ×0.04, stone ×1.38, coal ×0.79, copper ×2.93, uranium ×0.38
+The nearest iron field: 32 km south-east
+Dry ground within 5 km: flat 48% · foothill 43% · steep 9%
+No shallow water within 5 km · no sea within 5 km
+Its landmass: New York's, 36.8 million km² (id 2)
+World seed 4,127: the detail below the data, the fields and the streets.
+[site plot (376832, 376832), 21 m from the spot; foundable true]
+
+== the hills south of Medellin, a spot the snap moves (6.12° N, 75.57° W)
+19 km south of Medellín · 6.11° N, 75.57° W · the site 1.4 km from the spot
+Within 5 km: 100% dry · 0% rivers and lakes · 0% sea
+No river or lake within 5 km · no sea within 5 km
+Geology: West-Central Cordillera, a fold belt · deposits iron ore ×0.10, oil ×0.04, stone ×1.38, coal ×0.79, copper ×2.93, uranium ×0.38
+The nearest iron field: 31 km south-east
+Dry ground within 5 km: flat 3% · foothill 39% · steep 58%
+No shallow water within 5 km · no sea within 5 km
+Its landmass: New York's, 36.8 million km² (id 2)
+No river, lake or sea within 5 km: the city has nowhere near to draw its water from.
+World seed 4,127: the detail below the data, the fields and the streets.
+[site plot (376827, 376879), 1431 m from the spot; foundable true]
+
+== the Andes at -13.2, -72.5 (13.20° S, 72.50° W)
+the Andes at -13.2, -72.5 · 13.20° S, 72.50° W
+No ground a building may stand on within 5 km: the slopes here are steep. The nearest buildable ground is 5.3 km south.
+
+== Everest's southern slopes (27.60° N, 86.70° E)
+Everest's southern slopes · 27.60° N, 86.70° E
+No ground a building may stand on within 5 km: the slopes here are steep. The nearest buildable ground is 9.0 km west.
+
+== Everest's summit (27.99° N, 86.93° E)
+111 km north-east of Ramechhap · 27.99° N, 86.93° E
+On ice: snow and ice cover half the ground here or more, and no city is founded on an ice sheet.
+[site plot (376832, 376832), 21 m from the spot; foundable false]

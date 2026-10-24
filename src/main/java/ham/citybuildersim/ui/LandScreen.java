@@ -387,6 +387,25 @@ final class LandScreen {
                 any ? room(after) : "" };
     }
 
+    /**
+     * What the city's relief asks of its ground (ET2), one line for each kind it owns, empty for a city whose ground
+     * is all flat: the steep ground only a works may stand on and how much of it works stand on, then the foothill
+     * buildings stand on and how much of that has been prepared. Every figure is LandManager's own.
+     */
+    List<String> reliefLines() {
+        LandManager land = ui.game.getLandManager();
+        List<String> lines = new ArrayList<>();
+        if (land.getSlopeSqFt() > 0) {
+            lines.add("Steep ground only mines, quarries and wells may use: " + LandManager.areaWords(land.getSlopeSqFt())
+                    + " (" + LandManager.areaWords(land.getWorksOnSlopeSqFt()) + " of it worked)");
+        }
+        if (land.getFoothillSqFt() > 0) {
+            lines.add("Foothill built on: " + LandManager.areaWords(land.getBuildingsOnFoothillSqFt())
+                    + ", prepared: " + LandManager.areaWords(land.getPreparedSqFt()));
+        }
+        return lines;
+    }
+
     /** The bar's scale: the ground free and the best N together. */
     double groundScale(Next next) {
         double scale = ui.game.getLandManager().getAvailableSqFt();
@@ -1017,6 +1036,13 @@ final class LandScreen {
             afterRoom.setWrapText(true);
             VBox.setMargin(after, new javafx.geometry.Insets(4, 0, 0, 0));
             figures.getChildren().addAll(after, afterRoom);
+        }
+        for (String line : reliefLines()) {
+            Label relief = new Label(line);
+            relief.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            relief.setWrapText(true);
+            VBox.setMargin(relief, new javafx.geometry.Insets(4, 0, 0, 0));
+            figures.getChildren().add(relief);
         }
         figures.setMinWidth(0);
         figures.setAlignment(Pos.CENTER_LEFT);

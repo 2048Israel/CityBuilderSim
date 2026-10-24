@@ -2043,6 +2043,55 @@ public class LongPlaytest {
     /** The place --earth named, for the report; null for a spot given as figures. */
     static String earthPlace;
 
+    /**
+     * A city founded on the real Earth round a spot and played `months` months as the playtest plays it (ET2: the
+     * run SlopeCheck 9 counts, for tools.SlopeRenders, which draws the map of the city this returns): the village's
+     * first orders, then the advice's moves between runs of 6 to 120 months, every line of the game's log sent to
+     * `silent`. `files` is a scratch folder's (GameFiles.scratch()), never the real saves'. The run's findings are
+     * left in `findings`; a caller that wants them clean clears them first.
+     */
+    public static Game earthCity(String spot, int months, GameFiles files, PrintStream silent) {
+        PrintStream was = out, realOut = System.out;
+        out = silent;
+        System.setOut(silent);
+        try {
+            Game g = new Game(files, earthFounding(spot));
+            g.run();
+            g.getDebtManager().setAutopilot(AUTOPILOT);
+            g.setRolloverMode(ROLLOVER);
+            g.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
+            g.getCityMap();
+            layoutOn = true;
+            villageBuild(g, "House", 40);
+            villageBuild(g, "Convenience Store", 3);
+            villageBuild(g, "Mixed Farm", 2);
+            run(g, 3);
+            villageBuild(g, "House", 20);
+            run(g, 4);
+            villageBuild(g, "Convenience Store", 2);
+            villageBuild(g, "Construction Depot", 1);
+            run(g, 5);
+            advise(g);
+            run(g, 6);
+            int stop = 0;
+            while (g.getMonth() < months) {
+                stop++;
+                int skip = switch (stop % 6) { case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120; };
+                run(g, Math.min(skip, months - g.getMonth()));
+                if (g.getMonth() >= months) break;
+                for (int move = 0; move < movesPerLook(); move++) {
+                    if (advise(g) == null) break;
+                    run(g, 1);
+                }
+                run(g, 2);
+            }
+            return g;
+        } finally {
+            out = was;
+            System.setOut(realOut);
+        }
+    }
+
     /* =====================================================================
        THE TRACE, BESIDE THE REPORT (0.7.10)
 

@@ -1753,8 +1753,10 @@ final class BuildScreen {
                 // The city's rebate is the tax coming home (revised 0.7.19; EconomyManager,
                 // THE REBATES ON A NEW HOME, AND THE CITY'S): the builders remit it to the
                 // treasury as they bill the work.
+                String prep = prepWords(v.quote());
                 quoted.setText(money(v.quote().total) + " with " + money(v.quote().salesTax)
-                        + " sales tax, back to the treasury as it is built  ·  " + said[0]);
+                        + " sales tax, back to the treasury as it is built  ·  " + said[0]
+                        + (prep == null ? "" : "\n" + prep));
                 quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, said[1]));
             }
             refreshOrderBar();
@@ -1817,6 +1819,18 @@ final class BuildScreen {
         HBox steps = new HBox(4, less, count, more, ten, hundred, spread, reset);
         steps.setAlignment(Pos.CENTER_LEFT);
         return new Order(steps, build, quoted, reprice);
+    }
+
+    /**
+     * The quote's line for a foothill site (ET2; Game.BuildQuote's prepSqFt, prepPoints, prepCost): "Preparing 743 m² of
+     * foothill: 3.1 points of builders' work, $82.4k" - the ground the order has to cut pads in before its first
+     * building finishes, the construction points that is and the money in the quote's sticker. null for a building
+     * on flat ground, a works, and every order that has none to prepare, so a flat city's quote reads as it did.
+     */
+    static String prepWords(Game.BuildQuote q) {
+        if (q == null || !(q.prepSqFt > 0)) return null;
+        return "Preparing " + LandManager.areaWords(q.prepSqFt) + " of foothill: "
+                + String.format("%.1f", q.prepPoints) + " points of builders' work, " + money(q.prepCost);
     }
 
     /**
