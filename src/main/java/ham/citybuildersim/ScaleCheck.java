@@ -222,8 +222,28 @@ public class ScaleCheck {
      * 630, 650 and 660 the city's own rents priced migrants out (at 640 a
      * copy's rents pulled migrants otherwise). 622 is the middle
      * of 621 to 624, a narrow window: 2,388 people at 627.
+     *
+     * ...AT 807 SINCE 0.8.37 (batch PT1-M4), BY THE SAME PREMISE. The works
+     * department that built for nobody is retired and the city founds with a
+     * Builders' Yard, and the playtest's town is another one again: 4,947
+     * people at 627 where 0.8.36's had 2,388. Traced month by month (a scratch
+     * trace of OrderSearchCheck.playtestCity()'s rhythm, the months played one
+     * at a time), its own rents price migrants out in 749 of the 750 months
+     * from 51 to 800 (the affordability pull .82 on average, the rent burden
+     * .37 against the .30 target), where 0.8.36's town was calm in 141 of
+     * them, in runs like 616 to 630 - which is where 622 sat. The squeeze is
+     * this town's usual state in both (a town grows until its rents bind and
+     * the pull holds it there; Migration.affordabilityPull()), and a calm
+     * month is a dip under the yardstick that the new town's homes did not
+     * make until about 790. Scanned (a scratch scan, ScaleCheck's section 6
+     * with the month changed, every assertion read): every assertion holds at
+     * each month from 792 to 822, at 824 to 830 and at 844 to 853; at 786 to
+     * 791 the first month's pull is .990 to .999, and at 823, 831 to 843 and
+     * 854 to 860 the free copies ordered nothing "sized from more than a
+     * million needed, and judged on its interest". 807 is the middle of 792
+     * to 822, a window of 31 months: 5,319 people at 812.
      */
-    static final int FREE_FIXTURE_MONTHS = 622;
+    static final int FREE_FIXTURE_MONTHS = 807;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
@@ -1089,7 +1109,17 @@ public class ScaleCheck {
             JsonArray a = d.getAsJsonArray("foreignAccounts");
             java.util.Set<Integer> money = new java.util.HashSet<>(List.of(0, 1, 4, 5, 6, 7, 8, 9, 10, 15, 17, 19, 20,
                     21, 22, 23, 24, 25, 26, 27));
-            for (int i = 31; i < a.size(); i++) money.add(i);
+            // ...slots 31-44 are the land's dollars and the month's flows, all money (0.7.6, 0.7.46). From 45 on (PT1-M4,
+            // 2026-10-24) only the float's money: XR1's slots 45-70 and XR2's 71-94 are mostly LEVELS IN LOGS (parity's
+            // trend, the gap, balance and cover reached, the market's swing, the interventions and breaks still felt, the
+            // shadow), flags, ordinals, seeds and counts, and a copy that scaled them K times over opened its currency
+            // at ln(rate) K times the city's: the rate hit MAX_RATE (1e9) in its first month, and every sector holding
+            // dollars abroad recalled 10% of them to its till (OrderSearchCheck 2's tills of 1e12 to 1e14 where K times the
+            // city's were 1e7 to 4e8). Money there: the year's GDP (68), the dealing since the last reprice (70), the local price
+            // still owed for the edge's dollars (84), the edge's dollars the month bought, their price and the lifetime
+            // (86-88).
+            for (int i = 31; i < Math.min(45, a.size()); i++) money.add(i);
+            money.addAll(List.of(68, 70, 84, 86, 87, 88));
             for (int i = 0; i < a.size(); i++) if (money.contains(i)) a.set(i, times(a.get(i), k));
         }
         // The unemployment's people (FR2, 2026-10-18; the batch's notes): its claimant cohorts, those off EI, the unhoused, the

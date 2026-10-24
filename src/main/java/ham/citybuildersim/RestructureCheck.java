@@ -216,7 +216,9 @@ public class RestructureCheck {
             Game pump;
             if ("dollar".equals(kind)) {
                 System.setOut(quiet);
-                try { pump = ForeignDebtCheck.tradingCity(root.resolve("pump-" + kind)); }
+                // Two depots stand beside the plant's (PT1-M4): see ForeignDebtCheck.tradingCity(); without them the
+                // city is too small and too thinly traded for the world to lend it cheaper than it lends itself.
+                try { pump = ForeignDebtCheck.tradingCity(root.resolve("pump-" + kind), 2); }
                 finally { System.setOut(out); }
             } else {
                 pump = founded(root, "pump-" + kind);

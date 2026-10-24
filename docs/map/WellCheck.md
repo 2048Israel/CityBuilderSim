@@ -1,4 +1,4 @@
-# WellCheck.java - 1,117 lines · 27 methods · 6 constants · harnesses
+# WellCheck.java - 1,123 lines · 27 methods · 6 constants · harnesses
 
 `ham/citybuildersim/WellCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -76,16 +76,16 @@
 | 237 | 2. THEIR LIFE |
 | 258 | 3. A TOWN'S LIFT |
 | 326 | 4. WORN OUT, RETIRED, REFILLED |
-| 386 | 5. DRY AND SEA SITES |
-| 453 | 6. ACROSS A SAVE |
-| 507 | 7. ONE POST |
-| 525 | THE OIL AT SEA (0.7.91) |
-| 564 | 8. A PLATFORM |
-| 683 | 9. THE SHUTTLE TANKERS |
-| 744 | 10. THE PIPELINE |
-| 801 | 11. ACROSS A SAVE |
-| 861 | 12. THE PLANNER |
-| 921 | 13. THE TWO POOLS (0.7.93) |
+| 392 | 5. DRY AND SEA SITES |
+| 459 | 6. ACROSS A SAVE |
+| 513 | 7. ONE POST |
+| 531 | THE OIL AT SEA (0.7.91) |
+| 570 | 8. A PLATFORM |
+| 689 | 9. THE SHUTTLE TANKERS |
+| 750 | 10. THE PIPELINE |
+| 807 | 11. ACROSS A SAVE |
+| 867 | 12. THE PLANNER |
+| 927 | 13. THE TWO POOLS (0.7.93) |
 
 ## Constants
 
@@ -95,8 +95,8 @@
 | 132 | `WellCheck.WELL_TONNES` | `415` | A well's nameplate a month, the template's: 415 t, a hundred barrels a day. |
 | 135 | `WellCheck.FILL` | `50_000` | The Strategic Reserve's fill a month in the sea sections (OilCheck 16's order): more than the wells lift, so the city buys every tonne of theirs at home. |
 | 138 | `WellCheck.PLENTY` | `50_000_000` | The oil a town is handed: far more than its wells lift in the months a section runs, so the ground never limits them. |
-| 924 | `WellCheck.GROUND` | `2 * WELL_TONNES` | Section 13's ground pool: two months of a land well's nameplate, so it is worked out inside the months the section runs. |
-| 927 | `WellCheck.LAST_AT_SEA` | `100` | Section 13's offshore pool left for its other half: less than a month of the platform wells' lift, so it is worked out in one. |
+| 930 | `WellCheck.GROUND` | `2 * WELL_TONNES` | Section 13's ground pool: two months of a land well's nameplate, so it is worked out inside the months the section runs. |
+| 933 | `WellCheck.LAST_AT_SEA` | `100` | Section 13's offshore pool left for its other half: less than a month of the platform wells' lift, so it is worked out in one. |
 
 ## Fields (state)
 
@@ -110,7 +110,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 1025 | **type** `public class WellCheck` | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil 2.7, 2.11): the platforms, their wells, the shuttle tankers and ... |
+| 93 | 1031 | **type** `public class WellCheck` | The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil 2.7, 2.11): the platforms, their wells, the shuttle tankers and ... |
 | 99 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 104 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 109 | 5 | `static void quietly(Runnable r)` |  |
@@ -139,73 +139,73 @@
 |---:|---:|---|---|
 | 260 | 65 | `static Game aTownsLift()` |  |
 
-### 4. WORN OUT, RETIRED, REFILLED (lines 326-385)
+### 4. WORN OUT, RETIRED, REFILLED (lines 326-391)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 328 | 57 | `static Game wornOutWellsRetire()` |  |
+| 328 | 63 | `static Game wornOutWellsRetire()` |  |
 
-### 5. DRY AND SEA SITES (lines 386-452)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 388 | 64 | `static void drySitesAndSea()` |  |
-
-### 6. ACROSS A SAVE (lines 453-506)
+### 5. DRY AND SEA SITES (lines 392-458)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 455 | 51 | `static void acrossASave(Game g) throws Exception` |  |
+| 394 | 64 | `static void drySitesAndSea()` |  |
 
-### 7. ONE POST (lines 507-524)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 509 | 15 | `static void onePost()` |  |
-
-### THE OIL AT SEA (0.7.91) (lines 525-563)
+### 6. ACROSS A SAVE (lines 459-512)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 528 | 3 | `static Deposit seaField()` | The sea field the sea sections stand on: section 5's, the nearest oil field to SEA_OIL_SEED's site, in the sea. |
-| 539 | 24 | `static Game seaTown(String label)` | Section 4's staffed town on SEA_OIL_SEED's world, owning the ground over the sea field (bought, as section 5 buys it) and handed plenty of oil; every sector's own orders held, so the ground and the hands the sections ... |
+| 461 | 51 | `static void acrossASave(Game g) throws Exception` |  |
 
-### 8. A PLATFORM (lines 564-682)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 566 | 116 | `static Game aPlatform()` |  |
-
-### 9. THE SHUTTLE TANKERS (lines 683-743)
+### 7. ONE POST (lines 513-530)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 685 | 58 | `static void theShuttleTankers(Game g)` |  |
+| 515 | 15 | `static void onePost()` |  |
 
-### 10. THE PIPELINE (lines 744-800)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 746 | 54 | `static void thePipeline(Game g)` |  |
-
-### 11. ACROSS A SAVE (lines 801-860)
+### THE OIL AT SEA (0.7.91) (lines 531-569)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 803 | 57 | `static void seaAcrossASave(Game g) throws Exception` |  |
+| 534 | 3 | `static Deposit seaField()` | The sea field the sea sections stand on: section 5's, the nearest oil field to SEA_OIL_SEED's site, in the sea. |
+| 545 | 24 | `static Game seaTown(String label)` | Section 4's staffed town on SEA_OIL_SEED's world, owning the ground over the sea field (bought, as section 5 buys it) and handed plenty of oil; every sector's own orders held, so the ground and the hands the sections ... |
 
-### 12. THE PLANNER (lines 861-920)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 863 | 57 | `static void thePlanner()` |  |
-
-### 13. THE TWO POOLS (0.7.93) (lines 921-1117)
+### 8. A PLATFORM (lines 570-688)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 930 | 3 | `static boolean close(double a, double b)` | Whether two figures agree but for a rounding: within a billionth of the larger, or of a tonne. |
-| 935 | 4 | `static String lineValue(List<Sector.Line> lines, String label)` | The value of the line of `lines` with this label, or null. |
-| 941 | 8 | `static int untilWorkedOut(Game g, java.util.function.DoubleSupplier left, int most)` | Months played until a pool is worked out to the tonne's last bit (left == 0), at most `most`; the months played. |
-| 950 | 167 | `static void theTwoPools() throws Exception` |  |
+| 572 | 116 | `static Game aPlatform()` |  |
+
+### 9. THE SHUTTLE TANKERS (lines 689-749)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 691 | 58 | `static void theShuttleTankers(Game g)` |  |
+
+### 10. THE PIPELINE (lines 750-806)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 752 | 54 | `static void thePipeline(Game g)` |  |
+
+### 11. ACROSS A SAVE (lines 807-866)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 809 | 57 | `static void seaAcrossASave(Game g) throws Exception` |  |
+
+### 12. THE PLANNER (lines 867-926)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 869 | 57 | `static void thePlanner()` |  |
+
+### 13. THE TWO POOLS (0.7.93) (lines 927-1123)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 936 | 3 | `static boolean close(double a, double b)` | Whether two figures agree but for a rounding: within a billionth of the larger, or of a tonne. |
+| 941 | 4 | `static String lineValue(List<Sector.Line> lines, String label)` | The value of the line of `lines` with this label, or null. |
+| 947 | 8 | `static int untilWorkedOut(Game g, java.util.function.DoubleSupplier left, int most)` | Months played until a pool is worked out to the tonne's last bit (left == 0), at most `most`; the months played. |
+| 956 | 167 | `static void theTwoPools() throws Exception` |  |
 

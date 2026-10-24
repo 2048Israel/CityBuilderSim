@@ -846,6 +846,11 @@ public class CentralBankCheck {
         // ...and the auction allotted them none (CD2: what the households take is
         // their allotment now, not a share the issue yield gives).
         bond.allotHouseholdsFace = bond.allotHouseholdsCash = 0;
+        // ...nor the businesses nor the world (PT1-M4): the auction allots a sliver (0.05 of the 1,000 here) to
+        // businesses with spare cash and to the world, which the settle then keeps off the bank's book. The bank is meant
+        // to be the whole of the market here, so those two allotments are struck out as the households' is.
+        bond.allotFirmsFace = bond.allotFirmsCash = 0;
+        bond.allotWorldFace = bond.allotWorldCash = 0;
         play(city);
         close("fixture: ...and the bank holds all of it", bond.bankPrincipal(),
                 bond.getOustandingPrincipal(), 1e-9);
@@ -1453,6 +1458,12 @@ public class CentralBankCheck {
         quietly(() -> {
             city.run();
             city.getForeignAccounts().pinRate(1.0);
+            // Six depots stand beside the four ordered (PT1-M4): the works department that built 400 points a month for a
+            // city nobody staffed is retired, and the founding yard's 160 points built this city's houses so slowly that it
+            // had 20 people at month 72, a year of deficit (D$-523k) and no surplus to pay a slice of D$200k with.
+            // Builders enough to raise the houses (addStack(t, n, true), as foundingDepot() once stood its one) bring
+            // 654 people at month 72 and a surplus over the last year of D$3.7M.
+            city.buildStack(template(city, "Construction Depot"), 6, true);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);

@@ -167,7 +167,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 143,
+ "nextId": 144,
  "buildings": [
   {
    "id": 0,
@@ -370,6 +370,26 @@
     "MATERIALS": 160
    },
    "stock": 480
+  },
+  {
+   "id": 143,
+   "name": "Builders' Yard",
+   "category": "CONSTRUCTION",
+   "sector": "Construction",
+   "cashCost": 593,
+   "constructionPoints": 160,
+   "constructionMaterials": 22,
+   "electricity": 10,
+   "water": 1,
+   "jobs": {
+    "NO_DIPLOMA": 14,
+    "DIPLOMA": 6
+   },
+   "land": 24000,
+   "roadLoad": 36,
+   "makes": {
+    "BUILDING_WORK": 160
+   }
   },
   {
    "id": 4,

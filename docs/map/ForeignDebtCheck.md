@@ -1,4 +1,4 @@
-# ForeignDebtCheck.java - 879 lines · 8 methods · 0 constants · harnesses
+# ForeignDebtCheck.java - 895 lines · 9 methods · 0 constants · harnesses
 
 `ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -45,7 +45,7 @@
 >      rollover's parts add to what falls due, and the borrowing flags
 >      carry nothing else?
 
-**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (14), [Debt](Debt.md) (9), [CityCalendar](CityCalendar.md) (6), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [Rollover](Rollover.md) (3), [ChartModel](ChartModel.md) (3), [DecisionLog](DecisionLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Ladder](Ladder.md) (2), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [DebtManager](DebtManager.md) (32), [Game](Game.md) (15), [Debt](Debt.md) (9), [CityCalendar](CityCalendar.md) (6), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [Rollover](Rollover.md) (3), [ChartModel](ChartModel.md) (3), [DecisionLog](DecisionLog.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [TempDirs](TempDirs.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Ladder](Ladder.md) (2), [MoneyAudit](MoneyAudit.md) (1)
 
 **Used by (3):** [BuybackCheck](BuybackCheck.md), [CurveCheck](CurveCheck.md), [RestructureCheck](RestructureCheck.md)
 
@@ -53,16 +53,16 @@
 
 | line | section |
 |---:|---|
-| 123 | · 1. the instrument speaks two currencies |
-| 171 | · 2. and the world is cheaper, to begin with |
-| 253 | · 3. the books balance with dollars on them |
-| 316 | · 4. original sin |
-| 380 | · 4b. and where the dollars actually went |
-| 454 | · 5. the window shuts |
-| 478 | · 6. and the price of walking away |
-| 529 | · 7. across a reload |
-| 642 | 8. the world's paper on the world's curve (0.7.2) |
-| 714 | 9. the ladder, by the calendar year it is paid in (0.7.32) |
+| 138 | · 1. the instrument speaks two currencies |
+| 186 | · 2. and the world is cheaper, to begin with |
+| 268 | · 3. the books balance with dollars on them |
+| 331 | · 4. original sin |
+| 395 | · 4b. and where the dollars actually went |
+| 469 | · 5. the window shuts |
+| 493 | · 6. and the price of walking away |
+| 544 | · 7. across a reload |
+| 657 | 8. the world's paper on the world's curve (0.7.2) |
+| 730 | 9. the ladder, by the calendar year it is paid in (0.7.32) |
 
 ## Fields (state)
 
@@ -76,23 +76,24 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 829 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
+| 51 | 845 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
 | 57 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 62 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 72 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 94 | 6 | `static void tradingPlant(Game g)` | THE PLANT THE TRADING CITY EARNS WITH, STANDING (0.7.17): the builders' depots, the power, the water and the two bakeries whose bread is what it sells abroad. |
-| 102 | 15 | `static Game tradingCity(Path dir) throws Exception` | A small city that has been going long enough to have a credit record. |
-| 118 | 523 | `public static void main(String[] args) throws Exception` |  |
+| 102 | 3 | `static Game tradingCity(Path dir) throws Exception` | A small city that has been going long enough to have a credit record. |
+| 116 | 16 | `static Game tradingCity(Path dir, int depotsStanding) throws Exception` | ...with that many more depots standing beside the plant's and the founding yard's (PT1-M4). |
+| 133 | 523 | `public static void main(String[] args) throws Exception` |  |
 
-### 8. the world's paper on the world's curve (0.7.2) (lines 642-713)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 643 | 70 | `static void theWorldsCurve(Path dir) throws Exception` |  |
-
-### 9. the ladder, by the calendar year it is paid in (0.7.32) (lines 714-879)
+### 8. the world's paper on the world's curve (0.7.2) (lines 657-729)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 728 | 151 | `static void theLadder(Path dir) throws Exception` | WHAT THE FINANCES TAB DRAWS THE DEBT FROM. |
+| 658 | 71 | `static void theWorldsCurve(Path dir) throws Exception` |  |
+
+### 9. the ladder, by the calendar year it is paid in (0.7.32) (lines 730-895)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 744 | 151 | `static void theLadder(Path dir) throws Exception` | WHAT THE FINANCES TAB DRAWS THE DEBT FROM. |
 

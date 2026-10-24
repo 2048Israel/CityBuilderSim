@@ -1,4 +1,4 @@
-# RestructureCheck.java - 538 lines · 5 methods · 1 constants · harnesses
+# RestructureCheck.java - 540 lines · 5 methods · 1 constants · harnesses
 
 `ham/citybuildersim/RestructureCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -27,16 +27,16 @@
 | 108 | · 3. a real city buying real paper back |
 | 152 | · 4. the credit story |
 | 176 | · 5. THE ONE THAT MATTERS: is it a money pump? |
-| 273 | · 5b. the serial bond, on its own terms |
-| 345 | · 5c. the bill knows its own term |
-| 382 | · 5d. yield to maturity |
-| 410 | · 6. and it survives a save |
+| 275 | · 5b. the serial bond, on its own terms |
+| 347 | · 5c. the bill knows its own term |
+| 384 | · 5d. yield to maturity |
+| 412 | · 6. and it survives a save |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 529 | `RestructureCheck.DOLLAR_ASK` | `5_000` | What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. |
+| 531 | `RestructureCheck.DOLLAR_ASK` | `5_000` | What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. |
 
 ## Fields (state)
 
@@ -50,10 +50,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 21 | 518 | **type** `public class RestructureCheck` | Buying the city's own debt back, at what the paper is actually worth. |
+| 21 | 520 | **type** `public class RestructureCheck` | Buying the city's own debt back, at what the paper is actually worth. |
 | 30 | 6 | `static void check(String label, double actual, double expected, double tolerance)` |  |
 | 37 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 42 | 469 | `public static void main(String[] args) throws Exception` |  |
-| 513 | 14 | `static Game founded(Path root, String name) throws Exception` | A city with an economy, so the market has something to price against. |
-| 531 | 7 | `static void cleanUp(Path root)` |  |
+| 42 | 471 | `public static void main(String[] args) throws Exception` |  |
+| 515 | 14 | `static Game founded(Path root, String name) throws Exception` | A city with an economy, so the market has something to price against. |
+| 533 | 7 | `static void cleanUp(Path root)` |  |
 

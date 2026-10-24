@@ -136,6 +136,17 @@ public class MortgageCheck {
 
     /** ...with its works standing from the start when asked: see payoutsAfterPrincipal(). */
     static Game landlordCity(Path root, String name, boolean worksStanding) {
+        return landlordCity(root, name, worksStanding, 0);
+    }
+
+    /**
+     * ...and, when its works stand, with that many more depots standing beside the founding yard (PT1-M4). The works
+     * department that built for a city nobody lived in is retired: this town's builders are the Builders' Yard the city
+     * founds with and what depots stand, staffed from its hundred people at the per-type fill, and its repairs (149
+     * points a month for the works standing) were more than they could do - 13 homes, then none for sixty months.
+     * Standing depots (buildStack(t, n, true), as foundingYard() stands its one) are builders enough to out-work them.
+     */
+    static Game landlordCity(Path root, String name, boolean worksStanding, int depotsStanding) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
         quietly(() -> {
@@ -151,6 +162,7 @@ public class MortgageCheck {
                         { "Water Treatment Plant", "1" }, { "Commercial Bank", "1" }, { "Convenience Store", "4" } }) {
                     g.buildStack(template(g, w[0]), Integer.parseInt(w[1]), true);
                 }
+                if (depotsStanding > 0) g.buildStack(template(g, "Construction Depot"), depotsStanding, true);
                 LongPlaytest.build(g, "Construction Depot", 4);
                 return;
             }
@@ -1122,7 +1134,12 @@ public class MortgageCheck {
          * jobs are there, the landlords build for them and earn; their homes
          * are still built, on mortgages, as the premise has it.
          */
-        Game g = landlordCity(root, "payout", true);
+        // Three depots stand beside the founding yard (PT1-M4): see landlordCity(). Without them the town's builders
+        // cannot keep up with its repairs and no home is built (the landlords then beat their principal every month:
+        // 112 people, 0 homes, no month the other way); with one the landlords lose money until month 35; with two they
+        // beat it in all sixty; with three, the first months beat it and the months of the town's growth do not.
+        Game g = landlordCity(root, "payout", true, 3);
+        long[] homesAfterFirstMonth = { -1 };
         Equity register = g.getEquity();
         int landlords = Equity.indexOf(RE);
         boolean everPastIt = false, foundPaid = false, foundNothing = false;
@@ -1158,6 +1175,7 @@ public class MortgageCheck {
             candidate[0] = !foundPaid && last.repaid() > 0 && last.netIncome() > last.repaid();
             atDividend[0] = atDividend[1] = -1;
             quietly(() -> g.simulateMonths(1));
+            if (m == 0) homesAfterFirstMonth[0] = g.getBuildingManager().getTotalHomes();
             SectorBooks.SectorMonth now = g.getSectorBooks().get(RE);
             // Net of what the shortfall desk rolled of it that month (0.7.12
             // round 2, free cash flow to equity, as Game.payDividends() pays):
@@ -1175,14 +1193,20 @@ public class MortgageCheck {
                 tillAtDividend = atDividend[0];
                 dueAtDividend = atDividend[1];
             }
-            if (!foundNothing && last.netIncome() > 0 && last.repaid() > last.netIncome()) {
+            // ...a month the principal beat the income by what the lender was NOT rolled (PT1-M4): the shortfall desk rolled
+            // all of the first such month's principal (8.74 against 23.96, rolled 23.96), and the rule rightly paid on
+            // the income it left; the month the fixture needs is one whose principal, net of the roll, is still the larger.
+            double netPrincipal = repaid - rolled;
+            if (!foundNothing && last.netIncome() > 0 && netPrincipal > last.netIncome()) {
                 foundNothing = true;
                 nothingIncome = last.netIncome();
-                nothingPrincipal = last.repaid();
+                nothingPrincipal = netPrincipal;
                 everPastIt |= paid != 0;
             }
         }
         g.settleProbeForTest = null;
+        assertTrue("fixture: the landlords' town built homes in the months searched, its builders out-working its repairs",
+                g.getBuildingManager().getTotalHomes() > homesAfterFirstMonth[0]);
         assertTrue("fixture: a month whose income beat the principal its mortgages took, and one it did not",
                 foundPaid && foundNothing);
         assertTrue(String.format("fixture: the landlords' till covers the dividend due (%.4f against %.4f)",

@@ -100,6 +100,20 @@ public class ForeignDebtCheck {
 
     /** A small city that has been going long enough to have a credit record. */
     static Game tradingCity(Path dir) throws Exception {
+        return tradingCity(dir, 0);
+    }
+
+    /**
+     * ...with that many more depots standing beside the plant's and the founding yard's (PT1-M4). The works
+     * department that built 400 points a month for a city nobody staffed is retired: this city's builders are
+     * its depots' 50 posts each (and the yard's 20), filled from the few people it has, so on the plant's four
+     * depots alone its four hundred houses stood by month 60 at 155 people, 41 a month earned abroad against
+     * US$5.3M of dollar paper: the world's country premium sat at its ceiling (16%), a quarter of the exports
+     * could not raise it, and the world's curve could not move a bond's value (section 8). Two more depots
+     * (addStack(t, n, true), as foundingDepot() stood its one) are builders enough to raise the houses: 1,461
+     * people and 962 a month earned abroad, a premium of 1.0% that a quarter of the exports raises to 4.2%.
+     */
+    static Game tradingCity(Path dir, int depotsStanding) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         g.run();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
@@ -107,6 +121,7 @@ public class ForeignDebtCheck {
         // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
         g.setCashForTest(Founding.WEALTHY_CASH);
         g.getLandManager().setOwnedSqFt(30_000_000);
+        if (depotsStanding > 0) g.buildStack(template(g, "Construction Depot"), depotsStanding, true);
         g.buildStack(template(g, "House"), 400, false);
         g.buildStack(template(g, "Convenience Store"), 6, false);
         tradingPlant(g);
@@ -646,7 +661,8 @@ public class ForeignDebtCheck {
         Game city;
         System.setOut(quiet);
         try {
-            city = tradingCity(dir);
+            // Two depots stand beside the plant's (PT1-M4): see tradingCity(); without them the premium is at its ceiling.
+            city = tradingCity(dir, 2);
         } finally {
             System.setOut(out);
         }

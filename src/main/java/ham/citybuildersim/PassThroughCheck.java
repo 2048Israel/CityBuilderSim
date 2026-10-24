@@ -156,13 +156,24 @@ public class PassThroughCheck {
         return new GameFiles(root.resolve(label), root.resolve("no-legacy"));
     }
 
-    /** A trading town on the default founding, as ExchangeRateCheck builds it; its D$ is what the founding's seed makes it. */
+    /**
+     * A trading town on the default founding, as ExchangeRateCheck builds it; its D$ is what the founding's seed makes it.
+     *
+     * TWO DEPOTS STANDING SINCE PT1-M4, beside the four it orders. The works department that built 400 points a month for a
+     * city nobody staffed is retired, and the four ordered depots are built by the founding yard's 160 points at the crews it
+     * has: the town grew to 672 people by month 61, its trade stayed thin, and its treasury ended the 240 months of section 2
+     * at D$-2.0M, so section 4's treasury (buyForeignCurrency() buys no more than the cash it holds) bought no dollars at all:
+     * D$0k for US$0k, and every assertion of the swing read a twin that had done nothing. Two depots stood
+     * (addStack(t, n, true), as foundingDepot() once stood its one) are builders enough: 2,193 people at month 61 and a
+     * treasury of D$748M at month 240.
+     */
     static Game town(String label) {
         Game city = new Game(files(label), Founding.defaults());
         quietly(() -> {
             city.run();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
+            city.buildStack(ForeignCheck.template(city, "Construction Depot"), 2, true);
             city.buildStack(ForeignCheck.template(city, "House"), 500, false);
             city.buildStack(ForeignCheck.template(city, "Convenience Store"), 8, false);
             city.buildStack(ForeignCheck.template(city, "Small Grocery Store"), 3, false);

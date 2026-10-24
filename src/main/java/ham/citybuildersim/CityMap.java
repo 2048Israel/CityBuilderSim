@@ -3245,6 +3245,18 @@ public final class CityMap {
         return l == null ? new int[2][] : new int[][] { countsOf(l.in, types.length), countsOf(l.out, types.length) };
     }
 
+    /**
+     * What was carried to district d as {month, code} pairs, in the order they came (CL3; Link.in), null for none - its link's, once
+     * planned. A carry is never written after it is made: not to be written. The playtest's layout watch compares it pair by pair
+     * (PT1-M4): carried() counts it by type, and a log changed in its middle (the squaring of an upstream district's log with its
+     * plan's counts, DistrictPlan's OVERFLOW LOG) can leave the counts as they were.
+     */
+    public int[] carriedLog(District d) {
+        drawnOf(d);
+        Link l = links.get(d);
+        return l == null || l.in == null ? null : l.in.clone();   // a copy: the watch keeps it a month
+    }
+
     /** The links kept (0.7.89: a band's let go past BANDS_KEPT): a harness's. */
     int linksKept() { return links.size(); }
 
