@@ -1,4 +1,4 @@
-# ET1 - Earth 2 in the game, and drawn (0.8.40, 2026-10-24)
+# ET1 - Earth 2 in the game, and drawn (0.8.41, 2026-10-24)
 
 The brief: `docs/studies/spec-earth2-terrain.md` §10's ET1 row, with §3.1-3.4, §6.1, §7 and §9;
 Jerus's decisions of 2026-10-12 ("all rec", then 15″ for D3). Five slices, each written by a

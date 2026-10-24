@@ -7320,7 +7320,7 @@ public final class GameVersion {
      *   - Harness: FoundingYardCheck (new); twenty-three re-caused, the map's
      *     two watches (MapCheck 8, LongPlaytest's layout) read the plan's rules.
      *
-     * 0.8.40 (2026-10-24) - ET1, EARTH 2 IN THE GAME, AND DRAWN
+     * 0.8.41 (2026-10-24) - ET1, EARTH 2 IN THE GAME, AND DRAWN
      * (docs/queue/ET1-notes.md; docs/studies/spec-earth2-terrain.md 10,
      * Jerus's "all rec", 2026-10-12). The real Earth is earth-2.bin.
      *   - EarthData.EARTH_2, data/earth-2.bin (281,761,695 bytes, the 15"
@@ -7338,7 +7338,7 @@ public final class GameVersion {
      *     missing key reads flat); SAVE_FORMAT 45 unchanged, every earth-1
      *     city refused by its identity.
      */
-    public static final String VERSION = "0.8.40";
+    public static final String VERSION = "0.8.41";
 
     /**
      * The save shape.

@@ -14,7 +14,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.40 — ET1, Earth 2 in the game, and drawn — 2026-10-24, ready but MapCheck 8 (main's, FW11), see docs/queue/ET1-notes.md
+### 0.8.41 — ET1, Earth 2 in the game, and drawn — 2026-10-24, ready but MapCheck 8 (main's, FW11), see docs/queue/ET1-notes.md
 
 The real Earth is now **earth-2.bin** (the 15″ release, 281,761,695 bytes, its SHA-256 the one in both `earth-2.sha256`; the
 study's 135,965,097 was the superseded 30″ bake), and earth-1's ten layers read from it byte for byte (52.6 MB compared). A
@@ -25,6 +25,17 @@ far views and the globe. Depth is GEBCO's, so E4's shelf guess is retired (off R
 founding card shows the relief, the shallow water and the landmass, and each holding keeps its ground by relief under keys of
 its own (format 45 unchanged; earth-1 cities are refused by identity). No rule uses relief yet (ET2). Both playtests' traces
 are byte-identical to main's (no ensemble); three calls for Jerus under Pending as ET1-C.
+
+### 0.8.40 — FW3, a river's far bank surfaced after the hub's side — 2026-10-24, ready, see docs/queue/FW3-notes.md
+
+A district cut by a river no bridge crosses spread its road over the streets on both banks, by cell rank, so the
+far bank's streets, which are not on the city's network, were paved while streets on the hub's side were left
+tracks (fixN3 §7's "counts its whole grid", outlived by the tile deal it was found in). The plan now marks its
+parted streets before the surface (`markParted()` reads the streets themselves) and surfaces the network first,
+half width then full, the parted streets after in the same order, then the one-sided seams. A plan with none
+parted, or all, is surfaced as before. PlanCheck section 16 lays a 16-plot river across a root district: road
+short of the network goes on the network alone, and the far bank is dealt only what the network leaves (red on
+main: 883 plots of 5,293 beyond the river). The map's alone; the trace unmoved.
 
 ### 0.8.39 — PT1-M4, the works department retired — 2026-10-24, ready but MapCheck 8 (FW11), see docs/queue/PT1-M4-notes.md
 

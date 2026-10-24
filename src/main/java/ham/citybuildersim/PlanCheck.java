@@ -329,6 +329,7 @@ public class PlanCheck {
         avenues(types);
         curves(types);
         runsDated(types);
+        farBank(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -3856,4 +3857,54 @@ public class PlanCheck {
         }
         return n;
     }
+
+    /* ----- 16. the far bank (FW3) ----- */
+
+    /** A river too wide for any bridge across a root district south of its hub: its streets' road counted from the hub's side. */
+    static DistrictPlan.Input farBankInput(BuildingVisual.Type[] types, double gravel) {
+        DistrictPlan.Input in = flatMix(types, FULL_FILL, true, false);
+        in.root = true;
+        int n = DistrictPlan.FRAME, top = 3 * DistrictPlan.FRAME / 4, wide = DistrictPlan.ARTERIAL_BRIDGE + 2;
+        for (int y = top; y < top + wide; y++) for (int x = 0; x < n; x++) in.terrain[y * n + x] = World.FRESH;
+        in.paved = in.highway = 0;
+        in.gravel = gravel;
+        return in;
+    }
+
+    /** The surfaced width over a plan's surfaced streets (kind TRACK to HIGHWAY), [network, parted], and their plot counts. */
+    static double[] farBankWidths(DistrictPlan p) {
+        double[] r = new double[4];
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            int code = p.street[q], kind = code & DistrictPlan.KIND_MASK;
+            if (kind < DistrictPlan.TRACK || kind > DistrictPlan.HIGHWAY) continue;
+            int side = p.parted[q] ? 1 : 0;
+            r[side] += DistrictPlan.HALF * ((code >> DistrictPlan.WIDTH_SHIFT) & 3);
+            r[2 + side]++;
+        }
+        return r;
+    }
+
+    static void farBank(BuildingVisual.Type[] types) {
+        out.println("\n--- 16. the far bank: a district cut by a river no bridge crosses surfaces its hub's network before the streets beyond it (FW3) ---");
+        // The streets with no road, to count them: the network's plots and the parted plots beyond the river.
+        double[] zero = farBankWidths(DistrictPlan.make(farBankInput(types, 0)));
+        double netCap = DistrictPlan.FULL * zero[2], partCap = DistrictPlan.FULL * zero[3];
+        out.printf("      a river %d plots wide at row %d: %.0f network street plots, %.0f parted beyond it%n",
+                DistrictPlan.ARTERIAL_BRIDGE + 2, 3 * DistrictPlan.FRAME / 4, zero[2], zero[3]);
+        check("the fixture parts the district: streets on both banks, the far bank's not on the network", zero[2] > 0 && zero[3] > 0);
+        // (a) gravel only, three quarters of what the network holds at full width: all of it on the network, none beyond.
+        double ba = 0.75 * netCap;
+        DistrictPlan pa = DistrictPlan.make(farBankInput(types, ba));
+        double[] wa = farBankWidths(pa);
+        out.printf("      (a) %.1f plots of gravel: %.1f on the network, %.1f on the far bank%n", ba, wa[0], wa[1]);
+        check("(a) road short of the network's full width goes on the network alone: the far bank is dealt none", wa[1] == 0 && Math.abs(wa[0] - ba) <= DistrictPlan.HALF);
+        // (b) the network at full width and half the far bank's: the far bank dealt only what the network leaves.
+        double bb = netCap + 0.5 * partCap;
+        DistrictPlan pb = DistrictPlan.make(farBankInput(types, bb));
+        double[] wb = farBankWidths(pb);
+        out.printf("      (b) %.1f plots of gravel: %.1f on the network (%.0f at full width), %.1f on the far bank%n", bb, wb[0], netCap, wb[1]);
+        check("(b) the network takes its full width first, and the far bank only what is left (" + (bb - netCap) + ")",
+                Math.abs(wb[0] - netCap) < 1e-9 && Math.abs(wb[1] - (bb - netCap)) <= DistrictPlan.HALF && wb[2] == zero[2] && wb[3] == zero[3]);
+    }
+
 }
