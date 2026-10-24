@@ -1,6 +1,6 @@
 # InfrastructureCheck.java - 1,178 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/InfrastructureCheck.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InfrastructureCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The road network, from the curve up to a city that actually jams.
 > 

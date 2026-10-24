@@ -1,6 +1,6 @@
 # EnsembleCheck.java - 509 lines · 24 methods · 10 constants · harnesses
 
-`ham/citybuildersim/EnsembleCheck.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EnsembleCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The inflation ensemble is in the tree and still runs: its driver compiles
 > against this tree, its two halves name the same policies, and the stored

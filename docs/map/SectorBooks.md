@@ -1,6 +1,6 @@
 # SectorBooks.java - 801 lines · 42 methods · 1 constants · model
 
-`ham/citybuildersim/SectorBooks.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorBooks.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > A month of books for every business in the city, and last month's too.
 > 

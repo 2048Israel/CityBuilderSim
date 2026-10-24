@@ -67,7 +67,7 @@ Gson. No format bump: an older save reads them as empty.
 
 ## 4. The checks, the trace and the ensemble
 
-**DeskCheck** (new, 289 assertions, about 6 s): 1 a linker's last month, the coupon and the uplift apart; 2 the interest
+**DeskCheck** (new, 280 assertions, about 5 s): 1 a linker's last month, the coupon and the uplift apart; 2 the interest
 by kind is the budget's line in the month a bill matured and a month the D$ moved, and through a save; 3 a buyback at a
 gain, its journal and honest line against what it then does, and the call's gain against what the call books; 4 the
 desk is the ledger's figures, the value of a point what a curve a point higher takes off; 5 a line's next six months
@@ -95,4 +95,8 @@ added DeskCheck 7's last two assertions, ran the traces and wrote the record.
 
 ## 6. The final checks
 
-(below)
+`./batch-check.sh` on the final model merged with main (2bf138f1), beside another batch's JVM and Jerus's game, timing
+soft: **137 of 137 passed** in 1,685 s (main's baseline was 136 of 136; seven timing assertions said SOFT and were not
+counted: EarthTerrainCheck 1, MapCheck 4, KeptCheck 2). Stale reports 0 firm findings; the maps are regenerated and
+committed. The default playtest on that model is byte-identical to main's but for its two run-time lines. `--timing`
+was left for the ship gate, alone and hard.

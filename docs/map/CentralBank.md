@@ -1,6 +1,6 @@
 # CentralBank.java - 954 lines · 95 methods · 8 constants · model
 
-`ham/citybuildersim/CentralBank.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CentralBank.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The city's central bank: the balance sheet its money is made on, and the one
 > place money is made or destroyed.

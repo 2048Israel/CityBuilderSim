@@ -1,6 +1,6 @@
 # SaveSlotCheck.java - 1,395 lines · 42 methods · 2 constants · harnesses
 
-`ham/citybuildersim/SaveSlotCheck.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveSlotCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > Verifies the slot system: ten saves plus an autosave, the version stamp, and
 > the labels the menu is drawn from.

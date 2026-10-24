@@ -1,6 +1,6 @@
 # GridCheck.java - 619 lines · 22 methods · 7 constants · harnesses
 
-`ham/citybuildersim/GridCheck.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GridCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The block grid (0.7.65, batch M1): the city's owned ground as a quadtree, every plot's owner exact against a raster, and its offers six a side - apart, against its edge and whole blocks at 2:1 after every one of 600 purchases, a notch offered before ground farther out, and a plot's owner found in time.
 > 

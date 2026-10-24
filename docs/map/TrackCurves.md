@@ -1,6 +1,6 @@
 # TrackCurves.java - 346 lines · 26 methods · 7 constants · model
 
-`ham/citybuildersim/TrackCurves.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TrackCurves.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The railway's curves as one geometry, for the drawing and for the trains'
 > routes alike (FX5, 0.8.18): a polyline's corners rounded with arcs of a

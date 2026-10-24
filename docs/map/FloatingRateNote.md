@@ -1,6 +1,6 @@
-# FloatingRateNote.java - 207 lines · 19 methods · 2 constants · model
+# FloatingRateNote.java - 218 lines · 20 methods · 2 constants · model
 
-`ham/citybuildersim/FloatingRateNote.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FloatingRateNote.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > A floating-rate note: a coupon every month on the whole face, the month's
 > policy rate plus a margin fixed at the sale, and the face at the end - at 2
@@ -33,7 +33,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (4):** [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md)
+**Used by (6):** [BookDesk](BookDesk.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md)
 
 ## Constants
 
@@ -53,7 +53,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 173 | **type** `public class FloatingRateNote extends Debt` | A floating-rate note: a coupon every month on the whole face, the month's policy rate plus a margin fixed at the sale, and the face at the end - at 2 or 5 years, each sale its own line (CD5, spec-city-debt.md section ... |
+| 35 | 184 | **type** `public class FloatingRateNote extends Debt` | A floating-rate note: a coupon every month on the whole face, the month's policy rate plus a margin fixed at the sale, and the face at the end - at 2 or 5 years, each sale its own line (CD5, spec-city-debt.md section ... |
 | 44 | 4 | `public static boolean isIssuable(int years)` | True for one of the two. |
 | 50 | 7 | `public static int nearestYears(int years)` | The one of MATURITIES nearest this many years; the shorter on a tie. |
 | 68 | 11 | `public FloatingRateNote(double faceValue, int months, int monthStarted, double margin, double index)` |  |
@@ -71,6 +71,7 @@
 | 149 | 3 | `public String getType()` |  |
 | 155 | 3 | `protected double couponOwed()` | This month's coupon: the face at the coupon rate the last reset read, a twelfth. |
 | 166 | 9 | `protected double[] scheduleOwed()` | THE KNOWN SCHEDULE: today's coupon held flat every month, and the face in the last. |
-| 185 | 4 | `public double[] projectedFlows(double[] policyPath)` | THE MARKET'S SCHEDULE: each coupon at the dial the market expects when it is paid, the face added to the last. |
-| 196 | 11 | `public static double[] flowsFor(double face, double margin, double[] policyPath, int months)` | A floater's payments on a path of the dial: {@code face} of it, at this margin, for this many months - the one arithmetic projectedFlows(), DebtManager.fairMargin() and the auction's schedule share. |
+| 178 | 8 | `protected double[] couponScheduleOwed()` | Today's coupon, held flat: the dial moves it at each reset, and the books ahead do not guess where. |
+| 196 | 4 | `public double[] projectedFlows(double[] policyPath)` | THE MARKET'S SCHEDULE: each coupon at the dial the market expects when it is paid, the face added to the last. |
+| 207 | 11 | `public static double[] flowsFor(double face, double margin, double[] policyPath, int months)` | A floater's payments on a path of the dial: {@code face} of it, at this margin, for this many months - the one arithmetic projectedFlows(), DebtManager.fairMargin() and the auction's schedule share. |
 
