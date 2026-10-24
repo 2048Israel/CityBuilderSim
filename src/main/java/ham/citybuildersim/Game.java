@@ -8481,9 +8481,16 @@ public class Game {
         treasuryRaisedSoFar += quote.cashReceived();
     }
 
+    /**
+     * How the sale being booked reads on the piece it makes or joins (Debt.getSales(), CD6): "auction", or
+     * "the rollover" while the treasury's rollover sells what falls due (issueForRollover()). Read by the
+     * booking and set by nothing else; it moves no figure of the month.
+     */
+    private String saleHow = Debt.AUCTION;
+
     /** A new piece, sold: told what it raised and at what yield, given its allotment, and the treasury paid. */
     private void bookNewPiece(Debt paper, DebtQuote quote) {
-        paper.markIssued(quote.cashReceived(), quote.marketRate());
+        paper.markIssued(quote.cashReceived(), quote.marketRate(), saleHow);
         if (quote.auction() != null) paper.allot(quote.auction().fills(), quote.faceValue(), quote.cashReceived());
         bookProceeds(quote);
     }
@@ -8674,7 +8681,7 @@ public class Game {
         Auction.Result r = quote.auction();
         Debt line = r != null && !r.ask().isNewLine() ? debtManager.benchmarkLine(years, quote.callable()) : null;
         if (line instanceof LongTermBond bond && Math.abs(bond.couponRate() - r.ask().lineCoupon()) < 1e-12) {
-            line.reopen(quote.faceValue(), quote.cashReceived(), quote.marketRate());
+            line.reopen(quote.faceValue(), quote.cashReceived(), quote.marketRate(), month, saleHow);
             line.allot(r.fills(), quote.faceValue(), quote.cashReceived());
             bookProceeds(quote);
         } else if (quote.callable()) {
@@ -9189,6 +9196,8 @@ public class Game {
         // The city's books (CD3) open with what the sale raised, in dollars: markIssued() returns early for
         // paper abroad, so this is the dollar piece's carrying value and effective rate.
         dollarPaper.openBooks(quote.cashReceived());
+        // ...and the sale is remembered in the same currency (CD6): the face and what it raised in dollars.
+        dollarPaper.noteSale(month, quote.faceValue(), quote.cashReceived(), quote.marketRate(), saleHow);
 
         /*
          * THE DOLLARS ARRIVE. WHERE THEY GO IS THE PLAYER'S DECISION.
@@ -9778,6 +9787,7 @@ public class Game {
         double granule = "Note".equals(issue.type()) ? BUILD_NOTE_GRANULE : BUILD_BOND_GRANULE;
         // The player's setting at work, not a decision: the issue is not in the log (0.7.23).
         decisions.hold();
+        saleHow = Debt.ROLLOVER;
         try {
             if (issue.foreign()) {
                 return handleForeignLogic(issue.type(), quote.requested(), issue.term(), granule, false);
@@ -9790,6 +9800,7 @@ public class Game {
                 default       -> issueLongBond(quote);
             };
         } finally {
+            saleHow = Debt.AUCTION;
             decisions.release();
         }
     }
@@ -13049,6 +13060,8 @@ public class Game {
      */
     public void recordMonth() {
         historySave.recordMonth(this);
+        // Each piece's price and carrying value, and the curve, kept for the debt screens (CD6). Reads only: it moves nothing the month computes.
+        debtManager.recordTheBook(month);
         // Same call site as the graph, and for the same reason: a warning
         // raised in the middle of a fifty-month skip has to be raised by the
         // city, not by whichever screen the player comes back to.
@@ -13526,6 +13539,7 @@ public class Game {
         dataSave.setTreasuryRaisedPending(treasuryRaisedSoFar);
         dataSave.setRetiredGainPending(retiredGainSoFar);
         dataSave.setInterestBookedByKind(debtManager.interestByKindToSave());
+        dataSave.setCurveBook(debtManager.curveBookToSave());
         dataSave.setCityPaperUnsettled(getCityPaperUnsettled(), cityDiscountThisMonth + cityDiscountForBank);
         dataSave.setGovernmentMonth(economyManager.governmentMonthToSave());
         dataSave.setReports(reports);
@@ -14647,7 +14661,7 @@ public class Game {
                 Debt line = r != null && !r.ask().isNewLine() && "Term".equals(a.into().type())
                         ? debtManager.benchmarkLine(q.duration()) : null;
                 if (line instanceof LongTermBond bond && Math.abs(bond.couponRate() - r.ask().lineCoupon()) < 1e-12) {
-                    line.reopenForCentralBank(a.par(), price, q.marketRate());
+                    line.reopenForCentralBank(a.par(), price, q.marketRate(), month - 1);
                 } else {
                     Debt paper = switch (a.into().type()) {
                         case "Serial" -> debtManager.addMediumTermBond(a.par(), a.into().term() * 12, month - 1, q.couponRate());
@@ -14659,7 +14673,7 @@ public class Game {
                                 q.coupon(), debtManager.priceIndexLevel());
                         default       -> debtManager.addLongTermBond(a.par(), q.duration() * 12, month - 1, q.couponRate());
                     };
-                    paper.markIssued(price, q.marketRate());
+                    paper.markIssued(price, q.marketRate(), Debt.CENTRAL_BANK_AT_PAR);
                     paper.settled();
                     paper.moveToCentralBank(a.par());
                 }
@@ -14682,7 +14696,7 @@ public class Game {
                 double face = d.unsettledFace();
                 double addOn = sold.size() == 1 ? par : par * face / faces;
                 double price = addOn * d.getSettleDue() / face;
-                d.addOnForCentralBank(addOn);
+                d.addOnForCentralBank(addOn, month - 1);
                 paid += centralBank.buyAtIssue(price, addOn);
                 took += addOn;
             }
@@ -15371,6 +15385,17 @@ public class Game {
         priceTheDebtMarket();
         debtManager.updateInterest();
         return debtManager.marketValue(debt);
+    }
+
+    /**
+     * THE DEBT DESK (CD6): the book page's figures, a line a piece (BookDesk). The market is struck ONCE for the
+     * whole desk, as fairValueOf() strikes it for a piece, and the desk reads it; the month's recorder
+     * (DebtManager.recordTheBook()) strikes nothing and never calls this.
+     */
+    public BookDesk bookDesk() {
+        priceTheDebtMarket();
+        debtManager.updateInterest();
+        return BookDesk.of(debtManager);
     }
 
     /**
@@ -16779,6 +16804,8 @@ public class Game {
             retiredGainSoFar = loaded.getRetiredGainPending();
             // ...and the interest the month booked on each kind of paper (CD6), which the paper left on the list cannot give back.
             debtManager.restoreInterestByKind(loaded.getInterestBookedByKind());
+            // ...and the curve of the months behind (CD6), which today's curve cannot give back.
+            debtManager.restoreCurveBook(loaded.getCurveBook());
             // ...and the paper its bank has not yet paid for, which the next
             // settle pays (THE BANK PAYS FOR THE CITY'S PAPER). Zero from an
             // older save, which is what its bank would have paid.

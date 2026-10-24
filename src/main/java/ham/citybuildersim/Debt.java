@@ -173,6 +173,11 @@ public abstract class Debt {
 
     /** Told at issue what it raised and at what yield. See Game's handle*Logic(). The city's books open with what it raised (openBooks()); a dollar piece's are opened by Game.handleForeignLogic(). */
     void markIssued(double received, double yield) {
+        markIssued(received, yield, AUCTION);
+    }
+
+    /** ...and said how it was sold (CD6): the sale the piece records reads "auction", or what the rollover and the central bank are. */
+    void markIssued(double received, double yield, String how) {
         if (foreign) return;
         settleDue = Math.max(0, received);
         issueYield = yield;
@@ -180,6 +185,7 @@ public abstract class Debt {
         discountLeft = issueDiscount;
         unsettledFace = getOustandingPrincipal();
         openBooks(received);
+        noteSale(monthStarted, getOustandingPrincipal(), received, yield, how);
     }
 
     /**
@@ -205,6 +211,16 @@ public abstract class Debt {
      * rate a line.
      */
     void reopen(double face, double proceeds, double yield) {
+        reopen(face, proceeds, yield, monthStarted, AUCTION);
+    }
+
+    /**
+     * ...in the month the caller knows, sold the way it says (CD6): the sale
+     * the piece remembers (getSales()). The three-figure form above is for a
+     * fixture that does not say when, and dates the sale at the month the
+     * piece started.
+     */
+    void reopen(double face, double proceeds, double yield, int month, String how) {
         if (foreign || !(face > 0)) return;
         ensureBooks();
         double was = Math.max(0, outstandingPrincipal);
@@ -218,6 +234,7 @@ public abstract class Debt {
         issueYield = was + face > 0 ? (issueYield * was + yield * face) / (was + face) : yield;
         carryingValue += Math.max(0, proceeds);
         effectiveRate = effectiveRateOf(scheduleOwed(), carryingValue);
+        noteSale(month, face, proceeds, yield, how);
     }
 
     /**
@@ -228,9 +245,14 @@ public abstract class Debt {
      * unsettled, and the face is the central bank's.
      */
     void reopenForCentralBank(double face, double price, double yield) {
+        reopenForCentralBank(face, price, yield, monthStarted);
+    }
+
+    /** ...in the month the caller knows, recorded as the central bank's own sale (CD6). */
+    void reopenForCentralBank(double face, double price, double yield, int month) {
         if (foreign || !(face > 0)) return;
         double dueBefore = settleDue, unsettledBefore = unsettledFace;
-        reopen(face, price, yield);
+        reopen(face, price, yield, month, CENTRAL_BANK_AT_PAR);
         settleDue = dueBefore;
         unsettledFace = unsettledBefore;
         centralBankPrincipal += face;
@@ -356,6 +378,11 @@ public abstract class Debt {
      * effective rate is solved again on the whole schedule.
      */
     void addOnForCentralBank(double face) {
+        addOnForCentralBank(face, monthStarted);
+    }
+
+    /** ...in the month the caller knows (CD6): recorded as the add-on it is, at the price of the sale it rides on and the piece's issue yield. */
+    void addOnForCentralBank(double face, int month) {
         double out = outstandingPrincipal;
         if (foreign || !(face > 0) || !(out > 0)) return;
         ensureBooks();
@@ -371,6 +398,7 @@ public abstract class Debt {
         centralBankPrincipal += face;
         carryingValue += face * price;
         effectiveRate = effectiveRateOf(scheduleOwed(), carryingValue);
+        noteSale(month, face, face * price, issueYield, CENTRAL_BANK_ADD_ON);
     }
 
     /**
@@ -596,6 +624,181 @@ public abstract class Debt {
     /** ...and the part of the expense that is not coupon: the discount wearing off, below nothing for a premium. */
     public final double getLastAmortised() { return inLocal(lastExpenseOwn - lastCouponOwn); }
 
+    /* =======================================================================
+       WHAT A PIECE REMEMBERS (CD6, spec-city-debt.md section 7)
+
+       The line's page draws two histories that the state a month ended in
+       cannot give back (CLAUDE.md: a flow cannot be reconstructed), so the
+       piece keeps them, and they ride with it through Gson as every field
+       does (DataSave.setDebt()):
+
+         its price since the sale, against its carrying value - per 100 of
+         what is owed, one entry a month, recorded at the month's close by
+         DebtManager.recordTheBook() from reads alone;
+
+         its sales - a reopened line is one line with several, each
+         remembered as it was made: when, how much face, what it raised, at
+         what yield, and how.
+
+       A piece from a save without them has none and starts recording. Gson
+       builds a piece without running its initialisers, so every one of these
+       is created when first written and read as empty when absent.
+       ======================================================================= */
+
+    /** How a sale at auction reads on the piece. */
+    static final String AUCTION = "auction";
+
+    /** ...the central bank's own par, rolled into a line or a new piece at issue. */
+    static final String CENTRAL_BANK_AT_PAR = "the central bank, at its par";
+
+    /** ...and its non-competitive add-on to a sale. */
+    static final String CENTRAL_BANK_ADD_ON = "the central bank's add-on";
+
+    /** ...and the treasury's rollover of what fell due. */
+    static final String ROLLOVER = "the rollover";
+
+    /**
+     * ONE SALE INTO A PIECE, as it was made: the month, the face sold and what
+     * it raised (in the currency the piece is written in), the yield it
+     * cleared at and how it was sold. A plain class, for Gson.
+     */
+    public static final class Sale {
+        private int month;
+        private double face, proceeds, yield;
+        private String how;
+
+        Sale(int month, double face, double proceeds, double yield, String how) {
+            this.month = month;
+            this.face = face;
+            this.proceeds = proceeds;
+            this.yield = yield;
+            this.how = how;
+        }
+
+        public int getMonth()       { return month; }
+        public double getFace()     { return face; }
+        public double getProceeds() { return proceeds; }
+        public double getYield()    { return yield; }
+        public String getHow()      { return how; }
+    }
+
+    /** The sales into this piece, oldest first; null until the first is noted. */
+    private java.util.List<Sale> sales;
+
+    /** The month of the first entry of the price path, and the price per 100 of what is owed and the carrying value per 100, one entry a month from it; null until the first month is recorded. */
+    private int pathFirstMonth;
+    private double[] pricePath, carriedPath;
+
+    private static double finiteOrZero(double v) { return Double.isFinite(v) ? v : 0; }
+
+    /** Remembers a sale. A figure that is no number is nothing: Gson cannot carry a NaN. */
+    void noteSale(int month, double face, double proceeds, double yield, String how) {
+        if (sales == null) sales = new java.util.ArrayList<>();
+        sales.add(new Sale(month, finiteOrZero(face), Math.max(0, finiteOrZero(proceeds)), finiteOrZero(yield), how));
+    }
+
+    /**
+     * The sales into this piece, oldest first (a reopened line is one line with
+     * several): read-only. A piece built without a sale - a fixture, the
+     * founding's land bond - has none. In the currency the piece is written in,
+     * as its face is (faceInCurrency()); a change of unit scales a piece at
+     * home's.
+     */
+    public java.util.List<Sale> getSales() {
+        return sales == null ? java.util.List.of() : java.util.Collections.unmodifiableList(sales);
+    }
+
+    /**
+     * Appends this month's entry to the price path: where the piece trades and
+     * what it is carried at, each per 100 of what is owed. The first call sets
+     * the path's first month; a month already recorded is overwritten (the
+     * close of a month is recorded once, and a harness may record it twice); a
+     * month skipped repeats the entry before it. A figure that is no number is
+     * recorded as the entry before it, or 100 for the first.
+     */
+    void recordPath(int month, double pricePer100, double carriedPer100) {
+        int n = pricePath == null ? 0 : pricePath.length;
+        double p = Double.isFinite(pricePer100) ? pricePer100 : (n > 0 ? pricePath[n - 1] : 100);
+        double c = Double.isFinite(carriedPer100) ? carriedPer100 : (n > 0 ? carriedPath[n - 1] : 100);
+        if (n == 0) {
+            pathFirstMonth = month;
+            pricePath = new double[] {p};
+            carriedPath = new double[] {c};
+            return;
+        }
+        int at = month - pathFirstMonth;
+        if (at < n - 1) return;
+        if (at == n - 1) {
+            pricePath[at] = p;
+            carriedPath[at] = c;
+            return;
+        }
+        double lastPrice = pricePath[n - 1], lastCarried = carriedPath[n - 1];
+        pricePath = java.util.Arrays.copyOf(pricePath, at + 1);
+        carriedPath = java.util.Arrays.copyOf(carriedPath, at + 1);
+        for (int i = n; i < at; i++) {
+            pricePath[i] = lastPrice;
+            carriedPath[i] = lastCarried;
+        }
+        pricePath[at] = p;
+        carriedPath[at] = c;
+    }
+
+    /** The month the price path starts at: the first month recorded. Meaningless while getPricePath() is empty. */
+    public int getPathFirstMonth() { return pathFirstMonth; }
+
+    /** Where the piece traded against par at each month's close since the first recorded, per 100 of what was owed: a copy, empty before the first. */
+    public double[] getPricePath() { return pricePath == null ? new double[0] : pricePath.clone(); }
+
+    /** ...and what it was carried at, per 100 of what was owed, month for month with getPricePath(). */
+    public double[] getCarriedPath() { return carriedPath == null ? new double[0] : carriedPath.clone(); }
+
+    /**
+     * ONE MONTH OF THE BOOKS TO COME, in local money: what the piece opens the
+     * month carried at, the interest at the effective rate, the coupon, the
+     * discount that wears off (the interest less the coupon; below nothing for
+     * a premium), the principal the payment repays (the payment less the
+     * coupon) and what it closes carried at.
+     */
+    public record BooksMonth(int ahead, double opening, double interest, double coupon, double amortised, double repaid, double closing) { }
+
+    /**
+     * THE NEXT MONTHS ON THE BOOKS: amortise() projected on the schedule as it
+     * stands (scheduleOwed(), couponScheduleOwed()) at the effective rate as it
+     * stands, exactly as amortise() strikes a month - the interest on the
+     * carrying value at the rate, the carrying value stepped by the interest
+     * less the payment, and in the last month the interest that closes the
+     * piece to nothing. A pure read: nothing is booked. A floater's and a
+     * linker's projection holds today's dial and today's index flat (their
+     * coupons would move with them; the page says "at today's"). Fewer rows
+     * than asked when the piece has fewer months left; none for a piece that
+     * owes nothing.
+     */
+    public java.util.List<BooksMonth> booksAhead(int months) {
+        double[] payments = scheduleOwed();
+        double[] coupons = couponScheduleOwed();
+        int n = Math.min(Math.max(0, months), Math.min(payments.length, coupons.length));
+        java.util.List<BooksMonth> rows = new java.util.ArrayList<>(n);
+        // A piece whose books were never opened is carried at par, at the rate that makes its payments worth it: ensureBooks()'s, without opening them.
+        double carried = booksOpen ? carryingValue : principalOwed();
+        double rate = booksOpen ? effectiveRate : effectiveRateOf(payments, carried);
+        for (int k = 1; k <= n; k++) {
+            double payment = payments[k - 1], coupon = coupons[k - 1];
+            double expense, closing;
+            if (k == payments.length) {
+                expense = payment - carried;
+                closing = 0;
+            } else {
+                expense = carried * rate / 12;
+                closing = carried + (expense - payment);
+            }
+            rows.add(new BooksMonth(k, inLocal(carried), inLocal(expense), inLocal(coupon),
+                    inLocal(expense - coupon), inLocal(payment - coupon), inLocal(closing)));
+            carried = closing;
+        }
+        return rows;
+    }
+
     public abstract void processMonth(Game game);
 
     public abstract double getIssuePrice();
@@ -622,6 +825,16 @@ public abstract class Debt {
      * care what arrives and when. An empty array means nothing is left to pay.
      */
     protected abstract double[] scheduleOwed();
+
+    /**
+     * The coupon part of every payment still owed, in order, starting with next
+     * month's, in its own currency: scheduleOwed() less the principal each
+     * payment repays, so the first is couponOwed() to the bit. The same length
+     * as scheduleOwed(). A floater's holds today's dial and a linker's today's
+     * index, flat (booksAhead() is its one reader). A linker's last carries its
+     * inflation uplift, as couponOwed() counts it.
+     */
+    protected abstract double[] couponScheduleOwed();
 
     /* -------------------- ...and what the city's books see -------------------- */
 
@@ -902,6 +1115,13 @@ public abstract class Debt {
             carryingValue *= scale;
             lastExpenseOwn *= scale;
             lastCouponOwn *= scale;
+            // What was sold is money too (CD6); the per-100 paths and the yields are not.
+            if (sales != null) {
+                for (Sale sale : sales) {
+                    sale.face *= scale;
+                    sale.proceeds *= scale;
+                }
+            }
         }
         exchangeRate *= scale;
         redenominateSchedule(scale);

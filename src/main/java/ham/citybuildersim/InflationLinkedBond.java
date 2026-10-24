@@ -242,6 +242,24 @@ public class InflationLinkedBond extends Debt {
         return flows;
     }
 
+    /**
+     * The real coupon on the indexed principal, held flat at today's ratio, and
+     * in the last month the inflation uplift with it - the face times the
+     * ratio less one, as couponOwed() counts it, so the repayment left in that
+     * month's payment is the face.
+     */
+    @Override
+    protected double[] couponScheduleOwed() {
+        if (remainingMonths <= 0) {
+            return new double[0];
+        }
+        double coupon = faceValue * ratio * realCoupon / 12;
+        double[] flows = new double[remainingMonths];
+        java.util.Arrays.fill(flows, coupon);
+        flows[remainingMonths - 1] = coupon + faceValue * (Math.max(1, ratio) - 1);
+        return flows;
+    }
+
     /** The last uplift figures are quantities of money, in the new unit (and a part bought back is the same bond, smaller). */
     @Override
     protected void redenominateSchedule(double scale) {

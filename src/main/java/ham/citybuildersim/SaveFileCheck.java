@@ -1038,6 +1038,16 @@ public class SaveFileCheck {
         assertEquals("...and each kind's interest booked came back with the save",
                 java.util.Arrays.toString(paidUp.getDebtManager().interestByKindToSave()),
                 java.util.Arrays.toString(indebted.getDebtManager().interestByKindToSave()));
+        // ...and what the month's close kept for the debt screens (CD6): the curve of the months behind (DataSave.curveBook)
+        // and, with each piece, its sales and its price path (Debt, through Gson).
+        assertTrue("fixture: the city kept a curve for six months, and the bond a path and a sale",
+                indebted.getDebtManager().curveBookSize() >= 6 && indebted.getDebtManager().getDebt().get(0).getPricePath().length >= 6
+                        && indebted.getDebtManager().getDebt().get(0).getSales().size() == 1);
+        assertTrue("...and the curve book came back with the save",
+                java.util.Arrays.deepEquals(paidUp.getDebtManager().curveBookToSave(), indebted.getDebtManager().curveBookToSave()));
+        assertTrue("...and the bond's price path and its sale",
+                java.util.Arrays.equals(paidUp.getDebtManager().getDebt().get(0).getPricePath(), indebted.getDebtManager().getDebt().get(0).getPricePath())
+                        && DeskCheck.salesText(paidUp.getDebtManager().getDebt().get(0)).equals(DeskCheck.salesText(indebted.getDebtManager().getDebt().get(0))));
 
         // The half that actually costs money: the bill has to be PAID, once.
         // Restoring the figure and then not charging it would look right on the

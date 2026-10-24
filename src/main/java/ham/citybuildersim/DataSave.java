@@ -640,6 +640,15 @@ public class DataSave implements Cloneable {
     private double[] interestBookedByKind;
 
     /**
+     * The curve as the months behind it stood (CD6): one row a month, the newest DebtManager.CURVE_KEPT -
+     * [month, the dial, the city's zero rates at DebtManager.CURVE_TENORS, the world's at the same tenors] -
+     * DebtManager.curveBookToSave(). The "a year ago" and "two years ago" lines of Your rate, which the
+     * curve of today cannot give back. Null on a save without it, which starts a book afresh at the next
+     * month's close.
+     */
+    private double[][] curveBook;
+
+    /**
      * The city's own paper its bank has taken and not yet paid for, with the
      * discount on it - Game.getCityPaperUnsettled() - carried since 2026-09-21
      * because the bank now PAYS for the paper at the settle after the issue,
@@ -675,6 +684,8 @@ public class DataSave implements Cloneable {
     public double getRetiredGainPending()              { return retiredGainPending; }
     public void setInterestBookedByKind(double[] v)    { this.interestBookedByKind = v; }
     public double[] getInterestBookedByKind()          { return interestBookedByKind; }
+    public void setCurveBook(double[][] v)             { this.curveBook = v; }
+    public double[][] getCurveBook()                   { return curveBook; }
 
     /**
      * The government's own month: twenty-three revenue and spending lines, saved

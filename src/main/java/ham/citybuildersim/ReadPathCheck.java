@@ -1038,6 +1038,28 @@ public class ReadPathCheck {
             g.callGain(paper);
             g.honestLine(paper, Buyback.Result.none(paper.getOustandingPrincipal()));
         }
+        // ...and CD6's desk: the desk itself (a pure model; Game.bookDesk() strikes the market as fairValueOf() does), each
+        // piece's books ahead, sales and price path, its value of a point and duration, and the curve book and the rule
+        BookDesk.of(debt);
+        g.bookDesk();
+        for (Debt paper : debt.getDebt()) {
+            paper.booksAhead(6);
+            paper.getSales();
+            paper.getPricePath();
+            paper.getCarriedPath();
+            paper.getPathFirstMonth();
+            debt.valueOfAPoint(paper);
+            debt.durationOf(paper);
+        }
+        for (int ago = 0; ago <= DebtManager.CURVE_KEPT; ago++) {
+            debt.curveMonthsAgo(ago);
+            debt.worldCurveMonthsAgo(ago);
+            debt.policyRateMonthsAgo(ago);
+        }
+        debt.curveBookSize();
+        debt.curveBookToSave();
+        debt.ruleNow();
+        debt.settledDial();
         for (String kind : DebtManager.LADDER_KINDS) debt.getPrincipalOf(kind);
         debt.ladder(g.getMonth());
         debt.ladder(g.getMonth(), g.quoteDebt("Serial", 1_000, 3, 100).schedule(1));

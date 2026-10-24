@@ -1934,6 +1934,29 @@ public class DebtManager {
     public double getStruckExpected() { return struckExpected; }
 
     /**
+     * WHAT THE RULE WOULD SET THE DIAL TO AT TODAY'S INFLATION (CD6): the rule
+     * the market expects the dial to close on (YieldCurve.expectedPath()'s
+     * R(0)), advisedPolicyRate() at the inflation the month struck; the dial
+     * itself when nothing is struck, as the path is then flat at it. It is not
+     * the path's first month - that is the dial, and the gap between the two
+     * closes from there (expectedPath()) - except with the dial on the rule,
+     * when it is both.
+     */
+    public double ruleNow() {
+        return isStruck() ? advisedPolicyRate(struckInflation) : getPolicyRate();
+    }
+
+    /**
+     * ...and where the market expects the dial to settle (CD6): the rule at
+     * the inflation the city expects it to settle at, which the path
+     * approaches with the gap closed (expectedPath()'s limit); the dial when
+     * nothing is struck.
+     */
+    public double settledDial() {
+        return isStruck() ? advisedPolicyRate(struckExpected) : getPolicyRate();
+    }
+
+    /**
      * The expected dial's path and the curve built on it are CACHED, because
      * marketValue() runs for every piece several times a month and quoteRate()
      * walks a fixed point that builds a curve in each pass. Each cache is one
@@ -2291,6 +2314,149 @@ public class DebtManager {
     public double priceOfPar(Debt paper) {
         double owed = paper == null ? 0 : paper.getOustandingPrincipal();
         return owed > 0 ? marketValue(paper) / owed * 100 : 0;
+    }
+
+    /** A point on the curve (CD6): the rise in every rate that valueOfAPoint() prices a piece at, 1% a year. */
+    public static final double A_POINT = 0.01;
+
+    /**
+     * WHAT A POINT MOVES (CD6): what the piece's worth falls by if every rate on its curve (the world's
+     * for dollar paper, as marketValue() uses) rises a point, A_POINT - its pricing flows (pricingFlows())
+     * worth at the curve less the same flows at the curve and a point, YieldCurve.pvAtSpread(). A pure read.
+     *
+     * A callable line's is on its schedule as a bond that cannot be called: the right to call is not
+     * repriced. A floater's coupons would rise with the dial, so every coupon after the one fixed for
+     * the month ahead is raised the point too, and the sensitivity left is to its next reset only - about
+     * its worth a point and a month; a linker's coupons follow the index, which a rate does not move, so
+     * it is priced on the nominal curve like a bond. Nothing left to pay is not at risk: 0.
+     */
+    public double valueOfAPoint(Debt paper) {
+        if (paper == null || paper.getRemainingMonths() <= 0) return 0;
+        double[] flows = pricingFlows(paper);
+        YieldCurve curve = paper.isForeign() ? worldCurveAt(foreignRate()) : curve();
+        double[] shifted = flows;
+        if (paper instanceof FloatingRateNote note) {
+            // The dial a point up lifts the coupon of every month after the next, which was fixed at the last reset.
+            shifted = flows.clone();
+            for (int i = 1; i < shifted.length; i++) shifted[i] += note.getFaceValue() * A_POINT / 12;
+        }
+        return curve.pv(flows) - curve.pvAtSpread(shifted, A_POINT);
+    }
+
+    /**
+     * ...and the piece's duration, in years (CD6): valueOfAPoint() over its worth and the point,
+     * V / (marketValue x A_POINT) - the finite difference, the one definition. A floater's is its
+     * months to its next reset, a bond's under its life.
+     */
+    public double durationOf(Debt paper) {
+        double worth = marketValue(paper);
+        return worth > 0 ? valueOfAPoint(paper) / (worth * A_POINT) : 0;
+    }
+
+    /* ----- what the month's close keeps for the debt screens (CD6, spec-city-debt.md section 7) -----
+
+       Two histories the state a month ended in cannot give back: each piece's price against its carrying
+       value since its sale (Debt.recordPath()), and the curve as it stood in the months behind. Both are
+       RECORDED at the close of the month (Game.recordMonth()) by reads alone - marketValue(),
+       priceOfPar(), curveRate() and curve() are pure, and nothing here calls what strikes the market
+       (Game.fairValueOf(), quoteBuyback(), priceTheDebtMarket(), updateInterest()) - so the month's
+       money, rate and debt are what they were without them. The pieces carry their own path through
+       Gson; the curve book is saved beside the interest by kind (curveBookToSave()). */
+
+    /** The maturities, in months, the curve is drawn and kept at: three months to fifty years. */
+    public static final int[] CURVE_TENORS = {3, 6, 12, 24, 60, 120, 240, 360, 480, 600};
+
+    /** The months of the curve kept: today, a year ago and two years ago. */
+    public static final int CURVE_KEPT = 25;
+
+    /** A curve-book row: the month, the dial, the city's zero rate at each of CURVE_TENORS, the world's at each. */
+    private static final int CURVE_ROW = 2 + 2 * CURVE_TENORS.length;
+
+    private final java.util.ArrayList<double[]> curveBook = new java.util.ArrayList<>();
+
+    /** True: the month's close records the book. A harness turns it off for a twin city, to hold that recording moves nothing the month computes (DeskCheck). */
+    private boolean recording = true;
+
+    void setRecordingForTest(boolean on) { this.recording = on; }
+
+    /**
+     * Records the month's close: every piece's price against par and its carrying value per 100 of what is
+     * owed (Debt.recordPath()), then the curve (the zero rates at CURVE_TENORS, the dial and the world's
+     * rates) in the curve book, the newest CURVE_KEPT months kept. Pure reads, writing only these records.
+     */
+    public void recordTheBook(int month) {
+        if (!recording) return;
+        for (Debt d : debts) {
+            double owed = d.getOustandingPrincipal();
+            if (!(owed > 0)) continue;
+            d.recordPath(month, priceOfPar(d), d.getCarryingValue() / owed * 100);
+        }
+        recordCurve(month);
+    }
+
+    private void recordCurve(int month) {
+        double[] row = new double[CURVE_ROW];
+        row[0] = month;
+        row[1] = getPolicyRate();
+        YieldCurve curve = curve();
+        for (int i = 0; i < CURVE_TENORS.length; i++) {
+            row[2 + i] = curve.zero(CURVE_TENORS[i]);
+            row[2 + CURVE_TENORS.length + i] = foreignCurveRate(CURVE_TENORS[i]);
+        }
+        // A month already recorded is recorded again (the close of a month is once, a harness may run it twice).
+        if (!curveBook.isEmpty() && curveBook.get(curveBook.size() - 1)[0] == month) curveBook.remove(curveBook.size() - 1);
+        curveBook.add(row);
+        while (curveBook.size() > CURVE_KEPT) curveBook.remove(0);
+    }
+
+    /** The row recorded this many months before the newest, or null when none was: the book is read by the month, not by place. */
+    private double[] curveRowAgo(int months) {
+        if (months < 0 || curveBook.isEmpty()) return null;
+        double want = curveBook.get(curveBook.size() - 1)[0] - months;
+        for (double[] row : curveBook) if (row[0] == want) return row;
+        return null;
+    }
+
+    /** The city's zero rates at CURVE_TENORS as the curve stood this many months before the newest month recorded (0 the newest); null when that month was not kept - none recorded, or more than CURVE_KEPT - 1 months back. */
+    public double[] curveMonthsAgo(int months) {
+        double[] row = curveRowAgo(months);
+        return row == null ? null : java.util.Arrays.copyOfRange(row, 2, 2 + CURVE_TENORS.length);
+    }
+
+    /** ...and the world's, at the same tenors (foreignCurveRate()); null likewise. */
+    public double[] worldCurveMonthsAgo(int months) {
+        double[] row = curveRowAgo(months);
+        return row == null ? null : java.util.Arrays.copyOfRange(row, 2 + CURVE_TENORS.length, CURVE_ROW);
+    }
+
+    /** ...and the dial that month; NaN when that month was not kept. */
+    public double policyRateMonthsAgo(int months) {
+        double[] row = curveRowAgo(months);
+        return row == null ? Double.NaN : row[1];
+    }
+
+    /** How many months the curve book holds. */
+    public int curveBookSize() { return curveBook.size(); }
+
+    /** The curve book as a save carries it: a copy, one row a month, oldest first - [month, dial, the city's rates, the world's]. */
+    double[][] curveBookToSave() {
+        double[][] rows = new double[curveBook.size()][];
+        for (int i = 0; i < rows.length; i++) rows[i] = curveBook.get(i).clone();
+        return rows;
+    }
+
+    /** ...and put back by a load; null (an older save) or a row of the wrong length (a changed tenor list) is not kept, and the book is built afresh from the next close. */
+    void restoreCurveBook(double[][] saved) {
+        curveBook.clear();
+        if (saved == null) return;
+        for (double[] row : saved) {
+            if (row == null || row.length != CURVE_ROW) {
+                curveBook.clear();
+                return;
+            }
+            curveBook.add(row.clone());
+        }
+        while (curveBook.size() > CURVE_KEPT) curveBook.remove(0);
     }
 
     /** True for the city's own term paper - serial and term, not the notes: what the central bank's dial holds. */

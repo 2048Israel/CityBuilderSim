@@ -194,4 +194,15 @@ public class LongTermBond extends Debt {
         flows[remainingMonths - 1] += faceValue;
         return flows;
     }
+
+    /** The same coupon every month, couponOwed(). */
+    @Override
+    protected double[] couponScheduleOwed() {
+        if (remainingMonths <= 0) {
+            return new double[0];
+        }
+        double[] flows = new double[remainingMonths];
+        java.util.Arrays.fill(flows, faceValue * monthlyCouponRate);
+        return flows;
+    }
 }

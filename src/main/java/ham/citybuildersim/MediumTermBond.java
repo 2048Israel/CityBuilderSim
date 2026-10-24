@@ -217,6 +217,29 @@ public class MediumTermBond extends Debt {
         return flows;
     }
 
+    /** The coupon on the balance each month, before the slice that month repays: scheduleOwed()'s coupon, with the principal left out. */
+    @Override
+    protected double[] couponScheduleOwed() {
+        if (remainingMonths <= 0) {
+            return new double[0];
+        }
+        double[] flows = new double[remainingMonths];
+        double balance = outstandingPrincipal;
+        int slices = slicesRemaining;
+        int monthsLeft = remainingMonths;
+        for (int i = 0; i < flows.length; i++) {
+            flows[i] = balance * monthlyCouponRate;
+            monthsLeft--;
+            boolean anniversary = (monthsLeft % 12 == 0) || monthsLeft <= 0;
+            if (anniversary && slices > 0) {
+                double due = (slices == 1) ? balance : Math.min(principalPerSlice, balance);
+                balance -= due;
+                slices--;
+            }
+        }
+        return flows;
+    }
+
     /** The amortisation slice, in the new unit. The coupon RATE does not move. */
     @Override
     protected void redenominateSchedule(double scale) {
