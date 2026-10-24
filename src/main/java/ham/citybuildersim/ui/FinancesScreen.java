@@ -861,6 +861,41 @@ final class FinancesScreen {
         return (thousands < 0 ? "−" : "+") + marked(sym(), shown);
     }
 
+    /**
+     * What closing a line (or the book) would book, as the screen writes it (CD6, Jerus 2026-10-23: "show green or red,
+     * and a % value and dollar value"): the D$ with its sign, the share of the carrying value with its sign (empty at
+     * no money, and under a two-hundredth of a point), and the colour - green for a gain, red for a loss, the body's
+     * ink for a figure that rounds to no money (Pieces.BRIDGE_NOTHING, as pnl() holds it).
+     */
+    record Gain(String money, String percent, String tone) {
+        /** "+D$5.1M · +33.8%", "−D$725k · −4.2%", or just "D$0". */
+        String both() { return percent.isEmpty() ? money : money + " · " + percent; }
+    }
+
+    /** `gain` (carried less worth, thousands) and its `share` of the carrying value (the model's ifClosedNowShare()) written and coloured: see Gain. */
+    Gain gainOf(double gain, double share) {
+        boolean nothing = !Double.isFinite(gain) || Math.abs(gain) < BRIDGE_NOTHING;
+        if (nothing) return new Gain(d(0), "", Palette.TEXT_BODY);
+        double p = Math.abs(share) * 100;
+        String pct = !Double.isFinite(share) || p < 0.005 ? ""
+                : String.format(p >= 0.05 ? "%s%,.1f%%" : "%s%.2f%%", share < 0 ? "−" : "+", p);
+        return new Gain(signedD(gain), pct, gain > 0 ? Palette.GOOD : Palette.BAD);
+    }
+
+    /** A gain or a loss as a bold figure in its colour, right-aligned in the room it is given. */
+    Label gainFigure(Gain gain, double size) {
+        Label l = figure(gain.both(), size, gain.tone());
+        l.setAlignment(Pos.CENTER_RIGHT);
+        return l;
+    }
+
+    /** A line of a card whose figure is a gain or a loss: the words at the left, the figure bold and in its colour at the right, an (i) after the words when `info` is not null. */
+    HBox gainLine(String label, Gain gain, String info) {
+        HBox row = cardLine(label, gain.both(), gain.tone(), info);
+        row.getChildren().get(row.getChildren().size() - 1).setStyle(BuildScreen.figureAt(Palette.SIZE_BODY + 2, gain.tone()));
+        return row;
+    }
+
     /** An exchange rate with its unit, as the land office writes it: "D$0.7035 per US$" (the spec's B10). */
     String perUsd(double rate) { return sym() + fxRate(rate) + " per " + Currency.FOREIGN_SYMBOL; }
 
@@ -2665,26 +2700,42 @@ final class FinancesScreen {
        and since CD6 (spec-city-debt.md section 7, board 1; D31) it is a bond
        desk, as a treasury reads its lines:
 
-         THE FIVE       what is owed at face, what the books carry it at,
-         FIGURES        what it is worth on today's curve, the coupon a
+         THE SIX        what is owed at face, what the books carry it at,
+         FIGURES        what it is worth on today's curve, what closing
+                        the whole book now would book (carried less worth,
+                        in D$ and per cent, green or red), the coupon a
                         month in cash, and what a point on the curve moves.
          ON THE CURVE   today's zero curve and a dot a line at (months left,
                         yield); a floater and a linker are off it.
          IN BARS        face, carried and worth on one scale, each by kind.
-         EVERY LINE     a row a line by when it falls due: its coupon, the
-                        yield it was sold at and today's, price, worth,
-                        carried, what closing it would book, duration and
-                        holders. A click opens the line's page (A LINE'S
-                        PAGE, below); the ladder's columns and NEXT DUE
-                        scroll to the row.
+         EVERY LINE     a row a line by when it falls due: what closing
+                        it would book (green or red, beside its own Close
+                        it now), its face, coupon, the yield it was sold
+                        at and today's, price, worth, carried, duration
+                        and holders. A click opens the line's page (A
+                        LINE'S PAGE, below); the ladder's columns and NEXT
+                        DUE scroll to the row.
 
        A LINE IS VALUED AT WHAT A BUYBACK PAYS: DebtManager.marketValue(),
        the city's curve for its own paper and the world's for a dollar
        piece. The Buy back page valued a dollar piece at the city's short
        rate while Game.repurchaseDebt() charged the world's curve, and
        painted a price under par green under a sentence saying it was "not
-       the bargain it looks like" (the spec's B6): the price is plain now,
-       and so is a gain or a loss - no colour on either.
+       the bargain it looks like" (the spec's B6): the price is plain now.
+
+       WHAT CLOSING WOULD BOOK IS GREEN OR RED (Jerus, 2026-10-23: "show
+       green or red, and a % value and dollar value, cause right now it hard
+       to determine, like make it juicy to buyback"). That reverses the 0.7.32
+       spec's B6 for this one figure and no other: a line's carrying value
+       less its worth, in D$ and as a share of the carrying value, bold, green
+       for a gain and red for a loss (Palette.GOOD, Palette.BAD; the body's
+       ink for a figure that rounds to no money). It is on every row of the
+       desk, beside the row's own Close it now, on the book's total (the
+       strip's sixth figure, the bars' line and the desk's foot) and on a
+       line's page, where the reverse auction's own gain is beside it: the
+       auction pays holders who ask more than fair (households and the
+       businesses, CD4), so what it books can be less than the fair figure.
+       The price, the yield, "vs face" and every other figure stay plain.
 
        Every figure is the model's (BookDesk, struck ONCE by Game.bookDesk()
        for the page); the screen works out none. Since CD4 worth today is
@@ -2771,22 +2822,36 @@ final class FinancesScreen {
     /** THE THREE BARS' (i): the board's paragraph. */
     static final String DESK_BARS_INFO = "Carried is what the books say the city owes: what it raised, plus the discount "
             + "amortised since at each line's effective rate. Worth is what the remaining payments are worth on today's "
-            + "curve. The gap is what a buyback at today's prices would book. The dashed line marks what the book is worth "
-            + "today across all three.";
+            + "curve. The gap is what closing the whole book at today's fair prices would book: carried less worth, in D$ "
+            + "and as a share of what is carried, in green when the books carry the paper at more than it is worth (a gain "
+            + "the statement books) and in red when at less (a loss). The reverse auction pays holders who ask more than "
+            + "fair, so what a buyback really books is a line's page's figure. The dashed line marks what the book is "
+            + "worth today across all three.";
+
+    /** The (i) beside a gain or a loss on a line's page (CD6, Jerus 2026-10-23): what the colours mean. */
+    static final String GAIN_INFO = "Green is a gain and red a loss. It is what the books carry the line at less what "
+            + "closing it costs, in D$ and as a share of the carrying value. A gain: the line is carried at more than it "
+            + "is worth - rates have risen since it was sold - so buying it back at today's fair price books a gain on "
+            + "the statement. A loss: it is worth more than it is carried at, so closing it books a loss. The reverse "
+            + "auction pays every holder who asks more than fair (the households and the businesses do, CD4); the "
+            + "figure beside it is what that auction itself would book.";
 
     /** THE DESK's (i): the two readings under the table. */
-    static final String DESK_INFO = "If closed now: the carrying value less the worth. Above nothing is a gain the "
-            + "statement would book buying the line back at today's fair price, before the premium a buyback pays; below "
-            + "nothing, a loss. It is above nothing when rates have risen since the line was sold: the paper is worth less "
-            + "than it is carried at, and borrowing again to close it costs more. Vs face: the face less the worth, what "
-            + "the market's price saves against what is owed. No colour on either: a price under what a line is carried at "
-            + "means the city's paper got cheaper because its rates rose, and that is not good news (the 0.7.32 spec's B6).";
+    static final String DESK_INFO = "If closed now: the carrying value less the worth, in D$ and as a share of the "
+            + "carrying value, green for a gain and red for a loss, with Close it now beside it. A gain is what the "
+            + "statement books buying the line back at today's fair price: the paper is worth less than it is carried "
+            + "at, which happens when rates have risen since the line was sold. A loss is the reverse - rates have "
+            + "fallen and the line is worth more than the books carry it at. It is before the premium a buyback pays: the "
+            + "reverse auction pays holders who ask more than fair (the households and the businesses do), so the line's "
+            + "page shows what the auction itself would book. Vs face: the face less the worth, what the market's price "
+            + "saves against what is owed; it stays plain.";
 
     /**
-     * THE BOOK, AS A DESK (CD6, spec-city-debt.md section 7, board 1): the book's five figures, where each line sits on
-     * today's curve, the book at face, carried and worth in bars, and every line a row by when it falls due - the
-     * coupon, the yield it was sold at and today's, the price, what it is worth and carried at, what closing it would
-     * book, how long it lasts and who holds it. A click on a row opens the line's page. The desk strikes the market
+     * THE BOOK, AS A DESK (CD6, spec-city-debt.md section 7, board 1): the book's six figures, where each line sits on
+     * today's curve, the book at face, carried and worth in bars, and every line a row by when it falls due - what
+     * closing it would book (green or red, with its Close it now beside it), the coupon, the yield it was sold at and
+     * today's, the price, what it is worth and carried at, how long it lasts and who holds it. A click on a row opens
+     * the line's page, and the row's Close it now the page that buys it back. The desk strikes the market
      * ONCE (Game.bookDesk()); every figure on the page is the desk's, and the page works out none.
      */
     void bookPage(VBox page) {
@@ -2801,10 +2866,13 @@ final class FinancesScreen {
         List<BookDesk.Line> lines = desk.lines();
         int month = g.getMonth();
         int n = lines.size();
+        Gain closing = gainOf(desk.ifClosedNow(), desk.ifClosedNowShare());
         page.getChildren().add(figureStrip(new String[][] {
                 {"OWED, AT FACE", d(desk.face()), n + (n == 1 ? " line" : " lines")},
                 {"CARRIED", d(desk.carried()), "what the books say"},
                 {"WORTH TODAY", d(desk.worth()), "on today's curve"},
+                // Green or red (Jerus, 2026-10-23): what closing the whole book now would book.
+                {"IF CLOSED NOW", closing.money(), closing.percent().isEmpty() ? "carried less worth" : closing.percent() + " of what is carried", closing.tone()},
                 {"COUPON", d(desk.coupon()), "a month, in cash"},
                 {"A POINT ON THE CURVE", d(desk.valueOfAPoint()), "moves what it is worth"}}));
         // The lines are sorted by when they fall due: the first is the nearest.
@@ -2825,9 +2893,11 @@ final class FinancesScreen {
         GridPane row = equalColumns(cells.length, 0);
         row.setStyle("-fx-padding: 8 6 8 6;" + Palette.block(Palette.PANEL));
         for (int i = 0; i < cells.length; i++) {
+            // An optional fourth entry is the colour of the figure and of its note: green or red for a gain or a loss (CD6).
+            String tone = cells[i].length > 3 ? cells[i][3] : null;
             VBox cell = new VBox(0, words(cells[i][0], Palette.SIZE_CAPTION, Palette.TEXT_LABEL),
-                    figure(cells[i][1], Palette.SIZE_SECTION, Palette.TEXT_HEAD),
-                    words(cells[i][2], Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                    figure(cells[i][1], Palette.SIZE_SECTION, tone == null ? Palette.TEXT_HEAD : tone),
+                    words(cells[i][2], Palette.SIZE_CAPTION, tone == null ? Palette.TEXT_MUTED : tone));
             cell.setAlignment(Pos.CENTER_LEFT);
             cell.setMaxHeight(Double.MAX_VALUE);
             cell.setStyle("-fx-padding: 0 14 0 14;" + (i < cells.length - 1
@@ -2912,22 +2982,29 @@ final class FinancesScreen {
         return card(caption("AT FACE, CARRIED, AND WORTH TODAY", DESK_BARS_INFO),
                 muted("one scale · each bar by kind · the dashed line is the book's worth"),
                 new DeskBars(by, desk.worth(), this::d), keyRow(kindKey(present).toArray(new Node[0])),
-                cardLine("Carried less worth · what closing the book at fair would book", signedD(desk.ifClosedNow()), null),
+                gainLine("Carried less worth · what closing the book at fair would book", gainOf(desk.ifClosedNow(), desk.ifClosedNowShare()), GAIN_INFO),
                 cardLine("Face less worth · what the market's price saves against what is owed", signedD(desk.vsFace()), null));
     }
 
     /** EVERY LINE: the desk, a row a line by when it falls due; a click on a row opens the line's page, and the ladder's columns and NEXT DUE scroll to its row. */
     VBox deskCard(BookDesk desk) {
         final int cols = 12;
-        GridPane t = grid(new double[] {250, 58, 84, 64, 44, 58, 60, 60, 74, 58, 48, 80}, rightAfterFirst(cols));
+        // If closed now stands second, beside the line it is about: at a narrow window the table scrolls across, and the gain and the
+        // door that closes it are the first things in view (Jerus, 2026-10-23).
+        GridPane t = grid(new double[] {210, CLOSE_CELL, 58, 84, 64, 44, 58, 60, 60, 58, 48, 80}, rightAfterFirst(cols));
         t.setHgap(4);
         t.setVgap(0);
         // The first column takes what a wide window leaves; a narrow one scrolls the table across (acrossWhenNarrow()).
         t.getColumnConstraints().get(0).setMaxWidth(Double.MAX_VALUE);
         t.getColumnConstraints().get(0).setHgrow(Priority.ALWAYS);
-        gridHead(t, "Line", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "If closed now", "vs face", "Duration", "Holders");
+        gridHead(t, "Line", "If closed now", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
         // The headings are words, in the words' face: the figures' face is wider than a heading's column.
-        for (Node head : t.getChildren()) if (head instanceof Label h) h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        for (Node head : t.getChildren()) {
+            if (!(head instanceof Label h)) continue;
+            h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            // The heading of the gain's column stands over the gains, not over the doors beside them.
+            if (Integer.valueOf(1).equals(GridPane.getColumnIndex(head))) h.setPadding(new javafx.geometry.Insets(0, CLOSE_BUTTON + CLOSE_GAP, 0, 0));
+        }
         final String resting = "-fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
         final String lit = resting + " -fx-background-color: " + Palette.CONTROL + ";";
         int row = 1;
@@ -2944,6 +3021,8 @@ final class FinancesScreen {
 
             List<Node> cells = new ArrayList<>();
             cells.add(lineCell(l));
+            // What closing it now would book, green or red, with the door that closes it beside it (Jerus, 2026-10-23).
+            cells.add(closeCell(l));
             cells.add(gridCell(d(l.face()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true));
             cells.add(gridCell(lineCoupon(l), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
             cells.add(stacked(pct2(l.bookedRate()), linker ? "real" : null));
@@ -2956,8 +3035,6 @@ final class FinancesScreen {
             cells.add(yieldCell);
             cells.add(gridCell(d(l.worth()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
             cells.add(gridCell(d(l.carried()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
-            // No colour on a gain or a loss: the sign says which (the 0.7.32 spec's B6).
-            cells.add(gridCell(signedD(l.ifClosedNow()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
             cells.add(gridCell(signedD(l.vsFace()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
             cells.add(gridCell(String.format("%.1f", l.duration()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
             cells.add(segmentBar(holderParts(l), 1, null, 76, 6));
@@ -2986,11 +3063,15 @@ final class FinancesScreen {
         rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
         GridPane.setColumnSpan(rule, cols);
         t.add(rule, 0, row++);
-        String[] foot = {"The book", d(desk.face()), d(desk.coupon()) + " a month", "", "", "", d(desk.worth()), d(desk.carried()),
-                signedD(desk.ifClosedNow()), signedD(desk.vsFace()), "", ""};
+        String[] foot = {"The book", "", d(desk.face()), d(desk.coupon()) + " a month", "", "", "", d(desk.worth()), d(desk.carried()),
+                signedD(desk.vsFace()), "", ""};
         for (int c = 0; c < cols; c++) {
-            if (foot[c].isEmpty()) continue;
-            Label cell = gridCell(foot[c], Palette.TEXT_HEAD, Palette.SIZE_CAPTION, c > 0);
+            // The book's own gain or loss, green or red like each line's (Jerus, 2026-10-23), on the right edge of its column.
+            Label cell = c == 1 ? gainFigure(gainOf(desk.ifClosedNow(), desk.ifClosedNowShare()), Palette.SIZE_BODY)
+                    : foot[c].isEmpty() ? null : gridCell(foot[c], Palette.TEXT_HEAD, Palette.SIZE_CAPTION, c > 0);
+            if (cell == null) continue;
+            // The total stands under the gains, not under the doors beside them.
+            if (c == 1) cell.setPadding(new javafx.geometry.Insets(0, CLOSE_BUTTON + CLOSE_GAP, 0, 0));
             GridPane.setMargin(cell, new javafx.geometry.Insets(5, 0, 2, 0));
             t.add(cell, c, row);
         }
@@ -2998,8 +3079,44 @@ final class FinancesScreen {
                 swatch(Palette.MONEY_DARK, "the central bank", false), swatch(Palette.BUSINESS_DARK, "the businesses", false),
                 swatch(Palette.BUILDING_DARK, "the world", false));
         return card(caption("EVERY LINE", DESK_INFO, hint("by when it falls due · click a line for its page")), acrossWhenNarrow(t),
-                holdersKey, muted("If closed now: the carrying value less the worth. Above nothing is a gain the statement would "
-                        + "book buying the line back at today's fair price, before the premium a buyback pays."));
+                holdersKey, muted("If closed now: the carrying value less the worth, in D$ and as a share of the carrying value. "
+                        + "Green is a gain the statement would book buying the line back at today's fair price, red a loss; the reverse "
+                        + "auction pays holders who ask more than fair, so a line's page shows what the auction itself would book."));
+    }
+
+    /** The width of the desk's If closed now column (CD6): the gain or loss, and the Close it now button beside it. */
+    static final double CLOSE_CELL = 206;
+
+    /** The width of the gain or loss in that cell: "−D$725.3M · −100.0%" at the figure's size. */
+    private static final double CLOSE_FIGURE = 134;
+
+    /** The Close it now button's width, and the gap between it and the figure. */
+    private static final double CLOSE_BUTTON = 66, CLOSE_GAP = 6;
+
+    /**
+     * The desk's If closed now cell (CD6, Jerus 2026-10-23: "make it juicy to buyback"): what closing the line now would book
+     * - bold, in D$ and as a share of the carrying value, green for a gain and red for a loss - and, right beside it, a small
+     * Close it now button, which opens the line's Close it now page (openClose()) and not the line's own. The figure's room
+     * is fixed and the figure right-aligned in it, so the figures end in a line just before the buttons, which stand in a
+     * line themselves; the column's heading and the foot's total stand over and under the figures.
+     */
+    Node closeCell(BookDesk.Line l) {
+        Button close = new Button("Close it now");
+        close.setMinWidth(CLOSE_BUTTON);
+        close.setPrefWidth(CLOSE_BUTTON);
+        close.setMaxWidth(CLOSE_BUTTON);
+        close.setFocusTraversable(false);
+        close.setStyle("-fx-font-size: 9px; -fx-padding: 2 4 2 4; -fx-background-radius: 6;");
+        close.setTooltip(new Tooltip("Close " + pieceName(l.debt()) + " now: the page for buying it back, in whole or in part."));
+        close.setOnAction(e -> openClose(l.debt()));
+        // The click is the button's, not the row's: the rest of the row opens the line's page.
+        close.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
+        Label figure = gainFigure(gainOf(l.ifClosedNow(), l.ifClosedNowShare()), Palette.SIZE_BODY);
+        figure.setMinWidth(CLOSE_FIGURE);
+        figure.setPrefWidth(CLOSE_FIGURE);
+        HBox cell = new HBox(CLOSE_GAP, figure, close);
+        cell.setAlignment(Pos.CENTER_RIGHT);
+        return cell;
     }
 
     /**
@@ -3166,7 +3283,9 @@ final class FinancesScreen {
          WHO HOLDS IT, ITS SALES AND ITS RISK.
 
        Every figure is the model's (BookDesk.line(), Debt.booksAhead(), the price and carried paths, the sales,
-       Game.quoteBuyback() and honestLine()); the page works out none, and colours no gain or loss.
+       Game.quoteBuyback() and honestLine()); the page works out none. What closing would book - at fair, and what
+       the reverse auction itself would - is bold, in D$ and per cent, green for a gain and red for a loss (Jerus,
+       2026-10-23; see THE BOOK, above); the rest of the page is plain.
      */
 
     /** THE PRICE card's (i): board 2, note A. */
@@ -3179,8 +3298,11 @@ final class FinancesScreen {
     /** IF YOU CLOSED IT TODAY's (i): board 2, note B. */
     static final String LINE_CLOSE_INFO = "Worth is what closing the line would cost at its fair price; a buyback pays "
             + "more, since every holder offers at or over fair, and the reverse auction below prices what it really "
-            + "would. The gain or loss is the statement's: the carrying value less what it costs. It is real on the "
-            + "statement, but the cash to pay for it costs today's rate - the honest line says both.";
+            + "would. The gain or loss is the statement's: the carrying value less what it costs, in D$ and as a share "
+            + "of the carrying value - green when the books carry the line at more than it costs to close (a gain), "
+            + "red when at less (a loss). The first is at fair; the second is what the auction itself would book, "
+            + "since it pays holders who ask more than fair (the households and the businesses do, CD4). It is real on "
+            + "the statement, but the cash to pay for it costs today's rate - the honest line says both.";
 
     /** THE NEXT SIX MONTHS' (i): board 2, note C. */
     static final String LINE_BOOKS_INFO = "The books in full: what the line is carried at when the month opens, the "
@@ -3227,11 +3349,6 @@ final class FinancesScreen {
             default       -> "bond";
         };
         return termWords(debt.getDuration()) + " " + what + (debt.isForeign() ? " in dollars" : "");
-    }
-
-    /** A gain or a loss, in words, against what a line is carried at: "a gain of D$1.2M", "a loss of D$3k", or "no gain or loss". No colour (the 0.7.32 spec's B6). */
-    String gainWords(double gain) {
-        return Math.abs(gain) < .5 ? "no gain or loss" : (gain > 0 ? "a gain of " : "a loss of ") + d(Math.abs(gain));
     }
 
     /**
@@ -3345,12 +3462,12 @@ final class FinancesScreen {
         VBox close = new VBox(8, caption("IF YOU CLOSED IT TODAY", LINE_CLOSE_INFO),
                 cardLine("Worth today · the fair price", d(l.worth()), null),
                 cardLine("Carried · what the books hold it at", d(l.carried()), null),
-                cardLine("Carried less worth · what the books would show", gainWords(l.ifClosedNow()), null),
+                gainLine("Carried less worth · what the books would show at fair", gainOf(l.ifClosedNow(), l.ifClosedNowShare()), GAIN_INFO),
                 cardLine("Against its face of " + d(l.face()), againstWords, null, PREMIUM_INFO));
         if (taken) {
             close.getChildren().addAll(
                     cardLine("All of it on offer, " + d(whole.takenFace()) + ", at the reverse auction now", d(whole.paid()), null),
-                    cardLine("...its gain against carrying", gainWords(whole.gainOnCarrying()), null),
+                    gainLine("...what the auction itself books against carrying", gainOf(whole.gainOnCarrying(), whole.gainOnCarryingShare()), null),
                     words(honestSentence(debt, whole), Palette.SIZE_LABEL + 1, Palette.TEXT_BODY));
         } else {
             close.getChildren().add(muted("Nothing is on offer now: the central bank does not sell (D18), and a line sold lately can only be bought back whole."));
@@ -3884,8 +4001,9 @@ final class FinancesScreen {
        callCost(), callSaving(), worthCalling(), DebtManager.curveRate()); the
        page prices nothing. The sums it does are the spec's own: a coupon
        scaled to the face taken, a price times a rate over twelve, the
-       carrying value less the face. No colour on a gain or a loss (the
-       0.7.32 spec's B6). The two boxes keep their typing through a month's
+       carrying value less the face. The gain or loss against carrying value
+       is green or red since CD6 (Jerus, 2026-10-23: "show green or red",
+       over the 0.7.32 spec's B6), as the book's is. The two boxes keep their typing through a month's
        redraw as the ask's does (askBox()).
        ===================================================================== */
 
@@ -4195,7 +4313,7 @@ final class FinancesScreen {
         // ----- the three comparisons, and the journal -----
         if (taken) {
             VBox compare = card(caption("THE THREE COMPARISONS", COMPARE_INFO),
-                    cardLine("Against carrying value · the statement's Gain (loss) on debt retired", signedD(q.gainOnCarrying()), null),
+                    gainLine("Against carrying value · the statement's Gain (loss) on debt retired", gainOf(q.gainOnCarrying(), q.gainOnCarryingShare()), null),
                     cardLine("Against face · what the debt-to-GDP measure sees", signedD(q.gainOnFace()), null),
                     cardLine("Over fair · what the auction cost", d(q.overFair()), null));
             double sideways = q.unamortisedTaken();
@@ -4253,8 +4371,8 @@ final class FinancesScreen {
                 + (now ? "." : " - not yet callable: " + CityCalendar.until(month, first) + "."),
                 Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
         card.getChildren().add(cardLine("What the call costs · every holder paid in full", d(cost), null));
-        card.getChildren().add(cardLine("Gain (loss) against carrying value · " + d(carried) + " carried, less the face",
-                signedD(g.callGain(bond)), null));
+        card.getChildren().add(gainLine("Gain (loss) against carrying value · " + d(carried) + " carried, less the face",
+                gainOf(g.callGain(bond), Double.NaN), null));
         card.getChildren().add(cardLine("What calling saves, in present value", signedD(saving), null));
         card.getChildren().add(worth
                 ? infoLine("Worth calling: it saves " + d(saving) + ", over " + pc(CallTree.WORTH_CALLING) + " of the face.",

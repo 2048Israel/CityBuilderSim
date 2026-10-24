@@ -143,6 +143,11 @@ public final class Buyback {
             return carriedTaken - paid;
         }
 
+        /** That gain as a share of the carrying value of the face taken, a fraction (CD6, Jerus 2026-10-23: the book is green or red, in D$ and per cent); 0 when nothing carried was taken. */
+        public double gainOnCarryingShare() {
+            return carriedTaken > 0 ? gainOnCarrying() / carriedTaken : 0;
+        }
+
         /**
          * The premium still on the books for the face taken (CD6): the carrying value of the face taken
          * less the face - the journal's "Unamortised premium", which the buyback takes off with the paper;

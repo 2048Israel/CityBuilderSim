@@ -58,6 +58,14 @@ import java.util.Set;
  *    linked line's real coupon and breakeven, and the ten-year rate as its four parts; and
  *    the TRACE GUARD, twin cities one of which records and one of which does not, alike to
  *    the bit for the 26 months.
+ * 8. What closing a line now would book (Jerus, 2026-10-23: the book is green or red, in D$
+ *    and per cent): a line at a gain and a line at a loss, both caused (a line sold at par and
+ *    the rates raised, one sold at the higher rates and the rates cut) and both held by the bank
+ *    alone, which offers at fair; each line's ifClosedNow() and ifClosedNowShare() read from the
+ *    desk, then the line bought back whole and the gain the buyback booked (the deal's, and the
+ *    month's gain on debt retired) is the figure and its share; a dollar line's figure is in D$
+ *    at the month's actual rate; and the book's share is its total gain over its total carrying
+ *    value.
  *
  * Each fixture causes its condition rather than finding a city in it, and checks it
  * was caused. The cities are FloatLinkCheck's (it is borrowed whole: its played city,
@@ -121,6 +129,7 @@ public class DeskCheck {
         if (wanted(args, 5)) booksAhead();
         if (wanted(args, 6)) remembers();
         if (wanted(args, 7)) theCurvesPast();
+        if (wanted(args, 8)) whatClosingBooks();
 
         out.printf("%n(%d assertions, %d s)%n", asserts, (System.currentTimeMillis() - t0 + 500) / 1000);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -1094,5 +1103,122 @@ public class DeskCheck {
         check("the next month's close adds a month to the loaded book, and drops the oldest",
                 loaded.curveBookSize() == DebtManager.CURVE_KEPT && loaded.curveMonthsAgo(23) != null
                         && Arrays.equals(loaded.curveMonthsAgo(12), adm.curveMonthsAgo(11)) && loaded.curveMonthsAgo(DebtManager.CURVE_KEPT) == null);
+    }
+
+    /* =====================================================================
+       8. WHAT CLOSING A LINE NOW WOULD BOOK, GREEN OR RED
+       ===================================================================== */
+
+    /** A bank-held two-year line sold at par at today's curve: its coupon the curve's two-year par yield, carried at its face, settled. A short line, because the curve's short end follows the dial and its long end mostly does not. */
+    static LongTermBond bankHeldAtPar(Game g, double face) {
+        final int months = 24;
+        DebtManager dm = g.getDebtManager();
+        double coupon = dm.curve().parYield(months);
+        LongTermBond line = (LongTermBond) dm.addLongTermBond(face, months, g.getMonth(), coupon);
+        line.markIssued(face, coupon);
+        line.settled();
+        return line;
+    }
+
+    static void whatClosingBooks() {
+        out.println("\n--- what closing a line now would book, green or red, is what the buyback books ---");
+
+        Game g = FloatLinkCheck.readyCity("desk-close", true, 0);
+        DebtManager dm = g.getDebtManager();
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+        ForeignAccounts fx = g.getForeignAccounts();
+        fx.pinRate(1.25);
+        press(g);
+        FloatLinkCheck.worldWantsPaper(g);
+        g.setCashForTest(Founding.WEALTHY_CASH);
+
+        // The dollar line, sold at the D$ of its day, 1.25.
+        Debt usd = sold(g, "a five-year dollar bond", () -> g.handleForeignLogic("Term", 5_000, 5, 100, false));
+        // The gain line: sold at par at today's rates (the dial at 3%), then the dial raised five points, so it trades under what it is carried at.
+        LongTermBond gain = bankHeldAtPar(g, 20_000);
+        dm.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, dm.getPolicyRate() + .05));
+        g.strikeTheCurve();
+        press(g);
+        // The loss line: sold at par at the higher rates, then the dial cut four points, so it trades over what it is carried at (the first line, sold lower, is still under).
+        LongTermBond loss = bankHeldAtPar(g, 20_000);
+        dm.setPolicyRate(Math.max(DebtManager.MIN_POLICY_RATE, dm.getPolicyRate() - .04));
+        g.strikeTheCurve();
+        press(g);
+        // The D$ moves after the dollar line was sold, and the month ends on the new rate: the dollar line is valued at the month's actual D$.
+        fx.pinRate(1.4);
+        press(g);
+        g.setCashForTest(Founding.WEALTHY_CASH);
+        if (usd == null) return;
+
+        BookDesk desk = g.bookDesk();
+        BookDesk.Line gl = lineOf(desk, gain), ll = lineOf(desk, loss), ul = lineOf(desk, usd);
+        out.printf("   the gain line: worth %,.1f carried %,.1f, closed now %+,.1f (%+.2f%%); the loss line: worth %,.1f carried %,.1f, closed now %+,.1f (%+.2f%%); the dollar line: %+,.1f (%+.2f%%)%n",
+                gl.worth(), gl.carried(), gl.ifClosedNow(), gl.ifClosedNowShare() * 100, ll.worth(), ll.carried(), ll.ifClosedNow(), ll.ifClosedNowShare() * 100,
+                ul.ifClosedNow(), ul.ifClosedNowShare() * 100);
+        check("fixture: the rates rose after the first line was sold, so it trades under what it is carried at",
+                gl.worth() < gl.carried() && gl.pricePer100() < gl.carriedPer100());
+        check("fixture: the rates fell after the second was sold, so it trades over what it is carried at",
+                ll.worth() > ll.carried() && ll.pricePer100() > ll.carriedPer100());
+        // Why these are the fixture: the bank offers at fair (D34), so the reverse auction pays exactly fair for a line the bank alone holds. The households' and the
+        // businesses' slices ask more than fair, and would put the auction's price over the figure the desk gives; a line sold at auction has some of both.
+        check("fixture: the households, the businesses, the world and the central bank hold none of either line: the bank holds it alone, and offers at fair",
+                gain.bankPrincipal() == gain.getOustandingPrincipal() && loss.bankPrincipal() == loss.getOustandingPrincipal()
+                        && gain.householdPrincipal() + gain.firmPrincipal() + gain.worldPrincipal() + gain.centralBankPrincipal()
+                        + loss.householdPrincipal() + loss.firmPrincipal() + loss.worldPrincipal() + loss.centralBankPrincipal() == 0);
+        check("fixture: the dollar line is held by the world alone, which offers the whole piece at fair (D26)", usd.isForeign() && ul.world() == 1);
+
+        // The line's gain, as a figure and as a share of what the line is carried at.
+        check("the gain line's figure is above nothing, and its share (" + String.format("%.2f%%", gl.ifClosedNowShare() * 100) + ")",
+                gl.ifClosedNow() > 0 && gl.ifClosedNowShare() > 0);
+        check("the loss line's figure is below nothing, and its share (" + String.format("%.2f%%", ll.ifClosedNowShare() * 100) + ")",
+                ll.ifClosedNow() < 0 && ll.ifClosedNowShare() < 0);
+        check("the dollar line has a gain or a loss to read, not a nothing (" + String.format("%+,.3f", ul.ifClosedNow()) + ")", Math.abs(ul.ifClosedNow()) > 1e-6);
+        for (BookDesk.Line l : desk.lines()) {
+            near("a line's share is its gain over its carrying value (" + l.debt().getType() + "/" + l.monthsLeft() + ")", l.ifClosedNowShare(), l.ifClosedNow() / l.carried(), 1e-12);
+        }
+
+        // The book's total: the lines' gains, over the lines' carrying values.
+        double sumGain = 0, sumCarried = 0;
+        for (BookDesk.Line l : desk.lines()) {
+            sumGain += l.ifClosedNow();
+            sumCarried += l.carried();
+        }
+        near("the book's gain is the lines' gains added up", desk.ifClosedNow(), sumGain, 1e-6);
+        near("the book's share is the total gain over the total carrying value", desk.ifClosedNowShare(), sumGain / sumCarried, 1e-9);
+        near("...which is the ledger's carrying value less its market value, over the ledger's carrying value",
+                desk.ifClosedNowShare(), (dm.getCarryingValue() - dm.getTotalMarketValue()) / dm.getCarryingValue(), 1e-9);
+        check("...and a book carried at nothing has a share of nothing, not a division by nothing", BookDesk.of(new DebtManager()).ifClosedNowShare() == 0);
+
+        // The dollar line is valued at the month's actual D$, worked out here from its own dollars.
+        double rate = fx.getRate();
+        check("the month ended on the D$ it was pinned at (" + rate + "), and the dollar piece and the ledger are valued at it",
+                rate == 1.4 && usd.getExchangeRate() == rate && dm.getExchangeRate() == rate);
+        double[] flowsUsd = usd.remainingCashFlows();
+        for (int i = 0; i < flowsUsd.length; i++) flowsUsd[i] /= rate;
+        double worthUsd = dm.worldCurveAt(dm.foreignRate()).pv(flowsUsd);
+        near("the dollar line's worth is its dollars' worth on the world's curve, at the month's D$ (worked out here)", ul.worth(), worthUsd * rate, 1e-6);
+        near("...its carried is its dollars carried, at the month's D$", ul.carried(), usd.carryingInCurrency() * rate, 1e-6);
+        near("...so its gain is the dollars' gain at the month's D$, not at the D$ it was sold at",
+                ul.ifClosedNow(), (usd.carryingInCurrency() - worthUsd) * rate, 1e-6);
+        check("...and that is not the figure at 1.25, the D$ of its day (it differs by " + String.format("%+,.3f", (usd.carryingInCurrency() - worthUsd) * (rate - 1.25)) + ")",
+                Math.abs((usd.carryingInCurrency() - worthUsd) * (rate - 1.25)) > 1e-6);
+
+        // Each line bought back whole, off a fresh read of the desk (the market moves as paper is retired): the books take the gain the desk gave.
+        double booked = 0;
+        for (Debt piece : new Debt[] {gain, loss, usd}) {
+            String name = piece == gain ? "the gain line" : piece == loss ? "the loss line" : "the dollar line";
+            BookDesk.Line before = lineOf(g.bookDesk(), piece);
+            double carriedBefore = piece.getCarryingValue(), principal = piece.getOustandingPrincipal();
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            Buyback.Result deal = g.buyBack(piece, 1e12, Double.NaN);
+            check(name + " was bought back whole and is off the books", Math.abs(deal.takenFace() - principal) <= 1e-6 && !dm.getDebt().contains(piece));
+            near("...it paid exactly its fair price (the one holder offers at fair)", deal.paid(), before.worth(), 1e-6);
+            near("...the gain the buyback booked is the figure the desk gave before it", deal.gainOnCarrying(), before.ifClosedNow(), 1e-6);
+            near("...and its share is the desk's share, and the gain over the carrying value read before", deal.gainOnCarryingShare(), before.ifClosedNowShare(), 1e-9);
+            near("...which is the gain over what the line was carried at", before.ifClosedNowShare(), deal.gainOnCarrying() / carriedBefore, 1e-9);
+            booked += deal.gainOnCarrying();
+        }
+        press(g);
+        near("the month's gain on debt retired is the three lines' figures added up", na.getRetiredGain(), booked, 1e-6);
     }
 }

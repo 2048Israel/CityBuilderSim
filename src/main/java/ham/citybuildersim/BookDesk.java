@@ -35,7 +35,7 @@ public final class BookDesk {
      * {@code realYield} a linker's real yield (NaN for any other piece), {@code worth}
      * what it would cost to buy back today, {@code carried} what the books carry it at,
      * {@code ifClosedNow} the carrying value less the worth (positive: a gain buying it
-     * back at fair), {@code vsFace} the face less the worth, {@code duration} in years and
+     * back at fair; its share of the carrying value is {@link Line#ifClosedNowShare()}), {@code vsFace} the face less the worth, {@code duration} in years and
      * {@code valueOfAPoint} what a point on the curve takes off its worth
      * (DebtManager.valueOfAPoint(), which says what it is for a callable line and a
      * floater), and the holders as shares of the face, 0 to 1 (dollar paper is the
@@ -49,6 +49,16 @@ public final class BookDesk {
         /** What it is carried at for each 100 of what is still owed on it (CD6): the carrying value over the face, times 100; 0 for a line that owes nothing. */
         public double carriedPer100() {
             return face > 0 ? carried / face * 100 : 0;
+        }
+
+        /**
+         * What closing the line now would book as a share of what the books carry it at (CD6, Jerus 2026-10-23): the gain
+         * {@link #ifClosedNow()} over the carrying value, a fraction (0.338 is a gain of 33.8 per cent of what is carried,
+         * below nothing a loss); 0 for a line that is carried at nothing. The screen prints it in green or red beside the
+         * D$ and divides nothing itself.
+         */
+        public double ifClosedNowShare() {
+            return carried > 0 ? ifClosedNow / carried : 0;
         }
     }
 
@@ -131,6 +141,9 @@ public final class BookDesk {
 
     /** ...the carrying value less the worth: what closing the whole book now would book as a gain on the statement (below nothing, a loss). */
     public double ifClosedNow() { return carried - worth; }
+
+    /** ...that gain as a share of the carrying value, a fraction (CD6, Jerus 2026-10-23): the book's {@link #ifClosedNow()} over {@link #carried()}; 0 for a book carried at nothing. The same figure as a line's, for the whole book. */
+    public double ifClosedNowShare() { return carried > 0 ? (carried - worth) / carried : 0; }
 
     /** ...the face less the worth: what the market's price saves against what is owed. */
     public double vsFace() { return face - worth; }
