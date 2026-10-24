@@ -87,8 +87,8 @@ counts the 400).
 
 ## The suite
 
-137 harnesses and the playtest, on the merged main (FW1, 0.8.37): SUITE_COUNT
-(main: all). On the way, 23 harnesses' fixtures were re-caused, each with a
+137 harnesses and the playtest, on the merged main (FW1, 0.8.37): **all 138 green**
+(MapCheck's two timing lines soft beside another batch's JVM). On the way, 23 harnesses' fixtures were re-caused, each with a
 dated comment and a `fixture:` assertion: a town that ordered its works and
 houses at founding grew on the free 400 and on the yard's 160 stays a fraction
 of its old size, so the fixtures stand depots (`MortgageCheck.landlordCity(...,
