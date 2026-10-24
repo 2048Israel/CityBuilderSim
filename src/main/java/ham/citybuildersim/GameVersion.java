@@ -7320,7 +7320,7 @@ public final class GameVersion {
      *   - Harness: FoundingYardCheck (new); twenty-three re-caused, the map's
      *     two watches (MapCheck 8, LongPlaytest's layout) read the plan's rules.
      */
-    public static final String VERSION = "0.8.39";
+    public static final String VERSION = "0.8.40";
 
     /**
      * The save shape.
