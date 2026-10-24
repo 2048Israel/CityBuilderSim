@@ -14,6 +14,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.37 — FW1, a refused load leaves the city in play alone — 2026-10-24, ready, see docs/queue/FW1-notes.md
+
+`loadGameSave()` rebuilt the world before it read the save, so a save it then refused (below the format floor, from a
+newer build, on a missing Earth, empty or damaged) replaced the city in play with a blank one though nothing loaded:
+reachable from the pause menu by code only, the load list's button being off for such a slot. The refusals are now
+asked first (`Game.refusalBeforeRebuild()`, the checks themselves one method, `refusal()`, which `loadGame()` asks too),
+and a refused load returns before `buildWorld()`. A newer build's save is now refused in words naming the build that
+wrote it and opens it (`GameVersion.fromNewerBuild()`), as an older one's are. SaveFileCheck's new section loads both
+into a running city: same managers, month and cash, and its save key for key the same; red on main, green here. The
+month is untouched; the default playtest's trace is byte-identical to main's, so no ensemble.
+
 ### 0.8.36 — CD6, the rest of the debt's screens — 2026-10-23, ready, see docs/queue/CD6-notes.md
 
 The last of the debt study's screens (spec-city-debt §7, boards 1, 2 and 5; D31). Finances › The book is a desk: the book's

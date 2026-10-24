@@ -7302,7 +7302,7 @@ public final class GameVersion {
      *   - Close it now's journal, honest line and call gain behind getters.
      *   - Harness: DeskCheck (new). The manual's text: docs/queue/CD6-manual.md.
      */
-    public static final String VERSION = "0.8.36";
+    public static final String VERSION = "0.8.37";
 
     /**
      * The save shape.

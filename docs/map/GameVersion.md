@@ -1,4 +1,4 @@
-# GameVersion.java - 8,145 lines · 5 methods · 4 constants · model
+# GameVersion.java - 8,157 lines · 6 methods · 4 constants · model
 
 `ham/citybuildersim/GameVersion.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -46,7 +46,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7305 | `GameVersion.VERSION` | `"0.8.36"` | Bump on release. |
+| 7305 | `GameVersion.VERSION` | `"0.8.37"` | Bump on release. |
 | 8065 | `GameVersion.SAVE_FORMAT` | `44` | The save shape. |
 | 8103 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `44` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
 | 8105 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
@@ -55,10 +55,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 8104 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
+| 42 | 8116 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
 | 8107 | 1 | `private GameVersion()` |  |
 | 8110 | 3 | `public static String title()` | For the window title. |
 | 8120 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
 | 8129 | 3 | `public static boolean isNoLongerReadable(int saveFormat)` | True when a save is older than this build loads, below OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as it was, the player told in noLongerReadable()'s words. |
-| 8139 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
+| 8138 | 6 | `public static String fromNewerBuild(String savedBy)` | What the player is told about a save from a newer build (FW1): which build wrote it, so they know the build that opens it, as noLongerReadable() names the older one. |
+| 8151 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
 
