@@ -157,7 +157,7 @@ public class SectorStatementCheck {
         anOlderSave(player);
         theFormats(player);
         theSchedule();
-        everyGate(player, plain);
+        everyGate(player, plain, growingVillage(root));
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -223,6 +223,39 @@ public class SectorStatementCheck {
             }
         });
         out.printf("    (the plain founding: %d months, %,d people)%n", g.getMonth(), g.getPopulationManager().getPopulation());
+        return g;
+    }
+
+    /**
+     * A third city for section 9 (PT1-M4): a growing village, a hundred and twenty houses and eight months, whose
+     * people outnumber its posts and whose builders are at work. Section 9's F11 needs a building that passes the
+     * staffing gate, so the ground is the first it fails, and loses money. That the two cities above gave it
+     * stood on the works department that was retired: its 400 points had no posts, so no crew was ever laid off
+     * and held its posts back from the labour market (BuildingManager.getPostsWithheld()). With the founding
+     * depot a village's builders are 50 posts, and the idle crew of a city with nothing to build keeps three in
+     * four of them (37) from the people out of work - 140 people, half of them unemployed, staff 60% of a
+     * convenience store and no other building - so no lossy building reached the land gate first. A village whose
+     * builders have houses to build lays nobody off, and its unemployed fill the posts a new building asks.
+     */
+    static Game growingVillage(Path root) {
+        Path dir = root.resolve("village");
+        Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")), LongPlaytest.founding());
+        PrintStream was = LongPlaytest.out;
+        LongPlaytest.out = quiet;
+        try {
+            quietly(() -> {
+                g.run();
+                LongPlaytest.villageBuild(g, "House", 120);
+                LongPlaytest.run(g, 8);
+            });
+        } finally {
+            LongPlaytest.out = was;
+        }
+        out.printf("    (the growing village: %d months, %,d people, %,d of them out of work; %,d posts withheld by laid-off crews)%n",
+                g.getMonth(), g.getPopulationManager().getPopulation(), g.getPopulationManager().getUnemployed(),
+                g.getBuildingManager().getPostsWithheld());
+        assertTrue("fixture: the growing village's builders are at work, laying nobody off, and some of its people are not",
+                g.getBuildingManager().getPostsWithheld() == 0 && g.getPopulationManager().getUnemployed() > 0);
         return g;
     }
 
@@ -791,7 +824,7 @@ public class SectorStatementCheck {
      * posts, no ground; its owners, its own and what it borrows add to its
      * cost; its payback is its cost over its estimate when it pays. And the
      * spec's F11 caused: with the city's ground taken away, a building that
-     * would lose money shows the land and the loss both. On both cities.
+     * would lose money shows the land and the loss both. On each of the three cities (the third is growingVillage()'s, PT1-M4).
      */
     static void everyGate(Game... cities) {
         out.println("\n--- 9. every building at every gate (R4) ---");

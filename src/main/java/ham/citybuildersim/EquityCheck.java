@@ -302,6 +302,11 @@ public class EquityCheck {
         double paidHome = 0, paidAbroad = 0;
         try {
             city.run();
+            // PT1-M4: the works department that never laid anybody off is retired. The founding depot's idle crew keeps 37
+            // of its 50 posts from the village's hands, and a hundred and forty people staff 60% of a shop for good, so
+            // Retail never ordered its first one (nor in 150 months). Forty houses are raised beside the founding, so the
+            // hands are there: Retail's first shop is ordered at month 19 and is listed, within the months allowed below.
+            LongPlaytest.build(city, "House", 40);
             city.simulateMonths(2);
             System.setOut(out);
             Equity register = city.getEquity();
@@ -339,6 +344,8 @@ public class EquityCheck {
                 city.simulateMonths(1);
             }
             System.setOut(out);
+            assertTrue("fixture: Retail staffed and owns its first shop within the months allowed",
+                    java.util.Arrays.stream(city.getSectors().retail().postsPerTier()).sum() > 0);
             assertTrue("retail is listed once it has a book",
                     register.getShares(RETAIL) > 0);
             close("...and every share of it is held, at home or abroad",
