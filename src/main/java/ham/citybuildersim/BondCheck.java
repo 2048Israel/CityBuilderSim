@@ -880,17 +880,24 @@ public class BondCheck {
          * from an empty till they defaulted on their payroll at the settle,
          * which is not the stock they did not buy. With the month's running
          * costs in the till, what it can pay for is what its sales bring in.
+         *
+         * ...HALF A MONTH OF THEM SINCE PT1-M4. The city this section plays
+         * is no longer the one the works department's free points built: its
+         * shops' month of running costs and the month's sales (305.7k and
+         * 557.4k) paid the whole order (budget 602.9k against 526.3k), so
+         * nothing was short. Half a month's running costs leaves the till
+         * short of the order, as the section needs, and still not empty.
          */
         Sector.Statement last = shops.statement();
-        em.setSectorCash(R, Math.max(0, last.payroll + last.electricity + last.water + last.maintenance
-                + last.propertyTax + last.interest));
+        em.setSectorCash(R, Math.max(0, .5 * (last.payroll + last.electricity + last.water + last.maintenance
+                + last.propertyTax + last.interest)));
         assertTrue("fixture: the shops owe past the shortfall desk's ceiling and under the line on their quarter",
                 credit.getPrincipal(R) > credit.getAssets(R) * BusinessDebtManager.MAX_LOAN_TO_ASSETS
                         && credit.getQuarterLeverage(R) < BusinessDebtManager.INSOLVENCY_TRIGGER);
         assertTrue("the month closes", closes(play(g)));
         double[] over = stockBought(shops);
         double budget = shops.getPurchaseBudget(), ordered = shops.getOrderValue();
-        out.printf("   over the ceiling, a month's running costs in the till: ordered $%,.1fk of stock, could pay for $%,.1fk, bought $%,.1fk,"
+        out.printf("   over the ceiling, half a month's running costs in the till: ordered $%,.1fk of stock, could pay for $%,.1fk, bought $%,.1fk,"
                 + " did not buy $%,.1fk%n", ordered, budget, over[0], shops.getPurchasesForgone());
         assertTrue("fixture: it could pay for some of its order and not all of it", budget > 0 && budget < ordered);
         assertTrue("a sector over its ceiling and short buys only what its cash and the credit it can get cover",
