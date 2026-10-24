@@ -78,7 +78,7 @@ import java.util.TreeSet;
  *      line's point and no train position on water (MapCheck.worldWaysOk()),
  *      and some months have a line and trains, so the run exercised it.
  *
- *  17. HALIFAX ON THE EARTH, when earth-1.bin is named: the same, on
+ *  17. HALIFAX ON THE EARTH, when earth-2.bin is named: the same, on
  *      Jerus's founding site, where FR0's line lay across the harbour.
  *
  *  18. THE LABEL STAYS IN VIEW (LandMap.worldLabelAt): a line leaving
@@ -747,9 +747,9 @@ public class GatewayCheck {
         check("...and no month has a line's point or a train position on water off the track", bad == 0);
     }
 
-    /** Section 17: a square city at Jerus's founding site on the Earth, when earth-1.bin is named. */
+    /** Section 17: a square city at Jerus's founding site on the Earth, when earth-2.bin is named. */
     static void halifaxSection() {
-        System.out.println("\n--- Halifax on the Earth, when earth-1.bin is named ---");
+        System.out.println("\n--- Halifax on the Earth, when earth-2.bin is named ---");
         Path file = EarthData.locate();
         String named = System.getProperty(EarthData.PROPERTY);
         if (named != null && !named.isBlank() && !Files.isRegularFile(file)) {
@@ -757,7 +757,7 @@ public class GatewayCheck {
             return;
         }
         if (file == null) {
-            System.out.println("  earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": this section did not run");
+            System.out.println("  earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": this section did not run");
             return;
         }
         try (EarthData data = EarthData.open(file)) {

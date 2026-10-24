@@ -131,7 +131,7 @@ public final class SeaRoutes {
                 read++;
                 int[] salt = new int[BLOCK * BLOCK];
                 for (int p = 0; p < n * n; p++) {
-                    if (buf[p] != World.SALT) continue;
+                    if (!World.salt(buf[p])) continue;
                     salt[((p / n) / per) * BLOCK + (p % n) / per]++;
                 }
                 b = new boolean[BLOCK * BLOCK];

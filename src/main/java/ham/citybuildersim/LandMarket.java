@@ -584,13 +584,14 @@ public class LandMarket {
 
     /** ...under a given id, as listed in a given month. */
     private LandParcel measure(GridOffers.Rect r, int id, int listedIn) {
-        double[] km2 = land.groundOf(r.x0(), r.y0(), r.x1(), r.y1());
+        CityLand.Ground ground = land.groundWithRelief(r.x0(), r.y0(), r.x1(), r.y1());
+        double[] km2 = ground.km2();
         int[] sites = new int[CityLand.KINDS];
         double[] amounts = new double[CityLand.KINDS];
         land.fieldsOn(r.x0(), r.y0(), r.x1(), r.y1(), sites, amounts);
         amounts[Resource.FOREST.ordinal()] = Math.rint(km2[CityLand.FOREST] * World.FOREST_M3_PER_KM2);
         double usd = price(km2, amounts, groundUsdPerSqFt, usPriceLevel);
-        return new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, sites, amounts, usd, listedIn);
+        return new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, ground.relief(), sites, amounts, usd, listedIn);
     }
 
     /**
@@ -917,6 +918,14 @@ public class LandMarket {
         return rows;
     }
 
+    /** The offers' ground by relief (ET1), a record each in getOffersState()'s order (LandParcel.reliefRow()): DataSave's landOffersRelief. */
+    public double[][] getOffersReliefState() {
+        List<LandParcel> listed = getListing();
+        double[][] rows = new double[listed.size()][];
+        for (int i = 0; i < rows.length; i++) rows[i] = listed.get(i).reliefRow();
+        return rows;
+    }
+
     /** The id the next offer listed will take: DataSave's nextOfferId. Ids only grow. */
     public int getNextOfferId() { return nextId; }
 
@@ -926,9 +935,14 @@ public class LandMarket {
      * and update() lists that place's next.
      */
     public void restoreOffers(double[][] rows, int nextOfferId) {
+        restoreOffers(rows, null, nextOfferId);
+    }
+
+    /** ...with their ground by relief (ET1; getOffersReliefState(), a row for each of `rows` by its place): a key a save has not, or a row of the wrong width, reads the offer all flat. */
+    public void restoreOffers(double[][] rows, double[][] relief, int nextOfferId) {
         List<LandParcel> list = new ArrayList<>();
-        if (rows != null) for (double[] row : rows) {
-            LandParcel p = LandParcel.fromOfferRow(row);
+        if (rows != null) for (int i = 0; i < rows.length; i++) {
+            LandParcel p = LandParcel.fromOfferRow(rows[i], relief != null && i < relief.length ? relief[i] : null);
             if (p != null) list.add(p);
         }
         putOffers(list);

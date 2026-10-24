@@ -966,11 +966,11 @@ public final class CityRuns {
             long px = x + (long) dx * (s + 1), py = y + (long) dy * (s + 1);
             int gr = g.at(px, py, d);
             if (gr < 0) { why[0] = EDGE; return s; }
-            if (gr == World.SALT) { why[0] = SEA; return s; }
+            if (World.salt(gr)) { why[0] = SEA; return s; }
             if (diag) {
                 int c = g.at(px, py - dy, d);
                 if (c < 0) { why[0] = EDGE; return s; }
-                if (c == World.SALT) { why[0] = SEA; return s; }
+                if (World.salt(c)) { why[0] = SEA; return s; }
             }
             if (gr == World.FRESH) {
                 int w = 1;
@@ -979,11 +979,11 @@ public final class CityRuns {
                 long lx = px + (long) dx * w, ly = py + (long) dy * w;
                 int land = g.at(lx, ly, d);
                 if (land < 0) { why[0] = EDGE; return s; }
-                if (land == World.SALT) { why[0] = SEA; return s; }
+                if (World.salt(land)) { why[0] = SEA; return s; }
                 if (diag) {
                     for (int m = 1; m <= w; m++) {
                         int c = g.at(px + (long) dx * m, py + (long) dy * (m - 1), d);
-                        if (c < 0 || c == World.SALT) { why[0] = c < 0 ? EDGE : SEA; return s; }
+                        if (c < 0 || World.salt(c)) { why[0] = c < 0 ? EDGE : SEA; return s; }
                     }
                 }
                 s += w + 1;

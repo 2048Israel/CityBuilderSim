@@ -297,6 +297,7 @@ public class SaveFileCheck {
         landSave.setCityLand(ground.centreState(), ground.centreRectsState(), ground.holdingsState(), ground.partFieldsState(),
                 ground.convertedState(), office.getMarket().getOffersState(), office.getMarket().getNextOfferId(),
                 office.getDepletionState(), office.getWorldTotalsState(), office.getWorldSeaTheta());
+        landSave.setCityLandRelief(ground.centreReliefState(), ground.holdingsReliefState(), office.getMarket().getOffersReliefState());
         assertTrue("fixture: the land wrote itself", landSave.saveGame(trip, 2).ok);
         String landJson = Files.readString(trip.saveFile(2));
         DataSave landRead = gson.fromJson(landJson, DataSave.class);
@@ -304,6 +305,11 @@ public class SaveFileCheck {
         assertTrue("...its blocks (0.7.67)", java.util.Arrays.deepEquals(landRead.getLandCentreRects(), ground.centreRectsState()));
         assertTrue("...the purchase, its rectangle and all (0.7.67)", java.util.Arrays.deepEquals(landRead.getLandHoldings(), ground.holdingsState()));
         assertTrue("...the twenty-four offers", java.util.Arrays.deepEquals(landRead.getLandOffers(), office.getMarket().getOffersState()));
+        assertTrue("...and the ground by relief beside them (ET1): a generated city's all flat, its dry ground flat in the centre and every holding and offer",
+                java.util.Arrays.equals(landRead.getLandCentreRelief(), ground.centreReliefState())
+                        && java.util.Arrays.deepEquals(landRead.getLandHoldingsRelief(), ground.holdingsReliefState())
+                        && java.util.Arrays.deepEquals(landRead.getLandOffersRelief(), office.getMarket().getOffersReliefState())
+                        && landRead.getLandCentreRelief()[CityLand.RELIEF_FLAT] == ground.centreKm2(CityLand.DRY) && landRead.getLandCentreRelief()[CityLand.RELIEF_SHALLOW] == 0);
         assertTrue("...and no lanes, which only a format-31 save is read for (0.7.67)",
                 landRead.getLandLanes() == null && landRead.getLandPurchases() == null);
         assertEquals("...the next offer's id", landRead.getNextOfferId(), office.getMarket().getNextOfferId());
@@ -352,8 +358,8 @@ public class SaveFileCheck {
                 new double[] { 1_234.567, 456.789, 987_654.321 }));
         assertTrue("fixture: ...and a save with no map wrote itself", landSave.saveGame(trip, 2).ok);
         assertTrue("...and a save with no map carries no stamp", !Files.readString(trip.saveFile(2)).contains("\"mapStamp\""));
-        CityLand rebuilt = CityLand.restore(ground.seed(), landRead.getLandCentre(), landRead.getLandCentreRects(),
-                landRead.getLandHoldings(), landRead.getLandPartFields(), landRead.getLandConverted());
+        CityLand rebuilt = CityLand.restore(ground.key(), landRead.getLandCentre(), landRead.getLandCentreRects(),
+                landRead.getLandHoldings(), landRead.getLandPartFields(), landRead.getLandConverted(), landRead.getLandCentreRelief(), landRead.getLandHoldingsRelief());
         assertTrue("...and the land it rebuilds is the land written", ground.same(rebuilt));
         assertTrue("a save written now carries no parcels and no iron pool, which only an older save is read for",
                 !landJson.contains("\"landListing\"") && !landJson.contains("\"ironDeposits\"")
@@ -2877,6 +2883,12 @@ public class SaveFileCheck {
      *     the same Earth world, the same land, its map read back from the
      *     sidecar, saved again the same bytes, and two months on the same
      *     treasury, savings and tills;
+     *   - since ET1 the ground by relief rides in three keys of its own
+     *     (landCentreRelief, landHoldingsRelief, landOffersRelief), parallel to
+     *     the land's and widening none of its rows: the Earth city's are read
+     *     back to the bit, a holding with foothill and shallow sea (Perth's
+     *     window, bought by hand) round-trips, and a save without the keys
+     *     reads all flat, a row of the wrong width flat for its holding;
      *   - a save naming other data than any here, a world kind this build does
      *     not know, or an Earth with no spot, is refused in words that say so,
      *     nothing of it applied and its file as it was.
@@ -2979,6 +2991,104 @@ public class SaveFileCheck {
         assertTrue("...and every sector's till", tills);
         assertTrue("a map sidecar names its world's whole key: an Earth map is not this seed's generated world's",
                 CityMap.worldId(key) != CityMap.worldId(World.Key.generated(4127)) && CityMap.worldId(World.Key.generated(4127)) == 4127);
+
+        // THE GROUND BY RELIEF (ET1, spec-earth2-terrain 3.3): three keys of their own beside the land's - the centre's, each holding's
+        // and each offer's dry ground by relief and its shallow sea, parallel to landCentre, landHoldings and landOffers, none of whose
+        // rows is widened. Written with the land, read back with it; a save without them reads all flat.
+        assertTrue("the save carries the ground by relief in keys of its own, a row for each holding and each offer standing (ET1)",
+                earthJson.has("landCentreRelief") && earthJson.getAsJsonArray("landCentreRelief").size() == CityLand.RELIEF_AREAS
+                        && earthJson.getAsJsonArray("landHoldingsRelief").size() == earthJson.getAsJsonArray("landHoldings").size()
+                        && earthJson.getAsJsonArray("landOffersRelief").size() == earthJson.getAsJsonArray("landOffers").size()
+                        && earthJson.getAsJsonArray("landOffersRelief").size() > 0);
+        assertTrue("...and no row of the land's own is wider for it: the centre 24, a holding 31, an offer 29",
+                earthJson.getAsJsonArray("landCentre").size() == CityLand.CENTRE_FIELDS && CityLand.CENTRE_FIELDS == 24
+                        && earthJson.getAsJsonArray("landOffers").get(0).getAsJsonArray().size() == LandParcel.OFFER_FIELDS && LandParcel.OFFER_FIELDS == 29
+                        && LandParcel.PURCHASE_FIELDS == 31);
+        assertTrue("...read back, the relief is the city's: its centre's, each holding's and each offer's, to the bit",
+                java.util.Arrays.equals(read.getLandCentreRelief(), city.getCityLand().centreReliefState())
+                        && java.util.Arrays.deepEquals(read.getLandHoldingsRelief(), city.getCityLand().holdingsReliefState())
+                        && java.util.Arrays.deepEquals(read.getLandOffersRelief(), city.getLandManager().getMarket().getOffersReliefState()));
+        // A holding with foothill and shallow sea in it: Perth's window of the fixture, bought by hand (LandCheck.handBuy()) - the
+        // condition caused, with no file named - written through DataSave and read back, then read with the keys gone.
+        double[] perth = null;
+        byte[] expect = EarthCheck.resource(EarthCheck.EXPECT);
+        for (String line : new String(expect, java.nio.charset.StandardCharsets.UTF_8).split("\n")) {
+            String[] f = line.split("\t", -1);
+            if (f.length > 4 && f[1].equals("window") && f[2].equals("Perth")) perth = new double[] { Double.parseDouble(f[3]), Double.parseDouble(f[4]) };
+        }
+        assertTrue("fixture: Perth's window", perth != null);
+        if (perth != null) {
+            World.Key hillKey = World.Key.earth(4127, perth[0], perth[1], id);
+            CityLand hills = LandManager.foundingLand(hillKey);
+            LandCheck.handBuy(hills, 3, 3);
+            boolean foothill = false, shallow = false;
+            for (CityLand.Purchase p : hills.purchases()) {
+                foothill |= p.offer().getReliefKm2(CityLand.RELIEF_FOOTHILL) > 0;
+                shallow |= p.offer().getReliefKm2(CityLand.RELIEF_SHALLOW) > 0;
+            }
+            assertTrue("fixture: Perth's city holds a purchase with foothill in it and one with shallow sea", foothill && shallow);
+            GameFiles reliefFiles = new GameFiles(root.resolve("relief"), root.resolve("no-legacy"));
+            DataSave ds = new DataSave();
+            ds.setCityLand(hills.centreState(), hills.centreRectsState(), hills.holdingsState(), hills.partFieldsState(), hills.convertedState(),
+                    new double[0][], 1, null, null, 0);
+            ds.setCityLandRelief(hills.centreReliefState(), hills.holdingsReliefState(), new double[0][]);
+            assertTrue("fixture: the land with its relief wrote itself", ds.saveGame(reliefFiles, 1).ok);
+            com.google.gson.JsonObject withKeys = com.google.gson.JsonParser.parseString(Files.readString(reliefFiles.saveFile(1))).getAsJsonObject();
+            DataSave got = gson.fromJson(withKeys, DataSave.class);
+            CityLand back2 = CityLand.restore(hillKey, got.getLandCentre(), got.getLandCentreRects(), got.getLandHoldings(), got.getLandPartFields(),
+                    got.getLandConverted(), got.getLandCentreRelief(), got.getLandHoldingsRelief());
+            assertTrue("a holding with foothill and shallow sea round-trips: the land rebuilt from the file is the land written, every relief figure of it",
+                    back2 != null && hills.same(back2) && back2.totalReliefKm2(CityLand.RELIEF_FOOTHILL) == hills.totalReliefKm2(CityLand.RELIEF_FOOTHILL)
+                            && back2.totalReliefKm2(CityLand.RELIEF_SHALLOW) == hills.totalReliefKm2(CityLand.RELIEF_SHALLOW)
+                            && back2.totalReliefKm2(CityLand.RELIEF_FOOTHILL) > 0 && back2.totalReliefKm2(CityLand.RELIEF_SHALLOW) > 0);
+            boolean eachHolding = back2 != null && back2.purchases().size() == hills.purchases().size();
+            for (int i = 0; eachHolding && i < hills.purchases().size(); i++) {
+                eachHolding &= java.util.Arrays.equals(back2.purchases().get(i).offer().reliefRow(), hills.purchases().get(i).offer().reliefRow());
+            }
+            assertTrue("...each holding's own row, the foothill in this one and the shallow sea in that", eachHolding);
+            // The offer's row too, through LandParcel's records, on a hand-set row (an offer taken from the city's holdings).
+            LandParcel one = hills.purchases().get(0).offer();
+            double[] row = one.reliefRow();
+            row[CityLand.RELIEF_FOOTHILL] += 0.0005;
+            row[CityLand.RELIEF_FLAT] = Math.max(0, row[CityLand.RELIEF_FLAT] - 0.0005);
+            LandParcel handSet = LandParcel.fromOfferRow(one.offerRow(), row);
+            assertTrue("an offer whose relief row is set by hand reads it back through its record, and the record is still 29 wide",
+                    java.util.Arrays.equals(handSet.reliefRow(), row) && handSet.offerRow().length == LandParcel.OFFER_FIELDS);
+            // The keys gone (every save before ET1, and a generated city's before it wrote them): all flat.
+            com.google.gson.JsonObject without = withKeys.deepCopy();
+            for (String k : new String[] { "landCentreRelief", "landHoldingsRelief", "landOffersRelief" }) without.remove(k);
+            DataSave bare = gson.fromJson(without, DataSave.class);
+            assertTrue("a save without the three keys has none of them", bare.getLandCentreRelief() == null && bare.getLandHoldingsRelief() == null
+                    && bare.getLandOffersRelief() == null);
+            CityLand flatBack = CityLand.restore(hillKey, bare.getLandCentre(), bare.getLandCentreRects(), bare.getLandHoldings(), bare.getLandPartFields(),
+                    bare.getLandConverted(), bare.getLandCentreRelief(), bare.getLandHoldingsRelief());
+            boolean allFlat = flatBack != null && flatBack.centreReliefKm2(CityLand.RELIEF_FLAT) == flatBack.centreKm2(CityLand.DRY)
+                    && flatBack.totalReliefKm2(CityLand.RELIEF_FLAT) == flatBack.totalKm2(CityLand.DRY);
+            for (int i = CityLand.RELIEF_FOOTHILL; allFlat && i < CityLand.RELIEF_AREAS; i++) allFlat &= flatBack.totalReliefKm2(i) == 0;
+            for (CityLand.Purchase p : flatBack == null ? java.util.List.<CityLand.Purchase>of() : flatBack.purchases()) {
+                allFlat &= p.offer().getReliefKm2(CityLand.RELIEF_FLAT) == p.offer().getDryKm2();
+            }
+            assertTrue("...reads all flat: the dry ground flat in the centre, in the total and in every holding, nothing steep, nothing shallow (never refused)",
+                    allFlat && flatBack != null && !hills.same(flatBack));
+            double[] tooShort = java.util.Arrays.copyOf(hills.holdingsReliefState()[0], 3);
+            double[][] oneShort = hills.holdingsReliefState();
+            oneShort[0] = tooShort;
+            CityLand mended = CityLand.restore(hillKey, got.getLandCentre(), got.getLandCentreRects(), got.getLandHoldings(), got.getLandPartFields(),
+                    got.getLandConverted(), got.getLandCentreRelief(), oneShort);
+            assertTrue("a relief row of the wrong width reads that holding flat and leaves the rest as saved",
+                    mended != null && mended.purchases().get(0).offer().getReliefKm2(CityLand.RELIEF_FLAT) == mended.purchases().get(0).offer().getDryKm2()
+                            && java.util.Arrays.equals(mended.purchases().get(1).offer().reliefRow(), hills.purchases().get(1).offer().reliefRow()));
+            LandMarket market = new LandMarket();
+            market.attach(hills);
+            market.restoreOffers(new double[][] { one.offerRow() }, new double[][] { row }, 99);
+            LandMarket noRelief = new LandMarket();
+            noRelief.attach(hills);
+            noRelief.restoreOffers(new double[][] { one.offerRow() }, null, 99);
+            assertTrue("a land office restoring an offer reads its relief row, and with none reads it all flat",
+                    java.util.Arrays.equals(market.getListing().get(0).reliefRow(), row)
+                            && noRelief.getListing().get(0).getReliefKm2(CityLand.RELIEF_FLAT) == one.getDryKm2()
+                            && noRelief.getListing().get(0).getReliefKm2(CityLand.RELIEF_SHALLOW) == 0);
+        }
 
         // Refused: other data, an unknown kind, no spot.
         String nobody = "earth-1:" + "0".repeat(64);

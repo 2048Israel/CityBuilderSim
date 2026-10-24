@@ -256,6 +256,8 @@ final class MapView {
         WritableImage image;
         long stamp, version = Long.MIN_VALUE;
         byte[] ground;
+        /** The node's relief beside its ground (ET1 slice D): null on a generated world, whose ground is all flat. */
+        byte[] relief;
         boolean partial;
         long pictures;
         /** A far node's colours as drawn (0.7.135): what the globe reprojects near the city. */
@@ -355,7 +357,7 @@ final class MapView {
     /** The screen's box a still picture is to be drawn again over (a piece in, a node coloured), or null. */
     private double[] patch;
 
-    /** The GROUND tier's pieces past the plane, for one view at rest: its classes a pixel (-1 not in yet), the view and its number. */
+    /** The GROUND tier's pieces past the plane, for one view at rest: its codes - class and relief (GlobePicture.code()) - a pixel (-1 not in yet), the view and its number. */
     private byte[] pieceCls;
     private GlobeFrame pieceView;
     private volatile int pieceGen;
@@ -370,8 +372,9 @@ final class MapView {
     private boolean keyW, keyA, keyS, keyD;
     private long keyNanos;
 
-    /** The tier the legend was laid out for. */
+    /** The tier the legend was laid out for, and whether with the relief's entries (LandMap.reliefDrawn()). */
     private int legendTier = Integer.MIN_VALUE;
+    private boolean legendRelief;
 
     MapView(UserInterface ui, Picker picker, Runnable onClose) {
         this.ui = ui;
@@ -810,12 +813,14 @@ final class MapView {
                         final long x0 = nx * span, y0 = ny * span;
                         final MapTiles askedFor = tiles;
                         WORKER.submit(() -> {
-                            byte[] ground = MapTiles.nodeTerrain(world, x0, y0, plots);
+                            byte[] relief = world.earth() ? new byte[n * n] : null;
+                            byte[] ground = MapTiles.nodeTerrain(world, x0, y0, plots, relief);
                             Platform.runLater(() -> {
                                 nodesAsked.remove(key);
                                 if (tiles != askedFor) return;
                                 Img got = new Img();
                                 got.ground = ground;
+                                got.relief = relief;
                                 nodes.put(key, got);
                                 requestDraw();
                             });
@@ -841,7 +846,7 @@ final class MapView {
                 }
                 img.stamp = drawnFrom;
                 farRecoloured++;
-                img.partial = tiles.nodePixels(nx * span, ny * span, plots, img.ground, buffer) > 0;
+                img.partial = tiles.nodePixels(nx * span, ny * span, plots, img.ground, img.relief, buffer) > 0;
                 img.pictures = picturesKept;
                 picturesWanted.addAll(tiles.wanted());
                 if (img.image == null) img.image = new WritableImage(n, n);
@@ -1603,7 +1608,7 @@ final class MapView {
        THE GLOBE (0.7.135, batch E9; docs/studies/spec-globe.md 3)
        ===================================================================== */
 
-    /** The ground's colours on the globe: the world off the city's land dimmed, as the far nodes dim it (GlobePicture.colours()). */
+    /** The ground's colours on the globe, by code - a class and its relief (ET1 slice D): the world off the city's land dimmed, as the far nodes dim it (GlobePicture.colours()). */
     private static final int[] DIMMED = GlobePicture.colours(true);
 
     /** A GROUND-tier piece past the plane, in pixels a side: 128, a far node's (MapFrame.NODE_PX) - 9 to 50 ms on the worker from 0.48 to 7.3 km a pixel (E9's probe on the full file). */
@@ -1847,7 +1852,7 @@ final class MapView {
                 if (k >= 0 && cpx[k] != 0) return cpx[k];
             }
             if (pic == null) return GlobePicture.SPACE;
-            return DIMMED[pic.at(GlobeFrame.latOf(vx, vy, vz), t.lonOf(vx, vy))];
+            return DIMMED[pic.codeAt(GlobeFrame.latOf(vx, vy, vz), t.lonOf(vx, vy))];
         };
     }
 
@@ -1862,7 +1867,7 @@ final class MapView {
 
     /**
      * The GROUND tier's pieces past the plane for a view come to rest: the
-     * far rule through the camera (GlobeFrame.groundPiece()) a PIECE_PX
+     * far rule through the camera (GlobeFrame.groundCodes()) a PIECE_PX
      * square at a time on WORKER, from the middle out, each one with some
      * of its pixels on the planet and past where the plane draws - and only
      * while the view is still that one.
@@ -1897,7 +1902,7 @@ final class MapView {
                 if (gen != pieceGen) return;
                 byte[] b;
                 try {
-                    b = pv.groundPiece(key, q[0], q[1], q[2], q[3]);
+                    b = pv.groundCodes(key, q[0], q[1], q[2], q[3]);
                 } catch (RuntimeException e) {
                     System.out.println("The globe's ground could not be drawn: " + e);
                     return;
@@ -2072,7 +2077,7 @@ final class MapView {
         showCard(lines, sx, sy, globe.width(), globe.height());
     }
 
-    /** The ground drawn at a screen point on the globe, past the plane: the GROUND tier's piece where one is in, else the planet's picture's texel. */
+    /** The ground drawn at a screen point on the globe, past the plane, as a code - its class and relief (GlobePicture.code()): the GROUND tier's piece where one is in, else the planet's picture's texel. */
     private byte drawnAt(double sx, double sy) {
         int i = (int) sx, j = (int) sy, w = (int) globe.width(), h = (int) globe.height();
         if (pieceCls != null && pieceView != null && pieceView.sameView(globe) && i >= 0 && j >= 0 && i < w && j < h) {
@@ -2081,7 +2086,7 @@ final class MapView {
         }
         GlobePicture pic = globeData == null ? null : GlobePicture.best(globeData);
         double[] ll = globe.latLonAt(sx, sy);
-        return pic != null && ll != null ? pic.at(ll[0], ll[1]) : World.SALT;
+        return pic != null && ll != null ? pic.codeAt(ll[0], ll[1]) : World.SALT;
     }
 
     /* ----- the keys (0.7.135; spec-globe 3.11) ----- */
@@ -2285,7 +2290,7 @@ final class MapView {
             what = LandMap.plotWords(pin == null ? in : pin, painted, plot, this::nameOf);
         }
         if (!expanded) {
-            readout.setText(LandMap.ownerWords(land, p) + " · " + (what != null ? what : LandMap.groundWords(p.ground())));
+            readout.setText(LandMap.ownerWords(land, p) + " · " + (what != null ? what : LandMap.plotGroundWords(land, p.ground(), x, y)));
             showIf(readout, true);
             return;
         }
@@ -2905,9 +2910,12 @@ final class MapView {
     }
 
     /** The legend's entries in a tier (since 0.7.135 the model's, LandMap.legend(): on the globe the kinds of ground, the city's ring and edge, in the GROUND tier its offers; on the plane the plane's), as CSS colours and words. */
-    static List<String[]> legendEntries(int tier) {
+    static List<String[]> legendEntries(int tier) { return legendEntries(tier, false); }
+
+    /** ...on an Earth world with earth-2's layers (`relief`, LandMap.reliefDrawn(); ET1 slice D) also the three greys, forest on a slope and, on the plane, the shallow sea. */
+    static List<String[]> legendEntries(int tier, boolean relief) {
         List<String[]> out = new ArrayList<>();
-        for (LandMap.Entry e : LandMap.legend(tier)) out.add(new String[] { css(e.colour()), e.words() });
+        for (LandMap.Entry e : LandMap.legend(tier, relief)) out.add(new String[] { css(e.colour()), e.words() });
         return out;
     }
 
@@ -2981,11 +2989,13 @@ final class MapView {
         // ...and (0.8.0) on the plane the zones set, drawn again when they move.
         List<String[]> zones = tier == GlobeFrame.PLANE ? zoneEntries() : List.of();
         String zoneKey = String.join("|", zones.stream().map(z -> z[1]).toList());
-        if (tier == legendTier && zoneKey.equals(legendZones)) return;
+        boolean relief = shownMap != null && LandMap.reliefDrawn(shownMap.worldKey());
+        if (tier == legendTier && zoneKey.equals(legendZones) && relief == legendRelief) return;
         legendTier = tier;
         legendZones = zoneKey;
+        legendRelief = relief;
         legendGrid.getChildren().clear();
-        List<String[]> entries = new ArrayList<>(legendEntries(tier));
+        List<String[]> entries = new ArrayList<>(legendEntries(tier, relief));
         entries.addAll(zones);
         for (int i = 0; i < entries.size(); i++) {
             legendGrid.add(keySwatch(entries.get(i)[0], entries.get(i)[1]), i / LEGEND_ROWS, i % LEGEND_ROWS);

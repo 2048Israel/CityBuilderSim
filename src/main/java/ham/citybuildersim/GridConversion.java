@@ -89,6 +89,7 @@ public final class GridConversion {
         int level;
         boolean shared;
         final double[] km2 = new double[LegacyLand.AREAS];
+        final double[] relief = new double[CityLand.RELIEF_AREAS];
         final long[] sites = new long[LegacyLand.KINDS];
         final double[] amounts = new double[LegacyLand.KINDS];
         final double[] extracted = new double[LegacyLand.KINDS];
@@ -122,6 +123,9 @@ public final class GridConversion {
 
         /** One of its five areas, in square kilometres (CityLand.TOTAL, DRY, FRESH, SEA or FOREST): its drawn plots. */
         public double km2(int area)         { return km2[area]; }
+
+        /** Its dry ground by relief, or its shallow sea, in square kilometres (CityLand.RELIEF_FLAT to RELIEF_SHALLOW): its drawn plots, counted with the five areas. */
+        public double relief(int i)         { return relief[i]; }
 
         /** Its sites of a resource. */
         public long sites(Resource r)       { return sites[r.ordinal()]; }
@@ -435,6 +439,15 @@ public final class GridConversion {
         return t[(int) ((y - ty * World.TILE) * World.TILE + (x - tx * World.TILE))];
     }
 
+    /** A tile's relief beside its cover (tile()), kept in `rels` for the walk (ET1). */
+    private static byte[] reliefTile(World world, Map<Long, byte[]> rels, long tx, long ty) {
+        return rels.computeIfAbsent(tx * World.SIDE + ty, k -> {
+            byte[] r = new byte[World.TILE * World.TILE];
+            world.tileRelief(tx, ty, r);
+            return r;
+        });
+    }
+
     private static byte[] tile(World world, Map<Long, byte[]> tiles, long tx, long ty) {
         return tiles.computeIfAbsent(tx * World.SIDE + ty, k -> {
             byte[] t = new byte[World.TILE * World.TILE];
@@ -449,13 +462,22 @@ public final class GridConversion {
 
     /**
      * The plots a grid's holdings own, by World's classes (GRASS, FOREST,
-     * FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT, indexed
-     * by the class, World.CLASSES of them), counted one by one from
+     * FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT and since
+     * ET1 SHALLOW, indexed by the class, World.CLASSES of them), counted one by one from
      * World.tileTerrain(), as the map counts them: a leaf of a tile or more a
      * whole tile at a time, a smaller one plot by plot.
      */
     public static long[] drawnClasses(World world, LandGrid grid) {
+        return drawnClasses(world, grid, null);
+    }
+
+    /**
+     * ...and, when `relief` is given (CityLand.RELIEF_AREAS long), the plots' relief in the same pass (ET1): the
+     * dry ground's FLAT to VERY_STEEP and the shallow sea, as plots (CityLand.tally()), beside the classes.
+     */
+    public static long[] drawnClasses(World world, LandGrid grid, long[] relief) {
         long[] cls = new long[World.CLASSES];
+        Map<Long, byte[]> rels = relief == null ? null : new HashMap<>();
         Map<Long, byte[]> tiles = new HashMap<>();
         grid.leaves((level, x, y, h) -> {
             long side = 1L << level;
@@ -465,14 +487,25 @@ public final class GridConversion {
                 for (long ty = ty0; ty < ty0 + n; ty++) {
                     for (long tx = tx0; tx < tx0 + n; tx++) {
                         byte[] t = tile(world, tiles, tx, ty);
-                        for (byte c : t) cls[c]++;
+                        if (rels == null) for (byte c : t) cls[c]++;
+                        else {
+                            byte[] r = reliefTile(world, rels, tx, ty);
+                            for (int at = 0; at < t.length; at++) CityLand.tally(t, r, at, cls, relief, 0);
+                        }
                     }
                 }
                 return;
             }
             byte[] t = tile(world, tiles, tx0, ty0);
             int i0 = (int) (x - tx0 * World.TILE), j0 = (int) (y - ty0 * World.TILE);
-            for (int j = j0; j < j0 + side; j++) for (int i = i0; i < i0 + side; i++) cls[t[j * World.TILE + i]]++;
+            byte[] r = rels == null ? null : reliefTile(world, rels, tx0, ty0);
+            for (int j = j0; j < j0 + side; j++) {
+                for (int i = i0; i < i0 + side; i++) {
+                    int at = j * World.TILE + i;
+                    if (r == null) cls[t[at]]++;
+                    else CityLand.tally(t, r, at, cls, relief, 0);
+                }
+            }
         });
         return cls;
     }
@@ -481,8 +514,8 @@ public final class GridConversion {
      * Five areas in square kilometres - CityLand.TOTAL, DRY, FRESH, SEA and
      * FOREST - of plots counted by World's classes: the dry ground the
      * classes World.dry() names, the desert's with the grass, and (0.7.127)
-     * ice in the whole area only. The classes a shorter count leaves off
-     * are none.
+     * ice in the whole area only; the sea's area is SALT's and SHALLOW's (ET1:
+     * World.salt()). The classes a shorter count leaves off are none.
      */
     public static double[] km2Of(long[] cls) {
         long dry = 0, all = 0;
@@ -494,14 +527,16 @@ public final class GridConversion {
         km2[CityLand.TOTAL] = all * World.KM2_PER_PLOT;
         km2[CityLand.DRY] = dry * World.KM2_PER_PLOT;
         km2[CityLand.FRESH] = cls[World.FRESH] * World.KM2_PER_PLOT;
-        km2[CityLand.SEA] = cls[World.SALT] * World.KM2_PER_PLOT;
+        km2[CityLand.SEA] = (cls[World.SALT] + (cls.length > World.SHALLOW ? cls[World.SHALLOW] : 0)) * World.KM2_PER_PLOT;
         km2[CityLand.FOREST] = cls[World.FOREST] * World.KM2_PER_PLOT;
         return km2;
     }
 
     private static void books(World world, Result out) {
-        double[] k = km2Of(drawnClasses(world, out.grid));
+        long[] relief = new long[CityLand.RELIEF_AREAS];
+        double[] k = km2Of(drawnClasses(world, out.grid, relief));
         System.arraycopy(k, 0, out.km2, 0, k.length);
+        for (int i = 0; i < relief.length; i++) out.relief[i] = relief[i] * World.KM2_PER_PLOT;
     }
 
     private static void leaves(Result out) {

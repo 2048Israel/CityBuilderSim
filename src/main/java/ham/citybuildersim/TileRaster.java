@@ -127,9 +127,59 @@ public final class TileRaster {
      * Each ground class's colour, by World's class (GRASS, FOREST, FRESH,
      * SALT, SAND): the mockup's legend; and since 0.7.127 (batch E7;
      * spec-globe 3.9) ICE, the founding globe's ice, 0xdfe7ee, and DESERT,
-     * CSS's tan (#d2b48c), warmer and darker than the beach's sand.
+     * CSS's tan (#d2b48c), warmer and darker than the beach's sand; and
+     * since ET1 SHALLOW, the sea no deeper than 30 m, 0x4f87b5 (the study's
+     * mockup, earth2/mockups.py): a lighter blue than the deep sea's, darker
+     * than the lakes'.
      */
-    public static final int[] GROUND = { 0xffa8c47e, 0xff527c45, 0xff78b4dc, 0xff2f5d88, 0xffe6daaa, 0xffdfe7ee, 0xffd2b48c };
+    public static final int[] GROUND = { 0xffa8c47e, 0xff527c45, 0xff78b4dc, 0xff2f5d88, 0xffe6daaa, 0xffdfe7ee, 0xffd2b48c, 0xff4f87b5 };
+
+    /**
+     * The grey each relief paints on open dry ground (ET1 slice D; spec-earth2-terrain 9.3; Jerus 2026-10-12, D4),
+     * by World's relief (FLAT, FOOTHILL, STEEP, VERY_STEEP): FLAT none - flat ground keeps its cover's colour
+     * - and foothill the lightest, 0xc8c3b8 (buildable ground), steep 0x9b968c, very steep the darkest,
+     * 0x6c6862 (the study's mockup, earth2/mockups.py). Drawn on grass, the beach and the desert; ice is white
+     * whatever the slope (it has no relief), and water none.
+     */
+    public static final int[] RELIEF_GREY = { 0, 0xffc8c3b8, 0xff9b968c, 0xff6c6862 };
+
+    /**
+     * How far forest on a slope is shaded toward its slope's grey (D5, the study's way B; the mockup's
+     * mixes, estimated by eye on Medellin): FLAT none, foothill and steep half the way, very steep
+     * 0.60 - forest stays forest green, so the forest the law and Forestry count reads, and the slope
+     * under it still does: sage on a foothill, greyer on steep ground, darkest on very steep.
+     */
+    public static final double[] FOREST_MIX = { 0, 0.50, 0.50, 0.60 };
+
+    /** Every cover's colour at every relief, by relief x CLASSES + cover: the table colour() reads - GROUND on the FLAT row, built once. */
+    private static final int[] COVER_RELIEF = new int[World.RELIEFS * World.CLASSES];
+    static {
+        for (int r = 0; r < World.RELIEFS; r++) {
+            for (int c = 0; c < World.CLASSES; c++) {
+                int k = GROUND[c];
+                if (r != World.FLAT && World.dry(c)) k = c == World.FOREST ? blend(k, RELIEF_GREY[r], FOREST_MIX[r]) : RELIEF_GREY[r];
+                COVER_RELIEF[r * World.CLASSES + c] = k;
+            }
+        }
+    }
+
+    /**
+     * A plot's ground colour from its cover (a World class) and its relief (World.FLAT to VERY_STEEP): GROUND[cover]
+     * on flat ground, on water, on ice and for a generated world (which has no relief); on dry open ground (grass, the
+     * beach, the desert) its slope's RELIEF_GREY; on forest its green shaded toward that grey by FOREST_MIX. A cover or
+     * relief outside the classes is GROUND's (the cover's, or 0 for a cover that is not one).
+     */
+    public static int colour(int cover, int relief) {
+        if (cover < 0 || cover >= World.CLASSES) return 0;
+        return relief <= 0 || relief >= World.RELIEFS ? GROUND[cover] : COVER_RELIEF[relief * World.CLASSES + cover];
+    }
+
+    /**
+     * Every cover-and-relief code's colour, a copy of the table colour() reads: code = relief x World.CLASSES + cover
+     * (World.RELIEFS x World.CLASSES = 32 entries, the FLAT row GROUND). What the globe draws a texel by: its picture
+     * holds a code a texel (GlobePicture.code()).
+     */
+    public static int[] codeColours() { return COVER_RELIEF.clone(); }
 
     /**
      * Each road kind's colour (gravel, paved, highway): the mockup's MAP, but
@@ -1550,7 +1600,7 @@ public final class TileRaster {
         for (int y = 0; y < tile; y++) {
             for (int x = 0; x < tile; x++) {
                 int i = y * tile + x;
-                if (in.avenue[i] != 0 || p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL || in.terrain[i] == World.SALT) continue;
+                if (in.avenue[i] != 0 || p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL || World.salt(in.terrain[i])) continue;
                 if (p.use[i] == TilePainter.ROAD && !isStreet(p, i)) continue; // a highway's own plot
                 // A step beside it on each axis, or none of its four combinations holds.
                 if (in.avenueAt(x - 1, y) == 0 && in.avenueAt(x + 1, y) == 0 || in.avenueAt(x, y - 1) == 0 && in.avenueAt(x, y + 1) == 0) continue;
@@ -1571,7 +1621,7 @@ public final class TileRaster {
 
     /** Whether outer plot i (avenueNotches() says it is) is open ground that takes a verge: nothing on it, dry. */
     private static boolean notchVerge(TilePainter.Input in, TilePainter.Painted p, int i) {
-        return p.use[i] == TilePainter.EMPTY && in.terrain[i] != World.FRESH && in.terrain[i] != World.SALT;
+        return p.use[i] == TilePainter.EMPTY && in.terrain[i] != World.FRESH && !World.salt(in.terrain[i]);
     }
 
     /**
@@ -1750,7 +1800,7 @@ public final class TileRaster {
     private static void avenueEnds(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (in.avenue[i] != 0 || (p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD) || in.terrain[i] == World.FRESH || in.terrain[i] == World.SALT) continue;
+            if (in.avenue[i] != 0 || (p.use[i] != TilePainter.EMPTY && p.use[i] != TilePainter.FIELD) || in.terrain[i] == World.FRESH || World.salt(in.terrain[i])) continue;
             int x = i % tile, y = i / tile;
             if (in.avenueAt(x - 1, y) == 0 && in.avenueAt(x + 1, y) == 0 && in.avenueAt(x, y - 1) == 0 && in.avenueAt(x, y + 1) == 0) continue;
             for (int d = 0; d < 4; d++) {
@@ -1806,7 +1856,7 @@ public final class TileRaster {
                 int i = y * tile + x;
                 if (p.beneath[i] || p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL) continue;
                 if (p.use[i] == TilePainter.ROAD && !isStreet(p, i)) continue;
-                if (in.terrain[i] == World.SALT || (in.terrain[i] == World.FRESH && p.use[i] != TilePainter.ROAD)) continue;
+                if (World.salt(in.terrain[i]) || (in.terrain[i] == World.FRESH && p.use[i] != TilePainter.ROAD)) continue;
                 if (box && !cr.signalAt(x, y)) continue;
                 boolean owned = in.owned[i];
                 int c = box ? JUNCTION_BOX : kind == TilePainter.TRACK ? TRACK_DASH : ROAD[kind];
@@ -2188,7 +2238,7 @@ public final class TileRaster {
         boolean curves = in.curveMarks != 0;
         if (curves) {
             for (int i = 0; i < TilePainter.PLOTS; i++) {
-                if (in.curve[i] == 0 || p.use[i] != TilePainter.EMPTY || in.terrain[i] == World.FRESH || in.terrain[i] == World.SALT) continue;
+                if (in.curve[i] == 0 || p.use[i] != TilePainter.EMPTY || in.terrain[i] == World.FRESH || World.salt(in.terrain[i])) continue;
                 int x0 = (i % tile) * px, y0 = (i / tile) * px;
                 fillRect(img, w, x0, y0, x0 + px, y0 + px, in.owned[i] ? VERGE : blend(VERGE, VOID, UNOWNED_DIM));
             }
@@ -2840,7 +2890,7 @@ public final class TileRaster {
     /** Whether a roundabout's ring or island may be drawn on plot i: a street or empty ground, never a building, the track, a highway or water. */
     private static boolean roundaboutTarget(TilePainter.Input in, TilePainter.Painted p, int i) {
         if (p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL || isHighway(p, i)) return false;
-        if (in.terrain[i] == World.SALT || in.terrain[i] == World.FRESH) return false;
+        if (World.salt(in.terrain[i]) || in.terrain[i] == World.FRESH) return false;
         return p.use[i] == TilePainter.EMPTY || p.use[i] == TilePainter.FIELD || isStreet(p, i);
     }
 
@@ -3862,9 +3912,9 @@ public final class TileRaster {
     static int groundColour(TilePainter.Input in, TilePainter.Painted p, int i) {
         byte ground = in.terrain[i];
         if (ground == World.FOREST && p.use[i] == TilePainter.BUILDING) ground = World.GRASS;
-        int c = GROUND[ground];
+        int c = colour(ground, in.relief[i]);
         int s = p.site[i] - 1;
-        boolean wet = ground == World.SALT || ground == World.FRESH;
+        boolean wet = World.salt(ground) || ground == World.FRESH;
         if (s >= 0 && (!wet || in.siteKind[s] == Resource.OIL.ordinal())) c = siteTint(in, i, s, c);
         if (!in.owned[i]) c = blend(c, VOID, UNOWNED_DIM);
         return c;

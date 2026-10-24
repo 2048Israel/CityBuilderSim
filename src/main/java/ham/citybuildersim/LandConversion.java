@@ -181,7 +181,7 @@ public final class LandConversion {
             if (dx * dx + dy * dy < near * near) continue;
             long x = sx + Math.round(dx), y = sy + Math.round(dy);
             byte c = world.terrainAt(x, y);
-            if (c == World.SALT || c == World.FRESH) continue;
+            if (World.salt(c) || c == World.FRESH) continue;
             if (!onGround.test(x, y)) continue;
             fx = x;
             fy = y;

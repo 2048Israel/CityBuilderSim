@@ -452,6 +452,7 @@ public class MapCheck {
         trains(sq, city);
         onEarth(sq.types);
         pictures(city, sq);
+        pictureRelief(sq.types);
         miniMap(city, sq);
         globeOnScreen(sq);
         buyingFromTheMap(city);
@@ -1763,7 +1764,7 @@ public class MapCheck {
                     long cx = (sx + dx) * World.CELL + World.CELL / 2, cy = (sy + dy) * World.CELL + World.CELL / 2;
                     w.regionTerrain(cx - 3 * CityMap.DISTRICT / 2, cy - 3 * CityMap.DISTRICT / 2, World.TILE, n, buf);
                     int dry = 0;
-                    for (byte b : buf) if (b != World.SALT && b != World.FRESH) dry++;
+                    for (byte b : buf) if (!World.salt(b) && b != World.FRESH) dry++;
                     if (dry >= DRY_PLACE * buf.length && (side <= 0 || holdsIron(w, cx, cy, side))) return new long[] { cx, cy, ring };
                 }
             }
@@ -1935,7 +1936,7 @@ public class MapCheck {
                 }
                 for (int q = 0; q < TilePainter.PLOTS; q++) {
                     byte gr = in.terrain[q];
-                    if (in.owned[q] && gr != World.SALT && gr != World.FRESH && p.site[q] == 0) free++;
+                    if (in.owned[q] && !World.salt(gr) && gr != World.FRESH && p.site[q] == 0) free++;
                     if (p.isRoad(q)) streets++;
                 }
             }
@@ -2023,7 +2024,7 @@ public class MapCheck {
                         width[g] = p.width[k];
                         role[g] = p.role[k];
                         owned[g] = in.owned[k];
-                        sea[g] = in.terrain[k] == World.SALT;
+                        sea[g] = World.salt(in.terrain[k]);
                         wet[g] = sea[g] || in.terrain[k] == World.FRESH;
                         bridge[g] = p.bridge[k];
                         beneath[g] = p.beneath[k];
@@ -4148,7 +4149,7 @@ public class MapCheck {
             boolean owned = m.land().ownsPlot(x, y);
             int bare = TileRaster.GROUND[g];
             if (!owned && px[k] == TileRaster.blend(bare, TileRaster.VOID, TileRaster.UNOWNED_DIM)) dimmed++;
-            if (owned && g != World.SALT && g != World.FRESH && px[k] != bare) tinted++;
+            if (owned && !World.salt(g) && g != World.FRESH && px[k] != bare) tinted++;
         }
         out.printf("      a far node (%d plots a pixel): its ground in %.1f ms on the worker, its pixels in %.1f ms; %,d tinted, %,d dimmed%n",
                 plots, terrainMs, pixelsMs, tinted, dimmed);
@@ -4282,14 +4283,14 @@ public class MapCheck {
                     if (r == CityRuns.F_HIGHWAY || r == CityRuns.F_RAIL_OVER) clear = false;
                     if (!k.holds(x, y)) continue;
                     int tg = tileGround(w, x, y);
-                    onDry &= m.land().ownsPlot(x, y) && tg != World.SALT && tg != World.FRESH;
+                    onDry &= m.land().ownsPlot(x, y) && !World.salt(tg) && tg != World.FRESH;
                     if (r != 0) clear = false;
                     for (CityShore.Work o : shore.works()) if (o != k && (o.holds(x, y) || o.quayAt(x, y))) clear = false;
                 }
             }
             for (int q = 1; q <= k.quay(); q++) {
                 long[] at = k.quayPlot(q);
-                quays &= m.land().ownsPlot(at[0], at[1]) && tileGround(w, at[0], at[1]) == World.SALT;
+                quays &= m.land().ownsPlot(at[0], at[1]) && World.salt(tileGround(w, at[0], at[1]));
             }
             if (k.berthed()) {
                 long[] e = k.quayPlot(k.quay() + 1);
@@ -5393,6 +5394,7 @@ public class MapCheck {
                 LandMap.earthWords(rland, 0, 0).equals(List.of(LandMap.OFF_PLANET_WORDS))
                         && LandMap.earthWords(LandManager.foundingLand(World.Key.generated(seed)), gen.foundingX(), gen.foundingY()).isEmpty());
 
+        reliefOnMap(types);
         fullFile(widest, rot);
     }
 
@@ -5434,7 +5436,7 @@ public class MapCheck {
         Water water = new Water(e, data, x0, x0, s);
         int banded = 0, bandMissed = 0, cores = 0, coreMissed = 0;
         for (int k = 0; k < far.length; k++) {
-            if (far[k] == World.SALT) continue;
+            if (World.salt(far[k])) continue;
             if (water.inStroke(k % n, k / n, true)) {
                 banded++;
                 if (far[k] != World.FRESH) bandMissed++;
@@ -5452,7 +5454,7 @@ public class MapCheck {
         for (int k = 0; k < far.length; k++) {
             proj.latLonOfPlot(x0 + (k % n + 0.5) * s, x0 + (k / n + 0.5) * s, ll);
             seaData += data.at("sea", ll[0], ll[1]) / (double) EarthData.SHARE_LEVELS;
-            if (far[k] == World.SALT) sea++;
+            if (World.salt(far[k])) sea++;
             if (World.dry(far[k])) {
                 dry++;
                 if (far[k] == World.FOREST) forest++;
@@ -5573,7 +5575,7 @@ public class MapCheck {
             if (!e.projection().latLonOfPlot(x0 + (k % n + 0.5) * stride, y0 + (k / n + 0.5) * stride, ll)) continue;
             int side = ll[1] < 0 ? 1 : 0;
             cells[side]++;
-            if (mid[k] != World.SALT) land[side]++;
+            if (!World.salt(mid[k])) land[side]++;
             if (mid[k] == World.FRESH && reg[k] != World.FRESH) fresh[side]++;
             landData[side] += 1 - data.at("sea", ll[0], ll[1]) / (double) EarthData.SHARE_LEVELS;
         }
@@ -5592,7 +5594,7 @@ public class MapCheck {
     static void fullFile(int widest, EarthTerrainCheck.Spot rot) throws Exception {
         Path file = EarthData.locate();
         if (file == null || !Files.isRegularFile(file)) {
-            out.println("      earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's far views were not drawn");
+            out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's far views were not drawn");
             return;
         }
         EarthData d = EarthData.open(file);
@@ -5640,7 +5642,7 @@ public class MapCheck {
         for (int j = 0; j < across; j++) for (int i = 0; i < across; i++) {
             e.farTerrain(i * span, j * span, widest, n, g);
             for (byte b : g) {
-                if (b != World.SALT) land++;
+                if (!World.salt(b)) land++;
                 if (b == World.FRESH) fresh++;
             }
         }
@@ -5666,7 +5668,7 @@ public class MapCheck {
                 for (int jj = j0; jj <= j1; jj++) for (int ii = i0; ii <= i1; ii++) {
                     double dx = x0 + (ii + 0.5) * s - l[0], dy = y0 + (jj + 0.5) * s - l[1], t = (dx * dx + dy * dy) / (l[2] * l[2]);
                     if (t < 1) centres++;
-                    if (t <= 1 - EarthTerrain.BLOB_FRAY / 2 && g[jj * n + ii] != World.FRESH && g[jj * n + ii] != World.SALT) coreMissed++;
+                    if (t <= 1 - EarthTerrain.BLOB_FRAY / 2 && g[jj * n + ii] != World.FRESH && !World.salt(g[jj * n + ii])) coreMissed++;
                 }
             }
         }
@@ -6528,7 +6530,7 @@ public class MapCheck {
                 if (ll == null) continue;
                 beyond++;
                 List<String> words = LandMap.globeHoverWords(away, land, null, sx, sy, World.DESERT, LandMap.CARD_FIELDS);
-                List<String> want = new ArrayList<>(List.of(LandMap.groundWords(World.DESERT), LandMap.NOT_THE_CITYS));
+                List<String> want = new ArrayList<>(List.of(LandMap.groundWords(World.DESERT, World.FLAT, -1), LandMap.NOT_THE_CITYS));
                 want.addAll(LandMap.earthWords(e, ll[0], ll[1]));
                 if (words.equals(want)) beyondRight++;
             }
@@ -6659,26 +6661,28 @@ public class MapCheck {
         for (int j = 0; j < fh; j++) {
             for (int i = 0; i < fw; i++) {
                 double[] ll = fg.latLonAt(i + 0.5, j + 0.5);
-                int want = ll == null ? GlobePicture.SPACE : colours[picture.at(ll[0], ll[1])];
+                int want = ll == null ? GlobePicture.SPACE : colours[picture.codeAt(ll[0], ll[1])];
                 if (ll == null) space++; else pictured++;
                 if (shot[j * fw + i] != want) wrong++;
             }
         }
         fg.set(key.lat(), key.lon(), (GlobeFrame.PICTURE_FROM_KM + GlobeFrame.FOUNDING_HANDOFF_KM) / 2);
         picture.view(fg, key, colours, GlobePicture.SPACE, shot);
-        byte[] cls = fg.groundPiece(key, 0, 0, fw, fh);
-        int groundWrong = 0;
+        byte[] cls = fg.groundCodes(key, 0, 0, fw, fh), plainCls = fg.groundPiece(key, 0, 0, fw, fh);
+        int groundWrong = 0, coverWrong = 0;
         for (int k = 0; k < shot.length; k++) {
             int i = k % fw, j = k / fw;
             int want = fg.onPlanet(i + 0.5, j + 0.5) ? colours[cls[k]] : GlobePicture.SPACE;
             if (shot[k] != want) groundWrong++;
+            if (GlobePicture.classOf(cls[k]) != plainCls[k]) coverWrong++;
         }
         out.printf("      the founding globe, %d x %d: whole, %,d pixels of the picture (made in %.0f ms at %d') and %,d of space, %d unlike;"
                 + " at %.2f km a pixel the far rule through the camera, %d unlike%n", fw, fh, pictured, madeMs, GlobePicture.FIRST_ARCMIN, space, wrong,
                 fg.kmPx(), groundWrong);
         check("the founding screen's globe is the model's frame: its pixels the planet's picture's, space off the disc", fg.tier() == GlobeFrame.GROUND
                 && pictured > 0 && space > 0 && wrong == 0);
-        check("...and closer, the far rule's through the globe's camera (GlobeFrame.groundPiece()), as the map's GROUND tier draws", groundWrong == 0);
+        check("...and closer, the far rule's through the globe's camera (GlobeFrame.groundCodes(): its classes groundPiece()'s, its relief the far rule's), as the map's GROUND tier draws",
+                groundWrong == 0 && coverWrong == 0);
         // Its handoff: half a pixel at the canvas's corner, against the ground drawn round the view's centre.
         double handoff = GlobeFrame.FOUNDING_HANDOFF_KM, parting = foundingParting(key.lat(), key.lon(), handoff), e4 = foundingParting(key.lat(), key.lon(), 4);
         out.printf("      its handoff %.4f km a pixel (spec-globe 3.2: 2.3): the globe and the ground round its centre part by %.6f px at the corners; at E4's 4 km by %.2f (the study 1.50); the expanded map's %.3f (the study 0.58)%n",
@@ -6702,7 +6706,7 @@ public class MapCheck {
             GlobePicture.bands(h, GlobePicture.cores(), (j0, j1) -> cc.ground(32, (nx, ny) -> node, (i, j, vx, vy, vz) -> 1, 2, big, w, 0, w, j0, j1));
             double gMs = (System.nanoTime() - a0) / 1e6;
             a0 = System.nanoTime();
-            cost.groundPiece(key, w / 2 - 64, h / 2 - 64, 128, 128);
+            cost.groundCodes(key, w / 2 - 64, h / 2 - 64, 128, 128);
             double qMs = (System.nanoTime() - a0) / 1e6;
             if (round >= WARM_ROUNDS) {
                 best[0] = Math.min(best[0], pMs);
@@ -6711,7 +6715,8 @@ public class MapCheck {
             }
         }
         out.printf("      a %d x %d frame on %d cores: the PICTURE tier %.1f ms; the GROUND tier from the plane's nodes %.1f ms (a quarter of it on the move);"
-                + " a %d-pixel piece of the far rule through the camera %.1f ms on the worker%n", w, h, GlobePicture.cores(), best[0], best[1], 128, best[2]);
+                + " a %d-pixel piece of the far rule through the camera, with its relief (GlobeFrame.groundCodes()), %.1f ms on the worker%n", w, h, GlobePicture.cores(), best[0], best[1], 128, best[2]);
+        reliefWordsAndLegend(sq.types);
     }
 
     /** The class a legend's ground words name. */
@@ -7494,7 +7499,7 @@ public class MapCheck {
                     if (!enough) continue;
                     w.regionTerrain(cx - 3 * CityMap.DISTRICT / 2, cy - 3 * CityMap.DISTRICT / 2, World.TILE, n, buf);
                     int dry = 0;
-                    for (byte b : buf) if (b != World.SALT && b != World.FRESH) dry++;
+                    for (byte b : buf) if (!World.salt(b) && b != World.FRESH) dry++;
                     if (dry >= DRY_PLACE * buf.length) return new long[] { cx, cy, ring };
                 }
             }
@@ -7639,7 +7644,7 @@ public class MapCheck {
         int ground = t.ground(x, y);
         int kind = TilePainter.kindOf(t.code(x, y)), use = t.use(x, y);
         boolean street = use == TilePainter.ROAD && (kind == BuildingVisual.GRAVEL || kind == BuildingVisual.PAVED) && (t.flag(x, y) & (AvTiles.BENEATH | AvTiles.BRIDGE)) == 0;
-        return (use == TilePainter.EMPTY || street) && ground != World.FRESH && ground != World.SALT && t.mark(x, y) == 0 && (t.flag(x, y) & AvTiles.OWNED) != 0;
+        return (use == TilePainter.EMPTY || street) && ground != World.FRESH && !World.salt(ground) && t.mark(x, y) == 0 && (t.flag(x, y) & AvTiles.OWNED) != 0;
     }
 
     /** Whether a pixel is a surfaced street's: the paved colour, the gravel's, or its grain. */
@@ -9215,5 +9220,304 @@ public class MapCheck {
                         + " the runs' layer drawn in %d of the %d months the runs moved; %d months not settled in %d rounds; the stamp's view made %d times%n", w.name,
                 w.fars.stream().map(f -> f.count + " at " + f.plots + " plots a px").toList(), recol.isEmpty() ? "-" : String.valueOf(medianInt(recol)), medianInt(moved), medianInt(rep),
                 medianInt(onStamp), runsDrawn, runsMoved, unsettled, CHAIN_ROUNDS, w.viewChanges);
+    }
+
+    /* =====================================================================
+       THE RELIEF ON THE MAP (ET1 slice D; docs/studies/spec-earth2-terrain.md
+       9.3 and earth2/mockup-report.md boards 1 and 2): on the fixture's
+       Medellin, whose hills are foothill, steep and very steep over grass and
+       forest, and the Halifax Narrows, whose channel is shallow sea
+       ===================================================================== */
+
+    /**
+     * The colour a plot of cover `c` and relief `r` is painted, said again from TileRaster's constants (D4, D5, D19): flat
+     * ground, water and ice (which have no relief, and white wins over a slope) in their cover's colour; open dry ground (grass,
+     * the beach, the desert) on a slope its grey; forest on a slope its green shaded toward that grey by FOREST_MIX.
+     */
+    static int reliefColour(int c, int r) {
+        if (r == World.FLAT || !World.dry(c)) return TileRaster.GROUND[c];
+        return c == World.FOREST ? TileRaster.blend(TileRaster.GROUND[World.FOREST], TileRaster.RELIEF_GREY[r], TileRaster.FOREST_MIX[r]) : TileRaster.RELIEF_GREY[r];
+    }
+
+    /** A map's relief on EarthCheck's fixture's key at (lat, lon): the data in use (EarthTerrain.use()) and the key of the Earth world there. */
+    static World.Key fixtureKey(double[] at) throws Exception {
+        EarthData data = EarthData.of(EarthCheck.resource(EarthCheck.FIXTURE));
+        return World.Key.earth(EarthTerrainCheck.SEED, at[0], at[1], EarthTerrain.use(data));
+    }
+
+    /** Section 10: the plane's plots and the far node over Medellin painted by their relief; a generated world painted as it was. */
+    static void reliefOnMap(BuildingVisual.Type[] types) throws Exception {
+        if (EarthCheck.resource(EarthCheck.FIXTURE) == null) return;
+        out.println("      the relief (ET1 slice D, board 1): each plot's grey by the relief plane, forest shaded toward it, ice white, a generated world as it was");
+        int tile = TilePainter.TILE, px = 4;
+        TilePainter.Input in = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted();
+        java.util.Arrays.fill(in.owned, true);
+        // The rule on every cover at every relief, a plot each: the painter's colour and the raster's pixel.
+        int[] img = new int[tile * px * tile * px];
+        for (int r = 0; r < World.RELIEFS; r++) for (int c = 0; c < World.CLASSES; c++) { in.terrain[r * World.CLASSES + c] = (byte) c; in.relief[r * World.CLASSES + c] = (byte) r; }
+        TilePainter.paint(in, p);
+        TileRaster.raster(in, p, px, img);
+        boolean rule = true, raster = true, greys = true, shaded = true, white = true, water = true, flat = true;
+        for (int r = 0; r < World.RELIEFS; r++) {
+            for (int c = 0; c < World.CLASSES; c++) {
+                int i = r * World.CLASSES + c, want = reliefColour(c, r);
+                rule &= TileRaster.groundColour(in, p, i) == want;
+                raster &= img[(i % tile) * px] == want;
+                if (r == World.FLAT) flat &= want == TileRaster.GROUND[c];
+                else if (c == World.GRASS || c == World.SAND || c == World.DESERT) greys &= want == TileRaster.RELIEF_GREY[r];
+                else if (c == World.FOREST) shaded &= want != TileRaster.GROUND[World.FOREST] && want != TileRaster.RELIEF_GREY[r];
+                else if (c == World.ICE) white &= want == TileRaster.GROUND[World.ICE];
+                else water &= want == TileRaster.GROUND[c];
+            }
+        }
+        int[] grey = TileRaster.RELIEF_GREY;
+        boolean order = EarthTerrainCheck.luma(grey[World.FOOTHILL]) > EarthTerrainCheck.luma(grey[World.STEEP])
+                && EarthTerrainCheck.luma(grey[World.STEEP]) > EarthTerrainCheck.luma(grey[World.VERY_STEEP])
+                && EarthTerrainCheck.luma(reliefColour(World.FOREST, World.FOOTHILL)) > EarthTerrainCheck.luma(reliefColour(World.FOREST, World.STEEP))
+                && EarthTerrainCheck.luma(reliefColour(World.FOREST, World.STEEP)) > EarthTerrainCheck.luma(reliefColour(World.FOREST, World.VERY_STEEP));
+        check("a plot is painted by its cover and relief: flat ground its cover's colour; grass, the beach and the desert on a slope its grey, foothill lightest to very steep darkest",
+                rule && raster && flat && greys && order);
+        check("...forest on a slope its green shaded toward its slope's grey (neither forest's own nor the grey), ice white whatever the slope, water as it is", shaded && white && water);
+
+        // Medellin's hills in the fixture: every plot of a 21 x 21 tile screen painted by its relief; the three greys and the shaded forest all drawn.
+        World.Key vk = fixtureKey(EarthTerrainCheck.VALLEY);
+        World vw = World.of(vk);
+        long c0 = vw.foundingX() / World.TILE, r0 = vw.foundingY() / World.TILE;
+        long[][] seen = new long[World.RELIEFS][2];
+        long plots = 0, wrong = 0;
+        for (long ty = r0 - 10; ty <= r0 + 10; ty++) {
+            for (long tx = c0 - 10; tx <= c0 + 10; tx++) {
+                in.tx = tx;
+                in.ty = ty;
+                vw.tileTerrain(tx, ty, in.terrain);
+                vw.tileRelief(tx, ty, in.relief);
+                TilePainter.paint(in, p);
+                for (int i = 0; i < TilePainter.PLOTS; i++) {
+                    int c = in.terrain[i], r = in.relief[i];
+                    plots++;
+                    if (TileRaster.groundColour(in, p, i) != reliefColour(c, r)) wrong++;
+                    if (c == World.FOREST) seen[r][1]++;
+                    else if (World.dry(c)) seen[r][0]++;
+                }
+            }
+        }
+        out.printf("      Medellin's 21 x 21 tiles (%,d plots): open ground flat %,d, foothill %,d, steep %,d, very steep %,d; forest flat %,d, on foothill %,d, steep %,d, very steep %,d%n", plots,
+                seen[0][0], seen[1][0], seen[2][0], seen[3][0], seen[0][1], seen[1][1], seen[2][1], seen[3][1]);
+        boolean hills = true;
+        for (int r = World.FOOTHILL; r < World.RELIEFS; r++) hills &= seen[r][0] > 0 && seen[r][1] > 0;
+        check("Medellin's hills in the fixture: every plot painted by its relief, and the three greys and the three shades of forest all on the screen", wrong == 0 && hills);
+
+        // The seam: the map's input carries the world's relief; a generated map's is flat and paints its cover's colours, as it did.
+        int cap = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
+        CityMap vm = CityMap.square(vk, vw.foundingX(), vw.foundingY(), types, 1, cap, new long[types.length]);
+        byte[] want = new byte[TilePainter.PLOTS];
+        boolean seam = true, anyRelief = false;
+        MapTiles vt = new MapTiles(vm);
+        for (long ty = r0 - 1; ty <= r0 + 1; ty++) {
+            for (long tx = c0 - 1; tx <= c0 + 1; tx++) {
+                vw.tileRelief(tx, ty, want);
+                vm.tileInput(tx, ty, in);
+                seam &= Arrays.equals(in.relief, want);
+                vt.input(tx, ty, in);
+                seam &= Arrays.equals(in.relief, want);
+                for (byte b : want) anyRelief |= b != World.FLAT;
+            }
+        }
+        check("the map's tile input carries the world's relief (CityMap.tileInput(), MapTiles.input()), and the plots about Medellin's centre hold some", seam && anyRelief);
+        World gw = World.of(EarthTerrainCheck.SEED);
+        CityMap gm = CityMap.square(World.Key.generated(EarthTerrainCheck.SEED), gw.foundingX(), gw.foundingY(), types, 1, cap, new long[types.length]);
+        boolean genFlat = true, genSame = true;
+        for (long ty = gw.foundingY() / World.TILE - 1; ty <= gw.foundingY() / World.TILE + 1; ty++) {
+            for (long tx = gw.foundingX() / World.TILE - 1; tx <= gw.foundingX() / World.TILE + 1; tx++) {
+                gm.tileInput(tx, ty, in);
+                for (byte b : in.relief) genFlat &= b == World.FLAT;
+                java.util.Arrays.fill(in.owned, true);
+                TilePainter.paint(in, p);
+                for (int i = 0; i < TilePainter.PLOTS; i++) genSame &= TileRaster.groundColour(in, p, i) == TileRaster.GROUND[in.terrain[i]];
+            }
+        }
+        check("a generated world is flat everywhere and paints its cover's colour at every plot, byte for byte as before (D19)", genFlat && genSame);
+
+        // The far node over Medellin: the relief beside the cover, the pixels painted by it, and the kept node equal; timed.
+        int n = MapFrame.NODE_PX;
+        long x0 = EarthTerrain.spotPlot() - EarthTerrainCheck.WINDOW / 2;
+        byte[] relief = new byte[n * n], ground = MapTiles.nodeTerrain(vk, x0, x0, WINDOW_STRIDE, relief), plain = MapTiles.nodeTerrain(vk, x0, x0, WINDOW_STRIDE);
+        boolean dryOnly = true;
+        long[] shares = new long[World.RELIEFS];
+        for (int k = 0; k < ground.length; k++) {
+            shares[relief[k]]++;
+            dryOnly &= relief[k] == World.FLAT || World.dry(ground[k]);
+        }
+        MapTiles tiles = new MapTiles(vm);
+        int[] withRelief = new int[n * n], without = new int[n * n], flatRelief = new int[n * n], kept = new int[n * n];
+        tiles.nodePixels(x0, x0, WINDOW_STRIDE, ground, relief, withRelief);
+        boolean[] edge = tiles.lastEdge().clone();
+        tiles.nodePixels(x0, x0, WINDOW_STRIDE, ground, null, without);
+        tiles.nodePixels(x0, x0, WINDOW_STRIDE, ground, new byte[n * n], flatRelief);
+        tiles.nodePixels(new MapTiles.KeptNode(), x0, x0, WINDOW_STRIDE, ground, relief, kept);
+        int farWrong = 0, flatWrong = 0, greyed = 0;
+        for (int k = 0; k < withRelief.length; k++) {
+            int i = k % n, j = k / n;
+            if (edge[k]) continue;   // the city's edge, blended over its ground
+            int base = reliefColour(ground[k], relief[k]), flatBase = TileRaster.GROUND[ground[k]];
+            // The city owns the district at its centre, undimmed there; the rest of the node is dimmed (TileRaster.UNOWNED_DIM).
+            boolean cityLand = Math.abs(i - n / 2) < World.DISTRICT / WINDOW_STRIDE && Math.abs(j - n / 2) < World.DISTRICT / WINDOW_STRIDE;
+            if (withRelief[k] != TileRaster.blend(base, TileRaster.VOID, TileRaster.UNOWNED_DIM) && !(cityLand && withRelief[k] == base)) farWrong++;
+            if (without[k] != TileRaster.blend(flatBase, TileRaster.VOID, TileRaster.UNOWNED_DIM) && !(cityLand && without[k] == flatBase)) flatWrong++;
+            if (relief[k] != World.FLAT && withRelief[k] != without[k]) greyed++;
+        }
+        out.printf("      Medellin's far node (%d plots a pixel): flat %,d, foothill %,d, steep %,d, very steep %,d of its %,d pixels; %,d painted other than flat's colour; %d unlike the rule's, %d of the flat's, kept %s, flat-asked %s%n",
+                WINDOW_STRIDE, shares[0], shares[1], shares[2], shares[3], ground.length, greyed, farWrong, flatWrong, Arrays.equals(withRelief, kept), Arrays.equals(without, flatRelief));
+        check("a far node's cover is the same with its relief asked for, and its relief is on dry ground alone, all four classes present over Medellin",
+                Arrays.equals(ground, plain) && dryOnly && shares[World.FOOTHILL] > 0 && shares[World.STEEP] > 0 && shares[World.VERY_STEEP] > 0 && shares[World.FLAT] > 0);
+        check("...its pixels painted by cover and relief (TileRaster.colour()), the city's ground and edge aside; with no relief, or all flat, the pixels as before; the kept node the same",
+                farWrong == 0 && flatWrong == 0 && greyed > 0 && Arrays.equals(withRelief, kept) && Arrays.equals(without, flatRelief));
+        double best = Double.MAX_VALUE;
+        for (int r = 0; r < WARM_ROUNDS + TIMED_ROUNDS; r++) {
+            long t0 = System.nanoTime();
+            byte[] g = MapTiles.nodeTerrain(vk, x0, x0, WINDOW_STRIDE, relief);
+            tiles.nodePixels(x0, x0, WINDOW_STRIDE, g, relief, withRelief);
+            double ms = (System.nanoTime() - t0) / 1e6;
+            if (r >= WARM_ROUNDS) best = Math.min(best, ms);
+        }
+        out.printf("      Medellin's far node with its relief, ground and pixels: %.1f ms%n", best);
+        check("...the node and its pixels drawn in no more than SCREEN_MS (" + (int) SCREEN_MS + " ms)", Timing.within(best, SCREEN_MS));
+        // A generated world's far node asked for its relief is flat, and paints as before.
+        World.Key gk = World.Key.generated(EarthTerrainCheck.SEED);
+        byte[] grel = new byte[n * n], gground = MapTiles.nodeTerrain(gk, gw.foundingX() - 512, gw.foundingY() - 512, 8, grel);
+        boolean genNode = Arrays.equals(gground, MapTiles.nodeTerrain(gk, gw.foundingX() - 512, gw.foundingY() - 512, 8));
+        for (byte b : grel) genNode &= b == World.FLAT;
+        check("a generated world's far node asked for its relief is all flat, its cover the same", genNode);
+    }
+
+    /** Section 11: a built district's far node over Medellin's hills: the greys on the city's own ground, undimmed, and nowhere else but the plan's own colours. */
+    static void pictureRelief(BuildingVisual.Type[] types) throws Exception {
+        if (EarthCheck.resource(EarthCheck.FIXTURE) == null) return;
+        out.println("\n--- 11 (ET1 slice D). the district pictures over relief: the far node's own ground under a built city is painted by its relief ---");
+        World.Key vk = fixtureKey(EarthTerrainCheck.VALLEY);
+        World vw = World.of(vk);
+        long[] c = new long[types.length];
+        for (int t = 0; t < JERUS_COUNTS.length && t < c.length; t++) c[t] = JERUS_COUNTS[t];
+        for (BuildingVisual.Type t : types) if (t != null && t.id() == Mining.IRON_MINE) c[t.id()] = 0;
+        int side = (int) Math.ceil(Math.sqrt(groundKm2(types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
+        CityMap m = CityMap.square(vk, vw.foundingX(), vw.foundingY(), types, side, (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), c);
+        MapTiles tiles = new MapTiles(m);
+        int n = MapFrame.NODE_PX, plots = 16;
+        long span = (long) n * plots, x0 = Math.floorDiv(vw.foundingX(), span) * span, y0 = Math.floorDiv(vw.foundingY(), span) * span;
+        byte[] relief = new byte[n * n], ground = MapTiles.nodeTerrain(vk, x0, y0, plots, relief);
+        int[] px = new int[n * n];
+        // The pictures it lacks are drawn from the plans (the view asks CityMap.pictureJobs()); here as the pictures section does, so a district is a picture when its node asks.
+        tiles.nodePixels(x0, y0, plots, ground, relief, px);
+        for (CityMap.District d : new ArrayList<>(tiles.wanted())) for (CityMap.Job j : m.pictureJobs(d)) { j.run(); m.adopt(j); }
+        tiles.nodePixels(x0, y0, plots, ground, relief, px);
+        boolean[] edge = tiles.lastEdge().clone(), run = tiles.lastRun().clone();
+        java.util.Set<Integer> buildings = new java.util.HashSet<>();
+        for (int code = 1; code < DistrictPicture.CODES; code++) buildings.add(DistrictPicture.colour(code));
+        int own = 0, ownGrey = 0, other = 0, owned = 0;
+        for (int k = 0; k < px.length; k++) {
+            int base = reliefColour(ground[k], relief[k]), dim = TileRaster.blend(base, TileRaster.VOID, TileRaster.UNOWNED_DIM);
+            if (edge[k] || run[k] || buildings.contains(px[k])) continue;
+            if (px[k] == base) { own++; if (relief[k] != World.FLAT) ownGrey++; }
+            else if (px[k] != dim) other++;
+        }
+        out.printf("      the node over the city (%d districts, %d plots a pixel): %,d pixels of ground the city owns, %,d of them on a slope, %,d of no ground colour%n",
+                m.districts().size(), plots, own, ownGrey, other);
+        check("a far node over a built city on Medellin's hills draws the city's own bare ground by its relief, undimmed, and the rest dimmed - no pixel but a building's, a run's or its edge another colour",
+                other == 0 && ownGrey > 0 && own > ownGrey);
+    }
+
+    /** Section 13: the words and the legend by relief; the globe's hover and its picture's codes. */
+    static void reliefWordsAndLegend(BuildingVisual.Type[] types) throws Exception {
+        if (EarthCheck.resource(EarthCheck.FIXTURE) == null) return;
+        out.println("      the relief's words (ET1 slice D, board 2): the hover's first line by relief and depth, the legend's greys, only on an Earth world with relief");
+        World.Key vk = fixtureKey(EarthTerrainCheck.VALLEY), hk = fixtureKey(EarthTerrainCheck.NARROWS);
+        World vw = World.of(vk), hw = World.of(hk);
+        CityLand vland = LandManager.foundingLand(vk), hland = LandManager.foundingLand(hk);
+        // The hover on land: Medellin's plots by relief, words from the constants; the first line says the grade.
+        long c0 = vw.foundingX(), r0 = vw.foundingY();
+        int[] said = new int[World.RELIEFS];
+        boolean land = true;
+        for (long y = r0 - 320; y <= r0 + 320 && land; y += 7) {
+            for (long x = c0 - 320; x <= c0 + 320; x += 7) {
+                byte g = vw.terrainAt(x, y);
+                int r = vw.reliefAt(x, y);
+                String first = LandMap.hoverWords(vland, null, x, y).get(0);
+                if (World.salt(g) || !World.dry(g)) { land &= first.equals(LandMap.groundWords(g)) || World.salt(g); continue; }
+                String name = g == World.FOREST ? LandMap.FOREST_ON_WORDS[r] : r == World.FLAT ? LandMap.groundWords(g) : LandMap.RELIEF_NAMES[r];
+                land &= first.equals(name + " · " + LandMap.GRADE_WORDS[r]) && first.equals(LandMap.plotGroundWords(vland, g, x, y)) && first.equals(LandMap.groundWords(g, r, -1));
+                said[r]++;
+            }
+        }
+        out.printf("      Medellin's hover first lines over 2,000 plots: flat %,d, foothill %,d, steep %,d, very steep %,d%n", said[0], said[1], said[2], said[3]);
+        check("on an Earth world with relief the hover's first line is the plot's ground and grade: \"Foothill\" and its grade on open ground, \"Forest on steep ground\" and so on, flat \"Grass\" with \"flat\"",
+                land && said[World.FLAT] > 0 && said[World.FOOTHILL] > 0 && said[World.STEEP] > 0 && said[World.VERY_STEEP] > 0
+                        && LandMap.groundWords(World.GRASS, World.FOOTHILL, -1).startsWith(LandMap.RELIEF_NAMES[World.FOOTHILL])
+                        && LandMap.groundWords(World.GRASS, World.FOOTHILL, -1).contains(LandMap.GRADE_WORDS[World.FOOTHILL])
+                        && LandMap.groundWords(World.ICE, World.VERY_STEEP, -1).equals(LandMap.groundWords(World.ICE)));
+        // ...on the sea: the Narrows' shallow channel and Bedford Basin's deep, each with its depth.
+        double[] ll = { EarthTerrainCheck.NARROWS[0], EarthTerrainCheck.NARROWS[1] }, xy = new double[2];
+        hw.earthTerrain().projection().plotOf(ll[0], ll[1], xy);
+        long hx = (long) Math.floor(xy[0]), hy = (long) Math.floor(xy[1]);
+        hw.earthTerrain().projection().plotOf(EarthTerrainCheck.BASIN[0], EarthTerrainCheck.BASIN[1], xy);
+        long bx = (long) Math.floor(xy[0]), by = (long) Math.floor(xy[1]);
+        byte narrows = hw.terrainAt(hx, hy), basin = hw.terrainAt(bx, by);
+        String nw = LandMap.hoverWords(hland, null, hx, hy).get(0), bw = LandMap.hoverWords(hland, null, bx, by).get(0);
+        out.printf("      the Narrows: %s%n      Bedford Basin: %s%n", nw, bw);
+        check("on the sea the first line carries the depth: the Narrows \"Shallow sea\" and its metres, Bedford Basin \"Sea\" and its",
+                narrows == World.SHALLOW && basin == World.SALT && nw.equals(LandMap.seaWords(World.SHALLOW, hw.depthAt(hx, hy)))
+                        && bw.equals(LandMap.seaWords(World.SALT, hw.depthAt(bx, by))) && nw.startsWith(LandMap.SHALLOW_WORDS) && bw.startsWith(LandMap.groundWords(World.SALT))
+                        && hw.depthAt(hx, hy) <= 30);
+        // A generated world's hover is as it was; the globe's, past the plane, says the code's ground and grade, and the sea's depth where the point is.
+        long gseed = EarthTerrainCheck.SEED;
+        World.Key gk = World.Key.generated(gseed);
+        World gw = World.of(gk);
+        CityLand gland = LandManager.foundingLand(gk);
+        boolean generated = !LandMap.reliefDrawn(gk) && LandMap.reliefDrawn(vk) && LandMap.reliefDrawn(hk);
+        for (long y = gw.foundingY() - 100; y <= gw.foundingY() + 100; y += 9) {
+            for (long x = gw.foundingX() - 100; x <= gw.foundingX() + 100; x += 9) generated &= LandMap.hoverWords(gland, null, x, y).get(0).equals(LandMap.groundWords(gw.terrainAt(x, y)));
+        }
+        check("a generated world's hover first line is its ground's words, as before, and only the fixture's Earth worlds are drawn with relief (LandMap.reliefDrawn())", generated);
+        GlobeFrame away = new GlobeFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H, EarthTerrainCheck.VALLEY[0], EarthTerrainCheck.VALLEY[1]);
+        double[] far = GlobeFrame.destination(EarthTerrainCheck.VALLEY[0], EarthTerrainCheck.VALLEY[1], 135, 2000);
+        away.set(far[0], far[1], 0.1);
+        byte[] drawn = { GlobePicture.code(World.FOREST, World.STEEP), GlobePicture.code(World.GRASS, World.VERY_STEEP), GlobePicture.code(World.ICE, World.FLAT), World.SALT };
+        boolean globe = true;
+        double sx = MapTiles.DESIGN_W / 2.0, sy = MapTiles.DESIGN_H / 2.0;
+        double[] at = away.latLonAt(sx, sy);
+        for (byte d : drawn) {
+            List<String> words = LandMap.globeHoverWords(away, vland, null, sx, sy, d, LandMap.CARD_FIELDS);
+            String first = LandMap.pointGroundWords(vw.earthTerrain(), d, at[0], at[1]);
+            globe &= words.get(0).equals(first) && words.get(1).equals(LandMap.NOT_THE_CITYS);
+        }
+        globe &= LandMap.pointGroundWords(vw.earthTerrain(), drawn[0], at[0], at[1]).equals(LandMap.FOREST_ON_WORDS[World.STEEP] + " · " + LandMap.GRADE_WORDS[World.STEEP])
+                && LandMap.pointGroundWords(vw.earthTerrain(), drawn[1], at[0], at[1]).equals(LandMap.RELIEF_NAMES[World.VERY_STEEP] + " · " + LandMap.GRADE_WORDS[World.VERY_STEEP])
+                && LandMap.pointGroundWords(vw.earthTerrain(), drawn[2], at[0], at[1]).equals(LandMap.groundWords(World.ICE))
+                && LandMap.pointGroundWords(vw.earthTerrain(), drawn[3], at[0], at[1]).startsWith(LandMap.groundWords(World.SALT));
+        check("the globe's hover past the plane says the ground it drew by its code: the class and its grade, ice as it is, the sea with its depth", globe);
+        // The legend: the greys, forest on a slope and the shallow sea where the world has relief; the legend as it was where it has none.
+        List<LandMap.Entry> pic = LandMap.legend(GlobeFrame.PICTURE, true), gro = LandMap.legend(GlobeFrame.GROUND, true), pla = LandMap.legend(GlobeFrame.PLANE, true);
+        List<LandMap.Entry> pic0 = LandMap.legend(GlobeFrame.PICTURE), pla0 = LandMap.legend(GlobeFrame.PLANE);
+        boolean legend = pic.size() == pic0.size() + World.RELIEFS && gro.size() == pic.size() + 1 && pic0.equals(LandMap.legend(GlobeFrame.PICTURE, false))
+                && pla0.equals(LandMap.planeLegend()) && pla.equals(LandMap.planeLegend(true)) && pla.size() == pla0.size() + World.RELIEFS + 1 && gro.subList(0, pic.size()).equals(pic);
+        for (int r = World.FOOTHILL; r < World.RELIEFS; r++) {
+            final int rr = r;
+            legend &= pic.contains(new LandMap.Entry(TileRaster.RELIEF_GREY[r], LandMap.RELIEF_NAMES[r])) && pla.contains(new LandMap.Entry(TileRaster.RELIEF_GREY[r], LandMap.RELIEF_NAMES[r]))
+                    && pic0.stream().noneMatch(en -> en.words().equals(LandMap.RELIEF_NAMES[rr]));
+        }
+        LandMap.Entry shaded = new LandMap.Entry(reliefColour(World.FOREST, World.STEEP), LandMap.FOREST_SLOPE_WORDS);
+        legend &= pic.contains(shaded) && pla.contains(shaded) && !pic0.contains(shaded);
+        // The globe's legend keeps the shallow sea (and its words) and the plane's gains it.
+        LandMap.Entry shallow = new LandMap.Entry(TileRaster.GROUND[World.SHALLOW], LandMap.SHALLOW_WORDS);
+        legend &= pic0.contains(shallow) && pic.contains(shallow) && gro.contains(shallow) && pla.contains(shallow) && !pla0.contains(shallow);
+        check("the legend on an Earth world with relief has the three greys, forest on a slope and the shallow sea, in the globe's tiers and the plane's; without, as it was", legend);
+        // The picture's colours: a table of a code each, its FLAT row the classes' colours, the relief's rows the map's.
+        int[] colours = GlobePicture.colours(false);
+        boolean table = colours.length == GlobePicture.CODES && GlobePicture.CODES == World.RELIEFS * World.CLASSES;
+        for (int r = 0; r < World.RELIEFS; r++) for (int cl = 0; cl < World.CLASSES; cl++) table &= colours[GlobePicture.code(cl, r)] == reliefColour(cl, r)
+                && GlobePicture.classOf(GlobePicture.code(cl, r)) == cl && GlobePicture.reliefOf(GlobePicture.code(cl, r)) == r;
+        int[] dimmed = GlobePicture.colours(true);
+        for (int k = 0; k < colours.length; k++) table &= dimmed[k] == TileRaster.blend(colours[k], TileRaster.VOID, TileRaster.UNOWNED_DIM);
+        check("the globe's colour table is a colour for every code - a class and its relief - the map's own, and the world off the city's land dimmed as the far nodes dim it", table);
     }
 }

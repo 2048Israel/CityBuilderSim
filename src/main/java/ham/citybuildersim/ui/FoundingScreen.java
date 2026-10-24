@@ -101,7 +101,9 @@ import static ham.citybuildersim.ui.Pieces.*;
  *   - the card (EarthSite.measure(), on a worker): the site the snap found
  *     and how far from the spot, the ground within 5 km - dry, rivers and
  *     lakes, sea and (0.7.127) ice - and the nearest fresh water and sea, the province and its
- *     deposit multipliers, the nearest iron; a refusal (the sea, ice) in the
+ *     deposit multipliers, the nearest iron, and since ET1 the ground by relief, the nearest shallow
+ *     water with the sea's depth, and the landmass (D21: EarthSite.reliefWords(), shallowWords(),
+ *     landmassWords()); a refusal (the sea, ice) in the
  *     bad colour, which keeps Found dark, and a warning (a desert, no water
  *     near) in the warning colour, which does not.
  * The seed decides an Earth city's detail below the data, its fields and its
@@ -563,7 +565,7 @@ final class FoundingScreen {
         fillCard();
         refresh();
         CARDS.submit(() -> {
-            EarthData.Place p = EarthSite.randomPlace(d, EarthData.EARTH_1, seed);
+            EarthData.Place p = EarthSite.randomPlace(d, EarthData.EARTH_2, seed);
             Platform.runLater(() -> {
                 if (asked != cardAsked) return;
                 if (p == null) return;
@@ -591,7 +593,7 @@ final class FoundingScreen {
             refresh();
             return;
         }
-        World.Key key = World.Key.earth(seed, spotLat, spotLon, EarthData.EARTH_1);
+        World.Key key = World.Key.earth(seed, spotLat, spotLon, EarthData.EARTH_2);
         if (key.equals(cardKey) && card != null) {
             fillCard();
             refresh();
@@ -651,6 +653,11 @@ final class FoundingScreen {
         cardBox.getChildren().add(cardLine(waterWords(c), Palette.TEXT_BODY));
         cardBox.getChildren().add(cardLine(geologyWords(c), Palette.TEXT_BODY));
         cardBox.getChildren().add(cardLine(ironWords(c), Palette.TEXT_BODY));
+        // ET1 (D21): the ground by relief, the shallow water and the sea's depth, and the landmass, the words EarthSite writes.
+        cardBox.getChildren().add(cardLine(EarthSite.reliefWords(c), Palette.TEXT_BODY));
+        cardBox.getChildren().add(cardLine(EarthSite.shallowWords(c), Palette.TEXT_BODY));
+        String landmass = EarthSite.landmassWords(c);
+        if (landmass != null) cardBox.getChildren().add(cardLine(landmass, Palette.TEXT_BODY));
         for (String w : c.warnings()) cardBox.getChildren().add(cardLine(w, Palette.WARN));
         Long seed = seed();
         Label seedLine = cardLine(seedWords(seed == null ? 0 : seed), Palette.TEXT_MUTED);
@@ -1246,7 +1253,7 @@ final class FoundingScreen {
                             return;
                         }
                         px = new int[(int) GLOBE_W * (int) GLOBE_H];
-                        World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, vLat, vLon, EarthData.EARTH_1);
+                        World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, vLat, vLon, EarthData.EARTH_2);
                         pic.view(view, key, COLOURS, SPACE, px);
                     } else px = groundPixels(spot, vLat, vLon, vKm);
                 } catch (RuntimeException e) {
@@ -1271,7 +1278,7 @@ final class FoundingScreen {
         private World.Key spotKey() {
             Long seed = seed();
             if (seed == null || Double.isNaN(spotLat) || spotLat != lat || spotLon != lon) return null;
-            return World.Key.earth(seed, spotLat, spotLon, EarthData.EARTH_1);
+            return World.Key.earth(seed, spotLat, spotLon, EarthData.EARTH_2);
         }
 
         /** The canvas painted: the last picture (where its centre lies now, at the view's scale), the spot, and the site with its 5 km once the card has one. */
@@ -1326,21 +1333,21 @@ final class FoundingScreen {
 
     /* ------------------------------------------------------- the close tier's ground */
 
-    /** The ground close: the city's own far view (MapTiles.nodeTerrain()) on an Earth world centred on the view - the spot's own when it is there - a whole number of plots a pixel; the void past the planet's rim. Since 0.7.135 the globe's wide views are the map's (GlobePicture.view()), and this is the founding globe's own arithmetic alone. */
+    /** The ground close: the city's own far view (MapTiles.nodeTerrain()) on an Earth world centred on the view - the spot's own when it is there - a whole number of plots a pixel, each pixel's colour by its cover and relief as the map's far nodes are (ET1 slice D); the void past the planet's rim. Since 0.7.135 the globe's wide views are the map's (GlobePicture.view()), and this is the founding globe's own arithmetic alone. */
     static int[] groundPixels(World.Key spot, double lat0, double lon0, double kmPx) {
-        World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, lat0, lon0, EarthData.EARTH_1);
+        World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, lat0, lon0, EarthData.EARTH_2);
         long s = Math.max(1, Math.round(kmPx * 1000 / World.PLOT_M));
         int w = (int) GLOBE_W, h = (int) GLOBE_H, n = MapFrame.NODE_PX;
         long x0 = World.SIDE / 2 - (w / 2) * s, y0 = World.SIDE / 2 - (h / 2) * s;
         int[] out = new int[w * h];
         for (int ny = 0; ny * n < h; ny++) {
             for (int nx = 0; nx * n < w; nx++) {
-                byte[] node = MapTiles.nodeTerrain(key, x0 + (long) nx * n * s, y0 + (long) ny * n * s, s);
+                byte[] relief = new byte[n * n], node = MapTiles.nodeTerrain(key, x0 + (long) nx * n * s, y0 + (long) ny * n * s, s, relief);
                 for (int v = 0; v < n && ny * n + v < h; v++) {
                     for (int u = 0; u < n && nx * n + u < w; u++) {
                         int i = nx * n + u, j = ny * n + v;
                         double mx = EarthProj.metresX(x0 + (i + 0.5) * s), my = EarthProj.metresY(y0 + (j + 0.5) * s);
-                        out[j * w + i] = EarthProj.onPlanet(mx, my) ? TileRaster.GROUND[node[v * n + u]] : TileRaster.VOID;
+                        out[j * w + i] = EarthProj.onPlanet(mx, my) ? TileRaster.colour(node[v * n + u], relief[v * n + u]) : TileRaster.VOID;
                     }
                 }
             }

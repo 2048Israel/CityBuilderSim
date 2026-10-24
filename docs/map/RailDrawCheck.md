@@ -64,7 +64,7 @@
 >      the fan closes on the line the yard stands on, not on the middle of
 > ... (52 more lines in the source)
 
-**Uses:** [TileRaster](TileRaster.md) (176), [TilePainter](TilePainter.md) (130), [BuildingVisual](BuildingVisual.md) (66), [TrackCurves](TrackCurves.md) (33), [MapTiles](MapTiles.md) (27), [LandMap](LandMap.md) (17), [CityMap](CityMap.md) (16), [CityRuns](CityRuns.md) (10), [MapFrame](MapFrame.md) (8), [World](World.md) (4), [Founding](Founding.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [DistrictPlan](DistrictPlan.md) (3), [BuildingType](BuildingType.md) (3), [TrainSchedule](TrainSchedule.md) (2), [MapCheck](MapCheck.md) (1), [Resource](Resource.md) (1), [CityShore](CityShore.md) (1)
+**Uses:** [TileRaster](TileRaster.md) (175), [TilePainter](TilePainter.md) (130), [BuildingVisual](BuildingVisual.md) (66), [TrackCurves](TrackCurves.md) (33), [MapTiles](MapTiles.md) (27), [LandMap](LandMap.md) (17), [CityMap](CityMap.md) (16), [CityRuns](CityRuns.md) (10), [MapFrame](MapFrame.md) (8), [World](World.md) (5), [Founding](Founding.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [DistrictPlan](DistrictPlan.md) (3), [BuildingType](BuildingType.md) (3), [TrainSchedule](TrainSchedule.md) (2), [MapCheck](MapCheck.md) (1), [Resource](Resource.md) (1), [CityShore](CityShore.md) (1)
 
 ## Sections
 

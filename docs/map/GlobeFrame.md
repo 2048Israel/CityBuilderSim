@@ -1,4 +1,4 @@
-# GlobeFrame.java - 835 lines · 74 methods · 16 constants · model
+# GlobeFrame.java - 851 lines · 75 methods · 16 constants · model
 
 `ham/citybuildersim/GlobeFrame.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -62,9 +62,9 @@
 > no reach, hands off at half a pixel of its canvas (FOUNDING_HANDOFF_KM,
 > halfPixelKm()).
 
-**Uses:** [EarthProj](EarthProj.md) (41), [World](World.md) (18), [MapFrame](MapFrame.md) (5), [GlobePicture](GlobePicture.md) (2), [CityLand](CityLand.md) (1), [LandMarket](LandMarket.md) (1), [LandGrid](LandGrid.md) (1), [LandParcel](LandParcel.md) (1), [EarthTerrain](EarthTerrain.md) (1)
+**Uses:** [EarthProj](EarthProj.md) (41), [World](World.md) (21), [MapFrame](MapFrame.md) (5), [GlobePicture](GlobePicture.md) (3), [EarthTerrain](EarthTerrain.md) (2), [CityLand](CityLand.md) (1), [LandMarket](LandMarket.md) (1), [LandGrid](LandGrid.md) (1), [LandParcel](LandParcel.md) (1)
 
-**Used by (6):** [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapView](MapView.md)
+**Used by (8):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [ReliefRenders](ReliefRenders.md)
 
 ## Sections
 
@@ -76,7 +76,7 @@
 | 460 | · a pixel |
 | 496 | · the handoff to the city's plane (spec-globe 3.2) |
 | 524 | · the GROUND tier's pieces |
-| 542 | THE GLOBE ON SCREEN (0.7.135, batch E9; docs/studies/spec-globe.md 3.5 |
+| 558 | THE GLOBE ON SCREEN (0.7.135, batch E9; docs/studies/spec-globe.md 3.5 |
 
 ## Constants
 
@@ -97,7 +97,7 @@
 | 103 | `GlobeFrame.EDGE_FROM_PX` | `4` | The city's edge is drawn through the globe's camera once the city is at least this many pixels across: 4 (spec-globe 3.7's est.) - under it the ring alone marks it. |
 | 106 | `GlobeFrame.FOUNDING_W` | `560, FOUNDING_H = 270` | The founding screen's globe, in pixels: 560 x 270 (ui/FoundingScreen's right column, 0.7.121; GlobeFrame's since 0.7.135, so a harness draws what it draws). |
 | 124 | `GlobeFrame.FOUNDING_HANDOFF_KM` | `halfPixelKm(FOUNDING_W, FOUNDING_H)` | The founding globe hands its view to the ground drawn round its centre at this, km a pixel (★E9, spec-globe 3.2's choice): halfPixelKm() of its canvas, 2.32 - under half a pixel at the swap, as the map's 16 plots is, ... |
-| 834 | `GlobeFrame.AT_THE_CENTRE` | `" at the centre"` | What the globe's scale bar adds to its length (spec-globe 3.7: "true at the view's centre only, and says so"). |
+| 850 | `GlobeFrame.AT_THE_CENTRE` | `" at the centre"` | What the globe's scale bar adds to its length (spec-globe 3.7: "true at the view's centre only, and says so"). |
 
 ## Fields (state)
 
@@ -108,19 +108,19 @@
 | 128 | `private final EarthProj plane` |  |
 | 129 | `private double lat, lon, kmPx, roll, reachKm` |  |
 | 130 | `private EarthProj.Ortho ortho` |  |
-| 594 | `private double drawsKm` | A copy's planeDrawsKm(), its view's; NaN in a view of its own. |
-| 715 | `final double lat, lon, kmPx, roll, reach, draws` |  |
-| 716 | `final double m, cosR, sinR, cosL0, sinL0, cosReach, cosDraws` |  |
-| 717 | `final double ee, en, ea, ne, nn, na, ue, un, ua` |  |
-| 755 | `private Composed composed` | The matrix for the view as it is, made when it moved; its fields final, so the bands' threads read it whole. |
-| 775 | `private final double ax, ay, az, bx, by, bz, cx, cy, cz, w2, h2` |  |
-| 776 | `private final int w, h` |  |
+| 610 | `private double drawsKm` | A copy's planeDrawsKm(), its view's; NaN in a view of its own. |
+| 731 | `final double lat, lon, kmPx, roll, reach, draws` |  |
+| 732 | `final double m, cosR, sinR, cosL0, sinL0, cosReach, cosDraws` |  |
+| 733 | `final double ee, en, ea, ne, nn, na, ue, un, ua` |  |
+| 771 | `private Composed composed` | The matrix for the view as it is, made when it moved; its fields final, so the bands' threads read it whole. |
+| 791 | `private final double ax, ay, az, bx, by, bz, cx, cy, cz, w2, h2` |  |
+| 792 | `private final int w, h` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 772 | **type** `public final class GlobeFrame` | The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a drag, a held key and Fit move it, which of three pictures it draws - the ... |
+| 64 | 788 | **type** `public final class GlobeFrame` | The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a drag, a held key and Fit move it, which of three pictures it draws - the ... |
 | 118 | 4 | `public static double halfPixelKm(double w, double h)` | The scale at which a view of w x h pixels and the plane centred where it looks part by half a pixel at its corners, km a pixel (spec-globe 3.2): a point rho out from the middle is the angle c = 2 asin(rho / 2R) from t... |
 | 133 | 8 | `public GlobeFrame(double width, double height, double cityLat, double cityLon)` | A view of width x height pixels round a city on the real Earth at (cityLat, cityLon), the spot its plane is centred on: fitted, the whole planet facing the city, north up. |
 | 142 | 1 | `public double width()` |  |
@@ -199,39 +199,40 @@
 | 511 | 1 | `public double planeScale()` | ...and its scale, screen pixels a plot (MapFrame's): World.PLOT_M over the metres a pixel. |
 | 514 | 9 | `public void fromPlane(double x, double y, double pxAPlot)` | The plane's view taken back: centred on plot (x, y) at `pxAPlot` screen pixels a plot. |
 
-### the GROUND tier's pieces (lines 524-541)
+### the GROUND tier's pieces (lines 524-557)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 533 | 8 | `public byte[] groundPiece(World.Key key, int sx0, int sy0, int w, int h)` | A piece of the GROUND tier: the screen's pixels sx0 to sx0 + w - 1 across and sy0 to sy0 + h - 1 down, a World class each, drawn by the far rule through the globe's camera (EarthTerrain.globe()) on the Earth world a k... |
+| 548 | 9 | `public byte[] groundCodes(World.Key key, int sx0, int sy0, int w, int h)` | ...a piece's codes (ET1 slice D; spec-earth2-terrain 9.3): each pixel's class and relief as the planet's picture holds a texel's (GlobePicture.code()) - the far rule's relief through the same camera - so the GROUND ti... |
 
-### THE GLOBE ON SCREEN (0.7.135, batch E9; docs/studies/spec-globe.md 3.5 (lines 542-835)
+### THE GLOBE ON SCREEN (0.7.135, batch E9; docs/studies/spec-globe.md 3.5 (lines 558-851)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 550 | 10 | `public boolean plotAt(double sx, double sy, double[] xy)` | The plot under a screen point in the tier this view draws, into xy: on the plane its own; on the globe through the camera to the city's plane (EarthProj.plotOf()). |
-| 562 | 9 | `public double[] screenOfPlot(double x, double y)` | Where a plot of the city's plane lies on the screen, {x, y} in pixels, in the tier this view draws: null on the globe's far side or off the planet. |
-| 573 | 6 | `public boolean planeHolds(double sx, double sy)` | Whether a screen point is drawn from the city's plane - within planeDrawsKm() of the city and the world's square, or anywhere on the plane's own tier: the plane's answer is the one there (the hover's, a click's). |
-| 589 | 3 | `public double planeDrawsKm()` | How far from the city the globe draws the city's plane's own far nodes, km (★E9): the reach and the view's half-diagonal at the handoff, so a view at the handoff with its centre within the reach - every view the wheel... |
-| 597 | 1 | **type** `public interface NodePixels` | The pixels of a far node of the city's plane, its colours (MapTiles.nodePixels()) - null where it is not drawn yet. |
-| 597 | 1 | `int[] at(long nx, long ny)` _(in GlobeFrame.NodePixels)_ |  |
-| 600 | 1 | **type** `public interface Beyond` | A pixel's colour beyond the reach, or where the plane's node is not drawn: by its place on the screen, and its point on the planet as a unit vector in the camera's frame (vx, vy, vz: Ortho.inverse()'s), which latOf() ... |
-| 600 | 1 | `int colour(int i, int j, double vx, double vy, double vz)` _(in GlobeFrame.Beyond)_ |  |
-| 603 | 3 | `public static double latOf(double vx, double vy, double vz)` | The latitude of a point given as Beyond's unit vector, degrees: Ortho.inverse()'s. |
-| 608 | 3 | `public double lonOf(double vx, double vy)` | ...and its longitude, in [-180, 180). |
-| 626 | 45 | `public int ground(long plots, NodePixels nodes, Beyond beyond, int space, int[] out, int outW, int i0, int i1, int j0, int j1)` | The GROUND tier near the city (★E9; spec-globe 3.5's "cheaper GROUND tier"): the screen's pixels sx in [i0, i1), sy in [j0, j1) into out (outW a row), each pixel's centre through the globe to the city's plane and, wit... |
-| 673 | 14 | `public boolean planeAt(double sx, double sy, double[] xy)` | The plot of the city's plane under a screen point by ground()'s matrix, into xy: false off the disc or at the plane's antipode - what a harness holds to the camera and the plane's own projections (plotAt()). |
-| 689 | 7 | `public boolean reachHolds(double sx, double sy)` | Whether a screen point lies within the reach, by ground()'s matrix: the angle from the city no wider than the reach's. |
-| 698 | 7 | `public boolean drawsHold(double sx, double sy)` | ...and within planeDrawsKm(): where ground() draws the city's plane. |
-| 714 | 39 | **type** `private static final class Composed` | The view's two projections composed: the screen's metres turned by the roll into the camera's east and north (e, n) on the unit sphere, its third coordinate a = sqrt(1 - e^2 - n^2); the point's unit vector in the came... |
-| 719 | 29 | `Composed(GlobeFrame f)` _(in GlobeFrame.Composed)_ |  |
-| 749 | 3 | `boolean of(GlobeFrame f)` _(in GlobeFrame.Composed)_ |  |
-| 757 | 7 | `private Composed composed()` |  |
-| 774 | 41 | **type** `public static final class Carry` | Where the points of this view's pixels lie on an older view's screen (★E9): the GROUND tier is drawn again in pieces as a view comes to rest, and until a piece is in, its pixels are the last whole picture's at their o... |
-| 778 | 20 | `private Carry(GlobeFrame now, GlobeFrame old)` _(in GlobeFrame.Carry)_ |  |
-| 800 | 6 | `public boolean screen(double vx, double vy, double vz, double[] out)` _(in GlobeFrame.Carry)_ | The older view's screen point of Beyond's unit vector, into out: false on its far side. |
-| 808 | 6 | `public int pixel(double vx, double vy, double vz)` _(in GlobeFrame.Carry)_ | ...as the older view's pixel, its row times its width and its column: -1 on its far side or off its screen. |
-| 817 | 1 | `public Carry carryFrom(GlobeFrame old)` | ...this view's points on `old`'s screen. |
-| 820 | 7 | `public double[] scaleBar(double mostPx)` | The scale bar on the globe (spec-globe 3.7): MapFrame.scaleBar()'s rule at the view's centre, where alone it is true - {metres, pixels}. |
-| 829 | 3 | `public static String scaleWords(double metres)` | ...its words: the plane's, true at the centre only and saying so - "500 km at the centre". |
+| 566 | 10 | `public boolean plotAt(double sx, double sy, double[] xy)` | The plot under a screen point in the tier this view draws, into xy: on the plane its own; on the globe through the camera to the city's plane (EarthProj.plotOf()). |
+| 578 | 9 | `public double[] screenOfPlot(double x, double y)` | Where a plot of the city's plane lies on the screen, {x, y} in pixels, in the tier this view draws: null on the globe's far side or off the planet. |
+| 589 | 6 | `public boolean planeHolds(double sx, double sy)` | Whether a screen point is drawn from the city's plane - within planeDrawsKm() of the city and the world's square, or anywhere on the plane's own tier: the plane's answer is the one there (the hover's, a click's). |
+| 605 | 3 | `public double planeDrawsKm()` | How far from the city the globe draws the city's plane's own far nodes, km (★E9): the reach and the view's half-diagonal at the handoff, so a view at the handoff with its centre within the reach - every view the wheel... |
+| 613 | 1 | **type** `public interface NodePixels` | The pixels of a far node of the city's plane, its colours (MapTiles.nodePixels()) - null where it is not drawn yet. |
+| 613 | 1 | `int[] at(long nx, long ny)` _(in GlobeFrame.NodePixels)_ |  |
+| 616 | 1 | **type** `public interface Beyond` | A pixel's colour beyond the reach, or where the plane's node is not drawn: by its place on the screen, and its point on the planet as a unit vector in the camera's frame (vx, vy, vz: Ortho.inverse()'s), which latOf() ... |
+| 616 | 1 | `int colour(int i, int j, double vx, double vy, double vz)` _(in GlobeFrame.Beyond)_ |  |
+| 619 | 3 | `public static double latOf(double vx, double vy, double vz)` | The latitude of a point given as Beyond's unit vector, degrees: Ortho.inverse()'s. |
+| 624 | 3 | `public double lonOf(double vx, double vy)` | ...and its longitude, in [-180, 180). |
+| 642 | 45 | `public int ground(long plots, NodePixels nodes, Beyond beyond, int space, int[] out, int outW, int i0, int i1, int j0, int j1)` | The GROUND tier near the city (★E9; spec-globe 3.5's "cheaper GROUND tier"): the screen's pixels sx in [i0, i1), sy in [j0, j1) into out (outW a row), each pixel's centre through the globe to the city's plane and, wit... |
+| 689 | 14 | `public boolean planeAt(double sx, double sy, double[] xy)` | The plot of the city's plane under a screen point by ground()'s matrix, into xy: false off the disc or at the plane's antipode - what a harness holds to the camera and the plane's own projections (plotAt()). |
+| 705 | 7 | `public boolean reachHolds(double sx, double sy)` | Whether a screen point lies within the reach, by ground()'s matrix: the angle from the city no wider than the reach's. |
+| 714 | 7 | `public boolean drawsHold(double sx, double sy)` | ...and within planeDrawsKm(): where ground() draws the city's plane. |
+| 730 | 39 | **type** `private static final class Composed` | The view's two projections composed: the screen's metres turned by the roll into the camera's east and north (e, n) on the unit sphere, its third coordinate a = sqrt(1 - e^2 - n^2); the point's unit vector in the came... |
+| 735 | 29 | `Composed(GlobeFrame f)` _(in GlobeFrame.Composed)_ |  |
+| 765 | 3 | `boolean of(GlobeFrame f)` _(in GlobeFrame.Composed)_ |  |
+| 773 | 7 | `private Composed composed()` |  |
+| 790 | 41 | **type** `public static final class Carry` | Where the points of this view's pixels lie on an older view's screen (★E9): the GROUND tier is drawn again in pieces as a view comes to rest, and until a piece is in, its pixels are the last whole picture's at their o... |
+| 794 | 20 | `private Carry(GlobeFrame now, GlobeFrame old)` _(in GlobeFrame.Carry)_ |  |
+| 816 | 6 | `public boolean screen(double vx, double vy, double vz, double[] out)` _(in GlobeFrame.Carry)_ | The older view's screen point of Beyond's unit vector, into out: false on its far side. |
+| 824 | 6 | `public int pixel(double vx, double vy, double vz)` _(in GlobeFrame.Carry)_ | ...as the older view's pixel, its row times its width and its column: -1 on its far side or off its screen. |
+| 833 | 1 | `public Carry carryFrom(GlobeFrame old)` | ...this view's points on `old`'s screen. |
+| 836 | 7 | `public double[] scaleBar(double mostPx)` | The scale bar on the globe (spec-globe 3.7): MapFrame.scaleBar()'s rule at the view's centre, where alone it is true - {metres, pixels}. |
+| 845 | 3 | `public static String scaleWords(double metres)` | ...its words: the plane's, true at the centre only and saying so - "500 km at the centre". |
 

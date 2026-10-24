@@ -7319,8 +7319,26 @@ public final class GameVersion {
      *   - Save: SAVE_FORMAT 45, OLDEST_LOADABLE_FORMAT 45.
      *   - Harness: FoundingYardCheck (new); twenty-three re-caused, the map's
      *     two watches (MapCheck 8, LongPlaytest's layout) read the plan's rules.
+     *
+     * 0.8.41 (2026-10-24) - ET1, EARTH 2 IN THE GAME, AND DRAWN
+     * (docs/queue/ET1-notes.md; docs/studies/spec-earth2-terrain.md 10,
+     * Jerus's "all rec", 2026-10-12). The real Earth is earth-2.bin.
+     *   - EarthData.EARTH_2, data/earth-2.bin (281,761,695 bytes, the 15"
+     *     release); readers for slope, shallow, depth and the landmasses;
+     *     earth-1's ten layers held byte for byte (EarthCheck 11).
+     *   - World.SHALLOW (sea of 30 m or less) and World.salt(); the relief
+     *     plane FLAT to VERY_STEEP (reliefAt, tileRelief, regionRelief),
+     *     buildable() and workable() for ET2; generated worlds all flat.
+     *   - EarthTerrain.depthAt() reads the depth layer: E4's shelf rule and
+     *     SHELF_WIDTH_M retired; Oil.isShallow is canTakePlatform.
+     *   - The map's greys, forest shaded toward them, the shallow blue, the
+     *     legend and hover, far views and the globe's texel codes.
+     *   - The founding card's relief, water and landmass lines.
+     *   - Save: landCentreRelief, landHoldingsRelief, landOffersRelief (a
+     *     missing key reads flat); SAVE_FORMAT 45 unchanged, every earth-1
+     *     city refused by its identity.
      */
-    public static final String VERSION = "0.8.40";
+    public static final String VERSION = "0.8.41";
 
     /**
      * The save shape.

@@ -579,8 +579,8 @@ public class WellCheck {
             return null;
         }
         assertTrue("...the rule, pure: a field in the sea at 150 m takes one, at 150.5 m or on land or with no site owned none",
-                Oil.isShallow(new LandManager.SeaField(d, 8, 150)) && !Oil.isShallow(new LandManager.SeaField(d, 8, 150.5))
-                        && !Oil.isShallow(new LandManager.SeaField(d, 8, 0)) && !Oil.isShallow(new LandManager.SeaField(d, 0, 40)));
+                Oil.canTakePlatform(new LandManager.SeaField(d, 8, 150)) && !Oil.canTakePlatform(new LandManager.SeaField(d, 8, 150.5))
+                        && !Oil.canTakePlatform(new LandManager.SeaField(d, 8, 0)) && !Oil.canTakePlatform(new LandManager.SeaField(d, 0, 40)));
         // The slots, pure: a 16-site field takes a jacket of 12 and one of 4, a third none; a field the city does not own none.
         LandManager.SeaField big = new LandManager.SeaField(d, 16, 60);
         List<Oil.Platform> three = List.of(new Oil.Platform(d.cell(), d.index(), 0, 1), new Oil.Platform(d.cell(), d.index(), 0, 2),

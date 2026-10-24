@@ -210,6 +210,8 @@ public final class TilePainter {
         public long tx, ty;
         /** Its ground, a World class a plot, in rows. */
         public final byte[] terrain = new byte[PLOTS];
+        /** Its relief, a World relief a plot (FLAT, FOOTHILL, STEEP, VERY_STEEP) in rows as terrain is (ET1 slice D; spec-earth2-terrain 9.3): the second plane the ground is coloured by (TileRaster.colour()). All FLAT on a generated world, and by hand in a harness. */
+        public final byte[] relief = new byte[PLOTS];
         /** Whether the city owns each plot. */
         public final boolean[] owned = new boolean[PLOTS];
         /** Each plot's street from its district's plan, in the S_ codes (0.7.88): the district's own, and on its first column and row the street the district west or north of it lays there where it lays it (CityMap.tileInput()); 0 for none. */

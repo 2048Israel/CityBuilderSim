@@ -50,6 +50,8 @@ public final class LandParcel {
     private final int side, place, level;
     private final long x0, y0, x1, y1;
     private final double[] km2;
+    /** Its dry ground by relief and its shallow sea (CityLand.RELIEF_FLAT to RELIEF_SHALLOW), km2: flat all of its dry ground where the listing was not counted by relief (ET1). */
+    private final double[] relief;
     private final int[] sites;
     private final double[] amounts;
 
@@ -75,6 +77,17 @@ public final class LandParcel {
      */
     public LandParcel(int id, int side, int place, int level, long x0, long y0, long x1, long y1, double[] km2,
                       int[] sites, double[] amounts, double priceUsd, int listedMonth) {
+        this(id, side, place, level, x0, y0, x1, y1, km2, null, sites, amounts, priceUsd, listedMonth);
+    }
+
+    /**
+     * ...with its dry ground by relief and its shallow sea (ET1, spec-earth2-terrain 3.3): CityLand.RELIEF_AREAS
+     * figures in square kilometres, the four reliefs adding up to its DRY area. Null, or a row of the wrong width or
+     * not a figure, is all flat: its dry ground flat, no shallow sea - a hand-made offer, a generated world's and an
+     * older save's.
+     */
+    public LandParcel(int id, int side, int place, int level, long x0, long y0, long x1, long y1, double[] km2,
+                      double[] relief, int[] sites, double[] amounts, double priceUsd, int listedMonth) {
         this.id = id;
         this.side = side;
         this.place = place;
@@ -87,6 +100,8 @@ public final class LandParcel {
         this.sites = new int[CityLand.KINDS];
         this.amounts = new double[CityLand.KINDS];
         for (int a = 0; a < CityLand.AREAS && km2 != null && a < km2.length; a++) this.km2[a] = Math.max(0, km2[a]);
+        double[] kept = keptRelief(relief);
+        this.relief = kept != null ? kept : flatRelief(this.km2[CityLand.DRY]);
         for (int k = 0; k < CityLand.KINDS && sites != null && k < sites.length; k++) this.sites[k] = Math.max(0, sites[k]);
         for (int k = 0; k < CityLand.KINDS && amounts != null && k < amounts.length; k++) this.amounts[k] = Math.max(0, amounts[k]);
         this.priceUsd = Math.max(0, priceUsd);
@@ -166,6 +181,12 @@ public final class LandParcel {
     /** Its whole area, in square kilometres. */
     public double getKm2()         { return km2[CityLand.TOTAL]; }
 
+    /** Its dry ground by relief, or its shallow sea, in square kilometres (CityLand.RELIEF_FLAT, RELIEF_FOOTHILL, RELIEF_STEEP, RELIEF_VERY_STEEP; RELIEF_SHALLOW): the four reliefs add up to getDryKm2(). */
+    public double getReliefKm2(int relief) { return this.relief[relief]; }
+
+    /** Its relief as a record (DataSave's landOffersRelief and landHoldingsRelief): CityLand.RELIEF_AREAS figures, a copy. */
+    public double[] reliefRow() { return relief.clone(); }
+
     /** Its dry ground, in square kilometres. */
     public double getDryKm2()      { return km2[CityLand.DRY]; }
 
@@ -242,6 +263,13 @@ public final class LandParcel {
 
     /* =====================================================================
        ITS RECORDS (DataSave's landOffers and landHoldings, SAVE_FORMAT 32)
+
+       Its ground by relief (ET1) is not in these rows: a wider row would be
+       passed over by every save written before (fromOfferRow() and
+       fromPurchaseRow() return null on a wrong width), so it is kept in keys
+       of its own, a row each in the same order - reliefRow(), DataSave's
+       landOffersRelief and landHoldingsRelief - and a save without them reads
+       all flat.
        ===================================================================== */
 
     /** Where a record keeps the rectangle: side, place, level, x0, y0, x1, y1 - seven. */
@@ -265,15 +293,20 @@ public final class LandParcel {
         return row;
     }
 
-    /** An offer from its record; null when the record is the wrong width. */
+    /** An offer from its record; null when the record is the wrong width. Its ground reads all flat (fromOfferRow() with no relief). */
     public static LandParcel fromOfferRow(double[] row) {
+        return fromOfferRow(row, null);
+    }
+
+    /** ...with its ground by relief (reliefRow(), landOffersRelief's row for it): all flat when there is none, or it is the wrong width (ET1). */
+    public static LandParcel fromOfferRow(double[] row, double[] relief) {
         if (row == null || row.length != OFFER_FIELDS) return null;
         double[] km2 = new double[CityLand.AREAS];
         int[] sites = new int[CityLand.KINDS];
         double[] amounts = new double[CityLand.KINDS];
         int i = read(row, 1 + RECT_FIELDS, km2, sites, amounts);
         return new LandParcel((int) row[0], (int) row[1], (int) row[2], (int) row[3], (long) row[4], (long) row[5],
-                (long) row[6], (long) row[7], km2, sites, amounts, row[i], (int) row[i + 1]);
+                (long) row[6], (long) row[7], km2, relief, sites, amounts, row[i], (int) row[i + 1]);
     }
 
     /** Its record as a holding: the month it was bought in and what the treasury paid for it in local money. */
@@ -289,15 +322,20 @@ public final class LandParcel {
         return row;
     }
 
-    /** The offer a holding's record bought; null when the record is the wrong width. */
+    /** The offer a holding's record bought; null when the record is the wrong width. Its ground reads all flat (fromPurchaseRow() with no relief). */
     static LandParcel fromPurchaseRow(double[] row) {
+        return fromPurchaseRow(row, null);
+    }
+
+    /** ...with its ground by relief (reliefRow(), landHoldingsRelief's row for it): all flat when there is none, or it is the wrong width (ET1). */
+    static LandParcel fromPurchaseRow(double[] row, double[] relief) {
         if (row == null || row.length != PURCHASE_FIELDS) return null;
         double[] km2 = new double[CityLand.AREAS];
         int[] sites = new int[CityLand.KINDS];
         double[] amounts = new double[CityLand.KINDS];
         int i = read(row, RECT_FIELDS + 3, km2, sites, amounts);
         return new LandParcel((int) row[i], (int) row[0], (int) row[1], (int) row[2], (long) row[3], (long) row[4],
-                (long) row[5], (long) row[6], km2, sites, amounts, row[RECT_FIELDS + 1], (int) row[i + 1]);
+                (long) row[5], (long) row[6], km2, relief, sites, amounts, row[RECT_FIELDS + 1], (int) row[i + 1]);
     }
 
     /** The month a holding's record was bought in. */
@@ -305,6 +343,20 @@ public final class LandParcel {
 
     /** What the treasury paid for it, in local money. */
     static double purchasePaid(double[] row) { return row[RECT_FIELDS + 2]; }
+
+    /** A relief record as it reads: a copy of `row` when it is CityLand.RELIEF_AREAS figures, none of them negative or not a number, else null. */
+    static double[] keptRelief(double[] row) {
+        if (row == null || row.length != CityLand.RELIEF_AREAS) return null;
+        for (double v : row) if (!(v >= 0) || Double.isInfinite(v)) return null;
+        return row.clone();
+    }
+
+    /** The relief of ground that is all flat: its dry area flat, nothing else (what a record with no relief reads as). */
+    static double[] flatRelief(double dryKm2) {
+        double[] r = new double[CityLand.RELIEF_AREAS];
+        r[CityLand.RELIEF_FLAT] = dryKm2;
+        return r;
+    }
 
     private int rectInto(double[] row, int i) {
         row[i++] = side;
@@ -331,8 +383,8 @@ public final class LandParcel {
         return i;
     }
 
-    /** Whether two offers are the same, field for field. */
+    /** Whether two offers are the same, field for field: its record and its ground by relief (ET1). */
     public boolean same(LandParcel o) {
-        return o != null && java.util.Arrays.equals(offerRow(), o.offerRow());
+        return o != null && java.util.Arrays.equals(offerRow(), o.offerRow()) && java.util.Arrays.equals(relief, o.relief);
     }
 }

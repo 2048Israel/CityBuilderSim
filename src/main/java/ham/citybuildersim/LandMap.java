@@ -356,17 +356,81 @@ public final class LandMap {
 
     /* ----------------------------- the words ----------------------------- */
 
-    /** A World class as the hover card names it; since 0.7.127 ice and the desert by their own names (spec-globe 3.9). */
+    /** The shallow sea's words (ET1, spec-earth2-terrain 9.3): its depth (bridges over it are ET6's), the hover's and the legend's. */
+    public static final String SHALLOW_WORDS = "Shallow sea · 30 m or less";
+
+    /** A World class as the hover card names it; since 0.7.127 ice and the desert by their own names (spec-globe 3.9), since ET1 the shallow sea by its own. */
     public static String groundWords(byte ground) {
         switch (ground) {
             case World.FOREST: return "Forest";
             case World.FRESH:  return "Lake or river";
             case World.SALT:   return "Sea";
+            case World.SHALLOW: return SHALLOW_WORDS;
             case World.SAND:   return "Beach";
             case World.ICE:    return "Ice";
             case World.DESERT: return "Desert";
             default:           return "Grass";
         }
+    }
+
+    /* ----- the relief and the depth (ET1 slice D; spec-earth2-terrain 9.3, board 2) ----- */
+
+    /** Each relief's name as the legend and the hover's first line give it, by World's relief (FLAT, FOOTHILL, STEEP, VERY_STEEP): flat ground is named by its cover, so FLAT's is only for completeness. */
+    public static final String[] RELIEF_NAMES = { "Flat", "Foothill", "Steep", "Very steep" };
+
+    /** Each relief's grade, the hover's words after its name (World's thresholds: 10%, 30% and 60%): only what is true now - what may be built on it and what preparing it costs are later batches'. */
+    public static final String[] GRADE_WORDS = { "flat, under 10% grade", "10–30% grade", "30–60% grade", "60% grade or more" };
+
+    /** Forest as the hover names it on each relief (FLAT: the forest's own word). */
+    public static final String[] FOREST_ON_WORDS = { "Forest", "Forest on a foothill", "Forest on steep ground", "Forest on very steep ground" };
+
+    /** The legend's entry for forest on a slope: its swatch the steep slope's shading (TileRaster.colour()), the three being one family. */
+    public static final String FOREST_SLOPE_WORDS = "Forest on a slope";
+
+    /**
+     * The sea's words with its depth, the hover's first line on the sea: "Sea · about 51 m here", "Shallow sea · 30 m or less, about 15 m here" - the
+     * depth layer's metres at the plot (World.depthAt()), at least a metre. The depth is the layer's cell's mean, not the plot's class's:
+     * a deep plot (SALT) may stand over a cell whose mean is under 30 m, and says so.
+     */
+    public static String seaWords(byte ground, double metres) {
+        String depth = "about " + Math.max(1, Math.round(metres)) + " m here";
+        return ground == World.SHALLOW ? SHALLOW_WORDS + ", " + depth : groundWords(ground) + " · " + depth;
+    }
+
+    /**
+     * A ground class as the hover card's first line names it on an Earth world with earth-2's layers (ET1 slice
+     * D; board 2): open dry ground (grass, the beach, the desert) on a slope by the slope's name and grade -
+     * "Foothill · 10-30% grade" - and flat by its own name with the grade after it - "Grass · flat, under 10%
+     * grade"; forest as "Forest on a foothill · 10-30% grade" and so on, flat "Forest · flat, under 10% grade";
+     * the sea (SALT or SHALLOW) with the depth `depthM` metres (seaWords()): "Sea · about 51 m here", "Shallow sea ·
+     * 30 m or less, about 15 m here". A relief or depth below zero is "not asked for": groundWords(ground)'s words
+     * unchanged, as they are for water's relief and ice's. Nothing is said of buildable ground or its price (ET2).
+     */
+    public static String groundWords(byte ground, int relief, double depthM) {
+        if (World.salt(ground)) return depthM < 0 ? groundWords(ground) : seaWords(ground, depthM);
+        if (relief < 0 || relief >= World.RELIEFS || !World.dry(ground)) return groundWords(ground);
+        if (ground == World.FOREST) return FOREST_ON_WORDS[relief] + " · " + GRADE_WORDS[relief];
+        return (relief == World.FLAT ? groundWords(ground) : RELIEF_NAMES[relief]) + " · " + GRADE_WORDS[relief];
+    }
+
+    /** Whether the world a key names is drawn with a relief and a shallow sea: the real Earth from a file with earth-2's layers (EarthData.hasRelief()). A generated world's and an earth-1 file's are not, and their words, legends and colours stay as they were (D19). */
+    public static boolean reliefDrawn(World.Key key) {
+        World w = World.of(key);
+        return w.isEarth() && w.earthTerrain().data().hasRelief();
+    }
+
+    /** The hover's first line for plot (x, y) of ground class `ground`: groundWords() with the plot's relief and, on the sea, its depth where the world has them (reliefDrawn()); groundWords(ground) on any other. */
+    public static String plotGroundWords(CityLand land, byte ground, long x, long y) {
+        if (!reliefDrawn(land.key())) return groundWords(ground);
+        World w = World.of(land.key());
+        return groundWords(ground, w.reliefAt(x, y), World.salt(ground) ? w.depthAt(x, y) : -1);
+    }
+
+    /** ...for the globe's point (lat, lon), where `drawn` is the code the globe drew there (GlobePicture.code(): a class and its relief): its class's words with its relief and, on the sea, the depth layer's metres there. */
+    public static String pointGroundWords(EarthTerrain e, byte drawn, double lat, double lon) {
+        byte cover = (byte) GlobePicture.classOf(drawn);
+        if (!e.data().hasRelief()) return groundWords(cover);
+        return groundWords(cover, GlobePicture.reliefOf(drawn), World.salt(cover) ? e.depthOf(lat, lon) : -1);
     }
 
     /** Tonnes to three figures in their unit: "449 Mt", "12.8 Mt", "150 kt", "200 t", "1.12 Pt". */
@@ -469,7 +533,7 @@ public final class LandMap {
     public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y, int fieldsMost) {
         Pick p = pick(land, market, x, y);
         List<String> lines = new ArrayList<>();
-        lines.add(groundWords(p.ground()));
+        lines.add(plotGroundWords(land, p.ground(), x, y));
         lines.add(ownerWords(land, p));
         lines.addAll(earthWords(land, x, y));
         List<FieldAt> under = fieldsAt(land, x, y);
@@ -529,7 +593,8 @@ public final class LandMap {
      * plane's own card for the plot under it (hoverWords()), so at the
      * handoff the globe and the plane say the same of the same point;
      * elsewhere on the planet the ground drawn there (`drawn`, a World
-     * class), NOT_THE_CITYS, and the nearest place and the province by its
+     * class, or since ET1 slice D the code the globe drew - GlobePicture.code(),
+     * a class and its relief - said as pointGroundWords()), NOT_THE_CITYS, and the nearest place and the province by its
      * latitude and longitude (earthWords()). None off the planet. No
      * more than `fieldsMost` fields.
      */
@@ -539,9 +604,9 @@ public final class LandMap {
         double[] xy = new double[2];
         if (f.planeHolds(sx, sy) && f.plotAt(sx, sy, xy)) return hoverWords(land, market, (long) Math.floor(xy[0]), (long) Math.floor(xy[1]), fieldsMost);
         List<String> lines = new ArrayList<>();
-        lines.add(groundWords(drawn));
-        lines.add(NOT_THE_CITYS);
         World w = World.of(land.key());
+        lines.add(w.isEarth() ? pointGroundWords(w.earthTerrain(), drawn, ll[0], ll[1]) : groundWords(drawn));
+        lines.add(NOT_THE_CITYS);
         if (w.isEarth()) lines.addAll(earthWords(w.earthTerrain(), ll[0], ll[1]));
         return lines;
     }
@@ -703,16 +768,26 @@ public final class LandMap {
      * The expanded map's legend in a tier (spec-globe 3.7: "the legend on the
      * globe lists the kinds of ground and the city's ring; the whole legend
      * is back from the handoff in"): on the globe (GlobeFrame.PICTURE and
-     * GROUND) the seven kinds of ground, the city's ring and its edge - and
+     * GROUND) the eight kinds of ground (ET1: the shallow sea last), the city's ring and its edge - and
      * in the GROUND tier, where the city's plane draws within the reach, the
      * offers; on the plane (GlobeFrame.PLANE, and a generated world at every
      * scale) the plane's legend, planeLegend().
      */
     public static List<Entry> legend(int tier) {
-        if (tier == GlobeFrame.PLANE) return planeLegend();
+        return legend(tier, false);
+    }
+
+    /**
+     * ...on an Earth world with earth-2's layers (`relief`, reliefDrawn(); ET1 slice D): the three greys and forest on a slope
+     * after the desert (board 2's order), and on the plane the same with the shallow sea; false is the legend as it was, a
+     * generated world's (D19).
+     */
+    public static List<Entry> legend(int tier, boolean relief) {
+        if (tier == GlobeFrame.PLANE) return planeLegend(relief);
         List<Entry> out = new ArrayList<>();
-        for (byte g : new byte[] { World.GRASS, World.FOREST, World.DESERT, World.ICE, World.SAND, World.FRESH, World.SALT }) {
+        for (byte g : new byte[] { World.GRASS, World.FOREST, World.DESERT, World.ICE, World.SAND, World.FRESH, World.SALT, World.SHALLOW }) {
             out.add(new Entry(TileRaster.GROUND[g], groundWords(g)));
+            if (relief && g == World.DESERT) reliefEntries(out);
         }
         out.add(new Entry(RING, CITY_RING_WORDS));
         out.add(new Entry(0xffffffff, EDGE_WORDS));
@@ -725,6 +800,17 @@ public final class LandMap {
 
     /** The plane's legend (the expanded map's since 0.7.61; ui/MapView's until 0.7.135): the ten classes and flats, the three roads, (0.7.88) the tracks, (0.8.1) the eleventh transport class, the railway's four - ballast, the main line, the freight yard and the level crossing - and the gateway to the world, (0.7.97) the nine of the shore and the sea, (0.8.2) the train, (0.8.0) the four industries' works and the seven looks of the materials, (0.7.127) ice and the desert, the land, the six resources in fields. */
     public static List<Entry> planeLegend() {
+        return planeLegend(false);
+    }
+
+    /** The three greys' entries, then forest on a slope's: what an Earth world with relief (reliefDrawn()) adds to either legend. */
+    private static void reliefEntries(List<Entry> out) {
+        for (int r = World.FOOTHILL; r < World.RELIEFS; r++) out.add(new Entry(TileRaster.RELIEF_GREY[r], RELIEF_NAMES[r]));
+        out.add(new Entry(TileRaster.colour(World.FOREST, World.STEEP), FOREST_SLOPE_WORDS));
+    }
+
+    /** ...for an Earth world with earth-2's layers (`relief`, reliefDrawn(); ET1 slice D): the three greys, forest on a slope and the shallow sea with ice and the desert; false is the plane's legend as it was. */
+    public static List<Entry> planeLegend(boolean relief) {
         List<Entry> out = new ArrayList<>();
         for (int c = 0; c < BuildingVisual.CLASSES; c++) {
             out.add(new Entry(BuildingVisual.FILL[c], BuildingVisual.CLASS_NAMES[c]));
@@ -755,7 +841,11 @@ public final class LandMap {
         out.add(new Entry(ShipShapes.BOXES, "Box ship, both ways"));
         // The trains (0.8.2, batch FR1; spec-freight 4.9): the ships' four colours, reused, between two locomotives.
         out.add(new Entry(TrainShapes.LOCO, TRAIN_WORDS));
-        // The two kinds of ground the real Earth has and the map's colours alone would not name (0.7.127; spec-globe 3.9).
+        // The two kinds of ground the real Earth has and the map's colours alone would not name (0.7.127; spec-globe 3.9) - and (ET1) the slope's, and the shallow sea.
+        if (relief) {
+            reliefEntries(out);
+            out.add(new Entry(TileRaster.GROUND[World.SHALLOW], SHALLOW_WORDS));
+        }
         out.add(new Entry(TileRaster.GROUND[World.ICE], groundWords(World.ICE)));
         out.add(new Entry(TileRaster.GROUND[World.DESERT], groundWords(World.DESERT)));
         out.add(new Entry(0xffffffff, EDGE_WORDS));

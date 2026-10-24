@@ -897,7 +897,7 @@ public class RailDrawCheck {
         check("...lighter than paved: gravel reads apart from paved by lightness", luma(g) > luma(TileRaster.ROAD[BuildingVisual.PAVED]) + 8);
         int[][] neighbours = {
             { TileRaster.VERGE, 0 }, { TileRaster.ROAD[BuildingVisual.PAVED], 1 }, { TileRaster.BALLAST, 2 }, { TileRaster.TRACK_DASH, 3 },
-            { TileRaster.GROUND[TileRaster.GROUND.length - 1], 4 }, { BuildingVisual.FILL[BuildingVisual.FARM], 5 },
+            { TileRaster.GROUND[World.DESERT], 4 }, { BuildingVisual.FILL[BuildingVisual.FARM], 5 },
             { BuildingVisual.FILL[BuildingVisual.MINE], 6 } };
         String[] names = { "the verge", "paved", "the ballast", "the track's dashes", "the desert", "the Farms' fill", "the mines' fill" };
         for (int[] n : neighbours) {

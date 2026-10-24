@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,12 +16,14 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The Earth's reader (0.7.111, batch E1; the project's spec-earth.md 2 and
  * 8): EarthProj's projection, blend and areas held to the spec's measures,
- * and EarthData's reading of earth-1.bin held to tools/earth/earthread.py
- * figure for figure.
+ * and EarthData's reading of earth-2.bin (batch ET1; earth-1.bin before) held
+ * to tools/earth/earthread.py figure for figure, the layers earth-2 added
+ * with the rest, and earth-1's ten layers held to earth-1.bin byte for byte.
  *
  * WHY. E2 lays the real Earth's ground on the world through these two, and a
  * wrong figure there is a coast in the wrong place under a city that cannot
@@ -27,18 +31,21 @@ import java.util.Map;
  * against its own formulas; the reader against the Python that wrote the file
  * and reads it independently.
  *
- * THE DATA. The full earth-1.bin (52.8 MB) is not in the repository; since
- * f99d62c it is the asset of the GitHub release earth-1, which
- * tools/earth/get-earth.bat fetches into data/ (EarthData.DATA_FILE). This
- * runs on a fixture cut from it by
- * tools/earth/fixture.py - the same layout holding only the tiles read here,
- * the three windows the study drew (Rotterdam, Perth, Paris) and Fiji's four
- * on the 180th meridian - a resource beside the classes
- * (earth/earth-1-fixture.bin), with what earthread.py read from it and from
- * the full file beside it (earth/earth-1-fixture.expect). The full file's
- * sections run when it is named, -Dcbs.earth=<path> (EarthData.locate(); in
- * AllChecks through JDK_JAVA_OPTIONS, which every harness's JVM inherits),
- * and say so in one line when it is not.
+ * THE DATA. The full earth-2.bin (281.8 MB) is not in the repository; it is
+ * the asset of the GitHub release earth-2, which tools/earth/get-earth.bat
+ * fetches into data/ (EarthData.DATA_FILE). This runs on a fixture cut from
+ * it by tools/earth/fixture.py - the same layout holding only the tiles read
+ * here, the three windows the study drew (Rotterdam, Perth, Paris), Fiji's
+ * four on the 180th meridian and Halifax's Narrows, every layer's blobs
+ * (earth-1's and earth-2's) - a resource beside the classes
+ * (earth/earth-2-fixture.bin), with what earthread.py read from it and from
+ * the full file beside it (earth/earth-2-fixture.expect). ET1 replaced the
+ * earth-1 fixture by it, since the layers of earth-1 are in it byte for byte.
+ * The full file's sections run when it is named, -Dcbs.earth=<path>
+ * (EarthData.locate(); in AllChecks through JDK_JAVA_OPTIONS, which every
+ * harness's JVM inherits), and say so in one line when it is not; the
+ * comparison with earth-1.bin runs when that is found too, -Dcbs.earth1=<path>
+ * or earth-1.bin beside the named file.
  *
  * What this has to prove:
  *   1. INVERSE THEN FORWARD COMES BACK: from spots at the three windows,
@@ -57,9 +64,10 @@ import java.util.Map;
  *      BLEND_M of the exact ones at the spot and out to BLEND_REACH_M (spec:
  *      0.054 m measured), across the date line too; two tiles agree along the
  *      edge they share; above EarthProj.BLEND_MAX_LAT a tile projects exactly.
- *   4. THE FILE: the fixture opens; its layer table, indexes, meta and
- *      identity are what earthread.py read, and it names EarthData.EARTH_1 as
- *      the file it was cut from.
+ *   4. THE FILE: the fixture opens; its layer table (seventeen layers),
+ *      indexes, meta and identity ("earth-2:" and the SHA-256) are what
+ *      earthread.py read, and it names EarthData.EARTH_2 as the file it was
+ *      cut from.
  *   5. THE READER IS earthread.py'S: every fixture tile's bytes, cells of every
  *      value and the spots' cells found by position, every river run and
  *      small lake decoded, the lake areas, the geology at the spots and the
@@ -72,9 +80,26 @@ import java.util.Map;
  *      default budget holds the spec's 64 tiles of sea and lake.
  *   8. A TILE INFLATES IN UNDER INFLATE_MS (spec: 0.13 ms measured; wall
  *      clock, so run under the JVM lock).
- *   9. THE FULL FILE, when named: its identity is EarthData.EARTH_1, and 4 to 6
+ *   9. THE FULL FILE, when named: its identity is EarthData.EARTH_2, and 4 to 6
  *      hold on it, with a ring of tiles round each window, nine far places and
  *      every far-view band besides.
+ *  10. EARTH-2'S LAYERS (ET1), on the fixture and on the full file: the slope
+ *      byte and the shares it unpacks to, the estimated tiles, the shallow
+ *      share, the depth code in metres (all 256 codes, 255 the deepest, 750),
+ *      the landmass at a cell, a point and a whole tile (the palette form,
+ *      the short-index form on a tile built for it), and the landmasses' rows,
+ *      largest first; a landmass tile is no byte grid, so grid(), cell() and
+ *      at() refuse it.
+ *  11. EARTH-1'S TEN LAYERS BYTE FOR BYTE, when the named file is earth-2 and
+ *      earth-1.bin is found: every index entry and every stored blob of sea,
+ *      lake, lakes.small, rivers, landcover, far.land, far.lake, geology,
+ *      provinces and places is the same in both; earth-1.bin still opens as
+ *      "earth-1:" and its hash, and earth-2's meta names it as the file it
+ *      was made from.
+ *  12. WHAT A TILE HOLDS IN THE LRU (measured, the study's 2.9): a tile with
+ *      every layer inflated, earth-1's five and earth-2's four, in bytes, and
+ *      how many of them CACHE_BYTES keeps; printed, with a loose bound that
+ *      a city's tiles fit.
  *
  * Every fixture causes its condition: the windows hold coasts, lakes, rivers
  * crossing tiles' edges and every land-cover level they have.
@@ -98,7 +123,20 @@ public class EarthCheck {
     /** Rotterdam's square: the cells whose 4 x 4 samples are all off the planet (spec-earth 2: 12,108 of 135,424 measured; the square is the same round any spot). */
     static final int OFF_PLANET_CELLS = 12_108;
     /** The fixture and its expected figures, beside the classes. */
-    static final String FIXTURE = "earth/earth-1-fixture.bin", EXPECT = "earth/earth-1-fixture.expect";
+    static final String FIXTURE = "earth/earth-2-fixture.bin", EXPECT = "earth/earth-2-fixture.expect";
+    /** The system property that names earth-1.bin for section 11, when it is not beside the named file. */
+    static final String EARTH1_PROPERTY = "cbs.earth1";
+    /** An LRU budget no harness fills: a reader with room for every tile it is asked for, to weigh them. */
+    static final long ROOMY = Long.MAX_VALUE / 4;
+    /** A city's 50 km reads this many 1-degree tiles at most (the study's 2.9: 4 to 6). */
+    static final int CITY_TILES = 6;
+    /** The default LRU has to hold at least this many tiles with every layer inflated (section 12's loose bound): four cities' tiles. */
+    static final int MIN_FULL_TILES = 4 * CITY_TILES;
+    /** The 1-degree tile layers of earth-1 and of earth-2 section 12 inflates: the five a tile of earth-1 has, the four earth-2 adds. */
+    static final String[] EARTH1_TILE_LAYERS = { "sea", "lake", "landcover", "lakes.small", "rivers" },
+            EARTH2_TILE_LAYERS = { "slope", "shallow", "depth", "landmass" };
+    /** The ten layers earth-2 holds of earth-1's byte for byte (meta is earth-2's own). */
+    static final String[] EARTH1_LAYERS = { "sea", "lake", "lakes.small", "rivers", "landcover", "far.land", "far.lake", "geology", "provinces", "places" };
 
     static int fails = 0;
     /** Where the harness prints: the console. */
@@ -144,8 +182,12 @@ public class EarthCheck {
                 if (!line.isEmpty() && !line.startsWith("#")) expect.add(line.split("\t", -1));
             }
         }
-        Map<String, String[]> windows = new LinkedHashMap<>();
-        for (String[] f : expect) if (f[1].equals("window")) windows.put(f[2], f);
+        Map<String, String[]> windows = new LinkedHashMap<>();            // the study's four: the spots of 1 and 3
+        Map<String, String[]> allWindows = new LinkedHashMap<>();         // and Halifax's Narrows, which the river counts of 6 are also taken over
+        for (String[] f : expect) {
+            if (f[1].equals("window")) windows.put(f[2], f);
+            if (f[1].equals("window") || f[1].equals("narrows")) allWindows.put(f[2], f);
+        }
 
         projection(windows);
         areas();
@@ -154,11 +196,12 @@ public class EarthCheck {
         out.println("--- 4. the fixture is beside the classes ---");
         boolean haveFixture = fixtureBytes != null && expectBytes != null;
         assertTrue("the fixture and its expected figures are beside the classes (" + FIXTURE + ", " + EXPECT + ")", haveFixture);
+        EarthData fixture = null;
         if (!haveFixture) {
             out.println("  a build that copies only src/main/resources/*.json leaves earth/ behind: copy src/main/resources/earth/ beside the classes");
         } else {
-            EarthData fixture = EarthData.of(fixtureBytes);
-            agree(fixture, "fixture", expect, windows);
+            fixture = EarthData.of(fixtureBytes);
+            agree(fixture, "fixture", expect, allWindows);
             lru(fixtureBytes);
             inflateTime(fixture, fixtureBytes);
         }
@@ -166,15 +209,34 @@ public class EarthCheck {
         out.println("--- 9. the full file, when it is named ---");
         Path full = EarthData.locate();
         String named = System.getProperty(EarthData.PROPERTY);
+        EarthData opened = null;
         if (named != null && !named.isBlank() && !Files.isRegularFile(full)) {
             report("the file -Dcbs.earth names is there", false, named);
         } else if (full == null) {
-            out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": its sections did not run");
+            out.println("earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": its sections did not run");
         } else {
             out.println("reading " + full.toAbsolutePath());
-            try (EarthData d = EarthData.open(full)) {
-                report("the named file is the one this build reads: its SHA-256 is EarthData.EARTH_1", d.identity().equals(EarthData.EARTH_1), d.identity());
-                if (haveFixture) agree(d, "full", expect, windows);
+            opened = EarthData.open(full);
+        }
+        try (EarthData d = opened) {
+            boolean earth2 = false;
+            if (d != null) {
+                earth2 = d.identity().equals(EarthData.EARTH_2);
+                report("the named file is the one this build reads: its SHA-256 is EarthData.EARTH_2", earth2, d.identity());
+                if (haveFixture) agree(d, "full", expect, allWindows);
+            }
+            if (haveFixture) {
+                out.println("--- 10. earth-2's layers, on the fixture ---");
+                relief(fixture, "fixture", expect);
+                if (earth2) {
+                    out.println("--- 10. earth-2's layers, on the full file ---");
+                    relief(d, "full", expect);
+                }
+            }
+            if (earth2) sameAsEarth1(d, full);
+            if (haveFixture) {
+                weigh("the fixture", () -> EarthData.of(fixtureBytes, ROOMY), tilesWith(expect, "slopeest", "fixture"));
+                if (earth2) weigh("the full file", () -> EarthData.open(full, ROOMY), tilesWith(expect, "slopeest", "full"));
             }
         }
 
@@ -473,13 +535,14 @@ public class EarthCheck {
         for (String[] f : expect) {
             if (!f[0].equals("both") && !f[0].equals(scope)) continue;
             String kind = f[1];
+            if (RELIEF_KINDS.contains(kind)) continue;              // relief() reads these
             Tally y = t.get(kind);
             String line = String.join(" ", f);
             switch (kind) {
-                case "file" -> y.see(d.size() == Long.parseLong(f[3]) && d.identity().equals("earth-1:" + f[2]), line + " / " + d.size() + " " + d.identity());
+                case "file" -> y.see(d.size() == Long.parseLong(f[3]) && d.identity().equals("earth-2:" + f[2]), line + " / " + d.size() + " " + d.identity());
                 case "of" -> {
                     String of = com.google.gson.JsonParser.parseString(d.meta()).getAsJsonObject().getAsJsonObject("fixture").get("of").getAsString();
-                    y.see(of.equals(f[2]) && of.equals(EarthData.EARTH_1), line + " / " + of);
+                    y.see(of.equals(f[2]) && of.equals(EarthData.EARTH_2), line + " / " + of);
                 }
                 case "table" -> {
                     EarthData.Layer l = d.layer(f[2]);
@@ -496,7 +559,7 @@ public class EarthCheck {
                 case "tile" -> {
                     int i = Integer.parseInt(f[3]);
                     EarthData.Layer l = d.layer(f[2]);
-                    byte[] b = l.cellsPerDegree > 0 ? d.grid(f[2], i) : d.raw(f[2], i);
+                    byte[] b = l.gridBytes() > 0 ? d.grid(f[2], i) : d.raw(f[2], i);
                     y.see(d.entry(f[2], i) == Integer.parseInt(f[4]) && (b == null ? f[5].equals("-") : sha(b).equals(f[5])), line);
                 }
                 case "cell" -> {
@@ -565,7 +628,7 @@ public class EarthCheck {
                     y.see(p.name().equals(f[3]) && p.ascii().equals(f[4].isEmpty() ? f[3] : f[4]) && p.country().equals(f[5])
                             && p.lat() == Double.parseDouble(f[6]) && p.lon() == Double.parseDouble(f[7]) && p.population() == Long.parseLong(f[8]), line + " / " + p);
                 }
-                case "window" -> { }
+                case "window", "narrows" -> { }
                 default -> report("an expected figure of a kind this harness knows", false, line);
             }
         }
@@ -573,13 +636,13 @@ public class EarthCheck {
         if (fixture) out.println("--- 4. the fixture's file, as earthread.py read it ---");
         else out.println("--- 9. the full file's layout, as earthread.py read it ---");
         tally("the file is the one earthread.py read: its length and its SHA-256", t.get("file"));
-        if (fixture) tally("its meta names the full file it was cut from, EarthData.EARTH_1", t.get("of"));
+        if (fixture) tally("its meta names the full file it was cut from, EarthData.EARTH_2", t.get("of"));
         tally("the layer table is the file's own: every layer's kind, cells a degree, offsets and lengths", t.get("table"));
         tally("every layer's index is earthread.py's, entry by entry", t.get("index"));
-        tally("the meta, the geology, the provinces and the places inflate to earthread.py's bytes", t.get("whole"));
+        tally("the meta, the geology, the provinces, the places, the estimated tiles and the landmasses inflate to earthread.py's bytes", t.get("whole"));
         if (fixture) out.println("--- 5. the reader is earthread.py's, on the fixture's tiles ---");
         else out.println("--- 9. the reader is earthread.py's, on the full file's tiles, the windows' rings and nine far places ---");
-        tally("every tile's and band's bytes (the share layers' every cell, the lists as stored)", t.get("tile"));
+        tally("every tile's and band's bytes (the share layers' every cell, the lists and the landmass palettes as stored)", t.get("tile"));
         tally("a cell of every value in every tile, by its number and by a point at its centre", t.get("cell"));
         tally("the windows' spots' cells, found by position", t.get("spot"));
         tally("every tile's river runs decoded: the runs, the vertices and every stored integer", t.get("rivers"));
@@ -698,5 +761,305 @@ public class EarthCheck {
         double median = us[rounds / 2];
         report("the fullest sea tile of the fixture inflates in under INFLATE_MS, the median of 31 rounds of 50", Timing.within(median, INFLATE_MS * 1000, "us"),
                 String.format("tile %d, %,d bytes to %,d: median %.0f us, slowest round %.0f us (spec 126-130 us)", best, z.length, expect, median, us[rounds - 1]));
+    }
+
+    /* =====================================================================
+       10 TO 12. EARTH-2'S LAYERS (ET1)
+       ===================================================================== */
+
+    /** The expected figures' kinds relief() reads (agree() leaves them to it). */
+    static final Set<String> RELIEF_KINDS = Set.of("slopeb", "shallowb", "depthb", "depthcode", "slopeest", "landmasstile", "landmasscell", "landmasses",
+            "landmass", "point");
+
+    /** The point at the centre of cell (r, c) of a 1-degree tile read at cpd cells a degree. */
+    static double[] centre(int tile, int cpd, int r, int c) {
+        return new double[] { EarthData.tileLat0(tile) + 1 - (r + 0.5) / cpd, EarthData.tileLon0(tile) + (c + 0.5) / cpd };
+    }
+
+    /** The tile numbers of an expected figure's lines of this kind that are true of this scope (both, or the scope's own). */
+    static int[] tilesWith(List<String[]> expect, String kind, String scope) {
+        return expect.stream().filter(f -> f[1].equals(kind) && (f[0].equals("both") || f[0].equals(scope))).mapToInt(f -> Integer.parseInt(f[2])).toArray();
+    }
+
+    /** Whether a call is refused with an IllegalArgumentException. */
+    static boolean refuses(Runnable call) {
+        try {
+            call.run();
+            return false;
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+    }
+
+    /** Every expected figure of earth-2's layers of this scope (both, or the scope's own), read through EarthData's readers and compared. */
+    static void relief(EarthData d, String scope, List<String[]> expect) throws Exception {
+        Map<String, Tally> t = new HashMap<>();
+        for (String k : RELIEF_KINDS) t.put(k, new Tally());
+        int slopeCpd = d.layer(EarthData.SLOPE).cellsPerDegree, shallowCpd = d.layer("shallow").cellsPerDegree, depthCpd = d.layer("depth").cellsPerDegree,
+                landCpd = d.layer(EarthData.LANDMASS).cellsPerDegree;
+        for (String[] f : expect) {
+            if (!f[0].equals("both") && !f[0].equals(scope)) continue;
+            Tally y = t.get(f[1]);
+            if (y == null) continue;
+            String line = String.join(" ", f);
+            switch (f[1]) {
+                case "slopeb" -> {
+                    int i = Integer.parseInt(f[2]), b = Integer.parseInt(f[5]);
+                    double[] p = centre(i, slopeCpd, Integer.parseInt(f[3]), Integer.parseInt(f[4]));
+                    int got = d.slope(p[0], p[1]);
+                    y.see(got == b && EarthData.slopeFoothill(got) == Double.parseDouble(f[6]) && EarthData.slopeSteep(got) == Double.parseDouble(f[7])
+                            && EarthData.slopeVerySteep(got) == Double.parseDouble(f[8]), line + " / " + got);
+                }
+                case "shallowb" -> {
+                    double[] p = centre(Integer.parseInt(f[2]), shallowCpd, Integer.parseInt(f[3]), Integer.parseInt(f[4]));
+                    double got = d.shallowShare(p[0], p[1]);
+                    y.see(got == Double.parseDouble(f[6]) && d.at("shallow", p[0], p[1]) == Integer.parseInt(f[5]), line + " / " + got);
+                }
+                case "depthb" -> {
+                    double[] p = centre(Integer.parseInt(f[2]), depthCpd, Integer.parseInt(f[3]), Integer.parseInt(f[4]));
+                    double got = d.depthM(p[0], p[1]);
+                    y.see(got == Double.parseDouble(f[6]) && d.at("depth", p[0], p[1]) == Integer.parseInt(f[5]), line + " / " + got);
+                }
+                case "depthcode" -> y.see(EarthData.depthOfCode(Integer.parseInt(f[2])) == Double.parseDouble(f[3]), line + " / " + EarthData.depthOfCode(Integer.parseInt(f[2])));
+                case "slopeest" -> {
+                    int i = Integer.parseInt(f[2]);
+                    boolean want = f[3].equals("1");
+                    y.see(d.slopeEstimated(i) == want && d.slopeEstimatedAt(EarthData.tileLat0(i) + 0.5, EarthData.tileLon0(i) + 0.5) == want, line);
+                }
+                case "landmasscell" -> {
+                    int i = Integer.parseInt(f[2]), r = Integer.parseInt(f[3]), c = Integer.parseInt(f[4]), v = Integer.parseInt(f[5]);
+                    double[] p = centre(i, landCpd, r, c);
+                    y.see(d.landmassCell(i, r, c) == v && d.landmassAt(p[0], p[1]) == v, line + " / " + d.landmassCell(i, r, c) + " " + d.landmassAt(p[0], p[1]));
+                }
+                case "landmasstile" -> {
+                    int i = Integer.parseInt(f[2]);
+                    int[] ids = d.landmassIds(i);
+                    ByteBuffer idBytes = ByteBuffer.allocate(4 * ids.length);
+                    for (int id : ids) idBytes.putInt(id);
+                    ByteBuffer cells = ByteBuffer.allocate(4 * landCpd * landCpd);
+                    for (int r = 0; r < landCpd; r++) for (int c = 0; c < landCpd; c++) cells.putInt(d.landmassCell(i, r, c));
+                    y.see(ids.length == Integer.parseInt(f[3]) && sha(idBytes.array()).equals(f[4]) && sha(cells.array()).equals(f[5]), line + " / " + ids.length + " ids");
+                }
+                case "point" -> {
+                    double la = Double.parseDouble(f[3]), lo = Double.parseDouble(f[4]);
+                    int shallow = Integer.parseInt(f[6]), depth = Integer.parseInt(f[7]);
+                    boolean ok = d.slope(la, lo) == Integer.parseInt(f[5]) && d.at("shallow", la, lo) == shallow && d.shallowShare(la, lo) == shallow / 15.0
+                            && d.at("depth", la, lo) == depth && d.depthM(la, lo) == EarthData.depthOfCode(depth) && d.landmassAt(la, lo) == Integer.parseInt(f[8])
+                            && d.slopeEstimatedAt(la, lo) == f[9].equals("1");
+                    y.see(ok, line + " / " + d.slope(la, lo) + " " + d.at("shallow", la, lo) + " " + d.at("depth", la, lo) + " " + d.landmassAt(la, lo));
+                }
+                case "landmasses" -> y.see(d.landmasses().size() == Integer.parseInt(f[2]), line + " / " + d.landmasses().size());
+                case "landmass" -> {
+                    EarthData.Landmass m = d.landmass(Integer.parseInt(f[2]));
+                    y.see(m != null && m.id() == Integer.parseInt(f[2]) && m.areaKm2() == Double.parseDouble(f[3]) && m.cells() == Long.parseLong(f[4]) && m.name().equals(f[5]), line + " / " + m);
+                }
+                default -> report("an expected figure of a kind relief() knows", false, line);
+            }
+        }
+        out.println("      the file " + (d.hasRelief() ? "has" : "has NOT") + " earth-2's layers: slope at " + slopeCpd + " cells a degree, shallow " + shallowCpd + ", depth " + depthCpd
+                + ", landmass " + landCpd);
+        assertTrue("the file has earth-2's ground: hasRelief()", d.hasRelief());
+        tally("the slope byte read at a cell's centre, and its foothill, steep and very steep shares unpacked", t.get("slopeb"));
+        tally("the shallow share read at a cell's centre: the level over SHARE_LEVELS", t.get("shallowb"));
+        tally("the depth in metres at a cell's centre: the code decoded", t.get("depthb"));
+        tally("a depth code in metres, all 256 of them", t.get("depthcode"));
+        tally("a tile's slopes estimated or measured, by its number and by a point in it", t.get("slopeest"));
+        tally("a landmass tile's cells of every id, by their number and by a point at their centre", t.get("landmasscell"));
+        tally("a landmass tile's ids and all of its 57,600 cells, decoded from the palette", t.get("landmasstile"));
+        tally("the windows' spots and named places read every layer at once, found by position", t.get("point"));
+        tally("the landmasses counted, and the rows of the ids the windows' tiles hold: area, cells, name", merge(t.get("landmasses"), t.get("landmass")));
+        if (scope.equals("fixture")) decoders();                 // the hand-worked unpacking holds for the file as for the fixture: once
+        landmassLayer(d);
+    }
+
+    /** The unpacking of the slope byte and the depth code by hand, and the landmass palette's short-index form on a tile built for it. */
+    static void decoders() {
+        double e = 1e-12;
+        assertTrue("a slope byte of 0 is all flat; 255 is all of it, foothill, steep and very steep alike",
+                EarthData.slopeFoothill(0) == 0 && EarthData.slopeSteep(0) == 0 && EarthData.slopeVerySteep(0) == 0
+                        && EarthData.slopeFoothill(255) == 1 && EarthData.slopeSteep(255) == 1 && EarthData.slopeVerySteep(255) == 1);
+        int b = (2 << 6) | (3 << 3) | 5;                        // F = 5/7, S = 3/7, two thirds of the steep ground very steep
+        assertTrue("a slope byte of 157 is 5/7 foothill, 3/7 steep and 3/7 x 2/3 very steep, signed or not",
+                Math.abs(EarthData.slopeFoothill(b) - 5.0 / 7) < e && Math.abs(EarthData.slopeSteep(b) - 3.0 / 7) < e && Math.abs(EarthData.slopeVerySteep(b) - 2.0 / 7) < e
+                        && EarthData.slopeFoothill((byte) b) == EarthData.slopeFoothill(b) && EarthData.slopeSteep((byte) b) == EarthData.slopeSteep(b)
+                        && EarthData.slopeVerySteep((byte) b) == EarthData.slopeVerySteep(b));
+        boolean anchors = EarthData.depthOfCode(0) == 0 && EarthData.depthOfCode(1) == 1 && EarthData.depthOfCode(200) == 200 && EarthData.depthOfCode(201) == 210
+                && EarthData.depthOfCode(254) == 740 && EarthData.depthOfCode(255) == EarthData.DEPTH_DEEPEST_M && EarthData.DEPTH_DEEPEST_M == 750
+                && EarthData.DEPTH_DEEPEST_CODE == 255;
+        boolean rising = true;
+        for (int c = 1; c < 256; c++) rising &= EarthData.depthOfCode(c) > EarthData.depthOfCode(c - 1);
+        assertTrue("depth codes: 0 none, 1 and 200 their metres, 201 is 210, 254 is 740, and 255 is 750, the deepest (DEPTH_DEEPEST_M)", anchors);
+        assertTrue("a deeper code is always deeper", rising);
+
+        // a landmass tile with more than 256 ids holds its indexes a big-endian short each: no tile of the file does, so one is built
+        int n = 300;
+        int[] ids = new int[n];
+        java.io.ByteArrayOutputStream blob = new java.io.ByteArrayOutputStream();
+        varint(blob, n);
+        long id = 0;
+        for (int k = 0; k < n; k++) {
+            long delta = k == 0 ? 0 : 1 + (k % 5) * 90;         // some past 127: two-byte varints
+            id += delta;
+            ids[k] = (int) id;
+            varint(blob, delta);
+        }
+        int[] index = { 299, 256, 0, 1, 255, 257, 298, 128, 270, 3, 4, 5, 6, 7, 8, 9 };
+        for (int ix : index) {
+            blob.write(ix >> 8);
+            blob.write(ix & 0xFF);
+        }
+        byte[] wide = blob.toByteArray();
+        boolean shorts = true;
+        for (int k = 0; k < index.length; k++) shorts &= EarthData.landmassCellOf(wide, index.length, k) == ids[index[k]];
+        assertTrue("a palette of 300 ids is indexed a short a cell: all sixteen cells of a tile built so read their ids", shorts);
+        boolean refused = false;
+        try {
+            EarthData.landmassCellOf(wide, index.length + 1, 0);
+        } catch (IllegalStateException ex) {
+            refused = true;
+        }
+        assertTrue("a palette whose indexes do not fill the tile is refused, not read", refused);
+        java.io.ByteArrayOutputStream small = new java.io.ByteArrayOutputStream();
+        varint(small, 3);
+        varint(small, 0);
+        varint(small, 5);
+        varint(small, 200);                                     // ids 0, 5 and 205
+        for (int ix : new int[] { 2, 0, 1, 2 }) small.write(ix);
+        byte[] bytes = small.toByteArray();
+        assertTrue("a palette of 3 ids is indexed a byte a cell: 205, 0, 5, 205", EarthData.landmassCellOf(bytes, 4, 0) == 205 && EarthData.landmassCellOf(bytes, 4, 1) == 0
+                && EarthData.landmassCellOf(bytes, 4, 2) == 5 && EarthData.landmassCellOf(bytes, 4, 3) == 205);
+    }
+
+    /** A value as a LEB128 varint, as the file's lists write them. */
+    static void varint(java.io.ByteArrayOutputStream o, long v) {
+        while (v >= 0x80) {
+            o.write((int) (v & 0x7F) | 0x80);
+            v >>>= 7;
+        }
+        o.write((int) v);
+    }
+
+    /** The landmass layer is no byte grid, and the landmasses come largest first. */
+    static void landmassLayer(EarthData d) {
+        int tile = 0;
+        for (int i = 0; i < EarthData.TILES; i++) if (d.entry(EarthData.LANDMASS, i) > 0) { tile = i; break; }
+        final int t = tile;
+        assertTrue("the landmass layer holds a palette a tile, not a byte a cell: grid(), cell() and at() refuse it",
+                d.layer(EarthData.LANDMASS).palette() && refuses(() -> d.grid(EarthData.LANDMASS, t)) && refuses(() -> d.cell(EarthData.LANDMASS, t, 0, 0))
+                        && refuses(() -> d.at(EarthData.LANDMASS, 0, 0)));
+        assertTrue("and the layers that are byte grids are not palettes", !d.layer("sea").palette() && !d.layer(EarthData.SLOPE).palette() && !d.layer("depth").palette());
+        List<EarthData.Landmass> all = d.landmasses();
+        boolean order = !all.isEmpty();
+        for (int k = 0; k < all.size(); k++) {
+            EarthData.Landmass m = all.get(k);
+            order &= m.id() == k + 1 && m.cells() >= 1 && (k == 0 || m.areaKm2() <= all.get(k - 1).areaKm2());
+        }
+        report("the landmasses are numbered from 1 and come largest first by area", order, String.format("%,d landmasses, the largest %.0f km2 (%s), the smallest %.2f km2",
+                all.size(), all.isEmpty() ? 0 : all.get(0).areaKm2(), all.isEmpty() ? "-" : all.get(0).name(), all.isEmpty() ? 0 : all.get(all.size() - 1).areaKm2()));
+        assertTrue("a landmass by its id: 0 (no land) and an id past the last are none", d.landmass(0) == null && d.landmass(all.size() + 1) == null && d.landmass(1) == all.get(0));
+    }
+
+    /** A reader to be opened with room in its LRU for every tile weigh() reads. */
+    interface Opener {
+        EarthData open() throws IOException;
+    }
+
+    /** What a tile with every layer inflated holds in the LRU, from a reader with room for all of them: printed, with a loose bound that a city's tiles fit (the study's 2.9). */
+    static void weigh(String what, Opener opener, int[] tiles) throws IOException {
+        out.println("--- 12. what a tile with every layer holds in the LRU: " + what + " ---");
+        try (EarthData d = opener.open()) {
+            int whole = 0;
+            long sumOne = 0, sumTwo = 0, largest = 0, allSum = 0;
+            for (int t : tiles) {
+                long one = 0, two = 0;
+                boolean every = true;
+                for (String layer : EARTH1_TILE_LAYERS) {
+                    every &= d.entry(layer, t) > 0;
+                    long before = d.cachedBytes();
+                    d.raw(layer, t);
+                    one += d.cachedBytes() - before;
+                }
+                for (String layer : EARTH2_TILE_LAYERS) {
+                    every &= d.entry(layer, t) > 0;
+                    long before = d.cachedBytes();
+                    d.raw(layer, t);
+                    two += d.cachedBytes() - before;
+                }
+                allSum += one + two;
+                if (!every) continue;
+                whole++;
+                sumOne += one;
+                sumTwo += two;
+                largest = Math.max(largest, one + two);
+            }
+            if (whole == 0) {
+                assertTrue("a tile of " + what + " has a blob in every layer to weigh", false);
+                return;
+            }
+            long mean = (sumOne + sumTwo) / whole;
+            report("the default budget holds at least " + MIN_FULL_TILES + " tiles with every layer inflated (four cities' worth: a city reads " + CITY_TILES + ")",
+                    EarthData.CACHE_BYTES / largest >= MIN_FULL_TILES, String.format("%d of %d tiles have a blob in all nine layers", whole, tiles.length));
+            out.printf("      a tile with every layer inflated: mean %,d bytes (earth-1's five %,d, earth-2's four %,d), the largest %,d; the %,d-byte cache keeps %d of the largest, %d of the mean"
+                    + " (earth-1's five alone: %d of the mean); all %d tiles read, empty or uniform layers as they are: mean %,d%n",
+                    mean, sumOne / whole, sumTwo / whole, largest, EarthData.CACHE_BYTES, EarthData.CACHE_BYTES / largest, EarthData.CACHE_BYTES / mean,
+                    EarthData.CACHE_BYTES / (sumOne / whole), tiles.length, allSum / tiles.length);
+        }
+    }
+
+    /** Section 11: the ten layers earth-2 holds of earth-1's, compared with earth-1.bin index entry by index entry and stored blob by stored blob. */
+    static void sameAsEarth1(EarthData d2, Path full) throws IOException {
+        out.println("--- 11. earth-1's ten layers are earth-2's, byte for byte ---");
+        String named = System.getProperty(EARTH1_PROPERTY);
+        Path one = named != null && !named.isBlank() ? Path.of(named) : full.resolveSibling("earth-1.bin");
+        if (!Files.isRegularFile(one)) {
+            if (named != null && !named.isBlank()) report("the file -D" + EARTH1_PROPERTY + " names is there", false, named);
+            else out.println("earth-1.bin not found beside " + full + " nor named (-D" + EARTH1_PROPERTY + "=<path>): the byte-for-byte comparison did not run");
+            return;
+        }
+        out.println("comparing with " + one.toAbsolutePath());
+        Tally shape = new Tally(), entries = new Tally(), blobs = new Tally();
+        long bytes = 0;
+        try (EarthData d1 = EarthData.open(one);
+             FileChannel c1 = FileChannel.open(one, StandardOpenOption.READ);
+             FileChannel c2 = FileChannel.open(full, StandardOpenOption.READ)) {
+            report("earth-1.bin still opens and reads as it always did: its identity is earth-1's, and it has none of earth-2's layers",
+                    d1.identity().startsWith("earth-1:") && !d1.hasRelief() && d1.layers().size() == EARTH1_LAYERS.length + 1, d1.identity());
+            String from = com.google.gson.JsonParser.parseString(d2.meta()).getAsJsonObject().get("from_sha256").getAsString();
+            assertTrue("earth-2's meta names the earth-1 it was made from: this file's SHA-256", d1.identity().equals("earth-1:" + from));
+            ByteBuffer a = ByteBuffer.allocate(1 << 16), b = ByteBuffer.allocate(1 << 16);
+            for (String name : EARTH1_LAYERS) {
+                EarthData.Layer l1 = d1.layer(name), l2 = d2.layer(name);
+                shape.see(l1.kind == l2.kind && l1.cellsPerDegree == l2.cellsPerDegree && l1.dataLength == l2.dataLength, name + ": kind, cells a degree or stored length differ");
+                if (l1.kind == EarthData.KIND_WHOLE) {
+                    if (a.capacity() < l1.dataLength) { a = ByteBuffer.allocate((int) l1.dataLength); b = ByteBuffer.allocate((int) l1.dataLength); }
+                    blobs.see(sameStored(c1, l1.dataOffset, c2, l2.dataOffset, (int) l1.dataLength, a, b), name + " (the whole layer)");
+                    bytes += l1.dataLength;
+                    continue;
+                }
+                for (int i = 0; i < l1.count(); i++) {
+                    entries.see(l1.entries[i] == l2.entries[i], name + " " + i + ": entry " + l1.entries[i] + " and " + l2.entries[i]);
+                    int e = l1.entries[i];
+                    if (e <= 0) continue;
+                    if (a.capacity() < e) { a = ByteBuffer.allocate(e); b = ByteBuffer.allocate(e); }
+                    blobs.see(l1.entries[i] == l2.entries[i] && sameStored(c1, l1.offsets[i], c2, l2.offsets[i], e, a, b), name + " " + i + " (" + e + " bytes)");
+                    bytes += e;
+                }
+            }
+        }
+        tally("the ten layers have the same kind, cells a degree and stored length in both", shape);
+        tally("every index entry is the same: a blob's length, a uniform tile's value, an empty one", entries);
+        tally("every stored blob and every whole layer is the same bytes, read from the two files", blobs);
+        out.printf("      compared: %d layers, %,d index entries, %,d stored blobs and whole layers, %,d bytes%n", EARTH1_LAYERS.length, entries.n, blobs.n, bytes);
+    }
+
+    /** Whether len bytes at posA of one file are the same as those at posB of the other. */
+    static boolean sameStored(FileChannel c1, long posA, FileChannel c2, long posB, int len, ByteBuffer a, ByteBuffer b) throws IOException {
+        a.clear().limit(len);
+        b.clear().limit(len);
+        while (a.hasRemaining()) if (c1.read(a, posA + a.position()) < 0) return false;
+        while (b.hasRemaining()) if (c2.read(b, posB + b.position()) < 0) return false;
+        a.flip();
+        b.flip();
+        return a.equals(b);
     }
 }

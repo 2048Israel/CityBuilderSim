@@ -89,13 +89,13 @@ echo  modules:   %MODULES%
 echo.
 
 rem ------------------------------ the Earth ------------------------------
-rem  The real Earth, data\earth-1.bin (about 53 MB), is not in git. A build
+rem  The real Earth, data\earth-2.bin (about 282 MB), is not in git. A build
 rem  must carry it, so this fetches it when this PC lacks it or holds a bad
 rem  copy, and stops before jpackage when it cannot be had.
 call "tools\earth\get-earth.bat" nopause
 if errorlevel 1 (
     echo.
-    echo   No good data\earth-1.bin, so no build: without it the game would
+    echo   No good data\earth-2.bin, so no build: without it the game would
     echo   offer only the generated world. The reason is above.
     echo.
     pause
@@ -162,21 +162,21 @@ if exist "src\main\resources\buildings.json" (
 )
 
 rem --------------------------- the Earth beside the exe ---------------------------
-rem  The game looks for data\earth-1.bin in the folder it runs in, which for
+rem  The game looks for data\earth-2.bin in the folder it runs in, which for
 rem  the exe is its own folder (the start line at the bottom says why). Its
 rem  sources' credits go with it, as their licences ask.
 mkdir "dist\%APPNAME%\data"
-copy /y "data\earth-1.bin" "dist\%APPNAME%\data\" >nul
-copy /y "tools\earth\ATTRIBUTION.txt" "dist\%APPNAME%\data\earth-1-ATTRIBUTION.txt" >nul
-if not exist "dist\%APPNAME%\data\earth-1.bin" (
+copy /y "data\earth-2.bin" "dist\%APPNAME%\data\" >nul
+copy /y "tools\earth\ATTRIBUTION-2.txt" "dist\%APPNAME%\data\earth-2-ATTRIBUTION.txt" >nul
+if not exist "dist\%APPNAME%\data\earth-2.bin" (
     echo.
-    echo   Could not copy data\earth-1.bin into dist\%APPNAME%\data - stopping
+    echo   Could not copy data\earth-2.bin into dist\%APPNAME%\data - stopping
     echo   rather than leave a build without the Earth.
     echo.
     pause
     exit /b 1
 )
-echo  Copied data\earth-1.bin next to the exe, with its credits.
+echo  Copied data\earth-2.bin next to the exe, with its credits.
 
 rem ------------------------------- the zip -------------------------------
 rem  What goes up as the release: the whole folder under its own name, as

@@ -64,7 +64,20 @@ import java.util.zip.CRC32;
  *      file, FIRST_ARCMIN then ARCMIN.
  *   7. A FRAME of the expanded map from the picture in no more than FRAME_MS
  *      of the main thread's CPU (Jerus's A28; MapCheck's clock), the wall
- *      clock beside it, and on two threads.
+ *      clock beside it, and on two threads - since ET1 slice D by the colours
+ *      of its codes, a class and its relief.
+ *   8. THE RELIEF IN THE PICTURE (ET1 slice D; spec-earth2-terrain 9.3): a
+ *      texel's code is its class and its relief and the globe's colour for
+ *      it the map's; no texel of water or ice has a slope (snow stays white);
+ *      Medellin's degree is the far rule's, texel for texel, through another
+ *      band, and its relief shares the data's within RELIEF_SIGMAS binomial
+ *      spreads, foothill the most; a frame over it colours each pixel by its
+ *      texel's code, the three greys and the shaded forest among them, and
+ *      by a table of the classes alone as before; on the full file the
+ *      Himalaya and Tibet's shares are the data's with all three greys and
+ *      their snow white. The frame's colours are the only thing the
+ *      picture's relief changes in the prints above: the CRC32s of the far
+ *      nodes (FIXTURE_PRINTS, FULL_PRINTS) hold the cover, which it never touches.
  *
  * The fixture (EarthCheck's) causes the camera's conditions: its windows
  * hold coasts, rivers and small lakes and Fiji's the date line; its bands
@@ -109,14 +122,23 @@ public class GlobeCheck {
     /** Frames timed, the least taken, after as many to warm. */
     static final int FRAME_ROUNDS = 10;
 
-    /** The CRC32 of every stride's far node over the fixture's four windows and the world's (fingerprint()), as 0.7.131 drew them before the camera (probe E8Fingerprint on its build, 19f1cad). */
-    static final Map<String, Long> FIXTURE_PRINTS = Map.of("Rotterdam", 0x5de8b72aL, "Perth", 0x2bd933ffL, "Paris", 0x7016955fL, "Fiji", 0xd15c60f1L);
+    /**
+     * The CRC32 of every stride's far node over the fixture's four windows and the world's (fingerprint()), as 0.7.131 drew them before the camera
+     * (probe E8Fingerprint on its build, 19f1cad), but for what the earth-2 fixture and the shallow sea changed: re-struck by ET1 (2026-10-24) -
+     * the fixture's own tiles moved them at slice A (earth-2's fixture holds Halifax's Narrows), and the shallow sea (World.SHALLOW) is a class the
+     * far nodes now hold. Folding SHALLOW back to SALT gives slice A's figures (0b83f8c6, c5ba11b7, 85a23609, 1835aa85).
+     */
+    static final Map<String, Long> FIXTURE_PRINTS = Map.of("Rotterdam", 0xed2ff708L, "Perth", 0x0b1d7f68L, "Paris", 0xc3979824L, "Fiji", 0x4a0874dfL);
 
     /** The full file's spots: Rotterdam, Halifax, Manila, Greenland's ice, McMurdo past EarthProj.BLEND_MAX_LAT, Chukotka on the 180th meridian, Finland's lakes and the Sahara. */
     static final double[][] FULL_SPOTS = { { 51.90625, 4.48125 }, { 44.65, -63.57 }, { 14.60, 120.98 }, { 72, -40 }, { -77.85, 166.67 }, { 66, 180 }, { 62, 26 }, { 23, 12 } };
 
-    /** ...and their nodes' CRC32, as 0.7.131 drew them. */
-    static final long[] FULL_PRINTS = { 0x53186882L, 0xdcf6b91eL, 0x4b92b699L, 0x34df4490L, 0x663a5196L, 0x7e38f4f5L, 0x45cc7052L, 0x2b58c5a8L };
+    /**
+     * ...and their nodes' CRC32, as 0.7.131 drew them but for the shallow sea (ET1, 2026-10-24: World.SHALLOW is now a class the far nodes hold, so the
+     * figures moved). Folding SHALLOW back to SALT gives 0.7.131's eight exactly (53186882, dcf6b91e, 4b92b699, 34df4490, 663a5196, 7e38f4f5, 45cc7052,
+     * 2b58c5a8): nothing but the shallow sea changed in them.
+     */
+    static final long[] FULL_PRINTS = { 0xf291ea65L, 0x208e9728L, 0xd85a163cL, 0x734fdb04L, 0xf5f461adL, 0xbdc3b5b7L, 0x864aa160L, 0xf0f527ccL };
 
     static int fails = 0;
     /** Where the harness prints: the console. */
@@ -153,6 +175,7 @@ public class GlobeCheck {
         planeCamera(spots, id, full);
         cameras(spots, id, data);
         GlobePicture pic = picture(data, full);
+        reliefInPicture(data, id, full, pic);
         frame(pic);
         out.println();
         if (fails == 0) out.println("All checks passed.");
@@ -536,7 +559,7 @@ public class GlobeCheck {
         out.println("      the fixture: " + words);
         check("on the fixture's four windows every stride's far node, aligned and centred, and the whole world's, are 0.7.131's byte for byte", same);
         if (full == null) {
-            out.println("      earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's far nodes were not fingerprinted");
+            out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's far nodes were not fingerprinted");
             return;
         }
         String fid = EarthTerrain.use(full);
@@ -637,16 +660,16 @@ public class GlobeCheck {
         out.printf("      the fixture's texels: %s%n", rule);
         check("...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS", rule.ok());
         if (full == null) {
-            out.println("      earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the planet's picture was not made");
+            out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the planet's picture was not made");
             return one;
         }
         GlobePicture first = GlobePicture.make(full, GlobePicture.FIRST_ARCMIN, 2);
         GlobePicture pic = GlobePicture.make(full, GlobePicture.ARCMIN, 2);
         long[] count = new long[World.CLASSES];
-        for (byte b : pic.texels()) count[b]++;
-        out.printf("      on the full file, two threads: %d' in %.0f ms (%,d bytes), then %d' in %.0f ms (%,d bytes, %.1f MB); the 4' texels: sea %,d, grass %,d,"
+        for (byte b : pic.texels()) count[GlobePicture.classOf(b)]++;
+        out.printf("      on the full file, two threads: %d' in %.0f ms (%,d bytes), then %d' in %.0f ms (%,d bytes, %.1f MB); the 4' texels: sea %,d (%,d of it shallow), grass %,d,"
                         + " forest %,d, fresh %,d, ice %,d, desert %,d, beach %,d%n", first.arcmin(), first.madeMs(), first.bytes(), pic.arcmin(), pic.madeMs(), pic.bytes(),
-                pic.bytes() / 1e6, count[World.SALT], count[World.GRASS], count[World.FOREST], count[World.FRESH], count[World.ICE], count[World.DESERT], count[World.SAND]);
+                pic.bytes() / 1e6, count[World.SALT] + count[World.SHALLOW], count[World.SHALLOW], count[World.GRASS], count[World.FOREST], count[World.FRESH], count[World.ICE], count[World.DESERT], count[World.SAND]);
         land = land(full, pic);
         out.printf("      the planet: %s%n", land);
         check("on the full file each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast",
@@ -697,7 +720,7 @@ public class GlobeCheck {
                         double share = Math.min(1, ((land[k] & 0xFF) + (lake[k] & 0xFF)) / (double) EarthData.FAR_LEVELS);
                         data += share;
                         round += Math.min(share, 1 - share);
-                        if (p.texel(r0 + rr, lon * per + cc) != World.SALT) drawn++;
+                        if (!World.salt(p.texel(r0 + rr, lon * per + cc))) drawn++;
                     }
                 }
                 double cells = per * per, diff = 100 * Math.abs(drawn - data) / cells;
@@ -751,8 +774,8 @@ public class GlobeCheck {
                     double sea = Math.max(0, 1 - dry - wet);
                     byte b = p.texel(row, col);
                     r.texels++;
-                    if ((b == World.SALT) != (sea > 0 && sea >= EarthTerrain.SEA_LEVEL)) r.seaWrong++;
-                    if (b == World.SALT || b == World.FRESH) continue;
+                    if (World.salt(b) != (sea > 0 && sea >= EarthTerrain.SEA_LEVEL)) r.seaWrong++;
+                    if (World.salt(b) || b == World.FRESH) continue;
                     int lc = d.at("landcover", lat, lon);
                     boolean ice = (lc & EarthData.LC_ICE) != 0, desert = (lc & EarthData.LC_DESERT) != 0;
                     if ((b == World.ICE) != ice) r.iceWrong++;
@@ -777,20 +800,21 @@ public class GlobeCheck {
         double w = MapTiles.DESIGN_W, h = MapTiles.DESIGN_H;
         GlobeFrame f = new GlobeFrame(w, h, CITIES[1][0], CITIES[1][1]);
         int[] px = new int[(int) w * (int) h];
-        for (int k = 0; k < FRAME_ROUNDS; k++) pic.frame(f, TileRaster.GROUND, TileRaster.VOID, px, 1);
+        int[] colours = GlobePicture.colours(false);
+        for (int k = 0; k < FRAME_ROUNDS; k++) pic.frame(f, colours, TileRaster.VOID, px, 1);
         double cpu = Double.MAX_VALUE, wall = Double.MAX_VALUE, two = Double.MAX_VALUE;
         int space = 0;
         for (int k = 0; k < FRAME_ROUNDS; k++) {
             // the whole planet, then the picture's texel, round the globe
             f.set(CITIES[1][0] + 7 * k - 30, CITIES[1][1] + 31 * k, k % 2 == 0 ? f.mostKmPx() : GlobeFrame.PICTURE_FROM_KM);
             long c0 = MapCheck.monthClock(), w0 = System.nanoTime();
-            pic.frame(f, TileRaster.GROUND, TileRaster.VOID, px, 1);
+            pic.frame(f, colours, TileRaster.VOID, px, 1);
             long c1 = MapCheck.monthClock(), w1 = System.nanoTime();
             cpu = Math.min(cpu, (c1 - c0) / 1e6);
             wall = Math.min(wall, (w1 - w0) / 1e6);
             if (k == 0) for (int v : px) if (v == TileRaster.VOID) space++;
             w0 = System.nanoTime();
-            pic.frame(f, TileRaster.GROUND, TileRaster.VOID, px, 2);
+            pic.frame(f, colours, TileRaster.VOID, px, 2);
             two = Math.min(two, (System.nanoTime() - w0) / 1e6);
         }
         String clock = MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM measures no thread's CPU)";
@@ -798,5 +822,143 @@ public class GlobeCheck {
                 + " the whole planet leaves %,d pixels to space%n", (int) w, (int) h, cpu, clock, wall, two, space);
         check("a frame from the planet's picture is drawn in no more than FRAME_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock"),
                 Timing.within(cpu, FRAME_MS) && space > 0);
+    }
+
+    /* =====================================================================
+       8. THE RELIEF IN THE PICTURE (ET1 slice D; spec-earth2-terrain 9.3)
+       ===================================================================== */
+
+    /** The picture's relief shares are the data's within this many binomial spreads of the dry texels drawn (a texel is a hash's draw against the 4' block's share, as a far node's pixel is) and a rounding of the slope layer's seven levels, 0.03: 4, as MapCheck 11's pictures. */
+    static final double RELIEF_SIGMAS = 4, RELIEF_ROUNDING = 0.03;
+
+    /** The dry texels (not ice, not water) in a box of the picture, `rows` x `cols` of them from (row0 from the north, col0 from 180 W), counted by relief. */
+    static long[] dryTexelsByRelief(GlobePicture p, int row0, int col0, int rows, int cols) {
+        long[] n = new long[World.RELIEFS];
+        for (int r = row0; r < row0 + rows; r++) {
+            for (int c = col0; c < col0 + cols; c++) {
+                byte code = p.texelCode(r, c);
+                if (World.dry(GlobePicture.classOf(code))) n[GlobePicture.reliefOf(code)]++;
+            }
+        }
+        return n;
+    }
+
+    /** The data's relief shares over a box of 30" cells (the slope layer's bytes unpacked: flat is under foothill's share, foothill what is not steep, and so on): the mean over every cell. */
+    static double[] dataReliefShares(EarthData d, double lat0, double lat1, double lon0, double lon1) {
+        double[] s = new double[World.RELIEFS];
+        long n = 0;
+        for (double lat = lat0 + 1.0 / 240; lat < lat1; lat += 1.0 / 120) {
+            for (double lon = lon0 + 1.0 / 240; lon < lon1; lon += 1.0 / 120) {
+                int b = d.slope(lat, lon);
+                double f = EarthData.slopeFoothill(b), st = EarthData.slopeSteep(b), v = EarthData.slopeVerySteep(b);
+                s[World.FLAT] += 1 - f;
+                s[World.FOOTHILL] += f - st;
+                s[World.STEEP] += st - v;
+                s[World.VERY_STEEP] += v;
+                n++;
+            }
+        }
+        for (int k = 0; k < s.length; k++) s[k] /= Math.max(1, n);
+        return s;
+    }
+
+    /** Whether the texels' shares (counts) are the data's within RELIEF_SIGMAS spreads and the rounding, each relief. */
+    static boolean sharesMatch(long[] counts, double[] data) {
+        long n = Arrays.stream(counts).sum();
+        boolean ok = n > 0;
+        for (int r = 0; r < World.RELIEFS && ok; r++) {
+            double p = data[r], spread = Math.sqrt(Math.max(1e-9, p * (1 - p)) / n);
+            ok &= Math.abs(counts[r] / (double) n - p) <= RELIEF_SIGMAS * spread + RELIEF_ROUNDING;
+        }
+        return ok;
+    }
+
+    static String sharesWords(long[] counts) {
+        long n = Math.max(1, Arrays.stream(counts).sum());
+        return String.format("flat %.1f%%, foothill %.1f%%, steep %.1f%%, very steep %.1f%% of %,d dry texels", 100.0 * counts[0] / n, 100.0 * counts[1] / n, 100.0 * counts[2] / n, 100.0 * counts[3] / n, n);
+    }
+
+    static void reliefInPicture(EarthData fixture, String id, EarthData full, GlobePicture fullPicture) {
+        out.println("\n--- 8. the planet's picture holds each texel's relief beside its class: mountains grey from orbit, snow white, the classes as they were ---");
+        // The code: a class and its relief, 32 of them, the colour table the map's own.
+        int[] colours = GlobePicture.colours(false);
+        boolean codes = GlobePicture.CODES == World.RELIEFS * World.CLASSES && colours.length == GlobePicture.CODES && GlobePicture.CLASS_MASK == World.CLASSES - 1;
+        for (int r = 0; r < World.RELIEFS; r++) {
+            for (int c = 0; c < World.CLASSES; c++) {
+                byte code = GlobePicture.code(c, r);
+                codes &= code >= 0 && code < GlobePicture.CODES && GlobePicture.classOf(code) == c && GlobePicture.reliefOf(code) == r && colours[code] == TileRaster.colour(c, r)
+                        && (r != World.FLAT || (code == c && colours[c] == TileRaster.GROUND[c]));
+            }
+        }
+        check("a texel's code is its class in the low bits and its relief above, CODES of them, FLAT's the class itself; the globe's colour for each is the map's (TileRaster.colour())", codes);
+        // The fixture's picture: every texel a code whose relief is on dry ground alone, ice and water flat; its classes as they were (a class table of the old length reads them).
+        GlobePicture fp = GlobePicture.of(fixture, GlobePicture.ARCMIN);
+        long bad = 0, sloped = 0, ice = 0, iceSloped = 0;
+        for (byte b : fp.texels()) {
+            int cls = GlobePicture.classOf(b), rel = GlobePicture.reliefOf(b);
+            if (b < 0 || b >= GlobePicture.CODES || cls >= World.CLASSES || rel >= World.RELIEFS) bad++;
+            else {
+                if (rel != World.FLAT && !World.dry(cls)) bad++;
+                if (rel != World.FLAT) sloped++;
+                if (cls == World.ICE) { ice++; if (rel != World.FLAT) iceSloped++; }
+            }
+        }
+        out.printf("      the fixture's picture: %,d texels, %,d of them on a slope, %,d of ice (%,d sloped), %,d codes outside the rule%n", fp.texels().length, sloped, ice, iceSloped, bad);
+        check("every texel's relief is on dry ground alone (no slope on water or ice: snow stays white), and the picture has slopes", bad == 0 && iceSloped == 0 && sloped > 0);
+        // The fixture's hilliest degree (its far layers are the coasts' bands, so Medellin's is not among them): the picture's texels are the far rule's
+        // through a camera of one degree's rows, texel for texel, and a frame over it colours each pixel by its texel's code.
+        int per = 60 / GlobePicture.ARCMIN;
+        int[] sloping = new int[180 * 360];
+        for (int r = 0; r < fp.rows(); r++) for (int c = 0; c < fp.cols(); c++) if (GlobePicture.reliefOf(fp.texelCode(r, c)) != World.FLAT) sloping[(r / per) * 360 + c / per]++;
+        int hill = 0;
+        for (int k = 1; k < sloping.length; k++) if (sloping[k] > sloping[hill]) hill = k;
+        int dr = hill / 360, dc = hill % 360, row0 = dr * per, col0 = dc * per;
+        double lat0 = 90 - dr - 1, lon0 = dc - 180;
+        EarthTerrain e = new EarthTerrain(World.Key.earth(0, 0, 0, id));
+        byte[] cover = new byte[per * 360 * per], relief = new byte[per * 360 * per];
+        e.farTerrain(e.grid(GlobePicture.ARCMIN, row0, per), cover, relief);
+        boolean same = true;
+        for (int r = 0; r < per; r++) for (int c = 0; c < per; c++) same &= fp.texelCode(row0 + r, col0 + c) == GlobePicture.code(cover[r * 360 * per + col0 + c], relief[r * 360 * per + col0 + c]);
+        out.printf("      the fixture's hilliest degree (%.0f to %.0f N, %.0f to %.0f E): %s%n", lat0, lat0 + 1, lon0, lon0 + 1, sharesWords(dryTexelsByRelief(fp, row0, col0, per, per)));
+        check("the fixture's hilliest degree in the picture is the far rule's, texel for texel, through a band of one degree's rows instead of ten", same && sloping[hill] > 0);
+        GlobeFrame f = new GlobeFrame(400, 300, lat0 + 0.5, lon0 + 0.5);
+        f.set(lat0 + 0.5, lon0 + 0.5, 1.5);
+        int[] px = new int[400 * 300], plain = new int[400 * 300];
+        fp.frame(f, colours, GlobePicture.SPACE, px, 1);
+        fp.frame(f, TileRaster.GROUND, GlobePicture.SPACE, plain, 1);
+        int slopedPixels = 0;
+        boolean frameOk = true, classTable = true;
+        for (int j = 0; j < 300; j++) {
+            for (int i = 0; i < 400; i++) {
+                double[] ll = f.latLonAt(i + 0.5, j + 0.5);
+                if (ll == null) {
+                    frameOk &= px[j * 400 + i] == GlobePicture.SPACE;
+                    classTable &= plain[j * 400 + i] == GlobePicture.SPACE;
+                    continue;
+                }
+                byte code = fp.codeAt(ll[0], ll[1]);
+                frameOk &= px[j * 400 + i] == colours[code];
+                classTable &= plain[j * 400 + i] == TileRaster.GROUND[GlobePicture.classOf(code)];
+                if (GlobePicture.reliefOf(code) != World.FLAT) slopedPixels++;
+            }
+        }
+        check("a frame over it colours each pixel by its texel's code - a grey on open ground, forest shaded - and from a table of the classes alone, as before", frameOk && classTable && slopedPixels > 0);
+        // The full file, when it is named: the Himalaya and Tibet, where the range is grey and the snow white.
+        if (full == null) {
+            out.println("      earth-2.bin not named: the Himalaya's texels were not counted");
+            return;
+        }
+        int hr0 = (int) Math.round((90 - 36) * per), hc0 = (int) Math.round((180 + 76) * per), hrows = 10 * per, hcols = 20 * per;
+        long[] him = dryTexelsByRelief(fullPicture, hr0, hc0, hrows, hcols);
+        double[] hdata = dataReliefShares(full, 26, 36, 76, 96);
+        long snow = 0, snowSloped = 0;
+        for (int r = hr0; r < hr0 + hrows; r++) for (int c = hc0; c < hc0 + hcols; c++) {
+            byte code = fullPicture.texelCode(r, c);
+            if (GlobePicture.classOf(code) == World.ICE) { snow++; if (GlobePicture.reliefOf(code) != World.FLAT) snowSloped++; }
+        }
+        out.printf("      the Himalaya and Tibet (26 to 36 N, 76 to 96 E): the picture %s; the data's %.1f%% / %.1f%% / %.1f%% / %.1f%%; %,d texels of snow, %,d sloped%n", sharesWords(him),
+                100 * hdata[0], 100 * hdata[1], 100 * hdata[2], 100 * hdata[3], snow, snowSloped);
+        check("on the full file the Himalaya and Tibet's relief shares are the data's within RELIEF_SIGMAS spreads, with grey in all three classes, and its snow all white", sharesMatch(him, hdata)
+                && him[World.FOOTHILL] > 0 && him[World.STEEP] > 0 && him[World.VERY_STEEP] > 0 && snow > 0 && snowSloped == 0);
     }
 }

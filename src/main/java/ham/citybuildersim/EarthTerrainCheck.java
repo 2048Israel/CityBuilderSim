@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world - and since 0.7.117 (batch E3) its deposits on the Earth's geology (Geology), and since 0.7.127 (batch E7) its ice and desert.
@@ -23,8 +24,8 @@ import java.util.Map;
  * the key, that is held too (WorldCheck holds the generated world itself,
  * unchanged).
  *
- * THE DATA. EarthCheck's fixture (earth/earth-1-fixture.bin, cut from
- * earth-1.bin by tools/earth/fixture.py) holds the 15" tiles of the study's
+ * THE DATA. EarthCheck's fixture (earth/earth-2-fixture.bin, cut from
+ * earth-2.bin by tools/earth/fixture.py) holds the 15" tiles of the study's
  * three windows - Rotterdam, Perth and Paris - and Fiji's four on the 180th
  * meridian, and the 4' bands they lie in; a window here is the world cell
  * about the spot, 61.44 km a side, the study's "61 x 61 km about each spot".
@@ -138,6 +139,38 @@ import java.util.Map;
  *      snapped off it; a holding's tile of ice its whole area only, the
  *      Sahara's site desert and dry; and the far nodes draw both.
  *
+ * ...and since ET1 (2026-10-24; docs/studies/spec-earth2-terrain.md 6.1,
+ * 12's 6) the shallow sea:
+ *  16. World.SHALLOW is the byte after DESERT, World.salt() is SALT and
+ *      SHALLOW alone, the books count it as sea and the runs as not dry, its
+ *      colour, words and legend entry are its own. The shallow share of a
+ *      window's sea drawn is the data's, sea-weighted, within SHALLOW_POINTS
+ *      (Rotterdam all shallow, Perth and Halifax part), the tile rule and the
+ *      point rule split the sea alike, the Halifax Narrows is shallow and
+ *      Bedford Basin's middle deep, a tile costs no more than TILE_MS; a
+ *      generated world draws none (D19) and neither does an earth-1 file;
+ *      on the full file four coasts' shares are the data's.
+ *
+ * ...and since ET1's second slice (2026-10-24; docs/studies/spec-earth2-terrain.md
+ * 3.1) the relief plane:
+ *  17. World's relief classes FLAT, FOOTHILL, STEEP and VERY_STEEP, and the
+ *      two rules that read them (buildable(), workable()); a generated world
+ *      and an earth-1 file are FLAT everywhere. On each fixture window - said
+ *      to hold slope or not: Rotterdam holds none, so it proves only that none
+ *      is drawn - and, with the file named, six of the full file's hills
+ *      (Medellin, Everest, the Upper Engadin, Hong Kong, La Paz, Kathmandu),
+ *      the share of each class among the dry plots is the data's
+ *      land-weighted share within RELIEF_POINTS (scaled to the window's
+ *      ground); water, the shallow sea, fresh water and ice carry FLAT; forest
+ *      keeps its cover on a slope; Medellin's valley floor is FLAT and the
+ *      hills about it steep; Everest's ice is FLAT and the rock about it very
+ *      steep. The cover is untouched, the readers agree, the classes nest and lie
+ *      where the data has them, the tile rule and the point rule split alike
+ *      within RELIEF_COPIES_POINTS, a tile and its relief cost no more than
+ *      TILE_MS. On the full file: the far summary of a 4' block is the mean of
+ *      its 256 cells, far nodes at four strides, the globe's camera and the
+ *      picture's draw the relief within SCREEN_MS and FRAME_MS.
+ *
  * Every fixture causes its condition: the windows hold coasts (Rotterdam,
  * Perth), rivers (the Maas and the Seine), small lakes, lakes of 10 km2 and
  * more (Rotterdam's delta), beaches (Perth) and the date line (Fiji); the
@@ -238,7 +271,7 @@ public class EarthTerrainCheck {
                     String.format("%.2f points over %,d cells (the study %s); the window %.2f%% sea against the data's %.2f%%; fresh %.2f%% (lakes of 10 km2 and more %.2f%%);"
                             + " forest %.1f%% of the dry ground against the data's %.1f%%",
                             w.seaPoints, w.cells, s.name().equals("Rotterdam") ? "1.49" : s.name().equals("Perth") ? "0.39" : "Paris has no sea",
-                            100 * w.share(World.SALT), 100 * w.dataSea, 100 * w.share(World.FRESH), 100 * w.dataLake, 100 * w.forestOfDry(), 100 * w.dataForest));
+                            100 * (w.share(World.SALT) + w.share(World.SHALLOW)), 100 * w.dataSea, 100 * w.share(World.FRESH), 100 * w.dataLake, 100 * w.forestOfDry(), 100 * w.dataForest));
         }
         twice(three.get(0), id, windows.get("Rotterdam"));
         seeds(three, id, windows);
@@ -253,6 +286,8 @@ public class EarthTerrainCheck {
         planet(file, spots.get("Rotterdam"));
         types(id, spots);
         iceAndDesert(file, windows, id);
+        shallowSea(file, windows, data, id);
+        reliefPlane(file, spots, data, id);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -280,6 +315,8 @@ public class EarthTerrainCheck {
         final boolean[] edge;
         final int cells;
         final double seaPoints, dataSea, dataLake, dataForest;
+        /** The shallow share of the window's sea in the data (ET1): its cells' shallow levels weighted by each cell's sea and the plots laid on it; NaN where the file has no shallow layer or the window no sea. */
+        final double dataShallow;
         final long dryForestData;
 
         Window(World world, EarthData data) {
@@ -320,7 +357,7 @@ public class EarthTerrainCheck {
                         b.latLon(tx * World.TILE + p % World.TILE + 0.5, ty * World.TILE + p / World.TILE + 0.5, ll);
                         int at = (int) ((row(ll[0]) - rMin) * cols + (col(ll[1], spotLon) - cMin));
                         count[at]++;
-                        if (t[p] == World.SALT) salt[at]++;
+                        if (World.salt(t[p])) salt[at]++;
                         if (px == 0 || py == 0 || px == WINDOW - 1 || py == WINDOW - 1) edge[at] = true;
                         if (World.dry(t[p])) {
                             dry++;
@@ -332,7 +369,7 @@ public class EarthTerrainCheck {
             dryForestData = dry;
             dataForest = dry > 0 ? forestData / dry : 0;
             int n = 0;
-            double diff = 0, sea = 0, lake = 0;
+            double diff = 0, sea = 0, lake = 0, shallowSea = 0;
             long all = 0;
             for (int a = 0; a < count.length; a++) {
                 if (count[a] == 0) continue;
@@ -342,6 +379,7 @@ public class EarthTerrainCheck {
                 double l = data.cell("lake", tile, (int) (r % 240), (int) (c % 240)) / (double) EarthData.SHARE_LEVELS;
                 sea += s * count[a];
                 lake += l * count[a];
+                if (data.hasRelief()) shallowSea += s * count[a] * data.cell("shallow", tile, (int) (r % 240), (int) (c % 240)) / (double) EarthData.SHARE_LEVELS;
                 all += count[a];
                 if (edge[a]) continue;
                 n++;
@@ -351,6 +389,13 @@ public class EarthTerrainCheck {
             seaPoints = n > 0 ? 100 * diff / n : Double.NaN;
             dataSea = sea / all;
             dataLake = lake / all;
+            dataShallow = data.hasRelief() && sea > 0 ? shallowSea / sea : Double.NaN;
+        }
+
+        /** The shallow share of the sea drawn: SHALLOW plots over all the sea's, NaN where there is none. */
+        double drawnShallow() {
+            long sea = classes[World.SALT] + classes[World.SHALLOW];
+            return sea > 0 ? classes[World.SHALLOW] / (double) sea : Double.NaN;
         }
 
         /** A class's share of the window's plots. */
@@ -417,9 +462,9 @@ public class EarthTerrainCheck {
         } catch (UnsupportedOperationException x) {
             refused = true;
         }
-        // (Until 0.7.121 it refused the sea's depth too; E4 gives one by the coast's distance - EarthFoundingCheck 5 holds it.)
+        // (Until 0.7.121 it refused the sea's depth too; E4 gave one by the coast's distance, ET1 the data's - EarthFoundingCheck 5 holds it.)
         check("...and with no heights, an Earth world refuses the elevation field's shelf rather than make one up, and gives the"
-                + " sea's depth by the coast's distance instead (0.7.121)", refused && e.depthAt(0, 0) > 0);
+                + " sea's depth from the data instead (0.7.121; ET1)", refused && e.depthAt(0, 0) > 0);
     }
 
     /* =====================================================================
@@ -481,8 +526,8 @@ public class EarthTerrainCheck {
                     for (int p = 0; p < t.length; p++) {
                         byte was = a.at(i * World.TILE + p % World.TILE, j * World.TILE + p / World.TILE);
                         if (was != t[p]) changed++;
-                        if (was == World.SALT || was == World.FRESH) waterA++;
-                        if (t[p] == World.SALT || t[p] == World.FRESH) waterB++;
+                        if (World.salt(was) || was == World.FRESH) waterA++;
+                        if (World.salt(t[p]) || t[p] == World.FRESH) waterB++;
                     }
                 }
             }
@@ -581,7 +626,7 @@ public class EarthTerrainCheck {
                     if (px < 1 || py < 1 || px >= WINDOW - 1 || py >= WINDOW - 1) continue;
                     vertices++;
                     byte c = w.at(px, py);
-                    if (c == World.FRESH || c == World.SALT) onRiver++;
+                    if (c == World.FRESH || World.salt(c)) onRiver++;
                 }
             }
             // Small lakes: each one's point, and those clear of other water - no sea, lake share or river within its reach.
@@ -594,7 +639,7 @@ public class EarthTerrainCheck {
                     if (px - reach < 1 || py - reach < 1 || px + reach >= WINDOW - 1 || py + reach >= WINDOW - 1) continue;
                     lakes++;
                     byte c = w.at(px, py);
-                    if (c == World.FRESH || c == World.SALT) atLake++;
+                    if (c == World.FRESH || World.salt(c)) atLake++;
                     if (!clearOfWater(w, data, proj, p[0], p[1], reach)) continue;
                     clear++;
                     clearArea += Math.PI * r * r;
@@ -611,7 +656,7 @@ public class EarthTerrainCheck {
                     sand++;
                     if (e.getKey().equals("Perth")) perthSand++;
                     boolean besideSea = false;
-                    for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) besideSea |= w.at(px + dx, py + dy) == World.SALT;
+                    for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) besideSea |= World.salt(w.at(px + dx, py + dy));
                     proj.latLonOfPlot(w.x0 + px + 0.5, w.y0 + py + 0.5, ll);
                     if (besideSea && (data.at("landcover", ll[0], ll[1]) & EarthData.LC_BEACH) != 0) sandOk++;
                 }
@@ -732,7 +777,7 @@ public class EarthTerrainCheck {
                 Timing.within(best, MapCheck.SCREEN_MS),
                 String.format("%.1f ms (%.3f a tile), %,d buildings; the first time, its plans made, %.0f ms; the square city %d districts a side, laid in %.0f ms;"
                                 + " the screen %.0f%% sea, %.0f%% fresh", best, best / MapCheck.SCREEN_TILES, drawn, cold, side, built,
-                        100.0 * classes[World.SALT] / all, 100.0 * classes[World.FRESH] / all));
+                        100.0 * (classes[World.SALT] + classes[World.SHALLOW]) / all, 100.0 * classes[World.FRESH] / all));
     }
 
     /* =====================================================================
@@ -746,7 +791,7 @@ public class EarthTerrainCheck {
      * first time failed often in a full suite on the two-core cloud machine
      * (1,085 ms in the gate of 0.7.126, 1,125 and 1,212 in I6's suites) and
      * passed alone (491 to 652 ms), before and after I6 alike: the harnesses
-     * before it push earth-1.bin's pages out of the cache, and its first
+     * before it push earth-2.bin's pages out of the cache, and its first
      * reads wait on the disk (docs/queue/EC1.md). The design's bound is on
      * the pass's own work, which is its thread's CPU - a blocked read is
      * none, the kernel's copy of the bytes is - and the pass is all on the
@@ -773,12 +818,12 @@ public class EarthTerrainCheck {
             return null;
         }
         if (file == null) {
-            out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the cells pass was not timed");
+            out.println("earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the cells pass was not timed");
             return null;
         }
         EarthData d = EarthData.open(file);
         String id = EarthTerrain.use(d);
-        report("the named file is the one this build reads: EarthData.EARTH_1", id.equals(EarthData.EARTH_1), id);
+        report("the named file is the one this build reads: EarthData.EARTH_2", id.equals(EarthData.EARTH_2), id);
         World w = World.of(World.Key.earth(SEED, s.lat(), s.lon(), id));
         EarthTerrain e = w.earthTerrain();
         long w0 = System.nanoTime(), c0 = passClock();
@@ -1132,7 +1177,7 @@ public class EarthTerrainCheck {
     static void planet(EarthData file, Spot rotterdam) {
         out.println("\n--- 13. the full file, when it is named: Z and the types' odds are its own, and the study's figures on the rules' classes ---");
         if (file == null) {
-            out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Z and the odds were not measured");
+            out.println("earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Z and the odds were not measured");
             return;
         }
         Geology g = Geology.of(file);
@@ -1351,7 +1396,7 @@ public class EarthTerrainCheck {
                 && !World.dry(World.FRESH) && !World.dry(World.SALT) && !World.dry(World.ICE) && !World.dry(-1) && !World.dry(World.CLASSES);
         check("World.dry(): grass, forest, the beach and the desert are dry ground; fresh water, the sea and ice are not, nor what is not a class", rule);
         check("...ICE and DESERT take the two bytes after the five, World.CLASSES in all, each with its colour and its own name on the hover",
-                World.ICE == 5 && World.DESERT == 6 && World.CLASSES == 7 && TileRaster.GROUND.length == World.CLASSES
+                World.ICE == 5 && World.DESERT == 6 && World.CLASSES == World.SHALLOW + 1 && TileRaster.GROUND.length == World.CLASSES
                         && LandMap.groundWords(World.ICE).equals("Ice") && LandMap.groundWords(World.DESERT).equals("Desert"));
         // The books (GridConversion.km2Of(), what CityLand counts every holding with).
         long n = 1000;
@@ -1414,14 +1459,14 @@ public class EarthTerrainCheck {
         for (Window w : windows.values()) { fixtureIce += w.classes[World.ICE]; fixtureDesert += w.classes[World.DESERT]; }
         out.printf("      the fixture's three windows: %,d plots of ice and %,d of desert%n", fixtureIce, fixtureDesert);
         if (file == null) {
-            out.println("earth-1.bin not named: the shares, edges and cards of ice and desert, which the fixture's windows hold none of, were not tried");
+            out.println("earth-2.bin not named: the shares, edges and cards of ice and desert, which the fixture's windows hold none of, were not tried");
             return;
         }
         // Each kind's share of a 1-degree cell, and its edge.
         for (int[] c : ICE_CELLS) cover(file, true, c[0], c[1]);
         for (int[] c : DESERT_CELLS) cover(file, false, c[0], c[1]);
         // The founding card's ice is the plot's.
-        World.Key sheetKey = World.Key.earth(SEED, SHEET[0], SHEET[1], EarthData.EARTH_1);
+        World.Key sheetKey = World.Key.earth(SEED, SHEET[0], SHEET[1], EarthData.EARTH_2);
         EarthSite.Card sheet = EarthSite.measure(sheetKey);
         World sw = World.of(sheetKey);
         byte sp = sw.terrainAt(EarthTerrain.spotPlot(), EarthTerrain.spotPlot());
@@ -1429,7 +1474,7 @@ public class EarthTerrainCheck {
                 sw.earthTerrain().siteNear()[0] < 0 && sp == World.ICE && sheet.hasSite() && sheet.ice() && sw.terrainAt(sheet.siteX(), sheet.siteY()) == World.ICE
                         && EarthSite.ICE_WORDS.equals(sheet.refusal()) && EarthSite.ICE_WORDS.equals(EarthSite.foundingProblem(sheetKey)) && adds(sheet),
                 String.format("%.0f%% ice, %.0f%% dry within 5 km", 100 * sheet.iceShare(), 100 * sheet.dryShare()));
-        World.Key marginKey = World.Key.earth(SEED, MARGIN[0], MARGIN[1], EarthData.EARTH_1);
+        World.Key marginKey = World.Key.earth(SEED, MARGIN[0], MARGIN[1], EarthData.EARTH_2);
         EarthSite.Card margin = EarthSite.measure(marginKey);
         World mw = World.of(marginKey);
         double[] ll = new double[2];
@@ -1439,7 +1484,7 @@ public class EarthTerrainCheck {
         report("...on south Greenland's margin, a site on grass in a 2' cell with the ice bit (the bit's rule refused it): not on ice, as its plot is not, and foundable",
                 margin.hasSite() && bit && mp != World.ICE && World.dry(mp) && !margin.ice() && margin.foundable() && EarthSite.foundingProblem(marginKey) == null && adds(margin),
                 String.format("the site %s, its cell's ice bit %s; %.1f%% ice, %.1f%% dry within 5 km", LandMap.groundWords(mp), bit, 100 * margin.iceShare(), 100 * margin.dryShare()));
-        World.Key offKey = World.Key.earth(SEED, OFF_THE_ICE[0], OFF_THE_ICE[1], EarthData.EARTH_1);
+        World.Key offKey = World.Key.earth(SEED, OFF_THE_ICE[0], OFF_THE_ICE[1], EarthData.EARTH_2);
         EarthSite.Card off = EarthSite.measure(offKey);
         World ow = World.of(offKey);
         byte op = ow.terrainAt(EarthTerrain.spotPlot(), EarthTerrain.spotPlot());
@@ -1457,7 +1502,7 @@ public class EarthTerrainCheck {
                         && land.centreKm2(CityLand.DRY) >= 1.0 - World.KM2_PER_PLOT,
                 iceTile == null ? "no tile all ice within reach" : String.format("the tile %.4f km2; the city's centre %.3f km2 dry, %.3f in all", iceKm2[CityLand.TOTAL], land.centreKm2(CityLand.DRY), land.centreKm2(CityLand.TOTAL)));
         // The desert: the card's warning, the site's plot dry ground, the far view's pixels.
-        World.Key saharaKey = World.Key.earth(SEED, SAHARA[0], SAHARA[1], EarthData.EARTH_1);
+        World.Key saharaKey = World.Key.earth(SEED, SAHARA[0], SAHARA[1], EarthData.EARTH_2);
         EarthSite.Card sahara = EarthSite.measure(saharaKey);
         World hw = World.of(saharaKey);
         byte hp = hw.terrainAt(sahara.siteX(), sahara.siteY());
@@ -1472,6 +1517,765 @@ public class EarthTerrainCheck {
         report("the far view draws them: far nodes on Greenland's sheet ice, on the Sahara desert - all of it at WATER_STRIDE and FAR_STRIDE / 4, the most of it from the 4' layers at FAR_STRIDE",
                 farOk, "the sheet " + sheetFar[0] + "; the Sahara " + saharaFar[0]);
     }
+
+    /* =====================================================================
+       16. THE SHALLOW SEA (ET1, spec-earth2-terrain 6.1, D11 and 12's 6)
+       ===================================================================== */
+
+    /** The shallow share of a window's sea drawn is the data's within this, in points: COVER_POINTS, the bound ice's and the desert's share of a cell is held to (the sea-weighted share of cells whose coast the fray moves a plot or two). */
+    static final double SHALLOW_POINTS = COVER_POINTS;
+
+    /** The tile rule (draw()) and the point rule (classAt()) split the sea alike on all but this share of the plots both call sea, in points: half a point (the lattice blends the shares between points 120 m apart, the point rule reads them where the plot is, so a plot within a hair of the noise's threshold may differ). */
+    static final double TWO_COPIES_POINTS = 0.5;
+
+    /** How far round a spot the Narrows' and the Basin's plots are all held to their class, in plots: 5 (150 m, a Narrows is a few hundred metres across). */
+    static final int SPOT_REACH = 5;
+
+    /** The Halifax Narrows between Bedford Basin and the harbour, and Bedford Basin's middle (the fixture holds the Narrows' tiles: tools/earth/fixture.py NARROWS). */
+    static final double[] NARROWS = { 44.67, -63.59 }, BASIN = { 44.70, -63.64 };
+
+    static void shallowSea(EarthData file, Map<String, Window> windows, EarthData fixture, String id) throws Exception {
+        out.println("\n--- 16. the shallow sea: sea no deeper than 30 m, sea to every rule, drawn where the data's share beats its noise, weighted by the sea ---");
+        boolean cls = World.SHALLOW == 7 && World.CLASSES == World.SHALLOW + 1 && World.salt(World.SALT) && World.salt(World.SHALLOW)
+                && !World.salt(World.FRESH) && !World.salt(World.GRASS) && !World.salt(World.ICE) && !World.salt(World.SAND) && !World.salt(-1) && !World.salt(World.CLASSES)
+                && !World.dry(World.SHALLOW) && EarthData.SHALLOW_M == 30;
+        check("World.SHALLOW is the byte after DESERT, 7, and World.salt() is SALT and SHALLOW alone: not fresh water, not ice, not what is not a class; never dry", cls);
+        int lighter = TileRaster.GROUND[World.SHALLOW];
+        check("...with its own colour 0x4f87b5, lighter than the deep sea's and darker than the lakes', and its own words on the hover and in the legend",
+                TileRaster.GROUND.length == World.CLASSES && lighter == 0xff4f87b5 && lighter != TileRaster.GROUND[World.SALT] && lighter != TileRaster.GROUND[World.FRESH]
+                        && luma(lighter) > luma(TileRaster.GROUND[World.SALT]) && luma(lighter) < luma(TileRaster.GROUND[World.FRESH])
+                        && LandMap.groundWords(World.SHALLOW).equals(LandMap.SHALLOW_WORDS) && LandMap.SHALLOW_WORDS.startsWith("Shallow sea")
+                        && LandMap.legend(GlobeFrame.PICTURE).stream().anyMatch(en -> en.words().equals(LandMap.SHALLOW_WORDS) && en.colour() == lighter));
+        long n = 1000;
+        double[] shallow = GridConversion.km2Of(only(World.SHALLOW, n)), salt = GridConversion.km2Of(only(World.SALT, n));
+        check("the books: a shallow sea's plots count as a sea's in the sea area and the whole, never dry, fresh or forest", Arrays.equals(shallow, salt)
+                && shallow[CityLand.SEA] == n * World.KM2_PER_PLOT && shallow[CityLand.TOTAL] == n * World.KM2_PER_PLOT && shallow[CityLand.DRY] == 0
+                && shallow[CityLand.FRESH] == 0 && shallow[CityLand.FOREST] == 0);
+        check("the runs (CityRuns): the shallow sea is not dry ground, as the sea is not", !CityRuns.dry(World.SHALLOW) && CityRuns.dry(World.SHALLOW) == CityRuns.dry(World.SALT));
+        // The share: the fixture's windows with a sea (Rotterdam's North Sea, Perth's shelf), and Halifax's, where the strait and the harbour are shallow and the Basin deep.
+        Window hal = new Window(World.of(World.Key.earth(SEED, NARROWS[0], NARROWS[1], id)), fixture);
+        Window[] sea = { windows.get("Rotterdam"), windows.get("Perth"), hal };
+        String[] names = { "Rotterdam", "Perth", "Halifax" };
+        boolean mixed = false;
+        for (int k = 0; k < sea.length; k++) {
+            Window w = sea[k];
+            double drawn = w.drawnShallow(), want = w.dataShallow, points = 100 * Math.abs(drawn - want);
+            mixed |= want > 0.05 && want < 0.95;
+            report(names[k] + ": the shallow share of the window's sea drawn is the data's, sea-weighted, within SHALLOW_POINTS",
+                    want >= 0 && points <= SHALLOW_POINTS, String.format("%.2f%% drawn against %.2f%% (%.2f points), of %,d plots of sea", 100 * drawn, 100 * want, points,
+                            w.classes[World.SALT] + w.classes[World.SHALLOW]));
+        }
+        check("...and a window holds both kinds of sea, so the share is no mere all or nothing (a share between 5% and 95% in the data)", mixed);
+        // The rule's two copies: the tile's (draw()) and the point's (classAt(), the regions' and the far views'), on the plots both call sea.
+        byte[] t = new byte[World.TILE * World.TILE];
+        for (int k = 1; k < sea.length; k++) {
+            Window w = sea[k];
+            EarthTerrain e = w.world.earthTerrain();
+            long sampled = 0, both = 0, differ = 0;
+            for (long ty = w.y0 / World.TILE; ty < (w.y0 + WINDOW) / World.TILE; ty++) {
+                for (long tx = w.x0 / World.TILE; tx < (w.x0 + WINDOW) / World.TILE; tx++) {
+                    w.world.tileTerrain(tx, ty, t);
+                    for (int p = 0; p < t.length; p += 7) {
+                        if (!World.salt(t[p])) continue;
+                        sampled++;
+                        byte q = e.pointTerrain(tx * World.TILE + p % World.TILE, ty * World.TILE + p / World.TILE);
+                        if (!World.salt(q)) continue;
+                        both++;
+                        if (q != t[p]) differ++;
+                    }
+                }
+            }
+            double points = 100.0 * differ / Math.max(1, both);
+            report(names[k] + ": the tile rule and the point rule split the sea alike, SALT or SHALLOW, on all but TWO_COPIES_POINTS of the plots both call sea",
+                    both >= 0.99 * sampled && points <= TWO_COPIES_POINTS && w.classes[World.SHALLOW] > 0 && w.classes[World.SALT] > 0,
+                    String.format("%,d of %,d sampled sea plots, %,d differ (%.3f points)", both, sampled, differ, points));
+        }
+        // The Narrows is shallow and Bedford Basin deep, plot by plot round the spot.
+        World hw = hal.world;
+        double[] p = new double[2];
+        EarthProj proj = hw.earthTerrain().projection();
+        proj.plotOf(NARROWS[0], NARROWS[1], p);
+        long nx = (long) Math.floor(p[0]), ny = (long) Math.floor(p[1]);
+        proj.plotOf(BASIN[0], BASIN[1], p);
+        long bx = (long) Math.floor(p[0]), by = (long) Math.floor(p[1]);
+        int narrowsSea = 0, narrowsShallow = 0, basinSea = 0, basinDeep = 0;
+        for (int dy = -SPOT_REACH; dy <= SPOT_REACH; dy++) {
+            for (int dx = -SPOT_REACH; dx <= SPOT_REACH; dx++) {
+                byte a = hw.terrainAt(nx + dx, ny + dy), b = hw.terrainAt(bx + dx, by + dy);
+                if (World.salt(a)) { narrowsSea++; if (a == World.SHALLOW) narrowsShallow++; }
+                if (World.salt(b)) { basinSea++; if (b == World.SALT) basinDeep++; }
+            }
+        }
+        report("Halifax: the Narrows (44.67 N, 63.59 W) is shallow sea and Bedford Basin's middle (44.70 N, 63.64 W) deep, every sea plot within SPOT_REACH of each",
+                hw.terrainAt(nx, ny) == World.SHALLOW && hw.terrainAt(bx, by) == World.SALT && narrowsSea > 0 && narrowsShallow == narrowsSea && basinSea > 0 && basinDeep == basinSea,
+                String.format("the Narrows %d of %d sea plots shallow, the Basin %d of %d deep", narrowsShallow, narrowsSea, basinDeep, basinSea));
+        // No fringe of deep sea along a shallow coast (the study's 12, 6): a sea plot whose 3 x 3 cells of the data hold sea only in cells that are all
+        // shallow (shallow level 15) is shallow, however much land the cells about it hold - read unweighted, a coast cell's land would pull the share down.
+        EarthProj.Blend blend;
+        long qualifying = 0, atCoast = 0, deep = 0;
+        double[] ll = new double[2];
+        for (long ty = hal.y0 / World.TILE; ty < (hal.y0 + WINDOW) / World.TILE; ty++) {
+            for (long tx = hal.x0 / World.TILE; tx < (hal.x0 + WINDOW) / World.TILE; tx++) {
+                hw.tileTerrain(tx, ty, t);
+                blend = proj.blend(tx * World.TILE, ty * World.TILE, World.TILE);
+                for (int q = 0; q < t.length; q += 11) {
+                    if (!World.salt(t[q]) || !blend.latLon(tx * World.TILE + q % World.TILE + 0.5, ty * World.TILE + q / World.TILE + 0.5, ll)) continue;
+                    boolean allShallow = true, land = false;
+                    for (int dj = -1; dj <= 1; dj++) {
+                        for (int di = -1; di <= 1; di++) {
+                            double la = ll[0] + dj / 240.0, lo = ll[1] + di / 240.0;
+                            int seaLevel = fixture.at("sea", la, lo);
+                            if (seaLevel == 0) land = true;
+                            else if (fixture.at("shallow", la, lo) != EarthData.SHARE_LEVELS) allShallow = false;
+                        }
+                    }
+                    if (!allShallow) continue;
+                    qualifying++;
+                    if (land) atCoast++;
+                    if (t[q] == World.SALT) deep++;
+                }
+            }
+        }
+        report("Halifax: no fringe of deep sea along a shallow coast - a sea plot whose cells' sea is all shallow is shallow, with land in those cells too (the sea-weighted share)",
+                qualifying > 1000 && atCoast > 100 && deep <= qualifying / 1000, String.format("%,d such plots sampled, %,d with land in their cells, %,d of them deep", qualifying, atCoast, deep));
+        // The cost: tiles about a coast holding shallow and deep, the median of rounds, within TILE_MS.
+        long tx0 = EarthTerrain.spotPlot() / World.TILE - TIMED_TILES / 2, ty0 = tx0;
+        double[] ms = new double[TILE_ROUNDS];
+        for (int round = -1; round < TILE_ROUNDS; round++) {
+            long t0 = System.nanoTime();
+            for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) hw.tileTerrain(tx0 + i, ty0 + j, t);
+            if (round >= 0) ms[round] = (System.nanoTime() - t0) / 1e6 / (TIMED_TILES * TIMED_TILES);
+        }
+        Arrays.sort(ms);
+        report("Halifax: a tile's ground, its shallow sea drawn, in no more than TILE_MS", Timing.within(ms[TILE_ROUNDS / 2], TILE_MS),
+                String.format("%.3f ms a tile (rounds %.3f to %.3f)", ms[TILE_ROUNDS / 2], ms[0], ms[TILE_ROUNDS - 1]));
+        // A generated world has none (D19): its far view of the whole world holds sea and no SHALLOW, and so do the tiles about its founding site.
+        World g = World.of(SEED);
+        byte[] far = new byte[64 * 64];
+        g.regionTerrain(0, 0, (int) (World.SIDE / 64), 64, far);
+        int farSea = 0, farShallow = 0, siteSea = 0, siteShallow = 0;
+        for (byte b : far) { if (b == World.SALT) farSea++; if (b == World.SHALLOW) farShallow++; }
+        long cx = g.foundingX() / World.TILE, cy = g.foundingY() / World.TILE;
+        for (long ty = cy - 24; ty < cy + 24; ty++) {
+            for (long tx = cx - 24; tx < cx + 24; tx++) {
+                g.tileTerrain(tx, ty, t);
+                for (byte b : t) { if (b == World.SALT) siteSea++; if (b == World.SHALLOW) siteShallow++; }
+            }
+        }
+        report("a generated world draws no shallow sea (D19): its whole far view holds sea and no SHALLOW, nor do the tiles about its founding site",
+                farSea > 0 && farShallow == 0 && siteShallow == 0, String.format("%,d sea pixels of 4,096; %,d sea plots about the site", farSea, siteSea));
+        if (file == null) {
+            out.println("earth-2.bin not named: the full file's shallow shares, and earth-1's refusal to draw any, were not tried");
+            return;
+        }
+        // The full file: the shallow share of a 61 km window of the Earth's sea at four coasts; and an earth-1 file, which has no layer, draws none.
+        for (double[] at : SHELVES) {
+            Window w = new Window(World.of(World.Key.earth(SEED, at[0], at[1], EarthData.EARTH_2)), file);
+            double drawn = w.drawnShallow(), want = w.dataShallow, points = 100 * Math.abs(drawn - want);
+            report(String.format("the full file at %.2f, %.2f: the shallow share of the window's sea drawn is the data's within SHALLOW_POINTS", at[0], at[1]),
+                    want >= 0 && points <= SHALLOW_POINTS && w.classes[World.SHALLOW] > 0, String.format("%.2f%% drawn against %.2f%% (%.2f points), of %,d plots of sea",
+                            100 * drawn, 100 * want, points, w.classes[World.SALT] + w.classes[World.SHALLOW]));
+        }
+        Path one = EarthData.locate().resolveSibling("earth-1.bin");
+        if (!Files.isRegularFile(one)) {
+            out.println("earth-1.bin is not beside the named file: that a file with no shallow layer draws none was not tried");
+            return;
+        }
+        EarthData old = EarthData.open(one);
+        String oldId = EarthTerrain.use(old);
+        World ow = World.of(World.Key.earth(SEED, 51.90625, 4.48125, oldId));
+        int oldSea = 0, oldShallow = 0;
+        long oc = EarthTerrain.spotPlot() / World.TILE;
+        for (long ty = oc - 16; ty < oc + 16; ty++) {
+            for (long tx = oc - 16; tx < oc + 16; tx++) {
+                ow.tileTerrain(tx, ty, t);
+                for (byte b : t) { if (b == World.SALT) oldSea++; if (b == World.SHALLOW) oldShallow++; }
+            }
+        }
+        boolean refused = false;
+        for (long x = EarthTerrain.spotPlot() - 3000; x < EarthTerrain.spotPlot() && !refused; x += 50) {
+            if (!World.salt(ow.terrainAt(x, EarthTerrain.spotPlot()))) continue;
+            try { ow.depthAt(x, EarthTerrain.spotPlot()); } catch (IllegalStateException e) { refused = true; }
+        }
+        check("an earth-1 file, which has no shallow layer, draws no SHALLOW where it draws the sea (" + oldSea + " plots), and gives no depth it does not have",
+                !old.hasRelief() && oldSea > 0 && oldShallow == 0 && refused);
+    }
+
+    /* =====================================================================
+       17. THE RELIEF PLANE (ET1, spec-earth2-terrain 3.1, D4, D5 and D19)
+       ===================================================================== */
+
+    /** Each relief class's share of a window's dry ground drawn is the data's within this, in points, for a window of RELIEF_REF_PLOTS dry plots: SHARE_POINTS, section 15's bound - and more for a window with less dry ground, by the root of the ratio (see tolerance()). */
+    static final double RELIEF_POINTS = SHARE_POINTS;
+
+    /** The dry plots a 61 km window of land holds: 2,048 squared, 4,194,304 - the size RELIEF_POINTS is the bound for. A slope is drawn as patches a kilometre or two across (EarthTerrain.RELIEF_SHIFT), so a window holds as many independent patches as it holds ground, and the share it draws strays from the data's by a spread that grows as the root of the window shrinks: measured, 0.6 to 1.9 points at 61 km on the full file's six hills (0 to 0.8 where a window holds little slope), and 2.6 on Fiji's 0.56 million dry plots. */
+    static final long RELIEF_REF_PLOTS = (long) WINDOW * WINDOW;
+
+    /** The relief's two copies (the tile's drawRelief() and the point's reliefOf()) give a dry plot the same class on all but this share of the plots both draw dry, in points: 1 (the lattice blends the shares between points 120 m apart where the point rule reads them where the plot is, so a plot within a hair of a threshold may differ; measured 0.4). */
+    static final double RELIEF_COPIES_POINTS = 1.0;
+
+    /** A far node's relief shares are the data's cells' at its dry pixels within this, in points: twice RELIEF_POINTS (a node's 16,384 pixels are a sample, a pixel a hash's draw against the share), where it holds at least FAR_DRY_LEAST dry pixels. */
+    static final double FAR_POINTS = 2 * RELIEF_POINTS;
+    static final int FAR_DRY_LEAST = 2000;
+
+    /** Medellin's valley floor, the centre of the city (the study's 2.3: 98% flat in a 3 x 3 of 15" cells, 1,482 m), and the middle of the fixture's window about it (tools/earth/fixture.py MEDELLIN, one 1-degree tile). */
+    static final double[] FLOOR = { 6.25, -75.57 }, VALLEY = { 6.25, -75.58 };
+
+    /** Everest's summit area: snow and ice on all its high ground (the study's 12, 7), the rock between its glaciers the only dry land. */
+    static final double[] SUMMIT = { 27.99, 86.93 };
+
+    /** The full file's hilly spots, {lat, lon}: Medellin, Everest's, the Upper Engadin, Hong Kong (a steep coast), La Paz and Kathmandu - their classes in the study's table of 2.3. */
+    static final double[][] HILLS = { VALLEY, SUMMIT, { 46.7, 10.3 }, { 22.3, 114.2 }, { -16.5, -68.1 }, { 27.7, 85.3 } };
+    static final String[] HILL_NAMES = { "Medellin", "Everest", "the Upper Engadin", "Hong Kong", "La Paz", "Kathmandu" };
+
+    /** How far round the floor's spot the plots are all held FLAT, in plots: 5 (150 m); and the share of the plots within FLOOR_WIDE (17: 510 m) that are flat, at least. */
+    static final int FLOOR_REACH = 5, FLOOR_WIDE = 17;
+    static final double FLOOR_FLAT = 0.95;
+
+    /**
+     * A window of plots - the world cell's middle, side x side of them - drawn (cover and relief) and laid on the data's slope:
+     * its dry plots counted by relief against what the data's cells say of them (each plot's own 15" cell, EarthData.slope()
+     * decoded: the plot's expected share of each class), and the relief a plot that is not dry ground carries counted apart.
+     */
+    static final class ReliefWindow {
+        final World world;
+        final EarthData data;
+        final long x0, y0;
+        final int side;
+        final byte[] cover, relief;
+        final long[] drawn = new long[World.RELIEFS], classes = new long[World.CLASSES];
+        final double[] want = new double[World.RELIEFS];
+        long dry, lost;
+        /** Dry plots of each cover with a relief above FLAT, by cover class. */
+        final long[] sloped = new long[World.CLASSES];
+
+        ReliefWindow(World world, EarthData data, int side) {
+            this.world = world;
+            this.data = data;
+            this.side = side;
+            x0 = EarthTerrain.spotPlot() - side / 2;
+            y0 = x0;
+            cover = new byte[side * side];
+            relief = new byte[side * side];
+            EarthProj proj = world.earthTerrain().projection();
+            byte[] t = new byte[World.TILE * World.TILE], r = new byte[World.TILE * World.TILE];
+            double[] ll = new double[2];
+            int tiles = side / World.TILE;
+            for (int j = 0; j < tiles; j++) {
+                for (int i = 0; i < tiles; i++) {
+                    long tx = x0 / World.TILE + i, ty = y0 / World.TILE + j;
+                    world.tileTerrain(tx, ty, t);
+                    world.tileRelief(tx, ty, r);
+                    EarthProj.Blend b = proj.blend(tx * World.TILE, ty * World.TILE, World.TILE);
+                    for (int p = 0; p < t.length; p++) {
+                        int at = (j * World.TILE + p / World.TILE) * side + i * World.TILE + p % World.TILE;
+                        cover[at] = t[p];
+                        relief[at] = r[p];
+                        classes[t[p]]++;
+                        if (!World.dry(t[p])) {
+                            if (r[p] != World.FLAT) lost++;
+                            continue;
+                        }
+                        dry++;
+                        drawn[r[p]]++;
+                        if (r[p] != World.FLAT) sloped[t[p]]++;
+                        b.latLon(tx * World.TILE + p % World.TILE + 0.5, ty * World.TILE + p / World.TILE + 0.5, ll);
+                        int s = data.slope(ll[0], ll[1]);
+                        double f = EarthData.slopeFoothill(s), st = EarthData.slopeSteep(s), v = EarthData.slopeVerySteep(s);
+                        want[0] += 1 - f;
+                        want[1] += f - st;
+                        want[2] += st - v;
+                        want[3] += v;
+                    }
+                }
+            }
+        }
+
+        double drawnShare(int k) { return dry > 0 ? drawn[k] / (double) dry : 0; }
+
+        double wantShare(int k) { return dry > 0 ? want[k] / dry : 0; }
+
+        /** The largest gap between a class's share drawn and the data's, in points. */
+        double points() {
+            double worst = 0;
+            for (int k = 0; k < World.RELIEFS; k++) worst = Math.max(worst, 100 * Math.abs(drawnShare(k) - wantShare(k)));
+            return worst;
+        }
+
+        /** The bound on points(): RELIEF_POINTS, and past it by the root of the window's dry ground against RELIEF_REF_PLOTS. */
+        double tolerance() { return RELIEF_POINTS * Math.sqrt(Math.max(1.0, RELIEF_REF_PLOTS / (double) Math.max(1, dry))); }
+
+        /** Whether the data holds slope under the window: at least 5% of its dry ground at or above foothill. */
+        boolean hilly() { return wantShare(0) < 0.95; }
+
+        /** Whether it holds steep ground: at least 5% of its dry ground at or above steep. */
+        boolean steep() { return wantShare(2) + wantShare(3) >= 0.05; }
+
+        String shares(boolean data) {
+            return String.format("%.1f/%.1f/%.1f/%.1f%%", 100 * (data ? wantShare(0) : drawnShare(0)), 100 * (data ? wantShare(1) : drawnShare(1)),
+                    100 * (data ? wantShare(2) : drawnShare(2)), 100 * (data ? wantShare(3) : drawnShare(3)));
+        }
+    }
+
+    /** The relief about a point (its lat, lon), plots dx, dy of it, for a window's world: counted by class over the dry plots within `reach`. */
+    static long[] reliefAbout(World w, double lat, double lon, int reach) {
+        double[] p = new double[2];
+        w.earthTerrain().projection().plotOf(lat, lon, p);
+        long cx = (long) Math.floor(p[0]), cy = (long) Math.floor(p[1]);
+        long[] n = new long[World.RELIEFS];
+        for (int dy = -reach; dy <= reach; dy++) {
+            for (int dx = -reach; dx <= reach; dx++) {
+                if (World.dry(w.terrainAt(cx + dx, cy + dy))) n[w.reliefAt(cx + dx, cy + dy)]++;
+            }
+        }
+        return n;
+    }
+
+    static void reliefPlane(EarthData file, Map<String, Spot> spots, EarthData fixture, String id) throws Exception {
+        out.println("\n--- 17. the relief plane: four classes of slope beside the cover, drawn from the data's shares of the land, none on water or ice, the cover untouched ---");
+        // The classes and the two rules that read them (no model rule calls either yet: ET2's).
+        boolean classes = World.FLAT == 0 && World.FOOTHILL == 1 && World.STEEP == 2 && World.VERY_STEEP == 3 && World.RELIEFS == 4;
+        check("World's relief classes are FLAT 0, FOOTHILL 1, STEEP 2 and VERY_STEEP 3, RELIEFS 4 in all: a second plane, its own bytes", classes);
+        boolean rules = true, work = true;
+        for (int c = -1; c <= World.CLASSES; c++) {
+            for (int r = -1; r <= World.RELIEFS; r++) {
+                boolean real = c >= 0 && c < World.CLASSES && r >= 0 && r < World.RELIEFS;
+                rules &= World.buildable(c, r) == (real && World.dry(c) && r <= World.FOOTHILL);
+            }
+            boolean land = c >= 0 && c < World.CLASSES && c != World.SALT && c != World.SHALLOW && c != World.FRESH;
+            work &= World.workable(c) == land;
+        }
+        check("World.buildable(cover, relief) is dry ground on a FLAT or FOOTHILL plot: no sea, fresh water or ice, and no STEEP or VERY_STEEP ground, forest or not", rules
+                && World.buildable(World.FOREST, World.FOOTHILL) && !World.buildable(World.FOREST, World.STEEP) && !World.buildable(World.ICE, World.FLAT));
+        check("World.workable(cover) is any land, ice and the beach among it: not the sea (SALT, SHALLOW), not fresh water, not what is not a cover", work
+                && World.workable(World.ICE) && World.workable(World.SAND) && !World.workable(World.SHALLOW) && !World.workable(World.FRESH));
+        // A generated world is flat everywhere (D19), and answers without drawing a noise.
+        World g = World.of(SEED);
+        byte[] t = new byte[World.TILE * World.TILE], r = new byte[World.TILE * World.TILE], region = new byte[64 * 64];
+        long cx = g.foundingX() / World.TILE, cy = g.foundingY() / World.TILE;
+        boolean flat = true, ground = true;
+        long landG = 0;
+        for (long ty = cy - 16; ty < cy + 16; ty++) {
+            for (long tx = cx - 16; tx < cx + 16; tx++) {
+                g.tileTerrain(tx, ty, t);
+                Arrays.fill(r, (byte) 9);
+                g.tileRelief(tx, ty, r);
+                byte[] again = new byte[t.length];
+                g.tileTerrain(tx, ty, again);
+                ground &= Arrays.equals(t, again);
+                for (int p = 0; p < r.length; p++) {
+                    flat &= r[p] == World.FLAT && g.reliefAt(tx * World.TILE + p % World.TILE, ty * World.TILE + p / World.TILE) == World.FLAT;
+                    if (World.dry(t[p])) landG++;
+                }
+            }
+        }
+        Arrays.fill(region, (byte) 9);
+        g.regionRelief(0, 0, (int) (World.SIDE / 64), 64, region);
+        for (byte b : region) flat &= b == World.FLAT;
+        flat &= g.reliefAt(-5, 7) == World.FLAT && g.reliefAt(World.SIDE, 0) == World.FLAT;
+        report("a generated world's relief is FLAT everywhere (D19): every plot of the 32 x 32 tiles about its founding site, a far region, off the world - and asking for it changes none of its ground",
+                flat && ground && landG > 0, String.format("%,d dry plots about the site", landG));
+        if (fixture == null) return;
+        // The windows the relief is drawn on: the fixture's, each said to hold slope or not.
+        List<String> names = new ArrayList<>();
+        List<ReliefWindow> ws = new ArrayList<>();
+        for (String n : List.of("Rotterdam", "Perth", "Paris", "Fiji")) {
+            Spot s = spots.get(n);
+            names.add(n);
+            ws.add(new ReliefWindow(World.of(World.Key.earth(SEED, s.lat(), s.lon(), id)), fixture, WINDOW));
+        }
+        names.add("Halifax");
+        ws.add(new ReliefWindow(World.of(World.Key.earth(SEED, NARROWS[0], NARROWS[1], id)), fixture, WINDOW));
+        names.add("Medellin's valley (30 km)");
+        ws.add(new ReliefWindow(World.of(World.Key.earth(SEED, VALLEY[0], VALLEY[1], id)), fixture, WINDOW / 2));
+        reliefWindows("the fixture", names, ws, true);
+        // The floor of the valley and the hillsides about it, on the fixture's tile.
+        World valley = ws.get(ws.size() - 1).world;
+        long[] floor = reliefAbout(valley, FLOOR[0], FLOOR[1], FLOOR_REACH), wide = reliefAbout(valley, FLOOR[0], FLOOR[1], FLOOR_WIDE), hills = reliefAbout(valley, FLOOR[0], FLOOR[1], 300);
+        long floorAll = Arrays.stream(floor).sum(), wideAll = Arrays.stream(wide).sum(), hillsAll = Arrays.stream(hills).sum();
+        report("Medellin's valley floor (6.25 N, 75.57 W) reads FLAT: every dry plot within FLOOR_REACH of it, nearly all within FLOOR_WIDE, while the hills about it (9 km) are steep",
+                floorAll > 0 && floor[World.FLAT] == floorAll && wide[World.FLAT] >= FLOOR_FLAT * wideAll && hills[World.STEEP] + hills[World.VERY_STEEP] > hillsAll / 20,
+                String.format("%d of %d plots flat within %d; %d of %d within %d; the hills %d/%d/%d/%d", floor[0], floorAll, FLOOR_REACH, wide[0], wideAll, FLOOR_WIDE,
+                        hills[0], hills[1], hills[2], hills[3]));
+        if (file != null) {
+            names.clear();
+            ws.clear();
+            for (int k = 0; k < HILLS.length; k++) {
+                names.add(HILL_NAMES[k]);
+                ws.add(new ReliefWindow(World.of(World.Key.earth(SEED, HILLS[k][0], HILLS[k][1], EarthData.EARTH_2)), file, WINDOW));
+            }
+            reliefWindows("the full file", names, ws, false);
+            World top = ws.get(1).world;
+            long[] summit = reliefAbout(top, SUMMIT[0], SUMMIT[1], 300), core = reliefAbout(top, SUMMIT[0], SUMMIT[1], 33);
+            ReliefWindow everest = ws.get(1);
+            double[] sp = new double[2];
+            top.earthTerrain().projection().plotOf(SUMMIT[0], SUMMIT[1], sp);
+            long sx = (long) Math.floor(sp[0]), sy = (long) Math.floor(sp[1]), iceCore = 0, iceSloped = 0;
+            for (int dy = -33; dy <= 33; dy++) {
+                for (int dx = -33; dx <= 33; dx++) {
+                    if (top.terrainAt(sx + dx, sy + dy) != World.ICE) continue;
+                    iceCore++;
+                    if (top.reliefAt(sx + dx, sy + dy) != World.FLAT) iceSloped++;
+                }
+            }
+            report("Everest: the summit's own ground, a kilometre round, is ice and FLAT in the plane (D4: snow wins over slope), and the rock about it, 9 km round, has VERY_STEEP and STEEP plots among its non-ice land",
+                    iceCore > 4000 && iceSloped == 0 && Arrays.stream(core).sum() == 0 && summit[World.VERY_STEEP] > 0 && summit[World.STEEP] > 0 && everest.lost == 0,
+                    String.format("%,d plots of ice within 1 km, none with relief; 9 km round, the dry plots %d/%d/%d/%d; %,d plots of ice in the window against %,d dry", iceCore,
+                            summit[0], summit[1], summit[2], summit[3], everest.classes[World.ICE], everest.dry));
+            long[] full = reliefAbout(ws.get(0).world, FLOOR[0], FLOOR[1], FLOOR_REACH), fullWide = reliefAbout(ws.get(0).world, FLOOR[0], FLOOR[1], FLOOR_WIDE);
+            report("...and Medellin's valley floor reads FLAT on the full file too, every dry plot within FLOOR_REACH and nearly all within FLOOR_WIDE",
+                    Arrays.stream(full).sum() > 0 && full[World.FLAT] == Arrays.stream(full).sum() && fullWide[World.FLAT] >= FLOOR_FLAT * Arrays.stream(fullWide).sum(),
+                    String.format("%d of %d plots flat within %d; %d of %d within %d", full[0], Arrays.stream(full).sum(), FLOOR_REACH, fullWide[0], Arrays.stream(fullWide).sum(), FLOOR_WIDE));
+        }
+        reliefRule(fixture, file, id);
+        reliefFar(file);
+        // An earth-1 file has no slope layer: every plot FLAT, its cover as it was.
+        if (file == null) {
+            out.println("earth-2.bin not named: the full file's hills, Everest's summit, the far views' relief at the stride of the globe and the earth-1 file's flatness were not tried");
+            return;
+        }
+        Path one = EarthData.locate().resolveSibling("earth-1.bin");
+        if (!Files.isRegularFile(one)) {
+            out.println("earth-1.bin is not beside the named file: that a file with no slope layer draws every plot flat was not tried");
+            return;
+        }
+        EarthData old = EarthData.open(one);
+        String oldId = EarthTerrain.use(old);
+        World ow = World.of(World.Key.earth(SEED, 46.7, 10.3, oldId));
+        long oc = EarthTerrain.spotPlot() / World.TILE;
+        boolean allFlat = true;
+        long oldDry = 0;
+        for (long ty = oc - 8; ty < oc + 8; ty++) {
+            for (long tx = oc - 8; tx < oc + 8; tx++) {
+                ow.tileTerrain(tx, ty, t);
+                Arrays.fill(r, (byte) 9);
+                ow.tileRelief(tx, ty, r);
+                for (int p = 0; p < r.length; p++) {
+                    allFlat &= r[p] == World.FLAT;
+                    if (World.dry(t[p])) oldDry++;
+                }
+            }
+        }
+        byte[] oldFar = new byte[MapFrame.NODE_PX * MapFrame.NODE_PX], oldRelief = new byte[oldFar.length];
+        Arrays.fill(oldRelief, (byte) 9);
+        ow.earthTerrain().farTerrain(EarthTerrain.spotPlot() - 64 * 64, EarthTerrain.spotPlot() - 64 * 64, 64, MapFrame.NODE_PX, oldFar, oldRelief);
+        for (byte b : oldRelief) allFlat &= b == World.FLAT;
+        check("an earth-1 file, which has no slope layer, draws every plot FLAT (" + oldDry + " dry plots in the Alps, a far node over them too): none of the Alps' relief reaches an old save",
+                !old.hasRelief() && oldDry > 0 && allFlat);
+    }
+
+    /** The share check on each window, the checks that hold of all of them, and which hold slope. */
+    static void reliefWindows(String where, List<String> names, List<ReliefWindow> ws, boolean fixtureWindows) {
+        int hilly = 0, steep = 0;
+        long water = 0, ice = 0, fresh = 0, shallow = 0, forestOnSlope = 0, lost = 0;
+        for (int k = 0; k < ws.size(); k++) {
+            ReliefWindow w = ws.get(k);
+            double points = w.points(), tol = w.tolerance();
+            String says = w.hilly() ? (w.steep() ? "holds steep ground" : "holds foothill only") : "holds no slope, so it proves only that none is drawn";
+            report(names.get(k) + ": the relief of the dry ground drawn is the data's land-weighted shares, flat/foothill/steep/very steep, within RELIEF_POINTS (scaled to the window's ground)",
+                    w.dry > 0 && points <= tol && (w.want[1] + w.want[2] + w.want[3] > 0 || w.drawn[0] == w.dry),
+                    String.format("%s against the data's %s: %.2f points of %.2f, of %,d dry plots (%s)", w.shares(false), w.shares(true), points, tol, w.dry, says));
+            if (w.hilly()) hilly++;
+            if (w.steep()) steep++;
+            water += w.classes[World.SALT];
+            shallow += w.classes[World.SHALLOW];
+            fresh += w.classes[World.FRESH];
+            ice += w.classes[World.ICE];
+            forestOnSlope += w.sloped[World.FOREST];
+            lost += w.lost;
+        }
+        check(where + "'s windows hold slope for the rule to be tried on: " + hilly + " of " + ws.size() + " hold foothill and " + steep + " steep ground in the data (those that hold none prove only that none is drawn)",
+                fixtureWindows ? hilly >= 5 && steep >= 2 : hilly >= 5 && steep >= 5);
+        report(where + ": water carries no relief - the deep sea, the shallow sea, fresh water and ice alike are FLAT on every plot of every window",
+                lost == 0 && fresh > 0 && (fixtureWindows ? water > 0 && shallow > 0 : water + shallow > 0 && ice > 0),
+                String.format("%,d plots of sea, %,d of shallow sea, %,d of fresh water and %,d of ice, none with relief", water, shallow, fresh, ice));
+        report(where + ": forest keeps its cover on a slope (D5): " + String.format("%,d", forestOnSlope) + " plots of forest are foothill, steep or very steep, and are forest still",
+                forestOnSlope > 0, "the cover is the one tileTerrain() draws");
+    }
+
+    /** The rule's own: the cover untouched, the readers one another's, the classes nested within the data, the point rule the tile's, a tile's time. */
+    static void reliefRule(EarthData fixture, EarthData file, String id) throws Exception {
+        EarthData d = file != null ? file : fixture;
+        String did = file != null ? EarthData.EARTH_2 : id;
+        World w = World.of(World.Key.earth(SEED, file != null ? HILLS[0][0] : VALLEY[0], file != null ? HILLS[0][1] : VALLEY[1], did));
+        EarthTerrain e = w.earthTerrain();
+        EarthProj proj = e.projection();
+        long c = EarthTerrain.spotPlot();
+        // 1. The cover untouched: every reader of the relief leaves tileTerrain() as it was, and a far node's cover is the same with the relief asked for as without.
+        byte[] before = new byte[World.TILE * World.TILE], after = new byte[before.length], rel = new byte[before.length];
+        boolean same = true, agree = true;
+        long sloped = 0;
+        for (long ty = c / World.TILE - 6; ty < c / World.TILE + 6; ty++) {
+            for (long tx = c / World.TILE - 6; tx < c / World.TILE + 6; tx++) {
+                w.tileTerrain(tx, ty, before);
+                w.tileRelief(tx, ty, rel);
+                e.reliefAt(tx * World.TILE, ty * World.TILE);
+                e.regionRelief(tx * World.TILE, ty * World.TILE, 1, 4, new byte[16]);
+                w.tileTerrain(tx, ty, after);
+                same &= Arrays.equals(before, after);
+                for (int p = 0; p < rel.length; p += 5) {
+                    long x = tx * World.TILE + p % World.TILE, y = ty * World.TILE + p / World.TILE;
+                    agree &= w.reliefAt(x, y) == rel[p];
+                    if (rel[p] != World.FLAT) sloped++;
+                }
+            }
+        }
+        int n = MapFrame.NODE_PX;
+        boolean farSame = true, farFlat = true;
+        long farSloped = 0, farDry = 0;
+        for (int stride : new int[] { 2, 4, 16, 64, 256 }) {
+            long x0 = c - (long) n * stride / 2;
+            byte[] plain = new byte[n * n], with = new byte[n * n], relief = new byte[n * n], region = new byte[n * n];
+            Arrays.fill(relief, (byte) 9);
+            e.farTerrain(x0, x0, stride, n, plain);
+            e.farTerrain(x0, x0, stride, n, with, relief);
+            farSame &= Arrays.equals(plain, with);
+            Arrays.fill(region, (byte) 9);
+            e.regionRelief(x0, x0, stride, n, region);
+            for (int i = 0; i < relief.length; i++) {
+                if (!World.dry(with[i])) farFlat &= relief[i] == World.FLAT;
+                else farDry++;
+                if (relief[i] != World.FLAT) farSloped++;
+                farFlat &= relief[i] >= 0 && relief[i] < World.RELIEFS && region[i] >= 0 && region[i] < World.RELIEFS;
+            }
+        }
+        report("the cover is untouched: tileTerrain() is as it was after every reader of the relief has run on its tile, and a far node's cover is the same byte for byte with the relief asked for as without",
+                same && farSame && sloped > 0, String.format("%,d plots with relief in 144 tiles; %,d of %,d dry far pixels at five strides", sloped, farSloped, farDry));
+        report("the readers agree: reliefAt() is tileRelief() plot by plot; far nodes and regions give every pixel a relief class, and none to a pixel that is not dry ground",
+                agree && farFlat && farSloped > 0, "");
+        // 2. The classes nest: the shares at a point keep their order - steep within foothill, very steep within steep, in 0 to 1 - on the 15" cells' blend and on the far blocks'.
+        Random rnd = new Random(17);
+        double[] ll = new double[2];
+        boolean ordered = true;
+        long points = 0, withSlope = 0;
+        for (int i = 0; i < 20_000; i++) {
+            double x = c + (rnd.nextDouble() - 0.5) * 3000, y = c + (rnd.nextDouble() - 0.5) * 3000;
+            if (!proj.latLonOfPlot(x, y, ll)) continue;
+            for (boolean far : new boolean[] { false, true }) {
+                double[] s = e.reliefShares(ll[0], ll[1], far);
+                ordered &= s[0] >= s[1] && s[1] >= s[2] && s[2] >= 0 && s[0] <= 1;
+                points++;
+                if (s[0] > 0) withSlope++;
+            }
+        }
+        report("the classes nest: at every point the share at or above foothill is no less than the steep share and that no less than the very steep, in 0 to 1 - on the cells' blend and on the far blocks'",
+                ordered && withSlope > 0, String.format("%,d readings, %,d with slope", points, withSlope));
+        // ...and the drawn classes lie where the data has them: a STEEP plot only within a cell of some steep ground, a VERY_STEEP plot of some very steep.
+        long checked = 0, bad = 0, varied = 0;
+        byte[] cov = new byte[World.TILE * World.TILE];
+        for (long ty = c / World.TILE - 12; ty < c / World.TILE + 12; ty++) {
+            for (long tx = c / World.TILE - 12; tx < c / World.TILE + 12; tx++) {
+                w.tileTerrain(tx, ty, cov);
+                w.tileRelief(tx, ty, rel);
+                EarthProj.Blend b = proj.blend(tx * World.TILE, ty * World.TILE, World.TILE);
+                for (int p = 0; p < rel.length; p += 7) {
+                    if (rel[p] == World.FLAT) continue;
+                    b.latLon(tx * World.TILE + p % World.TILE + 0.5, ty * World.TILE + p / World.TILE + 0.5, ll);
+                    boolean foot = false, st = false, very = false;
+                    for (int dj = -1; dj <= 1; dj++) {
+                        for (int di = -1; di <= 1; di++) {
+                            int s = d.slope(ll[0] + dj / 240.0, ll[1] + di / 240.0);
+                            foot |= EarthData.slopeFoothill(s) > 0;
+                            st |= EarthData.slopeSteep(s) > 0;
+                            very |= EarthData.slopeVerySteep(s) > 0;
+                        }
+                    }
+                    checked++;
+                    if (!foot || (rel[p] >= World.STEEP && !st) || (rel[p] == World.VERY_STEEP && !very)) bad++;
+                    if (rel[p] >= World.STEEP) varied++;
+                }
+            }
+        }
+        report("...and the drawn classes lie where the data has them: a foothill plot beside a cell with foothill ground, a steep one beside steep, a very steep one beside very steep, in the 3 x 3 cells about it",
+                checked > 0 && bad == 0 && varied > 0, String.format("%,d sampled plots with relief, %,d out of place, %,d steep or more", checked, bad, varied));
+        // 3. The two copies: the tile's and the point's agree on all but RELIEF_COPIES_POINTS of the dry plots.
+        long both = 0, differ = 0;
+        for (long ty = c / World.TILE - 12; ty < c / World.TILE + 12; ty++) {
+            for (long tx = c / World.TILE - 12; tx < c / World.TILE + 12; tx++) {
+                w.tileTerrain(tx, ty, cov);
+                w.tileRelief(tx, ty, rel);
+                for (int p = 0; p < rel.length; p += 3) {
+                    if (!World.dry(cov[p])) continue;
+                    both++;
+                    if (e.pointRelief(tx * World.TILE + p % World.TILE, ty * World.TILE + p / World.TILE, cov[p]) != rel[p]) differ++;
+                }
+            }
+        }
+        double pts = 100.0 * differ / Math.max(1, both);
+        report("the tile rule and the point rule give a dry plot the same relief on all but RELIEF_COPIES_POINTS of the plots",
+                both > 0 && pts <= RELIEF_COPIES_POINTS, String.format("%,d of %,d sampled dry plots differ (%.3f points)", differ, both, pts));
+        // 4. The cost of a tile: each round a world of its own (another seed, the same data), so no tile is kept - the cover's tiles first, kept as a map keeps them, then the relief alone.
+        long tx0 = c / World.TILE - TIMED_TILES / 2, ty0 = tx0;
+        double[] coverMs = new double[TILE_ROUNDS], reliefMs = new double[TILE_ROUNDS];
+        byte[] tile = new byte[World.TILE * World.TILE];
+        for (int round = -1; round < TILE_ROUNDS; round++) {
+            World t0w = World.of(World.Key.earth(SEED + 1000 + round, file != null ? HILLS[0][0] : VALLEY[0], file != null ? HILLS[0][1] : VALLEY[1], did));
+            long t0 = System.nanoTime();
+            for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) t0w.terrainAt((tx0 + i) * World.TILE, (ty0 + j) * World.TILE);
+            long t1 = System.nanoTime();
+            for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) t0w.tileRelief(tx0 + i, ty0 + j, tile);
+            long t2 = System.nanoTime();
+            if (round >= 0) {
+                coverMs[round] = (t1 - t0) / 1e6 / (TIMED_TILES * TIMED_TILES);
+                reliefMs[round] = (t2 - t1) / 1e6 / (TIMED_TILES * TIMED_TILES);
+            }
+        }
+        Arrays.sort(coverMs);
+        Arrays.sort(reliefMs);
+        double both3 = coverMs[TILE_ROUNDS / 2] + reliefMs[TILE_ROUNDS / 2];
+        report("a hilly tile's ground and its relief together in no more than TILE_MS (the median of " + TILE_ROUNDS + " rounds over " + TIMED_TILES + " x " + TIMED_TILES
+                        + " tiles about Medellin)", Timing.within(both3, TILE_MS),
+                String.format("%.3f ms a tile: %.3f for the cover and %.3f for the relief beside it (cover kept; rounds %.3f to %.3f)", both3, coverMs[TILE_ROUNDS / 2],
+                        reliefMs[TILE_ROUNDS / 2], reliefMs[0], reliefMs[TILE_ROUNDS - 1]));
+    }
+
+    /** The far views' relief: a far node at a stride, the globe's camera, the picture's, their cost against SCREEN_MS and FRAME_MS. */
+    static void reliefFar(EarthData file) throws Exception {
+        if (file == null) return;
+        long c = EarthTerrain.spotPlot();
+        int n = MapFrame.NODE_PX;
+        World w = World.of(World.Key.earth(SEED, HILLS[0][0], HILLS[0][1], EarthData.EARTH_2));
+        EarthTerrain e = w.earthTerrain();
+        // The far summary: a 4' block's shares are the land-weighted mean of its 256 cells'.
+        Random rnd = new Random(5);
+        double worst = 0;
+        int blocks = 0;
+        for (double[] at : new double[][] { HILLS[0], HILLS[1], HILLS[2], HILLS[3], HILLS[4], HILLS[5], { 46.5, 10.2 }, { 35.7, 139.7 }, { 0.5, -150.5 } }) {
+            for (int k = 0; k < 4; k++) {
+                double lat = at[0] + (rnd.nextDouble() - 0.5) * 0.4, lon = at[1] + (rnd.nextDouble() - 0.5) * 0.4;
+                long gb = (long) Math.floor((90 - lat) * 240) / 16 * 16, cb = (long) Math.floor((lon + 180) * 240) / 16 * 16;
+                double land = 0, f = 0, s = 0, v = 0;
+                for (int i = 0; i < 16; i++) {
+                    for (int j = 0; j < 16; j++) {
+                        double la = 90 - (gb + i + 0.5) / 240, lo = -180 + (cb + j + 0.5) / 240;
+                        double wgt = Math.max(0, EarthData.SHARE_LEVELS - file.at("sea", la, lo) - file.at("lake", la, lo));
+                        int b = file.slope(la, lo);
+                        land += wgt;
+                        f += wgt * EarthData.slopeFoothill(b);
+                        s += wgt * Math.min(EarthData.slopeFoothill(b), EarthData.slopeSteep(b));
+                        v += wgt * Math.min(Math.min(EarthData.slopeFoothill(b), EarthData.slopeSteep(b)), EarthData.slopeVerySteep(b));
+                    }
+                }
+                double[] got = e.reliefShares(90 - (gb + 8) / 240.0, -180 + (cb + 8) / 240.0, true);
+                if (land > 0) worst = Math.max(worst, Math.max(Math.abs(got[0] - f / land), Math.max(Math.abs(got[1] - s / land), Math.abs(got[2] - v / land))));
+                else worst = Math.max(worst, got[0] + got[1] + got[2]);
+                blocks++;
+            }
+        }
+        report("the far summary: a 4' block's shares are the land-weighted mean of its 256 cells' (within a level of a byte, 1/255), at " + blocks + " blocks over the hills, a city and the open Pacific",
+                worst <= 1.0 / 255 + 1e-9, String.format("the worst %.4f", worst));
+        // A far node at each stride over the hills: its relief shares are the data's cells' at its dry pixels; its cost, cold and warm, against SCREEN_MS.
+        EarthData fresh = EarthData.open(EarthData.locate());
+        String freshId = EarthTerrain.use(fresh);
+        EarthTerrain ce = new EarthTerrain(World.Key.earth(SEED, HILLS[0][0], HILLS[0][1], freshId));
+        double[] ll = new double[2];
+        EarthProj proj = e.projection();
+        for (int stride : new int[] { 16, 64, 256, 1024 }) {
+            long x0 = c - (long) n * stride / 2;
+            byte[] plain = new byte[n * n], relief = new byte[n * n];
+            double plainMs = Double.MAX_VALUE, withMs = Double.MAX_VALUE;
+            long t0 = System.nanoTime();
+            ce.farTerrain(x0, x0, stride, n, plain, relief);
+            double cold = (System.nanoTime() - t0) / 1e6;
+            for (int round = 0; round < 3; round++) {
+                t0 = System.nanoTime();
+                e.farTerrain(x0, x0, stride, n, plain);
+                plainMs = Math.min(plainMs, (System.nanoTime() - t0) / 1e6);
+                t0 = System.nanoTime();
+                e.farTerrain(x0, x0, stride, n, plain, relief);
+                withMs = Math.min(withMs, (System.nanoTime() - t0) / 1e6);
+            }
+            long[] drawn = new long[World.RELIEFS];
+            double[] want = new double[World.RELIEFS];
+            long dry = 0;
+            for (int py = 0; py < n; py++) {
+                for (int px = 0; px < n; px++) {
+                    int i = py * n + px;
+                    if (!World.dry(plain[i])) continue;
+                    double x = x0 + (px + 0.5) * stride, y = x0 + (py + 0.5) * stride;
+                    if (!proj.latLonOfPlot(x, y, ll)) continue;
+                    dry++;
+                    drawn[relief[i]]++;
+                    int b = file.slope(ll[0], ll[1]);
+                    double f = EarthData.slopeFoothill(b), s = EarthData.slopeSteep(b), v = EarthData.slopeVerySteep(b);
+                    want[0] += 1 - f;
+                    want[1] += f - s;
+                    want[2] += s - v;
+                    want[3] += v;
+                }
+            }
+            double points = 0;
+            for (int k = 0; k < World.RELIEFS; k++) points = Math.max(points, 100 * Math.abs(drawn[k] - want[k]) / Math.max(1, dry));
+            report("a far node over Medellin at " + stride + " plots a pixel: its relief shares are the cells' within FAR_POINTS (a sample of its pixels), and it is drawn in no more than SCREEN_MS",
+                    dry >= FAR_DRY_LEAST && points <= FAR_POINTS && Timing.within(withMs, MapCheck.SCREEN_MS),
+                    String.format("%.1f/%.1f/%.1f/%.1f%% against %.1f/%.1f/%.1f/%.1f%% of %,d dry pixels, %.1f points; %.1f ms with the relief, %.1f without, %.0f ms the first time over fresh data",
+                            100.0 * drawn[0] / Math.max(1, dry), 100.0 * drawn[1] / Math.max(1, dry), 100.0 * drawn[2] / Math.max(1, dry), 100.0 * drawn[3] / Math.max(1, dry),
+                            100 * want[0] / Math.max(1, dry), 100 * want[1] / Math.max(1, dry), 100 * want[2] / Math.max(1, dry), 100 * want[3] / Math.max(1, dry), dry, points,
+                            withMs, plainMs, cold));
+        }
+        // The globe's camera at the handoff, against the plane's node: the same shares; its piece in no more than FRAME_MS.
+        GlobeFrame f = new GlobeFrame(n, n, HILLS[0][0], HILLS[0][1]);
+        f.set(HILLS[0][0], HILLS[0][1], GlobeFrame.HANDOFF_KM);
+        byte[] gc = new byte[n * n], gr = new byte[n * n], pc = new byte[n * n], pr = new byte[n * n];
+        long x0 = c - (long) n * GlobeFrame.HANDOFF_PLOTS / 2;
+        double gMs = Double.MAX_VALUE;
+        for (int round = 0; round < 3; round++) {
+            long t0 = System.nanoTime();
+            e.farTerrain(e.globe(f.ortho(), f.kmPx(), f.width(), f.height(), 0, 0, n, n), gc, gr);
+            gMs = Math.min(gMs, (System.nanoTime() - t0) / 1e6);
+        }
+        e.farTerrain(x0, x0, GlobeFrame.HANDOFF_PLOTS, n, pc, pr);
+        e.farTerrain(x0, x0, GlobeFrame.HANDOFF_PLOTS, n, pc, pr);
+        long gDry = 0, pDry = 0;
+        double[] g = new double[World.RELIEFS], p = new double[World.RELIEFS];
+        boolean flat = true;
+        for (int i = 0; i < gr.length; i++) {
+            if (World.dry(gc[i])) { gDry++; g[gr[i]]++; } else flat &= gr[i] == World.FLAT;
+            if (World.dry(pc[i])) { pDry++; p[pr[i]]++; }
+        }
+        double apart = 0;
+        for (int k = 0; k < World.RELIEFS; k++) apart = Math.max(apart, 100 * Math.abs(g[k] / Math.max(1, gDry) - p[k] / Math.max(1, pDry)));
+        report("the globe's camera at the handoff draws the plane's relief shares: its dry pixels within RELIEF_POINTS x 2 of the plane's node over the same ground, none on water, and a piece is drawn in no more than FRAME_MS",
+                gDry > 0 && pDry > 0 && flat && apart <= 2 * RELIEF_POINTS * 2 && Timing.within(gMs, GlobeCheck.FRAME_MS),
+                String.format("%.1f/%.1f/%.1f/%.1f%% on the globe's %,d dry pixels against %.1f/%.1f/%.1f/%.1f%% on the plane's %,d (%.1f points); %.1f ms", 100 * g[0] / Math.max(1, gDry), 100 * g[1] / Math.max(1, gDry),
+                        100 * g[2] / Math.max(1, gDry), 100 * g[3] / Math.max(1, gDry), gDry, 100 * p[0] / Math.max(1, pDry), 100 * p[1] / Math.max(1, pDry), 100 * p[2] / Math.max(1, pDry),
+                        100 * p[3] / Math.max(1, pDry), pDry, apart, gMs));
+        // The picture's camera: a band of the planet at 4', cover as without, and the cost of a band's relief over fresh data (the picture is made once and never saved).
+        EarthData again = EarthData.open(EarthData.locate());
+        String againId = EarthTerrain.use(again);
+        EarthTerrain pe = new EarthTerrain(World.Key.earth(0, 0, 0, againId));
+        int perDeg = 60 / GlobePicture.ARCMIN, bandRows = GlobePicture.BAND_DEG * perDeg, cols = 360 * perDeg;
+        byte[] bandPlain = new byte[cols * bandRows], bandWith = new byte[bandPlain.length], bandRelief = new byte[bandPlain.length];
+        int row0 = (90 - 50) / GlobePicture.BAND_DEG * bandRows;   // the band 50 N to 40 N: the Alps, the Pyrenees, the Pamirs' foot
+        long t0 = System.nanoTime();
+        pe.farTerrain(pe.grid(GlobePicture.ARCMIN, row0, bandRows), bandPlain);
+        double plainBand = (System.nanoTime() - t0) / 1e6;
+        t0 = System.nanoTime();
+        pe.farTerrain(pe.grid(GlobePicture.ARCMIN, row0, bandRows), bandWith, bandRelief);
+        double withBand = (System.nanoTime() - t0) / 1e6;
+        long bandDry = 0, bandSloped = 0;
+        boolean bandFlat = true;
+        for (int i = 0; i < bandRelief.length; i++) {
+            if (World.dry(bandWith[i])) { bandDry++; if (bandRelief[i] != World.FLAT) bandSloped++; } else bandFlat &= bandRelief[i] == World.FLAT;
+        }
+        long bandTiles = 0, planetTiles = 0;
+        for (int t = 0; t < EarthData.TILES; t++) {
+            if (file.entry(EarthData.SLOPE, t) <= 0) continue;
+            planetTiles++;
+            if (EarthData.tileLat0(t) >= 40 && EarthData.tileLat0(t) < 50) bandTiles++;
+        }
+        double perTile = (withBand - plainBand) / Math.max(1, bandTiles);
+        report("the picture's camera (a band of 10 degrees at 4'): the cover is the same byte for byte, the relief is none on water, and the band's relief costs a first sight of its slope tiles only",
+                Arrays.equals(bandPlain, bandWith) && bandFlat && bandSloped > 0 && bandTiles > 0,
+                String.format("%,d of %,d dry texels with relief; %.0f ms for the band's cover, the relief adding %.0f over fresh data for its %,d tiles with slope (%.2f ms each: the planet's %,d about %.1f s of one thread, once)",
+                        bandSloped, bandDry, plainBand, withBand - plainBand, bandTiles, perTile, planetTiles, perTile * planetTiles / 1000));
+    }
+
+    /** Four coasts of the full file, {lat, lon}, each a 61 km window with sea of both depths: the North Sea at the Flemish banks, the shelf off Perth, the Texas shelf off Galveston and the Gulf off Ras Tanura. */
+    static final double[][] SHELVES = { { 52.0, 3.0 }, { -32.0, 115.4 }, { 28.5, -94.0 }, { 27.0, 50.5 } };
+
+    /** A colour's luma, the plain sum of its channels. */
+    static int luma(int c) { return ((c >> 16) & 255) + ((c >> 8) & 255) + (c & 255); }
 
     /** A count of n plots of one class, World.CLASSES long. */
     static long[] only(byte cls, long n) {
@@ -1540,7 +2344,7 @@ public class EarthTerrainCheck {
      */
     static void cover(EarthData d, boolean ice, int lat0, int lon0) {
         long t0 = System.nanoTime();
-        World w = World.of(World.Key.earth(SEED, lat0 + 0.5, lon0 + 0.5, EarthData.EARTH_1));
+        World w = World.of(World.Key.earth(SEED, lat0 + 0.5, lon0 + 0.5, EarthData.EARTH_2));
         EarthProj proj = w.earthTerrain().projection();
         double[] p = new double[2];
         long x0 = Long.MAX_VALUE, x1 = Long.MIN_VALUE, y0 = Long.MAX_VALUE, y1 = Long.MIN_VALUE;
@@ -1568,7 +2372,7 @@ public class EarthTerrainCheck {
                     double px = tx * World.TILE + i % World.TILE + 0.5, py = ty * World.TILE + i / World.TILE + 0.5;
                     if (!b.latLon(px, py, ll) || ll[0] < lat0 || ll[0] >= lat0 + 1 || ll[1] < lon0 || ll[1] >= lon0 + 1) continue;
                     byte g = t[i];
-                    if (ice ? !(g != World.SALT && g != World.FRESH) : !(g == World.GRASS || g == World.DESERT)) continue;
+                    if (ice ? !(!World.salt(g) && g != World.FRESH) : !(g == World.GRASS || g == World.DESERT)) continue;
                     ground++;
                     boolean is = g == kind;
                     if (is) drawn++;

@@ -694,7 +694,7 @@ public final class CityMap {
                 int n = block * per;
                 world.regionTerrain((baseDX + dx0 + bi) * DISTRICT, (baseDY + dy0 + bj) * DISTRICT, COARSE_STRIDE, n, buf);
                 for (int p = 0; p < n * n; p++) {
-                    if (buf[p] == World.SALT) continue;
+                    if (World.salt(buf[p])) continue;
                     int i = bi + (p % n) / per, j = bj + (p / n) / per;
                     if (i < nx && j < ny) land[j * nx + i] = true;
                 }
@@ -5450,7 +5450,7 @@ public final class CityMap {
                 boolean wet = false, dry = false;
                 for (int i = 0; i < World.TILE * World.TILE && !(wet && dry); i++) {
                     int g = runGround.at(tx * tile + i % tile, ty * tile + i / tile, -1);
-                    if (g == World.SALT) wet = true;
+                    if (World.salt(g)) wet = true;
                     else if (CityRuns.dry(g)) dry = true;
                 }
                 if (!wet || !dry) continue;
@@ -5467,7 +5467,7 @@ public final class CityMap {
                         int j = (iy + m) * ww + ix + m;
                         if (!CityRuns.dry(ground[j])) continue;
                         for (int side = 0; side < 4; side++) {
-                            if (ground[j + CityShore.DX[side] + CityShore.DY[side] * ww] != World.SALT) continue;
+                            if (!World.salt(ground[j + CityShore.DX[side] + CityShore.DY[side] * ww])) continue;
                             for (int turn = 0; turn < (fp[0] == fp[1] ? 1 : 2); turn++) {
                                 int w = turn == 0 ? fp[0] : fp[1], h = turn == 0 ? fp[1] : fp[0];
                                 long sx = tx * tile + ix, sy = ty * tile + iy;
@@ -5508,7 +5508,7 @@ public final class CityMap {
         for (int q = 1; q <= c.quay(); q++) {
             long[] at = c.quayPlot(q);
             if (at[0] < wx0 || at[1] < wy0 || at[0] >= wx0 + ww || at[1] >= wy0 + ww) return false;
-            if (ground[(int) ((at[1] - wy0) * ww + (at[0] - wx0))] != World.SALT) return false;
+            if (!World.salt(ground[(int) ((at[1] - wy0) * ww + (at[0] - wx0))])) return false;
         }
         return true;
     }
@@ -5776,13 +5776,16 @@ public final class CityMap {
      * drawn that the model does not have.
      */
     public void tileInput(long tx, long ty, TilePainter.Input in) {
-        World.of(worldKey).tileTerrain(tx, ty, in.terrain);
+        World w = World.of(worldKey);
+        w.tileTerrain(tx, ty, in.terrain);
+        w.tileRelief(tx, ty, in.relief);
         fillInput(tx, ty, in);
     }
 
     /** ...with the tile's ground given (a view keeps it: MapTiles.terrain(), batch J4) rather than read from the world. */
     public void tileInput(long tx, long ty, TilePainter.Input in, byte[] terrain) {
         System.arraycopy(terrain, 0, in.terrain, 0, TilePainter.PLOTS);
+        World.of(worldKey).tileRelief(tx, ty, in.relief);   // the Earth keeps its tiles' relief itself (EarthTerrain.tileRelief()); a generated world's is FLAT
         fillInput(tx, ty, in);
     }
 
