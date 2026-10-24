@@ -69,7 +69,9 @@ public class OrderSearchCheck {
      * 22 when the month was chosen, 23 and 5 at 0.7.103). On the whole cost
      * (0.7.113) 52, 47 decided below the counted slices, none trimmed - each
      * refused or built whole; its twin on the rule to 0.7.112 24, 17 trimmed
-     * past them, the deepest by 71,823.
+     * past them, the deepest by 71,823. At 0.8.37 (PT1-M4, the copy's D$ floating
+     * as the city's does: ScaleCheck.scale()): 53 judged, 38 refused; the twin 37
+     * judged, 13 trimmed, 23 past the counted slices, the deepest by 100,840.
      */
     static final int COPY_MONTH = 400;
     /** ...how many times over it is copied... */
@@ -120,6 +122,7 @@ public class OrderSearchCheck {
         g.watchOrders(w);
         playtestCity(g, COPY_MONTH, quiet);
         quietly(() -> g.saveGame(10, "ordersearch"));
+        double cityRate = g.getForeignAccounts().getRate();
         playtestRhythm(g, LONG_MONTHS, quiet);
         out.printf("      month %d, %,d people%n", g.getMonth(), g.getPopulationManager().getPopulation());
         quietly(() -> {
@@ -165,6 +168,11 @@ public class OrderSearchCheck {
         assertTrue("fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some"
                 + " below the counted slices, so the search found them", wc.largestInvested > Game.COUNTDOWN_SLICES && wc.searched > 0);
         wc.verdicts("the copy");
+        // PT1-M4 (2026-10-24): the copy's D$ floats as the city's does (ScaleCheck.scale() scaled the float's logs, flags and
+        // seeds K times over until now, and the copy's rate hit MAX_RATE in its first month: the sectors holding dollars abroad
+        // recalled them into tills of 1e12 to 1e14 and built every order whole, so the twin below trimmed nothing).
+        assertTrue("fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling",
+                Math.abs(Math.log(copy.getForeignAccounts().getRate() / cityRate)) < Math.log(10));
 
         /*
          * ...AND ITS TWIN ON THE RULE TO 0.7.112 (0.7.113). On its whole cost
@@ -189,6 +197,7 @@ public class OrderSearchCheck {
                 wt.largestInvested > Game.COUNTDOWN_SLICES && wt.trimmed > 0);
         assertTrue("fixture: ...some by more than the counted slices, so the search found them", wt.searched > 0 && wt.deepest >= Game.COUNTDOWN_SLICES);
         wt.verdicts("the twin");
+        assertTrue("fixture: ...and the twin's too", Math.abs(Math.log(twin.getForeignAccounts().getRate() / cityRate)) < Math.log(10));
     }
 
     /**
