@@ -539,6 +539,22 @@ public final class GlobeFrame {
         return out;
     }
 
+    /**
+     * ...a piece's codes (ET1 slice D; spec-earth2-terrain 9.3): each pixel's class and relief as the planet's
+     * picture holds a texel's (GlobePicture.code()) - the far rule's relief through the same camera - so the
+     * GROUND tier draws the three greys and the shaded forest as the picture does. Its class is
+     * groundPiece()'s, byte for byte; an earth-1 file's and every flat pixel's code is its class.
+     */
+    public byte[] groundCodes(World.Key key, int sx0, int sy0, int w, int h) {
+        World world = World.of(key);
+        if (!world.isEarth()) throw new IllegalArgumentException("the globe draws an Earth world's ground: " + key);
+        EarthTerrain e = world.earthTerrain();
+        byte[] out = new byte[w * h], relief = new byte[w * h];
+        e.farTerrain(e.globe(ortho, kmPx, width, height, sx0, sy0, w, h), out, relief);
+        for (int k = 0; k < out.length; k++) out[k] = GlobePicture.code(out[k], relief[k]);
+        return out;
+    }
+
     /* =====================================================================
        THE GLOBE ON SCREEN (0.7.135, batch E9; docs/studies/spec-globe.md 3.5
        to 3.7): the city's plane under the globe's pixels, the GROUND tier

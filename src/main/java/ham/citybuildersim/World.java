@@ -124,11 +124,25 @@ public final class World {
     /** Desert (0.7.127, batch E7; spec-globe Q1): dry ground every rule treats as grass - only its colour and its name differ. The real Earth's bare ground (EarthTerrain); a generated world has none. */
     public static final byte DESERT = 6;
 
-    /** How many classes the ground has: 7, GRASS to DESERT - the length of an array a class indexes (0.7.127; five until then, and a generated world draws only those). */
-    public static final int CLASSES = 7;
+    /** Shallow sea (ET1, spec-earth2-terrain 6.1; Jerus 2026-10-12, D11): sea no deeper than 30 m - salt water every rule that asks "is this the sea?" treats as SALT (salt()), lighter on the map and the one water a short bridge can cross (a later batch). The real Earth's, drawn where earth-2's shallow share beats the plot's noise (EarthTerrain); a generated world has none (D19). */
+    public static final byte SHALLOW = 7;
+
+    /** How many classes the ground has: 8, GRASS to SHALLOW - the length of an array a class indexes (0.7.127; five until then, seven until ET1, and a generated world draws only the first five). */
+    public static final int CLASSES = 8;
 
     /** The dry classes, a bit each: grass, forest, the beach and the desert. */
     private static final int DRY_CLASSES = 1 << GRASS | 1 << FOREST | 1 << SAND | 1 << DESERT;
+
+    /**
+     * Whether a class is the sea - SALT or SHALLOW (ET1, spec-earth2-terrain
+     * 6.1): the one question every rule that asks "is this the sea?" puts, a
+     * port's, the coast's, the sea routes', a sea field's, so the shallow sea
+     * changes only the look and the crossings. False for anything that is not
+     * a class, -1 included.
+     */
+    public static boolean salt(int cls) {
+        return cls == SALT || cls == SHALLOW;
+    }
 
     /**
      * Whether a class is dry ground - grass, forest, the beach or the desert:
@@ -139,6 +153,47 @@ public final class World {
      */
     public static boolean dry(int cls) {
         return (DRY_CLASSES & 1 << cls) != 0;
+    }
+
+    /* ---------------------------------------------------- the terrain's relief (ET1, spec-earth2-terrain 3.1) */
+
+    /**
+     * Flat ground (ET1, spec-earth2-terrain 3.1): under a 10% grade, the relief of every plot of a generated
+     * world (D19) and of the Earth's water, ice and anything else the slope plane says nothing of -
+     * "none" and "flat" are one byte. A second plane beside the cover (GRASS to SHALLOW); reliefAt() reads it.
+     */
+    public static final byte FLAT = 0;
+
+    /** Foothill (ET1; D4): a grade of 10% to under 30% (5.7 to 16.7 degrees) - buildable, with preparation (a later batch prices it). */
+    public static final byte FOOTHILL = 1;
+
+    /** Steep (ET1; D4): a grade of 30% to under 60% (16.7 to 31 degrees) - no building stands on it (buildable()); works that may stand anywhere do (workable()). */
+    public static final byte STEEP = 2;
+
+    /** Very steep (ET1; D4): a grade of 60% or more (31 degrees and over) - no building stands on it (buildable()). */
+    public static final byte VERY_STEEP = 3;
+
+    /** How many relief classes there are: 4, FLAT to VERY_STEEP - the length of an array a relief indexes. */
+    public static final int RELIEFS = 4;
+
+    /**
+     * Whether a building may stand on a plot of this cover and relief (ET1, spec-earth2-terrain 3.2): dry
+     * ground (dry(): not water, not ice) that is FLAT or FOOTHILL. Steep ground is refused whatever grows on it.
+     * Nothing calls it yet: the founding card and the build rules are ET2's. False for anything that is
+     * not a cover, -1 included, and for anything that is not a relief.
+     */
+    public static boolean buildable(int cover, int relief) {
+        return dry(cover) && (relief == FLAT || relief == FOOTHILL);
+    }
+
+    /**
+     * Whether a work that may stand anywhere on land may stand on a plot of this cover (ET1,
+     * spec-earth2-terrain 3.2): any land, ice included - not the sea (salt()) and not fresh water. The
+     * mines', quarries' and wells' rule for a later batch; slope does not enter it. False for anything that
+     * is not a cover, -1 included.
+     */
+    public static boolean workable(int cover) {
+        return cover >= 0 && cover < CLASSES && !salt(cover) && cover != FRESH;
     }
 
     /* =====================================================================
@@ -537,7 +592,7 @@ public final class World {
      * What makes one world another (0.7.115, batch E2; spec-earth 6): its
      * kind and seed, and on Earth the spot the projection is centred on
      * (degrees) and the data it is drawn from, by its identity
-     * (EarthData.identity(), "earth-1:<hash>"). The seed decides an Earth
+     * (EarthData.identity(), "earth-2:<hash>"). The seed decides an Earth
      * world's detail below the data, its fields and its painting; the spot
      * and the data its coasts, lakes and rivers.
      */
@@ -773,21 +828,23 @@ public final class World {
     /** The sea's level: the elevation SEA_SHARE of the world's samples lie under; on Earth (0.7.115), with no heights, EarthTerrain.SEA_LEVEL, the share the coast is drawn at. */
     public double seaTheta() { build(); return seaTheta; }
 
-    /** The continental shelf's edge in the elevation field (0.7.79): the level the shallowest SHELF_SHARE of the sea's samples lie at and above, so under seaTheta(). None on Earth, which has no elevation field: its shelf is a distance from the coast (EarthTerrain.SHELF_WIDTH_M, 0.7.121). */
+    /** The continental shelf's edge in the elevation field (0.7.79): the level the shallowest SHELF_SHARE of the sea's samples lie at and above, so under seaTheta(). None on Earth, which has no elevation field: its sea has the data's own depth (EarthTerrain.depthAt(), ET1; a distance from the coast until then, 0.7.121). */
     public double shelfTheta() { noHeightsOnEarth("the shelf's edge"); build(); return shelfTheta; }
 
     /**
      * The sea's depth at a plot's centre, in metres below its level (0.7.79,
      * batch O3; spec-oil 2.7): 0 where the plot is not sea (land, beach, a
-     * lake or the river - on the world terrainAt() is SALT exactly where it
-     * is over 0), SHELF_BREAK_M at shelfTheta(), and linear in the
+     * lake or the river - on the world terrainAt() is SALT, or on Earth SHALLOW,
+     * exactly where it is over 0), SHELF_BREAK_M at shelfTheta(), and linear in the
      * elevation from the sea's level to the shelf's edge and on at the same
      * slope below it. Off the world, what the elevation there says. Pure; an
-     * elevation's cost, about half a microsecond. On Earth (0.7.121, batch
-     * E4), which has no heights, the same rule with the distance from the
-     * coast standing in for the elevation (EarthTerrain.depthAt(), ★E4-1):
-     * SHELF_BREAK_M at EarthTerrain.SHELF_WIDTH_M from the coast, the width
-     * within which SHELF_SHARE of the Earth's sea lies.
+     * elevation's cost, about half a microsecond. On Earth, which has no
+     * heights, the data's: earth-2's depth layer at the plot's centre, at
+     * least a metre on any sea plot (SALT or SHALLOW) and 0 elsewhere
+     * (EarthTerrain.depthAt(), ET1; from 0.7.121 to ET1 the coast's distance
+     * stood in for the elevation, SHELF_BREAK_M at a fixed width from the
+     * coast - the study's 7 shows it three to nine times too deep on a broad
+     * shelf and far too shallow on a narrow one).
      */
     public double depthAt(long x, long y) {
         if (earth != null) return earth.depthAt(x, y);
@@ -1117,7 +1174,7 @@ public final class World {
         return forest >= FOREST_THETA ? FOREST : GRASS;
     }
 
-    /** One plot's ground, at its centre: GRASS, FOREST, FRESH, SALT or SAND; SALT off the world. 650 to 930 ns. On Earth (0.7.115) its tile's, kept (EarthTerrain.terrainAt()), which may be ICE or DESERT too (0.7.127). */
+    /** One plot's ground, at its centre: GRASS, FOREST, FRESH, SALT or SAND; SALT off the world. 650 to 930 ns. On Earth (0.7.115) its tile's, kept (EarthTerrain.terrainAt()), which may be ICE or DESERT too (0.7.127), and SHALLOW where it would be SALT on earth-2's data (ET1: ask World.salt() for "the sea"). */
     public byte terrainAt(long x, long y) {
         if (earth != null) return earth.terrainAt(x, y);
         build();
@@ -1128,6 +1185,37 @@ public final class World {
         double lake = lakeField(px, py);
         double forest = lake >= LAKE_THETA || e < seaTheta + BEACH_BAND ? 0 : forestField(px, py);
         return classOf(px, py, e, lake, forest);
+    }
+
+    /**
+     * One plot's relief (ET1, spec-earth2-terrain 3.1): FLAT, FOOTHILL, STEEP or VERY_STEEP - the second plane
+     * beside terrainAt()'s cover, which it never changes. Only dry ground (dry(): not water, not ice) has
+     * any; every other plot, and every plot of a generated world (D19) or of an earth-1 file, is FLAT.
+     * A generated world answers without drawing anything. On Earth its tile's relief, kept
+     * (EarthTerrain.reliefAt()); FLAT off the world.
+     */
+    public byte reliefAt(long x, long y) {
+        return earth != null ? earth.reliefAt(x, y) : FLAT;
+    }
+
+    /**
+     * One tile's relief, a byte a plot in rows (out[py x 32 + px]) as tileTerrain() lays its cover: what
+     * reliefAt() gives each of its plots. FLAT everywhere on a generated world (no noise is drawn) and
+     * off the world's square.
+     */
+    public void tileRelief(long tx, long ty, byte[] out) {
+        if (earth != null) earth.tileRelief(tx, ty, out);
+        else Arrays.fill(out, 0, TILE * TILE, FLAT);
+    }
+
+    /**
+     * A region's relief at a stride, as regionTerrain() lays its cover: n x n pixels from plot (x0, y0),
+     * each `stride` plots wide, out[py x n + px] - FLAT where the pixel's cover is not dry ground. At a
+     * stride of one it is reliefAt() for every plot. FLAT everywhere on a generated world.
+     */
+    public void regionRelief(long x0, long y0, int stride, int n, byte[] out) {
+        if (earth != null) earth.regionRelief(x0, y0, stride, n, out);
+        else Arrays.fill(out, 0, n * n, FLAT);
     }
 
     /** The smoothstep at a plot's centre within an octave's lattice cell, for every wavelength 2^k: SMOOTH[k][f] for f = 0 .. 2^k - 1. */

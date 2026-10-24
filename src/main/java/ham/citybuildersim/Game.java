@@ -13546,6 +13546,8 @@ public class Game {
                 land.convertedState(), landManager.getMarket().getOffersState(), landManager.getMarket().getNextOfferId(),
                 landManager.getDepletionState(), landManager.getWorldTotalsState(),
                 landManager.getWorldSeaTheta());
+        // ...and each holding's, offer's and the centre's dry ground by relief and shallow sea, in keys of their own (ET1): none widens a row.
+        dataSave.setCityLandRelief(land.centreReliefState(), land.holdingsReliefState(), landManager.getMarket().getOffersReliefState());
         // ...and the offshore pool's E (0.7.93, SAVE_FORMAT 35): the depletion's oil is the ground pool's.
         dataSave.setOilDepletionAtSea(landManager.getOilExtractedAtSea());
         // ...and what has been taken out by type, once a works has dug by type (0.7.110; null until then).
@@ -16389,7 +16391,7 @@ public class Game {
         String earth = loaded.earthProblem();
         if (earth != null) {
             System.out.println(GameFiles.slotLabel(slot) + " not loaded (" + loaded.getWorldKind() + ", data "
-                    + EarthSite.shortId(loaded.getEarthData()) + "; this build reads " + EarthSite.shortId(EarthData.EARTH_1)
+                    + EarthSite.shortId(loaded.getEarthData()) + "; this build reads " + EarthSite.shortId(EarthData.EARTH_2)
                     + "), its file left as it was. " + earth);
             return earth;
         }
@@ -16523,7 +16525,7 @@ public class Game {
         int format = loaded.getSaveFormat();
         CityLand land = format > LandConversion.LAST_LANES_FORMAT
                 ? CityLand.restore(founding.getWorldKey(), loaded.getLandCentre(), loaded.getLandCentreRects(), loaded.getLandHoldings(),
-                        loaded.getLandPartFields(), loaded.getLandConverted())
+                        loaded.getLandPartFields(), loaded.getLandConverted(), loaded.getLandCentreRelief(), loaded.getLandHoldingsRelief())
                 : null;
         if (land == null) {
             long t0 = System.nanoTime();
@@ -16556,7 +16558,7 @@ public class Game {
         boolean oldWorld = kept == null && format < CityLand.NEW_FIELDS_FORMAT;
         land.setOldWorldHoldings(kept != null ? kept : oldWorld ? 1 + land.purchases().size() : 0);
         landManager.install(land, loaded.getDepletion(), loaded.getWorldTotals(), sea);
-        landManager.getMarket().restoreOffers(loaded.getLandOffers(), loaded.getNextOfferId());
+        landManager.getMarket().restoreOffers(loaded.getLandOffers(), loaded.getLandOffersRelief(), loaded.getNextOfferId());
         if (oldWorld) {
             // ...and its offers were listed on the old world's fields, gone from every plot it does not own: measured again, once.
             int standing = landManager.getMarket().getListing().size();

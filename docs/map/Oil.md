@@ -1,4 +1,4 @@
-# Oil.java - 1,353 lines · 89 methods · 14 constants · sectors
+# Oil.java - 1,360 lines · 89 methods · 14 constants · sectors
 
 `ham/citybuildersim/sectors/Oil.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -47,10 +47,10 @@
 |---:|---|
 | 101 | THE WELLS DECLINE (0.7.84, batch O7; docs/studies/spec-oil.md 2.6, the |
 | 626 | THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7 and 2.11, |
-| 965 | · the pipelines |
-| 1066 | · the shuttle tankers |
-| 1111 | · the pipeline rule |
-| 1189 | · the planner's three kinds at sea |
+| 972 | · the pipelines |
+| 1073 | · the shuttle tankers |
+| 1118 | · the pipeline rule |
+| 1196 | · the planner's three kinds at sea |
 
 ## Enum constants
 
@@ -93,17 +93,17 @@
 | 723 | `private final List<Pipeline> pipelines` | The pipelines as struck last, in the order they were ordered. |
 | 726 | `private long offshoreStamp` | Moves with every change to the two lists, for the reads' caches. |
 | 729 | `private Platform pipeFor` | The field this month's planner ordered a pipe for: where the kilometres ordered this month go (pipelinesNow()); cleared at the strike. |
-| 890 | `private int pvMonth` | The platforms' cache: the month, the jackets and wells standing, the record's stamp and the fields it was read against. |
-| 891 | `private long pvStamp` |  |
-| 892 | `private Object pvFields` |  |
-| 893 | `private List<Platform> pvCached` |  |
-| 1075 | `private double shuttleTonnes, shuttleBill` | The month's shuttle tankers: tonnes brought ashore and what they cost (payShuttle()); not saved - the statement carries the bill. |
+| 897 | `private int pvMonth` | The platforms' cache: the month, the jackets and wells standing, the record's stamp and the fields it was read against. |
+| 898 | `private long pvStamp` |  |
+| 899 | `private Object pvFields` |  |
+| 900 | `private List<Platform> pvCached` |  |
+| 1082 | `private double shuttleTonnes, shuttleBill` | The month's shuttle tankers: tonnes brought ashore and what they cost (payShuttle()); not saved - the statement carries the bill. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1296 | **type** `public final class Oil extends Sector` | Oil wells. |
+| 58 | 1303 | **type** `public final class Oil extends Sector` | Oil wells. |
 | 60 | 7 | `public Oil()` |  |
 | 76 | 13 | `protected double groundLimit(Good g, double asked)` | The ground, not the well, decides what comes up - since 0.7.93 each kind's own pool (LandManager's THE TWO OIL POOLS): the platform wells' part of the month's ask, their nameplate (getCapacityAtSea()) at the month's r... |
 | 93 | 1 | `public double getLiftedOnGround()` |  |
@@ -150,7 +150,7 @@
 | 596 | 5 | `public double unitsOf(BuildingsTemplate t)` | A well's part of the measure above (0.7.84): the average well's lift - the template's nameplate times the wells' lift over what they would lift new - so a field worked out sheds wells by the count, as it did before th... |
 | 612 | 13 | `public boolean mayRetire(BuildingsTemplate t)` | Whether a holding may be sold back this month (0.7.91): a platform's jacket and a pipeline are not plant the lift measures, so the shrinking rules never pick them while they stand - they go when their wells have (Game... |
 
-### THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7 and 2.11, (lines 626-964)
+### THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7 and 2.11, (lines 626-971)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -171,62 +171,62 @@
 | 778 | 4 | `public int slotsEach()` | The wells a jacket holds: its template's slots (12); 0 with none. |
 | 784 | 3 | `private long[] site()` | The city's founding site, {x, y} in plots: where every pipe runs to. |
 | 789 | 6 | `public List<LandManager.SeaField> shallowFields()` | The oil fields the city owns in the sea no deeper than PLATFORM_MAX_DEPTH_M at their centre, in LandManager.seaFields()'s order: what a jacket stands on. |
-| 797 | 3 | `public static boolean isShallow(LandManager.SeaField f)` | Whether a jacket may stand on a sea field (pure): in the sea, PLATFORM_MAX_DEPTH_M deep or less at its centre, with a site the city owns. |
-| 802 | 4 | `static int sitesOf(List<LandManager.SeaField> fields, int cell, int index)` | A field's sites in the list, by its cell and index; 0 when the city owns none of it (or it is not a shallow sea field). |
-| 808 | 4 | `static Deposit fieldOf(List<LandManager.SeaField> fields, int cell, int index)` | The field in the list by its cell and index, or null. |
-| 819 | 14 | `public static int[] slotsOf(List<Platform> ps, List<LandManager.SeaField> fields, int slotsEach)` | Each platform's slots, in the list's order (pure): min(slotsEach, its field's sites less the slots of the platforms before it on the same field), never under none - none for a platform on no field, or on one the city ... |
-| 835 | 10 | `public static int[] freeSites(List<Platform> ps, List<LandManager.SeaField> fields, int slotsEach)` | Each field's sea sites no platform in the list has slotted, in the list of fields' order (pure). |
-| 847 | 15 | `public static int freeField(List<Platform> ps, List<LandManager.SeaField> fields, int slotsEach, long x, long y)` | The field a new jacket stands on (pure): the one with the most sea sites free, the nearest (x, y) on a tie, then the first listed; -1 for none free. |
-| 869 | 19 | `public static List<Platform> platformView(List<Platform> kept, int jackets, int wells, int month, List<LandManager.SeaField> fi...` | The platforms read against `jackets` standing and `wells` platform wells (pure): those past the jackets dropped newest first, jackets past them opened in `month` on freeField() (or on none), then the wells in slots de... |
-| 896 | 15 | `public List<Platform> platformsNow()` | The platforms this month, read against the jackets and platform wells standing (platformView()): what the slots, the lift and the shuttle read. |
-| 912 | 1 | `private boolean sameFields(List<LandManager.SeaField> fields)` |  |
-| 915 | 7 | `public int slotsStanding()` | The slots of the platforms standing, all of them. |
-| 924 | 6 | `public int platformWellsInSlots()` | The platform wells in a slot: those that lift. |
-| 932 | 9 | `public int platformRoom()` | How many more jackets the shallow fields the city owns could take: each field's sea sites no standing platform has slotted, a jacket to every slotsEach of them or part. |
-| 943 | 1 | `public int jacketsOnSite()` | The jackets ordered and on site, not yet standing: what an order for another counts against platformRoom(). |
-| 946 | 4 | `public int platformWellsCommitted()` | The platform wells standing and on site: what an order for another counts against the slots. |
-| 952 | 12 | `public void strikeOffshore()` | Strikes the platforms and pipelines to this month's reading (endOfMonth(): once a month, after the month's crude is paid ashore). |
+| 804 | 3 | `public static boolean canTakePlatform(LandManager.SeaField f)` | Whether a jacket may stand on a sea field (pure): in the sea, PLATFORM_MAX_DEPTH_M deep or less at its centre (the sea's real depth on Earth, World.depthAt()), with a site the city owns. |
+| 809 | 4 | `static int sitesOf(List<LandManager.SeaField> fields, int cell, int index)` | A field's sites in the list, by its cell and index; 0 when the city owns none of it (or it is not a shallow sea field). |
+| 815 | 4 | `static Deposit fieldOf(List<LandManager.SeaField> fields, int cell, int index)` | The field in the list by its cell and index, or null. |
+| 826 | 14 | `public static int[] slotsOf(List<Platform> ps, List<LandManager.SeaField> fields, int slotsEach)` | Each platform's slots, in the list's order (pure): min(slotsEach, its field's sites less the slots of the platforms before it on the same field), never under none - none for a platform on no field, or on one the city ... |
+| 842 | 10 | `public static int[] freeSites(List<Platform> ps, List<LandManager.SeaField> fields, int slotsEach)` | Each field's sea sites no platform in the list has slotted, in the list of fields' order (pure). |
+| 854 | 15 | `public static int freeField(List<Platform> ps, List<LandManager.SeaField> fields, int slotsEach, long x, long y)` | The field a new jacket stands on (pure): the one with the most sea sites free, the nearest (x, y) on a tie, then the first listed; -1 for none free. |
+| 876 | 19 | `public static List<Platform> platformView(List<Platform> kept, int jackets, int wells, int month, List<LandManager.SeaField> fi...` | The platforms read against `jackets` standing and `wells` platform wells (pure): those past the jackets dropped newest first, jackets past them opened in `month` on freeField() (or on none), then the wells in slots de... |
+| 903 | 15 | `public List<Platform> platformsNow()` | The platforms this month, read against the jackets and platform wells standing (platformView()): what the slots, the lift and the shuttle read. |
+| 919 | 1 | `private boolean sameFields(List<LandManager.SeaField> fields)` |  |
+| 922 | 7 | `public int slotsStanding()` | The slots of the platforms standing, all of them. |
+| 931 | 6 | `public int platformWellsInSlots()` | The platform wells in a slot: those that lift. |
+| 939 | 9 | `public int platformRoom()` | How many more jackets the shallow fields the city owns could take: each field's sea sites no standing platform has slotted, a jacket to every slotsEach of them or part. |
+| 950 | 1 | `public int jacketsOnSite()` | The jackets ordered and on site, not yet standing: what an order for another counts against platformRoom(). |
+| 953 | 4 | `public int platformWellsCommitted()` | The platform wells standing and on site: what an order for another counts against the slots. |
+| 959 | 12 | `public void strikeOffshore()` | Strikes the platforms and pipelines to this month's reading (endOfMonth(): once a month, after the month's crude is paid ashore). |
 
-### the pipelines (lines 965-1065)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 968 | 4 | `public static int lengthKm(Deposit field, long x, long y)` | A field's pipe, in whole kilometres: the straight line from its centre to (x, y), rounded up - at least one. |
-| 974 | 1 | `public int pipeKmStanding()` | The kilometres of pipe standing, finished. |
-| 977 | 4 | `public int pipeKmCommitted()` | ...and standing and on site: what the records hold. |
-| 989 | 41 | `public static List<Pipeline> pipelineView(List<Pipeline> kept, int km, Platform wanted, List<Platform> ps, int month)` | The pipelines read against `km` kilometres committed (pure): those past them taken from the newest record; kilometres past the records go to `wanted`'s field (this month's order), else to the first platform field in `... |
-| 1032 | 5 | `public List<Pipeline> pipelinesNow()` | The pipelines this month, read against the kilometres committed (pipelineView()). |
-| 1043 | 11 | `public static java.util.Set<Long> pipedFields(List<Pipeline> ls, int kmStanding, List<LandManager.SeaField> fields, long x, lon...` | The fields whose whole pipe stands (pure): the kilometres standing dealt to the records oldest first, each field's pipe whole when its kilometres reach its length (lengthKm()). |
-| 1056 | 9 | `public double pipedShare()` | The share of the platform wells in slots whose field's whole pipe stands: the share of the crude at sea the shuttle tankers do not carry. |
-
-### the shuttle tankers (lines 1066-1110)
+### the pipelines (lines 972-1072)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1069 | 4 | `public double shuttleFreightPerTonne()` | What a tonne of crude costs to bring ashore by shuttle tanker this month: CRUDE's band freight, baseFreight x freightFactor x the rate (spec-oil 2.7). |
-| 1077 | 1 | `public double getShuttleTonnes()` |  |
-| 1078 | 1 | `public double getShuttleBill()` |  |
-| 1089 | 14 | `public void payShuttle()` | Pays the shuttle tankers for the month's crude brought ashore (endOfMonth(), after the crude's market cleared): the sea's share of what was sold at home - since 0.7.93 the offshore pool's part of the month's lift (get... |
-| 1105 | 5 | `public double homeShareLastMonth()` | Last month's share of the wells' crude sold at home, by its money at home and abroad (the statement's): 0 with none sold. |
+| 975 | 4 | `public static int lengthKm(Deposit field, long x, long y)` | A field's pipe, in whole kilometres: the straight line from its centre to (x, y), rounded up - at least one. |
+| 981 | 1 | `public int pipeKmStanding()` | The kilometres of pipe standing, finished. |
+| 984 | 4 | `public int pipeKmCommitted()` | ...and standing and on site: what the records hold. |
+| 996 | 41 | `public static List<Pipeline> pipelineView(List<Pipeline> kept, int km, Platform wanted, List<Platform> ps, int month)` | The pipelines read against `km` kilometres committed (pure): those past them taken from the newest record; kilometres past the records go to `wanted`'s field (this month's order), else to the first platform field in `... |
+| 1039 | 5 | `public List<Pipeline> pipelinesNow()` | The pipelines this month, read against the kilometres committed (pipelineView()). |
+| 1050 | 11 | `public static java.util.Set<Long> pipedFields(List<Pipeline> ls, int kmStanding, List<LandManager.SeaField> fields, long x, lon...` | The fields whose whole pipe stands (pure): the kilometres standing dealt to the records oldest first, each field's pipe whole when its kilometres reach its length (lengthKm()). |
+| 1063 | 9 | `public double pipedShare()` | The share of the platform wells in slots whose field's whole pipe stands: the share of the crude at sea the shuttle tankers do not carry. |
 
-### the pipeline rule (lines 1111-1188)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1119 | 6 | `public static boolean pipelinePays(double freightPerTonne, double standingPerMonth, double tonnesPerMonth, double monthsLeft, d...` | The pipeline rule (pure; spec-oil 2.11): (the freight a tonne the pipe saves less its repairs and property tax a tonne) x the tonnes a month it carries x min(the months the oil lasts, PIPE_LIFE_MONTHS) is at least PIP... |
-| 1136 | 2 | **type** `public record PipeCase(Deposit field, int km, double cost, double freight, double standing, double tonnes, ...` | A field's pipe weighed (spec-oil 2.11): its kilometres still to order, their cost, the freight a tonne it saves (the shuttle's at sea; none on land), its repairs and tax a month, the tonnes a month it would carry (the... |
-| 1140 | 29 | `public PipeCase pipeCase(LandManager.SeaField f, BusinessInvestment plans)` | ...for a field the city owns a platform on; null with no pipeline template, or the field's whole pipe ordered. |
-| 1171 | 17 | `public PipeCase bestPipe(BusinessInvestment plans)` | The field whose pipe pays best, by its life's saving over its cost; null for none. |
-
-### the planner's three kinds at sea (lines 1189-1353)
+### the shuttle tankers (lines 1073-1117)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1192 | 1 | **type** `public record JacketCase(LandManager.SeaField field, int wells, double earns, double cost)` | A platform's jacket weighed with its wells (spec-oil 2.7): its field, the wells it is judged with, the package's earnings a month and its cost. |
-| 1195 | 14 | `public JacketCase jacketCase(BusinessInvestment plans)` | ...on freeField(): min(slotsEach, its free sea sites) wells at a platform well's earnings, less the jacket's running and standing costs; null with no field free or no templates. |
-| 1211 | 8 | `private double shuttleOnOneMore(BuildingsTemplate well, BusinessInvestment plans)` | The platform crude's shuttle freight a month on one more well's crude sold at home: its nameplate at the plants' rate, as much of it as the house forecast leaves room for at home (BusinessInvestment.estimatedMakerProf... |
-| 1229 | 12 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more building of the wells' would clear a month (0.7.91): a platform well the house's maker estimate less the shuttle tankers on its crude sold at home; a jacket its share by cost of its package's (jacketCase... |
-| 1243 | 6 | `private PipeCase pipeCaseOf(Platform at, BusinessInvestment plans)` | The pipe case of the field a record names, or null when the city holds it no longer. |
-| 1251 | 50 | `private BusinessInvestment.Decision planAtSea(BusinessInvestment plans, Game game)` | The order at sea, or null when there is nothing at sea to weigh (THE OIL AT SEA, the planner). |
-| 1303 | 50 | `public List<Line> ownLines(Game game)` |  |
+| 1076 | 4 | `public double shuttleFreightPerTonne()` | What a tonne of crude costs to bring ashore by shuttle tanker this month: CRUDE's band freight, baseFreight x freightFactor x the rate (spec-oil 2.7). |
+| 1084 | 1 | `public double getShuttleTonnes()` |  |
+| 1085 | 1 | `public double getShuttleBill()` |  |
+| 1096 | 14 | `public void payShuttle()` | Pays the shuttle tankers for the month's crude brought ashore (endOfMonth(), after the crude's market cleared): the sea's share of what was sold at home - since 0.7.93 the offshore pool's part of the month's lift (get... |
+| 1112 | 5 | `public double homeShareLastMonth()` | Last month's share of the wells' crude sold at home, by its money at home and abroad (the statement's): 0 with none sold. |
+
+### the pipeline rule (lines 1118-1195)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1126 | 6 | `public static boolean pipelinePays(double freightPerTonne, double standingPerMonth, double tonnesPerMonth, double monthsLeft, d...` | The pipeline rule (pure; spec-oil 2.11): (the freight a tonne the pipe saves less its repairs and property tax a tonne) x the tonnes a month it carries x min(the months the oil lasts, PIPE_LIFE_MONTHS) is at least PIP... |
+| 1143 | 2 | **type** `public record PipeCase(Deposit field, int km, double cost, double freight, double standing, double tonnes, ...` | A field's pipe weighed (spec-oil 2.11): its kilometres still to order, their cost, the freight a tonne it saves (the shuttle's at sea; none on land), its repairs and tax a month, the tonnes a month it would carry (the... |
+| 1147 | 29 | `public PipeCase pipeCase(LandManager.SeaField f, BusinessInvestment plans)` | ...for a field the city owns a platform on; null with no pipeline template, or the field's whole pipe ordered. |
+| 1178 | 17 | `public PipeCase bestPipe(BusinessInvestment plans)` | The field whose pipe pays best, by its life's saving over its cost; null for none. |
+
+### the planner's three kinds at sea (lines 1196-1360)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1199 | 1 | **type** `public record JacketCase(LandManager.SeaField field, int wells, double earns, double cost)` | A platform's jacket weighed with its wells (spec-oil 2.7): its field, the wells it is judged with, the package's earnings a month and its cost. |
+| 1202 | 14 | `public JacketCase jacketCase(BusinessInvestment plans)` | ...on freeField(): min(slotsEach, its free sea sites) wells at a platform well's earnings, less the jacket's running and standing costs; null with no field free or no templates. |
+| 1218 | 8 | `private double shuttleOnOneMore(BuildingsTemplate well, BusinessInvestment plans)` | The platform crude's shuttle freight a month on one more well's crude sold at home: its nameplate at the plants' rate, as much of it as the house forecast leaves room for at home (BusinessInvestment.estimatedMakerProf... |
+| 1236 | 12 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more building of the wells' would clear a month (0.7.91): a platform well the house's maker estimate less the shuttle tankers on its crude sold at home; a jacket its share by cost of its package's (jacketCase... |
+| 1250 | 6 | `private PipeCase pipeCaseOf(Platform at, BusinessInvestment plans)` | The pipe case of the field a record names, or null when the city holds it no longer. |
+| 1258 | 50 | `private BusinessInvestment.Decision planAtSea(BusinessInvestment plans, Game game)` | The order at sea, or null when there is nothing at sea to weigh (THE OIL AT SEA, the planner). |
+| 1310 | 50 | `public List<Line> ownLines(Game game)` |  |
 

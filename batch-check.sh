@@ -135,8 +135,8 @@ if [ "$FAST" = 0 ]; then
         sed '/^$/d' "$OUT/suite.txt" | sed 's/^/    /'
     fi
     # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX
-    find "$OUT" -name 'Earth*Check.log' -newer "$OUT/.started" -exec grep -l '^earth-1.bin not named' {} + 2>/dev/null | grep -q . \
-        && echo "    note: no earth-1.bin here, so the Earth harnesses' full-file sections did not run"
+    find "$OUT" -name 'Earth*Check.log' -newer "$OUT/.started" -exec grep -l '^earth-2.bin not named' {} + 2>/dev/null | grep -q . \
+        && echo "    note: no earth-2.bin here, so the Earth harnesses' full-file sections did not run"
     grep 'skipped (needs JavaFX' "$OUT/suite.txt" | sed 's/^/    note: /'
 fi
 [ "$TIMING" = 0 ] || exit $FAILED   # --timing: the timing harnesses and nothing more

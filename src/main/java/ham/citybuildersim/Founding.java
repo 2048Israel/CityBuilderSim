@@ -49,7 +49,7 @@ import java.util.List;
  * ...OR THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 and
  * 6): a founding's world is its key (World.Key, since 0.7.115) - generated
  * from its seed, or the real Earth round a spot, its latitude and longitude,
- * drawn from the data the key names (EarthData.EARTH_1 for the game's), the
+ * drawn from the data the key names (EarthData.EARTH_2 for the game's), the
  * seed deciding the detail below the data and the fields. The founding
  * screen offers Earth when the data is here (EarthSite.gameData()); saved as
  * DataSave's worldKind, earthLat, earthLon and earthData (SAVE_FORMAT 38). A
@@ -336,9 +336,9 @@ public final class Founding {
         return new Founding(cityName, currency, cash, reserveUsd, meanInflation, key);
     }
 
-    /** The same founding on the real Earth round a spot (0.7.121, batch E4): its seed this founding's, its data the game's, EarthData.EARTH_1 - the founding screen's Earth. */
+    /** The same founding on the real Earth round a spot (0.7.121, batch E4): its seed this founding's, its data the game's, EarthData.EARTH_2 - the founding screen's Earth. */
     public Founding onEarth(double lat, double lon) {
-        return withWorldKey(World.Key.earth(worldSeed, lat, lon, EarthData.EARTH_1));
+        return withWorldKey(World.Key.earth(worldSeed, lat, lon, EarthData.EARTH_2));
     }
 
     /** The same founding with the world's mean inflation it is handed (Game.getFounding()), on the same world. */
@@ -375,7 +375,7 @@ public final class Founding {
     public double getEarthLat()        { return worldKey.earth() ? worldKey.lat() : Double.NaN; }
     /** ...and its longitude. */
     public double getEarthLon()        { return worldKey.earth() ? worldKey.lon() : Double.NaN; }
-    /** On Earth, the data it is drawn from, by identity ("earth-1:<hash>"); null on a generated world (0.7.121). */
+    /** On Earth, the data it is drawn from, by identity ("earth-2:<hash>"); null on a generated world (0.7.121). */
     public String getEarthData()       { return worldKey.earth() ? worldKey.data() : null; }
 
     /* ------------------------------------------------------------ is it a city */

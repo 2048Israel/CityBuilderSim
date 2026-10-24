@@ -24,21 +24,28 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 /**
- * The reader of earth-1.bin, the real Earth's ground as data: its layers'
- * 1-degree tiles inflated into an LRU, the sea, lake, land-cover and far-view
- * shares, rivers and small lakes, geology, places and the file's identity.
+ * The reader of earth-2.bin (and of earth-1.bin, whose layers it holds), the
+ * real Earth's ground as data: its layers' 1-degree tiles inflated into an
+ * LRU, the sea, lake, land-cover and far-view shares, rivers and small lakes,
+ * geology, places, and since ET1 the slope, the shallow sea, the sea's depth
+ * and the landmasses, with the file's identity.
  *
  * WHY. "The world as planet Earth" (the project's spec-earth.md) needs the
  * Earth's coasts, lakes, rivers, forest and geology in the game, and E0 baked
  * them on 2026-10-08 into one file of 52.8 MB outside the game (tools/earth/,
  * whose FORMAT.txt is the layout and earthread.py the reference reader this
- * is ported from). Each layer is a deflated blob a tile, java.util.zip reads
- * them, and no library is added. A tile is inflated the first time it is
- * asked for and kept while it is among the CACHE_BYTES most recently read, so
- * a screen that reads the same few tiles over and over inflates each once
- * (spec-earth 5: 126-130 microseconds a 15" tile).
+ * is ported from). The Earth 2 study (docs/studies/spec-earth2-terrain.md)
+ * added the ground's relief, the sea's depth and the landmasses as six layers
+ * more in the same container, earth-2.bin of 281.8 MB, which ET1 made the
+ * game's file (tools/earth/FORMAT-2.txt has the new layers' bytes); earth-1.bin
+ * still opens and reads as it always did, it is simply not this build's
+ * Earth. Each layer is a deflated blob a tile, java.util.zip reads them, and
+ * no library is added. A tile is inflated the first time it is asked for and
+ * kept while it is among the CACHE_BYTES most recently read, so a screen that
+ * reads the same few tiles over and over inflates each once (spec-earth 5:
+ * 126-130 microseconds a 15" tile).
  *
- * WHAT IT HOLDS, a layer each (FORMAT.txt has every byte):
+ * WHAT IT HOLDS, a layer each (FORMAT.txt and FORMAT-2.txt have every byte):
  *   - sea, lake: a 15" cell's share of sea and of lakes of 10 km2 or more, in
  *     SHARE_LEVELS levels; sea + lake never passes it, and dry ground is the
  *     rest. landcover: a 2' cell's forest level and its beach, desert, ice and
@@ -49,6 +56,15 @@ import java.util.zip.Inflater;
  *     kind; lakes.small: a point and an area a lake under 10 km2.
  *   - geology: the 0.25-degree index of USGS provinces, provinces: the table
  *     it indexes; places: Natural Earth's 7,342, for search; meta: the build.
+ *   - earth-2's six (hasRelief()): slope, a byte a cell of the land's shares
+ *     at or above foothill, steep and very steep (slope() and the static
+ *     decoders), and slope.est, the 1-degree tiles whose shares are an
+ *     estimate; shallow, a cell's share of sea no deeper than 30 m; depth, a
+ *     1' cell's mean sea depth in a code (depthM()); landmass, a land cell's
+ *     landmass in a PALETTE (a tile's ids, then an index a cell: not a byte
+ *     grid, so grid(), cell() and at() refuse it and landmassAt() reads it,
+ *     kept in the LRU as the bytes it is stored in, never widened); and
+ *     landmasses, the text a landmass's area, cells and name come from.
  *
  * WHERE A POINT FALLS. A cell holds its north and west edges: rows are counted
  * from 90 N and columns from 180 W, so a point on a whole degree of latitude
@@ -61,10 +77,12 @@ import java.util.zip.Inflater;
  * whose box touches its tile's edge can be one of those, so only those are
  * looked up.
  *
- * THE IDENTITY (identity()) is "earth-1:" and the file's SHA-256, the name an
- * Earth city's save carries (DataSave's earthData, since 0.7.121; spec-earth
- * 6: the data is frozen per version, and a load refuses a city on another);
- * EARTH_1 is the file this build is made for.
+ * THE IDENTITY (identity()) is the file's own name (its meta layer's: "earth-2"
+ * here, "earth-1" for earth-1.bin and for a file whose meta has none), a colon
+ * and the file's SHA-256: the name an Earth city's save carries (DataSave's
+ * earthData, since 0.7.121; spec-earth 6: the data is frozen per version, and
+ * a load refuses a city on another, so every city on earth-1 is refused since
+ * ET1); EARTH_2 is the file this build is made for.
  *
  * E1 (0.7.111) built it pure; since 0.7.115 (batch E2) EarthTerrain lays
  * the Earth's ground on a world with an Earth key from it (World.Key's data
@@ -74,20 +92,20 @@ import java.util.zip.Inflater;
  */
 public final class EarthData implements AutoCloseable {
 
-    /** The file this build reads, as a save will name it: earth-1 as E0 baked it on 2026-10-08 (tools/earth/earth-1.sha256). */
-    public static final String EARTH_1 = "earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a";
+    /** The file this build reads, as a save will name it: earth-2 as the Earth 2 study baked it on 2026-10-12 at 15" (tools/earth/earth-2.sha256); the earth-1 it holds the layers of is "earth-1:b754a28f9fc1100b5e2986d6b0a17fec9678cc341e680ffb050782660b68c13a" (tools/earth/earth-1.sha256). */
+    public static final String EARTH_2 = "earth-2:c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b";
 
     /**
      * Where the game looks for the file, from the folder it runs in: beside the game, not in the repository (data/ is git-ignored); the game runs without it and offers the generated world (EarthSite.gameData(), 0.7.121), and EarthCheck, EarthTerrainCheck, EarthFoundingCheck and EarthTerrain.source() (for a key whose data nothing registered) look here.
-     * How it gets here (since f99d62c, 2026-10-11): it is the asset of the GitHub release earth-1, and tools/earth/get-earth.bat checks data/earth-1.bin against tools/earth/earth-1.sha256 and downloads it when it is missing or bad; Play CityBuilderSim.bat and Build EXE.bat call that script first, and the EXE build carries the file into the built game and its zip.
-     * A new Earth (earth-2) is a new file, hash file and release: change the three names at the top of get-earth.bat together with this (and EARTH_1, the identity the new file has).
+     * How it gets here (since f99d62c, 2026-10-11; earth-2 since ET1): it is the asset of the GitHub release earth-2, and tools/earth/get-earth.bat checks data/earth-2.bin against tools/earth/earth-2.sha256 and downloads it when it is missing or bad; Play CityBuilderSim.bat and Build EXE.bat call that script first, and the EXE build carries the file into the built game and its zip.
+     * A new Earth is a new file, hash file and release: change the three names at the top of get-earth.bat together with this (and EARTH_2, the identity the new file has).
      */
-    public static final String DATA_FILE = "data/earth-1.bin";
+    public static final String DATA_FILE = "data/earth-2.bin";
 
     /** The system property that names the file instead (-Dcbs.earth=<path>), as the harnesses' runs on the full file and LongPlaytest --earth take it. */
     public static final String PROPERTY = "cbs.earth";
 
-    /** The bytes the first eight of the file are. */
+    /** The bytes the first eight of the file are: they name the container's layout, which earth-2.bin shares with earth-1.bin, not the file. */
     public static final String MAGIC = "EARTH-1\n";
 
     /** The layout's version this reads (FORMAT.txt). */
@@ -110,6 +128,23 @@ public final class EarthData implements AutoCloseable {
     public static final int SHARE_LEVELS = 15;
     /** The far view's levels: a cell's share is its value over this. */
     public static final int FAR_LEVELS = 255;
+
+    /** The slope layer's levels in each of the foothill and steep shares (3 bits): a share is the value over this (FORMAT-2.txt). */
+    public static final int SLOPE_LEVELS = 7;
+    /** The slope layer's levels in the very steep part of the steep ground (2 bits): the part is the value over this. */
+    public static final int VERY_STEEP_LEVELS = 3;
+    /** A sea depth code of this or less is that many metres (0 is no sea, 1 to this the metres). */
+    public static final int DEPTH_METRE_CODES = 200;
+    /** Above DEPTH_METRE_CODES each code is this many metres deeper: 201 is 210 m, 254 is 740 m. */
+    public static final int DEPTH_STEP_M = 10;
+    /** The sea depth code for the deepest sea the layer tells apart. */
+    public static final int DEPTH_DEEPEST_CODE = 255;
+    /** What the deepest code, 255, stands for and depthM() answers for it: 750 m or deeper (the layer does not say how much deeper). */
+    public static final double DEPTH_DEEPEST_M = 750;
+    /** The slope layer's name: a file has the earth-2 layers when it has this one (hasRelief()). */
+    public static final String SLOPE = "slope";
+    /** The landmass layer's name: a palette blob a tile, not a byte grid (landmassAt()). */
+    public static final String LANDMASS = "landmass";
 
     /** Land cover's forest level, 0 to SHARE_LEVELS: the forest's share of the cell's land. */
     public static final int LC_FOREST = 0x0F;
@@ -189,9 +224,12 @@ public final class EarthData implements AutoCloseable {
         /** Tiles or bands in the layer; 1 for a whole one. */
         public int count() { return entries == null ? 1 : entries.length; }
 
-        /** A share tile's or band's bytes inflated, 0 for a list or a whole layer. */
+        /** Whether the layer is the landmass layer, whose tiles are a palette and an index a cell, not a byte a cell. */
+        public boolean palette() { return name.equals(LANDMASS); }
+
+        /** A share tile's or band's bytes inflated, 0 for a list, a palette layer or a whole layer. */
         int gridBytes() {
-            if (cellsPerDegree == 0 || kind == KIND_WHOLE) return 0;
+            if (cellsPerDegree == 0 || kind == KIND_WHOLE || palette()) return 0;
             return kind == KIND_TILES ? cellsPerDegree * cellsPerDegree : cellsPerDegree * 360 * cellsPerDegree;
         }
     }
@@ -205,15 +243,16 @@ public final class EarthData implements AutoCloseable {
     private long cached;
     private int inflations;
     private String identity;
+    private String fileName;
     private List<Province> provinces;
     private List<Place> places;
 
-    /** Opens earth-1.bin, reading tiles from the file as they are asked for. */
+    /** Opens an earth file (earth-2.bin, or earth-1.bin), reading tiles from the file as they are asked for. */
     public static EarthData open(Path file) throws IOException {
         return open(file, CACHE_BYTES);
     }
 
-    /** Opens earth-1.bin with an LRU of the given bytes. */
+    /** Opens an earth file with an LRU of the given bytes. */
     public static EarthData open(Path file, long cacheBytes) throws IOException {
         FileChannel ch = FileChannel.open(file, StandardOpenOption.READ);
         Source s = new Source() {
@@ -237,12 +276,12 @@ public final class EarthData implements AutoCloseable {
         }
     }
 
-    /** Reads a file of earth-1's layout held in memory (EarthCheck's fixture). */
+    /** Reads a file of the earth container's layout held in memory (EarthCheck's fixture, cut from earth-2.bin). */
     public static EarthData of(byte[] bytes) throws IOException {
         return of(bytes, CACHE_BYTES);
     }
 
-    /** Reads a file of earth-1's layout held in memory, with an LRU of the given bytes. */
+    /** Reads a file of the earth container's layout held in memory, with an LRU of the given bytes. */
     public static EarthData of(byte[] bytes, long cacheBytes) throws IOException {
         Source s = new Source() {
             public long size() { return bytes.length; }
@@ -272,7 +311,7 @@ public final class EarthData implements AutoCloseable {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(head));
         byte[] magic = new byte[8];
         in.readFully(magic);
-        if (!MAGIC.equals(new String(magic, StandardCharsets.ISO_8859_1))) throw new IOException("earth data: not an earth-1 file (it begins " + Arrays.toString(magic) + ")");
+        if (!MAGIC.equals(new String(magic, StandardCharsets.ISO_8859_1))) throw new IOException("earth data: not an earth file (it begins " + Arrays.toString(magic) + ")");
         version = in.readInt();
         if (version != FORMAT) throw new IOException("earth data: layout version " + version + ", and this build reads " + FORMAT);
         int n = in.readInt();
@@ -325,7 +364,7 @@ public final class EarthData implements AutoCloseable {
     /** The layers, in the file's order. */
     public List<Layer> layers() { return layers; }
 
-    /** A layer by name (sea, lake, landcover, lakes.small, rivers, far.land, far.lake, geology, provinces, places, meta). */
+    /** A layer by name (sea, lake, landcover, lakes.small, rivers, far.land, far.lake, geology, provinces, places, meta; earth-2 adds slope, shallow, depth, slope.est, landmass and landmasses). */
     public Layer layer(String name) {
         Layer l = byName.get(name);
         if (l == null) throw new IllegalArgumentException("earth data has no layer " + name);
@@ -338,7 +377,29 @@ public final class EarthData implements AutoCloseable {
     /** The file's length, bytes. */
     public long size() { return source.size(); }
 
-    /** "earth-1:" and the file's SHA-256 in hex: the name a save carries (spec-earth 6). Read once, then kept. */
+    /** The file's own name, from its meta layer ("earth-2" for earth-2.bin, "earth-1" for earth-1.bin and for a file whose meta has none), the prefix of identity(). */
+    public synchronized String fileName() {
+        if (fileName == null) {
+            String name = "earth-1";
+            if (has("meta")) {
+                try {
+                    Layer m = layer("meta");
+                    byte[] z = new byte[(int) m.dataLength];
+                    source.read(m.dataOffset, z, 0, z.length);
+                    var n = com.google.gson.JsonParser.parseString(new String(inflate(z, 0), StandardCharsets.UTF_8)).getAsJsonObject().get("name");
+                    if (n != null && n.isJsonPrimitive() && !n.getAsString().isBlank()) name = n.getAsString();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } catch (DataFormatException e) {
+                    throw new UncheckedIOException(new IOException("earth data: the meta does not inflate", e));
+                }
+            }
+            fileName = name;
+        }
+        return fileName;
+    }
+
+    /** The file's name (fileName(): "earth-2" here), a colon and the file's SHA-256 in hex: the name a save carries (spec-earth 6). Read once, then kept. */
     public synchronized String identity() {
         if (identity == null) {
             try {
@@ -350,7 +411,7 @@ public final class EarthData implements AutoCloseable {
                     source.read(pos, buf, 0, len);
                     md.update(buf, 0, len);
                 }
-                identity = "earth-1:" + hex(md.digest());
+                identity = fileName() + ":" + hex(md.digest());
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             } catch (NoSuchAlgorithmException e) {
@@ -435,9 +496,10 @@ public final class EarthData implements AutoCloseable {
         return u;
     }
 
-    /** One cell of a share layer's tile (or band), 0 to 255: row r from the north, column c from the west (a band's columns run all round, from 180 W). */
+    /** One cell of a share layer's tile (or band), 0 to 255: row r from the north, column c from the west (a band's columns run all round, from 180 W). The landmass layer is no byte grid: landmassCell() reads it. */
     public int cell(String layer, int i, int r, int c) {
         Layer l = layer(layer);
+        if (l.palette()) throw new IllegalArgumentException(layer + " holds ids in a palette: landmassCell() reads it");
         int cpd = l.cellsPerDegree;
         int cols = l.kind == KIND_TILES ? cpd : 360 * cpd;
         if (r < 0 || r >= cpd || c < 0 || c >= cols) throw new IndexOutOfBoundsException(layer + " cell " + r + ", " + c);
@@ -446,7 +508,7 @@ public final class EarthData implements AutoCloseable {
         return raw(layer, i)[r * cols + c] & 0xFF;
     }
 
-    /** A share layer's value at a point, 0 to 255 (sea and lake over SHARE_LEVELS, far.land and far.lake over FAR_LEVELS, land cover by its LC_ masks). */
+    /** A share layer's value at a point, 0 to 255 (sea, lake and shallow over SHARE_LEVELS, far.land and far.lake over FAR_LEVELS, land cover by its LC_ masks, slope packed as slope() says, depth a code depthOfCode() reads). */
     public int at(String layer, double lat, double lon) {
         Layer l = layer(layer);
         int cpd = l.cellsPerDegree;
@@ -749,5 +811,152 @@ public final class EarthData implements AutoCloseable {
     /** The meta layer: the build's date, sources, credits, fallbacks and counts, JSON. */
     public String meta() {
         return new String(raw("meta"), StandardCharsets.UTF_8);
+    }
+
+    /* =====================================================================
+       EARTH-2'S LAYERS - slope, shallow sea, depth and landmasses (ET1)
+       ===================================================================== */
+
+    /** One landmass: its id (1 is Afro-Eurasia, ids by area, largest first), its area in km2, its count of 15" cells and the name of the most populous Natural Earth place on it (empty when none). */
+    public record Landmass(int id, double areaKm2, long cells, String name) { }
+
+    /** A landmass tile's palette read: the ids the tile holds, ascending, and where its indexes begin in the inflated blob (a byte each, or a big-endian short each when the palette passes 256). */
+    private static final class Palette {
+        final int[] ids;
+        final int start;
+        final boolean wide;
+
+        Palette(int[] ids, int start, boolean wide) {
+            this.ids = ids; this.start = start; this.wide = wide;
+        }
+    }
+
+    private List<Landmass> landmasses;
+    /** The palette read of the landmass tile last asked for, with the inflated bytes it was read from (the LRU's own array: a palette of a few ints kept beside it, not the cells widened). */
+    private byte[] paletteBlob;
+    private Palette paletteRead;
+
+    /** Whether the file has earth-2's ground layers (the slope and, with it, the shallow sea, the depth and the landmasses): earth-2.bin does, earth-1.bin does not. */
+    public boolean hasRelief() { return has(SLOPE); }
+
+    /** The slope layer's byte at a point, the land's shares by slope packed (slopeFoothill(), slopeSteep(), slopeVerySteep() unpack it): 0 where the cell holds no land. Needs hasRelief(). */
+    public int slope(double lat, double lon) { return at(SLOPE, lat, lon); }
+
+    /** The share of a slope byte's land at or above foothill (a 10% grade): bits 0 to 2 over SLOPE_LEVELS. */
+    public static double slopeFoothill(int b) { return (b & 7) / (double) SLOPE_LEVELS; }
+
+    /** The share of a slope byte's land at or above steep (a 30% grade, never more than the foothill share): bits 3 to 5 over SLOPE_LEVELS. */
+    public static double slopeSteep(int b) { return ((b >> 3) & 7) / (double) SLOPE_LEVELS; }
+
+    /** The share of a slope byte's land at or above very steep (a 60% grade): the steep share times bits 6 and 7 over VERY_STEEP_LEVELS. */
+    public static double slopeVerySteep(int b) { return slopeSteep(b) * ((b >> 6) & 3) / VERY_STEEP_LEVELS; }
+
+    /** Whether a 1-degree tile's slope shares are an estimate from GEBCO (north of 61 N, south of 56 S, and where NASADEM has no heights), not a measure. */
+    public boolean slopeEstimated(int tile) {
+        if (tile < 0 || tile >= TILES) throw new IndexOutOfBoundsException("tile " + tile);
+        return ((raw("slope.est")[tile >> 3] >> (7 - (tile & 7))) & 1) != 0;
+    }
+
+    /** Whether the slope shares at a point are an estimate (slopeEstimated() of its tile). */
+    public boolean slopeEstimatedAt(double lat, double lon) { return slopeEstimated(tileAt(lat, lon)); }
+
+    /** The depth, in metres, the shallow layer's share counts the sea to: 30 (FORMAT-2's depth.SHALLOW_M; the study's D11, ET1): the sea World.SHALLOW is drawn of. */
+    public static final double SHALLOW_M = 30;
+
+    /** The share of the cell's sea no deeper than SHALLOW_M (30 m), 0 to 1: the shallow layer's level over SHARE_LEVELS, 0 where the cell has no sea. */
+    public double shallowShare(double lat, double lon) { return at("shallow", lat, lon) / (double) SHARE_LEVELS; }
+
+    /** The metres a depth code stands for: 0 for none, 1 to DEPTH_METRE_CODES that many, above that DEPTH_STEP_M more a code, and the deepest code, DEPTH_DEEPEST_CODE, DEPTH_DEEPEST_M (750 m or deeper: the layer does not say how much). */
+    public static double depthOfCode(int code) {
+        int v = code & 0xFF;
+        if (v <= DEPTH_METRE_CODES) return v;
+        if (v >= DEPTH_DEEPEST_CODE) return DEPTH_DEEPEST_M;
+        return DEPTH_METRE_CODES + DEPTH_STEP_M * (v - DEPTH_METRE_CODES);
+    }
+
+    /** The mean depth of the sea in the 1' cell at a point, metres: 0 where there is no sea (or under half a metre), DEPTH_DEEPEST_M for 750 m or deeper. */
+    public double depthM(double lat, double lon) { return depthOfCode(at("depth", lat, lon)); }
+
+    /** The id of the landmass a tile's cell r (from the north), c (from the west) is land of, 0 for no land. A uniform tile holds one id for every cell (its index entry is minus the id). */
+    public int landmassCell(int tile, int r, int c) {
+        Layer l = layer(LANDMASS);
+        int cpd = l.cellsPerDegree;
+        if (r < 0 || r >= cpd || c < 0 || c >= cpd) throw new IndexOutOfBoundsException(LANDMASS + " cell " + r + ", " + c);
+        int e = l.entries[tile];
+        if (e <= 0) return -e;
+        byte[] b = raw(LANDMASS, tile);
+        return idAt(paletteOf(b, cpd * cpd), b, r * cpd + c);
+    }
+
+    /** The id of the landmass at a point, the cell holding its north and west edges (WHERE A POINT FALLS), 0 for no land. Needs hasRelief(). */
+    public int landmassAt(double lat, double lon) {
+        int cpd = layer(LANDMASS).cellsPerDegree;
+        long g = Math.min(180L * cpd - 1, Math.max(0, (long) StrictMath.floor((90 - lat) * cpd)));
+        long c = (long) StrictMath.floor(wrap360(lon + 180) * cpd) % (360L * cpd);
+        return landmassCell(tile(89 - (int) (g / cpd), (int) (c / cpd) - 180), (int) (g % cpd), (int) (c % cpd));
+    }
+
+    /** The ids a landmass tile holds, ascending, 0 (no land) among them where it has a cell without land: a uniform tile holds just its one. */
+    public int[] landmassIds(int tile) {
+        Layer l = layer(LANDMASS);
+        int e = l.entries[tile];
+        if (e <= 0) return new int[] { -e };
+        return paletteOf(raw(LANDMASS, tile), l.cellsPerDegree * l.cellsPerDegree).ids.clone();
+    }
+
+    /** The palette read of an inflated landmass tile, the last one kept so that a scan of a tile reads it once. */
+    private synchronized Palette paletteOf(byte[] blob, int cells) {
+        if (blob != paletteBlob) {
+            paletteRead = palette(blob, cells);
+            paletteBlob = blob;
+        }
+        return paletteRead;
+    }
+
+    /** An inflated landmass tile's palette (uvarint n, then n uvarints, the ids ascending as deltas from 0) and where its cells' indexes begin; the indexes must fill the rest of the blob. */
+    private static Palette palette(byte[] b, int cells) {
+        Varints v = new Varints(b);
+        int n = (int) v.u();
+        int[] ids = new int[n];
+        long id = 0;
+        for (int k = 0; k < n; k++) {
+            id += v.u();
+            ids[k] = Math.toIntExact(id);
+        }
+        boolean wide = n > 256;
+        if (b.length - v.pos != (long) cells * (wide ? 2 : 1))
+            throw new IllegalStateException("earth data: a landmass tile of " + n + " ids holds " + (b.length - v.pos) + " bytes of indexes, not " + cells * (wide ? 2 : 1));
+        return new Palette(ids, v.pos, wide);
+    }
+
+    /** The id of the cell numbered index (row x cells a row + column) in a palette's tile. */
+    private static int idAt(Palette p, byte[] b, int index) {
+        int k = p.wide ? ((b[p.start + 2 * index] & 0xFF) << 8) | (b[p.start + 2 * index + 1] & 0xFF) : b[p.start + index] & 0xFF;
+        if (k >= p.ids.length) throw new IllegalStateException("earth data: a landmass cell indexes id " + k + " of a palette of " + p.ids.length);
+        return p.ids[k];
+    }
+
+    /** The id of cell number index in an inflated landmass tile of that many cells, read without the LRU (EarthCheck holds the short-index form to it, which no tile of the file needs). */
+    static int landmassCellOf(byte[] blob, int cells, int index) { return idAt(palette(blob, cells), blob, index); }
+
+    /** The landmasses, in id order (id 1 first): from the landmasses layer's text, a line each, read once. Needs hasRelief(). */
+    public synchronized List<Landmass> landmasses() {
+        if (landmasses == null) {
+            List<Landmass> list = new ArrayList<>();
+            for (String line : new String(raw("landmasses"), StandardCharsets.UTF_8).split("\n")) {
+                if (line.isEmpty()) continue;
+                String[] f = line.split("\t", -1);
+                if (f.length < 3) throw new IllegalStateException("earth data: landmass line " + (list.size() + 1) + " has " + f.length + " fields: " + line);
+                list.add(new Landmass(list.size() + 1, Double.parseDouble(f[0]), Long.parseLong(f[1]), f[2]));
+            }
+            landmasses = Collections.unmodifiableList(list);
+        }
+        return landmasses;
+    }
+
+    /** A landmass by its id (1 and up), null for 0 (no land) or an id the layer does not hold. */
+    public Landmass landmass(int id) {
+        List<Landmass> all = landmasses();
+        return id >= 1 && id <= all.size() ? all.get(id - 1) : null;
     }
 }

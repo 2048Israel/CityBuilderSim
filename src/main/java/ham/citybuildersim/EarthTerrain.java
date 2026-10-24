@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * The real Earth's ground on the world's plots: a tile, a plot, a line or a region at a time, each world cell's land and forest (the cells pass), the founding site snapped to dry ground, and a point's sea - spec-earth 3's detail below the data, drawn from earth-1 through EarthData and EarthProj.
@@ -42,6 +43,13 @@ import java.util.Map;
  *   - SEA where the sea share plus COAST_FRAY x the coast noise about its
  *     mean, unranked, reaches SEA_LEVEL: the data's half-contour, frayed by a
  *     plot or two;
+ *   - SHALLOW (ET1, spec-earth2-terrain 6.1) for a sea plot where the shallow
+ *     sea's share of the sea there - earth-2's shallow layer, interpolated
+ *     between the 15" cells' centres WEIGHTED BY EACH CELL'S SEA, so a coast
+ *     grows no fringe of deep sea - ranks over the shallow noise (its own,
+ *     ranked as the forest's is, so it covers in expectation what the data
+ *     gives it); the rest of the sea is SALT. Only on data that has the
+ *     layer (EarthData.hasRelief()): an earth-1 file draws none;
  *   - FRESH where a river's centreline (GRWL) passes within half its width,
  *     at least RIVER_MIN_HALF; where a small lake (under 10 km2, a point and
  *     an area in the data) lies, drawn as a blob of its own area in
@@ -85,6 +93,19 @@ import java.util.Map;
  * latitude-longitude grid at the pixel's scale (globeDither()), so it moves
  * with the ground as the globe turns. GlobeCheck holds them.
  *
+ * THE RELIEF (ET1, 2026-10-24; docs/studies/spec-earth2-terrain.md 3.1). On
+ * earth-2's data a plot carries a second value beside its cover: how steep
+ * its ground is - World.FLAT, FOOTHILL, STEEP or VERY_STEEP (a grade of under
+ * 10%, to 30%, to 60%, and over), read with reliefAt(), tileRelief() and
+ * regionRelief() and, through a camera, farTerrain(camera, cover, relief).
+ * It is drawn as the forest is - the data's shares of the land at the plot
+ * (the slope layer, a 15" cell holding the shares at or above each grade),
+ * ranked over a noise of its own, one noise for the three so the classes
+ * nest - on the plots whose cover is dry ground, and nowhere else: water and
+ * ICE carry FLAT, and forest keeps its cover on any slope. It never touches
+ * the cover; a generated world and an earth-1 file are FLAT throughout.
+ * THE RELIEF below has the rule, its two copies and the far view's.
+ *
  * THE WORLD'S OTHER HALF. The cells pass (cellsPass()) replaces the
  * generated world's sea pass: each world cell's land and forest from
  * CELL_SAMPLES x CELL_SAMPLES points of the 4' layers, which the fields of
@@ -102,7 +123,7 @@ import java.util.Map;
  * a cluster stays in its province's own cells.
  *
  * WHICH DATA. A world's key names its data by identity (EarthData.identity(),
- * "earth-1:<hash>"); a harness registers its EarthData with use(), and the
+ * "earth-2:<hash>"); a harness registers its EarthData with use(), and the
  * game's file is found by EarthData.locate() the first time its identity is
  * asked for. Every value is a pure function of the key: the same key draws
  * the same ground on every machine (StrictMath, World's hashes).
@@ -207,8 +228,35 @@ public final class EarthTerrain {
     /** 1-degree tiles' rivers and small lakes kept, projected: 64. */
     static final int DATA_TILES_KEPT = 64;
 
+    /**
+     * How much wider the relief's noise is than the cover noises' (ET1, spec-earth2-terrain 3.1): its octaves are
+     * theirs scaled by 2^RELIEF_SHIFT, 2^3 plots (240 m) down to 2^6 (1.9 km) at 2, so a slope is drawn as a
+     * connected patch of a few hundred metres to a kilometre or two - a hillside, not the forest's speckle, whose
+     * widest patch is 480 m - and the data's 15" cell (463 m), which holds the share, holds two or three of them.
+     * Wider (3: to 3.8 km) the share a 61 km window draws strays from the data's by more than the cover's
+     * tolerance, the realised share of a noise having as few independent patches in a window as the window
+     * holds (EarthTerrainCheck 17 prints the spread); narrower, the slope speckles. The same table ranks it as
+     * the cover noises: a value noise's distribution does not depend on its scale.
+     */
+    public static final int RELIEF_SHIFT = 2;
+
+    /** The relief noise's lattice scale as a divisor of plot coordinates: 2^RELIEF_SHIFT, 4 (the noise is the cover noises' at x / 4, y / 4). */
+    private static final double RELIEF_SCALE = 1 << RELIEF_SHIFT;
+
+    /** Tiles of relief kept for reliefAt() and tileRelief(): 1,024 (1 MB), a tile of ground's partner (TILES_KEPT). */
+    static final int RELIEF_KEPT = 1024;
+
+    /** Cells a side of the block a far pixel reads the slope of from FAR_STRIDE: 16 (4', 7.4 km), the 4' far layers' cell - 15 of them a side of a 1-degree tile, 225 a tile. */
+    static final int FAR_BLOCK = 16;
+
     /* The fields' keys: what makes one class's noise another's. */
-    private static final long F_COAST = 0xC0A57L, F_FRESH = 0xF4E54L, F_FOREST = 0xF0E57L, F_BLOB = 0xB10BL, F_ICE = 0x1CE5L, F_DESERT = 0xDE5E7L;
+    private static final long F_COAST = 0xC0A57L, F_FRESH = 0xF4E54L, F_FOREST = 0xF0E57L, F_BLOB = 0xB10BL, F_ICE = 0x1CE5L, F_DESERT = 0xDE5E7L, F_SHALLOW = 0x5A110L, F_RELIEF = 0x4E11EFL;
+
+    /** The stream a far pixel's relief dither is drawn from: the camera's dither (the forest's) remixed with it, for the two must not be one number, or the steep ground would be the forested. */
+    private static final long F_RELIEF_DITHER = 0x4E11D17L;
+
+    /** A share layer's levels squared, 15 x 15: what bilinearProduct() of two of them is over to be a share of the area (ET1). */
+    private static final double SHARE_AREA = (double) EarthData.SHARE_LEVELS * EarthData.SHARE_LEVELS;
 
     /** The stream the ranking table's samples are drawn from. */
     private static final long QUANTILE_SALT = 0x0A1E5A3DL;
@@ -216,19 +264,27 @@ public final class EarthTerrain {
     /** Each octave's amplitude over the sum of them, octave k at AMP_N[k]. */
     private static final double[] AMP_N = new double[NOISE_HI + 1];
 
-    /** The smoothstep at a plot's centre within octave k's lattice cell, SMOOTH[k][f] for f = 0 .. 2^k - 1. */
-    private static final double[][] SMOOTH = new double[NOISE_HI + 1][];
+    /** A slope byte's shares of the land at or above foothill, steep and very steep, by byte (ET1): EarthData's decoders, the steep share held within the foothill share and the very steep within the steep - the file promises both (FORMAT-2.txt), and the order of the classes drawn from them rests on it. */
+    private static final double[] SLOPE_F = new double[256], SLOPE_S = new double[256], SLOPE_V = new double[256];
+
+    /** The smoothstep at a plot's centre within octave k's lattice cell, SMOOTH[k][f] for f = 0 .. 2^k - 1 - up to the relief's widest octave, NOISE_HI + RELIEF_SHIFT (ET1). */
+    private static final double[][] SMOOTH = new double[NOISE_HI + RELIEF_SHIFT + 1][];
 
     static {
         double norm = World.norm(NOISE_HI, NOISE_LO);
         for (int k = NOISE_LO; k <= NOISE_HI; k++) AMP_N[k] = World.amp(NOISE_HI, k) / norm;
-        for (int k = 0; k <= NOISE_HI; k++) {
+        for (int k = 0; k <= NOISE_HI + RELIEF_SHIFT; k++) {
             int w = 1 << k;
             SMOOTH[k] = new double[w];
             for (int f = 0; f < w; f++) {
                 double t = (f + 0.5) / w;
                 SMOOTH[k][f] = t * t * (3 - 2 * t);
             }
+        }
+        for (int b = 0; b < 256; b++) {
+            SLOPE_F[b] = EarthData.slopeFoothill(b);
+            SLOPE_S[b] = Math.min(SLOPE_F[b], EarthData.slopeSteep(b));
+            SLOPE_V[b] = Math.min(SLOPE_S[b], EarthData.slopeVerySteep(b));
         }
     }
 
@@ -277,10 +333,12 @@ public final class EarthTerrain {
     private final long seed;
     private final EarthData data;
     private final EarthProj proj;
-    /** Each field's octave streams: COAST, FRESH, FOREST, BLOB, ICE, DESERT, octave k at [f][k]. */
-    private final long[][] os = new long[6][NOISE_HI + 1];
-    /** Each noise field's row in os: the coast's, fresh water's, the forest's, the small lakes' blobs', and (0.7.127) the ice's and the desert's edges'. */
-    private static final int COAST = 0, FRESH = 1, FOREST = 2, BLOB = 3, ICE = 4, DESERT = 5;
+    /** Whether its data has the slope layer (EarthData.hasRelief()): without it every plot's relief is FLAT. */
+    private final boolean relief;
+    /** Each field's octave streams: COAST, FRESH, FOREST, BLOB, ICE, DESERT, SHALLOW, RELIEF, octave k at [f][k] (the relief's octave k is the lattice 2^(k + RELIEF_SHIFT) wide). */
+    private final long[][] os = new long[8][NOISE_HI + 1];
+    /** Each noise field's row in os: the coast's, fresh water's, the forest's, the small lakes' blobs', (0.7.127) the ice's and the desert's edges', and (ET1) the shallow sea's and the relief's. */
+    private static final int COAST = 0, FRESH = 1, FOREST = 2, BLOB = 3, ICE = 4, DESERT = 5, SHALLOW = 6, RELIEF = 7;
 
     private volatile boolean built;
     private double[] cellLand, cellForest;
@@ -297,7 +355,8 @@ public final class EarthTerrain {
         this.seed = key.seed();
         this.data = source(key.data());
         this.proj = new EarthProj(key.lat(), key.lon());
-        long[] fields = { F_COAST, F_FRESH, F_FOREST, F_BLOB, F_ICE, F_DESERT };
+        this.relief = data.hasRelief();
+        long[] fields = { F_COAST, F_FRESH, F_FOREST, F_BLOB, F_ICE, F_DESERT, F_SHALLOW, F_RELIEF };
         for (int f = 0; f < fields.length; f++) {
             for (int k = NOISE_LO; k <= NOISE_HI; k++) os[f][k] = World.mix(seed ^ fields[f] ^ (k * 0x632BE59BD9B4E019L));
         }
@@ -438,6 +497,64 @@ public final class EarthTerrain {
         }
 
         /**
+         * ...the product of this layer's level and `sea`'s at each cell, both
+         * 0 to 15, interpolated the same way, so 0 to 15 x 15 (ET1): the
+         * shallow sea's share of a cell's AREA when this is the shallow layer
+         * and `sea` the sea layer (the two lie on one grid of 15" cells).
+         * Over bilinear() of the sea, the shallow share of the sea there,
+         * weighted by the sea share of each cell about the point, so a coast's
+         * land cells (nought sea, nought shallow) pull no share down and
+         * draw no fringe of deep sea along the shore (the study's 12, 6).
+         */
+        double bilinearProduct(Reader sea, double lat, double lon) {
+            double g = (90 - lat) * cpd - 0.5, c = (lon + 180) * cpd - 0.5;
+            long r0 = (long) Math.floor(g), c0 = (long) Math.floor(c);
+            double fr = g - r0, fc = c - c0;
+            double top = value(r0, c0) * sea.value(r0, c0) * (1 - fc) + value(r0, c0 + 1) * sea.value(r0, c0 + 1) * fc;
+            double bottom = value(r0 + 1, c0) * sea.value(r0 + 1, c0) * (1 - fc) + value(r0 + 1, c0 + 1) * sea.value(r0 + 1, c0 + 1) * fc;
+            return top * (1 - fr) + bottom * fr;
+        }
+
+        /**
+         * ...the slope layer's (ET1, spec-earth2-terrain 3.1): the shares of the LAND
+         * at a point at or above foothill, steep and very steep into out[0..2], 0 to 1,
+         * each interpolated between the four cell centres about it WEIGHTED BY EACH
+         * CELL'S LAND (1 - sea - lake of the cells `sea` and `lake` read, on the same
+         * grid of 15" cells): a cell's byte is the share of its own land, so a cell of
+         * sea or lake - which holds 0 - must pull no share down, or every steep coast
+         * would draw a flat strip along the shore (the shallow sea's lesson, and
+         * bilinearProduct()'s). The shares keep the file's order, steep within
+         * foothill and very steep within steep, in every blend; 0 where the four
+         * cells hold no land. Ice and water are the cover's to say: the slope under
+         * them is read and left.
+         */
+        void shares(Reader sea, Reader lake, double lat, double lon, double[] out) {
+            double g = (90 - lat) * cpd - 0.5, c = (lon + 180) * cpd - 0.5;
+            long r0 = (long) Math.floor(g), c0 = (long) Math.floor(c);
+            double fr = g - r0, fc = c - c0;
+            double land = 0, f = 0, s = 0, v = 0;
+            for (int k = 0; k < 4; k++) {
+                long r = r0 + (k >> 1), cc = c0 + (k & 1);
+                double w = ((k & 1) == 0 ? 1 - fc : fc) * ((k >> 1) == 0 ? 1 - fr : fr);
+                if (w == 0) continue;
+                int b = value(r, cc);
+                double a = w * Math.max(0, EarthData.SHARE_LEVELS - sea.value(r, cc) - lake.value(r, cc));
+                if (a == 0) continue;
+                land += a;
+                f += a * SLOPE_F[b];
+                s += a * SLOPE_S[b];
+                v += a * SLOPE_V[b];
+            }
+            if (land > 0) {
+                out[0] = f / land;
+                out[1] = s / land;
+                out[2] = v / land;
+            } else {
+                out[0] = out[1] = out[2] = 0;
+            }
+        }
+
+        /**
          * ...land cover's: the forest level, 0 to 15, interpolated the same
          * way, and (0.7.127, batch E7) its ice and desert bits each read 0 or
          * 1 at its cell and interpolated from the same four cells: out[0] the
@@ -482,11 +599,23 @@ public final class EarthTerrain {
         final double[] lat = new double[19 * 19];
         final double[] seaL = new double[LATTICE * LATTICE], lakeL = new double[LATTICE * LATTICE], forestL = new double[LATTICE * LATTICE];
         final double[] iceL = new double[LATTICE * LATTICE], desertL = new double[LATTICE * LATTICE];
+        /** The shallow sea's share of the area at each lattice point (ET1): over seaL, the shallow share of the sea there. */
+        final double[] shalL = new double[LATTICE * LATTICE];
+        final double[] shal = new double[AREA];
+        /** The relief's noise over a tile (ET1), and the slope shares at the lattice's points: at or above foothill, steep, very steep. */
+        final double[] rel = new double[AREA], relF = new double[LATTICE * LATTICE], relS = new double[LATTICE * LATTICE], relV = new double[LATTICE * LATTICE];
+        final double[] sh = new double[3];
         final boolean[] sea = new boolean[RING_AREA];
         final double[] ll = new double[2], cv = new double[3];
         int[] segs = new int[64], lakes = new int[16];
-        final Reader seaR = new Reader(), lakeR = new Reader(), coverR = new Reader(), farLandR = new Reader(), farLakeR = new Reader();
+        final Reader seaR = new Reader(), lakeR = new Reader(), coverR = new Reader(), farLandR = new Reader(), farLakeR = new Reader(), shalR = new Reader(), slopeR = new Reader();
         EarthData bound;
+        /** Whether the data bound has earth-2's layers (EarthData.hasRelief()): an earth-1 file draws no SHALLOW and no relief. */
+        boolean shallow;
+        /** The far shares of the bound data's slope (FarShares), the last 1-degree tile read from them and its number: one thread's, so a far view's neighbouring pixels take the lock once a tile. */
+        FarShares far;
+        int farTile = -1;
+        byte[] farBlocks;
 
         void bind(EarthData d) {
             if (bound == d) return;
@@ -495,6 +624,17 @@ public final class EarthTerrain {
             coverR.bind(d, "landcover");
             farLandR.bind(d, "far.land");
             farLakeR.bind(d, "far.lake");
+            shallow = d.hasRelief();
+            if (shallow) {
+                shalR.bind(d, "shallow");
+                slopeR.bind(d, EarthData.SLOPE);
+                if (slopeR.cpd != seaR.cpd || slopeR.cpd != lakeR.cpd) {
+                    throw new IllegalStateException("the slope layer is not on the sea's and the lakes' grid of cells (" + slopeR.cpd + " a degree against " + seaR.cpd + "): " + d.identity());
+                }
+            }
+            far = null;
+            farTile = -1;
+            farBlocks = null;
             bound = d;
         }
     }
@@ -541,7 +681,7 @@ public final class EarthTerrain {
         int i0 = (ox - 1 + LATTICE_STEP) / LATTICE_STEP, i1 = Math.min(LATTICE - 1, (ox + w + LATTICE_STEP) / LATTICE_STEP + 1);
         int j0 = (oy - 1 + LATTICE_STEP) / LATTICE_STEP, j1 = Math.min(LATTICE - 1, (oy + h + LATTICE_STEP) / LATTICE_STEP + 1);
         boolean anySea = false, allSea = true, anyLake = false, anyForest = false, allForest = true;
-        boolean anyIce = false, allIce = true, anyDesert = false, allDesert = true;
+        boolean anyIce = false, allIce = true, anyDesert = false, allDesert = true, anyShal = false;
         double[] ll = s.ll, cv = s.cv;
         for (int j = j0; j <= j1; j++) {
             for (int i = i0; i <= i1; i++) {
@@ -553,6 +693,7 @@ public final class EarthTerrain {
                     s.forestL[at] = 0;
                     s.iceL[at] = 0;
                     s.desertL[at] = 0;
+                    s.shalL[at] = 0;
                 } else {
                     s.seaL[at] = s.seaR.bilinear(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
                     s.lakeL[at] = s.lakeR.bilinear(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
@@ -560,6 +701,8 @@ public final class EarthTerrain {
                     s.forestL[at] = cv[0] / EarthData.SHARE_LEVELS;
                     s.iceL[at] = cv[1];
                     s.desertL[at] = cv[2];
+                    // The shallow sea's share of the area (ET1), read only where there is sea and the data has the layer.
+                    s.shalL[at] = s.shallow && s.seaL[at] > 0 ? s.shalR.bilinearProduct(s.seaR, ll[0], ll[1]) / SHARE_AREA : 0;
                 }
                 anySea |= s.seaL[at] > 0;
                 allSea &= s.seaL[at] >= 1;
@@ -570,10 +713,24 @@ public final class EarthTerrain {
                 allIce &= s.iceL[at] >= 1;
                 anyDesert |= s.desertL[at] > 0;
                 allDesert &= s.desertL[at] >= 1;
+                anyShal |= s.shalL[at] > 0;
             }
         }
         if (allSea) {
-            Arrays.fill(out, 0, w * h, World.SALT);
+            // All sea: SALT, or SHALLOW where the shallow share beats its noise (ET1) - the tile is the sea alone.
+            if (!anyShal) {
+                Arrays.fill(out, 0, w * h, World.SALT);
+                return;
+            }
+            double[] q = quantile();
+            Arrays.fill(s.shal, 0, w * h, 0);
+            for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[SHALLOW][k], k, x0 + ox, y0 + oy, w, h, AMP_N[k], s.shal);
+            for (int py = 0; py < h; py++) {
+                for (int px = 0; px < w; px++) {
+                    int i = py * w + px;
+                    out[i] = s.shal[i] < below(q, shallowShare(s, ox + px, oy + py)) ? World.SHALLOW : World.SALT;
+                }
+            }
             return;
         }
         double[] q = quantile();
@@ -627,10 +784,19 @@ public final class EarthTerrain {
             Arrays.fill(s.desert, 0, w * h, 0);
             for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[DESERT][k], k, rx0, ry0, w, h, AMP_N[k], s.desert);
         }
+        // The shallow sea's detail (ET1): its own noise, ranked as the forest's is, where a plot may be sea and some of the sea is shallow.
+        boolean shalNoise = anyShal && anySea;
+        if (shalNoise) {
+            Arrays.fill(s.shal, 0, w * h, 0);
+            for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[SHALLOW][k], k, rx0, ry0, w, h, AMP_N[k], s.shal);
+        }
         for (int py = 0; py < h; py++) {
             for (int px = 0; px < w; px++) {
                 int i = py * w + px, r = (py + 1) * rw + px + 1;
-                if (s.sea[r]) { out[i] = World.SALT; continue; }
+                if (s.sea[r]) {
+                    out[i] = shalNoise && s.shal[i] < below(q, shallowShare(s, ox + px, oy + py)) ? World.SHALLOW : World.SALT;
+                    continue;
+                }
                 double x = rx0 + px + 0.5, y = ry0 + py + 0.5;
                 boolean wet = false;
                 for (int k = 0; k < nseg && !wet; k++) wet = onRiver(wt, s.segs[k], x, y);
@@ -651,6 +817,17 @@ public final class EarthTerrain {
                 out[i] = forest ? World.FOREST : desert ? World.DESERT : World.GRASS;
             }
         }
+    }
+
+    /**
+     * The shallow share of the sea at the tile's plot (px, py) - -1 to 32 (ET1): the
+     * lattice's blend of the shallow sea's area over its blend of the sea's, so the
+     * share is weighted by the sea share (no fringe of deep sea along a coast, the
+     * study's 12, 6; the mockup's shal * sw / sw). 0 where the blend holds no sea.
+     */
+    private static double shallowShare(Scratch s, int px, int py) {
+        double sea = lattice(s.seaL, px, py);
+        return sea > 0 ? lattice(s.shalL, px, py) / sea : 0;
     }
 
     /** A share at the tile's plot (px, py) - -1 to 32, the ring included - blended between the lattice's points about it. */
@@ -819,7 +996,7 @@ public final class EarthTerrain {
             ice = cv[1];
             desert = cv[2];
         }
-        if (sea > 0 && sea(sea, noiseAt(os[COAST], x, y, stride))) return World.SALT;
+        if (sea > 0 && sea(sea, noiseAt(os[COAST], x, y, stride))) return s.shallow && shallowAt(s, q, x, y, lat, lon, sea, stride) ? World.SHALLOW : World.SALT;
         if (water && stride < WATER_STRIDE) {
             Water w = water(Math.floorDiv((long) Math.floor(x), World.DISTRICT), Math.floorDiv((long) Math.floor(y), World.DISTRICT));
             for (int k = 0; k < w.segs; k++) {
@@ -842,6 +1019,35 @@ public final class EarthTerrain {
     }
 
     /**
+     * A plot's class by the point rule (classAt(), the regions' and the far
+     * views') at its centre, at a stride of one, rather than its tile's
+     * (draw()): the rule's two copies, which agree but for the lattice's blend
+     * of the shares (a plot within a hair of a threshold may differ). What a
+     * harness holds the one to the other with.
+     */
+    byte pointTerrain(long x, long y) {
+        return pointClass(scratch(), quantile(), x + 0.5, y + 0.5, 1);
+    }
+
+    /**
+     * Whether a point of the sea is SHALLOW (ET1), the tile rule's other copy
+     * (draw()): the shallow share of the sea there, interpolated between the
+     * 15" cells' centres weighted by each cell's sea (Reader.bilinearProduct()
+     * over `sea`, the sea share bilinear() gave), beats the shallow noise
+     * ranked as the forest's is. From FAR_STRIDE, where `sea` is the 4' far
+     * layers' and a pixel is wider than a 15" cell, the shallow level of the
+     * 15" cell the point lies in (0 where the cell holds no sea, so the sea
+     * layer is not read: a far view makes millions of these, and each tile
+     * of a layer read is a blob inflated).
+     */
+    private boolean shallowAt(Scratch s, double[] q, double x, double y, double lat, double lon, double sea, int stride) {
+        double share = stride >= FAR_STRIDE
+                ? s.shalR.at(lat, lon) / (double) EarthData.SHARE_LEVELS
+                : s.shalR.bilinearProduct(s.seaR, lat, lon) / SHARE_AREA / sea;
+        return share > 0 && noiseAt(os[SHALLOW], x, y, stride) < below(q, share);
+    }
+
+    /**
      * Whether a point (plot coordinates) is sea, by the coast's rule at the
      * point itself: the sea share there, read through the exact projection,
      * and the coast noise at every octave - what a field drawn off the sea
@@ -855,6 +1061,337 @@ public final class EarthTerrain {
         double sea = s.seaR.bilinear(s.ll[0], s.ll[1]) / EarthData.SHARE_LEVELS;
         if (!(sea > 0)) return false;
         return sea(sea, noiseAt(os[COAST], x, y, 1));
+    }
+
+    /* =====================================================================
+       THE RELIEF: a second plane beside the cover (ET1, spec-earth2-terrain 3.1)
+
+       A plot carries two values: its cover (terrainAt(): GRASS to SHALLOW) and
+       its relief (reliefAt(): FLAT, FOOTHILL, STEEP, VERY_STEEP). The cover is
+       never touched by it: tileTerrain() gives the classes it gave before, byte
+       for byte, and a harness holds that. The relief is drawn from earth-2's slope
+       layer (EarthData.slope()), a byte a 15" cell holding the shares of the
+       cell's LAND at or above foothill (a 10% grade), steep (30%) and very steep
+       (60%).
+
+       THE RULE, the forest's own. F, S and V are those shares at the plot -
+       interpolated between the four cell centres about it, WEIGHTED BY EACH
+       CELL'S LAND (Reader.shares()), a tile's at the lattice's points and blended
+       between them as the forest's are - and r is one noise of the relief's own
+       (its field key F_RELIEF, octaves RELIEF_SHIFT wider than the cover's: the
+       dial says why), ranked through the same table (below()), so each class
+       covers in expectation what the data gives it:
+         VERY_STEEP where r < below(V), else STEEP where r < below(S), else
+         FOOTHILL where r < below(F), else FLAT.
+       One noise for the three, so the classes nest as the shares do (V <= S <= F
+       by the file's promise and the blend's weights): a very steep patch is the
+       core of a steep one, and a steep one of a foothill - a slope grades away
+       into the plain instead of speckling.
+
+       WHAT HAS NONE. Relief is drawn only on a plot whose cover is dry ground
+       (World.dry(): grass, forest, the beach, the desert); water, the shallow sea
+       and ICE carry FLAT, meaning "none" (D4: snow wins over slope, and water has
+       no relief). Forest keeps its cover on any slope (D5): the plot is FOREST
+       and, say, STEEP. An earth-1 file has no slope layer: every plot is FLAT, and
+       so is every plot of a generated world (D19), which never reaches this.
+
+       TWO COPIES, as the cover's: drawRelief() for a tile (a lattice, the
+       tile's octaves a rectangle at once) and reliefOf() for a point (the regions',
+       the far views', a stride at a time), which agree but for the lattice's blend
+       of the shares (a plot within a hair of a threshold may differ).
+
+       THE FAR VIEW. From FAR_STRIDE a pixel is wider than a 15" cell and a far
+       view spans thousands of 1-degree tiles, each a 57 KB blob of the slope
+       layer to inflate (about 0.15 ms): read cell by cell, a globe's frame would
+       inflate thousands of them every frame and the LRU, which holds a hundred and
+       seventy, would never keep them. So the far shares are summarised, once a
+       tile and kept (FarShares): the land-weighted shares in each 4' block, 225 a
+       tile, and a pixel reads the block it lies in - the far layers' own scale.
+       From DITHER_STRIDE a camera's pixels are dithered by a hash against the
+       shares, as the forest's are (the camera's dither, remixed so that steep
+       ground is not forested ground), for under it the ranked noise keeps its
+       widest octaves and over it a pixel holds the whole of them.
+       ===================================================================== */
+
+    private final Map<Long, byte[]> reliefTiles = new LinkedHashMap<>(256, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> eldest) {
+            return size() > RELIEF_KEPT;
+        }
+    };
+
+    /** A tile's relief, kept (RELIEF_KEPT): shared, do not write into it. The tile's cover is drawn first, kept as it is (keptTile()). */
+    byte[] keptRelief(long tx, long ty) {
+        long k = (tx << 32) ^ (ty & 0xffffffffL);
+        synchronized (reliefTiles) {
+            byte[] t = reliefTiles.get(k);
+            if (t != null) return t;
+        }
+        byte[] t = new byte[World.TILE * World.TILE];
+        drawRelief(tx, ty, keptTile(tx, ty), t);
+        synchronized (reliefTiles) { reliefTiles.put(k, t); }
+        return t;
+    }
+
+    /** One plot's relief: its tile's (tileRelief()), from a kept tile; FLAT off the world, and for data with no slope layer. World.reliefAt() on Earth. */
+    public byte reliefAt(long x, long y) {
+        if (!relief || x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE) return World.FLAT;
+        byte[] t = keptRelief(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE));
+        return t[(int) (Math.floorMod(y, World.TILE) * World.TILE + Math.floorMod(x, World.TILE))];
+    }
+
+    /**
+     * One tile's relief, a byte a plot in rows (out[py x 32 + px], as tileTerrain()'s cover): the rule
+     * above, on the plots whose cover tileTerrain() draws dry. A tile off the world's square is FLAT, and
+     * so is every tile of data with no slope layer. Nothing is drawn where no plot of the tile is dry or
+     * no cell about it holds a slope (EarthTerrainCheck 17 times it).
+     */
+    public void tileRelief(long tx, long ty, byte[] out) {
+        int n = World.TILE;
+        if (!relief || tx < 0 || ty < 0 || tx >= World.SIDE / n || ty >= World.SIDE / n) {
+            Arrays.fill(out, 0, n * n, World.FLAT);
+            return;
+        }
+        System.arraycopy(keptRelief(tx, ty), 0, out, 0, n * n);
+    }
+
+    /**
+     * A tile's relief given its cover (the rule's tile copy): FLAT but on dry plots, and on those the
+     * nested classes over the relief noise. The lattice of shares is read only where the tile holds
+     * dry ground, the noise only where some lattice point holds a slope.
+     */
+    private void drawRelief(long tx, long ty, byte[] cover, byte[] out) {
+        int n = World.TILE, area = n * n;
+        Arrays.fill(out, 0, area, World.FLAT);
+        if (!relief || tx < 0 || ty < 0 || tx >= World.SIDE / n || ty >= World.SIDE / n) return;
+        boolean land = false;
+        for (int i = 0; i < area && !land; i++) land = World.dry(cover[i]);
+        if (!land) return;
+        Scratch s = scratch();
+        long x0 = tx * n, y0 = ty * n;
+        EarthProj.Blend b = proj.blend(x0, y0, n);
+        double[] ll = s.ll, sh = s.sh;
+        boolean any = false;
+        // The lattice points the plots blend between (the cover's: plots x0 - 4 + 4i, y0 - 4 + 4j); the ring's, i = 0, no plot reads.
+        for (int j = 1; j < LATTICE; j++) {
+            for (int i = 1; i < LATTICE; i++) {
+                int at = j * LATTICE + i;
+                double px = x0 - LATTICE_STEP + LATTICE_STEP * i + 0.5, py = y0 - LATTICE_STEP + LATTICE_STEP * j + 0.5;
+                if (b.latLon(px, py, ll)) {
+                    s.slopeR.shares(s.seaR, s.lakeR, ll[0], ll[1], sh);
+                    s.relF[at] = sh[0];
+                    s.relS[at] = sh[1];
+                    s.relV[at] = sh[2];
+                } else {
+                    s.relF[at] = s.relS[at] = s.relV[at] = 0;
+                }
+                any |= s.relF[at] > 0;
+            }
+        }
+        if (!any) return;
+        double[] q = quantile();
+        Arrays.fill(s.rel, 0, area, 0);
+        for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[RELIEF][k], k + RELIEF_SHIFT, x0, y0, n, n, AMP_N[k], s.rel);
+        for (int py = 0; py < n; py++) {
+            for (int px = 0; px < n; px++) {
+                int i = py * n + px;
+                if (!World.dry(cover[i])) continue;
+                double f = lattice(s.relF, px, py);
+                if (!(f > 0)) continue;
+                double r = s.rel[i];
+                if (!(r < below(q, f))) continue;
+                double st = lattice(s.relS, px, py);
+                if (!(r < below(q, st))) { out[i] = World.FOOTHILL; continue; }
+                double v = lattice(s.relV, px, py);
+                out[i] = r < below(q, v) ? World.VERY_STEEP : World.STEEP;
+            }
+        }
+    }
+
+    /**
+     * A point's relief at a stride, the rule's point copy (the regions' and the far views'): the shares
+     * at the point (Reader.shares(), a 15" cell's own land-weighted blend; from FAR_STRIDE the 4' block's
+     * - FarShares) against the relief noise at the point and its octaves wider than a pixel, the
+     * narrower at their mean - or, where `dither` is a number (the forest's rule: from DITHER_STRIDE, a
+     * camera's dither), against a hash of it, remixed: a pixel that wide has no octave of the noise
+     * to itself, and a globe's or a grid's camera has no plot coordinates to read the noise at (its x() and y() are
+     * nought). The caller has found the point's cover dry ground; (lat, lon) is the point's place on the planet.
+     */
+    private byte reliefOf(Scratch s, double[] q, double x, double y, double lat, double lon, int stride, double dither) {
+        double[] sh = s.sh;
+        if (stride >= FAR_STRIDE) farShares(s, lat, lon, sh);
+        else s.slopeR.shares(s.seaR, s.lakeR, lat, lon, sh);
+        double f = sh[0];
+        if (!(f > 0)) return World.FLAT;
+        double r, lf, ls, lv;
+        if (!Double.isNaN(dither)) {
+            r = World.unit(World.mix(Double.doubleToLongBits(dither) ^ F_RELIEF_DITHER));
+            lf = f;
+            ls = sh[1];
+            lv = sh[2];
+        } else {
+            r = noiseAt(os[RELIEF], x / RELIEF_SCALE, y / RELIEF_SCALE, stride / RELIEF_SCALE);
+            lf = below(q, f);
+            ls = below(q, sh[1]);
+            lv = below(q, sh[2]);
+        }
+        return r < lv ? World.VERY_STEEP : r < ls ? World.STEEP : r < lf ? World.FOOTHILL : World.FLAT;
+    }
+
+    /**
+     * A plot's relief by the point rule at its centre, at a stride of one, given its cover: the rule's
+     * other copy (drawRelief() is the tile's) for a plot of dry cover, FLAT for any other. What a harness
+     * holds the one to the other with, on plots whose cover both copies agree on.
+     */
+    byte pointRelief(long x, long y, byte cover) {
+        if (!relief || !World.dry(cover)) return World.FLAT;
+        Scratch s = scratch();
+        double px = x + 0.5, py = y + 0.5;
+        if (!proj.latLonOfPlot(px, py, s.ll)) return World.FLAT;
+        return reliefOf(s, quantile(), px, py, s.ll[0], s.ll[1], 1, Double.NaN);
+    }
+
+    /**
+     * The shares the tile and point rules draw against at a point (ET1): of the land there, at or above
+     * foothill, at or above steep and very steep (Reader.shares(): the four 15" cells' about it, weighted
+     * by each cell's land), or - `far` - the 4' block's it lies in (FarShares). {0, 0, 0} for data with
+     * no slope layer. What a harness holds the order of the classes, and the far summary, to.
+     */
+    double[] reliefShares(double lat, double lon, boolean far) {
+        double[] out = new double[3];
+        if (!relief) return out;
+        Scratch s = scratch();
+        if (far) farShares(s, lat, lon, out);
+        else s.slopeR.shares(s.seaR, s.lakeR, lat, lon, out);
+        return out;
+    }
+
+    /**
+     * A region's relief at a stride (World.regionRelief()'s contract), as regionTerrain() lays its cover:
+     * n x n pixels from plot (x0, y0), each `stride` plots wide, FLAT where the pixel's cover is not dry
+     * ground. At a stride of one every plot's own (reliefAt()). Wider, each pixel's cover is drawn as
+     * regionTerrain() draws it, and on dry ground the relief by the point rule at its centre - from
+     * DITHER_STRIDE against the plane's dither, the far node's own, so a region and a far node over the
+     * same ground draw the same relief on the pixels whose cover agrees.
+     */
+    public void regionRelief(long x0, long y0, int stride, int n, byte[] out) {
+        if (!relief) {
+            Arrays.fill(out, 0, n * n, World.FLAT);
+            return;
+        }
+        if (stride <= 1) {
+            for (int py = 0; py < n; py++) {
+                for (int px = 0; px < n; px++) out[py * n + px] = reliefAt(x0 + px, y0 + py);
+            }
+            return;
+        }
+        Scratch s = scratch();
+        double[] q = quantile(), ll = s.ll;
+        Camera plane = plane(x0, y0, stride, n);
+        for (int py = 0; py < n; py++) {
+            double y = y0 + (double) py * stride + stride * 0.5;
+            for (int px = 0; px < n; px++) {
+                double x = x0 + (double) px * stride + stride * 0.5;
+                byte r = World.FLAT;
+                if (x >= 0 && y >= 0 && x < World.SIDE && y < World.SIDE && proj.latLonOfPlot(x, y, ll)) {
+                    double lat = ll[0], lon = ll[1];
+                    if (World.dry(classAt(s, q, x, y, lat, lon, stride, true, Double.NaN))) r = reliefOf(s, q, x, y, lat, lon, stride, plane.dither(px, py, lat, lon));
+                }
+                out[py * n + px] = r;
+            }
+        }
+    }
+
+    /** The far shares of the slope at a point into out[0..2] (the 4' block it lies in, FarShares), the last tile read kept in hand. */
+    private void farShares(Scratch s, double lat, double lon, double[] out) {
+        int cpd = s.slopeR.cpd;
+        long g = Math.min(180L * cpd - 1, Math.max(0, (long) Math.floor((90 - lat) * cpd)));
+        long c = Math.floorMod((long) Math.floor((lon + 180) * cpd), 360L * cpd);
+        int tile = (int) ((179 - g / cpd) * 360 + c / cpd);
+        if (tile != s.farTile) {
+            if (s.far == null) s.far = FarShares.of(data);
+            s.farBlocks = s.far.blocks(data, tile);
+            s.farTile = tile;
+        }
+        byte[] bl = s.farBlocks;
+        if (bl == null) {
+            out[0] = out[1] = out[2] = 0;
+            return;
+        }
+        int per = cpd / FAR_BLOCK, plane = per * per;
+        int at = (int) (g % cpd) / FAR_BLOCK * per + (int) (c % cpd) / FAR_BLOCK;
+        out[0] = (bl[at] & 0xFF) / 255.0;
+        out[1] = (bl[plane + at] & 0xFF) / 255.0;
+        out[2] = (bl[2 * plane + at] & 0xFF) / 255.0;
+    }
+
+    /**
+     * The slope's shares summarised for the far views (ET1): per 1-degree tile, built the first time a far
+     * pixel lies in it and kept, the land-weighted shares at or above foothill, steep and very steep of
+     * each FAR_BLOCK x FAR_BLOCK block of 15" cells (4', 225 blocks a tile), a byte each, in three planes
+     * (foothill, steep, very steep). A tile with no slope at all is kept as nothing. One for each data
+     * (of()), shared by every world drawn from it and every thread; the cost of a tile is its slope blob's
+     * inflation (about 0.15 ms) and a pass over its cells, so a far view's first sight of a country costs
+     * its tiles and every later one nothing. At most 675 bytes for each of the planet's 14,520 tiles
+     * with land.
+     */
+    private static final class FarShares {
+        private static final Map<EarthData, FarShares> OF = new WeakHashMap<>();
+        /** A tile built and found flat or without land, kept in place of an array. */
+        private static final byte[] NONE = new byte[0];
+        private final byte[][] tiles = new byte[EarthData.TILES][];
+
+        static FarShares of(EarthData d) {
+            synchronized (OF) { return OF.computeIfAbsent(d, k -> new FarShares()); }
+        }
+
+        /** Tile t's blocks, three planes of (cpd / FAR_BLOCK)^2; null where the tile has no slope to speak of. */
+        byte[] blocks(EarthData d, int t) {
+            synchronized (this) {
+                byte[] b = tiles[t];
+                if (b != null) return b == NONE ? null : b;
+            }
+            byte[] b = build(d, t);
+            synchronized (this) {
+                if (tiles[t] == null) tiles[t] = b == null ? NONE : b;
+            }
+            return b;
+        }
+
+        private static byte[] build(EarthData d, int t) {
+            EarthData.Layer slope = d.layer(EarthData.SLOPE), sea = d.layer("sea"), lake = d.layer("lake");
+            int cpd = slope.cellsPerDegree;
+            if (sea.cellsPerDegree != cpd || lake.cellsPerDegree != cpd || cpd % FAR_BLOCK != 0) {
+                throw new IllegalStateException("the slope layer is not on the sea's and the lakes' grid of 15\" cells, or not in blocks of " + FAR_BLOCK + ": " + d.identity());
+            }
+            byte[] sl = d.raw(EarthData.SLOPE, t), se = d.raw("sea", t), lk = d.raw("lake", t);
+            int slU = sl == null ? -d.entry(EarthData.SLOPE, t) : 0, seU = se == null ? -d.entry("sea", t) : 0, lkU = lk == null ? -d.entry("lake", t) : 0;
+            if (sl == null && slU == 0) return null;
+            int per = cpd / FAR_BLOCK, plane = per * per;
+            double[] land = new double[plane], f = new double[plane], st = new double[plane], v = new double[plane];
+            for (int r = 0; r < cpd; r++) {
+                int row = r / FAR_BLOCK * per;
+                for (int c = 0; c < cpd; c++) {
+                    int i = r * cpd + c;
+                    int w = EarthData.SHARE_LEVELS - (se == null ? seU : se[i] & 0xFF) - (lk == null ? lkU : lk[i] & 0xFF);
+                    if (w <= 0) continue;
+                    int b = sl == null ? slU : sl[i] & 0xFF, at = row + c / FAR_BLOCK;
+                    land[at] += w;
+                    f[at] += w * SLOPE_F[b];
+                    st[at] += w * SLOPE_S[b];
+                    v[at] += w * SLOPE_V[b];
+                }
+            }
+            byte[] out = new byte[3 * plane];
+            boolean any = false;
+            for (int at = 0; at < plane; at++) {
+                if (!(land[at] > 0)) continue;
+                out[at] = (byte) Math.round(255 * f[at] / land[at]);
+                out[plane + at] = (byte) Math.round(255 * st[at] / land[at]);
+                out[2 * plane + at] = (byte) Math.round(255 * v[at] / land[at]);
+                any |= out[at] != 0;
+            }
+            return any ? out : null;
+        }
     }
 
     /* =====================================================================
@@ -1086,11 +1623,22 @@ public final class EarthTerrain {
      * (plane()), byte for byte what it drew before (GlobeCheck 4).
      */
     public void farTerrain(long x0, long y0, int stride, int n, byte[] out) {
+        farTerrain(x0, y0, stride, n, out, null);
+    }
+
+    /**
+     * ...and, where `relief` is not null, its relief beside it (ET1, spec-earth2-terrain 3.1): n x n
+     * bytes laid as `out` is, FLAT where the pixel's cover is not dry ground - the cover is the same
+     * byte for byte as without it. At a stride of one every plot's own (regionRelief()). A far node's
+     * relief costs the slope of the 4' blocks under it (FarShares) the first time it is seen.
+     */
+    public void farTerrain(long x0, long y0, int stride, int n, byte[] out, byte[] relief) {
         if (stride <= 1) {
             regionTerrain(x0, y0, stride, n, out);
+            if (relief != null) regionRelief(x0, y0, stride, n, relief);
             return;
         }
-        farTerrain(plane(x0, y0, stride, n), out);
+        farTerrain(plane(x0, y0, stride, n), out, relief);
     }
 
     /**
@@ -1104,8 +1652,21 @@ public final class EarthTerrain {
      * draws the void or space there (the camera says where).
      */
     public void farTerrain(Camera c, byte[] out) {
+        farTerrain(c, out, null);
+    }
+
+    /**
+     * ...and, where `relief` is not null, the relief of its pixels beside the cover (ET1,
+     * spec-earth2-terrain 3.1; w x h bytes laid as `out` is): on each pixel whose cover is dry ground, once the
+     * rivers and small lakes are stroked, the nested classes (reliefOf()) from the 15" cells' shares to
+     * FAR_STRIDE and the 4' blocks' (FarShares) from it, ranked through the relief noise where the camera
+     * has no dither (under DITHER_STRIDE) and drawn against a hash of its dither (the forest's, remixed)
+     * where it has; FLAT on every other pixel. The cover is byte for byte what it is without.
+     */
+    public void farTerrain(Camera c, byte[] out, byte[] relief) {
         Scratch s = scratch();
         double[] q = quantile(), ll = s.ll;
+        boolean rel = relief != null && this.relief;
         int b = FAR_BLEND_PX, w = c.w, h = c.h;
         for (int by = 0; by < h; by += b) {
             for (int bx = 0; bx < w; bx += b) {
@@ -1114,15 +1675,22 @@ public final class EarthTerrain {
                         int at = py * w + px;
                         if (!c.latLon(px, py, ll)) {
                             out[at] = World.SALT;
+                            if (relief != null) relief[at] = World.FLAT;
                             continue;
                         }
-                        double d = c.dither(px, py, ll[0], ll[1]);
-                        out[at] = classAt(s, q, c.x(px), c.y(py), ll[0], ll[1], c.stride, false, d);
+                        double lat = ll[0], lon = ll[1];
+                        double d = c.dither(px, py, lat, lon);
+                        out[at] = classAt(s, q, c.x(px), c.y(py), lat, lon, c.stride, false, d);
+                        if (relief != null) relief[at] = rel && World.dry(out[at]) ? reliefOf(s, q, c.x(px), c.y(py), lat, lon, c.stride, d) : World.FLAT;
                     }
                 }
             }
         }
         strokeWater(c, out, q);
+        // The rivers and small lakes are stroked over the land: the pixels they took are fresh water now, and have none.
+        if (rel) {
+            for (int i = 0; i < w * h; i++) if (relief[i] != World.FLAT && !World.dry(out[i])) relief[i] = World.FLAT;
+        }
     }
 
     /** How many river segments and small lakes the last far node on this thread drew from, and how many 1-degree tiles it read: what a harness prints. */
@@ -1250,7 +1818,7 @@ public final class EarthTerrain {
             double y = c.oy + (j + 0.5) * c.step;
             for (int i = i0; i <= i1; i++) {
                 int at = j * c.w + i;
-                if (out[at] == World.SALT || out[at] == World.FRESH) continue;
+                if (World.salt(out[at]) || out[at] == World.FRESH) continue;
                 double x = c.ox + (i + 0.5) * c.step, ex = (x - ax) * xs;
                 double t = l2 > 0 ? (ex * vx + (y - ay) * vy) / l2 : 0;
                 t = t < 0 ? 0 : t > 1 ? 1 : t;
@@ -1269,7 +1837,7 @@ public final class EarthTerrain {
             double y = c.oy + (j + 0.5) * c.step;
             for (int i = i0; i <= i1; i++) {
                 int at = j * c.w + i;
-                if (out[at] == World.SALT || out[at] == World.FRESH) continue;
+                if (World.salt(out[at]) || out[at] == World.FRESH) continue;
                 double x = c.ox + (i + 0.5) * c.step, dx = (x - lx) * xs, dy = y - ly;
                 double t = (dx * dx + dy * dy) / (r * r);
                 if (t >= 1 + BLOB_FRAY / 2) continue;
@@ -1770,59 +2338,42 @@ public final class EarthTerrain {
     }
 
     /* =====================================================================
-       THE SEA'S DEPTH (0.7.121, batch E4; spec-earth 6's E4, E2's star 7)
+       THE SEA'S DEPTH (0.7.121, batch E4; ET1, 2026-10-24: spec-earth2-terrain 7)
 
        The generated world's sea has a depth from its elevation field
-       (World.depthAt(), 0.7.79): its shallowest SHELF_SHARE is the shelf,
-       SHELF_BREAK_M deep at its edge, the depth linear in the elevation from
-       the sea's level and on at the same slope. earth-1 ships no heights
-       (Jerus's eighth answer: no elevation), and E3 lists oil fields on the
-       Earth's shelf, basin and rift seas, so an Earth city's first platform -
-       and before it the land wells' count of the dry sites, which asks every
-       field's depth - threw.
+       (World.depthAt(), 0.7.79). The real Earth's sea has its own: earth-2's
+       depth layer, the mean of the sea in each 1' cell (1.85 km) from GEBCO,
+       in a code a byte (EarthData.depthM()).
 
-       THE SAME RULE, WITH THE COAST'S DISTANCE FOR THE ELEVATION IT LACKS
-       (★E4-1): the sea nearest the coast is the shallowest. A sea plot's
-       depth is SHELF_BREAK_M x its distance from the coast over SHELF_WIDTH_M,
-       the distance within which SHELF_SHARE of the Earth's sea lies - the
-       generated world's shelf, measured the generated world's way (a share
-       of the sea's samples, here SHELF_SAMPLES points even over the sphere)
-       on earth-1's own coast; linear from the coast and on at the same slope.
-       No figure is added that the generated world does not already use: the
-       shelf's share of the sea and its edge's depth (Harris et al. 2014, the
-       mean shelf break), and the rest is measured on the data.
+       WHY THE GUESS RETIRED. earth-1 shipped no heights, so E4 (★E4-1)
+       guessed: SHELF_BREAK_M x a plot's distance from the coast over
+       SHELF_WIDTH_M, 54,167 m, the distance within which the generated
+       world's share of the sea lies - linear from the coast and on at the
+       same slope. GEBCO showed it wrong both ways (the study's 7): the North
+       Sea 40 and 80 km off Rotterdam is 27 and 34 m deep, not 69 and 150, so
+       a broad shelf came out three to nine times too deep and no platform
+       stood past 58 km where the real sea is 20 to 40 m; off Valparaiso the
+       sea is 656 m deep 20 km out, not 44, and a platform could stand on 2.4
+       km of water. Jerus decided (D17, 2026-10-12) the real depth replaces
+       it; the shelf's width, its measure over the Earth's sea and the
+       coast-distance search that fed them went with it.
 
-       THE COAST is the data's: the centre of the nearest 15" cell whose sea
-       share is under SEA_LEVEL - the half-contour the plots' coast is drawn
-       on, a plot or two off it (THE RULE above); measured on the plots
-       instead, a depth would move by under a metre at this slope. The
-       distance is the great circle's, the world's own within 0.3% at
-       1,000 km from the spot (EarthProj). A sea plot is at least a plot from
-       the coast, so its depth is over nothing, as World.depthAt() promises
-       of every SALT plot; past the planet's rim, the farthest anything lies.
+       THE DEPTH A PLOT HAS is the layer's at the plot's centre, at least a
+       metre (the file's promise: a sea plot is never shallower than 1 m in
+       the game, because World.depthAt() over 0 is how the land office tells
+       a sea field from a dry one); 0 where the plot is not the sea's (not
+       SALT or SHALLOW). Past the planet's rim, where the layer has no
+       ground, the deepest it says. The shallow sea (World.SHALLOW, a 15"
+       cell's share of its sea under 30 m) and this depth (a 1' cell's mean)
+       are two readings of GEBCO and need not agree at a plot: a SHALLOW plot
+       may be 34 m deep, and a SALT one 12.
        ===================================================================== */
 
-    /**
-     * The distance within which SHELF_SHARE of the Earth's sea lies from the
-     * coast, metres: 54,167, measured on earth-1 (measureShelfWidthM(): 46,434
-     * of SHELF_SAMPLES points the sea's, 54,167.3 m; EarthFoundingCheck holds
-     * it to the file) - where a sea plot is World.SHELF_BREAK_M deep, so a
-     * platform (sectors.Oil.PLATFORM_MAX_DEPTH_M) stands within 58 km of a
-     * coast (★E4-1).
-     */
-    public static final double SHELF_WIDTH_M = 54_167;
-
-    /** Points the shelf's width is measured over: 2^16, evenly on the sphere by a fixed hash (SHELF_SALT), of which the sea's (about 71%) are measured - the generated world's measure is a share of its sea's samples too (World.SEA_SAMPLES a cell). */
-    public static final int SHELF_SAMPLES = 1 << 16;
-
-    /** How far a sample's coast is looked for while the width is measured, metres: 250 km, past which a sample is beyond the shelf by far - over four times its width (the measure is a low quantile; depthAt() itself looks as far as it must). */
-    public static final double SHELF_MEASURE_REACH_M = 250_000;
-
-    /** The stream the shelf's sample points are drawn from. */
-    private static final long SHELF_SALT = 0x5E1F5A3DL;
-
-    /** The sea layer's levels under which a 15" cell is the coast's land side: the share under SEA_LEVEL, 0 to 7 of 15. */
+    /** The sea layer's levels under which a 15" cell is the coast's land side: the share under SEA_LEVEL, 0 to 7 of 15 - the land of the landmass layer (tools/earth/FORMAT-2.txt). */
     static final int COAST_BELOW = (int) Math.ceil(SEA_LEVEL * EarthData.SHARE_LEVELS);
+
+    /** The shallowest a sea plot is, metres: 1 (FORMAT-2: "a sea plot is never shallower than 1 m in the game"), so World.depthAt() over 0 is still how a sea plot is told from land. */
+    public static final double SEA_LEAST_DEPTH_M = 1;
 
     /** Depths kept, by plot: 4,096 (a field's depth is asked again every time the city's ground changes). */
     static final int DEPTHS_KEPT = 4096;
@@ -1834,158 +2385,36 @@ public final class EarthTerrain {
     };
 
     /**
-     * The sea's depth at a plot's centre, metres below its level (★E4-1): 0
-     * where the plot is not SALT, else World.SHELF_BREAK_M x its distance
-     * from the coast (coastDistanceM(), at least a plot) over SHELF_WIDTH_M.
-     * World.depthAt() on Earth. Kept by plot (DEPTHS_KEPT).
+     * The sea's depth at a plot's centre, metres below its level (ET1, the
+     * study's 7): 0 where the plot is not the sea's (World.salt()), else the
+     * depth layer's metres there (EarthData.depthM()), at least
+     * SEA_LEAST_DEPTH_M, and the layer's deepest, EarthData.DEPTH_DEEPEST_M,
+     * past the planet's rim. World.depthAt() on Earth. Kept by plot
+     * (DEPTHS_KEPT). A reader without the layer (an earth-1 file) has no depth
+     * to give: it throws, naming the file that has.
      */
     public double depthAt(long x, long y) {
-        if (terrainAt(x, y) != World.SALT) return 0;
+        if (!World.salt(terrainAt(x, y))) return 0;
         long k = (x << 32) ^ (y & 0xffffffffL);
         synchronized (depths) {
             Double d = depths.get(k);
             if (d != null) return d;
         }
+        if (!data.hasRelief()) throw new IllegalStateException("this data has no depth layer; earth-2.bin does (" + data.identity() + ")");
         double[] ll = new double[2];
-        double m = proj.latLonOfPlot(x + 0.5, y + 0.5, ll)
-                ? Math.max(World.PLOT_M, coastDistanceM(data, ll[0], ll[1], Double.POSITIVE_INFINITY))
-                : StrictMath.PI * EarthProj.RADIUS_M;
-        double depth = World.SHELF_BREAK_M * m / SHELF_WIDTH_M;
+        double depth = proj.latLonOfPlot(x + 0.5, y + 0.5, ll) ? depthOf(ll[0], ll[1]) : EarthData.DEPTH_DEEPEST_M;
         synchronized (depths) { depths.put(k, depth); }
         return depth;
     }
 
-    /** ...a point's distance from the coast, metres (see the banner): the great circle to the centre of the nearest 15" cell whose sea share is under SEA_LEVEL. */
-    public double coastDistanceM(double lat, double lon) {
-        return coastDistanceM(data, lat, lon, Double.POSITIVE_INFINITY);
-    }
-
     /**
-     * The great-circle distance from (lat, lon) to the centre of the nearest
-     * 15" cell of the data whose sea share is under SEA_LEVEL (COAST_BELOW),
-     * metres; infinity when there is none within reachM. Best first over the
-     * 1-degree tiles, nearest the point by a bound that never overstates
-     * (the angle to the tile's centre less its corners' farthest), a tile of
-     * one value read without inflating it, until no tile left can hold a
-     * nearer cell.
+     * The depth layer's metres at a point of the planet (ET1 slice D; the globe's hover, which has a point and no plot): what
+     * depthAt() gives the plot there if it is sea - at least SEA_LEAST_DEPTH_M - whether or not the point is sea. Needs
+     * data with the depth layer (an earth-1 file throws).
      */
-    static double coastDistanceM(EarthData data, double lat, double lon, double reachM) {
-        EarthData.Layer sea = data.layer("sea");
-        int cpd = sea.cellsPerDegree;
-        double[] p = new double[3];
-        unitVector(lat, lon, p);
-        double best = Math.min(StrictMath.PI, reachM / EarthProj.RADIUS_M);   // the angle to beat, radians: at most half a turn
-        boolean[] seen = new boolean[EarthData.TILES];
-        java.util.PriorityQueue<double[]> queue = new java.util.PriorityQueue<>((a, b) -> Double.compare(a[0], b[0]));
-        int first = EarthData.tileAt(lat, lon);
-        seen[first] = true;
-        queue.add(new double[] { 0, first });
-        double[] c = new double[3], cosLon = new double[cpd], sinLon = new double[cpd];
-        while (!queue.isEmpty()) {
-            double[] q = queue.poll();
-            if (q[0] >= best) break;
-            int t = (int) q[1];
-            int lat0 = EarthData.tileLat0(t), lon0 = EarthData.tileLon0(t);
-            int e = sea.entries[t];
-            if (e > 0 || -e < COAST_BELOW) {
-                byte[] g = e > 0 ? data.raw("sea", t) : null;
-                for (int j = 0; j < cpd; j++) {
-                    double l = StrictMath.toRadians(lon0 + (j + 0.5) / cpd);
-                    cosLon[j] = StrictMath.cos(l);
-                    sinLon[j] = StrictMath.sin(l);
-                }
-                double most = StrictMath.cos(best);
-                for (int r = 0; r < cpd; r++) {
-                    double f = StrictMath.toRadians(lat0 + 1 - (r + 0.5) / cpd);
-                    double cf = StrictMath.cos(f), sf = StrictMath.sin(f);
-                    for (int j = 0; j < cpd; j++) {
-                        if (g != null && (g[r * cpd + j] & 0xFF) >= COAST_BELOW) continue;
-                        double dot = cf * (cosLon[j] * p[0] + sinLon[j] * p[1]) + sf * p[2];
-                        if (dot > most) most = dot;
-                    }
-                }
-                best = Math.min(best, StrictMath.acos(Math.min(1, most)));
-            }
-            // The tiles beside it - every one along a polar row, which all meet at the pole.
-            int row = (lat0 + 90), col = lon0 + 180;
-            for (int dr = -1; dr <= 1; dr++) {
-                int rr = row + dr;
-                if (rr < 0 || rr >= 180) continue;
-                if ((rr == 0 || rr == 179) && dr != 0) {
-                    for (int cc = 0; cc < 360; cc++) offer(queue, seen, rr * 360 + cc, p, c, best);
-                    continue;
-                }
-                for (int dc = -1; dc <= 1; dc++) {
-                    if (dr == 0 && dc == 0) continue;
-                    offer(queue, seen, rr * 360 + Math.floorMod(col + dc, 360), p, c, best);
-                }
-            }
-        }
-        return Double.isInfinite(reachM) || best < reachM / EarthProj.RADIUS_M ? best * EarthProj.RADIUS_M : Double.POSITIVE_INFINITY;
-    }
-
-    /** A tile into the queue once, by the least angle any point of it can lie from p: the angle to its centre less the farthest of its corners from that centre. */
-    private static void offer(java.util.PriorityQueue<double[]> queue, boolean[] seen, int t, double[] p, double[] c, double best) {
-        if (seen[t]) return;
-        seen[t] = true;
-        int lat0 = EarthData.tileLat0(t), lon0 = EarthData.tileLon0(t);
-        unitVector(lat0 + 0.5, lon0 + 0.5, c);
-        double far = 0;
-        double[] k = new double[3];
-        for (int i = 0; i < 4; i++) {
-            unitVector(lat0 + (i >> 1), lon0 + (i & 1), k);
-            far = Math.max(far, angle(c, k));
-        }
-        double bound = Math.max(0, angle(p, c) - far - 1e-12);
-        if (bound < best) queue.add(new double[] { bound, t });
-    }
-
-    /** A point's unit vector on the sphere. */
-    private static void unitVector(double lat, double lon, double[] v) {
-        double f = StrictMath.toRadians(lat), l = StrictMath.toRadians(lon), cf = StrictMath.cos(f);
-        v[0] = cf * StrictMath.cos(l);
-        v[1] = cf * StrictMath.sin(l);
-        v[2] = StrictMath.sin(f);
-    }
-
-    /** The angle between two unit vectors, radians. */
-    private static double angle(double[] a, double[] b) {
-        return StrictMath.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
-    }
-
-    /**
-     * The shelf's width on a reader's data (★E4-1), metres: SHELF_SAMPLES
-     * points evenly on the sphere (a fixed hash: latitude by the arcsine of
-     * an even draw, longitude even), the sea's among them - its 15" cell's
-     * share at SEA_LEVEL or over - each its coastDistanceM() (out to
-     * SHELF_MEASURE_REACH_M), sorted; the distance SHELF_SHARE of them lie
-     * within. What SHELF_WIDTH_M is, to the metre it is rounded to.
-     */
-    public static double measureShelfWidthM(EarthData data) {
-        double[] d = new double[SHELF_SAMPLES];
-        int n = 0;
-        for (int i = 0; i < SHELF_SAMPLES; i++) {
-            long h = World.mix(SHELF_SALT + i * 0x9E3779B97F4A7C15L);
-            double lat = StrictMath.toDegrees(StrictMath.asin(2 * World.unit(h) - 1));
-            double lon = 360 * World.unit(World.mix(h)) - 180;
-            if (data.at("sea", lat, lon) < COAST_BELOW) continue;
-            d[n++] = coastDistanceM(data, lat, lon, SHELF_MEASURE_REACH_M);
-        }
-        double[] sea = Arrays.copyOf(d, n);
-        Arrays.sort(sea);
-        return sea[(int) (World.SHELF_SHARE * n)];
-    }
-
-    /** How many of the shelf's samples are the sea's, on a reader's data. */
-    public static int shelfSeaSamples(EarthData data) {
-        int n = 0;
-        for (int i = 0; i < SHELF_SAMPLES; i++) {
-            long h = World.mix(SHELF_SALT + i * 0x9E3779B97F4A7C15L);
-            double lat = StrictMath.toDegrees(StrictMath.asin(2 * World.unit(h) - 1));
-            double lon = 360 * World.unit(World.mix(h)) - 180;
-            if (data.at("sea", lat, lon) >= COAST_BELOW) n++;
-        }
-        return n;
+    public double depthOf(double lat, double lon) {
+        if (!data.hasRelief()) throw new IllegalStateException("this data has no depth layer; earth-2.bin does (" + data.identity() + ")");
+        return Math.max(SEA_LEAST_DEPTH_M, data.depthM(lat, lon));
     }
 
     /**

@@ -227,6 +227,7 @@ public final class MapTiles {
         b.tx = a.tx;
         b.ty = a.ty;
         System.arraycopy(a.terrain, 0, b.terrain, 0, TilePainter.PLOTS);
+        System.arraycopy(a.relief, 0, b.relief, 0, TilePainter.PLOTS);
         System.arraycopy(a.owned, 0, b.owned, 0, TilePainter.PLOTS);
         System.arraycopy(a.street, 0, b.street, 0, TilePainter.PLOTS);
         System.arraycopy(a.beyond, 0, b.beyond, 0, a.beyond.length);
@@ -378,11 +379,24 @@ public final class MapTiles {
      * forest dithered by a hash.
      */
     public static byte[] nodeTerrain(World.Key world, long x0, long y0, long plots) {
+        return nodeTerrain(world, x0, y0, plots, null);
+    }
+
+    /**
+     * ...and, where `relief` is not null (MapFrame.NODE_PX squared bytes), the node's relief beside it (ET1
+     * slice D; spec-earth2-terrain 9.3): each pixel's World relief (FLAT, FOOTHILL, STEEP, VERY_STEEP) as the
+     * far rule draws it at the node's stride (EarthTerrain.farTerrain()), FLAT where its cover is not dry
+     * ground and everywhere on a generated world. The cover is byte for byte what it is without.
+     */
+    public static byte[] nodeTerrain(World.Key world, long x0, long y0, long plots, byte[] relief) {
         byte[] out = new byte[MapFrame.NODE_PX * MapFrame.NODE_PX];
         World w = World.of(world);
         int stride = (int) Math.min(Integer.MAX_VALUE, plots);
-        if (w.isEarth()) w.earthTerrain().farTerrain(x0, y0, stride, MapFrame.NODE_PX, out);
-        else w.regionTerrain(x0, y0, stride, MapFrame.NODE_PX, out);
+        if (w.isEarth()) w.earthTerrain().farTerrain(x0, y0, stride, MapFrame.NODE_PX, out, relief);
+        else {
+            w.regionTerrain(x0, y0, stride, MapFrame.NODE_PX, out);
+            if (relief != null) java.util.Arrays.fill(relief, 0, MapFrame.NODE_PX * MapFrame.NODE_PX, World.FLAT);
+        }
         return out;
     }
 
@@ -430,6 +444,15 @@ public final class MapTiles {
      * tint, until 0.7.127.
      */
     public int nodePixels(long x0, long y0, long plots, byte[] ground, int[] out) {
+        return nodePixels(x0, y0, plots, ground, null, out);
+    }
+
+    /**
+     * ...with the node's relief (nodeTerrain()'s, ET1 slice D): each pixel's ground in TileRaster.colour()'s
+     * - the three greys on open dry ground, forest shaded toward them - where `relief` is not null; null, and a
+     * generated world's (all FLAT), are the pixels as they were before.
+     */
+    public int nodePixels(long x0, long y0, long plots, byte[] ground, byte[] relief, int[] out) {
         CityLand land = map.land();
         LandGrid grid = land == null ? null : land.grid();
         int n = MapFrame.NODE_PX, w = n + 2;
@@ -473,7 +496,7 @@ public final class MapTiles {
                     continue;
                 }
                 byte g = ground[k];
-                int c = TileRaster.GROUND[g];
+                int c = relief == null ? TileRaster.GROUND[g] : TileRaster.colour(g, relief[k]);
                 int cv = cover[(j + 1) * w + i + 1];
                 boolean owned = city[(j + 1) * w + i + 1];
                 if (!owned) c = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
@@ -668,7 +691,7 @@ public final class MapTiles {
         private CityLand land;
         private LandGrid grid;
         private long x0, y0, plots, landKey, runsKey;
-        private byte[] ground;
+        private byte[] ground, relief;
         private boolean runsKept;
         /** The land layer: the city's cover of each pixel and a ring about the node, whether it owns the pixel's sample, whether the pixel is its edge, and each pixel's district (an index into districts, or NO_DISTRICT, or VOID_PIXEL). Null before the first call. */
         private byte[] cover;
@@ -709,12 +732,17 @@ public final class MapTiles {
      * MapCheck 18 holds it equal to nodePixels(), which stays as it was.
      */
     public int nodePixels(KeptNode keep, long x0, long y0, long plots, byte[] ground, int[] out) {
+        return nodePixels(keep, x0, y0, plots, ground, null, out);
+    }
+
+    /** ...with the node's relief (nodeTerrain()'s; null as before), equal to nodePixels(x0, y0, plots, ground, relief, out) as the plain one is. */
+    public int nodePixels(KeptNode keep, long x0, long y0, long plots, byte[] ground, byte[] relief, int[] out) {
         int n = MapFrame.NODE_PX;
         CityLand land = map.land();
         LandGrid grid = land == null ? null : land.grid();
         boolean pictures = World.DISTRICT / plots >= PICTURE_FROM_PX;
         keep.calls++;
-        boolean fresh = keep.district == null || keep.map != map || keep.x0 != x0 || keep.y0 != y0 || keep.plots != plots || keep.ground != ground;
+        boolean fresh = keep.district == null || keep.map != map || keep.x0 != x0 || keep.y0 != y0 || keep.plots != plots || keep.ground != ground || keep.relief != relief;
         long landKey = landKey(x0, y0, plots);
         boolean landMoved = fresh || keep.land != land || keep.grid != grid || keep.landKey != landKey;
         if (fresh) {
@@ -723,6 +751,7 @@ public final class MapTiles {
             keep.y0 = y0;
             keep.plots = plots;
             keep.ground = ground;
+            keep.relief = relief;
             keep.runsKept = false;
         }
         if (landMoved) {
@@ -896,7 +925,7 @@ public final class MapTiles {
                 if (!all && !(di >= 0 && dirty[di])) continue;
                 long x = x0 + i * plots + plots / 2;
                 byte g = keep.ground[k];
-                int c = TileRaster.GROUND[g];
+                int c = keep.relief == null ? TileRaster.GROUND[g] : TileRaster.colour(g, keep.relief[k]);
                 boolean owned = keep.city[(j + 1) * w + i + 1];
                 if (!owned) c = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
                 if (di >= 0 && keep.dUsed[di] > 0) {

@@ -118,7 +118,7 @@
 | 96 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 132 | 1 | **type** `record Spot(String name, double lat, double lon, long seed)` | A spot of the study: its name, where, and the seed of the world there. |
 | 145 | 42 | `public static void main(String[] args) throws Exception` |  |
-| 189 | 13 | `static EarthData openFull() throws Exception` | The full file's reader when it is named or lies at data/earth-1.bin, else null (and a named file that is not there fails). |
+| 189 | 13 | `static EarthData openFull() throws Exception` | The full file's reader when it is named or lies at data/earth-2.bin, else null (and a named file that is not there fails). |
 | 203 | 5 | `static Set<String> codesOf(EarthData d)` |  |
 | 209 | 5 | `static Set<Geology.Kind> classesOf(EarthData d, Geology geo)` |  |
 | 216 | 4 | `static int rowOf(EarthData d, String code)` | The row of a USGS code's first province in the data's table, 0 for none. |

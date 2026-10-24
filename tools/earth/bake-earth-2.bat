@@ -14,7 +14,7 @@ rem core, shared over CBS_PROCS processes below. Each stage skips work already d
 rem so if it stops (a dropped connection, the PC asleep) double-click it again.
 rem
 rem It runs, in order (each is a Python script beside this file):
-rem   get-earth.bat     data\earth-1.bin, whose layers earth-2 copies
+rem   get-earth.bat     (with earth-1) data\earth-1.bin, whose layers earth-2 copies
 rem   slope_tiles.py    every NASADEM tile: heights to 90 m, the slope, its classes per 15" cell
 rem   landmass.py       GEBCO 2026 (downloaded here once, 7.5 GB); every 15" land cell's landmass
 rem                     (ground cut off by more than a 1,020 m crossing of fresh water or shallow sea)
@@ -51,7 +51,7 @@ set "CBS_EARTH1=%CD%\data\earth-1.bin"
 set "CBS_PROCS=4"
 if not exist "%CBS_E2%" md "%CBS_E2%"
 
-call "tools\earth\get-earth.bat" nopause
+call "tools\earth\get-earth.bat" nopause earth-1
 if errorlevel 1 goto fail
 
 echo Earth 2: [1/4] the slope, tile by tile (the long part; it says how far it is every 100 tiles)

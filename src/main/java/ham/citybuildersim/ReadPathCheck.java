@@ -1865,6 +1865,16 @@ public class ReadPathCheck {
         return r;
     }
 
+    /** How many of a land office's offers standing hold shallow sea (ET1). */
+    static long shallowOffers(LandMarket market) {
+        return market.getListing().stream().filter(p -> p.getReliefKm2(CityLand.RELIEF_SHALLOW) > 0).count();
+    }
+
+    /** A ground by relief given by hand (ET1): of `dry` km2 of dry ground, half flat, three tenths foothill, 15% steep and 5% very steep, and 0.004 km2 of shallow sea (a fiat figure: the fixture's world has no sea) - RELIEF_AREAS figures. */
+    static double[] handRelief(double dry) {
+        return new double[] { 0.5 * dry, 0.3 * dry, 0.15 * dry, 0.05 * dry, 0.004 };
+    }
+
     /**
      * THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the
      * businesses' growth, the land office's price, the high schools'
@@ -1879,6 +1889,26 @@ public class ReadPathCheck {
         g.getLandManager().setAllocatedSqFt(g.getBuildingManager().getTotalLandFootprint());
         // ...and a dig by type (0.7.110), so the save carries E by type: the fixture's ore is by fiat, the first type's.
         double dug = g.getLandManager().extract(Resource.IRON, Deposit.FieldType.HEMATITE, 1_000.5);
+        // ...and the ground by relief (ET1, spec-earth2-terrain 3.3): the fixture's ground is a generated world's, all flat, so it is given hills by
+        // hand - the centre, each purchase and each offer standing foothill, steep and very steep ground and some shallow sea, as fixtures
+        // are given ore (setCentre()) - for the save to carry, and the load to bring back, in the keys of their own.
+        CityLand land = g.getCityLand();
+        land.setCentreRelief(handRelief(land.centreKm2(CityLand.DRY)));
+        for (int k = 0; k < land.purchases().size(); k++) {
+            LandParcel p = land.purchases().get(k).offer();
+            land.setPurchaseRelief(k, handRelief(p.getDryKm2()));
+        }
+        LandMarket market = g.getLandManager().getMarket();
+        double[][] standing = market.getOffersState(), standingRelief = new double[standing.length][];
+        for (int i = 0; i < standing.length; i++) {
+            LandParcel p = market.getListing().get(i);
+            standingRelief[i] = handRelief(p.getDryKm2());
+        }
+        market.restoreOffers(standing, standingRelief, market.getNextOfferId());
+        assertTrue("fixture: the city holds hills by hand - the centre, " + land.purchases().size() + " purchase(s) and " + market.getListing().size()
+                + " offers, foothill and shallow sea in them", land.centreReliefKm2(CityLand.RELIEF_FOOTHILL) > 0 && land.centreReliefKm2(CityLand.RELIEF_SHALLOW) > 0
+                && !market.getListing().isEmpty() && market.getListing().stream().allMatch(p -> p.getReliefKm2(CityLand.RELIEF_SHALLOW) > 0)
+                && market.getListing().stream().anyMatch(p -> p.getReliefKm2(CityLand.RELIEF_FOOTHILL) > 0));
         System.setOut(quiet);
         g.saveGame(10, "readpath");
         Game loaded = new Game(files);
@@ -1902,6 +1932,37 @@ public class ReadPathCheck {
                 loaded.getCityLand().same(g.getCityLand()));
         assertTrue("...its offers, field for field", java.util.Arrays.deepEquals(
                 loaded.getLandManager().getMarket().getOffersState(), g.getLandManager().getMarket().getOffersState()));
+        assertTrue("...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit",
+                java.util.Arrays.equals(loaded.getCityLand().centreReliefState(), g.getCityLand().centreReliefState())
+                        && java.util.Arrays.deepEquals(loaded.getCityLand().holdingsReliefState(), g.getCityLand().holdingsReliefState())
+                        && java.util.Arrays.deepEquals(loaded.getLandManager().getMarket().getOffersReliefState(), g.getLandManager().getMarket().getOffersReliefState())
+                        && loaded.getCityLand().centreReliefKm2(CityLand.RELIEF_FOOTHILL) == g.getCityLand().centreReliefKm2(CityLand.RELIEF_FOOTHILL)
+                        && shallowOffers(loaded.getLandManager().getMarket()) == shallowOffers(g.getLandManager().getMarket()) && shallowOffers(loaded.getLandManager().getMarket()) > 0);
+        // ...and the same save with the three keys taken out, as every save before ET1 is, loads all flat - never refused.
+        try {
+            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(10))).getAsJsonObject();
+            boolean keys = true;
+            for (String k : new String[] { "landCentreRelief", "landHoldingsRelief", "landOffersRelief" }) {
+                keys &= json.has(k);
+                json.remove(k);
+            }
+            assertTrue("the save carries the three keys of the ground by relief, and they are what the load read", keys);
+            Files.writeString(files.saveFile(10), new com.google.gson.Gson().toJson(json));
+            Game bare = new Game(files);
+            System.setOut(quiet);
+            bare.loadGameSave(10);
+            System.setOut(out);
+            CityLand flat = bare.getCityLand();
+            boolean allFlat = bare.getLoadFailure() == null && flat.centreReliefKm2(CityLand.RELIEF_FLAT) == flat.centreKm2(CityLand.DRY)
+                    && flat.totalReliefKm2(CityLand.RELIEF_FLAT) == flat.totalKm2(CityLand.DRY) && !bare.getLandManager().getMarket().getListing().isEmpty();
+            for (int i = CityLand.RELIEF_FOOTHILL; i < CityLand.RELIEF_AREAS; i++) allFlat &= flat.centreReliefKm2(i) == 0 && flat.totalReliefKm2(i) == 0;
+            for (LandParcel p : bare.getLandManager().getMarket().getListing()) allFlat &= p.getReliefKm2(CityLand.RELIEF_FLAT) == p.getDryKm2() && p.getReliefKm2(CityLand.RELIEF_SHALLOW) == 0;
+            for (CityLand.Purchase p : flat.purchases()) allFlat &= p.offer().getReliefKm2(CityLand.RELIEF_FLAT) == p.offer().getDryKm2();
+            assertTrue("...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,"
+                    + " nothing steep and nothing shallow", allFlat);
+        } catch (java.io.IOException e) {
+            assertTrue("the saved file reads: " + e, false);
+        }
         assertTrue("...and what was taken out of its ground", java.util.Arrays.equals(
                 loaded.getLandManager().getDepletionState(), g.getLandManager().getDepletionState()));
         assertTrue("...and out of its offshore pool (0.7.93)",
@@ -1944,7 +2005,7 @@ public class ReadPathCheck {
         World w = g.getWorld();
         long sx = g.getCityLand().siteX(), sy = g.getCityLand().siteY();
         long seaX = sx - 2_000;
-        assertTrue("fixture: a plot of the North Sea west of it", w.terrainAt(seaX, sy) == World.SALT);
+        assertTrue("fixture: a plot of the North Sea west of it", World.salt(w.terrainAt(seaX, sy)));
         System.setOut(quiet);
         Map<String, Double> before = NewGameCheck.snapshot(g);
         bankPrint(g, before);

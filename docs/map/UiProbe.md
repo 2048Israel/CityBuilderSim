@@ -37,7 +37,7 @@
 >                       a TempDirs folder, which is deleted when the JVM ends
 >                       (the repository is never written)
 >   -Dprobe.earth=SPOT  grow the city on the real Earth round a spot, as
->                       LongPlaytest --earth does; needs -Dcbs.earth=PATH-TO-earth-1.bin
+>                       LongPlaytest --earth does; needs -Dcbs.earth=PATH-TO-earth-2.bin
 > 
 > and, without a city or a window, the callers of a method in a recording
 > (JfrCallers): {@code UiProbe --callers file.jfr ham.citybuildersim.Game.nextMonth [rows]}

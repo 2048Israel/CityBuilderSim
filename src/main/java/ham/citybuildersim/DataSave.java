@@ -64,7 +64,7 @@ public class DataSave implements Cloneable {
      * on a generated world's - every save before 0.7.121 is one; the spot,
      * earthLat and earthLon (degrees, the projection's centre the site is
      * snapped from); and the data it was drawn from by identity, earthData
-     * ("earth-1:<hash>"), which a load needs here and the same (Game's load,
+     * ("earth-2:<hash>"), which a load needs here and the same (Game's load,
      * EarthSite.loadProblem()). The seed above decides the detail below the
      * data and the fields on both. SAVE_FORMAT 38: a format-37 build handed
      * an Earth city would found it on its seed's generated world.
@@ -261,6 +261,13 @@ public class DataSave implements Cloneable {
      * owned); a converted city's purchase records as its save had them
      * (landConverted, history); the twenty-four offers standing, every field
      * (LandParcel.offerRow(), 29 wide), and the next offer's id; and what has
+     * ET1 (spec-earth2-terrain 3.3): each of them has its dry ground by relief and
+     * its shallow sea in a key of its own, parallel to it - landCentreRelief
+     * (CityLand.RELIEF_AREAS figures), landHoldingsRelief and landOffersRelief (a
+     * row of them for each row of landHoldings and landOffers) - so no row is
+     * widened (a wider row is passed over by every save before) and a save with
+     * none reads all flat, which is what every generated city is.
+     *
      * been taken out of the ground, a resource at a time. The grid itself is
      * never written: the load replays the rectangles. Written in full rather
      * than drawn again from the world, for the reason the parcels always
@@ -284,6 +291,9 @@ public class DataSave implements Cloneable {
     private double[] landLanes;
     private double[][] landPurchases;
     private double[][] landOffers;
+    private double[] landCentreRelief;
+    private double[][] landHoldingsRelief;
+    private double[][] landOffersRelief;
     private Integer nextOfferId;
     private double[] depletion;
     /**
@@ -586,7 +596,7 @@ public class DataSave implements Cloneable {
     /** ...its longitude. */
     public Double getEarthLon() { return earthLon; }
 
-    /** The Earth's data the city was drawn from, by identity ("earth-1:<hash>", 0.7.121); null on a generated world. */
+    /** The Earth's data the city was drawn from, by identity ("earth-2:<hash>", 0.7.121); null on a generated world. */
     public String getEarthData() { return earthData; }
 
     /**
@@ -1069,6 +1079,17 @@ public class DataSave implements Cloneable {
         this.worldSeaTheta = worldSeaTheta;
     }
 
+    /**
+     * The city's ground by relief and shallow sea (ET1): the centre's, a row for each purchase and a row for each offer
+     * standing, each CityLand.RELIEF_AREAS figures in km2 (CityLand.centreReliefState(), holdingsReliefState(),
+     * LandMarket.getOffersReliefState()). Written beside the land, never inside its rows.
+     */
+    public void setCityLandRelief(double[] centre, double[][] holdings, double[][] offers) {
+        this.landCentreRelief = centre;
+        this.landHoldingsRelief = holdings;
+        this.landOffersRelief = offers;
+    }
+
     /** The centre's record: 24 wide in format 32, 25 (with a half-side) in format 31. */
     public double[] getLandCentre()         { return landCentre; }
     /** The centre's blocks (format 32). */
@@ -1084,6 +1105,12 @@ public class DataSave implements Cloneable {
     /** A format-31 save's purchases, 28 wide: read only to convert. */
     public double[][] getLandPurchases()    { return landPurchases; }
     public double[][] getLandOffers()       { return landOffers; }
+    /** The centre's dry ground by relief and shallow sea as saved (ET1), or null on a save from before: all flat. */
+    public double[] getLandCentreRelief()   { return landCentreRelief; }
+    /** The purchases' relief, a row each in landHoldings' order, or null: all flat. */
+    public double[][] getLandHoldingsRelief() { return landHoldingsRelief; }
+    /** The offers' relief, a row each in landOffers' order, or null: all flat. */
+    public double[][] getLandOffersRelief() { return landOffersRelief; }
     /** The next offer's id, 1 on a save that has none. */
     public int getNextOfferId()             { return nextOfferId != null ? nextOfferId : 1; }
     public double[] getDepletion()          { return depletion; }

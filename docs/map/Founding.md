@@ -47,7 +47,7 @@
 > ...OR THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 and
 > 6): a founding's world is its key (World.Key, since 0.7.115) - generated
 > from its seed, or the real Earth round a spot, its latitude and longitude,
-> drawn from the data the key names (EarthData.EARTH_1 for the game's), the
+> drawn from the data the key names (EarthData.EARTH_2 for the game's), the
 > seed deciding the detail below the data and the fields. The founding
 > screen offers Earth when the data is here (EarthSite.gameData()); saved as
 > DataSave's worldKind, earthLat, earthLon and earthData (SAVE_FORMAT 38). A
@@ -160,7 +160,7 @@
 | 325 | 3 | `public Founding withCurrency(Currency typed)` | The same founding with money the player named by hand - Currency.typed(), which is null when the typed pair does not pass, and problem() then says so. |
 | 330 | 3 | `public Founding withWorldSeed(long seed)` | The same founding on another world: the founding screen's World field and its dice (0.7.56). |
 | 335 | 3 | `public Founding withWorldKey(World.Key key)` | The same founding on the world a key names (0.7.115): an Earth world (onEarth()) or a harness's; a generated key is withWorldSeed(). |
-| 340 | 3 | `public Founding onEarth(double lat, double lon)` | The same founding on the real Earth round a spot (0.7.121, batch E4): its seed this founding's, its data the game's, EarthData.EARTH_1 - the founding screen's Earth. |
+| 340 | 3 | `public Founding onEarth(double lat, double lon)` | The same founding on the real Earth round a spot (0.7.121, batch E4): its seed this founding's, its data the game's, EarthData.EARTH_2 - the founding screen's Earth. |
 | 345 | 3 | `public Founding withMeanInflation(double meanInflation)` | The same founding with the world's mean inflation it is handed (Game.getFounding()), on the same world. |
 | 350 | 3 | `public static Founding legacy(double meanInflation)` | What a save from before 0.7.10 was founded with. |
 | 354 | 1 | `private static String clean(String name)` |  |
@@ -176,7 +176,7 @@
 | 373 | 1 | `public boolean isOnEarth()` | Whether it stands on the real Earth (0.7.121). |
 | 375 | 1 | `public double getEarthLat()` | On Earth, the spot's latitude in degrees - the projection's centre, which the site is snapped from; NaN on a generated world (0.7.121). |
 | 377 | 1 | `public double getEarthLon()` | ...and its longitude. |
-| 379 | 1 | `public String getEarthData()` | On Earth, the data it is drawn from, by identity ("earth-1:<hash>"); null on a generated world (0.7.121). |
+| 379 | 1 | `public String getEarthData()` | On Earth, the data it is drawn from, by identity ("earth-2:<hash>"); null on a generated world (0.7.121). |
 
 ### is it a city (lines 381-436)
 
