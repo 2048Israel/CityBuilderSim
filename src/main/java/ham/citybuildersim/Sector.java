@@ -426,11 +426,20 @@ public abstract class Sector {
         // ...every post, the builders' laid-off crews included (0.7.17): the
         // people laid off for want of work go back to those posts when the
         // work comes, so they are not spare for a new building. See
-        // BuildingManager.getPostsWithheld().
+        // BuildingManager.getPostsWithheld(). Since PT1-M4 the builders' posts
+        // count as taken only as far as their crews have filled them
+        // (Construction.crewsLaidOff()): a post nobody was ever laid off from,
+        // like the founding depot's, is nobody's to go back to. Every other
+        // sector's withheld posts (Freight's drivers, FR2) are added as before.
         BuildingManager bm = game.getBuildingManager();
         if (bm != null && bm.getPostsWithheld() > 0) {
             posts = posts.clone();
-            for (JobType job : JobType.values()) posts[WageBand.of(job).ordinal()] += bm.getPostsWithheld(job);
+            ham.citybuildersim.sectors.Construction builders = game.getSectors() == null ? null : game.getSectors().construction();
+            for (JobType job : JobType.values()) {
+                long held = bm.getPostsWithheld(job);
+                if (builders != null) held += builders.crewsLaidOff(job) - builders.postsWithheld(job);
+                posts[WageBand.of(job).ordinal()] += Math.max(0, held);
+            }
         }
         double[] supply = people.supplyByBand(posts);
         if (supply == null) return Staffing.ANY;

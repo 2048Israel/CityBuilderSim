@@ -6574,7 +6574,9 @@ public class BuildingManager {
      * job that comes back with the work, so what the city's planners weigh -
      * the landlords' jobs (sectors.RealEstate), the staff a new building could
      * find (Sector.staffableShare()) - is every post, these included; only
-     * the labour market and the wage bills take the posts offered.
+     * the labour market and the wage bills take the posts offered. (Since
+     * PT1-M4 the staffing test counts the builders' only as far as their
+     * crews have filled them - Sector.staffing(), Construction.crewsLaidOff().)
      *
      * KEYED BY THE OWNER, NOT THE OPERATOR (FR3): a sector lays off the posts
      * of the buildings it owns (the builders' crews, Freight's drivers on its

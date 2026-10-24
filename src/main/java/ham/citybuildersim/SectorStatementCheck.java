@@ -236,6 +236,12 @@ public class SectorStatementCheck {
      * four of them (37) from the people out of work - 140 people, half of them unemployed, staff 60% of a
      * convenience store and no other building - so no lossy building reached the land gate first. A village whose
      * builders have houses to build lays nobody off, and its unemployed fill the posts a new building asks.
+     *
+     * RE-CAUSED A SECOND TIME (PT1-M4, the crews laid off): the staffing test no longer counts the posts the
+     * builders withhold but only the crews they laid off (Construction.crewsLaidOff()), and a village that opens a
+     * shop earlier builds differently, so a hundred and twenty houses were done by month 9 and the builders had
+     * laid one crew off. A hundred and sixty are not (still within what the treasury pays for): the premise is
+     * read on the crews laid off, which is what the test reserves, not on the posts withheld.
      */
     static Game growingVillage(Path root) {
         Path dir = root.resolve("village");
@@ -245,19 +251,24 @@ public class SectorStatementCheck {
         try {
             quietly(() -> {
                 g.run();
-                LongPlaytest.villageBuild(g, "House", 120);
+                LongPlaytest.villageBuild(g, "House", VILLAGE_HOUSES);
                 LongPlaytest.run(g, 8);
             });
         } finally {
             LongPlaytest.out = was;
         }
-        out.printf("    (the growing village: %d months, %,d people, %,d of them out of work; %,d posts withheld by laid-off crews)%n",
+        long laidOff = 0;
+        for (JobType job : JobType.values()) laidOff += g.getSectors().construction().crewsLaidOff(job);
+        out.printf("    (the growing village: %d months, %,d people, %,d of them out of work; %,d posts withheld, %,d crews laid off)%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(), g.getPopulationManager().getUnemployed(),
-                g.getBuildingManager().getPostsWithheld());
+                g.getBuildingManager().getPostsWithheld(), laidOff);
         assertTrue("fixture: the growing village's builders are at work, laying nobody off, and some of its people are not",
-                g.getBuildingManager().getPostsWithheld() == 0 && g.getPopulationManager().getUnemployed() > 0);
+                laidOff == 0 && g.getPopulationManager().getUnemployed() > 0);
         return g;
     }
+
+    /** The houses the growing village's builders are given (PT1-M4): enough that at month 9 they have not yet laid a crew off. */
+    static final int VILLAGE_HOUSES = 160;
 
     /** Months played one at a time, each audited. */
     static void months(Game g, int n) {

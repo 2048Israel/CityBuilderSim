@@ -51,7 +51,7 @@ public class AllChecks {
         "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "ConversionCheck", "CalendarCheck", "BooksCheck", "WaterCheck",
         "EarthCheck", "EarthTerrainCheck", "EarthFoundingCheck", "EarthDepositsCheck", "GlobeCheck",
         "PolicyCheck", "LandCheck", "ZoningCheck", "ZoningViewCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck",
-        "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "SectorFlowCheck", "PolicyPreviewCheck",
+        "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "FoundingDepotCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "SectorFlowCheck", "PolicyPreviewCheck",
         "RestructureCheck", "BuybackCheck", "CallCheck", "ConservationCheck", "MoneyCheck", "GdpCheck", "HistoryCheck",
         "BankCheck", "ForeignCheck", "CurrencyCheck", "ExchangeRateCheck", "CurrencyRegimeCheck", "PassThroughCheck", "ForeignDebtCheck", "CapitalFlowCheck", "CarryTradeCheck", "EquityCheck", "ExchangeCheck", "MonetaryCheck", "ExpectationsCheck", "CurveCheck", "GroceryCheck", "SupplierCreditCheck", "CentralBankCheck", "FundCheck", "FundLedgerCheck", "HoldersCheck", "BondCheck", "OrderBookCheck",
         "DenominationCheck",
