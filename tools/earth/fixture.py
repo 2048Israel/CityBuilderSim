@@ -1,14 +1,16 @@
 # EarthCheck's fixture, cut from earth-2.bin (batch E1, 2026-10-10, from earth-1.bin; batch ET1, 2026-10-24, from
 # earth-2.bin). Two files, named for the file they are cut from (its meta layer's name):
 #   - earth-2-fixture.bin: the file's own layout (FORMAT.txt, FORMAT-2.txt) holding only the tiles EarthCheck reads -
-#     the three windows the study drew (Rotterdam, Perth, Paris), Fiji's four on the 180th meridian and Halifax's
-#     Narrows, every layer's blobs copied byte for byte, every other tile's index entry 0 (so it reads as uniform 0 or
-#     empty: it is not in the fixture), the whole-file layers copied, and the meta given a "fixture" key;
+#     the three windows the study drew (Rotterdam, Perth, Paris), Fiji's four on the 180th meridian, Halifax's
+#     Narrows and Medellin's valley, every layer's blobs copied byte for byte, every other tile's index entry 0
+#     (so it reads as uniform 0 or empty: it is not in the fixture), the whole-file layers copied, and the meta
+#     given a "fixture" key;
 #   - earth-2-fixture.expect: what earthread.py, this folder's reference reader, reads from those tiles, from the
 #     fixture and from the full file - for EarthCheck to hold the game's reader (EarthData) to, figure for figure.
 #     A line is tab-separated: scope (both = true of the fixture and the full file alike, fixture, full), kind,
 #     fields. EarthCheck reads every line; the full file's lines run when the file is named (-Dcbs.earth=<path>).
-#     The Narrows is a "narrows" line, not a "window": the other harnesses count the study's four windows.
+#     The Narrows and Medellin's valley are "narrows" lines, not "window"s: the other harnesses count the
+#     study's four windows.
 #   - given earth-1.bin the same script cuts earth-1-fixture.* as it did (no Narrows, none of the new layers).
 #   PYTHONPATH="$(cygpath -w ~/.cache/cbs-ensemble/py)" python -B tools/earth/fixture.py <earth-2.bin> src/main/resources/earth
 #   (-B: no __pycache__ in the tree; numpy is where PYTHONPATH says, so not -I.)
@@ -26,6 +28,12 @@ WINDOWS = [('Rotterdam', 52 + 86 / 240, 3 + 187 / 240, 217, 337),
 # Halifax's Narrows, 44.60-44.72 N and 63.50-63.70 W: a strait a few hundred metres wide between Halifax and Dartmouth
 # (FORMAT-2.txt: one landmass, the sea there shallow). Only an earth-2 file has it.
 NARROWS = ('Halifax Narrows', 44.72, -63.70, 29, 48)
+# Medellin's valley, 6.10-6.40 N and 75.73-75.43 W (one 1-degree tile): the valley floor flat and its hillsides steep,
+# for the relief plane (batch ET1, slice B2: EarthTerrainCheck 17). Only an earth-2 file has it.
+MEDELLIN = ('Medellin valley', 6.40, -75.73, 72, 72)
+# ...with its 15" tiles alone, not the 4' band it lies in: a band added would move every far node the other harnesses
+# hold to the bytes of 0.7.131 (GlobeCheck 4's whole-world node reads every band the fixture has).
+BANDLESS = {MEDELLIN[0]}
 FIJI = [(-17, 179), (-17, -180), (-18, 179), (-18, -180)]   # the 180th meridian (spec-earth 2: no seam)
 FIJI_SPOT = (-17.0, 180.0)
 RING = 2                                    # the full file's wider areas: 2 degrees round each window
@@ -246,8 +254,10 @@ def main():
     if relief:
         n, a, o, r, c = NARROWS
         windows.append((n, 'narrows', window_tiles(a, o, r, c), (a - r / 480, o + c / 480)))
+        n, a, o, r, c = MEDELLIN
+        windows.append((n, 'narrows', window_tiles(a, o, r, c), (a - r / 480, o + c / 480)))
     tiles = sorted({t for _, _, ts, _ in windows for t in ts})
-    bands = sorted({t // 360 for t in tiles})
+    bands = sorted({t // 360 for n, _, ts, _ in windows if n not in BANDLESS for t in ts})
     os.makedirs(outdir, exist_ok=True)
     fixture_path = os.path.join(outdir, name + '-fixture.bin')
     fixture = cut(E, name, full_sha, full_bytes, tiles, bands, fixture_path)
@@ -301,7 +311,7 @@ def main():
             point_line(E, 'both', wname, sla, slo, L)
         st, un = segments(E, ts)
         L.append(('both', 'segments', wname, st, un))
-        for b in sorted({t // 360 for t in ts}):
+        for b in sorted({t // 360 for t in ts if wname not in BANDLESS}):
             lat0 = b - 90
             lons = sorted({t % 360 - 180 for t in ts})
             for lname in FAR:

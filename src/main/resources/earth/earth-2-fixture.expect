@@ -1,37 +1,37 @@
 # What tools/earth/earthread.py reads from earth-2.bin and from EarthCheck's fixture cut from it;
 # written by tools/earth/fixture.py, read by EarthCheck. Tab-separated: scope, kind, fields.
-fixture	file	140aecea27cef6dda22a3eb34c826a3fd72da5d60fe9464d90a444dabcddc768	532958
+fixture	file	d441f1ea5197e98c80bc8025c51612fe6301f3043a5779e415eeac6d994bdfd8	571134
 full	file	c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b	281761695
 fixture	of	earth-2:c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b
 fixture	table	sea	0	240	730	353	1083	23296
 fixture	index	sea	f3ec806e7c399905c21966e6ce50feda35ac6173ad893af8d79cad62079c42ed
-fixture	table	lake	0	240	24379	304	24683	4751
-fixture	index	lake	21605e2d280185be1f07f4ce4f7c9b134e7b9d5d48ce8f6a751d0b3c785233e2
-fixture	table	lakes.small	0	0	29434	348	29782	4957
-fixture	index	lakes.small	a249887db9374fb3a5fbf1b761d1ea44eaa57a36555a1c82788b2ba2b175fb36
-fixture	table	rivers	0	0	34739	343	35082	29212
-fixture	index	rivers	f19cbda7cea366cbb19d13cb63d16f230896a71f1249206922001b4929bf01c9
-fixture	table	landcover	0	30	64294	355	64649	5981
-fixture	index	landcover	9d5d16bef3d031f3e738c127a2fb598690c38a7f166f00bc5ddfb57071430433
-fixture	table	far.land	1	15	70630	49	70679	42719
+fixture	table	lake	0	240	24379	310	24689	5215
+fixture	index	lake	180852ca89c44819535fa6cbd835c3f6afe5ae6f80415c0b80a892633d527151
+fixture	table	lakes.small	0	0	29904	353	30257	5001
+fixture	index	lakes.small	691c3f4e72ba838c308f57a613cb0a792091ff0cf3709adfca8426df64df2fd4
+fixture	table	rivers	0	0	35258	349	35607	33177
+fixture	index	rivers	ed060240a3f8b2069da7c5bc7af6ca034fa7f832c32258d9628aabb056c9e7f8
+fixture	table	landcover	0	30	68784	360	69144	6462
+fixture	index	landcover	688244cc9c14ff3783c34d6d593a36641dd87f0d290856b3367b209ac0b36237
+fixture	table	far.land	1	15	75606	49	75655	42719
 fixture	index	far.land	7c481ddf8db2ed76783f198604c316ea444a4f296eae88f4952d136504a49e52
-fixture	table	far.lake	1	15	113398	47	113445	27823
+fixture	table	far.lake	1	15	118374	47	118421	27823
 fixture	index	far.lake	eb837fbb429f99ecdc162189a2fccd9c07a25dbe3211ee3640597e0e9e252128
-fixture	table	geology	2	4	141268	0	141268	47318
-fixture	table	provinces	2	0	188586	0	188586	13273
-fixture	table	places	2	0	201859	0	201859	141188
-fixture	table	slope	0	240	343047	369	343416	89152
-fixture	index	slope	0afc43c998b23fd2db28cd9348bc2c226093d6caf09453afd9ffcc8105e717e3
-fixture	table	shallow	0	240	432568	349	432917	28339
+fixture	table	geology	2	4	146244	0	146244	47318
+fixture	table	provinces	2	0	193562	0	193562	13273
+fixture	table	places	2	0	206835	0	206835	141188
+fixture	table	slope	0	240	348023	373	348396	122132
+fixture	index	slope	d1214209178c766c38bc40f8c51e093b07e3860471c658bf317b28bb226dc24c
+fixture	table	shallow	0	240	470528	349	470877	28339
 fixture	index	shallow	73fcaf9d744092efdd516d8cc933804dd68bbd6854ceea9ca6050d0763505284
-fixture	table	depth	0	60	461256	340	461596	17322
+fixture	table	depth	0	60	499216	340	499556	17322
 fixture	index	depth	4e80b4e09b0f3036b6d94d6869772133a0f79cd84f330a3c6d56526ac2182a7c
-fixture	table	slope.est	2	0	478918	0	478918	925
-fixture	table	landmass	0	240	479843	351	480194	9648
-fixture	index	landmass	4d69ecd7fba02772f98d61f09284f13d4c494c49dbf632e09698bd8381183361
-fixture	table	landmasses	2	0	489842	0	489842	38665
-fixture	table	meta	2	0	528507	0	528507	4451
-fixture	whole	meta	56013a5a8e517513adde63086b2c38ca86a5b1e506aac180014e7b6480e26a72
+fixture	table	slope.est	2	0	516878	0	516878	925
+fixture	table	landmass	0	240	517803	355	518158	9856
+fixture	index	landmass	dab7ed3f7632c82ef79c848e3e58d83edd9e38d36e45b1dd803e754fec150eb5
+fixture	table	landmasses	2	0	528014	0	528014	38665
+fixture	table	meta	2	0	566679	0	566679	4455
+fixture	whole	meta	46a236486b31927fea077861c173dbe84b295472f6317fe8244aae014074f31a
 full	table	sea	0	240	730	21834	22564	6357537
 full	index	sea	e8ecfb4495772654d7edb3768d4ca8a21f6e9d6042dcf19d7afe75f9f07f7e15
 full	table	lake	0	240	6380101	18485	6398586	6023071
@@ -2614,6 +2614,111 @@ both	cell	far.lake	134	1	1746	36
 both	cell	far.lake	134	1	1745	52
 both	cell	far.lake	134	4	1750	53
 both	spot	far.lake	44.65958333333333	-63.6	134	5	1746	0
+both	narrows	Medellin valley	6.25	-75.58	34664
+both	tile	sea	34664	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	lake	34664	464	5a6e868a71d6ca8c36fe966f7bff6e52edda453d85524bdefbed7f8919a1d795
+both	tile	landcover	34664	481	3cdd4d6bef3c6fd89d80244151b2fd75b0f08e6ed69daa6d07413423358038bd
+both	tile	slope	34664	32980	96510e3f103052bff945117d19e20346051a0899857b22a2fe2a9c74e8b126c3
+both	tile	shallow	34664	0	c72274a22cba2dcef62e0f62834446ee39b0cd95ad0faa27a89b3b49f48aa390
+both	tile	depth	34664	0	967eedb2dc77a95e6270119ece23d9f47ca97c3b18ffa7d391d34e461b284f4c
+both	tile	lakes.small	34664	44	fe8b0410369e60c6ced4878ddc1a99719dd3a86d12b8ed7f770fa04565166d68
+both	tile	rivers	34664	3965	352782229b5641912e3e990c1937162e7f00454691f5bce1a8564b1b0f08d6b3
+both	tile	landmass	34664	208	0165ccd768efbaf1a979c84e99ae665a2ee7b9d9973bcd396e59c2b52e1c33a3
+both	rivers	34664	3	1023	90d6f5f37e4532890a12d4970de7e8668b6170d1e30fee9c08d337e0c61c09fc
+both	lakes	34664	7	84af21a34a094b783aba3e929931de8c2fe970cd5628b17b7c72bca3d53847a8
+both	slopeest	34664	0
+both	landmasstile	34664	2	cd04a4754498e06db5a13c5f371f1f04ff6d2470f24aa9bd886540e5dce77f70	d7676ece73962ff4f6f6f35800ff4ea1a30e2df27d3a47d5bb79765ef4d7006d
+both	cell	sea	34664	0	0	0
+both	spot	sea	6.25	-75.58	34664	180	100	0
+both	cell	lake	34664	0	0	0
+both	cell	lake	34664	163	193	1
+both	cell	lake	34664	163	186	2
+both	cell	lake	34664	163	192	3
+both	cell	lake	34664	165	186	4
+both	cell	lake	34664	164	196	5
+both	cell	lake	34664	163	187	6
+both	cell	lake	34664	163	197	7
+both	cell	lake	34664	164	193	8
+both	cell	lake	34664	163	199	9
+both	cell	lake	34664	164	199	10
+both	cell	lake	34664	164	187	11
+both	cell	lake	34664	164	194	12
+both	cell	lake	34664	166	189	13
+both	cell	lake	34664	164	198	14
+both	cell	lake	34664	166	188	15
+both	spot	lake	6.25	-75.58	34664	180	100	0
+both	cell	landcover	34664	9	23	2
+both	cell	landcover	34664	5	15	3
+both	cell	landcover	34664	0	14	4
+both	cell	landcover	34664	0	15	5
+both	cell	landcover	34664	0	18	6
+both	cell	landcover	34664	0	21	7
+both	cell	landcover	34664	0	13	8
+both	cell	landcover	34664	0	5	9
+both	cell	landcover	34664	0	6	10
+both	cell	landcover	34664	0	7	11
+both	cell	landcover	34664	0	2	12
+both	cell	landcover	34664	0	3	13
+both	cell	landcover	34664	0	0	14
+both	cell	landcover	34664	1	1	15
+both	cell	landcover	34664	20	13	19
+both	cell	landcover	34664	18	16	20
+both	spot	landcover	6.25	-75.58	34664	22	12	3
+both	cell	slope	34664	22	221	0
+both	cell	slope	34664	0	127	5
+both	cell	slope	34664	102	48	10
+both	cell	slope	34664	0	100	15
+both	cell	slope	34664	0	113	23
+both	cell	slope	34664	26	173	37
+both	cell	slope	34664	0	23	47
+both	cell	slope	34664	47	225	77
+both	cell	slope	34664	9	166	86
+both	cell	slope	34664	4	19	95
+both	cell	slope	34664	0	45	110
+both	cell	slope	34664	97	158	142
+both	cell	slope	34664	21	77	158
+both	cell	slope	34664	2	45	174
+both	cell	slope	34664	0	9	191
+both	cell	slope	34664	0	26	255
+both	spot	slope	6.25	-75.58	34664	180	100	0
+both	cell	shallow	34664	0	0	0
+both	spot	shallow	6.25	-75.58	34664	180	100	0
+both	cell	depth	34664	0	0	0
+both	spot	depth	6.25	-75.58	34664	45	25	0
+both	vertex	34664	0	0	7.00076	-75.80929	127.0	0.0
+both	vertex	34664	0	209	6.46861	-75.82618	201.0	0.0
+both	vertex	34664	0	418	5.99833	-75.83209	135.0	0.0
+both	vertex	34664	1	0	7.00118	-75.06469	45.0	0.0
+both	vertex	34664	1	277	6.59327	-75.15908	51.0	0.0
+both	vertex	34664	1	553	6.20137	-75.58009	42.0	0.0
+both	vertex	34664	2	0	7.00002	-75.26799	68.0	0.0
+both	vertex	34664	2	25	6.96486	-75.29785	30.0	0.0
+both	vertex	34664	2	49	6.94653	-75.32798	42.0	0.0
+both	lake	34664	0	6.103	-75.4961	1.1313708498984762
+both	lake	34664	3	6.5124	-75.4799	9.05096679918781
+both	lake	34664	6	6.7837	-75.1258	9.870149282610821
+both	slopeb	34664	22	221	0	0.0	0.0	0.0
+both	slopeb	34664	0	127	5	0.7142857142857143	0.0	0.0
+both	slopeb	34664	102	48	10	0.2857142857142857	0.14285714285714285	0.0
+both	slopeb	34664	0	100	15	1.0	0.14285714285714285	0.0
+both	slopeb	34664	0	113	23	1.0	0.2857142857142857	0.0
+both	slopeb	34664	26	173	37	0.7142857142857143	0.5714285714285714	0.0
+both	slopeb	34664	0	23	47	1.0	0.7142857142857143	0.0
+both	slopeb	34664	47	225	77	0.7142857142857143	0.14285714285714285	0.047619047619047616
+both	slopeb	34664	9	166	86	0.8571428571428571	0.2857142857142857	0.09523809523809523
+both	slopeb	34664	4	19	95	1.0	0.42857142857142855	0.14285714285714285
+both	slopeb	34664	0	45	110	0.8571428571428571	0.7142857142857143	0.2380952380952381
+both	slopeb	34664	97	158	142	0.8571428571428571	0.14285714285714285	0.09523809523809523
+both	slopeb	34664	21	77	158	0.8571428571428571	0.42857142857142855	0.2857142857142857
+both	slopeb	34664	2	45	174	0.8571428571428571	0.7142857142857143	0.4761904761904762
+both	slopeb	34664	0	9	191	1.0	1.0	0.6666666666666666
+both	slopeb	34664	0	26	255	1.0	1.0	1.0
+both	shallowb	34664	0	0	0	0.0
+both	depthb	34664	0	0	0	0.0
+both	landmasscell	34664	163	199	0
+both	landmasscell	34664	0	0	2
+both	point	Medellin valley	6.25	-75.58	0	0	0	2	0
+both	segments	Medellin valley	1020	1020
 both	area	0	0.1
 both	area	1	0.10905077326652578
 both	area	2	0.11892071150027211
@@ -3242,6 +3347,7 @@ both	geology	Perth	-31.95625	115.76041666666666	854
 both	geology	Paris	48.856249999999996	2.3395833333333336	164
 both	geology	Fiji	-17.0	180.0	993
 both	geology	Halifax Narrows	44.65958333333333	-63.6	161
+both	geology	Medellin valley	6.25	-75.58	665
 both	geology	Rotterdam NW	52.358333333333334	3.779166666666667	126
 both	geology	Rotterdam SE	51.454166666666666	5.183333333333334	126
 both	geology	Perth NW	-31.504166666666666	115.20833333333333	854
@@ -3252,6 +3358,7 @@ both	geology	Yilgarn	-31.95	117.35	851
 both	province	126	4036	Anglo-Dutch Basin	basin	12640.0
 both	province	161	5219	Appalachian Foldbelt	fold belt	0.0
 both	province	164	4040	Anglo-Paris Basin	basin	0.0
+both	province	665	6106	West-Central Cordillera	fold belt	0.0
 both	province	851	3974	Yilgarn Block	shield	0.0
 both	province	854	3952	Perth Basin	basin	0.0
 both	province	993	1	Ocean	other	0.0
