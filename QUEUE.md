@@ -86,6 +86,7 @@ stuff".
 | XR5 | The currency regimes' rest: a peg pays the pressure, not the month's balance; the tied path prices the curve under a peg; the overshoot both ways; a warning when a thin vault pegs (Jerus, 2026-10-23, on XR2's ★4, ★5 and the review's two: "Pay the pressure", "Price on the tied path") | [XR5](docs/queue/XR5.md) |
 | AN2 | AN1's leftovers: the D$ the goods are struck at on Trade › The currency, and the Earth playtest (Rotterdam) with the anchor (Jerus, 2026-10-23: "Queue both, small") | [AN2](docs/queue/AN2.md) |
 | FX9 | Ground bought into an open cell gets the cell's own streets, nothing standing moved, so piecemeal land is built on (Jerus, 2026-10-23, on FX6's ★1: "Extend the streets") | [FX9](docs/queue/FX9.md) |
+| BP1 | The batch process cheaper and quicker: a fresh orchestrator each day, sessions that end turns only when done or blocked, one full suite per batch at the gate, the version set by ship.sh, stranger's reviews for money, saves and threading only, Sonnet for small fix batches, a shorter CLAUDE.md, the orchestrator answering what it safely can and taking the recommended calls, a screen-check session that may write slots 7-9 (Jerus, 2026-10-23: "yes, all recs"); after TM2, which shares batch-check.sh | [BP1](docs/queue/BP1.md) |
 
 ## Pending
 
