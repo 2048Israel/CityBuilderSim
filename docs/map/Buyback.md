@@ -35,7 +35,7 @@
 
 **Uses:** [Auction](Auction.md) (7), [OutwardInvestment](OutwardInvestment.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Debt](Debt.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
-**Used by (5):** [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md)
+**Used by (6):** [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md)
 
 ## Sections
 

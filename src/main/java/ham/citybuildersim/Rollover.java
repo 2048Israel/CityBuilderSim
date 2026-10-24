@@ -111,7 +111,8 @@ public final class Rollover {
     /**
      * One issue the rollover makes: the instrument by the quote functions'
      * names ("Note", "Serial", "Term": the bill, the amortizing bond and the
-     * bond since CD2), its term in their units (months for a bill, years for
+     * bond since CD2; "Float" and "Linked": the floating-rate note and the
+     * inflation-linked bond since CD5), its term in their units (months for a bill, years for
      * the rest), whether it is sold abroad in dollars, the
      * cash it must bring in local money, the face its quote gives for that
      * cash as the books stand (in local money at the day's rate, for dollar
@@ -126,6 +127,8 @@ public final class Rollover {
             String what = switch (type) {
                 case "Note"   -> term + "-month bill";
                 case "Serial" -> term + "-year amortizing bond";
+                case "Float"  -> term + "-year floating-rate note";
+                case "Linked" -> term + "-year inflation-linked bond";
                 default       -> term + "-year bond";
             };
             return "a " + what + (foreign ? " in dollars" : "");

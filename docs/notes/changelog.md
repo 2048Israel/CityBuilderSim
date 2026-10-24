@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.35 — CD5, floating and linked paper — 2026-10-23, ready, see docs/queue/CD5-notes.md
+
+The city can sell two more kinds of paper at its auction (spec-city-debt §2.4, §2.5, §5.3; D25, D31). A floating-rate
+note at 2 or 5 years pays each month's policy rate plus a margin fixed at the sale, so it sells near 100 and the city
+carries the dial's risk; its effective rate resets with the coupon. An inflation-linked bond at 10 or 30 years pays a
+real coupon on a principal that follows the price index and repays the indexed face, never under the original (the
+deflation floor); each indexation is booked as "Inflation uplift on linked bonds", an expense paid in cash only at
+maturity. Both are priced, bought back and valued on the dial and the index the market expects, and roll into their own
+kind. Borrow has Floating and Linked tiles with today's fair margin and real coupon; Finances and the Government tab
+carry the uplift. The money closes (FloatLinkCheck); nothing sells them unasked, so the default playtest's trace is
+byte-identical and the ensemble was not run.
+
 ### 0.8.34 — PT1-M3, the advice card says what automatic building holds back — 2026-10-23, ready, see docs/queue/PT1-M3-notes.md
 
 WHAT WOULD HELP MOST offered a Middle School and a Police Station that automatic building held back, and only the inbox
