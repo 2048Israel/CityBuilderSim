@@ -1200,7 +1200,8 @@ public class BusinessDebtManager {
        (writeDownSector(), writeDownInterim(), and the bonds' through
        recordBondWriteOff()), a bond sold and repaid (BondBook's
        faceIssuedSoFar(), faceRepaidSoFar()) - as running totals in memory,
-       from nothing at a founding or a load, scaled by a reform. The
+       from nothing at a founding, carried on from the save's at a load
+       since FW2 (restoreMoved()), scaled by a reform. The
        statements read them where R2 is read and take the difference a month
        apart, so the roll-forward's window is the sheet's: from last month's
        sheet to this month's. Nothing else reads them.
@@ -1228,6 +1229,41 @@ public class BusinessDebtManager {
             out[REPAID][1] += bondBook.faceRepaidSoFar(sector);
         }
         return out;
+    }
+
+    /** Every sector's debtMovedByKind() as it stands, for the save (FW2, 2026-10-24). */
+    public Map<String, double[][]> movedToSave() {
+        Map<String, double[][]> out = new LinkedHashMap<>();
+        for (String s : SECTORS) out.put(s, debtMovedByKind(s));
+        return out;
+    }
+
+    /**
+     * ...and put back at the end of a load (FW2), so the totals carry on
+     * from where the saved city's stood and R7's schedule a month on
+     * differences two readings of one series: debtMovedByKind() reads the
+     * saved figures again, whatever the load's rebuild counted on the way
+     * and whatever the bond book counts from nothing. A save from before FW2
+     * has none, and the totals start from nothing, as they did.
+     */
+    public void restoreMoved(Map<String, double[][]> saved) {
+        if (saved == null) return;
+        int n = DEBT_KINDS.length;
+        moved.clear();
+        for (Map.Entry<String, double[][]> e : saved.entrySet()) {
+            double[][] m = e.getValue();
+            if (e.getKey() == null || m == null || m.length != 3) continue;
+            double[] all = new double[3 * n];
+            for (int f = 0; f < 3; f++) {
+                if (m[f] == null || m[f].length != n) continue;
+                System.arraycopy(m[f], 0, all, f * n, n);
+            }
+            if (bondBook != null) {
+                all[BORROWED * n + 1] -= bondBook.faceIssuedSoFar(e.getKey());
+                all[REPAID * n + 1] -= bondBook.faceRepaidSoFar(e.getKey());
+            }
+            moved.put(e.getKey(), all);
+        }
     }
 
     public double getTotalPrincipal() {

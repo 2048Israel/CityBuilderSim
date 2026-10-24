@@ -13335,6 +13335,8 @@ public class Game {
         // ...and the graduates the next census carries the loans of (0.7.63).
         dataSave.setHouseholdGraduates(householdBalance.graduatesToSave());
         dataSave.setBankCash(bank.getCash());
+        // ...and its deposit book as the month last set it (FW2): the load re-reads the city's after the month.
+        dataSave.setBankDeposits(bank.getHouseholdDeposits(), bank.getSectorDeposits());
         dataSave.setBankBranchesCapitalised(bank.getBranchesCapitalised());
         dataSave.setBankProfitLastMonth(bank.getProfitLastMonth());
         dataSave.setBankDepositRate(bank.depositRate());
@@ -13541,6 +13543,9 @@ public class Game {
         dataSave.setNotices(inbox.all());
         dataSave.setSectorBooks(sectorBooks.thisMonth());
         dataSave.setSectorBooksBefore(sectorBooks.lastMonth());
+        // ...the debt their sheets split, both months, and what had moved it so far (FW2; R1, R2 and R7).
+        dataSave.setSectorDebt(sectorBooks.debtToSave(true), sectorBooks.debtToSave(false));
+        dataSave.setCreditMoved(economyManager.getBusinessDebtManager().movedToSave());
         dataSave.setTreasuryMonth(treasuryMonthToSave());
         dataSave.setTreasuryJournal(treasuryJournal.closedLabels(), treasuryJournal.closedAmounts(),
                 treasuryJournal.pendingLabels(), treasuryJournal.pendingAmounts());
@@ -16847,6 +16852,8 @@ public class Game {
             inbox.restoreFrom(loaded.getNotices());
             sectorBooks.restoreFrom(loaded.getSectorBooks(),
                     loaded.getSectorBooksBefore());
+            // ...and the debt their sheets split, both months (FW2): an older save has none, and reads not counted.
+            sectorBooks.restoreDebt(loaded.getSectorDebt(), loaded.getSectorDebtBefore());
             // ...whose share capital a save from before 0.7.75 did not keep: derived from the register's (R3).
             if (loaded.getSaveFormat() < Equity.PAID_IN_FORMAT) sectorBooks.derivePaidIn(equity);
             restoreTreasuryMonth(loaded.getTreasuryMonth());
@@ -17746,6 +17753,22 @@ public class Game {
 
         priceTheDebtMarket();
         refreshBank();
+        /*
+         * ...ITS DEPOSIT BOOK AS THE MONTH LAST SET IT (FW2, 2026-10-24;
+         * F-S1-1). refreshBank() reads the families' savings and the
+         * businesses' tills as they stand after the month, and the month last
+         * set the book before they moved: the bank's sheet after a load moved
+         * its borrowings between its deposits and the window ($131.9M in the
+         * test player's city at month 364). The saved book is put back over
+         * the re-read, before anything reads the bank's funding; an older save
+         * keeps the re-read.
+         */
+        if (restoredFlows != null && restoredFlows.getBankHouseholdDeposits() != null
+                && restoredFlows.getBankSectorDeposits() != null) {
+            bank.restoreDeposits(restoredFlows.getBankHouseholdDeposits(), restoredFlows.getBankSectorDeposits());
+        }
+        // ...and what had moved each sector's debt so far (FW2, R7), over whatever the rebuild counted.
+        if (restoredFlows != null) economyManager.getBusinessDebtManager().restoreMoved(restoredFlows.getCreditMoved());
         /*
          * A BANK FROM BEFORE 0.7.8 HAS SET NOTHING ASIDE, and is given the
          * allowance its borrowers call for now that they are all back - with

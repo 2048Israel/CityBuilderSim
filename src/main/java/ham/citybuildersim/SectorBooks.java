@@ -400,10 +400,10 @@ public final class SectorBooks {
      * the bill it handed the sector at the top of the month, so it adds to
      * `interest`; the debt its split of the principal the sheet was last
      * pushed with, so it adds to `bondsPayable`. Either is null when it was
-     * not read. Kept for this month and last in memory and NOT SAVED: after
-     * a load both months read as not counted until a month has run - the
-     * rule the flows' units keep (B14) - which is what the spec asks of R1,
-     * R2 and R7 alike.
+     * not read. Kept for this month and last, and SAVED since FW2
+     * (2026-10-24; debtToSave(), restoreDebt()): until then a load read both
+     * months as not counted until a month had run, and the sheet's debt as
+     * one line. A save from before FW2 still reads so.
      *
      * ...AND SINCE 0.7.75 (R2's rate and "runs to", R7): the rate each kind
      * pays a year, weighted by what is owed on it, and the month the last of
@@ -726,12 +726,77 @@ public final class SectorBooks {
         return new java.util.ArrayList<>(from.values());
     }
 
+    /**
+     * R1 and R2 as the books took them, this month's or last month's (FW2,
+     * 2026-10-24), for the save: each sector's record as DEBT_ROWS rows of
+     * fresh arrays - interest, owed, within a year, within five, rate, runs
+     * to, then moved's three rows and movedAtClose's, a missing part a null
+     * row. Rows and not the record, because a record holding arrays is a
+     * mutable object the autosave's snapshot cannot copy (SaveSlotCheck), and
+     * a copy, because the autosave writes off the clock. Only the records
+     * whose every figure a save can hold: a NaN would fail the whole save,
+     * and a record left out reads not counted, as every one did before FW2.
+     */
+    public Map<String, double[][]> debtToSave(boolean thisMonth) {
+        Map<String, double[][]> out = new LinkedHashMap<>();
+        for (Map.Entry<String, Debt> e : (thisMonth ? debtNow : debtBefore).entrySet()) {
+            double[][] rows = rowsOf(e.getValue());
+            if (rows != null && finite(rows)) out.put(e.getKey(), rows);
+        }
+        return out;
+    }
+
+    /** The rows a saved Debt is written as: six arrays, then moved's three and movedAtClose's three. */
+    public static final int DEBT_ROWS = 12;
+
+    private static double[][] rowsOf(Debt d) {
+        if (d == null) return null;
+        double[][] rows = new double[DEBT_ROWS][];
+        double[][] six = { d.interest(), d.owed(), d.withinYear(), d.withinFive(), d.rate(), d.runsTo() };
+        for (int r = 0; r < 6; r++) rows[r] = six[r] == null ? null : six[r].clone();
+        for (int r = 0; r < 3; r++) {
+            rows[6 + r] = d.moved() == null || d.moved().length != 3 || d.moved()[r] == null ? null : d.moved()[r].clone();
+            rows[9 + r] = d.movedAtClose() == null || d.movedAtClose().length != 3 || d.movedAtClose()[r] == null
+                    ? null : d.movedAtClose()[r].clone();
+        }
+        return rows;
+    }
+
+    private static Debt debtOf(double[][] rows) {
+        if (rows == null || rows.length != DEBT_ROWS) return null;
+        double[][] moved = rows[6] == null || rows[7] == null || rows[8] == null ? null
+                : new double[][] { rows[6].clone(), rows[7].clone(), rows[8].clone() };
+        double[][] atClose = rows[9] == null || rows[10] == null || rows[11] == null ? null
+                : new double[][] { rows[9].clone(), rows[10].clone(), rows[11].clone() };
+        double[][] six = new double[6][];
+        for (int r = 0; r < 6; r++) six[r] = rows[r] == null ? null : rows[r].clone();
+        return new Debt(six[0], six[1], six[2], six[3], six[4], six[5], moved, atClose);
+    }
+
+    private static boolean finite(double[][] rows) {
+        for (double[] a : rows) if (a != null) for (double v : a) if (!Double.isFinite(v)) return false;
+        return true;
+    }
+
+    /**
+     * ...and put back by the load path after restoreFrom() (FW2): a loaded
+     * city's sheets split their debt, and its income statements their
+     * interest, as the saved city's did. A save from before FW2 has neither,
+     * and its books read them not counted until a month runs, as before.
+     */
+    public void restoreDebt(Map<String, double[][]> saved, Map<String, double[][]> savedBefore) {
+        debtNow.clear();
+        debtBefore.clear();
+        if (saved != null) saved.forEach((k, v) -> { Debt d = debtOf(v); if (k != null && d != null) debtNow.put(k, d); });
+        if (savedBefore != null) savedBefore.forEach((k, v) -> { Debt d = debtOf(v); if (k != null && d != null) debtBefore.put(k, d); });
+    }
+
     public void restoreFrom(java.util.List<SectorMonth> saved,
                             java.util.List<SectorMonth> savedBefore) {
         now.clear();
         before.clear();
         lastCash.clear();
-        // ...and R1, R2 and the shares are not saved (0.7.74): not counted until a month runs.
+        // ...and R1 and R2, which the load puts back after this (restoreDebt(), FW2); the shares are not saved (0.7.74): not counted until a month runs.
         debtNow.clear();
         debtBefore.clear();
         sharesNow.clear();

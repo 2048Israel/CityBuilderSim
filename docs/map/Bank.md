@@ -1,4 +1,4 @@
-# Bank.java - 6,539 lines · 447 methods · 57 constants · model
+# Bank.java - 6,555 lines · 448 methods · 57 constants · model
 
 `ham/citybuildersim/Bank.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -116,9 +116,9 @@
 | 6247 | · in words |
 | 6309 | · what its book weighs |
 | 6352 | · its funding |
-| 6368 | · another branch |
-| 6382 | · how its equity moved |
-| 6435 | · its equity, in two parts |
+| 6384 | · another branch |
+| 6398 | · how its equity moved |
+| 6451 | · its equity, in two parts |
 
 ## Enum constants
 
@@ -390,14 +390,14 @@
 | 5910 | `private int statementsFiled` |  |
 | 6124 | `private final double[][] sheetRing` | The sheet at the top of each of the last YEAR_MONTHS months - every line, then the loans and the interim financing by sector - filed at startMonth() before anything moves, so the oldest is the sheet exactly a year bef... |
 | 6125 | `private int sheetsFiled` |  |
-| 6477 | `private double paidInOpening, retainedOpening` | ITS EQUITY, IN TWO PARTS (0.7.13, round 2). |
-| 6478 | `private boolean splitKnown` |  |
+| 6493 | `private double paidInOpening, retainedOpening` | ITS EQUITY, IN TWO PARTS (0.7.13, round 2). |
+| 6494 | `private boolean splitKnown` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 6467 | **type** `public class Bank` | The city's commercial bank: every loan in it, and every default. |
+| 73 | 6483 | **type** `public class Bank` | The city's commercial bank: every loan in it, and every default. |
 
 ### the dials (lines 75-191)
 
@@ -1026,44 +1026,45 @@
 | 6329 | 17 | `public java.util.List<WeightRow> weightTable()` | Every row, the desk's shares included: the weighted column foots to getWeightedBook(). |
 | 6347 | 4 | `private static WeightRow weightRow(Book book, double face, double risk, double weighted)` |  |
 
-### its funding (lines 6352-6367)
+### its funding (lines 6352-6383)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 6355 | 1 | `public double getHouseholdDeposits()` | What the families have banked with it. |
 | 6357 | 1 | `public double getSectorDeposits()` | ...and what the businesses hold in credit. |
-| 6360 | 1 | `public double getPaidInPerBranch()` | What its owners put up when a branch opens, in today's money: PAID_IN_PER_BRANCH, reformed, and struck at the expected price level since 0.7.42 (seedConstants()). |
-| 6363 | 1 | `public double localDeposits()` | The city's own savings with it: everything banked, less the world's - all of it gathered since 0.7.19 (depositsGathered()). |
-| 6366 | 1 | `public double fundingLimit()` | What its funding would carry: what it gathered, lent LEVERAGE times over - the second of capacity()'s two limits. |
+| 6369 | 5 | `public void restoreDeposits(double household, double sector)` | The deposit book as the month last set it, put back by the load path (FW2, 2026-10-24; F-S1-1). |
+| 6376 | 1 | `public double getPaidInPerBranch()` | What its owners put up when a branch opens, in today's money: PAID_IN_PER_BRANCH, reformed, and struck at the expected price level since 0.7.42 (seedConstants()). |
+| 6379 | 1 | `public double localDeposits()` | The city's own savings with it: everything banked, less the world's - all of it gathered since 0.7.19 (depositsGathered()). |
+| 6382 | 1 | `public double fundingLimit()` | What its funding would carry: what it gathered, lent LEVERAGE times over - the second of capacity()'s two limits. |
 
-### another branch (lines 6368-6381)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6371 | 1 | `public double capacityAnotherBranchWouldAdd()` | The capacity one more branch would add: the capital it would open with, since 0.7.19 - it brings no deposits the bank does not already reach. |
-| 6374 | 1 | `public double runningCostPerBranch()` | What a branch cost to run last month on average: the payroll, the repairs and (since 0.7.19) the operating cost the branches past the charter paid, over the branches standing. |
-| 6377 | 4 | `public double feeCover()` | This month's fees against this month's running costs, over every branch: what each branch past the first is held to (0.7.19). |
-
-### how its equity moved (lines 6382-6434)
+### another branch (lines 6384-6397)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6399 | 22 | **type** `public record EquityMovement(double opening, double kept, double fromShareholders, double fromCity, double ...` | HOW ITS EQUITY MOVED since the month opened, every cause named: what it kept (net income); capital put in by its shareholders at home and abroad, and by the city in a rescue; the founding settlement, the month the cit... |
-| 6405 | 5 | `public double residual()` _(in Bank.EquityMovement)_ | What none of the causes explains. |
-| 6412 | 8 | `public double scale()` _(in Bank.EquityMovement)_ | The size of the figures residual() is made of, each as a magnitude: what MoneyAudit.tolerance() reads it against (0.7.54). |
-| 6428 | 6 | `public EquityMovement equityMovement()` | The month's movement, as it stands. |
+| 6387 | 1 | `public double capacityAnotherBranchWouldAdd()` | The capacity one more branch would add: the capital it would open with, since 0.7.19 - it brings no deposits the bank does not already reach. |
+| 6390 | 1 | `public double runningCostPerBranch()` | What a branch cost to run last month on average: the payroll, the repairs and (since 0.7.19) the operating cost the branches past the charter paid, over the branches standing. |
+| 6393 | 4 | `public double feeCover()` | This month's fees against this month's running costs, over every branch: what each branch past the first is held to (0.7.19). |
 
-### its equity, in two parts (lines 6435-6539)
+### how its equity moved (lines 6398-6450)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6481 | 1 | `public boolean knowsEquitySplit()` | True when this bank has kept its equity in two parts since it was founded; false on a save from before 0.7.13's round 2. |
-| 6490 | 4 | `public double paidInThisMonth()` | What its owners and the city put in this month: its offerings at home and abroad, new shares, less shares bought back, and the city's capital in a resolution - and since 0.7.14, less the old owners' paid-in written of... |
-| 6504 | 5 | `public double retainedThisMonth()` | ...and everything else that moved its equity this month: its net income, less its dividend, the founding settlement, what its creditors absorbed (before 0.7.14), the treasury's buybacks, an older save's allowance - an... |
-| 6511 | 1 | `public double paidInCapital()` | Its paid-in capital as it stands. |
-| 6514 | 1 | `public double retainedEarnings()` | Its retained earnings as they stand - the Balance sheet page's, not getRetained()'s month's payout. |
-| 6517 | 3 | `public double equitySplitResidual()` | What the parts leave unexplained against equity() - paid in, retained and, since 0.7.14, the city's preferred: nothing when every cause is routed, and nothing when !knowsEquitySplit(). |
-| 6522 | 1 | `public double paidInOpening()` | Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). |
-| 6525 | 1 | `public double retainedOpening()` | ...and its retained earnings. |
-| 6532 | 6 | `public void restoreEquitySplit(Double paidIn, Double retained)` | The load path: the two counters at the top of the saved month, after the month's lines are restored (restoreMonthLines()). |
+| 6415 | 22 | **type** `public record EquityMovement(double opening, double kept, double fromShareholders, double fromCity, double ...` | HOW ITS EQUITY MOVED since the month opened, every cause named: what it kept (net income); capital put in by its shareholders at home and abroad, and by the city in a rescue; the founding settlement, the month the cit... |
+| 6421 | 5 | `public double residual()` _(in Bank.EquityMovement)_ | What none of the causes explains. |
+| 6428 | 8 | `public double scale()` _(in Bank.EquityMovement)_ | The size of the figures residual() is made of, each as a magnitude: what MoneyAudit.tolerance() reads it against (0.7.54). |
+| 6444 | 6 | `public EquityMovement equityMovement()` | The month's movement, as it stands. |
+
+### its equity, in two parts (lines 6451-6555)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6497 | 1 | `public boolean knowsEquitySplit()` | True when this bank has kept its equity in two parts since it was founded; false on a save from before 0.7.13's round 2. |
+| 6506 | 4 | `public double paidInThisMonth()` | What its owners and the city put in this month: its offerings at home and abroad, new shares, less shares bought back, and the city's capital in a resolution - and since 0.7.14, less the old owners' paid-in written of... |
+| 6520 | 5 | `public double retainedThisMonth()` | ...and everything else that moved its equity this month: its net income, less its dividend, the founding settlement, what its creditors absorbed (before 0.7.14), the treasury's buybacks, an older save's allowance - an... |
+| 6527 | 1 | `public double paidInCapital()` | Its paid-in capital as it stands. |
+| 6530 | 1 | `public double retainedEarnings()` | Its retained earnings as they stand - the Balance sheet page's, not getRetained()'s month's payout. |
+| 6533 | 3 | `public double equitySplitResidual()` | What the parts leave unexplained against equity() - paid in, retained and, since 0.7.14, the city's preferred: nothing when every cause is routed, and nothing when !knowsEquitySplit(). |
+| 6538 | 1 | `public double paidInOpening()` | Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). |
+| 6541 | 1 | `public double retainedOpening()` | ...and its retained earnings. |
+| 6548 | 6 | `public void restoreEquitySplit(Double paidIn, Double retained)` | The load path: the two counters at the top of the saved month, after the month's lines are restored (restoreMonthLines()). |
 
