@@ -54,8 +54,10 @@ import java.util.Set;
  *    the next month adds one entry.
  * 7. The curve's past: 26 months with the dial moved partway, the curve a year and two years
  *    ago as the harness read it then, none beyond what is kept; saved and loaded, the same;
- *    the rule and the dial the market expects; and the TRACE GUARD, twin cities one of which
- *    records and one of which does not, alike to the bit for the 26 months.
+ *    the rule and the dial the market expects; Your rate's nominal par yield against the
+ *    linked line's real coupon and breakeven, and the ten-year rate as its four parts; and
+ *    the TRACE GUARD, twin cities one of which records and one of which does not, alike to
+ *    the bit for the 26 months.
  *
  * Each fixture causes its condition rather than finding a city in it, and checks it
  * was caused. The cities are FloatLinkCheck's (it is borrowed whole: its played city,
@@ -1059,6 +1061,15 @@ public class DeskCheck {
         double[] settled = adm.expectedPolicyPath();
         near("the dial settles where the rule is at the inflation the city expects to settle at", settled[YieldCurve.HORIZON - 1], adm.settledDial(), 1e-6);
         near("...which is the rule's rate at the expectation the month struck", adm.settledDial(), adm.advisedPolicyRate(adm.getStruckExpected()), 0);
+
+        // Your rate's other figures (slice D): the nominal par yield the linked line is set against, read off the same
+        // curve as the real coupon and the breakeven; and the ten-year rate, taken apart into the four parts the page draws.
+        for (int m : new int[] {120, 360}) {
+            near("the nominal par yield at " + m + " months is the real coupon a linked bond sells at plus the inflation it prices",
+                    adm.parYield(m, 0), adm.fairRealCoupon(m, 0) + adm.breakevenInflation(m, 0), 1e-12);
+        }
+        near("the ten-year zero rate is its four parts: the dial expected over ten years, the debt's spread, the term premium, less the central bank's compression",
+                adm.curveRate(120), adm.expectedDialOver(120) + adm.creditSpread() + DebtManager.termPremium(120) - adm.compression(120), 1e-9);
 
         // Saved and loaded.
         boolean[] ok = new boolean[1];
