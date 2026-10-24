@@ -14,6 +14,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.38 — FW2, the bank's sheet and the books' sheet the same after a load — 2026-10-24, ready, see docs/queue/FW2-notes.md
+
+After a load the bank's sheet re-read its deposits off the city as it stood after the month (F-S1-1), and every
+sector's sheet showed its debt as one line, its split by kind and when it falls due not saved (F-S1-2's load half;
+the live half was fixed in 0.7.102). The bank's deposit book, R1 and R2 for both months, and R7's running totals
+are saved and put back, so each sheet reads after a load what it read before, to the cent, and the debt schedule
+is counted the first month after. SectorStatementCheck section 6 now loads through `loadGameSave()` (it read the
+save into an unbuilt game, which had no bank branch) and compares every line. No format bump; the trace unmoved.
+
 ### 0.8.37 — FW1, a refused load leaves the city in play alone — 2026-10-24, ready, see docs/queue/FW1-notes.md
 
 `loadGameSave()` rebuilt the world before it read the save, so a save it then refused (below the format floor, from a

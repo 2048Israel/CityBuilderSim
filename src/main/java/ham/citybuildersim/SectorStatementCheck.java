@@ -634,7 +634,7 @@ public class SectorStatementCheck {
         assertTrue(String.format("the register's founders' books and what its buybacks paid, every company, the same after a"
                 + " load (worst %.2g), and none derived (format %d)", worstPaidIn, GameVersion.SAVE_FORMAT),
                 worstPaidIn <= CENT && flags && GameVersion.SAVE_FORMAT >= Equity.PAID_IN_FORMAT);
-        assertTrue("fixture: a sector owes, and its sheet splits the debt by when it falls due", split);
+        assertTrue("a sector owes, and its loaded sheet splits the debt by when it falls due", split);
         assertTrue("R1 and R2 are saved (FW2): after a load every sector's interest and debt by kind, both months, read the"
                 + " saved city's to the cent; the shares are not saved, and read not counted", debtKept && sharesNot);
         double worstBank = compare(rows(SectorStatements.bankIncome(g.getBank())), rows(SectorStatements.bankIncome(back.getBank())), Set.of());
