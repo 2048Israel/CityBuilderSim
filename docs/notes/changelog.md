@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.37 — PT1-M4, the works department retired — 2026-10-24, ready with 6 harnesses red, see docs/queue/PT1-M4-notes.md
+
+Construction was paid for 400 points a month nobody worked (PT1's month 183: a 72% margin with 0 workers; Jerus: *"not
+meant ... perhaps a starting depot or something instead"*). The free points are gone: the builders' capacity is their yards'
+and depots' nameplate, worked at the posts they keep on and their fill. Every city founds with a **Builders' Yard** (a new
+template, id 143: the Construction Depot at two fifths, 20 posts, 160 points), because a depot's 37 laid-off posts, counted as
+spoken for, left a hands-off village no hands for a shop in 240 months; and the builders' last yard or depot is never sold.
+The default playtest moved: 8,601 / 44,440 / 765,819 people near m600 / m1060 / the end (main 3,934 / 16,288 / 625,815),
+prices 3.2 / 9.8 / 712 (8.2 / 62 / 13,374), the village's homes by month 17 where main's stood by 5. The ensemble passes 23
+of 25 against 0.8.29's 24 of 26, no new red (A2 and S1 better, H2 vacuous). Twenty harnesses re-caused; six left red,
+each a played trajectory or a retired premise (PT1-M4-C). Save format 45.
+
 ### 0.8.36 — CD6, the rest of the debt's screens — 2026-10-23, ready, see docs/queue/CD6-notes.md
 
 The last of the debt study's screens (spec-city-debt §7, boards 1, 2 and 5; D31). Finances › The book is a desk: the book's

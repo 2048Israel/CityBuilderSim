@@ -1,4 +1,4 @@
-# CentralBankCheck.java - 2,062 lines · 28 methods · 7 constants · harnesses
+# CentralBankCheck.java - 2,073 lines · 28 methods · 7 constants · harnesses
 
 `ham/citybuildersim/CentralBankCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -82,11 +82,11 @@
 | 721 | · 8. a currency reform |
 | 745 | · 10. an old save |
 | 798 | 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. |
-| 981 | 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road |
-| 1082 | 17-18. THE WHOLE BOOK AND THE SPLIT FLOOR (0.7.15), on bare debt |
-| 1178 | 19. THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) - a |
-| 1442 | 20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a |
-| 1566 | 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, |
+| 986 | 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road |
+| 1087 | 17-18. THE WHOLE BOOK AND THE SPLIT FLOOR (0.7.15), on bare debt |
+| 1183 | 19. THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) - a |
+| 1447 | 20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a |
+| 1577 | 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, |
 
 ## Constants
 
@@ -94,11 +94,11 @@
 |---:|---|---|---|
 | 207 | `CentralBankCheck.KINDS` | `{ "interest on reserves", "lent at the window", "repaid at the window", "the ...` |  |
 | 210 | `CentralBankCheck.seen` | `new boolean [ KINDS.length ]` |  |
-| 1186 | `CentralBankCheck.ROLL_SLOT` | `10` | The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. |
-| 1596 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
-| 1599 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
-| 1609 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path gave it in some buil... |
-| 1612 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
+| 1191 | `CentralBankCheck.ROLL_SLOT` | `10` | The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. |
+| 1607 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
+| 1610 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
+| 1620 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path gave it in some buil... |
+| 1623 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
 
 ## Fields (state)
 
@@ -109,13 +109,13 @@
 | 173 | `static PrintStream quiet` |  |
 | 211 | `static int monthsPlayed, monthsBroken, mostKindsInAMonth` |  |
 | 212 | `static double worstResidual` |  |
-| 1636 | `int under, underSoon, underAsStandard, over, overCheaper, past` |  |
+| 1647 | `int under, underSoon, underAsStandard, over, overCheaper, past` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 169 | 1894 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
+| 169 | 1905 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
 | 175 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 180 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 190 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -129,55 +129,55 @@
 | 226 | 24 | `static int play(Game g)` | Plays a month and holds it to the identities. |
 | 251 | 546 | `public static void main(String[] args) throws Exception` |  |
 
-### 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. (lines 798-980)
+### 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. (lines 798-985)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 810 | 3 | `static double shape20(DebtManager m)` | The long end's shape: the premium at twenty years less what the holdings compress - the twenty-year rate less the dial the market expects over those years and the credit spread (the curve taken apart, CD1). |
-| 814 | 166 | `static void theHoldingsDial(GameFiles files) throws Exception` |  |
+| 814 | 171 | `static void theHoldingsDial(GameFiles files) throws Exception` |  |
 
-### 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road (lines 981-1081)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 987 | 86 | `static void theCeilingDial(GameFiles files) throws Exception` |  |
-| 1075 | 6 | `static double journalAmount(Game g, String label)` | The amount on last month's journal line with this label, or 0. |
-
-### 17-18. THE WHOLE BOOK AND THE SPLIT FLOOR (0.7.15), on bare debt (lines 1082-1177)
+### 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road (lines 986-1086)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1088 | 27 | `static void theWholeBook()` |  |
-| 1116 | 61 | `static void theSplitFloor()` |  |
+| 992 | 86 | `static void theCeilingDial(GameFiles files) throws Exception` |  |
+| 1080 | 6 | `static double journalAmount(Game g, String label)` | The amount on last month's journal line with this label, or 0. |
 
-### 19. THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) - a (lines 1178-1441)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1189 | 6 | `static Debt fixtureSerial(Game g, int soldIn)` | The serial the fixture sold: the one piece of the city's paper that is a serial and started before the month the fixture saved in. |
-| 1197 | 7 | `static java.util.List<Debt> soldAtTheLastPress(Game g)` | The city's own paper sold at the last press or between it and the one before - started the month before this one. |
-| 1206 | 3 | `static double issuePricePerFace(Debt d)` | What the central bank paid a unit of face for a piece at its issue: what the treasury was paid for it over its face, which the add-on does not move. |
-| 1211 | 7 | `static Game toTheSlice(GameFiles files, int soldIn)` | The fixture as saved, loaded fresh, and played to the gap before its first slice. |
-| 1219 | 222 | `static void theRolloverAtIssue() throws Exception` |  |
-
-### 20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a (lines 1442-1565)
+### 17-18. THE WHOLE BOOK AND THE SPLIT FLOOR (0.7.15), on bare debt (lines 1087-1182)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1449 | 116 | `static void theSurplusPaysEveryone() throws Exception` |  |
+| 1093 | 27 | `static void theWholeBook()` |  |
+| 1121 | 61 | `static void theSplitFloor()` |  |
 
-### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1566-2062)
+### 19. THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) - a (lines 1183-1446)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1574 | 4 | `static double oldRule(double inflation, double target)` | The rule as it was until 0.7.51, written out: the neutral rate, the target's distance from the default, and TAYLOR_WEIGHT on the gap. |
-| 1584 | 7 | `static double rule052(double inflation, double target, DebtManager.Strictness s)` | The rule at a step as it was from 0.7.52 to 0.7.80, written out: struck at the aim, on the gap past the band either side of it, at the step's weight. |
-| 1593 | 1 | `static boolean bits(double a, double b)` | Equal to the bit (a NaN as any NaN). |
-| 1621 | 7 | `static void worldPricesFall(Game g, double fall)` | A fall in the world's price level by `fall` (a fraction of it), at once: the level and the newest of the thirteen months it keeps (WorldEconomy.toSaveArray(), the level first, the ring oldest first and the mean last),... |
-| 1635 | 17 | **type** `static final class LooseMonths` | The very loose twin's months by the side of its target the rule read (0.7.81): in a month under it the rate is Standard's, to the bit; in one over it, money cheaper than Standard's rule at that reading - inside the ba... |
-| 1639 | 12 | `void take(Game g, double read, double target, int month)` _(in CentralBankCheck.LooseMonths)_ | One month taken: `read` is what the autopilot read at the top of it (Game.nextMonth(), THE AUTOPILOT), the dial what the rule set. |
-| 1653 | 260 | `static void howStrict() throws Exception` |  |
-| 2003 | 43 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 7's shape since FR7 - 43 houses, then four months before the next 20 (seed 5's, 41 and four months, from 0.7.139; seed 8's, 40 and five mon... |
-| 2048 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
-| 2053 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
+| 1194 | 6 | `static Debt fixtureSerial(Game g, int soldIn)` | The serial the fixture sold: the one piece of the city's paper that is a serial and started before the month the fixture saved in. |
+| 1202 | 7 | `static java.util.List<Debt> soldAtTheLastPress(Game g)` | The city's own paper sold at the last press or between it and the one before - started the month before this one. |
+| 1211 | 3 | `static double issuePricePerFace(Debt d)` | What the central bank paid a unit of face for a piece at its issue: what the treasury was paid for it over its face, which the add-on does not move. |
+| 1216 | 7 | `static Game toTheSlice(GameFiles files, int soldIn)` | The fixture as saved, loaded fresh, and played to the gap before its first slice. |
+| 1224 | 222 | `static void theRolloverAtIssue() throws Exception` |  |
+
+### 20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a (lines 1447-1576)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1454 | 122 | `static void theSurplusPaysEveryone() throws Exception` |  |
+
+### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1577-2073)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1585 | 4 | `static double oldRule(double inflation, double target)` | The rule as it was until 0.7.51, written out: the neutral rate, the target's distance from the default, and TAYLOR_WEIGHT on the gap. |
+| 1595 | 7 | `static double rule052(double inflation, double target, DebtManager.Strictness s)` | The rule at a step as it was from 0.7.52 to 0.7.80, written out: struck at the aim, on the gap past the band either side of it, at the step's weight. |
+| 1604 | 1 | `static boolean bits(double a, double b)` | Equal to the bit (a NaN as any NaN). |
+| 1632 | 7 | `static void worldPricesFall(Game g, double fall)` | A fall in the world's price level by `fall` (a fraction of it), at once: the level and the newest of the thirteen months it keeps (WorldEconomy.toSaveArray(), the level first, the ring oldest first and the mean last),... |
+| 1646 | 17 | **type** `static final class LooseMonths` | The very loose twin's months by the side of its target the rule read (0.7.81): in a month under it the rate is Standard's, to the bit; in one over it, money cheaper than Standard's rule at that reading - inside the ba... |
+| 1650 | 12 | `void take(Game g, double read, double target, int month)` _(in CentralBankCheck.LooseMonths)_ | One month taken: `read` is what the autopilot read at the top of it (Game.nextMonth(), THE AUTOPILOT), the dial what the rule set. |
+| 1664 | 260 | `static void howStrict() throws Exception` |  |
+| 2014 | 43 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 7's shape since FR7 - 43 houses, then four months before the next 20 (seed 5's, 41 and four months, from 0.7.139; seed 8's, 40 and five mon... |
+| 2059 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
+| 2064 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
 

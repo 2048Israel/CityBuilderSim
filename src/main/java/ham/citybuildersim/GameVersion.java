@@ -7317,7 +7317,7 @@ public final class GameVersion {
      *     or bought out (Construction.mayRetire(), Game.demolishable()).
      *   - The People strip's unused fold keeps no words' width (KeptCheck).
      *   - Save: SAVE_FORMAT 45, OLDEST_LOADABLE_FORMAT 45.
-     *   - Harness: FoundingYardCheck (new); forty fixtures re-caused.
+     *   - Harness: FoundingYardCheck (new); twenty harnesses re-caused.
      */
     public static final String VERSION = "0.8.37";
 

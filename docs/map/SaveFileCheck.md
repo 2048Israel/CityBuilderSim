@@ -1,4 +1,4 @@
-# SaveFileCheck.java - 3,074 lines · 14 methods · 1 constants · harnesses
+# SaveFileCheck.java - 3,079 lines · 14 methods · 1 constants · harnesses
 
 `ham/citybuildersim/SaveFileCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -48,7 +48,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 3016 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 3021 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ## Fields (state)
 
@@ -60,19 +60,19 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 3049 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
+| 26 | 3054 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
 | 30 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 35 | 10 | `static void assertEquals(String label, Object actual, Object expected)` |  |
 | 47 | 9 | `static void same(String label, double actual, double expected)` | Two readings of one month, which must not differ at all. |
 | 58 | 3 | `static String flat(Path p)` | Forward slashes, so the assertions read the same on any host. |
 | 62 | 2739 | `public static void main(String[] args) throws Exception` |  |
 | 2802 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 2819 | 36 | `static void everyIdCrossesASave(Path root)` | EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19). |
-| 2877 | 125 | `static void onEarth(Path root) throws IOException` | A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). |
-| 3004 | 10 | `static java.util.List<String> jsonDiff(com.google.gson.JsonObject a, com.google.gson.JsonObject b, java.util.Set<String> except)` | The keys two saves differ on, by name and value, but those left out. |
-| 3019 | 4 | `static void quietly(Runnable r)` | Runs a piece of the city with the game's narration off. |
-| 3024 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
-| 3044 | 10 | `static boolean refusedAtTheFloor(GameFiles files, int slot, Game loaded, byte[] before)` | Whether a load of `slot` from `files` into `loaded` was refused at the floor (0.7.120, batch I3): the save's format below GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming the build that saved it ... |
-| 3056 | 9 | `static java.util.Map<String, byte[]> folderBytes(Path dir) throws IOException` | Every file under a folder and its bytes, by its path within it - to say nothing in it moved. |
-| 3067 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
+| 2819 | 41 | `static void everyIdCrossesASave(Path root)` | EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19). |
+| 2882 | 125 | `static void onEarth(Path root) throws IOException` | A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). |
+| 3009 | 10 | `static java.util.List<String> jsonDiff(com.google.gson.JsonObject a, com.google.gson.JsonObject b, java.util.Set<String> except)` | The keys two saves differ on, by name and value, but those left out. |
+| 3024 | 4 | `static void quietly(Runnable r)` | Runs a piece of the city with the game's narration off. |
+| 3029 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
+| 3049 | 10 | `static boolean refusedAtTheFloor(GameFiles files, int slot, Game loaded, byte[] before)` | Whether a load of `slot` from `files` into `loaded` was refused at the floor (0.7.120, batch I3): the save's format below GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming the build that saved it ... |
+| 3061 | 9 | `static java.util.Map<String, byte[]> folderBytes(Path dir) throws IOException` | Every file under a folder and its bytes, by its path within it - to say nothing in it moved. |
+| 3072 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
 

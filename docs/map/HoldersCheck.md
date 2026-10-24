@@ -1,4 +1,4 @@
-# HoldersCheck.java - 1,521 lines · 20 methods · 1 constants · harnesses
+# HoldersCheck.java - 1,530 lines · 20 methods · 1 constants · harnesses
 
 `ham/citybuildersim/HoldersCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -77,16 +77,16 @@
 | 312 | · 5. a buyback |
 | 358 | · 6. the save |
 | 401 | · 7. an old save |
-| 459 | · 8. a dollar bond bought back |
-| 497 | 9. the whole of the paper (0.7.15) |
-| 664 | 10. the businesses (CD2, slice 4, D33) |
-| 1125 | 11. the world (CD2, slice 5, D7; star 2) |
+| 462 | · 8. a dollar bond bought back |
+| 500 | 9. the whole of the paper (0.7.15) |
+| 667 | 10. the businesses (CD2, slice 4, D33) |
+| 1128 | 11. the world (CD2, slice 5, D7; star 2) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1149 | `HoldersCheck.CENT` | `.0051` | The audit's tolerance for a figure read to the cent. |
+| 1152 | `HoldersCheck.CENT` | `.0051` | The audit's tolerance for a figure read to the cent. |
 
 ## Fields (state)
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 1445 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 77 | 1454 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
 | 83 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 88 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 98 | 4 | `static void quietly(Runnable r)` |  |
@@ -109,32 +109,32 @@
 | 110 | 1 | `static double savings(Game g)` |  |
 | 113 | 5 | `static boolean booksAgree(Game g)` | The two books of the households' paper agree: the cells, and the paper. |
 | 122 | 10 | `static MoneyAudit.Result play(Game g)` | A month, held to the audit. |
-| 133 | 363 | `public static void main(String[] args) throws Exception` |  |
+| 133 | 366 | `public static void main(String[] args) throws Exception` |  |
 
-### 9. the whole of the paper (0.7.15) (lines 497-663)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 500 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
-| 506 | 157 | `static void theWholeBook() throws Exception` |  |
-
-### 10. the businesses (CD2, slice 4, D33) (lines 664-1124)
+### 9. the whole of the paper (0.7.15) (lines 500-666)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 667 | 5 | `static boolean firmsAgree(Game g)` | The two books of the businesses' paper agree: the sectors', and the paper's. |
-| 674 | 5 | `static Debt newPiece(DebtManager ledger, java.util.List<Debt> before)` | The domestic piece on the books that was not there before. |
-| 681 | 5 | `static double[] tills(Game g)` | Every sector's till, in Sectors.KEYS order. |
-| 688 | 5 | `static double[] holdings(Game g)` | Every sector's paper, in Sectors.KEYS order. |
-| 695 | 8 | `static boolean booksExplain(Game g, java.util.List<String> sectors)` | True when these sectors' cash flow statements explain their tills to the cent this month (SectorBooks.SectorMonth.unexplained()). |
-| 705 | 3 | `static void near(String label, double actual, double expected)` | One close() with the tolerance a part in a billion of the figure, or a cent. |
-| 709 | 415 | `static void theBusinesses() throws Exception` |  |
+| 503 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
+| 509 | 157 | `static void theWholeBook() throws Exception` |  |
 
-### 11. the world (CD2, slice 5, D7; star 2) (lines 1125-1521)
+### 10. the businesses (CD2, slice 4, D33) (lines 667-1127)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1128 | 5 | `static boolean worldAgrees(Game g)` | The two books of the world's paper agree: CapitalFlows', and the paper's. |
-| 1135 | 12 | `static double auditLine(MoneyAudit.Result r, String label)` | One line of the month's audit by its label, to the cent: 0 when the month has none. |
-| 1151 | 370 | `static void theWorld() throws Exception` |  |
+| 670 | 5 | `static boolean firmsAgree(Game g)` | The two books of the businesses' paper agree: the sectors', and the paper's. |
+| 677 | 5 | `static Debt newPiece(DebtManager ledger, java.util.List<Debt> before)` | The domestic piece on the books that was not there before. |
+| 684 | 5 | `static double[] tills(Game g)` | Every sector's till, in Sectors.KEYS order. |
+| 691 | 5 | `static double[] holdings(Game g)` | Every sector's paper, in Sectors.KEYS order. |
+| 698 | 8 | `static boolean booksExplain(Game g, java.util.List<String> sectors)` | True when these sectors' cash flow statements explain their tills to the cent this month (SectorBooks.SectorMonth.unexplained()). |
+| 708 | 3 | `static void near(String label, double actual, double expected)` | One close() with the tolerance a part in a billion of the figure, or a cent. |
+| 712 | 415 | `static void theBusinesses() throws Exception` |  |
+
+### 11. the world (CD2, slice 5, D7; star 2) (lines 1128-1530)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1131 | 5 | `static boolean worldAgrees(Game g)` | The two books of the world's paper agree: CapitalFlows', and the paper's. |
+| 1138 | 12 | `static double auditLine(MoneyAudit.Result r, String label)` | One line of the month's audit by its label, to the cent: 0 when the month has none. |
+| 1154 | 376 | `static void theWorld() throws Exception` |  |
 
