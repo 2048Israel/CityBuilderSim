@@ -458,17 +458,18 @@ public class DataSave implements Cloneable {
      * schedule differences a month apart. Until FW2 none was saved, and a
      * loaded city's sheet read its debt as one line and its schedule as not
      * counted for two months. Additive: an older save has none and reads as
-     * before.
+     * before. Each sector's record as SectorBooks.DEBT_ROWS rows of numbers
+     * (SectorBooks.debtToSave()), not as the record.
      */
-    private java.util.Map<String, SectorBooks.Debt> sectorDebt, sectorDebtBefore;
+    private java.util.Map<String, double[][]> sectorDebt, sectorDebtBefore;
     private java.util.Map<String, double[][]> creditMoved;
 
-    public void setSectorDebt(java.util.Map<String, SectorBooks.Debt> now, java.util.Map<String, SectorBooks.Debt> before) {
+    public void setSectorDebt(java.util.Map<String, double[][]> now, java.util.Map<String, double[][]> before) {
         this.sectorDebt = now;
         this.sectorDebtBefore = before;
     }
-    public java.util.Map<String, SectorBooks.Debt> getSectorDebt()       { return sectorDebt; }
-    public java.util.Map<String, SectorBooks.Debt> getSectorDebtBefore() { return sectorDebtBefore; }
+    public java.util.Map<String, double[][]> getSectorDebt()       { return sectorDebt; }
+    public java.util.Map<String, double[][]> getSectorDebtBefore() { return sectorDebtBefore; }
     public void setCreditMoved(java.util.Map<String, double[][]> moved)  { this.creditMoved = moved; }
     public java.util.Map<String, double[][]> getCreditMoved()            { return creditMoved; }
 

@@ -728,25 +728,53 @@ public final class SectorBooks {
 
     /**
      * R1 and R2 as the books took them, this month's or last month's (FW2,
-     * 2026-10-24), for the save: a copy, and only the records whose every
-     * figure a save can hold - a NaN would fail the whole save, and a record
-     * left out reads not counted, as every one did before FW2.
+     * 2026-10-24), for the save: each sector's record as DEBT_ROWS rows of
+     * fresh arrays - interest, owed, within a year, within five, rate, runs
+     * to, then moved's three rows and movedAtClose's, a missing part a null
+     * row. Rows and not the record, because a record holding arrays is a
+     * mutable object the autosave's snapshot cannot copy (SaveSlotCheck), and
+     * a copy, because the autosave writes off the clock. Only the records
+     * whose every figure a save can hold: a NaN would fail the whole save,
+     * and a record left out reads not counted, as every one did before FW2.
      */
-    public Map<String, Debt> debtToSave(boolean thisMonth) {
-        Map<String, Debt> out = new LinkedHashMap<>();
+    public Map<String, double[][]> debtToSave(boolean thisMonth) {
+        Map<String, double[][]> out = new LinkedHashMap<>();
         for (Map.Entry<String, Debt> e : (thisMonth ? debtNow : debtBefore).entrySet()) {
-            if (e.getValue() != null && finite(e.getValue())) out.put(e.getKey(), e.getValue());
+            double[][] rows = rowsOf(e.getValue());
+            if (rows != null && finite(rows)) out.put(e.getKey(), rows);
         }
         return out;
     }
 
-    private static boolean finite(Debt d) {
-        for (double[] a : new double[][] { d.interest(), d.owed(), d.withinYear(), d.withinFive(), d.rate(), d.runsTo() }) {
-            if (a != null) for (double v : a) if (!Double.isFinite(v)) return false;
+    /** The rows a saved Debt is written as: six arrays, then moved's three and movedAtClose's three. */
+    public static final int DEBT_ROWS = 12;
+
+    private static double[][] rowsOf(Debt d) {
+        if (d == null) return null;
+        double[][] rows = new double[DEBT_ROWS][];
+        double[][] six = { d.interest(), d.owed(), d.withinYear(), d.withinFive(), d.rate(), d.runsTo() };
+        for (int r = 0; r < 6; r++) rows[r] = six[r] == null ? null : six[r].clone();
+        for (int r = 0; r < 3; r++) {
+            rows[6 + r] = d.moved() == null || d.moved().length != 3 || d.moved()[r] == null ? null : d.moved()[r].clone();
+            rows[9 + r] = d.movedAtClose() == null || d.movedAtClose().length != 3 || d.movedAtClose()[r] == null
+                    ? null : d.movedAtClose()[r].clone();
         }
-        for (double[][] m : new double[][][] { d.moved(), d.movedAtClose() }) {
-            if (m != null) for (double[] a : m) if (a != null) for (double v : a) if (!Double.isFinite(v)) return false;
-        }
+        return rows;
+    }
+
+    private static Debt debtOf(double[][] rows) {
+        if (rows == null || rows.length != DEBT_ROWS) return null;
+        double[][] moved = rows[6] == null || rows[7] == null || rows[8] == null ? null
+                : new double[][] { rows[6].clone(), rows[7].clone(), rows[8].clone() };
+        double[][] atClose = rows[9] == null || rows[10] == null || rows[11] == null ? null
+                : new double[][] { rows[9].clone(), rows[10].clone(), rows[11].clone() };
+        double[][] six = new double[6][];
+        for (int r = 0; r < 6; r++) six[r] = rows[r] == null ? null : rows[r].clone();
+        return new Debt(six[0], six[1], six[2], six[3], six[4], six[5], moved, atClose);
+    }
+
+    private static boolean finite(double[][] rows) {
+        for (double[] a : rows) if (a != null) for (double v : a) if (!Double.isFinite(v)) return false;
         return true;
     }
 
@@ -756,11 +784,11 @@ public final class SectorBooks {
      * interest, as the saved city's did. A save from before FW2 has neither,
      * and its books read them not counted until a month runs, as before.
      */
-    public void restoreDebt(Map<String, Debt> saved, Map<String, Debt> savedBefore) {
+    public void restoreDebt(Map<String, double[][]> saved, Map<String, double[][]> savedBefore) {
         debtNow.clear();
         debtBefore.clear();
-        if (saved != null) saved.forEach((k, v) -> { if (k != null && v != null) debtNow.put(k, v); });
-        if (savedBefore != null) savedBefore.forEach((k, v) -> { if (k != null && v != null) debtBefore.put(k, v); });
+        if (saved != null) saved.forEach((k, v) -> { Debt d = debtOf(v); if (k != null && d != null) debtNow.put(k, d); });
+        if (savedBefore != null) savedBefore.forEach((k, v) -> { Debt d = debtOf(v); if (k != null && d != null) debtBefore.put(k, d); });
     }
 
     public void restoreFrom(java.util.List<SectorMonth> saved,
