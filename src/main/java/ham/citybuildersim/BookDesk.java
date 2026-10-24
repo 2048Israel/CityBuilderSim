@@ -44,7 +44,13 @@ public final class BookDesk {
     public record Line(Debt debt, double face, double coupon, double couponRate, double bookedRate,
                        double pricePer100, double yield, double realYield, double worth, double carried,
                        double ifClosedNow, double vsFace, double duration, double valueOfAPoint, int monthsLeft,
-                       double households, double bank, double centralBank, double firms, double world) { }
+                       double households, double bank, double centralBank, double firms, double world) {
+
+        /** What it is carried at for each 100 of what is still owed on it (CD6): the carrying value over the face, times 100; 0 for a line that owes nothing. */
+        public double carriedPer100() {
+            return face > 0 ? carried / face * 100 : 0;
+        }
+    }
 
     private final List<Line> lines;
     private final double face, carried, worth, coupon, valueOfAPoint;

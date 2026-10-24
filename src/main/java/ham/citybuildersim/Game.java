@@ -15398,6 +15398,13 @@ public class Game {
         return BookDesk.of(debtManager);
     }
 
+    /** ...and one line of it, for a line's page (CD6): the market struck once, as bookDesk() strikes it, and the line read (BookDesk.line()). */
+    public BookDesk.Line bookLine(Debt debt) {
+        priceTheDebtMarket();
+        debtManager.updateInterest();
+        return BookDesk.line(debtManager, debt);
+    }
+
     /**
      * What clearing the whole of one piece that can be cleared would cost
      * right now (CD4): the reverse auction's price for everything its holders

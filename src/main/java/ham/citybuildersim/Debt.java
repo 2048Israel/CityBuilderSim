@@ -680,6 +680,9 @@ public abstract class Debt {
         public double getProceeds() { return proceeds; }
         public double getYield()    { return yield; }
         public String getHow()      { return how; }
+
+        /** The price the sale made, for each 100 of face (CD6): what it raised over its face, times 100; 0 for a sale of no face. */
+        public double getPricePer100() { return face > 0 ? proceeds / face * 100 : 0; }
     }
 
     /** The sales into this piece, oldest first; null until the first is noted. */
