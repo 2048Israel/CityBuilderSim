@@ -1853,8 +1853,19 @@ public class LandManager {
      * 0 with no foothill. `sector` is not read: preparing does not depend on a zone.
      */
     public double foothillToPrepareSqFt(double sqFt, String sector, boolean works) {
+        return foothillToPrepareSqFt(sqFt, sector, works, 0, 0, 0);
+    }
+
+    /**
+     * ...for an order placed after others in a run (Game.buildRunInvoice()), which have taken their ground and
+     * prepared their foothill by then: `groundAhead` square feet, `worksAhead` of them works's, and `preparedAhead`
+     * the foothill their orders prepare. What placing them one after another asks of each, to the bit.
+     */
+    public double foothillToPrepareSqFt(double sqFt, String sector, boolean works,
+                                        double groundAhead, double worksAhead, double preparedAhead) {
         if (works || !(sqFt > 0) || !(reliefSqFt(CityLand.RELIEF_FOOTHILL) > 0)) return 0;
-        return Math.max(0, split(allocatedSqFt + sqFt, worksSqFt).buildingsOnFoothill() - preparedSqFt);
+        return Math.max(0, split(allocatedSqFt + groundAhead + sqFt, worksSqFt + worksAhead).buildingsOnFoothill()
+                - (preparedSqFt + preparedAhead));
     }
 
     /** Puts the works' ground back (Game's load path): the saved figure, or the standing works' land where a save has none. */

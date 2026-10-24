@@ -6297,6 +6297,16 @@ public class Game {
          */
         public final double bitumenNeeded, bitumenFromRefiners, bitumenImported, bitumenLocalCost, bitumenImportCost, bitumen;
 
+        /**
+         * The foothill the order has to prepare (ET2; SitePreparation, LandManager.foothillToPrepareSqFt()), square
+         * feet; the construction points that is, owed by the order's site before its first building finishes; and
+         * its money before the builders' tax, which is in the sticker and so grossed up in the total like all the
+         * work. All 0 for a building on flat ground, a works, a quote with no House to price it on, and every
+         * quote but a new order's; the points and the money also with no House in the catalogue to price them on
+         * (Game.preparationPoints()), the foothill measured all the same.
+         */
+        public final double prepSqFt, prepPoints, prepCost;
+
         BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
@@ -6310,6 +6320,19 @@ public class Game {
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
                    double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate) {
+            this(quantity, sticker, materialsNeeded, materialsInStock, boughtIn, plantPrice, materialsPrice,
+                    landNeeded, landFree, months, buildersRate, plantRate, bitumen, refinersRate, 0, 0, 0);
+        }
+
+        /** ...with the foothill preparation an order carries (ET2): the sticker already holds prepCost, the money for prepPoints. */
+        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+                   Markets.Draw boughtIn, double plantPrice, double materialsPrice,
+                   double landNeeded, double landFree, double months,
+                   double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
+                   double prepSqFt, double prepPoints, double prepCost) {
+            this.prepSqFt = prepSqFt;
+            this.prepPoints = prepPoints;
+            this.prepCost = prepCost;
             this.quantity = quantity;
             this.sticker = sticker;
             this.materialsNeeded = materialsNeeded;
@@ -6497,15 +6520,34 @@ public class Game {
 
     /** ...and with `bitumenAhead` tonnes of the refiners' bitumen taken by the orders before it in a run (0.7.83; drawBitumen()). */
     private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds, double bitumenAhead) {
+        return quoteBuild(selected, quantity, yardHolds, bitumenAhead, NO_GROUND_AHEAD);
+    }
+
+    /** What the orders before one in a run have taken of the ground (ET2): their square feet, the part of it works's, and the foothill their orders prepare (buildRunInvoice()). */
+    private record GroundAhead(double ground, double works, double prepared) { }
+
+    private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0);
+
+    /** ...and with the ground the orders before it in a run take (ET2): the foothill it prepares is what placing it after them would ask. */
+    private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds, double bitumenAhead,
+                                  GroundAhead ahead) {
         double needed = selected.constructionMaterials * (double) quantity;
         double yard = yardHolds;
         double beyondYard = Math.max(0, needed - yard);
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, beyondYard, getSectors());
         Markets.Draw bitumen = getMarkets().quote(Good.BITUMEN, bitumenFor(selected) * (double) quantity, getSectors(),
                 bitumenAhead);
+        // ...and a building's foothill preparation (ET2): read here, before allocate() raises the prepared figure by
+        // exactly it, so the quote and the charge read one; its money joins the sticker, taxed with the work.
+        double prepSqFt = landManager.foothillToPrepareSqFt(selected.getLandSqFt() * (double) quantity,
+                selected.getSector(), standsAnywhere(selected), ahead.ground(), ahead.works(), ahead.prepared());
+        double prepPoints = prepSqFt > 0 ? preparationPoints(prepSqFt) : 0;
+        double prepCost = prepPoints > 0 ? preparationCost(prepPoints) : 0;
+        double sticker = buildingManager.nonMaterialCost(selected) * quantity;
+        if (prepCost > 0) sticker += prepCost;
         return new BuildQuote(
                 quantity,
-                buildingManager.nonMaterialCost(selected) * quantity,
+                sticker,
                 needed,
                 yard,
                 boughtIn,
@@ -6516,12 +6558,44 @@ public class Game {
                 landManager.freeFor(selected.getSector(), standsAnywhere(selected)),
                 // The city's own order's wait (0.7.22, after the docs pass):
                 // quoteMonths() exactly with no order set and no rush, and with
-                // one, where the order would land in it (quoteCityMonths()).
-                quoteCityMonths(selected, quantity),
+                // one, where the order would land in it (quoteCityMonths()) -
+                // the foothill's preparation owed on its site too (ET2).
+                quoteCityMonths(selected, quantity, prepPoints),
                 buildersSalesRate(),
                 plantSalesRate(),
                 bitumen,
-                refinersSalesRate());
+                refinersSalesRate(),
+                prepSqFt, prepPoints, prepCost);
+    }
+
+    /**
+     * The House the foothill's preparation is priced on (ET2; SitePreparation): the template named "House", with
+     * points to build it and a founding price. Null in a catalogue without one - and then no preparation is
+     * charged, the land still counting the foothill as prepared.
+     */
+    private BuildingsTemplate preparationAnchor() {
+        BuildingsTemplate house = buildingManager == null ? null : buildingManager.getTemplateByName("House");
+        return house != null && house.getConstructionPoints() > 0 && house.getFoundingCashCost() > 0 ? house : null;
+    }
+
+    /**
+     * Construction points to prepare `sqFt` square feet of foothill: SitePreparation's dollars a m2 over the House's
+     * founding cash cost a point, so the points move with nothing but the work. 0 with no House (preparationAnchor()).
+     */
+    public double preparationPoints(double sqFt) {
+        BuildingsTemplate house = preparationAnchor();
+        return house == null ? 0 : SitePreparation.points(sqFt,
+                house.getFoundingCashCost() / (double) house.getConstructionPoints());
+    }
+
+    /**
+     * What those points cost the builders' customer, before the builders' tax: the builders' price for house work
+     * today - the House's non-material cost over its points (BuildingManager.nonMaterialCost()) - so it keeps up with
+     * wages as every building's labour does. 0 with no House.
+     */
+    public double preparationCost(double points) {
+        BuildingsTemplate house = preparationAnchor();
+        return house == null ? 0 : points * buildingManager.nonMaterialCost(house) / (double) house.getConstructionPoints();
     }
 
     /* ---------------------------------------------------------------------
@@ -6643,7 +6717,12 @@ public class Game {
      * quote's months. NaN when there is no site output. Reads.
      */
     public double quoteCityMonths(BuildingsTemplate template, int quantity) {
-        double months = buildingManager.cityOrderWait(template, quantity, getBuildingOutputAtEveryPost());
+        return quoteCityMonths(template, quantity, 0);
+    }
+
+    /** ...with `extraPoints` more owed on its site than its buildings' own (ET2: a foothill pad's preparation, BuildQuote.prepPoints); quoteCityMonths() exactly for none. */
+    public double quoteCityMonths(BuildingsTemplate template, int quantity, double extraPoints) {
+        double months = buildingManager.cityOrderWait(template, quantity, extraPoints, getBuildingOutputAtEveryPost());
         return months == Double.MAX_VALUE ? Double.NaN : months;
     }
 
@@ -6931,9 +7010,11 @@ public class Game {
     public DemolitionQuote quoteShellDemolition(ConstructionControl.Shell shell) {
         BuildingsTemplate t = shell == null ? null : buildingManager.getTemplate(shell.templateId);
         if (t == null) return null;
-        double points = ConstructionControl.DEMOLITION_SHARE * shell.progress;
+        // ...the work done in it: a shell stopped before its foothill pad was prepared holds progress below nothing, the preparation still owed (ET2), and nothing of it was done.
+        double held = Math.max(0, shell.progress);
+        double points = ConstructionControl.DEMOLITION_SHARE * held;
         double months = demolitionMonths(t, shell.buildings, points);
-        BuildQuote price = demolitionPrice(t, shell.progress, points, months);
+        BuildQuote price = demolitionPrice(t, held, points, months);
         double units = Math.max(0, t.getConstructionMaterials() * (double) shell.buildings - shell.materialsOwed)
                 * ConstructionControl.SALVAGE_SHARE;
         double unitPrice = getMarkets().get(Good.MATERIALS).getLocalPrice();
@@ -7537,6 +7618,9 @@ public class Game {
             // builders carried it until then, as a fixed-price contractor does.
             buildingManager.addStack(selected, quantity, noConstruction);
             if (!noConstruction) {
+                // ...a foothill site's preparation, owed by the stack before its first building finishes (ET2); it is
+                // in the price and billed below. An instant build has none: it charges and owes none.
+                if (quote.prepPoints > 0) buildingManager.addPreparation(selected, quote.prepPoints);
                 double fromYard = deliverYardToSites(selected, totalMaterialsRequired);
                 // ...and a paved road's bitumen, bought by the builders with the
                 // yard's material and billed in the quote (0.7.83; drawBitumen()).
@@ -7566,8 +7650,10 @@ public class Game {
             if (!noConstruction) {
                 // Earned as the work is delivered, material included - the
                 // crews buy it as they go. See sectors.Construction.bill().
-                getSectors().construction().bill(totalCost,
-                        selected.getConstructionPoints() * (double) quantity);
+                // ...the foothill's preparation among the points (ET2), as the stack owes it.
+                double billedPoints = selected.getConstructionPoints() * (double) quantity;
+                if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
+                getSectors().construction().bill(totalCost, billedPoints);
             }
 
             System.out.println(quantity + " " + selected.getName()
@@ -7995,6 +8081,8 @@ public class Game {
         cash += landPrice;
 
         buildingManager.addStack(template, quantity, false);
+        // ...a foothill site's preparation, owed by the stack before its first building finishes (ET2); it is in the quote.
+        if (quote.prepPoints > 0) buildingManager.addPreparation(template, quote.prepPoints);
         double fromYard = deliverYardToSites(template, quote.materialsNeeded);
         // ...and a paved road's bitumen, should a business ever order one (0.7.83; drawBitumen()).
         drawBitumen(quote.bitumenNeeded);
@@ -8011,8 +8099,10 @@ public class Game {
         // Construction is paid for the building work only - the land was the
         // city's, not theirs to be paid for. The material beyond the yard is
         // drawn as the crews build, see drawSiteMaterials().
-        getSectors().construction().bill(totalCost - landPrice,
-                template.getConstructionPoints() * (double) quantity);
+        // ...the foothill's preparation among the points (ET2), as the stack owes it.
+        double billedPoints = template.getConstructionPoints() * (double) quantity;
+        if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
+        getSectors().construction().bill(totalCost - landPrice, billedPoints);
 
         return true;
     }
@@ -8136,10 +8226,17 @@ public class Game {
     public double buildRunInvoice(java.util.Map<BuildingsTemplate, Integer> run) {
         int yard = buildingManager.getConstructionMaterials();
         double total = 0, bitumenAhead = 0;
+        // ...and the ground the orders before it take and the foothill they prepare, which the next is asked for after them (ET2).
+        double groundAhead = 0, worksAhead = 0, preparedAhead = 0;
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
-            BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead);
+            BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead,
+                    new GroundAhead(groundAhead, worksAhead, preparedAhead));
             total += q.total;
+            double land = e.getKey().getLandSqFt() * (double) e.getValue();
+            groundAhead += land;
+            if (standsAnywhere(e.getKey())) worksAhead += land;
+            preparedAhead += q.prepSqFt;
             // What deliverYardToSites() will take: BuildingManager.takeFromYard()'s own rule.
             yard -= Math.max(0, Math.min((int) Math.round(q.materialsNeeded), yard));
             // ...and the refiners' bitumen an order's paving draws as it is placed (0.7.83; drawBitumen()).
