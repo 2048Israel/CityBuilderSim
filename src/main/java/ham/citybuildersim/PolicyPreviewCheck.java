@@ -127,6 +127,14 @@ public class PolicyPreviewCheck {
      * This fixture measures the Policy tab's previews, not the currency, so
      * the rate is held where the founding leaves it: 4,622 people and 197 on
      * EI at month 61.
+     *
+     * 800 HOMES SINCE PT1-M4, where it was 700. The works department that
+     * built 400 points for nobody is retired and the city founds with a
+     * Builders' Yard that builds 160, so the fixture's businesses grow
+     * differently again and hire the pool empty (4,906 people, 0 on EI at
+     * month 61: sections 6 and 7 had no claimants to price the benefit on).
+     * 800 homes put the pool back, the same remedy as 0.7.55's and FR2's:
+     * 5,075 people and 117 on EI at month 61.
      */
     static Game city(Path root) {
         GameFiles files = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy"));
@@ -147,9 +155,9 @@ public class PolicyPreviewCheck {
         return g;
     }
 
-    /** The fixture's orders. */
+    /** The fixture's orders (the houses 800 since PT1-M4: see city()). */
     static final String[][] ORDERS = {
-            { "House", "700" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
+            { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
             { "Coal Power Plant", "2" }, { "Water Treatment Plant", "2" }, { "Industrial Bakery", "3" },
             { LongPlaytest.byId(HeavyIndustry.ARC_FURNACE), "2" }, { "Fabrication Shop", "2" }, { "Commercial Bank", "1" },
             { "Elementary School", "3" }, { "Walk-in Clinic", "3" }, { "Paved Road", "20" } };

@@ -333,6 +333,16 @@ public class CallCheck {
        A PLAYED CITY (BuybackCheck's: the households, the bank and the world have the money to bid)
        ===================================================================== */
 
+    /**
+     * FOUR DEPOTS STANDING SINCE PT1-M4, beside the four it orders. The works department that built 400 points a month for a
+     * city nobody staffed is retired, and the founding yard's 160 points raised this city's houses so slowly that it had 256
+     * people at month 62 and its price index no year of prices until month 86: section 4 sold the callable at month 85, on a
+     * curve whose rule read the target for want of an inflation, and the first inflation it ever read (15%) landed in the
+     * two months before the line was valued - the curve rose 150 basis points under it and the line was worth 89.0 per 100.
+     * Builders enough to raise the city (addStack(t, n, true), as foundingDepot() once stood its one) give it its year of
+     * prices by month 50 and a calm one at the sale (inflation -0.7% and -0.6% either side of it): the line is worth about
+     * its face. Two depots were not enough: the price index swung from +20% to -9% a year across the sale (105.8 per 100).
+     */
     static Game playedCity(String label) {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
@@ -343,6 +353,7 @@ public class CallCheck {
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
             city.buildStack(template(city, "Gravel Road"), 6, true);
+            city.buildStack(template(city, "Construction Depot"), 4, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
             city.buildStack(template(city, "Industrial Bakery"), 2, false);
@@ -404,6 +415,8 @@ public class CallCheck {
 
         worldWantsPaper(city);
         city.setCashForTest(Founding.WEALTHY_CASH);
+        check("fixture: the city has a year of prices before it sells, so the curve it sells on already reads an inflation",
+                city.getPriceIndex().hasRate());
         double ask = Math.max(100, hb.spareForPaper() * 3);
         double face = Math.ceil(ask / 100) * 100;
 

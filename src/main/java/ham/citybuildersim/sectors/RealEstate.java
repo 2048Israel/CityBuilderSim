@@ -115,6 +115,20 @@ public final class RealEstate extends Sector {
      * $34 a home a month; a tenth to a fifth of gross rent, which is what
      * real landlords spend. The house rate: since 0.7.103 a road kind has its
      * own (BuildingsTemplate.repairsPerYear()).
+     *
+     * CALIBRATED AGAINST THE WORKS DEPARTMENT, AND NOT MOVED WITH IT (PT1-M4).
+     * The works department's javadoc said housing maintenance was charged
+     * against its 400 free points - at 100 a depot-less city with a thousand
+     * flats spent a third of its works department on repairs, at 400 under a
+     * tenth, the share this rate was set for. The works department is retired
+     * and the city founds with a Builders' Yard of 160 points
+     * (Game.foundingYard()), against which those thousand flats would take
+     * about a fifth; but a city of a thousand flats has depots, and the
+     * repairs are no longer taken out of a free month: they count in the work
+     * the builders strike their crews for (sectors.Construction, THE CREWS THE
+     * WORK NEEDS), so they are worked by crews kept on for them. A founding
+     * village's repairs are a few points a month of the yard's 160. The rate
+     * is the real one (above) and is not moved.
      */
     public static final double MAINTENANCE_PER_YEAR = .01;
 

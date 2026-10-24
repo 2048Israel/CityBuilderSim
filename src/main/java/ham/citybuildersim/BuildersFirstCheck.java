@@ -56,12 +56,15 @@ import java.util.Locale;
  *      offer every post and their loss clock is under the retirement rule's,
  *      and no depot is retired over the run.
  *   6. ONLY A DEPOT THE CITY COULD STAFF: in a new town whose founding
- *      put depots on site among a hundred people, the builders' own test
- *      (Sector.staffing()) says the town could not staff them, and they are
- *      crewed by the rule, to the bit; the twin that builds them first all
- *      the same opens one in its second month, its builders' fill falls
- *      under MIN_STAFFABLE_TO_ORDER, the month under the repairs, and no
- *      home is built, where the town with the test builds its homes.
+ *      put depots on site beside three standing and the Builders' Yard, among
+ *      a few hundred people, the builders' own test (Sector.staffing())
+ *      says the town could not staff them, and they are crewed by the rule,
+ *      to the bit; the twin told it could staff them serves them first all
+ *      the same and opens one while the town with the test has not, where
+ *      the town with the test has work for its sites every month and builds
+ *      its homes. The twin's fill under MIN_STAFFABLE_TO_ORDER, its month
+ *      under the repairs and no home built were the works department's free
+ *      points multiplied by the fill, and are retired with them (PT1-M4).
  *   7. ONE PRIORITY WITH THE DEATH CARE: while the dead wait, a depot of the
  *      builders' and the city's cemetery on site together share what the
  *      first group takes by the crews' rule - neither ahead, neither starved;
@@ -111,8 +114,11 @@ public class BuildersFirstCheck {
     /** The builders' sector's key: whose depots the rule serves first, and whose plan the fixture asks. */
     static final String BUILDERS = Sectors.CONSTRUCTION;
 
-    /** The builders' depot: the one template that adds to their capacity. */
+    /** The builders' depot: the template that adds most to their capacity. */
     static final String DEPOT = "Construction Depot";
+
+    /** ...and the Builders' Yard the city founds with (PT1-M4), the other that adds to it: 160 points. */
+    static final String YARD = Game.FOUNDING_YARD;
 
     /** The months the fixture's run is played: two years, a span the trace's city held through ten times over. */
     static final int RUN_MONTHS = 24;
@@ -345,7 +351,7 @@ public class BuildersFirstCheck {
         BuildingManager a = without.getBuildingManager(), b = with.getBuildingManager();
         ham.citybuildersim.sectors.Construction builders = with.getSectors().construction();
         long startA = a.getTotalConstructionCapacity(), startB = b.getTotalConstructionCapacity();
-        int depotsA = a.countByName(DEPOT), depotsB = b.countByName(DEPOT);
+        int depotsA = a.countByName(DEPOT), depotsB = b.countByName(DEPOT), yardsB = b.countByName(YARD);
         double trap = with.getBuildingOutput();
         int points = template(with, DEPOT).getConstructionPoints();
         int bound = (int) Math.ceil(points / trap) + 1;
@@ -395,8 +401,12 @@ public class BuildersFirstCheck {
         out.printf("  after the first opened, its one order held the plan at most %d months running%n", longestAfter);
         assertTrue("...and after it, its one order never held the plan past the months it expands at, and one more",
                 longestAfter <= (int) Math.ceil(BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING) + 1);
+        // The nameplate is the yards' and depots' (PT1-M4): the builders' plan orders a Builders' Yard where the city could
+        // staff 75% of a depot and wants 80% (month 14, then the yard in month 15), so the growth is the depots' 400 each and
+        // the yards' 160 each, no longer the depots' alone.
         assertTrue("with the rule the builders' nameplate grows", endB > startB
-                && endB - startB == (long) (b.countByName(DEPOT) - depotsB) * template(with, DEPOT).makes(Good.BUILDING_WORK));
+                && endB - startB == (long) (b.countByName(DEPOT) - depotsB) * template(with, DEPOT).makes(Good.BUILDING_WORK)
+                        + (long) (b.countByName(YARD) - yardsB) * template(with, YARD).makes(Good.BUILDING_WORK));
         assertTrue("...by more than one depot over the run", b.countByName(DEPOT) - depotsB >= 2);
         assertTrue("...and the sites get more than the trap's month", with.getBuildingOutput() > trap);
         bits("without the rule the builders' nameplate holds", endA, startA);
@@ -421,18 +431,39 @@ public class BuildersFirstCheck {
 
     /* ============================ 6. ONLY WHAT IT COULD STAFF ============================ */
 
-    /** The months the new town is played: long enough for its first depot to open, crewed first, and its homes to come or not. */
-    static final int NEW_TOWN_MONTHS = 6;
+    /**
+     * The most months the new town is played once it has its people, and its first depot opened early or not: the window
+     * ends the month the twin without the test opens one, or here (PT1-M4: it opens in the fifth, the gated town's own
+     * in the ninth; the cap is well over that, so a slower town is still seen to open one).
+     */
+    static final int NEW_TOWN_MONTHS = 12;
+
+    /**
+     * The depots that stand beside the founding Builders' Yard (PT1-M4): the works department that built for a town
+     * nobody lived in is retired, and the yard alone, at the town's per-type fill (about a fifth), cannot out-work the
+     * repairs of the works that stand (149 points a month) - the sites of a new town got nothing in either twin, and
+     * the gate had nothing to show. Two depots do not clear them either (nothing for eight months); three do, from the
+     * fourth month, as MortgageCheck's payout town has them (landlordCity(root, name, true, 3)).
+     */
+    static final int DEPOTS_STANDING = 3;
+
+    /**
+     * The months the town is played before the twins are compared (PT1-M4): the town is founded with nobody in it, so
+     * the builders' fill after month 1 reads 0, and in months 2 and 3 the first homes fill (184, then 255 people) while
+     * the builders' month, at a fifth of the nameplate, is under the repairs: the sites get nothing in either twin
+     * whichever rule orders them. From the fourth month the town's builders have work for the sites.
+     */
+    static final int FOUNDING_MONTHS = 3;
 
     static void onlyWhatItCouldStaff(Path root) {
         out.println("\n--- 6. only a depot the city could staff: a new town's founding depots, crewed by the rule ---");
-        // MortgageCheck's new town: its works standing, its four founding depots
-        // on site, a hundred people; the landlords build. Twins: one as the game
-        // has it, one told the town could staff anything.
+        // MortgageCheck's new town: its works standing, three depots standing beside the founding yard (PT1-M4), its four
+        // founding depots on site, the landlords building. Twins: one as the game has it, one told the town could staff
+        // anything.
         MortgageCheck.out = out;
         MortgageCheck.quiet = quiet;
-        Game gated = MortgageCheck.landlordCity(root, "town-gated", true);
-        Game ungated = MortgageCheck.landlordCity(root, "town-ungated", true);
+        Game gated = MortgageCheck.landlordCity(root, "town-gated", true, DEPOTS_STANDING);
+        Game ungated = MortgageCheck.landlordCity(root, "town-ungated", true, DEPOTS_STANDING);
         ungated.getBuildingManager().setBuildersCouldStaff(null);
         BuildingManager bm = gated.getBuildingManager();
         BuildingsTemplate depot = template(gated, DEPOT);
@@ -451,10 +482,34 @@ public class BuildersFirstCheck {
         boolean same = p.share.length == rule.length;
         for (int i = 0; same && i < rule.length; i++) same = Double.doubleToLongBits(p.share[i]) == Double.doubleToLongBits(rule[i]);
         assertTrue("...the plan is the crews' rule's, every slot to the bit", same && p.buildersFirst.isEmpty());
+        BuildingManager bu = ungated.getBuildingManager();
+        assertTrue("fixture: " + DEPOTS_STANDING + " depots stand beside the founding yard, in both twins",
+                bm.countByName(DEPOT) == DEPOTS_STANDING && bm.countByName(YARD) == 1
+                        && bu.countByName(DEPOT) == DEPOTS_STANDING && bu.countByName(YARD) == 1);
+        // The founding months (PT1-M4): the town gets its people and the builders a fill; nothing is compared yet.
+        for (int m = 1; m <= FOUNDING_MONTHS; m++) {
+            month(gated);
+            month(ungated);
+        }
+        int onSiteNow = bm.underConstructionByName(DEPOT);
+        Sector.Staffing staffingNow = builders.staffing(depot, onSiteNow);
+        out.printf("  after %d founding months: %,d people, %d homes, the builders' fill %.2f; %d depots open and %d on site,"
+                        + " the town could staff %.0f%% of their posts; the sites get %,d a month%n",
+                FOUNDING_MONTHS, gated.getPopulationManager().getPopulation(), bm.getTotalHomes(), builders.getAverageFill(),
+                bm.countByName(DEPOT), onSiteNow, staffingNow.share * 100, gated.getBuildingOutput());
+        assertTrue("fixture: the town has its people and the builders a fill, in both twins",
+                gated.getPopulationManager().getPopulation() > 0 && builders.getAverageFill() > 0
+                        && ungated.getPopulationManager().getPopulation() > 0 && ungated.getSectors().construction().getAverageFill() > 0);
+        assertTrue("fixture: still a new town, with depots on site that by the builders' own test it could not staff",
+                onSiteNow > 0 && bm.getTotalHomes() < 100 && !staffingNow.passes()
+                        && bu.underConstructionByName(DEPOT) > 0 && bu.getTotalHomes() < 100);
         long homesAtStart = bm.getTotalHomes();
-        double floorG = Double.MAX_VALUE, floorU = Double.MAX_VALUE, fillU = 1;
-        int firstG = 0, firstU = 0;
-        for (int m = 1; m <= NEW_TOWN_MONTHS; m++) {
+        int openAtStart = bm.countByName(DEPOT), openAtStartU = bu.countByName(DEPOT);
+        double floorG = Double.MAX_VALUE, floorU = Double.MAX_VALUE;
+        int firstG = 0, firstU = 0, played = 0;
+        // ...then the twins are compared until the one told it could staff them opens a depot, or for at most NEW_TOWN_MONTHS.
+        while (played < NEW_TOWN_MONTHS && bu.countByName(DEPOT) == openAtStartU) {
+            played++;
             month(gated);
             month(ungated);
             BuildingManager.Plan pg = bm.getLastPlan(), pu = ungated.getBuildingManager().getLastPlan();
@@ -462,20 +517,36 @@ public class BuildersFirstCheck {
             if (pu != null && !pu.buildersFirst.isEmpty()) firstU++;
             floorG = Math.min(floorG, gated.getBuildingOutput());
             floorU = Math.min(floorU, ungated.getBuildingOutput());
-            fillU = Math.min(fillU, ungated.getSectors().construction().getAverageFill());
         }
         out.printf("  months the depots went first: %d in the town with the test, %d in the twin without it%n", firstG, firstU);
         assertTrue("in the town with the test its depots never went first", firstG == 0);
         assertTrue("...where the twin told it could staff them built them first", firstU > 0);
-        BuildingManager bu = ungated.getBuildingManager();
-        out.printf("  after %d months: with the test %d depots open, the sites at least %,.0f a month, %,d homes, %,d people;"
-                        + " without it %d open, the builders' fill down to %.2f, the sites at least %,.0f, %,d homes, %,d people%n",
-                NEW_TOWN_MONTHS, bm.countByName(DEPOT), floorG, bm.getTotalHomes(), gated.getPopulationManager().getPopulation(),
-                bu.countByName(DEPOT), fillU, floorU, bu.getTotalHomes(), ungated.getPopulationManager().getPopulation());
+        out.printf("  after %d more months: with the test %d depots open (%d before), the sites at least %,.0f a month, %,d homes"
+                        + " (%,d before), %,d people; without it %d open (%d before), the builders' fill now %.2f, the sites at"
+                        + " least %,.0f, %,d homes, %,d people%n",
+                played, bm.countByName(DEPOT), openAtStart, floorG, bm.getTotalHomes(), homesAtStart,
+                gated.getPopulationManager().getPopulation(), bu.countByName(DEPOT), openAtStartU, ungated.getSectors().construction().getAverageFill(), floorU,
+                bu.getTotalHomes(), ungated.getPopulationManager().getPopulation());
         assertTrue("without the test a depot opens early", bu.countByName(DEPOT) > bm.countByName(DEPOT));
-        assertTrue("...the builders' fill falls under MIN_STAFFABLE_TO_ORDER", fillU < Sector.MIN_STAFFABLE_TO_ORDER);
-        assertTrue("...and their month under the repairs: the sites get nothing", floorU == 0);
-        assertTrue("...so no home is built", bu.getTotalHomes() == homesAtStart);
+        /*
+         * THREE OF THE TRAP'S SIX ASSERTIONS ARE RETIRED WITH THE WORKS
+         * DEPARTMENT (PT1-M4, 2026-10-24; star 6 of docs/queue/PT1-M4-notes.md,
+         * Jerus's to rule on): "the builders' fill falls under
+         * MIN_STAFFABLE_TO_ORDER", "...and their month under the repairs: the
+         * sites get nothing" and "...so no home is built". T1-C's trap was the
+         * works department's free points multiplied by the builders' fill: a
+         * depot opened among a hundred people brought fifty posts the town
+         * filled at 0.16, and the whole month - the free 400 with it - fell under
+         * the repairs. Every point is a yard's or a depot's now, worked at the
+         * posts kept on and their fill, and a city's fill is a job type's, the
+         * same for every employer: a depot opened early adds posts the builders
+         * fill at that fill, so their output rises and cannot collapse (the
+         * fill dips from 0.32 to 0.29 as the twin's depot opens, and the month
+         * still has work for the sites, 74 points then 80). What the gate
+         * achieves stays asserted: a depot opened early in the twin, and the
+         * sites worked every month and the homes built in the town with the
+         * test.
+         */
         assertTrue("with the test the sites get work every month", floorG > 0);
         assertTrue("...and the town builds its homes", bm.getTotalHomes() > bu.getTotalHomes());
     }

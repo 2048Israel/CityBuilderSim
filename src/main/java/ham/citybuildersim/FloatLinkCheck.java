@@ -538,6 +538,10 @@ public class FloatLinkCheck {
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
             city.buildStack(template(city, "Gravel Road"), 6, true);
+            // ...and two depots standing (PT1-M4), as CallCheck's played city stands its own: the works department that
+            // built for nobody is retired, and the founding yard alone raised this town to 256 people by month 62, whose
+            // asks were too small for the fixed fee the near-par assertions read against.
+            city.buildStack(template(city, "Construction Depot"), 2, true);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
             city.buildStack(template(city, "Industrial Bakery"), 2, false);

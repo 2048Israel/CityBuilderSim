@@ -3928,9 +3928,10 @@ public class LongPlaytest {
      *    while its type did not fall in that district moved: per district and
      *    type, moved += max(0, boxes of the type gone - max(0, its count before -
      *    its count now)). A district whose carry in changed between the two months
-     *    (carried(d)[0], by type) is the spill's, which a departure in the district
-     *    before can move: counted apart. Any other move is flagged "a building on
-     *    the map moved".
+     *    (carriedLog(d), pair by pair, since PT1-M4; carried(d)[0] counts it by type
+     *    and missed a log rewritten in its middle that nets to the same counts) is
+     *    the spill's, which a departure in the district before can move: counted
+     *    apart. Any other move is flagged "a building on the map moved".
      *  - THE RING. At the last window's last month, each use's mean distance from the
      *    founding site in km, flagged when industry's is farther than the homes'
      *    (Jerus, 2026-10-20: "residential in middle then industrial in the outer
@@ -3968,11 +3969,12 @@ public class LongPlaytest {
         return kept.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    /** One district in one month: its boxes {type << 40 | x << 20 | y} sorted, its count of boxes by type, what was carried in to it (null for none), and the model's own count by type (a finding's detail, not the test). */
+    /** One district in one month: its boxes {type << 40 | x << 20 | y} sorted, its count of boxes by type, what was carried in to it by type (null for none) and as the {month, code} pairs it came in (carryLog, null for none), and the model's own count by type (a finding's detail, not the test). */
     static final class LayoutSnap {
         long[] boxes;
         int[] byType;
         int[] carryIn;
+        int[] carryLog;
         int[] counted;
     }
 
@@ -4085,6 +4087,7 @@ public class LongPlaytest {
             java.util.Arrays.sort(keys, 0, n);
             s.boxes = java.util.Arrays.copyOf(keys, n);
             s.carryIn = m.carried(d)[0];
+            s.carryLog = m.carriedLog(d);
             s.counted = new int[nt];
             for (int t = 0; t < nt; t++) s.counted[t] = d.count(t);
             out.put(layoutKey(d), s);
@@ -4092,13 +4095,19 @@ public class LongPlaytest {
         return out;
     }
 
-    /** Whether two carries in are the same counts by type (none is all zeros). */
+    /**
+     * Whether two carries in leave a district the same history (none is an empty list): the same {month, code} pairs in the same
+     * order, or the one the other with pairs appended - CL3's promise is that an arrival appended moves no box already drawn, so a
+     * move beside an append is a move. Only a rewrite inside the pairs the two have in common is a different history, whose moves
+     * are the spill's. Not the counts by type, as this was before PT1-M4: the squaring of an upstream log with its plan's counts
+     * changes it in its middle (DistrictPlan, OVERFLOW LOG), and a re-deal of the works on their sites (a Large Open-Pit Mine opening
+     * at m3991 took 12 Iron Mines from district (2,0) to (1,0)) puts back 12 arrivals at the months they came in and takes them away
+     * at the deal's: the counts by type are as they were, the log is not, and a district after it replays a different history.
+     */
     static boolean layoutSameCarry(int[] a, int[] b) {
-        int n = Math.max(a == null ? 0 : a.length, b == null ? 0 : b.length);
-        for (int t = 0; t < n; t++) {
-            int x = a != null && t < a.length ? a[t] : 0, y = b != null && t < b.length ? b[t] : 0;
-            if (x != y) return false;
-        }
+        int na = a == null ? 0 : a.length, nb = b == null ? 0 : b.length;
+        int common = Math.min(na, nb);
+        for (int i = 0; i < common; i++) if (a[i] != b[i]) return false;
         return true;
     }
 
@@ -4142,7 +4151,7 @@ public class LongPlaytest {
                         .append(", counted ").append(a.counted[t]).append("->").append(b.counted[t]).append(')');
             }
             if (moved == 0) continue;
-            if (layoutSameCarry(a.carryIn, b.carryIn)) {
+            if (layoutSameCarry(a.carryLog, b.carryLog)) {
                 layoutMoved += moved;
                 long key = e.getKey();
                 flag(month, "a building on the map moved", String.format("district (%d,%d), m%d to m%d: %d of its %d boxes moved: %s",

@@ -1,4 +1,4 @@
-# FW3 - a river's far bank surfaced after the hub's side (0.8.39)
+# FW3 - a river's far bank surfaced after the hub's side (0.8.40)
 
 - **The note against today's code.** fixN3 §7 (0.7.72) found it in the tile deal: a road tile cut by a river
   counted its whole grid, so a gravel-only tile was dealt road its hub's bank could not hold. That deal went in

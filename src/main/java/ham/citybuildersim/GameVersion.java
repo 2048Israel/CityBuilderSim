@@ -7301,8 +7301,26 @@ public final class GameVersion {
      *     uplift is not coupon (Debt.getMonthlyCoupon()/getUpliftDue()).
      *   - Close it now's journal, honest line and call gain behind getters.
      *   - Harness: DeskCheck (new). The manual's text: docs/queue/CD6-manual.md.
+     *
+     * 0.8.39 (2026-10-24) - PT1-M4, THE WORKS DEPARTMENT RETIRED
+     * (docs/queue/PT1-M4-notes.md; Jerus, 2026-10-12: "not meant ... perhaps
+     * a starting depot or something instead"). Construction earns only for
+     * work its own crews do.
+     *   - BuildingManager.BASE_CONSTRUCTION (400 free points a month) is gone:
+     *     the builders' capacity is their yards' and depots' nameplate, and
+     *     Game.getConstructionOutput() the posts kept on at their fill.
+     *   - A city founds with a Builders' Yard (id 143, the depot at two
+     *     fifths: 20 posts, 160 points; Game.foundingYard()): the depot's 50
+     *     posts, laid off idle and counted as spoken for, left a village no
+     *     hands for a shop.
+     *   - The builders' last yard or depot is never retired, sold in distress
+     *     or bought out (Construction.mayRetire(), Game.demolishable()).
+     *   - The People strip's unused fold keeps no words' width (KeptCheck).
+     *   - Save: SAVE_FORMAT 45, OLDEST_LOADABLE_FORMAT 45.
+     *   - Harness: FoundingYardCheck (new); twenty-three re-caused, the map's
+     *     two watches (MapCheck 8, LongPlaytest's layout) read the plan's rules.
      */
-    public static final String VERSION = "0.8.39";
+    public static final String VERSION = "0.8.40";
 
     /**
      * The save shape.
@@ -8061,8 +8079,24 @@ public final class GameVersion {
      *     THE FLOOR RISES TO 44 WITH IT (the rule): a save of format 43 or
      *     older is refused, naming the build that still opens it. No
      *     conversion is written.
+     *
+     * 45 - THE WORKS DEPARTMENT RETIRED (batch PT1-M4; docs/queue/PT1.md,
+     *     M4): the builders' capacity is their yards' and depots' nameplate
+     *     alone, and a new city founds with a Builders' Yard standing
+     *     (Game.foundingYard(), a new template, id 143) where it had 400 free
+     *     points a month. Nothing
+     *     new is saved, but a save from before was played on the free points
+     *     and would load WRONGLY, not merely incompletely: one with no depot
+     *     yet - PT1's city at month 183 was one - would load with no builders
+     *     at all, a city that can never build anything again, its depot
+     *     included; and every older city's crews would be struck 400 points
+     *     short of the month it was saved in.
+     *
+     *     THE FLOOR RISES TO 45 WITH IT (the rule): a save of format 44 or
+     *     older is refused, naming the build that still opens it. No
+     *     conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 44;
+    public static final int SAVE_FORMAT = 45;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8072,7 +8106,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 44 since batch CD3 (THE CITY'S PAPER ON AMORTISED COST above: a save's
+     * 45 since batch PT1-M4 (THE WORKS DEPARTMENT RETIRED above: a save
+     * without a depot would load into a city that can never build). 44 from
+     * batch CD3 (THE CITY'S PAPER ON AMORTISED COST above: a save's
      * pieces carry no carrying value and would book their interest wrongly).
      * 43 from batch XR1 (THE FLOAT above: a save's currency would load
      * wrongly). 42 from batch CD2 (THE LINEUP AND THE AUCTION above: a save's term
@@ -8100,7 +8136,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 44;
+    public static final int OLDEST_LOADABLE_FORMAT = 45;
 
     public static final String NAME = "CityBuilderSim";
 

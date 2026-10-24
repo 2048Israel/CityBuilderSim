@@ -1833,6 +1833,14 @@ final class PeopleScreen {
         private final Label moreLabel = new Label();
         private final Tooltip moreTip = new Tooltip();
 
+        /**
+         * What the "+n more" label says while nothing folds: a space, never nothing (PT1-M4). A Label
+         * set to no words at all keeps its Text's wrapping width from the words it last had, so the
+         * label of a kept strip that once folded stuck out of its box 34 pixels wide while one built
+         * new did not (KeptCheck, the playtest's month 613); a space is laid out afresh each time.
+         */
+        private static final String UNUSED = " ";
+
         /** The "+n more" tile and the strip's size, made once in its life (Kept: a kept Strip is told each month's households by set()). */
         Strip() {
             moreLabel.setWrapText(true);
@@ -1887,7 +1895,7 @@ final class PeopleScreen {
             if (moved || built) {
                 // What a new strip's "+n more" starts as: the layout fills it in where tiles fold.
                 more.setVisible(true);
-                String idle = pieces.isEmpty() ? "nobody" : "";
+                String idle = pieces.isEmpty() ? "nobody" : UNUSED;
                 if (!idle.equals(moreLabel.getText())) moreLabel.setText(idle);
                 if (!moreTip.getText().isEmpty()) moreTip.setText("");
                 requestLayout();
@@ -1944,7 +1952,10 @@ final class PeopleScreen {
             for (int i = 0; i < n; i++) {
                 VBox t = tiles.get(i).box;
                 t.setVisible(i < k);
-                if (i >= k) continue;
+                // A folded tile is laid at nothing, as the "+n more" is when nothing folds (PT1-M4):
+                // a kept strip held a tile it had folded where it last stood, so it and a strip
+                // built new differed in what neither shows (KeptCheck, the playtest's month 612).
+                if (i >= k) { t.resizeRelocate(0, 0, 0, 0); continue; }
                 double width = Math.min(tw[i], Math.max(0, w - x));
                 t.resizeRelocate(x, 0, Math.max(0, width - 3), h);
                 x += width;
@@ -1962,6 +1973,11 @@ final class PeopleScreen {
                 if (!text.equals(moreLabel.getText())) moreLabel.setText(text);
                 if (!names.toString().equals(moreTip.getText())) moreTip.setText(names.toString());
                 more.resizeRelocate(x, 0, Math.max(0, Math.min(TILE_MIN, w - x) - 3), h);
+            } else {
+                // ...and with its words gone, as a strip built new has none there to lay out.
+                if (!UNUSED.equals(moreLabel.getText())) moreLabel.setText(UNUSED);
+                if (!moreTip.getText().isEmpty()) moreTip.setText("");
+                more.resizeRelocate(0, 0, 0, 0);
             }
         }
 

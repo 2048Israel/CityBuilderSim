@@ -40,9 +40,10 @@ import java.util.Map;
  *               queue is deeper than BACKLOG_MONTHS_BEFORE_EXPANDING.
  *
  * Everything else - the books, the credit, the listing, the property tax on
- * its depots and the repairs it pays itself for - is the template's. The
- * city's own works department (BuildingManager.BASE_CONSTRUCTION) builds
- * alongside the depots and has no payroll; it is capacity, not a company.
+ * its depots and the repairs it pays itself for - is the template's. Every
+ * point of building work is a yard's or a depot's, worked by its crews: the
+ * municipal works department's free points were retired at PT1-M4, and the
+ * city founds with a Builders' Yard standing instead (Game.foundingYard()).
  */
 public final class Construction extends Sector {
 
@@ -90,11 +91,10 @@ public final class Construction extends Sector {
      * (Game.strikeBuildersCrews(), from SimulationEngine.updatePopulation()),
      * the builders strike the share of their depots' posts the work ahead
      * needs: the repairs the standing city takes plus every point still owed
-     * on site, less what the city's own works department does on its own
-     * (BuildingManager.BASE_CONSTRUCTION has no posts), over what the depots
-     * would do at full staffing - the road and health ratios in, every post
-     * filled. They offer that need over their fill, never less than the
-     * core crew (IDLE_PAYROLL_FLOOR) and never more than all of them
+     * on site, over what the depots would do at full staffing - the road
+     * and health ratios in, every post filled. They offer that need over
+     * their fill, never less than the core crew (IDLE_PAYROLL_FLOOR) and
+     * never more than all of them
      * (strikeCrews()).
      *
      * OVER THE FILL, so the crews that come are the crews the work needs.
@@ -146,16 +146,15 @@ public final class Construction extends Sector {
      * Strikes the month's crews.
      *
      * @param work       points the crews face: the repairs plus everything owed on site
-     * @param cityWorks  what the city's own works department does of it at full staffing
      * @param depots     what the depots would do with every post filled
      */
-    public void strikeCrews(double work, double cityWorks, double depots) {
+    public void strikeCrews(double work, double depots) {
         if (!(depots > 0)) {
             crewsNeeded = 0;
             postsOfferedShare = 1;
             return;
         }
-        crewsNeeded = Math.max(0, work - Math.max(0, cityWorks)) / depots;
+        crewsNeeded = Math.max(0, work) / depots;
         // ...over last month's fill, so the crews that come are the crews the work needs.
         double fill = getAverageFill();
         fillStruckOn = fill;
@@ -504,7 +503,7 @@ public final class Construction extends Sector {
         return staffed / capacity;
     }
 
-    /** Points a month the depots and the city's own works could deliver, before staffing and roads. */
+    /** Points a month the depots could deliver, before staffing and roads. */
     public double getConstructionCapacity() {
         return buildings == null ? 0 : buildings.getTotalConstructionCapacity();
     }
@@ -755,6 +754,36 @@ public final class Construction extends Sector {
         return new double[] { demand, capacity };
     }
 
+    /**
+     * THE LAST DEPOT IS NOT FOR SALE (PT1-M4). The municipal works department
+     * used to be what built a depot when the builders had none; with it
+     * retired, the last depot is what builds the next one, so neither the
+     * spare-capacity rule nor the distress rule (BusinessInvestment.
+     * planRetirement(), planDistressRetirement(), both ask mayRetire()) may
+     * sell it. With two or more standing, MAX_RETIREMENT_FRACTION (.25) never
+     * takes them all.
+     */
+    @Override
+    public boolean mayRetire(BuildingsTemplate t) {
+        if (t == null || !(t.makes(Good.BUILDING_WORK) > 0) || buildings == null) return true;
+        // ...standing and not closing: a yard or depot the city has bought out to demolish is gone at the
+        // month's start (Game.closeDemolished()), so it is not the one that would be left.
+        int depots = 0;
+        for (BuildingsTemplate d : buildings.getTemplatesBySector(key())) {
+            if (d.makes(Good.BUILDING_WORK) > 0) {
+                depots += Math.max(0, buildings.getQuantity(d.getId()) - buildings.getControl().closingOf(d.getId()));
+            }
+        }
+        return depots > 1;
+    }
+
+    /** Why nothing could be sold, when mayRetire() refused everything: the builders have the one depot. */
+    @Override
+    public String noRetirementReason(boolean distress) {
+        return (distress ? "overdrawn, but " : "")
+                + "its last yard or depot: without it nothing in the city can be built";
+    }
+
     /* ===================================================================
        THE SCREEN
        =================================================================== */
@@ -812,7 +841,7 @@ public final class Construction extends Sector {
         // With no depot there are no posts to fill, and averageFill's 100% is its
         // empty-city default rather than a reading (0.7.20).
         lines.add(standing <= 0
-                ? Line.of("Staffed", "no depot yet", Line.Tone.MUTED)
+                ? Line.of("Staffed", "no depot - nothing can be built", Line.Tone.MUTED)
                 : Line.of("Staffed", f.pct(averageFill), averageFill < .9 ? Line.Tone.WARN : Line.Tone.NONE));
         if (standing > 0 && offered < standing) {
             lines.add(Line.note(String.format("The work ahead - the repairs and what the sites still owe - "

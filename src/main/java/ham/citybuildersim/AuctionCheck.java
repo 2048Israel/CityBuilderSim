@@ -936,6 +936,11 @@ public class AuctionCheck {
         double allotFace = bond.allotHouseholdsFace(), allotCash = bond.allotHouseholdsCash();
         assertTrue("fixture: the households were allotted some, and can pay for it",
                 allotFace > 0 && allotCash > 0 && allotCash < hb.spareForPaper());
+        // ...and nobody else was (PT1-M4): the auction also allots a sliver to businesses with spare cash and to the world
+        // (0.2 of the 330 here), which the settle takes off the bank's part. This section is about the households and the
+        // bank, "the rest" being the bank's, so the two slivers are struck out as CentralBankCheck 11 strikes them.
+        bond.allotFirmsFace = bond.allotFirmsCash = 0;
+        bond.allotWorldFace = bond.allotWorldCash = 0;
         close("what the buyers owe at the settle is what the treasury was paid", received, quote.cashReceived(), 1e-9);
         final double[] around = new double[2];
         city.settleProbeForTest = after -> around[after ? 1 : 0] = savings(city);

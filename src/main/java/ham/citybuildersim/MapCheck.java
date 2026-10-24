@@ -1859,8 +1859,9 @@ public class MapCheck {
     /**
      * Jerus, 2026-10-07: "the generation should only put what the city has,
      * not more not less". A new default city drawn as founded, a month on and
-     * a year on is exactly what it holds - as founded, its one Commercial Bank
-     * (Game.foundingBank()) on bare ground, no road and no highway, where J3b
+     * a year on is exactly what it holds - as founded, its Commercial Bank
+     * (Game.foundingBank()) and its Builders' Yard (Game.foundingYard(), PT1-M4: the
+     * works department that built for nobody is retired) on bare ground, no road and no highway, where J3b
      * drew it as a shop of the shops' colour beside the mockup's two world
      * highways; and on the dense screen every building is drawn on its own
      * type's land where its district's plan placed it (0.7.88; until 0.7.87
@@ -1896,8 +1897,11 @@ public class MapCheck {
                         what.length() == 0 ? "nothing" : what, d.surfaced(), tracks));
                 if (months == 0) {
                     BuildingsTemplate bank = g.getBuildingManager().getTemplateByName("Commercial Bank");
-                    bare = bank != null && d.total() == 1 && d.buildings[bank.getId()] == 1 && model[bank.getId()] == 1
-                            && modelBuildings(model, map.types()) == 1 && d.surfaced() == 0 && r.count(r::isHighway) == 0;
+                    // ...and the Builders' Yard the city founds with since PT1-M4: the founding is the two, and nothing else.
+                    BuildingsTemplate yard = g.getBuildingManager().getTemplateByName(Game.FOUNDING_YARD);
+                    bare = bank != null && yard != null && d.total() == 2 && d.buildings[bank.getId()] == 1 && model[bank.getId()] == 1
+                            && d.buildings[yard.getId()] == 1 && model[yard.getId()] == 1
+                            && modelBuildings(model, map.types()) == 2 && d.surfaced() == 0 && r.count(r::isHighway) == 0;
                 }
             }
         } finally {
@@ -1906,7 +1910,7 @@ public class MapCheck {
         out.print(lines);
         check("a new default city is drawn as what it holds, as founded, a month on and a year on: each type's buildings, no more, no less",
                 exact);
-        check("...as founded, its one Commercial Bank: no other building, no road (its streets tracks, the model's base streets: spec 2.2), no highway", bare);
+        check("...as founded, its Commercial Bank and its Builders' Yard: no other building, no road (its streets tracks, the model's base streets: spec 2.2), no highway", bare);
         // The dense screen, painted: every building on its own type's land, where its district's plan put it.
         long tx0 = Math.floorDiv(dense.land().siteX(), World.TILE) - SCREEN_ACROSS / 2;
         long ty0 = Math.floorDiv(dense.land().siteY(), World.TILE) - SCREEN_DOWN / 2;
@@ -6783,7 +6787,9 @@ public class MapCheck {
             while (towardField < FIELD_BUYS_MOST && market.richest(Resource.IRON) == null) {
                 LandParcel step = MiningCheck.towardIron(g);
                 if (step == null) break;
-                if (!g.canAffordParcel(step)) g.setCashForTest(g.getCash() + step.localPrice(g.getForeignAccounts().getRate()));
+                // ...from nothing when the treasury is in the red (PT1-M4: the played city's months before this section
+                // no longer leave it in credit; Game.landPayable() reads max(0, cash), so cash + price stayed short of it).
+                if (!g.canAffordParcel(step)) g.setCashForTest(Math.max(0, g.getCash()) + step.localPrice(g.getForeignAccounts().getRate()));
                 if (!g.buyLandParcel(step.getId())) break;
                 towardField++;
             }
@@ -6791,6 +6797,7 @@ public class MapCheck {
             System.setOut(was);
         }
         out.printf("      %d offers bought toward the nearest iron field until one holds it%n", towardField);
+        check("fixture: the city bought toward the iron field until an offer held it", market.richest(Resource.IRON) != null);
         List<LandParcel> listing = market.getListing();
         double rate = g.getForeignAccounts().getRate();
         boolean wasVault = g.isLandPaidFromVault();

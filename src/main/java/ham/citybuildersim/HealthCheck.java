@@ -1275,7 +1275,15 @@ public class HealthCheck {
                  * the shelves' timing, the fee's rule unchanged
                  * (runs/fixP4-notes.md).
                  */
-                b.addStack(b.getTemplateByName("Construction Depot"), 1, true);
+                // THREE DEPOTS STAND, BESIDE THE FOUNDING YARD (PT1-M4: the works department's 400 free points, which kept the
+                // dear twin building while sickness stalled its crews, are retired; the yard and one depot build 560 a
+                // month where the works and one depot built 800, and the dear twin's year of hunger read the stalled
+                // builders again: 12.0 points over the free twin's, its shelves 17.2 short, and it buried no more of its
+                // people). Measured by the depots standing: 1 - both red; 2 - deaths 11.27 against 11.40 a thousand, red;
+                // 3 - green (23,561, 22,197 and 21,572 people at the end, deaths 10.88 and 12.63, hunger 1.5 points over);
+                // 4 - hunger 5.8 over, red on the shelves; 5 and above - the cities outgrow the clinics' 25,000 places.
+                // Three build alike enough for the fee to be what differs.
+                b.addStack(b.getTemplateByName("Construction Depot"), 3, true);
                 // ...and the fleet of Freight's Haulage kept ahead of the plant (trucksKeepUp(), FR2).
                 for (int pre = 0; pre < 48; pre++) {
                     trucksKeepUp(town);

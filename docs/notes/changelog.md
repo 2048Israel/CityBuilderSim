@@ -14,7 +14,7 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
-### 0.8.39 — FW3, a river's far bank surfaced after the hub's side — 2026-10-24, ready, see docs/queue/FW3-notes.md
+### 0.8.40 — FW3, a river's far bank surfaced after the hub's side — 2026-10-24, ready, see docs/queue/FW3-notes.md
 
 A district cut by a river no bridge crosses spread its road over the streets on both banks, by cell rank, so the
 far bank's streets, which are not on the city's network, were paved while streets on the hub's side were left
@@ -24,6 +24,17 @@ half width then full, the parted streets after in the same order, then the one-s
 parted, or all, is surfaced as before. PlanCheck section 16 lays a 16-plot river across a root district: road
 short of the network goes on the network alone, and the far bank is dealt only what the network leaves (red on
 main: 883 plots of 5,293 beyond the river). The map's alone; the trace unmoved.
+### 0.8.39 — PT1-M4, the works department retired — 2026-10-24, ready but MapCheck 8 (FW11), see docs/queue/PT1-M4-notes.md
+
+Construction was paid for 400 points a month nobody worked (PT1's month 183: a 72% margin with 0 workers; Jerus: *"not
+meant ... perhaps a starting depot or something instead"*). The free points are gone: the builders' capacity is their yards'
+and depots' nameplate, worked at the posts they keep on and their fill. Every city founds with a **Builders' Yard** (a new
+template, id 143: the Construction Depot at two fifths, 20 posts, 160 points), because a depot's 37 laid-off posts, counted as
+spoken for, left a hands-off village no hands for a shop in 240 months; and the builders' last yard or depot is never sold.
+The default playtest moved: 8,601 / 44,440 / 765,819 people near m600 / m1060 / the end (main 3,934 / 16,288 / 625,815),
+prices 3.2 / 9.8 / 712 (8.2 / 62 / 13,374), the village's homes by month 17 where main's stood by 5. The ensemble passes 23
+of 25 against 0.8.29's 24 of 26, no new red (A2 and S1 better, H2 vacuous). Twenty-three harnesses re-caused and T1-C's
+trap retired with the free points; MapCheck 8 is red on a street remnant walled in by houses, FW11's case (PT1-M4-C). Format 45.
 
 ### 0.8.38 — FW2, the bank's sheet and the books' sheet the same after a load — 2026-10-24, ready, see docs/queue/FW2-notes.md
 

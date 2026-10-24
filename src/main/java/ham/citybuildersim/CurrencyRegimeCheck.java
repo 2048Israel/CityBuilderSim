@@ -199,11 +199,24 @@ public class CurrencyRegimeCheck {
 
     /** A trading town on the default founding, as ExchangeRateCheck builds it (its own copy: that one is tied to its harness's streams). */
     static Game town(String label, Founding founding) {
+        return town(label, founding, 0);
+    }
+
+    /**
+     * ...with that many more depots STANDING beside the four it orders (PT1-M4). The works department that built 400
+     * points a month for a city nobody staffed is retired, and the four ordered depots are built by the founding
+     * yard's 160 points at the crews it has: 196 of the 500 houses stood at month 61, 672 people, and the price index
+     * (a basket based on a month the city shopped in, then thirteen readings) had two months to go - the year of
+     * prices section 7's inflation rule reads. Two depots stood (addStack(t, n, true), as foundingDepot() once stood
+     * its one) raise the houses: 2,193 people at month 61, and the index has its rate from month 55.
+     */
+    static Game town(String label, Founding founding, int depotsStanding) {
         Game city = new Game(GameFiles.scratch(label), founding);
         quietly(() -> {
             city.run();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
+            if (depotsStanding > 0) city.buildStack(ForeignCheck.template(city, "Construction Depot"), depotsStanding, true);
             city.buildStack(ForeignCheck.template(city, "House"), 500, false);
             city.buildStack(ForeignCheck.template(city, "Convenience Store"), 8, false);
             city.buildStack(ForeignCheck.template(city, "Small Grocery Store"), 3, false);
@@ -960,7 +973,8 @@ public class CurrencyRegimeCheck {
     static void underAPegTheDialIsTheUSes() {
         out.println("\n--- 7. under a peg the dial is the US's rate plus the spread; the aim ---");
 
-        Game g = town("xr2-dial", Founding.defaults());
+        // Two depots stand beside the four ordered (PT1-M4): see town(); without them the price index has no rate at month 60.
+        Game g = town("xr2-dial", Founding.defaults(), 2);
         play(g, 60);
         ForeignAccounts fx = g.getForeignAccounts();
         DebtManager dm = g.getDebtManager();
