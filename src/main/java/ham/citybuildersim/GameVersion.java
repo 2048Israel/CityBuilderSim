@@ -8113,8 +8113,29 @@ public final class GameVersion {
      *     THE FLOOR RISES TO 45 WITH IT (the rule): a save of format 44 or
      *     older is refused, naming the build that still opens it. No
      *     conversion is written.
+     *
+     * 46 - BUILDABLE GROUND, FOUNDED ON (batch ET2, slice C;
+     *     docs/studies/spec-earth2-terrain.md 3.4): the real Earth's founding
+     *     site is snapped to ground a building may stand on - dry, and flat or
+     *     foothill (EarthTerrain.siteBuildable()) - where it was snapped to
+     *     any dry ground. Nothing new is saved, but the world's founding
+     *     site is found again from the city's spot and the data each time the
+     *     world is built (the boats' reference, any new founding), so an
+     *     Earth city saved before, its site snapped among steep slopes,
+     *     would load into a world whose founding site is elsewhere than the
+     *     one it was built round, and its map (a street plan and a district's
+     *     room that refuse steep ground now) would stand differently from
+     *     the one its sidecar kept.
+     *
+     *     THE EARTH'S FLOOR RISES TO 46 WITH IT, AND ONLY THE EARTH'S
+     *     (EarthSite.SLOPE_FORMAT, as ICE_FORMAT and DEPOSITS_FORMAT did): an
+     *     Earth save of format 45 or older is refused with its own words
+     *     (EarthSite.BEFORE_SLOPE_WORDS), naming the build that still opens
+     *     it. A generated world is flat, its founding reads no relief, and
+     *     its saves load as they did, so OLDEST_LOADABLE_FORMAT stays at 45.
+     *     No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 45;
+    public static final int SAVE_FORMAT = 46;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT

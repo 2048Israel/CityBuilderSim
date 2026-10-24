@@ -198,6 +198,12 @@ public final class EarthTerrain {
     /** How far the founding snaps from the spot, in plots: 167 (5 km, the founding card's reach, spec-earth 2); a spot with no site within it has none, and E4's screen refuses it. */
     public static final int SNAP_PLOTS = 167;
 
+    /** How far past the spot the nearest buildable ground is looked for when the snap finds none (ET2, spec-earth2-terrain 3.4): 1,667 plots (50 km); past it the founding card says there is none. */
+    public static final int BEYOND_PLOTS = 1667;
+
+    /** The step of that search (ET2): a lattice of spots 8 plots (240 m) apart, each tried by the founding's test 1, so the nearest it reports is within a lattice step of the true nearest - cheap where the snap's ring of one plot is not, over a disc 100 times the snap's. */
+    public static final int BEYOND_STEP = 8;
+
     /** Points a side of a world cell the cells pass reads: 4, so 16 a cell of the 4' layers (spec-earth 4). */
     public static final int CELL_SAMPLES = 4;
 
@@ -2659,16 +2665,19 @@ public final class EarthTerrain {
      * THE SNAP (spec-earth 2): from the spot's plot - the projection's
      * centre is the corner of four, and this is the one south-east of it,
      * (SIDE/2, SIDE/2) - the nearest plot that passes the founding's test 1,
-     * dry ground with eight dry points World.SITE_DRY_PLOTS round it, ring by
-     * ring of one plot (a ring the plots k to k + 1 plots off, nearest first,
-     * then north to south and west to east), out to SNAP_PLOTS. Dry is the
-     * ground as drawn (World.dry()): not sea, not fresh water, rivers
-     * included, and since 0.7.127 not ice, which is never a founding site.
+     * buildable ground with eight buildable points World.SITE_DRY_PLOTS round
+     * it, ring by ring of one plot (a ring the plots k to k + 1 plots off,
+     * nearest first, then north to south and west to east), out to
+     * SNAP_PLOTS. Buildable is World.buildable() of the ground as drawn and
+     * its relief (ET2, spec-earth2-terrain 3.4): dry - not sea, not fresh
+     * water, rivers included, and since 0.7.127 not ice, which is never a
+     * founding site - and flat or foothill, so no city is founded where no
+     * building may stand.
      */
     private void snap() {
         long[] s = siteNear();
         siteTests = (int) s[2];
-        if (s[0] < 0) throw new IllegalStateException("no dry ground within " + SNAP_PLOTS + " plots of (" + key.lat() + ", " + key.lon() + ") to found a city on");
+        if (s[0] < 0) throw new IllegalStateException("no buildable ground within " + SNAP_PLOTS + " plots of (" + key.lat() + ", " + key.lon() + ") to found a city on");
         siteX = s[0];
         siteY = s[1];
     }
@@ -2699,7 +2708,7 @@ public final class EarthTerrain {
             ring.sort((p, o) -> p[0] != o[0] ? Long.compare(p[0], o[0]) : p[1] != o[1] ? Long.compare(p[1], o[1]) : Long.compare(p[2], o[2]));
             for (long[] p : ring) {
                 tests++;
-                if (siteDry(cx + p[2], cy + p[1])) {
+                if (siteBuildable(cx + p[2], cy + p[1])) {
                     site = new long[] { cx + p[2], cy + p[1], tests };
                     return site.clone();
                 }
@@ -2709,19 +2718,89 @@ public final class EarthTerrain {
         return site.clone();
     }
 
-    /** The founding's test 1 at plot (px, py): it and eight points World.SITE_DRY_PLOTS round its centre are dry ground. */
-    boolean siteDry(long px, long py) {
-        if (!dry(px, py)) return false;
+    /** The founding's test 1 at plot (px, py) (ET2: buildable ground, spec-earth2-terrain 3.4): it and eight points World.SITE_DRY_PLOTS round its centre are ground a building may stand on - dry, and flat or foothill (World.buildable()). */
+    boolean siteBuildable(long px, long py) {
+        if (!buildable(px, py)) return false;
         double x = px + 0.5, y = py + 0.5;
         for (int q = 0; q < 8; q++) {
             double a = q * Math.PI / 4;
-            if (!dry((long) Math.floor(x + World.SITE_DRY_PLOTS * StrictMath.cos(a)), (long) Math.floor(y + World.SITE_DRY_PLOTS * StrictMath.sin(a)))) return false;
+            if (!buildable((long) Math.floor(x + World.SITE_DRY_PLOTS * StrictMath.cos(a)), (long) Math.floor(y + World.SITE_DRY_PLOTS * StrictMath.sin(a)))) return false;
         }
         return true;
     }
 
-    private boolean dry(long x, long y) {
-        return World.dry(terrainAt(x, y));
+    /** Whether plot (x, y) is ground a building may stand on: its cover is dry, and its relief - read only where it is - flat or foothill. */
+    private boolean buildable(long x, long y) {
+        byte c = terrainAt(x, y);
+        return World.dry(c) && World.buildable(c, reliefAt(x, y));
+    }
+
+    private volatile long[] snapGround, beyond;
+
+    /**
+     * What the snap's disc holds when it found no site (ET2): {dry plots, and of them the steep and very steep} within
+     * SNAP_PLOTS of the spot, counted plot by plot from the tiles drawn for them - what tells a spot among steep slopes
+     * from a spot in the sea or on an island too small (the card's words, EarthSite.noSiteWords()). Worked out once.
+     */
+    long[] snapGround() {
+        long[] g = snapGround;
+        if (g != null) return g.clone();
+        long cx = World.SIDE / 2, cy = World.SIDE / 2, r = SNAP_PLOTS, dry = 0, steep = 0;
+        int n = World.TILE;
+        for (long ty = Math.floorDiv(cy - r, n); ty <= Math.floorDiv(cy + r, n); ty++) {
+            for (long tx = Math.floorDiv(cx - r, n); tx <= Math.floorDiv(cx + r, n); tx++) {
+                byte[] t = keptTile(tx, ty), rt = null;
+                for (int py = 0; py < n; py++) {
+                    long dy = ty * n + py - cy;
+                    if (dy * dy > r * r) continue;
+                    for (int px = 0; px < n; px++) {
+                        long dx = tx * n + px - cx;
+                        if (dx * dx + dy * dy > r * r || !World.dry(t[py * n + px])) continue;
+                        dry++;
+                        if (rt == null) rt = keptRelief(tx, ty);
+                        if (rt[py * n + px] >= World.STEEP) steep++;
+                    }
+                }
+            }
+        }
+        snapGround = new long[] { dry, steep };
+        return snapGround.clone();
+    }
+
+    /**
+     * The nearest buildable ground past a snap that found none (ET2, spec-earth2-terrain 3.4): {x, y} of the nearest
+     * spot that passes the founding's test 1 (siteBuildable()) on a lattice of BEYOND_STEP plots from the spot, rings of
+     * the lattice - the ring k the lattice steps k to k + 1 off, nearest first, then north to south and west to east -
+     * from the snap's reach out to BEYOND_PLOTS; {-1, -1} for none within it. Worked out once, and only for a card that
+     * asks (a spot among steep slopes: EarthSite.noSiteWords()).
+     */
+    long[] siteBeyond() {
+        long[] b = beyond;
+        if (b != null) return b.clone();
+        long cx = World.SIDE / 2, cy = World.SIDE / 2;
+        int first = (SNAP_PLOTS + BEYOND_STEP - 1) / BEYOND_STEP, last = BEYOND_PLOTS / BEYOND_STEP;
+        List<long[]> ring = new ArrayList<>();
+        for (int k = first; k <= last; k++) {
+            ring.clear();
+            long lo = (long) k * k, hi = (long) (k + 1) * (k + 1);
+            for (int dy = -(k + 1); dy <= k + 1; dy++) {
+                for (int dx = -(k + 1); dx <= k + 1; dx++) {
+                    long d2 = (long) dx * dx + (long) dy * dy;
+                    if (d2 >= lo && d2 < hi) ring.add(new long[] { d2, dy, dx });
+                }
+            }
+            ring.sort((p, o) -> p[0] != o[0] ? Long.compare(p[0], o[0]) : p[1] != o[1] ? Long.compare(p[1], o[1]) : Long.compare(p[2], o[2]));
+            for (long[] p : ring) {
+                long x = cx + p[2] * BEYOND_STEP, y = cy + p[1] * BEYOND_STEP;
+                if (x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE) continue;
+                if (siteBuildable(x, y)) {
+                    beyond = new long[] { x, y };
+                    return beyond.clone();
+                }
+            }
+        }
+        beyond = new long[] { -1, -1 };
+        return beyond.clone();
     }
 
     /** The founding site, as a plot: the snap's. */

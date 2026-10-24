@@ -1381,8 +1381,8 @@ public class EarthTerrainCheck {
     /** Greenland's sheet's middle, EarthFoundingCheck 3's spot on ice. */
     static final double[] SHEET = { 72, -40 };
 
-    /** A spot on south Greenland's ice margin whose snapped site lies on grass in a 2' cell with the ice bit - the bit's rule (E4's) refused it, the plot's does not (found by E7's probe, the default seed). */
-    static final double[] MARGIN = { 61.41, -45.53 };
+    /** A spot on south Greenland's ice margin whose snapped site lies on grass in a 2' cell with the ice bit - the bit's rule (E4's) refused it, the plot's does not (found by E7's probe, the default seed; moved about 9 km from 61.41, -45.53 by ET2, whose snap on buildable ground lands elsewhere from that spot - the premise is the same). */
+    static final double[] MARGIN = { 61.48, -45.68 };
 
     /** A spot on the ice there whose site the snap finds off it, on dry ground over a kilometre away (E7's probe). */
     static final double[] OFF_THE_ICE = { 61.42, -45.62 };
@@ -1435,26 +1435,30 @@ public class EarthTerrainCheck {
         String earthSave = "{\"worldKind\":\"EARTH\",\"earthLat\":" + r.lat() + ",\"earthLon\":" + r.lon() + ",\"earthData\":\"" + id + "\",\"saveFormat\":";
         DataSave before = gson.fromJson(earthSave + (EarthSite.ICE_FORMAT - 1) + "}", DataSave.class), after = gson.fromJson(earthSave + EarthSite.ICE_FORMAT + "}", DataSave.class);
         DataSave beforeDeposits = gson.fromJson(earthSave + (EarthSite.DEPOSITS_FORMAT - 1) + "}", DataSave.class), atDeposits = gson.fromJson(earthSave + EarthSite.DEPOSITS_FORMAT + "}", DataSave.class);
+        DataSave atSlope = gson.fromJson(earthSave + EarthSite.SLOPE_FORMAT + "}", DataSave.class);
         DataSave generated = gson.fromJson("{\"saveFormat\":" + GameVersion.OLDEST_LOADABLE_FORMAT + "}", DataSave.class);
-        // Two floors for an Earth save since 0.8.12 (batch EG1): below ICE_FORMAT the ice words; from ICE_FORMAT to below DEPOSITS_FORMAT the deposits words; at DEPOSITS_FORMAT neither.
+        // Three floors for an Earth save since ET2: below ICE_FORMAT the ice words; from ICE_FORMAT to below DEPOSITS_FORMAT the deposits words;
+        // from DEPOSITS_FORMAT to below SLOPE_FORMAT (the founding site snapped to buildable ground, ET2) the slope words; at SLOPE_FORMAT none.
         check("the saves: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so; from there to before"
-                        + " its fields were drawn on the geology (DEPOSITS_FORMAT, EG1) in the deposits words; one saved at DEPOSITS_FORMAT is not refused",
+                        + " its fields were drawn on the geology (DEPOSITS_FORMAT, EG1) in the deposits words; from there to before its founding site was snapped to"
+                        + " buildable ground (SLOPE_FORMAT, ET2) in the slope words; one saved at SLOPE_FORMAT is not refused",
                 EarthSite.BEFORE_ICE_WORDS.equals(before.earthProblem())
                         && EarthSite.BEFORE_DEPOSITS_WORDS.equals(after.earthProblem()) && EarthSite.BEFORE_DEPOSITS_WORDS.equals(beforeDeposits.earthProblem())
-                        && atDeposits.earthProblem() == null && !EarthSite.BEFORE_ICE_WORDS.equals(EarthSite.BEFORE_DEPOSITS_WORDS)
-                        && GameVersion.SAVE_FORMAT >= EarthSite.DEPOSITS_FORMAT && EarthSite.DEPOSITS_FORMAT > EarthSite.ICE_FORMAT
-                        && EarthSite.ICE_FORMAT > EarthSite.EARTH_FORMAT);
+                        && EarthSite.BEFORE_SLOPE_WORDS.equals(atDeposits.earthProblem()) && atSlope.earthProblem() == null
+                        && !EarthSite.BEFORE_ICE_WORDS.equals(EarthSite.BEFORE_DEPOSITS_WORDS) && !EarthSite.BEFORE_DEPOSITS_WORDS.equals(EarthSite.BEFORE_SLOPE_WORDS)
+                        && GameVersion.SAVE_FORMAT >= EarthSite.SLOPE_FORMAT && EarthSite.SLOPE_FORMAT > EarthSite.DEPOSITS_FORMAT
+                        && EarthSite.DEPOSITS_FORMAT > EarthSite.ICE_FORMAT && EarthSite.ICE_FORMAT > EarthSite.EARTH_FORMAT);
         // Since 0.8.5 (FR2) the floor, 40, is past the ice format: an Earth save from before ice is refused by the floor as well.
         check("...and a generated city's save at the floor, its ground as it was, still loads: no Earth problem; and an Earth save"
                         + " before ice is refused, by its words below the floor or by the floor past it",
                 generated.earthProblem() == null && !GameVersion.isNoLongerReadable(GameVersion.OLDEST_LOADABLE_FORMAT)
                         && (GameVersion.OLDEST_LOADABLE_FORMAT < EarthSite.ICE_FORMAT || GameVersion.isNoLongerReadable(EarthSite.ICE_FORMAT - 1)));
-        // EG1's floor is Earth-only: the general floor stays below it, so an Earth save of the floor's format is refused in the deposits words while a generated one loads.
+        // The Earth's floors are Earth-only: the general floor stays below the newest, so an Earth save of the floor's format is refused in the slope words (ET2; the deposits words, EG1's, before it) while a generated one loads.
         DataSave earthAtFloor = gson.fromJson(earthSave + GameVersion.OLDEST_LOADABLE_FORMAT + "}", DataSave.class);
-        check("...and the deposits floor is the Earth's alone: an Earth save at the general floor is refused in the deposits words while the floor is below"
-                        + " DEPOSITS_FORMAT, a generated save of that format loads",
-                generated.earthProblem() == null && (GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.DEPOSITS_FORMAT
-                        ? earthAtFloor.earthProblem() == null : EarthSite.BEFORE_DEPOSITS_WORDS.equals(earthAtFloor.earthProblem())));
+        check("...and the slope floor is the Earth's alone: an Earth save at the general floor is refused in the slope words while the floor is below"
+                        + " SLOPE_FORMAT, a generated save of that format loads",
+                generated.earthProblem() == null && (GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.SLOPE_FORMAT
+                        ? earthAtFloor.earthProblem() == null : EarthSite.BEFORE_SLOPE_WORDS.equals(earthAtFloor.earthProblem())));
         long fixtureIce = 0, fixtureDesert = 0;
         for (Window w : windows.values()) { fixtureIce += w.classes[World.ICE]; fixtureDesert += w.classes[World.DESERT]; }
         out.printf("      the fixture's three windows: %,d plots of ice and %,d of desert%n", fixtureIce, fixtureDesert);
