@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.40 — ET1, Earth 2 in the game, and drawn — 2026-10-24, ready but MapCheck 8 (main's, FW11), see docs/queue/ET1-notes.md
+
+The real Earth is now **earth-2.bin** (the 15″ release, 281,761,695 bytes, its SHA-256 the one in both `earth-2.sha256`; the
+study's 135,965,097 was the superseded 30″ bake), and earth-1's ten layers read from it byte for byte (52.6 MB compared). A
+plot now has a **relief** beside its ground, flat, foothill, steep or very steep, drawn from the slope shares (Medellín
+20.7/42.5/31.2/5.6% against the data's 19.7/43.9/31.1/5.3), and the sea of 30 m or less is **SHALLOW**, which every sea rule
+reads as sea. The map paints slope's greys, forest shaded toward them, snow over all and the shallow blue, with legend, hover,
+far views and the globe. Depth is GEBCO's, so E4's shelf guess is retired (off Rotterdam 22/31 m at 40/80 km, not 69/150). The
+founding card shows the relief, the shallow water and the landmass, and each holding keeps its ground by relief under keys of
+its own (format 45 unchanged; earth-1 cities are refused by identity). No rule uses relief yet (ET2). Both playtests' traces
+are byte-identical to main's (no ensemble); three calls for Jerus under Pending as ET1-C.
+
 ### 0.8.39 — PT1-M4, the works department retired — 2026-10-24, ready but MapCheck 8 (FW11), see docs/queue/PT1-M4-notes.md
 
 Construction was paid for 400 points a month nobody worked (PT1's month 183: a 72% margin with 0 workers; Jerus: *"not
