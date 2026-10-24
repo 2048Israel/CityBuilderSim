@@ -14,6 +14,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.42 — FW4, a young auto-built city measured, and PlanCheck's save section traced — 2026-10-24, ready but MapCheck 8 (main's, FW11), see docs/queue/FW4-notes.md
+
+Automatic building in a young city is measured: the autobuild playtest over 40 seeds to month 1,000 ends 66,270 to 209,195
+people, and none stalls (0.7.89's single seed at 2,626 was RD4's dropped tree; 0.7.101's P2 cured the cause, a refused order
+holding its whole measure at a 60% limit). **AutoBuildCheck 7** now holds it: a young city at month 60, its limit pinned and
+its cash $0.28M short, refuses a Small Childcare Centre, walks on to the 11 measures ranked after it, and with the limit
+back at the default orders it a month later and grows (1,704 to 2,175 people). `PlanCheck <save>` section 9's red is FX7's
+as-built rule, not the plan's: 233 boxes in 9 of 25 districts of the playtest's month-4,000 city touch a highway laid after
+they stood (87 under it, 146 on its verge); every placement keeps the verge. Left red for his call, written into MF1 and
+FW4-C. No model change: the traces cannot move (no ensemble).
+
 ### 0.8.41 — ET1, Earth 2 in the game, and drawn — 2026-10-24, ready but MapCheck 8 (main's, FW11), see docs/queue/ET1-notes.md
 
 The real Earth is now **earth-2.bin** (the 15″ release, 281,761,695 bytes, its SHA-256 the one in both `earth-2.sha256`; the
