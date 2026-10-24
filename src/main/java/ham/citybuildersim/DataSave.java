@@ -509,6 +509,16 @@ public class DataSave implements Cloneable {
     private double landOwned;
     private int landBlocksPurchased;
     private double landPricePerSqFt;
+    /*
+     * ET2 (spec-earth2-terrain 3.2, 4.2, 4.4): the part of what is built on that
+     * works stand on (LandManager.getWorksSqFt()), and the foothill prepared so
+     * far (getPreparedSqFt(), which never falls, so it is history and not
+     * derivable). Boxed: a key a save does not have reads null, and the load
+     * puts back the standing works' ground, and the foothill the buildings
+     * on it stand on - the figures of a save from before the slope counted.
+     */
+    private Double landWorksSqFt;
+    private Double landPreparedSqFt;
 
     /*
      * Tax rates. Zero means "written before these were saved" rather than "a
@@ -753,10 +763,19 @@ public class DataSave implements Cloneable {
     public void setLandOwned(double sqFt)          { this.landOwned = sqFt; }
     public void setLandBlocksPurchased(int blocks) { this.landBlocksPurchased = blocks; }
     public void setLandPricePerSqFt(double price)  { this.landPricePerSqFt = price; }
+    /** The works' ground and the foothill prepared (ET2): LandManager.getWorksSqFt() and getPreparedSqFt(). */
+    public void setLandWorks(double worksSqFt, double preparedSqFt) {
+        this.landWorksSqFt = worksSqFt;
+        this.landPreparedSqFt = preparedSqFt;
+    }
 
     public double getLandOwned()          { return landOwned; }
     public int    getLandBlocksPurchased(){ return landBlocksPurchased; }
     public double getLandPricePerSqFt()   { return landPricePerSqFt; }
+    /** The works' ground as saved (ET2), or null on a save without it: read from the standing buildings. */
+    public Double getLandWorksSqFt()      { return landWorksSqFt; }
+    /** The foothill prepared as saved (ET2), or null on a save without it. */
+    public Double getLandPreparedSqFt()   { return landPreparedSqFt; }
 
     public void setIncomeTaxRate(double rate)   { this.incomeTaxRate = rate; }
     public void setPropertyTaxRate(double rate) { this.propertyTaxRate = rate; }

@@ -19,7 +19,9 @@ import java.util.Locale;
  *   available   the difference - what can still be built on; since 0.7.107
  *               less what the forest law keeps from building and what the
  *               zones hold, the ground free for anyone (ZONES AND THE FOREST
- *               LAW; a zoned sector also builds on its zone's, freeFor())
+ *               LAW; a zoned sector also builds on its zone's, freeFor());
+ *               since ET2 a building's is less, too, the steep ground only
+ *               a works may stand on (BUILDABLE BY SLOPE)
  *
  * Land is freed when what stood on it goes - a scrapped business's plot, a
  * finished demolition (release()).
@@ -242,6 +244,12 @@ public class LandManager {
 
     private double ownedSqFt = STARTING_SQ_FT;
     private double allocatedSqFt;
+
+    /** The part of allocatedSqFt that works stand on (ET2, BUILDABLE BY SLOPE): the mines, quarries and wells that may stand on any ground (Game.standsAnywhere()). DataSave's landWorksSqFt. */
+    private double worksSqFt;
+
+    /** The foothill prepared so far for buildings, square feet (ET2): it never falls, a pad once cut staying cut. DataSave's landPreparedSqFt. */
+    private double preparedSqFt;
 
     /** How many purchases the city has made: blocks once, parcels since, offers since 0.7.57 (DataSave's landBlocksPurchased). */
     private int blocksPurchased;
@@ -1620,7 +1628,12 @@ public class LandManager {
 
     /** ...for one sector's building (0.7.107): on the ground free for anyone and what its zone holds (freeFor()); a key with no zone, "" or null, the first. */
     public boolean canAllocate(double sqFt, String sector) {
-        return sqFt <= freeFor(sector);
+        return canAllocate(sqFt, sector, false);
+    }
+
+    /** ...for a works that may stand anywhere when `works` (ET2): on any dry ground, steep ground too (freeFor(sector, works)); a building's, as above, on flat and foothill only. */
+    public boolean canAllocate(double sqFt, String sector, boolean works) {
+        return sqFt <= freeFor(sector, works);
     }
 
     /**
@@ -1640,12 +1653,25 @@ public class LandManager {
      * (clearFor(), Z7). A key with no zone takes the ground free for anyone.
      */
     public boolean allocate(double sqFt, String sector) {
-        if (!canAllocate(sqFt, sector)) {
+        return allocate(sqFt, sector, false);
+    }
+
+    /**
+     * ...a works's when `works` (ET2): the ground it takes is counted in worksSqFt,
+     * which stands on steep ground first (split()); a building's raises
+     * preparedSqFt by what foothillToPrepareSqFt() answered just before, read
+     * before the ground is taken.
+     */
+    public boolean allocate(double sqFt, String sector, boolean works) {
+        if (!canAllocate(sqFt, sector, works)) {
             return false;
         }
+        double prepare = foothillToPrepareSqFt(sqFt, sector, works);
         double fromZone = zoning.zone(sector) == null ? 0 : Math.min(sqFt, heldBy(sector));
         clearFor(sqFt, fromZone, sector);
         allocatedSqFt += sqFt;
+        if (works) worksSqFt += sqFt;
+        if (prepare > 0) preparedSqFt += prepare;
         if (fromZone > 0) zoning.addUsed(sector, fromZone);
         return true;
     }
@@ -1661,7 +1687,14 @@ public class LandManager {
      * everyone. Cleared forest stays cleared (Z7).
      */
     public void release(double sqFt, String sector) {
+        release(sqFt, sector, false);
+    }
+
+    /** ...a works's when `works` (ET2): its ground leaves worksSqFt too, never below nothing. The foothill prepared stays prepared. */
+    public void release(double sqFt, String sector, boolean works) {
         allocatedSqFt = Math.max(allocatedSqFt - sqFt, 0);
+        if (works) worksSqFt = Math.max(worksSqFt - sqFt, 0);
+        if (worksSqFt > allocatedSqFt) worksSqFt = allocatedSqFt;
         zoning.releaseUsed(sector, sqFt);
     }
 
@@ -1703,6 +1736,133 @@ public class LandManager {
     public void recordSale(double sqFt, double price) {
         landSalesThisMonth += price;
         sqFtSoldThisMonth += sqFt;
+    }
+
+    /* =====================================================================
+       BUILDABLE BY SLOPE (ET2, 2026-10-24; spec-earth2-terrain 3.2, 4.2, 4.4)
+
+       WHAT STANDS WHERE. The city's dry ground is flat, foothill, steep and
+       very steep (CityLand's relief, centre and purchases). Buildings stand
+       on flat and foothill only; steep and very steep ground is refused them.
+       A works that may stand anywhere - a mine, a quarry, a well, every
+       template with a site (Game.standsAnywhere()) - takes steep and very
+       steep first, since nothing else can use it, then foothill, then flat.
+       A building takes flat first, then foothill: "flat first" is an order
+       of use, as clearFor() takes bare ground before forest (4.2). The
+       model has no positions, so each is an amount.
+
+       ONE POOL, TWO FIGURES. allocatedSqFt is still the one pool every
+       building takes from. worksSqFt is the part of it works stand on, and
+       preparedSqFt the foothill prepared so far for buildings: it never
+       falls, a pad once cut staying cut, so ground freed and built on again
+       is not prepared twice. Everything else is derived, by one helper
+       (split()) that nothing re-derives:
+
+         slope                steep and very steep, owned
+         worksOnSlope         min(works, slope)
+         worksOnFoothill      what works have left past the slope, up to the foothill
+         worksOnFlat          the rest of what works have left
+         buildings            allocated less works
+         buildingsOnFoothill  what buildings stand on past the flat the works left them
+         idleSlope            the steep ground no works stands on yet
+
+       Idle steep ground is not free for a building (freeForAnyone(),
+       freeFor()), and is free for a works. The foothill a building stands
+       on has to be prepared: foothillToPrepareSqFt() measures it, read before
+       allocate(), which raises preparedSqFt by exactly that. Preparing is
+       builders' work with a price (4.1); this class only measures it.
+
+       WHY ONE POOL AND NOT ONE A RELIEF. Three pools would have made every
+       zone, the forest law, the land market's crowding and every save read
+       three figures. The slope only changes what a building may take from
+       the one, and a generated world (all flat) reads every derived figure
+       as 0, and so every figure it always did. Ice is not counted: the
+       city's owned figure has never held it (World.dry()), so a works on
+       ice waits for the ground that owns it.
+       ===================================================================== */
+
+    /** One reading of the ground by relief and by use (split()), square feet. */
+    private record Split(double flat, double foothill, double slope, double works, double worksOnSlope,
+                         double worksOnFoothill, double worksOnFlat, double buildings, double buildingsOnFoothill,
+                         double idleSlope) { }
+
+    /** The city's dry ground of one relief, square feet (CityLand.RELIEF_FLAT to RELIEF_VERY_STEEP), centre and purchases; 0 before the land is founded, which reads flat. */
+    private double reliefSqFt(int relief) {
+        return land == null ? 0 : sqFt(land.totalReliefKm2(relief));
+    }
+
+    /** The steep and very steep ground the city owns, square feet. */
+    private double slopeSqFt() {
+        return reliefSqFt(CityLand.RELIEF_STEEP) + reliefSqFt(CityLand.RELIEF_VERY_STEEP);
+    }
+
+    /**
+     * What the ground is used for if `allocated` square feet were taken, `works` of them by works (the pool as it
+     * stands, or after an allocation): works on the slope first, then foothill, then flat; buildings on flat first,
+     * then foothill. Pure. Every figure but flat and works is 0 where there is no slope and no foothill.
+     */
+    private Split split(double allocated, double works) {
+        double flat = reliefSqFt(CityLand.RELIEF_FLAT);
+        double foothill = reliefSqFt(CityLand.RELIEF_FOOTHILL);
+        double slope = slopeSqFt();
+        double w = Math.min(Math.max(works, 0), Math.max(allocated, 0));
+        double onSlope = Math.min(w, slope);
+        double excess = w - onSlope;
+        double onFoothill = Math.min(excess, foothill);
+        double onFlat = excess - onFoothill;
+        double buildings = allocated - w;
+        double roomOnFoothill = foothill - onFoothill;
+        double buildingsOnFoothill = Math.max(0, Math.min(buildings - (flat - onFlat), roomOnFoothill));
+        return new Split(flat, foothill, slope, w, onSlope, onFoothill, onFlat, buildings, buildingsOnFoothill,
+                Math.max(0, slope - onSlope));
+    }
+
+    private Split split() { return split(allocatedSqFt, worksSqFt); }
+
+    /** The city's flat ground, foothill and steep ground (steep and very steep together), square feet: CityLand's relief, centre and purchases. */
+    public double getFlatSqFt()     { return reliefSqFt(CityLand.RELIEF_FLAT); }
+    public double getFoothillSqFt() { return reliefSqFt(CityLand.RELIEF_FOOTHILL); }
+    public double getSlopeSqFt()    { return slopeSqFt(); }
+
+    /** The part of the built ground that works stand on, square feet (never more than is built). */
+    public double getWorksSqFt()           { return split().works(); }
+
+    /** ...the works' part on the steep ground: what no building could use. */
+    public double getWorksOnSlopeSqFt()    { return split().worksOnSlope(); }
+
+    /** ...and on the foothill, which works take after the slope. */
+    public double getWorksOnFoothillSqFt() { return split().worksOnFoothill(); }
+
+    /** The foothill buildings stand on now, square feet: what the pads are cut in. */
+    public double getBuildingsOnFoothillSqFt() { return split().buildingsOnFoothill(); }
+
+    /** The foothill prepared so far, square feet: never falls. */
+    public double getPreparedSqFt()        { return preparedSqFt; }
+
+    /** The steep ground no works stands on yet, square feet: not free for a building, free for a works. */
+    public double idleSlopeSqFt() {
+        double slope = slopeSqFt();
+        return slope > 0 ? split().idleSlope() : 0;
+    }
+
+    /**
+     * The foothill a building of this size would have to prepare, square feet: what stands on foothill after it
+     * less what is prepared already, never below nothing - read BEFORE allocate(), changing nothing, so the quote and
+     * the charge read one figure (allocate() raises preparedSqFt by exactly this). 0 for a works, which stands on
+     * any ground without preparing it (spec 4.4: a pit and its benches are dug as part of the mine's own cost), and
+     * 0 with no foothill. `sector` is not read: preparing does not depend on a zone.
+     */
+    public double foothillToPrepareSqFt(double sqFt, String sector, boolean works) {
+        if (works || !(sqFt > 0) || !(reliefSqFt(CityLand.RELIEF_FOOTHILL) > 0)) return 0;
+        return Math.max(0, split(allocatedSqFt + sqFt, worksSqFt).buildingsOnFoothill() - preparedSqFt);
+    }
+
+    /** Puts the works' ground back (Game's load path): the saved figure, or the standing works' land where a save has none. */
+    void restoreWorks(double sqFt) { this.worksSqFt = Math.max(0, sqFt); }
+
+    /** ...and the foothill prepared, null where a save has none: what the buildings on foothill stand on now, so a city saved before is not charged for pads it already has. */
+    void restorePrepared(Double sqFt) {
+        this.preparedSqFt = sqFt != null ? Math.max(0, sqFt) : split().buildingsOnFoothill();
     }
 
     /* =====================================================================
@@ -1869,8 +2029,18 @@ public class LandManager {
     }
 
     private double freeForAnyone(Zoning z) {
-        if (!z.hasZones()) return freeSqFt(z);
-        return Math.max(0, freeSqFt(z) - heldTotal(z));
+        return freeForAnyone(z, false);
+    }
+
+    /**
+     * ...for a works that may stand anywhere when `works` (ET2): free less what the zones hold, on any dry ground;
+     * for a building the same less the steep ground no works stands on yet (idleSlopeSqFt()), never below nothing.
+     */
+    private double freeForAnyone(Zoning z, boolean works) {
+        double anyone = !z.hasZones() ? freeSqFt(z) : Math.max(0, freeSqFt(z) - heldTotal(z));
+        if (works) return anyone;
+        double idle = idleSlopeSqFt();
+        return idle > 0 ? Math.max(0, anyone - idle) : anyone;
     }
 
     /** The free ground a sector's zone holds for it, square feet: its size less what it has used, as far as the free ground goes (Z10); 0 with no zone. */
@@ -1888,15 +2058,24 @@ public class LandManager {
     /** What all the zones hold together. */
     public double heldByZones()           { return zoning.hasZones() ? heldTotal(zoning) : 0; }
 
-    /** The ground free for anyone: free, less what the zones hold. */
+    /** The ground free for anyone: free, less what the zones hold - and since ET2, for a building, less the steep ground only a works may stand on (idleSlopeSqFt()). */
     public double freeForAnyone()         { return freeForAnyone(zoning); }
 
-    /** The ground a sector may build on: free for anyone, and what its zone holds for it. */
-    public double freeFor(String sector)  { return freeFor(zoning, sector); }
+    /** ...for a works that may stand anywhere when `works` (ET2): on any dry ground, steep ground too; false is freeForAnyone(). */
+    public double freeForAnyone(boolean works) { return freeForAnyone(zoning, works); }
 
-    private double freeFor(Zoning z, String sector) {
-        double anyone = freeForAnyone(z);
-        return z.zone(sector) == null ? anyone : anyone + heldBy(z, sector);
+    /** The ground a sector may build on: free for anyone, and what its zone holds for it. */
+    public double freeFor(String sector)  { return freeFor(zoning, sector, false); }
+
+    /** ...a works's when `works` (ET2): today's figure, any dry ground; false is freeFor(sector). */
+    public double freeFor(String sector, boolean works) { return freeFor(zoning, sector, works); }
+
+    private double freeFor(Zoning z, String sector, boolean works) {
+        double anyone = freeForAnyone(z, works);
+        double free = z.zone(sector) == null ? anyone : anyone + heldBy(z, sector);
+        // ...a building's, never more than the free ground less the steep ground nothing of its kind may stand on (ET2).
+        double idle = works ? 0 : idleSlopeSqFt();
+        return idle > 0 ? Math.min(free, Math.max(0, freeSqFt(z) - idle)) : free;
     }
 
     /** What a square foot of a sector's zone is sold and assessed at: its price share of the going business price (Z3, Z4); the going price with no zone. */
@@ -2184,6 +2363,8 @@ public class LandManager {
     public void reset() {
         ownedSqFt = STARTING_SQ_FT;
         allocatedSqFt = 0;
+        worksSqFt = 0;
+        preparedSqFt = 0;
         blocksPurchased = 0;
         pricePerSqFt = defaultPricePerSqFt;
         land = null;

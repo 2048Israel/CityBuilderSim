@@ -130,6 +130,24 @@ public class BusinessInvestment {
     public void setLandAvailable(double sqFt, double pricePerSqFt) {
         this.landAvailable = sqFt;
         this.landPricePerSqFt = pricePerSqFt;
+        this.landAvailableForWorks = Double.NaN;
+    }
+
+    /**
+     * ...and what a works that may stand anywhere has (ET2, Game.standsAnywhere(); LandManager.freeForAnyone(true)):
+     * the steep ground no building may have too. NaN until handed in, which is the same figure as the buildings'
+     * (setLandAvailable() clears it), as it is wherever the land is flat.
+     */
+    private double landAvailableForWorks = Double.NaN;
+
+    /** The ground free for anyone for a works that may stand anywhere, square feet - handed in after setLandAvailable(). */
+    public void setLandAvailableForWorks(double sqFt) {
+        this.landAvailableForWorks = sqFt;
+    }
+
+    /** The ground free for anyone that this building may take: a works's (ET2) where one is handed in, the buildings' otherwise. */
+    private double landAvailableFor(BuildingsTemplate template) {
+        return Game.standsAnywhere(template) && !Double.isNaN(landAvailableForWorks) ? landAvailableForWorks : landAvailable;
     }
 
     /*
@@ -414,14 +432,14 @@ public class BusinessInvestment {
         double land = template.getLandSqFt();
         if (land <= 0) return Integer.MAX_VALUE;
         // ...on the ground free for anyone and, since 0.7.107, what its zone holds for it.
-        if (zoneLand.isEmpty()) return (int) Math.floor(landAvailable / land);
-        return (int) Math.floor((landAvailable + zoneHeldFor(template.getSector())) / land);
+        if (zoneLand.isEmpty()) return (int) Math.floor(landAvailableFor(template) / land);
+        return (int) Math.floor((landAvailableFor(template) + zoneHeldFor(template.getSector())) / land);
     }
 
     /** Why a sector could not build, when land is what stopped it - with the numbers, because the player can fix this one: "no land - needs 743 m\u00b2, 301 m\u00b2 free" (in square feet until 0.7.68; LandManager.areaWords()); since 0.7.107 with what the other sectors' zones hold ("...; 55.9 km\u00b2 is zoned for others"). */
     public String landReason(BuildingsTemplate template) {
         String why = "no land - needs " + LandManager.areaWords(template.getLandSqFt()) + ", "
-                + LandManager.areaWords(landAvailable + zoneHeldFor(template.getSector())) + " free";
+                + LandManager.areaWords(landAvailableFor(template) + zoneHeldFor(template.getSector())) + " free";
         double others = zoneLand.isEmpty() ? 0 : zonedForOthers(template.getSector());
         return others > 0 ? why + "; " + zonedForOthersWords(others) : why;
     }

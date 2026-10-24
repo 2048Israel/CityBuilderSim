@@ -7540,6 +7540,29 @@ public class BuildingManager {
     }
 
     /**
+     * The part of getTotalLandFootprint() that the buildings `works` picks stand on (ET2): the same sum, over the
+     * standing and on site, the stopped shells and the demolitions on site, of those templates alone - the ground
+     * LandManager counts as works's (Game.standsAnywhere()), which a load without it puts back. A paving's gravel
+     * road is never one.
+     */
+    public double getWorksLandFootprint(java.util.function.Predicate<BuildingsTemplate> works) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (works.test(stack.getBuilding())) {
+                total += stack.getBuilding().getLandSqFt() * (stack.getQuantity() + stack.getUnderConstruction());
+            }
+        }
+        for (ConstructionControl.Shell shell : control.shells()) {
+            BuildingsTemplate t = getTemplate(shell.templateId);
+            if (t != null && works.test(t)) total += t.getLandSqFt() * shell.buildings;
+        }
+        for (ConstructionControl.Demolition site : control.demolitions()) {
+            if (!site.closing && works.test(getTemplate(site.templateId))) total += site.landSqFt;
+        }
+        return total;
+    }
+
+    /**
      * Scraps finished buildings. The counterpart to addStack(), and the first
      * thing in the game that makes the city smaller.
      *

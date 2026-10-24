@@ -4231,6 +4231,8 @@ public class Game {
     private void refreshLand(){
         businessInvestment.setLandAvailable(landManager.getAvailableSqFt(),
                 landManager.getPricePerSqFt());
+        // ...and a works's, which may stand on the steep ground too (ET2).
+        businessInvestment.setLandAvailableForWorks(landManager.freeForAnyone(true));
         businessInvestment.setZoneLand(landManager.zoneLand());
     }
 
@@ -4537,7 +4539,7 @@ public class Game {
         // to the zone (0.7.107): priced before the release takes it out.
         double landFreed = decision.template.getLandSqFt() * scrapped;
         double proceeds = landManager.buybackPriceFor(landFreed, decision.template.getSector());
-        landManager.release(landFreed, decision.template.getSector());
+        landManager.release(landFreed, decision.template.getSector(), standsAnywhere(decision.template));
 
         if (proceeds > 0 && proceeds <= cash) {
             treasuryPays(TreasuryLine.LAND, proceeds);
@@ -4959,7 +4961,7 @@ public class Game {
             double others = landManager.heldByZones() - landManager.heldBy(sector);
             String needs = String.format("needs %s, %s free%s",
                     LandManager.areaWords(decision.template.getLandSqFt() * (double) quantity),
-                    LandManager.areaWords(landManager.freeFor(sector)),
+                    LandManager.areaWords(landManager.freeFor(sector, standsAnywhere(decision.template))),
                     others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "");
             blockOnLand(decision.sector, needs);
             lastInvestment.put(slot, "Could not build " + decision.template.getName() + " - " + needs);
@@ -5447,7 +5449,7 @@ public class Game {
             double others = landManager.heldByZones() - landManager.heldBy(t.getSector());
             String needs = String.format("needs %s, %s free%s",
                     LandManager.areaWords(t.getLandSqFt() * (double) quantity),
-                    LandManager.areaWords(landManager.freeFor(t.getSector())),
+                    LandManager.areaWords(landManager.freeFor(t.getSector(), standsAnywhere(t))),
                     others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "");
             blockOnLand(decision.sector, needs);
             lastInvestment.put(slot, "Could not build " + t.getName() + " - " + needs);
@@ -6510,8 +6512,8 @@ public class Game {
                 getMarkets().get(Good.MATERIALS).getLocalPrice(),
                 buildingManager.getConstructionMaterialPrice(),
                 selected.getLandSqFt() * (double) quantity,
-                // ...on the ground its sector may build on (0.7.109, Z2): what buildFor()'s canAllocate() asks.
-                landManager.freeFor(selected.getSector()),
+                // ...on the ground its sector may build on (0.7.109, Z2): what buildFor()'s canAllocate() asks - a works's any dry ground, steep too (ET2).
+                landManager.freeFor(selected.getSector(), standsAnywhere(selected)),
                 // The city's own order's wait (0.7.22, after the docs pass):
                 // quoteMonths() exactly with no order set and no rush, and with
                 // one, where the order would land in it (quoteCityMonths()).
@@ -7423,7 +7425,8 @@ public class Game {
             // in one month are two sales, not one read twice.
             c.sold(bought, paid);
             // ...a bought building's ground back to its zone, if its sector has one (0.7.107).
-            landManager.release(d.landSqFt, d.from);
+            // ...a works's ground leaves the works' part of the pool (standsAnywhere(), ET2).
+            landManager.release(d.landSqFt, d.from, standsAnywhere(buildingManager.getTemplate(d.templateId)));
             GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for $%,.0fk, %s freed.",
                     d.buildings, d.building, bought, paid, LandManager.areaWords(d.landSqFt)));
         }
@@ -7509,16 +7512,18 @@ public class Game {
 
         // ...the city's own works on the ground free for anyone, a sector's
         // building (a fixture's) on its zone's first (0.7.107).
-        if (!landManager.canAllocate(landNeeded, selected.getSector())) {
+        // ...a works that may stand anywhere on any ground, steep too (standsAnywhere(), ET2).
+        boolean works = standsAnywhere(selected);
+        if (!landManager.canAllocate(landNeeded, selected.getSector(), works)) {
             this.hasNewReceipt = false;
             System.out.println("Not enough land (need "
                     + LandManager.areaWords(landNeeded) + ", have "
-                    + LandManager.areaWords(landManager.freeFor(selected.getSector())) + ")");
+                    + LandManager.areaWords(landManager.freeFor(selected.getSector(), works)) + ")");
             return;
         }
 
         if (totalCost <= cash) {
-            landManager.allocate(landNeeded, selected.getSector());
+            landManager.allocate(landNeeded, selected.getSector(), works);
             this.hasNewReceipt = true;
             this.receiptSerial++;
             lastBuildingName = buildingManager.getName(selected);
@@ -7761,6 +7766,16 @@ public class Game {
     }
 
     /**
+     * Whether a building is a works that may stand on any ground (ET2, spec-earth2-terrain 3.2 and 4.4): every
+     * template with a site (siteOf()) - the mines, the quarries, the wells and the platforms, a pit and its benches
+     * being dug as part of its own cost. Its ground comes from the steep and very steep first, then the foothill,
+     * then the flat (LandManager's BUILDABLE BY SLOPE); every other building stands on flat and foothill only.
+     */
+    public static boolean standsAnywhere(BuildingsTemplate t) {
+        return siteOf(t) != null;
+    }
+
+    /**
      * Whether this order can go ahead on the ore the city owns.
      *
      * A mine needs ground with iron under it. Buying a land parcel with a
@@ -7941,7 +7956,9 @@ public class Game {
         // ...on the ground free for anyone and, since 0.7.107, what the
         // building's sector's zone holds (LandManager.freeFor()).
         String zoned = template.getSector();
-        if (!landManager.canAllocate(landNeeded, zoned)) {
+        // ...a works that may stand anywhere on any ground, steep too (standsAnywhere(), ET2).
+        boolean works = standsAnywhere(template);
+        if (!landManager.canAllocate(landNeeded, zoned, works)) {
             return false;   // the city has no plot to sell them
         }
 
@@ -7973,7 +7990,7 @@ public class Game {
         payer.spend(totalCost);
 
         // The land money goes to the city; the rest goes to construction below.
-        landManager.allocate(landNeeded, zoned);
+        landManager.allocate(landNeeded, zoned, works);
         landManager.recordSale(landNeeded, landPrice);
         cash += landPrice;
 
@@ -8046,7 +8063,7 @@ public class Game {
             return BuildResult.NO_LICENCE;
         }
 
-        if (!landManager.canAllocate(template.getLandSqFt() * quantity, template.getSector())) {
+        if (!landManager.canAllocate(template.getLandSqFt() * quantity, template.getSector(), standsAnywhere(template))) {
             this.hasNewReceipt = false;
             return BuildResult.NO_LAND;
         }
@@ -8156,16 +8173,20 @@ public class Game {
         int[] onSites = new int[Resource.values().length + 2];
         java.util.Map<Resource, java.util.List<LandManager.Claim>> claimsAhead = new java.util.EnumMap<>(Resource.class);
         double ground = 0;
+        // ...and how much of it is works's (ET2): a works takes the steep ground no building may have, so it is not all of it off a building's free ground.
+        double worksAhead = 0;
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             BuildingsTemplate t = e.getKey();
             int n = e.getValue() == null ? 0 : e.getValue();
             int pool = sitePool(t);
             if (t != null && n > 0) {
+                boolean works = standsAnywhere(t);
+                double onIdleSlope = works ? 0 : Math.min(worksAhead, landManager.idleSlopeSqFt());
                 java.util.List<LandManager.Claim> packedAhead = packs(t) ? claimsAhead.get(t.site().resource()) : null;
                 BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
-                        : !landManager.canAllocate(ground + t.getLandSqFt() * (double) n, t.getSector()) ? BuildResult.NO_LAND
+                        : !landManager.canAllocate(ground - onIdleSlope + t.getLandSqFt() * (double) n, t.getSector(), works) ? BuildResult.NO_LAND
                         : null;
                 if (refused != null) {
                     if (stop != null) stop[0] = refused;
@@ -8178,6 +8199,7 @@ public class Game {
                     onSites[pool] += n;
                 }
                 ground += t.getLandSqFt() * (double) n;
+                if (works) worksAhead += t.getLandSqFt() * (double) n;
             }
             ahead++;
         }
@@ -13635,6 +13657,8 @@ public class Game {
         dataSave.setLandOwned(landManager.getOwnedSqFt());
         dataSave.setLandBlocksPurchased(landManager.getBlocksPurchased());
         dataSave.setLandPricePerSqFt(landManager.getPricePerSqFt());
+        // ...the works' ground and the foothill prepared (ET2).
+        dataSave.setLandWorks(landManager.getWorksSqFt(), landManager.getPreparedSqFt());
         dataSave.setIncomeTaxRate(economyManager.getTaxPolicy().getIncomeTaxRate());
         dataSave.setPropertyTaxRate(economyManager.getTaxPolicy().getPropertyTaxRate());
         dataSave.setNotices(inbox.all());
@@ -17197,6 +17221,12 @@ public class Game {
             // ...and E by type as saved; a save without it reads as the walk (0.7.110, LandManager's THE GROUND BY TYPE).
             landManager.restoreDepletionByType(loaded.getDepletionByType());
             landManager.setAllocatedSqFt(built);
+            // ...and the part of it that works stand on, and the foothill prepared (ET2): a save from before them has
+            // neither, and reads the standing works' ground (as the allocation is read from the buildings) and the
+            // foothill the buildings stand on now.
+            landManager.restoreWorks(loaded.getLandWorksSqFt() != null ? loaded.getLandWorksSqFt()
+                    : buildingManager.getWorksLandFootprint(Game::standsAnywhere));
+            landManager.restorePrepared(loaded.getLandPreparedSqFt());
             // ...and its zones, the forest law and the forest cleared (0.7.107): a save from before
             // them has none, and loads with the ground free for anyone, as it always was.
             landManager.restoreZoning(loaded.getZoning());
