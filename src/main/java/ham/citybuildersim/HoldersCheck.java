@@ -423,7 +423,10 @@ public class HoldersCheck {
         json.add("householdCells", shorter);
         for (com.google.gson.JsonElement e : json.getAsJsonArray("debts")) {
             com.google.gson.JsonObject d = e.getAsJsonObject();
-            for (String k : new String[] {"householdPrincipal", "centralBankPrincipal", "firmPrincipal", "settleDue",
+            // PT1-M4: "worldPrincipal" too - a save from before the holders has no holder of any kind. The list stopped at the
+            // three it was written for, and no piece of paper held a world sliver in the fixture until the city that founds
+            // with a staffed yard let the auction allot the world a bit (0.1 of the 5,602.5 owed here).
+            for (String k : new String[] {"householdPrincipal", "centralBankPrincipal", "firmPrincipal", "worldPrincipal", "settleDue",
                     "issueYield", "issueDiscount", "discountLeft"}) d.remove(k);
         }
         // ...and the sectors' array as it was before their paper was appended (CD2, slice 4).
@@ -1491,8 +1494,14 @@ public class HoldersCheck {
         calm[1] = -1;
         hot.restore(calm);
         appetite.run();
+        // PT1-M4: sized past the households' purse AS IT NOW IS, three times it, as `ask` was when the city began. By this
+        // month (99, inflation 12% and the 20-year at 8.3% against a deposit at 1%) the households' savings past the cushion
+        // had grown past the whole of the old issue, they bid it in full at the fair yield (D13, "the households first and
+        // in full") and the auction allotted the world none: "the world took part of it" was an accident of the households'
+        // purse, not a state the fixture caused.
+        final double bigAsk = Math.max(ask, hb.spareForPaper() * 3);
         had = new java.util.ArrayList<>(ledger.getDebt());
-        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        quietly(() -> city.handleLongBondLogic(bigAsk, 20, 100));
         final Debt bond5 = newPiece(ledger, had);
         assertTrue("fixture: the treasury sold a twenty-year bond", bond5 != null);
         boolean worldHad = bond5.allotWorldFace() > 0;
