@@ -6,7 +6,7 @@ points base, so ya sure fix, perhaps a starting depot or something instead?"
 `BuildingManager.BASE_CONSTRUCTION`, 400 points a month with no posts behind
 them, is retired, and every city is founded with a builders' building standing,
 staffed and paid like any other, so Construction earns only for work its own
-crews do. Version 0.8.37; save format 45.
+crews do. Version 0.8.38; save format 45.
 
 ## What changed
 
@@ -87,9 +87,9 @@ counts the 400).
 
 ## The suite
 
-137 harnesses and the playtest, on the merged main (CD6, 0.8.36): **131 green,
-6 red** (main: none). Twenty harnesses were re-caused on the way, each fixture with
-a dated comment and a `fixture:` assertion: a town that ordered its works and
+137 harnesses and the playtest, on the merged main (FW1, 0.8.37): SUITE_COUNT
+(main: all). On the way, 23 harnesses' fixtures were re-caused, each with a
+dated comment and a `fixture:` assertion: a town that ordered its works and
 houses at founding grew on the free 400 and on the yard's 160 stays a fraction
 of its old size, so the fixtures stand depots (`MortgageCheck.landlordCity(...,
 depotsStanding)`, `ForeignDebtCheck.tradingCity(dir, depots)`, CallCheck's and
@@ -101,30 +101,46 @@ auction's slivers to the firms and the world are taken out where an assertion
 reads the bank's whole take (CentralBankCheck 11, HoldersCheck 7, AuctionCheck
 8); the founding itself (MapCheck 6, SaveFileCheck, BuildingDataCheck).
 
-The six red, none moved to green by loosening:
-- **BuildersFirstCheck 6** (3): the T1-C trap was the free points multiplied by a
-  first depot's fill; with every point a depot's, an unstaffable depot no longer
-  collapses the town's output - the premise retired with the works department
-  (★6). With 3+ depots standing, the gated town still builds more homes.
-- **BondCheck 5d** (2), owned by the debt batches, not edited: a month of running
-  costs in the till plus the month's revenue now pays the whole order; the fix is
-  `.5 *` the running costs in the till (~line 885), which passes in a copy.
-- **ScaleCheck** (3) and **OrderSearchCheck** (2): played trajectory. ScaleCheck's
-  copy at month 622 was a calm window of the old run; OrderSearchCheck's x1000
-  copy tips Retail into a blow-up at month 402 (`ScaleCheck.scale` leaves the
-  register's share counts unscaled), so its twin trims nothing.
-- **MapCheck 8** (1): a road piece of the played city is reachable only across
-  unmined iron-field sites; the plan lays no street over a site where the BFS
-  counts it as joinable ground.
-- **LongPlaytest**: its one finding. A Large Open-Pit Mine opening at month 3991
-  re-dealt 12 Iron Mines between districts, which rewrote the carry log of every
-  district downstream with the same net count by type; district (-2,-3) replays
-  its history and a Heavy Truck Plant's second box moves. The watch compares the
-  carry by type (`LongPlaytest.layoutCompare`, `layoutSameCarry`), so it flags the
-  move instead of counting it the spill's - a map watch limit the new trajectory
-  exposed, not construction (PT1-M4-C).
-HealthCheck passes on a window one depot wide (3 standing). MapCheck's timing
-lines ran soft beside another batch's JVM; `--timing` is the gate's.
+The six that stayed red after that, and what became of each (the orchestrator's
+round, 2026-10-24), none by loosening:
+- **BondCheck 5d**: its till, cut to a month of running costs, plus the month's
+  sales now paid the whole order (budget 602.9k against 526.3k); cut to half a
+  month it is short of it again (450.4k), not empty. Re-caused.
+- **ScaleCheck**: its free fixture copied the playtest's city at month 622, a
+  calm window of the old run (the affordability pull 1 in all six months). The
+  new town's rents price migrants out in 749 of its first 800 months (a town
+  grows until its rents bind); by the rule `FREE_FIXTURE_MONTHS`'s javadoc states
+  (scan, every assertion read, the window's middle) it is month 807, the middle
+  of 792-822. Re-caused by its own rule.
+- **OrderSearchCheck**: a fault in the scaled copy, fixed at the root.
+  `ScaleCheck.scale()` scaled XR1/XR2's foreign-account slots 45-94 - logs,
+  flags, seeds and counts - as money, so the x1000 copy's D$ hit `MAX_RATE` in
+  its first month and every sector holding dollars recalled 1e12-1e14 into its
+  till; main hid it because only two sectors held dollars there. Only the land's
+  slots and the float's money are scaled now, and the fixture asserts the
+  copy's rate stays within ten times the city's.
+- **MapCheck 8**: the check's walk crossed the plans' own buildings, which the
+  plan never streets over (`DistrictPlan.joinable()`, `groundJoinable()`); it
+  bars them now and prints what is reachable only across them: one piece in the
+  played city, a 22-plot boulevard remnant walled in by the plan's own houses on
+  later-bought ground (FX6's dated ground). That remnant is a map fault the plan
+  would need a larger change to avoid - ★8.
+- **LongPlaytest's finding**: the watch's. A Large Open-Pit Mine at m3991
+  re-dealt 12 Iron Mines between districts, and the overflow log's squaring (CL3,
+  documented in `DistrictPlan`'s OVERFLOW LOG) rewrote six downstream districts'
+  carry logs mid-list with the same net by type; FX7's journal promises nothing
+  about the carry. The watch compared only the net; it compares the log pair by
+  pair now (`CityMap.carriedLog()`, a copy), so the box counts as the spill's.
+  Nothing else in the report moved. A departure of sited mines reviving
+  excluded instances is the squaring's quirk - ★9.
+- **BuildersFirstCheck 6**: T1-C's trap was the free points multiplied by a
+  first depot's fill. A city's fill is a job type's, the same for every
+  employer, so a depot opened early adds posts the builders fill at it: their
+  output rises and cannot collapse. Its six collapse assertions (three red, three
+  passing because both twins stall alike on the yard) are retired with a note;
+  the gate's own assertions stay - ★6.
+HealthCheck passes on a window one depot wide (3 standing). Timing ran soft
+beside other batches' JVMs; `--timing` is the gate's.
 
 ## The ensemble
 
@@ -156,8 +172,15 @@ T1 16/16 seeds reach 40,000 people (month 1,189); T2 AUTO2's final population
   for. Left; counting only crews that worked cut the playtest's end by 62%.
 - ★5 **The last builder is never sold.** Is a city allowed to lose all its
   builders?
-- ★6 **BuildersFirstCheck 6**: rewrite to what still holds, or retire its three
-  collapse assertions with the works department?
+- ★6 **BuildersFirstCheck 6**: its collapse assertions are retired with the
+  works department (the trap cannot happen); keep it so, or assert something new
+  of the gate (with 3+ depots standing the gated town builds more homes)?
 - ★7 **The young city's tax take** leaned on Construction's profit from free
   points; fixture towns that order at founding now grow slowly unless they stand
   builders. In play the city grows faster (the player buys depots sooner).
+- ★8 **A street remnant walled in by houses** (MapCheck 8): the plan cannot
+  join it; lay or keep a street when a cell grows into bought ground, or drop
+  such remnants?
+- ★9 **The overflow squaring** revives a district's excluded sited mines as
+  past arrivals when they depart; harmless here, it would shift a district with
+  room.

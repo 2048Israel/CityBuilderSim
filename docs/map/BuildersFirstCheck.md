@@ -1,4 +1,4 @@
-# BuildersFirstCheck.java - 584 lines · 17 methods · 5 constants · harnesses
+# BuildersFirstCheck.java - 599 lines · 17 methods · 5 constants · harnesses
 
 `ham/citybuildersim/BuildersFirstCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -52,114 +52,114 @@
 >   6. ONLY A DEPOT THE CITY COULD STAFF: in a new town whose founding
 >      put depots on site among a hundred people, the builders' own test
 >      (Sector.staffing()) says the town could not staff them, and they are
->      crewed by the rule, to the bit; the twin that builds them first all
->      the same opens one in its second month, its builders' fill falls
->      under MIN_STAFFABLE_TO_ORDER, the month under the repairs, and no
->      home is built, where the town with the test builds its homes.
+>      crewed by the rule, to the bit, where the twin told it could staff
+>      them serves them first. Its collapse - the twin's fill under
+>      MIN_STAFFABLE_TO_ORDER, its month under the repairs, no home built -
+>      was the works department's points multiplied by the fill, and was
+>      retired with them (PT1-M4).
 >   7. ONE PRIORITY WITH THE DEATH CARE: while the dead wait, a depot of the
 >      builders' and the city's cemetery on site together share what the
 >      first group takes by the crews' rule - neither ahead, neither starved;
 >      the city's order keeps the cemetery at its top; with the player's
 >      order set, the city's other sites take the city's share of what is
->      left in that order.
-> ... (4 more lines in the source)
+> ... (5 more lines in the source)
 
-**Uses:** [BuildingManager](BuildingManager.md) (30), [Game](Game.md) (17), [ConstructionControl](ConstructionControl.md) (9), [DeathCareFirstCheck](DeathCareFirstCheck.md) (8), [BuildingsStacks](BuildingsStacks.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [MortgageCheck](MortgageCheck.md) (4), [Construction](Construction.md) (2), [Good](Good.md) (2), [Sector](Sector.md) (2), [Sectors](Sectors.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BuildingManager](BuildingManager.md) (30), [Game](Game.md) (17), [ConstructionControl](ConstructionControl.md) (9), [DeathCareFirstCheck](DeathCareFirstCheck.md) (8), [BuildingsStacks](BuildingsStacks.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [MortgageCheck](MortgageCheck.md) (4), [Construction](Construction.md) (2), [Good](Good.md) (2), [Sectors](Sectors.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TempDirs](TempDirs.md) (1), [Sector](Sector.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 158 | 1. THE RULE'S ARITHMETIC |
-| 216 | 2. THE STALL, CAUSED |
-| 279 | 3. BEFORE AND WITH |
-| 341 | 4. THE BUILDERS GROW |
-| 414 | 5. NEVER LAID OFF |
-| 429 | 6. ONLY WHAT IT COULD STAFF |
-| 490 | 7. ONE PRIORITY |
-| 574 | 8. CONSERVED |
+| 159 | 1. THE RULE'S ARITHMETIC |
+| 217 | 2. THE STALL, CAUSED |
+| 280 | 3. BEFORE AND WITH |
+| 342 | 4. THE BUILDERS GROW |
+| 415 | 5. NEVER LAID OFF |
+| 430 | 6. ONLY WHAT IT COULD STAFF |
+| 505 | 7. ONE PRIORITY |
+| 589 | 8. CONSERVED |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 112 | `BuildersFirstCheck.BUILDERS` | `Sectors.CONSTRUCTION` | The builders' sector's key: whose depots the rule serves first, and whose plan the fixture asks. |
-| 115 | `BuildersFirstCheck.DEPOT` | `"Construction Depot"` | The builders' depot: the template that adds most to their capacity. |
-| 118 | `BuildersFirstCheck.YARD` | `Game.FOUNDING_YARD` | ...and the Builders' Yard the city founds with (PT1-M4), the other that adds to it: 160 points. |
-| 121 | `BuildersFirstCheck.RUN_MONTHS` | `24` | The months the fixture's run is played: two years, a span the trace's city held through ten times over. |
-| 432 | `BuildersFirstCheck.NEW_TOWN_MONTHS` | `6` | The months the new town is played: long enough for its first depot to open, crewed first, and its homes to come or not. |
+| 113 | `BuildersFirstCheck.BUILDERS` | `Sectors.CONSTRUCTION` | The builders' sector's key: whose depots the rule serves first, and whose plan the fixture asks. |
+| 116 | `BuildersFirstCheck.DEPOT` | `"Construction Depot"` | The builders' depot: the template that adds most to their capacity. |
+| 119 | `BuildersFirstCheck.YARD` | `Game.FOUNDING_YARD` | ...and the Builders' Yard the city founds with (PT1-M4), the other that adds to it: 160 points. |
+| 122 | `BuildersFirstCheck.RUN_MONTHS` | `24` | The months the fixture's run is played: two years, a span the trace's city held through ten times over. |
+| 433 | `BuildersFirstCheck.NEW_TOWN_MONTHS` | `6` | The months the new town is played: long enough for its first depot to open, crewed first, and its homes to come or not. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 78 | `static int fails` |  |
-| 79 | `static PrintStream out` |  |
-| 80 | `static PrintStream quiet` |  |
-| 124 | `static double worstResidual` | The worst month of the audit any month here saw, and the worst drift after it. |
-| 125 | `static int monthsAudited` |  |
-| 344 | `static int openings` | What the run saw in the city with the rule, the months a depot opened: read by section 5. |
+| 79 | `static int fails` |  |
+| 80 | `static PrintStream out` |  |
+| 81 | `static PrintStream quiet` |  |
+| 125 | `static double worstResidual` | The worst month of the audit any month here saw, and the worst drift after it. |
+| 126 | `static int monthsAudited` |  |
+| 345 | `static int openings` | What the run saw in the city with the rule, the months a depot opened: read by section 5. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 509 | **type** `public class BuildersFirstCheck` | The builders' own depots first (0.7.130, batch T1-C): the rule that serves a depot on site the crews' rule would starve - keep there past the months the builders expand at - off the top of their month, before the rule... |
-| 82 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 87 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 93 | 5 | `static void bits(String label, double actual, double expected)` |  |
-| 99 | 5 | `static void quietly(Runnable r)` |  |
-| 105 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 128 | 7 | `static void month(Game g)` | One month, audited. |
-| 136 | 21 | `public static void main(String[] args) throws Exception` |  |
+| 77 | 523 | **type** `public class BuildersFirstCheck` | The builders' own depots first (0.7.130, batch T1-C): the rule that serves a depot on site the crews' rule would starve - keep there past the months the builders expand at - off the top of their month, before the rule... |
+| 83 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 88 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 94 | 5 | `static void bits(String label, double actual, double expected)` |  |
+| 100 | 5 | `static void quietly(Runnable r)` |  |
+| 106 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 129 | 7 | `static void month(Game g)` | One month, audited. |
+| 137 | 21 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE RULE'S ARITHMETIC (lines 158-215)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 161 | 3 | `static double crew(double points, int buildings)` | A site's crew by the rule (BuildingManager.weightOf()): its buildings times one's points to CREW_SCALE_EXPONENT. |
-| 165 | 50 | `static void arithmetic()` |  |
-
-### 2. THE STALL, CAUSED (lines 216-278)
+### 1. THE RULE'S ARITHMETIC (lines 159-216)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 227 | 9 | `static Game stalled(Path root, String name, boolean rule)` | DeathCareFirstCheck's trap - repairs leaving the builders' sick month a year's share of a cemetery's points, a University, a Penitentiary, schools and the landlords' Houses on site - with the death-care rule told nobo... |
-| 237 | 41 | `static Game[] stall(Path root)` |  |
+| 162 | 3 | `static double crew(double points, int buildings)` | A site's crew by the rule (BuildingManager.weightOf()): its buildings times one's points to CREW_SCALE_EXPONENT. |
+| 166 | 50 | `static void arithmetic()` |  |
 
-### 3. BEFORE AND WITH (lines 279-340)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 281 | 59 | `static void beforeAndWith(Game without, Game with)` |  |
-
-### 4. THE BUILDERS GROW (lines 341-413)
+### 2. THE STALL, CAUSED (lines 217-279)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 346 | 67 | `static void grow(Game without, Game with)` |  |
+| 228 | 9 | `static Game stalled(Path root, String name, boolean rule)` | DeathCareFirstCheck's trap - repairs leaving the builders' sick month a year's share of a cemetery's points, a University, a Penitentiary, schools and the landlords' Houses on site - with the death-care rule told nobo... |
+| 238 | 41 | `static Game[] stall(Path root)` |  |
 
-### 5. NEVER LAID OFF (lines 414-428)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 416 | 12 | `static void neverLaidOff()` |  |
-
-### 6. ONLY WHAT IT COULD STAFF (lines 429-489)
+### 3. BEFORE AND WITH (lines 280-341)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 434 | 55 | `static void onlyWhatItCouldStaff(Path root)` |  |
+| 282 | 59 | `static void beforeAndWith(Game without, Game with)` |  |
 
-### 7. ONE PRIORITY (lines 490-573)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 492 | 81 | `static void onePriority(Path root)` |  |
-
-### 8. CONSERVED (lines 574-584)
+### 4. THE BUILDERS GROW (lines 342-414)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 576 | 8 | `static void conserved()` |  |
+| 347 | 67 | `static void grow(Game without, Game with)` |  |
+
+### 5. NEVER LAID OFF (lines 415-429)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 417 | 12 | `static void neverLaidOff()` |  |
+
+### 6. ONLY WHAT IT COULD STAFF (lines 430-504)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 435 | 69 | `static void onlyWhatItCouldStaff(Path root)` |  |
+
+### 7. ONE PRIORITY (lines 505-588)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 507 | 81 | `static void onePriority(Path root)` |  |
+
+### 8. CONSERVED (lines 589-599)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 591 | 8 | `static void conserved()` |  |
 
