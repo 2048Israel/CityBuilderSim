@@ -4,7 +4,7 @@ Generated 2026-10-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 407 files, 437,508 lines, 18,546 methods, 4,090 constants. `GameVersion.VERSION` is "0.8.41", `SAVE_FORMAT` 45.
+**The tree:** 407 files, 437,749 lines, 18,552 methods, 4,095 constants. `GameVersion.VERSION` is "0.8.42", `SAVE_FORMAT` 45.
 
 ## model (191 files)
 
@@ -283,7 +283,7 @@ Generated 2026-10-24 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AgricultureCheck.java](AgricultureCheck.md) | 413 | 7 | The ground under the loaf. | 0 |
 | [AllChecks.java](AllChecks.md) | 203 | 4 | Runs every harness, one JVM each, and says which failed. | 1 |
 | [AuctionCheck.java](AuctionCheck.md) | 1,654 | 42 | The city's paper sold at auction: one clearing yield, and what it costs. | 0 |
-| [AutoBuildCheck.java](AutoBuildCheck.md) | 1,570 | 35 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
+| [AutoBuildCheck.java](AutoBuildCheck.md) | 1,811 | 41 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
 | [BankCheck.java](BankCheck.md) | 4,325 | 22 | The commercial bank, and the families it discharges. | 1 |
 | [BondCheck.java](BondCheck.md) | 1,581 | 37 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
 | [BooksCheck.java](BooksCheck.md) | 299 | 3 | Verifies a sector's income statement and balance sheet, off the template. | 0 |
