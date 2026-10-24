@@ -58,10 +58,11 @@ import java.util.Locale;
  *   6. ONLY A DEPOT THE CITY COULD STAFF: in a new town whose founding
  *      put depots on site among a hundred people, the builders' own test
  *      (Sector.staffing()) says the town could not staff them, and they are
- *      crewed by the rule, to the bit; the twin that builds them first all
- *      the same opens one in its second month, its builders' fill falls
- *      under MIN_STAFFABLE_TO_ORDER, the month under the repairs, and no
- *      home is built, where the town with the test builds its homes.
+ *      crewed by the rule, to the bit, where the twin told it could staff
+ *      them serves them first. Its collapse - the twin's fill under
+ *      MIN_STAFFABLE_TO_ORDER, its month under the repairs, no home built -
+ *      was the works department's points multiplied by the fill, and was
+ *      retired with them (PT1-M4).
  *   7. ONE PRIORITY WITH THE DEATH CARE: while the dead wait, a depot of the
  *      builders' and the city's cemetery on site together share what the
  *      first group takes by the crews' rule - neither ahead, neither starved;
@@ -479,12 +480,26 @@ public class BuildersFirstCheck {
                         + " without it %d open, the builders' fill down to %.2f, the sites at least %,.0f, %,d homes, %,d people%n",
                 NEW_TOWN_MONTHS, bm.countByName(DEPOT), floorG, bm.getTotalHomes(), gated.getPopulationManager().getPopulation(),
                 bu.countByName(DEPOT), fillU, floorU, bu.getTotalHomes(), ungated.getPopulationManager().getPopulation());
-        assertTrue("without the test a depot opens early", bu.countByName(DEPOT) > bm.countByName(DEPOT));
-        assertTrue("...the builders' fill falls under MIN_STAFFABLE_TO_ORDER", fillU < Sector.MIN_STAFFABLE_TO_ORDER);
-        assertTrue("...and their month under the repairs: the sites get nothing", floorU == 0);
-        assertTrue("...so no home is built", bu.getTotalHomes() == homesAtStart);
-        assertTrue("with the test the sites get work every month", floorG > 0);
-        assertTrue("...and the town builds its homes", bm.getTotalHomes() > bu.getTotalHomes());
+        /*
+         * THE TRAP'S SIX ASSERTIONS, RETIRED WITH THE WORKS DEPARTMENT (PT1-M4,
+         * 2026-10-24; star 6 of docs/queue/PT1-M4-notes.md, Jerus's to rule on).
+         * T1-C's trap was the works department's free points multiplied by the
+         * builders' fill: a depot opened among a hundred people brought fifty
+         * posts the town filled at 0.16, and the whole month - the free 400
+         * with it - fell under the repairs. Every point is a yard's or a
+         * depot's now, worked at the posts kept on and their fill, and a city's
+         * fill is a job type's, the same for every employer: a depot opened
+         * early adds posts the builders fill at that fill, so their output
+         * rises and cannot collapse. The trap cannot be caused. Here both
+         * twins stall alike - the founding yard, at the town's fill, cannot
+         * out-work its works' repairs - so "the builders' fill falls", "the
+         * sites get nothing" and "no home is built" would pass for that and
+         * not for the trap, and they go with it (the homes, the fill and the
+         * floors are printed). What the gate still does is asserted above: the
+         * depots it could not staff are never served first, and the plan is
+         * the crews' rule's, to the bit.
+         */
+        out.printf("  homes at the start %,d; the trap's six assertions retired with the works department (PT1-M4)%n", homesAtStart);
     }
 
     /* ============================ 7. ONE PRIORITY ============================ */
