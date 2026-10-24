@@ -2399,9 +2399,12 @@ public class DebtManager {
         row[0] = month;
         row[1] = getPolicyRate();
         YieldCurve curve = curve();
+        // foreignCurveRate(m) is the world's short rate plus the term premium: the short rate (the country premium,
+        // which reads the whole dollar book) struck once for the ten tenors, the same figure to the bit.
+        double world = foreignRate();
         for (int i = 0; i < CURVE_TENORS.length; i++) {
             row[2 + i] = curve.zero(CURVE_TENORS[i]);
-            row[2 + CURVE_TENORS.length + i] = foreignCurveRate(CURVE_TENORS[i]);
+            row[2 + CURVE_TENORS.length + i] = world + termPremium(CURVE_TENORS[i]);
         }
         // A month already recorded is recorded again (the close of a month is once, a harness may run it twice).
         if (!curveBook.isEmpty() && curveBook.get(curveBook.size() - 1)[0] == month) curveBook.remove(curveBook.size() - 1);
