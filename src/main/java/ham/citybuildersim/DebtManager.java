@@ -1270,6 +1270,7 @@ public class DebtManager {
         accretedForBank = 0;
         interestBooked = amortisedBooked = 0;
         upliftBooked = upliftPaidBooked = 0;
+        java.util.Arrays.fill(interestByKind, 0);
 
         while (iterator.hasNext()) {
             Debt debt = iterator.next();
@@ -1294,6 +1295,7 @@ public class DebtManager {
              */
             debt.amortise();
             interestBooked += debt.getLastInterestExpense();
+            interestByKind[bookKind(debt.getType())] += debt.getLastInterestExpense();
             if (debt instanceof InflationLinkedBond linked) {
                 // The uplift paid in the last month is the uplift line's, cash, and not the discount wearing
                 // off: the interest line's not-cash part is the discount alone (CD5).
@@ -1333,10 +1335,15 @@ public class DebtManager {
 
        Struck in processAllDebts() from each piece's amortise(), in local
        money at the rate each paper is valued at, and read until the next
-       month's strike. Not saved: the month's government block carries the
-       amortisation (NationalAccounts.getInterestNotCash()) and each piece
-       carries its own last expense, so a loaded city has both; these totals
-       read nothing until the first month ticks.
+       month's strike. The totals are not saved: the month's government block
+       carries the amortisation (NationalAccounts.getInterestNotCash()) and
+       each piece carries its own last expense, so a loaded city has both;
+       these totals read nothing until the first month ticks. THE INTEREST BY
+       KIND (CD6) IS SAVED, though: the Government tab's grid reads it after
+       the month, and it is a flow the state the month ended in cannot give
+       back - a bill that matured in the month is gone from the list, and a
+       dollar piece's expense, struck at the rate of that month, is not what
+       its last expense reads at the new rate. A save without it reads zeros.
        ----------------------------------------------------------------------- */
 
     /** This month's interest expense on the city's paper: every piece's carrying value at its effective rate, a month. The coupons and the discount wearing off together. */
@@ -1357,6 +1364,36 @@ public class DebtManager {
 
     public double getInterestBooked()  { return interestBooked; }
     public double getAmortisedBooked() { return amortisedBooked; }
+
+    /**
+     * THE INTEREST BOOKED, BY KIND (CD6): the month's interest expense on each kind of paper, in
+     * BOOK_KINDS' order, struck in processAllDebts() beside interestBooked from the same figures, so
+     * the five add up to getInterestBooked() - the budget's line (NationalAccounts.getInterestExpense())
+     * - including the interest of a piece that fell due in the month and is no longer on the list, and
+     * a dollar piece's, booked at the month's rate and not read again at a new one. Saved.
+     */
+    private final double[] interestByKind = new double[5];
+
+    /** The kinds of paper the interest is booked by, as Debt.getType() calls them: the notes, the serial bonds, the bonds, the floaters, the linkers. */
+    public static final String[] BOOK_KINDS = {"NOTE", "SERIAL", "TERM", "FLOAT", "LINKED"};
+
+    /** A type's place in BOOK_KINDS; a type that is none of them is a term loan's, as ladderKind() reads it. */
+    static int bookKind(String type) {
+        for (int i = 0; i < BOOK_KINDS.length; i++) if (BOOK_KINDS[i].equals(type)) return i;
+        return 2;
+    }
+
+    /** The month's interest expense on one kind of paper (a BOOK_KINDS entry), in local money: the Government tab's row of the budget's interest line. A type that is none of them reads as a term loan's. */
+    public double getInterestBookedOf(String type) { return interestByKind[bookKind(type)]; }
+
+    /** The interest by kind as a save carries it: a copy, in BOOK_KINDS' order. */
+    double[] interestByKindToSave() { return interestByKind.clone(); }
+
+    /** ...and put back by a load; null or the wrong length (an older save) reads as zeros. */
+    void restoreInterestByKind(double[] saved) {
+        java.util.Arrays.fill(interestByKind, 0);
+        if (saved != null && saved.length == interestByKind.length) System.arraycopy(saved, 0, interestByKind, 0, saved.length);
+    }
 
     /** The month's inflation uplift on linked bonds, booked (CD5): an expense, not cash. Nothing for a city that holds none. */
     public double getUpliftBooked()    { return upliftBooked; }
@@ -1409,15 +1446,26 @@ public class DebtManager {
        ----------------------------------------------------------------------- */
 
     /**
-     * What the city is charged in coupon a month, every piece together, in
-     * local money: the bonds' own getMonthlyInterestExpense(), summed - the
-     * Finances tab's COUPON. A note charges none (its cost was its discount),
-     * so a city owing only notes reads nothing here; getNotePrincipal() is
-     * what pays at maturity instead.
+     * What the paper pays in coupon next month, in cash, every piece together,
+     * in local money: the pieces' own getMonthlyCoupon(), summed - the
+     * Finances tab's COUPON. A forward cash measure, which is not the budget's
+     * interest line (that is the carrying value at the effective rate, struck
+     * last month: getInterestBooked()). A note pays none (its cost was its
+     * discount), so a city owing only notes reads nothing here;
+     * getNotePrincipal() is what pays at maturity instead. A linked bond's
+     * inflation uplift, which it pays with its last coupon, is not in it: that
+     * is getUpliftDueNextMonth().
      */
     public double getMonthlyCoupon() {
         double total = 0;
-        for (Debt d : debts) total += d.getMonthlyInterestExpense();
+        for (Debt d : debts) total += d.getMonthlyCoupon();
+        return total;
+    }
+
+    /** The inflation uplift the linked bonds pay next month, with their last coupon, every piece together, in local money (CD6): cash beside getMonthlyCoupon(), and the uplift line's in the budget. */
+    public double getUpliftDueNextMonth() {
+        double total = 0;
+        for (Debt d : debts) total += d.getUpliftDue();
         return total;
     }
 
@@ -1886,6 +1934,29 @@ public class DebtManager {
     public double getStruckExpected() { return struckExpected; }
 
     /**
+     * WHAT THE RULE WOULD SET THE DIAL TO AT TODAY'S INFLATION (CD6): the rule
+     * the market expects the dial to close on (YieldCurve.expectedPath()'s
+     * R(0)), advisedPolicyRate() at the inflation the month struck; the dial
+     * itself when nothing is struck, as the path is then flat at it. It is not
+     * the path's first month - that is the dial, and the gap between the two
+     * closes from there (expectedPath()) - except with the dial on the rule,
+     * when it is both.
+     */
+    public double ruleNow() {
+        return isStruck() ? advisedPolicyRate(struckInflation) : getPolicyRate();
+    }
+
+    /**
+     * ...and where the market expects the dial to settle (CD6): the rule at
+     * the inflation the city expects it to settle at, which the path
+     * approaches with the gap closed (expectedPath()'s limit); the dial when
+     * nothing is struck.
+     */
+    public double settledDial() {
+        return isStruck() ? advisedPolicyRate(struckExpected) : getPolicyRate();
+    }
+
+    /**
      * The expected dial's path and the curve built on it are CACHED, because
      * marketValue() runs for every piece several times a month and quoteRate()
      * walks a fixed point that builds a curve in each pass. Each cache is one
@@ -2243,6 +2314,152 @@ public class DebtManager {
     public double priceOfPar(Debt paper) {
         double owed = paper == null ? 0 : paper.getOustandingPrincipal();
         return owed > 0 ? marketValue(paper) / owed * 100 : 0;
+    }
+
+    /** A point on the curve (CD6): the rise in every rate that valueOfAPoint() prices a piece at, 1% a year. */
+    public static final double A_POINT = 0.01;
+
+    /**
+     * WHAT A POINT MOVES (CD6): what the piece's worth falls by if every rate on its curve (the world's
+     * for dollar paper, as marketValue() uses) rises a point, A_POINT - its pricing flows (pricingFlows())
+     * worth at the curve less the same flows at the curve and a point, YieldCurve.pvAtSpread(). A pure read.
+     *
+     * A callable line's is on its schedule as a bond that cannot be called: the right to call is not
+     * repriced. A floater's coupons would rise with the dial, so every coupon after the one fixed for
+     * the month ahead is raised the point too, and the sensitivity left is to its next reset only - about
+     * its worth a point and a month; a linker's coupons follow the index, which a rate does not move, so
+     * it is priced on the nominal curve like a bond. Nothing left to pay is not at risk: 0.
+     */
+    public double valueOfAPoint(Debt paper) {
+        if (paper == null || paper.getRemainingMonths() <= 0) return 0;
+        double[] flows = pricingFlows(paper);
+        YieldCurve curve = paper.isForeign() ? worldCurveAt(foreignRate()) : curve();
+        double[] shifted = flows;
+        if (paper instanceof FloatingRateNote note) {
+            // The dial a point up lifts the coupon of every month after the next, which was fixed at the last reset.
+            shifted = flows.clone();
+            for (int i = 1; i < shifted.length; i++) shifted[i] += note.getFaceValue() * A_POINT / 12;
+        }
+        return curve.pv(flows) - curve.pvAtSpread(shifted, A_POINT);
+    }
+
+    /**
+     * ...and the piece's duration, in years (CD6): valueOfAPoint() over its worth and the point,
+     * V / (marketValue x A_POINT) - the finite difference, the one definition. A floater's is its
+     * months to its next reset, a bond's under its life.
+     */
+    public double durationOf(Debt paper) {
+        double worth = marketValue(paper);
+        return worth > 0 ? valueOfAPoint(paper) / (worth * A_POINT) : 0;
+    }
+
+    /* ----- what the month's close keeps for the debt screens (CD6, spec-city-debt.md section 7) -----
+
+       Two histories the state a month ended in cannot give back: each piece's price against its carrying
+       value since its sale (Debt.recordPath()), and the curve as it stood in the months behind. Both are
+       RECORDED at the close of the month (Game.recordMonth()) by reads alone - marketValue(),
+       priceOfPar(), curveRate() and curve() are pure, and nothing here calls what strikes the market
+       (Game.fairValueOf(), quoteBuyback(), priceTheDebtMarket(), updateInterest()) - so the month's
+       money, rate and debt are what they were without them. The pieces carry their own path through
+       Gson; the curve book is saved beside the interest by kind (curveBookToSave()). */
+
+    /** The maturities, in months, the curve is drawn and kept at: three months to fifty years. */
+    public static final int[] CURVE_TENORS = {3, 6, 12, 24, 60, 120, 240, 360, 480, 600};
+
+    /** The months of the curve kept: today, a year ago and two years ago. */
+    public static final int CURVE_KEPT = 25;
+
+    /** A curve-book row: the month, the dial, the city's zero rate at each of CURVE_TENORS, the world's at each. */
+    private static final int CURVE_ROW = 2 + 2 * CURVE_TENORS.length;
+
+    private final java.util.ArrayList<double[]> curveBook = new java.util.ArrayList<>();
+
+    /** True: the month's close records the book. A harness turns it off for a twin city, to hold that recording moves nothing the month computes (DeskCheck). */
+    private boolean recording = true;
+
+    void setRecordingForTest(boolean on) { this.recording = on; }
+
+    /**
+     * Records the month's close: every piece's price against par and its carrying value per 100 of what is
+     * owed (Debt.recordPath()), then the curve (the zero rates at CURVE_TENORS, the dial and the world's
+     * rates) in the curve book, the newest CURVE_KEPT months kept. Pure reads, writing only these records.
+     */
+    public void recordTheBook(int month) {
+        if (!recording) return;
+        for (Debt d : debts) {
+            double owed = d.getOustandingPrincipal();
+            if (!(owed > 0)) continue;
+            d.recordPath(month, priceOfPar(d), d.getCarryingValue() / owed * 100);
+        }
+        recordCurve(month);
+    }
+
+    private void recordCurve(int month) {
+        double[] row = new double[CURVE_ROW];
+        row[0] = month;
+        row[1] = getPolicyRate();
+        YieldCurve curve = curve();
+        // foreignCurveRate(m) is the world's short rate plus the term premium: the short rate (the country premium,
+        // which reads the whole dollar book) struck once for the ten tenors, the same figure to the bit.
+        double world = foreignRate();
+        for (int i = 0; i < CURVE_TENORS.length; i++) {
+            row[2 + i] = curve.zero(CURVE_TENORS[i]);
+            row[2 + CURVE_TENORS.length + i] = world + termPremium(CURVE_TENORS[i]);
+        }
+        // A month already recorded is recorded again (the close of a month is once, a harness may run it twice).
+        if (!curveBook.isEmpty() && curveBook.get(curveBook.size() - 1)[0] == month) curveBook.remove(curveBook.size() - 1);
+        curveBook.add(row);
+        while (curveBook.size() > CURVE_KEPT) curveBook.remove(0);
+    }
+
+    /** The row recorded this many months before the newest, or null when none was: the book is read by the month, not by place. */
+    private double[] curveRowAgo(int months) {
+        if (months < 0 || curveBook.isEmpty()) return null;
+        double want = curveBook.get(curveBook.size() - 1)[0] - months;
+        for (double[] row : curveBook) if (row[0] == want) return row;
+        return null;
+    }
+
+    /** The city's zero rates at CURVE_TENORS as the curve stood this many months before the newest month recorded (0 the newest); null when that month was not kept - none recorded, or more than CURVE_KEPT - 1 months back. */
+    public double[] curveMonthsAgo(int months) {
+        double[] row = curveRowAgo(months);
+        return row == null ? null : java.util.Arrays.copyOfRange(row, 2, 2 + CURVE_TENORS.length);
+    }
+
+    /** ...and the world's, at the same tenors (foreignCurveRate()); null likewise. */
+    public double[] worldCurveMonthsAgo(int months) {
+        double[] row = curveRowAgo(months);
+        return row == null ? null : java.util.Arrays.copyOfRange(row, 2 + CURVE_TENORS.length, CURVE_ROW);
+    }
+
+    /** ...and the dial that month; NaN when that month was not kept. */
+    public double policyRateMonthsAgo(int months) {
+        double[] row = curveRowAgo(months);
+        return row == null ? Double.NaN : row[1];
+    }
+
+    /** How many months the curve book holds. */
+    public int curveBookSize() { return curveBook.size(); }
+
+    /** The curve book as a save carries it: a copy, one row a month, oldest first - [month, dial, the city's rates, the world's]. */
+    double[][] curveBookToSave() {
+        double[][] rows = new double[curveBook.size()][];
+        for (int i = 0; i < rows.length; i++) rows[i] = curveBook.get(i).clone();
+        return rows;
+    }
+
+    /** ...and put back by a load; null (an older save) or a row of the wrong length (a changed tenor list) is not kept, and the book is built afresh from the next close. */
+    void restoreCurveBook(double[][] saved) {
+        curveBook.clear();
+        if (saved == null) return;
+        for (double[] row : saved) {
+            if (row == null || row.length != CURVE_ROW) {
+                curveBook.clear();
+                return;
+            }
+            curveBook.add(row.clone());
+        }
+        while (curveBook.size() > CURVE_KEPT) curveBook.remove(0);
     }
 
     /** True for the city's own term paper - serial and term, not the notes: what the central bank's dial holds. */
@@ -2829,6 +3046,17 @@ public class DebtManager {
     public double breakevenInflation(int months, double extraFace) {
         YieldCurve curve = quoteCurve(Math.max(0, extraFace));
         return curve.parYield(months) - fairRealCoupon(curve, expectedInflationGrowth(), months);
+    }
+
+    /**
+     * The nominal coupon a new bullet bond of these months sells at par for (CD6): the par yield
+     * of the curve a sale of `extraFace` is priced on, YieldCurve.parYield() - the figure
+     * breakevenInflation() takes fairRealCoupon() from, so that
+     * parYield(m, f) == fairRealCoupon(m, f) + breakevenInflation(m, f). For Your rate's
+     * sentence on the ten-year linked line against a nominal one.
+     */
+    public double parYield(int months, double extraFace) {
+        return quoteCurve(Math.max(0, extraFace)).parYield(months);
     }
 
     /**

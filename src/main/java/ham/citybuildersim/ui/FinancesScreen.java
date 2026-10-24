@@ -85,8 +85,8 @@ final class FinancesScreen {
          THE POSITION   can the city carry it, and does the market mind?
                         Overview, Debt service, Home & abroad, Your rate.
          THE BOOK       what is each piece, and what would it cost to retire?
-                        One page: a card a piece, Close it now on each (CD4),
-                        which opens a page of its own for the piece.
+                        One page, a desk since CD6: every line a row, and a
+                        page for each line, which has Close it now (CD4).
          BORROW        what would this paper cost, and what would it do to
                         the ladder? At home, Abroad.
          MONEY          who made the money, and how much is there (0.7.0)?
@@ -116,9 +116,10 @@ final class FinancesScreen {
     /** ...and their icons on the chips. */
     static final String[] POSITION_ICONS = {Icons.OVERVIEW, Icons.COIN, Icons.TRADE, Icons.POLICY};
     /**
-     * The book is one page since 0.7.32, and Close it now is on each piece's
-     * card (CD4: it was Buy back). The piece's own page, CLOSE_PAGE, is no
-     * chip's: it is open while its piece is on the books (closeOpen()).
+     * The book is one page since 0.7.32, a desk of lines since CD6. A line's
+     * own page, LINE_PAGE, and Close it now's, CLOSE_PAGE (CD4: it was Buy
+     * back), are no chips': each is open while its piece is on the books
+     * (lineOpenNow(), closeOpen()).
      */
     static final String[] BOOK_PAGES   = {"Every piece"};
     /** The page Close it now opens on, under The book (CD4): one piece's reverse auction, its ticket, its ladder and its call. */
@@ -242,8 +243,8 @@ final class FinancesScreen {
        Two more tiles on Borrow after the amortizing bond (home only, as it is), their term columns in the margin
        that prices a floater at 100 and the real coupon that prices a linker (the model's fairMargin(),
        fairRealCoupon() and breakevenInflation()), the auction card's and the quote card's coupon words (settlesAt(),
-       monthlyWords(), totalWords()), the receipt's coupon line, a piece's name and its card (pieceName(),
-       pieceCard()), the hub's bar of principal by kind (DebtManager.getPrincipalOfLadderKind(): the ladder draws
+       monthlyWords(), totalWords()), the receipt's coupon line, a piece's name (pieceName(); its card is a
+       line's page since CD6), the hub's bar of principal by kind (DebtManager.getPrincipalOfLadderKind(): the ladder draws
        both as bonds), and Debt service's line for the uplift. The Government tab carries the rest (its spending
        list, its bridge, its debt card). The coupon field of a floater's quote is the MARGIN and of a linker's the
        real coupon: never couponRate(), which backs out the whole coupon at today's dial and index. */
@@ -437,8 +438,8 @@ final class FinancesScreen {
         String[] pages = pagesOf(financeArea);
         boolean onPage = false;
         for (String p : pages) if (p.equals(financePage)) onPage = true;
-        // Close it now is no chip's (CD4): it stays open while its piece is on the books, and falls back to The book's page when it is gone.
-        if (closeOpen()) onPage = true;
+        // Close it now is no chip's (CD4), nor is a line's page (CD6): each stays open while its piece is on the books, and falls back to The book's page when it is gone.
+        if (closeOpen() || lineOpenNow()) onPage = true;
         if (!onPage && pages.length > 0) financePage = pages[0];
 
         List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
@@ -450,8 +451,9 @@ final class FinancesScreen {
         } else {
             switch (financeArea) {
                 case "The book" -> {
-                    if (closeOpen()) closePage(page);
-                    else             bookPage(page);
+                    if (closeOpen())        closePage(page);
+                    else if (lineOpenNow()) linePage(page);
+                    else                    bookPage(page);
                 }
                 case "Borrow"   -> borrowPage(page, "Abroad".equals(financePage));
                 case "Money"    -> moneyPage(page);
@@ -545,7 +547,8 @@ final class FinancesScreen {
     static final String[] AREA_INFO = {
         "What the city holds, what it owes, and why the rate is the rate: the balance and the credit band, what "
                 + "the paper costs against the take, who holds it, and the rate taken apart.",
-        "Every piece of paper, and what each would cost to retire - Close it now is on each piece's card.",
+        "Every line of the city's paper on one desk - its coupon, the yield it was sold at and today's, what it is "
+                + "worth and what it is carried at, what closing it would book - and a page for each line, with Close it now on it.",
         "Bills, bonds, amortizing bonds, floating-rate notes and inflation-linked bonds sold at auction at home, "
                 + "bills and bonds in dollars abroad - the auction run on the city as it stands on every click, and "
                 + "the ladder it would build.",
@@ -636,7 +639,9 @@ final class FinancesScreen {
                 : "no output to compare";
 
         int band = revenue > 0 ? CityNeeds.serviceLevel(coupon / revenue) : 0;
-        String couponNote = "a month · " + (revenue > 0
+        // The coupon is the cash the paper pays NEXT month, not the interest the budget charged last month (CD6): the
+        // note says so, and the tooltip puts the budget's line beside it.
+        String couponNote = "in cash next month · " + (revenue > 0
                 ? String.format("%.1f%% of a month's take", coupon / revenue * 100) : "nothing came in")
                 + (notes > 0 ? " · " + d(notes) + " more pays at maturity" : "");
 
@@ -670,7 +675,9 @@ final class FinancesScreen {
                         "Go to the policy rate, which this one is built on", null),
                 new Kpi("COUPON", d(coupon), couponNote,
                         band >= 2 ? Palette.BAD : band == 1 ? Palette.WARN : Palette.TEXT_HEAD,
-                        "Debt service: what the paper costs against what the city takes in", null),
+                        "Debt service: what the paper costs against what the city takes in. The coupon is the cash the paper pays "
+                                + "next month; the budget charged " + d(na.getInterestExpense()) + " of interest last month, "
+                                + "the coupons and the discount wearing off.", null),
                 new Kpi("NEXT DUE", dueValue, dueNote, dueTone,
                         "When it falls due: the ladder", null));
     }
@@ -854,6 +861,41 @@ final class FinancesScreen {
         return (thousands < 0 ? "−" : "+") + marked(sym(), shown);
     }
 
+    /**
+     * What closing a line (or the book) would book, as the screen writes it (CD6, Jerus 2026-10-23: "show green or red,
+     * and a % value and dollar value"): the D$ with its sign, the share of the carrying value with its sign (empty at
+     * no money, and under a two-hundredth of a point), and the colour - green for a gain, red for a loss, the body's
+     * ink for a figure that rounds to no money (Pieces.BRIDGE_NOTHING, as pnl() holds it).
+     */
+    record Gain(String money, String percent, String tone) {
+        /** "+D$5.1M · +33.8%", "−D$725k · −4.2%", or just "D$0". */
+        String both() { return percent.isEmpty() ? money : money + " · " + percent; }
+    }
+
+    /** `gain` (carried less worth, thousands) and its `share` of the carrying value (the model's ifClosedNowShare()) written and coloured: see Gain. */
+    Gain gainOf(double gain, double share) {
+        boolean nothing = !Double.isFinite(gain) || Math.abs(gain) < BRIDGE_NOTHING;
+        if (nothing) return new Gain(d(0), "", Palette.TEXT_BODY);
+        double p = Math.abs(share) * 100;
+        String pct = !Double.isFinite(share) || p < 0.005 ? ""
+                : String.format(p >= 0.05 ? "%s%,.1f%%" : "%s%.2f%%", share < 0 ? "−" : "+", p);
+        return new Gain(signedD(gain), pct, gain > 0 ? Palette.GOOD : Palette.BAD);
+    }
+
+    /** A gain or a loss as a bold figure in its colour, right-aligned in the room it is given. */
+    Label gainFigure(Gain gain, double size) {
+        Label l = figure(gain.both(), size, gain.tone());
+        l.setAlignment(Pos.CENTER_RIGHT);
+        return l;
+    }
+
+    /** A line of a card whose figure is a gain or a loss: the words at the left, the figure bold and in its colour at the right, an (i) after the words when `info` is not null. */
+    HBox gainLine(String label, Gain gain, String info) {
+        HBox row = cardLine(label, gain.both(), gain.tone(), info);
+        row.getChildren().get(row.getChildren().size() - 1).setStyle(BuildScreen.figureAt(Palette.SIZE_BODY + 2, gain.tone()));
+        return row;
+    }
+
     /** An exchange rate with its unit, as the land office writes it: "D$0.7035 per US$" (the spec's B10). */
     String perUsd(double rate) { return sym() + fxRate(rate) + " per " + Currency.FOREIGN_SYMBOL; }
 
@@ -922,7 +964,12 @@ final class FinancesScreen {
 
     /** The card's ground, with its edge in a colour - red when the card is in alarm. */
     static String cardStyle(String edge) {
-        return "-fx-padding: 14; -fx-background-color: " + Palette.RAISED + ";"
+        return cardStyle(Palette.RAISED, edge);
+    }
+
+    /** ...on a ground of its own: the PINNED card of a page's raised one (Your rate's, CD6). */
+    static String cardStyle(String ground, String edge) {
+        return "-fx-padding: 14; -fx-background-color: " + ground + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + edge + ";";
     }
 
@@ -1263,7 +1310,7 @@ final class FinancesScreen {
         return box;
     }
 
-    /** One piece on NEXT DUE: its amount in its urgency, its kind's tag and its date; a click opens it on The book. */
+    /** One piece on NEXT DUE: its amount in its urgency, its kind's tag and its date; a click opens the line's page (CD6). */
     HBox nextDueRow(Debt debt, int month) {
         int due = debt.getMaturityMonth();
         Label amount = figure(d(debt.getOustandingPrincipal()), 13, urgency(due - month));
@@ -1280,7 +1327,7 @@ final class FinancesScreen {
         row.setStyle(rest);
         row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
         row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> open("The book", null, debt));
+        row.setOnMouseClicked(e -> openLine(debt));
         return row;
     }
 
@@ -1590,7 +1637,7 @@ final class FinancesScreen {
                                 : annual > 0 ? pc(principal / annual) + " of GDP" : d(principal) + " owed"),
                         Palette.TEXT_LABEL, null),
                 new AreaCard("The book", pieces == 0 ? "nothing" : pieces + (pieces == 1 ? " piece" : " pieces"),
-                        coupon >= .5 ? d(coupon) + " coupon a month"
+                        coupon >= .5 ? d(coupon) + " coupon a month in cash"
                                 : pieces > 0 ? "no coupon: bills pay at maturity" : "nothing outstanding",
                         Palette.TEXT_LABEL, null),
                 new AreaCard("Borrow", pct2(g.getInterestRate()),
@@ -1920,7 +1967,7 @@ final class FinancesScreen {
         double lead = Math.max(month, year);
         int level = CityNeeds.serviceLevel(lead);
         String tone = BuildScreen.verdict(level);
-        VBox left = new VBox(4, words(year >= month ? "THE NEXT 12 MONTHS" : "A MONTH'S COUPON", Palette.SIZE_LABEL + 1,
+        VBox left = new VBox(4, words(year >= month ? "THE NEXT 12 MONTHS" : "A MONTH'S COUPON, IN CASH", Palette.SIZE_LABEL + 1,
                         Palette.TEXT_LABEL),
                 figure(pc1(lead), 28, tone), words(SERVICE_WORDS[level], Palette.SIZE_BODY + 1, tone),
                 words("of the take", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
@@ -1931,16 +1978,19 @@ final class FinancesScreen {
                                 "felt: " + pc(CityNeeds.SERVICE_FELT) + " to " + pc(CityNeeds.SERVICE_CONSTRAINED)),
                         ghost(top - CityNeeds.SERVICE_CONSTRAINED, Palette.BAD, null,
                                 "constrained: past " + pc(CityNeeds.SERVICE_CONSTRAINED))), top,
-                List.of(new Tick(Math.min(month, top), Palette.TEXT_HEAD, 3, null, "a month's coupon " + pc1(month)),
+                List.of(new Tick(Math.min(month, top), Palette.TEXT_HEAD, 3, null, "a month's coupon in cash " + pc1(month)),
                         new Tick(Math.min(year, top), Palette.ACCENT, 3, null, "the next 12 months " + pc1(year))), 0, 14);
-        javafx.scene.layout.FlowPane marks = keyRow(keySwatch(Palette.TEXT_HEAD, "a month's coupon " + pc1(month)
+        javafx.scene.layout.FlowPane marks = keyRow(keySwatch(Palette.TEXT_HEAD, "a month's coupon in cash " + pc1(month)
                                 + (month > top ? " (past the end)" : "")),
                 keySwatch(Palette.ACCENT, "the next 12 months " + pc1(year) + (year > top ? " (past the end)" : "")),
                 words("comfortable to " + pc(CityNeeds.SERVICE_FELT) + " · felt to " + pc(CityNeeds.SERVICE_CONSTRAINED)
                         + " · constrained past it, to " + pc(top) + " drawn", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         VBox right = new VBox(8, caption("WHAT THE PAPER ASKS, AGAINST THE TAKE", SERVICE_INFO), gauge, marks,
                 line(String.format("%s due in the next twelve months, coupons and principal, against twelve months of "
-                        + "this month's take, %s a month; the coupon alone is %s a month.", d(next12), d(revenue), d(coupon))));
+                        + "this month's take, %s a month; the coupon alone is %s a month, in cash. The budget charged %s of "
+                        + "interest last month: the coupons and the discount wearing off (LAST MONTH, below).",
+                        d(next12), d(revenue), d(coupon),
+                        d(g.getEconomyManager().getNationalAccounts().getInterestExpense()))));
         return heroCard(left, 220, right);
     }
 
@@ -2131,20 +2181,48 @@ final class FinancesScreen {
     }
 
     /* =====================================================================
-       YOUR RATE, TAKEN APART (0.7.32)
+       YOUR RATE, TAKEN APART (0.7.32; the curve first since CD6, 2026-10-23)
 
-       Why does money cost this city what it does? THE RATE, BUILT UP on
-       the band from nothing to what a hopeless city pays - the floor, then
-       what the debt adds against output and against a year of tax - with
-       the dial and the city's rate marked; each part's figure, what moves
-       it and a door to it. THE CURVE by maturity, home and abroad, and how
-       much each measure has left to say.
+       Why does money cost this city what it does? Since CD6 (spec-city-debt
+       .md section 7, board 5; D31) the page opens on the curve, as a
+       treasury reads it, and goes down to the short end:
+
+         THE LINE       today's month, the dial and credibility.
+         THE CITY'S     zero rates by maturity: today (heavy), a year ago and
+         CURVE          two years ago (the curve book, DebtManager
+                        .curveMonthsAgo(); left out and named "not yet
+                        recorded" until the city has them), the world's for
+                        dollar paper (dotted) and the dial the market expects
+                        (dashed), month by month. CurveChart draws any lines
+                        it is given, months to the square root as the desk's
+                        curve does.
+         WHAT THE       the dial, the rule at today's inflation, the dial in a
+         MARKET         year, in five and where it settles; what that leans
+         EXPECTS        to; and that expected inflation settles off the target
+                        by as much as credibility falls short. The dial drifts
+                        to the rule, whoever holds it (YieldCurve
+                        .DRIFT_MONTHS).
+         THE 10-YEAR    a bar of its parts - the dial the market expects, what
+         RATE           the city's debt adds, the term premium, and what the
+                        central bank takes off, outlined - a line each and the
+                        total, curveRate(120).
+         REAL RATES     by maturity from a year out: the real rate a linked
+                        bond would sell at and the inflation priced, from
+                        DebtManager.fairRealCoupon() and breakevenInflation(),
+                        the target across and a dot a linked line on the
+                        book, at its real yield.
+         THE SHORT END  THE RATE, BUILT UP and WHAT EACH MEASURE HAS USED,
+                        as the page had them: the floor, then what the debt
+                        adds against output and against a year of tax, with
+                        the dial and the city's rate marked.
+
+       Every figure is the model's through a getter; the page works out none.
 
        THE CURVE'S THIRTY-YEAR POINT IS THE NEW PARTS (2026-10-20, CD1): the
        dial the market expects over thirty years, what the city's debt adds,
        the term premium, less what the central bank holds - the four getters
-       that add up to curveRate(360) - and a line on where the market expects
-       the dial in a year and in five, against today.
+       that add up to curveRate(360). Since CD6 the ten-year point is taken
+       apart in the bar and the thirty-year one is the sentence under it.
 
        THE FLOOR IS NOT THE DIAL (the spec's B13, this page's T23): it is
        the dial or what the bank's money costs it, whichever is higher, on
@@ -2152,7 +2230,18 @@ final class FinancesScreen {
        ===================================================================== */
 
     void yourRatePage(VBox page) {
-        page.getChildren().add(builtUpCard());
+        Game g = ui.game;
+        DebtManager ledger = g.getDebtManager();
+        page.getChildren().add(line(String.format("%s · the dial %s · credibility %s", CityCalendar.format(g.getMonth()),
+                pct2(ledger.getPolicyRate()), trust(g.getCredibility()))));
+        page.getChildren().add(wideAndNarrow(curveCard(), expectCard()));
+        page.getChildren().add(pair(partsCard(), realCard()));
+        page.getChildren().add(sectionHead("THE SHORT END", hint("the floor, and what the city's own debt adds to it")));
+        page.getChildren().add(wideAndNarrow(builtUpCard(), measuresCard()));
+    }
+
+    /** Two cards in the page's wide and narrow columns, two thirds and one third, each as tall as the taller. */
+    static GridPane wideAndNarrow(Node left, Node right) {
         GridPane two = new GridPane();
         two.setHgap(TILE_GAP);
         javafx.scene.layout.ColumnConstraints wide = new javafx.scene.layout.ColumnConstraints();
@@ -2163,12 +2252,11 @@ final class FinancesScreen {
         narrow.setHgrow(Priority.ALWAYS);
         two.getColumnConstraints().addAll(wide, narrow);
         two.setMaxWidth(Double.MAX_VALUE);
-        VBox curve = curveCard(), measures = measuresCard();
-        GridPane.setFillHeight(curve, true);
-        GridPane.setFillHeight(measures, true);
-        two.add(curve, 0, 0);
-        two.add(measures, 1, 0);
-        page.getChildren().add(two);
+        if (left instanceof Region r) GridPane.setFillHeight(r, true);
+        if (right instanceof Region r) GridPane.setFillHeight(r, true);
+        two.add(left, 0, 0);
+        two.add(right, 1, 0);
+        return two;
     }
 
     /** The floor's (i): the spec's T23, rewritten (B13), and the central bank's share (0.7.15). */
@@ -2230,115 +2318,341 @@ final class FinancesScreen {
         return c;
     }
 
-    /** The curve's maturities, in months. */
-    static final int[] CURVE_MONTHS = {3, 6, 12, 24, 60, 120, 240, 360, 480, 600};
-    /** ...and how they are written under it. */
-    static final String[] CURVE_NAMES = {"3m", "6m", "1y", "2y", "5y", "10y", "20y", "30y", "40y", "50y"};
+    /** THE CITY'S CURVE's (i): the spec's T24, and what each line on the chart is (CD6, board 5). */
+    static final String CURVE_INFO = "Each point is what the city pays to borrow for that term: the zero rate. The short end "
+            + "is the floor - the dial, or what the bank's money costs it, whichever is higher - plus what the city's own "
+            + "debt adds. Further out, each month is priced at where the market expects the dial to be then: the rule's "
+            + "rate at the inflation it expects, with the dial drifting there over about " + YieldCurve.DRIFT_MONTHS
+            + " months whoever holds it - plus the debt's spread. Longer money adds a term premium on top, less whatever "
+            + "the central bank's holdings of term paper take off it. Today's curve is the heavy line; a year ago and "
+            + "two years ago are the same curve as it stood then, kept each month, and are left off until the city has "
+            + "that much history. The world's is what dollar paper pays. The dashed line is the dial the market expects, "
+            + "month by month. A hike the market expects to undo inverts the curve. Months run to the square root, so the "
+            + "short end has room.";
 
-    /** THE CURVE's (i): the spec's T24, and the world's curve - CD1 priced it on the dial the market expects. */
-    static final String CURVE_INFO = "The short end is the floor - the dial, or what the bank's money costs it, "
-            + "whichever is higher - plus what the city's own debt adds. Further out, each month is priced at where the "
-            + "market expects the dial to be then: the rule's rate at the inflation it expects, with the dial drifting "
-            + String.format("there over about %d months whoever holds it", YieldCurve.DRIFT_MONTHS)
-            + " - plus the debt's spread. Longer money adds a term premium on top, less whatever the central bank's "
-            + "holdings of term paper take off it. The world lends at its own base and the same premium abroad. "
-            + "The dashed line is the dial today.";
-
-    /** THE CURVE: the city's rate by maturity at home and, while the window is open, abroad, with the dial dashed and the thirty-year point taken apart. */
+    /** THE CITY'S CURVE: today's zero rates by maturity, a year ago and two years ago, the world's for dollar paper and the dial the market expects, with each line named under it. */
     VBox curveCard() {
         DebtManager ledger = ui.game.getDebtManager();
-        boolean world = ledger.foreignWindowOpen();
-        double[] home = new double[CURVE_MONTHS.length], abroad = world ? new double[CURVE_MONTHS.length] : null;
-        for (int i = 0; i < CURVE_MONTHS.length; i++) {
-            home[i] = ledger.curveRate(CURVE_MONTHS[i]);
-            if (world) abroad[i] = ledger.foreignCurveRate(CURVE_MONTHS[i]);
+        int[] tenors = DebtManager.CURVE_TENORS;
+        // One curve, read at every tenor and every month of the path.
+        YieldCurve curve = ledger.curve();
+        double[] now = new double[tenors.length];
+        for (int i = 0; i < tenors.length; i++) now[i] = curve.zero(tenors[i]);
+        double[] yearAgo = ledger.curveMonthsAgo(12), twoAgo = ledger.curveMonthsAgo(24), world = null;
+        if (ledger.foreignWindowOpen()) {
+            world = new double[tenors.length];
+            for (int i = 0; i < tenors.length; i++) world[i] = ledger.foreignCurveRate(tenors[i]);
         }
-        double expected = ledger.expectedDialOver(360), credit = ledger.creditSpread();
-        double premium = DebtManager.termPremium(360), comp = ledger.compression(360);
-        VBox card = card(caption("THE CURVE", CURVE_INFO),
-                new CurveChart(home, abroad, ledger.getPolicyRate(), 7,
-                        String.format("%.2f the dial expected + %.2f credit + %.2f term − %.2f the central bank",
-                                expected * 100, credit * 100, premium * 100, comp * 100)),
-                keyRow(keySwatch(Palette.MONEY, "at home"), world ? keySwatch(Palette.BUSINESS, "abroad, in dollars") : null,
-                        keySwatch(Palette.TEXT_MUTED, "the dial, dashed")),
-                line(String.format("Thirty-year money costs %s: the dial the market expects over thirty years, %s; "
-                                + "what the city's debt adds, %s; the term premium, %s; and %s.",
-                        pct2(ledger.curveRate(360)), pct2(expected), pts(credit), pts(premium),
-                        comp > 0 ? String.format("%.2f pts off for what the central bank holds", comp * 100) : "nothing off")),
-                line(String.format("The market expects the dial at %s in a year and %s in five, against %s today.",
-                        pct2(ledger.expectedDialIn(12)), pct2(ledger.expectedDialIn(60)), pct2(ledger.getPolicyRate()))));
+        int[] months = new int[YieldCurve.HORIZON + 1];
+        double[] dial = new double[months.length];
+        for (int m = 0; m < months.length; m++) {
+            months[m] = m;
+            dial[m] = curve.path(m);
+        }
+        final double[] solid = {};
+        final double[] dashed = {6, 4}, dotted = {2, 3};
+        // The lines underneath first; today's last, over them.
+        List<CurveChart.Series> lines = new ArrayList<>();
+        if (twoAgo != null) lines.add(new CurveChart.Series("two years ago", tenors, twoAgo, Palette.TEXT_SPENT, 1.6, solid, null, false));
+        if (yearAgo != null) lines.add(new CurveChart.Series("a year ago", tenors, yearAgo, Palette.MONEY_DARK, 1.8, solid, null, false));
+        if (world != null) lines.add(new CurveChart.Series("the world's, for dollar paper", tenors, world, Palette.ORE, 1.5, dotted, null, false));
+        lines.add(new CurveChart.Series("the dial the market expects", months, dial, Palette.WARN, 1.6, dashed, null, false));
+        lines.add(new CurveChart.Series("today", tenors, now, Palette.MONEY, 2.6, solid, "today", true));
+
+        List<Node> key = new ArrayList<>();
+        key.add(lineKey(Palette.MONEY, 2.6, solid, "today"));
+        if (yearAgo != null) key.add(lineKey(Palette.MONEY_DARK, 1.8, solid, "a year ago"));
+        if (twoAgo != null) key.add(lineKey(Palette.TEXT_SPENT, 1.6, solid, "two years ago"));
+        if (yearAgo == null && twoAgo == null) key.add(captionWords("a year ago and two years ago: not yet recorded"));
+        else if (yearAgo == null) key.add(captionWords("a year ago: not yet recorded"));
+        else if (twoAgo == null) key.add(captionWords("two years ago: not yet recorded"));
+        key.add(lineKey(Palette.WARN, 1.6, dashed, "the dial the market expects"));
+        if (world != null) key.add(lineKey(Palette.ORE, 1.5, dotted, "the world's, for dollar paper"));
+        return card(caption("THE CITY'S CURVE", CURVE_INFO), muted("zero rates by maturity · and the dial the market expects"),
+                new CurveChart(tenors, lines, List.of(), 250), keyRow(key.toArray(new Node[0])));
+    }
+
+    /** A caption-sized muted line of words that does not wrap: an entry of a key. */
+    static Label captionWords(String text) {
+        Label l = new Label(text);
+        l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        return l;
+    }
+
+    /** A key's entry for a line: a short stroke in the line's colour, width and dash, and its name. */
+    static HBox lineKey(String colour, double width, double[] dash, String name) {
+        javafx.scene.shape.Line sample = new javafx.scene.shape.Line(0, 5, 22, 5);
+        sample.setStroke(javafx.scene.paint.Color.web(colour));
+        sample.setStrokeWidth(width);
+        for (double d : dash) sample.getStrokeDashArray().add(d);
+        javafx.scene.layout.Pane holder = new javafx.scene.layout.Pane(sample);
+        holder.setMinSize(22, 10);
+        holder.setPrefSize(22, 10);
+        holder.setMaxSize(22, 10);
+        HBox row = new HBox(5, holder, captionWords(name));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /** A key's entry for a dot off the lines: a dot in the colour, as the chart draws it, and its name. */
+    static HBox dotKey(String colour, String name) {
+        javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(5, 5, 4.5, javafx.scene.paint.Color.web(colour));
+        dot.setStroke(javafx.scene.paint.Color.web(Palette.RAISED));
+        dot.setStrokeWidth(1.5);
+        javafx.scene.layout.Pane holder = new javafx.scene.layout.Pane(dot);
+        holder.setMinSize(10, 10);
+        holder.setPrefSize(10, 10);
+        holder.setMaxSize(10, 10);
+        HBox row = new HBox(5, holder, captionWords(name));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /**
+     * Lines on the curve's chart (CD6, board 5), months across to the square root as the desk's curve draws them, so the
+     * two curve pictures are one family: any number of series, each at its own months with its own colour, width and
+     * dash, a dot or two off the lines, and a name at the end of the line that has one. It draws itself again at the
+     * width it is given (Drawn). Every figure is the model's.
+     */
+    static final class CurveChart extends Drawn {
+        /**
+         * One line: its name (a tooltip's), the months each value is at, the values, its colour, its width, its dash
+         * (empty: solid), its name at its end (null: none), and whether each of its points is marked with a dot.
+         */
+        record Series(String name, int[] months, double[] values, String colour, double width, double[] dash, String end, boolean dots) { }
+
+        /** A mark off the lines: months, value, colour and what its tooltip says. */
+        record Dot(double months, double value, String colour, String tip) { }
+
+        static final double LEFT = 46, RIGHT = 14, TOP = 18, FOOT = 26;
+
+        private final int[] axis;
+        private final List<Series> series;
+        private final List<Dot> dots;
+        private final double height;
+
+        /** The chart of these lines on an axis that ends at the last of `axis`' tenors, `height` px tall. */
+        CurveChart(int[] axis, List<Series> series, List<Dot> dots, double height) {
+            super(300, 560, height);
+            this.axis = axis;
+            this.series = series;
+            this.dots = dots;
+            this.height = height;
+            drawFirst();
+        }
+
+        @Override void draw(double w) {
+            final double plotL = LEFT, plotR = Math.max(LEFT + 100, w - RIGHT), plotT = TOP, plotB = height - FOOT;
+            final double maxMonths = axis[axis.length - 1];
+            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
+            for (Series s : series) for (double v : s.values()) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+            for (Dot dot : dots) { lo = Math.min(lo, dot.value()); hi = Math.max(hi, dot.value()); }
+            if (lo > hi) { lo = 0; hi = .01; }
+            double step = niceStep(hi - lo, 5, .0025, .005, .01, .02, .05);
+            lo = Math.floor(lo / step + 1e-9) * step;
+            hi = Math.ceil(hi / step - 1e-9) * step;
+            if (hi - lo < step) hi = lo + step;
+            final double bottom = lo, span = hi - lo;
+            java.util.function.DoubleUnaryOperator y = v -> plotB - (v - bottom) / span * (plotB - plotT);
+            java.util.function.DoubleUnaryOperator x = m -> plotL + Math.sqrt(Math.max(0, m) / maxMonths) * (plotR - plotL);
+
+            for (double v = lo; v <= hi + 1e-9; v += step) {
+                stroke(plotL, y.applyAsDouble(v), plotR, y.applyAsDouble(v), Palette.EDGE, 1);
+                put(String.format(step < .005 ? "%.2f%%" : "%.1f%%", v * 100).replace('-', '−'), 0, y.applyAsDouble(v) - 7,
+                        LEFT - 6, Pos.CENTER_RIGHT, figureIn(Palette.TEXT_MUTED));
+            }
+            stroke(plotL, plotB, plotR, plotB, Palette.TEXT_SPENT, 1);
+            tenorAxis(axis, x, plotB);
+
+            for (Series s : series) {
+                javafx.scene.shape.Polyline line = new javafx.scene.shape.Polyline();
+                javafx.scene.paint.Color colour = javafx.scene.paint.Color.web(s.colour());
+                line.setStroke(colour);
+                line.setStrokeWidth(s.width());
+                line.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+                for (double d : s.dash()) line.getStrokeDashArray().add(d);
+                for (int i = 0; i < s.values().length; i++) line.getPoints().addAll(x.applyAsDouble(s.months()[i]), y.applyAsDouble(s.values()[i]));
+                getChildren().add(line);
+                // A line of a few points has a tooltip at each: a dot when it asks for one, else a bare target.
+                if (s.values().length <= 12) {
+                    for (int i = 0; i < s.values().length; i++) {
+                        javafx.scene.shape.Circle mark = new javafx.scene.shape.Circle(x.applyAsDouble(s.months()[i]), y.applyAsDouble(s.values()[i]),
+                                s.dots() ? 3.2 : 5, s.dots() ? colour : javafx.scene.paint.Color.TRANSPARENT);
+                        Tooltip.install(mark, tip(s.name() + " · " + tenorName(s.months()[i]) + ": " + pct2(s.values()[i])));
+                        getChildren().add(mark);
+                    }
+                }
+            }
+            for (Dot dot : dots) {
+                javafx.scene.shape.Circle c = new javafx.scene.shape.Circle(x.applyAsDouble(dot.months()), y.applyAsDouble(dot.value()), 4.5,
+                        javafx.scene.paint.Color.web(dot.colour()));
+                c.setStroke(javafx.scene.paint.Color.web(Palette.RAISED));
+                c.setStrokeWidth(1.5);
+                Tooltip.install(c, tip(dot.tip()));
+                getChildren().add(c);
+            }
+            for (Series s : series) {
+                if (s.end() == null) continue;
+                int last = s.values().length - 1;
+                put(s.end(), x.applyAsDouble(s.months()[last]) - 64, y.applyAsDouble(s.values()[last]) - 18, 60, Pos.CENTER_RIGHT,
+                        Palette.words(Palette.SIZE_CAPTION, s.colour()));
+            }
+        }
+    }
+
+    /** WHAT THE MARKET EXPECTS THE DIAL TO DO's (i): the path the curve is built on (CD6, board 5, note A). */
+    static final String EXPECT_INFO = "The dial the market expects, month by month, is the path the whole curve is built on. "
+            + "It starts at the dial and closes the gap to the rule over about " + YieldCurve.DRIFT_MONTHS + " months, whoever "
+            + "holds the dial - by hand or on autopilot. The rule it closes on follows the inflation the city expects, which "
+            + "is not today's: it settles between what the city has lived through and the target, by how far people "
+            + "believe the bank. Credibility shows at the long end of the curve for that reason.";
+
+    /** The gap under which two rates are the same to the eye in the page's sentences: a twentieth of a point. */
+    static final double LEAN = .0005;
+
+    /** WHAT THE MARKET EXPECTS THE DIAL TO DO: the dial, the rule, and where the market expects the dial in a year, in five and at last, and what that says. */
+    VBox expectCard() {
+        DebtManager ledger = ui.game.getDebtManager();
+        VBox card = card(caption("WHAT THE MARKET EXPECTS THE DIAL TO DO", EXPECT_INFO),
+                cardLine("The dial today", pct2(ledger.getPolicyRate()), null),
+                cardLine("The rule, at today's inflation", pct2(ledger.ruleNow()), null),
+                cardLine("Expected in a year", pct2(ledger.expectedDialIn(12)), null),
+                cardLine("Expected in five years", pct2(ledger.expectedDialIn(60)), null),
+                cardLine("Where it settles", pct2(ledger.settledDial()), null),
+                flag(expectWords(ledger, ui.game.getCredibility()), Palette.RAISED),
+                muted("By hand or on autopilot, the market prices the same path: a dial held off the rule is expected to come "
+                        + "back to it over about " + YieldCurve.DRIFT_MONTHS + " months."));
+        // The board's raised card: a step lighter than the others.
+        card.setStyle(cardStyle(Palette.PINNED, Palette.EDGE));
         return card;
     }
 
     /**
-     * The curve, drawn: a point a maturity at equal steps, the city's in the
-     * money blue, the world's in violet, the dial dashed across, and the
-     * point at `marked` annotated with `note` - a fixed size, as a card's
-     * picture is; every figure is the model's curve at that maturity.
+     * The board's flag in the game's words: which way the rule and the path lean, and that the inflation the city expects
+     * settles off the target by as much as credibility falls short. Built from the model's figures; nothing is worked out.
      */
-    static final class CurveChart extends javafx.scene.layout.Pane {
-        /** Its size and its margins, in pixels: a card's picture, at a fixed size. */
-        static final double W = 720, H = 190, LEFT = 44, RIGHT = 16, TOP = 26, FOOT = 22;
+    static String expectWords(DebtManager l, double credibility) {
+        double dial = l.getPolicyRate();
+        if (!l.isStruck()) return "Nothing has been struck yet, so the market expects the dial where it is, " + pct2(dial) + ".";
+        double rule = l.ruleNow(), year = l.expectedDialIn(12), settled = l.settledDial();
+        double inflation = l.getStruckInflation(), expected = l.getStruckExpected(), target = l.getInflationTarget();
+        String rules = Math.abs(rule - dial) < LEAN
+                ? String.format("The dial is on the rule: it would set %s at today's inflation of %s", pct2(rule), pct2(inflation))
+                : String.format("The rule would set %s at today's inflation of %s, %s the dial's %s", pct2(rule), pct2(inflation),
+                        rule > dial ? "above" : "below", pct2(dial));
+        // The first year's move, then what comes after it.
+        double near = year - dial, far = settled - year;
+        String move = (near > LEAN ? "hikes" : near < -LEAN ? "cuts" : "no change") + " over the year"
+                + (far > LEAN ? (near > LEAN ? " and more hikes after" : ", then hikes")
+                : far < -LEAN ? (near < -LEAN ? " and more cuts after" : ", then cuts")
+                : (Math.abs(near) > LEAN ? ", then it holds" : ""));
+        // The rule follows the inflation the city expects: when that is not today's, the rule's own move is part of the path.
+        String why = Math.abs(settled - rule) > LEAN ? ", as the rule follows the inflation it expects" : "";
+        String belief = Math.abs(expected - target) < LEAN
+                ? String.format("It expects inflation to settle at %s, the target.", pct2(expected))
+                : String.format("It expects inflation to settle at %s, not the %s target: at %s credibility the rest is what "
+                        + "the city has lived through.", pct2(expected), pct2(target), trust(credibility));
+        return rules + ". The market expects " + move + why + ". " + belief;
+    }
 
-        CurveChart(double[] home, double[] abroad, double dial, int marked, String note) {
-            double top = dial;
-            for (double v : home) top = Math.max(top, v);
-            if (abroad != null) for (double v : abroad) top = Math.max(top, v);
-            top = Math.max(.001, top * 1.15);
-            double plotW = W - LEFT - RIGHT, plotH = H - TOP - FOOT;
-            int n = home.length;
-            java.util.function.IntToDoubleFunction x = i -> LEFT + (n > 1 ? plotW * i / (n - 1) : 0);
-            final double scale = top;
-            java.util.function.DoubleUnaryOperator y = v -> TOP + plotH * (1 - Math.max(0, v) / scale);
-            for (double tick : new double[] {0, scale / 2, scale}) {
-                javafx.scene.shape.Line grid = new javafx.scene.shape.Line(LEFT, y.applyAsDouble(tick), W - RIGHT, y.applyAsDouble(tick));
-                grid.setStroke(javafx.scene.paint.Color.web(Palette.EDGE));
-                Label at = new Label(pct2(tick));
-                at.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-                at.relocate(0, y.applyAsDouble(tick) - 7);
-                getChildren().addAll(grid, at);
-            }
-            javafx.scene.shape.Line dialLine = new javafx.scene.shape.Line(LEFT, y.applyAsDouble(dial), W - RIGHT, y.applyAsDouble(dial));
-            dialLine.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED));
-            dialLine.getStrokeDashArray().addAll(5.0, 4.0);
-            getChildren().add(dialLine);
-            draw(abroad, x, y, Palette.BUSINESS, "abroad");
-            draw(home, x, y, Palette.MONEY, "at home");
-            for (int i = 0; i < n; i++) {
-                Label name = new Label(CURVE_NAMES[i]);
-                name.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-                name.relocate(x.applyAsDouble(i) - 8, H - FOOT + 4);
-                getChildren().add(name);
-            }
-            if (marked >= 0 && marked < n) {
-                Label at = new Label(pct2(home[marked]) + "  " + note);
-                at.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-                double ax = Math.min(x.applyAsDouble(marked) - 40, W - 420);
-                at.relocate(Math.max(LEFT, ax), Math.max(0, y.applyAsDouble(home[marked]) - 22));
-                getChildren().add(at);
-            }
-            setMinSize(W, H);
-            setPrefSize(W, H);
-            setMaxSize(W, H);
-        }
+    /** A note on a card: words on a ground a step off the card's, with an edge. */
+    static VBox flag(String text, String ground) {
+        VBox box = new VBox(words(text, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        box.setStyle("-fx-padding: 8 10 8 10;" + Palette.block(ground, Palette.EDGE));
+        box.setMaxWidth(Double.MAX_VALUE);
+        return box;
+    }
 
-        private void draw(double[] values, java.util.function.IntToDoubleFunction x,
-                          java.util.function.DoubleUnaryOperator y, String colour, String who) {
-            if (values == null) return;
-            javafx.scene.shape.Polyline line = new javafx.scene.shape.Polyline();
-            line.setStroke(javafx.scene.paint.Color.web(colour));
-            line.setStrokeWidth(2);
-            getChildren().add(line);
-            for (int i = 0; i < values.length; i++) {
-                double px = x.applyAsDouble(i), py = y.applyAsDouble(values[i]);
-                line.getPoints().addAll(px, py);
-                javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(px, py, 3.5, javafx.scene.paint.Color.web(colour));
-                Tooltip tip = new Tooltip(CURVE_NAMES[i] + " " + who + ": " + pct2(values[i]));
-                tip.setShowDelay(Duration.millis(150));
-                Tooltip.install(dot, tip);
-                getChildren().add(dot);
-            }
+    /** THE 10-YEAR RATE's (i): what the bar is made of. */
+    static final String PARTS_INFO = "The ten-year zero rate is the sum of its parts, to rounding: the dial the market expects, "
+            + "averaged over the ten years; what the city's own debt adds, which is the same for every term; and the term "
+            + "premium for tying money up that long, less whatever the central bank's holdings of term paper take off it. "
+            + "The bar is drawn to the parts, and the outlined stretch at its end is what the central bank takes off.";
+
+    /** THE 10-YEAR RATE, TAKEN APART: a bar of its parts, a line each and the total, with the thirty-year point's sentence under it. */
+    VBox partsCard() {
+        DebtManager ledger = ui.game.getDebtManager();
+        final int term = 120;
+        double path = ledger.expectedDialOver(term), credit = ledger.creditSpread();
+        double premium = DebtManager.termPremium(term), taken = ledger.compression(term);
+        List<Segment> parts = new ArrayList<>();
+        parts.add(seg(Math.max(0, path), Palette.WARN, "the dial the market expects over ten years " + pct2(path)));
+        parts.add(seg(Math.max(0, credit), Palette.BUSINESS, "what the city's debt adds " + pts(credit)));
+        parts.add(seg(Math.max(0, premium - taken), Palette.MONEY, "the term premium " + pts(premium)));
+        // What the central bank takes off is outlined: it is in the premium, and not in the rate.
+        if (taken > 0) parts.add(ghost(taken, Palette.MONEY, null, "taken off by the central bank's holdings " + pts(-taken)));
+        HBox total = cardLine("The 10-year zero rate", pct2(ledger.curveRate(term)), null);
+        total.setStyle("-fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0; -fx-padding: 6 0 0 0;");
+        double expected30 = ledger.expectedDialOver(360), comp30 = ledger.compression(360);
+        return card(caption("THE 10-YEAR RATE, TAKEN APART", PARTS_INFO), segmentBar(parts, 0, null, 0, 22),
+                partLine(Palette.WARN, false, "The dial the market expects, averaged over ten years", pct2(path)),
+                partLine(Palette.BUSINESS, false, "What the city's debt adds", pts(credit)),
+                partLine(Palette.MONEY, false, "The term premium", pts(premium)),
+                partLine(Palette.MONEY, true, taken > 0 ? "Taken off by the central bank's holdings"
+                        : "Taken off by the central bank's holdings · it holds none of the term paper",
+                        taken > 0 ? pts(-taken) : "none"),
+                total,
+                muted(String.format("Thirty-year money costs %s: the dial the market expects over thirty years, %s; what the "
+                                + "city's debt adds, %s; the term premium, %s; and %s.",
+                        pct2(ledger.curveRate(360)), pct2(expected30), pts(credit), pts(DebtManager.termPremium(360)),
+                        comp30 > 0 ? String.format("%.2f pts off for what the central bank holds", comp30 * 100) : "nothing off")));
+    }
+
+    /** One part of the rate: its swatch (outlined when it is what is taken off), its words and its figure. */
+    static HBox partLine(String colour, boolean ghost, String label, String value) {
+        HBox row = cardLine(label, value, null);
+        row.getChildren().add(0, swatch(colour, "", ghost));
+        return row;
+    }
+
+    /** REAL RATES's (i): what the two lines are and what the dots are. */
+    static final String REAL_INFO = "A linked bond pays a real coupon on a principal that grows with the price index, so what "
+            + "it sells at is a real rate: the coupon that prices a new one at par, given the index the market expects. The "
+            + "nominal curve prices the same term with the inflation in it, and the gap between the two is the inflation "
+            + "the market prices in (the breakeven). The dashed line is the inflation target. Each linked line on the book "
+            + "is a dot at the months it has left and the real yield the market prices it at now. Months run to the square root.";
+
+    /** REAL RATES, AND THE INFLATION THE MARKET PRICES: by maturity from a year out, the real rate a linked bond would sell at and the inflation priced, the target across, a dot a linked line on the book. */
+    VBox realCard() {
+        DebtManager ledger = ui.game.getDebtManager();
+        int from = 0;
+        while (DebtManager.CURVE_TENORS[from] < 12) from++;
+        int[] tenors = java.util.Arrays.copyOfRange(DebtManager.CURVE_TENORS, from, DebtManager.CURVE_TENORS.length);
+        double[] real = new double[tenors.length], priced = new double[tenors.length];
+        for (int i = 0; i < tenors.length; i++) {
+            real[i] = ledger.fairRealCoupon(tenors[i], 0);
+            priced[i] = ledger.breakevenInflation(tenors[i], 0);
         }
+        double target = ledger.getInflationTarget();
+        final double[] solid = {}, dashed = {4, 3};
+        List<CurveChart.Series> lines = new ArrayList<>();
+        lines.add(new CurveChart.Series("the target", new int[] {tenors[0], tenors[tenors.length - 1]}, new double[] {target, target},
+                Palette.TEXT_MUTED, 1, dashed, null, false));
+        lines.add(new CurveChart.Series("the inflation priced", tenors, priced, Palette.PEOPLE, 2, solid, null, true));
+        lines.add(new CurveChart.Series("the real rate", tenors, real, Palette.MONEY_LIGHT, 2, solid, null, true));
+        List<CurveChart.Dot> dots = new ArrayList<>();
+        for (Debt debt : ledger.getDebt()) {
+            if (!(debt instanceof InflationLinkedBond linked) || debt.isForeign() || debt.getRemainingMonths() <= 0) continue;
+            double realYield = ledger.realYieldOf(linked);
+            dots.add(new CurveChart.Dot(debt.getRemainingMonths(), realYield, Palette.MONEY_LIGHT,
+                    pieceName(debt) + " · real yield " + pct2(realYield) + " · " + debt.getRemainingMonths() + " months left"));
+        }
+        List<Node> key = new ArrayList<>();
+        key.add(lineKey(Palette.MONEY_LIGHT, 2, solid, "the real rate a linked bond would sell at"));
+        key.add(lineKey(Palette.PEOPLE, 2, solid, "the inflation priced"));
+        key.add(lineKey(Palette.TEXT_MUTED, 1, dashed, "the " + pct2(target) + " target"));
+        if (!dots.isEmpty()) key.add(dotKey(Palette.MONEY_LIGHT, "a linked line on the book, at its real yield"));
+        double real10 = ledger.fairRealCoupon(120, 0), priced10 = ledger.breakevenInflation(120, 0), nominal10 = ledger.parYield(120, 0);
+        String words = String.format("A new ten-year linked bond would sell at a real %s, plus the inflation the city actually has. "
+                        + "A nominal ten-year would sell at %s, which prices about %s a year of inflation.",
+                pct2(real10), pct2(nominal10), pct2(priced10));
+        if (priced10 > target + LEAN) {
+            words += String.format(" A city that holds inflation at its %s target pays less on the linked line than the "
+                    + "nominal line prices in.", pct2(target));
+        }
+        return card(caption("REAL RATES, AND THE INFLATION THE MARKET PRICES", REAL_INFO), muted("from the linked bonds"),
+                new CurveChart(tenors, lines, dots, 210), keyRow(key.toArray(new Node[0])),
+                flag(words, Palette.PINNED));
     }
 
     /** WHAT EACH MEASURE HAS USED's (i): the spec's T25. */
@@ -2379,27 +2693,56 @@ final class FinancesScreen {
     }
 
     /* =====================================================================
-       THE BOOK (0.7.32)
+       THE BOOK (0.7.32; a desk since CD6, 2026-10-23)
 
-       What is each piece, and what would it cost to retire? One page since
-       0.7.32 (Every piece and Buy back until then): a card a piece by when
-       it falls due - its life from issue to its date, its coupon, who holds
-       it, what it is worth today and Buy back on it, the old BUY BACK banner's own
-       intent ("on the bond it is about"). The old table is behind "details".
+       What is each line, and what would it cost to retire? One page since
+       0.7.32 (Every piece and Buy back until then). It was a card a piece,
+       and since CD6 (spec-city-debt.md section 7, board 1; D31) it is a bond
+       desk, as a treasury reads its lines:
 
-       A PIECE IS VALUED AT WHAT A BUYBACK PAYS: DebtManager.marketValue(),
+         THE SIX        what is owed at face, what the books carry it at,
+         FIGURES        what it is worth on today's curve, what closing
+                        the whole book now would book (carried less worth,
+                        in D$ and per cent, green or red), the coupon a
+                        month in cash, and what a point on the curve moves.
+         ON THE CURVE   today's zero curve and a dot a line at (months left,
+                        yield); a floater and a linker are off it.
+         IN BARS        face, carried and worth on one scale, each by kind.
+         EVERY LINE     a row a line by when it falls due: what closing
+                        it would book (green or red, beside its own Close
+                        it now), its face, coupon, the yield it was sold
+                        at and today's, price, worth, carried, duration
+                        and holders. A click opens the line's page (A
+                        LINE'S PAGE, below); the ladder's columns and NEXT
+                        DUE scroll to the row.
+
+       A LINE IS VALUED AT WHAT A BUYBACK PAYS: DebtManager.marketValue(),
        the city's curve for its own paper and the world's for a dollar
        piece. The Buy back page valued a dollar piece at the city's short
        rate while Game.repurchaseDebt() charged the world's curve, and
        painted a price under par green under a sentence saying it was "not
        the bargain it looks like" (the spec's B6): the price is plain now.
 
-       SINCE CD4 BUY BACK IS CLOSE IT NOW, and worth today is the floor of
-       what closing costs, not the cost: a buyback is a reverse auction that
-       pays each holder what its own rule asks, never under fair
-       (Game.fairValueOf()). The card's button opens the piece's own page
-       (CLOSE IT NOW, below); its foot reads the whole line's quote
-       (Game.quoteBuyback()) for the gain and for whether the cash is there.
+       WHAT CLOSING WOULD BOOK IS GREEN OR RED (Jerus, 2026-10-23: "show
+       green or red, and a % value and dollar value, cause right now it hard
+       to determine, like make it juicy to buyback"). That reverses the 0.7.32
+       spec's B6 for this one figure and no other: a line's carrying value
+       less its worth, in D$ and as a share of the carrying value, bold, green
+       for a gain and red for a loss (Palette.GOOD, Palette.BAD; the body's
+       ink for a figure that rounds to no money). It is on every row of the
+       desk, beside the row's own Close it now, on the book's total (the
+       strip's sixth figure, the bars' line and the desk's foot) and on a
+       line's page, where the reverse auction's own gain is beside it: the
+       auction pays holders who ask more than fair (households and the
+       businesses, CD4), so what it books can be less than the fair figure.
+       The price, the yield, "vs face" and every other figure stay plain.
+
+       Every figure is the model's (BookDesk, struck ONCE by Game.bookDesk()
+       for the page); the screen works out none. Since CD4 worth today is
+       the floor of what closing costs, not the cost: a buyback is a reverse
+       auction that pays each holder what its own rule asks, never under
+       fair (Game.fairValueOf()); a line's page reads the whole line's quote
+       (Game.quoteBuyback()) for the gain, and opens Close it now (below).
        ===================================================================== */
 
     /** The book's (i): the spec's T32 and T34. */
@@ -2423,12 +2766,19 @@ final class FinancesScreen {
 
     /* ----- the books (CD3) ----- */
 
-    /** The "carried · effective" line on a piece's card: its (i). */
+    /** The "carried · effective" line on a line's page: its (i). */
     static final String CARRIED_INFO = "What the books hold the piece at, and the rate they charge it at. It starts "
             + "at what the sale raised, so a piece sold under its face is carried under it. Each month the interest "
             + "is that figure at the effective rate; what the coupon does not pay of it is added to what is carried, "
             + "so the figure climbs to the face by the day it falls due. Paper sold over its face runs down to it "
             + "instead. The effective rate is the yield the sale made of the piece's payments, not its coupon.";
+
+    /** The same line on an inflation-linked bond's card (CD6): its rate is a real rate. */
+    static final String LINKED_BOOKS_INFO = "What the books hold the piece at, and the rate they charge it at. The books "
+            + "follow the bond's schedule at today's index held flat: the real coupon on the principal as the index has "
+            + "moved it, and at the end the face, or the indexed principal when that is more. So the effective rate is "
+            + "a real rate, the yield over the index, and not a nominal one. What the index adds to what the city will "
+            + "owe is booked beside it, as the inflation uplift, and is not in this rate.";
 
     /** A price against face, in words (the spec's T33, D16). */
     static final String PREMIUM_INFO = "Buying a piece back pays its holders what it is worth today. Under its face, "
@@ -2462,32 +2812,393 @@ final class FinancesScreen {
             + "paper again costs. It is worth calling when that passes " + pc(CallTree.WORTH_CALLING) + " of the face, the "
             + "rule municipal refunding goes by. Whether it can be called yet is the call date's.";
 
+    /** THE CURVE card's (i) (CD6, board 1): what the dots are and what is left off. */
+    static final String DESK_CURVE_INFO = "Today's zero curve is the line: what the city pays to borrow for each term. Each "
+            + "line of paper is a dot at the months it has left and the yield the market prices it at now, in its kind's "
+            + "colour, and a bond is named beside its dot where there is room. A floating-rate note has no fixed yield, "
+            + "and a linked bond's is a real yield, so neither is on the chart. Dollar paper is priced on the world's curve, "
+            + "not this one: its dot is hollow.";
+
+    /** THE THREE BARS' (i): the board's paragraph. */
+    static final String DESK_BARS_INFO = "Carried is what the books say the city owes: what it raised, plus the discount "
+            + "amortised since at each line's effective rate. Worth is what the remaining payments are worth on today's "
+            + "curve. The gap is what closing the whole book at today's fair prices would book: carried less worth, in D$ "
+            + "and as a share of what is carried, in green when the books carry the paper at more than it is worth (a gain "
+            + "the statement books) and in red when at less (a loss). The reverse auction pays holders who ask more than "
+            + "fair, so what a buyback really books is a line's page's figure. The dashed line marks what the book is "
+            + "worth today across all three.";
+
+    /** The (i) beside a gain or a loss on a line's page (CD6, Jerus 2026-10-23): what the colours mean. */
+    static final String GAIN_INFO = "Green is a gain and red a loss. It is what the books carry the line at less what "
+            + "closing it costs, in D$ and as a share of the carrying value. A gain: the line is carried at more than it "
+            + "is worth - rates have risen since it was sold - so buying it back at today's fair price books a gain on "
+            + "the statement. A loss: it is worth more than it is carried at, so closing it books a loss. The reverse "
+            + "auction pays every holder who asks more than fair (the households and the businesses do, CD4); the "
+            + "figure beside it is what that auction itself would book.";
+
+    /** THE DESK's (i): the two readings under the table. */
+    static final String DESK_INFO = "If closed now: the carrying value less the worth, in D$ and as a share of the "
+            + "carrying value, green for a gain and red for a loss, with Close it now beside it. A gain is what the "
+            + "statement books buying the line back at today's fair price: the paper is worth less than it is carried "
+            + "at, which happens when rates have risen since the line was sold. A loss is the reverse - rates have "
+            + "fallen and the line is worth more than the books carry it at. It is before the premium a buyback pays: the "
+            + "reverse auction pays holders who ask more than fair (the households and the businesses do), so the line's "
+            + "page shows what the auction itself would book. Vs face: the face less the worth, what the market's price "
+            + "saves against what is owed; it stays plain.";
+
+    /**
+     * THE BOOK, AS A DESK (CD6, spec-city-debt.md section 7, board 1): the book's six figures, where each line sits on
+     * today's curve, the book at face, carried and worth in bars, and every line a row by when it falls due - what
+     * closing it would book (green or red, with its Close it now beside it), the coupon, the yield it was sold at and
+     * today's, the price, what it is worth and carried at, how long it lasts and who holds it. A click on a row opens
+     * the line's page, and the row's Close it now the page that buys it back. The desk strikes the market
+     * ONCE (Game.bookDesk()); every figure on the page is the desk's, and the page works out none.
+     */
     void bookPage(VBox page) {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
-        List<Debt> paper = new ArrayList<>(ledger.getDebt());
-        paper.sort(java.util.Comparator.comparingInt(Debt::getMaturityMonth));
-        if (paper.isEmpty()) {
-            page.getChildren().add(card(caption("EVERY PIECE", null), line("Nothing outstanding."),
+        if (ledger.getDebt().isEmpty()) {
+            page.getChildren().add(card(caption("EVERY LINE", null), line("Nothing outstanding."),
                     door("Borrow", Palette.ACCENT, () -> open("Borrow", "At home", null))));
             return;
         }
-        String head = String.format("%d %s · %s owed · %s carried · %s coupon a month · cleared today for %s · %s in the treasury",
-                paper.size(), paper.size() == 1 ? "piece" : "pieces", d(ledger.getAllPrincipal()),
-                d(ledger.getCarryingValue()), d(ledger.getMonthlyCoupon()),
-                d(ledger.getTotalMarketValue()), d(g.getCash()));
+        BookDesk desk = g.bookDesk();
+        List<BookDesk.Line> lines = desk.lines();
+        int month = g.getMonth();
+        int n = lines.size();
+        Gain closing = gainOf(desk.ifClosedNow(), desk.ifClosedNowShare());
+        page.getChildren().add(figureStrip(new String[][] {
+                {"OWED, AT FACE", d(desk.face()), n + (n == 1 ? " line" : " lines")},
+                {"CARRIED", d(desk.carried()), "what the books say"},
+                {"WORTH TODAY", d(desk.worth()), "on today's curve"},
+                // Green or red (Jerus, 2026-10-23): what closing the whole book now would book.
+                {"IF CLOSED NOW", closing.money(), closing.percent().isEmpty() ? "carried less worth" : closing.percent() + " of what is carried", closing.tone()},
+                {"COUPON", d(desk.coupon()), "a month, in cash"},
+                {"A POINT ON THE CURVE", d(desk.valueOfAPoint()), "moves what it is worth"}}));
+        // The lines are sorted by when they fall due: the first is the nearest.
+        int nearest = lines.get(0).debt().getMaturityMonth();
+        String head = String.format("%d %s · %s in the treasury · the nearest falls due %s, %s", n, n == 1 ? "line" : "lines",
+                d(g.getCash()), CityCalendar.formatShort(nearest), CityCalendar.until(month, nearest));
         page.getChildren().add(infoLine(head, bookInfo(), true, Palette.SIZE_BODY + 1, Palette.TEXT_LABEL, 1200));
-        GridPane cards = equalColumns(2, TILE_GAP);
-        for (int i = 0; i < paper.size(); i++) {
-            Debt debt = paper.get(i);
-            VBox c = pieceCard(debt);
-            GridPane.setFillHeight(c, true);
-            targets.put(debt, c);
-            targets.putIfAbsent(CityCalendar.yearOf(debt.getMaturityMonth()), c);
-            cards.add(c, i % 2, i / 2);
+        page.getChildren().add(pair(deskCurveCard(desk, ledger), deskBarsCard(desk)));
+        page.getChildren().add(deskCard(desk));
+    }
+
+    /**
+     * Figures in the strip's look (CD6): a label, a figure and a note in each of equal columns on the strip's ground,
+     * a hairline between. They share the page's width, so at a narrow window a note wraps and the row never runs off
+     * the edge, as the 190 px cells of limitCell() would.
+     */
+    static GridPane figureStrip(String[][] cells) {
+        GridPane row = equalColumns(cells.length, 0);
+        row.setStyle("-fx-padding: 8 6 8 6;" + Palette.block(Palette.PANEL));
+        for (int i = 0; i < cells.length; i++) {
+            // An optional fourth entry is the colour of the figure and of its note: green or red for a gain or a loss (CD6).
+            String tone = cells[i].length > 3 ? cells[i][3] : null;
+            VBox cell = new VBox(0, words(cells[i][0], Palette.SIZE_CAPTION, Palette.TEXT_LABEL),
+                    figure(cells[i][1], Palette.SIZE_SECTION, tone == null ? Palette.TEXT_HEAD : tone),
+                    words(cells[i][2], Palette.SIZE_CAPTION, tone == null ? Palette.TEXT_MUTED : tone));
+            cell.setAlignment(Pos.CENTER_LEFT);
+            cell.setMaxHeight(Double.MAX_VALUE);
+            cell.setStyle("-fx-padding: 0 14 0 14;" + (i < cells.length - 1
+                    ? " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 1 0 0;" : ""));
+            row.add(cell, i, 0);
         }
-        page.getChildren().add(cards);
-        page.getChildren().add(fold("book:grid", "every piece, as a table", () -> bookGrid(paper)));
+        return row;
+    }
+
+    /** A kind's colour on the desk (CD6): the ladder's three for the bills, the amortizing bonds and the bonds, and a floater's and a linker's of their own, which the ladder folds into the bonds. */
+    static String bookKindColour(String type) {
+        return switch (type) {
+            case "FLOAT"  -> Palette.WARN;
+            case "LINKED" -> Palette.PEOPLE;
+            default       -> instrumentColour(type);
+        };
+    }
+
+    /** The kinds of paper as the desk names them, in DebtManager.BOOK_KINDS' order. */
+    static final String[] BOOK_KIND_NAMES = {"bills", "amortizing bonds", "bonds", "floating-rate notes", "inflation-linked bonds"};
+
+    /** A type's place in DebtManager.BOOK_KINDS; a type that is none of them is a term loan's (the manager's own reading). */
+    static int bookKindOf(String type) {
+        for (int i = 0; i < DebtManager.BOOK_KINDS.length; i++) if (DebtManager.BOOK_KINDS[i].equals(type)) return i;
+        return 2;
+    }
+
+    /** The kinds a key names: a swatch for each kind that is in `present`, in the kinds' colours. */
+    static List<Node> kindKey(boolean[] present) {
+        List<Node> key = new ArrayList<>();
+        for (int k = 0; k < present.length; k++) {
+            if (present[k]) key.add(swatch(bookKindColour(DebtManager.BOOK_KINDS[k]), BOOK_KIND_NAMES[k], false));
+        }
+        return key;
+    }
+
+    /** WHERE EACH LINE SITS ON THE CURVE: today's zero curve at DebtManager.CURVE_TENORS, a dot a line at (months left, yield). */
+    VBox deskCurveCard(BookDesk desk, DebtManager ledger) {
+        // One curve, read ten times: ledger.curveRate(m) would build it ten times.
+        YieldCurve curve = ledger.curve();
+        int[] tenors = DebtManager.CURVE_TENORS;
+        double[] zero = new double[tenors.length];
+        for (int i = 0; i < tenors.length; i++) zero[i] = curve.zero(tenors[i]);
+        List<DeskCurve.Dot> dots = new ArrayList<>();
+        boolean[] present = new boolean[DebtManager.BOOK_KINDS.length];
+        boolean dollars = false;
+        for (BookDesk.Line l : desk.lines()) {
+            Debt debt = l.debt();
+            int kind = bookKindOf(debt.getType());
+            present[kind] = true;
+            dollars |= debt.isForeign();
+            // A floater has no fixed yield and a linker's is real: neither is a dot on this chart.
+            if (kind >= 3) continue;
+            String name = pieceName(debt);
+            dots.add(new DeskCurve.Dot(Math.max(1, l.monthsLeft()), l.yield(), bookKindColour(debt.getType()), debt.isForeign(),
+                    name + " · yields " + pct2(l.yield()) + " · " + l.monthsLeft() + " months left",
+                    debt instanceof LongTermBond && !debt.isForeign() ? name : null));
+        }
+        List<Node> key = new ArrayList<>();
+        key.add(swatch(Palette.TEXT_LABEL, "today's curve", false));
+        List<Node> kinds = kindKey(present);
+        key.addAll(kinds);
+        if (present[3]) key.add(muted("floating: off the chart, no fixed yield"));
+        if (present[4]) key.add(muted("linked: off the chart, its yield is real"));
+        if (dollars) key.add(swatch(Palette.TEXT_MUTED, "hollow: dollar paper, priced on the world's curve", true));
+        return card(caption("WHERE EACH LINE SITS ON THE CURVE", DESK_CURVE_INFO), muted("today's yield, by what it has left"),
+                new DeskCurve(tenors, zero, dots), keyRow(key.toArray(new Node[0])));
+    }
+
+    /** AT FACE, CARRIED, AND WORTH TODAY: three bars on one scale, each stacked by kind, and what the book is worth across all three. */
+    VBox deskBarsCard(BookDesk desk) {
+        int kinds = DebtManager.BOOK_KINDS.length;
+        double[][] by = new double[3][kinds];
+        boolean[] present = new boolean[kinds];
+        for (int k = 0; k < kinds; k++) {
+            String kind = DebtManager.BOOK_KINDS[k];
+            by[0][k] = desk.faceOf(kind);
+            by[1][k] = desk.carriedOf(kind);
+            by[2][k] = desk.worthOf(kind);
+            present[k] = by[0][k] > 0 || by[1][k] > 0 || by[2][k] > 0;
+        }
+        return card(caption("AT FACE, CARRIED, AND WORTH TODAY", DESK_BARS_INFO),
+                muted("one scale · each bar by kind · the dashed line is the book's worth"),
+                new DeskBars(by, desk.worth(), this::d), keyRow(kindKey(present).toArray(new Node[0])),
+                gainLine("Carried less worth · what closing the book at fair would book", gainOf(desk.ifClosedNow(), desk.ifClosedNowShare()), GAIN_INFO),
+                cardLine("Face less worth · what the market's price saves against what is owed", signedD(desk.vsFace()), null));
+    }
+
+    /** EVERY LINE: the desk, a row a line by when it falls due; a click on a row opens the line's page, and the ladder's columns and NEXT DUE scroll to its row. */
+    VBox deskCard(BookDesk desk) {
+        final int cols = 12;
+        // If closed now stands second, beside the line it is about: at a narrow window the table scrolls across, and the gain and the
+        // door that closes it are the first things in view (Jerus, 2026-10-23).
+        GridPane t = grid(new double[] {210, CLOSE_CELL, 58, 84, 64, 44, 58, 60, 60, 58, 48, 80}, rightAfterFirst(cols));
+        t.setHgap(4);
+        t.setVgap(0);
+        // The first column takes what a wide window leaves; a narrow one scrolls the table across (acrossWhenNarrow()).
+        t.getColumnConstraints().get(0).setMaxWidth(Double.MAX_VALUE);
+        t.getColumnConstraints().get(0).setHgrow(Priority.ALWAYS);
+        gridHead(t, "Line", "If closed now", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
+        // The headings are words, in the words' face: the figures' face is wider than a heading's column.
+        for (Node head : t.getChildren()) {
+            if (!(head instanceof Label h)) continue;
+            h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            // The heading of the gain's column stands over the gains, not over the doors beside them.
+            if (Integer.valueOf(1).equals(GridPane.getColumnIndex(head))) h.setPadding(new javafx.geometry.Insets(0, CLOSE_BUTTON + CLOSE_GAP, 0, 0));
+        }
+        final String resting = "-fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
+        final String lit = resting + " -fx-background-color: " + Palette.CONTROL + ";";
+        int row = 1;
+        for (BookDesk.Line l : desk.lines()) {
+            Debt debt = l.debt();
+            String type = debt.getType();
+            boolean linker = debt instanceof InflationLinkedBond, floater = debt instanceof FloatingRateNote;
+            Region bg = new Region();
+            bg.setStyle(resting);
+            GridPane.setColumnSpan(bg, cols);
+            t.add(bg, 0, row);
+            targets.put(debt, bg);
+            targets.putIfAbsent(CityCalendar.yearOf(debt.getMaturityMonth()), bg);
+
+            List<Node> cells = new ArrayList<>();
+            cells.add(lineCell(l));
+            // What closing it now would book, green or red, with the door that closes it beside it (Jerus, 2026-10-23).
+            cells.add(closeCell(l));
+            cells.add(gridCell(d(l.face()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true));
+            cells.add(gridCell(lineCoupon(l), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+            cells.add(stacked(pct2(l.bookedRate()), linker ? "real" : null));
+            cells.add(gridCell(String.format("%.2f", l.pricePer100()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+            Node yieldCell = linker ? stacked(pct2(l.realYield()), "real") : floater ? stacked(pct2(l.yield()), "expected")
+                    : gridCell(pct2(l.yield()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true);
+            if (floater || linker) Tooltip.install(yieldCell, new Tooltip(floater
+                    ? "A floater has no fixed yield: this is the return on the payments the market expects of it at today's price, the dial following its expected path."
+                    : "A linked bond's real yield: the return over the price index. Its nominal yield is in its page."));
+            cells.add(yieldCell);
+            cells.add(gridCell(d(l.worth()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+            cells.add(gridCell(d(l.carried()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+            cells.add(gridCell(signedD(l.vsFace()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+            cells.add(gridCell(String.format("%.1f", l.duration()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true));
+            cells.add(segmentBar(holderParts(l), 1, null, 76, 6));
+            for (int c = 0; c < cells.size(); c++) {
+                Node cell = cells.get(c);
+                GridPane.setMargin(cell, new javafx.geometry.Insets(5, 0, 5, 0));
+                GridPane.setValignment(cell, javafx.geometry.VPos.CENTER);
+                t.add(cell, c, row);
+            }
+            // The whole row is the door: every cell, and the ground under them, opens the line.
+            List<Node> hot = new ArrayList<>(cells);
+            hot.add(bg);
+            for (Node h : hot) {
+                h.setCursor(javafx.scene.Cursor.HAND);
+                h.setOnMouseClicked(e -> openLine(debt));
+                h.setOnMouseEntered(e -> bg.setStyle(lit));
+                h.setOnMouseExited(e -> bg.setStyle(resting));
+            }
+            row++;
+        }
+        // The foot: the book, and its totals.
+        Region rule = new Region();
+        rule.setMinHeight(1);
+        rule.setPrefHeight(1);
+        rule.setMaxHeight(1);
+        rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
+        GridPane.setColumnSpan(rule, cols);
+        t.add(rule, 0, row++);
+        String[] foot = {"The book", "", d(desk.face()), d(desk.coupon()) + " a month", "", "", "", d(desk.worth()), d(desk.carried()),
+                signedD(desk.vsFace()), "", ""};
+        for (int c = 0; c < cols; c++) {
+            // The book's own gain or loss, green or red like each line's (Jerus, 2026-10-23), on the right edge of its column.
+            Label cell = c == 1 ? gainFigure(gainOf(desk.ifClosedNow(), desk.ifClosedNowShare()), Palette.SIZE_BODY)
+                    : foot[c].isEmpty() ? null : gridCell(foot[c], Palette.TEXT_HEAD, Palette.SIZE_CAPTION, c > 0);
+            if (cell == null) continue;
+            // The total stands under the gains, not under the doors beside them.
+            if (c == 1) cell.setPadding(new javafx.geometry.Insets(0, CLOSE_BUTTON + CLOSE_GAP, 0, 0));
+            GridPane.setMargin(cell, new javafx.geometry.Insets(5, 0, 2, 0));
+            t.add(cell, c, row);
+        }
+        Node holdersKey = keyRow(muted("Holders:"), swatch(Palette.PEOPLE, "households", false), swatch(Palette.MONEY, "the bank", false),
+                swatch(Palette.MONEY_DARK, "the central bank", false), swatch(Palette.BUSINESS_DARK, "the businesses", false),
+                swatch(Palette.BUILDING_DARK, "the world", false));
+        return card(caption("EVERY LINE", DESK_INFO, hint("by when it falls due · click a line for its page")), acrossWhenNarrow(t),
+                holdersKey, muted("If closed now: the carrying value less the worth, in D$ and as a share of the carrying value. "
+                        + "Green is a gain the statement would book buying the line back at today's fair price, red a loss; the reverse "
+                        + "auction pays holders who ask more than fair, so a line's page shows what the auction itself would book."));
+    }
+
+    /** The width of the desk's If closed now column (CD6): the gain or loss, and the Close it now button beside it. */
+    static final double CLOSE_CELL = 206;
+
+    /** The width of the gain or loss in that cell: "−D$725.3M · −100.0%" at the figure's size. */
+    private static final double CLOSE_FIGURE = 134;
+
+    /** The Close it now button's width, and the gap between it and the figure. */
+    private static final double CLOSE_BUTTON = 66, CLOSE_GAP = 6;
+
+    /**
+     * The desk's If closed now cell (CD6, Jerus 2026-10-23: "make it juicy to buyback"): what closing the line now would book
+     * - bold, in D$ and as a share of the carrying value, green for a gain and red for a loss - and, right beside it, a small
+     * Close it now button, which opens the line's Close it now page (openClose()) and not the line's own. The figure's room
+     * is fixed and the figure right-aligned in it, so the figures end in a line just before the buttons, which stand in a
+     * line themselves; the column's heading and the foot's total stand over and under the figures.
+     */
+    Node closeCell(BookDesk.Line l) {
+        Button close = new Button("Close it now");
+        close.setMinWidth(CLOSE_BUTTON);
+        close.setPrefWidth(CLOSE_BUTTON);
+        close.setMaxWidth(CLOSE_BUTTON);
+        close.setFocusTraversable(false);
+        close.setStyle("-fx-font-size: 9px; -fx-padding: 2 4 2 4; -fx-background-radius: 6;");
+        close.setTooltip(new Tooltip("Close " + pieceName(l.debt()) + " now: the page for buying it back, in whole or in part."));
+        close.setOnAction(e -> openClose(l.debt()));
+        // The click is the button's, not the row's: the rest of the row opens the line's page.
+        close.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
+        Label figure = gainFigure(gainOf(l.ifClosedNow(), l.ifClosedNowShare()), Palette.SIZE_BODY);
+        figure.setMinWidth(CLOSE_FIGURE);
+        figure.setPrefWidth(CLOSE_FIGURE);
+        HBox cell = new HBox(CLOSE_GAP, figure, close);
+        cell.setAlignment(Pos.CENTER_RIGHT);
+        return cell;
+    }
+
+    /**
+     * A table that scrolls across when the window is narrower than it, and fills the card when it is wider. A scroll pane
+     * asks its content how tall it wants to be before the content has wrapped a word, so the pane is told the height the
+     * table laid out at (and room for its bar when it scrolls) and a wrapped row is never cut off the foot.
+     */
+    static Node acrossWhenNarrow(javafx.scene.layout.Region table) {
+        javafx.scene.control.ScrollPane across = new javafx.scene.control.ScrollPane(table);
+        across.setFitToWidth(true);
+        across.setFitToHeight(true);
+        across.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        across.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        across.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
+        Runnable fit = () -> {
+            double bar = table.getWidth() > across.getViewportBounds().getWidth() + 1 ? 16 : 0;
+            if (table.getHeight() > 0) across.setPrefHeight(table.getHeight() + bar + 2);
+        };
+        table.heightProperty().addListener((o, was, now) -> fit.run());
+        table.widthProperty().addListener((o, was, now) -> fit.run());
+        across.viewportBoundsProperty().addListener((o, was, now) -> fit.run());
+        return across;
+    }
+
+    /** The desk's first cell: the kind's tag, the line's name and, muted under them, its term, when it was sold, what it has left, and whether it was reopened or can be called. */
+    Node lineCell(BookDesk.Line l) {
+        Debt debt = l.debt();
+        Label name = new Label(pieceName(debt));
+        name.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        name.setMinWidth(Region.USE_PREF_SIZE);
+        // The tag and the name wrap, the name to a second line where they do not fit the column together.
+        javafx.scene.layout.FlowPane top = new javafx.scene.layout.FlowPane(Palette.GAP, 2,
+                tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), bookKindColour(debt.getType())), name);
+        top.setAlignment(Pos.CENTER_LEFT);
+        List<String> parts = new ArrayList<>();
+        parts.add(termWords(debt.getDuration()));
+        parts.add("sold " + CityCalendar.formatShort(debt.getMonthStarted()));
+        parts.add(l.monthsLeft() + (l.monthsLeft() == 1 ? " month left" : " months left"));
+        if (debt.getSales().size() > 1) parts.add("reopened");
+        if (debt instanceof LongTermBond bond && bond.isCallable()) {
+            parts.add("call from " + CityCalendar.formatShort(bond.getFirstCallMonth()));
+        }
+        // A phrase at a time, so the line wraps between phrases and never inside one.
+        javafx.scene.layout.FlowPane sub = new javafx.scene.layout.FlowPane(0, 0);
+        for (int i = 0; i < parts.size(); i++) {
+            Label part = new Label(parts.get(i) + (i < parts.size() - 1 ? " · " : ""));
+            part.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            part.setMinWidth(Region.USE_PREF_SIZE);
+            sub.getChildren().add(part);
+        }
+        return new VBox(2, top, sub);
+    }
+
+    /** A line's coupon in words (CD6): a bill "discount", a floater "policy + 18 bp", a linker "1⅝% real", anything else its coupon in eighths. */
+    static String lineCoupon(BookDesk.Line l) {
+        return switch (l.debt().getType()) {
+            case "NOTE"   -> "discount";
+            case "FLOAT"  -> marginWords(l.couponRate());
+            case "LINKED" -> couponWords(l.couponRate()) + " real";
+            default       -> couponWords(l.couponRate());
+        };
+    }
+
+    /** A table figure with a muted word under it, right-aligned: "3.84%" over "real". */
+    static Node stacked(String figure, String under) {
+        Label top = gridCell(figure, Palette.TEXT_BODY, Palette.SIZE_CAPTION, true);
+        if (under == null) return top;
+        Label low = new Label(under);
+        low.setStyle(Palette.words(Palette.SIZE_CAPTION - 1, Palette.TEXT_MUTED));
+        VBox both = new VBox(0, top, low);
+        both.setAlignment(Pos.CENTER_RIGHT);
+        return both;
+    }
+
+    /** A line's holders as shares of its face, in the holders bar's colours: the households, the bank, the central bank, the businesses and the world. */
+    static List<Segment> holderParts(BookDesk.Line l) {
+        return List.of(
+                seg(l.households(), Palette.PEOPLE, "households " + pc(l.households())),
+                seg(l.bank(), Palette.MONEY, "the bank " + pc(l.bank())),
+                seg(l.centralBank(), Palette.MONEY_DARK, "the central bank " + pc(l.centralBank())),
+                seg(l.firms(), Palette.BUSINESS_DARK, "the businesses " + pc(l.firms())),
+                seg(l.world(), Palette.BUILDING_DARK, "the world " + pc(l.world())));
     }
 
     /**
@@ -2538,105 +3249,6 @@ final class FinancesScreen {
         return what + (debt.isForeign() ? " in dollars" : "");
     }
 
-    /** One piece as a card (the spec's section 3 C). */
-    VBox pieceCard(Debt debt) {
-        Game g = ui.game;
-        DebtManager ledger = g.getDebtManager();
-        int month = g.getMonth();
-        int due = debt.getMaturityMonth(), started = debt.getMonthStarted();
-        String colour = instrumentColour(debt.getType());
-        String when = urgency(due - month);
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
-        name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        HBox head = new HBox(Palette.GAP, tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), colour), name, gap,
-                figure(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due), Palette.SIZE_LABEL + 1, when));
-        head.setAlignment(Pos.CENTER_LEFT);
-
-        HBox face = new HBox(Palette.GAP, figure(d(debt.getOustandingPrincipal()), 17, Palette.TEXT_HEAD));
-        if (debt.isForeign()) face.getChildren().add(words(usd(debt.principalInCurrency()) + " at "
-                + perUsd(debt.getExchangeRate()), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
-        face.setAlignment(Pos.BASELINE_LEFT);
-
-        int life = Math.max(1, due - started);
-        Region lifeBar = segmentBar(List.of(seg(Math.max(0, month - started), Palette.MONEY_DARK,
-                                "issued " + CityCalendar.format(started)),
-                        ghost(Math.max(0, due - month), colour, null, "falls due " + CityCalendar.format(due))),
-                life, null, 0, 8);
-        Region g2 = new Region();
-        HBox.setHgrow(g2, Priority.ALWAYS);
-        HBox ends = new HBox(muted("issued " + CityCalendar.formatShort(started)), g2,
-                words("falls due " + CityCalendar.formatShort(due), Palette.SIZE_LABEL, when));
-
-        double coupon = debt.getMonthlyInterestExpense();
-        Node couponLine = coupon >= .5 ? line("coupon " + d(coupon) + " a month")
-                : noteLine("no coupon - the discount wears off as interest", NOTE_INFO, 560);
-        // A floater's coupon follows the dial and a linker's follows the index (CD5): the card says what each is made of.
-        Node followsLine = null;
-        if (debt instanceof FloatingRateNote note) {
-            couponLine = infoLine("coupon " + d(coupon) + " a month · the policy rate " + dialPlusMargin(note.getIndex(), note.getMargin())
-                            + ", reset monthly", FLOATING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
-        } else if (debt instanceof InflationLinkedBond linked) {
-            couponLine = infoLine("coupon " + d(coupon) + " a month · real " + couponWords(linked.getRealCoupon()) + " on "
-                            + d(linked.getIndexedPrincipal()) + " indexed (the index ×" + String.format("%.3f", linked.getRatio())
-                            + " since the sale)", INDEXED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
-            followsLine = line("uplift last month " + d(linked.getLastUplift()) + " · repays " + d(linked.owedAtMaturity())
-                    + " at today's index");
-        }
-        // The piece's books (CD3): what it is carried at and the rate it is charged at.
-        Node booksLine = infoLine("carried " + d(debt.getCarryingValue()) + " · effective " + pct2(debt.getEffectiveRate()),
-                CARRIED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
-
-        Node holders = holdersBar(debt);
-
-        // A line that can be called (CD4): from when, and whether calling it would pay.
-        Node callableNote = null, worthCallingLine = null;
-        if (debt instanceof LongTermBond bond && bond.isCallable()) {
-            callableNote = infoLine("callable at " + String.format("%.0f", CallTree.CALL_PRICE) + " from "
-                            + CityCalendar.formatShort(bond.getFirstCallMonth())
-                            + (g.canCall(debt) ? " · callable now" : ""),
-                    CALLABLE_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
-            if (g.worthCalling(debt)) {
-                worthCallingLine = infoLine("Worth calling: saves " + d(g.callSaving(debt)),
-                        WORTH_CALLING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 420);
-            }
-        }
-
-        // What the piece is worth today is the FLOOR of what it costs (fairValueOf()); what closing it costs is the
-        // reverse auction's price for everything its holders offer (CD4), which a holder never sells under fair.
-        double worth = g.fairValueOf(debt);
-        double under = ledger.underFace(debt);
-        String price = String.format("worth today %s · %.1f of par · yields %s", d(worth),
-                ledger.priceOfPar(debt), pct2(ledger.yieldOf(debt)))
-                + (debt instanceof InflationLinkedBond linked ? " (real " + pct2(ledger.realYieldOf(linked)) + ")" : "");
-        String against = Math.abs(under) < .5 ? "at its face" : under > 0 ? d(under) + " under face" : "a premium of " + d(-under);
-        // The whole line's quote: the gain the books would show and the price (Buyback.Result).
-        Buyback.Result whole = g.quoteBuyback(debt, g.buybackOfferable(debt), Double.NaN);
-        double gain = whole.gainOnCarrying();
-        String gainWords = whole.takenFace() <= 0 ? "nothing: no holder offers any of it"
-                : Math.abs(gain) < .5 ? "no gain or loss against what it is carried at"
-                : (gain > 0 ? "a gain of " : "a loss of ") + d(Math.abs(gain)) + " against what it is carried at";
-        // The old test, worth <= cash, is wrong now: the auction pays at or over fair. The page's button reads the same price.
-        boolean affordable = whole.takenFace() > 0 && whole.paid() > 0 && whole.paid() <= g.getCash();
-        Button buy = new Button("Close it now");
-        buy.setMinWidth(Region.USE_PREF_SIZE);
-        if (affordable) buy.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
-        else buy.setTooltip(new Tooltip(whole.takenFace() <= 0
-                ? "Nothing is on offer now: the central bank does not sell (D18), and a piece sold lately can only be bought back whole."
-                : "Closing all of it costs " + d(whole.paid()) + "; the treasury has " + d(g.getCash()) + ". The page can close part of it."));
-        buy.setOnAction(e -> openClose(debt));
-        Region g3 = new Region();
-        HBox.setHgrow(g3, Priority.ALWAYS);
-        VBox says = new VBox(2, words(price, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL),
-                infoLine("clears " + d(debt.getOustandingPrincipal()) + " for " + d(worth) + " · " + against,
-                        PREMIUM_INFO, true, Palette.SIZE_LABEL, Palette.TEXT_MUTED, 420),
-                muted("closing all of it now books " + gainWords));
-        HBox foot = new HBox(Palette.GAP, says, g3, buy);
-        foot.setAlignment(Pos.CENTER_LEFT);
-        return card(head, face, lifeBar, ends, couponLine, followsLine, booksLine, callableNote, worthCallingLine, holders, foot);
-    }
-
     /** Who holds a piece, one bar (the card's, and the Close it now page's): the households, the bank, the central bank, the businesses and the world; "held abroad" for a dollar piece. */
     Node holdersBar(Debt debt) {
         if (debt.isForeign()) return muted("held abroad");
@@ -2650,32 +3262,709 @@ final class FinancesScreen {
                 p > 0 ? p : 1, null, 0, 6);
     }
 
-    /** The book as the old page's table, in the fold: kind, owed (face), carried and effective rate (CD3), coupon a month, when it matures, how far off. */
-    Node bookGrid(List<Debt> paper) {
-        GridPane t = grid(new double[] {84, 74, 74, 76, 64, 70, 100}, rightAfterFirst(7));
-        gridHead(t, "", "owed", "carried", "coupon /mo", "effective", "matures", "how far off");
-        int month = ui.game.getMonth();
-        int line = 1;
-        for (Debt debt : paper) {
-            Label kind = new Label((debt.isForeign() ? Currency.FOREIGN_CODE + " " : "") + kindTag(debt.getType()));
-            kind.setStyle(Palette.words(Palette.SIZE_CAPTION, instrumentColour(debt.getType())));
-            t.add(kind, 0, line);
-            t.add(gridCell(d(debt.getOustandingPrincipal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, line);
-            t.add(gridCell(d(debt.getCarryingValue()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 2, line);
-            t.add(gridCell(debt.getMonthlyInterestExpense() > 0 ? d(debt.getMonthlyInterestExpense()) : "none",
-                    debt.getMonthlyInterestExpense() > 0 ? Palette.TEXT_BODY : Palette.TEXT_SPENT,
-                    Palette.SIZE_CAPTION, true), 3, line);
-            t.add(gridCell(pct2(debt.getEffectiveRate()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 4, line);
-            t.add(gridCell(CityCalendar.formatShort(debt.getMaturityMonth()), Palette.TEXT_MUTED,
-                    Palette.SIZE_CAPTION, true), 5, line);
-            t.add(gridCell(CityCalendar.until(month, debt.getMaturityMonth()),
-                    urgency(debt.getMaturityMonth() - month), Palette.SIZE_CAPTION, true), 6, line);
-            line++;
+    /* ----- a line's page (CD6, board 2) ----- */
+
+    /*
+       A LINE'S PAGE (CD6, spec-city-debt.md section 7, board 2; D31).
+
+       WHAT IT WAS: the book was a card a piece, each with its own Close it now, and a table behind a fold. The
+       desk is the table now and a line's page is the card: a click on a desk row, or on a row of NEXT DUE, opens
+       it, as the card's button opened Close it now (openClose(), which a line's page offers in its turn).
+
+         ITS HEAD       the kind, the line's name, its term, when it was sold and falls due.
+         ITS FIGURES    the coupon, the yield it was sold at, its price and yield today, its worth and what it is
+                        carried at; below them the coupon's own lines where the kind has any and the books' line.
+         ITS PRICE      the price per 100 of face since the first month it was on the books, against what it was
+                        carried at: carried creeps to 100 and the price does not.
+         IF YOU CLOSED  worth, carried, the gain or loss against carrying, against face, what closing all of it on
+         IT TODAY       offer would pay at the reverse auction, and the honest line; Close it now and Call it.
+         THE BOOKS      the next six months of effective interest: opening, interest, coupon, amortised, repaid
+                        and closing, the table that turns the price paid at the sale into the face.
+         WHO HOLDS IT, ITS SALES AND ITS RISK.
+
+       Every figure is the model's (BookDesk.line(), Debt.booksAhead(), the price and carried paths, the sales,
+       Game.quoteBuyback() and honestLine()); the page works out none. What closing would book - at fair, and what
+       the reverse auction itself would - is bold, in D$ and per cent, green for a gain and red for a loss (Jerus,
+       2026-10-23; see THE BOOK, above); the rest of the page is plain.
+     */
+
+    /** THE PRICE card's (i): board 2, note A. */
+    static final String LINE_PRICE_INFO = "The price is the market's: what the line's remaining payments are worth on "
+            + "each month's curve, per 100 of what is owed. What it is carried at is the books': what it raised, with the "
+            + "issue discount amortised month by month at the effective rate, so it creeps to 100 by the day the line "
+            + "falls due, while the price follows the curve. Both are recorded at each month's close, from the month "
+            + "after the sale.";
+
+    /** IF YOU CLOSED IT TODAY's (i): board 2, note B. */
+    static final String LINE_CLOSE_INFO = "Worth is what closing the line would cost at its fair price; a buyback pays "
+            + "more, since every holder offers at or over fair, and the reverse auction below prices what it really "
+            + "would. The gain or loss is the statement's: the carrying value less what it costs, in D$ and as a share "
+            + "of the carrying value - green when the books carry the line at more than it costs to close (a gain), "
+            + "red when at less (a loss). The first is at fair; the second is what the auction itself would book, "
+            + "since it pays holders who ask more than fair (the households and the businesses do, CD4). It is real on "
+            + "the statement, but the cash to pay for it costs today's rate - the honest line says both.";
+
+    /** THE NEXT SIX MONTHS' (i): board 2, note C. */
+    static final String LINE_BOOKS_INFO = "The books in full: what the line is carried at when the month opens, the "
+            + "interest a month of it at the effective rate, the coupon paid, the discount amortised (the interest less "
+            + "the coupon), the principal repaid with the payment and what it is carried at when the month closes - "
+            + "amortised cost, the way a ledger shows it. A floater's and a linker's rows hold today's dial and today's "
+            + "index flat: their coupons would move with them.";
+
+    /** ITS SALES, AND ITS RISK's (i). */
+    static final String LINE_SALES_INFO = "Each sale into the line: when, how much face, what it raised, the price it "
+            + "made for each 100 and the yield it cleared at - a reopened line has several. A point on the curve is "
+            + "what the line's worth falls by if every rate on its curve rises a point; its duration is that over its "
+            + "worth and the point, in years.";
+
+    /** The name of a line's page, under The book: no chip's, open while its line is on the books (lineOpenNow()). */
+    static final String LINE_PAGE = "A line";
+
+    /** The line a line's page is open on (CD6), by identity; null while none has been. */
+    private Debt lineOpen;
+
+    /** Whether Close it now was opened from the line's page, so its back door returns there. */
+    private boolean closeFromLine;
+
+    /** True while a line's page is open on a line that is still on the books; else the book is drawn in its place. */
+    boolean lineOpenNow() {
+        return "The book".equals(financeArea) && LINE_PAGE.equals(financePage) && lineOpen != null
+                && ui.game.getDebtManager().getDebt().contains(lineOpen);
+    }
+
+    /** A desk row's, or NEXT DUE's, door: the page of this line. */
+    void openLine(Debt debt) {
+        lineOpen = debt;
+        closeFromLine = false;
+        open("The book", LINE_PAGE, null);
+    }
+
+    /** A line named by its term and kind: "10-year bond", "6-month bill", "2-year floating-rate note", "5-year bond in dollars". */
+    static String kindNoun(Debt debt) {
+        String what = switch (debt.getType()) {
+            case "NOTE"   -> "bill";
+            case "SERIAL" -> "amortizing bond";
+            case "FLOAT"  -> "floating-rate note";
+            case "LINKED" -> "inflation-linked bond";
+            default       -> "bond";
+        };
+        return termWords(debt.getDuration()) + " " + what + (debt.isForeign() ? " in dollars" : "");
+    }
+
+    /**
+     * THE HONEST LINE's sentence (CD6, spec-city-debt.md 6.3), for a buyback of this quote: what it stops a month of
+     * coupon and what the price paid, borrowed again at today's rate for the months the line has left, would cost a
+     * month. Close it now's page and a line's page both say it, from the model's Game.honestLine().
+     */
+    String honestSentence(Debt debt, Buyback.Result q) {
+        Buyback.HonestLine hl = ui.game.honestLine(debt, q);
+        double gain = q.gainOnCarrying();
+        double stopped = hl.couponStopped();
+        double again = hl.costAgain();
+        String stops = stopped >= .5 ? "It stops " + d(stopped) + " a month of coupon; "
+                : "It has no coupon to stop - a bill's interest is the discount wearing off; ";
+        return stops + d(q.paid()) + " borrowed again at today's " + termWords(hl.months()) + " rate, "
+                + pct2(hl.rate()) + ", would cost " + d(again) + " a month."
+                + (stopped >= .5 && Math.abs(again - stopped) >= .5
+                ? " So it books " + (gain >= 0 ? "a gain" : "a loss") + " and "
+                        + (again > stopped ? "raises" : "lowers") + " the city's interest by "
+                        + d(Math.abs(again - stopped)) + " a month." : "");
+    }
+
+    /** A line's page (CD6, board 2): see the banner above. */
+    void linePage(VBox page) {
+        Game g = ui.game;
+        DebtManager ledger = g.getDebtManager();
+        Debt debt = lineOpen;
+        int month = g.getMonth();
+        int due = debt.getMaturityMonth(), started = debt.getMonthStarted();
+        // The market struck once (Game.bookLine()), for the line's figures and for the quote below.
+        BookDesk.Line l = g.bookLine(debt);
+        boolean linker = debt instanceof InflationLinkedBond, floater = debt instanceof FloatingRateNote;
+        String colour = bookKindColour(debt.getType());
+
+        // ----- the head -----
+        Label name = words(pieceName(debt), Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD);
+        name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        HBox top = new HBox(Palette.GAP, tag((debt.isForeign() ? "US$ " : "") + kindTag(debt.getType()), colour), name);
+        top.setAlignment(Pos.CENTER_LEFT);
+        Label dueOn = new Label(CityCalendar.formatShort(due));
+        dueOn.setStyle(Palette.words(Palette.SIZE_LABEL, urgency(due - month)));
+        dueOn.setMinWidth(Region.USE_PREF_SIZE);
+        HBox when = new HBox(0, muted(kindNoun(debt) + " · sold " + CityCalendar.formatShort(started) + " · falls due "), dueOn,
+                muted(" · " + l.monthsLeft() + (l.monthsLeft() == 1 ? " month left" : " months left")));
+        when.setAlignment(Pos.CENTER_LEFT);
+        page.getChildren().add(card(backDoor("The book", () -> open("The book", null, lineOpen)), top, when));
+
+        // ----- its five figures -----
+        double coupon = debt.getMonthlyCoupon();
+        String yieldNote = linker ? "real yield today" : floater ? "yield today, as the market expects" : "yield today";
+        String yieldNow = linker ? pct2(l.realYield()) : pct2(l.yield());
+        page.getChildren().add(figureStrip(new String[][] {
+                {"COUPON", lineCoupon(l), coupon >= .5 ? d(coupon) + " a month" : "none: the discount wears off as interest"},
+                {"ISSUE YIELD", pct2(l.bookedRate()) + (linker ? " real" : ""), "the effective rate the books charge"},
+                {"PRICE · YIELD", String.format("%.2f", l.pricePer100()) + " · " + yieldNow, "per 100 of face · " + yieldNote},
+                {"WORTH TODAY", d(l.worth()), "on today's curve"},
+                {"CARRIED", d(l.carried()), String.format("%.2f", l.carriedPer100()) + " per 100"}}));
+
+        // ----- the paper's own lines: the coupon's, the books', the call's -----
+        VBox terms = new VBox(4);
+        terms.setStyle("-fx-padding: 0 4 0 4;");
+        if (debt instanceof FloatingRateNote note) {
+            terms.getChildren().add(infoLine("coupon " + d(coupon) + " a month · the policy rate " + dialPlusMargin(note.getIndex(), note.getMargin())
+                    + ", reset monthly", FLOATING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+        } else if (debt instanceof InflationLinkedBond linked) {
+            terms.getChildren().add(infoLine("coupon " + d(coupon) + " a month · real " + couponWords(linked.getRealCoupon()) + " on "
+                    + d(linked.getIndexedPrincipal()) + " indexed (the index ×" + String.format("%.3f", linked.getRatio())
+                    + " since the sale)", INDEXED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+            terms.getChildren().add(line("uplift last month " + d(linked.getLastUplift()) + " · repays " + d(linked.owedAtMaturity())
+                    + " at today's index"
+                    + (linked.getUpliftDue() >= .5 ? " · next month pays the uplift, " + d(linked.getUpliftDue()) + ", with the face" : "")));
+        } else if (coupon < .5) {
+            terms.getChildren().add(noteLine("no coupon - the discount wears off as interest", NOTE_INFO, 560));
         }
-        DebtManager ledger = ui.game.getDebtManager();
-        return column(t, statementTotal("On the book altogether", dFull(ledger.getAllPrincipal()), Palette.TEXT_HEAD),
-                statementLine("Carried on the books", dFull(ledger.getCarryingValue())),
-                statementLine("Coupon a month", dFull(ledger.getMonthlyCoupon())));
+        terms.getChildren().add(linker
+                ? infoLine("carried " + d(l.carried()) + " · effective " + pct2(debt.getEffectiveRate()) + " real",
+                        LINKED_BOOKS_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560)
+                : infoLine("carried " + d(l.carried()) + " · effective " + pct2(debt.getEffectiveRate()),
+                        CARRIED_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+        if (debt instanceof LongTermBond bond && bond.isCallable()) {
+            terms.getChildren().add(infoLine("callable at " + String.format("%.0f", CallTree.CALL_PRICE) + " from "
+                            + CityCalendar.formatShort(bond.getFirstCallMonth()) + (g.canCall(debt) ? " · callable now" : ""),
+                    CALLABLE_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+            if (g.worthCalling(debt)) {
+                terms.getChildren().add(infoLine("Worth calling: saves " + d(g.callSaving(debt)),
+                        WORTH_CALLING_INFO, true, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, 560));
+            }
+        }
+        page.getChildren().add(terms);
+
+        // ----- its price since it was sold, and what closing it today would book -----
+        double[] price = debt.getPricePath(), carried = debt.getCarriedPath();
+        VBox priceCard = card(caption("ITS PRICE SINCE IT WAS SOLD", LINE_PRICE_INFO), muted("per 100 of face · and what it is carried at"));
+        if (price.length >= 2) {
+            priceCard.getChildren().addAll(new PathChart(price, carried, debt.getPathFirstMonth()),
+                    keyRow(swatch(Palette.MONEY, "price, at the curve each month", false),
+                            swatch(Palette.TEXT_LABEL, "carried, per 100", false),
+                            swatch(Palette.TEXT_SPENT, "par, 100", false)));
+        } else {
+            priceCard.getChildren().add(line(price.length == 0
+                    ? "Sold this month: nothing is recorded yet. The first point comes when the month closes."
+                    : "One month on the books so far."));
+        }
+        priceCard.getChildren().add(muted("The price is drawn from the line's second month on the books: a month closes before it is recorded."
+                + (price.length >= 2 ? "" : " Two points make a line.")));
+
+        Buyback.Result whole = g.quoteBuyback(debt, g.buybackOfferable(debt), Double.NaN);
+        boolean taken = whole.takenFace() > 0 && whole.paid() > 0;
+        double against = l.vsFace();
+        String againstWords = Math.abs(against) < .5 ? "at its face" : against > 0 ? d(against) + " under face" : "a premium of " + d(-against);
+        VBox close = new VBox(8, caption("IF YOU CLOSED IT TODAY", LINE_CLOSE_INFO),
+                cardLine("Worth today · the fair price", d(l.worth()), null),
+                cardLine("Carried · what the books hold it at", d(l.carried()), null),
+                gainLine("Carried less worth · what the books would show at fair", gainOf(l.ifClosedNow(), l.ifClosedNowShare()), GAIN_INFO),
+                cardLine("Against its face of " + d(l.face()), againstWords, null, PREMIUM_INFO));
+        if (taken) {
+            close.getChildren().addAll(
+                    cardLine("All of it on offer, " + d(whole.takenFace()) + ", at the reverse auction now", d(whole.paid()), null),
+                    gainLine("...what the auction itself books against carrying", gainOf(whole.gainOnCarrying(), whole.gainOnCarryingShare()), null),
+                    words(honestSentence(debt, whole), Palette.SIZE_LABEL + 1, Palette.TEXT_BODY));
+        } else {
+            close.getChildren().add(muted("Nothing is on offer now: the central bank does not sell (D18), and a line sold lately can only be bought back whole."));
+        }
+        boolean affordable = taken && whole.paid() <= g.getCash();
+        Button closeIt = new Button("Close it now…");
+        closeIt.setMinWidth(Region.USE_PREF_SIZE);
+        if (affordable) closeIt.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
+        else if (taken) closeIt.setTooltip(new Tooltip("Closing all of it costs " + d(whole.paid()) + "; the treasury has " + d(g.getCash())
+                + ". The page can close part of it."));
+        closeIt.setOnAction(e -> openClose(debt));
+        boolean callable = debt instanceof LongTermBond bond && bond.isCallable();
+        Button callIt = new Button(callable ? "Call it…" : "Call it · not callable");
+        callIt.setMinWidth(Region.USE_PREF_SIZE);
+        callIt.setDisable(!callable);
+        // Close it now is where the call is: the page that holds the call card.
+        callIt.setOnAction(e -> openClose(debt));
+        HBox buttons = new HBox(Palette.GAP, closeIt, callIt);
+        buttons.setAlignment(Pos.CENTER_LEFT);
+        close.getChildren().add(buttons);
+        close.setStyle("-fx-padding: 14; -fx-background-color: " + Palette.PINNED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.ACCENT_FILL + ";");
+        page.getChildren().add(pair(priceCard, close));
+
+        // ----- the books, who holds it, its sales and its risk -----
+        // Three cards side by side - the books' table the half of the row, the others a quarter each - and, in a window
+        // narrower than a table of the books and two cards, the table across the top and the two under it.
+        GridPane three = equalColumns(12, TILE_GAP);
+        VBox books = booksCard(debt, month, l);
+        VBox holders = holdersCard(debt, l);
+        VBox sales = salesCard(debt, l);
+        for (VBox c : List.of(books, holders, sales)) GridPane.setFillHeight(c, true);
+        three.getChildren().addAll(books, holders, sales);
+        arrangeThree(books, holders, sales, false);
+        three.widthProperty().addListener((o, was, now) -> arrangeThree(books, holders, sales, now.doubleValue() < THREE_NARROW));
+        page.getChildren().add(three);
+    }
+
+    /** The width under which a line's page stacks its three cards (CD6): the books' table, then the other two side by side. */
+    static final double THREE_NARROW = 1000;
+
+    /** The three cards of a line's page on a grid of twelve columns: 6, 3 and 3 across, or, narrow, the first over the other two. */
+    static void arrangeThree(VBox books, VBox holders, VBox sales, boolean narrow) {
+        GridPane.setConstraints(books, 0, 0, narrow ? 12 : 6, 1);
+        GridPane.setConstraints(holders, narrow ? 0 : 6, narrow ? 1 : 0, narrow ? 6 : 3, 1);
+        GridPane.setConstraints(sales, narrow ? 6 : 9, narrow ? 1 : 0, narrow ? 6 : 3, 1);
+    }
+
+    /** THE NEXT SIX MONTHS ON THE BOOKS: Debt.booksAhead(6) - opening, interest, coupon, amortised, repaid (only when any is) and closing. */
+    VBox booksCard(Debt debt, int month, BookDesk.Line l) {
+        boolean linker = debt instanceof InflationLinkedBond;
+        List<Debt.BooksMonth> ahead = debt.booksAhead(6);
+        VBox card = card(caption("THE NEXT SIX MONTHS ON THE BOOKS", LINE_BOOKS_INFO),
+                muted("effective interest at " + pct2(debt.getEffectiveRate()) + (linker ? " real" : "")
+                        + (debt instanceof FloatingRateNote || linker ? " · today's " + (linker ? "index" : "dial") + " held flat" : "")));
+        if (ahead.isEmpty()) {
+            card.getChildren().add(muted("Nothing is left to book."));
+            return card;
+        }
+        boolean repaid = false;
+        for (Debt.BooksMonth b : ahead) repaid |= b.repaid() >= .5;
+        GridPane t = repaid
+                ? grid(new double[] {52, 62, 52, 52, 60, 56, 62}, rightAfterFirst(7))
+                : grid(new double[] {52, 66, 56, 56, 64, 66}, rightAfterFirst(6));
+        t.setHgap(4);
+        if (repaid) gridHead(t, "Month", "Opening", "Interest", "Coupon", "Amortised", "Repaid", "Closing");
+        else gridHead(t, "Month", "Opening", "Interest", "Coupon", "Amortised", "Closing");
+        for (Node head : t.getChildren()) if (head instanceof Label h) h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        int row = 1;
+        for (Debt.BooksMonth b : ahead) {
+            int c = 0;
+            t.add(gridCell(CityCalendar.formatShort(month + b.ahead()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, false), c++, row);
+            t.add(gridCell(d(b.opening()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), c++, row);
+            t.add(gridCell(d(b.interest()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), c++, row);
+            t.add(gridCell(d(b.coupon()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), c++, row);
+            t.add(gridCell(signedD(b.amortised()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), c++, row);
+            if (repaid) t.add(gridCell(d(b.repaid()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), c++, row);
+            t.add(gridCell(d(b.closing()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), c, row);
+            row++;
+        }
+        card.getChildren().add(acrossWhenNarrow(t));
+        return card;
+    }
+
+    /** WHO HOLDS IT: the holders bar and a line a holder with its face and its share. */
+    VBox holdersCard(Debt debt, BookDesk.Line l) {
+        VBox card = card(caption("WHO HOLDS IT", null), holdersBar(debt));
+        if (debt.isForeign()) {
+            card.getChildren().add(holderLine("the world", Palette.BUILDING_DARK, usd(debt.principalInCurrency()) + " · all of it"));
+            card.getChildren().add(muted("Dollar paper: nobody at home holds it."));
+            return card;
+        }
+        Object[][] who = {
+                {"households", Palette.PEOPLE, debt.householdPrincipal(), l.households()},
+                {"the bank", Palette.MONEY, debt.bankPrincipal(), l.bank()},
+                {"the central bank", Palette.MONEY_DARK, debt.centralBankPrincipal(), l.centralBank()},
+                {"the businesses", Palette.BUSINESS_DARK, debt.firmPrincipal(), l.firms()},
+                {"the world", Palette.BUILDING_DARK, debt.worldPrincipal(), l.world()}};
+        for (Object[] w : who) {
+            // A holder with nothing of it is no line (a share that rounds to nothing is none).
+            if ((double) w[2] < .5) continue;
+            card.getChildren().add(holderLine((String) w[0], (String) w[1], d((double) w[2]) + " · " + pc((double) w[3])));
+        }
+        if (debt.centralBankPrincipal() > 0) {
+            card.getChildren().add(muted("The central bank's share follows its holdings dial, and it does not sell (D18)."));
+        }
+        return card;
+    }
+
+    /** One holder's line: its swatch and name at the left, its face and its share at the right. */
+    static HBox holderLine(String who, String colour, String text) {
+        HBox key = swatch(colour, who, false);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP, key, gap, figure(text, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /** ITS SALES, AND ITS RISK: each sale as it was made, then its duration and the value of a point. */
+    VBox salesCard(Debt debt, BookDesk.Line l) {
+        VBox card = card(caption("ITS SALES, AND ITS RISK", LINE_SALES_INFO));
+        boolean dollars = debt.isForeign();
+        List<Debt.Sale> sales = debt.getSales();
+        if (sales.isEmpty()) {
+            card.getChildren().add(muted("Not sold at auction: no sale is recorded for it, as the founding's bond has none."));
+        }
+        for (Debt.Sale s : sales) {
+            String face = dollars ? usd(s.getFace()) : d(s.getFace());
+            String raised = dollars ? usd(s.getProceeds()) : d(s.getProceeds());
+            card.getChildren().add(new VBox(1,
+                    words(CityCalendar.formatShort(s.getMonth()) + " · " + s.getHow() + (dollars ? " · in dollars" : ""),
+                            Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD),
+                    muted(face + " sold, " + raised + " raised · " + String.format("%.2f", s.getPricePer100()) + " per 100 · yield "
+                            + pct2(s.getYield()))));
+        }
+        card.getChildren().add(cardLine("Duration", String.format("%.2f years", l.duration()), null));
+        card.getChildren().add(cardLine("A point on the curve moves it", d(l.valueOfAPoint()), null));
+        if (debt instanceof FloatingRateNote) {
+            card.getChildren().add(muted("A floater's coupon follows the dial, so a point moves it only until its next reset."));
+        } else if (debt instanceof LongTermBond bond && bond.isCallable()) {
+            card.getChildren().add(muted("A callable line is priced as a bond that cannot be called: the right to call is not repriced."));
+        }
+        return card;
+    }
+
+    /* ----- the desk's pictures (CD6) ----- */
+
+    /**
+     * A picture that draws itself again at whatever width it is given and a fixed height (BuybackLadder's way): the
+     * desk's curve and bars and a line's price path sit in half a page, at 900 px or at 1,480.
+     */
+    abstract static class Drawn extends javafx.scene.layout.Pane {
+        private final double first;
+        private double drawnAt;
+
+        Drawn(double least, double first, double height) {
+            this.first = first;
+            setMinSize(least, height);
+            setPrefSize(first, height);
+            setMaxSize(Double.MAX_VALUE, height);
+        }
+
+        /** Everything in the picture, drawn at this width: the children have been cleared. */
+        abstract void draw(double w);
+
+        /** The first drawing, at the width the picture asks for; a subclass calls it once its figures are set. */
+        final void drawFirst() {
+            drawnAt = first;
+            getChildren().clear();
+            draw(first);
+        }
+
+        @Override protected void layoutChildren() {
+            double w = Math.max(getMinWidth(), getWidth());
+            if (Math.abs(w - drawnAt) > .5) {
+                drawnAt = w;
+                getChildren().clear();
+                draw(w);
+            }
+            super.layoutChildren();
+        }
+
+        /** Words at a place, their top left at (x, y); in a box `width` wide, aligned, when width is above nothing. */
+        final Label put(String text, double x, double y, double width, Pos align, String style) {
+            Label l = new Label(text);
+            l.setStyle(style);
+            if (width > 0) {
+                l.setMinWidth(width);
+                l.setPrefWidth(width);
+                l.setMaxWidth(width);
+                l.setAlignment(align);
+            }
+            l.relocate(x, y);
+            getChildren().add(l);
+            return l;
+        }
+
+        /** The caption's words in a tone. */
+        static String wordsIn(String tone) { return Palette.words(Palette.SIZE_CAPTION, tone); }
+
+        /** A figure's, in a tone. */
+        static String figureIn(String tone) { return Palette.figure(Palette.SIZE_CAPTION, tone); }
+
+        /** A straight stroke. */
+        final javafx.scene.shape.Line stroke(double x1, double y1, double x2, double y2, String colour, double width, double... dash) {
+            javafx.scene.shape.Line s = new javafx.scene.shape.Line(x1, y1, x2, y2);
+            s.setStroke(javafx.scene.paint.Color.web(colour));
+            s.setStrokeWidth(width);
+            for (double d : dash) s.getStrokeDashArray().add(d);
+            getChildren().add(s);
+            return s;
+        }
+
+        /** A tooltip that shows at once. */
+        static Tooltip tip(String text) {
+            Tooltip t = new Tooltip(text);
+            t.setShowDelay(Duration.millis(150));
+            return t;
+        }
+
+        /** A tenor as the axis writes it: "3m", "1y". */
+        static String tenorName(int months) {
+            return months < 12 ? months + "m" : months / 12 + "y";
+        }
+
+        /**
+         * The tenors' axis along `plotB` (CD6): every tenor has its tick, and the labels claim room round ones first
+         * (a year, five, ten, thirty...), none within 26 px of another. `x` maps months to a pixel.
+         */
+        final void tenorAxis(int[] tenors, java.util.function.DoubleUnaryOperator x, double plotB) {
+            List<Double> labelled = new ArrayList<>();
+            int[] first = {12, 60, 120, 360, 6, 24, 240, 3, 480, 600};
+            for (int months : tenors) stroke(x.applyAsDouble(months), plotB, x.applyAsDouble(months), plotB + 4, Palette.TEXT_SPENT, 1);
+            for (int want : first) {
+                for (int months : tenors) {
+                    if (months != want) continue;
+                    double px = x.applyAsDouble(months);
+                    boolean room = true;
+                    for (double at : labelled) if (Math.abs(at - px) < 26) room = false;
+                    if (!room) continue;
+                    labelled.add(px);
+                    put(tenorName(months), px - 15, plotB + 6, 30, Pos.CENTER, wordsIn(Palette.TEXT_MUTED));
+                }
+            }
+        }
+
+        /** A round number to put the axis's steps on: the smallest of these that fits the span into `ticks` steps or fewer. */
+        static double niceStep(double span, int ticks, double... steps) {
+            double pick = steps[steps.length - 1];
+            for (double s : steps) {
+                if (span / s <= ticks) {
+                    pick = s;
+                    break;
+                }
+            }
+            return pick;
+        }
+    }
+
+    /**
+     * WHERE EACH LINE SITS ON THE CURVE (CD6, board 1): today's zero curve at the tenors, months across (to the square
+     * root, as the board draws it, so the short end has room) and the yield up; each line a dot at (months left,
+     * yield) in its kind's colour, hollow for dollar paper; a bond named beside its dot where the name does not
+     * collide with another dot or name.
+     */
+    static final class DeskCurve extends Drawn {
+        /** One line on the curve: its months left, its yield, its colour, whether it is dollar paper (hollow), what its tooltip says, and its name beside the dot (null: none). */
+        record Dot(double months, double yield, String colour, boolean hollow, String tip, String name) { }
+
+        static final double H = 232, LEFT = 46, RIGHT = 14, TOP = 12, FOOT = 26;
+
+        private final int[] tenors;
+        private final double[] zero;
+        private final List<Dot> dots;
+
+        DeskCurve(int[] tenors, double[] zero, List<Dot> dots) {
+            super(300, 560, H);
+            this.tenors = tenors;
+            this.zero = zero;
+            this.dots = dots;
+            drawFirst();
+        }
+
+        private static boolean overlaps(double[] box, List<double[]> taken) {
+            for (double[] t : taken) {
+                if (box[0] < t[2] && box[2] > t[0] && box[1] < t[3] && box[3] > t[1]) return true;
+            }
+            return false;
+        }
+
+        @Override void draw(double w) {
+            final double plotL = LEFT, plotR = Math.max(LEFT + 100, w - RIGHT), plotT = TOP, plotB = H - FOOT;
+            final double maxMonths = tenors[tenors.length - 1];
+            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
+            for (double v : zero) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+            for (Dot dot : dots) { lo = Math.min(lo, dot.yield()); hi = Math.max(hi, dot.yield()); }
+            double step = niceStep(hi - lo, 5, .0025, .005, .01, .02, .05);
+            lo = Math.floor(lo / step + 1e-9) * step;
+            hi = Math.ceil(hi / step - 1e-9) * step;
+            if (hi - lo < step) hi = lo + step;
+            final double bottom = lo, span = hi - lo;
+            java.util.function.DoubleUnaryOperator y = v -> plotB - (v - bottom) / span * (plotB - plotT);
+            java.util.function.DoubleUnaryOperator x = m -> plotL + Math.sqrt(Math.max(0, m) / maxMonths) * (plotR - plotL);
+
+            for (double v = lo; v <= hi + 1e-9; v += step) {
+                stroke(plotL, y.applyAsDouble(v), plotR, y.applyAsDouble(v), Palette.EDGE, 1);
+                put(String.format(step < .005 ? "%.2f%%" : "%.1f%%", v * 100), 0, y.applyAsDouble(v) - 7, LEFT - 6, Pos.CENTER_RIGHT,
+                        figureIn(Palette.TEXT_MUTED));
+            }
+            stroke(plotL, plotB, plotR, plotB, Palette.TEXT_SPENT, 1);
+            tenorAxis(tenors, x, plotB);
+            // Today's curve.
+            javafx.scene.shape.Polyline curve = new javafx.scene.shape.Polyline();
+            curve.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_LABEL));
+            curve.setStrokeWidth(2);
+            getChildren().add(curve);
+            for (int i = 0; i < tenors.length; i++) {
+                double px = x.applyAsDouble(tenors[i]), py = y.applyAsDouble(zero[i]);
+                curve.getPoints().addAll(px, py);
+                javafx.scene.shape.Circle mark = new javafx.scene.shape.Circle(px, py, 2.5, javafx.scene.paint.Color.web(Palette.TEXT_LABEL));
+                Tooltip.install(mark, tip(tenorName(tenors[i]) + " zero rate: " + pct2(zero[i])));
+                getChildren().add(mark);
+            }
+            // The lines.
+            List<double[]> taken = new ArrayList<>();
+            for (Dot dot : dots) {
+                double px = x.applyAsDouble(dot.months()), py = y.applyAsDouble(dot.yield());
+                javafx.scene.shape.Circle c = new javafx.scene.shape.Circle(px, py, 4.5);
+                javafx.scene.paint.Color colour = javafx.scene.paint.Color.web(dot.colour());
+                if (dot.hollow()) {
+                    c.setFill(javafx.scene.paint.Color.TRANSPARENT);
+                    c.setStroke(colour);
+                    c.setStrokeWidth(2);
+                } else {
+                    c.setFill(colour);
+                    c.setStroke(javafx.scene.paint.Color.web(Palette.RAISED));
+                    c.setStrokeWidth(1.5);
+                }
+                Tooltip.install(c, tip(dot.tip()));
+                getChildren().add(c);
+                taken.add(new double[] {px - 6, py - 6, px + 6, py + 6});
+            }
+            // The bonds' names, beside their dots where they do not collide.
+            for (Dot dot : dots) {
+                if (dot.name() == null) continue;
+                double px = x.applyAsDouble(dot.months()), py = y.applyAsDouble(dot.yield());
+                double tw = dot.name().length() * 5.3 + 4, th = 12;
+                double[][] tries = {{px + 8, py - th - 1}, {px + 8, py + 1}, {px - 8 - tw, py - th - 1}, {px - 8 - tw, py + 1}};
+                for (double[] at : tries) {
+                    double[] box = {at[0], at[1], at[0] + tw, at[1] + th};
+                    if (box[0] < plotL || box[2] > w - 2 || box[1] < plotT - 4 || box[3] > plotB || overlaps(box, taken)) continue;
+                    taken.add(box);
+                    put(dot.name(), at[0], at[1], 0, null, wordsIn(Palette.TEXT_LABEL));
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * AT FACE, CARRIED, AND WORTH TODAY (CD6, board 1): three bars on one scale, each stacked by kind in the kinds'
+     * colours with its total at its end, and what the book is worth marked across all three as a dashed line.
+     */
+    static final class DeskBars extends Drawn {
+        static final double H = 158, LEFT = 84, RIGHT = 76, TOP = 26, ROW = 42, BAR = 26;
+        static final String[] ROWS = {"at face", "carried", "worth today"};
+
+        private final double[][] byKind;
+        private final double worth;
+        private final java.util.function.DoubleFunction<String> money;
+
+        DeskBars(double[][] byKind, double worth, java.util.function.DoubleFunction<String> money) {
+            super(300, 480, H);
+            this.byKind = byKind;
+            this.worth = worth;
+            this.money = money;
+            drawFirst();
+        }
+
+        @Override void draw(double w) {
+            double[] totals = new double[ROWS.length];
+            double max = Math.max(worth, 1);
+            for (int r = 0; r < ROWS.length; r++) {
+                for (double v : byKind[r]) totals[r] += v;
+                max = Math.max(max, totals[r]);
+            }
+            final double plotW = Math.max(40, w - LEFT - RIGHT);
+            for (int r = 0; r < ROWS.length; r++) {
+                double top = TOP + r * ROW;
+                put(ROWS[r], 0, top + 4, LEFT - 8, Pos.CENTER_RIGHT, wordsIn(Palette.TEXT_LABEL));
+                double acc = 0;
+                for (int k = 0; k < byKind[r].length; k++) {
+                    double v = byKind[r][k];
+                    if (v <= 0) continue;
+                    double x0 = LEFT + acc / max * plotW, x1 = LEFT + (acc + v) / max * plotW;
+                    javafx.scene.shape.Rectangle bar = new javafx.scene.shape.Rectangle(x0, top, Math.max(1, x1 - x0 - 1), BAR);
+                    bar.setFill(javafx.scene.paint.Color.web(bookKindColour(DebtManager.BOOK_KINDS[k])));
+                    bar.setArcWidth(3);
+                    bar.setArcHeight(3);
+                    Tooltip.install(bar, tip(ROWS[r] + ", " + BOOK_KIND_NAMES[k] + ": " + money.apply(v)));
+                    getChildren().add(bar);
+                    acc += v;
+                }
+                put(money.apply(totals[r]), LEFT + acc / max * plotW + 6, top + 3, 0, null, figureIn(Palette.TEXT_HEAD));
+            }
+            double wx = LEFT + worth / max * plotW;
+            stroke(wx, TOP - 8, wx, TOP + ROWS.length * ROW - 10, Palette.TEXT_HEAD, 1, 3, 3);
+            put("worth today", Math.max(0, Math.min(w - 80, wx - 40)), 1, 80, Pos.CENTER, wordsIn(Palette.TEXT_LABEL));
+        }
+    }
+
+    /**
+     * ITS PRICE SINCE IT WAS SOLD (CD6, board 2): the price per 100 of face a month, in the money blue, and what
+     * the line is carried at per 100, muted and dashed, against a horizontal at 100, the axis in years. Carried creeps
+     * to 100 and the price does not.
+     */
+    static final class PathChart extends Drawn {
+        static final double H = 212, LEFT = 40, RIGHT = 16, TOP = 14, FOOT = 26;
+
+        private final double[] price, carried;
+        private final int firstMonth;
+
+        PathChart(double[] price, double[] carried, int firstMonth) {
+            super(300, 440, H);
+            this.price = price;
+            this.carried = carried;
+            this.firstMonth = firstMonth;
+            drawFirst();
+        }
+
+        /** Whether a month carries a tick of this step: January's of the years it counts in, or the months it counts in. */
+        private static boolean ticked(int month, int step) {
+            int moy = CityCalendar.monthOfYear(month);
+            return step <= 12 ? (moy - 1) % step == 0 : moy == 1 && CityCalendar.yearOf(month) % (step / 12) == 0;
+        }
+
+        @Override void draw(double w) {
+            final double plotL = LEFT, plotR = Math.max(LEFT + 100, w - RIGHT), plotT = TOP, plotB = H - FOOT;
+            final int n = price.length;
+            double lo = 100, hi = 100;
+            for (int i = 0; i < n; i++) {
+                lo = Math.min(lo, Math.min(price[i], carried[i]));
+                hi = Math.max(hi, Math.max(price[i], carried[i]));
+            }
+            double pad = Math.max(.5, (hi - lo) * .1);
+            double step = niceStep(hi - lo + 2 * pad, 5, .5, 1, 2, 5, 10, 20);
+            lo = Math.floor((lo - pad) / step) * step;
+            hi = Math.ceil((hi + pad) / step) * step;
+            final double bottom = lo, span = hi - lo;
+            java.util.function.DoubleUnaryOperator y = v -> plotB - (v - bottom) / span * (plotB - plotT);
+            java.util.function.IntToDoubleFunction x = i -> plotL + (n > 1 ? (plotR - plotL) * i / (n - 1) : 0);
+            for (double v = lo; v <= hi + 1e-9; v += step) {
+                stroke(plotL, y.applyAsDouble(v), plotR, y.applyAsDouble(v), Palette.EDGE, 1);
+                put(String.format(step < 1 ? "%.1f" : "%.0f", v), 0, y.applyAsDouble(v) - 7, LEFT - 6, Pos.CENTER_RIGHT, figureIn(Palette.TEXT_MUTED));
+            }
+            stroke(plotL, plotB, plotR, plotB, Palette.TEXT_SPENT, 1);
+            // The axis in years: the smallest step that leaves a label room.
+            int every = 1;
+            for (int s : new int[] {1, 2, 3, 6, 12, 24, 60, 120}) {
+                every = s;
+                if ((plotR - plotL) * s / Math.max(1, n - 1) >= 58) break;
+            }
+            for (int i = 0; i < n; i++) {
+                int month = firstMonth + i;
+                if (!ticked(month, every)) continue;
+                stroke(x.applyAsDouble(i), plotB, x.applyAsDouble(i), plotB + 4, Palette.TEXT_SPENT, 1);
+                put(every >= 12 ? String.valueOf(CityCalendar.yearOf(month)) : CityCalendar.formatShort(month),
+                        x.applyAsDouble(i) - 28, plotB + 6, 56, Pos.CENTER, wordsIn(Palette.TEXT_MUTED));
+            }
+            // Par.
+            stroke(plotL, y.applyAsDouble(100), plotR, y.applyAsDouble(100), Palette.TEXT_SPENT, 1, 5, 4);
+            // Carried under the price, dashed; the price over it, solid.
+            polyline(carried, x, y, Palette.TEXT_LABEL, 1.5, true);
+            polyline(price, x, y, Palette.MONEY, 2.2, false);
+            double lastP = price[n - 1], lastC = carried[n - 1];
+            for (double[] end : new double[][] {{lastP, 0}, {lastC, 1}}) {
+                javafx.scene.shape.Circle c = new javafx.scene.shape.Circle(plotR, y.applyAsDouble(end[0]), end[1] == 0 ? 3.5 : 3,
+                        javafx.scene.paint.Color.web(end[1] == 0 ? Palette.MONEY : Palette.TEXT_LABEL));
+                getChildren().add(c);
+            }
+            boolean priceAbove = lastP >= lastC;
+            put(String.format("%.2f", lastP), plotR - 96, y.applyAsDouble(lastP) + (priceAbove ? -15 : 5), 90, Pos.CENTER_RIGHT, figureIn(Palette.TEXT_HEAD));
+            put("carried " + String.format("%.2f", lastC), plotR - 96, y.applyAsDouble(lastC) + (priceAbove ? 5 : -15), 90, Pos.CENTER_RIGHT,
+                    figureIn(Palette.TEXT_LABEL));
+        }
+
+        private void polyline(double[] values, java.util.function.IntToDoubleFunction x, java.util.function.DoubleUnaryOperator y,
+                              String colour, double width, boolean dashed) {
+            javafx.scene.shape.Polyline line = new javafx.scene.shape.Polyline();
+            line.setStroke(javafx.scene.paint.Color.web(colour));
+            line.setStrokeWidth(width);
+            line.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+            if (dashed) line.getStrokeDashArray().addAll(4.0, 3.0);
+            for (int i = 0; i < values.length; i++) line.getPoints().addAll(x.applyAsDouble(i), y.applyAsDouble(values[i]));
+            getChildren().add(line);
+        }
     }
 
     /* =====================================================================
@@ -2712,8 +4001,9 @@ final class FinancesScreen {
        callCost(), callSaving(), worthCalling(), DebtManager.curveRate()); the
        page prices nothing. The sums it does are the spec's own: a coupon
        scaled to the face taken, a price times a rate over twelve, the
-       carrying value less the face. No colour on a gain or a loss (the
-       0.7.32 spec's B6). The two boxes keep their typing through a month's
+       carrying value less the face. The gain or loss against carrying value
+       is green or red since CD6 (Jerus, 2026-10-23: "show green or red",
+       over the 0.7.32 spec's B6), as the book's is. The two boxes keep their typing through a month's
        redraw as the ask's does (askBox()).
        ===================================================================== */
 
@@ -2791,6 +4081,8 @@ final class FinancesScreen {
 
     /** The card's Close it now: the page opened on this piece, its boxes empty (everything on offer, no limit). */
     void openClose(Debt debt) {
+        // From a line's page the back door returns there (CD6); from anywhere else, to the book.
+        closeFromLine = lineOpenNow() && lineOpen == debt;
         closing = debt;
         closeFaceText = "";
         closeMaxText = "";
@@ -2904,7 +4196,7 @@ final class FinancesScreen {
                 figure(CityCalendar.formatShort(due) + " · " + CityCalendar.until(month, due), Palette.SIZE_LABEL + 1,
                         urgency(due - month)));
         head.setAlignment(Pos.CENTER_LEFT);
-        double coupon = debt.getMonthlyInterestExpense();
+        double coupon = debt.getMonthlyCoupon();
         Node facts = muted(String.format("%s owed · %s carried · %s · worth today %s · %.3f for each 100", d(principal),
                 d(debt.getCarryingValue()), coupon >= .5 ? d(coupon) + " a month of coupon" : "no coupon",
                 d(g.fairValueOf(debt)), ledger.priceOfPar(debt)));
@@ -2915,7 +4207,10 @@ final class FinancesScreen {
                 ? muted("The central bank holds " + d(debt.centralBankPrincipal()) + " of it and does not sell (D18): "
                         + d(offerable) + " is on offer.")
                 : null;
-        page.getChildren().add(card(backDoor("The book", () -> open("The book", null, closing)), head, facts, held, central));
+        // The way back is the line's page when Close it now was opened from there (CD6), else the book.
+        final Debt back = closing;
+        page.getChildren().add(card(closeFromLine ? backDoor("The line", () -> openLine(back))
+                : backDoor("The book", () -> open("The book", null, back)), head, facts, held, central));
 
         // ----- the ticket -----
         VBox ticket = card(caption("THE TICKET", CLOSE_INFO, hint("a reverse auction, struck on the city as it stands")));
@@ -3018,10 +4313,10 @@ final class FinancesScreen {
         // ----- the three comparisons, and the journal -----
         if (taken) {
             VBox compare = card(caption("THE THREE COMPARISONS", COMPARE_INFO),
-                    cardLine("Against carrying value · the statement's Gain (loss) on debt retired", signedD(q.gainOnCarrying()), null),
+                    gainLine("Against carrying value · the statement's Gain (loss) on debt retired", gainOf(q.gainOnCarrying(), q.gainOnCarryingShare()), null),
                     cardLine("Against face · what the debt-to-GDP measure sees", signedD(q.gainOnFace()), null),
                     cardLine("Over fair · what the auction cost", d(q.overFair()), null));
-            double sideways = q.carriedTaken() - q.takenFace();
+            double sideways = q.unamortisedTaken();
             double gain = q.gainOnCarrying();
             VBox journal = card(caption("THE JOURNAL", null, hint("what the first of them books")),
                     cardLine("Dr  City paper payable", d(q.takenFace()), null),
@@ -3033,18 +4328,7 @@ final class FinancesScreen {
             page.getChildren().add(pair(compare, journal));
 
             // ----- the honest line -----
-            int left = Math.max(1, debt.getRemainingMonths());
-            double rate = debt.isForeign() ? ledger.foreignCurveRate(left) : ledger.curveRate(left);
-            double stopped = coupon * (principal > 0 ? q.takenFace() / principal : 0);
-            double again = q.paid() * rate / 12;
-            String stops = stopped >= .5 ? "It stops " + d(stopped) + " a month of coupon; "
-                    : "It has no coupon to stop - a bill's interest is the discount wearing off; ";
-            String honest = stops + d(q.paid()) + " borrowed again at today's " + termWords(left) + " rate, "
-                    + pct2(rate) + ", would cost " + d(again) + " a month."
-                    + (stopped >= .5 && Math.abs(again - stopped) >= .5
-                    ? " So it books " + (gain >= 0 ? "a gain" : "a loss") + " and "
-                            + (again > stopped ? "raises" : "lowers") + " the city's interest by "
-                            + d(Math.abs(again - stopped)) + " a month." : "");
+            String honest = honestSentence(debt, q);
             page.getChildren().add(card(caption("THE HONEST LINE", null),
                     words(honest, Palette.SIZE_BODY + 1, Palette.TEXT_BODY),
                     muted("A buyback at fair moves nothing in present value; it changes when the city pays and what the "
@@ -3087,8 +4371,8 @@ final class FinancesScreen {
                 + (now ? "." : " - not yet callable: " + CityCalendar.until(month, first) + "."),
                 Palette.SIZE_BODY + 1, Palette.TEXT_BODY));
         card.getChildren().add(cardLine("What the call costs · every holder paid in full", d(cost), null));
-        card.getChildren().add(cardLine("Gain (loss) against carrying value · " + d(carried) + " carried, less the face",
-                signedD(carried - cost), null));
+        card.getChildren().add(gainLine("Gain (loss) against carrying value · " + d(carried) + " carried, less the face",
+                gainOf(g.callGain(bond), Double.NaN), null));
         card.getChildren().add(cardLine("What calling saves, in present value", signedD(saving), null));
         card.getChildren().add(worth
                 ? infoLine("Worth calling: it saves " + d(saving) + ", over " + pc(CallTree.WORTH_CALLING) + " of the face.",

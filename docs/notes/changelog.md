@@ -14,6 +14,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.36 — CD6, the rest of the debt's screens — 2026-10-23, ready, see docs/queue/CD6-notes.md
+
+The last of the debt study's screens (spec-city-debt §7, boards 1, 2 and 5; D31). Finances › The book is a desk: the book's
+figures, every line on today's curve, face, carried and worth by kind, and a row a line with its coupon, issue yield, price,
+yield, duration and holders, and what closing it now would book in green or red, in D$ and per cent, with Close it now beside
+it (Jerus: *"have it so that it shows green or red, and a % value and dollar value ... make it juicy to buyback"*). A line's
+page draws its price since the sale against what it is carried at, its next six months on the books, its sales and the honest
+line; Your rate draws the curve today, a year and two years ago, the dial the market expects, the 10-year rate taken apart and
+real rates. The coupon is labelled cash next month beside the budget's interest, the Government grid now adds up to the
+budget's line, a linker's last-month uplift is no longer "coupon", and Close it now's figures come from the model (DeskCheck).
+The month is untouched: the default playtest's trace is byte-identical, so the ensemble was not run.
+
 ### 0.8.35 — CD5, floating and linked paper — 2026-10-23, ready, see docs/queue/CD5-notes.md
 
 The city can sell two more kinds of paper at its auction (spec-city-debt §2.4, §2.5, §5.3; D25, D31). A floating-rate

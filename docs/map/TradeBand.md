@@ -1,6 +1,6 @@
 # TradeBand.java - 252 lines · 21 methods · 0 constants · model
 
-`ham/citybuildersim/TradeBand.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TradeBand.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The freight band of what the city trades, split into its legs, as the Trade
 > tab draws it (batch FR4; docs/studies/spec-freight-and-infrastructure.md 6,

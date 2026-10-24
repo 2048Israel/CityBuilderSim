@@ -166,7 +166,7 @@ public class InflationLinkedBond extends Debt {
     @Override
     double amortise() {
         double discount = super.amortise();
-        lastUpliftPaidOwn = remainingMonths == 1 ? faceValue * (Math.max(1, ratio) - 1) : 0;
+        lastUpliftPaidOwn = upliftOwed();
         return discount;
     }
 
@@ -211,12 +211,18 @@ public class InflationLinkedBond extends Debt {
         return type;
     }
 
-    /** This month's coupon: the real coupon on the indexed principal, a twelfth - and in the last month the uplift as well, faceValue x (max(1, ratio) - 1). */
+    /** This month's coupon: the real coupon on the indexed principal, a twelfth - and in the last month the uplift as well (upliftOwed()). */
     @Override
     protected double couponOwed() {
         double coupon = faceValue * ratio * realCoupon / 12;
-        if (remainingMonths == 1) coupon += faceValue * (Math.max(1, ratio) - 1);
+        coupon += upliftOwed();
         return coupon;
+    }
+
+    /** The uplift the last month pays: faceValue x (max(1, ratio) - 1), the indexed principal less the face, never under nothing (the floor); nothing in any other month. */
+    @Override
+    protected double upliftOwed() {
+        return remainingMonths == 1 ? faceValue * (Math.max(1, ratio) - 1) : 0;
     }
 
     /**
@@ -233,6 +239,24 @@ public class InflationLinkedBond extends Debt {
         double[] flows = new double[remainingMonths];
         java.util.Arrays.fill(flows, faceValue * ratio * realCoupon / 12);
         flows[remainingMonths - 1] += faceValue * Math.max(1, ratio);
+        return flows;
+    }
+
+    /**
+     * The real coupon on the indexed principal, held flat at today's ratio, and
+     * in the last month the inflation uplift with it - the face times the
+     * ratio less one, as couponOwed() counts it, so the repayment left in that
+     * month's payment is the face.
+     */
+    @Override
+    protected double[] couponScheduleOwed() {
+        if (remainingMonths <= 0) {
+            return new double[0];
+        }
+        double coupon = faceValue * ratio * realCoupon / 12;
+        double[] flows = new double[remainingMonths];
+        java.util.Arrays.fill(flows, coupon);
+        flows[remainingMonths - 1] = coupon + faceValue * (Math.max(1, ratio) - 1);
         return flows;
     }
 

@@ -1031,6 +1031,23 @@ public class SaveFileCheck {
                 Math.round(dInterest * 10000));
         assertEquals("...so next month's income still shows the deficit",
                 Math.round(paidUp.getIncome() * 10000), Math.round(dIncome * 10000));
+        // ...and the interest the month booked on each kind of paper (CD6): a flow the list of paper cannot give
+        // back, which the Government tab's grid reads after the month; DataSave.interestBookedByKind, out and in.
+        assertTrue("fixture: the bond really booked some interest in the month",
+                indebted.getDebtManager().getInterestBookedOf("TERM") > 0);
+        assertEquals("...and each kind's interest booked came back with the save",
+                java.util.Arrays.toString(paidUp.getDebtManager().interestByKindToSave()),
+                java.util.Arrays.toString(indebted.getDebtManager().interestByKindToSave()));
+        // ...and what the month's close kept for the debt screens (CD6): the curve of the months behind (DataSave.curveBook)
+        // and, with each piece, its sales and its price path (Debt, through Gson).
+        assertTrue("fixture: the city kept a curve for six months, and the bond a path and a sale",
+                indebted.getDebtManager().curveBookSize() >= 6 && indebted.getDebtManager().getDebt().get(0).getPricePath().length >= 6
+                        && indebted.getDebtManager().getDebt().get(0).getSales().size() == 1);
+        assertTrue("...and the curve book came back with the save",
+                java.util.Arrays.deepEquals(paidUp.getDebtManager().curveBookToSave(), indebted.getDebtManager().curveBookToSave()));
+        assertTrue("...and the bond's price path and its sale",
+                java.util.Arrays.equals(paidUp.getDebtManager().getDebt().get(0).getPricePath(), indebted.getDebtManager().getDebt().get(0).getPricePath())
+                        && DeskCheck.salesText(paidUp.getDebtManager().getDebt().get(0)).equals(DeskCheck.salesText(indebted.getDebtManager().getDebt().get(0))));
 
         // The half that actually costs money: the bill has to be PAID, once.
         // Restoring the figure and then not charging it would look right on the

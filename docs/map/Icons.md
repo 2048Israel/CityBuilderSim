@@ -1,6 +1,6 @@
 # Icons.java - 541 lines · 6 methods · 69 constants · interface
 
-`ham/citybuildersim/ui/Icons.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Icons.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one
 > per category, and the few the frame draws (the money block, the "Needs you"

@@ -1,6 +1,6 @@
-# ShortTermTBill.java - 115 lines · 13 methods · 1 constants · model
+# ShortTermTBill.java - 121 lines · 14 methods · 1 constants · model
 
-`ham/citybuildersim/ShortTermTBill.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ShortTermTBill.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > A bill: borrow now, repay one lump, no coupon - at 1, 3, 6 or 12 months,
 > each sale its own line (CD2).
@@ -30,7 +30,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Auction](Auction.md) (1), [Game](Game.md) (1)
 
-**Used by (10):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (11):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Constants
 
@@ -42,7 +42,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 86 | **type** `public class ShortTermTBill extends Debt` | A bill: borrow now, repay one lump, no coupon - at 1, 3, 6 or 12 months, each sale its own line (CD2). |
+| 30 | 92 | **type** `public class ShortTermTBill extends Debt` | A bill: borrow now, repay one lump, no coupon - at 1, 3, 6 or 12 months, each sale its own line (CD2). |
 | 32 | 3 | `public ShortTermTBill(double faceValue, int months, int monthStarted)` |  |
 | 37 | 9 | `public ShortTermTBill(double faceValue, int months, int monthStarted, boolean foreign)` |  |
 | 51 | 4 | `public static boolean isIssuable(int months)` | True for one of the terms a bill is sold at. |
@@ -56,4 +56,5 @@
 | 96 | 3 | `public String getType()` |  |
 | 101 | 3 | `protected double couponOwed()` |  |
 | 107 | 8 | `protected double[] scheduleOwed()` | Nothing until maturity, then the whole face. |
+| 118 | 3 | `protected double[] couponScheduleOwed()` | A bill pays no coupon: its cost is its discount. |
 

@@ -1,6 +1,6 @@
 # Rollover.java - 378 lines · 34 methods · 2 constants · model
 
-`ham/citybuildersim/Rollover.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Rollover.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > What falls due next month, refinanced: the treasury's rollover setting and the ledger of the surplus it has netted (0.7.13).
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [Auction](Auction.md) (6)
 
-**Used by (17):** [AuctionCheck](AuctionCheck.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityNeeds](CityNeeds.md), [DataSave](DataSave.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Game](Game.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (18):** [AuctionCheck](AuctionCheck.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityNeeds](CityNeeds.md), [DataSave](DataSave.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Game](Game.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Enum constants
 

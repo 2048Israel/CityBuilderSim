@@ -1,6 +1,6 @@
-# DataSave.java - 2,347 lines · 366 methods · 0 constants · model
+# DataSave.java - 2,369 lines · 370 methods · 0 constants · model
 
-`ham/citybuildersim/DataSave.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DataSave.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
@@ -15,9 +15,9 @@
 | 247 | · land and ore |
 | 334 | · the shedding warning |
 | 492 | · the header |
-| 902 | · construction, by id |
-| 995 | · charged, not derived |
-| 1077 | · policy |
+| 924 | · construction, by id |
+| 1017 | · charged, not derived |
+| 1099 | · policy |
 
 ## Fields (state)
 
@@ -118,117 +118,119 @@
 | 614 | `private double[] treasuryJournalPendingAmounts` |  |
 | 622 | `private double treasuryRaisedPending` | What the treasury has raised by issuing paper since the last strike - Game.treasuryRaisedSoFar - carried for the reason cityCapitalSpending is: a city saved between two presses has already raised what the next strike ... |
 | 631 | `private double retiredGainPending` | The gain on paper the treasury has retired since the last strike - Game.retiredGainSoFar (CD3), the carrying value less the price paid - carried for the same reason: a city saved between two presses, after a buyback, ... |
-| 642 | `private double cityPaperUnsettled` | The city's own paper its bank has taken and not yet paid for, with the discount on it - Game.getCityPaperUnsettled() - carried since 2026-09-21 because the bank now PAYS for the paper at the settle after the issue, an... |
-| 643 | `private double cityDiscountUnsettled` |  |
-| 677 | `private double[] governmentMonth` | The government's own month: twenty-three revenue and spending lines, saved and restored as one. |
-| 913 | `private int[] stackOrder` | THE ORDER THE CITY'S BUILDINGS STAND IN (0.7.43): their template ids in BuildingManager's list, which is the order each was first bought. |
-| 1087 | `private double[] taxPolicyState` |  |
-| 1100 | `private double[] householdBalance` | What the households have saved and what they owe, per pay tier. |
-| 1112 | `private String[] householdCellKeys` | The same stock, per CELL of the family matrix - one shape at one tier - since 2026-09-10, when the households became objects (Household, HouseholdBalance). |
-| 1113 | `private double[] householdCells` |  |
-| 1125 | `private double bankCash` | The bank's cash. |
-| 1135 | `private double rentWeight` | The housing match the month's rent was struck on. |
-| 1138 | `private java.util.List<String> subsidisedSectors` | The protected sectors, by name, and the month's VAT ledger by name. |
-| 1139 | `private SalesTaxLedger.State salesTax` |  |
-| 1141 | `private java.util.List<TaxPolicy.SectorOffsets> sectorOffsets` | Every sector's three tax offsets, by name. |
-| 1175 | `private double bankBranchesCapitalised` | Branches the shareholders have already paid capital for. |
-| 1187 | `private double bankProfitLastMonth` | The bank's profit for the month this save was taken in. |
-| 1193 | `private double bankDepositRate` | What savers were paid. |
-| 1209 | `private double[] foreignAccounts` | The city's foreign position: reserves, the trailing import bill the cover is measured against, how many months have been counted into it, and the exchange rate. |
-| 1215 | `private double[] rateHistory` | Game's ring of the last twelve exchange rates and how full it is (XR1): the year's depreciation the hot money reads. |
-| 1228 | `private double[] centralBank` | The central bank's balance sheet (0.7.0), under its own key: the two advances, the paper it holds, reserves and currency, the loss it carries, the remittance it owes, the lifetime totals and the trailing revenue its c... |
-| 1239 | `private String[] treasuryArrearsKeys` | What the treasury owes and has not paid (0.7.0): its arrears, as two parallel arrays - the ledger's key ("LINE" or "LINE:sector", see TreasuryLine) and the amount in thousands. |
-| 1240 | `private double[] treasuryArrearsAmounts` |  |
-| 1257 | `private double[] foreignStanding` | The city's standing with foreign lenders: the default scar and how long ago it was earned. |
-| 1269 | `private double[] capitalFlows` | Hot money: how much is here, and how long the city has left to sweat. |
-| 1280 | `private double[] outwardInvestment` | The city's own savings abroad, per sector. |
-| 1291 | `private String[] equityKeys` | The share register, company by company, named. |
-| 1292 | `private double[] equity` |  |
-| 1299 | `private double[] exchange` | The exchange's quotes, company by company, named. |
-| 1304 | `private Exchange.State exchangeState` | The exchange on its order books (0.7.12 round 2): every company's book with its resting orders, fair value, the split factors and the record. |
-| 1323 | `private double[] bankSolvency` | How often the bank has failed, what its creditors ate (before 0.7.14, when nothing absorbs a hole any more), whether it is frozen right now, and - on the end since 0.7.9 - what the city has put into it in rescues over... |
-| 1342 | `private double[] housingOccupancy` | Doors that were lived in when the month's housing pass ran. |
-| 1359 | `private double[] bankLastMonth` | The bank's last CLOSED month: payroll, upkeep, interest earned, book. |
-| 1371 | `private double[] bankPricingHistory` | The record the bank's loan prices are struck from (0.7.7): a year of payroll and upkeep beside the book they served - flows, which no month's end state can give back. |
-| 1383 | `private double bankLateProfit` | What the bank earned after its month's close (0.7.7) - the desk's re-mark, its dividends, the paper it bought from the households - which the next month's taxed profit carries. |
-| 1398 | `private java.util.Map<String, double[]> bankAllowance` | What the bank has set aside against its books (0.7.8), book by book - each sector's name and Bank.HOUSEHOLD_BOOK to {the allowance, what it held when the month opened, what the month wrote off, whether it is in troubl... |
-| 1410 | `private double[] bankCapitalRecord` | The record the bank's capital target is struck from (0.7.8): its worst year of provisions and the rings of the last year's provisions and weighted book, and the owners' year of dividends and buybacks. |
-| 1421 | `private double[] bankMonthLines` | The bank's month, line by line (0.7.8): every flow its income statement, its equity's movement and its funding page read. |
-| 1433 | `private double[] bankStatementYear` | The bank's year of statements (0.7.9): the months before the one saved, each filed whole at the top of the month after - what the Bank tab's last-month column and its last twelve months are read from. |
-| 1446 | `private double[] bankSheetYear` | The bank's balance sheet at the top of each of the last twelve months (0.7.13): every line of it and its loans by sector, what the Balance sheet page's year-ago column is read from. |
-| 1458 | `private Double bankPaidInOpening` | The bank's equity in two parts (0.7.13, round 2): its paid-in capital and its retained earnings at the top of the saved month, by name - the month's own causes are its statement lines (bankMonthLines). |
-| 1459 | `private Double bankRetainedOpening` |  |
-| 1472 | `private java.util.List<Bank.Preferred> bankPreferred` | The city's preferred in its bank (0.7.14), block by block - its par, the month it was issued, the dividend cap a share and its warrants - and the arrears with their record (Bank.preferredRecordToSave()). |
-| 1473 | `private double[] bankPreferredRecord` |  |
-| 1490 | `private TreasuryFund.State fund` | The city's fund (0.7.14), by name (TreasuryFund.State): its cash, its dial, the rescue setting, the bank's pending offer and its clocks, the rescues and the player's orders. |
-| 1497 | `private double[] debtMarket` | The city's debt market as it last struck its rate (0.7.14): DebtManager.marketToSave(). |
-| 1503 | `private double[] auctionTally` | The city's auctions counted (CD2, D33): AuctionTally.toSave(), fourteen slots. |
-| 1515 | `private double[] priceIndex` | The price basket, its weights, and a year of readings. |
-| 1529 | `private double[] expectations` | The anchor (0.7.42): credibility, smoothed inflation, expected inflation, the expected price level and whether it was seeded, then the month's lean, the level its money constants are struck at and (0.7.45) the month's... |
-| 1542 | `private double[] worldEconomy` | The world's price level and what it is rising at. |
-| 1558 | `private double tradedExchangeRate` | THE RATE THE MONTH WAS TRADED AT, as EconomyManager holds it: the foreign rate times the world's price level, struck at the top of the month and fanned out to the food market and the building manager. |
-| 1569 | `private double struckRate` | The D$ per US$ the city's goods were struck at (AN1, EconomyManager's THE D$ THE GOODS ARE STRUCK AT): the state the next month's strike moves from, which neither the D$ nor the traded rate above can give back. |
-| 1584 | `private double[] denomination` | The currency's unit and how many reforms it has been through. |
-| 1599 | `private Double policyRate` | The policy rate. |
-| 1610 | `private Boolean policyAutopilot` | Whether the rule held the dial when this was saved (0.7.0) - see DebtManager's autopilot. |
-| 1619 | `private String policyAim` | What the autopilot aims at (XR2; DebtManager.Aim), by name. |
-| 1633 | `private Double pegSpread` | The spread the dial stands at over the US's rate under a peg (XR2), a fraction a year. |
-| 1645 | `private String rolloverMode` | The treasury's rollover (0.7.13), by name: its setting, the ledger of what it netted from the year's surplus - {month, netted} pairs, so two months cannot net the same surplus twice across a reload - and its record (R... |
-| 1646 | `private double[] rolloverLedger` |  |
-| 1647 | `private double[] rolloverRecord` |  |
-| 1667 | `private String rolloverCapMode` | ...and the cap its auctions take (CD2, D28), the mode by name and the tail or yield beside it, two plain fields because a cap's Fill it carries no number and Gson writes no NaN (CapSetting). |
-| 1668 | `private double rolloverCapValue` |  |
-| 1685 | `private Boolean landPaidFromVault` | How the land office pays (0.7.6) - Game.isLandPaidFromVault(): true out of the vault's dollars, false converting cash. |
-| 1698 | `private Double inflationTarget` | The inflation target the rule aims at (0.7.4) - DebtManager .getInflationTarget(). |
-| 1710 | `private String policyStrictness` | How strictly the rule holds the target (0.7.52) - DebtManager .getStrictness(), by name, beside the target for the same reason. |
-| 1723 | `private double qeTargetShare` | The central bank's holdings dial (0.7.1): the share of the city's term paper it aims to hold - CentralBank.getTargetShare(). |
-| 1737 | `private Double advancesCeilingMonths` | The advances ceiling dial (0.7.2): the most the treasury may owe its central bank, in months of its revenue - CentralBank .getAdvancesCeilingMonths(). |
-| 1750 | `private double householdPaperRatio` | The month's ratio for the households' city paper (0.7.1): their book at the curve over its face, which their plan reads - so it is carried, and the load path re-strikes the plan on the figure the live path used. |
-| 1769 | `private BondMarket.State bondMarket` | THE BUSINESSES' BONDS (0.7.12): every bond and who holds it, every order book's resting orders, the market's month and its record over the city's life (BondMarket.State); what defaults have taken off the bonds, by sec... |
-| 1770 | `private java.util.Map<String, Double> bondWrittenOff` |  |
-| 1771 | `private double householdBondRatio` |  |
-| 1772 | `private java.util.Map<String, java.util.Map<String, Double>> householdBondsByCell` |  |
-| 1790 | `private double buybackToHouseholdsUnsettled` | What a buyback between two presses paid the households and a dollar bond's holders and the next month has not yet declared (0.7.1) - Game.getBuybackUnsettled() less the central bank's share, which rides in its own array. |
-| 1791 | `private double buybackAbroadUnsettled` |  |
-| 1814 | `private double rememberedCommute` | The commute the city REMEMBERS, which decides how many of its car owners get on a tram - see InfrastructureManager.noteCongestion(). |
-| 1820 | `private double carsPerHousehold` | Cars per household, as the road read it. |
-| 1834 | `private double transitBill` | The month's transit bill as advanceDemographics() 6d struck it (0.7.49): the buses' and trams' wages and upkeep. |
-| 1847 | `private double captiveShare` | ...and the commute as 6d struck it (0.7.49): the share of the working cells' workers with no car of their own, and a journey's fuel in the month's money. |
-| 1861 | `private double[] householdFuel` | ...and the drivers' fuel as 6d drew it (0.7.62, batch K): the bill, the part of it imported and the litres - a draw off the refiners' shelf is a month passing and cannot be run again by a load. |
-| 1874 | `private double[] householdGraduates` | ...and the students who finished a course and wait for the next census to carry their loans to the working families, beside the ones who carried theirs at this month's (0.7.63; HouseholdBalance.graduatesToSave()). |
-| 1891 | `private double costOfLiving` | How far wages have chased the cost of living. |
-| 1905 | `private double bankTaxCharged` | The tax the city actually took off the bank this month. |
-| 1931 | `private double rentWeightStudio` | The studio half of that weight, added 2026-09-09 with the segment split. |
-| 1964 | `private double[] cohorts` | The demographics. |
-| 1988 | `private String[] bandNames` | THE AGE BANDS THIS WHOLE SAVE WAS WRITTEN WITH (2026-09-15). |
-| 1990 | `private double[] families` |  |
-| 1991 | `private double[] migration` |  |
-| 2001 | `private double[] unemployment` | The people out of work: the EI claims by the month they began, who is past EI, who has been evicted, and the month the flows were struck against (2026-09-11). |
-| 2010 | `private double[] sickness` | Who has been sick how long: five rings of thirteen monthly shares, the last month's deaths from sickness by band, the recovery and whether the ring has been seeded (2026-09-11). |
-| 2020 | `private double[] crime` | Crime and the prisons (2026-09-11): six monthly cohorts of prisoners, the month as it was struck - the rate next month's migration reads, the killings next month's pyramid reads - and the running totals. |
-| 2033 | `private double[] health` | The month's sickness: the outbreak still decaying, and the rate the sectors were throttled by. |
-| 2046 | `private double[] healthcare` | The health service: plots used, the unburied backlog, and the month's bill. |
-| 2062 | `private double[] labour` | The minimum wage, then the eleven wages the city is actually paying. |
-| 2074 | `private double[] skilledWorkforce` | How many skilled workers the city has, by band. |
-| 2091 | `private double[] licences` | Who is licensed to practise what, and the schools' running total. |
-| 2092 | `private double[] education` |  |
-| 2123 | `private String[] shapeNames` | The household shapes this save was written with. |
-| 2156 | `private java.util.Map<String, Integer> sectorLossMonths` | The private sector's memory, and the player's own turn. |
-| 2157 | `private java.util.List<Long> populationTrend` |  |
-| 2158 | `private double cityCapitalSpending` |  |
-| 2159 | `private double monthlyMaterialImports` |  |
-| 2166 | `private double monthlyMaterialImportBill` | The same imports in money, at the price each was charged at - the builders' materials expense and the accounts' import line. |
-| 2167 | `private int materialsConsumed` |  |
-| 2190 | `private double cityMaintenancePaid` | What the treasury paid the builders to keep the city's own buildings up. |
-| 2207 | `private java.util.Map<String, String> lastInvestment` | THE INVESTORS' LAST WORD ON EACH SECTOR (0.7.102, Jerus's A22): what the month's investment pass decided for it and why - "Built 2 ...", "Holding: ...", a refusal - as Game.getLastInvestment() reads it, the Sectors sc... |
-| 2224 | `private java.util.Map<String, Double> subsidyPaid` | What each protected sector was paid last month. |
-| 2235 | `private double[] householdStatement` | The residents' month: twelve scalars and eleven per-tier arrays. |
+| 640 | `private double[] interestBookedByKind` | The month's interest expense on each kind of paper, in DebtManager.BOOK_KINDS' order - DebtManager.interestByKind (CD6), the rows of the budget's interest line the Government tab's grid reads after the month. |
+| 649 | `private double[][] curveBook` | The curve as the months behind it stood (CD6): one row a month, the newest DebtManager.CURVE_KEPT - [month, the dial, the city's zero rates at DebtManager.CURVE_TENORS, the world's at the same tenors] - DebtManager.cu... |
+| 660 | `private double cityPaperUnsettled` | The city's own paper its bank has taken and not yet paid for, with the discount on it - Game.getCityPaperUnsettled() - carried since 2026-09-21 because the bank now PAYS for the paper at the settle after the issue, an... |
+| 661 | `private double cityDiscountUnsettled` |  |
+| 699 | `private double[] governmentMonth` | The government's own month: twenty-three revenue and spending lines, saved and restored as one. |
+| 935 | `private int[] stackOrder` | THE ORDER THE CITY'S BUILDINGS STAND IN (0.7.43): their template ids in BuildingManager's list, which is the order each was first bought. |
+| 1109 | `private double[] taxPolicyState` |  |
+| 1122 | `private double[] householdBalance` | What the households have saved and what they owe, per pay tier. |
+| 1134 | `private String[] householdCellKeys` | The same stock, per CELL of the family matrix - one shape at one tier - since 2026-09-10, when the households became objects (Household, HouseholdBalance). |
+| 1135 | `private double[] householdCells` |  |
+| 1147 | `private double bankCash` | The bank's cash. |
+| 1157 | `private double rentWeight` | The housing match the month's rent was struck on. |
+| 1160 | `private java.util.List<String> subsidisedSectors` | The protected sectors, by name, and the month's VAT ledger by name. |
+| 1161 | `private SalesTaxLedger.State salesTax` |  |
+| 1163 | `private java.util.List<TaxPolicy.SectorOffsets> sectorOffsets` | Every sector's three tax offsets, by name. |
+| 1197 | `private double bankBranchesCapitalised` | Branches the shareholders have already paid capital for. |
+| 1209 | `private double bankProfitLastMonth` | The bank's profit for the month this save was taken in. |
+| 1215 | `private double bankDepositRate` | What savers were paid. |
+| 1231 | `private double[] foreignAccounts` | The city's foreign position: reserves, the trailing import bill the cover is measured against, how many months have been counted into it, and the exchange rate. |
+| 1237 | `private double[] rateHistory` | Game's ring of the last twelve exchange rates and how full it is (XR1): the year's depreciation the hot money reads. |
+| 1250 | `private double[] centralBank` | The central bank's balance sheet (0.7.0), under its own key: the two advances, the paper it holds, reserves and currency, the loss it carries, the remittance it owes, the lifetime totals and the trailing revenue its c... |
+| 1261 | `private String[] treasuryArrearsKeys` | What the treasury owes and has not paid (0.7.0): its arrears, as two parallel arrays - the ledger's key ("LINE" or "LINE:sector", see TreasuryLine) and the amount in thousands. |
+| 1262 | `private double[] treasuryArrearsAmounts` |  |
+| 1279 | `private double[] foreignStanding` | The city's standing with foreign lenders: the default scar and how long ago it was earned. |
+| 1291 | `private double[] capitalFlows` | Hot money: how much is here, and how long the city has left to sweat. |
+| 1302 | `private double[] outwardInvestment` | The city's own savings abroad, per sector. |
+| 1313 | `private String[] equityKeys` | The share register, company by company, named. |
+| 1314 | `private double[] equity` |  |
+| 1321 | `private double[] exchange` | The exchange's quotes, company by company, named. |
+| 1326 | `private Exchange.State exchangeState` | The exchange on its order books (0.7.12 round 2): every company's book with its resting orders, fair value, the split factors and the record. |
+| 1345 | `private double[] bankSolvency` | How often the bank has failed, what its creditors ate (before 0.7.14, when nothing absorbs a hole any more), whether it is frozen right now, and - on the end since 0.7.9 - what the city has put into it in rescues over... |
+| 1364 | `private double[] housingOccupancy` | Doors that were lived in when the month's housing pass ran. |
+| 1381 | `private double[] bankLastMonth` | The bank's last CLOSED month: payroll, upkeep, interest earned, book. |
+| 1393 | `private double[] bankPricingHistory` | The record the bank's loan prices are struck from (0.7.7): a year of payroll and upkeep beside the book they served - flows, which no month's end state can give back. |
+| 1405 | `private double bankLateProfit` | What the bank earned after its month's close (0.7.7) - the desk's re-mark, its dividends, the paper it bought from the households - which the next month's taxed profit carries. |
+| 1420 | `private java.util.Map<String, double[]> bankAllowance` | What the bank has set aside against its books (0.7.8), book by book - each sector's name and Bank.HOUSEHOLD_BOOK to {the allowance, what it held when the month opened, what the month wrote off, whether it is in troubl... |
+| 1432 | `private double[] bankCapitalRecord` | The record the bank's capital target is struck from (0.7.8): its worst year of provisions and the rings of the last year's provisions and weighted book, and the owners' year of dividends and buybacks. |
+| 1443 | `private double[] bankMonthLines` | The bank's month, line by line (0.7.8): every flow its income statement, its equity's movement and its funding page read. |
+| 1455 | `private double[] bankStatementYear` | The bank's year of statements (0.7.9): the months before the one saved, each filed whole at the top of the month after - what the Bank tab's last-month column and its last twelve months are read from. |
+| 1468 | `private double[] bankSheetYear` | The bank's balance sheet at the top of each of the last twelve months (0.7.13): every line of it and its loans by sector, what the Balance sheet page's year-ago column is read from. |
+| 1480 | `private Double bankPaidInOpening` | The bank's equity in two parts (0.7.13, round 2): its paid-in capital and its retained earnings at the top of the saved month, by name - the month's own causes are its statement lines (bankMonthLines). |
+| 1481 | `private Double bankRetainedOpening` |  |
+| 1494 | `private java.util.List<Bank.Preferred> bankPreferred` | The city's preferred in its bank (0.7.14), block by block - its par, the month it was issued, the dividend cap a share and its warrants - and the arrears with their record (Bank.preferredRecordToSave()). |
+| 1495 | `private double[] bankPreferredRecord` |  |
+| 1512 | `private TreasuryFund.State fund` | The city's fund (0.7.14), by name (TreasuryFund.State): its cash, its dial, the rescue setting, the bank's pending offer and its clocks, the rescues and the player's orders. |
+| 1519 | `private double[] debtMarket` | The city's debt market as it last struck its rate (0.7.14): DebtManager.marketToSave(). |
+| 1525 | `private double[] auctionTally` | The city's auctions counted (CD2, D33): AuctionTally.toSave(), fourteen slots. |
+| 1537 | `private double[] priceIndex` | The price basket, its weights, and a year of readings. |
+| 1551 | `private double[] expectations` | The anchor (0.7.42): credibility, smoothed inflation, expected inflation, the expected price level and whether it was seeded, then the month's lean, the level its money constants are struck at and (0.7.45) the month's... |
+| 1564 | `private double[] worldEconomy` | The world's price level and what it is rising at. |
+| 1580 | `private double tradedExchangeRate` | THE RATE THE MONTH WAS TRADED AT, as EconomyManager holds it: the foreign rate times the world's price level, struck at the top of the month and fanned out to the food market and the building manager. |
+| 1591 | `private double struckRate` | The D$ per US$ the city's goods were struck at (AN1, EconomyManager's THE D$ THE GOODS ARE STRUCK AT): the state the next month's strike moves from, which neither the D$ nor the traded rate above can give back. |
+| 1606 | `private double[] denomination` | The currency's unit and how many reforms it has been through. |
+| 1621 | `private Double policyRate` | The policy rate. |
+| 1632 | `private Boolean policyAutopilot` | Whether the rule held the dial when this was saved (0.7.0) - see DebtManager's autopilot. |
+| 1641 | `private String policyAim` | What the autopilot aims at (XR2; DebtManager.Aim), by name. |
+| 1655 | `private Double pegSpread` | The spread the dial stands at over the US's rate under a peg (XR2), a fraction a year. |
+| 1667 | `private String rolloverMode` | The treasury's rollover (0.7.13), by name: its setting, the ledger of what it netted from the year's surplus - {month, netted} pairs, so two months cannot net the same surplus twice across a reload - and its record (R... |
+| 1668 | `private double[] rolloverLedger` |  |
+| 1669 | `private double[] rolloverRecord` |  |
+| 1689 | `private String rolloverCapMode` | ...and the cap its auctions take (CD2, D28), the mode by name and the tail or yield beside it, two plain fields because a cap's Fill it carries no number and Gson writes no NaN (CapSetting). |
+| 1690 | `private double rolloverCapValue` |  |
+| 1707 | `private Boolean landPaidFromVault` | How the land office pays (0.7.6) - Game.isLandPaidFromVault(): true out of the vault's dollars, false converting cash. |
+| 1720 | `private Double inflationTarget` | The inflation target the rule aims at (0.7.4) - DebtManager .getInflationTarget(). |
+| 1732 | `private String policyStrictness` | How strictly the rule holds the target (0.7.52) - DebtManager .getStrictness(), by name, beside the target for the same reason. |
+| 1745 | `private double qeTargetShare` | The central bank's holdings dial (0.7.1): the share of the city's term paper it aims to hold - CentralBank.getTargetShare(). |
+| 1759 | `private Double advancesCeilingMonths` | The advances ceiling dial (0.7.2): the most the treasury may owe its central bank, in months of its revenue - CentralBank .getAdvancesCeilingMonths(). |
+| 1772 | `private double householdPaperRatio` | The month's ratio for the households' city paper (0.7.1): their book at the curve over its face, which their plan reads - so it is carried, and the load path re-strikes the plan on the figure the live path used. |
+| 1791 | `private BondMarket.State bondMarket` | THE BUSINESSES' BONDS (0.7.12): every bond and who holds it, every order book's resting orders, the market's month and its record over the city's life (BondMarket.State); what defaults have taken off the bonds, by sec... |
+| 1792 | `private java.util.Map<String, Double> bondWrittenOff` |  |
+| 1793 | `private double householdBondRatio` |  |
+| 1794 | `private java.util.Map<String, java.util.Map<String, Double>> householdBondsByCell` |  |
+| 1812 | `private double buybackToHouseholdsUnsettled` | What a buyback between two presses paid the households and a dollar bond's holders and the next month has not yet declared (0.7.1) - Game.getBuybackUnsettled() less the central bank's share, which rides in its own array. |
+| 1813 | `private double buybackAbroadUnsettled` |  |
+| 1836 | `private double rememberedCommute` | The commute the city REMEMBERS, which decides how many of its car owners get on a tram - see InfrastructureManager.noteCongestion(). |
+| 1842 | `private double carsPerHousehold` | Cars per household, as the road read it. |
+| 1856 | `private double transitBill` | The month's transit bill as advanceDemographics() 6d struck it (0.7.49): the buses' and trams' wages and upkeep. |
+| 1869 | `private double captiveShare` | ...and the commute as 6d struck it (0.7.49): the share of the working cells' workers with no car of their own, and a journey's fuel in the month's money. |
+| 1883 | `private double[] householdFuel` | ...and the drivers' fuel as 6d drew it (0.7.62, batch K): the bill, the part of it imported and the litres - a draw off the refiners' shelf is a month passing and cannot be run again by a load. |
+| 1896 | `private double[] householdGraduates` | ...and the students who finished a course and wait for the next census to carry their loans to the working families, beside the ones who carried theirs at this month's (0.7.63; HouseholdBalance.graduatesToSave()). |
+| 1913 | `private double costOfLiving` | How far wages have chased the cost of living. |
+| 1927 | `private double bankTaxCharged` | The tax the city actually took off the bank this month. |
+| 1953 | `private double rentWeightStudio` | The studio half of that weight, added 2026-09-09 with the segment split. |
+| 1986 | `private double[] cohorts` | The demographics. |
+| 2010 | `private String[] bandNames` | THE AGE BANDS THIS WHOLE SAVE WAS WRITTEN WITH (2026-09-15). |
+| 2012 | `private double[] families` |  |
+| 2013 | `private double[] migration` |  |
+| 2023 | `private double[] unemployment` | The people out of work: the EI claims by the month they began, who is past EI, who has been evicted, and the month the flows were struck against (2026-09-11). |
+| 2032 | `private double[] sickness` | Who has been sick how long: five rings of thirteen monthly shares, the last month's deaths from sickness by band, the recovery and whether the ring has been seeded (2026-09-11). |
+| 2042 | `private double[] crime` | Crime and the prisons (2026-09-11): six monthly cohorts of prisoners, the month as it was struck - the rate next month's migration reads, the killings next month's pyramid reads - and the running totals. |
+| 2055 | `private double[] health` | The month's sickness: the outbreak still decaying, and the rate the sectors were throttled by. |
+| 2068 | `private double[] healthcare` | The health service: plots used, the unburied backlog, and the month's bill. |
+| 2084 | `private double[] labour` | The minimum wage, then the eleven wages the city is actually paying. |
+| 2096 | `private double[] skilledWorkforce` | How many skilled workers the city has, by band. |
+| 2113 | `private double[] licences` | Who is licensed to practise what, and the schools' running total. |
+| 2114 | `private double[] education` |  |
+| 2145 | `private String[] shapeNames` | The household shapes this save was written with. |
+| 2178 | `private java.util.Map<String, Integer> sectorLossMonths` | The private sector's memory, and the player's own turn. |
+| 2179 | `private java.util.List<Long> populationTrend` |  |
+| 2180 | `private double cityCapitalSpending` |  |
+| 2181 | `private double monthlyMaterialImports` |  |
+| 2188 | `private double monthlyMaterialImportBill` | The same imports in money, at the price each was charged at - the builders' materials expense and the accounts' import line. |
+| 2189 | `private int materialsConsumed` |  |
+| 2212 | `private double cityMaintenancePaid` | What the treasury paid the builders to keep the city's own buildings up. |
+| 2229 | `private java.util.Map<String, String> lastInvestment` | THE INVESTORS' LAST WORD ON EACH SECTOR (0.7.102, Jerus's A22): what the month's investment pass decided for it and why - "Built 2 ...", "Holding: ...", a refusal - as Game.getLastInvestment() reads it, the Sectors sc... |
+| 2246 | `private java.util.Map<String, Double> subsidyPaid` | What each protected sector was paid last month. |
+| 2257 | `private double[] householdStatement` | The residents' month: twelve scalars and eleven per-tier arrays. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 2336 | **type** `public class DataSave implements Cloneable` |  |
+| 12 | 2358 | **type** `public class DataSave implements Cloneable` |  |
 | 223 | 1 | `public void setSectors(java.util.List<SectorState> s)` |  |
 | 224 | 1 | `public java.util.List<SectorState> getSectors()` |  |
 | 225 | 1 | `public void setMarkets(java.util.List<Markets.State> m)` |  |
@@ -247,7 +249,7 @@
 | 444 | 3 | `public java.util.List<SectorBooks.SectorMonth> getSectorBooks()` |  |
 | 448 | 3 | `public java.util.List<SectorBooks.SectorMonth> getSectorBooksBefore()` |  |
 
-### the header (lines 492-901)
+### the header (lines 492-923)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -264,362 +266,366 @@
 | 584 | 1 | `public String getCityName()` | The city's name as saved, or null on a save from before 0.7.10. |
 | 595 | 1 | `public void setTreasuryMonth(double[] state)` |  |
 | 596 | 1 | `public double[] getTreasuryMonth()` |  |
-| 645 | 4 | `public void setCityPaperUnsettled(double cash, double discount)` |  |
-| 649 | 1 | `public double getCityPaperUnsettled()` |  |
-| 650 | 1 | `public double getCityDiscountUnsettled()` |  |
-| 652 | 7 | `public void setTreasuryJournal(String[] labels, double[] amounts, String[] pendingLabels, double[] pendingAmounts)` |  |
-| 659 | 1 | `public String[] getTreasuryJournalLabels()` |  |
-| 660 | 1 | `public double[] getTreasuryJournalAmounts()` |  |
-| 661 | 1 | `public String[] getTreasuryJournalPendingLabels()` |  |
-| 662 | 1 | `public double[] getTreasuryJournalPendingAmounts()` |  |
-| 663 | 1 | `public void setTreasuryRaisedPending(double v)` |  |
-| 664 | 1 | `public double getTreasuryRaisedPending()` |  |
-| 665 | 1 | `public void setRetiredGainPending(double v)` |  |
-| 666 | 1 | `public double getRetiredGainPending()` |  |
-| 679 | 1 | `public void setGovernmentMonth(double[] state)` |  |
-| 680 | 1 | `public double[] getGovernmentMonth()` |  |
-| 681 | 1 | `public String getSlotName()` |  |
-| 684 | 5 | `public void stamp(String gameVersion, int saveFormat, long savedAt)` | Stamped at save time so a save always says which build wrote it. |
-| 690 | 1 | `public String getGameVersion()` |  |
-| 691 | 1 | `public int getSaveFormat()` |  |
-| 692 | 1 | `public long getSavedAt()` |  |
-| 694 | 1 | `public void setHouseholdSavings(double value)` |  |
-| 695 | 1 | `public double getHouseholdSavings()` |  |
-| 697 | 1 | `public void setLandOwned(double sqFt)` |  |
-| 698 | 1 | `public void setLandBlocksPurchased(int blocks)` |  |
-| 699 | 1 | `public void setLandPricePerSqFt(double price)` |  |
-| 701 | 1 | `public double getLandOwned()` |  |
-| 702 | 1 | `public int getLandBlocksPurchased()` |  |
-| 703 | 1 | `public double getLandPricePerSqFt()` |  |
-| 705 | 1 | `public void setIncomeTaxRate(double rate)` |  |
-| 706 | 1 | `public void setPropertyTaxRate(double rate)` |  |
-| 708 | 1 | `public double getIncomeTaxRate()` |  |
-| 709 | 1 | `public double getPropertyTaxRate()` |  |
-| 711 | 3 | `public void setUnderConstruction(int[] underConstruction)` |  |
-| 716 | 3 | `public void setCash(double money)` | setters |
-| 720 | 3 | `public void setMonth(int month)` |  |
-| 724 | 3 | `public void setBuildingNum(int i)` |  |
-| 728 | 6 | `public void setBuildingQuantity(int index, int quantity)` |  |
-| 735 | 4 | `public void setDebt(List<Debt> debts)` |  |
-| 740 | 3 | `public void setProgress(double[] progress)` |  |
-| 744 | 3 | `public void setConstructionMaterials(int constructionMaterials)` |  |
-| 748 | 3 | `public void setPopulation(long population)` |  |
-| 751 | 3 | `public void setReports(boolean reports)` |  |
-| 764 | 4 | `public void setNotices(java.util.List<Notice> notices)` | The city's inbox. |
-| 768 | 3 | `public void setGraphs(boolean graphs)` |  |
-| 804 | 28 | `public GameFiles.Result saveGame(GameFiles files, int slot)` | Writes the save, and refuses to take the game down with it if it cannot. |
-| 851 | 9 | `public DataSave snapshot()` | A copy of this save for the writer thread (UP1, 2026-10-22): the object itself, shallow, plus a copy of every array or list DataSave mutates in place. |
-| 869 | 25 | `private String describeUnwritable()` | Names the field that broke, if it can find it. |
-| 895 | 4 | `private void append(StringBuilder sb, String name, double value)` |  |
+| 663 | 4 | `public void setCityPaperUnsettled(double cash, double discount)` |  |
+| 667 | 1 | `public double getCityPaperUnsettled()` |  |
+| 668 | 1 | `public double getCityDiscountUnsettled()` |  |
+| 670 | 7 | `public void setTreasuryJournal(String[] labels, double[] amounts, String[] pendingLabels, double[] pendingAmounts)` |  |
+| 677 | 1 | `public String[] getTreasuryJournalLabels()` |  |
+| 678 | 1 | `public double[] getTreasuryJournalAmounts()` |  |
+| 679 | 1 | `public String[] getTreasuryJournalPendingLabels()` |  |
+| 680 | 1 | `public double[] getTreasuryJournalPendingAmounts()` |  |
+| 681 | 1 | `public void setTreasuryRaisedPending(double v)` |  |
+| 682 | 1 | `public double getTreasuryRaisedPending()` |  |
+| 683 | 1 | `public void setRetiredGainPending(double v)` |  |
+| 684 | 1 | `public double getRetiredGainPending()` |  |
+| 685 | 1 | `public void setInterestBookedByKind(double[] v)` |  |
+| 686 | 1 | `public double[] getInterestBookedByKind()` |  |
+| 687 | 1 | `public void setCurveBook(double[][] v)` |  |
+| 688 | 1 | `public double[][] getCurveBook()` |  |
+| 701 | 1 | `public void setGovernmentMonth(double[] state)` |  |
+| 702 | 1 | `public double[] getGovernmentMonth()` |  |
+| 703 | 1 | `public String getSlotName()` |  |
+| 706 | 5 | `public void stamp(String gameVersion, int saveFormat, long savedAt)` | Stamped at save time so a save always says which build wrote it. |
+| 712 | 1 | `public String getGameVersion()` |  |
+| 713 | 1 | `public int getSaveFormat()` |  |
+| 714 | 1 | `public long getSavedAt()` |  |
+| 716 | 1 | `public void setHouseholdSavings(double value)` |  |
+| 717 | 1 | `public double getHouseholdSavings()` |  |
+| 719 | 1 | `public void setLandOwned(double sqFt)` |  |
+| 720 | 1 | `public void setLandBlocksPurchased(int blocks)` |  |
+| 721 | 1 | `public void setLandPricePerSqFt(double price)` |  |
+| 723 | 1 | `public double getLandOwned()` |  |
+| 724 | 1 | `public int getLandBlocksPurchased()` |  |
+| 725 | 1 | `public double getLandPricePerSqFt()` |  |
+| 727 | 1 | `public void setIncomeTaxRate(double rate)` |  |
+| 728 | 1 | `public void setPropertyTaxRate(double rate)` |  |
+| 730 | 1 | `public double getIncomeTaxRate()` |  |
+| 731 | 1 | `public double getPropertyTaxRate()` |  |
+| 733 | 3 | `public void setUnderConstruction(int[] underConstruction)` |  |
+| 738 | 3 | `public void setCash(double money)` | setters |
+| 742 | 3 | `public void setMonth(int month)` |  |
+| 746 | 3 | `public void setBuildingNum(int i)` |  |
+| 750 | 6 | `public void setBuildingQuantity(int index, int quantity)` |  |
+| 757 | 4 | `public void setDebt(List<Debt> debts)` |  |
+| 762 | 3 | `public void setProgress(double[] progress)` |  |
+| 766 | 3 | `public void setConstructionMaterials(int constructionMaterials)` |  |
+| 770 | 3 | `public void setPopulation(long population)` |  |
+| 773 | 3 | `public void setReports(boolean reports)` |  |
+| 786 | 4 | `public void setNotices(java.util.List<Notice> notices)` | The city's inbox. |
+| 790 | 3 | `public void setGraphs(boolean graphs)` |  |
+| 826 | 28 | `public GameFiles.Result saveGame(GameFiles files, int slot)` | Writes the save, and refuses to take the game down with it if it cannot. |
+| 873 | 9 | `public DataSave snapshot()` | A copy of this save for the writer thread (UP1, 2026-10-22): the object itself, shallow, plus a copy of every array or list DataSave mutates in place. |
+| 891 | 25 | `private String describeUnwritable()` | Names the field that broke, if it can find it. |
+| 917 | 4 | `private void append(StringBuilder sb, String name, double value)` |  |
 
-### construction, by id (lines 902-994)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 915 | 1 | `public void setStackOrder(int[] templateIds)` |  |
-| 916 | 1 | `public int[] getStackOrder()` |  |
-| 918 | 6 | `public void setConstructionById(int[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue)` |  |
-| 926 | 1 | `public boolean hasContractsById()` | False on a save that kept one order book for the whole city. |
-| 928 | 1 | `public void setContractRecords(java.util.List<BuildingManager.ContractRecord> records)` |  |
-| 930 | 1 | `public java.util.List<BuildingManager.ContractRecord> getContractRecords()` | Null on a save from before 0.7.19. |
-| 933 | 1 | `public void setConstructionControl(ConstructionControl.State state)` | UP1: a copy - toState() is the control's own live state. |
-| 935 | 1 | `public ConstructionControl.State getConstructionControl()` | Null on a save from before 0.7.22 (format 27 and older). |
-| 937 | 1 | `public void setDecisionLog(java.util.List<DecisionLog.Entry> log)` |  |
-| 939 | 1 | `public java.util.List<DecisionLog.Entry> getDecisionLog()` | Null on a save from before 0.7.23 (format 28 and older). |
-| 941 | 1 | `public void setAutoBuild(AutoBuilder.State state)` |  |
-| 943 | 1 | `public AutoBuilder.State getAutoBuild()` | Null on a save from before 0.7.73. |
-| 945 | 1 | `public void setReserve(StrategicReserve.State state)` |  |
-| 947 | 1 | `public StrategicReserve.State getReserve()` | Null on a save from before 0.7.85. |
-| 949 | 1 | `public void setZoning(Zoning.State state)` |  |
-| 951 | 1 | `public Zoning.State getZoning()` | Null on a save from before 0.7.107, or with nothing zoned, no law and no forest cleared. |
-| 953 | 1 | `public void setPortMonth(Ports.State state)` |  |
-| 955 | 1 | `public Ports.State getPortMonth()` | Null on a save from before 0.7.86. |
-| 958 | 3 | `public boolean hasConstructionById()` | False for a save written before the format changed. |
-| 962 | 3 | `public int getConstructionByIdLength()` |  |
-| 966 | 6 | `public int getUnderConstructionById(int templateId)` |  |
-| 973 | 6 | `public double getConstructionProgressById(int templateId)` |  |
-| 980 | 6 | `public double getContractValueById(int templateId)` |  |
-| 988 | 6 | `public double getMaterialsOwedById(int templateId)` | Zero on a save that has no record: its orders drew their material the day they were placed. |
-
-### charged, not derived (lines 995-1076)
+### construction, by id (lines 924-1016)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 997 | 1 | `public void setPropertyTaxCharged(double value)` |  |
-| 998 | 1 | `public double getPropertyTaxCharged()` |  |
-| 1000 | 1 | `public void setCityInterestAccrued(double value)` |  |
-| 1001 | 1 | `public double getCityInterestAccrued()` |  |
-| 1003 | 1 | `public void setWorkforce(long workforce)` |  |
-| 1006 | 1 | `public long getWorkforce()` | -1 when the save predates this field. |
-| 1009 | 16 | `public void setCityLand(double[] centre, double[][] centreRects, double[][] holdings, double[][] partFields, double[][] convert...` | The city's land on the world, whole (0.7.57; on the block grid since 0.7.67, format 32): see land and ore above. |
-| 1027 | 1 | `public double[] getLandCentre()` | The centre's record: 24 wide in format 32, 25 (with a half-side) in format 31. |
-| 1029 | 1 | `public double[][] getLandCentreRects()` | The centre's blocks (format 32). |
-| 1031 | 1 | `public double[][] getLandHoldings()` | The purchases since, 31 wide (format 32). |
-| 1033 | 1 | `public double[][] getLandPartFields()` | The fields held in part (format 32), or null. |
-| 1035 | 1 | `public double[][] getLandConverted()` | A converted city's purchase history (format 32), or null. |
-| 1037 | 1 | `public double[] getLandLanes()` | A format-31 save's lanes: read only to convert. |
-| 1039 | 1 | `public double[][] getLandPurchases()` | A format-31 save's purchases, 28 wide: read only to convert. |
-| 1040 | 1 | `public double[][] getLandOffers()` |  |
-| 1042 | 1 | `public int getNextOfferId()` | The next offer's id, 1 on a save that has none. |
-| 1043 | 1 | `public double[] getDepletion()` |  |
-| 1045 | 1 | `public void setOilDepletionAtSea(double tonnes)` |  |
-| 1046 | 1 | `public void setDepletionByType(double[][] byType)` |  |
-| 1048 | 1 | `public double[][] getDepletionByType()` | E by type as saved (0.7.110), a row per resource or null for the walk's reading; null on a save that carries none. |
-| 1050 | 1 | `public Double getOilDepletionAtSea()` | The offshore pool's E as saved (0.7.93), or null on a save from before the two pools. |
-| 1052 | 1 | `public void setLandOldWorldHoldings(int holdings)` |  |
-| 1054 | 1 | `public Integer getLandOldWorldHoldings()` | How many holdings hold the old world's fields, as saved (0.7.99), or null on a save from before. |
-| 1055 | 1 | `public double[] getWorldTotals()` |  |
-| 1057 | 1 | `public Double getWorldSeaTheta()` | The world's sea level as stored, or null on a save from before 0.7.57. |
-| 1059 | 1 | `public void setFreshRights(double units)` |  |
-| 1061 | 1 | `public Double getFreshRights()` | The water rights as saved, or null on a save from before 0.7.59. |
-| 1063 | 1 | `public void setMapStamp(Long stamp)` |  |
-| 1065 | 1 | `public Long getMapStamp()` | The city map's sidecar stamp, or null when the city had no map (or the save is from before 0.7.60). |
-| 1068 | 1 | `public double[] getLandListing()` | An older save's nine parcels, read by nothing since 0.7.57 but kept to say what the save carried. |
-| 1069 | 1 | `public void setLandMarketPrices(double[] state)` |  |
-| 1070 | 1 | `public double[] getLandMarketPrices()` |  |
-| 1072 | 1 | `public int getIronDeposits()` | An older save's pool of iron sites, 0 when it carries none: what LandConversion reads. |
-| 1074 | 1 | `public double getIronReserveTonnes()` | ...and its tonnes. |
+| 937 | 1 | `public void setStackOrder(int[] templateIds)` |  |
+| 938 | 1 | `public int[] getStackOrder()` |  |
+| 940 | 6 | `public void setConstructionById(int[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue)` |  |
+| 948 | 1 | `public boolean hasContractsById()` | False on a save that kept one order book for the whole city. |
+| 950 | 1 | `public void setContractRecords(java.util.List<BuildingManager.ContractRecord> records)` |  |
+| 952 | 1 | `public java.util.List<BuildingManager.ContractRecord> getContractRecords()` | Null on a save from before 0.7.19. |
+| 955 | 1 | `public void setConstructionControl(ConstructionControl.State state)` | UP1: a copy - toState() is the control's own live state. |
+| 957 | 1 | `public ConstructionControl.State getConstructionControl()` | Null on a save from before 0.7.22 (format 27 and older). |
+| 959 | 1 | `public void setDecisionLog(java.util.List<DecisionLog.Entry> log)` |  |
+| 961 | 1 | `public java.util.List<DecisionLog.Entry> getDecisionLog()` | Null on a save from before 0.7.23 (format 28 and older). |
+| 963 | 1 | `public void setAutoBuild(AutoBuilder.State state)` |  |
+| 965 | 1 | `public AutoBuilder.State getAutoBuild()` | Null on a save from before 0.7.73. |
+| 967 | 1 | `public void setReserve(StrategicReserve.State state)` |  |
+| 969 | 1 | `public StrategicReserve.State getReserve()` | Null on a save from before 0.7.85. |
+| 971 | 1 | `public void setZoning(Zoning.State state)` |  |
+| 973 | 1 | `public Zoning.State getZoning()` | Null on a save from before 0.7.107, or with nothing zoned, no law and no forest cleared. |
+| 975 | 1 | `public void setPortMonth(Ports.State state)` |  |
+| 977 | 1 | `public Ports.State getPortMonth()` | Null on a save from before 0.7.86. |
+| 980 | 3 | `public boolean hasConstructionById()` | False for a save written before the format changed. |
+| 984 | 3 | `public int getConstructionByIdLength()` |  |
+| 988 | 6 | `public int getUnderConstructionById(int templateId)` |  |
+| 995 | 6 | `public double getConstructionProgressById(int templateId)` |  |
+| 1002 | 6 | `public double getContractValueById(int templateId)` |  |
+| 1010 | 6 | `public double getMaterialsOwedById(int templateId)` | Zero on a save that has no record: its orders drew their material the day they were placed. |
 
-### policy (lines 1077-2347)
+### charged, not derived (lines 1017-1098)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1143 | 1 | `public void setSubsidisedSectors(java.util.List<String> keys)` |  |
-| 1144 | 1 | `public java.util.List<String> getSubsidisedSectors()` |  |
-| 1145 | 1 | `public void setSalesTax(SalesTaxLedger.State state)` |  |
-| 1146 | 1 | `public SalesTaxLedger.State getSalesTax()` |  |
-| 1147 | 1 | `public void setSectorOffsets(java.util.List<TaxPolicy.SectorOffsets> o)` |  |
-| 1148 | 1 | `public java.util.List<TaxPolicy.SectorOffsets> getSectorOffsets()` |  |
-| 1150 | 1 | `public void setTaxPolicyState(double[] state)` |  |
-| 1151 | 1 | `public double[] getTaxPolicyState()` |  |
-| 1153 | 1 | `public void setHouseholdBalance(double[] state)` |  |
-| 1154 | 1 | `public double[] getHouseholdBalance()` |  |
-| 1156 | 4 | `public void setHouseholdCells(String[] keys, double[] state)` |  |
-| 1160 | 1 | `public String[] getHouseholdCellKeys()` |  |
-| 1161 | 1 | `public double[] getHouseholdCells()` |  |
-| 1163 | 1 | `public void setBankCash(double cash)` |  |
-| 1164 | 1 | `public double getBankCash()` |  |
-| 1177 | 1 | `public void setBankBranchesCapitalised(double n)` |  |
-| 1178 | 1 | `public double getBankBranchesCapitalised()` |  |
-| 1189 | 1 | `public void setBankProfitLastMonth(double v)` |  |
-| 1190 | 1 | `public double getBankProfitLastMonth()` |  |
-| 1194 | 1 | `public void setBankDepositRate(double v)` |  |
-| 1195 | 1 | `public double getBankDepositRate()` |  |
-| 1211 | 1 | `public void setForeignAccounts(double[] state)` |  |
-| 1212 | 1 | `public double[] getForeignAccounts()` |  |
-| 1217 | 1 | `public void setRateHistory(double[] ring)` |  |
-| 1218 | 1 | `public double[] getRateHistory()` |  |
-| 1230 | 1 | `public void setCentralBank(double[] state)` |  |
-| 1231 | 1 | `public double[] getCentralBank()` |  |
-| 1242 | 4 | `public void setTreasuryArrears(String[] keys, double[] amounts)` |  |
-| 1246 | 1 | `public String[] getTreasuryArrearsKeys()` |  |
-| 1247 | 1 | `public double[] getTreasuryArrearsAmounts()` |  |
-| 1259 | 1 | `public void setForeignStanding(double[] state)` |  |
-| 1260 | 1 | `public double[] getForeignStanding()` |  |
-| 1271 | 1 | `public void setCapitalFlows(double[] state)` |  |
-| 1272 | 1 | `public double[] getCapitalFlows()` |  |
-| 1282 | 1 | `public void setOutwardInvestment(double[] state)` |  |
-| 1283 | 1 | `public double[] getOutwardInvestment()` |  |
-| 1294 | 1 | `public void setEquity(String[] keys, double[] state)` |  |
-| 1295 | 1 | `public String[] getEquityKeys()` |  |
-| 1296 | 1 | `public double[] getEquity()` |  |
-| 1300 | 1 | `public void setExchange(double[] state)` |  |
-| 1301 | 1 | `public double[] getExchange()` |  |
-| 1306 | 1 | `public void setExchangeState(Exchange.State state)` | UP1: a copy - toState() lists the exchange's own books. |
-| 1307 | 1 | `public Exchange.State getExchangeState()` |  |
-| 1325 | 1 | `public void setBankSolvency(double[] state)` |  |
-| 1326 | 1 | `public double[] getBankSolvency()` |  |
-| 1344 | 1 | `public void setHousingOccupancy(double[] state)` |  |
-| 1345 | 1 | `public double[] getHousingOccupancy()` |  |
-| 1361 | 1 | `public void setBankLastMonth(double[] state)` |  |
-| 1362 | 1 | `public double[] getBankLastMonth()` |  |
-| 1373 | 1 | `public void setBankPricingHistory(double[] state)` |  |
-| 1374 | 1 | `public double[] getBankPricingHistory()` |  |
-| 1385 | 1 | `public void setBankLateProfit(double value)` |  |
-| 1386 | 1 | `public double getBankLateProfit()` |  |
-| 1400 | 1 | `public void setBankAllowance(java.util.Map<String, double[]> state)` |  |
-| 1401 | 1 | `public java.util.Map<String, double[]> getBankAllowance()` |  |
-| 1412 | 1 | `public void setBankCapitalRecord(double[] state)` |  |
-| 1413 | 1 | `public double[] getBankCapitalRecord()` |  |
-| 1423 | 1 | `public void setBankMonthLines(double[] state)` |  |
-| 1424 | 1 | `public double[] getBankMonthLines()` |  |
-| 1435 | 1 | `public void setBankStatementYear(double[] state)` |  |
-| 1436 | 1 | `public double[] getBankStatementYear()` |  |
-| 1448 | 1 | `public void setBankSheetYear(double[] state)` |  |
-| 1449 | 1 | `public double[] getBankSheetYear()` |  |
-| 1461 | 1 | `public void setBankPaidInOpening(Double value)` |  |
-| 1462 | 1 | `public Double getBankPaidInOpening()` |  |
-| 1463 | 1 | `public void setBankRetainedOpening(Double value)` |  |
-| 1464 | 1 | `public Double getBankRetainedOpening()` |  |
-| 1475 | 5 | `public void setBankPreferred(java.util.List<Bank.Preferred> blocks, double[] record)` |  |
-| 1480 | 1 | `public java.util.List<Bank.Preferred> getBankPreferred()` |  |
-| 1481 | 1 | `public double[] getBankPreferredRecord()` |  |
-| 1493 | 1 | `public void setFund(TreasuryFund.State state)` | UP1: a copy - toState() lists the fund's own resolutions and orders. |
-| 1494 | 1 | `public TreasuryFund.State getFund()` |  |
-| 1499 | 1 | `public void setDebtMarket(double[] market)` |  |
-| 1500 | 1 | `public double[] getDebtMarket()` |  |
-| 1505 | 1 | `public void setAuctionTally(double[] tally)` |  |
-| 1506 | 1 | `public double[] getAuctionTally()` |  |
-| 1517 | 1 | `public void setPriceIndex(double[] state)` |  |
-| 1518 | 1 | `public double[] getPriceIndex()` |  |
-| 1531 | 1 | `public void setExpectations(double[] state)` |  |
-| 1532 | 1 | `public double[] getExpectations()` |  |
-| 1544 | 1 | `public void setWorldEconomy(double[] state)` |  |
-| 1545 | 1 | `public double[] getWorldEconomy()` |  |
-| 1560 | 1 | `public void setTradedExchangeRate(double rate)` |  |
-| 1561 | 1 | `public double getTradedExchangeRate()` |  |
-| 1571 | 1 | `public void setStruckRate(double rate)` |  |
-| 1572 | 1 | `public double getStruckRate()` |  |
-| 1586 | 1 | `public void setDenomination(double[] state)` |  |
-| 1587 | 1 | `public double[] getDenomination()` |  |
-| 1601 | 1 | `public void setPolicyRate(double rate)` |  |
-| 1603 | 1 | `public Double getPolicyRate()` | The rate as saved, or null on a save that did not carry one. |
-| 1612 | 1 | `public void setPolicyAutopilot(boolean on)` |  |
-| 1613 | 1 | `public boolean getPolicyAutopilot()` |  |
-| 1621 | 1 | `public void setPolicyAim(String name)` |  |
-| 1622 | 6 | `public DebtManager.Aim getPolicyAim()` |  |
-| 1635 | 1 | `public void setPegSpread(double spread)` |  |
-| 1636 | 1 | `public double getPegSpread()` |  |
-| 1649 | 1 | `public void setRolloverMode(String mode)` |  |
-| 1651 | 5 | `public Rollover.Mode getRolloverMode()` | The setting as saved; MANUAL for an older save or a name this build does not know. |
-| 1656 | 1 | `public void setRolloverLedger(double[] ledger)` |  |
-| 1657 | 1 | `public double[] getRolloverLedger()` |  |
-| 1658 | 1 | `public void setRolloverRecord(double[] record)` |  |
-| 1659 | 1 | `public double[] getRolloverRecord()` |  |
-| 1670 | 5 | `public void setRolloverCap(Auction.Cap cap)` |  |
-| 1675 | 3 | `public Auction.Cap getRolloverCap()` |  |
-| 1687 | 1 | `public void setLandPaidFromVault(boolean fromVault)` |  |
-| 1688 | 1 | `public boolean getLandPaidFromVault()` |  |
-| 1700 | 1 | `public void setInflationTarget(double target)` |  |
-| 1702 | 1 | `public Double getInflationTarget()` | The target as saved, or null on a save from before the dial. |
-| 1712 | 1 | `public void setPolicyStrictness(String name)` |  |
-| 1714 | 1 | `public DebtManager.Strictness getPolicyStrictness()` | The strictness as saved; STANDARD for an older save or a name this build does not know. |
-| 1725 | 1 | `public void setQeTargetShare(double share)` |  |
-| 1726 | 1 | `public double getQeTargetShare()` |  |
-| 1739 | 1 | `public void setAdvancesCeilingMonths(double months)` |  |
-| 1741 | 1 | `public Double getAdvancesCeilingMonths()` | The ceiling as saved, or null on a save from before the dial. |
-| 1752 | 1 | `public void setHouseholdPaperRatio(double ratio)` |  |
-| 1753 | 1 | `public double getHouseholdPaperRatio()` |  |
-| 1775 | 1 | `public void setBondMarket(BondMarket.State state)` | UP1: a copy - toState() lists the market's own bonds and books. |
-| 1776 | 1 | `public BondMarket.State getBondMarket()` |  |
-| 1777 | 1 | `public void setBondWrittenOff(java.util.Map<String, Double> totals)` |  |
-| 1778 | 1 | `public java.util.Map<String, Double> getBondWrittenOff()` |  |
-| 1779 | 1 | `public void setHouseholdBondRatio(double ratio)` |  |
-| 1780 | 1 | `public double getHouseholdBondRatio()` |  |
-| 1781 | 1 | `public void setHouseholdBondsByCell(java.util.Map<String, java.util.Map<String, Double>> byCell)` |  |
-| 1782 | 1 | `public java.util.Map<String, java.util.Map<String, Double>> getHouseholdBondsByCell()` |  |
-| 1793 | 4 | `public void setBuybackUnsettled(double households, double abroad)` |  |
-| 1797 | 1 | `public double getBuybackToHouseholdsUnsettled()` |  |
-| 1798 | 1 | `public double getBuybackAbroadUnsettled()` |  |
-| 1822 | 1 | `public void setCarsPerHousehold(double v)` |  |
-| 1823 | 1 | `public double getCarsPerHousehold()` |  |
-| 1836 | 1 | `public void setTransitBill(double v)` |  |
-| 1837 | 1 | `public double getTransitBill()` |  |
-| 1849 | 1 | `public void setCaptiveShare(double v)` |  |
-| 1850 | 1 | `public double getCaptiveShare()` |  |
-| 1851 | 1 | `public void setFuelPerJourney(double v)` |  |
-| 1852 | 1 | `public double getFuelPerJourney()` |  |
-| 1863 | 1 | `public void setHouseholdFuel(double[] v)` |  |
-| 1864 | 1 | `public double[] getHouseholdFuel()` |  |
-| 1876 | 1 | `public void setHouseholdGraduates(double[] v)` |  |
-| 1877 | 1 | `public double[] getHouseholdGraduates()` |  |
-| 1879 | 1 | `public void setRememberedCommute(double v)` |  |
-| 1880 | 3 | `public double getRememberedCommute()` |  |
-| 1893 | 1 | `public void setCostOfLiving(double v)` |  |
-| 1894 | 1 | `public double getCostOfLiving()` |  |
-| 1907 | 1 | `public void setBankTaxCharged(double v)` |  |
-| 1908 | 1 | `public double getBankTaxCharged()` |  |
-| 1912 | 1 | `public void setRentWeight(double weight)` | What the landlords billed this month - see FamilyModel.setRentWeight(). |
-| 1913 | 1 | `public double getRentWeight()` |  |
-| 1933 | 1 | `public void setRentWeightStudio(double weight)` |  |
-| 1934 | 1 | `public double getRentWeightStudio()` |  |
-| 1936 | 4 | `public void setConstructionShedding(int month, double points)` |  |
-| 1940 | 1 | `public int getConstructionShedMonth()` |  |
-| 1941 | 1 | `public double getConstructionShedPoints()` |  |
-| 1943 | 3 | `public void setDemolitions(java.util.List<DemolitionLog.Entry> entries)` |  |
-| 1946 | 1 | `public java.util.List<DemolitionLog.Entry> getDemolitions()` |  |
-| 2095 | 1 | `public void setLicences(double[] a)` | UP1: a copy, not the live head counts - PopulationManager hands out its own arrays. |
-| 2096 | 1 | `public double[] getLicences()` |  |
-| 2097 | 1 | `public void setEducation(double[] a)` |  |
-| 2098 | 1 | `public double[] getEducation()` |  |
-| 2100 | 1 | `public void setLabour(double[] a)` |  |
-| 2101 | 1 | `public double[] getLabour()` |  |
-| 2103 | 1 | `public void setSkilledWorkforce(double[] a)` | UP1: a copy, not the live head counts. |
-| 2104 | 1 | `public double[] getSkilledWorkforce()` |  |
-| 2106 | 1 | `public void setCohorts(double[] a)` |  |
-| 2107 | 1 | `public double[] getCohorts()` |  |
-| 2110 | 1 | `public void setBandNames(String[] names)` |  |
-| 2112 | 1 | `public String[] getBandNames()` | Null on a save from before the names travelled: read it as LEGACY_BANDS. |
-| 2126 | 1 | `public void setShapeNames(String[] names)` |  |
-| 2127 | 1 | `public String[] getShapeNames()` |  |
-| 2128 | 1 | `public void setFamilies(double[] a)` |  |
-| 2129 | 1 | `public double[] getFamilies()` |  |
-| 2130 | 1 | `public void setMigration(double[] a)` |  |
-| 2131 | 1 | `public double[] getMigration()` |  |
-| 2132 | 1 | `public void setUnemployment(double[] a)` |  |
-| 2133 | 1 | `public double[] getUnemployment()` |  |
-| 2134 | 1 | `public void setSickness(double[] a)` |  |
-| 2135 | 1 | `public double[] getSickness()` |  |
-| 2136 | 1 | `public void setCrime(double[] a)` |  |
-| 2137 | 1 | `public double[] getCrime()` |  |
-| 2138 | 1 | `public void setHealth(double[] a)` |  |
-| 2139 | 1 | `public double[] getHealth()` |  |
-| 2140 | 1 | `public void setHealthcare(double[] a)` |  |
-| 2141 | 1 | `public double[] getHealthcare()` |  |
-| 2169 | 1 | `public void setSectorLossMonths(java.util.Map<String, Integer> m)` |  |
-| 2170 | 1 | `public java.util.Map<String, Integer> getSectorLossMonths()` |  |
-| 2171 | 1 | `public void setPopulationTrend(java.util.List<Long> l)` |  |
-| 2172 | 1 | `public java.util.List<Long> getPopulationTrend()` |  |
-| 2173 | 1 | `public void setCityCapitalSpending(double v)` |  |
-| 2174 | 1 | `public double getCityCapitalSpending()` |  |
-| 2192 | 1 | `public void setCityMaintenancePaid(double v)` |  |
-| 2193 | 1 | `public double getCityMaintenancePaid()` |  |
-| 2209 | 1 | `public void setLastInvestment(java.util.Map<String, String> m)` |  |
-| 2210 | 1 | `public java.util.Map<String, String> getLastInvestment()` |  |
-| 2211 | 1 | `public void setMonthlyMaterialImports(double v)` |  |
-| 2212 | 1 | `public double getMonthlyMaterialImports()` |  |
-| 2213 | 1 | `public void setMonthlyMaterialImportBill(double v)` |  |
-| 2214 | 1 | `public double getMonthlyMaterialImportBill()` |  |
-| 2215 | 1 | `public void setMaterialsConsumed(int v)` |  |
-| 2216 | 1 | `public int getMaterialsConsumed()` |  |
-| 2225 | 1 | `public void setSubsidyPaid(java.util.Map<String, Double> v)` |  |
-| 2226 | 1 | `public java.util.Map<String, Double> getSubsidyPaid()` |  |
-| 2236 | 1 | `public void setHouseholdStatement(double[] v)` |  |
-| 2237 | 1 | `public double[] getHouseholdStatement()` |  |
-| 2239 | 4 | `public void setBuilds(java.util.List<BuildLog.Entry> entries)` |  |
-| 2243 | 1 | `public java.util.List<BuildLog.Entry> getBuilds()` |  |
-| 2245 | 3 | `public void setWriteOffTotals(java.util.Map<String, Double> totals)` |  |
-| 2248 | 1 | `public java.util.Map<String, Double> getWriteOffTotals()` |  |
-| 2250 | 3 | `public void setRestructureCounts(java.util.Map<String, Integer> counts)` |  |
-| 2253 | 1 | `public java.util.Map<String, Integer> getRestructureCounts()` |  |
-| 2255 | 3 | `public void setBlockedMonths(java.util.Map<String, Integer> months)` |  |
-| 2258 | 1 | `public java.util.Map<String, Integer> getBlockedMonths()` |  |
-| 2260 | 3 | `public void setCreditStatements(java.util.Map<String, double[]> statements)` |  |
-| 2263 | 1 | `public java.util.Map<String, double[]> getCreditStatements()` |  |
-| 2265 | 1 | `public void setMortgageRepaid(java.util.Map<String, Double> repaid)` |  |
-| 2266 | 1 | `public java.util.Map<String, Double> getMortgageRepaid()` |  |
-| 2268 | 1 | `public void setInsuranceClaims(java.util.Map<String, Double> claims)` |  |
-| 2269 | 1 | `public java.util.Map<String, Double> getInsuranceClaims()` |  |
-| 2271 | 1 | `public void setInsurancePremiums(double premiums)` |  |
-| 2272 | 1 | `public double getInsurancePremiums()` |  |
-| 2274 | 1 | `public void setNationalAccounts(double[] state)` |  |
-| 2275 | 1 | `public double[] getNationalAccounts()` |  |
-| 2277 | 1 | `public void setGdpRolling(List<Double> months)` |  |
-| 2278 | 1 | `public List<Double> getGdpRolling()` |  |
-| 2288 | 3 | `public int getUnderConstructionLength()` | Null-safe, because new saves no longer write the legacy arrays at all. |
-| 2291 | 3 | `public int getUnderConstruction(int index)` |  |
-| 2294 | 3 | `public double getCash()` |  |
-| 2298 | 3 | `public int getMonth()` |  |
-| 2302 | 3 | `public int getBuildingQuantity(int index)` |  |
-| 2306 | 3 | `public int getBuildingsLength()` |  |
-| 2310 | 3 | `public JsonArray getDebt()` |  |
-| 2314 | 4 | `public void setBusinessDebt(List<BusinessDebt> loans)` |  |
-| 2319 | 3 | `public JsonArray getBusinessDebt()` |  |
-| 2323 | 3 | `public int getProgressLength()` |  |
-| 2327 | 3 | `public double getProgress(int index)` |  |
-| 2331 | 3 | `public int getConstructionMaterials()` |  |
-| 2335 | 3 | `public long getPopulation()` |  |
-| 2338 | 3 | `public boolean getReports()` |  |
-| 2341 | 3 | `public java.util.List<Notice> getNotices()` |  |
-| 2344 | 3 | `public boolean getGraphs()` |  |
+| 1019 | 1 | `public void setPropertyTaxCharged(double value)` |  |
+| 1020 | 1 | `public double getPropertyTaxCharged()` |  |
+| 1022 | 1 | `public void setCityInterestAccrued(double value)` |  |
+| 1023 | 1 | `public double getCityInterestAccrued()` |  |
+| 1025 | 1 | `public void setWorkforce(long workforce)` |  |
+| 1028 | 1 | `public long getWorkforce()` | -1 when the save predates this field. |
+| 1031 | 16 | `public void setCityLand(double[] centre, double[][] centreRects, double[][] holdings, double[][] partFields, double[][] convert...` | The city's land on the world, whole (0.7.57; on the block grid since 0.7.67, format 32): see land and ore above. |
+| 1049 | 1 | `public double[] getLandCentre()` | The centre's record: 24 wide in format 32, 25 (with a half-side) in format 31. |
+| 1051 | 1 | `public double[][] getLandCentreRects()` | The centre's blocks (format 32). |
+| 1053 | 1 | `public double[][] getLandHoldings()` | The purchases since, 31 wide (format 32). |
+| 1055 | 1 | `public double[][] getLandPartFields()` | The fields held in part (format 32), or null. |
+| 1057 | 1 | `public double[][] getLandConverted()` | A converted city's purchase history (format 32), or null. |
+| 1059 | 1 | `public double[] getLandLanes()` | A format-31 save's lanes: read only to convert. |
+| 1061 | 1 | `public double[][] getLandPurchases()` | A format-31 save's purchases, 28 wide: read only to convert. |
+| 1062 | 1 | `public double[][] getLandOffers()` |  |
+| 1064 | 1 | `public int getNextOfferId()` | The next offer's id, 1 on a save that has none. |
+| 1065 | 1 | `public double[] getDepletion()` |  |
+| 1067 | 1 | `public void setOilDepletionAtSea(double tonnes)` |  |
+| 1068 | 1 | `public void setDepletionByType(double[][] byType)` |  |
+| 1070 | 1 | `public double[][] getDepletionByType()` | E by type as saved (0.7.110), a row per resource or null for the walk's reading; null on a save that carries none. |
+| 1072 | 1 | `public Double getOilDepletionAtSea()` | The offshore pool's E as saved (0.7.93), or null on a save from before the two pools. |
+| 1074 | 1 | `public void setLandOldWorldHoldings(int holdings)` |  |
+| 1076 | 1 | `public Integer getLandOldWorldHoldings()` | How many holdings hold the old world's fields, as saved (0.7.99), or null on a save from before. |
+| 1077 | 1 | `public double[] getWorldTotals()` |  |
+| 1079 | 1 | `public Double getWorldSeaTheta()` | The world's sea level as stored, or null on a save from before 0.7.57. |
+| 1081 | 1 | `public void setFreshRights(double units)` |  |
+| 1083 | 1 | `public Double getFreshRights()` | The water rights as saved, or null on a save from before 0.7.59. |
+| 1085 | 1 | `public void setMapStamp(Long stamp)` |  |
+| 1087 | 1 | `public Long getMapStamp()` | The city map's sidecar stamp, or null when the city had no map (or the save is from before 0.7.60). |
+| 1090 | 1 | `public double[] getLandListing()` | An older save's nine parcels, read by nothing since 0.7.57 but kept to say what the save carried. |
+| 1091 | 1 | `public void setLandMarketPrices(double[] state)` |  |
+| 1092 | 1 | `public double[] getLandMarketPrices()` |  |
+| 1094 | 1 | `public int getIronDeposits()` | An older save's pool of iron sites, 0 when it carries none: what LandConversion reads. |
+| 1096 | 1 | `public double getIronReserveTonnes()` | ...and its tonnes. |
+
+### policy (lines 1099-2369)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1165 | 1 | `public void setSubsidisedSectors(java.util.List<String> keys)` |  |
+| 1166 | 1 | `public java.util.List<String> getSubsidisedSectors()` |  |
+| 1167 | 1 | `public void setSalesTax(SalesTaxLedger.State state)` |  |
+| 1168 | 1 | `public SalesTaxLedger.State getSalesTax()` |  |
+| 1169 | 1 | `public void setSectorOffsets(java.util.List<TaxPolicy.SectorOffsets> o)` |  |
+| 1170 | 1 | `public java.util.List<TaxPolicy.SectorOffsets> getSectorOffsets()` |  |
+| 1172 | 1 | `public void setTaxPolicyState(double[] state)` |  |
+| 1173 | 1 | `public double[] getTaxPolicyState()` |  |
+| 1175 | 1 | `public void setHouseholdBalance(double[] state)` |  |
+| 1176 | 1 | `public double[] getHouseholdBalance()` |  |
+| 1178 | 4 | `public void setHouseholdCells(String[] keys, double[] state)` |  |
+| 1182 | 1 | `public String[] getHouseholdCellKeys()` |  |
+| 1183 | 1 | `public double[] getHouseholdCells()` |  |
+| 1185 | 1 | `public void setBankCash(double cash)` |  |
+| 1186 | 1 | `public double getBankCash()` |  |
+| 1199 | 1 | `public void setBankBranchesCapitalised(double n)` |  |
+| 1200 | 1 | `public double getBankBranchesCapitalised()` |  |
+| 1211 | 1 | `public void setBankProfitLastMonth(double v)` |  |
+| 1212 | 1 | `public double getBankProfitLastMonth()` |  |
+| 1216 | 1 | `public void setBankDepositRate(double v)` |  |
+| 1217 | 1 | `public double getBankDepositRate()` |  |
+| 1233 | 1 | `public void setForeignAccounts(double[] state)` |  |
+| 1234 | 1 | `public double[] getForeignAccounts()` |  |
+| 1239 | 1 | `public void setRateHistory(double[] ring)` |  |
+| 1240 | 1 | `public double[] getRateHistory()` |  |
+| 1252 | 1 | `public void setCentralBank(double[] state)` |  |
+| 1253 | 1 | `public double[] getCentralBank()` |  |
+| 1264 | 4 | `public void setTreasuryArrears(String[] keys, double[] amounts)` |  |
+| 1268 | 1 | `public String[] getTreasuryArrearsKeys()` |  |
+| 1269 | 1 | `public double[] getTreasuryArrearsAmounts()` |  |
+| 1281 | 1 | `public void setForeignStanding(double[] state)` |  |
+| 1282 | 1 | `public double[] getForeignStanding()` |  |
+| 1293 | 1 | `public void setCapitalFlows(double[] state)` |  |
+| 1294 | 1 | `public double[] getCapitalFlows()` |  |
+| 1304 | 1 | `public void setOutwardInvestment(double[] state)` |  |
+| 1305 | 1 | `public double[] getOutwardInvestment()` |  |
+| 1316 | 1 | `public void setEquity(String[] keys, double[] state)` |  |
+| 1317 | 1 | `public String[] getEquityKeys()` |  |
+| 1318 | 1 | `public double[] getEquity()` |  |
+| 1322 | 1 | `public void setExchange(double[] state)` |  |
+| 1323 | 1 | `public double[] getExchange()` |  |
+| 1328 | 1 | `public void setExchangeState(Exchange.State state)` | UP1: a copy - toState() lists the exchange's own books. |
+| 1329 | 1 | `public Exchange.State getExchangeState()` |  |
+| 1347 | 1 | `public void setBankSolvency(double[] state)` |  |
+| 1348 | 1 | `public double[] getBankSolvency()` |  |
+| 1366 | 1 | `public void setHousingOccupancy(double[] state)` |  |
+| 1367 | 1 | `public double[] getHousingOccupancy()` |  |
+| 1383 | 1 | `public void setBankLastMonth(double[] state)` |  |
+| 1384 | 1 | `public double[] getBankLastMonth()` |  |
+| 1395 | 1 | `public void setBankPricingHistory(double[] state)` |  |
+| 1396 | 1 | `public double[] getBankPricingHistory()` |  |
+| 1407 | 1 | `public void setBankLateProfit(double value)` |  |
+| 1408 | 1 | `public double getBankLateProfit()` |  |
+| 1422 | 1 | `public void setBankAllowance(java.util.Map<String, double[]> state)` |  |
+| 1423 | 1 | `public java.util.Map<String, double[]> getBankAllowance()` |  |
+| 1434 | 1 | `public void setBankCapitalRecord(double[] state)` |  |
+| 1435 | 1 | `public double[] getBankCapitalRecord()` |  |
+| 1445 | 1 | `public void setBankMonthLines(double[] state)` |  |
+| 1446 | 1 | `public double[] getBankMonthLines()` |  |
+| 1457 | 1 | `public void setBankStatementYear(double[] state)` |  |
+| 1458 | 1 | `public double[] getBankStatementYear()` |  |
+| 1470 | 1 | `public void setBankSheetYear(double[] state)` |  |
+| 1471 | 1 | `public double[] getBankSheetYear()` |  |
+| 1483 | 1 | `public void setBankPaidInOpening(Double value)` |  |
+| 1484 | 1 | `public Double getBankPaidInOpening()` |  |
+| 1485 | 1 | `public void setBankRetainedOpening(Double value)` |  |
+| 1486 | 1 | `public Double getBankRetainedOpening()` |  |
+| 1497 | 5 | `public void setBankPreferred(java.util.List<Bank.Preferred> blocks, double[] record)` |  |
+| 1502 | 1 | `public java.util.List<Bank.Preferred> getBankPreferred()` |  |
+| 1503 | 1 | `public double[] getBankPreferredRecord()` |  |
+| 1515 | 1 | `public void setFund(TreasuryFund.State state)` | UP1: a copy - toState() lists the fund's own resolutions and orders. |
+| 1516 | 1 | `public TreasuryFund.State getFund()` |  |
+| 1521 | 1 | `public void setDebtMarket(double[] market)` |  |
+| 1522 | 1 | `public double[] getDebtMarket()` |  |
+| 1527 | 1 | `public void setAuctionTally(double[] tally)` |  |
+| 1528 | 1 | `public double[] getAuctionTally()` |  |
+| 1539 | 1 | `public void setPriceIndex(double[] state)` |  |
+| 1540 | 1 | `public double[] getPriceIndex()` |  |
+| 1553 | 1 | `public void setExpectations(double[] state)` |  |
+| 1554 | 1 | `public double[] getExpectations()` |  |
+| 1566 | 1 | `public void setWorldEconomy(double[] state)` |  |
+| 1567 | 1 | `public double[] getWorldEconomy()` |  |
+| 1582 | 1 | `public void setTradedExchangeRate(double rate)` |  |
+| 1583 | 1 | `public double getTradedExchangeRate()` |  |
+| 1593 | 1 | `public void setStruckRate(double rate)` |  |
+| 1594 | 1 | `public double getStruckRate()` |  |
+| 1608 | 1 | `public void setDenomination(double[] state)` |  |
+| 1609 | 1 | `public double[] getDenomination()` |  |
+| 1623 | 1 | `public void setPolicyRate(double rate)` |  |
+| 1625 | 1 | `public Double getPolicyRate()` | The rate as saved, or null on a save that did not carry one. |
+| 1634 | 1 | `public void setPolicyAutopilot(boolean on)` |  |
+| 1635 | 1 | `public boolean getPolicyAutopilot()` |  |
+| 1643 | 1 | `public void setPolicyAim(String name)` |  |
+| 1644 | 6 | `public DebtManager.Aim getPolicyAim()` |  |
+| 1657 | 1 | `public void setPegSpread(double spread)` |  |
+| 1658 | 1 | `public double getPegSpread()` |  |
+| 1671 | 1 | `public void setRolloverMode(String mode)` |  |
+| 1673 | 5 | `public Rollover.Mode getRolloverMode()` | The setting as saved; MANUAL for an older save or a name this build does not know. |
+| 1678 | 1 | `public void setRolloverLedger(double[] ledger)` |  |
+| 1679 | 1 | `public double[] getRolloverLedger()` |  |
+| 1680 | 1 | `public void setRolloverRecord(double[] record)` |  |
+| 1681 | 1 | `public double[] getRolloverRecord()` |  |
+| 1692 | 5 | `public void setRolloverCap(Auction.Cap cap)` |  |
+| 1697 | 3 | `public Auction.Cap getRolloverCap()` |  |
+| 1709 | 1 | `public void setLandPaidFromVault(boolean fromVault)` |  |
+| 1710 | 1 | `public boolean getLandPaidFromVault()` |  |
+| 1722 | 1 | `public void setInflationTarget(double target)` |  |
+| 1724 | 1 | `public Double getInflationTarget()` | The target as saved, or null on a save from before the dial. |
+| 1734 | 1 | `public void setPolicyStrictness(String name)` |  |
+| 1736 | 1 | `public DebtManager.Strictness getPolicyStrictness()` | The strictness as saved; STANDARD for an older save or a name this build does not know. |
+| 1747 | 1 | `public void setQeTargetShare(double share)` |  |
+| 1748 | 1 | `public double getQeTargetShare()` |  |
+| 1761 | 1 | `public void setAdvancesCeilingMonths(double months)` |  |
+| 1763 | 1 | `public Double getAdvancesCeilingMonths()` | The ceiling as saved, or null on a save from before the dial. |
+| 1774 | 1 | `public void setHouseholdPaperRatio(double ratio)` |  |
+| 1775 | 1 | `public double getHouseholdPaperRatio()` |  |
+| 1797 | 1 | `public void setBondMarket(BondMarket.State state)` | UP1: a copy - toState() lists the market's own bonds and books. |
+| 1798 | 1 | `public BondMarket.State getBondMarket()` |  |
+| 1799 | 1 | `public void setBondWrittenOff(java.util.Map<String, Double> totals)` |  |
+| 1800 | 1 | `public java.util.Map<String, Double> getBondWrittenOff()` |  |
+| 1801 | 1 | `public void setHouseholdBondRatio(double ratio)` |  |
+| 1802 | 1 | `public double getHouseholdBondRatio()` |  |
+| 1803 | 1 | `public void setHouseholdBondsByCell(java.util.Map<String, java.util.Map<String, Double>> byCell)` |  |
+| 1804 | 1 | `public java.util.Map<String, java.util.Map<String, Double>> getHouseholdBondsByCell()` |  |
+| 1815 | 4 | `public void setBuybackUnsettled(double households, double abroad)` |  |
+| 1819 | 1 | `public double getBuybackToHouseholdsUnsettled()` |  |
+| 1820 | 1 | `public double getBuybackAbroadUnsettled()` |  |
+| 1844 | 1 | `public void setCarsPerHousehold(double v)` |  |
+| 1845 | 1 | `public double getCarsPerHousehold()` |  |
+| 1858 | 1 | `public void setTransitBill(double v)` |  |
+| 1859 | 1 | `public double getTransitBill()` |  |
+| 1871 | 1 | `public void setCaptiveShare(double v)` |  |
+| 1872 | 1 | `public double getCaptiveShare()` |  |
+| 1873 | 1 | `public void setFuelPerJourney(double v)` |  |
+| 1874 | 1 | `public double getFuelPerJourney()` |  |
+| 1885 | 1 | `public void setHouseholdFuel(double[] v)` |  |
+| 1886 | 1 | `public double[] getHouseholdFuel()` |  |
+| 1898 | 1 | `public void setHouseholdGraduates(double[] v)` |  |
+| 1899 | 1 | `public double[] getHouseholdGraduates()` |  |
+| 1901 | 1 | `public void setRememberedCommute(double v)` |  |
+| 1902 | 3 | `public double getRememberedCommute()` |  |
+| 1915 | 1 | `public void setCostOfLiving(double v)` |  |
+| 1916 | 1 | `public double getCostOfLiving()` |  |
+| 1929 | 1 | `public void setBankTaxCharged(double v)` |  |
+| 1930 | 1 | `public double getBankTaxCharged()` |  |
+| 1934 | 1 | `public void setRentWeight(double weight)` | What the landlords billed this month - see FamilyModel.setRentWeight(). |
+| 1935 | 1 | `public double getRentWeight()` |  |
+| 1955 | 1 | `public void setRentWeightStudio(double weight)` |  |
+| 1956 | 1 | `public double getRentWeightStudio()` |  |
+| 1958 | 4 | `public void setConstructionShedding(int month, double points)` |  |
+| 1962 | 1 | `public int getConstructionShedMonth()` |  |
+| 1963 | 1 | `public double getConstructionShedPoints()` |  |
+| 1965 | 3 | `public void setDemolitions(java.util.List<DemolitionLog.Entry> entries)` |  |
+| 1968 | 1 | `public java.util.List<DemolitionLog.Entry> getDemolitions()` |  |
+| 2117 | 1 | `public void setLicences(double[] a)` | UP1: a copy, not the live head counts - PopulationManager hands out its own arrays. |
+| 2118 | 1 | `public double[] getLicences()` |  |
+| 2119 | 1 | `public void setEducation(double[] a)` |  |
+| 2120 | 1 | `public double[] getEducation()` |  |
+| 2122 | 1 | `public void setLabour(double[] a)` |  |
+| 2123 | 1 | `public double[] getLabour()` |  |
+| 2125 | 1 | `public void setSkilledWorkforce(double[] a)` | UP1: a copy, not the live head counts. |
+| 2126 | 1 | `public double[] getSkilledWorkforce()` |  |
+| 2128 | 1 | `public void setCohorts(double[] a)` |  |
+| 2129 | 1 | `public double[] getCohorts()` |  |
+| 2132 | 1 | `public void setBandNames(String[] names)` |  |
+| 2134 | 1 | `public String[] getBandNames()` | Null on a save from before the names travelled: read it as LEGACY_BANDS. |
+| 2148 | 1 | `public void setShapeNames(String[] names)` |  |
+| 2149 | 1 | `public String[] getShapeNames()` |  |
+| 2150 | 1 | `public void setFamilies(double[] a)` |  |
+| 2151 | 1 | `public double[] getFamilies()` |  |
+| 2152 | 1 | `public void setMigration(double[] a)` |  |
+| 2153 | 1 | `public double[] getMigration()` |  |
+| 2154 | 1 | `public void setUnemployment(double[] a)` |  |
+| 2155 | 1 | `public double[] getUnemployment()` |  |
+| 2156 | 1 | `public void setSickness(double[] a)` |  |
+| 2157 | 1 | `public double[] getSickness()` |  |
+| 2158 | 1 | `public void setCrime(double[] a)` |  |
+| 2159 | 1 | `public double[] getCrime()` |  |
+| 2160 | 1 | `public void setHealth(double[] a)` |  |
+| 2161 | 1 | `public double[] getHealth()` |  |
+| 2162 | 1 | `public void setHealthcare(double[] a)` |  |
+| 2163 | 1 | `public double[] getHealthcare()` |  |
+| 2191 | 1 | `public void setSectorLossMonths(java.util.Map<String, Integer> m)` |  |
+| 2192 | 1 | `public java.util.Map<String, Integer> getSectorLossMonths()` |  |
+| 2193 | 1 | `public void setPopulationTrend(java.util.List<Long> l)` |  |
+| 2194 | 1 | `public java.util.List<Long> getPopulationTrend()` |  |
+| 2195 | 1 | `public void setCityCapitalSpending(double v)` |  |
+| 2196 | 1 | `public double getCityCapitalSpending()` |  |
+| 2214 | 1 | `public void setCityMaintenancePaid(double v)` |  |
+| 2215 | 1 | `public double getCityMaintenancePaid()` |  |
+| 2231 | 1 | `public void setLastInvestment(java.util.Map<String, String> m)` |  |
+| 2232 | 1 | `public java.util.Map<String, String> getLastInvestment()` |  |
+| 2233 | 1 | `public void setMonthlyMaterialImports(double v)` |  |
+| 2234 | 1 | `public double getMonthlyMaterialImports()` |  |
+| 2235 | 1 | `public void setMonthlyMaterialImportBill(double v)` |  |
+| 2236 | 1 | `public double getMonthlyMaterialImportBill()` |  |
+| 2237 | 1 | `public void setMaterialsConsumed(int v)` |  |
+| 2238 | 1 | `public int getMaterialsConsumed()` |  |
+| 2247 | 1 | `public void setSubsidyPaid(java.util.Map<String, Double> v)` |  |
+| 2248 | 1 | `public java.util.Map<String, Double> getSubsidyPaid()` |  |
+| 2258 | 1 | `public void setHouseholdStatement(double[] v)` |  |
+| 2259 | 1 | `public double[] getHouseholdStatement()` |  |
+| 2261 | 4 | `public void setBuilds(java.util.List<BuildLog.Entry> entries)` |  |
+| 2265 | 1 | `public java.util.List<BuildLog.Entry> getBuilds()` |  |
+| 2267 | 3 | `public void setWriteOffTotals(java.util.Map<String, Double> totals)` |  |
+| 2270 | 1 | `public java.util.Map<String, Double> getWriteOffTotals()` |  |
+| 2272 | 3 | `public void setRestructureCounts(java.util.Map<String, Integer> counts)` |  |
+| 2275 | 1 | `public java.util.Map<String, Integer> getRestructureCounts()` |  |
+| 2277 | 3 | `public void setBlockedMonths(java.util.Map<String, Integer> months)` |  |
+| 2280 | 1 | `public java.util.Map<String, Integer> getBlockedMonths()` |  |
+| 2282 | 3 | `public void setCreditStatements(java.util.Map<String, double[]> statements)` |  |
+| 2285 | 1 | `public java.util.Map<String, double[]> getCreditStatements()` |  |
+| 2287 | 1 | `public void setMortgageRepaid(java.util.Map<String, Double> repaid)` |  |
+| 2288 | 1 | `public java.util.Map<String, Double> getMortgageRepaid()` |  |
+| 2290 | 1 | `public void setInsuranceClaims(java.util.Map<String, Double> claims)` |  |
+| 2291 | 1 | `public java.util.Map<String, Double> getInsuranceClaims()` |  |
+| 2293 | 1 | `public void setInsurancePremiums(double premiums)` |  |
+| 2294 | 1 | `public double getInsurancePremiums()` |  |
+| 2296 | 1 | `public void setNationalAccounts(double[] state)` |  |
+| 2297 | 1 | `public double[] getNationalAccounts()` |  |
+| 2299 | 1 | `public void setGdpRolling(List<Double> months)` |  |
+| 2300 | 1 | `public List<Double> getGdpRolling()` |  |
+| 2310 | 3 | `public int getUnderConstructionLength()` | Null-safe, because new saves no longer write the legacy arrays at all. |
+| 2313 | 3 | `public int getUnderConstruction(int index)` |  |
+| 2316 | 3 | `public double getCash()` |  |
+| 2320 | 3 | `public int getMonth()` |  |
+| 2324 | 3 | `public int getBuildingQuantity(int index)` |  |
+| 2328 | 3 | `public int getBuildingsLength()` |  |
+| 2332 | 3 | `public JsonArray getDebt()` |  |
+| 2336 | 4 | `public void setBusinessDebt(List<BusinessDebt> loans)` |  |
+| 2341 | 3 | `public JsonArray getBusinessDebt()` |  |
+| 2345 | 3 | `public int getProgressLength()` |  |
+| 2349 | 3 | `public double getProgress(int index)` |  |
+| 2353 | 3 | `public int getConstructionMaterials()` |  |
+| 2357 | 3 | `public long getPopulation()` |  |
+| 2360 | 3 | `public boolean getReports()` |  |
+| 2363 | 3 | `public java.util.List<Notice> getNotices()` |  |
+| 2366 | 3 | `public boolean getGraphs()` |  |
 

@@ -1,6 +1,6 @@
 # SectorScreen.java - 6,295 lines · 246 methods · 71 constants · interface
 
-`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The sector economy: every business in the city as a card, and each one's
 > five pages - what goes in and what comes out, the income statement with
