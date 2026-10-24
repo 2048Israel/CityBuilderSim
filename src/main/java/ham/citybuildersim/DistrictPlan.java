@@ -2536,8 +2536,9 @@ public final class DistrictPlan {
             access(out, placed);
             // SIDINGS (batch FR7 slice 5): the same ground, the streets and the access roads as they stand, nothing taken from the plan.
             sidings(out, placed);
-            surface(out);
+            // FW3: the parted streets known before the surface, so the hub's network is surfaced first.
             markParted(out);
+            surface(out);
             return let(out);
         }
 
@@ -5865,7 +5866,7 @@ public final class DistrictPlan {
             nPartedAt = 0;
         }
 
-        /** PARTED (0.7.88): out.parted - each street plot whose piece, over the plan's final streets and the parted streets of the districts before it, touches no anchor, nor is the first district's largest piece. */
+        /** PARTED (0.7.88): out.parted - each street plot whose piece, over the plan's final streets and the parted streets of the districts before it, touches no anchor, nor is the first district's largest piece. Read before the surface (FW3), from the streets themselves (onStreet). */
         void markParted(DistrictPlan out) {
             out.parted = new boolean[AREA];
             if (proto) return;
@@ -5891,7 +5892,7 @@ public final class DistrictPlan {
             if (in.root && largest >= 0) partOn[largest] = true;
             for (int i = 0; i < nOrdered; i++) {
                 int p = ordered[i];
-                if (out.street[p] != 0 && !partOn[lab[p]]) out.parted[p] = true;
+                if (onStreet(p) && !partOn[lab[p]]) out.parted[p] = true;
             }
         }
 
@@ -5902,16 +5903,23 @@ public final class DistrictPlan {
         /** markParted()'s step (a plot a call): plot u of piece n counted, whether it touches an anchor, its neighbours of the piece not yet labelled labelled and stacked above sp. The stack's height after. */
         int partedStep(DistrictPlan out, int u, int n, int sp) {
             int[] lab = scratchLab, stack = pieceStack;
-            if (out.street[u] != 0) partSize[n]++;
+            if (onStreet(u)) partSize[n]++;
             if (nearAnchor(u)) partOn[n] = true;
             int ux = u % FRAME, uy = u / FRAME;
             for (int d = 0; d < 4; d++) {
                 int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
                 if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
                 int a = ay * FRAME + ax;
-                if ((out.street[a] != 0 || in.partedAnchor[a]) && lab[a] < 0) { lab[a] = n; stack[sp++] = a; }
+                if ((onStreet(a) || in.partedAnchor[a]) && lab[a] < 0) { lab[a] = n; stack[sp++] = a; }
             }
             return sp;
+        }
+
+        /** Whether plot p will have a street code once surfaced: a street, or beneath a highway (streetsInRow's plots). */
+        boolean onStreet(int p) {
+            if (str[p]) return true;
+            int x = p % FRAME;
+            return under[p] && (hwRows[(p / FRAME) * WORDS + (x >>> 6)] & (1L << (x & 63))) != 0;
         }
 
         /** Whether plot p is, or is beside (four ways), a plot of the frame's edge a district before this one lays a street on. */
@@ -5950,8 +5958,9 @@ public final class DistrictPlan {
         void surface(DistrictPlan out) {
             // The order: arterials first, then by the rank of the cell a plot is in (or west and north of), none last; row by
             // row within each - bucketed, each bucket filled in plot order.
-            // Bucket 0 is the access roads' (batch FR7: paved first), then the arterials' by cell rank, then the rest's.
-            int buckets = 2 * (CELLS + 1) + 1;
+            // Bucket 0 is the access roads' (batch FR7: paved first), then the arterials' by cell rank, then the rest's; then
+            // (FW3) the parted streets', which the hub's network cannot reach, in the same order: they take what it leaves.
+            int buckets = 2 * PARTED_BUCKETS;
             int[] start = new int[buckets + 1];
             // The streets read from their bits in plot order (THE STREETS IN ORDER, 0.7.94): each with its bucket, every one
             // (allStr), and the one-sided seams (openAt).
@@ -5969,18 +5978,12 @@ public final class DistrictPlan {
             for (int i = 0; i < open; i++) keys[k0++] = openAt[i];
             double b = rP + rG + rH, left = b;
             byte[] w = new byte[n + open];
-            for (int i = 0; i < n; i++) {
-                if (left >= HALF) { w[i] = 1; left -= HALF; }
-            }
-            for (int i = 0; i < n; i++) {
-                if (w[i] == 1 && left >= FULL - HALF) { w[i] = 2; left -= FULL - HALF; }
-            }
-            for (int i = n; i < n + open; i++) {
-                if (left >= HALF) { w[i] = 1; left -= HALF; }
-            }
-            for (int i = n; i < n + open; i++) {
-                if (w[i] == 1 && left >= FULL - HALF) { w[i] = 2; left -= FULL - HALF; }
-            }
+            // The network half width then full, then the parted streets the same (FW3: a river's far bank is dealt no road
+            // the hub's side could hold), then the one-sided seams.
+            int net = start[PARTED_BUCKETS - 1];
+            left = widths(w, 0, net, left);
+            left = widths(w, net, n, left);
+            left = widths(w, n, n + open, left);
             n += open;
             out.seamsSurfaced = 0;
             for (int i = n - open; i < n; i++) if (w[i] > 0) out.seamsSurfaced++;
@@ -6012,6 +6015,20 @@ public final class DistrictPlan {
             for (int i = 0; i < nHighway; i++) if (!str[hwList[i]] && under[hwList[i]]) code(out, hwList[i]);
         }
 
+        /** surface()'s buckets a side of the river: the access roads', the arterials' by cell rank and the rest's (FW3). */
+        static final int PARTED_BUCKETS = 2 * (CELLS + 1) + 1;
+
+        /** surface()'s widths over w[from, to): each HALF while the road lasts, then each FULL; the road left after. */
+        static double widths(byte[] w, int from, int to, double left) {
+            for (int i = from; i < to; i++) {
+                if (left >= HALF) { w[i] = 1; left -= HALF; }
+            }
+            for (int i = from; i < to; i++) {
+                if (w[i] == 1 && left >= FULL - HALF) { w[i] = 2; left -= FULL - HALF; }
+            }
+            return left;
+        }
+
         /** surface()'s counts: the streets it surfaces, its one-sided seams, every street. */
         int sN, sOpen, sAll;
 
@@ -6030,7 +6047,8 @@ public final class DistrictPlan {
                     int ci = Math.floorDiv(x - 1, CELL), cj = Math.floorDiv(y - 1, CELL);
                     int rank = ci >= 0 && cj >= 0 && ci < CELLS_A_SIDE && cj < CELLS_A_SIDE && out.cellRank[ci + cj * CELLS_A_SIDE] >= 0
                             ? out.cellRank[ci + cj * CELLS_A_SIDE] : CELLS;
-                    int bk = art[p] && role[p] == ROLE_ACCESS ? 0 : 1 + (art[p] ? 0 : CELLS + 1) + rank;
+                    int bk = (art[p] && role[p] == ROLE_ACCESS ? 0 : 1 + (art[p] ? 0 : CELLS + 1) + rank)
+                            + (out.parted[p] ? PARTED_BUCKETS : 0);
                     surfP[sN] = p;
                     surfB[sN] = bk;
                     start[bk + 1]++;
