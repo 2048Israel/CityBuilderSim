@@ -2810,8 +2810,13 @@ public class SaveFileCheck {
         });
         BuildingManager bm = city.getBuildingManager();
         BuildingsTemplate highest = bm.getTemplate(bm.getMaxTemplateId());
-        bm.addStack(highest, 2, true);
-        city.getLandManager().allocate(highest.getLandSqFt() * 2);
+        // ...the highest id is the Builders' Yard (id 143) since PT1-M4 and the founding stands one: the city stands two of it by
+        // adding the one more, not two more (the founding's land is allocated already).
+        int more = Math.max(0, 2 - bm.getQuantity(highest.getId()));
+        if (more > 0) {
+            bm.addStack(highest, more, true);
+            city.getLandManager().allocate(highest.getLandSqFt() * more);
+        }
         BuildingsTemplate dropped = null;
         for (int id = bm.getMaxTemplateId() - 1; id >= 0 && dropped == null; id--) {
             BuildingsTemplate t = bm.getTemplate(id);

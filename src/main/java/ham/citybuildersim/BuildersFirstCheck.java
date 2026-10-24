@@ -111,8 +111,11 @@ public class BuildersFirstCheck {
     /** The builders' sector's key: whose depots the rule serves first, and whose plan the fixture asks. */
     static final String BUILDERS = Sectors.CONSTRUCTION;
 
-    /** The builders' depot: the one template that adds to their capacity. */
+    /** The builders' depot: the template that adds most to their capacity. */
     static final String DEPOT = "Construction Depot";
+
+    /** ...and the Builders' Yard the city founds with (PT1-M4), the other that adds to it: 160 points. */
+    static final String YARD = Game.FOUNDING_YARD;
 
     /** The months the fixture's run is played: two years, a span the trace's city held through ten times over. */
     static final int RUN_MONTHS = 24;
@@ -345,7 +348,7 @@ public class BuildersFirstCheck {
         BuildingManager a = without.getBuildingManager(), b = with.getBuildingManager();
         ham.citybuildersim.sectors.Construction builders = with.getSectors().construction();
         long startA = a.getTotalConstructionCapacity(), startB = b.getTotalConstructionCapacity();
-        int depotsA = a.countByName(DEPOT), depotsB = b.countByName(DEPOT);
+        int depotsA = a.countByName(DEPOT), depotsB = b.countByName(DEPOT), yardsB = b.countByName(YARD);
         double trap = with.getBuildingOutput();
         int points = template(with, DEPOT).getConstructionPoints();
         int bound = (int) Math.ceil(points / trap) + 1;
@@ -395,8 +398,12 @@ public class BuildersFirstCheck {
         out.printf("  after the first opened, its one order held the plan at most %d months running%n", longestAfter);
         assertTrue("...and after it, its one order never held the plan past the months it expands at, and one more",
                 longestAfter <= (int) Math.ceil(BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING) + 1);
+        // The nameplate is the yards' and depots' (PT1-M4): the builders' plan orders a Builders' Yard where the city could
+        // staff 75% of a depot and wants 80% (month 14, then the yard in month 15), so the growth is the depots' 400 each and
+        // the yards' 160 each, no longer the depots' alone.
         assertTrue("with the rule the builders' nameplate grows", endB > startB
-                && endB - startB == (long) (b.countByName(DEPOT) - depotsB) * template(with, DEPOT).makes(Good.BUILDING_WORK));
+                && endB - startB == (long) (b.countByName(DEPOT) - depotsB) * template(with, DEPOT).makes(Good.BUILDING_WORK)
+                        + (long) (b.countByName(YARD) - yardsB) * template(with, YARD).makes(Good.BUILDING_WORK));
         assertTrue("...by more than one depot over the run", b.countByName(DEPOT) - depotsB >= 2);
         assertTrue("...and the sites get more than the trap's month", with.getBuildingOutput() > trap);
         bits("without the rule the builders' nameplate holds", endA, startA);

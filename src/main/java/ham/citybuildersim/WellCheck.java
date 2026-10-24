@@ -329,12 +329,18 @@ public class WellCheck {
         out.println("\n--- 4. a worn-out well is retired, oldest first, and its site refilled ---");
         // Three hundred houses more than its jobs, and a year for their people to come, so the town has the hands to staff
         // a new well.
-        Game g = town("wellcheck-worn", 600, 12 * 87_120 + 300 * 10_000, 0);
+        // PT1-M4: the works department that raised a freed site's well on its free points is retired. The yard and the town's
+        // four depots opened the first of the two new wells in the ninth month after the retirements and the second after the
+        // eight the section watches; two depots more stand beside them (and the ground they need), as the other fixtures'
+        // builders do, and both wells open by the sixth.
+        final int moreDepots = 2;
+        Game g = town("wellcheck-worn", 600, 12 * 87_120 + 300 * 10_000 + moreDepots * 75_000, 0);
         BuildingsTemplate well = template(g, "Oil Well");
         LandManager land = g.getLandManager();
         Oil wells = g.getSectors().oil();
         int[] at = new int[1];
         quietly(() -> {
+            g.buildStack(template(g, "Construction Depot"), moreDepots, true);
             g.buildStack(template(g, "House"), 300, true);
             land.restoreSites(Resource.OIL, 4, PLENTY);
             g.buildStack(well, 4, true);

@@ -1045,6 +1045,23 @@ public class BuildingManager {
         constructionDepot.setId(4);
         templates.add(constructionDepot);
 
+        // The Builders' Yard (PT1-M4, id 143): the depot at two fifths, the
+        // building every city is founded with (Game.foundingYard()).
+        BuildingsTemplate buildersYard = new BuildingsTemplate("Builders' Yard", BuildingType.CONSTRUCTION);
+        buildersYard.setSector("Construction");
+        buildersYard.setCashCost(593);
+        buildersYard.setConstructionPoints(160);
+        buildersYard.setConstructionMaterials(22);
+        buildersYard.makes(Good.BUILDING_WORK, 160);
+        buildersYard.setElectricityConsumption(10);
+        buildersYard.setWaterConsumption(1);
+        buildersYard.setLandSqFt(24000);
+        buildersYard.setRoadLoad(36);
+        buildersYard.setJobs(JobType.NO_DIPLOMA, 14);
+        buildersYard.setJobs(JobType.DIPLOMA, 6);
+        buildersYard.setId(143);
+        templates.add(buildersYard);
+
         // ELECTRICTY buildings
         BuildingsTemplate coalPowerplant = new BuildingsTemplate("Coal Power Plant", BuildingType.ELECTRICITY)
                 .setCashCost(1071816)

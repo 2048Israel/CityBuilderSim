@@ -1944,7 +1944,10 @@ final class PeopleScreen {
             for (int i = 0; i < n; i++) {
                 VBox t = tiles.get(i).box;
                 t.setVisible(i < k);
-                if (i >= k) continue;
+                // A folded tile is laid at nothing, as the "+n more" is when nothing folds (PT1-M4):
+                // a kept strip held a tile it had folded where it last stood, so it and a strip
+                // built new differed in what neither shows (KeptCheck, the playtest's month 612).
+                if (i >= k) { t.resizeRelocate(0, 0, 0, 0); continue; }
                 double width = Math.min(tw[i], Math.max(0, w - x));
                 t.resizeRelocate(x, 0, Math.max(0, width - 3), h);
                 x += width;
@@ -1962,6 +1965,11 @@ final class PeopleScreen {
                 if (!text.equals(moreLabel.getText())) moreLabel.setText(text);
                 if (!names.toString().equals(moreTip.getText())) moreTip.setText(names.toString());
                 more.resizeRelocate(x, 0, Math.max(0, Math.min(TILE_MIN, w - x) - 3), h);
+            } else {
+                // ...and with its words gone, as a strip built new has none there to lay out.
+                if (!moreLabel.getText().isEmpty()) moreLabel.setText("");
+                if (!moreTip.getText().isEmpty()) moreTip.setText("");
+                more.resizeRelocate(0, 0, 0, 0);
             }
         }
 
