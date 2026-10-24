@@ -1,4 +1,4 @@
-# SectorStatements.java - 1,024 lines · 64 methods · 18 constants · model
+# SectorStatements.java - 1,025 lines · 64 methods · 18 constants · model
 
 `ham/citybuildersim/SectorStatements.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
@@ -47,8 +47,8 @@
 | 533 | THE CASH FLOWS (spec 4.3): INDIRECT, IN THREE SECTIONS |
 | 623 | THE STATEMENT OF CHANGES IN EQUITY (spec 4.2), IN COLUMNS (0.7.75) |
 | 732 | THE DEBT SCHEDULE (spec 4.3; 0.7.75, R7): BY KIND, FROM SHEET TO SHEET |
-| 786 | THE RATIOS (spec 4.1-4.3), each NaN where it means nothing |
-| 838 | THE BANK (spec 4.5): ITS OWN FORMAT, ON ITS OWN TAB (D9) |
+| 787 | THE RATIOS (spec 4.1-4.3), each NaN where it means nothing |
+| 839 | THE BANK (spec 4.5): ITS OWN FORMAT, ON ITS OWN TAB (D9) |
 
 ## Enum constants
 
@@ -84,10 +84,10 @@
 | 645 | `SectorStatements.EQ_START` | `"eq.start", EQ_PROFIT = "eq.profit", EQ_OUTSIDE = "eq.outside", EQ_FOUNDED = ...` | The statement of changes in equity's row ids, which the screens and SectorStatementCheck look a row up by. |
 | 651 | `SectorStatements.CAPITAL` | `0, KEPT = 1` | The equity statement's two columns, each row's parts: share capital, and what it kept and revalued. |
 | 654 | `SectorStatements.REVALUED_IDS` | `{ EQ_STOCK, EQ_LAND, EQ_BUILDINGS, EQ_ABROAD }` | R6's four parts, ids: what the prices did to what it began the month with. |
-| 853 | `SectorStatements.B_INCOME_HEAD` | `"b.incomeHead", B_OTHER_INTEREST = "b.otherInterest", B_INTEREST = "b.interes...` | The bank's statement of profit or loss's row ids, which the screens and SectorStatementCheck look a row up by. |
-| 861 | `SectorStatements.BANK_INTEREST` | `{ { "From the businesses", Bank.Line.FROM_BUSINESSES }, { "On the businesses'...` | The interest income lines: {label, line}. |
-| 871 | `SectorStatements.BANK_FEES` | `{ { "On the families' accounts", Bank.Line.ACCOUNT_FEES }, { "On the business...` | ...and the fees. |
-| 936 | `SectorStatements.BS_ASSETS_HEAD` | `"bs.assetsHead", BS_LOANS_HEAD = "bs.loansHead", BS_GROSS = "bs.gross", BS_NE...` | The bank's balance sheet's row ids, which the screens and SectorStatementCheck look a row up by. |
+| 854 | `SectorStatements.B_INCOME_HEAD` | `"b.incomeHead", B_OTHER_INTEREST = "b.otherInterest", B_INTEREST = "b.interes...` | The bank's statement of profit or loss's row ids, which the screens and SectorStatementCheck look a row up by. |
+| 862 | `SectorStatements.BANK_INTEREST` | `{ { "From the businesses", Bank.Line.FROM_BUSINESSES }, { "On the businesses'...` | The interest income lines: {label, line}. |
+| 872 | `SectorStatements.BANK_FEES` | `{ { "On the families' accounts", Bank.Line.ACCOUNT_FEES }, { "On the business...` | ...and the fees. |
+| 937 | `SectorStatements.BS_ASSETS_HEAD` | `"bs.assetsHead", BS_LOANS_HEAD = "bs.loansHead", BS_GROSS = "bs.gross", BS_NE...` | The bank's balance sheet's row ids, which the screens and SectorStatementCheck look a row up by. |
 
 ## Fields (state)
 
@@ -108,7 +108,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 985 | **type** `public final class SectorStatements` | A business's month as formal statements (0.7.74): the income statement classified down through gross and operating profit, the balance sheet in current and long-lived parts, the cash flow in three sections, the statem... |
+| 40 | 986 | **type** `public final class SectorStatements` | A business's month as formal statements (0.7.74): the income statement classified down through gross and operating profit, the balance sheet in current and long-lived parts, the cash flow in three sections, the statem... |
 | 42 | 1 | `private SectorStatements()` |  |
 
 ### THE FORMATS (spec 4.6) (lines 44-81)
@@ -193,35 +193,35 @@
 | 702 | 8 | `public static double revaluedTotal(Table equity)` | What the equity statement says the prices did, together (R6's four parts, those counted): the summary's bridge. |
 | 718 | 13 | `public static List<Row> capitalNote(Equity register, String company)` | Note 10, its share capital's parts as the register keeps them (R3): the book its founders' shares were issued against, what it raised at home and abroad, and what its buybacks paid. |
 
-### THE DEBT SCHEDULE (spec 4.3; 0.7.75, R7): BY KIND, FROM SHEET TO SHEET (lines 732-785)
+### THE DEBT SCHEDULE (spec 4.3; 0.7.75, R7): BY KIND, FROM SHEET TO SHEET (lines 732-786)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 753 | 10 | **type** `public record Schedule(double[] start, double[] borrowed, double[] repaid, double[] writtenOff, double[] en...` | One sector's debt schedule: each in DEBT_KINDS' order. |
-| 757 | 5 | `public static double total(double[] a)` _(in SectorStatements.Schedule)_ | A column's total. |
-| 764 | 21 | `public static Schedule schedule(SectorBooks.Debt now, SectorBooks.Debt before)` |  |
+| 754 | 10 | **type** `public record Schedule(double[] start, double[] borrowed, double[] repaid, double[] writtenOff, double[] en...` | One sector's debt schedule: each in DEBT_KINDS' order. |
+| 758 | 5 | `public static double total(double[] a)` _(in SectorStatements.Schedule)_ | A column's total. |
+| 765 | 21 | `public static Schedule schedule(SectorBooks.Debt now, SectorBooks.Debt before)` |  |
 
-### THE RATIOS (spec 4.1-4.3), each NaN where it means nothing (lines 786-837)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 791 | 3 | `public static double of(double part, double base)` | A share of a base, NaN on no base. |
-| 796 | 4 | `public static double interestCover(Table income)` | Interest cover on the statement's operating profit (D10, F6): how many times its trading profit, after property and sales tax, covers its finance costs. |
-| 802 | 4 | `public static double effectiveTax(Table income)` | Business tax over profit before tax: NaN on a loss, where the rate means nothing. |
-| 808 | 4 | `public static double currentRatio(Table sheet)` | Current assets over what falls due within a year; NaN while R2 is not counted or nothing falls due. |
-| 814 | 4 | `public static double quickRatio(Table sheet)` | ...without the stock: what it could pay at once. |
-| 820 | 5 | `public static double returnOnEquity(SectorBooks.SectorMonth now, SectorBooks.SectorMonth then)` | Return on equity a year: twelve months at this month's profit, over the average of the two months' equity. |
-| 827 | 4 | `public static double daysOfCash(SectorBooks.SectorMonth m)` | Cash on hand in days of what trading costs it: its cash over a thirtieth of the month's operating costs, interest and tax. |
-| 833 | 4 | `public static double debtYears(Table cash, SectorBooks.SectorMonth m)` | Debt over a year of trading cash: what it owes over twelve months of the operating section, NaN when that is nothing or less. |
-
-### THE BANK (spec 4.5): ITS OWN FORMAT, ON ITS OWN TAB (D9) (lines 838-1024)
+### THE RATIOS (spec 4.1-4.3), each NaN where it means nothing (lines 787-838)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 878 | 1 | `public static String bankId(Bank.Line line)` | A bank line's id on the statement. |
-| 881 | 53 | `public static Table bankIncome(Bank bank)` | The bank's income statement, this month against last. |
-| 944 | 1 | `public static String sheetId(Bank.Sheet line)` | A sheet line's id on the statement. |
-| 947 | 65 | `public static Table bankSheet(Bank bank)` | The bank's balance sheet, this month against a year ago - the bank keeps a year of sheets, not last month's. |
-| 1013 | 5 | `private static void sheetLine(Builder b, String label, Bank.Sheet line, java.util.function.ToDoubleFunction<Bank.Sheet> now, ja...` |  |
-| 1020 | 4 | `public static double bankGrossLoans(Bank bank)` | The bank's loans and advances, gross: what its provisions and allowance are read against. |
+| 792 | 3 | `public static double of(double part, double base)` | A share of a base, NaN on no base. |
+| 797 | 4 | `public static double interestCover(Table income)` | Interest cover on the statement's operating profit (D10, F6): how many times its trading profit, after property and sales tax, covers its finance costs. |
+| 803 | 4 | `public static double effectiveTax(Table income)` | Business tax over profit before tax: NaN on a loss, where the rate means nothing. |
+| 809 | 4 | `public static double currentRatio(Table sheet)` | Current assets over what falls due within a year; NaN while R2 is not counted or nothing falls due. |
+| 815 | 4 | `public static double quickRatio(Table sheet)` | ...without the stock: what it could pay at once. |
+| 821 | 5 | `public static double returnOnEquity(SectorBooks.SectorMonth now, SectorBooks.SectorMonth then)` | Return on equity a year: twelve months at this month's profit, over the average of the two months' equity. |
+| 828 | 4 | `public static double daysOfCash(SectorBooks.SectorMonth m)` | Cash on hand in days of what trading costs it: its cash over a thirtieth of the month's operating costs, interest and tax. |
+| 834 | 4 | `public static double debtYears(Table cash, SectorBooks.SectorMonth m)` | Debt over a year of trading cash: what it owes over twelve months of the operating section, NaN when that is nothing or less. |
+
+### THE BANK (spec 4.5): ITS OWN FORMAT, ON ITS OWN TAB (D9) (lines 839-1025)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 879 | 1 | `public static String bankId(Bank.Line line)` | A bank line's id on the statement. |
+| 882 | 53 | `public static Table bankIncome(Bank bank)` | The bank's income statement, this month against last. |
+| 945 | 1 | `public static String sheetId(Bank.Sheet line)` | A sheet line's id on the statement. |
+| 948 | 65 | `public static Table bankSheet(Bank bank)` | The bank's balance sheet, this month against a year ago - the bank keeps a year of sheets, not last month's. |
+| 1014 | 5 | `private static void sheetLine(Builder b, String label, Bank.Sheet line, java.util.function.ToDoubleFunction<Bank.Sheet> now, ja...` |  |
+| 1021 | 4 | `public static double bankGrossLoans(Bank bank)` | The bank's loans and advances, gross: what its provisions and allowance are read against. |
 

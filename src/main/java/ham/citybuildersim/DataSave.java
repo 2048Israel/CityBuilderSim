@@ -449,6 +449,30 @@ public class DataSave implements Cloneable {
         return sectorBooksBefore;
     }
 
+    /**
+     * ...AND THE DEBT THEIR SHEETS SPLIT (FW2, 2026-10-24): R1's interest by
+     * instrument and R2's debt by kind and when it falls due, this month's and
+     * last month's, by sector (SectorBooks.Debt) - and what had moved each
+     * sector's debt so far as the save was taken
+     * (BusinessDebtManager.debtMovedByKind()), the running totals R7's
+     * schedule differences a month apart. Until FW2 none was saved, and a
+     * loaded city's sheet read its debt as one line and its schedule as not
+     * counted for two months. Additive: an older save has none and reads as
+     * before. Each sector's record as SectorBooks.DEBT_ROWS rows of numbers
+     * (SectorBooks.debtToSave()), not as the record.
+     */
+    private java.util.Map<String, double[][]> sectorDebt, sectorDebtBefore;
+    private java.util.Map<String, double[][]> creditMoved;
+
+    public void setSectorDebt(java.util.Map<String, double[][]> now, java.util.Map<String, double[][]> before) {
+        this.sectorDebt = now;
+        this.sectorDebtBefore = before;
+    }
+    public java.util.Map<String, double[][]> getSectorDebt()       { return sectorDebt; }
+    public java.util.Map<String, double[][]> getSectorDebtBefore() { return sectorDebtBefore; }
+    public void setCreditMoved(java.util.Map<String, double[][]> moved)  { this.creditMoved = moved; }
+    public java.util.Map<String, double[][]> getCreditMoved()            { return creditMoved; }
+
     //settings
     private boolean reports = true;
     private boolean graphs = true;
@@ -1184,6 +1208,23 @@ public class DataSave implements Cloneable {
 
     public void setBankCash(double cash) { this.bankCash = cash; }
     public double getBankCash()          { return bankCash; }
+
+    /**
+     * The bank's deposit book as the month last set it (FW2, 2026-10-24;
+     * F-S1-1): what the families and the businesses had banked when
+     * Game.refreshBank() last ran in the month, which the load's own
+     * refreshBank() would re-read off the city as it stands after it
+     * (Bank.restoreDeposits()). Null in an older save, which keeps the
+     * re-read.
+     */
+    private Double bankHouseholdDeposits, bankSectorDeposits;
+
+    public void setBankDeposits(double household, double sector) {
+        this.bankHouseholdDeposits = household;
+        this.bankSectorDeposits = sector;
+    }
+    public Double getBankHouseholdDeposits() { return bankHouseholdDeposits; }
+    public Double getBankSectorDeposits()    { return bankSectorDeposits; }
 
     /**
      * Branches the shareholders have already paid capital for.

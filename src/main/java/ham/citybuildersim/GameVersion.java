@@ -7302,7 +7302,7 @@ public final class GameVersion {
      *   - Close it now's journal, honest line and call gain behind getters.
      *   - Harness: DeskCheck (new). The manual's text: docs/queue/CD6-manual.md.
      *
-     * 0.8.38 (2026-10-24) - PT1-M4, THE WORKS DEPARTMENT RETIRED
+     * 0.8.39 (2026-10-24) - PT1-M4, THE WORKS DEPARTMENT RETIRED
      * (docs/queue/PT1-M4-notes.md; Jerus, 2026-10-12: "not meant ... perhaps
      * a starting depot or something instead"). Construction earns only for
      * work its own crews do.
@@ -7320,7 +7320,7 @@ public final class GameVersion {
      *   - Harness: FoundingYardCheck (new); twenty-three re-caused, the map's
      *     two watches (MapCheck 8, LongPlaytest's layout) read the plan's rules.
      */
-    public static final String VERSION = "0.8.38";
+    public static final String VERSION = "0.8.39";
 
     /**
      * The save shape.

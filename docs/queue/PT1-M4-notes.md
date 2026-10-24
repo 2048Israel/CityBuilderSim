@@ -6,7 +6,7 @@ points base, so ya sure fix, perhaps a starting depot or something instead?"
 `BuildingManager.BASE_CONSTRUCTION`, 400 points a month with no posts behind
 them, is retired, and every city is founded with a builders' building standing,
 staffed and paid like any other, so Construction earns only for work its own
-crews do. Version 0.8.38; save format 45.
+crews do. Version 0.8.39; save format 45.
 
 ## What changed
 
