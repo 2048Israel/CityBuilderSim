@@ -2,7 +2,7 @@
 
 Generated 2026-10-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**137 harness files, 14,119 labelled assertions.** AllChecks runs 137 of them.
+**137 harness files, 14,120 labelled assertions.** AllChecks runs 137 of them.
 
 ## Which harnesses read which class
 
@@ -16452,7 +16452,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L295 6. the page is the block and the sector's own lines (D3)**
   - L305 operations() is plantLines() then ownLines() for the
 
-## SectorStatementCheck.java - 20 labelled assertions
+## SectorStatementCheck.java - 21 labelled assertions
 
 > The sector statements (0.7.74, batch S1): SectorStatements' formal
 > statements held to the model's own figures, every sector and the bank,
@@ -16480,25 +16480,26 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L514 fixture: the businesses expensed what their borrowing cost them up front in
   - L516 fixture: ...and R6's parts: the stock, the land, the buildings and what is held abroad each moved in some
   - L518 a city founded in this build derives no paid-in:
-- **L562 6. a save and a load keep every comparative**
-  - L605 R1, R2 and the shares are not saved: after a load they read not counted, and the sheet's debt is one line,
-  - L644 a month on, R1 and R2 are counted again, the split's last month reads not counted, and the sheet's
-  - L656 R7's schedule reads not counted a month after the load, and is counted the month after
-  - L662 ...and the loaded city's month holds every identity of sections 1 to 5 (
-- **L669 7. the formats**
-  - L686 the shops, the luxury shops and the kitchens are merchants, the landlords landlords, the builders builders,
-  - L688 every format but the bank's is some sector's:
-  - L695 the landlords' statement has no gross line and its middle line is its net operating income; a maker's
-  - L703 an income statement with R1 not counted keeps no finance note
-- **L723 6b. a format-32 save is refused since 0.7.120 (to 0.7.119 it loaded, its paid-in derived)**
-  - L728 the save says format
-  - L757 a format-32 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
-  - L761 ...so no sector's paid-in is derived
-- **L767 8. the debt schedule (R7)**
-  - L779 fixture: the cities' schedules borrowed, repaid and wrote off
-  - L781 the sheet is read at the month's close: nothing is lent after it, in any schedule (0.7.102)
-- **L797 9. every building at every gate (R4)**
-  - L855 ...and the ground put back, each city is as it was
+- **L579 6. a save and a load keep every comparative**
+  - L592 fixture: the loaded city stands on its buildings, its bank's branches with them (
+  - L637 a sector owes, and its loaded sheet splits the debt by when it falls due
+  - L638 R1 and R2 are saved (FW2): after a load every sector's interest and debt by kind, both months, read the
+  - L686 a month on, R1 and R2 are counted, the split's last month is the saved city's (FW2), and the sheet's
+  - L713 ...and the loaded city's month holds every identity of sections 1 to 5 (
+- **L720 7. the formats**
+  - L737 the shops, the luxury shops and the kitchens are merchants, the landlords landlords, the builders builders,
+  - L739 every format but the bank's is some sector's:
+  - L746 the landlords' statement has no gross line and its middle line is its net operating income; a maker's
+  - L754 an income statement with R1 not counted keeps no finance note
+- **L774 6b. a format-32 save is refused since 0.7.120 (to 0.7.119 it loaded, its paid-in derived)**
+  - L779 the save says format
+  - L808 a format-32 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
+  - L812 ...so no sector's paid-in is derived
+- **L818 8. the debt schedule (R7)**
+  - L830 fixture: the cities' schedules borrowed, repaid and wrote off
+  - L832 the sheet is read at the month's close: nothing is lent after it, in any schedule (0.7.102)
+- **L848 9. every building at every gate (R4)**
+  - L906 ...and the ground put back, each city is as it was
 
 ## SicknessCheck.java - 55 labelled assertions
 

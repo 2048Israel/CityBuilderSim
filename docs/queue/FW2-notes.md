@@ -19,4 +19,4 @@
   gap ("R1, R2 and the shares are not saved", the bank's four re-read lines) are replaced by these.
 - **No format bump:** the fields are additive; an older save reads as before (the re-read, R1/R2 not counted).
 - **Not saved still:** the shares (`SectorBooks.Shares`, the investor report), not a sheet.
-- **The trace:** see the last line of this file.
+- **The trace:** the default playtest (4,005 months) is byte-identical to main's but for its two run-time lines; no ensemble (EN1).
