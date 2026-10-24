@@ -929,7 +929,12 @@ final class FinancesScreen {
 
     /** The card's ground, with its edge in a colour - red when the card is in alarm. */
     static String cardStyle(String edge) {
-        return "-fx-padding: 14; -fx-background-color: " + Palette.RAISED + ";"
+        return cardStyle(Palette.RAISED, edge);
+    }
+
+    /** ...on a ground of its own: the PINNED card of a page's raised one (Your rate's, CD6). */
+    static String cardStyle(String ground, String edge) {
+        return "-fx-padding: 14; -fx-background-color: " + ground + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + edge + ";";
     }
 
@@ -2141,20 +2146,48 @@ final class FinancesScreen {
     }
 
     /* =====================================================================
-       YOUR RATE, TAKEN APART (0.7.32)
+       YOUR RATE, TAKEN APART (0.7.32; the curve first since CD6, 2026-10-23)
 
-       Why does money cost this city what it does? THE RATE, BUILT UP on
-       the band from nothing to what a hopeless city pays - the floor, then
-       what the debt adds against output and against a year of tax - with
-       the dial and the city's rate marked; each part's figure, what moves
-       it and a door to it. THE CURVE by maturity, home and abroad, and how
-       much each measure has left to say.
+       Why does money cost this city what it does? Since CD6 (spec-city-debt
+       .md section 7, board 5; D31) the page opens on the curve, as a
+       treasury reads it, and goes down to the short end:
+
+         THE LINE       today's month, the dial and credibility.
+         THE CITY'S     zero rates by maturity: today (heavy), a year ago and
+         CURVE          two years ago (the curve book, DebtManager
+                        .curveMonthsAgo(); left out and named "not yet
+                        recorded" until the city has them), the world's for
+                        dollar paper (dotted) and the dial the market expects
+                        (dashed), month by month. CurveChart draws any lines
+                        it is given, months to the square root as the desk's
+                        curve does.
+         WHAT THE       the dial, the rule at today's inflation, the dial in a
+         MARKET         year, in five and where it settles; what that leans
+         EXPECTS        to; and that expected inflation settles off the target
+                        by as much as credibility falls short. The dial drifts
+                        to the rule, whoever holds it (YieldCurve
+                        .DRIFT_MONTHS).
+         THE 10-YEAR    a bar of its parts - the dial the market expects, what
+         RATE           the city's debt adds, the term premium, and what the
+                        central bank takes off, outlined - a line each and the
+                        total, curveRate(120).
+         REAL RATES     by maturity from a year out: the real rate a linked
+                        bond would sell at and the inflation priced, from
+                        DebtManager.fairRealCoupon() and breakevenInflation(),
+                        the target across and a dot a linked line on the
+                        book, at its real yield.
+         THE SHORT END  THE RATE, BUILT UP and WHAT EACH MEASURE HAS USED,
+                        as the page had them: the floor, then what the debt
+                        adds against output and against a year of tax, with
+                        the dial and the city's rate marked.
+
+       Every figure is the model's through a getter; the page works out none.
 
        THE CURVE'S THIRTY-YEAR POINT IS THE NEW PARTS (2026-10-20, CD1): the
        dial the market expects over thirty years, what the city's debt adds,
        the term premium, less what the central bank holds - the four getters
-       that add up to curveRate(360) - and a line on where the market expects
-       the dial in a year and in five, against today.
+       that add up to curveRate(360). Since CD6 the ten-year point is taken
+       apart in the bar and the thirty-year one is the sentence under it.
 
        THE FLOOR IS NOT THE DIAL (the spec's B13, this page's T23): it is
        the dial or what the bank's money costs it, whichever is higher, on
@@ -2162,7 +2195,18 @@ final class FinancesScreen {
        ===================================================================== */
 
     void yourRatePage(VBox page) {
-        page.getChildren().add(builtUpCard());
+        Game g = ui.game;
+        DebtManager ledger = g.getDebtManager();
+        page.getChildren().add(line(String.format("%s · the dial %s · credibility %s", CityCalendar.format(g.getMonth()),
+                pct2(ledger.getPolicyRate()), trust(g.getCredibility()))));
+        page.getChildren().add(wideAndNarrow(curveCard(), expectCard()));
+        page.getChildren().add(pair(partsCard(), realCard()));
+        page.getChildren().add(sectionHead("THE SHORT END", hint("the floor, and what the city's own debt adds to it")));
+        page.getChildren().add(wideAndNarrow(builtUpCard(), measuresCard()));
+    }
+
+    /** Two cards in the page's wide and narrow columns, two thirds and one third, each as tall as the taller. */
+    static GridPane wideAndNarrow(Node left, Node right) {
         GridPane two = new GridPane();
         two.setHgap(TILE_GAP);
         javafx.scene.layout.ColumnConstraints wide = new javafx.scene.layout.ColumnConstraints();
@@ -2173,12 +2217,11 @@ final class FinancesScreen {
         narrow.setHgrow(Priority.ALWAYS);
         two.getColumnConstraints().addAll(wide, narrow);
         two.setMaxWidth(Double.MAX_VALUE);
-        VBox curve = curveCard(), measures = measuresCard();
-        GridPane.setFillHeight(curve, true);
-        GridPane.setFillHeight(measures, true);
-        two.add(curve, 0, 0);
-        two.add(measures, 1, 0);
-        page.getChildren().add(two);
+        if (left instanceof Region r) GridPane.setFillHeight(r, true);
+        if (right instanceof Region r) GridPane.setFillHeight(r, true);
+        two.add(left, 0, 0);
+        two.add(right, 1, 0);
+        return two;
     }
 
     /** The floor's (i): the spec's T23, rewritten (B13), and the central bank's share (0.7.15). */
@@ -2240,115 +2283,341 @@ final class FinancesScreen {
         return c;
     }
 
-    /** The curve's maturities, in months. */
-    static final int[] CURVE_MONTHS = {3, 6, 12, 24, 60, 120, 240, 360, 480, 600};
-    /** ...and how they are written under it. */
-    static final String[] CURVE_NAMES = {"3m", "6m", "1y", "2y", "5y", "10y", "20y", "30y", "40y", "50y"};
+    /** THE CITY'S CURVE's (i): the spec's T24, and what each line on the chart is (CD6, board 5). */
+    static final String CURVE_INFO = "Each point is what the city pays to borrow for that term: the zero rate. The short end "
+            + "is the floor - the dial, or what the bank's money costs it, whichever is higher - plus what the city's own "
+            + "debt adds. Further out, each month is priced at where the market expects the dial to be then: the rule's "
+            + "rate at the inflation it expects, with the dial drifting there over about " + YieldCurve.DRIFT_MONTHS
+            + " months whoever holds it - plus the debt's spread. Longer money adds a term premium on top, less whatever "
+            + "the central bank's holdings of term paper take off it. Today's curve is the heavy line; a year ago and "
+            + "two years ago are the same curve as it stood then, kept each month, and are left off until the city has "
+            + "that much history. The world's is what dollar paper pays. The dashed line is the dial the market expects, "
+            + "month by month. A hike the market expects to undo inverts the curve. Months run to the square root, so the "
+            + "short end has room.";
 
-    /** THE CURVE's (i): the spec's T24, and the world's curve - CD1 priced it on the dial the market expects. */
-    static final String CURVE_INFO = "The short end is the floor - the dial, or what the bank's money costs it, "
-            + "whichever is higher - plus what the city's own debt adds. Further out, each month is priced at where the "
-            + "market expects the dial to be then: the rule's rate at the inflation it expects, with the dial drifting "
-            + String.format("there over about %d months whoever holds it", YieldCurve.DRIFT_MONTHS)
-            + " - plus the debt's spread. Longer money adds a term premium on top, less whatever the central bank's "
-            + "holdings of term paper take off it. The world lends at its own base and the same premium abroad. "
-            + "The dashed line is the dial today.";
-
-    /** THE CURVE: the city's rate by maturity at home and, while the window is open, abroad, with the dial dashed and the thirty-year point taken apart. */
+    /** THE CITY'S CURVE: today's zero rates by maturity, a year ago and two years ago, the world's for dollar paper and the dial the market expects, with each line named under it. */
     VBox curveCard() {
         DebtManager ledger = ui.game.getDebtManager();
-        boolean world = ledger.foreignWindowOpen();
-        double[] home = new double[CURVE_MONTHS.length], abroad = world ? new double[CURVE_MONTHS.length] : null;
-        for (int i = 0; i < CURVE_MONTHS.length; i++) {
-            home[i] = ledger.curveRate(CURVE_MONTHS[i]);
-            if (world) abroad[i] = ledger.foreignCurveRate(CURVE_MONTHS[i]);
+        int[] tenors = DebtManager.CURVE_TENORS;
+        // One curve, read at every tenor and every month of the path.
+        YieldCurve curve = ledger.curve();
+        double[] now = new double[tenors.length];
+        for (int i = 0; i < tenors.length; i++) now[i] = curve.zero(tenors[i]);
+        double[] yearAgo = ledger.curveMonthsAgo(12), twoAgo = ledger.curveMonthsAgo(24), world = null;
+        if (ledger.foreignWindowOpen()) {
+            world = new double[tenors.length];
+            for (int i = 0; i < tenors.length; i++) world[i] = ledger.foreignCurveRate(tenors[i]);
         }
-        double expected = ledger.expectedDialOver(360), credit = ledger.creditSpread();
-        double premium = DebtManager.termPremium(360), comp = ledger.compression(360);
-        VBox card = card(caption("THE CURVE", CURVE_INFO),
-                new CurveChart(home, abroad, ledger.getPolicyRate(), 7,
-                        String.format("%.2f the dial expected + %.2f credit + %.2f term − %.2f the central bank",
-                                expected * 100, credit * 100, premium * 100, comp * 100)),
-                keyRow(keySwatch(Palette.MONEY, "at home"), world ? keySwatch(Palette.BUSINESS, "abroad, in dollars") : null,
-                        keySwatch(Palette.TEXT_MUTED, "the dial, dashed")),
-                line(String.format("Thirty-year money costs %s: the dial the market expects over thirty years, %s; "
-                                + "what the city's debt adds, %s; the term premium, %s; and %s.",
-                        pct2(ledger.curveRate(360)), pct2(expected), pts(credit), pts(premium),
-                        comp > 0 ? String.format("%.2f pts off for what the central bank holds", comp * 100) : "nothing off")),
-                line(String.format("The market expects the dial at %s in a year and %s in five, against %s today.",
-                        pct2(ledger.expectedDialIn(12)), pct2(ledger.expectedDialIn(60)), pct2(ledger.getPolicyRate()))));
+        int[] months = new int[YieldCurve.HORIZON + 1];
+        double[] dial = new double[months.length];
+        for (int m = 0; m < months.length; m++) {
+            months[m] = m;
+            dial[m] = curve.path(m);
+        }
+        final double[] solid = {};
+        final double[] dashed = {6, 4}, dotted = {2, 3};
+        // The lines underneath first; today's last, over them.
+        List<CurveChart.Series> lines = new ArrayList<>();
+        if (twoAgo != null) lines.add(new CurveChart.Series("two years ago", tenors, twoAgo, Palette.TEXT_SPENT, 1.6, solid, null, false));
+        if (yearAgo != null) lines.add(new CurveChart.Series("a year ago", tenors, yearAgo, Palette.MONEY_DARK, 1.8, solid, null, false));
+        if (world != null) lines.add(new CurveChart.Series("the world's, for dollar paper", tenors, world, Palette.ORE, 1.5, dotted, null, false));
+        lines.add(new CurveChart.Series("the dial the market expects", months, dial, Palette.WARN, 1.6, dashed, null, false));
+        lines.add(new CurveChart.Series("today", tenors, now, Palette.MONEY, 2.6, solid, "today", true));
+
+        List<Node> key = new ArrayList<>();
+        key.add(lineKey(Palette.MONEY, 2.6, solid, "today"));
+        if (yearAgo != null) key.add(lineKey(Palette.MONEY_DARK, 1.8, solid, "a year ago"));
+        if (twoAgo != null) key.add(lineKey(Palette.TEXT_SPENT, 1.6, solid, "two years ago"));
+        if (yearAgo == null && twoAgo == null) key.add(captionWords("a year ago and two years ago: not yet recorded"));
+        else if (yearAgo == null) key.add(captionWords("a year ago: not yet recorded"));
+        else if (twoAgo == null) key.add(captionWords("two years ago: not yet recorded"));
+        key.add(lineKey(Palette.WARN, 1.6, dashed, "the dial the market expects"));
+        if (world != null) key.add(lineKey(Palette.ORE, 1.5, dotted, "the world's, for dollar paper"));
+        return card(caption("THE CITY'S CURVE", CURVE_INFO), muted("zero rates by maturity · and the dial the market expects"),
+                new CurveChart(tenors, lines, List.of(), 250), keyRow(key.toArray(new Node[0])));
+    }
+
+    /** A caption-sized muted line of words that does not wrap: an entry of a key. */
+    static Label captionWords(String text) {
+        Label l = new Label(text);
+        l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        return l;
+    }
+
+    /** A key's entry for a line: a short stroke in the line's colour, width and dash, and its name. */
+    static HBox lineKey(String colour, double width, double[] dash, String name) {
+        javafx.scene.shape.Line sample = new javafx.scene.shape.Line(0, 5, 22, 5);
+        sample.setStroke(javafx.scene.paint.Color.web(colour));
+        sample.setStrokeWidth(width);
+        for (double d : dash) sample.getStrokeDashArray().add(d);
+        javafx.scene.layout.Pane holder = new javafx.scene.layout.Pane(sample);
+        holder.setMinSize(22, 10);
+        holder.setPrefSize(22, 10);
+        holder.setMaxSize(22, 10);
+        HBox row = new HBox(5, holder, captionWords(name));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /** A key's entry for a dot off the lines: a dot in the colour, as the chart draws it, and its name. */
+    static HBox dotKey(String colour, String name) {
+        javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(5, 5, 4.5, javafx.scene.paint.Color.web(colour));
+        dot.setStroke(javafx.scene.paint.Color.web(Palette.RAISED));
+        dot.setStrokeWidth(1.5);
+        javafx.scene.layout.Pane holder = new javafx.scene.layout.Pane(dot);
+        holder.setMinSize(10, 10);
+        holder.setPrefSize(10, 10);
+        holder.setMaxSize(10, 10);
+        HBox row = new HBox(5, holder, captionWords(name));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /**
+     * Lines on the curve's chart (CD6, board 5), months across to the square root as the desk's curve draws them, so the
+     * two curve pictures are one family: any number of series, each at its own months with its own colour, width and
+     * dash, a dot or two off the lines, and a name at the end of the line that has one. It draws itself again at the
+     * width it is given (Drawn). Every figure is the model's.
+     */
+    static final class CurveChart extends Drawn {
+        /**
+         * One line: its name (a tooltip's), the months each value is at, the values, its colour, its width, its dash
+         * (empty: solid), its name at its end (null: none), and whether each of its points is marked with a dot.
+         */
+        record Series(String name, int[] months, double[] values, String colour, double width, double[] dash, String end, boolean dots) { }
+
+        /** A mark off the lines: months, value, colour and what its tooltip says. */
+        record Dot(double months, double value, String colour, String tip) { }
+
+        static final double LEFT = 46, RIGHT = 14, TOP = 18, FOOT = 26;
+
+        private final int[] axis;
+        private final List<Series> series;
+        private final List<Dot> dots;
+        private final double height;
+
+        /** The chart of these lines on an axis that ends at the last of `axis`' tenors, `height` px tall. */
+        CurveChart(int[] axis, List<Series> series, List<Dot> dots, double height) {
+            super(300, 560, height);
+            this.axis = axis;
+            this.series = series;
+            this.dots = dots;
+            this.height = height;
+            drawFirst();
+        }
+
+        @Override void draw(double w) {
+            final double plotL = LEFT, plotR = Math.max(LEFT + 100, w - RIGHT), plotT = TOP, plotB = height - FOOT;
+            final double maxMonths = axis[axis.length - 1];
+            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
+            for (Series s : series) for (double v : s.values()) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+            for (Dot dot : dots) { lo = Math.min(lo, dot.value()); hi = Math.max(hi, dot.value()); }
+            if (lo > hi) { lo = 0; hi = .01; }
+            double step = niceStep(hi - lo, 5, .0025, .005, .01, .02, .05);
+            lo = Math.floor(lo / step + 1e-9) * step;
+            hi = Math.ceil(hi / step - 1e-9) * step;
+            if (hi - lo < step) hi = lo + step;
+            final double bottom = lo, span = hi - lo;
+            java.util.function.DoubleUnaryOperator y = v -> plotB - (v - bottom) / span * (plotB - plotT);
+            java.util.function.DoubleUnaryOperator x = m -> plotL + Math.sqrt(Math.max(0, m) / maxMonths) * (plotR - plotL);
+
+            for (double v = lo; v <= hi + 1e-9; v += step) {
+                stroke(plotL, y.applyAsDouble(v), plotR, y.applyAsDouble(v), Palette.EDGE, 1);
+                put(String.format(step < .005 ? "%.2f%%" : "%.1f%%", v * 100).replace('-', '−'), 0, y.applyAsDouble(v) - 7,
+                        LEFT - 6, Pos.CENTER_RIGHT, figureIn(Palette.TEXT_MUTED));
+            }
+            stroke(plotL, plotB, plotR, plotB, Palette.TEXT_SPENT, 1);
+            tenorAxis(axis, x, plotB);
+
+            for (Series s : series) {
+                javafx.scene.shape.Polyline line = new javafx.scene.shape.Polyline();
+                javafx.scene.paint.Color colour = javafx.scene.paint.Color.web(s.colour());
+                line.setStroke(colour);
+                line.setStrokeWidth(s.width());
+                line.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+                for (double d : s.dash()) line.getStrokeDashArray().add(d);
+                for (int i = 0; i < s.values().length; i++) line.getPoints().addAll(x.applyAsDouble(s.months()[i]), y.applyAsDouble(s.values()[i]));
+                getChildren().add(line);
+                // A line of a few points has a tooltip at each: a dot when it asks for one, else a bare target.
+                if (s.values().length <= 12) {
+                    for (int i = 0; i < s.values().length; i++) {
+                        javafx.scene.shape.Circle mark = new javafx.scene.shape.Circle(x.applyAsDouble(s.months()[i]), y.applyAsDouble(s.values()[i]),
+                                s.dots() ? 3.2 : 5, s.dots() ? colour : javafx.scene.paint.Color.TRANSPARENT);
+                        Tooltip.install(mark, tip(s.name() + " · " + tenorName(s.months()[i]) + ": " + pct2(s.values()[i])));
+                        getChildren().add(mark);
+                    }
+                }
+            }
+            for (Dot dot : dots) {
+                javafx.scene.shape.Circle c = new javafx.scene.shape.Circle(x.applyAsDouble(dot.months()), y.applyAsDouble(dot.value()), 4.5,
+                        javafx.scene.paint.Color.web(dot.colour()));
+                c.setStroke(javafx.scene.paint.Color.web(Palette.RAISED));
+                c.setStrokeWidth(1.5);
+                Tooltip.install(c, tip(dot.tip()));
+                getChildren().add(c);
+            }
+            for (Series s : series) {
+                if (s.end() == null) continue;
+                int last = s.values().length - 1;
+                put(s.end(), x.applyAsDouble(s.months()[last]) - 64, y.applyAsDouble(s.values()[last]) - 18, 60, Pos.CENTER_RIGHT,
+                        Palette.words(Palette.SIZE_CAPTION, s.colour()));
+            }
+        }
+    }
+
+    /** WHAT THE MARKET EXPECTS THE DIAL TO DO's (i): the path the curve is built on (CD6, board 5, note A). */
+    static final String EXPECT_INFO = "The dial the market expects, month by month, is the path the whole curve is built on. "
+            + "It starts at the dial and closes the gap to the rule over about " + YieldCurve.DRIFT_MONTHS + " months, whoever "
+            + "holds the dial - by hand or on autopilot. The rule it closes on follows the inflation the city expects, which "
+            + "is not today's: it settles between what the city has lived through and the target, by how far people "
+            + "believe the bank. Credibility shows at the long end of the curve for that reason.";
+
+    /** The gap under which two rates are the same to the eye in the page's sentences: a twentieth of a point. */
+    static final double LEAN = .0005;
+
+    /** WHAT THE MARKET EXPECTS THE DIAL TO DO: the dial, the rule, and where the market expects the dial in a year, in five and at last, and what that says. */
+    VBox expectCard() {
+        DebtManager ledger = ui.game.getDebtManager();
+        VBox card = card(caption("WHAT THE MARKET EXPECTS THE DIAL TO DO", EXPECT_INFO),
+                cardLine("The dial today", pct2(ledger.getPolicyRate()), null),
+                cardLine("The rule, at today's inflation", pct2(ledger.ruleNow()), null),
+                cardLine("Expected in a year", pct2(ledger.expectedDialIn(12)), null),
+                cardLine("Expected in five years", pct2(ledger.expectedDialIn(60)), null),
+                cardLine("Where it settles", pct2(ledger.settledDial()), null),
+                flag(expectWords(ledger, ui.game.getCredibility()), Palette.RAISED),
+                muted("By hand or on autopilot, the market prices the same path: a dial held off the rule is expected to come "
+                        + "back to it over about " + YieldCurve.DRIFT_MONTHS + " months."));
+        // The board's raised card: a step lighter than the others.
+        card.setStyle(cardStyle(Palette.PINNED, Palette.EDGE));
         return card;
     }
 
     /**
-     * The curve, drawn: a point a maturity at equal steps, the city's in the
-     * money blue, the world's in violet, the dial dashed across, and the
-     * point at `marked` annotated with `note` - a fixed size, as a card's
-     * picture is; every figure is the model's curve at that maturity.
+     * The board's flag in the game's words: which way the rule and the path lean, and that the inflation the city expects
+     * settles off the target by as much as credibility falls short. Built from the model's figures; nothing is worked out.
      */
-    static final class CurveChart extends javafx.scene.layout.Pane {
-        /** Its size and its margins, in pixels: a card's picture, at a fixed size. */
-        static final double W = 720, H = 190, LEFT = 44, RIGHT = 16, TOP = 26, FOOT = 22;
+    static String expectWords(DebtManager l, double credibility) {
+        double dial = l.getPolicyRate();
+        if (!l.isStruck()) return "Nothing has been struck yet, so the market expects the dial where it is, " + pct2(dial) + ".";
+        double rule = l.ruleNow(), year = l.expectedDialIn(12), settled = l.settledDial();
+        double inflation = l.getStruckInflation(), expected = l.getStruckExpected(), target = l.getInflationTarget();
+        String rules = Math.abs(rule - dial) < LEAN
+                ? String.format("The dial is on the rule: it would set %s at today's inflation of %s", pct2(rule), pct2(inflation))
+                : String.format("The rule would set %s at today's inflation of %s, %s the dial's %s", pct2(rule), pct2(inflation),
+                        rule > dial ? "above" : "below", pct2(dial));
+        // The first year's move, then what comes after it.
+        double near = year - dial, far = settled - year;
+        String move = (near > LEAN ? "hikes" : near < -LEAN ? "cuts" : "no change") + " over the year"
+                + (far > LEAN ? (near > LEAN ? " and more hikes after" : ", then hikes")
+                : far < -LEAN ? (near < -LEAN ? " and more cuts after" : ", then cuts")
+                : (Math.abs(near) > LEAN ? ", then it holds" : ""));
+        // The rule follows the inflation the city expects: when that is not today's, the rule's own move is part of the path.
+        String why = Math.abs(settled - rule) > LEAN ? ", as the rule follows the inflation it expects" : "";
+        String belief = Math.abs(expected - target) < LEAN
+                ? String.format("It expects inflation to settle at %s, the target.", pct2(expected))
+                : String.format("It expects inflation to settle at %s, not the %s target: at %s credibility the rest is what "
+                        + "the city has lived through.", pct2(expected), pct2(target), trust(credibility));
+        return rules + ". The market expects " + move + why + ". " + belief;
+    }
 
-        CurveChart(double[] home, double[] abroad, double dial, int marked, String note) {
-            double top = dial;
-            for (double v : home) top = Math.max(top, v);
-            if (abroad != null) for (double v : abroad) top = Math.max(top, v);
-            top = Math.max(.001, top * 1.15);
-            double plotW = W - LEFT - RIGHT, plotH = H - TOP - FOOT;
-            int n = home.length;
-            java.util.function.IntToDoubleFunction x = i -> LEFT + (n > 1 ? plotW * i / (n - 1) : 0);
-            final double scale = top;
-            java.util.function.DoubleUnaryOperator y = v -> TOP + plotH * (1 - Math.max(0, v) / scale);
-            for (double tick : new double[] {0, scale / 2, scale}) {
-                javafx.scene.shape.Line grid = new javafx.scene.shape.Line(LEFT, y.applyAsDouble(tick), W - RIGHT, y.applyAsDouble(tick));
-                grid.setStroke(javafx.scene.paint.Color.web(Palette.EDGE));
-                Label at = new Label(pct2(tick));
-                at.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-                at.relocate(0, y.applyAsDouble(tick) - 7);
-                getChildren().addAll(grid, at);
-            }
-            javafx.scene.shape.Line dialLine = new javafx.scene.shape.Line(LEFT, y.applyAsDouble(dial), W - RIGHT, y.applyAsDouble(dial));
-            dialLine.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED));
-            dialLine.getStrokeDashArray().addAll(5.0, 4.0);
-            getChildren().add(dialLine);
-            draw(abroad, x, y, Palette.BUSINESS, "abroad");
-            draw(home, x, y, Palette.MONEY, "at home");
-            for (int i = 0; i < n; i++) {
-                Label name = new Label(CURVE_NAMES[i]);
-                name.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-                name.relocate(x.applyAsDouble(i) - 8, H - FOOT + 4);
-                getChildren().add(name);
-            }
-            if (marked >= 0 && marked < n) {
-                Label at = new Label(pct2(home[marked]) + "  " + note);
-                at.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-                double ax = Math.min(x.applyAsDouble(marked) - 40, W - 420);
-                at.relocate(Math.max(LEFT, ax), Math.max(0, y.applyAsDouble(home[marked]) - 22));
-                getChildren().add(at);
-            }
-            setMinSize(W, H);
-            setPrefSize(W, H);
-            setMaxSize(W, H);
-        }
+    /** A note on a card: words on a ground a step off the card's, with an edge. */
+    static VBox flag(String text, String ground) {
+        VBox box = new VBox(words(text, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        box.setStyle("-fx-padding: 8 10 8 10;" + Palette.block(ground, Palette.EDGE));
+        box.setMaxWidth(Double.MAX_VALUE);
+        return box;
+    }
 
-        private void draw(double[] values, java.util.function.IntToDoubleFunction x,
-                          java.util.function.DoubleUnaryOperator y, String colour, String who) {
-            if (values == null) return;
-            javafx.scene.shape.Polyline line = new javafx.scene.shape.Polyline();
-            line.setStroke(javafx.scene.paint.Color.web(colour));
-            line.setStrokeWidth(2);
-            getChildren().add(line);
-            for (int i = 0; i < values.length; i++) {
-                double px = x.applyAsDouble(i), py = y.applyAsDouble(values[i]);
-                line.getPoints().addAll(px, py);
-                javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(px, py, 3.5, javafx.scene.paint.Color.web(colour));
-                Tooltip tip = new Tooltip(CURVE_NAMES[i] + " " + who + ": " + pct2(values[i]));
-                tip.setShowDelay(Duration.millis(150));
-                Tooltip.install(dot, tip);
-                getChildren().add(dot);
-            }
+    /** THE 10-YEAR RATE's (i): what the bar is made of. */
+    static final String PARTS_INFO = "The ten-year zero rate is the sum of its parts, to rounding: the dial the market expects, "
+            + "averaged over the ten years; what the city's own debt adds, which is the same for every term; and the term "
+            + "premium for tying money up that long, less whatever the central bank's holdings of term paper take off it. "
+            + "The bar is drawn to the parts, and the outlined stretch at its end is what the central bank takes off.";
+
+    /** THE 10-YEAR RATE, TAKEN APART: a bar of its parts, a line each and the total, with the thirty-year point's sentence under it. */
+    VBox partsCard() {
+        DebtManager ledger = ui.game.getDebtManager();
+        final int term = 120;
+        double path = ledger.expectedDialOver(term), credit = ledger.creditSpread();
+        double premium = DebtManager.termPremium(term), taken = ledger.compression(term);
+        List<Segment> parts = new ArrayList<>();
+        parts.add(seg(Math.max(0, path), Palette.WARN, "the dial the market expects over ten years " + pct2(path)));
+        parts.add(seg(Math.max(0, credit), Palette.BUSINESS, "what the city's debt adds " + pts(credit)));
+        parts.add(seg(Math.max(0, premium - taken), Palette.MONEY, "the term premium " + pts(premium)));
+        // What the central bank takes off is outlined: it is in the premium, and not in the rate.
+        if (taken > 0) parts.add(ghost(taken, Palette.MONEY, null, "taken off by the central bank's holdings " + pts(-taken)));
+        HBox total = cardLine("The 10-year zero rate", pct2(ledger.curveRate(term)), null);
+        total.setStyle("-fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0; -fx-padding: 6 0 0 0;");
+        double expected30 = ledger.expectedDialOver(360), comp30 = ledger.compression(360);
+        return card(caption("THE 10-YEAR RATE, TAKEN APART", PARTS_INFO), segmentBar(parts, 0, null, 0, 22),
+                partLine(Palette.WARN, false, "The dial the market expects, averaged over ten years", pct2(path)),
+                partLine(Palette.BUSINESS, false, "What the city's debt adds", pts(credit)),
+                partLine(Palette.MONEY, false, "The term premium", pts(premium)),
+                partLine(Palette.MONEY, true, taken > 0 ? "Taken off by the central bank's holdings"
+                        : "Taken off by the central bank's holdings · it holds none of the term paper",
+                        taken > 0 ? pts(-taken) : "none"),
+                total,
+                muted(String.format("Thirty-year money costs %s: the dial the market expects over thirty years, %s; what the "
+                                + "city's debt adds, %s; the term premium, %s; and %s.",
+                        pct2(ledger.curveRate(360)), pct2(expected30), pts(credit), pts(DebtManager.termPremium(360)),
+                        comp30 > 0 ? String.format("%.2f pts off for what the central bank holds", comp30 * 100) : "nothing off")));
+    }
+
+    /** One part of the rate: its swatch (outlined when it is what is taken off), its words and its figure. */
+    static HBox partLine(String colour, boolean ghost, String label, String value) {
+        HBox row = cardLine(label, value, null);
+        row.getChildren().add(0, swatch(colour, "", ghost));
+        return row;
+    }
+
+    /** REAL RATES's (i): what the two lines are and what the dots are. */
+    static final String REAL_INFO = "A linked bond pays a real coupon on a principal that grows with the price index, so what "
+            + "it sells at is a real rate: the coupon that prices a new one at par, given the index the market expects. The "
+            + "nominal curve prices the same term with the inflation in it, and the gap between the two is the inflation "
+            + "the market prices in (the breakeven). The dashed line is the inflation target. Each linked line on the book "
+            + "is a dot at the months it has left and the real yield the market prices it at now. Months run to the square root.";
+
+    /** REAL RATES, AND THE INFLATION THE MARKET PRICES: by maturity from a year out, the real rate a linked bond would sell at and the inflation priced, the target across, a dot a linked line on the book. */
+    VBox realCard() {
+        DebtManager ledger = ui.game.getDebtManager();
+        int from = 0;
+        while (DebtManager.CURVE_TENORS[from] < 12) from++;
+        int[] tenors = java.util.Arrays.copyOfRange(DebtManager.CURVE_TENORS, from, DebtManager.CURVE_TENORS.length);
+        double[] real = new double[tenors.length], priced = new double[tenors.length];
+        for (int i = 0; i < tenors.length; i++) {
+            real[i] = ledger.fairRealCoupon(tenors[i], 0);
+            priced[i] = ledger.breakevenInflation(tenors[i], 0);
         }
+        double target = ledger.getInflationTarget();
+        final double[] solid = {}, dashed = {4, 3};
+        List<CurveChart.Series> lines = new ArrayList<>();
+        lines.add(new CurveChart.Series("the target", new int[] {tenors[0], tenors[tenors.length - 1]}, new double[] {target, target},
+                Palette.TEXT_MUTED, 1, dashed, null, false));
+        lines.add(new CurveChart.Series("the inflation priced", tenors, priced, Palette.PEOPLE, 2, solid, null, true));
+        lines.add(new CurveChart.Series("the real rate", tenors, real, Palette.MONEY_LIGHT, 2, solid, null, true));
+        List<CurveChart.Dot> dots = new ArrayList<>();
+        for (Debt debt : ledger.getDebt()) {
+            if (!(debt instanceof InflationLinkedBond linked) || debt.isForeign() || debt.getRemainingMonths() <= 0) continue;
+            double realYield = ledger.realYieldOf(linked);
+            dots.add(new CurveChart.Dot(debt.getRemainingMonths(), realYield, Palette.MONEY_LIGHT,
+                    pieceName(debt) + " · real yield " + pct2(realYield) + " · " + debt.getRemainingMonths() + " months left"));
+        }
+        List<Node> key = new ArrayList<>();
+        key.add(lineKey(Palette.MONEY_LIGHT, 2, solid, "the real rate a linked bond would sell at"));
+        key.add(lineKey(Palette.PEOPLE, 2, solid, "the inflation priced"));
+        key.add(lineKey(Palette.TEXT_MUTED, 1, dashed, "the " + pct2(target) + " target"));
+        if (!dots.isEmpty()) key.add(dotKey(Palette.MONEY_LIGHT, "a linked line on the book, at its real yield"));
+        double real10 = ledger.fairRealCoupon(120, 0), priced10 = ledger.breakevenInflation(120, 0), nominal10 = ledger.parYield(120, 0);
+        String words = String.format("A new ten-year linked bond would sell at a real %s, plus the inflation the city actually has. "
+                        + "A nominal ten-year would sell at %s, which prices about %s a year of inflation.",
+                pct2(real10), pct2(nominal10), pct2(priced10));
+        if (priced10 > target + LEAN) {
+            words += String.format(" A city that holds inflation at its %s target pays less on the linked line than the "
+                    + "nominal line prices in.", pct2(target));
+        }
+        return card(caption("REAL RATES, AND THE INFLATION THE MARKET PRICES", REAL_INFO), muted("from the linked bonds"),
+                new CurveChart(tenors, lines, dots, 210), keyRow(key.toArray(new Node[0])),
+                flag(words, Palette.PINNED));
     }
 
     /** WHAT EACH MEASURE HAS USED's (i): the spec's T25. */
@@ -3303,6 +3572,32 @@ final class FinancesScreen {
             return t;
         }
 
+        /** A tenor as the axis writes it: "3m", "1y". */
+        static String tenorName(int months) {
+            return months < 12 ? months + "m" : months / 12 + "y";
+        }
+
+        /**
+         * The tenors' axis along `plotB` (CD6): every tenor has its tick, and the labels claim room round ones first
+         * (a year, five, ten, thirty...), none within 26 px of another. `x` maps months to a pixel.
+         */
+        final void tenorAxis(int[] tenors, java.util.function.DoubleUnaryOperator x, double plotB) {
+            List<Double> labelled = new ArrayList<>();
+            int[] first = {12, 60, 120, 360, 6, 24, 240, 3, 480, 600};
+            for (int months : tenors) stroke(x.applyAsDouble(months), plotB, x.applyAsDouble(months), plotB + 4, Palette.TEXT_SPENT, 1);
+            for (int want : first) {
+                for (int months : tenors) {
+                    if (months != want) continue;
+                    double px = x.applyAsDouble(months);
+                    boolean room = true;
+                    for (double at : labelled) if (Math.abs(at - px) < 26) room = false;
+                    if (!room) continue;
+                    labelled.add(px);
+                    put(tenorName(months), px - 15, plotB + 6, 30, Pos.CENTER, wordsIn(Palette.TEXT_MUTED));
+                }
+            }
+        }
+
         /** A round number to put the axis's steps on: the smallest of these that fits the span into `ticks` steps or fewer. */
         static double niceStep(double span, int ticks, double... steps) {
             double pick = steps[steps.length - 1];
@@ -3340,10 +3635,6 @@ final class FinancesScreen {
             drawFirst();
         }
 
-        private static String tenorName(int months) {
-            return months < 12 ? months + "m" : months / 12 + "y";
-        }
-
         private static boolean overlaps(double[] box, List<double[]> taken) {
             for (double[] t : taken) {
                 if (box[0] < t[2] && box[2] > t[0] && box[1] < t[3] && box[3] > t[1]) return true;
@@ -3371,21 +3662,7 @@ final class FinancesScreen {
                         figureIn(Palette.TEXT_MUTED));
             }
             stroke(plotL, plotB, plotR, plotB, Palette.TEXT_SPENT, 1);
-            // The axis: every tenor has its tick, and the labels claim room round ones first.
-            List<Double> labelled = new ArrayList<>();
-            int[] first = {12, 60, 120, 360, 6, 24, 240, 3, 480, 600};
-            for (int months : tenors) stroke(x.applyAsDouble(months), plotB, x.applyAsDouble(months), plotB + 4, Palette.TEXT_SPENT, 1);
-            for (int want : first) {
-                for (int months : tenors) {
-                    if (months != want) continue;
-                    double px = x.applyAsDouble(months);
-                    boolean room = true;
-                    for (double at : labelled) if (Math.abs(at - px) < 26) room = false;
-                    if (!room) continue;
-                    labelled.add(px);
-                    put(tenorName(months), px - 15, plotB + 6, 30, Pos.CENTER, wordsIn(Palette.TEXT_MUTED));
-                }
-            }
+            tenorAxis(tenors, x, plotB);
             // Today's curve.
             javafx.scene.shape.Polyline curve = new javafx.scene.shape.Polyline();
             curve.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_LABEL));

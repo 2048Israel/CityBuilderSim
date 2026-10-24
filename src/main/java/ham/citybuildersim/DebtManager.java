@@ -3049,6 +3049,17 @@ public class DebtManager {
     }
 
     /**
+     * The nominal coupon a new bullet bond of these months sells at par for (CD6): the par yield
+     * of the curve a sale of `extraFace` is priced on, YieldCurve.parYield() - the figure
+     * breakevenInflation() takes fairRealCoupon() from, so that
+     * parYield(m, f) == fairRealCoupon(m, f) + breakevenInflation(m, f). For Your rate's
+     * sentence on the ten-year linked line against a nominal one.
+     */
+    public double parYield(int months, double extraFace) {
+        return quoteCurve(Math.max(0, extraFace)).parYield(months);
+    }
+
+    /**
      * The one coupon that prices an amortizing bond of these years at 100 on a
      * curve: every payment of its schedule at its own month's factor. The
      * schedule is linear in the coupon (a month's interest is the balance times

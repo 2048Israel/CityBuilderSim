@@ -27,20 +27,36 @@ public final class RenderCD6Page {
      * the FX thread has drawn it.
      */
     public static void snapshot(Game g, Debt line, double width, File out) throws Exception {
+        shoot(g, width, out, (ui, page) -> {
+            if (line == null) {
+                ui.financesScreen.bookPage(page);
+            } else {
+                java.lang.reflect.Field open = FinancesScreen.class.getDeclaredField("lineOpen");
+                open.setAccessible(true);
+                open.set(ui.financesScreen, line);
+                ui.financesScreen.linePage(page);
+            }
+        });
+    }
+
+    /** Builds Finances > The position > Your rate for the city, `width` px wide, and writes it to `out`. */
+    public static void snapshotYourRate(Game g, double width, File out) throws Exception {
+        shoot(g, width, out, (ui, page) -> ui.financesScreen.yourRatePage(page));
+    }
+
+    /** What a page is built with: the interface bound to the city and the empty page to fill. */
+    private interface Build {
+        void into(UserInterface ui, VBox page) throws Exception;
+    }
+
+    private static void shoot(Game g, double width, File out, Build build) throws Exception {
         CountDownLatch done = new CountDownLatch(1);
         Throwable[] failed = new Throwable[1];
         Platform.runLater(() -> {
             try {
                 UserInterface ui = new UserInterface(g);
                 VBox page = Pieces.widePage();
-                if (line == null) {
-                    ui.financesScreen.bookPage(page);
-                } else {
-                    java.lang.reflect.Field open = FinancesScreen.class.getDeclaredField("lineOpen");
-                    open.setAccessible(true);
-                    open.set(ui.financesScreen, line);
-                    ui.financesScreen.linePage(page);
-                }
+                build.into(ui, page);
                 VBox root = new VBox(page);
                 root.setStyle("-fx-background-color: " + Palette.STAGE + ";");
                 Scene scene = new Scene(root, width, 4000);
