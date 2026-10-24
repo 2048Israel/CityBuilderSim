@@ -64,7 +64,7 @@ public class DataSave implements Cloneable {
      * on a generated world's - every save before 0.7.121 is one; the spot,
      * earthLat and earthLon (degrees, the projection's centre the site is
      * snapped from); and the data it was drawn from by identity, earthData
-     * ("earth-1:<hash>"), which a load needs here and the same (Game's load,
+     * ("earth-2:<hash>"), which a load needs here and the same (Game's load,
      * EarthSite.loadProblem()). The seed above decides the detail below the
      * data and the fields on both. SAVE_FORMAT 38: a format-37 build handed
      * an Earth city would found it on its seed's generated world.
@@ -586,7 +586,7 @@ public class DataSave implements Cloneable {
     /** ...its longitude. */
     public Double getEarthLon() { return earthLon; }
 
-    /** The Earth's data the city was drawn from, by identity ("earth-1:<hash>", 0.7.121); null on a generated world. */
+    /** The Earth's data the city was drawn from, by identity ("earth-2:<hash>", 0.7.121); null on a generated world. */
     public String getEarthData() { return earthData; }
 
     /**

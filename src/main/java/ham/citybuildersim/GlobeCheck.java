@@ -536,7 +536,7 @@ public class GlobeCheck {
         out.println("      the fixture: " + words);
         check("on the fixture's four windows every stride's far node, aligned and centred, and the whole world's, are 0.7.131's byte for byte", same);
         if (full == null) {
-            out.println("      earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's far nodes were not fingerprinted");
+            out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's far nodes were not fingerprinted");
             return;
         }
         String fid = EarthTerrain.use(full);
@@ -637,7 +637,7 @@ public class GlobeCheck {
         out.printf("      the fixture's texels: %s%n", rule);
         check("...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS", rule.ok());
         if (full == null) {
-            out.println("      earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the planet's picture was not made");
+            out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the planet's picture was not made");
             return one;
         }
         GlobePicture first = GlobePicture.make(full, GlobePicture.FIRST_ARCMIN, 2);

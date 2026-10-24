@@ -102,7 +102,7 @@ public final class EarthSite {
     private static String lookedAt;
 
     /**
-     * The game's Earth (EarthData.EARTH_1): the file EarthData.locate() finds
+     * The game's Earth (EarthData.EARTH_2): the file EarthData.locate() finds
      * (-Dcbs.earth, or EarthData.DATA_FILE in the folder the game runs from)
      * when its identity is the one this build reads, or a reader a harness
      * made available with EarthTerrain.use(). Looked for again when the file
@@ -120,7 +120,7 @@ public final class EarthSite {
         if (looked != null && at.equals(lookedAt)) return looked;
         lookedAt = at;
         try {
-            looked = new Data(EarthTerrain.source(EarthData.EARTH_1), null);
+            looked = new Data(EarthTerrain.source(EarthData.EARTH_2), null);
         } catch (RuntimeException e) {
             looked = new Data(null, dataWords(p));
         }
@@ -128,8 +128,8 @@ public final class EarthSite {
     }
 
     /* ----- how the file gets there (0.7.125, batch C2) -----
-       Since f99d62c the file is the GitHub release earth-1's asset:
-       GET_EARTH checks DATA_FILE against tools/earth/earth-1.sha256 and
+       Since f99d62c (earth-2 since ET1) the file is the GitHub release earth-2's asset:
+       GET_EARTH checks DATA_FILE against tools/earth/earth-2.sha256 and
        downloads it when it is missing or bad, Play CityBuilderSim.bat calls
        it before it starts the game, and Build EXE.bat carries the file into
        the built game and its zip. So the words say the fetch where the
@@ -152,10 +152,10 @@ public final class EarthSite {
     /** ...for a copy of the repository or the built game, said: the founding screen's words. */
     static String dataWords(Path found, boolean repository) {
         if (missing(found)) {
-            return "The real Earth needs its data, earth-1.bin (about 53 MB), as " + EarthData.DATA_FILE + " beside the game,"
+            return "The real Earth needs its data, earth-2.bin (about 282 MB), as " + EarthData.DATA_FILE + " beside the game,"
                     + " and it is not here. " + fetchWords(repository, "open this page again");
         }
-        return "The file at " + found + " is not the Earth's data this build reads (" + shortId(EarthData.EARTH_1) + "). "
+        return "The file at " + found + " is not the Earth's data this build reads (" + shortId(EarthData.EARTH_2) + "). "
                 + replaceWords(repository, "open this page again");
     }
 
@@ -178,7 +178,7 @@ public final class EarthSite {
                 : "The game's zip carries the right one: unzip the whole zip once more and " + then + ".";
     }
 
-    /** An identity as a person reads it: "earth-1, b754a28f". */
+    /** An identity as a person reads it: "earth-2, c897b242". */
     public static String shortId(String identity) {
         if (identity == null) return "none";
         int colon = identity.indexOf(':');
@@ -220,18 +220,18 @@ public final class EarthSite {
         if (format < ICE_FORMAT) return BEFORE_ICE_WORDS;
         if (format < DEPOSITS_FORMAT) return BEFORE_DEPOSITS_WORDS;
         if (available(identity)) return null;
-        if (identity.equals(EarthData.EARTH_1)) return missingWords(EarthData.locate(), fromRepository());
+        if (identity.equals(EarthData.EARTH_2)) return missingWords(EarthData.locate(), fromRepository());
         return otherDataWords(identity);
     }
 
     /** The load's words for a city on this build's Earth whose file is not here or not this build's (0.7.125): how it gets there, then load the city again. */
     static String missingWords(Path found, boolean repository) {
         if (missing(found)) {
-            return "This city stands on the real Earth, and its data is not here: earth-1.bin (about 53 MB), as " + EarthData.DATA_FILE
+            return "This city stands on the real Earth, and its data is not here: earth-2.bin (about 282 MB), as " + EarthData.DATA_FILE
                     + " beside the game. " + fetchWords(repository, "load the city again");
         }
         return "This city stands on the real Earth, and the file at " + found + " is not the Earth's data this build reads ("
-                + shortId(EarthData.EARTH_1) + "). " + replaceWords(repository, "load the city again");
+                + shortId(EarthData.EARTH_2) + "). " + replaceWords(repository, "load the city again");
     }
 
     /** The load's words for a city on the real Earth saved before ice was a kind of ground (ICE_FORMAT). */
@@ -246,7 +246,7 @@ public final class EarthSite {
     /** The load's words for a city on other data than this build's. */
     private static String otherDataWords(String identity) {
         return "This city stands on the real Earth as other data drew it (" + shortId(identity) + "), and this build reads "
-                + shortId(EarthData.EARTH_1) + ": its coasts and rivers would not be the ones it was built on. The build that"
+                + shortId(EarthData.EARTH_2) + ": its coasts and rivers would not be the ones it was built on. The build that"
                 + " saved it still opens it.";
     }
 
@@ -332,8 +332,8 @@ public final class EarthSite {
      */
     public static String foundingProblem(World.Key key) {
         if (!available(key.data())) {
-            return key.data().equals(EarthData.EARTH_1) ? dataWords(EarthData.locate())
-                    : "The real Earth as " + shortId(key.data()) + " draws it is not here; this build reads " + shortId(EarthData.EARTH_1) + ".";
+            return key.data().equals(EarthData.EARTH_2) ? dataWords(EarthData.locate())
+                    : "The real Earth as " + shortId(key.data()) + " draws it is not here; this build reads " + shortId(EarthData.EARTH_2) + ".";
         }
         EarthTerrain e = World.of(key).earthTerrain();
         long[] s = e.siteNear();

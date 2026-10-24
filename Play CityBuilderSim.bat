@@ -43,7 +43,7 @@ if not "%JAVA%"=="java" if not exist "%JAVA%" (
     exit /b 1
 )
 
-rem The real Earth, data\earth-1.bin, is not in git (about 53 MB). This
+rem The real Earth, data\earth-2.bin, is not in git (about 282 MB). This
 rem fetches it the first time and after that only checks it. The game runs
 rem without it, on the generated world, so a failure here does not stop it.
 call "tools\earth\get-earth.bat" nopause

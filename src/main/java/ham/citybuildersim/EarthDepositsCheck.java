@@ -167,7 +167,7 @@ public class EarthDepositsCheck {
         Near halifaxNear = null;
         if (full == null) {
             out.println("\n--- 5 and 6, and 7's second half: the full file ---");
-            out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Nova Scotia's fields, the size of a field and Halifax's clusters were not drawn");
+            out.println("earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Nova Scotia's fields, the size of a field and Halifax's clusters were not drawn");
         } else {
             halifax = new World(World.Key.earth(HALIFAX.seed(), HALIFAX.lat(), HALIFAX.lon(), fullId));
             halifaxNear = new Near(halifax, REACH_CELLS, FIELD_RESOURCES);
@@ -185,7 +185,7 @@ public class EarthDepositsCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
-    /** The full file's reader when it is named or lies at data/earth-1.bin, else null (and a named file that is not there fails). */
+    /** The full file's reader when it is named or lies at data/earth-2.bin, else null (and a named file that is not there fails). */
     static EarthData openFull() throws Exception {
         Path file = EarthData.locate();
         String named = System.getProperty(EarthData.PROPERTY);
@@ -196,8 +196,8 @@ public class EarthDepositsCheck {
         if (file == null) return null;
         EarthData d = EarthData.open(file);
         String id = EarthTerrain.use(d);
-        report("the named file is the one this build reads: EarthData.EARTH_1", id.equals(EarthData.EARTH_1), id);
-        return id.equals(EarthData.EARTH_1) ? d : null;
+        report("the named file is the one this build reads: EarthData.EARTH_2", id.equals(EarthData.EARTH_2), id);
+        return id.equals(EarthData.EARTH_2) ? d : null;
     }
 
     static Set<String> codesOf(EarthData d) {
@@ -777,8 +777,8 @@ public class EarthDepositsCheck {
        ===================================================================== */
     static void theSave() {
         out.println("\n--- 8. the save: an Earth city saved before its fields were drawn on the geology is refused, in words ---");
-        String before = EarthSite.loadProblem(EarthData.EARTH_1, 51.92, 4.48, EarthSite.DEPOSITS_FORMAT - 1);
-        String at = EarthSite.loadProblem(EarthData.EARTH_1, 51.92, 4.48, EarthSite.DEPOSITS_FORMAT);
+        String before = EarthSite.loadProblem(EarthData.EARTH_2, 51.92, 4.48, EarthSite.DEPOSITS_FORMAT - 1);
+        String at = EarthSite.loadProblem(EarthData.EARTH_2, 51.92, 4.48, EarthSite.DEPOSITS_FORMAT);
         check("an Earth save of the format before DEPOSITS_FORMAT is refused in BEFORE_DEPOSITS_WORDS", EarthSite.BEFORE_DEPOSITS_WORDS.equals(before));
         check("...and one at DEPOSITS_FORMAT is not refused in those words", !EarthSite.BEFORE_DEPOSITS_WORDS.equals(at));
         check("this build saves at DEPOSITS_FORMAT or later", GameVersion.SAVE_FORMAT >= EarthSite.DEPOSITS_FORMAT);

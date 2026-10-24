@@ -5592,7 +5592,7 @@ public class MapCheck {
     static void fullFile(int widest, EarthTerrainCheck.Spot rot) throws Exception {
         Path file = EarthData.locate();
         if (file == null || !Files.isRegularFile(file)) {
-            out.println("      earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's far views were not drawn");
+            out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's far views were not drawn");
             return;
         }
         EarthData d = EarthData.open(file);

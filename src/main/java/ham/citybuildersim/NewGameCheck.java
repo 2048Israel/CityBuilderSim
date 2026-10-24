@@ -1152,7 +1152,7 @@ public class NewGameCheck {
          - the defaults and every preset stand on a generated world: no kind
            but GENERATED, no spot (NaN), no data;
          - onEarth() puts a founding on the Earth round a spot, its data the
-           game's (EarthData.EARTH_1), its seed and every other choice kept;
+           game's (EarthData.EARTH_2), its seed and every other choice kept;
          - a city founded on the Earth - Rotterdam's window of EarthCheck's
            fixture - stands on that world: its World the key's, its land the
            snap's site, its record the spot; a save keeps the four fields and
@@ -1176,7 +1176,7 @@ public class NewGameCheck {
         Founding there = Founding.custom("Arden", 62_500, 12_500, .02).withWorldSeed(77).onEarth(51.9, 4.5);
         assertTrue("onEarth() puts a founding on the Earth round a spot, the game's data, its seed and choices kept",
                 there.isOnEarth() && there.getWorldKind() == World.Kind.EARTH && there.getEarthLat() == 51.9 && there.getEarthLon() == 4.5
-                        && EarthData.EARTH_1.equals(there.getEarthData()) && there.getWorldSeed() == 77
+                        && EarthData.EARTH_2.equals(there.getEarthData()) && there.getWorldSeed() == 77
                         && there.getCityName().equals("Arden") && there.getCash() == 62_500);
 
         byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);

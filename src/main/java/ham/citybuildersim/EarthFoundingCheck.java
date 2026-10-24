@@ -38,7 +38,7 @@ import java.util.Map;
  *      game - for a file that is not this build's what replaces it, the
  *      load's the same; for another identity both identities, for a save that
  *      does not say where that it does not; the game's Earth is here when the
- *      full file is named, its identity EARTH_1.
+ *      full file is named, its identity EARTH_2.
  *   2. THE CARD IS THE PLOTS': on each window, the card's site is the world's
  *      founding site, the snap's; its disc of CARD_PLOTS counted again plot
  *      by plot adds up and agrees, and so do the nearest fresh water and sea;
@@ -147,11 +147,11 @@ public class EarthFoundingCheck {
         report("...and how it gets there: in a copy of the repository the script, which Play CityBuilderSim.bat runs; in the built game its zip",
                 fetch.contains(EarthData.DATA_FILE) && fetch.contains(EarthSite.GET_EARTH) && fetch.contains("Play CityBuilderSim.bat")
                 && zip.contains(EarthData.DATA_FILE) && zip.contains("zip") && !zip.contains(".bat"), fetch + " | " + zip);
-        Path bad = TempDirs.create("earthfounding-words").resolve("earth-1.bin");
+        Path bad = TempDirs.create("earthfounding-words").resolve("earth-2.bin");
         Files.write(bad, new byte[] { 1, 2, 3 });
         String replace = EarthSite.dataWords(bad, true), unzip = EarthSite.dataWords(bad, false);
         report("...for a file that is not this build's, the file, this build's identity and what replaces it: the script, or the zip",
-                replace.contains(bad.toString()) && replace.contains(EarthSite.shortId(EarthData.EARTH_1)) && replace.contains(EarthSite.GET_EARTH)
+                replace.contains(bad.toString()) && replace.contains(EarthSite.shortId(EarthData.EARTH_2)) && replace.contains(EarthSite.GET_EARTH)
                 && unzip.contains(bad.toString()) && unzip.contains("zip") && !unzip.contains(".bat"), replace + " | " + unzip);
         String[] load = { EarthSite.missingWords(null, true), EarthSite.missingWords(null, false), EarthSite.missingWords(bad, true), EarthSite.missingWords(bad, false) };
         boolean loadSays = load[0].contains(EarthSite.GET_EARTH) && load[1].contains("zip") && load[2].contains(EarthSite.GET_EARTH) && load[3].contains("zip");
@@ -159,11 +159,11 @@ public class EarthFoundingCheck {
         report("...and a save on this build's Earth without it, the same ways to it, then load the city again", loadSays, load[0] + " | " + load[1]);
         String other = EarthSite.loadProblem(nobody, 51.9, 4.5);
         report("...for a save on other data, both identities and the build that opens it", other != null && other.contains(EarthSite.shortId(nobody))
-                && other.contains(EarthSite.shortId(EarthData.EARTH_1)) && other.contains("still opens it"), other);
+                && other.contains(EarthSite.shortId(EarthData.EARTH_2)) && other.contains("still opens it"), other);
         String where = EarthSite.loadProblem(id, null, 4.5);
         report("...for a save that does not say where, that it does not", where != null && where.contains("does not say where"), where);
         check("...and nothing for a save whose data is here", EarthSite.loadProblem(id, 51.9, 4.5) == null);
-        check("an identity reads as a person reads it: its name and the hash's first eight", EarthSite.shortId(EarthData.EARTH_1).equals("earth-1, b754a28f"));
+        check("an identity reads as a person reads it: its name and the hash's first eight", EarthSite.shortId(EarthData.EARTH_2).equals("earth-2, c897b242"));
 
         Path p = EarthData.locate();
         String named = System.getProperty(EarthData.PROPERTY);
@@ -175,11 +175,11 @@ public class EarthFoundingCheck {
         if (p == null) {
             report("no file named nor at " + EarthData.DATA_FILE + ": the game's Earth is not here, and says where the file goes",
                     !game.here() && game.words().contains(EarthData.DATA_FILE), game.words());
-            out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's sections were not run");
+            out.println("earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the full file's sections were not run");
             return null;
         }
-        report("the game's Earth is here, the file named, EARTH_1", game.here() && game.reader().identity().equals(EarthData.EARTH_1)
-                && EarthSite.available(EarthData.EARTH_1) && EarthSite.loadProblem(EarthData.EARTH_1, 51.9, 4.5) == null, String.valueOf(p));
+        report("the game's Earth is here, the file named, EARTH_2", game.here() && game.reader().identity().equals(EarthData.EARTH_2)
+                && EarthSite.available(EarthData.EARTH_2) && EarthSite.loadProblem(EarthData.EARTH_2, 51.9, 4.5) == null, String.valueOf(p));
         return game.reader();
     }
 
@@ -285,20 +285,20 @@ public class EarthFoundingCheck {
         EarthSite.Card p = EarthSite.measure(paris);
         check("fixture: Paris is neither ice nor desert, and has the Seine: no warning", !p.ice() && !p.desert() && p.warnings().isEmpty() && p.foundable());
         if (file == null) {
-            out.println("earth-1.bin not named: ice and desert, which the fixture's windows hold none of, were not tried");
+            out.println("earth-2.bin not named: ice and desert, which the fixture's windows hold none of, were not tried");
             return;
         }
-        EarthSite.Card ice = EarthSite.measure(World.Key.earth(SEED, 72, -40, EarthData.EARTH_1));
+        EarthSite.Card ice = EarthSite.measure(World.Key.earth(SEED, 72, -40, EarthData.EARTH_2));
         report("the full file: the middle of Greenland's sheet is refused, on ice", ice.hasSite() && ice.ice() && EarthSite.ICE_WORDS.equals(ice.refusal())
                 && EarthSite.ICE_WORDS.equals(Founding.defaults().onEarth(72, -40).problem()), String.valueOf(ice.refusal()));
-        EarthSite.Card sand = EarthSite.measure(World.Key.earth(SEED, 23, 10, EarthData.EARTH_1));
+        EarthSite.Card sand = EarthSite.measure(World.Key.earth(SEED, 23, 10, EarthData.EARTH_2));
         report("...the Sahara is foundable, warned that it is a desert and has no water near", sand.foundable() && sand.desert()
                 && sand.warnings().contains(EarthSite.DESERT_WORDS) && sand.warnings().contains(EarthSite.NO_WATER_WORDS), String.valueOf(sand.warnings()));
-        EarthSite.Card fiji = EarthSite.measure(World.Key.earth(SEED, -17.0, 180.0, EarthData.EARTH_1));
+        EarthSite.Card fiji = EarthSite.measure(World.Key.earth(SEED, -17.0, 180.0, EarthData.EARTH_2));
         report("...and a spot by the sea with no river or lake within 5 km is warned it drinks the sea", fiji.foundable()
                 && Double.isNaN(fiji.freshKm()) && !Double.isNaN(fiji.seaKm()) && fiji.warnings().contains(EarthSite.NO_FRESH_WORDS),
                 String.valueOf(fiji.warnings()));
-        EarthSite.Card mid = EarthSite.measure(World.Key.earth(SEED, 30, -30, EarthData.EARTH_1));
+        EarthSite.Card mid = EarthSite.measure(World.Key.earth(SEED, 30, -30, EarthData.EARTH_2));
         check("...and the middle of the Atlantic is refused", !mid.hasSite() && EarthSite.NO_SITE_WORDS.equals(mid.refusal()));
     }
 
@@ -395,7 +395,7 @@ public class EarthFoundingCheck {
         try { w.shelfTheta(); } catch (UnsupportedOperationException x) { threw = true; }
         check("...and the elevation field's shelf, which Earth has none of, is still refused", threw);
         if (file == null) {
-            out.println("earth-1.bin not named: the shelf's width was not measured again");
+            out.println("earth-2.bin not named: the shelf's width was not measured again");
             return;
         }
         boolean far = true;

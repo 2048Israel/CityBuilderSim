@@ -16389,7 +16389,7 @@ public class Game {
         String earth = loaded.earthProblem();
         if (earth != null) {
             System.out.println(GameFiles.slotLabel(slot) + " not loaded (" + loaded.getWorldKind() + ", data "
-                    + EarthSite.shortId(loaded.getEarthData()) + "; this build reads " + EarthSite.shortId(EarthData.EARTH_1)
+                    + EarthSite.shortId(loaded.getEarthData()) + "; this build reads " + EarthSite.shortId(EarthData.EARTH_2)
                     + "), its file left as it was. " + earth);
             return earth;
         }

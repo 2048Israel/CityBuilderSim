@@ -102,7 +102,7 @@ import java.util.Map;
  * a cluster stays in its province's own cells.
  *
  * WHICH DATA. A world's key names its data by identity (EarthData.identity(),
- * "earth-1:<hash>"); a harness registers its EarthData with use(), and the
+ * "earth-2:<hash>"); a harness registers its EarthData with use(), and the
  * game's file is found by EarthData.locate() the first time its identity is
  * asked for. Every value is a pure function of the key: the same key draws
  * the same ground on every machine (StrictMath, World's hashes).

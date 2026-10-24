@@ -46,10 +46,10 @@ Claude outputs/
 __pycache__/
 
 # --- The Earth's data ---
-# earth-1.bin (about 53 MB), the real Earth a city can be founded on since
-# 0.7.121 (EarthData.DATA_FILE, data/earth-1.bin beside the game, or named
+# earth-2.bin (about 282 MB), the real Earth a city can be founded on since
+# 0.7.121 (EarthData.DATA_FILE, data/earth-2.bin beside the game, or named
 # with -Dcbs.earth=<path>). Not in the repository: it is the asset of the
-# GitHub release earth-1, tools/earth/get-earth.bat fetches it (Play
+# GitHub release earth-2, tools/earth/get-earth.bat fetches it (Play
 # CityBuilderSim.bat and Build EXE.bat call it), and Build EXE.bat puts it in
 # the built game. The game runs without it - the founding screen offers the
 # generated world then, and says where the file goes. tools/earth/ bakes it.

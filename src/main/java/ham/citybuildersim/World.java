@@ -537,7 +537,7 @@ public final class World {
      * What makes one world another (0.7.115, batch E2; spec-earth 6): its
      * kind and seed, and on Earth the spot the projection is centred on
      * (degrees) and the data it is drawn from, by its identity
-     * (EarthData.identity(), "earth-1:<hash>"). The seed decides an Earth
+     * (EarthData.identity(), "earth-2:<hash>"). The seed decides an Earth
      * world's detail below the data, its fields and its painting; the spot
      * and the data its coasts, lakes and rivers.
      */

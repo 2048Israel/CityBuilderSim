@@ -563,7 +563,7 @@ final class FoundingScreen {
         fillCard();
         refresh();
         CARDS.submit(() -> {
-            EarthData.Place p = EarthSite.randomPlace(d, EarthData.EARTH_1, seed);
+            EarthData.Place p = EarthSite.randomPlace(d, EarthData.EARTH_2, seed);
             Platform.runLater(() -> {
                 if (asked != cardAsked) return;
                 if (p == null) return;
@@ -591,7 +591,7 @@ final class FoundingScreen {
             refresh();
             return;
         }
-        World.Key key = World.Key.earth(seed, spotLat, spotLon, EarthData.EARTH_1);
+        World.Key key = World.Key.earth(seed, spotLat, spotLon, EarthData.EARTH_2);
         if (key.equals(cardKey) && card != null) {
             fillCard();
             refresh();
@@ -1246,7 +1246,7 @@ final class FoundingScreen {
                             return;
                         }
                         px = new int[(int) GLOBE_W * (int) GLOBE_H];
-                        World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, vLat, vLon, EarthData.EARTH_1);
+                        World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, vLat, vLon, EarthData.EARTH_2);
                         pic.view(view, key, COLOURS, SPACE, px);
                     } else px = groundPixels(spot, vLat, vLon, vKm);
                 } catch (RuntimeException e) {
@@ -1271,7 +1271,7 @@ final class FoundingScreen {
         private World.Key spotKey() {
             Long seed = seed();
             if (seed == null || Double.isNaN(spotLat) || spotLat != lat || spotLon != lon) return null;
-            return World.Key.earth(seed, spotLat, spotLon, EarthData.EARTH_1);
+            return World.Key.earth(seed, spotLat, spotLon, EarthData.EARTH_2);
         }
 
         /** The canvas painted: the last picture (where its centre lies now, at the view's scale), the spot, and the site with its 5 km once the card has one. */
@@ -1328,7 +1328,7 @@ final class FoundingScreen {
 
     /** The ground close: the city's own far view (MapTiles.nodeTerrain()) on an Earth world centred on the view - the spot's own when it is there - a whole number of plots a pixel; the void past the planet's rim. Since 0.7.135 the globe's wide views are the map's (GlobePicture.view()), and this is the founding globe's own arithmetic alone. */
     static int[] groundPixels(World.Key spot, double lat0, double lon0, double kmPx) {
-        World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, lat0, lon0, EarthData.EARTH_1);
+        World.Key key = spot != null ? spot : World.Key.earth(Founding.DEFAULT_WORLD_SEED, lat0, lon0, EarthData.EARTH_2);
         long s = Math.max(1, Math.round(kmPx * 1000 / World.PLOT_M));
         int w = (int) GLOBE_W, h = (int) GLOBE_H, n = MapFrame.NODE_PX;
         long x0 = World.SIDE / 2 - (w / 2) * s, y0 = World.SIDE / 2 - (h / 2) * s;

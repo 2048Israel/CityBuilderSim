@@ -23,8 +23,8 @@ import java.util.Map;
  * the key, that is held too (WorldCheck holds the generated world itself,
  * unchanged).
  *
- * THE DATA. EarthCheck's fixture (earth/earth-1-fixture.bin, cut from
- * earth-1.bin by tools/earth/fixture.py) holds the 15" tiles of the study's
+ * THE DATA. EarthCheck's fixture (earth/earth-2-fixture.bin, cut from
+ * earth-2.bin by tools/earth/fixture.py) holds the 15" tiles of the study's
  * three windows - Rotterdam, Perth and Paris - and Fiji's four on the 180th
  * meridian, and the 4' bands they lie in; a window here is the world cell
  * about the spot, 61.44 km a side, the study's "61 x 61 km about each spot".
@@ -746,7 +746,7 @@ public class EarthTerrainCheck {
      * first time failed often in a full suite on the two-core cloud machine
      * (1,085 ms in the gate of 0.7.126, 1,125 and 1,212 in I6's suites) and
      * passed alone (491 to 652 ms), before and after I6 alike: the harnesses
-     * before it push earth-1.bin's pages out of the cache, and its first
+     * before it push earth-2.bin's pages out of the cache, and its first
      * reads wait on the disk (docs/queue/EC1.md). The design's bound is on
      * the pass's own work, which is its thread's CPU - a blocked read is
      * none, the kernel's copy of the bytes is - and the pass is all on the
@@ -773,12 +773,12 @@ public class EarthTerrainCheck {
             return null;
         }
         if (file == null) {
-            out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the cells pass was not timed");
+            out.println("earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": the cells pass was not timed");
             return null;
         }
         EarthData d = EarthData.open(file);
         String id = EarthTerrain.use(d);
-        report("the named file is the one this build reads: EarthData.EARTH_1", id.equals(EarthData.EARTH_1), id);
+        report("the named file is the one this build reads: EarthData.EARTH_2", id.equals(EarthData.EARTH_2), id);
         World w = World.of(World.Key.earth(SEED, s.lat(), s.lon(), id));
         EarthTerrain e = w.earthTerrain();
         long w0 = System.nanoTime(), c0 = passClock();
@@ -1132,7 +1132,7 @@ public class EarthTerrainCheck {
     static void planet(EarthData file, Spot rotterdam) {
         out.println("\n--- 13. the full file, when it is named: Z and the types' odds are its own, and the study's figures on the rules' classes ---");
         if (file == null) {
-            out.println("earth-1.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Z and the odds were not measured");
+            out.println("earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Z and the odds were not measured");
             return;
         }
         Geology g = Geology.of(file);
@@ -1414,14 +1414,14 @@ public class EarthTerrainCheck {
         for (Window w : windows.values()) { fixtureIce += w.classes[World.ICE]; fixtureDesert += w.classes[World.DESERT]; }
         out.printf("      the fixture's three windows: %,d plots of ice and %,d of desert%n", fixtureIce, fixtureDesert);
         if (file == null) {
-            out.println("earth-1.bin not named: the shares, edges and cards of ice and desert, which the fixture's windows hold none of, were not tried");
+            out.println("earth-2.bin not named: the shares, edges and cards of ice and desert, which the fixture's windows hold none of, were not tried");
             return;
         }
         // Each kind's share of a 1-degree cell, and its edge.
         for (int[] c : ICE_CELLS) cover(file, true, c[0], c[1]);
         for (int[] c : DESERT_CELLS) cover(file, false, c[0], c[1]);
         // The founding card's ice is the plot's.
-        World.Key sheetKey = World.Key.earth(SEED, SHEET[0], SHEET[1], EarthData.EARTH_1);
+        World.Key sheetKey = World.Key.earth(SEED, SHEET[0], SHEET[1], EarthData.EARTH_2);
         EarthSite.Card sheet = EarthSite.measure(sheetKey);
         World sw = World.of(sheetKey);
         byte sp = sw.terrainAt(EarthTerrain.spotPlot(), EarthTerrain.spotPlot());
@@ -1429,7 +1429,7 @@ public class EarthTerrainCheck {
                 sw.earthTerrain().siteNear()[0] < 0 && sp == World.ICE && sheet.hasSite() && sheet.ice() && sw.terrainAt(sheet.siteX(), sheet.siteY()) == World.ICE
                         && EarthSite.ICE_WORDS.equals(sheet.refusal()) && EarthSite.ICE_WORDS.equals(EarthSite.foundingProblem(sheetKey)) && adds(sheet),
                 String.format("%.0f%% ice, %.0f%% dry within 5 km", 100 * sheet.iceShare(), 100 * sheet.dryShare()));
-        World.Key marginKey = World.Key.earth(SEED, MARGIN[0], MARGIN[1], EarthData.EARTH_1);
+        World.Key marginKey = World.Key.earth(SEED, MARGIN[0], MARGIN[1], EarthData.EARTH_2);
         EarthSite.Card margin = EarthSite.measure(marginKey);
         World mw = World.of(marginKey);
         double[] ll = new double[2];
@@ -1439,7 +1439,7 @@ public class EarthTerrainCheck {
         report("...on south Greenland's margin, a site on grass in a 2' cell with the ice bit (the bit's rule refused it): not on ice, as its plot is not, and foundable",
                 margin.hasSite() && bit && mp != World.ICE && World.dry(mp) && !margin.ice() && margin.foundable() && EarthSite.foundingProblem(marginKey) == null && adds(margin),
                 String.format("the site %s, its cell's ice bit %s; %.1f%% ice, %.1f%% dry within 5 km", LandMap.groundWords(mp), bit, 100 * margin.iceShare(), 100 * margin.dryShare()));
-        World.Key offKey = World.Key.earth(SEED, OFF_THE_ICE[0], OFF_THE_ICE[1], EarthData.EARTH_1);
+        World.Key offKey = World.Key.earth(SEED, OFF_THE_ICE[0], OFF_THE_ICE[1], EarthData.EARTH_2);
         EarthSite.Card off = EarthSite.measure(offKey);
         World ow = World.of(offKey);
         byte op = ow.terrainAt(EarthTerrain.spotPlot(), EarthTerrain.spotPlot());
@@ -1457,7 +1457,7 @@ public class EarthTerrainCheck {
                         && land.centreKm2(CityLand.DRY) >= 1.0 - World.KM2_PER_PLOT,
                 iceTile == null ? "no tile all ice within reach" : String.format("the tile %.4f km2; the city's centre %.3f km2 dry, %.3f in all", iceKm2[CityLand.TOTAL], land.centreKm2(CityLand.DRY), land.centreKm2(CityLand.TOTAL)));
         // The desert: the card's warning, the site's plot dry ground, the far view's pixels.
-        World.Key saharaKey = World.Key.earth(SEED, SAHARA[0], SAHARA[1], EarthData.EARTH_1);
+        World.Key saharaKey = World.Key.earth(SEED, SAHARA[0], SAHARA[1], EarthData.EARTH_2);
         EarthSite.Card sahara = EarthSite.measure(saharaKey);
         World hw = World.of(saharaKey);
         byte hp = hw.terrainAt(sahara.siteX(), sahara.siteY());
@@ -1540,7 +1540,7 @@ public class EarthTerrainCheck {
      */
     static void cover(EarthData d, boolean ice, int lat0, int lon0) {
         long t0 = System.nanoTime();
-        World w = World.of(World.Key.earth(SEED, lat0 + 0.5, lon0 + 0.5, EarthData.EARTH_1));
+        World w = World.of(World.Key.earth(SEED, lat0 + 0.5, lon0 + 0.5, EarthData.EARTH_2));
         EarthProj proj = w.earthTerrain().projection();
         double[] p = new double[2];
         long x0 = Long.MAX_VALUE, x1 = Long.MIN_VALUE, y0 = Long.MAX_VALUE, y1 = Long.MIN_VALUE;
