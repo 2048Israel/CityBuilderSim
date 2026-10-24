@@ -2184,6 +2184,21 @@ public class EconomyManager {
     }
 
     /**
+     * ...and the inflation uplift on linked bonds (CD5): the month's indexation booked
+     * (DebtManager.getUpliftBooked()), an expense that is not cash, and the part of it paid in cash
+     * in a linker's last month (getUpliftPaid()). `interestPaid` is then the cash coupons LESS the uplift
+     * paid, which is the uplift line's and not the interest's
+     * (NationalAccounts.getInflationUplift()).
+     */
+    public void refreshGovernmentAccounts(double landSales, double capitalSpending,
+                                          double landPurchases, double interestPaid,
+                                          double interestNotCash, double retiredGain,
+                                          double inflationUplift, double upliftPaid) {
+        refreshGovernmentAccounts(landSales, capitalSpending, landPurchases, interestPaid, interestNotCash, retiredGain);
+        nationalAccounts.setInflationUplift(inflationUplift, upliftPaid);
+    }
+
+    /**
      * Repopulates the government's revenue and expenditure block after a
      * load, and nothing else - running the whole measure would be running
      * a month of the economy with the calendar standing still.

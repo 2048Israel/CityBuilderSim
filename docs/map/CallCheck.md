@@ -45,6 +45,8 @@
 
 **Uses:** [CallTree](CallTree.md) (69), [Game](Game.md) (22), [LongTermBond](LongTermBond.md) (19), [Auction](Auction.md) (17), [YieldCurve](YieldCurve.md) (13), [DebtManager](DebtManager.md) (11), [Debt](Debt.md) (8), [Founding](Founding.md) (6), [DebtQuote](DebtQuote.md) (6), [MoneyAudit](MoneyAudit.md) (4), [GameFiles](GameFiles.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sectors](Sectors.md) (2), [CapitalFlows](CapitalFlows.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [CentralBank](CentralBank.md) (1), [Bank](Bank.md) (1), [TreasuryCheck](TreasuryCheck.md) (1)
 
+**Used by (1):** [FloatLinkCheck](FloatLinkCheck.md)
+
 ## Sections
 
 | line | section |

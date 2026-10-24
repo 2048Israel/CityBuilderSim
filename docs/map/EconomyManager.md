@@ -1,4 +1,4 @@
-# EconomyManager.java - 2,520 lines · 252 methods · 9 constants · model
+# EconomyManager.java - 2,535 lines · 253 methods · 9 constants · model
 
 `ham/citybuildersim/EconomyManager.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
 
@@ -52,9 +52,9 @@
 | 1884 | THE TRANSIT BOOKS (2026-09-16) |
 | 1937 | · pensions |
 | 1969 | THE NATIONAL ACCOUNTS |
-| 2322 | CONVENIENCES - the prices the screens and the harnesses ask for by name |
-| 2339 | SAVE AND RESTORE |
-| 2372 | PRINTERS, RESET, THE REFORM |
+| 2337 | CONVENIENCES - the prices the screens and the harnesses ask for by name |
+| 2354 | SAVE AND RESTORE |
+| 2387 | PRINTERS, RESET, THE REFORM |
 
 ## Constants
 
@@ -68,7 +68,7 @@
 | 949 | `EconomyManager.NRRP_CAP` | `6.3` | ...and its most a unit, in founding thousands: $6,300. |
 | 951 | `EconomyManager.NRRP_FULL_BELOW` | `350` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
 | 953 | `EconomyManager.NRRP_NONE_FROM` | `450` | ...and none for a unit worth this or more: $450,000. |
-| 2438 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 2453 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -158,7 +158,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 2492 | **type** `public class EconomyManager` | The private economy: every sector, every market, the credit desk, the tax policy and the national accounts, and the month they run in. |
+| 29 | 2507 | **type** `public class EconomyManager` | The private economy: every sector, every market, the credit desk, the tax policy and the national accounts, and the month they run in. |
 
 ### THE CITY'S PARTS (lines 31-61)
 
@@ -506,55 +506,56 @@
 | 1966 | 1 | `public void setUtilityIncome(double income)` |  |
 | 1967 | 1 | `public void setDebt(double debt)` |  |
 
-### THE NATIONAL ACCOUNTS (lines 1969-2321)
+### THE NATIONAL ACCOUNTS (lines 1969-2336)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1984 | 171 | `public void updateNationalAccounts(double constructionWorkDone, double governmentServices, double interest, double capitalSpend...` | Measures the month's output and the government's books, from the statements the sectors have just struck. |
 | 2163 | 7 | `static double heldPrice(GoodsMarket m)` | What one unit of a held good is counted at (0.7.58): what one costs to bring in this month (GoodsMarket.landedPrice()) - the local price while somebody in the city has it on offer, the import price while nobody does -... |
 | 2179 | 6 | `public void refreshGovernmentAccounts(double landSales, double capitalSpending, double landPurchases, double interestPaid, doub...` | The month's strike, with the debt's two lines (CD3): the discount the city's paper amortised (DebtManager.getAmortisedBooked()), which is the non-cash part of the budget's interest, and the gain on paper retired in th... |
-| 2196 | 25 | `public void refreshGovernmentAccounts(double landSales, double capitalSpending, double landPurchases, double interestPaid)` | Repopulates the government's revenue and expenditure block after a load, and nothing else - running the whole measure would be running a month of the economy with the calendar standing still. |
-| 2231 | 4 | `private void setMortgageInsuranceLines()` | THE MORTGAGE INSURANCE'S TWO BUDGET LINES (0.7.11), off the lender's month: the premiums on the mortgages written, which the treasury took as each was written, and the claims - what the month's write-downs took off in... |
-| 2236 | 1 | `public double getLastFoodVolume()` |  |
-| 2248 | 28 | `public void restoreNationalAccounts(double[] a)` | A NEW SLOT RATHER THAN A CHANGED ONE, because slot 11 changed SCALE. |
-| 2277 | 24 | `public double[] getNationalAccountsState()` |  |
-| 2302 | 1 | `double[] governmentMonthToSave()` |  |
-| 2303 | 1 | `void restoreGovernmentMonth(double[] m)` |  |
-| 2305 | 1 | `public double getMonthGdp()` |  |
-| 2306 | 1 | `public double getYearGdp()` |  |
-| 2307 | 1 | `public double getGDP()` |  |
-| 2309 | 1 | `public double getTaxRate()` | The income rate - the three income taxes together, TaxPolicy.getIncomeTaxRate(): the profit rate once they have parted (0.7.4). |
-| 2311 | 10 | `public void setPreviousGdp(HistorySave historySave)` |  |
+| 2193 | 7 | `public void refreshGovernmentAccounts(double landSales, double capitalSpending, double landPurchases, double interestPaid, doub...` | ...and the inflation uplift on linked bonds (CD5): the month's indexation booked (DebtManager.getUpliftBooked()), an expense that is not cash, and the part of it paid in cash in a linker's last month (getUpliftPaid()). |
+| 2211 | 25 | `public void refreshGovernmentAccounts(double landSales, double capitalSpending, double landPurchases, double interestPaid)` | Repopulates the government's revenue and expenditure block after a load, and nothing else - running the whole measure would be running a month of the economy with the calendar standing still. |
+| 2246 | 4 | `private void setMortgageInsuranceLines()` | THE MORTGAGE INSURANCE'S TWO BUDGET LINES (0.7.11), off the lender's month: the premiums on the mortgages written, which the treasury took as each was written, and the claims - what the month's write-downs took off in... |
+| 2251 | 1 | `public double getLastFoodVolume()` |  |
+| 2263 | 28 | `public void restoreNationalAccounts(double[] a)` | A NEW SLOT RATHER THAN A CHANGED ONE, because slot 11 changed SCALE. |
+| 2292 | 24 | `public double[] getNationalAccountsState()` |  |
+| 2317 | 1 | `double[] governmentMonthToSave()` |  |
+| 2318 | 1 | `void restoreGovernmentMonth(double[] m)` |  |
+| 2320 | 1 | `public double getMonthGdp()` |  |
+| 2321 | 1 | `public double getYearGdp()` |  |
+| 2322 | 1 | `public double getGDP()` |  |
+| 2324 | 1 | `public double getTaxRate()` | The income rate - the three income taxes together, TaxPolicy.getIncomeTaxRate(): the profit rate once they have parted (0.7.4). |
+| 2326 | 10 | `public void setPreviousGdp(HistorySave historySave)` |  |
 
-### CONVENIENCES - the prices the screens and the harnesses ask for by name (lines 2322-2338)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2327 | 1 | `public double getFoodLocalPrice()` | What one person-month of food costs the shops at today's market prices. |
-| 2328 | 1 | `public double getIronLocalPrice()` |  |
-| 2331 | 7 | `public long getFoodUnitsHeld()` | Every warehouse and shelf of food in the city, in KILOGRAMS across the thirteen. |
-
-### SAVE AND RESTORE (lines 2339-2371)
+### CONVENIENCES - the prices the screens and the harnesses ask for by name (lines 2337-2353)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2343 | 1 | `public List<SectorState> getSectorStates()` |  |
-| 2344 | 1 | `public void restoreSectorStates(List<SectorState> s)` |  |
-| 2347 | 13 | `public void restoreSectorBills(List<SectorState> saved)` | The month's bills back over the rebuild's re-derivation, and the total they add to. |
-| 2360 | 1 | `public List<Markets.State> getMarketStates()` |  |
-| 2361 | 1 | `public void restoreMarketStates(List<Markets.State> s)` |  |
-| 2363 | 1 | `public SalesTaxLedger.State getSalesTaxState()` |  |
-| 2366 | 5 | `public boolean restoreSalesTaxState(SalesTaxLedger.State state)` | The month's VAT back, AND the total that came out of it - one fact. |
+| 2342 | 1 | `public double getFoodLocalPrice()` | What one person-month of food costs the shops at today's market prices. |
+| 2343 | 1 | `public double getIronLocalPrice()` |  |
+| 2346 | 7 | `public long getFoodUnitsHeld()` | Every warehouse and shelf of food in the city, in KILOGRAMS across the thirteen. |
 
-### PRINTERS, RESET, THE REFORM (lines 2372-2520)
+### SAVE AND RESTORE (lines 2354-2386)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2376 | 3 | `public void printWageTaxInfo()` |  |
-| 2380 | 35 | `public void printCityStats()` |  |
-| 2417 | 4 | `static String debtToGdpLine(double debt, double yearGdp)` | The report's debt-to-GDP line: a dash, not "NaN%", while there is no GDP to divide by (months 1 and 2). |
-| 2422 | 15 | `public void resetEconomyManager()` |  |
-| 2440 | 4 | `static { ... }` |  |
-| 2452 | 63 | `public void redenominate(double scale)` | Every figure the economy manager holds, and every sector and market under it, in the new unit. |
-| 2516 | 4 | `private static void scaleArray(double[] values, double scale)` |  |
+| 2358 | 1 | `public List<SectorState> getSectorStates()` |  |
+| 2359 | 1 | `public void restoreSectorStates(List<SectorState> s)` |  |
+| 2362 | 13 | `public void restoreSectorBills(List<SectorState> saved)` | The month's bills back over the rebuild's re-derivation, and the total they add to. |
+| 2375 | 1 | `public List<Markets.State> getMarketStates()` |  |
+| 2376 | 1 | `public void restoreMarketStates(List<Markets.State> s)` |  |
+| 2378 | 1 | `public SalesTaxLedger.State getSalesTaxState()` |  |
+| 2381 | 5 | `public boolean restoreSalesTaxState(SalesTaxLedger.State state)` | The month's VAT back, AND the total that came out of it - one fact. |
+
+### PRINTERS, RESET, THE REFORM (lines 2387-2535)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2391 | 3 | `public void printWageTaxInfo()` |  |
+| 2395 | 35 | `public void printCityStats()` |  |
+| 2432 | 4 | `static String debtToGdpLine(double debt, double yearGdp)` | The report's debt-to-GDP line: a dash, not "NaN%", while there is no GDP to divide by (months 1 and 2). |
+| 2437 | 15 | `public void resetEconomyManager()` |  |
+| 2455 | 4 | `static { ... }` |  |
+| 2467 | 63 | `public void redenominate(double scale)` | Every figure the economy manager holds, and every sector and market under it, in the new unit. |
+| 2531 | 4 | `private static void scaleArray(double[] values, double scale)` |  |
 

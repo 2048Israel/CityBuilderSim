@@ -53,8 +53,13 @@ public final class Auction {
        WHAT IS SOLD, WHO BIDS, WHAT COMES OUT
        ===================================================================== */
 
-    /** The kind of paper: a discount bill, a bullet bond with a monthly coupon, or an amortizing bond. */
-    public enum Kind { BILL, BOND, AMORTIZING }
+    /**
+     * The kind of paper: a discount bill, a bullet bond with a monthly coupon, or an amortizing bond - and,
+     * at the end since CD5, the floating-rate note (a margin over the policy rate) and the inflation-linked
+     * bond (a real coupon on an indexed principal), whose ask carries the coupon that prices them at 100
+     * (Ask.fairCoupon()) and their payments per 100 of face (Ask.schedule()).
+     */
+    public enum Kind { BILL, BOND, AMORTIZING, FLOATING, LINKED }
 
     /** How a cap on the yield is read: as a tail over fair, as a yield, or not at all. */
     public enum Mode { TAIL, YIELD, FILL }
@@ -138,17 +143,36 @@ public final class Auction {
     }
 
     /**
+     * A schedule per 100 of face as a function of the coupon the sale sets (CD5): what a floating-rate note
+     * or an inflation-linked bond pays on the paths the market expects, which depends on the margin or the
+     * real coupon and is not a bullet. The game hands one built on the curve's paths (Game.runAuction()).
+     */
+    public interface Schedule {
+        double[] per100(double coupon);
+    }
+
+    /**
      * What is for sale.
      *
-     * @param kind       bill, bond or amortizing
+     * @param kind       bill, bond, amortizing, floating-rate note or inflation-linked bond
      * @param months     the term in months (an amortizing bond's is its years times twelve)
      * @param face       the face on offer
      * @param fair       the curve's fair yield for this paper with the issue on the books, the caller's
      * @param lineCoupon NaN for a new line; the line's own coupon for a reopening
      * @param fee        the fixed cost of a sale, money
      * @param pricer     how the schedule is priced at the sale; null prices it at the stop, one flat yield (a pure fixture's)
+     * @param fairCoupon the coupon that prices the paper at 100 on the curve with no tail (CD5): a floater's margin,
+     *                   a linker's real coupon; NaN for the older kinds
+     * @param schedule   the paper's payments per 100 of face as a function of its coupon (CD5): a floater's and a
+     *                   linker's; null for the older kinds, which are a bullet or the amortizing shape
      */
-    public record Ask(Kind kind, int months, double face, double fair, double lineCoupon, double fee, Pricer pricer) {
+    public record Ask(Kind kind, int months, double face, double fair, double lineCoupon, double fee, Pricer pricer,
+                      double fairCoupon, Schedule schedule) {
+
+        /** An ask of the older kinds, priced as the caller says: no fair coupon, no schedule of its own (a bullet or the amortizing shape). */
+        public Ask(Kind kind, int months, double face, double fair, double lineCoupon, double fee, Pricer pricer) {
+            this(kind, months, face, fair, lineCoupon, fee, pricer, Double.NaN, null);
+        }
 
         /** An ask priced at one flat yield, the stop: the fixture's. */
         public Ask(Kind kind, int months, double face, double fair, double lineCoupon, double fee) {
@@ -157,21 +181,23 @@ public final class Auction {
 
         /**
          * Two asks are the same ask when they offer the same paper at the same
-         * fair yield and fee. The pricer is HOW it is priced, a fresh function
-         * each time the game builds an ask, so it is left out: a DebtQuote
-         * quoted twice on the same city is equal to itself (MapCheck 14 holds
-         * the land office's card to that).
+         * fair yield and fee. The pricer and the schedule are HOW it is priced
+         * and paid, a fresh function each time the game builds an ask, so they
+         * are left out: a DebtQuote quoted twice on the same city is equal to
+         * itself (MapCheck 14 holds the land office's card to that). The fair
+         * coupon is a figure and is in it.
          */
         @Override
         public boolean equals(Object o) {
             return o instanceof Ask x && kind == x.kind && months == x.months
                     && Double.compare(face, x.face) == 0 && Double.compare(fair, x.fair) == 0
-                    && Double.compare(lineCoupon, x.lineCoupon) == 0 && Double.compare(fee, x.fee) == 0;
+                    && Double.compare(lineCoupon, x.lineCoupon) == 0 && Double.compare(fee, x.fee) == 0
+                    && Double.compare(fairCoupon, x.fairCoupon) == 0;
         }
 
         @Override
         public int hashCode() {
-            return java.util.Objects.hash(kind, months, face, fair, lineCoupon, fee);
+            return java.util.Objects.hash(kind, months, face, fair, lineCoupon, fee, fairCoupon);
         }
 
         /** True when this opens a line rather than reopens one. */
@@ -205,7 +231,7 @@ public final class Auction {
      * @param cover       what was bid up to the ceiling, each bidder at most the issue, over the issue
      * @param sold        the face sold: the whole issue, or what was bid at the ceiling when that fell short
      * @param shortSale   true when the bids did not reach the issue at the ceiling
-     * @param coupon      the coupon the paper carries: 0 for a bill
+     * @param coupon      the coupon the paper carries: 0 for a bill; a floating-rate note's margin over the policy rate (it may be nothing or below); a linked bond's real coupon
      * @param pricePer100 the paper's value per 100 of face at the stop: one flat yield, or on the curve with the tail as a spread when the ask carries a pricer
      * @param proceeds    price over 100 times the face sold, less the fee; nothing when nothing sold
      * @param fills       who took the face sold
@@ -360,7 +386,8 @@ public final class Auction {
                 + Math.min(top.world(), face) + Math.min(top.bank(), face)) / face;
 
         double coupon = couponFor(a, stop);
-        double[] flows = a.kind() == Kind.AMORTIZING
+        double[] flows = a.schedule() != null ? a.schedule().per100(coupon)
+                : a.kind() == Kind.AMORTIZING
                 ? amortizingPer100(coupon, a.years()) : bulletPer100(coupon, a.months());
         double price = a.pricer() != null ? a.pricer().per100(flows, stop - fair) : Debt.presentValue(flows, stop);
         double proceeds = sold > 0 ? price / 100 * sold - a.fee() : 0;
@@ -379,12 +406,20 @@ public final class Auction {
      * COUPON_STEP (D2), with a hair added before the floor so a stop that IS a
      * multiple of the step does not lose a step to floating error. A
      * reopening keeps its line's coupon. An amortizing bond: the stop itself,
-     * the one coupon that prices its whole schedule at 100. A bill: none.
+     * the one coupon that prices its whole schedule at 100. A bill: none. A
+     * floating-rate note (CD5): the fair margin and the tail. A linked bond:
+     * the fair real coupon and the tail, rounded down like a bond's.
      */
     private static double couponFor(Ask a, double stop) {
         switch (a.kind()) {
             case BILL: return 0;
             case AMORTIZING: return stop;
+            // CD5: a floater's margin is the fair margin and the tail, not rounded (the treasury's high
+            // discount margin); a linker's real coupon is rounded down to an eighth as a bond's is (D2; TIPS
+            // are set so) and never under nothing.
+            case FLOATING: return a.fairCoupon() + (stop - a.fair());
+            case LINKED:
+                return Math.max(0, Math.floor((a.fairCoupon() + (stop - a.fair()) + 1e-12) / COUPON_STEP) * COUPON_STEP);
             default:
                 return a.isNewLine()
                         ? Math.floor((stop + 1e-12) / COUPON_STEP) * COUPON_STEP
