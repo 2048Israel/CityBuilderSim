@@ -60,14 +60,26 @@ Only the process changes: `CLAUDE.md`, `batch-check.sh`, `ship.sh`,
 
 9. **The orchestrator answers what it safely can** (Jerus, 2026-10-23):
    a session's question about the process, the code or a reading of a brief
-   it answers itself. What it sends to Jerus is only his: how the game
-   plays, a standing rule, a ★ call, money he spends.
+   it answers itself. **It also takes the recommended option on a batch's
+   ★ calls** (Jerus: "dont most end up being rec? its only a few that
+   arent"), writes in the notes which it took and why, and the batch ships
+   without waiting on him; he can overturn one later. It sends him only the
+   few that are his: a call with no clear recommendation, one that moves a
+   standing rule or a premise, one that spends money, an eye check of his.
+   A Pending row that waits only on calls with a recommendation the
+   orchestrator may settle the same way (an amendment to QUEUE.md's rule
+   that only his review moves a row).
 10. **A screen-check session** (Jerus, 2026-10-23): when a batch needs a
-    screen looked at (renders, the game on slot 10, never slots 1-9), it
-    asks the orchestrator, which starts or reuses one session whose only job
-    is that. It takes a list of what to look at, returns what it saw and the
-    images' paths in 15 lines, and edits nothing. One at a time, on Sonnet
-    unless a check needs judgement.
+    screen looked at (renders, or the game on slots 7-10), it asks the
+    orchestrator, which starts or reuses one session whose only job is
+    that. It takes a list of what to look at, returns what it saw and the
+    images' paths in 15 lines, and edits no source. One at a time, on
+    Sonnet unless a check needs judgement. **Slots 7-9 are its to write,
+    even over a city of his there** (Jerus: "it can do whatever it wants
+    with slots 7-9 even if i have a city save there"); slots 1-6 stay his
+    and are never written. This changes CLAUDE.md's standing rule (and the
+    memory note `saves-never-matter.md`) for this session only; a harness
+    still uses `GameFiles.scratch` or `TempDirs`.
 
 ## Done when
 
