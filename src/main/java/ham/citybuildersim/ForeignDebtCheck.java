@@ -100,18 +100,6 @@ public class ForeignDebtCheck {
 
     /** A small city that has been going long enough to have a credit record. */
     static Game tradingCity(Path dir) throws Exception {
-        return tradingCity(dir, 0);
-    }
-
-    /**
-     * ...with that many more depots standing beside the plant's and the founding's (PT1-M4). The works department
-     * that built for a city nobody staffed is retired: this city's builders are its depots' 50 posts each, filled
-     * from its first few hundred people at a seventh (258 points a month at month 60 on five depots, where the 400
-     * free ones raised 350), so its four hundred houses stood at 65 and the world still charged it 10.5% against
-     * its own 3% - it earned abroad (63 a month), but not enough to be lent to cheaply. Two more depots
-     * (addStack(t, n, true), as foundingDepot() stands its one) are builders enough to raise the houses.
-     */
-    static Game tradingCity(Path dir, int depotsStanding) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         g.run();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
@@ -119,7 +107,6 @@ public class ForeignDebtCheck {
         // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
         g.setCashForTest(Founding.WEALTHY_CASH);
         g.getLandManager().setOwnedSqFt(30_000_000);
-        if (depotsStanding > 0) g.buildStack(template(g, "Construction Depot"), depotsStanding, true);
         g.buildStack(template(g, "House"), 400, false);
         g.buildStack(template(g, "Convenience Store"), 6, false);
         tradingPlant(g);

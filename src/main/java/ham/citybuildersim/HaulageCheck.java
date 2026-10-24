@@ -447,14 +447,9 @@ public class HaulageCheck {
                 homeTonnes > 0 && oreImpTonnes > 0 && coalTonnes > 0 && pelletTonnes > 0 && near(plantGot, plantWant, 1e-9),
                 String.format("%,.0f t ore at home + %,.0f t ore landed + %,.0f t coal + %,.0f t pellets, x%.4f x D$%.5fk = %,.4fk against %,.4fk billed",
                         homeTonnes, oreImpTonnes, coalTonnes, pelletTonnes, fBefore, quoteBefore, plantWant, plantGot));
-        // "Nothing" is read within 1e-9 of what hauling the ore it sold at home would have cost it (PT1-M4): the city's numbers moved
-        // with the works department retired, and the trade books left float noise (~1e-14 of a bill of 150k) where they left an exact 0.
-        double soldAtHomeBill = soldLocalTonnes * fBefore * quoteBefore;
         report("the mine that sold its ore at home, and shipped none, was billed nothing for it",
-                soldLocalTonnes > 0 && Good.IRON.tonnesPerUnit() * Math.abs(mineExports) <= 1e-9 * soldLocalTonnes
-                        && Math.abs(mineBill) <= 1e-9 * soldAtHomeBill && near(soldLocalTonnes, homeTonnes, 1e-9),
-                String.format("sold %,.0f t at home (the plant bought %,.0f t), exported %.0f (%.3g), billed %s of the %,.2fk hauling the ore it sold would have been",
-                        soldLocalTonnes, homeTonnes, mineExports, mineExports, mineBill, soldAtHomeBill));
+                soldLocalTonnes > 0 && same(mineExports, 0) && same(mineBill, 0) && near(soldLocalTonnes, homeTonnes, 1e-9),
+                String.format("sold %,.0f t at home (the plant bought %,.0f t), exported %.0f, billed %s", soldLocalTonnes, homeTonnes, mineExports, mineBill));
         report("...and a goods tonne that crossed, or was bought at home, has no truck leg, whatever the railway carries",
                 goodsCrossed > 0 && goodsFree, goodsCrossed + " sector-goods rows crossed");
         report("Freight's \"Haulage billed\" is the shippers' lines to the cent, and the bill is in its other revenue",

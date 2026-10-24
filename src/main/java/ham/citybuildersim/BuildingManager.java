@@ -6574,9 +6574,7 @@ public class BuildingManager {
      * job that comes back with the work, so what the city's planners weigh -
      * the landlords' jobs (sectors.RealEstate), the staff a new building could
      * find (Sector.staffableShare()) - is every post, these included; only
-     * the labour market and the wage bills take the posts offered. (Since
-     * PT1-M4 the staffing test counts the builders' only as far as their
-     * crews have filled them - Sector.staffing(), Construction.crewsLaidOff().)
+     * the labour market and the wage bills take the posts offered.
      *
      * KEYED BY THE OWNER, NOT THE OPERATOR (FR3): a sector lays off the posts
      * of the buildings it owns (the builders' crews, Freight's drivers on its
@@ -6707,12 +6705,16 @@ public class BuildingManager {
      * IT MOVED WITH THE POINTS on 2026-09-09, as the other half of one build
      * rate: raising one without the other would have quadrupled how fast the
      * city could build and left it importing four times as much material to do
-     * it. It STAYS at PT1-M4 (2026-10-23), when the free points were retired:
-     * the founding depot's nameplate is the same 400 the points were, so the
-     * pair is the same build rate at nameplate - and the yard's material is not
-     * the builders' earning: an order's invoice already leaves out what the
-     * yard covers (Founding.orderCost(), Game.quoteBuild()), so the free
-     * material is the order placer's, not Construction's margin.
+     * it. It STAYS at PT1-M4 (2026-10-23), when the free points were retired
+     * and the city founds with a Builders' Yard of 160 points instead
+     * (Game.foundingYard()): the pair is no longer one build rate - 36 units
+     * cover the material of 3.6 Houses a month, against the yard's 16 -
+     * but the yard's material is not the builders' earning: an order's invoice
+     * already leaves out what the yard covers (Founding.orderCost(),
+     * Game.quoteBuild()), so the free material is the order placer's, not
+     * Construction's margin, and it is held at what it is worth (below). Whether
+     * a free yard of material should outlive the free points is Jerus's call
+     * (the batch's notes).
      *
      * 320 -> 36 on 2026-09-10, WITH THE UNIT, NOT AGAINST IT. The unit of
      * material went from $2,000 to $18,000 (see MATERIALS_WORLD_PRICE), so the
@@ -6730,9 +6732,10 @@ public class BuildingManager {
     public static final int BASE_MATERIALS = 36;
 
     /**
-     * The builders' depots' nameplate, and nothing else since PT1-M4
-     * (2026-10-23): the municipal works department's free 400 points are
-     * retired, and the city founds with a depot instead (Game.foundingDepot()).
+     * The nameplate of the builders' yards and depots, and nothing else since
+     * PT1-M4 (2026-10-23): the municipal works department's free 400 points
+     * are retired, and the city founds with a Builders' Yard instead
+     * (Game.foundingYard()).
      *
      * The works department put up 100 points a month with no posts behind
      * them, raised to 400 on 2026-09-09 because the opening decade waited on

@@ -8026,9 +8026,10 @@ public final class GameVersion {
      *     conversion is written.
      *
      * 45 - THE WORKS DEPARTMENT RETIRED (batch PT1-M4; docs/queue/PT1.md,
-     *     M4): the builders' capacity is their depots' nameplate alone, and a
-     *     new city founds with a Construction Depot standing
-     *     (Game.foundingDepot()) where it had 400 free points a month. Nothing
+     *     M4): the builders' capacity is their yards' and depots' nameplate
+     *     alone, and a new city founds with a Builders' Yard standing
+     *     (Game.foundingYard(), a new template, id 143) where it had 400 free
+     *     points a month. Nothing
      *     new is saved, but a save from before was played on the free points
      *     and would load WRONGLY, not merely incompletely: one with no depot
      *     yet - PT1's city at month 183 was one - would load with no builders

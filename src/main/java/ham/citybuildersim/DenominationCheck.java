@@ -147,12 +147,6 @@ public class DenominationCheck {
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);
-            // PT1-M4: the works department that built for a town nobody staffed is retired. This town's builders are the
-            // founding depot's 50 posts, filled from ninety-odd people at a fifth (65 points a month, where the 400 free
-            // ones raised 350): its list of 400 houses stood at 147 by month 121, and its drivers had burnt no fuel yet.
-            // Two depots stand beside the founding's (as MortgageCheck's landlords' town stands its), builders enough to
-            // raise the list; the plain twins of section 2 stay as they were.
-            if (buses) g.buildStack(g.getBuildingManager().getTemplateByName("Construction Depot"), 2, true);
             LongPlaytest.build(g, "House", 400);
             LongPlaytest.build(g, "Convenience Store", 20);
             LongPlaytest.build(g, "Construction Depot", 6);
@@ -563,8 +557,6 @@ public class DenominationCheck {
         assertTrue("fixture: two bus towns, identical, with riders and a transit bill and fares",
                 same(buses, reformed) && buses.getInfrastructureManager().getTransitRiders() > 0
                         && buses.getEconomyManager().getTransitBill() > 0 && buses.getEconomyManager().getTransitFares() > 0);
-        assertTrue("fixture: the bus towns' builders raised the list of 400 houses they were given",
-                buses.getBuildingManager().getTotalHomes() > 400 && reformed.getBuildingManager().getTotalHomes() > 400);
         double thousand = 1000;
         double billBefore = reformed.getEconomyManager().getTransitBill();
         double faresBefore = reformed.getEconomyManager().getTransitFares();

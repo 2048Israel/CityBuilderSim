@@ -521,7 +521,7 @@ public class Game {
          * BuildingsTemplate's header, or claude/reading-the-numbers.md.
          *
          * Jerus's call, alongside quadrupling the municipal works (retired at
-         * PT1-M4: the city founds with a depot instead, foundingDepot()) and
+         * PT1-M4: the city founds with a builders' yard instead, foundingYard()) and
          * giving the city a bank on day one. All four are the same decision seen from four
          * sides: the opening was a city that could not afford to do anything
          * with its first decade. $300M bought about forty Gravel Roads ($6.0M
@@ -667,7 +667,7 @@ public class Game {
     public void run() {
         initialize();
         foundingBank();
-        foundingDepot();
+        foundingYard();
     }
         
     private void initialize() {
@@ -743,7 +743,7 @@ public class Game {
         initialized = false;
         initialize();
         foundingBank();
-        foundingDepot();
+        foundingYard();
 
         /*
          * A NEW GAME FOUNDS ON THE AUTOPILOT, AND ROLLS WHAT FALLS DUE (0.7.13).
@@ -832,20 +832,35 @@ public class Game {
         landManager.allocate(branch.getLandSqFt());
     }
 
+    /** The builders' building a city is founded with (PT1-M4): see foundingYard(). */
+    public static final String FOUNDING_YARD = "Builders' Yard";
+
     /**
-     * The city opens with one builders' depot already standing (PT1-M4).
+     * The city opens with the builders' yard already standing (PT1-M4).
      *
      * WHY. The city used to build its first depot with the municipal works
-     * department: its constant of 400 points a month, with no
-     * posts behind them, which Construction was paid for. PT1's month 183 was
-     * the finding: $377k of the month at a 72% margin with 0 workers - revenue
-     * for work nobody did. Jerus (2026-10-12): "not meant ... ya sure fix,
-     * perhaps a starting depot or something instead". So the free points are
-     * retired and the city is founded with a Construction Depot (50 posts, 400
-     * points) standing, staffed and paid like any other, and the sector earns
-     * only for the work its own people do. No new template: measured, a
-     * founding town staffs the ordinary depot well enough, because the depot's
-     * own posts bring people.
+     * department: 400 points a month with no posts behind them, which
+     * Construction was paid for. PT1's month 183 was the finding: $377k of the
+     * month at a 72% margin with 0 workers - revenue for work nobody did.
+     * Jerus (2026-10-12): "not meant ... ya sure fix, perhaps a starting depot
+     * or something instead". So the free points are retired and the city is
+     * founded with a builders' building standing, staffed and paid like any
+     * other, and the sector earns only for the work its own people do.
+     *
+     * A YARD, NOT A DEPOT: A NEW, SMALLER TEMPLATE, BECAUSE NONE FITTED
+     * (measured; the batch's notes). The Construction Depot's 50 posts are a
+     * founding village's whole workforce. Idle, its builders keep the core
+     * crew and lay the rest off, and every planner counts the laid-off posts
+     * as spoken for (Sector.staffing(), BuildingManager.getPostsWithheld():
+     * they come back with the work) - 37 posts in a village of 70 workers, so
+     * no shop ever passed MIN_STAFFABLE_TO_ORDER: a hands-off village stood at
+     * 146 people and no shop after 240 months, against main's 299 and a shop
+     * at month 13. The Builders' Yard is the depot at two fifths - 20 posts in
+     * its mix, 160 points at its points a post, its ground, cost and draws in
+     * proportion - which a village staffs and whose idle crews leave it hands
+     * for its shops (332 people, a shop by month 25). It is a template like
+     * any of the builders': their planner may order one where a depot could
+     * not be staffed (sectors.Construction.plan(), the same points over cost).
      *
      * PLACED, NOT BUILT - `true` is noConstruction - like the founding bank: it
      * is part of the endowment, not a month of the builders' output. Its posts
@@ -855,30 +870,32 @@ public class Game {
      * ITS FIRST MONTH IS THE MODEL'S FIRST-MONTH CONVENTION, and was left so
      * (PT1-M4, measured; the batch's notes). Every employer's fill reads 1
      * until the first month's labour market strikes it, and the sites of
-     * month 1 advance before that market runs, so the depot works month 1 at
-     * its nameplate in a city nobody lives in yet: one month of 400 points with
-     * no payroll, where the works department did it every month. Striking the
-     * founding's fill from its empty workforce, as the load path would, left
-     * the village unbuilt until month 3 and the playtest's first households
-     * with nowhere to live in months 2-3, and four more harnesses red - a call
-     * for Jerus, not taken here.
+     * month 1 advance before that market runs, so the yard works month 1 at
+     * its nameplate in a city nobody lives in yet: one month with no payroll,
+     * where the works department did it every month. Striking the founding's
+     * fill from its empty workforce, as the load path does, left the village
+     * unbuilt until month 3 and the playtest's first households with nowhere
+     * to live in months 2-3, and four more harnesses red - a call for Jerus,
+     * not taken here; until then a city saved before its first month and
+     * reloaded builds nothing in month 1 where the live one builds its yard's
+     * nameplate.
      *
      * CALLED FROM newGame() AND run(), NOT FROM initialize(), for the reason
      * foundingBank() gives: the load path restores buildings by adding to
-     * whatever is standing, so a depot founded there would be one more on every
+     * whatever is standing, so a yard founded there would be one more on every
      * load.
      */
-    private void foundingDepot() {
-        BuildingsTemplate depot = buildingManager.getTemplateByName("Construction Depot");
-        if (depot == null) return;                                       // no such template
-        if (buildingManager.countByName("Construction Depot") > 0) return;   // already has one
+    private void foundingYard() {
+        BuildingsTemplate yard = buildingManager.getTemplateByName(FOUNDING_YARD);
+        if (yard == null) return;                                         // no such template
+        if (buildingManager.countByName(FOUNDING_YARD) > 0) return;       // already has one
 
-        buildingManager.addStack(depot, 1, true);
+        buildingManager.addStack(yard, 1, true);
 
         // The ground under it, for the reason the bank's note gives: addStack()
         // does not tell the land office, and the load path derives the
         // allocation from what stands.
-        landManager.allocate(depot.getLandSqFt());
+        landManager.allocate(yard.getLandSqFt());
     }
 
     public void resumeGame(){

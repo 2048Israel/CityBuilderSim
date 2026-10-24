@@ -1598,15 +1598,6 @@ public class ForeignCheck {
            ================================================================= */
         g.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
         g.getBusinessInvestment().holdSector(Sectors.RESTAURANTS);
-        /*
-         * AND WOOD PRODUCTS SITS IT OUT, PT1-M4, the sixth of these and for the same reason. The weaker city alone
-         * imported wood products ($66,067k of the $1,140,692k, none at parity: it printed on the per-sector line, which is
-         * what the note above says to read), and that is not a public works programme. It was there before the works
-         * department's free points were retired, when the premise read 1.0472 against its five per cent band; the founding
-         * that stands a staffed depot moved the other sectors' imports a little (Retail, Industry) and it read 1.0520.
-         * Held, the weaker city imports no wood products and the premise reads 0.9853.
-         */
-        g.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
         g.buildStack(template(g, "House"), 500, false);
         g.buildStack(template(g, "Convenience Store"), 8, false);
         g.buildStack(template(g, "Small Grocery Store"), 3, false);

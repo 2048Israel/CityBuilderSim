@@ -59,12 +59,7 @@ public class RobustnessCheck {
         game.run();
         game.buildStack(template(game, "House"), 30, false);
         game.buildStack(template(game, "Convenience Store"), 2, false);
-        // PT1-M4: this village's income stood on the works department's profit tax (225 of its 418 a month at month 21, from
-        // work nobody did); with the points retired it runs a deficit, and section 5b reads the income of its rebuilt statement.
-        // So its taxes are raised, by the model's own lever, until the live city earns more than it spends.
-        game.getEconomyManager().getTaxPolicy().setIncomeTaxRate(.30);
         game.simulateMonths(20);
-        assertTrue("fixture: the live city earns more than it spends, so a statement rebuilt blank would show", game.getIncome() > 0);
         assertTrue("a good save to work from", game.saveGame(1, "good").ok);
 
         String good = Files.readString(files.saveFile(1));

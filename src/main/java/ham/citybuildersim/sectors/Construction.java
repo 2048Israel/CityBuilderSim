@@ -41,9 +41,9 @@ import java.util.Map;
  *
  * Everything else - the books, the credit, the listing, the property tax on
  * its depots and the repairs it pays itself for - is the template's. Every
- * point of building work is a depot's, worked by its crews: the municipal
- * works department's free points were retired at PT1-M4, and the city founds
- * with a depot standing instead (Game.foundingDepot()).
+ * point of building work is a yard's or a depot's, worked by its crews: the
+ * municipal works department's free points were retired at PT1-M4, and the
+ * city founds with a Builders' Yard standing instead (Game.foundingYard()).
  */
 public final class Construction extends Sector {
 
@@ -181,24 +181,6 @@ public final class Construction extends Sector {
         return total;
     }
 
-    /**
-     * THE MOST OF EACH JOB TYPE'S POSTS ITS CREWS HAVE FILLED (PT1-M4): a
-     * high-water mark, struck at every wage strike - the posts offered at
-     * that strike times the fill the labour market gave them.
-     *
-     * WHY. Sector.staffing() adds the posts the builders withhold back to the
-     * posts a new building competes with, because the people laid off for
-     * want of work go back to them when the work comes (0.7.17). The founding
-     * depot's posts were never filled: nobody was laid off from them, and the
-     * village's unemployed were counted as spoken for by posts nobody held,
-     * so no shop passed MIN_STAFFABLE_TO_ORDER and a founded village with
-     * nobody building stalled at 146 people with no shop in twenty years
-     * (main's opened its first at month 13). The reservation is the crews
-     * actually laid off - crewsLaidOff() - and this is what says how many
-     * there were. Saved with the sector.
-     */
-    private final double[] crewsHeld = new double[11];
-
     /** The wage bill on the posts it offers: its depots' posts at the struck share, rounded as the city counts them. */
     @Override
     public void updateWages(double[] wagePerType, long[] posts) {
@@ -206,34 +188,6 @@ public final class Construction extends Sector {
         long[] offered = new long[posts.length];
         for (int i = 0; i < posts.length; i++) offered[i] = BuildingManager.postsOffered(posts[i], postsOfferedShare);
         super.updateWages(wagePerType, offered);
-        // ...and the most the crews have filled (PT1-M4), by the fill this strike read.
-        for (int i = 0; i < offered.length && i < crewsHeld.length; i++) {
-            crewsHeld[i] = Math.max(crewsHeld[i], offered[i] * fill[i]);
-        }
-    }
-
-    /**
-     * The posts of a job type its depots have and are not offering this month
-     * (0.7.17): what BuildingManager.getPostsWithheld() counts for the
-     * builders, on their own posts and the share struck now.
-     */
-    public long postsWithheld(ham.citybuildersim.JobType job) {
-        long posts = postsPerTier()[job.ordinal()];
-        return posts - BuildingManager.postsOffered(posts, postsOfferedShare);
-    }
-
-    /**
-     * The people laid off for want of work (PT1-M4), who go back to those
-     * posts when it comes (Sector.staffing()): of the posts withheld this
-     * month, as many as the crews ever filled beyond what they fill now -
-     * not the posts nobody was ever laid off from, like the founding depot's.
-     */
-    public long crewsLaidOff(ham.citybuildersim.JobType job) {
-        int i = job.ordinal();
-        long withheld = postsWithheld(job);
-        if (withheld <= 0) return 0;
-        long offeredNow = BuildingManager.postsOffered(postsPerTier()[i], postsOfferedShare);
-        return Math.min(withheld, Math.max(0, Math.round(crewsHeld[i] - offeredNow * fill[i])));
     }
 
     /** What the month last struck recognised, for the national accounts' investment line. */
@@ -823,7 +777,7 @@ public final class Construction extends Sector {
     @Override
     public String noRetirementReason(boolean distress) {
         return (distress ? "overdrawn, but " : "")
-                + "its last depot: without it nothing in the city can be built";
+                + "its last yard or depot: without it nothing in the city can be built";
     }
 
     /* ===================================================================
@@ -970,10 +924,6 @@ public final class Construction extends Sector {
                 if (overtimeWages[i] != 0) extras.put("overtimeWages." + i, overtimeWages[i]);
             }
         }
-        // ...and the most the crews have filled (PT1-M4), each job type that has some.
-        for (int i = 0; i < crewsHeld.length; i++) {
-            if (crewsHeld[i] != 0) extras.put("crewsHeld." + i, crewsHeld[i]);
-        }
         // ...and the materials of the month struck (A5, 0.7.46), only when they
         // are figures (see drawnKnown): an older save has neither.
         if (drawnKnown) {
@@ -1006,8 +956,6 @@ public final class Construction extends Sector {
                 if (i < overtimeWages.length) overtimeWages[i] = e.getValue();
             } catch (NumberFormatException ignored) { }
         }
-        java.util.Arrays.fill(crewsHeld, 0);
-        for (int i = 0; i < crewsHeld.length; i++) crewsHeld[i] = extras.getOrDefault("crewsHeld." + i, 0.0);
         rDrawnLocal = extras.getOrDefault("drawnLocal", 0.0);
         rDrawnImported = extras.getOrDefault("drawnImported", 0.0);
         drawnKnown = extras.containsKey("drawnLocal");
@@ -1021,7 +969,6 @@ public final class Construction extends Sector {
         postsOfferedShare = crewsNeeded = fillStruckOn = 1;
         overtimeThisMonth = 0;
         overtimeWages = null;
-        java.util.Arrays.fill(crewsHeld, 0);
         rDrawnLocal = rDrawnImported = 0;
         drawnKnown = true;
     }

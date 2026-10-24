@@ -102,8 +102,8 @@ import java.util.Map;
  *      a thread's CPU is timed on the wall clock and says so;
  *   6. the city is drawn as what it has (0.7.64, batch L2): a new default
  *      city as founded, a month on and a year on draws its own buildings and
- *      nothing else - at its founding the bank and the builders' depot
- *      (PT1-M4) on bare ground, no road, no highway; on the dense screen every building is drawn on its own
+ *      nothing else - at its founding the bank and bare ground, no road, no
+ *      highway; on the dense screen every building is drawn on its own
  *      type's land;
  *   7. the view's pure half (J4: MapFrame, LandMap, MapTiles, Game's draft):
  *      a screen point and its plot go back and forth, a notch of the wheel
@@ -1860,8 +1860,7 @@ public class MapCheck {
      * Jerus, 2026-10-07: "the generation should only put what the city has,
      * not more not less". A new default city drawn as founded, a month on and
      * a year on is exactly what it holds - as founded, its one Commercial Bank
-     * (Game.foundingBank()) and, since PT1-M4, its one Construction Depot
-     * (Game.foundingDepot()) on bare ground, no road and no highway, where J3b
+     * (Game.foundingBank()) on bare ground, no road and no highway, where J3b
      * drew it as a shop of the shops' colour beside the mockup's two world
      * highways; and on the dense screen every building is drawn on its own
      * type's land where its district's plan placed it (0.7.88; until 0.7.87
@@ -1896,14 +1895,9 @@ public class MapCheck {
                         g.getMonth(), months, g.getPopulationManager().getPopulation(), has.length() == 0 ? "nothing" : has,
                         what.length() == 0 ? "nothing" : what, d.surfaced(), tracks));
                 if (months == 0) {
-                    // What the founding places (PT1-M4): the bank (Game.foundingBank()) and the builders' one depot
-                    // (Game.foundingDepot()), each once, and nothing besides.
                     BuildingsTemplate bank = g.getBuildingManager().getTemplateByName("Commercial Bank");
-                    BuildingsTemplate depot = g.getBuildingManager().getTemplateByName("Construction Depot");
-                    bare = bank != null && depot != null && d.total() == 2
-                            && d.buildings[bank.getId()] == 1 && model[bank.getId()] == 1
-                            && d.buildings[depot.getId()] == 1 && model[depot.getId()] == 1
-                            && modelBuildings(model, map.types()) == 2 && d.surfaced() == 0 && r.count(r::isHighway) == 0;
+                    bare = bank != null && d.total() == 1 && d.buildings[bank.getId()] == 1 && model[bank.getId()] == 1
+                            && modelBuildings(model, map.types()) == 1 && d.surfaced() == 0 && r.count(r::isHighway) == 0;
                 }
             }
         } finally {
@@ -1912,7 +1906,7 @@ public class MapCheck {
         out.print(lines);
         check("a new default city is drawn as what it holds, as founded, a month on and a year on: each type's buildings, no more, no less",
                 exact);
-        check("...as founded, its one Commercial Bank and its one Construction Depot: no other building, no road (its streets tracks, the model's base streets: spec 2.2), no highway", bare);
+        check("...as founded, its one Commercial Bank: no other building, no road (its streets tracks, the model's base streets: spec 2.2), no highway", bare);
         // The dense screen, painted: every building on its own type's land, where its district's plan put it.
         long tx0 = Math.floorDiv(dense.land().siteX(), World.TILE) - SCREEN_ACROSS / 2;
         long ty0 = Math.floorDiv(dense.land().siteY(), World.TILE) - SCREEN_DOWN / 2;

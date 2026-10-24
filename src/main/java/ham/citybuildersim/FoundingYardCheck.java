@@ -4,59 +4,63 @@ import ham.citybuildersim.sectors.Construction;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 /**
- * The founding depot (PT1-M4, 2026-10-12): the works department's free 400
- * points a month are retired and every city founds with one Construction Depot
+ * The founding yard (PT1-M4, 2026-10-12): the works department's free 400
+ * points a month are retired and every city founds with one Builders' Yard
  * standing, staffed and paid like any other, so the builders earn only for the
- * work their own people do - and keep the one depot they cannot sell.
+ * work their own people do - and keep the one building that builds, which they
+ * cannot sell.
  *
  * WHY. PT1's month 183 was the finding: $377k of a month at a 72% margin with
  * 0 workers in the sector's posts. BuildingManager.BASE_CONSTRUCTION was 400
  * points of building work with no posts behind them, paid to Construction as
  * revenue. Jerus: "not meant ... ya sure fix, perhaps a starting depot or
  * something instead". The constant is gone; Game.run() and newGame() place the
- * depot (Game.foundingDepot()); the builders' last depot is not sold by either
- * of the retirement rules nor bought out (Construction.mayRetire()); and the
- * staffing test of a new building counts the builders' withheld posts only as
- * far as their crews have filled them (Construction.crewsLaidOff()), because a
- * founded village whose depot was never staffed stalled at 146 people with no
- * shop in twenty years, where main's opened its first at month 13.
+ * yard (Game.foundingYard()); the builders' last building that builds is not
+ * sold by either of the retirement rules nor bought out (Construction.
+ * mayRetire(), Game.demolishable()). A yard and not the Construction Depot,
+ * because the depot's 50 posts were a founding village's whole workforce: idle,
+ * its builders laid 37 of them off and every planner counted them as spoken for
+ * (Sector.staffing()), so a founded village stood at 146 people with no shop
+ * in twenty years, where main's opened its first at month 13. The yard is the
+ * depot at two fifths (20 posts, 160 points); section 6 is the proof.
  *
  * What this has to prove:
- *   1. THE FOUNDING STANDS ONE DEPOT, through both doors (run() and
- *      newGame()): standing, none on site, the builders', the capacity its
+ *   1. THE FOUNDING STANDS ONE YARD, through both doors (run() and newGame()):
+ *      standing, none on site, no depot, the builders', the capacity its
  *      nameplate and no other points, and the land office holds its ground.
- *   2. NO DEPOT, NO POINTS: with the depot retired by fiat the builders'
+ *   2. NO YARD, NO POINTS: with the yard retired by fiat the builders'
  *      capacity and output are 0, and houses ordered owe what they owed, are
  *      not finished and are not recognised, month after month.
  *   3. MONTH 1 IS THE FIRST-MONTH CONVENTION, and month 2 on is worked by the
  *      crews the city has: the fill reads 1 until the first labour market,
- *      the depot works month 1 at its nameplate; from then the output is the
+ *      the yard works month 1 at its nameplate; from then the output is the
  *      nameplate x the posts offered share x the fill x the road and work
  *      ratios; and a founded city saved before its first month loads with one
- *      depot, its capacity and its ground.
+ *      yard, its capacity and its ground.
  *   4. A FOUNDING TOWN BUILDS, AND EARNS ONLY FOR WORK ITS CREWS DO: the
  *      founding village stands within TOWN_MONTHS; once crews come the sites
  *      get work every month while anything is owed (T1-C's trap); a month
  *      whose crews are 0 has no output and recognises nothing; the builders'
  *      payroll is positive.
- *   5. THE LAST DEPOT IS NEVER SOLD: neither the spare-capacity rule nor the
- *      distress rule sells it, nor does the city buy it out; with a second
- *      standing, both sell at most all but one.
- *   6. A FOUNDED VILLAGE'S IDLE BUILDERS HOLD BACK ONLY THE CREWS THEY LAID
- *      OFF: the staffing test reserves the crews the builders laid off, not
- *      the posts nobody ever filled; the village opens its first shop within
- *      FIRST_SHOP_MONTHS; and a builder that did lay crews off holds them back.
+ *   5. THE LAST BUILDING THAT BUILDS IS NEVER SOLD: neither the
+ *      spare-capacity rule nor the distress rule sells the yard, nor does the
+ *      city buy it out; with a Construction Depot standing beside it, both
+ *      sell one of the two and leave the other.
+ *   6. A FOUNDED VILLAGE HAS HANDS FOR ITS SHOPS, WHERE A DEPOT WOULD HAVE HELD
+ *      THEM: a hands-off village founded on the yard opens its first shop
+ *      within FIRST_SHOP_MONTHS, its builders idle at the core crew and holding
+ *      posts back; its twin, founded the same way with a Construction Depot
+ *      in the yard's place, holds more posts back in its idle months and opens
+ *      none in the same months.
  *   7. MONEY IS CONSERVED: the money audit every month played here.
  *
  * Every fixture causes its condition and says so in an assertion labelled
  * "fixture:". How a real run goes is LongPlaytest's.
  */
-public class FoundingDepotCheck {
+public class FoundingYardCheck {
 
     static int fails = 0;
     static PrintStream out;
@@ -91,32 +95,35 @@ public class FoundingDepotCheck {
         return t;
     }
 
-    /** The builders' depot: the one template that adds to their capacity. */
+    /** The builders' yard: what every city is founded with. */
+    static final String YARD = Game.FOUNDING_YARD;
+
+    /** The builders' depot: the village's own order, and the second builders' building of sections 5 and 6. */
     static final String DEPOT = "Construction Depot";
 
-    /** The founding bank, whose ground the depot's is added to. */
+    /** The founding bank, whose ground the yard's is added to. */
     static final String BANK = "Commercial Bank";
 
-    /** The months a city with no depot is played: long enough for a month's work to show it is not done. */
-    static final int NO_DEPOT_MONTHS = 3;
+    /** The months a city with no yard is played: long enough for a month's work to show it is not done. */
+    static final int NO_YARD_MONTHS = 3;
 
     /**
      * The months the founding village is given to stand: the two founding months nobody is there to work, then its
-     * points at the core crew alone (Construction.IDLE_PAYROLL_FLOOR of the depot's nameplate a month, the least the
+     * points at the core crew alone (Construction.IDLE_PAYROLL_FLOOR of the yard's nameplate a month, the least the
      * builders ever keep on). A village that stands inside it was built by the people the city had.
      */
     static int townMonths(Game g) {
-        BuildingsTemplate depot = template(g, DEPOT);
+        BuildingsTemplate yard = template(g, YARD);
         return 2 + (int) Math.ceil(villagePoints(g)
-                / (depot.makes(Good.BUILDING_WORK) * Construction.IDLE_PAYROLL_FLOOR));
+                / (yard.makes(Good.BUILDING_WORK) * Construction.IDLE_PAYROLL_FLOOR));
     }
 
     /**
-     * The months a hands-off founded village is given to open its first shop: two years. Main's village of 0.8.34
-     * opened its first at month 13, and this batch's, before the builders held back only the crews they laid off,
-     * stalled with none in 240.
+     * The months a hands-off founded village is given to open its first shop: three years. Main's village of 0.8.34,
+     * on the works department's free points, opened its first at month 13; the yard's opens at month 24, its idle
+     * crews holding 14 posts; the village on a Construction Depot stalled with none in 240, holding 37.
      */
-    static final int FIRST_SHOP_MONTHS = 24;
+    static final int FIRST_SHOP_MONTHS = 36;
 
     /** The worst month of the audit any month here saw, and the worst drift after it. */
     static double worstResidual = 0, worstDrift = 0;
@@ -165,19 +172,6 @@ public class FoundingDepotCheck {
         return 0;
     }
 
-    /** What the builders lay off, summed over the job types. */
-    static long laidOff(Construction builders) {
-        long total = 0;
-        for (JobType job : JobType.values()) total += builders.crewsLaidOff(job);
-        return total;
-    }
-
-    static long withheld(Construction builders) {
-        long total = 0;
-        for (JobType job : JobType.values()) total += builders.postsWithheld(job);
-        return total;
-    }
-
     /** The output the model says the builders give now: nameplate x posts offered share x fill x road ratio x work ratio. */
     static long outputFormula(Game g) {
         Construction builders = g.getSectors().construction();
@@ -189,60 +183,61 @@ public class FoundingDepotCheck {
         Locale.setDefault(Locale.CANADA);
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        Path root = TempDirs.create("foundingdepotcheck");
+        Path root = TempDirs.create("foundingyardcheck");
 
         standing(root);
-        noDepot(root);
+        noYard(root);
         monthOne(root);
         town(root);
-        lastDepot(root);
-        idleBuilders(root);
+        lastYard(root);
+        handsForShops(root);
         conserved();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
 
-    /* ============================ 1. THE FOUNDING STANDS ONE DEPOT ============================ */
+    /* ============================ 1. THE FOUNDING STANDS ONE YARD ============================ */
 
     static void standing(Path root) {
-        out.println("--- 1. the founding stands one depot, through both doors ---");
+        out.println("--- 1. the founding stands one yard, through both doors ---");
         for (boolean byNewGame : new boolean[] { false, true }) {
             String door = byNewGame ? "newGame()" : "run()";
             City c = founded(root, byNewGame ? "door-new-game" : "door-run", byNewGame);
             Game g = c.game();
             BuildingManager bm = g.getBuildingManager();
-            BuildingsTemplate depot = template(g, DEPOT), bank = template(g, BANK);
-            check("a city founded by " + door + " stands one Construction Depot", bm.countByName(DEPOT), 1);
-            check("...none on site", bm.underConstructionByName(DEPOT), 0);
-            assertTrue("...owned by the builders (" + door + ")", depot.getSector().equals(Sectors.CONSTRUCTION)
-                    && depot.makes(Good.BUILDING_WORK) > 0);
-            check("...and the builders' capacity is that depot's nameplate, no other points (" + door + ")",
-                    bm.getTotalConstructionCapacity(), (long) depot.makes(Good.BUILDING_WORK));
+            BuildingsTemplate yard = template(g, YARD), bank = template(g, BANK);
+            check("a city founded by " + door + " stands one " + YARD, bm.countByName(YARD), 1);
+            check("...and no " + DEPOT, bm.countByName(DEPOT), 0);
+            check("...none on site", bm.underConstructionByName(YARD), 0);
+            assertTrue("...owned by the builders (" + door + ")", yard.getSector().equals(Sectors.CONSTRUCTION)
+                    && yard.makes(Good.BUILDING_WORK) > 0);
+            check("...and the builders' capacity is that yard's nameplate, no other points (" + door + ")",
+                    bm.getTotalConstructionCapacity(), (long) yard.makes(Good.BUILDING_WORK));
             check("...as the builders' own screen reads it (" + door + ")",
-                    g.getSectors().construction().getConstructionCapacity(), depot.makes(Good.BUILDING_WORK), 1e-12);
-            assertTrue("...with its posts standing: " + g.getSectors().construction().getPostsStanding() + " of the depot's "
-                    + (depot.getJobs(JobType.NO_DIPLOMA) + depot.getJobs(JobType.DIPLOMA)),
-                    g.getSectors().construction().getPostsStanding() == depot.getJobs(JobType.NO_DIPLOMA)
-                            + depot.getJobs(JobType.DIPLOMA)
-                            && depot.getJobs(JobType.NO_DIPLOMA) + depot.getJobs(JobType.DIPLOMA) > 0);
+                    g.getSectors().construction().getConstructionCapacity(), yard.makes(Good.BUILDING_WORK), 1e-12);
+            assertTrue("...with its posts standing: " + g.getSectors().construction().getPostsStanding() + " of the yard's "
+                    + (yard.getJobs(JobType.NO_DIPLOMA) + yard.getJobs(JobType.DIPLOMA)),
+                    g.getSectors().construction().getPostsStanding() == yard.getJobs(JobType.NO_DIPLOMA)
+                            + yard.getJobs(JobType.DIPLOMA)
+                            && yard.getJobs(JobType.NO_DIPLOMA) + yard.getJobs(JobType.DIPLOMA) > 0);
             assertTrue("...and the land office holds its ground beside the bank's (" + door + ")",
-                    g.getLandManager().getAllocatedSqFt() + 1e-6 >= bank.getLandSqFt() + depot.getLandSqFt());
+                    g.getLandManager().getAllocatedSqFt() + 1e-6 >= bank.getLandSqFt() + yard.getLandSqFt());
         }
     }
 
-    /* ============================ 2. NO DEPOT, NO POINTS ============================ */
+    /* ============================ 2. NO YARD, NO POINTS ============================ */
 
-    static void noDepot(Path root) {
-        out.println("\n--- 2. no depot, no points ---");
-        City c = founded(root, "no-depot", false);
+    static void noYard(Path root) {
+        out.println("\n--- 2. no yard, no points ---");
+        City c = founded(root, "no-yard", false);
         Game g = c.game();
         BuildingManager bm = g.getBuildingManager();
         Construction builders = g.getSectors().construction();
-        BuildingsTemplate depot = template(g, DEPOT), house = template(g, "House");
-        bm.retire(depot, 1);                       // the fixture: by fiat, past the guard that refuses a sale
-        assertTrue("fixture: no depot stands", bm.countByName(DEPOT) == 0);
-        check("with no depot the builders' capacity is 0", bm.getTotalConstructionCapacity(), 0);
+        BuildingsTemplate yard = template(g, YARD), house = template(g, "House");
+        bm.retire(yard, 1);                        // the fixture: by fiat, past the guard that refuses a sale
+        assertTrue("fixture: no builders' building stands", bm.countByName(YARD) == 0 && bm.countByName(DEPOT) == 0);
+        check("with no yard the builders' capacity is 0", bm.getTotalConstructionCapacity(), 0);
         check("...and their output 0", g.getConstructionOutput(), 0);
 
         int ordered = villageCount("House");
@@ -253,12 +248,12 @@ public class FoundingDepotCheck {
         assertTrue("fixture: " + ordered + " houses are ordered and the sites owe their points",
                 result[0] == Game.BuildResult.SUCCESS && owed > 0);
         boolean unchanged = true, none = true;
-        for (int m = 1; m <= NO_DEPOT_MONTHS; m++) {
+        for (int m = 1; m <= NO_YARD_MONTHS; m++) {
             month(g);
             unchanged &= Math.abs(bm.getRemainingConstructionPoints() - owed) <= 1e-9 * owed;
             none &= builders.getRecognisedThisMonth() == 0;
         }
-        assertTrue("the sites owe what they owed after " + NO_DEPOT_MONTHS + " months: nothing advanced them", unchanged);
+        assertTrue("the sites owe what they owed after " + NO_YARD_MONTHS + " months: nothing advanced them", unchanged);
         check("...no house is finished", bm.countByName("House"), standingBefore);
         assertTrue("...and Construction recognised nothing in any of them", none);
     }
@@ -271,29 +266,30 @@ public class FoundingDepotCheck {
         Game g = c.game();
         BuildingManager bm = g.getBuildingManager();
         Construction builders = g.getSectors().construction();
-        BuildingsTemplate depot = template(g, DEPOT);
-        double nameplate = depot.makes(Good.BUILDING_WORK);
+        BuildingsTemplate yard = template(g, YARD);
+        double nameplate = yard.makes(Good.BUILDING_WORK);
         assertTrue("fixture: nobody lives in the city at its founding", g.getPopulationManager().getPopulation() == 0);
         check("before the first labour market the builders' fill reads 1, as every employer's does",
                 builders.getAverageFill(), 1.0, 1e-12);
         double roadAtFounding = g.getServicesManager().getRoadRatio(), workAtFounding = g.getHealth().getWorkRatio();
-        check("...so the depot's output is its nameplate x the road ratio x the work ratio",
+        check("...so the yard's output is its nameplate x the road ratio x the work ratio",
                 g.getConstructionOutput(), Math.round(nameplate * roadAtFounding * workAtFounding), 0);
 
         assertTrue("fixture: the founding village is ordered before the first month", orderVillage(g));
         double owedBefore = bm.getRemainingConstructionPoints();
         int outputBefore = g.getConstructionOutput();
-        assertTrue("fixture: the village owes more than the depot does in a month",
+        assertTrue("fixture: the village owes more than the yard does in a month",
                 owedBefore > outputBefore && outputBefore > 0);
 
         // The save before month 1, taken now, into the city's own folder: slot 10 of a scratch folder.
-        quietly(() -> g.saveGame(10, "foundingdepot"));
+        quietly(() -> g.saveGame(10, "foundingyard"));
         Game twin = new Game(c.files());
         quietly(() -> twin.loadGameSave(10));
-        // The twin, loaded from the save before month 1: one depot, its capacity, its ground, its orders.
+        // The twin, loaded from the save before month 1: one yard, its capacity, its ground, its orders.
         BuildingManager tb = twin.getBuildingManager();
-        check("the city reloaded from a save before its first month stands one Construction Depot (the load founds none more)",
-                tb.countByName(DEPOT), 1);
+        check("the city reloaded from a save before its first month stands one " + YARD + " (the load founds none more)",
+                tb.countByName(YARD), 1);
+        check("...and no " + DEPOT + " (the village's own is still on site)", tb.countByName(DEPOT), 0);
         check("...with the same capacity", tb.getTotalConstructionCapacity(), (long) nameplate);
         check("...the same points owed on site", tb.getRemainingConstructionPoints(), owedBefore, 1e-9);
         check("...and the same ground allocated", twin.getLandManager().getAllocatedSqFt(),
@@ -305,7 +301,7 @@ public class FoundingDepotCheck {
         out.printf("   month 1: the sites advanced %,.1f of %,d points, the builders recognised %,.1f; the fill is now %.3f "
                 + "with %,d people%n", advanced, outputBefore, builders.getRecognisedThisMonth(), fillAfter,
                 g.getPopulationManager().getPopulation());
-        assertTrue("month 1 is worked at the depot's nameplate: the sites advanced, by no more than its output",
+        assertTrue("month 1 is worked at the yard's nameplate: the sites advanced, by no more than its output",
                 advanced > 0 && advanced <= outputBefore + 1e-9);
         assertTrue("...and the builders recognised the work", builders.getRecognisedThisMonth() > 0);
         assertTrue("fixture: the first labour market struck the fill off the city's people, below the convention's 1",
@@ -391,10 +387,10 @@ public class FoundingDepotCheck {
                 standsAt < 0 ? "never" : String.valueOf(standsAt), limit, monthsWithCrews, monthsWithout, payroll);
         StringBuilder end = new StringBuilder();
         for (String[] line : Founding.VILLAGE) end.append(String.format(" %s %d/%d", line[0], bm.countByName(line[0]),
-                Integer.parseInt(line[1]) + (line[0].equals(DEPOT) ? 1 : 0)));
-        out.println("   standing at month " + g.getMonth() + ":" + end);
+                Integer.parseInt(line[1])));
+        out.println("   standing at the end of the run, month " + g.getMonth() + ":" + end);
         if (standsAt < 0 || monthsWithCrews == 0) out.print(trace);
-        assertTrue("every building of the village stood at once by month " + limit + " (the depot beside the founding one)", standsAt > 0);
+        assertTrue("every building of the village stood at once by month " + limit + " (the depot beside the founding yard)", standsAt > 0);
         assertTrue("...the last finished in month " + standsAt + ", within TOWN_MONTHS", standsAt > 0 && standsAt <= limit);
         assertTrue("the people came: " + g.getPopulationManager().getPopulation() + " live in the town and the builders' crews filled",
                 g.getPopulationManager().getPopulation() > 0 && monthsWithCrews > 0);
@@ -407,124 +403,123 @@ public class FoundingDepotCheck {
         assertTrue("the builders' payroll over the run is positive: they paid the people who did the work", payroll > 0);
     }
 
-    /** Whether every building of the founding village stands (the depot line: the founding's own and the ordered one). */
+    /** Whether every building of the founding village stands (the depot line is the village's own, beside the founding yard). */
     static boolean villageStands(BuildingManager bm) {
         for (String[] line : Founding.VILLAGE) {
-            int wanted = Integer.parseInt(line[1]) + (line[0].equals(DEPOT) ? 1 : 0);
-            if (bm.countByName(line[0]) < wanted) return false;
+            if (bm.countByName(line[0]) < Integer.parseInt(line[1])) return false;
         }
         return true;
     }
 
-    /* ============================ 5. THE LAST DEPOT IS NEVER SOLD ============================ */
+    /* ============================ 5. THE LAST BUILDING THAT BUILDS IS NEVER SOLD ============================ */
 
-    static void lastDepot(Path root) {
-        out.println("\n--- 5. the last depot is never sold ---");
-        City c = founded(root, "last-depot", false);
+    static void lastYard(Path root) {
+        out.println("\n--- 5. the last building that builds is never sold ---");
+        City c = founded(root, "last-yard", false);
         Game g = c.game();
         BuildingManager bm = g.getBuildingManager();
         Construction builders = g.getSectors().construction();
-        BuildingsTemplate depot = template(g, DEPOT);
+        BuildingsTemplate yard = template(g, YARD), depot = template(g, DEPOT);
         double nameplate = bm.getTotalConstructionCapacity();
         BusinessInvestment bi = new BusinessInvestment(bm, g.getEconomyManager());
         int months = Math.max(BusinessInvestment.RETIREMENT_LOSS_MONTHS, BusinessInvestment.DISTRESS_LOSS_MONTHS);
         for (int i = 0; i < months; i++) bi.recordSectorResult(builders.key(), -1);
-        assertTrue("fixture: the builders have lost money for " + months + " months and stand one depot",
-                bi.getLossMonths(builders.key()) >= months && bm.countByName(DEPOT) == 1);
+        assertTrue("fixture: the builders have lost money for " + months + " months and stand one yard, no depot",
+                bi.getLossMonths(builders.key()) >= months && bm.countByName(YARD) == 1 && bm.countByName(DEPOT) == 0);
 
         BusinessInvestment.Decision spare = bi.planRetirement(builders, 0, nameplate, 0);
-        assertTrue("the spare-capacity rule does not sell the last depot, though nothing uses it", !spare.build);
+        assertTrue("the spare-capacity rule does not sell the yard, though nothing uses it", !spare.build);
         assertTrue("...and says why: " + spare.reason, spare.reason.equals(builders.noRetirementReason(false)));
         BusinessInvestment.Decision distress = bi.planDistressRetirement(builders, -1, 0);
         assertTrue("the distress rule does not sell it either, overdrawn and refused credit", !distress.build);
         assertTrue("...and says why: " + distress.reason, distress.reason.equals(builders.noRetirementReason(true)));
-        check("the city may not buy the last depot out and demolish it", g.demolishable(depot), 0);
+        check("the city may not buy the yard out and demolish it", g.demolishable(yard), 0);
 
         quietly(() -> bm.addStack(depot, 1, true));
-        int held = bm.countByName(DEPOT);
-        assertTrue("fixture: a second depot stands", held == 2);
+        assertTrue("fixture: a " + DEPOT + " stands beside the yard", bm.countByName(YARD) == 1 && bm.countByName(DEPOT) == 1);
         spare = bi.planRetirement(builders, 0, bm.getTotalConstructionCapacity(), 0);
-        assertTrue("with two standing the spare-capacity rule sells, at most all but one (" + spare.quantity + " of " + held + ")",
-                spare.build && spare.quantity >= 1 && spare.quantity <= held - 1);
+        assertTrue("with a depot beside it the spare-capacity rule sells one of the two (it picked the "
+                + (spare.template == null ? "none" : spare.template.getName()) + "), and leaves the other",
+                spare.build && spare.quantity == 1 && spare.template != null
+                        && (spare.template.getId() == yard.getId() || spare.template.getId() == depot.getId()));
         distress = bi.planDistressRetirement(builders, -1, 0);
-        assertTrue("...and so does the distress rule (" + distress.quantity + " of " + held + ")",
-                distress.build && distress.quantity >= 1 && distress.quantity <= held - 1);
-        check("...and the city may buy one of the two out", g.demolishable(depot), 1);
+        assertTrue("...and so does the distress rule (it picked the "
+                + (distress.template == null ? "none" : distress.template.getName()) + ")",
+                distress.build && distress.quantity == 1 && distress.template != null
+                        && (distress.template.getId() == yard.getId() || distress.template.getId() == depot.getId()));
+        check("...and the city may buy the yard out, the depot standing", g.demolishable(yard), 1);
+        check("...or the depot out, the yard standing", g.demolishable(depot), 1);
     }
 
-    /* ============================ 6. A FOUNDED VILLAGE'S IDLE BUILDERS ============================ */
+    /* ============================ 6. HANDS FOR ITS SHOPS, WHERE A DEPOT WOULD HAVE HELD THEM ============================ */
 
-    /** The builders' saved extras, read through the base class (Sector.saveExtras() is protected, this package's): the harness's seam to the builders' memory of their crews. */
-    static Map<String, Double> extrasOf(Construction builders) {
-        Map<String, Double> extras = new HashMap<>();
-        ((Sector) builders).saveExtras(extras);
-        return extras;
+    /** How many of the village's two small food shops stand. */
+    static int shops(BuildingManager bm) {
+        return bm.countByName("Convenience Store") + bm.countByName("Small Grocery Store");
     }
 
-    static void idleBuilders(Path root) {
-        out.println("\n--- 6. a founded village's idle builders hold back only the crews they laid off ---");
-        City c = founded(root, "idle-village", false);
+    /** One hands-off village, played FIRST_SHOP_MONTHS months: when its first shop stood, and what its builders held back while idle. */
+    record Village(Game game, int firstShop, int idleMonths, long withheldInIdle, long mostWithheld, long people) {
+        double meanWithheld() { return idleMonths == 0 ? 0 : (double) withheldInIdle / idleMonths; }
+    }
+
+    /**
+     * A hands-off founded city (run(), no orders, Founding.defaults()), its yard retired and a Construction Depot placed
+     * in its stead before month 1 when depotInstead, played FIRST_SHOP_MONTHS months. An idle month is one in which the
+     * builders offer the core crew and no more (Construction.IDLE_PAYROLL_FLOOR) with posts held back (the figure
+     * Sector.staffing() counts as spoken for: BuildingManager.getPostsWithheld()).
+     */
+    static Village playHandsOff(Path root, String name, boolean depotInstead) {
+        City c = founded(root, name, false);
         Game g = c.game();
         BuildingManager bm = g.getBuildingManager();
         Construction builders = g.getSectors().construction();
-        JobType[] jobs = JobType.values();
-        double[] held = new double[jobs.length];     // the most each job type's crews have filled, struck here from the city's own figures
-        int firstShop = -1, idleMonths = 0, unfilled = 0, overHeld = 0, overWithheld = 0;
+        String stands = (depotInstead ? "the " + DEPOT : "the " + YARD) + " of " + name;
+        if (depotInstead) {
+            BuildingsTemplate yard = template(g, YARD), depot = template(g, DEPOT);
+            bm.retire(yard, 1);
+            quietly(() -> bm.addStack(depot, 1, true));
+            // ...the ground goes with it, as the land office would have it had the city been founded so.
+            g.getLandManager().release(yard.getLandSqFt());
+            g.getLandManager().allocate(depot.getLandSqFt());
+        }
+        assertTrue("fixture: " + name + " stands its one builders' building, " + stands
+                + (depotInstead ? ", the yard retired" : ", no depot"),
+                bm.countByName(YARD) == (depotInstead ? 0 : 1) && bm.countByName(DEPOT) == (depotInstead ? 1 : 0));
+        int firstShop = -1, idleMonths = 0;
+        long withheldInIdle = 0, mostWithheld = 0;
         for (int m = 1; m <= FIRST_SHOP_MONTHS; m++) {
             month(g);
-            double[] fillRate = g.getPopulationManager().getJobFillRate();
-            long[] offered = builders.postsOfferedPerTier();
-            for (int i = 0; i < jobs.length; i++) held[i] = Math.max(held[i], offered[i] * fillRate[i]);
-            if (firstShop < 0 && bm.countByName("Convenience Store") + bm.countByName("Small Grocery Store") > 0) firstShop = m;
-            if (builders.getPostsOfferedShare() <= Construction.IDLE_PAYROLL_FLOOR + 1e-9 && bm.getPostsWithheld() > 0) {
+            if (firstShop < 0 && shops(bm) > 0) firstShop = m;
+            long withheld = bm.getPostsWithheld();
+            if (builders.getPostsOfferedShare() <= Construction.IDLE_PAYROLL_FLOOR + 1e-9 && withheld > 0) {
                 idleMonths++;
-                for (int i = 0; i < jobs.length; i++) {
-                    long laid = builders.crewsLaidOff(jobs[i]);
-                    // ...at most what the crews ever filled beyond today's, and never more than the posts withheld.
-                    if (laid > Math.max(0, Math.round(held[i] - offered[i] * fillRate[i]))) overHeld++;
-                    if (laid > builders.postsWithheld(jobs[i])) overWithheld++;
-                }
-                if (laidOff(builders) < withheld(builders)) unfilled++;
+                withheldInIdle += withheld;
+                mostWithheld = Math.max(mostWithheld, withheld);
             }
         }
-        out.printf("   month %d: %d people, %d idle months, first shop at month %d; builders withhold %d posts, crews laid off %d%n",
-                g.getMonth(), g.getPopulationManager().getPopulation(), idleMonths, firstShop, withheld(builders), laidOff(builders));
-        assertTrue("fixture: the builders were idle (posts offered at the core crew, posts withheld) in " + idleMonths + " months",
-                idleMonths > 0);
-        assertTrue("fixture: in some idle month a withheld post was one nobody was ever laid off from (" + unfilled + " months)",
-                unfilled > 0);
-        assertTrue("in every idle month the crews laid off were at most what the crews ever filled beyond today's", overHeld == 0);
-        assertTrue("...and never more than the posts withheld", overWithheld == 0);
-        assertTrue("the village opened its first shop at month " + firstShop + ", within FIRST_SHOP_MONTHS (" + FIRST_SHOP_MONTHS + ")",
-                firstShop > 0 && firstShop <= FIRST_SHOP_MONTHS);
+        return new Village(g, firstShop, idleMonths, withheldInIdle, mostWithheld, g.getPopulationManager().getPopulation());
+    }
 
-        // A builder that did lay crews off holds them back: the builders are idle now, after a month of full crews.
-        assertTrue("fixture: the builders are idle and have laid crews off (" + laidOff(builders) + " of " + withheld(builders)
-                + " posts withheld)", builders.getPostsOfferedShare() <= Construction.IDLE_PAYROLL_FLOOR + 1e-9
-                && withheld(builders) > 0 && laidOff(builders) > 0);
-        BuildingsTemplate store = template(g, "Convenience Store");
-        Sector.Staffing reserved = builders.staffing(store);
-        Map<String, Double> memory = extrasOf(builders);
-        Map<String, Double> forgotten = new HashMap<>(memory);
-        forgotten.keySet().removeIf(k -> k.startsWith("crewsHeld."));
-        ((Sector) builders).restoreExtras(forgotten);
-        assertTrue("fixture: with the builders' memory of their crews cleared nobody is reserved", laidOff(builders) == 0);
-        Sector.Staffing open = builders.staffing(store);
-        ((Sector) builders).restoreExtras(memory);
-        out.printf("   a Convenience Store's posts the city could staff: %.1f%% with the laid-off crews reserved, %.1f%% with none%n",
-                reserved.share * 100, open.share * 100);
-        assertTrue("fixture: the crews are back in the builders' memory", laidOff(builders) > 0);
-        assertTrue("the staffing test counts the crews laid off as taken: a shop's staffable share is lower for them",
-                reserved.share < open.share);
-
-        // ...and the memory is saved: a city reloaded holds back the same crews.
-        quietly(() -> g.saveGame(10, "idlevillage"));
-        Game twin = new Game(c.files());
-        quietly(() -> twin.loadGameSave(10));
-        boolean same = true;
-        for (JobType job : jobs) same &= twin.getSectors().construction().crewsLaidOff(job) == builders.crewsLaidOff(job);
-        assertTrue("a reloaded city holds back the same crews as the one saved (" + laidOff(twin.getSectors().construction())
-                + " of " + laidOff(builders) + ")", same);
+    static void handsForShops(Path root) {
+        out.println("\n--- 6. a founded village has hands for its shops, where a depot would have held them ---");
+        Village yard = playHandsOff(root, "hands-yard", false);
+        Village depot = playHandsOff(root, "hands-depot", true);
+        out.printf("   the yard's village, %d months: %d people, first shop at month %d, %d idle months, %.1f posts held back in an idle month (most %d)%n",
+                FIRST_SHOP_MONTHS, yard.people(), yard.firstShop(), yard.idleMonths(), yard.meanWithheld(), yard.mostWithheld());
+        out.printf("   the depot's twin, %d months: %d people, first shop at month %d, %d idle months, %.1f posts held back in an idle month (most %d)%n",
+                FIRST_SHOP_MONTHS, depot.people(), depot.firstShop(), depot.idleMonths(), depot.meanWithheld(), depot.mostWithheld());
+        assertTrue("the yard's village opened its first shop at month " + yard.firstShop() + ", within FIRST_SHOP_MONTHS ("
+                + FIRST_SHOP_MONTHS + ")", yard.firstShop() > 0 && yard.firstShop() <= FIRST_SHOP_MONTHS);
+        assertTrue("fixture: the yard's builders went idle at the core crew in " + yard.idleMonths()
+                + " months and held posts back then (" + yard.mostWithheld() + " at most)",
+                yard.idleMonths() > 0 && yard.mostWithheld() > 0);
+        assertTrue("fixture: the depot's twin went idle at the core crew in " + depot.idleMonths() + " months and held posts back",
+                depot.idleMonths() > 0 && depot.mostWithheld() > 0);
+        assertTrue("the twin held back more posts in its idle months than the yard did (" + String.format("%.1f against %.1f",
+                depot.meanWithheld(), yard.meanWithheld()) + ")", depot.meanWithheld() > yard.meanWithheld());
+        assertTrue("...and opened no shop in the same " + FIRST_SHOP_MONTHS + " months, the reason the founding building is a yard",
+                depot.firstShop() < 0);
     }
 
     /* ============================ 7. MONEY IS CONSERVED ============================ */
