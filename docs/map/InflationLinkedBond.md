@@ -1,6 +1,6 @@
-# InflationLinkedBond.java - 287 lines · 26 methods · 2 constants · model
+# InflationLinkedBond.java - 311 lines · 28 methods · 2 constants · model
 
-`ham/citybuildersim/InflationLinkedBond.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InflationLinkedBond.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > An inflation-linked bond: a REAL coupon every month on a principal that
 > follows the city's price index, and at the end the indexed principal, never
@@ -41,7 +41,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (4):** [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md)
+**Used by (6):** [BookDesk](BookDesk.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md)
 
 ## Constants
 
@@ -63,7 +63,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 245 | **type** `public class InflationLinkedBond extends Debt` | An inflation-linked bond: a REAL coupon every month on a principal that follows the city's price index, and at the end the indexed principal, never under the face - at 10 or 30 years, each sale its own line (CD5, spec... |
+| 43 | 269 | **type** `public class InflationLinkedBond extends Debt` | An inflation-linked bond: a REAL coupon every month on a principal that follows the city's price index, and at the end the indexed principal, never under the face - at 10 or 30 years, each sale its own line (CD5, spec... |
 | 52 | 4 | `public static boolean isIssuable(int years)` | True for one of the two. |
 | 58 | 7 | `public static int nearestYears(int years)` | The one of MATURITIES nearest this many years; the shorter on a tie. |
 | 82 | 12 | `public InflationLinkedBond(double faceValue, int months, int monthStarted, double realCoupon, double baseIndex)` |  |
@@ -84,10 +84,12 @@
 | 200 | 3 | `public int getMaturityMonth()` |  |
 | 205 | 3 | `public boolean isMatured()` |  |
 | 210 | 3 | `public String getType()` |  |
-| 216 | 5 | `protected double couponOwed()` | This month's coupon: the real coupon on the indexed principal, a twelfth - and in the last month the uplift as well, faceValue x (max(1, ratio) - 1). |
-| 229 | 9 | `protected double[] scheduleOwed()` | THE KNOWN SCHEDULE at today's ratio held flat: the real coupon on the indexed principal every month, and in the last also the face or the indexed principal if that is more. |
-| 241 | 4 | `protected void redenominateSchedule(double scale)` | The last uplift figures are quantities of money, in the new unit (and a part bought back is the same bond, smaller). |
-| 255 | 3 | `public double[] projectedFlows(double nextRatio, double[] monthlyGrowth)` | THE MARKET'S SCHEDULE: the ratio the next payment carries is {@code nextRatio} - the price index now over the base, because the next tick indexes on it (the index takes its month after the debts are paid) - and each l... |
-| 267 | 8 | `public static double[] flowsFor(double face, double realCoupon, double nextRatio, double[] monthlyGrowth, int months)` | A linker's payments on a path of the price index: {@code face} of it, at this real coupon, the first payment's ratio {@code nextRatio} and each later month's grown by monthlyGrowth[i] (i months ahead; the last entry h... |
-| 277 | 10 | `public static double[] ratiosFor(double nextRatio, double[] monthlyGrowth, int months)` | The index ratio each payment carries on that path: payment 0 the next ratio, each after it grown by its month's growth. |
+| 216 | 5 | `protected double couponOwed()` | This month's coupon: the real coupon on the indexed principal, a twelfth - and in the last month the uplift as well (upliftOwed()). |
+| 224 | 3 | `protected double upliftOwed()` | The uplift the last month pays: faceValue x (max(1, ratio) - 1), the indexed principal less the face, never under nothing (the floor); nothing in any other month. |
+| 235 | 9 | `protected double[] scheduleOwed()` | THE KNOWN SCHEDULE at today's ratio held flat: the real coupon on the indexed principal every month, and in the last also the face or the indexed principal if that is more. |
+| 252 | 10 | `protected double[] couponScheduleOwed()` | The real coupon on the indexed principal, held flat at today's ratio, and in the last month the inflation uplift with it - the face times the ratio less one, as couponOwed() counts it, so the repayment left in that mo... |
+| 265 | 4 | `protected void redenominateSchedule(double scale)` | The last uplift figures are quantities of money, in the new unit (and a part bought back is the same bond, smaller). |
+| 279 | 3 | `public double[] projectedFlows(double nextRatio, double[] monthlyGrowth)` | THE MARKET'S SCHEDULE: the ratio the next payment carries is {@code nextRatio} - the price index now over the base, because the next tick indexes on it (the index takes its month after the debts are paid) - and each l... |
+| 291 | 8 | `public static double[] flowsFor(double face, double realCoupon, double nextRatio, double[] monthlyGrowth, int months)` | A linker's payments on a path of the price index: {@code face} of it, at this real coupon, the first payment's ratio {@code nextRatio} and each later month's grown by monthlyGrowth[i] (i months ahead; the last entry h... |
+| 301 | 10 | `public static double[] ratiosFor(double nextRatio, double[] monthlyGrowth, int months)` | The index ratio each payment carries on that path: payment 0 the next ratio, each after it grown by its month's growth. |
 

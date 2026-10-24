@@ -173,6 +173,17 @@ public class FloatingRateNote extends Debt {
         return flows;
     }
 
+    /** Today's coupon, held flat: the dial moves it at each reset, and the books ahead do not guess where. */
+    @Override
+    protected double[] couponScheduleOwed() {
+        if (remainingMonths <= 0) {
+            return new double[0];
+        }
+        double[] flows = new double[remainingMonths];
+        java.util.Arrays.fill(flows, couponOwed());
+        return flows;
+    }
+
     /**
      * THE MARKET'S SCHEDULE: each coupon at the dial the market expects when
      * it is paid, the face added to the last. {@code policyPath[t]} is the dial

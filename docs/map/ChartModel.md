@@ -1,6 +1,6 @@
 # ChartModel.java - 717 lines · 49 methods · 11 constants · model
 
-`ham/citybuildersim/ChartModel.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChartModel.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > What a time chart shows, as numbers: the window of months it looks at and
 > how a drag, a wheel, a range button and the overview move it; the ticks on

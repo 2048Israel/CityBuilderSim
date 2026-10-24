@@ -1,6 +1,6 @@
-# MediumTermBond.java - 232 lines · 17 methods · 1 constants · model
+# MediumTermBond.java - 255 lines · 18 methods · 1 constants · model
 
-`ham/citybuildersim/MediumTermBond.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MediumTermBond.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The amortizing bond: the workhorse of municipal finance - at 5 to 30 years in
 > fives, one coupon, each sale its own line (CD2). It was the serial bond; the
@@ -42,7 +42,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Auction](Auction.md) (1), [Game](Game.md) (1)
 
-**Used by (9):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [MoneyCheck](MoneyCheck.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (11):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [BookDesk](BookDesk.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [MoneyCheck](MoneyCheck.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Constants
 
@@ -62,7 +62,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 191 | **type** `public class MediumTermBond extends Debt` | The amortizing bond: the workhorse of municipal finance - at 5 to 30 years in fives, one coupon, each sale its own line (CD2). |
+| 42 | 214 | **type** `public class MediumTermBond extends Debt` | The amortizing bond: the workhorse of municipal finance - at 5 to 30 years in fives, one coupon, each sale its own line (CD2). |
 | 48 | 5 | `public static int nearestYears(int years)` | The one of YEARS nearest this many years; the shorter on a tie. |
 | 57 | 3 | `public double couponRate()` | The one coupon, a year, that the auction set at issue (the stop itself): the screen's name for the bond, "20-year amortizing bond at 4.21%". |
 | 67 | 3 | `public MediumTermBond(double faceValue, int months, int monthStarted, double couponRate)` |  |
@@ -78,6 +78,7 @@
 | 174 | 3 | `public double getPrincipalPerSlice()` | How much principal is retired on each anniversary. |
 | 178 | 3 | `public int getSlicesRemaining()` |  |
 | 191 | 28 | `protected double[] scheduleOwed()` | Coupon on the declining balance, with a principal slice each anniversary. |
-| 222 | 3 | `protected void redenominateSchedule(double scale)` | The amortisation slice, in the new unit. |
-| 228 | 3 | `protected void shrinkSchedule(double k)` | Part of the piece bought back (CD4, Debt.retirePart()): the slice shrinks with the balance, a dollar piece's too - it is not a change of unit. |
+| 222 | 20 | `protected double[] couponScheduleOwed()` | The coupon on the balance each month, before the slice that month repays: scheduleOwed()'s coupon, with the principal left out. |
+| 245 | 3 | `protected void redenominateSchedule(double scale)` | The amortisation slice, in the new unit. |
+| 251 | 3 | `protected void shrinkSchedule(double k)` | Part of the piece bought back (CD4, Debt.retirePart()): the slice shrinks with the balance, a dollar piece's too - it is not a change of unit. |
 

@@ -1,6 +1,6 @@
 # Auction.java - 460 lines · 28 methods · 9 constants · model
 
-`ham/citybuildersim/Auction.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Auction.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > The city's paper sold at auction: the bidders, each by its own rule in the
 > game, and the one yield that clears them.
@@ -23,7 +23,7 @@
 
 **Uses:** [CapitalFlows](CapitalFlows.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [HouseholdBalance](HouseholdBalance.md) (1), [Debt](Debt.md) (1)
 
-**Used by (24):** [AuctionCheck](AuctionCheck.md), [AuctionTally](AuctionTally.md), [AutoBuilder](AutoBuilder.md), [BuildScreen](BuildScreen.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CapChips](CapChips.md), [CapSetting](CapSetting.md), [DataSave](DataSave.md), [Debt](Debt.md), [DebtManager](DebtManager.md), [DebtQuote](DebtQuote.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [MediumTermBond](MediumTermBond.md), [NewGameCheck](NewGameCheck.md), [RestructureCheck](RestructureCheck.md), [Rollover](Rollover.md), [SaveFileCheck](SaveFileCheck.md), [ShortTermTBill](ShortTermTBill.md)
+**Used by (25):** [AuctionCheck](AuctionCheck.md), [AuctionTally](AuctionTally.md), [AutoBuilder](AutoBuilder.md), [BuildScreen](BuildScreen.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CapChips](CapChips.md), [CapSetting](CapSetting.md), [DataSave](DataSave.md), [Debt](Debt.md), [DebtManager](DebtManager.md), [DebtQuote](DebtQuote.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [MediumTermBond](MediumTermBond.md), [NewGameCheck](NewGameCheck.md), [RestructureCheck](RestructureCheck.md), [Rollover](Rollover.md), [SaveFileCheck](SaveFileCheck.md), [ShortTermTBill](ShortTermTBill.md)
 
 ## Sections
 

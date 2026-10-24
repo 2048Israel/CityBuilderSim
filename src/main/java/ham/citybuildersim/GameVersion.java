@@ -7281,7 +7281,28 @@ public final class GameVersion {
      *     and the Government tab.
      *   - Harness: FloatLinkCheck (new).
      *
-     * 0.8.36 (2026-10-24) - PT1-M4, THE WORKS DEPARTMENT RETIRED
+     * 0.8.36 (2026-10-23) - CD6, THE REST OF THE DEBT'S SCREENS
+     * (docs/queue/CD6-notes.md; spec-city-debt.md section 7, boards 1, 2
+     * and 5, D31). The month is untouched; the playtest's trace is too.
+     *   - Finances › The book as a desk (BookDesk, Game.bookDesk()): the
+     *     book's figures, the lines on the curve, face/carried/worth by kind,
+     *     a row a line with what closing it now books in green or red, in D$
+     *     and per cent (Jerus, 2026-10-23), and Close it now beside it.
+     *   - A line's page: its price since the sale against carried (each
+     *     piece's path, recorded at the close), if you closed it today with
+     *     the honest line, its next six months on the books
+     *     (Debt.booksAhead()), its holders, sales and risk.
+     *   - Your rate as the curve: today, a year and two years ago (the curve
+     *     book, saved), the world's, the dial expected, the 10-year taken
+     *     apart, real rates and the inflation priced.
+     *   - CD3's star 4: the coupon is labelled cash next month beside the
+     *     budget's interest; the Government grid adds up to the budget's line
+     *     (DebtManager.getInterestBookedOf(), saved). A linker's last-month
+     *     uplift is not coupon (Debt.getMonthlyCoupon()/getUpliftDue()).
+     *   - Close it now's journal, honest line and call gain behind getters.
+     *   - Harness: DeskCheck (new). The manual's text: docs/queue/CD6-manual.md.
+     *
+     * 0.8.37 (2026-10-24) - PT1-M4, THE WORKS DEPARTMENT RETIRED
      * (docs/queue/PT1-M4-notes.md; Jerus, 2026-10-12: "not meant ... perhaps
      * a starting depot or something instead"). Construction earns only for
      * work its own crews do.
@@ -7298,7 +7319,7 @@ public final class GameVersion {
      *   - Save: SAVE_FORMAT 45, OLDEST_LOADABLE_FORMAT 45.
      *   - Harness: FoundingYardCheck (new); forty fixtures re-caused.
      */
-    public static final String VERSION = "0.8.36";
+    public static final String VERSION = "0.8.37";
 
     /**
      * The save shape.

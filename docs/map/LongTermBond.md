@@ -1,6 +1,6 @@
-# LongTermBond.java - 197 lines · 20 methods · 2 constants · model
+# LongTermBond.java - 208 lines · 21 methods · 2 constants · model
 
-`ham/citybuildersim/LongTermBond.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LongTermBond.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > A bond: a fixed coupon every month on the whole face, and the face at the
 > end - at 2, 5, 10, 20, 30 or 50 years, sold in lines that reopen (CD2).
@@ -22,7 +22,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (16):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (18):** [AuctionCheck](AuctionCheck.md), [BankCheck](BankCheck.md), [BookDesk](BookDesk.md), [CallCheck](CallCheck.md), [CallTree](CallTree.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [DebtManager](DebtManager.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Sections
 
@@ -49,9 +49,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 174 | **type** `public class LongTermBond extends Debt` | A bond: a fixed coupon every month on the whole face, and the face at the end - at 2, 5, 10, 20, 30 or 50 years, sold in lines that reopen (CD2). |
+| 24 | 185 | **type** `public class LongTermBond extends Debt` | A bond: a fixed coupon every month on the whole face, and the face at the end - at 2, 5, 10, 20, 30 or 50 years, sold in lines that reopen (CD2). |
 
-### SIX MATURITIES (CD2; five from 0.7.1) (lines 26-197)
+### SIX MATURITIES (CD2; five from 0.7.1) (lines 26-208)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -75,4 +75,5 @@
 | 165 | 3 | `public double getCouponRate()` |  |
 | 170 | 3 | `public double couponRate()` | The coupon, a year, as the auction set it at issue (Auction.COUPON_STEP): the same figure getCouponRate() gives. |
 | 185 | 12 | `protected double[] scheduleOwed()` | Coupon every month, and the whole face at the end. |
+| 200 | 8 | `protected double[] couponScheduleOwed()` | The same coupon every month, couponOwed(). |
 

@@ -112,4 +112,10 @@ public class ShortTermTBill extends Debt {
         flows[remainingMonths - 1] = faceValue;
         return flows;
     }
+
+    /** A bill pays no coupon: its cost is its discount. */
+    @Override
+    protected double[] couponScheduleOwed() {
+        return new double[Math.max(0, remainingMonths)];
+    }
 }

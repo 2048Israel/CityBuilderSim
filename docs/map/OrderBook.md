@@ -1,6 +1,6 @@
 # OrderBook.java - 459 lines · 52 methods · 1 constants · model
 
-`ham/citybuildersim/OrderBook.java` - generated 2026-10-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OrderBook.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
 
 > A limit-order book for one instrument: buy and sell orders from named
 > participants, each a price and a quantity, matched by price-time priority.

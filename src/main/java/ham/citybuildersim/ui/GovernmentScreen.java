@@ -1759,10 +1759,13 @@ final class GovernmentScreen {
        =================================================================== */
 
     /**
-     * One kind of paper, totalled: its pieces, principal (face), coupons a month, the discounts it was sold at,
-     * and the soonest of its maturities - and, since CD3, the interest expense its pieces' books last booked
+     * One kind of paper, totalled: its pieces, principal (face), the coupons it pays next month in cash (a
+     * linker's uplift not among them: DebtManager.getUpliftDueNextMonth()), the discounts it was sold at, and
+     * the soonest of its maturities - and, since CD3, the interest expense the books last booked on the kind
      * (the carrying value at the effective rate: the coupons and the discount wearing off together) and what
-     * they are carried at.
+     * its pieces are carried at. The expense is the ledger's (CD6, DebtManager.getInterestBookedOf()), not a
+     * sum of the pieces still on the list: a piece that fell due last month booked its interest and is gone,
+     * and the kinds' expenses add up to the budget's line.
      */
     record PaperKind(String name, int count, double principal,
                              double coupon, String note, double discount, int soonest,
@@ -1776,17 +1779,20 @@ final class GovernmentScreen {
             tally.put(t, new double[] {0, 0, 0, 0, Integer.MAX_VALUE, 0, 0});
         }
 
-        for (Debt d : ui.game.getDebtManager().getDebt()) {
+        DebtManager ledger = ui.game.getDebtManager();
+        for (Debt d : ledger.getDebt()) {
             double[] row = tally.get(d.getType());
             if (row == null) continue;
             row[0]++;
             row[1] += d.getOustandingPrincipal();
-            row[2] += d.getMonthlyInterestExpense();
+            row[2] += d.getMonthlyCoupon();
             row[3] += d.getIssueDiscount();
             row[4] = Math.min(row[4], d.getRemainingMonths());
-            row[5] += d.getLastInterestExpense();
             row[6] += d.getCarryingValue();
         }
+        // The interest each kind cost last month is the ledger's, struck as the budget's line was (CD6): it holds
+        // the kind's interest on a piece that fell due in the month too, and a dollar piece's at the month's rate.
+        for (String t : DebtManager.BOOK_KINDS) tally.get(t)[5] = ledger.getInterestBookedOf(t);
 
         java.util.List<PaperKind> kinds = new java.util.ArrayList<>();
         kinds.add(kind("Notes", tally.get("NOTE"), "discounted at issue — no coupon, the discount wears off as interest"));
@@ -1834,7 +1840,8 @@ final class GovernmentScreen {
         double repaid = ui.game.getCityPrincipalRepaidThisMonth() + ui.game.getForeignPrincipalRepaidThisMonth();
         List<Payer> who = new ArrayList<>();
         for (PaperKind k : paperKinds()) {
-            if (k.count() == 0) continue;
+            // A kind whose last piece fell due in the month still booked its interest (CD6), so it stays on the list.
+            if (k.count() == 0 && Math.abs(k.expense()) < .5) continue;
             // The interest each kind cost (CD3): the coupons and the discount wearing off, which a note's coupon
             // alone (nothing) left off this list.
             who.add(new Payer(k.name() + "  ×" + k.count(), k.expense(),
@@ -2094,8 +2101,7 @@ final class GovernmentScreen {
         String upliftWords = Math.abs(uplift) < .5 ? ""
                 : (uplift > 0 ? " · inflation uplift on linked bonds " : " · less the index's fall on linked bonds ") + m(Math.abs(uplift))
                         + (na.getUpliftPaidInCash() >= .5 ? " (" + m(na.getUpliftPaidInCash()) + " paid at maturity)" : " (no cash)");
-        out.add(new String[] {"owed " + m(notes.principal() + serial.principal() + term.principal() + floating.principal()
-                + linked.principal())
+        out.add(new String[] {"owed " + m(ui.game.getDebtManager().getAllPrincipal())
                 + " · interest on the city's paper " + m(na.getInterestExpense()) + " a month" + parts + upliftWords, null});
         if (notes.count() > 0) {
             out.add(new String[] {"notes " + m(notes.principal()) + " · no coupon: the discount ("
@@ -2123,13 +2129,17 @@ final class GovernmentScreen {
         return out;
     }
 
-    /** S6's grid: pieces, owed (face), carried (CD3), interest a month (the effective interest), of spending - plain figures. */
+    /**
+     * S6's grid: pieces, owed (face), carried (CD3), interest a month (the effective interest), of spending -
+     * plain figures. A kind with no piece left still has its row for the month its last piece fell due and
+     * booked its interest (CD6), and the foot row, "all paper", is the budget's line the rows add up to.
+     */
     Node debtGrid(double spending) {
         javafx.scene.layout.GridPane table = grid(new double[] {120, 50, 90, 90, 90, 80}, rightAfterFirst(6));
         gridHead(table, "", "pieces", "owed", "carried", "interest /mo", "of spending");
         int line = 1;
         for (PaperKind k : paperKinds()) {
-            if (k.count() == 0) continue;
+            if (k.count() == 0 && Math.abs(k.expense()) < .5) continue;
             table.add(gridCell(k.name(), Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, line);
             table.add(gridCell(String.valueOf(k.count()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, line);
             table.add(gridCell(m(k.principal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
@@ -2140,6 +2150,17 @@ final class GovernmentScreen {
                     Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 5, line);
             line++;
         }
+        // The foot (CD6): all the paper together - what is owed, what it is carried at, and the budget's own
+        // interest line, which the rows above add up to.
+        DebtManager ledger = ui.game.getDebtManager();
+        double interest = ui.game.getEconomyManager().getNationalAccounts().getInterestExpense();
+        table.add(gridCell("all paper", Palette.TEXT_HEAD, Palette.SIZE_CAPTION, false), 0, line);
+        table.add(gridCell(String.valueOf(ledger.getDebt().size()), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 1, line);
+        table.add(gridCell(m(ledger.getAllPrincipal()), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 2, line);
+        table.add(gridCell(m(ledger.getCarryingValue()), Palette.TEXT_BODY, Palette.SIZE_CAPTION, true), 3, line);
+        table.add(gridCell(m(interest), interest > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT, Palette.SIZE_CAPTION, true), 4, line);
+        table.add(gridCell(spending > 0 ? String.format("%.2f%%", interest / spending * 100) : "—",
+                Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 5, line);
         return table;
     }
 
