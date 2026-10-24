@@ -358,7 +358,13 @@ public class HoldersCheck {
         /* ================= 6. the save ================= */
         out.println("\n--- 6. save and reload, and every holding is where it was ---");
         ledger.setPolicyRate(ledger.getPolicyRate() - .04);
-        quietly(() -> city.handleLongBondLogic(ask, 30, 100));
+        // PT1-M4: the issue is sized past the households' purse, as section 9's is (1.7 times what they can pay), so the bank
+        // is left paper by the auction itself. Sized by the rule (the fifth of their purse above) the households bid the
+        // whole of the issue and the bank held none: it held a sliver (0.7%) in the old city only because a household
+        // short of money sold the desk some, and in the city that founds with a staffed depot none did, so "held by all
+        // three" was an accident of who sold, not a state the fixture caused.
+        final double bigAsk = Math.max(100, hb.spareForPaper() * 1.7);
+        quietly(() -> city.handleLongBondLogic(bigAsk, 30, 100));
         play(city);                                        // the settle: households take theirs
         play(city);                                        // and the central bank buys at the top of the next
         assertTrue("fixture: paper held by all three again",
@@ -423,7 +429,10 @@ public class HoldersCheck {
         json.add("householdCells", shorter);
         for (com.google.gson.JsonElement e : json.getAsJsonArray("debts")) {
             com.google.gson.JsonObject d = e.getAsJsonObject();
-            for (String k : new String[] {"householdPrincipal", "centralBankPrincipal", "firmPrincipal", "settleDue",
+            // PT1-M4: "worldPrincipal" too - a save from before the holders has no holder of any kind. The list stopped at the
+            // three it was written for, and no piece of paper had a world holding to leave behind until section 6's issue was
+            // sized past the households' purse, which lets the auction allot the world a sliver (0.4 of 258,255).
+            for (String k : new String[] {"householdPrincipal", "centralBankPrincipal", "firmPrincipal", "worldPrincipal", "settleDue",
                     "issueYield", "issueDiscount", "discountLeft"}) d.remove(k);
         }
         // ...and the sectors' array as it was before their paper was appended (CD2, slice 4).
@@ -566,7 +575,13 @@ public class HoldersCheck {
         // not by half the issue as they were, so they take their whole purse - about 59% of
         // this issue - and the bank the rest. Both hold part, and the households hold more
         // than the first step off them, so the middle this section saves in still comes.
-        double ask = Math.max(100, hb.spareForPaper() * 1.7);
+        // PT1-M4: one and four tenths, not one and seven. At the settle the households had spent 16% of the purse the sale
+        // found, in the city that founds with a staffed depot (the old city's spent 0.3%), so 1.7 left them 49% of the issue
+        // and the bank 51%, and the bank's paper took three of the dial's steps (each QE_SPEED of the term paper) to clear
+        // instead of two - which leaves exactly one step of the households' paper, the one this section watches, and the
+        // "middle" it saves in never came. At 1.4 they hold about 60% and the bank about 40%, which two steps clear, as the
+        // section needs.
+        double ask = Math.max(100, hb.spareForPaper() * 1.4);
         quietly(() -> city.handleLongBondLogic(ask, 20, 100));
         play(city);                                        // the settle: the households take their share
         Debt bond = termPiece(ledger);
@@ -574,6 +589,8 @@ public class HoldersCheck {
         assertTrue("fixture: one twenty-year bond, the households holding part and the bank the rest",
                 bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0 && bond.centralBankPrincipal() == 0
                         && bond.getSettleDue() == 0);
+        assertTrue("fixture: the bank's paper is no more than two steps of the dial (2 x QE_SPEED of the issue), so the section's step is the households' alone with some left after it",
+                bond.bankPrincipal() <= 2 * CentralBank.QE_SPEED * face);
         out.printf("   the households hold $%,.2fk of $%,.2fk, the bank $%,.2fk%n",
                 bond.householdPrincipal(), face, bond.bankPrincipal());
 
@@ -789,7 +806,12 @@ public class HoldersCheck {
             sumW += weight[i];
             double paid = before[i] - atSettle[i];
             paidSum += paid;
-            couldPay &= before[i] >= allotCash * weight[i];
+            // PT1-M4: a sector that bids nothing owes nothing, and a till cannot be cut on a share of nil. Real Estate is a
+            // landlord whose till is a few hundred dollars thin, and it ends a month a few hundred under nil when the month
+            // costs it more than it earns (-$468 here, at the top of the settle, after the month has run - it was -$1.4k in
+            // month 57 of the old city too, and the bond's month there happened to miss it): its weight is nil, and nil is
+            // paid from any till. "Could pay its share" is read against the sectors that have one.
+            couldPay &= weight[i] == 0 || before[i] >= allotCash * weight[i];
             paidEach &= Math.abs(paid - allotCash * weight[i]) <= 1e-6 * Math.max(1, allotCash);
             holdsEach &= Math.abs(held[i] - allotFace * weight[i]) <= 1e-6 * Math.max(1, allotFace);
         }

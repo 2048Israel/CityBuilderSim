@@ -846,6 +846,13 @@ public class CentralBankCheck {
         // ...and the auction allotted them none (CD2: what the households take is
         // their allotment now, not a share the issue yield gives).
         bond.allotHouseholdsFace = bond.allotHouseholdsCash = 0;
+        // ...nor the businesses nor the world (PT1-M4): before the works department's free points were retired the
+        // households' allotment was the whole issue (1,000), so striking it out left the bank everything; the city now
+        // founds with a depot that has a payroll and its auction allots the households 558 of the 1,000, and a sliver (0.08)
+        // to businesses with spare cash and (0.001) to the world. The bank is meant to be the whole of the market here, so
+        // those two allotments are struck out as the households' is.
+        bond.allotFirmsFace = bond.allotFirmsCash = 0;
+        bond.allotWorldFace = bond.allotWorldCash = 0;
         play(city);
         close("fixture: ...and the bank holds all of it", bond.bankPrincipal(),
                 bond.getOustandingPrincipal(), 1e-9);

@@ -4081,8 +4081,19 @@ public class BankCheck {
 
         out.printf("   the households paid $%,.2fk of it at the settle, the bank $%,.2fk%n",
                 householdsPaid, bankPaid);
+        // PT1-M4: ...and the paper the desk bought off the world when its hot money left in the month (the departing deposits
+        // take the paper they bought home, CD2 slice 5: worldPaperLeavesWithTheMoney()), which it pays for out of the same
+        // cash, a financial outflow the audit declares. The city's foreign deposits fell $28k in the settle month here (they
+        // rose $187k in the old city's), and 1.3% of the world's sliver of the bond went home with them, $1.53 of cash the
+        // ordinary month does not carry. The households' counterpart is a fixture above (the desk bought none); the world's
+        // is a flow of the hot money, which this city does not hold still, so it is read and taken out. The desk books the
+        // gain on it (face less the discount unearned, against the price: -$0.002, a loss) in its income, which is no
+        // cash, so "ordinary" (taken off net income) carries it and it is taken out.
+        double worldSold = city.getPaperBoughtFromWorld(), worldGain = bank.getPaperGains();
         close("the bank's cash fell by exactly what the treasury received less what the households"
-                + " paid, less the ordinary month", cashMoved - ordinary, -bankPaid, 1e-6);
+                + " paid, less the ordinary month, less what the desk paid the departing hot money for its paper"
+                + " (and its gain on that paper, which is no cash)",
+                cashMoved - ordinary, -bankPaid - worldSold - worldGain, 1e-6);
         close("...which is the figure the settle reports", city.getCityPaperSettled(), bankPaid, 1e-9);
         close("...and between them the holders paid every dollar the treasury received",
                 city.getCityPaperSettled() + householdsPaid + firmsPaid + worldPaid, received, 1e-9);
