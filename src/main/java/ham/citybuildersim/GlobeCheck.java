@@ -109,14 +109,23 @@ public class GlobeCheck {
     /** Frames timed, the least taken, after as many to warm. */
     static final int FRAME_ROUNDS = 10;
 
-    /** The CRC32 of every stride's far node over the fixture's four windows and the world's (fingerprint()), as 0.7.131 drew them before the camera (probe E8Fingerprint on its build, 19f1cad). */
-    static final Map<String, Long> FIXTURE_PRINTS = Map.of("Rotterdam", 0x5de8b72aL, "Perth", 0x2bd933ffL, "Paris", 0x7016955fL, "Fiji", 0xd15c60f1L);
+    /**
+     * The CRC32 of every stride's far node over the fixture's four windows and the world's (fingerprint()), as 0.7.131 drew them before the camera
+     * (probe E8Fingerprint on its build, 19f1cad), but for what the earth-2 fixture and the shallow sea changed: re-struck by ET1 (2026-10-24) -
+     * the fixture's own tiles moved them at slice A (earth-2's fixture holds Halifax's Narrows), and the shallow sea (World.SHALLOW) is a class the
+     * far nodes now hold. Folding SHALLOW back to SALT gives slice A's figures (0b83f8c6, c5ba11b7, 85a23609, 1835aa85).
+     */
+    static final Map<String, Long> FIXTURE_PRINTS = Map.of("Rotterdam", 0xed2ff708L, "Perth", 0x0b1d7f68L, "Paris", 0xc3979824L, "Fiji", 0x4a0874dfL);
 
     /** The full file's spots: Rotterdam, Halifax, Manila, Greenland's ice, McMurdo past EarthProj.BLEND_MAX_LAT, Chukotka on the 180th meridian, Finland's lakes and the Sahara. */
     static final double[][] FULL_SPOTS = { { 51.90625, 4.48125 }, { 44.65, -63.57 }, { 14.60, 120.98 }, { 72, -40 }, { -77.85, 166.67 }, { 66, 180 }, { 62, 26 }, { 23, 12 } };
 
-    /** ...and their nodes' CRC32, as 0.7.131 drew them. */
-    static final long[] FULL_PRINTS = { 0x53186882L, 0xdcf6b91eL, 0x4b92b699L, 0x34df4490L, 0x663a5196L, 0x7e38f4f5L, 0x45cc7052L, 0x2b58c5a8L };
+    /**
+     * ...and their nodes' CRC32, as 0.7.131 drew them but for the shallow sea (ET1, 2026-10-24: World.SHALLOW is now a class the far nodes hold, so the
+     * figures moved). Folding SHALLOW back to SALT gives 0.7.131's eight exactly (53186882, dcf6b91e, 4b92b699, 34df4490, 663a5196, 7e38f4f5, 45cc7052,
+     * 2b58c5a8): nothing but the shallow sea changed in them.
+     */
+    static final long[] FULL_PRINTS = { 0xf291ea65L, 0x208e9728L, 0xd85a163cL, 0x734fdb04L, 0xf5f461adL, 0xbdc3b5b7L, 0x864aa160L, 0xf0f527ccL };
 
     static int fails = 0;
     /** Where the harness prints: the console. */
@@ -644,9 +653,9 @@ public class GlobeCheck {
         GlobePicture pic = GlobePicture.make(full, GlobePicture.ARCMIN, 2);
         long[] count = new long[World.CLASSES];
         for (byte b : pic.texels()) count[b]++;
-        out.printf("      on the full file, two threads: %d' in %.0f ms (%,d bytes), then %d' in %.0f ms (%,d bytes, %.1f MB); the 4' texels: sea %,d, grass %,d,"
+        out.printf("      on the full file, two threads: %d' in %.0f ms (%,d bytes), then %d' in %.0f ms (%,d bytes, %.1f MB); the 4' texels: sea %,d (%,d of it shallow), grass %,d,"
                         + " forest %,d, fresh %,d, ice %,d, desert %,d, beach %,d%n", first.arcmin(), first.madeMs(), first.bytes(), pic.arcmin(), pic.madeMs(), pic.bytes(),
-                pic.bytes() / 1e6, count[World.SALT], count[World.GRASS], count[World.FOREST], count[World.FRESH], count[World.ICE], count[World.DESERT], count[World.SAND]);
+                pic.bytes() / 1e6, count[World.SALT] + count[World.SHALLOW], count[World.SHALLOW], count[World.GRASS], count[World.FOREST], count[World.FRESH], count[World.ICE], count[World.DESERT], count[World.SAND]);
         land = land(full, pic);
         out.printf("      the planet: %s%n", land);
         check("on the full file each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast",
@@ -697,7 +706,7 @@ public class GlobeCheck {
                         double share = Math.min(1, ((land[k] & 0xFF) + (lake[k] & 0xFF)) / (double) EarthData.FAR_LEVELS);
                         data += share;
                         round += Math.min(share, 1 - share);
-                        if (p.texel(r0 + rr, lon * per + cc) != World.SALT) drawn++;
+                        if (!World.salt(p.texel(r0 + rr, lon * per + cc))) drawn++;
                     }
                 }
                 double cells = per * per, diff = 100 * Math.abs(drawn - data) / cells;
@@ -751,8 +760,8 @@ public class GlobeCheck {
                     double sea = Math.max(0, 1 - dry - wet);
                     byte b = p.texel(row, col);
                     r.texels++;
-                    if ((b == World.SALT) != (sea > 0 && sea >= EarthTerrain.SEA_LEVEL)) r.seaWrong++;
-                    if (b == World.SALT || b == World.FRESH) continue;
+                    if (World.salt(b) != (sea > 0 && sea >= EarthTerrain.SEA_LEVEL)) r.seaWrong++;
+                    if (World.salt(b) || b == World.FRESH) continue;
                     int lc = d.at("landcover", lat, lon);
                     boolean ice = (lc & EarthData.LC_ICE) != 0, desert = (lc & EarthData.LC_DESERT) != 0;
                     if ((b == World.ICE) != ice) r.iceWrong++;

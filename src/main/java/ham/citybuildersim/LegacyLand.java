@@ -449,7 +449,7 @@ public final class LegacyLand {
         }
 
         private void tally(byte c, int ring) {
-            if (c == World.SALT) sea[ring]++;
+            if (World.salt(c)) sea[ring]++;
             else if (c == World.FRESH) fresh[ring]++;
             else {
                 dry[ring]++;

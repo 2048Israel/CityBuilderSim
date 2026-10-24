@@ -138,6 +138,18 @@ import java.util.Map;
  *      snapped off it; a holding's tile of ice its whole area only, the
  *      Sahara's site desert and dry; and the far nodes draw both.
  *
+ * ...and since ET1 (2026-10-24; docs/studies/spec-earth2-terrain.md 6.1,
+ * 12's 6) the shallow sea:
+ *  16. World.SHALLOW is the byte after DESERT, World.salt() is SALT and
+ *      SHALLOW alone, the books count it as sea and the runs as not dry, its
+ *      colour, words and legend entry are its own. The shallow share of a
+ *      window's sea drawn is the data's, sea-weighted, within SHALLOW_POINTS
+ *      (Rotterdam all shallow, Perth and Halifax part), the tile rule and the
+ *      point rule split the sea alike, the Halifax Narrows is shallow and
+ *      Bedford Basin's middle deep, a tile costs no more than TILE_MS; a
+ *      generated world draws none (D19) and neither does an earth-1 file;
+ *      on the full file four coasts' shares are the data's.
+ *
  * Every fixture causes its condition: the windows hold coasts (Rotterdam,
  * Perth), rivers (the Maas and the Seine), small lakes, lakes of 10 km2 and
  * more (Rotterdam's delta), beaches (Perth) and the date line (Fiji); the
@@ -238,7 +250,7 @@ public class EarthTerrainCheck {
                     String.format("%.2f points over %,d cells (the study %s); the window %.2f%% sea against the data's %.2f%%; fresh %.2f%% (lakes of 10 km2 and more %.2f%%);"
                             + " forest %.1f%% of the dry ground against the data's %.1f%%",
                             w.seaPoints, w.cells, s.name().equals("Rotterdam") ? "1.49" : s.name().equals("Perth") ? "0.39" : "Paris has no sea",
-                            100 * w.share(World.SALT), 100 * w.dataSea, 100 * w.share(World.FRESH), 100 * w.dataLake, 100 * w.forestOfDry(), 100 * w.dataForest));
+                            100 * (w.share(World.SALT) + w.share(World.SHALLOW)), 100 * w.dataSea, 100 * w.share(World.FRESH), 100 * w.dataLake, 100 * w.forestOfDry(), 100 * w.dataForest));
         }
         twice(three.get(0), id, windows.get("Rotterdam"));
         seeds(three, id, windows);
@@ -253,6 +265,7 @@ public class EarthTerrainCheck {
         planet(file, spots.get("Rotterdam"));
         types(id, spots);
         iceAndDesert(file, windows, id);
+        shallowSea(file, windows, data, id);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -280,6 +293,8 @@ public class EarthTerrainCheck {
         final boolean[] edge;
         final int cells;
         final double seaPoints, dataSea, dataLake, dataForest;
+        /** The shallow share of the window's sea in the data (ET1): its cells' shallow levels weighted by each cell's sea and the plots laid on it; NaN where the file has no shallow layer or the window no sea. */
+        final double dataShallow;
         final long dryForestData;
 
         Window(World world, EarthData data) {
@@ -320,7 +335,7 @@ public class EarthTerrainCheck {
                         b.latLon(tx * World.TILE + p % World.TILE + 0.5, ty * World.TILE + p / World.TILE + 0.5, ll);
                         int at = (int) ((row(ll[0]) - rMin) * cols + (col(ll[1], spotLon) - cMin));
                         count[at]++;
-                        if (t[p] == World.SALT) salt[at]++;
+                        if (World.salt(t[p])) salt[at]++;
                         if (px == 0 || py == 0 || px == WINDOW - 1 || py == WINDOW - 1) edge[at] = true;
                         if (World.dry(t[p])) {
                             dry++;
@@ -332,7 +347,7 @@ public class EarthTerrainCheck {
             dryForestData = dry;
             dataForest = dry > 0 ? forestData / dry : 0;
             int n = 0;
-            double diff = 0, sea = 0, lake = 0;
+            double diff = 0, sea = 0, lake = 0, shallowSea = 0;
             long all = 0;
             for (int a = 0; a < count.length; a++) {
                 if (count[a] == 0) continue;
@@ -342,6 +357,7 @@ public class EarthTerrainCheck {
                 double l = data.cell("lake", tile, (int) (r % 240), (int) (c % 240)) / (double) EarthData.SHARE_LEVELS;
                 sea += s * count[a];
                 lake += l * count[a];
+                if (data.hasRelief()) shallowSea += s * count[a] * data.cell("shallow", tile, (int) (r % 240), (int) (c % 240)) / (double) EarthData.SHARE_LEVELS;
                 all += count[a];
                 if (edge[a]) continue;
                 n++;
@@ -351,6 +367,13 @@ public class EarthTerrainCheck {
             seaPoints = n > 0 ? 100 * diff / n : Double.NaN;
             dataSea = sea / all;
             dataLake = lake / all;
+            dataShallow = data.hasRelief() && sea > 0 ? shallowSea / sea : Double.NaN;
+        }
+
+        /** The shallow share of the sea drawn: SHALLOW plots over all the sea's, NaN where there is none. */
+        double drawnShallow() {
+            long sea = classes[World.SALT] + classes[World.SHALLOW];
+            return sea > 0 ? classes[World.SHALLOW] / (double) sea : Double.NaN;
         }
 
         /** A class's share of the window's plots. */
@@ -417,9 +440,9 @@ public class EarthTerrainCheck {
         } catch (UnsupportedOperationException x) {
             refused = true;
         }
-        // (Until 0.7.121 it refused the sea's depth too; E4 gives one by the coast's distance - EarthFoundingCheck 5 holds it.)
+        // (Until 0.7.121 it refused the sea's depth too; E4 gave one by the coast's distance, ET1 the data's - EarthFoundingCheck 5 holds it.)
         check("...and with no heights, an Earth world refuses the elevation field's shelf rather than make one up, and gives the"
-                + " sea's depth by the coast's distance instead (0.7.121)", refused && e.depthAt(0, 0) > 0);
+                + " sea's depth from the data instead (0.7.121; ET1)", refused && e.depthAt(0, 0) > 0);
     }
 
     /* =====================================================================
@@ -481,8 +504,8 @@ public class EarthTerrainCheck {
                     for (int p = 0; p < t.length; p++) {
                         byte was = a.at(i * World.TILE + p % World.TILE, j * World.TILE + p / World.TILE);
                         if (was != t[p]) changed++;
-                        if (was == World.SALT || was == World.FRESH) waterA++;
-                        if (t[p] == World.SALT || t[p] == World.FRESH) waterB++;
+                        if (World.salt(was) || was == World.FRESH) waterA++;
+                        if (World.salt(t[p]) || t[p] == World.FRESH) waterB++;
                     }
                 }
             }
@@ -581,7 +604,7 @@ public class EarthTerrainCheck {
                     if (px < 1 || py < 1 || px >= WINDOW - 1 || py >= WINDOW - 1) continue;
                     vertices++;
                     byte c = w.at(px, py);
-                    if (c == World.FRESH || c == World.SALT) onRiver++;
+                    if (c == World.FRESH || World.salt(c)) onRiver++;
                 }
             }
             // Small lakes: each one's point, and those clear of other water - no sea, lake share or river within its reach.
@@ -594,7 +617,7 @@ public class EarthTerrainCheck {
                     if (px - reach < 1 || py - reach < 1 || px + reach >= WINDOW - 1 || py + reach >= WINDOW - 1) continue;
                     lakes++;
                     byte c = w.at(px, py);
-                    if (c == World.FRESH || c == World.SALT) atLake++;
+                    if (c == World.FRESH || World.salt(c)) atLake++;
                     if (!clearOfWater(w, data, proj, p[0], p[1], reach)) continue;
                     clear++;
                     clearArea += Math.PI * r * r;
@@ -611,7 +634,7 @@ public class EarthTerrainCheck {
                     sand++;
                     if (e.getKey().equals("Perth")) perthSand++;
                     boolean besideSea = false;
-                    for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) besideSea |= w.at(px + dx, py + dy) == World.SALT;
+                    for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) besideSea |= World.salt(w.at(px + dx, py + dy));
                     proj.latLonOfPlot(w.x0 + px + 0.5, w.y0 + py + 0.5, ll);
                     if (besideSea && (data.at("landcover", ll[0], ll[1]) & EarthData.LC_BEACH) != 0) sandOk++;
                 }
@@ -732,7 +755,7 @@ public class EarthTerrainCheck {
                 Timing.within(best, MapCheck.SCREEN_MS),
                 String.format("%.1f ms (%.3f a tile), %,d buildings; the first time, its plans made, %.0f ms; the square city %d districts a side, laid in %.0f ms;"
                                 + " the screen %.0f%% sea, %.0f%% fresh", best, best / MapCheck.SCREEN_TILES, drawn, cold, side, built,
-                        100.0 * classes[World.SALT] / all, 100.0 * classes[World.FRESH] / all));
+                        100.0 * (classes[World.SALT] + classes[World.SHALLOW]) / all, 100.0 * classes[World.FRESH] / all));
     }
 
     /* =====================================================================
@@ -1351,7 +1374,7 @@ public class EarthTerrainCheck {
                 && !World.dry(World.FRESH) && !World.dry(World.SALT) && !World.dry(World.ICE) && !World.dry(-1) && !World.dry(World.CLASSES);
         check("World.dry(): grass, forest, the beach and the desert are dry ground; fresh water, the sea and ice are not, nor what is not a class", rule);
         check("...ICE and DESERT take the two bytes after the five, World.CLASSES in all, each with its colour and its own name on the hover",
-                World.ICE == 5 && World.DESERT == 6 && World.CLASSES == 7 && TileRaster.GROUND.length == World.CLASSES
+                World.ICE == 5 && World.DESERT == 6 && World.CLASSES == World.SHALLOW + 1 && TileRaster.GROUND.length == World.CLASSES
                         && LandMap.groundWords(World.ICE).equals("Ice") && LandMap.groundWords(World.DESERT).equals("Desert"));
         // The books (GridConversion.km2Of(), what CityLand counts every holding with).
         long n = 1000;
@@ -1473,6 +1496,195 @@ public class EarthTerrainCheck {
                 farOk, "the sheet " + sheetFar[0] + "; the Sahara " + saharaFar[0]);
     }
 
+    /* =====================================================================
+       16. THE SHALLOW SEA (ET1, spec-earth2-terrain 6.1, D11 and 12's 6)
+       ===================================================================== */
+
+    /** The shallow share of a window's sea drawn is the data's within this, in points: COVER_POINTS, the bound ice's and the desert's share of a cell is held to (the sea-weighted share of cells whose coast the fray moves a plot or two). */
+    static final double SHALLOW_POINTS = COVER_POINTS;
+
+    /** The tile rule (draw()) and the point rule (classAt()) split the sea alike on all but this share of the plots both call sea, in points: half a point (the lattice blends the shares between points 120 m apart, the point rule reads them where the plot is, so a plot within a hair of the noise's threshold may differ). */
+    static final double TWO_COPIES_POINTS = 0.5;
+
+    /** How far round a spot the Narrows' and the Basin's plots are all held to their class, in plots: 5 (150 m, a Narrows is a few hundred metres across). */
+    static final int SPOT_REACH = 5;
+
+    /** The Halifax Narrows between Bedford Basin and the harbour, and Bedford Basin's middle (the fixture holds the Narrows' tiles: tools/earth/fixture.py NARROWS). */
+    static final double[] NARROWS = { 44.67, -63.59 }, BASIN = { 44.70, -63.64 };
+
+    static void shallowSea(EarthData file, Map<String, Window> windows, EarthData fixture, String id) throws Exception {
+        out.println("\n--- 16. the shallow sea: sea no deeper than 30 m, sea to every rule, drawn where the data's share beats its noise, weighted by the sea ---");
+        boolean cls = World.SHALLOW == 7 && World.CLASSES == World.SHALLOW + 1 && World.salt(World.SALT) && World.salt(World.SHALLOW)
+                && !World.salt(World.FRESH) && !World.salt(World.GRASS) && !World.salt(World.ICE) && !World.salt(World.SAND) && !World.salt(-1) && !World.salt(World.CLASSES)
+                && !World.dry(World.SHALLOW) && EarthData.SHALLOW_M == 30;
+        check("World.SHALLOW is the byte after DESERT, 7, and World.salt() is SALT and SHALLOW alone: not fresh water, not ice, not what is not a class; never dry", cls);
+        int lighter = TileRaster.GROUND[World.SHALLOW];
+        check("...with its own colour 0x4f87b5, lighter than the deep sea's and darker than the lakes', and its own words on the hover and in the legend",
+                TileRaster.GROUND.length == World.CLASSES && lighter == 0xff4f87b5 && lighter != TileRaster.GROUND[World.SALT] && lighter != TileRaster.GROUND[World.FRESH]
+                        && luma(lighter) > luma(TileRaster.GROUND[World.SALT]) && luma(lighter) < luma(TileRaster.GROUND[World.FRESH])
+                        && LandMap.groundWords(World.SHALLOW).equals(LandMap.SHALLOW_WORDS) && LandMap.SHALLOW_WORDS.startsWith("Shallow sea")
+                        && LandMap.legend(GlobeFrame.PICTURE).stream().anyMatch(en -> en.words().equals(LandMap.SHALLOW_WORDS) && en.colour() == lighter));
+        long n = 1000;
+        double[] shallow = GridConversion.km2Of(only(World.SHALLOW, n)), salt = GridConversion.km2Of(only(World.SALT, n));
+        check("the books: a shallow sea's plots count as a sea's in the sea area and the whole, never dry, fresh or forest", Arrays.equals(shallow, salt)
+                && shallow[CityLand.SEA] == n * World.KM2_PER_PLOT && shallow[CityLand.TOTAL] == n * World.KM2_PER_PLOT && shallow[CityLand.DRY] == 0
+                && shallow[CityLand.FRESH] == 0 && shallow[CityLand.FOREST] == 0);
+        check("the runs (CityRuns): the shallow sea is not dry ground, as the sea is not", !CityRuns.dry(World.SHALLOW) && CityRuns.dry(World.SHALLOW) == CityRuns.dry(World.SALT));
+        // The share: the fixture's windows with a sea (Rotterdam's North Sea, Perth's shelf), and Halifax's, where the strait and the harbour are shallow and the Basin deep.
+        Window hal = new Window(World.of(World.Key.earth(SEED, NARROWS[0], NARROWS[1], id)), fixture);
+        Window[] sea = { windows.get("Rotterdam"), windows.get("Perth"), hal };
+        String[] names = { "Rotterdam", "Perth", "Halifax" };
+        boolean mixed = false;
+        for (int k = 0; k < sea.length; k++) {
+            Window w = sea[k];
+            double drawn = w.drawnShallow(), want = w.dataShallow, points = 100 * Math.abs(drawn - want);
+            mixed |= want > 0.05 && want < 0.95;
+            report(names[k] + ": the shallow share of the window's sea drawn is the data's, sea-weighted, within SHALLOW_POINTS",
+                    want >= 0 && points <= SHALLOW_POINTS, String.format("%.2f%% drawn against %.2f%% (%.2f points), of %,d plots of sea", 100 * drawn, 100 * want, points,
+                            w.classes[World.SALT] + w.classes[World.SHALLOW]));
+        }
+        check("...and a window holds both kinds of sea, so the share is no mere all or nothing (a share between 5% and 95% in the data)", mixed);
+        // The rule's two copies: the tile's (draw()) and the point's (classAt(), the regions' and the far views'), on the plots both call sea.
+        byte[] t = new byte[World.TILE * World.TILE];
+        for (int k = 1; k < sea.length; k++) {
+            Window w = sea[k];
+            EarthTerrain e = w.world.earthTerrain();
+            long sampled = 0, both = 0, differ = 0;
+            for (long ty = w.y0 / World.TILE; ty < (w.y0 + WINDOW) / World.TILE; ty++) {
+                for (long tx = w.x0 / World.TILE; tx < (w.x0 + WINDOW) / World.TILE; tx++) {
+                    w.world.tileTerrain(tx, ty, t);
+                    for (int p = 0; p < t.length; p += 7) {
+                        if (!World.salt(t[p])) continue;
+                        sampled++;
+                        byte q = e.pointTerrain(tx * World.TILE + p % World.TILE, ty * World.TILE + p / World.TILE);
+                        if (!World.salt(q)) continue;
+                        both++;
+                        if (q != t[p]) differ++;
+                    }
+                }
+            }
+            double points = 100.0 * differ / Math.max(1, both);
+            report(names[k] + ": the tile rule and the point rule split the sea alike, SALT or SHALLOW, on all but TWO_COPIES_POINTS of the plots both call sea",
+                    both >= 0.99 * sampled && points <= TWO_COPIES_POINTS && w.classes[World.SHALLOW] > 0 && w.classes[World.SALT] > 0,
+                    String.format("%,d of %,d sampled sea plots, %,d differ (%.3f points)", both, sampled, differ, points));
+        }
+        // The Narrows is shallow and Bedford Basin deep, plot by plot round the spot.
+        World hw = hal.world;
+        double[] p = new double[2];
+        EarthProj proj = hw.earthTerrain().projection();
+        proj.plotOf(NARROWS[0], NARROWS[1], p);
+        long nx = (long) Math.floor(p[0]), ny = (long) Math.floor(p[1]);
+        proj.plotOf(BASIN[0], BASIN[1], p);
+        long bx = (long) Math.floor(p[0]), by = (long) Math.floor(p[1]);
+        int narrowsSea = 0, narrowsShallow = 0, basinSea = 0, basinDeep = 0;
+        for (int dy = -SPOT_REACH; dy <= SPOT_REACH; dy++) {
+            for (int dx = -SPOT_REACH; dx <= SPOT_REACH; dx++) {
+                byte a = hw.terrainAt(nx + dx, ny + dy), b = hw.terrainAt(bx + dx, by + dy);
+                if (World.salt(a)) { narrowsSea++; if (a == World.SHALLOW) narrowsShallow++; }
+                if (World.salt(b)) { basinSea++; if (b == World.SALT) basinDeep++; }
+            }
+        }
+        report("Halifax: the Narrows (44.67 N, 63.59 W) is shallow sea and Bedford Basin's middle (44.70 N, 63.64 W) deep, every sea plot within SPOT_REACH of each",
+                hw.terrainAt(nx, ny) == World.SHALLOW && hw.terrainAt(bx, by) == World.SALT && narrowsSea > 0 && narrowsShallow == narrowsSea && basinSea > 0 && basinDeep == basinSea,
+                String.format("the Narrows %d of %d sea plots shallow, the Basin %d of %d deep", narrowsShallow, narrowsSea, basinDeep, basinSea));
+        // No fringe of deep sea along a shallow coast (the study's 12, 6): a sea plot whose 3 x 3 cells of the data hold sea only in cells that are all
+        // shallow (shallow level 15) is shallow, however much land the cells about it hold - read unweighted, a coast cell's land would pull the share down.
+        EarthProj.Blend blend;
+        long qualifying = 0, atCoast = 0, deep = 0;
+        double[] ll = new double[2];
+        for (long ty = hal.y0 / World.TILE; ty < (hal.y0 + WINDOW) / World.TILE; ty++) {
+            for (long tx = hal.x0 / World.TILE; tx < (hal.x0 + WINDOW) / World.TILE; tx++) {
+                hw.tileTerrain(tx, ty, t);
+                blend = proj.blend(tx * World.TILE, ty * World.TILE, World.TILE);
+                for (int q = 0; q < t.length; q += 11) {
+                    if (!World.salt(t[q]) || !blend.latLon(tx * World.TILE + q % World.TILE + 0.5, ty * World.TILE + q / World.TILE + 0.5, ll)) continue;
+                    boolean allShallow = true, land = false;
+                    for (int dj = -1; dj <= 1; dj++) {
+                        for (int di = -1; di <= 1; di++) {
+                            double la = ll[0] + dj / 240.0, lo = ll[1] + di / 240.0;
+                            int seaLevel = fixture.at("sea", la, lo);
+                            if (seaLevel == 0) land = true;
+                            else if (fixture.at("shallow", la, lo) != EarthData.SHARE_LEVELS) allShallow = false;
+                        }
+                    }
+                    if (!allShallow) continue;
+                    qualifying++;
+                    if (land) atCoast++;
+                    if (t[q] == World.SALT) deep++;
+                }
+            }
+        }
+        report("Halifax: no fringe of deep sea along a shallow coast - a sea plot whose cells' sea is all shallow is shallow, with land in those cells too (the sea-weighted share)",
+                qualifying > 1000 && atCoast > 100 && deep <= qualifying / 1000, String.format("%,d such plots sampled, %,d with land in their cells, %,d of them deep", qualifying, atCoast, deep));
+        // The cost: tiles about a coast holding shallow and deep, the median of rounds, within TILE_MS.
+        long tx0 = EarthTerrain.spotPlot() / World.TILE - TIMED_TILES / 2, ty0 = tx0;
+        double[] ms = new double[TILE_ROUNDS];
+        for (int round = -1; round < TILE_ROUNDS; round++) {
+            long t0 = System.nanoTime();
+            for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) hw.tileTerrain(tx0 + i, ty0 + j, t);
+            if (round >= 0) ms[round] = (System.nanoTime() - t0) / 1e6 / (TIMED_TILES * TIMED_TILES);
+        }
+        Arrays.sort(ms);
+        report("Halifax: a tile's ground, its shallow sea drawn, in no more than TILE_MS", Timing.within(ms[TILE_ROUNDS / 2], TILE_MS),
+                String.format("%.3f ms a tile (rounds %.3f to %.3f)", ms[TILE_ROUNDS / 2], ms[0], ms[TILE_ROUNDS - 1]));
+        // A generated world has none (D19): its far view of the whole world holds sea and no SHALLOW, and so do the tiles about its founding site.
+        World g = World.of(SEED);
+        byte[] far = new byte[64 * 64];
+        g.regionTerrain(0, 0, (int) (World.SIDE / 64), 64, far);
+        int farSea = 0, farShallow = 0, siteSea = 0, siteShallow = 0;
+        for (byte b : far) { if (b == World.SALT) farSea++; if (b == World.SHALLOW) farShallow++; }
+        long cx = g.foundingX() / World.TILE, cy = g.foundingY() / World.TILE;
+        for (long ty = cy - 24; ty < cy + 24; ty++) {
+            for (long tx = cx - 24; tx < cx + 24; tx++) {
+                g.tileTerrain(tx, ty, t);
+                for (byte b : t) { if (b == World.SALT) siteSea++; if (b == World.SHALLOW) siteShallow++; }
+            }
+        }
+        report("a generated world draws no shallow sea (D19): its whole far view holds sea and no SHALLOW, nor do the tiles about its founding site",
+                farSea > 0 && farShallow == 0 && siteShallow == 0, String.format("%,d sea pixels of 4,096; %,d sea plots about the site", farSea, siteSea));
+        if (file == null) {
+            out.println("earth-2.bin not named: the full file's shallow shares, and earth-1's refusal to draw any, were not tried");
+            return;
+        }
+        // The full file: the shallow share of a 61 km window of the Earth's sea at four coasts; and an earth-1 file, which has no layer, draws none.
+        for (double[] at : SHELVES) {
+            Window w = new Window(World.of(World.Key.earth(SEED, at[0], at[1], EarthData.EARTH_2)), file);
+            double drawn = w.drawnShallow(), want = w.dataShallow, points = 100 * Math.abs(drawn - want);
+            report(String.format("the full file at %.2f, %.2f: the shallow share of the window's sea drawn is the data's within SHALLOW_POINTS", at[0], at[1]),
+                    want >= 0 && points <= SHALLOW_POINTS && w.classes[World.SHALLOW] > 0, String.format("%.2f%% drawn against %.2f%% (%.2f points), of %,d plots of sea",
+                            100 * drawn, 100 * want, points, w.classes[World.SALT] + w.classes[World.SHALLOW]));
+        }
+        Path one = EarthData.locate().resolveSibling("earth-1.bin");
+        if (!Files.isRegularFile(one)) {
+            out.println("earth-1.bin is not beside the named file: that a file with no shallow layer draws none was not tried");
+            return;
+        }
+        EarthData old = EarthData.open(one);
+        String oldId = EarthTerrain.use(old);
+        World ow = World.of(World.Key.earth(SEED, 51.90625, 4.48125, oldId));
+        int oldSea = 0, oldShallow = 0;
+        long oc = EarthTerrain.spotPlot() / World.TILE;
+        for (long ty = oc - 16; ty < oc + 16; ty++) {
+            for (long tx = oc - 16; tx < oc + 16; tx++) {
+                ow.tileTerrain(tx, ty, t);
+                for (byte b : t) { if (b == World.SALT) oldSea++; if (b == World.SHALLOW) oldShallow++; }
+            }
+        }
+        boolean refused = false;
+        for (long x = EarthTerrain.spotPlot() - 3000; x < EarthTerrain.spotPlot() && !refused; x += 50) {
+            if (!World.salt(ow.terrainAt(x, EarthTerrain.spotPlot()))) continue;
+            try { ow.depthAt(x, EarthTerrain.spotPlot()); } catch (IllegalStateException e) { refused = true; }
+        }
+        check("an earth-1 file, which has no shallow layer, draws no SHALLOW where it draws the sea (" + oldSea + " plots), and gives no depth it does not have",
+                !old.hasRelief() && oldSea > 0 && oldShallow == 0 && refused);
+    }
+
+    /** Four coasts of the full file, {lat, lon}, each a 61 km window with sea of both depths: the North Sea at the Flemish banks, the shelf off Perth, the Texas shelf off Galveston and the Gulf off Ras Tanura. */
+    static final double[][] SHELVES = { { 52.0, 3.0 }, { -32.0, 115.4 }, { 28.5, -94.0 }, { 27.0, 50.5 } };
+
+    /** A colour's luma, the plain sum of its channels. */
+    static int luma(int c) { return ((c >> 16) & 255) + ((c >> 8) & 255) + (c & 255); }
+
     /** A count of n plots of one class, World.CLASSES long. */
     static long[] only(byte cls, long n) {
         long[] c = new long[World.CLASSES];
@@ -1568,7 +1780,7 @@ public class EarthTerrainCheck {
                     double px = tx * World.TILE + i % World.TILE + 0.5, py = ty * World.TILE + i / World.TILE + 0.5;
                     if (!b.latLon(px, py, ll) || ll[0] < lat0 || ll[0] >= lat0 + 1 || ll[1] < lon0 || ll[1] >= lon0 + 1) continue;
                     byte g = t[i];
-                    if (ice ? !(g != World.SALT && g != World.FRESH) : !(g == World.GRASS || g == World.DESERT)) continue;
+                    if (ice ? !(!World.salt(g) && g != World.FRESH) : !(g == World.GRASS || g == World.DESERT)) continue;
                     ground++;
                     boolean is = g == kind;
                     if (is) drawn++;

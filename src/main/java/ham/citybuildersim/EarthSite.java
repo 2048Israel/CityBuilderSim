@@ -476,7 +476,7 @@ public final class EarthSite {
                         if (t == null) t = x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE ? null : e.keptTile(tx, ty);
                         byte g = t == null ? World.SALT : t[py * n + px];
                         plots++;
-                        if (g == World.SALT) {
+                        if (World.salt(g)) {
                             sea++;
                             sea2 = Math.min(sea2, d2);
                         } else if (g == World.FRESH) {

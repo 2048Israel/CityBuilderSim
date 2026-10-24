@@ -124,11 +124,25 @@ public final class World {
     /** Desert (0.7.127, batch E7; spec-globe Q1): dry ground every rule treats as grass - only its colour and its name differ. The real Earth's bare ground (EarthTerrain); a generated world has none. */
     public static final byte DESERT = 6;
 
-    /** How many classes the ground has: 7, GRASS to DESERT - the length of an array a class indexes (0.7.127; five until then, and a generated world draws only those). */
-    public static final int CLASSES = 7;
+    /** Shallow sea (ET1, spec-earth2-terrain 6.1; Jerus 2026-10-12, D11): sea no deeper than 30 m - salt water every rule that asks "is this the sea?" treats as SALT (salt()), lighter on the map and the one water a short bridge can cross (a later batch). The real Earth's, drawn where earth-2's shallow share beats the plot's noise (EarthTerrain); a generated world has none (D19). */
+    public static final byte SHALLOW = 7;
+
+    /** How many classes the ground has: 8, GRASS to SHALLOW - the length of an array a class indexes (0.7.127; five until then, seven until ET1, and a generated world draws only the first five). */
+    public static final int CLASSES = 8;
 
     /** The dry classes, a bit each: grass, forest, the beach and the desert. */
     private static final int DRY_CLASSES = 1 << GRASS | 1 << FOREST | 1 << SAND | 1 << DESERT;
+
+    /**
+     * Whether a class is the sea - SALT or SHALLOW (ET1, spec-earth2-terrain
+     * 6.1): the one question every rule that asks "is this the sea?" puts, a
+     * port's, the coast's, the sea routes', a sea field's, so the shallow sea
+     * changes only the look and the crossings. False for anything that is not
+     * a class, -1 included.
+     */
+    public static boolean salt(int cls) {
+        return cls == SALT || cls == SHALLOW;
+    }
 
     /**
      * Whether a class is dry ground - grass, forest, the beach or the desert:
@@ -773,21 +787,23 @@ public final class World {
     /** The sea's level: the elevation SEA_SHARE of the world's samples lie under; on Earth (0.7.115), with no heights, EarthTerrain.SEA_LEVEL, the share the coast is drawn at. */
     public double seaTheta() { build(); return seaTheta; }
 
-    /** The continental shelf's edge in the elevation field (0.7.79): the level the shallowest SHELF_SHARE of the sea's samples lie at and above, so under seaTheta(). None on Earth, which has no elevation field: its shelf is a distance from the coast (EarthTerrain.SHELF_WIDTH_M, 0.7.121). */
+    /** The continental shelf's edge in the elevation field (0.7.79): the level the shallowest SHELF_SHARE of the sea's samples lie at and above, so under seaTheta(). None on Earth, which has no elevation field: its sea has the data's own depth (EarthTerrain.depthAt(), ET1; a distance from the coast until then, 0.7.121). */
     public double shelfTheta() { noHeightsOnEarth("the shelf's edge"); build(); return shelfTheta; }
 
     /**
      * The sea's depth at a plot's centre, in metres below its level (0.7.79,
      * batch O3; spec-oil 2.7): 0 where the plot is not sea (land, beach, a
-     * lake or the river - on the world terrainAt() is SALT exactly where it
-     * is over 0), SHELF_BREAK_M at shelfTheta(), and linear in the
+     * lake or the river - on the world terrainAt() is SALT, or on Earth SHALLOW,
+     * exactly where it is over 0), SHELF_BREAK_M at shelfTheta(), and linear in the
      * elevation from the sea's level to the shelf's edge and on at the same
      * slope below it. Off the world, what the elevation there says. Pure; an
-     * elevation's cost, about half a microsecond. On Earth (0.7.121, batch
-     * E4), which has no heights, the same rule with the distance from the
-     * coast standing in for the elevation (EarthTerrain.depthAt(), ★E4-1):
-     * SHELF_BREAK_M at EarthTerrain.SHELF_WIDTH_M from the coast, the width
-     * within which SHELF_SHARE of the Earth's sea lies.
+     * elevation's cost, about half a microsecond. On Earth, which has no
+     * heights, the data's: earth-2's depth layer at the plot's centre, at
+     * least a metre on any sea plot (SALT or SHALLOW) and 0 elsewhere
+     * (EarthTerrain.depthAt(), ET1; from 0.7.121 to ET1 the coast's distance
+     * stood in for the elevation, SHELF_BREAK_M at a fixed width from the
+     * coast - the study's 7 shows it three to nine times too deep on a broad
+     * shelf and far too shallow on a narrow one).
      */
     public double depthAt(long x, long y) {
         if (earth != null) return earth.depthAt(x, y);
@@ -1117,7 +1133,7 @@ public final class World {
         return forest >= FOREST_THETA ? FOREST : GRASS;
     }
 
-    /** One plot's ground, at its centre: GRASS, FOREST, FRESH, SALT or SAND; SALT off the world. 650 to 930 ns. On Earth (0.7.115) its tile's, kept (EarthTerrain.terrainAt()), which may be ICE or DESERT too (0.7.127). */
+    /** One plot's ground, at its centre: GRASS, FOREST, FRESH, SALT or SAND; SALT off the world. 650 to 930 ns. On Earth (0.7.115) its tile's, kept (EarthTerrain.terrainAt()), which may be ICE or DESERT too (0.7.127), and SHALLOW where it would be SALT on earth-2's data (ET1: ask World.salt() for "the sea"). */
     public byte terrainAt(long x, long y) {
         if (earth != null) return earth.terrainAt(x, y);
         build();

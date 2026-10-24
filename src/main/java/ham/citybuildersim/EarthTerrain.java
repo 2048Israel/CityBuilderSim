@@ -42,6 +42,13 @@ import java.util.Map;
  *   - SEA where the sea share plus COAST_FRAY x the coast noise about its
  *     mean, unranked, reaches SEA_LEVEL: the data's half-contour, frayed by a
  *     plot or two;
+ *   - SHALLOW (ET1, spec-earth2-terrain 6.1) for a sea plot where the shallow
+ *     sea's share of the sea there - earth-2's shallow layer, interpolated
+ *     between the 15" cells' centres WEIGHTED BY EACH CELL'S SEA, so a coast
+ *     grows no fringe of deep sea - ranks over the shallow noise (its own,
+ *     ranked as the forest's is, so it covers in expectation what the data
+ *     gives it); the rest of the sea is SALT. Only on data that has the
+ *     layer (EarthData.hasRelief()): an earth-1 file draws none;
  *   - FRESH where a river's centreline (GRWL) passes within half its width,
  *     at least RIVER_MIN_HALF; where a small lake (under 10 km2, a point and
  *     an area in the data) lies, drawn as a blob of its own area in
@@ -208,7 +215,10 @@ public final class EarthTerrain {
     static final int DATA_TILES_KEPT = 64;
 
     /* The fields' keys: what makes one class's noise another's. */
-    private static final long F_COAST = 0xC0A57L, F_FRESH = 0xF4E54L, F_FOREST = 0xF0E57L, F_BLOB = 0xB10BL, F_ICE = 0x1CE5L, F_DESERT = 0xDE5E7L;
+    private static final long F_COAST = 0xC0A57L, F_FRESH = 0xF4E54L, F_FOREST = 0xF0E57L, F_BLOB = 0xB10BL, F_ICE = 0x1CE5L, F_DESERT = 0xDE5E7L, F_SHALLOW = 0x5A110L;
+
+    /** A share layer's levels squared, 15 x 15: what bilinearProduct() of two of them is over to be a share of the area (ET1). */
+    private static final double SHARE_AREA = (double) EarthData.SHARE_LEVELS * EarthData.SHARE_LEVELS;
 
     /** The stream the ranking table's samples are drawn from. */
     private static final long QUANTILE_SALT = 0x0A1E5A3DL;
@@ -277,10 +287,10 @@ public final class EarthTerrain {
     private final long seed;
     private final EarthData data;
     private final EarthProj proj;
-    /** Each field's octave streams: COAST, FRESH, FOREST, BLOB, ICE, DESERT, octave k at [f][k]. */
-    private final long[][] os = new long[6][NOISE_HI + 1];
-    /** Each noise field's row in os: the coast's, fresh water's, the forest's, the small lakes' blobs', and (0.7.127) the ice's and the desert's edges'. */
-    private static final int COAST = 0, FRESH = 1, FOREST = 2, BLOB = 3, ICE = 4, DESERT = 5;
+    /** Each field's octave streams: COAST, FRESH, FOREST, BLOB, ICE, DESERT, SHALLOW, octave k at [f][k]. */
+    private final long[][] os = new long[7][NOISE_HI + 1];
+    /** Each noise field's row in os: the coast's, fresh water's, the forest's, the small lakes' blobs', (0.7.127) the ice's and the desert's edges', and (ET1) the shallow sea's. */
+    private static final int COAST = 0, FRESH = 1, FOREST = 2, BLOB = 3, ICE = 4, DESERT = 5, SHALLOW = 6;
 
     private volatile boolean built;
     private double[] cellLand, cellForest;
@@ -297,7 +307,7 @@ public final class EarthTerrain {
         this.seed = key.seed();
         this.data = source(key.data());
         this.proj = new EarthProj(key.lat(), key.lon());
-        long[] fields = { F_COAST, F_FRESH, F_FOREST, F_BLOB, F_ICE, F_DESERT };
+        long[] fields = { F_COAST, F_FRESH, F_FOREST, F_BLOB, F_ICE, F_DESERT, F_SHALLOW };
         for (int f = 0; f < fields.length; f++) {
             for (int k = NOISE_LO; k <= NOISE_HI; k++) os[f][k] = World.mix(seed ^ fields[f] ^ (k * 0x632BE59BD9B4E019L));
         }
@@ -438,6 +448,25 @@ public final class EarthTerrain {
         }
 
         /**
+         * ...the product of this layer's level and `sea`'s at each cell, both
+         * 0 to 15, interpolated the same way, so 0 to 15 x 15 (ET1): the
+         * shallow sea's share of a cell's AREA when this is the shallow layer
+         * and `sea` the sea layer (the two lie on one grid of 15" cells).
+         * Over bilinear() of the sea, the shallow share of the sea there,
+         * weighted by the sea share of each cell about the point, so a coast's
+         * land cells (nought sea, nought shallow) pull no share down and
+         * draw no fringe of deep sea along the shore (the study's 12, 6).
+         */
+        double bilinearProduct(Reader sea, double lat, double lon) {
+            double g = (90 - lat) * cpd - 0.5, c = (lon + 180) * cpd - 0.5;
+            long r0 = (long) Math.floor(g), c0 = (long) Math.floor(c);
+            double fr = g - r0, fc = c - c0;
+            double top = value(r0, c0) * sea.value(r0, c0) * (1 - fc) + value(r0, c0 + 1) * sea.value(r0, c0 + 1) * fc;
+            double bottom = value(r0 + 1, c0) * sea.value(r0 + 1, c0) * (1 - fc) + value(r0 + 1, c0 + 1) * sea.value(r0 + 1, c0 + 1) * fc;
+            return top * (1 - fr) + bottom * fr;
+        }
+
+        /**
          * ...land cover's: the forest level, 0 to 15, interpolated the same
          * way, and (0.7.127, batch E7) its ice and desert bits each read 0 or
          * 1 at its cell and interpolated from the same four cells: out[0] the
@@ -482,11 +511,16 @@ public final class EarthTerrain {
         final double[] lat = new double[19 * 19];
         final double[] seaL = new double[LATTICE * LATTICE], lakeL = new double[LATTICE * LATTICE], forestL = new double[LATTICE * LATTICE];
         final double[] iceL = new double[LATTICE * LATTICE], desertL = new double[LATTICE * LATTICE];
+        /** The shallow sea's share of the area at each lattice point (ET1): over seaL, the shallow share of the sea there. */
+        final double[] shalL = new double[LATTICE * LATTICE];
+        final double[] shal = new double[AREA];
         final boolean[] sea = new boolean[RING_AREA];
         final double[] ll = new double[2], cv = new double[3];
         int[] segs = new int[64], lakes = new int[16];
-        final Reader seaR = new Reader(), lakeR = new Reader(), coverR = new Reader(), farLandR = new Reader(), farLakeR = new Reader();
+        final Reader seaR = new Reader(), lakeR = new Reader(), coverR = new Reader(), farLandR = new Reader(), farLakeR = new Reader(), shalR = new Reader();
         EarthData bound;
+        /** Whether the data bound has earth-2's shallow layer (EarthData.hasRelief()): an earth-1 file draws no SHALLOW. */
+        boolean shallow;
 
         void bind(EarthData d) {
             if (bound == d) return;
@@ -495,6 +529,8 @@ public final class EarthTerrain {
             coverR.bind(d, "landcover");
             farLandR.bind(d, "far.land");
             farLakeR.bind(d, "far.lake");
+            shallow = d.hasRelief();
+            if (shallow) shalR.bind(d, "shallow");
             bound = d;
         }
     }
@@ -541,7 +577,7 @@ public final class EarthTerrain {
         int i0 = (ox - 1 + LATTICE_STEP) / LATTICE_STEP, i1 = Math.min(LATTICE - 1, (ox + w + LATTICE_STEP) / LATTICE_STEP + 1);
         int j0 = (oy - 1 + LATTICE_STEP) / LATTICE_STEP, j1 = Math.min(LATTICE - 1, (oy + h + LATTICE_STEP) / LATTICE_STEP + 1);
         boolean anySea = false, allSea = true, anyLake = false, anyForest = false, allForest = true;
-        boolean anyIce = false, allIce = true, anyDesert = false, allDesert = true;
+        boolean anyIce = false, allIce = true, anyDesert = false, allDesert = true, anyShal = false;
         double[] ll = s.ll, cv = s.cv;
         for (int j = j0; j <= j1; j++) {
             for (int i = i0; i <= i1; i++) {
@@ -553,6 +589,7 @@ public final class EarthTerrain {
                     s.forestL[at] = 0;
                     s.iceL[at] = 0;
                     s.desertL[at] = 0;
+                    s.shalL[at] = 0;
                 } else {
                     s.seaL[at] = s.seaR.bilinear(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
                     s.lakeL[at] = s.lakeR.bilinear(ll[0], ll[1]) / EarthData.SHARE_LEVELS;
@@ -560,6 +597,8 @@ public final class EarthTerrain {
                     s.forestL[at] = cv[0] / EarthData.SHARE_LEVELS;
                     s.iceL[at] = cv[1];
                     s.desertL[at] = cv[2];
+                    // The shallow sea's share of the area (ET1), read only where there is sea and the data has the layer.
+                    s.shalL[at] = s.shallow && s.seaL[at] > 0 ? s.shalR.bilinearProduct(s.seaR, ll[0], ll[1]) / SHARE_AREA : 0;
                 }
                 anySea |= s.seaL[at] > 0;
                 allSea &= s.seaL[at] >= 1;
@@ -570,10 +609,24 @@ public final class EarthTerrain {
                 allIce &= s.iceL[at] >= 1;
                 anyDesert |= s.desertL[at] > 0;
                 allDesert &= s.desertL[at] >= 1;
+                anyShal |= s.shalL[at] > 0;
             }
         }
         if (allSea) {
-            Arrays.fill(out, 0, w * h, World.SALT);
+            // All sea: SALT, or SHALLOW where the shallow share beats its noise (ET1) - the tile is the sea alone.
+            if (!anyShal) {
+                Arrays.fill(out, 0, w * h, World.SALT);
+                return;
+            }
+            double[] q = quantile();
+            Arrays.fill(s.shal, 0, w * h, 0);
+            for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[SHALLOW][k], k, x0 + ox, y0 + oy, w, h, AMP_N[k], s.shal);
+            for (int py = 0; py < h; py++) {
+                for (int px = 0; px < w; px++) {
+                    int i = py * w + px;
+                    out[i] = s.shal[i] < below(q, shallowShare(s, ox + px, oy + py)) ? World.SHALLOW : World.SALT;
+                }
+            }
             return;
         }
         double[] q = quantile();
@@ -627,10 +680,19 @@ public final class EarthTerrain {
             Arrays.fill(s.desert, 0, w * h, 0);
             for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[DESERT][k], k, rx0, ry0, w, h, AMP_N[k], s.desert);
         }
+        // The shallow sea's detail (ET1): its own noise, ranked as the forest's is, where a plot may be sea and some of the sea is shallow.
+        boolean shalNoise = anyShal && anySea;
+        if (shalNoise) {
+            Arrays.fill(s.shal, 0, w * h, 0);
+            for (int k = NOISE_HI; k >= NOISE_LO; k--) octave(s.lat, os[SHALLOW][k], k, rx0, ry0, w, h, AMP_N[k], s.shal);
+        }
         for (int py = 0; py < h; py++) {
             for (int px = 0; px < w; px++) {
                 int i = py * w + px, r = (py + 1) * rw + px + 1;
-                if (s.sea[r]) { out[i] = World.SALT; continue; }
+                if (s.sea[r]) {
+                    out[i] = shalNoise && s.shal[i] < below(q, shallowShare(s, ox + px, oy + py)) ? World.SHALLOW : World.SALT;
+                    continue;
+                }
                 double x = rx0 + px + 0.5, y = ry0 + py + 0.5;
                 boolean wet = false;
                 for (int k = 0; k < nseg && !wet; k++) wet = onRiver(wt, s.segs[k], x, y);
@@ -651,6 +713,17 @@ public final class EarthTerrain {
                 out[i] = forest ? World.FOREST : desert ? World.DESERT : World.GRASS;
             }
         }
+    }
+
+    /**
+     * The shallow share of the sea at the tile's plot (px, py) - -1 to 32 (ET1): the
+     * lattice's blend of the shallow sea's area over its blend of the sea's, so the
+     * share is weighted by the sea share (no fringe of deep sea along a coast, the
+     * study's 12, 6; the mockup's shal * sw / sw). 0 where the blend holds no sea.
+     */
+    private static double shallowShare(Scratch s, int px, int py) {
+        double sea = lattice(s.seaL, px, py);
+        return sea > 0 ? lattice(s.shalL, px, py) / sea : 0;
     }
 
     /** A share at the tile's plot (px, py) - -1 to 32, the ring included - blended between the lattice's points about it. */
@@ -819,7 +892,7 @@ public final class EarthTerrain {
             ice = cv[1];
             desert = cv[2];
         }
-        if (sea > 0 && sea(sea, noiseAt(os[COAST], x, y, stride))) return World.SALT;
+        if (sea > 0 && sea(sea, noiseAt(os[COAST], x, y, stride))) return s.shallow && shallowAt(s, q, x, y, lat, lon, sea, stride) ? World.SHALLOW : World.SALT;
         if (water && stride < WATER_STRIDE) {
             Water w = water(Math.floorDiv((long) Math.floor(x), World.DISTRICT), Math.floorDiv((long) Math.floor(y), World.DISTRICT));
             for (int k = 0; k < w.segs; k++) {
@@ -839,6 +912,35 @@ public final class EarthTerrain {
         if (forest >= 1 || (forest > 0 && (Double.isNaN(dither) ? noiseAt(os[FOREST], x, y, stride) < below(q, forest) : dither < forest))) return World.FOREST;
         if (desert >= 1 || (desert > 0 && covered(desert, noiseAt(os[DESERT], x, y, stride)))) return World.DESERT;
         return World.GRASS;
+    }
+
+    /**
+     * A plot's class by the point rule (classAt(), the regions' and the far
+     * views') at its centre, at a stride of one, rather than its tile's
+     * (draw()): the rule's two copies, which agree but for the lattice's blend
+     * of the shares (a plot within a hair of a threshold may differ). What a
+     * harness holds the one to the other with.
+     */
+    byte pointTerrain(long x, long y) {
+        return pointClass(scratch(), quantile(), x + 0.5, y + 0.5, 1);
+    }
+
+    /**
+     * Whether a point of the sea is SHALLOW (ET1), the tile rule's other copy
+     * (draw()): the shallow share of the sea there, interpolated between the
+     * 15" cells' centres weighted by each cell's sea (Reader.bilinearProduct()
+     * over `sea`, the sea share bilinear() gave), beats the shallow noise
+     * ranked as the forest's is. From FAR_STRIDE, where `sea` is the 4' far
+     * layers' and a pixel is wider than a 15" cell, the shallow level of the
+     * 15" cell the point lies in (0 where the cell holds no sea, so the sea
+     * layer is not read: a far view makes millions of these, and each tile
+     * of a layer read is a blob inflated).
+     */
+    private boolean shallowAt(Scratch s, double[] q, double x, double y, double lat, double lon, double sea, int stride) {
+        double share = stride >= FAR_STRIDE
+                ? s.shalR.at(lat, lon) / (double) EarthData.SHARE_LEVELS
+                : s.shalR.bilinearProduct(s.seaR, lat, lon) / SHARE_AREA / sea;
+        return share > 0 && noiseAt(os[SHALLOW], x, y, stride) < below(q, share);
     }
 
     /**
@@ -1250,7 +1352,7 @@ public final class EarthTerrain {
             double y = c.oy + (j + 0.5) * c.step;
             for (int i = i0; i <= i1; i++) {
                 int at = j * c.w + i;
-                if (out[at] == World.SALT || out[at] == World.FRESH) continue;
+                if (World.salt(out[at]) || out[at] == World.FRESH) continue;
                 double x = c.ox + (i + 0.5) * c.step, ex = (x - ax) * xs;
                 double t = l2 > 0 ? (ex * vx + (y - ay) * vy) / l2 : 0;
                 t = t < 0 ? 0 : t > 1 ? 1 : t;
@@ -1269,7 +1371,7 @@ public final class EarthTerrain {
             double y = c.oy + (j + 0.5) * c.step;
             for (int i = i0; i <= i1; i++) {
                 int at = j * c.w + i;
-                if (out[at] == World.SALT || out[at] == World.FRESH) continue;
+                if (World.salt(out[at]) || out[at] == World.FRESH) continue;
                 double x = c.ox + (i + 0.5) * c.step, dx = (x - lx) * xs, dy = y - ly;
                 double t = (dx * dx + dy * dy) / (r * r);
                 if (t >= 1 + BLOB_FRAY / 2) continue;
@@ -1770,59 +1872,42 @@ public final class EarthTerrain {
     }
 
     /* =====================================================================
-       THE SEA'S DEPTH (0.7.121, batch E4; spec-earth 6's E4, E2's star 7)
+       THE SEA'S DEPTH (0.7.121, batch E4; ET1, 2026-10-24: spec-earth2-terrain 7)
 
        The generated world's sea has a depth from its elevation field
-       (World.depthAt(), 0.7.79): its shallowest SHELF_SHARE is the shelf,
-       SHELF_BREAK_M deep at its edge, the depth linear in the elevation from
-       the sea's level and on at the same slope. earth-1 ships no heights
-       (Jerus's eighth answer: no elevation), and E3 lists oil fields on the
-       Earth's shelf, basin and rift seas, so an Earth city's first platform -
-       and before it the land wells' count of the dry sites, which asks every
-       field's depth - threw.
+       (World.depthAt(), 0.7.79). The real Earth's sea has its own: earth-2's
+       depth layer, the mean of the sea in each 1' cell (1.85 km) from GEBCO,
+       in a code a byte (EarthData.depthM()).
 
-       THE SAME RULE, WITH THE COAST'S DISTANCE FOR THE ELEVATION IT LACKS
-       (★E4-1): the sea nearest the coast is the shallowest. A sea plot's
-       depth is SHELF_BREAK_M x its distance from the coast over SHELF_WIDTH_M,
-       the distance within which SHELF_SHARE of the Earth's sea lies - the
-       generated world's shelf, measured the generated world's way (a share
-       of the sea's samples, here SHELF_SAMPLES points even over the sphere)
-       on earth-1's own coast; linear from the coast and on at the same slope.
-       No figure is added that the generated world does not already use: the
-       shelf's share of the sea and its edge's depth (Harris et al. 2014, the
-       mean shelf break), and the rest is measured on the data.
+       WHY THE GUESS RETIRED. earth-1 shipped no heights, so E4 (★E4-1)
+       guessed: SHELF_BREAK_M x a plot's distance from the coast over
+       SHELF_WIDTH_M, 54,167 m, the distance within which the generated
+       world's share of the sea lies - linear from the coast and on at the
+       same slope. GEBCO showed it wrong both ways (the study's 7): the North
+       Sea 40 and 80 km off Rotterdam is 27 and 34 m deep, not 69 and 150, so
+       a broad shelf came out three to nine times too deep and no platform
+       stood past 58 km where the real sea is 20 to 40 m; off Valparaiso the
+       sea is 656 m deep 20 km out, not 44, and a platform could stand on 2.4
+       km of water. Jerus decided (D17, 2026-10-12) the real depth replaces
+       it; the shelf's width, its measure over the Earth's sea and the
+       coast-distance search that fed them went with it.
 
-       THE COAST is the data's: the centre of the nearest 15" cell whose sea
-       share is under SEA_LEVEL - the half-contour the plots' coast is drawn
-       on, a plot or two off it (THE RULE above); measured on the plots
-       instead, a depth would move by under a metre at this slope. The
-       distance is the great circle's, the world's own within 0.3% at
-       1,000 km from the spot (EarthProj). A sea plot is at least a plot from
-       the coast, so its depth is over nothing, as World.depthAt() promises
-       of every SALT plot; past the planet's rim, the farthest anything lies.
+       THE DEPTH A PLOT HAS is the layer's at the plot's centre, at least a
+       metre (the file's promise: a sea plot is never shallower than 1 m in
+       the game, because World.depthAt() over 0 is how the land office tells
+       a sea field from a dry one); 0 where the plot is not the sea's (not
+       SALT or SHALLOW). Past the planet's rim, where the layer has no
+       ground, the deepest it says. The shallow sea (World.SHALLOW, a 15"
+       cell's share of its sea under 30 m) and this depth (a 1' cell's mean)
+       are two readings of GEBCO and need not agree at a plot: a SHALLOW plot
+       may be 34 m deep, and a SALT one 12.
        ===================================================================== */
 
-    /**
-     * The distance within which SHELF_SHARE of the Earth's sea lies from the
-     * coast, metres: 54,167, measured on earth-1 (measureShelfWidthM(): 46,434
-     * of SHELF_SAMPLES points the sea's, 54,167.3 m; EarthFoundingCheck holds
-     * it to the file) - where a sea plot is World.SHELF_BREAK_M deep, so a
-     * platform (sectors.Oil.PLATFORM_MAX_DEPTH_M) stands within 58 km of a
-     * coast (★E4-1).
-     */
-    public static final double SHELF_WIDTH_M = 54_167;
-
-    /** Points the shelf's width is measured over: 2^16, evenly on the sphere by a fixed hash (SHELF_SALT), of which the sea's (about 71%) are measured - the generated world's measure is a share of its sea's samples too (World.SEA_SAMPLES a cell). */
-    public static final int SHELF_SAMPLES = 1 << 16;
-
-    /** How far a sample's coast is looked for while the width is measured, metres: 250 km, past which a sample is beyond the shelf by far - over four times its width (the measure is a low quantile; depthAt() itself looks as far as it must). */
-    public static final double SHELF_MEASURE_REACH_M = 250_000;
-
-    /** The stream the shelf's sample points are drawn from. */
-    private static final long SHELF_SALT = 0x5E1F5A3DL;
-
-    /** The sea layer's levels under which a 15" cell is the coast's land side: the share under SEA_LEVEL, 0 to 7 of 15. */
+    /** The sea layer's levels under which a 15" cell is the coast's land side: the share under SEA_LEVEL, 0 to 7 of 15 - the land of the landmass layer (tools/earth/FORMAT-2.txt). */
     static final int COAST_BELOW = (int) Math.ceil(SEA_LEVEL * EarthData.SHARE_LEVELS);
+
+    /** The shallowest a sea plot is, metres: 1 (FORMAT-2: "a sea plot is never shallower than 1 m in the game"), so World.depthAt() over 0 is still how a sea plot is told from land. */
+    public static final double SEA_LEAST_DEPTH_M = 1;
 
     /** Depths kept, by plot: 4,096 (a field's depth is asked again every time the city's ground changes). */
     static final int DEPTHS_KEPT = 4096;
@@ -1834,158 +1919,28 @@ public final class EarthTerrain {
     };
 
     /**
-     * The sea's depth at a plot's centre, metres below its level (★E4-1): 0
-     * where the plot is not SALT, else World.SHELF_BREAK_M x its distance
-     * from the coast (coastDistanceM(), at least a plot) over SHELF_WIDTH_M.
-     * World.depthAt() on Earth. Kept by plot (DEPTHS_KEPT).
+     * The sea's depth at a plot's centre, metres below its level (ET1, the
+     * study's 7): 0 where the plot is not the sea's (World.salt()), else the
+     * depth layer's metres there (EarthData.depthM()), at least
+     * SEA_LEAST_DEPTH_M, and the layer's deepest, EarthData.DEPTH_DEEPEST_M,
+     * past the planet's rim. World.depthAt() on Earth. Kept by plot
+     * (DEPTHS_KEPT). A reader without the layer (an earth-1 file) has no depth
+     * to give: it throws, naming the file that has.
      */
     public double depthAt(long x, long y) {
-        if (terrainAt(x, y) != World.SALT) return 0;
+        if (!World.salt(terrainAt(x, y))) return 0;
         long k = (x << 32) ^ (y & 0xffffffffL);
         synchronized (depths) {
             Double d = depths.get(k);
             if (d != null) return d;
         }
+        if (!data.hasRelief()) throw new IllegalStateException("this data has no depth layer; earth-2.bin does (" + data.identity() + ")");
         double[] ll = new double[2];
-        double m = proj.latLonOfPlot(x + 0.5, y + 0.5, ll)
-                ? Math.max(World.PLOT_M, coastDistanceM(data, ll[0], ll[1], Double.POSITIVE_INFINITY))
-                : StrictMath.PI * EarthProj.RADIUS_M;
-        double depth = World.SHELF_BREAK_M * m / SHELF_WIDTH_M;
+        double depth = proj.latLonOfPlot(x + 0.5, y + 0.5, ll)
+                ? Math.max(SEA_LEAST_DEPTH_M, data.depthM(ll[0], ll[1]))
+                : EarthData.DEPTH_DEEPEST_M;
         synchronized (depths) { depths.put(k, depth); }
         return depth;
-    }
-
-    /** ...a point's distance from the coast, metres (see the banner): the great circle to the centre of the nearest 15" cell whose sea share is under SEA_LEVEL. */
-    public double coastDistanceM(double lat, double lon) {
-        return coastDistanceM(data, lat, lon, Double.POSITIVE_INFINITY);
-    }
-
-    /**
-     * The great-circle distance from (lat, lon) to the centre of the nearest
-     * 15" cell of the data whose sea share is under SEA_LEVEL (COAST_BELOW),
-     * metres; infinity when there is none within reachM. Best first over the
-     * 1-degree tiles, nearest the point by a bound that never overstates
-     * (the angle to the tile's centre less its corners' farthest), a tile of
-     * one value read without inflating it, until no tile left can hold a
-     * nearer cell.
-     */
-    static double coastDistanceM(EarthData data, double lat, double lon, double reachM) {
-        EarthData.Layer sea = data.layer("sea");
-        int cpd = sea.cellsPerDegree;
-        double[] p = new double[3];
-        unitVector(lat, lon, p);
-        double best = Math.min(StrictMath.PI, reachM / EarthProj.RADIUS_M);   // the angle to beat, radians: at most half a turn
-        boolean[] seen = new boolean[EarthData.TILES];
-        java.util.PriorityQueue<double[]> queue = new java.util.PriorityQueue<>((a, b) -> Double.compare(a[0], b[0]));
-        int first = EarthData.tileAt(lat, lon);
-        seen[first] = true;
-        queue.add(new double[] { 0, first });
-        double[] c = new double[3], cosLon = new double[cpd], sinLon = new double[cpd];
-        while (!queue.isEmpty()) {
-            double[] q = queue.poll();
-            if (q[0] >= best) break;
-            int t = (int) q[1];
-            int lat0 = EarthData.tileLat0(t), lon0 = EarthData.tileLon0(t);
-            int e = sea.entries[t];
-            if (e > 0 || -e < COAST_BELOW) {
-                byte[] g = e > 0 ? data.raw("sea", t) : null;
-                for (int j = 0; j < cpd; j++) {
-                    double l = StrictMath.toRadians(lon0 + (j + 0.5) / cpd);
-                    cosLon[j] = StrictMath.cos(l);
-                    sinLon[j] = StrictMath.sin(l);
-                }
-                double most = StrictMath.cos(best);
-                for (int r = 0; r < cpd; r++) {
-                    double f = StrictMath.toRadians(lat0 + 1 - (r + 0.5) / cpd);
-                    double cf = StrictMath.cos(f), sf = StrictMath.sin(f);
-                    for (int j = 0; j < cpd; j++) {
-                        if (g != null && (g[r * cpd + j] & 0xFF) >= COAST_BELOW) continue;
-                        double dot = cf * (cosLon[j] * p[0] + sinLon[j] * p[1]) + sf * p[2];
-                        if (dot > most) most = dot;
-                    }
-                }
-                best = Math.min(best, StrictMath.acos(Math.min(1, most)));
-            }
-            // The tiles beside it - every one along a polar row, which all meet at the pole.
-            int row = (lat0 + 90), col = lon0 + 180;
-            for (int dr = -1; dr <= 1; dr++) {
-                int rr = row + dr;
-                if (rr < 0 || rr >= 180) continue;
-                if ((rr == 0 || rr == 179) && dr != 0) {
-                    for (int cc = 0; cc < 360; cc++) offer(queue, seen, rr * 360 + cc, p, c, best);
-                    continue;
-                }
-                for (int dc = -1; dc <= 1; dc++) {
-                    if (dr == 0 && dc == 0) continue;
-                    offer(queue, seen, rr * 360 + Math.floorMod(col + dc, 360), p, c, best);
-                }
-            }
-        }
-        return Double.isInfinite(reachM) || best < reachM / EarthProj.RADIUS_M ? best * EarthProj.RADIUS_M : Double.POSITIVE_INFINITY;
-    }
-
-    /** A tile into the queue once, by the least angle any point of it can lie from p: the angle to its centre less the farthest of its corners from that centre. */
-    private static void offer(java.util.PriorityQueue<double[]> queue, boolean[] seen, int t, double[] p, double[] c, double best) {
-        if (seen[t]) return;
-        seen[t] = true;
-        int lat0 = EarthData.tileLat0(t), lon0 = EarthData.tileLon0(t);
-        unitVector(lat0 + 0.5, lon0 + 0.5, c);
-        double far = 0;
-        double[] k = new double[3];
-        for (int i = 0; i < 4; i++) {
-            unitVector(lat0 + (i >> 1), lon0 + (i & 1), k);
-            far = Math.max(far, angle(c, k));
-        }
-        double bound = Math.max(0, angle(p, c) - far - 1e-12);
-        if (bound < best) queue.add(new double[] { bound, t });
-    }
-
-    /** A point's unit vector on the sphere. */
-    private static void unitVector(double lat, double lon, double[] v) {
-        double f = StrictMath.toRadians(lat), l = StrictMath.toRadians(lon), cf = StrictMath.cos(f);
-        v[0] = cf * StrictMath.cos(l);
-        v[1] = cf * StrictMath.sin(l);
-        v[2] = StrictMath.sin(f);
-    }
-
-    /** The angle between two unit vectors, radians. */
-    private static double angle(double[] a, double[] b) {
-        return StrictMath.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
-    }
-
-    /**
-     * The shelf's width on a reader's data (★E4-1), metres: SHELF_SAMPLES
-     * points evenly on the sphere (a fixed hash: latitude by the arcsine of
-     * an even draw, longitude even), the sea's among them - its 15" cell's
-     * share at SEA_LEVEL or over - each its coastDistanceM() (out to
-     * SHELF_MEASURE_REACH_M), sorted; the distance SHELF_SHARE of them lie
-     * within. What SHELF_WIDTH_M is, to the metre it is rounded to.
-     */
-    public static double measureShelfWidthM(EarthData data) {
-        double[] d = new double[SHELF_SAMPLES];
-        int n = 0;
-        for (int i = 0; i < SHELF_SAMPLES; i++) {
-            long h = World.mix(SHELF_SALT + i * 0x9E3779B97F4A7C15L);
-            double lat = StrictMath.toDegrees(StrictMath.asin(2 * World.unit(h) - 1));
-            double lon = 360 * World.unit(World.mix(h)) - 180;
-            if (data.at("sea", lat, lon) < COAST_BELOW) continue;
-            d[n++] = coastDistanceM(data, lat, lon, SHELF_MEASURE_REACH_M);
-        }
-        double[] sea = Arrays.copyOf(d, n);
-        Arrays.sort(sea);
-        return sea[(int) (World.SHELF_SHARE * n)];
-    }
-
-    /** How many of the shelf's samples are the sea's, on a reader's data. */
-    public static int shelfSeaSamples(EarthData data) {
-        int n = 0;
-        for (int i = 0; i < SHELF_SAMPLES; i++) {
-            long h = World.mix(SHELF_SALT + i * 0x9E3779B97F4A7C15L);
-            double lat = StrictMath.toDegrees(StrictMath.asin(2 * World.unit(h) - 1));
-            double lon = 360 * World.unit(World.mix(h)) - 180;
-            if (data.at("sea", lat, lon) >= COAST_BELOW) n++;
-        }
-        return n;
     }
 
     /**

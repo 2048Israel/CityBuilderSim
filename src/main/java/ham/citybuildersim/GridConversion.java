@@ -449,8 +449,8 @@ public final class GridConversion {
 
     /**
      * The plots a grid's holdings own, by World's classes (GRASS, FOREST,
-     * FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT, indexed
-     * by the class, World.CLASSES of them), counted one by one from
+     * FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT and since
+     * ET1 SHALLOW, indexed by the class, World.CLASSES of them), counted one by one from
      * World.tileTerrain(), as the map counts them: a leaf of a tile or more a
      * whole tile at a time, a smaller one plot by plot.
      */
@@ -481,8 +481,8 @@ public final class GridConversion {
      * Five areas in square kilometres - CityLand.TOTAL, DRY, FRESH, SEA and
      * FOREST - of plots counted by World's classes: the dry ground the
      * classes World.dry() names, the desert's with the grass, and (0.7.127)
-     * ice in the whole area only. The classes a shorter count leaves off
-     * are none.
+     * ice in the whole area only; the sea's area is SALT's and SHALLOW's (ET1:
+     * World.salt()). The classes a shorter count leaves off are none.
      */
     public static double[] km2Of(long[] cls) {
         long dry = 0, all = 0;
@@ -494,7 +494,7 @@ public final class GridConversion {
         km2[CityLand.TOTAL] = all * World.KM2_PER_PLOT;
         km2[CityLand.DRY] = dry * World.KM2_PER_PLOT;
         km2[CityLand.FRESH] = cls[World.FRESH] * World.KM2_PER_PLOT;
-        km2[CityLand.SEA] = cls[World.SALT] * World.KM2_PER_PLOT;
+        km2[CityLand.SEA] = (cls[World.SALT] + (cls.length > World.SHALLOW ? cls[World.SHALLOW] : 0)) * World.KM2_PER_PLOT;
         km2[CityLand.FOREST] = cls[World.FOREST] * World.KM2_PER_PLOT;
         return km2;
     }

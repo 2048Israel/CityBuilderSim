@@ -356,12 +356,16 @@ public final class LandMap {
 
     /* ----------------------------- the words ----------------------------- */
 
-    /** A World class as the hover card names it; since 0.7.127 ice and the desert by their own names (spec-globe 3.9). */
+    /** The shallow sea's words (ET1, spec-earth2-terrain 9.3): its depth (bridges over it are ET6's), the hover's and the legend's. */
+    public static final String SHALLOW_WORDS = "Shallow sea · 30 m or less";
+
+    /** A World class as the hover card names it; since 0.7.127 ice and the desert by their own names (spec-globe 3.9), since ET1 the shallow sea by its own. */
     public static String groundWords(byte ground) {
         switch (ground) {
             case World.FOREST: return "Forest";
             case World.FRESH:  return "Lake or river";
             case World.SALT:   return "Sea";
+            case World.SHALLOW: return SHALLOW_WORDS;
             case World.SAND:   return "Beach";
             case World.ICE:    return "Ice";
             case World.DESERT: return "Desert";
@@ -703,7 +707,7 @@ public final class LandMap {
      * The expanded map's legend in a tier (spec-globe 3.7: "the legend on the
      * globe lists the kinds of ground and the city's ring; the whole legend
      * is back from the handoff in"): on the globe (GlobeFrame.PICTURE and
-     * GROUND) the seven kinds of ground, the city's ring and its edge - and
+     * GROUND) the eight kinds of ground (ET1: the shallow sea last), the city's ring and its edge - and
      * in the GROUND tier, where the city's plane draws within the reach, the
      * offers; on the plane (GlobeFrame.PLANE, and a generated world at every
      * scale) the plane's legend, planeLegend().
@@ -711,7 +715,7 @@ public final class LandMap {
     public static List<Entry> legend(int tier) {
         if (tier == GlobeFrame.PLANE) return planeLegend();
         List<Entry> out = new ArrayList<>();
-        for (byte g : new byte[] { World.GRASS, World.FOREST, World.DESERT, World.ICE, World.SAND, World.FRESH, World.SALT }) {
+        for (byte g : new byte[] { World.GRASS, World.FOREST, World.DESERT, World.ICE, World.SAND, World.FRESH, World.SALT, World.SHALLOW }) {
             out.add(new Entry(TileRaster.GROUND[g], groundWords(g)));
         }
         out.add(new Entry(RING, CITY_RING_WORDS));

@@ -25,8 +25,9 @@ import java.util.Map;
  * THE DATA. EarthCheck's fixture (the three windows, Rotterdam, Perth and
  * Paris, and Fiji's) for everything a player can cause anywhere; the full
  * file, when it is named (-Dcbs.earth=<path>, EarthData.locate()), for what
- * only the whole planet holds - an ice sheet, a desert, the shelf's width
- * measured over the Earth's sea - and says so in one line when it is not.
+ * only the whole planet holds - an ice sheet, a desert, the sea off
+ * Valparaiso and the North Sea's depth 40 and 80 km out - and says so in one
+ * line when it is not.
  * The save's four fields are SaveFileCheck's, NewGameCheck's and
  * ReadPathCheck's.
  *
@@ -56,11 +57,14 @@ import java.util.Map;
  *      group in the data's order, at most SEARCH_HITS, nothing for nothing;
  *      the same seed picks the same place, which passes the site test, and
  *      seeds pick more than one.
- *   5. THE SEA'S DEPTH: on the plots a line out to sea crosses, nothing where
- *      a plot is not the sea's, and where it is World.SHELF_BREAK_M x its
- *      distance from the coast - a brute force over every cell within reach -
- *      over EarthTerrain.SHELF_WIDTH_M, at least a plot's; on the full file
- *      the width measured again is the constant, to its rounding.
+ *   5. THE SEA'S DEPTH (rewritten by ET1, D17: the real depth replaces E4's
+ *      guess from the coast's distance): on the plots a line out to sea
+ *      crosses, nothing where a plot is not the sea's (SALT or SHALLOW), and
+ *      where it is the depth layer's code at the plot's centre, decoded, at
+ *      least a metre; on the full file the study's spots - the North Sea off
+ *      Rotterdam 40 and 80 km out, where a platform stands, and the sea off
+ *      Valparaiso 20 km out, where none can - read the layer's depth, on the
+ *      side of Oil.PLATFORM_MAX_DEPTH_M the sea is on.
  *   6. AN EARTH CITY, FOUNDED, PLAYED AND AT SEA: Rotterdam's founded through
  *      the game stands on its Earth world, its land the snap's; it buys the
  *      ground to an oil field in the sea, the field's sites the sea's, its
@@ -206,7 +210,7 @@ public class EarthFoundingCheck {
                     if (d2 > r * r) continue;
                     byte g = w.terrainAt(c.siteX() + dx, c.siteY() + dy);
                     plots++;
-                    if (g == World.SALT) { sea++; s2 = Math.min(s2, d2); }
+                    if (World.salt(g)) { sea++; s2 = Math.min(s2, d2); }
                     else if (g == World.FRESH) { fresh++; f2 = Math.min(f2, d2); }
                     else dry++;
                 }
@@ -356,7 +360,7 @@ public class EarthFoundingCheck {
        5. THE SEA'S DEPTH
        ===================================================================== */
     static void depth(String id, Spot r, EarthData file) {
-        out.println("\n--- 5. the sea's depth on Earth: the coast's distance for the elevation it lacks ---");
+        out.println("\n--- 5. the sea's depth on Earth: the depth layer's, at least a metre (ET1, D17) ---");
         World w = World.of(World.Key.earth(SEED, r.lat(), r.lon(), id));
         EarthTerrain e = w.earthTerrain();
         EarthData data = e.data();
@@ -368,88 +372,73 @@ public class EarthFoundingCheck {
         for (int km = 0; km <= 80; km += 4) {
             long x = w.foundingX() - Math.round(km * 1000.0 / World.PLOT_M);
             double depth = w.depthAt(x, y);
-            if (w.terrainAt(x, y) != World.SALT) {
+            if (!World.salt(w.terrainAt(x, y))) {
                 landPlots++;
                 rule &= depth == 0;
                 continue;
             }
             seaPlots++;
-            double[] ll = new double[2];
-            e.projection().latLonOfPlot(x + 0.5, y + 0.5, ll);
-            double d = bruteCoast(data, ll[0], ll[1]);
-            double want = World.SHELF_BREAK_M * Math.max(World.PLOT_M, d) / EarthTerrain.SHELF_WIDTH_M;
-            boolean ok = depth > 0 && Math.abs(depth - want) <= 1e-9 * want;
+            double want = layerDepth(e, data, x, y);
+            boolean ok = depth >= EarthTerrain.SEA_LEAST_DEPTH_M && depth == want;
             if (!ok) worst = String.format("%d km: %.6f m for %.6f", km, depth, want);
             rule &= ok;
             deepest = Math.max(deepest, depth);
         }
-        report("fixture: west of Rotterdam's site, nothing where the plot is not the sea's, and at sea SHELF_BREAK_M x the coast's distance"
-                        + " (every cell within reach, by brute force) over SHELF_WIDTH_M, at least a plot's",
+        report("fixture: west of Rotterdam's site, nothing where the plot is not the sea's, and at sea the depth layer's code at the plot's centre, decoded, at least a metre",
                 rule && seaPlots >= 5 && landPlots >= 1, seaPlots + " at sea, " + landPlots + " on land, the deepest "
                         + String.format("%.1f m", deepest) + (worst.isEmpty() ? "" : "; " + worst));
-        check("the rule's own arithmetic: SHELF_BREAK_M at SHELF_WIDTH_M from the coast, so a platform's 150 m within 58 km",
-                World.SHELF_BREAK_M * EarthTerrain.SHELF_WIDTH_M / EarthTerrain.SHELF_WIDTH_M == World.SHELF_BREAK_M
-                        && ham.citybuildersim.sectors.Oil.PLATFORM_MAX_DEPTH_M / World.SHELF_BREAK_M * EarthTerrain.SHELF_WIDTH_M / 1000 > 58
-                        && ham.citybuildersim.sectors.Oil.PLATFORM_MAX_DEPTH_M / World.SHELF_BREAK_M * EarthTerrain.SHELF_WIDTH_M / 1000 < 59);
+        // The floor: sea plots whose 1' cell holds no sea in the layer (its code nought) are a metre, not nought - World.depthAt() over 0 is how a sea plot is told from land.
+        int floored = 0, zeroes = 0;
+        boolean floor = true;
+        for (long x = w.foundingX() - 4000; x < w.foundingX(); x++) {
+            if (!World.salt(w.terrainAt(x, y))) continue;
+            double[] ll = new double[2];
+            e.projection().latLonOfPlot(x + 0.5, y + 0.5, ll);
+            double d = w.depthAt(x, y);
+            floor &= d >= EarthTerrain.SEA_LEAST_DEPTH_M;
+            if (EarthData.depthOfCode(data.at("depth", ll[0], ll[1])) < EarthTerrain.SEA_LEAST_DEPTH_M) {
+                zeroes++;
+                if (d == EarthTerrain.SEA_LEAST_DEPTH_M) floored++;
+            }
+        }
+        report("...a sea plot is never shallower than SEA_LEAST_DEPTH_M, and where the layer reads none under it, it is exactly that",
+                floor && floored == zeroes && EarthTerrain.SEA_LEAST_DEPTH_M == 1, zeroes + " plot(s) of the line out to sea over a cell the layer gives no depth, " + floored + " floored");
         boolean threw = false;
         try { w.shelfTheta(); } catch (UnsupportedOperationException x) { threw = true; }
         check("...and the elevation field's shelf, which Earth has none of, is still refused", threw);
         if (file == null) {
-            out.println("earth-2.bin not named: the shelf's width was not measured again");
+            out.println("earth-2.bin not named: the study's spots (the North Sea off Rotterdam, the sea off Valparaiso) were not read");
             return;
         }
-        boolean far = true;
-        double[][] points = { { 52.5, 3.0 }, { 55.0, 3.0 }, { -32.0, 115.5 }, { 20, -40 } };
-        for (double[] p : points) far &= EarthTerrain.coastDistanceM(file, p[0], p[1], Double.POSITIVE_INFINITY) == bruteCoast(file, p[0], p[1]);
-        check("the full file: the coast's distance is the brute force's at four points, the North Sea's to the mid-Atlantic's", far);
-        long t0 = System.nanoTime();
-        double width = EarthTerrain.measureShelfWidthM(file);
-        int seaSamples = EarthTerrain.shelfSeaSamples(file);
-        report("...and the shelf's width measured again over the Earth's sea is SHELF_WIDTH_M, to the metre it is rounded to",
-                Math.abs(width - EarthTerrain.SHELF_WIDTH_M) <= 0.5,
-                String.format("%.1f m over %,d of %,d samples the sea's (%.1f%%), %.1f s", width, seaSamples, EarthTerrain.SHELF_SAMPLES,
-                        100.0 * seaSamples / EarthTerrain.SHELF_SAMPLES, (System.nanoTime() - t0) / 1e9));
+        // The study's spots (spec-earth2-terrain 7): GEBCO's depth 40 and 80 km out into the North Sea off Rotterdam, and 20 km off Valparaiso.
+        World north = World.of(World.Key.earth(SEED, r.lat(), r.lon(), EarthData.EARTH_2));
+        double[] rot = { seaOut(north, 40), seaOut(north, 80) };
+        World chile = World.of(World.Key.earth(SEED, -33.05, -71.62, EarthData.EARTH_2));
+        double valpo = seaOut(chile, 20), valpo40 = seaOut(chile, 40);
+        double max = ham.citybuildersim.sectors.Oil.PLATFORM_MAX_DEPTH_M;
+        report("the full file: the North Sea off Rotterdam, 40 and 80 km out, is the layer's depth and a platform stands in it (the study: 27 and 34 m, E4's rule gave 69 and 150)",
+                rot[0] > 0 && rot[1] > 0 && rot[0] <= max && rot[1] <= max && rot[0] < 69 && rot[1] < 150, String.format("%.0f m and %.0f m", rot[0], rot[1]));
+        report("...the sea off Valparaiso, 20 and 40 km out, is hundreds of metres: no platform stands (the study: 656 and 2,369 m, E4's rule gave 44 and 91)",
+                valpo > max && valpo40 > max && valpo > 200 && valpo40 > valpo, String.format("%.0f m and %.0f m", valpo, valpo40));
     }
 
-    /** How far past the search's answer the brute force reads, degrees: 2, so a cell the search missed nearer than its answer lies well inside what is read. */
-    static final double BRUTE_MARGIN_DEG = 2;
+    /** The depth layer's metres at a plot's centre, at least SEA_LEAST_DEPTH_M: what depthAt() must give, read by another road (the raw code at the plot's latitude and longitude). */
+    static double layerDepth(EarthTerrain e, EarthData data, long x, long y) {
+        double[] ll = new double[2];
+        if (!e.projection().latLonOfPlot(x + 0.5, y + 0.5, ll)) return EarthData.DEPTH_DEEPEST_M;
+        return Math.max(EarthTerrain.SEA_LEAST_DEPTH_M, EarthData.depthOfCode(data.at("depth", ll[0], ll[1])));
+    }
 
-    /**
-     * The great-circle distance to the centre of the nearest 15" cell whose
-     * sea share is under the coast's level, by brute force: every cell of
-     * every 1-degree tile whose centre lies within the search's answer and
-     * BRUTE_MARGIN_DEG more - a nearer cell than the search found would lie
-     * in one of them, so the two agree only if the search missed none.
-     */
-    static double bruteCoast(EarthData d, double lat, double lon) {
-        double within = EarthTerrain.coastDistanceM(d, lat, lon, Double.POSITIVE_INFINITY) / EarthProj.RADIUS_M + StrictMath.toRadians(BRUTE_MARGIN_DEG);
-        EarthData.Layer sea = d.layer("sea");
-        int cpd = sea.cellsPerDegree;
-        double f0 = StrictMath.toRadians(lat), l0 = StrictMath.toRadians(lon);
-        double px = StrictMath.cos(f0) * StrictMath.cos(l0), py = StrictMath.cos(f0) * StrictMath.sin(l0), pz = StrictMath.sin(f0);
-        double most = -2;
-        double[] cl = new double[cpd], sl = new double[cpd];
-        for (int t = 0; t < EarthData.TILES; t++) {
-            int lat0 = EarthData.tileLat0(t), lon0 = EarthData.tileLon0(t);
-            if (EarthProj.distanceM(lat, lon, lat0 + 0.5, lon0 + 0.5) / EarthProj.RADIUS_M > within + StrictMath.toRadians(1)) continue;
-            int e = sea.entries[t];
-            if (e <= 0 && -e >= EarthTerrain.COAST_BELOW) continue;
-            byte[] g = e > 0 ? d.raw("sea", t) : null;
-            for (int c = 0; c < cpd; c++) {
-                double l = StrictMath.toRadians(lon0 + (c + 0.5) / cpd);
-                cl[c] = StrictMath.cos(l);
-                sl[c] = StrictMath.sin(l);
-            }
-            for (int r = 0; r < cpd; r++) {
-                double f = StrictMath.toRadians(lat0 + 1 - (r + 0.5) / cpd), cf = StrictMath.cos(f), sf = StrictMath.sin(f);
-                for (int c = 0; c < cpd; c++) {
-                    if (g != null && (g[r * cpd + c] & 0xFF) >= EarthTerrain.COAST_BELOW) continue;
-                    double dot = cf * (cl[c] * px + sl[c] * py) + sf * pz;
-                    if (dot > most) most = dot;
-                }
-            }
-        }
-        return StrictMath.acos(Math.min(1, most)) * EarthProj.RADIUS_M;
+    /** The sea's depth `km` out from the coast west of a world's founding site, along its row: the first sea plot going west, then km further; -1 where the row has no sea within 200 km. */
+    static double seaOut(World w, double km) {
+        long y = w.foundingY(), x = w.foundingX(), reach = Math.round(200_000.0 / World.PLOT_M), coast = -1;
+        for (long k = 0; k < reach && coast < 0; k++) if (World.salt(w.terrainAt(x - k, y))) coast = x - k;
+        if (coast < 0) return -1;
+        long at = coast - Math.round(km * 1000.0 / World.PLOT_M);
+        boolean sea = World.salt(w.terrainAt(at, y));
+        double depth = w.depthAt(at, y);
+        EarthTerrain e = w.earthTerrain();
+        return sea && depth == layerDepth(e, e.data(), at, y) ? depth : -1;
     }
 
     /* =====================================================================

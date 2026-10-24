@@ -1944,7 +1944,7 @@ public class ReadPathCheck {
         World w = g.getWorld();
         long sx = g.getCityLand().siteX(), sy = g.getCityLand().siteY();
         long seaX = sx - 2_000;
-        assertTrue("fixture: a plot of the North Sea west of it", w.terrainAt(seaX, sy) == World.SALT);
+        assertTrue("fixture: a plot of the North Sea west of it", World.salt(w.terrainAt(seaX, sy)));
         System.setOut(quiet);
         Map<String, Double> before = NewGameCheck.snapshot(g);
         bankPrint(g, before);

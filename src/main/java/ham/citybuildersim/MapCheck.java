@@ -1763,7 +1763,7 @@ public class MapCheck {
                     long cx = (sx + dx) * World.CELL + World.CELL / 2, cy = (sy + dy) * World.CELL + World.CELL / 2;
                     w.regionTerrain(cx - 3 * CityMap.DISTRICT / 2, cy - 3 * CityMap.DISTRICT / 2, World.TILE, n, buf);
                     int dry = 0;
-                    for (byte b : buf) if (b != World.SALT && b != World.FRESH) dry++;
+                    for (byte b : buf) if (!World.salt(b) && b != World.FRESH) dry++;
                     if (dry >= DRY_PLACE * buf.length && (side <= 0 || holdsIron(w, cx, cy, side))) return new long[] { cx, cy, ring };
                 }
             }
@@ -1935,7 +1935,7 @@ public class MapCheck {
                 }
                 for (int q = 0; q < TilePainter.PLOTS; q++) {
                     byte gr = in.terrain[q];
-                    if (in.owned[q] && gr != World.SALT && gr != World.FRESH && p.site[q] == 0) free++;
+                    if (in.owned[q] && !World.salt(gr) && gr != World.FRESH && p.site[q] == 0) free++;
                     if (p.isRoad(q)) streets++;
                 }
             }
@@ -2023,7 +2023,7 @@ public class MapCheck {
                         width[g] = p.width[k];
                         role[g] = p.role[k];
                         owned[g] = in.owned[k];
-                        sea[g] = in.terrain[k] == World.SALT;
+                        sea[g] = World.salt(in.terrain[k]);
                         wet[g] = sea[g] || in.terrain[k] == World.FRESH;
                         bridge[g] = p.bridge[k];
                         beneath[g] = p.beneath[k];
@@ -4148,7 +4148,7 @@ public class MapCheck {
             boolean owned = m.land().ownsPlot(x, y);
             int bare = TileRaster.GROUND[g];
             if (!owned && px[k] == TileRaster.blend(bare, TileRaster.VOID, TileRaster.UNOWNED_DIM)) dimmed++;
-            if (owned && g != World.SALT && g != World.FRESH && px[k] != bare) tinted++;
+            if (owned && !World.salt(g) && g != World.FRESH && px[k] != bare) tinted++;
         }
         out.printf("      a far node (%d plots a pixel): its ground in %.1f ms on the worker, its pixels in %.1f ms; %,d tinted, %,d dimmed%n",
                 plots, terrainMs, pixelsMs, tinted, dimmed);
@@ -4282,14 +4282,14 @@ public class MapCheck {
                     if (r == CityRuns.F_HIGHWAY || r == CityRuns.F_RAIL_OVER) clear = false;
                     if (!k.holds(x, y)) continue;
                     int tg = tileGround(w, x, y);
-                    onDry &= m.land().ownsPlot(x, y) && tg != World.SALT && tg != World.FRESH;
+                    onDry &= m.land().ownsPlot(x, y) && !World.salt(tg) && tg != World.FRESH;
                     if (r != 0) clear = false;
                     for (CityShore.Work o : shore.works()) if (o != k && (o.holds(x, y) || o.quayAt(x, y))) clear = false;
                 }
             }
             for (int q = 1; q <= k.quay(); q++) {
                 long[] at = k.quayPlot(q);
-                quays &= m.land().ownsPlot(at[0], at[1]) && tileGround(w, at[0], at[1]) == World.SALT;
+                quays &= m.land().ownsPlot(at[0], at[1]) && World.salt(tileGround(w, at[0], at[1]));
             }
             if (k.berthed()) {
                 long[] e = k.quayPlot(k.quay() + 1);
@@ -5434,7 +5434,7 @@ public class MapCheck {
         Water water = new Water(e, data, x0, x0, s);
         int banded = 0, bandMissed = 0, cores = 0, coreMissed = 0;
         for (int k = 0; k < far.length; k++) {
-            if (far[k] == World.SALT) continue;
+            if (World.salt(far[k])) continue;
             if (water.inStroke(k % n, k / n, true)) {
                 banded++;
                 if (far[k] != World.FRESH) bandMissed++;
@@ -5452,7 +5452,7 @@ public class MapCheck {
         for (int k = 0; k < far.length; k++) {
             proj.latLonOfPlot(x0 + (k % n + 0.5) * s, x0 + (k / n + 0.5) * s, ll);
             seaData += data.at("sea", ll[0], ll[1]) / (double) EarthData.SHARE_LEVELS;
-            if (far[k] == World.SALT) sea++;
+            if (World.salt(far[k])) sea++;
             if (World.dry(far[k])) {
                 dry++;
                 if (far[k] == World.FOREST) forest++;
@@ -5573,7 +5573,7 @@ public class MapCheck {
             if (!e.projection().latLonOfPlot(x0 + (k % n + 0.5) * stride, y0 + (k / n + 0.5) * stride, ll)) continue;
             int side = ll[1] < 0 ? 1 : 0;
             cells[side]++;
-            if (mid[k] != World.SALT) land[side]++;
+            if (!World.salt(mid[k])) land[side]++;
             if (mid[k] == World.FRESH && reg[k] != World.FRESH) fresh[side]++;
             landData[side] += 1 - data.at("sea", ll[0], ll[1]) / (double) EarthData.SHARE_LEVELS;
         }
@@ -5640,7 +5640,7 @@ public class MapCheck {
         for (int j = 0; j < across; j++) for (int i = 0; i < across; i++) {
             e.farTerrain(i * span, j * span, widest, n, g);
             for (byte b : g) {
-                if (b != World.SALT) land++;
+                if (!World.salt(b)) land++;
                 if (b == World.FRESH) fresh++;
             }
         }
@@ -5666,7 +5666,7 @@ public class MapCheck {
                 for (int jj = j0; jj <= j1; jj++) for (int ii = i0; ii <= i1; ii++) {
                     double dx = x0 + (ii + 0.5) * s - l[0], dy = y0 + (jj + 0.5) * s - l[1], t = (dx * dx + dy * dy) / (l[2] * l[2]);
                     if (t < 1) centres++;
-                    if (t <= 1 - EarthTerrain.BLOB_FRAY / 2 && g[jj * n + ii] != World.FRESH && g[jj * n + ii] != World.SALT) coreMissed++;
+                    if (t <= 1 - EarthTerrain.BLOB_FRAY / 2 && g[jj * n + ii] != World.FRESH && !World.salt(g[jj * n + ii])) coreMissed++;
                 }
             }
         }
@@ -7494,7 +7494,7 @@ public class MapCheck {
                     if (!enough) continue;
                     w.regionTerrain(cx - 3 * CityMap.DISTRICT / 2, cy - 3 * CityMap.DISTRICT / 2, World.TILE, n, buf);
                     int dry = 0;
-                    for (byte b : buf) if (b != World.SALT && b != World.FRESH) dry++;
+                    for (byte b : buf) if (!World.salt(b) && b != World.FRESH) dry++;
                     if (dry >= DRY_PLACE * buf.length) return new long[] { cx, cy, ring };
                 }
             }
@@ -7639,7 +7639,7 @@ public class MapCheck {
         int ground = t.ground(x, y);
         int kind = TilePainter.kindOf(t.code(x, y)), use = t.use(x, y);
         boolean street = use == TilePainter.ROAD && (kind == BuildingVisual.GRAVEL || kind == BuildingVisual.PAVED) && (t.flag(x, y) & (AvTiles.BENEATH | AvTiles.BRIDGE)) == 0;
-        return (use == TilePainter.EMPTY || street) && ground != World.FRESH && ground != World.SALT && t.mark(x, y) == 0 && (t.flag(x, y) & AvTiles.OWNED) != 0;
+        return (use == TilePainter.EMPTY || street) && ground != World.FRESH && !World.salt(ground) && t.mark(x, y) == 0 && (t.flag(x, y) & AvTiles.OWNED) != 0;
     }
 
     /** Whether a pixel is a surfaced street's: the paved colour, the gravel's, or its grain. */

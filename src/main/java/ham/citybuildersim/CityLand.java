@@ -955,7 +955,7 @@ public final class CityLand {
         return GridConversion.km2Of(unownedClasses(x0, y0, x1, y1));
     }
 
-    /** ...as plots by World's classes (GRASS, FOREST, FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT), World.CLASSES of them. */
+    /** ...as plots by World's classes (GRASS, FOREST, FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT and since ET1 SHALLOW), World.CLASSES of them. */
     long[] unownedClasses(long x0, long y0, long x1, long y1) {
         long[] cls = new long[World.CLASSES];
         x0 = Math.max(0, x0);

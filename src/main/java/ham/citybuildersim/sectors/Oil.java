@@ -789,12 +789,19 @@ public final class Oil extends Sector {
     public List<LandManager.SeaField> shallowFields() {
         if (game == null) return List.of();
         List<LandManager.SeaField> out = new ArrayList<>();
-        for (LandManager.SeaField f : game.getLandManager().seaFields(Resource.OIL)) if (isShallow(f)) out.add(f);
+        for (LandManager.SeaField f : game.getLandManager().seaFields(Resource.OIL)) if (canTakePlatform(f)) out.add(f);
         return out;
     }
 
-    /** Whether a jacket may stand on a sea field (pure): in the sea, PLATFORM_MAX_DEPTH_M deep or less at its centre, with a site the city owns. */
-    public static boolean isShallow(LandManager.SeaField f) {
+    /**
+     * Whether a jacket may stand on a sea field (pure): in the sea,
+     * PLATFORM_MAX_DEPTH_M deep or less at its centre (the sea's real depth
+     * on Earth, World.depthAt()), with a site the city owns. Not the shallow
+     * sea: World.SHALLOW is sea no deeper than 30 m, a ground class that a
+     * bridge may cross, and this is the depth a platform stands in - named
+     * isShallow() until ET1, when the two names would have been confused.
+     */
+    public static boolean canTakePlatform(LandManager.SeaField f) {
         return f != null && f.depth() > 0 && f.depth() <= PLATFORM_MAX_DEPTH_M && f.sites() > 0;
     }
 

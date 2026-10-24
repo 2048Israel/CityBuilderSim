@@ -860,7 +860,10 @@ public final class EarthData implements AutoCloseable {
     /** Whether the slope shares at a point are an estimate (slopeEstimated() of its tile). */
     public boolean slopeEstimatedAt(double lat, double lon) { return slopeEstimated(tileAt(lat, lon)); }
 
-    /** The share of the cell's sea no deeper than 30 m, 0 to 1: the shallow layer's level over SHARE_LEVELS, 0 where the cell has no sea. */
+    /** The depth, in metres, the shallow layer's share counts the sea to: 30 (FORMAT-2's depth.SHALLOW_M; the study's D11, ET1): the sea World.SHALLOW is drawn of. */
+    public static final double SHALLOW_M = 30;
+
+    /** The share of the cell's sea no deeper than SHALLOW_M (30 m), 0 to 1: the shallow layer's level over SHARE_LEVELS, 0 where the cell has no sea. */
     public double shallowShare(double lat, double lon) { return at("shallow", lat, lon) / (double) SHARE_LEVELS; }
 
     /** The metres a depth code stands for: 0 for none, 1 to DEPTH_METRE_CODES that many, above that DEPTH_STEP_M more a code, and the deepest code, DEPTH_DEEPEST_CODE, DEPTH_DEEPEST_M (750 m or deeper: the layer does not say how much). */

@@ -3149,7 +3149,7 @@ public final class DistrictPlan {
 
         /** What an avenue makes of staircase plot p, by the ground the plan has now (owns): AVK_OFF to AVK_STREET. */
         int avKind(int p) {
-            if (!owns[p] || in.terrain[p] == World.SALT) return AVK_OFF;
+            if (!owns[p] || World.salt(in.terrain[p])) return AVK_OFF;
             byte f = fx[p];
             if (works(f) || in.site[p] == SITE_MINED) return AVK_BROKEN;
             if (f == FIXED_HIGHWAY) return AVK_UNDER;
@@ -4179,7 +4179,7 @@ public final class DistrictPlan {
             int p = y * FRAME + x;
             if (!owns[p]) return true;
             byte t = in.terrain[p];
-            return t == World.SALT || (t == World.FRESH && !str[p]);
+            return World.salt(t) || (t == World.FRESH && !str[p]);
         }
 
         /**
@@ -4337,7 +4337,7 @@ public final class DistrictPlan {
                 byte f = fixed[p];
                 blocked[p] = !d | f != 0 | site[p] != 0;
                 // Its lay code from the ground (LAY CODES; fresh water's runs and the runs' plots added after).
-                layCode[p] = (byte) (!owned[p] | t == World.SALT ? LAY_REFUSED : proto ? (f == FIXED_HIGHWAY ? LAY_REFUSED : 0)
+                layCode[p] = (byte) (!owned[p] | World.salt(t) ? LAY_REFUSED : proto ? (f == FIXED_HIGHWAY ? LAY_REFUSED : 0)
                         : site[p] == SITE_MINED ? LAY_REFUSED : 0);
                 if (f != 0) fixedPlot(p, x, base, f);
                 if (partedAnchor[p]) paRows[base + (x >>> 6)] |= 1L << (x & 63);
@@ -5157,7 +5157,7 @@ public final class DistrictPlan {
         boolean joinable(int a, boolean horizontal) {
             int x = a % FRAME, y = a / FRAME;
             if (x % LATTICE != 0 && y % LATTICE != 0) return false;
-            if (!owns[a] || in.terrain[a] == World.SALT || occ[a] > 0) return false;
+            if (!owns[a] || World.salt(in.terrain[a]) || occ[a] > 0) return false;
             byte f = fx[a];
             if (proto) return f != FIXED_HIGHWAY;
             if (in.site[a] == SITE_MINED) return false;
@@ -5169,7 +5169,7 @@ public final class DistrictPlan {
         /** Whether a step onto plot a going horizontally (or not) may be laid off the lattice, where the join's lattice finds no way: as joinable(), on any plot (H2: a street follows the ground where it must). */
         boolean groundJoinable(int a, boolean horizontal) {
             int x = a % FRAME, y = a / FRAME;
-            if (!owns[a] || in.terrain[a] == World.SALT || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
+            if (!owns[a] || World.salt(in.terrain[a]) || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
             boolean arterial = horizontal ? y % CELL == 0 : x % CELL == 0;
             if (in.terrain[a] == World.FRESH && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
             return fx[a] == 0 || (!works(fx[a]) && !along(fx, a, horizontal));
