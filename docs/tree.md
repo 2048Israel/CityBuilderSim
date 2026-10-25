@@ -648,8 +648,9 @@ adds its line here, not in `CLAUDE.md`.
                                          whose trace moved, are docs/ensemble/<version>.md; EnsembleCheck keeps
                                          the driver compiling against the tree and the newest score readable
     tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
-                                         Batch check.bat, batch-check.sh and ship.sh, which time soft while either
-                                         runs and wait for the batches before the gate's hard timing (TM1)
+                                         Batch check.bat, which times soft while either runs, and batch-check.sh and
+                                         ship.sh, which wait for the batches before the gate's hard timing (TM1;
+                                         batch-check.sh times every other run soft since BP1)
     tools/pick.sh                        the harnesses that read what a branch changed, picked from its diff against
                                          main through docs/harnesses.md's reverse index, with no JVM: one line, the
                                          names, ALL or NONE, for batch-check.sh --pick, and on stderr whether the
@@ -661,3 +662,6 @@ adds its line here, not in `CLAUDE.md`.
     tools/wait.sh                        waits inside one command, so a session need not end its turn: until a
                                          batch's row has left origin/main's queue (--row), or a line of a file
                                          matches (--line); --for MIN gives up after so long (BP1, 2026-10-24)
+    tools/ship-selftest.sh               ship.sh run against a throwaway local origin with a stub batch-check.sh, so
+                                         no JVM: its stops and its records in about two minutes; run it after any
+                                         change to ship.sh (BP1's review, 2026-10-25)

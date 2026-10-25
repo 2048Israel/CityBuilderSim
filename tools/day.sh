@@ -19,7 +19,12 @@
 #                branch), and "BUT conflicts with main in ..." when git merge-tree
 #                predicts any, generated docs aside (ship.sh takes the branch's
 #                side of those); "conflicts not predicted" where git is too old
-#      stuck     ID - queued, no commit for 30 h
+#      ready     ID - old-style (its row out on the branch, no ship file) - ./ship.sh batch/ID
+#                a branch finished the old way (docs/batch.md, the change-over):
+#                main still queues ID, the branch's own QUEUE.md had the row
+#                where it was cut and no longer has it, which is what ship.sh
+#                asks of a branch with no ship file; the same conflict note
+#      stuck    ID - queued, no commit for 30 h
 #      working   ID - queued, last commit 3 h ago
 #      off-queue unmerged and not queued, one line for all: ID (age), ...
 #      tidy      N merged batch branches still on origin
@@ -36,6 +41,12 @@
 #  check-in needed a probe that costs one short call when nothing is due. The
 #  first draft counted the merged branches inside a pipe's subshell, where the
 #  count was lost; the loop here runs in the shell itself.
+#  2026-10-25, the review: a branch finished the old way (ET2 was one) has no
+#  ship file, so the first draft called it "working" for 24 h and then "stuck",
+#  and --due stayed silent on it: the old-style ready test below is that fix.
+#  It goes, with ship.sh's old path, when no branch from before BP1 is left.
+#  The gate's date was the first date in any '#' line, which is often a date in
+#  the queue row's text; it is now the '# date:' line ship.sh writes for it.
 # ---------------------------------------------------------------------------
 
 usage() { echo "usage: sh tools/day.sh [--due]" >&2; exit 2; }
@@ -79,6 +90,18 @@ QUEUED=$(printf '%s\n' "$Q" | rows Queued)
 # its counts are lost.
 CAN_MT=0
 git merge-tree --write-tree --no-messages "$M" "$M" >/dev/null 2>&1 && CAN_MT=1
+mtnote() {   # what git predicts of merging branch ref $1 into main, as the tail of a ready line
+    if [ "$CAN_MT" != 1 ]; then printf ' - conflicts not predicted'; return; fi
+    R=$(git merge-tree --write-tree --name-only --no-messages "$M" "$1" 2>/dev/null); rc=$?
+    if [ "$rc" -eq 1 ]; then
+        C=$(printf '%s\n' "$R" | sed 1d | grep -v '^$' | grep -v -E "$GEN" | head -n 4 | tr '\n' ' ')
+        [ -z "$C" ] || printf ' - BUT conflicts with main in %s' "${C% }"
+    elif [ "$rc" -ne 0 ]; then printf ' - conflicts not predicted'
+    fi
+}
+queues() {   # does the QUEUE.md of commit-ish $1 have a row for $id under Queued?
+    git show "$1:QUEUE.md" 2>/dev/null | rows Queued | grep -qxF "$id"
+}
 READY=; STUCK=; WORK=; OFFQ=; MERGED=0
 for b in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/batch/*'); do
     id=${b#refs/remotes/origin/batch/}
@@ -86,19 +109,14 @@ for b in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/batch/*')
     t=$(git log -1 --format=%ct "$b")
     age=$(ago "$t")
     if git cat-file -e "$b:docs/queue/$id-ship.md" 2>/dev/null; then
-        note=
-        if [ "$CAN_MT" = 1 ]; then
-            R=$(git merge-tree --write-tree --name-only --no-messages "$M" "$b" 2>/dev/null); rc=$?
-            if [ "$rc" -eq 1 ]; then
-                C=$(printf '%s\n' "$R" | sed 1d | grep -v '^$' | grep -v -E "$GEN" | head -n 4 | tr '\n' ' ')
-                [ -z "$C" ] || note=" - BUT conflicts with main in ${C% }"
-            elif [ "$rc" -ne 0 ]; then note=" - conflicts not predicted"
-            fi
-        else note=" - conflicts not predicted"
-        fi
-        READY="${READY}ready     $id - ./ship.sh batch/$id (last commit $age ago)$note$NL"
+        READY="${READY}ready     $id - ./ship.sh batch/$id (last commit $age ago)$(mtnote "$b")$NL"
     elif ! printf '%s\n' "$QUEUED" | grep -qxF "$id"; then
         OFFQ="${OFFQ:+$OFFQ, }$id ($age)"
+    elif base=$(git merge-base "$M" "$b" 2>/dev/null) && [ -n "$base" ] && queues "$base" &&
+         git cat-file -e "$b:QUEUE.md" 2>/dev/null && ! queues "$b"; then
+        # old-style, finished: main queues it (the test above), the row was on the branch where it
+        # was cut (a branch cut before the row was queued is not this one), and is out of it now
+        READY="${READY}ready     $id - old-style (its row out on the branch, no ship file) - ./ship.sh batch/$id (last commit $age ago)$(mtnote "$b")$NL"
     elif [ $((NOW - t)) -ge 86400 ]; then
         STUCK="${STUCK}stuck     $id - queued, no commit for $age$NL"
     else
@@ -122,7 +140,8 @@ LAST=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -t. -k1,1n -k2,2n 
 if [ "$V" = "$LAST" ]; then VS="$V = the last version tag"; else VS="$V BUT the last version tag is ${LAST:-none} (tag or mend main)"; fi
 echo "main      $VS; merged $(ago "$(git log -1 --format=%ct "$M")") ago: $(git log -1 --format=%s "$M" | cut -c1-70)"
 if G=$(git show "$M:docs/notes/gate.txt" 2>/dev/null); then
-    GDATE=$(printf '%s\n' "$G" | grep '^#' | grep -o -E '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -n 1)
+    # ship.sh's '# date:' line: the '# gate of' line above it carries the queue row's text, dates and all
+    GDATE=$(printf '%s\n' "$G" | sed -n 's/^# date: \([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}\).*/\1/p' | head -n 1)
     REDS=$(printf '%s\n' "$G" | awk '
         /^#/ || /^[ \t]*$/ { next }
         { i = index($0, " | "); if (i == 0) next

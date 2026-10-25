@@ -24,12 +24,18 @@
 #       the old way (the branch wrote its own: its version, its changelog
 #       block, its Queued row out), said in a line;
 #    5. stops before any merge: "-- names" without --dry-run (a partial suite
-#       never ships); a branch that changes docs/notes/gate.txt; in the new
-#       way, one that changes GameVersion's VERSION line, adds a
-#       docs/ensemble/<x.y.z>.md, edits QUEUE.md or the changelog, has a "## "
-#       heading in its ship file other than changelog, pending and queued,
-#       asks for a version ({next}) with --no-tag, or is a batch/ branch with
-#       no {next} and no --no-tag; a --version that is not x.y.z, does not
+#       never ships); a branch that changes docs/notes/gate.txt, or adds a
+#       docs/queue/*-ship.md that is not its own; with --no-tag, one that
+#       changes GameVersion's VERSION line (main's VERSION would stay untagged
+#       and step 3 would stop every later ship); in the new way, one that
+#       changes GameVersion's VERSION line, adds a docs/ensemble/<x.y.z>.md,
+#       edits QUEUE.md or the changelog, has a "## " heading in its ship file
+#       other than changelog, pending and queued, a pending or queued row with
+#       no first cell, asks for a version ({next}) with --no-tag or without a
+#       "## changelog" block whose first line starts "### {next} ", or is a
+#       batch/ branch with no {next} and no --no-tag; in the old way, a batch/
+#       branch (without --no-tag) whose VERSION is tagged already or does not
+#       sort above the last tag; a --version that is not x.y.z, does not
 #       sort above the last tag or is tagged here or on origin;
 #    6. the version: NEXT is --version, or the last tag's patch + 1, when the
 #       ship file has {next}; the tag is NEXT unless --no-tag;
@@ -45,24 +51,34 @@
 #       first "---"); QUEUE.md's Queued row for the id out, the "## pending"
 #       rows at the top of the Pending table, the "## queued" rows at the end
 #       of the Queued table; the baseline moved to docs/ensemble/<NEXT>.md;
-#       the ship file deleted. A {next} left in another file the branch
-#       changed is named, not filled;
+#       the ship file deleted. Of its pending and queued sections only the
+#       table's data rows are taken: a header row (first cell "item" or
+#       "batch") and a separator row are dropped. A {next} left in another
+#       file the branch changed is named, not filled;
 #    9. the checks: batch-check.sh on the merge (compile, suite, maps, Stale,
 #       line endings), the suite timed soft so that timing is judged once;
 #       exit 0 and 3 (red only as main's record has it) pass, 4 (a new red
 #       line) passes only with --red-ok, 1 and 2 stop. On a chatgpt/ or gemini/
 #       branch tools.Names too: said, never a gate. Then the timing harnesses
 #       alone and hard (batch-check.sh --timing), once no other batch's JVM
-#       runs: a timing red is compared, the same day on the same machine, with
-#       main's own timing run in a worktree of main (target/main-timing, digits
-#       masked): all of it red on main too passes and is named, otherwise it is
-#       the batch's and stops. A merge that changes only .md files outside
-#       docs/ensemble/ runs batch-check.sh --fast alone;
+#       runs; its exit is 0, 3 or 4 alike, and the record is no shortcut. Its
+#       red lines less the lines the suite step already judged (main's
+#       recorded reds, or reds passed with --red-ok) and less main's recorded
+#       lines are the timing's own: none, and it passes with no run of main's
+#       (a red passed with --red-ok in one of the timing harnesses comes back
+#       here and is not judged twice). Otherwise only those lines are compared,
+#       the same day on the same machine, with main's own timing run in a
+#       worktree of main (target/main-timing, digits masked): all of them red
+#       on main too passes and is named, otherwise it is the batch's and stops.
+#       A merge that changes only .md files outside docs/ensemble/ runs
+#       batch-check.sh --fast alone;
 #   10. docs/notes/gate.txt written (every gate that ran the suite) and added:
 #       "#" lines (the merge's title, the date, whether earth-2.bin was named,
-#       the suite's and the timing's summary lines), then the suite's red
-#       lines, which are the next ship's "main's recorded reds". Only this
-#       script writes it;
+#       the suite's and the timing's summary lines, each timing red accepted as
+#       main's "# timing red on main too, today: ..."), then the suite's red
+#       lines, which are the next ship's "main's recorded reds". A timing red
+#       is a "#" line only, never a recorded one: the next ship compares it
+#       with main's run again. Only this script writes it;
 #   11. --dry-run says what it would commit, tag and push, and the records it
 #       would write, then takes the merge back: the tree and HEAD as they were;
 #   12. the merge committed as "Merge <branch>: <title>, <version>", the title
@@ -93,6 +109,17 @@
 #  finished by hand past main's known reds, a timing red compared by hand and
 #  a map conflict resolved by hand. The version, the records, those reds and
 #  that conflict are now this script's, and a dry run shows the real merge.
+#  WHY (BP1 review, 2026-10-25): a red passed with --red-ok in one of the
+#  eleven timing harnesses came back in the hard timing run and was judged
+#  against main's run, where it was never red; a timing red accepted as main's
+#  was written to gate.txt as a plain line, so a later regression on the same
+#  assertion printed the same line and passed as "recorded"; a ship file with
+#  {next} but no changelog block tagged a version with no paragraph, and one
+#  with a copied table header corrupted QUEUE.md; and an old-style branch could
+#  ship a version main had tagged already, or a --no-tag merge that moved
+#  VERSION and stopped every later ship at step 3. tools/ship-selftest.sh runs
+#  this script against a throwaway origin with a stub for the checks (no JVM):
+#  run it after changing this file.
 # ---------------------------------------------------------------------------
 
 cd "$(dirname "$0")" || exit 1
@@ -184,11 +211,22 @@ LAST=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -t. -k1,1n -k2,2n 
 [ -n "$LAST" ] || die "no x.y.z tag here (git fetch --tags origin)"
 MAINV=$(vof main)
 [ "$MAINV" = "$LAST" ] || die "main's VERSION is ${MAINV:-unreadable}, the last version tag $LAST: tag or mend main first"
+LASTPLUS=${LAST%.*}.$(( ${LAST##*.} + 1 ))
+above_last() {   # $1 sorts above the last version tag
+    [ "$1" != "$LAST" ] && [ "$(printf '%s\n%s\n' "$LAST" "$1" | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)" = "$1" ]
+}
 
 # 4. the way: a ship file on the branch is the new way
 queued() {   # the "what" of the row for $ID under Queued in QUEUE.md as $1 has it
     git show "$1:QUEUE.md" 2>/dev/null | sed '/^## Pending/,$d' \
         | awk -F'|' -v id="$ID" '{ gsub(/^ +| +$/, "", $2) } $2 == id { gsub(/^ +| +$/, "", $3); print $3; exit }'
+}
+sect() {   # the lines of the ship file's section $1 (the file $2, else the one in the tree), its heading excluded
+    tr -d '\r' < "${2:-$SHIPF}" | awk -v s="## $1" '$0 == s { on = 1; next } /^## / { on = 0 } on'
+}
+shiprows() {   # the table rows of section $1 that are data: no separator row, no header row (first cell item or batch)
+    sect "$1" "$2" | grep '^|' | grep -v -E '^\|[-| :]+\|[[:space:]]*$' \
+        | awk -F'|' '{ c = tolower($2); gsub(/^ +| +$/, "", c) } c != "item" && c != "batch"'
 }
 NEW=0; WANT=0; NEXT=""
 if git cat-file -e "$REF:$SHIPF" 2>/dev/null; then
@@ -203,9 +241,12 @@ fi
 # 5. stops, before any merge
 [ "$#" -eq 0 ] || [ "$DRY" = 1 ] || die "a partial suite never ships: '-- harness names' only with --dry-run"
 printf '%s\n' "$CHANGED" | grep -q -x 'docs/notes/gate.txt' && die "$BRANCH changes docs/notes/gate.txt: only ship.sh writes the gate's record"
+OTHERSHIP=$(git diff --name-only --diff-filter=A --no-renames "main...$REF" | grep -E '^docs/queue/.+-ship\.md$' | grep -v -x -F "$SHIPF" | head -3 | tr '\n' ' ')
+[ -z "$OTHERSHIP" ] || die "$BRANCH adds a ship file for another id: ${OTHERSHIP% }; this branch's is $SHIPF (the branch's name, each / a -: docs/batch.md)"
+VCHG=0
+git diff -U0 --no-renames "main...$REF" -- "$GV" | grep -q -E '^[+-] *public static final String VERSION = ' && VCHG=1
 if [ "$NEW" = 1 ]; then
-    git diff -U0 --no-renames "main...$REF" -- "$GV" | grep -q -E '^[+-] *public static final String VERSION = ' \
-        && die "$BRANCH changes GameVersion's VERSION line: a batch writes {next} in its ship file, and ship.sh sets the version (docs/batch.md)"
+    [ "$VCHG" = 0 ] || die "$BRANCH changes GameVersion's VERSION line: a batch writes {next} in its ship file, and ship.sh sets the version (docs/batch.md)"
     ADDED=$(git diff --name-only --diff-filter=A --no-renames "main...$REF" | grep -E '^docs/ensemble/[0-9]+\.[0-9]+\.[0-9]+\.md$' | head -1)
     [ -z "$ADDED" ] || die "$BRANCH adds $ADDED: a batch commits its baseline as docs/ensemble/$ID.md, and ship.sh names it by the version"
     RECORDS=$(printf '%s\n' "$CHANGED" | grep -x -e QUEUE.md -e docs/notes/changelog.md | tr '\n' ' ' | sed 's/ *$//')
@@ -215,23 +256,35 @@ if [ "$NEW" = 1 ]; then
     if [ "$WANT" = 0 ] && git cat-file -e "$REF:docs/ensemble/$ID.md" 2>/dev/null; then
         die "docs/ensemble/$ID.md is a baseline and $SHIPF has no {next} to name it by"
     fi
+    for SEC in pending queued; do   # a row with no id in its first cell is not a row of QUEUE.md
+        NOID=$(shiprows "$SEC" "$T/ship-on-branch" | awk -F'|' '{ c = $2; gsub(/^ +| +$/, "", c) } c == "" { print; exit }')
+        [ -z "$NOID" ] || die "$SHIPF has a ## $SEC row with no first cell (the id): $(printf '%s' "$NOID" | cut -c1-60)"
+    done
     if [ "$WANT" = 1 ]; then
         [ "$NOTAG" = 0 ] || die "$SHIPF asks for a version ({next}) and --no-tag was given"
+        sect changelog "$T/ship-on-branch" | awk 'NF { print; exit }' | grep -q '^### {next} ' \
+            || die "$SHIPF asks for a version ({next}) but has no '## changelog' block headed '### {next} ...': the version would ship with no paragraph"
     elif [ "$ISBATCH" = 1 ] && [ "$NOTAG" = 0 ]; then
         die "$SHIPF has no {next}: write {next} in its changelog heading, or ship it --no-tag"
     fi
+elif [ "$NOTAG" = 1 ]; then   # a --no-tag merge carries main's version: one that moves it leaves main untagged and stops every later ship (step 3)
+    [ "$VCHG" = 0 ] || die "$BRANCH changes GameVersion's VERSION line and --no-tag was given: main's VERSION would stay untagged and stop every later ship; leave VERSION as main has it"
+elif [ "$ISBATCH" = 1 ]; then   # the old way: a number another batch took is a stop, not a second copy of a version (lesson f)
+    BV=$(vof "$REF")
+    [ -n "$BV" ] || die "cannot read GameVersion's VERSION on $BRANCH"
+    ! tagged "$BV" || die "$BRANCH's VERSION $BV is tagged already: merge main and bump to $LASTPLUS, or write a ship file (--no-tag if no player sees the change)"
+    above_last "$BV" || die "$BRANCH's VERSION $BV does not sort above the last version tag $LAST: merge main and bump to $LASTPLUS, or write a ship file (--no-tag if no player sees the change)"
 fi
 if [ -n "$OVERRIDE" ]; then
     [ "$WANT" = 1 ] || die "--version names the number {next} takes, and $BRANCH has no {next}"
     printf '%s\n' "$OVERRIDE" | grep -q -E '^[0-9]+\.[0-9]+\.[0-9]+$' || die "--version $OVERRIDE is not x.y.z"
-    TOP=$(printf '%s\n%s\n' "$LAST" "$OVERRIDE" | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
-    { [ "$OVERRIDE" != "$LAST" ] && [ "$TOP" = "$OVERRIDE" ]; } || die "--version $OVERRIDE does not sort above the last version tag $LAST"
+    above_last "$OVERRIDE" || die "--version $OVERRIDE does not sort above the last version tag $LAST"
     ! tagged "$OVERRIDE" || die "--version $OVERRIDE is tagged already, here or on origin"
 fi
 
 # 6. the version this ship sets
 if [ "$WANT" = 1 ]; then
-    NEXT=${OVERRIDE:-${LAST%.*}.$(( ${LAST##*.} + 1 ))}
+    NEXT=${OVERRIDE:-$LASTPLUS}
     ! tagged "$NEXT" || die "$NEXT is tagged already, here or on origin (the tags above $LAST?): fetch the tags and run again"
 fi
 
@@ -268,7 +321,6 @@ fill() {   # {next} -> NEXT in the file $1, when it is in the tree and has one
     sed "s/{next}/$NEXT/g" "$1" > "$T/fill" && cat "$T/fill" > "$1" && git add -- "$1" || die "cannot fill {next} in $1"
     NFILL=$((NFILL + 1))
 }
-sect() { tr -d '\r' < "$SHIPF" | awk -v s="## $1" '$0 == s { on = 1; next } /^## / { on = 0 } on'; }
 records() {
     if [ "$WANT" = 1 ]; then
         ENSTOKEN=0; [ -f "docs/ensemble/$ID.md" ] && grep -q -F '{next}' "docs/ensemble/$ID.md" && ENSTOKEN=1
@@ -298,7 +350,7 @@ records() {
         BLOCK=1
     fi
     # QUEUE.md: its Queued row out, the pending rows at the top of Pending, the queued rows at the end of Queued
-    sect pending | grep '^|' > "$T/prows"; sect queued | grep '^|' > "$T/qrows"
+    shiprows pending > "$T/prows"; shiprows queued > "$T/qrows"   # data rows only: no header, no separator
     NPEND=$(wc -l < "$T/prows" | tr -d ' '); NQUEUED=$(wc -l < "$T/qrows" | tr -d ' ')
     awk -v id="$ID" -v pf="$T/prows" -v qf="$T/qrows" -v cnt="$T/gone" '
         function put(f,  l) { while ((getline l < f) > 0) print l; close(f) }
@@ -335,6 +387,8 @@ fi
 
 # the version this merge carries: NEXT, or what the tree reads (the old way: the branch's own)
 if [ "$WANT" = 1 ]; then V=$NEXT; else V=$(sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p' "$GV" | head -1); fi
+[ "$NOTAG" = 0 ] || [ "$V" = "$LAST" ] \
+    || die "--no-tag, and the merge reads VERSION ${V:-unreadable}, not the last version tag $LAST: a --no-tag merge carries main's version, or main's VERSION is left untagged"
 TAG=""
 if [ "$NOTAG" = 1 ]; then :
 elif [ "$NEW" = 1 ]; then [ "$WANT" = 0 ] || TAG=$NEXT
@@ -355,6 +409,15 @@ run_check() {   # the command given, its output on the screen and in $T/check.ou
     CHECKED=$(cat "$T/code")
 }
 heads() { sed 's/ |.*//' "$1" | sort -u | tr '\n' ' ' | sed 's/ *$//'; }   # the harness of each red line of a file
+without() {   # the lines of file $1 that are in none of the files after it, whole lines as written; an empty file takes nothing out
+    cp "$1" "$T/without.cur"; shift
+    for f in "$@"; do
+        [ -s "$f" ] || continue   # grep -f with an empty pattern file: some greps take every line out, some none
+        { grep -v -x -F -f "$f" "$T/without.cur" || :; } > "$T/without.next"
+        cat "$T/without.next" > "$T/without.cur"
+    done
+    cat "$T/without.cur"
+}
 GATE=""; TIMINGLINE=""; SUMMARY=""; TSUMMARY=""; EARTH="named"
 if [ "$DOCSONLY" = 1 ]; then
     say "docs only (every path the branch changed is a .md outside docs/ensemble/): batch-check.sh --fast alone, no suite, no timing, gate.txt untouched"
@@ -396,35 +459,42 @@ else
     cp target/checks/reds.txt "$T/timing-reds.txt" 2>/dev/null || : > "$T/timing-reds.txt"
     TSUMMARY=$(grep 'harness.* run in ' target/checks/suite.txt 2>/dev/null | tail -1)
     case "$CHECKED" in
-        0|3) ;;
-        4)   # lesson d: a timing red that main shows today, on this machine, is not the batch's
-            rm -rf "$MT"; git worktree prune
-            git worktree add -q --detach "$MT" HEAD >/dev/null 2>&1 || die "cannot make the worktree $MT of main for its own timing run"
-            say "timing red on the merge: main's own timing run now, in $MT, to compare..."
-            ( cd "$MT" && ./batch-check.sh --timing ) > "$T/main-timing.out" 2>&1
-            MC=$?
-            grep -E '^(suite|timing|compile) ' "$T/main-timing.out" | sed 's/^/    main: /'
-            case "$MC" in 0|3|4) ;; *) die "main's own timing run did not run (exit $MC; see its lines above)" ;; esac
-            cp "$MT/target/checks/reds.txt" "$T/main-reds.txt" 2>/dev/null || : > "$T/main-reds.txt"
-            sed 's/[0-9][0-9]*/N/g' "$T/main-reds.txt" | sort -u > "$T/main-masked"
-            : > "$T/offenders"; : > "$T/accepted"
-            while IFS= read -r line; do
-                [ -n "$line" ] || continue
-                if grep -q -x -F -- "$line" "$T/recorded"; then continue; fi          # main's recorded red, no news
-                m=$(printf '%s\n' "$line" | sed 's/[0-9][0-9]*/N/g')
-                if grep -q -x -F -- "$m" "$T/main-masked"; then printf '%s\n' "$line" >> "$T/accepted"; else printf '%s\n' "$line" >> "$T/offenders"; fi
-            done < "$T/timing-reds.txt"
-            if [ -s "$T/offenders" ]; then
-                sed 's/^/    /' "$T/offenders" | head -10
-                die "main passes $(heads "$T/offenders") today: the batch's; main is where it was"
-            fi
-            TIMINGLINE="timing    red on main too, today, here - not the batch's: $(heads "$T/accepted")"
-            echo "$TIMINGLINE" ;;
+        0|3|4) ;;
         *) die "the timing harnesses failed on the merge (above, exit $CHECKED); main is where it was" ;;
     esac
+    # BP1 review: exit 3 is no shortcut (a timing red is never main's recorded one) and exit 4 is not all the batch's: the
+    # lines the suite step judged (main's recorded reds, or reds passed with --red-ok) and main's recorded ones come back in
+    # this run whatever harness they are in, and are not judged twice; what is left is the timing's own
+    without "$T/timing-reds.txt" "$T/suite-reds.txt" "$T/recorded" > "$T/residual"
+    : > "$T/accepted"
+    if [ -s "$T/residual" ]; then   # lesson d: a timing red that main shows today, on this machine, is not the batch's
+        rm -rf "$MT"; git worktree prune
+        git worktree add -q --detach "$MT" HEAD >/dev/null 2>&1 || die "cannot make the worktree $MT of main for its own timing run"
+        say "timing red on the merge: main's own timing run now, in $MT, to compare..."
+        ( cd "$MT" && ./batch-check.sh --timing ) > "$T/main-timing.out" 2>&1
+        MC=$?
+        grep -E '^(suite|timing|compile) ' "$T/main-timing.out" | sed 's/^/    main: /'
+        case "$MC" in 0|3|4) ;; *) die "main's own timing run did not run (exit $MC; see its lines above)" ;; esac
+        cp "$MT/target/checks/reds.txt" "$T/main-reds.txt" 2>/dev/null || : > "$T/main-reds.txt"
+        sed 's/[0-9][0-9]*/N/g' "$T/main-reds.txt" | sort -u > "$T/main-masked"
+        : > "$T/offenders"
+        while IFS= read -r line; do   # only the residual lines, digits masked: main's figure differs from the batch's
+            [ -n "$line" ] || continue
+            m=$(printf '%s\n' "$line" | sed 's/[0-9][0-9]*/N/g')
+            if grep -q -x -F -- "$m" "$T/main-masked"; then printf '%s\n' "$line" >> "$T/accepted"; else printf '%s\n' "$line" >> "$T/offenders"; fi
+        done < "$T/residual"
+        if [ -s "$T/offenders" ]; then
+            sed 's/^/    /' "$T/offenders" | head -10
+            die "main passes $(heads "$T/offenders") today: the batch's; main is where it was"
+        fi
+        TIMINGLINE="timing    red on main too, today, here - not the batch's: $(heads "$T/accepted")"
+        echo "$TIMINGLINE"
+    elif [ -s "$T/timing-reds.txt" ]; then
+        echo "timing    its red lines are ones the suite step judged (main's recorded reds, or passed with --red-ok): no run of main's"
+    fi
 
-    # 10. the gate's record: the next ship's "main's recorded reds" - the suite's red lines, then the timing run's
-    #     (its red lines are main's recorded ones or main's own today, or the gate stopped above)
+    # 10. the gate's record: the next ship's "main's recorded reds" - the suite's red lines, nothing from the timing run
+    #     but "#" lines (a timing red is judged again against main's run at every gate, never taken from the record)
     PART=""; [ "$#" -eq 0 ] || PART=" (partial: $*)"
     {
         echo "# gate of $MSG"
@@ -432,7 +502,8 @@ else
         echo "# earth-2.bin: $EARTH"
         echo "# suite: ${SUMMARY:-none}$PART"
         echo "# timing: ${TSUMMARY:-none}${TIMINGLINE:+; its red lines are main's too, today}"
-        cat "$T/suite-reds.txt" "$T/timing-reds.txt"
+        sed 's/^/# timing red on main too, today: /' "$T/accepted"
+        cat "$T/suite-reds.txt"
         [ "$EARTH" = named ] || grep -E '^(Earth|Globe)[A-Za-z0-9]* \|' "$T/recorded"   # lines this gate could not see are kept
     } | awk '/^#/ || (NF && !seen[$0]++)' > docs/notes/gate.txt
     git add -- docs/notes/gate.txt

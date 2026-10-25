@@ -72,8 +72,11 @@ from the code.
      count against the gate's record, `docs/notes/gate.txt`, files verified
      on the PC). Newest first. A `{next}` on a branch is not stale: it is
      the version `ship.sh` fills in at the gate (BP1, 2026-10-24). Your own
-     block may go in a ship file of yours, `docs/queue/<id>-ship.md` under
-     `## changelog`, which `ship.sh` puts at the top in the merge; a docs
+     block may go in a ship file of yours in `docs/queue/`, under
+     `## changelog`, which `ship.sh` puts at the top in the merge. Its name
+     is your branch's with each `/` a `-`, then `-ship.md`: on
+     `docs/pass-2026-10-26` it is `docs-pass-2026-10-26-ship.md`, and
+     `ship.sh` stops a branch carrying a ship file of any other name. A docs
      pass ships `--no-tag`, so its block writes no `{next}`.
    - `claude/todo.md`: strike the line the batch closed (`~~…~~ — done
      <date>`), add a line for anything the batch opened and did not do.

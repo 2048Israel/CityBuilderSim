@@ -16,31 +16,35 @@ the brief, with the figures it was measured against.
 recs"). The old one was about 500k tokens deep after two days, and every
 wake-up - a session's turn end, a report, a background task - re-sent all
 of it; a fresh one is about 70k. At the end of its day the orchestrator
-overwrites the PC memory note `orchestrator-handoff.md`, at most 40 lines:
-the lanes, each running session's name and id, the gates waiting, Jerus's
-open questions, and the screen-check session's id. The next day's
-orchestrator starts from that note, `sh tools/day.sh` and the top of
+CronDeletes its hourly check-in (below), then overwrites the PC memory note
+`orchestrator-handoff.md`, at most 40 lines: its own session id, the lanes,
+each running session's name and id, the gates waiting, Jerus's open
+questions, and the screen-check session's id. The next day's orchestrator
+archives the session that note names as orchestrator before it arms its
+own check-in, then starts from the note, `sh tools/day.sh` and the top of
 `docs/notes/changelog.md`, and reads nothing else until a session needs it.
 
 `sh tools/day.sh` is the morning in one call, in about fifteen lines:
 main's `GameVersion.VERSION` against the last version tag, main's recorded
 reds (`docs/notes/gate.txt`), the next queued ids, the Pending ids, and
-each unmerged `batch/` branch on origin as ready (its ship file pushed,
-with the conflicts a merge would meet), working, stuck (no commit for a
-day) or off-queue.
+each unmerged `batch/` branch on origin as ready (its ship file pushed, or
+an old-style branch's row out of its own `QUEUE.md`; with the conflicts a
+merge would meet), working, stuck (no commit for a day) or off-queue.
 
 **The hourly check-in** (lesson b). Each day the orchestrator creates a
 CronCreate job at minute 7 of every hour (`7 * * * *`) whose prompt is: run
 `sh tools/day.sh --due`, and if it prints nothing, end the turn at once
 with no other call. `--due` prints only the ready and the stuck branches,
 so the orchestrator acts on the hour only when it is quiet and batch work
-is due: a branch to gate, a lane stuck. A cron lapses after seven days, so
-it is re-armed each day rather than trusted.
+is due: a branch to gate, a lane stuck. The job lives in the session that
+made it, so each day's orchestrator arms its own, and yesterday's is
+deleted, not left to lapse after seven days: left, it wakes yesterday's
+whole context every hour, and two orchestrators may gate one branch.
 
 **Two lanes, on files of their own**: the next two queued batches side by
 side, as sessions, and never more than two at once. A lane's next batch
 waits in the background for its predecessor's row to leave `QUEUE.md`
-(`sh tools/wait.sh --row PRED`, below).
+(`sh tools/wait.sh --row PRED`, below), then takes `origin/main`.
 
 **A blocked batch goes under Pending at once** (lesson a): its Queued row
 out and a Pending row in, saying why, in a queue commit pushed to `main`
@@ -64,13 +68,14 @@ a premise, one that spends money, an eye check of his.
 
 Each batch runs in a worktree of the orchestrator's clone, on a branch of
 its own from `main` (`batch/<id>`), as it has since the git era began
-(2026-10-10). **Batches check side by side** (TM1, 2026-10-18): timing is
-soft while another batch's JVM or Jerus's game runs - a timing figure over
-its budget says SOFT and is not counted (`Timing`, `-Dcbs.timing=soft`,
-which the check scripts set by themselves) - and hard only at the ship
-gate, which runs the timing harnesses alone. The cloud workbench, with two
-cores, still runs one JVM at a time under the shared lock (`batch-check.sh`
-takes it).
+(2026-10-10). **Batches check side by side** (TM1, 2026-10-18): every
+`batch-check.sh` run but `--timing` times soft - a timing figure over its
+budget says SOFT and is not counted (`Timing`, `-Dcbs.timing=soft`, which
+the script sets by itself) - and timing is judged hard only by `--timing`
+at the ship gate, which runs the timing harnesses alone (BP1's review: a
+run that began alone timed hard, and main's own misses on a slow day came
+out as the batch's reds). The cloud workbench, with two cores, still runs
+one JVM at a time under the shared lock (`batch-check.sh` takes it).
 
 1. Read `docs/map/README.md`, then the map of each file the change
    touches; `docs/harnesses.md` (grep it) says what already checks the
@@ -124,11 +129,17 @@ takes it).
    (a `{next}` anywhere else is left, with a line saying so), puts the
    changelog block on top, deletes the batch's Queued row, puts its pending
    rows at the top of Pending and its queued rows at the end of Queued, and
-   removes the ship file. A batch whose change no player sees may write no `{next}` at all
-   and be shipped `--no-tag`, as the docs pass is. **The ship file is
-   pushed last**: on the branch it means "ready to ship". A branch with no
-   ship file still ships the old way during the change-over, its records as
-   it wrote them; BP1 itself ships so, `--no-tag`.
+   removes the ship file. A batch whose change no player sees may write no
+   `{next}` at all and be shipped `--no-tag`, as the docs pass is. **The
+   ship file is pushed last**: on the branch it means "ready to ship". A
+   branch sent back from the gate first takes it off (`git rm
+   docs/queue/<id>-ship.md`, pushed) and pushes it again last when mended;
+   left on, `day.sh --due` calls the branch ready every hour. A branch with
+   no ship file still ships the old way during the change-over, its records
+   as it wrote them (BP1 itself ships so, `--no-tag`); `ship.sh` stops one
+   whose `VERSION` main has tagged already (merge main and bump it, or
+   write a ship file), `--no-tag` with a `VERSION` change, and any branch
+   carrying another id's ship file.
 6. **The ensemble only when the trace moves** (EN1, Jerus 2026-10-20): a
    batch whose default playtest's trace is byte-identical to main's but for
    its run-time line skips the 80-run ensemble and its notes say so; one
@@ -140,17 +151,21 @@ takes it).
 7. **A session ends a turn only when it is done or blocked** (BP1 item 2),
    so the orchestrator is woken only by a finished report or a question it
    must answer. A wait of minutes (a suite, a playtest) is a background run
-   and then a wait in the foreground, repeated until it says done (the Bash
-   tool stops a call at ten minutes, hence `--for 9`):
+   and then a wait in the foreground, repeated until it says done, in a
+   Bash call whose timeout is raised to 600000 ms, the most it allows (the
+   default cuts the call at two minutes), hence `--for 9`:
 
    ```
    mkdir -p target/checks; ./batch-check.sh --pick > target/checks/run.txt 2>&1; echo "exit $?" >> target/checks/run.txt   # in the background
-   sh tools/wait.sh --line target/checks/run.txt '^exit [0-9]' --for 9                                                       # in the foreground
+   sh tools/wait.sh --line target/checks/run.txt '^exit [0-9]' --for 9                                                       # in the foreground, Bash timeout 600000
    ```
 
    A wait of hours, for its lane's predecessor, is one background
    `sh tools/wait.sh --row PRED`, which ends when PRED's row has left the
-   Queued table of origin's `QUEUE.md`.
+   Queued table of origin's `QUEUE.md`. When it says done the session
+   takes main as it now is, before any work: `git merge -q --ff-only
+   origin/main` (nothing is committed yet, and the worktree was cut hours
+   before, so the predecessor's shared files would conflict at the gate).
 8. **The report is 15 lines**: what it did, the checks' exit and any red
    lines, its ★ calls each with a recommendation, and its branch pushed
    with the ship file last. The first batch after BP1 also reports its token
@@ -205,20 +220,25 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
      fetches.
 5. **Reds** (the calls below, 4). Main's recorded reds pass, word for word,
    and the body says `Gate: red as main's recorded: <harnesses>`. A new red
-   line ships only with `--red-ok "his words"`, and his words go in the
-   body. Any other red goes back to the batch as its failing lines
-   (`target/checks/reds.txt` in the gate's clone).
+   line ships only with `--red-ok "his words"`, his words in the body, even
+   in a timing harness: the timing step does not judge it again. Any other
+   red goes back to the batch as its failing lines (`target/checks/reds.txt`
+   in the gate's clone), and its ship file comes off first (A batch
+   session, 5).
 6. **Timing** (lesson d; the calls below, 5). A timing red at the gate is
    compared with main's own `--timing` run, the same day on the same
    machine, which `ship.sh` runs by itself in a worktree of `main`. Red on
-   main too: it passes, named in the body and in `gate.txt`. Green on main:
-   it is the batch's.
+   main too: it passes, named in the body, and in `gate.txt` only as a `#`
+   line, so it never becomes a recorded red and the next gate compares it
+   with main again. Green on main: it is the batch's.
 7. `--version X.Y.Z` only on Jerus's word. `--dry-run` runs everything, the
    gate included, prints what it would commit, tag and push, and keeps
    nothing. Harness names after `--` only with `--dry-run`: a partial suite
    never ships. A docs-only merge (every path ends in `.md`, none under
    `docs/ensemble/`) gates on `--fast`: no suite, no timing, `gate.txt`
-   untouched.
+   untouched. After any change to `ship.sh`, `sh tools/ship-selftest.sh`
+   runs it against a throwaway local origin with a stub `batch-check.sh`:
+   no JVM, about two minutes.
 
 ## The screen-check session
 
@@ -242,13 +262,13 @@ and Build* or `mvn -q compile`. Sessions check with Git Bash's
 `Batch check.bat` is Jerus's double-click (`--maps` to regenerate the maps
 too; without it it writes nothing git tracks, because the PC's copy pulls
 `main` and must stay clean). Batches check side by side here, and alongside
-Jerus's game, which nobody waits on him to close: the script times soft by
-itself when another batch's JVM or the game runs, and says so in a line;
-`--timing` waits for the other batches' JVMs and runs the timing harnesses
-hard. The script decides soft or hard **once, at its start**, so a run that
-began alone stays hard when another starts beside it (lesson d); TM2 is
-queued to make the gate's `--timing` wait for a quiet minute, not one empty
-look.
+Jerus's game, which nobody waits on him to close: `batch-check.sh` times
+every run soft but `--timing`, which waits for the other batches' JVMs and
+runs the timing harnesses alone and hard. `Batch check.bat` still times
+soft only while another batch's JVM or the game runs, and decides **once,
+at its start**, so a run of it that began alone stays hard when another
+starts beside it (lesson d). TM2 is queued to make `--timing` wait for a
+quiet minute, not one empty look.
 
 A batch shipped from the PC ships from a temp clone of `origin`, never this
 folder: `%TEMP%\cbs-<id>` (the scratchpad's path is past Windows' 260
@@ -332,11 +352,13 @@ cannot judge. A batch is not done until it has run. A manual edition only
 at a milestone or when Jerus asks.
 
 Since BP1 it ships `--no-tag`, and may carry a ship file for its changelog
-block, named from its branch with each `/` a `-` and holding no `{next}`;
-a pass that changes only `.md` files gates on `--fast`. A `{next}` on a
-batch branch is not stale: `ship.sh` fills it at the gate. `Docs pass.bat`
-runs a bare `claude -p`, which takes the CLI's default effort: check it
-before trusting a headless pass (lesson e).
+block in `docs/queue/`, named from its branch with each `/` a `-` (on
+`docs/pass-2026-10-26`, `docs-pass-2026-10-26-ship.md`; `ship.sh` stops a
+branch carrying any other)
+and holding no `{next}`; a pass that changes only `.md` files gates on
+`--fast`. A `{next}` on a batch branch is not stale: `ship.sh` fills it at
+the gate. `Docs pass.bat` runs a bare `claude -p`, which takes the CLI's
+default effort: check it before trusting a headless pass (lesson e).
 
 ## Before saying a change works
 
@@ -345,12 +367,13 @@ in `docs/notes/gate.txt` and the merge's body), the maps are regenerated,
 the ensemble scored if the trace moved, the write-up exists, the docs pass
 has run, and the batch's row is out of `QUEUE.md` (`ship.sh` takes it out
 in the merge). A batch session calls itself ready when `--pick` exits 0 or
-3 and its ship file is pushed.
+3 and its ship file is pushed, last.
 
 ## The calls BP1 left
 
-Each ★ with its recommendation already built; until Jerus says otherwise,
-the recommended way holds.
+Each ★ but 2 with its recommendation already built; until Jerus says
+otherwise, the built way holds. Call 2 is his, since it moves the standing
+rule on Pending.
 
 1. A class most harnesses read (`Game.java` and the like, more than
    `CBS_PICK_FANOUT` readers) is left to the gate's full suite, with
@@ -359,8 +382,8 @@ the recommended way holds.
    `CBS_PICK_FANOUT=999` flips it; it reopens if more than one of the first
    four batches bounces at the gate on a harness so left.
 2. Who returns a blocked batch to Queued when its block clears by itself.
-   Recommended: the orchestrator, saying so in the queue commit. Until he
-   says, only his review moves a Pending row.
+   Recommended: the orchestrator, saying so in the queue commit. Not built:
+   until he says, only his review moves a Pending row.
 3. No more paragraphs in `GameVersion`'s javadoc: the changelog is the one
    record. Recommended.
 4. Main's recorded reds pass the gate by default, word for word, and a new

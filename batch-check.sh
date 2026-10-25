@@ -27,8 +27,11 @@
 #      2  usage: an unknown option, two of --fast/--timing/--pick, --fast with
 #         names, a name no harness file has - said before anything is built
 #      3  nothing failed but the suite, and every red line is in main's
-#         recorded reds (the non-# lines of docs/notes/gate.txt, as origin/main
-#         has it, else main, else this tree)
+#         recorded reds (the non-# lines of docs/notes/gate.txt as it was at
+#         the merge-base with origin/main, else with main, else this tree's:
+#         at the gate HEAD is main, so that is main's own record; in a batch
+#         it is the record of the main the batch forked from, whose reds its
+#         tree can have - not the reds main has gained or mended since)
 #      4  nothing else failed, but some red line is not recorded
 #  When something else failed as well, 1.
 #
@@ -48,12 +51,17 @@
 #  the lock at $CBS_JVM_LOCK (default /home/claude/jvm.lock) when its folder
 #  exists and flock is installed. The PC's twin is Batch check.bat.
 #
-#  Timing (TM1, 2026-10-18): when another batch's JVM or Jerus's game runs
-#  as the suite starts, the suite times soft (-Dcbs.timing=soft): a timing
-#  figure over its budget says SOFT on its line and is not counted. On the PC
-#  tools/jvms.ps1 counts them; elsewhere ps does. --timing is always hard: it
-#  waits (up to 30 minutes) for the other batches' JVMs to finish, and says
-#  so when the game is running, whose load a timing red may then be.
+#  Timing (TM1, 2026-10-18; BP1, 2026-10-25): every run but --timing times
+#  soft (-Dcbs.timing=soft): a timing figure over its budget says SOFT on its
+#  line and is not counted. TM1 made a run soft only when another batch's JVM
+#  or Jerus's game was running as the suite started, and a run that began alone
+#  timed hard - so main's own timing misses came out as a batch's new reds,
+#  exit 4, "the batch's to mend". Timing is now judged once, hard, by --timing,
+#  the ship gate's: it waits (up to 30 minutes) for the other batches' JVMs to
+#  finish, and says so when the game is running, whose load a timing red may
+#  then be. A soft run says in a line when another batch's JVM or the game is
+#  running (on the PC tools/jvms.ps1 counts them; elsewhere ps does), and says
+#  nothing when it began alone.
 #  In Git Bash the classpath is joined with ';', as Java on Windows wants.
 # ---------------------------------------------------------------------------
 
@@ -99,10 +107,13 @@ SUITE_EXIT=0   # 0 green or no suite, 3 only main's recorded reds, 4 reds not re
 RUNSUITE=1
 
 # the suite log's reds (BP1), one line each: "Harness | exit N" for a failed harness, "Harness | <line>" for each
-# failing line AllChecks -f printed under it, its 4-space indent stripped; a section title is not a failing line
+# failing line AllChecks -f printed under it, its 4-space indent stripped; a section title is not a failing line.
+# The exit may be negative (BP1, 2026-10-25): on Windows a JVM that dies natively reaches AllChecks as a negative int
+# (0xC0000005 is -1073741819), and a header that did not match was dropped with its lines - a crash passed beside
+# main's recorded red as exit 3.
 reds_of() {
     awk '
-    /^[A-Za-z0-9_]+ +FAILED - exit [0-9]+/ { h = $1; nofail = 0; infail = 1; print h " | exit " $5; next }
+    /^[A-Za-z0-9_]+ +FAILED - exit -?[0-9]+/ { h = $1; nofail = 0; infail = 1; print h " | exit " $5; next }
     !/^    / { infail = 0; next }
     !infail { next }
     {
@@ -116,16 +127,24 @@ reds_of() {
     }' "$1"
 }
 
-# main's recorded reds: the non-# lines of docs/notes/gate.txt as origin/main has it, else main, else this tree, else none
+# main's recorded reds: docs/notes/gate.txt as it was at the merge-base with origin/main, else with main, else this
+# tree's, else none. At the gate HEAD is main (or main plus the batch), so the merge-base is origin/main's tip and this
+# is ship.sh's own recorded(); in a batch it is the record of the main the batch forked from. WHY (BP1, 2026-10-25):
+# the tip of origin/main was read first, so a batch that forked while MapCheck 8 was recorded saw it as a new red the
+# day main's fix rewrote gate.txt without it - a red its own tree still has, and one it was told to mend twice.
 recorded_reds() {
     for r in origin/main main; do
-        if git cat-file -e "$r:docs/notes/gate.txt" 2>/dev/null; then git show "$r:docs/notes/gate.txt"; return 0; fi
+        mb=$(git merge-base HEAD "$r" 2>/dev/null) || continue
+        if git cat-file -e "$mb:docs/notes/gate.txt" 2>/dev/null; then git show "$mb:docs/notes/gate.txt"; return 0; fi
     done
     [ -f docs/notes/gate.txt ] && cat docs/notes/gate.txt
     return 0
 }
 
-# the suite is red: 3 when every red line is one main records, else 4 with the lines that are not
+# the suite is red: 3 when every red line is one main records, else 4 with the lines that are not. Before that, a
+# guard that does not depend on the header's form (BP1, 2026-10-25): the summary says how many harnesses failed, and
+# reds.txt must name as many - a harness whose header reds_of could not read would otherwise be dropped, and the
+# rest pass as main's recorded reds.
 judge_reds() {
     recorded_reds | tr -d '\r' | grep -v -e '^#' -e '^[[:space:]]*$' > "$OUT/known-reds.txt"
     if [ -s "$OUT/known-reds.txt" ]; then
@@ -134,14 +153,21 @@ judge_reds() {
         cp "$OUT/reds.txt" "$OUT/new-reds.txt"
     fi
     NEW=$(grep -c . "$OUT/new-reds.txt")
-    if ! grep -q ' | exit [0-9]*$' "$OUT/reds.txt"; then
+    NAMED=$(grep -c -E '^[A-Za-z0-9_]+ \| exit -?[0-9]+$' "$OUT/reds.txt")
+    SAID=$(sed -n 's/^[0-9][0-9]* harness.* run in .*, \([0-9][0-9]*\) failed$/\1/p' "$OUT/suite.txt" | tail -1)
+    if [ "$NAMED" = 0 ]; then
         FAILED=1
         echo "suite     FAILED - the log says harnesses failed but no red line could be read from it: $OUT/suite.txt"
         return 0
     fi
+    if [ "$NAMED" != "$SAID" ]; then
+        FAILED=1
+        echo "suite     FAILED - the log says ${SAID:-an unreadable number of} harness(es) failed, its red lines name $NAMED: $OUT/suite.txt"
+        return 0
+    fi
     if [ "$NEW" = 0 ]; then
         SUITE_EXIT=3
-        echo "suite     red as main only - $(sed -n 's/ | exit [0-9]*$//p' "$OUT/reds.txt" | paste -sd, - | sed 's/,/, /g') (docs/notes/gate.txt)"
+        echo "suite     red as main only - $(sed -n 's/ | exit -\{0,1\}[0-9]*$//p' "$OUT/reds.txt" | paste -sd, - | sed 's/,/, /g') (docs/notes/gate.txt)"
     else
         SUITE_EXIT=4
         echo "suite     FAILED - $NEW new red line(s), main's recorded reds aside:"
@@ -193,7 +219,7 @@ if [ "$PICK" = 1 ]; then
     fi
 fi
 
-# --- timing: hard, or soft while another batch's JVM or the game runs (TM1) --
+# --- timing: hard for --timing alone, soft for every other run (TM1; BP1 made it always) --
 others() {   # "<batch JVMs> <game processes>" on the machine, this run not yet among them
     if [ "$WINDOWS" = 1 ]; then
         powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/jvms.ps1 2>/dev/null | tr -d '\r'
@@ -225,12 +251,12 @@ EOF
     [ "${GAME:-0}" = 0 ] || echo "timing    the game is running: a timing red may be its load - close it if you can"
     echo "timing    hard - the timing harnesses alone"
 elif [ "$FAST" = 0 ]; then
+    TIMED="-Dcbs.timing=soft"   # always: only --timing, the gate's, judges timing (BP1, 2026-10-25)
     read -r BATCH GAME <<EOF
 $(others)
 EOF
     BATCH=${BATCH:-0}; GAME=${GAME:-0}
     if [ "$BATCH" != 0 ] || [ "$GAME" != 0 ]; then
-        TIMED="-Dcbs.timing=soft"
         WHO=""
         [ "$BATCH" = 0 ] || WHO="$BATCH other batch JVM(s)"
         [ "$GAME" = 0 ] || WHO="${WHO:+$WHO and }the game"

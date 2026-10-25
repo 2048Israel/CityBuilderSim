@@ -23,6 +23,11 @@ It was green, but a hard red so placed may be load.
   and its line says it ran without the quiet minute.
 - The line they print while waiting says how many quiet looks it has.
 - `ship.sh` calls `--timing` as it does.
+- (BP1, 2026-10-25) `Batch check.bat` refuses an unknown `--option`: BP1
+  found that `Batch check.bat --pick` took `--pick` for a harness name, ran
+  0 harnesses and said All clear. In `batch-check.sh` the change goes in the
+  `if [ "$TIMING" = 1 ]` block, found by that line, not by a line number,
+  since BP1 moved them.
 - **DeepSeek's `tools/deepseek/agent.py`** (Jerus, 2026-10-20: "Add it to
   TM2"): its harness runs time hard with no look at the machine. It runs
   them as the check scripts do, soft while `tools/jvms.ps1` (or `ps`

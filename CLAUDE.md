@@ -21,8 +21,9 @@ every call after it.
   runs the timing harnesses alone and hard, `--pick` runs the harnesses that
   read what the diff changed, `tools/pick.sh`). Exit 3 means the only reds
   are main's recorded ones (`docs/notes/gate.txt`). Logs go to
-  `target/checks/`; grep them, never cat them. On the PC: `Batch check.bat`,
-  or the same script in Git Bash.
+  `target/checks/`; grep them, never cat them. On the PC: the same script in
+  Git Bash; `Batch check.bat`, Jerus's double-click, has no `--pick` and no
+  exit 3.
 - **The suite alone:** `AllChecks -f` prints only the failing assertions,
   under their sections. Run it in the background and wait for it; never
   poll it, and never rerun a red harness in full to find its assertion.
