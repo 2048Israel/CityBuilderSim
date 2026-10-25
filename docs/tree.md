@@ -650,3 +650,14 @@ adds its line here, not in `CLAUDE.md`.
     tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
                                          Batch check.bat, batch-check.sh and ship.sh, which time soft while either
                                          runs and wait for the batches before the gate's hard timing (TM1)
+    tools/pick.sh                        the harnesses that read what a branch changed, picked from its diff against
+                                         main through docs/harnesses.md's reverse index, with no JVM: one line, the
+                                         names, ALL or NONE, for batch-check.sh --pick, and on stderr whether the
+                                         diff touches money, saves or threading (BP1, 2026-10-24)
+    tools/day.sh                         the orchestrator's morning in one call: main's version against the last tag,
+                                         main's recorded reds, the queue's next rows and Pending, and each unmerged
+                                         batch branch as ready, working, stuck or off-queue; --due only the ready
+                                         and the stuck, for the hourly check-in (BP1, 2026-10-24)
+    tools/wait.sh                        waits inside one command, so a session need not end its turn: until a
+                                         batch's row has left origin/main's queue (--row), or a line of a file
+                                         matches (--line); --for MIN gives up after so long (BP1, 2026-10-24)

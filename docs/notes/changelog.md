@@ -4,7 +4,11 @@ The live changelog since 2026-10-20 (Jerus: the record "in GitHub", so no
 session has to paste into the claude.ai project). One block per version, at
 most 12 lines (CLAUDE.md, "Each batch is told once"), in the house shape:
 `### version - batch, title - date, state, see notes`, then one paragraph.
-A batch or a docs pass adds its block at the top in its own merge.
+Since BP1 (2026-10-24) a batch's block comes from its
+`docs/queue/<id>-ship.md`, its `{next}` the version: `ship.sh` puts it at the
+top in the merge, and the branch leaves this file alone. A branch with no
+ship file - a docs pass that writes none, an old-style branch - still adds
+its own block at the top in its own merge.
 
 The older record: the project's `claude/changelog.md` ("Civic Ledger: Java
 Game") holds the blocks from 2026-09-11 up to the batch before I12, and

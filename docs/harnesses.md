@@ -1,6 +1,6 @@
 # The harnesses
 
-Generated 2026-10-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
 **138 harness files, 14,318 labelled assertions.** AllChecks runs 138 of them.
 
@@ -18,12 +18,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
 | [Bank](map/Bank.md) | AuctionCheck, BankCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MortgageCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, WoodProductsCheck |
+| [BankScreen](map/BankScreen.md) | **none** |
 | [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PortCheck, ReadPathCheck |
 | [BondMarket](map/BondMarket.md) | BondCheck, CurveCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BookDesk](map/BookDesk.md) | DeskCheck, ReadPathCheck |
 | [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, LandCheck, LongPlaytest, ReadPathCheck, RoadCheck, SectorFlowCheck, WaterCheck |
 | [BuildCard](map/BuildCard.md) | BuildCardCheck, ChildcareCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, SectorFlowCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
+| [BuildScreen](map/BuildScreen.md) | **none** |
 | [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
 | [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
@@ -38,6 +40,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, LongPlaytest |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, DeskCheck, FloatLinkCheck, HoldersCheck, ReadPathCheck |
 | [CallTree](map/CallTree.md) | CallCheck |
+| [CapChips](map/CapChips.md) | **none** |
 | [CapSetting](map/CapSetting.md) | AuctionCheck |
 | [CapitalFlows](map/CapitalFlows.md) | AuctionCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, FloatLinkCheck, HoldersCheck, LongPlaytest, MoneyCheck, SaveFileCheck |
 | [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, ChildcareCheck, ExpectationsCheck, HealthCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
@@ -45,6 +48,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CentralBank](map/CentralBank.md) | BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, FloatLinkCheck, ForeignCheck, FundCheck, HoldersCheck, LongPlaytest, MortgageCheck, PolicyPreviewCheck, ScaleCheck |
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, ReadPathCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
+| [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, IslandNetCheck, LandCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, TruckRouteCheck |
@@ -53,8 +57,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityShore](map/CityShore.md) | MapCheck, RailDrawCheck, TruckRouteCheck |
 | [ClockPace](map/ClockPace.md) | ClockCheck |
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck |
+| [CodeMap](map/CodeMap.md) | **none** |
 | [Construction](map/Construction.md) | BankCheck, BuildersFirstCheck, ConstructionControlCheck, FoundingYardCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, RobustnessCheck, SaveFileCheck, SectorBooksCheck |
 | [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, DeathCareFirstCheck, LongPlaytest, RoadCheck, SaveSlotCheck |
+| [ConstructionScreen](map/ConstructionScreen.md) | **none** |
 | [Consumption](map/Consumption.md) | ConsumptionCheck, ForeignCheck |
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, IndustryViewCheck |
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, MoneyCheck, ReadPathCheck |
@@ -69,6 +75,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
 | [Denomination](map/Denomination.md) | DenominationCheck, NewGameCheck |
 | [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
+| [Dials](map/Dials.md) | **none** |
 | [DistrictPicture](map/DistrictPicture.md) | MapCheck |
 | [DistrictPlan](map/DistrictPlan.md) | EarthTerrainCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
 | [EarthData](map/EarthData.md) | EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck |
@@ -84,6 +91,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck |
 | [FamilyModel](map/FamilyModel.md) | CrimeCheck, EducationCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, LongPlaytest, OutsideCheck, PopulationCheck |
 | [FamilyStructure](map/FamilyStructure.md) | BankCheck, BondCheck, CarCheck, ConsumptionCheck, CrimeCheck, EducationCheck, EquityCheck, ExchangeCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InvestCheck, LongPlaytest, OutsideCheck, PopulationCheck, RestaurantsCheck |
+| [FinancesScreen](map/FinancesScreen.md) | **none** |
 | [FloatingRateNote](map/FloatingRateNote.md) | DeskCheck, FloatLinkCheck |
 | [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, WaterCheck |
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
@@ -91,10 +99,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
 | [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [FoundingScreen](map/FoundingScreen.md) | **none** |
 | [Freight](map/Freight.md) | BuildCardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck |
 | [FreightView](map/FreightView.md) | FreightViewCheck, TradeBandCheck |
 | [FuelSplit](map/FuelSplit.md) | OilCheck |
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
+| [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
 | [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeskCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
@@ -107,49 +117,67 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, FoodProcessingCheck, ForeignCheck, GdpCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RoadCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
+| [GovernmentScreen](map/GovernmentScreen.md) | **none** |
 | [GridConversion](map/GridConversion.md) | ConversionCheck, EarthTerrainCheck, LandCheck |
 | [GridOffers](map/GridOffers.md) | BuildCardCheck, ConversionCheck, GridCheck, LandCheck, MapCheck |
+| [HarnessMap](map/HarnessMap.md) | **none** |
 | [Haulage](map/Haulage.md) | BondCheck, BuildCardCheck, FreightViewCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, RailCheck, TradeBandCheck, TruckCheck |
 | [Health](map/Health.md) | BuildAdviceCheck, ChartCheck, ChildcareCheck, DeathCareFirstCheck, HealthCheck, LongPlaytest, OutsideCheck, SicknessCheck, YearBookCheck |
 | [Healthcare](map/Healthcare.md) | BuildAdviceCheck, ChildcareCheck, DeathCareFirstCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, FreightViewCheck, GdpCheck, HaulageCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, PolicyPreviewCheck, PortCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
 | [HistoryGrapher](map/HistoryGrapher.md) | **none** |
 | [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ClockCheck, DeathRecordCheck, HistoryCheck, HouseholdMemoryCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, YearBookCheck |
+| [HistoryScreen](map/HistoryScreen.md) | **none** |
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyPreviewCheck, ReadPathCheck |
 | [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BondCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, WoodProductsCheck |
+| [Icons](map/Icons.md) | **none** |
 | [Inbox](map/Inbox.md) | InboxCheck, PlaytestFixCheck |
 | [IndustryPicture](map/IndustryPicture.md) | IndustryViewCheck |
 | [IndustryView](map/IndustryView.md) | IndustryViewCheck |
 | [InflationLinkedBond](map/InflationLinkedBond.md) | DeskCheck, FloatLinkCheck |
 | [InfrastructureManager](map/InfrastructureManager.md) | BuildCardCheck, CarCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LongPlaytest, PortCheck, RailCheck, ReadPathCheck, RoadCheck, SaveFileCheck, TradeCostCheck, TruckCheck |
+| [InfrastructureScreen](map/InfrastructureScreen.md) | **none** |
 | [InterchangeGround](map/InterchangeGround.md) | JunctionCheck, MapCheck |
 | [InterimLoan](map/InterimLoan.md) | CreditCheck, LongPlaytest |
 | [Investor](map/Investor.md) | CreditCheck |
+| [JavaScan](map/JavaScan.md) | **none** |
 | [JobType](map/JobType.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, EducationCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, WellCheck, WoodProductsCheck |
+| [Kept](map/Kept.md) | **none** |
+| [KeptBench](map/KeptBench.md) | KeptCheck |
 | [LabourMarket](map/LabourMarket.md) | ExpectationsCheck, LabourCheck, LongPlaytest, PolicyPreviewCheck |
+| [Ladder](map/Ladder.md) | BankCheck, ForeignDebtCheck, MortgageCheck |
 | [LandConversion](map/LandConversion.md) | ConversionCheck, LandCheck, ScaleCheck, WaterCheck |
 | [LandGrid](map/LandGrid.md) | ConversionCheck, GridCheck, LandCheck, MapCheck |
 | [LandManager](map/LandManager.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, LandCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
 | [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
+| [LandScreen](map/LandScreen.md) | **none** |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
+| [Levers](map/Levers.md) | **none** |
 | [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, CallCheck, CentralBankCheck, CreditCheck, DeskCheck, FloatLinkCheck, FundCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
 | [LuxuryRetail](map/LuxuryRetail.md) | **none** |
+| [ManualToMarkdown](map/ManualToMarkdown.md) | **none** |
 | [Manufacturing](map/Manufacturing.md) | BuildingDataCheck, CopperRefiningCheck, ManufacturingCheck |
 | [MapFrame](map/MapFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck, RailDrawCheck, TruckCheck |
 | [MapTiles](map/MapTiles.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck |
+| [MapView](map/MapView.md) | **none** |
+| [Maps](map/Maps.md) | **none** |
 | [Markets](map/Markets.md) | BooksCheck, BuildMenuCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, RailDepotCheck, WoodProductsCheck |
 | [Materials](map/Materials.md) | **none** |
 | [MediumTermBond](map/MediumTermBond.md) | AuctionCheck, BankCheck, CentralBankCheck, DeskCheck, MoneyCheck, RestructureCheck, TreasuryCheck |
 | [Migration](map/Migration.md) | CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck, ReadPathCheck, SaveFileCheck |
+| [MiniMap](map/MiniMap.md) | **none** |
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, ConservationCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PlanCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
+| [Money](map/Money.md) | TradeBandCheck |
 | [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BondCheck, BuildersFirstCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, DeathCareFirstCheck, EducationCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FundCheck, GroceryCheck, HistoryCheck, HoldersCheck, InvestCheck, LandCheck, LongPlaytest, MaterialsCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PortCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, SkipReportCheck, SupplierCreditCheck, TreasuryCheck, WoodProductsCheck |
+| [MonthOrder](map/MonthOrder.md) | **none** |
 | [Mortgage](map/Mortgage.md) | BooksCheck, CreditCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
+| [Names](map/Names.md) | StaleCheck |
 | [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperMiningCheck, DeskCheck, EducationCheck, FloatLinkCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WoodProductsCheck |
 | [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, ConstructionControlCheck, InboxCheck, KeptCheck, LongPlaytest, PlaytestFixCheck, SaveSlotCheck |
 | [Offending](map/Offending.md) | **none** |
@@ -159,8 +187,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [OrderBook](map/OrderBook.md) | BankCheck, BondCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, OrderBookCheck, ReadPathCheck, SaveFileCheck |
 | [OrphanHousehold](map/OrphanHousehold.md) | OutsideCheck |
 | [OutwardInvestment](map/OutwardInvestment.md) | AuctionCheck, BondCheck, BuybackCheck, CapitalFlowCheck, ExchangeCheck, HoldersCheck, LongPlaytest |
+| [Palette](map/Palette.md) | **none** |
 | [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, TradeCostCheck, WoodProductsCheck |
+| [PeopleScreen](map/PeopleScreen.md) | **none** |
+| [Pieces](map/Pieces.md) | IslandNetCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, GroceryCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
+| [PolicyScreen](map/PolicyScreen.md) | **none** |
 | [PopulationCohorts](map/PopulationCohorts.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck |
 | [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, PopulationCheck, SaveFileCheck, ScaleCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
@@ -173,6 +205,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck |
 | [RefineryView](map/RefineryView.md) | IndustryViewCheck, OilViewCheck, RefineryCheck, RefineryViewCheck |
 | [Refining](map/Refining.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, LongPlaytest, OilCheck, OilViewCheck, PortCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck |
+| [ReliefRenders](map/ReliefRenders.md) | **none** |
 | [Resource](map/Resource.md) | AutoBuildCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BondCheck, BuildCardCheck, BuildingDataCheck, CarCheck, ExpectationsCheck, ForeignCheck, GdpCheck, GroceryCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SupplierCreditCheck, WaterCheck |
@@ -181,36 +214,46 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SafetyType](map/SafetyType.md) | BuildAdviceCheck, BuildingDataCheck, CrimeCheck |
 | [SalesTaxLedger](map/SalesTaxLedger.md) | PolicyCheck |
 | [SaveCopy](map/SaveCopy.md) | SaveSlotCheck |
+| [SaveDump](map/SaveDump.md) | **none** |
 | [SaveHeader](map/SaveHeader.md) | SaveFileCheck, SaveSlotCheck, ScaleCheck |
 | [SaveWriter](map/SaveWriter.md) | SaveSlotCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck |
 | [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, ReadPathCheck, SectorFlowCheck |
+| [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, HomeRailCheck, RailCheck, SectorBooksCheck, TruckCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CentralBankCheck, SectorStatementCheck |
 | [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
+| [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
 | [ShipShapes](map/ShipShapes.md) | **none** |
 | [ShortTermTBill](map/ShortTermTBill.md) | AuctionCheck, BankCheck, CentralBankCheck, DeskCheck, FloatLinkCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
 | [Sickness](map/Sickness.md) | LongPlaytest, PopulationCheck, ReadPathCheck, SicknessCheck |
 | [SimulationEngine](map/SimulationEngine.md) | **none** |
 | [SocialSecurity](map/SocialSecurity.md) | HouseholdCheck, PolicyPreviewCheck |
+| [SourceTree](map/SourceTree.md) | StaleCheck |
 | [SpreadPlanner](map/SpreadPlanner.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LongPlaytest, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PortCheck, QuarryingCheck, RefineryCheck, RefineryViewCheck, WoodProductsCheck |
+| [Stale](map/Stale.md) | StaleCheck |
+| [Statement](map/Statement.md) | BankCheck, BondCheck, BooksCheck, CopperRefiningCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, MiningCheck, NewGameCheck, RailCheck, SectorBooksCheck, WellCheck, WoodProductsCheck |
+| [StatementView](map/StatementView.md) | **none** |
 | [StrategicReserve](map/StrategicReserve.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, SaveFileCheck |
 | [StreetCurves](map/StreetCurves.md) | MapCheck, PlanCheck |
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
+| [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck |
+| [TimeChart](map/TimeChart.md) | **none** |
 | [TimeSkipReport](map/TimeSkipReport.md) | AuctionCheck, HealthCheck, SkipReportCheck |
 | [Timing](map/Timing.md) | EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandNetCheck, KeptCheck, MapCheck, PlanCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck |
 | [TrackCurves](map/TrackCurves.md) | GatewayCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
 | [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [TradeBand](map/TradeBand.md) | TradeBandCheck |
+| [TradeScreen](map/TradeScreen.md) | **none** |
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckCheck, VanCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, RailCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TrainShapes](map/TrainShapes.md) | ReadPathCheck |
@@ -219,10 +262,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TreasuryLine](map/TreasuryLine.md) | BankCheck, CentralBankCheck, FundCheck, GroceryCheck, LongPlaytest |
 | [TruckSchedule](map/TruckSchedule.md) | TruckCheck, TruckRouteCheck |
 | [TruckShapes](map/TruckShapes.md) | **none** |
+| [UiProbe](map/UiProbe.md) | **none** |
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
+| [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck |
 | [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, LongPlaytest, MaterialsCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
 | [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ZoningCheck |
+| [Where](map/Where.md) | **none** |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
 | [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, IslandNetCheck, JunctionCheck, LandCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
@@ -230,6 +276,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, ReadPathCheck, ScaleCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurveCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
 | [Zoning](map/Zoning.md) | ForestryCheck, LandCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
+| [ZoningScreen](map/ZoningScreen.md) | **none** |
 | [ZoningView](map/ZoningView.md) | ZoningViewCheck |
 
 ## AgricultureCheck.java - 43 labelled assertions

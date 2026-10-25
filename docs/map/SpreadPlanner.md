@@ -1,6 +1,6 @@
 # SpreadPlanner.java - 556 lines · 47 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/SpreadPlanner.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/SpreadPlanner.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and
 > docs/studies/spec-materials.md 2.6): what a processing sector orders - of the

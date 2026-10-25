@@ -9,18 +9,42 @@
 #      ./batch-check.sh money bank    the same, the suite only the harnesses named so
 #      ./batch-check.sh --fast        compile, maps, Stale, git status: no suite
 #      ./batch-check.sh --timing      compile and the timing harnesses alone, hard: the ship gate's
+#      ./batch-check.sh --pick        the plain run, the suite only the harnesses tools/pick.sh picks
+#                                     from the diff against main, plus any names typed after it
+#
+#  One of --fast, --timing and --pick, and harness names, in any order. After a
+#  suite run the red lines are in target/checks/reds.txt, one "Harness | exit N"
+#  per failed harness and one "Harness | <failing line>" per failing line.
 #
 #  Not here: the 80-run ensemble, tools/ensemble/ensemble.sh, run only for a
 #  batch whose playtest trace moves (EN1, 2026-10-20; tools/ensemble/README.md).
+#
+#  Exit status, which is what ship.sh reads:
+#      0  it compiled, every harness run passed, Stale has no firm finding
+#      1  the compile, the classpath, the maps, Stale or the line endings failed,
+#         the pick's guard did, or the suite printed no summary or ran 0
+#         harnesses (AllChecks skips a name it does not know without a word)
+#      2  usage: an unknown option, two of --fast/--timing/--pick, --fast with
+#         names, a name no harness file has - said before anything is built
+#      3  nothing failed but the suite, and every red line is in main's
+#         recorded reds (the non-# lines of docs/notes/gate.txt, as origin/main
+#         has it, else main, else this tree)
+#      4  nothing else failed, but some red line is not recorded
+#  When something else failed as well, 1.
 #
 #  WHY (2026-10-13): a session paid for every line it read, and a batch's
 #  checks were a dozen calls - each re-reading the whole conversation - and
 #  their output: a line for every harness, a red one run again in full to find
 #  its assertion, Stale's report whole. This prints about ten lines when all is
 #  well and the failing assertions when it is not (AllChecks -f).
+#  BP1 (2026-10-25): a batch ran the whole suite three times (15-22 minutes
+#  each) and a person read every red to tell main's own from the batch's; now a
+#  batch runs --pick (tools/pick.sh: the harnesses that read what its diff
+#  changed), the one full suite is the gate's, and the red lines and the exit
+#  statuses 3 and 4 let the gate pass main's recorded reds, word for word, with
+#  nobody reading the log.
 #
-#  Exit status 0 only when it compiled, every harness run passed and Stale has
-#  no firm finding. On the cloud workbench (2 cores) one JVM at a time: under
+#  On the cloud workbench (2 cores) one JVM at a time: under
 #  the lock at $CBS_JVM_LOCK (default /home/claude/jvm.lock) when its folder
 #  exists and flock is installed. The PC's twin is Batch check.bat.
 #
@@ -35,17 +59,33 @@
 
 cd "$(dirname "$0")" || exit 1
 
+# --- the options: read and checked first, before the lock and the compile (BP1) ---
+FAST=0; TIMING=0; PICK=0; NAMES=""
+bad() { echo "batch-check: $1" >&2; echo "usage: ./batch-check.sh [--fast | --timing | --pick] [harness names]   (no names with --fast)" >&2; exit 2; }
+HARNESS_FILES=$(ls src/main/java/ham/citybuildersim 2>/dev/null | sed -n 's/\.java$//; /Check$/p; /^LongPlaytest$/p')
+for a in "$@"; do
+    case "$a" in
+        --fast)   FAST=1 ;;
+        --timing) TIMING=1 ;;
+        --pick)   PICK=1 ;;
+        -*)       bad "unknown option $a" ;;
+        '')       bad "an empty harness name" ;;
+        *)        if [ -n "$HARNESS_FILES" ] && ! printf '%s\n' "$HARNESS_FILES" | grep -q -i -F -- "$a"; then
+                      bad "no harness file is named like '$a' (AllChecks would run none and say nothing)"
+                  fi
+                  NAMES="$NAMES $a" ;;
+    esac
+done
+[ $((FAST + TIMING + PICK)) -le 1 ] || bad "--fast, --timing and --pick exclude each other"
+[ "$FAST" = 0 ] || [ -z "$NAMES" ] || bad "--fast runs no suite, so the names$NAMES select nothing"
+
 LOCK="${CBS_JVM_LOCK:-/home/claude/jvm.lock}"
 if [ -z "$CBS_LOCKED" ] && command -v flock >/dev/null 2>&1 && [ -d "$(dirname "$LOCK")" ]; then
     export CBS_LOCKED=1
     exec flock "$LOCK" "$0" "$@"
 fi
 
-FAST=0; TIMING=0
-case "$1" in
-    --fast) FAST=1; shift ;;
-    --timing) TIMING=1; shift ;;
-esac
+set -f; set -- $NAMES; set +f   # from here "$@" is the harness names alone
 case "$(uname -s)" in
     MINGW*|MSYS*|CYGWIN*) WINDOWS=1; SEP=';' ;;
     *) WINDOWS=0; SEP=':' ;;
@@ -55,6 +95,63 @@ OUT=target/checks
 mkdir -p "$OUT"
 FAILED=0
 quiet() { grep -v '^Picked up JAVA_TOOL_OPTIONS'; }   # the cloud's proxy settings, said by every JVM
+SUITE_EXIT=0   # 0 green or no suite, 3 only main's recorded reds, 4 reds not recorded (the exit status, if nothing else failed)
+RUNSUITE=1
+
+# the suite log's reds (BP1), one line each: "Harness | exit N" for a failed harness, "Harness | <line>" for each
+# failing line AllChecks -f printed under it, its 4-space indent stripped; a section title is not a failing line
+reds_of() {
+    awk '
+    /^[A-Za-z0-9_]+ +FAILED - exit [0-9]+/ { h = $1; nofail = 0; infail = 1; print h " | exit " $5; next }
+    !/^    / { infail = 0; next }
+    !infail { next }
+    {
+        t = substr($0, 5)
+        sub(/^[ \t]+/, "", t); sub(/[ \t\r]+$/, "", t)
+        if (t == "(no FAIL line; its last lines:)") { print h " | (no FAIL line)"; nofail = 1; next }
+        if (nofail) next                                   # a harness that died some other way: its last lines are not failures
+        if (t ~ /^---[ \t].*[ \t]---$/) next
+        if (t ~ /^\.\.\. [0-9]+ failing lines in all: /) sub(/: .*$/, "", t)   # the log path differs by machine
+        if (t != "") print h " | " t
+    }' "$1"
+}
+
+# main's recorded reds: the non-# lines of docs/notes/gate.txt as origin/main has it, else main, else this tree, else none
+recorded_reds() {
+    for r in origin/main main; do
+        if git cat-file -e "$r:docs/notes/gate.txt" 2>/dev/null; then git show "$r:docs/notes/gate.txt"; return 0; fi
+    done
+    [ -f docs/notes/gate.txt ] && cat docs/notes/gate.txt
+    return 0
+}
+
+# the suite is red: 3 when every red line is one main records, else 4 with the lines that are not
+judge_reds() {
+    recorded_reds | tr -d '\r' | grep -v -e '^#' -e '^[[:space:]]*$' > "$OUT/known-reds.txt"
+    if [ -s "$OUT/known-reds.txt" ]; then
+        grep -v -x -F -f "$OUT/known-reds.txt" "$OUT/reds.txt" > "$OUT/new-reds.txt"
+    else
+        cp "$OUT/reds.txt" "$OUT/new-reds.txt"
+    fi
+    NEW=$(grep -c . "$OUT/new-reds.txt")
+    if ! grep -q ' | exit [0-9]*$' "$OUT/reds.txt"; then
+        FAILED=1
+        echo "suite     FAILED - the log says harnesses failed but no red line could be read from it: $OUT/suite.txt"
+        return 0
+    fi
+    if [ "$NEW" = 0 ]; then
+        SUITE_EXIT=3
+        echo "suite     red as main only - $(sed -n 's/ | exit [0-9]*$//p' "$OUT/reds.txt" | paste -sd, - | sed 's/,/, /g') (docs/notes/gate.txt)"
+    else
+        SUITE_EXIT=4
+        echo "suite     FAILED - $NEW new red line(s), main's recorded reds aside:"
+        head -30 "$OUT/new-reds.txt" | sed 's/^/    /'
+        [ "$NEW" -le 30 ] || echo "    ... $((NEW - 30)) more: $OUT/new-reds.txt"
+    fi
+}
+
+# the end: a failure of anything but the suite's harnesses is 1; else the suite's own 0, 3 or 4
+finish() { [ "$FAILED" = 0 ] || exit 1; exit "$SUITE_EXIT"; }
 
 # --- compile ---------------------------------------------------------------
 t=$(date +%s)
@@ -76,6 +173,25 @@ if [ ! -s target/classpath.txt ] || [ pom.xml -nt target/classpath.txt ]; then
         || { echo "classpath FAILED - $OUT/classpath.txt"; exit 1; }
 fi
 CP="target/classes$SEP$(cat target/classpath.txt)"
+
+# --- --pick: the suite narrowed to the harnesses the diff needs (tools/pick.sh, BP1) ----
+if [ "$PICK" = 1 ]; then
+    PICKED=$(sh tools/pick.sh 2> "$OUT/pick.txt"); PRC=$?
+    cat "$OUT/pick.txt"
+    if [ "$PRC" != 0 ]; then
+        FAILED=1; RUNSUITE=0
+        echo "pick      FAILED (exit $PRC) - no suite: $OUT/pick.txt"
+    else
+        case "$PICKED" in
+            ALL)  set -- ;;   # the whole suite, whatever was typed
+            NONE) if [ "$#" = 0 ]; then
+                      RUNSUITE=0
+                      echo "suite     none picked - no harness reads what changed; the gate runs the suite"
+                  fi ;;
+            *)    set -f; set -- $PICKED "$@"; set +f ;;
+        esac
+    fi
+fi
 
 # --- timing: hard, or soft while another batch's JVM or the game runs (TM1) --
 others() {   # "<batch JVMs> <game processes>" on the machine, this run not yet among them
@@ -123,23 +239,30 @@ EOF
 fi
 
 # --- the suite -------------------------------------------------------------
-if [ "$FAST" = 0 ]; then
+if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ]; then
     touch "$OUT/.started"   # the logs this run writes are newer; an earlier run's are not read
     java $TIMED -cp "$CP" ham.citybuildersim.AllChecks -f "$@" 2>&1 | quiet | tr -d '\r' > "$OUT/suite.txt"
-    if grep -q ' 0 failed$' "$OUT/suite.txt"; then
-        echo "suite     OK - $(grep 'harness.* run in ' "$OUT/suite.txt" | sed 's/:.*//')"
-        grep ' SOFT, not counted ' "$OUT/suite.txt" | sed 's/^/timing    /'
-    else
+    reds_of "$OUT/suite.txt" > "$OUT/reds.txt"
+    if ! grep -q -E '^[0-9]+ harness(es)? run in ' "$OUT/suite.txt"; then
         FAILED=1
-        echo "suite     FAILED"
-        sed '/^$/d' "$OUT/suite.txt" | sed 's/^/    /'
+        echo "suite     FAILED - no summary line, the run did not finish; its last lines:"
+        sed '/^$/d' "$OUT/suite.txt" | tail -15 | sed 's/^/    /'
+    elif grep -q '^0 harnesses run' "$OUT/suite.txt"; then
+        FAILED=1
+        echo "suite     FAILED - 0 harnesses run: no name matches a harness AllChecks runs (it skips an unknown one without a word)"
+        sed '/^$/d' "$OUT/suite.txt" | head -5 | sed 's/^/    /'
+    elif grep -q ' 0 failed$' "$OUT/suite.txt"; then
+        echo "suite     OK - $(grep 'harness.* run in ' "$OUT/suite.txt" | sed 's/:.*//')"
+    else
+        judge_reds
     fi
+    grep ' SOFT, not counted ' "$OUT/suite.txt" | sed 's/^/timing    /'
     # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX
     find "$OUT" -name 'Earth*Check.log' -newer "$OUT/.started" -exec grep -l '^earth-2.bin not named' {} + 2>/dev/null | grep -q . \
         && echo "    note: no earth-2.bin here, so the Earth harnesses' full-file sections did not run"
     grep 'skipped (needs JavaFX' "$OUT/suite.txt" | sed 's/^/    note: /'
 fi
-[ "$TIMING" = 0 ] || exit $FAILED   # --timing: the timing harnesses and nothing more
+[ "$TIMING" = 0 ] || finish   # --timing: the timing harnesses and nothing more
 
 # --- the maps ----------------------------------------------------------------
 if java -cp target/classes ham.citybuildersim.tools.Maps > "$OUT/maps.txt" 2>&1; then
@@ -170,4 +293,4 @@ if [ "$CRLF" != 0 ]; then
     git ls-files --eol | grep 'w/crlf' | grep -v -i '\.bat$\|\.cmd$' | head -10 | sed 's/^.*\t/    /'
 fi
 
-exit $FAILED
+finish

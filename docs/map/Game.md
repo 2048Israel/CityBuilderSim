@@ -1,6 +1,6 @@
 # Game.java - 18,275 lines · 765 methods · 22 constants · model
 
-`ham/citybuildersim/Game.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Game.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 

@@ -1,6 +1,6 @@
 # ReliefRenders.java - 152 lines · 6 methods · 2 constants · tools
 
-`ham/citybuildersim/tools/ReliefRenders.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/ReliefRenders.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > Renders the map's relief for review: six PNG files drawn by the game's own painters, headless.
 > 

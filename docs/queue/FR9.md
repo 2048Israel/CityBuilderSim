@@ -3,8 +3,9 @@
 Jerus, 2026-10-20, at the review desk: "the trucks on screen only flow for a
 bit then disappear into the void... but still inside the city", then "Queue
 it" on one truck followed the whole way. The map's alone: nothing in the
-model reads it, and the playtest's trace stays byte-identical. Bump
-`GameVersion.VERSION` (player-visible).
+model reads it, and the playtest's trace stays byte-identical. A new
+version (player-visible): `{next}` in its ship file, and `ship.sh` sets
+`GameVersion.VERSION` (BP1).
 
 ## What is there (FR5, 0.8.8; FR5-notes §1, ★5, ★6)
 
@@ -51,6 +52,7 @@ start the day (FR5-notes §5).
 ## Done when
 
 The suite green but what was already red, the playtests byte-identical, the
-maps regenerated, the changelog's block in `docs/notes/changelog.md`, this
-row out of `QUEUE.md`, and the renders of a played city beside the notes for
+maps regenerated, the changelog's block in its ship file,
+`docs/queue/FR9-ship.md` (`ship.sh` puts it in `docs/notes/changelog.md` and
+takes this row out of `QUEUE.md`, BP1), and the renders of a played city beside the notes for
 Jerus's eye.

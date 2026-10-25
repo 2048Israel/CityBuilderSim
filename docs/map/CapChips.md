@@ -1,6 +1,6 @@
 # CapChips.java - 190 lines · 8 methods · 0 constants · interface
 
-`ham/citybuildersim/ui/CapChips.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/CapChips.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > The highest yield a sale will take, as three chips and a yield box: fair plus
 > a point (the default), a yield the player names, or Fill it (CD2, D28).

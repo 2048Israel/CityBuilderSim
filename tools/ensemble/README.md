@@ -13,8 +13,10 @@ one CSV row a month), `ensemble.sh` the runner, `score.py` the scorer, and
 Run it only for a batch whose playtest trace moves. A batch whose trace is
 byte-identical to main's skips it and says so in its notes. It compares with
 the newest `docs/ensemble/<version>.md` and never reruns main. A batch that
-moved the trace commits its run's `baseline.md` as `docs/ensemble/<version>.md`
-in its merge, and that file is the next batch's baseline.
+moved the trace commits its run's `baseline.md` as `docs/ensemble/<batch id>.md`
+on its branch; `ship.sh` names it `docs/ensemble/<version>.md` in the merge, by
+the version it sets at the gate (BP1, 2026-10-24), and that file is the next
+batch's baseline.
 
 ## Running it
 

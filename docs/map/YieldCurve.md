@@ -1,6 +1,6 @@
 # YieldCurve.java - 278 lines · 19 methods · 2 constants · model
 
-`ham/citybuildersim/YieldCurve.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/YieldCurve.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > The city's curve: a discount factor for every month to fifty years, built
 > from the dial the market expects, the credit spreads, and the shape the term

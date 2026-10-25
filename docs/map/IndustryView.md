@@ -1,6 +1,6 @@
 # IndustryView.java - 883 lines · 64 methods · 6 constants · model
 
-`ham/citybuildersim/IndustryView.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/IndustryView.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > Each materials industry's month as a picture (0.7.141, batch I11;
 > docs/studies/spec-materials.md 2.13): where what it worked came from - its

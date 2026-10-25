@@ -8,12 +8,18 @@ stuff".
 
 - **The top row is next.** A new batch goes on the end unless Jerus places it.
 - **Done: delete the row**, in the merge that ships it. What shipped is the
-  changelog's to say; this file keeps no history.
+  changelog's to say; this file keeps no history. Since BP1 `ship.sh` deletes
+  the row in the merge and adds the rows of the batch's
+  `docs/queue/<id>-ship.md`; a batch branch leaves this file alone.
 - **Not done, or done in part: delete the row and put what was NOT done under
   Pending**, with why - it failed, it waits on Jerus's decision, a caveat, a
-  bug.
+  bug. A blocked batch moves to Pending at once, pushed the same turn, so the
+  next row in its lane can start (2026-10-24).
 - **A Pending row leaves when Jerus reviews it**: back into the queue, or
-  dropped. Nobody else moves one.
+  dropped. Nobody else moves one, but for this: the orchestrator may settle a
+  row that waits only on calls with a recommendation, taking the recommended
+  way and saying which and why; he can overturn one later (Jerus,
+  2026-10-23: "dont most end up being rec? its only a few that arent").
 - **No detail here.** The brief holds it - a study in `docs/studies/`, a note
   in `docs/queue/`, or a file in the project, named.
 

@@ -1,6 +1,6 @@
 # PayTier.java - 125 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/PayTier.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PayTier.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > The six pay levels a household can be in.
 > 
