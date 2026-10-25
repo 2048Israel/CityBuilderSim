@@ -107,6 +107,10 @@ Options: `--model deepseek-flash` (cheaper and faster; for lookups);
 - **The harness:** a small existing one to model, each section and the
   fixture that causes it, and its line in `AllChecks.HARNESSES`.
 - **Done means:** `compile` clean and the harness exits 0 with no FAIL line.
+- **Timing** (a Sonnet subagent's brief): run a harness through
+  `./batch-check.sh <Name>`, which always times soft. A bare
+  `java ... <Name>` times hard, so it takes `-Dcbs.timing=soft` while
+  `tools/jvms.ps1` counts another batch's JVM or the game (TM2).
 
 ### The review
 
@@ -151,9 +155,12 @@ What the gate sent back in the test, and what DeepSeek cannot do itself:
   turns: do not count on them.
 - **One JVM at a time on the cloud workbench:** there the script's compile
   and harness wait on the lock `batch-check.sh` takes (`$CBS_JVM_LOCK`). The
-  PC has no lock: batches check side by side (TM1), and a harness the script
-  runs times hard, so a timing red it reports while another batch or the game
-  runs is rerun through `batch-check.sh` or `Batch check.bat`, which time soft.
-  They decide soft or hard once, as the suite starts, never per harness
-  (lesson d, `docs/batch.md`); a timing red at the gate `ship.sh` compares
-  with main's own timing run, the same day on the same machine.
+  PC has no lock: batches check side by side (TM1). A harness the script runs
+  takes one look at the machine just before its JVM (TM2: `tools/jvms.ps1` on
+  Windows, `ps` elsewhere) and times soft when another batch's JVM or the game
+  runs, saying so on the first line of its result ("timing soft - ... a timing
+  miss says SOFT and is not counted"); alone, it times hard. `batch-check.sh`
+  times every run soft but the gate's `--timing`; `Batch check.bat` decides
+  soft or hard once, as the suite starts, never per harness (lesson d,
+  `docs/batch.md`); a timing red at the gate `ship.sh` compares with main's
+  own timing run, the same day on the same machine.

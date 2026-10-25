@@ -156,6 +156,24 @@ def mvn():
     return shutil.which("mvn") or shutil.which("mvn.cmd") or "mvn"
 
 
+def others():
+    """One look at the machine, as the check scripts take it: (other batches' JVMs, the game's processes), 0 0 if unreadable."""
+    game_re = re.compile(r'ham\.citybuildersim\.CityBuilderSim\b|CityBuilderSim-[^/"]*\.jar')
+    try:
+        if os.name == "nt":
+            r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "tools/jvms.ps1"],
+                               cwd=REPO, capture_output=True, text=True, timeout=60)
+            batch, game = r.stdout.split()[:2]
+            return int(batch), int(game)
+        lines = subprocess.run(["ps", "-eo", "args"], capture_output=True, text=True, timeout=30).stdout.splitlines()
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return 0, 0
+    game = sum(1 for l in lines if game_re.search(l))
+    batch = sum(1 for l in lines if re.search(r"ham\.citybuildersim\.", l)
+                and not re.search(r"ham\.citybuildersim\.CityBuilderSim\b", l))
+    return batch, game
+
+
 def t_run_check(name, args=""):
     """Whitelisted commands only."""
     if name == "compile":
@@ -175,10 +193,14 @@ def t_run_check(name, args=""):
             return cap(f"compile failed (exit {code}) before the harness:\n{out[-6000:]}")
         if not os.path.exists(os.path.join(REPO, "target", "classes", "ham", "citybuildersim", h + ".class")):
             return f"no such harness class: ham.citybuildersim.{h}"
-        code, out = run(["java", "-cp", os.pathsep.join(["target/classes", GSON]), f"ham.citybuildersim.{h}"],
+        batch, game = others()  # one look just before the JVM, as the check scripts take it (TM2)
+        who = " and ".join(([f"{batch} other batch JVM(s)"] if batch else []) + (["the game"] if game else []))
+        soft = ["-Dcbs.timing=soft"] if who else []  # else it times hard, as a bare java run does
+        code, out = run(["java"] + soft + ["-cp", os.pathsep.join(["target/classes", GSON]), f"ham.citybuildersim.{h}"],
                         timeout=900, jvm=True)
         fails = [l for l in out.splitlines() if "FAIL" in l]
-        head = f"{h}: exit {code}, {len(fails)} lines with FAIL\n"
+        head = f"timing soft - {who} running: a timing miss says SOFT and is not counted\n" if who else ""
+        head += f"{h}: exit {code}, {len(fails)} lines with FAIL\n"
         if fails:
             head += "FAIL lines:\n" + "\n".join(fails[:40]) + "\n--- tail of output ---\n"
         return cap(head + out[-5000:])

@@ -652,7 +652,9 @@ adds its line here, not in `CLAUDE.md`.
     tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
                                          Batch check.bat, which times soft while either runs, and batch-check.sh and
                                          ship.sh, which wait for the batches before the gate's hard timing (TM1;
-                                         batch-check.sh times every other run soft since BP1)
+                                         batch-check.sh times every other run soft since BP1); -Quiet is that wait:
+                                         four empty looks in a row, 15 s apart, 30 minutes at most, the game not
+                                         waited for unless CBS_QUIET_GAME=1 (TM2)
     tools/pick.sh                        the harnesses that read what a branch changed, picked from its diff against
                                          main through docs/harnesses.md's reverse index, with no JVM: one line, the
                                          names, ALL or NONE, for batch-check.sh --pick, and on stderr whether the
@@ -667,3 +669,7 @@ adds its line here, not in `CLAUDE.md`.
     tools/ship-selftest.sh               ship.sh run against a throwaway local origin with a stub batch-check.sh, so
                                          no JVM: its stops and its records in about two minutes; run it after any
                                          change to ship.sh (BP1's review, 2026-10-25)
+    tools/quiet-selftest.sh              the timing wait (jvms.ps1 -Quiet, batch-check.sh --timing, Batch check.bat
+                                         --timing) run against real JVMs that come and go: a runner with gaps, a fake
+                                         game, the cap, the .bat's refusal, in about three minutes; run it after any
+                                         change to the wait (TM2, 2026-10-25)

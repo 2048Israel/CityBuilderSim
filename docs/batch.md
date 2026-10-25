@@ -244,7 +244,9 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
    `docs/ensemble/`) gates on `--fast`: no suite, no timing, `gate.txt`
    untouched. After any change to `ship.sh`, `sh tools/ship-selftest.sh`
    runs it against a throwaway local origin with a stub `batch-check.sh`:
-   no JVM, about two minutes.
+   no JVM, about two minutes. After any change to the timing wait
+   (`tools/jvms.ps1`, the `--timing` of the two check scripts),
+   `sh tools/quiet-selftest.sh` tries it against real JVMs that come and go.
 
 ## The screen-check session
 
@@ -269,12 +271,19 @@ and Build* or `mvn -q compile`. Sessions check with Git Bash's
 too; without it it writes nothing git tracks, because the PC's copy pulls
 `main` and must stay clean). Batches check side by side here, and alongside
 Jerus's game, which nobody waits on him to close: `batch-check.sh` times
-every run soft but `--timing`, which waits for the other batches' JVMs and
-runs the timing harnesses alone and hard. `Batch check.bat` still times
-soft only while another batch's JVM or the game runs, and decides **once,
-at its start**, so a run of it that began alone stays hard when another
-starts beside it (lesson d). TM2 is queued to make `--timing` wait for a
-quiet minute, not one empty look.
+every run soft but `--timing`, which waits for a quiet minute and then runs
+the timing harnesses alone and hard. A quiet minute is four empty looks in a
+row, 15 s apart (`tools/jvms.ps1 -Quiet`, and the same loop in sh over `ps`
+off the PC); a look that finds another batch's JVM starts the count again,
+because a runner that starts its JVMs one after another leaves a gap of a
+second or two that one look can fall in (TM2). It waits 30 minutes at most,
+then runs hard without the quiet minute and says so. The game is not waited
+for: a line says it runs, and `ship.sh` judges a timing red beside it against
+main's own timing run, beside it as well; `CBS_QUIET_GAME=1` on the gate's
+command waits for it too. `Batch check.bat` still times soft only while another batch's
+JVM or the game runs, and decides **once, at its start**, so a run of it that
+began alone stays hard when another starts beside it (lesson d); its
+`--timing` waits as above.
 
 A batch shipped from the PC ships from a temp clone of `origin`, never this
 folder: `%TEMP%\cbs-<id>` (the scratchpad's path is past Windows' 260
