@@ -1,4 +1,4 @@
-# ET2 - Buildable by slope (0.8.42, 2026-10-24)
+# ET2 - Buildable by slope (0.8.43, 2026-10-24)
 
 The brief: `QUEUE.md`'s ET2 row and `docs/studies/spec-earth2-terrain.md` §10's ET2 row, with
 §3.2, §3.4, §4.1, §4.2 (the order of use), §4.4; Jerus's decisions of 2026-10-12 ("all rec": D6,
@@ -92,7 +92,7 @@ reviewed and committed here, and one fix of the land buyers found in the Medell�
 3. **The land buyer buys steep ground it cannot build on**: Medellín ends with 5.4 of its 72.4 km²
    steep and idle, no mine built. ET3's price by class (steep at the base) is the fix (rec.).
 4. **Works on ice (D9)**: a batch of its own with ET3 (rec.), or later.
-5. **Earth cities saved before 0.8.42 are refused** (the Earth floor at 46); generated cities load.
+5. **Earth cities saved before 0.8.43 are refused** (the Earth floor at 46); generated cities load.
 
 ## Found on the way
 

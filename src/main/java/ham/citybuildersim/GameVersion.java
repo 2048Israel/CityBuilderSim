@@ -7338,7 +7338,7 @@ public final class GameVersion {
      *     missing key reads flat); SAVE_FORMAT 45 unchanged, every earth-1
      *     city refused by its identity.
      *
-     * 0.8.42 (2026-10-24) - ET2, BUILDABLE BY SLOPE
+     * 0.8.43 (2026-10-24) - ET2, BUILDABLE BY SLOPE
      * (docs/queue/ET2-notes.md; docs/studies/spec-earth2-terrain.md 3.2,
      * 3.4, 4.1, 4.2, 4.4; D6, D7, D9, D21; E7 star 10).
      *   - LandManager, BUILDABLE BY SLOPE: buildings on flat then foothill,
@@ -7353,7 +7353,7 @@ public final class GameVersion {
      *     floor (EarthSite.SLOPE_FORMAT) 46, OLDEST_LOADABLE_FORMAT 45.
      *   - Harness: SlopeCheck (new); SlopeRenders, docs/queue/ET2/.
      */
-    public static final String VERSION = "0.8.42";
+    public static final String VERSION = "0.8.43";
 
     /**
      * The save shape.
