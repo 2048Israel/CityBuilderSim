@@ -248,6 +248,9 @@ public class LandManager {
     /** The part of allocatedSqFt that works stand on (ET2, BUILDABLE BY SLOPE): the mines, quarries and wells that may stand on any ground (Game.standsAnywhere()). DataSave's landWorksSqFt. */
     private double worksSqFt;
 
+    /** The part of allocatedSqFt that highways and railway lines stand on (ET4, BUILDABLE BY SLOPE): a third use of the one pool, spread over every class of ground in the city's proportions (Game.isRun()). DataSave's landRunsSqFt. */
+    private double runsSqFt;
+
     /** The foothill prepared so far for buildings, square feet (ET2): it never falls, a pad once cut staying cut. DataSave's landPreparedSqFt. */
     private double preparedSqFt;
 
@@ -421,17 +424,20 @@ public class LandManager {
     /**
      * The share of the city's ground built on, unclamped (ET2): allocated over owned, as it always was - and where
      * the city owns steep ground, the share of the ground a building may use, the built ground less the works on the
-     * steep over the owned less the steep (BUILDABLE BY SLOPE). WHY: the steep ground no works stands on is not room
-     * for a building, and counting it as room told the land buyers a city was 89% full while no building could stand
-     * anywhere - the Medellín playtest stopped buying for a thousand months and ended at half its people. 1 with no
-     * ground; on a generated world (no steep) allocated over owned, to the bit.
+     * steep, and the steep ground the highways and railway lines stand on (ET4), over the owned less the steep
+     * (BUILDABLE BY SLOPE). WHY: the steep ground no works stands on is not room for a building, and counting it as
+     * room told the land buyers a city was 89% full while no building could stand anywhere - the Medellín playtest
+     * stopped buying for a thousand months and ended at half its people; the steep ground a run stands on is no
+     * more room than a works's is. 1 with no ground; on a generated world (no steep) allocated over owned, to the bit.
      */
     public double getUsedShare() {
         if (!(ownedSqFt > 0)) return 1;
         double slope = slopeSqFt();
         if (!(slope > 0)) return allocatedSqFt / ownedSqFt;
         double room = ownedSqFt - slope;
-        return room > 0 ? (allocatedSqFt - split().worksOnSlope()) / room : 1;
+        if (!(room > 0)) return 1;
+        Split s = split();
+        return (allocatedSqFt - s.worksOnSlope() - s.runsOnSlope()) / room;
     }
 
     public double getAvailableBlocks()  { return getAvailableSqFt() / BLOCK_SQ_FT; }
@@ -1649,7 +1655,12 @@ public class LandManager {
 
     /** ...for a works that may stand anywhere when `works` (ET2): on any dry ground, steep ground too (freeFor(sector, works)); a building's, as above, on flat and foothill only. */
     public boolean canAllocate(double sqFt, String sector, boolean works) {
-        return sqFt <= freeFor(sector, works);
+        return canAllocate(sqFt, sector, works ? Use.WORKS : Use.BUILDING);
+    }
+
+    /** ...for what the ground is to be used for (ET4): a building's on flat and foothill, a works's on any dry ground, a run's on every class in the city's proportions (freeFor(sector, use)). */
+    public boolean canAllocate(double sqFt, String sector, Use use) {
+        return sqFt <= freeFor(sector, use);
     }
 
     /**
@@ -1679,14 +1690,27 @@ public class LandManager {
      * before the ground is taken.
      */
     public boolean allocate(double sqFt, String sector, boolean works) {
-        if (!canAllocate(sqFt, sector, works)) {
+        return allocate(sqFt, sector, works ? Use.WORKS : Use.BUILDING);
+    }
+
+    /**
+     * ...for what the ground is to be used for (ET4): a works's is counted in worksSqFt, a run's - a highway's or a
+     * railway line's - in runsSqFt, which stands on every class of ground in the city's proportions (split()). A run
+     * prepares no pad itself, but where its share of the flat pushes buildings from the flat onto foothill, those
+     * pads are cut for them: preparedSqFt rises by exactly that, read before the ground is taken
+     * (foothillDisplacedByRunSqFt()), so the next building is not charged for pads the run displaced.
+     */
+    public boolean allocate(double sqFt, String sector, Use use) {
+        if (!canAllocate(sqFt, sector, use)) {
             return false;
         }
-        double prepare = foothillToPrepareSqFt(sqFt, sector, works);
+        double prepare = use == Use.RUN ? foothillDisplacedByRunSqFt(sqFt, 0, 0, 0)
+                : foothillToPrepareSqFt(sqFt, sector, use);
         double fromZone = zoning.zone(sector) == null ? 0 : Math.min(sqFt, heldBy(sector));
         clearFor(sqFt, fromZone, sector);
         allocatedSqFt += sqFt;
-        if (works) worksSqFt += sqFt;
+        if (use == Use.WORKS) worksSqFt += sqFt;
+        if (use == Use.RUN) runsSqFt += sqFt;
         if (prepare > 0) preparedSqFt += prepare;
         if (fromZone > 0) zoning.addUsed(sector, fromZone);
         return true;
@@ -1708,9 +1732,19 @@ public class LandManager {
 
     /** ...a works's when `works` (ET2): its ground leaves worksSqFt too, never below nothing. The foothill prepared stays prepared. */
     public void release(double sqFt, String sector, boolean works) {
+        release(sqFt, sector, works ? Use.WORKS : Use.BUILDING);
+    }
+
+    /**
+     * ...for what the ground was used for (ET4): a works's leaves worksSqFt, a run's runsSqFt, never below nothing, and
+     * the two together never above the ground built. The foothill prepared stays prepared.
+     */
+    public void release(double sqFt, String sector, Use use) {
         allocatedSqFt = Math.max(allocatedSqFt - sqFt, 0);
-        if (works) worksSqFt = Math.max(worksSqFt - sqFt, 0);
+        if (use == Use.WORKS) worksSqFt = Math.max(worksSqFt - sqFt, 0);
+        if (use == Use.RUN) runsSqFt = Math.max(runsSqFt - sqFt, 0);
         if (worksSqFt > allocatedSqFt) worksSqFt = allocatedSqFt;
+        if (runsSqFt > allocatedSqFt - worksSqFt) runsSqFt = Math.max(allocatedSqFt - worksSqFt, 0);
         zoning.releaseUsed(sector, sqFt);
     }
 
@@ -1737,12 +1771,17 @@ public class LandManager {
      * foothill and no steep ground is priced exactly as it was, the old expression.
      */
     public double priceFor(double sqFt, String sector, boolean works) {
+        return priceFor(sqFt, sector, works ? Use.WORKS : Use.BUILDING);
+    }
+
+    /** ...for what the ground is to be used for (ET4): a run's plot is priced at the city's proportions of every class (plotByRelief(sqFt, Use.RUN)). */
+    public double priceFor(double sqFt, String sector, Use use) {
         double inZone = zoning.zone(sector) == null ? 0 : Math.min(Math.max(0, sqFt), heldBy(sector));
         if (flatOnly()) {
             if (!(inZone > 0)) return priceFor(sqFt);
             return (sqFt - inZone) * pricePerSqFt + inZone * groundPriceFor(sector);
         }
-        return pricedByClass(plotByRelief(sqFt, works), sqFt, inZone, sector);
+        return pricedByClass(plotByRelief(sqFt, use), sqFt, inZone, sector);
     }
 
     /**
@@ -1761,12 +1800,17 @@ public class LandManager {
      * expression for a city with no foothill and no steep ground.
      */
     public double buybackPriceFor(double sqFt, String sector, boolean works) {
+        return buybackPriceFor(sqFt, sector, works ? Use.WORKS : Use.BUILDING);
+    }
+
+    /** ...for what the ground was used for (ET4): a run's comes back at the city's proportions of every class (releasedByRelief(sqFt, Use.RUN)). */
+    public double buybackPriceFor(double sqFt, String sector, Use use) {
         double inZone = Math.min(Math.max(0, sqFt), zoning.used(sector));
         if (flatOnly()) {
             if (!(inZone > 0)) return priceFor(sqFt);
             return (sqFt - inZone) * pricePerSqFt + inZone * groundPriceFor(sector);
         }
-        return pricedByClass(releasedByRelief(sqFt, works), sqFt, inZone, sector);
+        return pricedByClass(releasedByRelief(sqFt, use), sqFt, inZone, sector);
     }
 
     /** Records a sale to a business. The caller moves the cash. */
@@ -1782,7 +1826,7 @@ public class LandManager {
     }
 
     /* =====================================================================
-       BUILDABLE BY SLOPE (ET2, 2026-10-24; spec-earth2-terrain 3.2, 4.2, 4.4)
+       BUILDABLE BY SLOPE (ET2, 2026-10-24; ET4, 2026-10-25; spec-earth2-terrain 3.2, 4.2, 4.3, 4.4)
 
        WHAT STANDS WHERE. The city's dry ground is flat, foothill, steep and
        very steep (CityLand's relief, centre and purchases). Buildings stand
@@ -1794,26 +1838,74 @@ public class LandManager {
        of use, as clearFor() takes bare ground before forest (4.2). The
        model has no positions, so each is an amount.
 
-       ONE POOL, TWO FIGURES. allocatedSqFt is still the one pool every
-       building takes from. worksSqFt is the part of it works stand on, and
-       preparedSqFt the foothill prepared so far for buildings: it never
-       falls, a pad once cut staying cut, so ground freed and built on again
-       is not prepared twice. Everything else is derived, by one helper
-       (split()) that nothing re-derives:
+       A THIRD USE: THE RUNS (ET4; 4.3). A highway or a railway line
+       (Game.isRun(): the Elevated Highway, the Rail Spur, the Freight Line;
+       the Rail Terminal and Depot are yards, buildings) is a run, and its
+       land comes from ALL the ground, "spread over the classes in the city's
+       proportions, not taken from the buildable pool alone, so a mountain
+       city's highways use its steep ground as real ones do". Its flat,
+       foothill and slope parts are its ground times each class's share of
+       the city's dry ground, taken off the classes BEFORE the works and the
+       buildings are placed on what is left, so the works and the buildings
+       keep their own rules on the rest. A city that owns no foothill and no
+       steep ground (flatOnly(): every generated world) keeps its runs among
+       its buildings, and every figure of it is the old one, to the bit.
+
+       ONE POOL, THREE FIGURES. allocatedSqFt is still the one pool every
+       building takes from. worksSqFt is the part of it works stand on,
+       runsSqFt the part runs stand on, and preparedSqFt the foothill
+       prepared so far for buildings: it never falls, a pad once cut staying
+       cut, so ground freed and built on again is not prepared twice.
+       Everything else is derived, by one helper (split()) that nothing
+       re-derives:
 
          slope                steep and very steep, owned
-         worksOnSlope         min(works, slope)
-         worksOnFoothill      what works have left past the slope, up to the foothill
+         runsOnFlat/Foothill/Slope  the runs' ground times each class's share of the owned
+         (the classes below are what the runs leave: flat', foothill', slope')
+         worksOnSlope         min(works, slope')
+         worksOnFoothill      what works have left past the slope', up to the foothill'
          worksOnFlat          the rest of what works have left
-         buildings            allocated less works
-         buildingsOnFoothill  what buildings stand on past the flat the works left them
-         idleSlope            the steep ground no works stands on yet
+         buildings            allocated less works less runs
+         buildingsOnFoothill  what buildings stand on past the flat' the works left them
+         idleSlope            the steep ground no works stands on yet, past the runs
 
        Idle steep ground is not free for a building (freeForAnyone(),
        freeFor()), and is free for a works. The foothill a building stands
        on has to be prepared: foothillToPrepareSqFt() measures it, read before
        allocate(), which raises preparedSqFt by exactly that. Preparing is
        builders' work with a price (4.1); this class only measures it.
+
+       THE ROOM FOR A RUN (runRoom()). A run may take any dry ground, and the
+       zones' (freeFor(sector, WORKS)), but its pro-rata share of the flat and
+       foothill must leave them room for the buildings, and its share of the
+       steep ground must leave the works room for what spills past it. With
+       FF the owned flat and foothill, sFF the share of the owned ground they
+       are, and R the run asked: the runs then take sFF * (runs + R) of the
+       flat and foothill, and the slope' falls by (1 - sFF) * (runs + R).
+       The buildings (allocated less works less runs) are the same after the
+       run as before it, and the works that spill past the slope' stand on
+       the flat and foothill too, so what must hold is
+           buildings + max(0, works - slope') <= FF - sFF * (runs + R)
+       which is exactly two linear constraints:
+           buildings <= FF - sFF * (runs + R)       R <= (FF - buildings) / sFF - runs
+           buildings + works - slope' <= FF'        R <= owned - allocated
+       (the second is the ground still unbuilt; the first is the one that
+       binds in a city of mountains, where a run's flat share would crowd
+       the buildings out). runRoom() is the smaller of the two, and the ground a
+       run may take is the smaller of that and the works' ground. With no
+       flat and no foothill (sFF = 0) the first does not bind.
+
+       THE PADS THE RUN DISPLACES. Where a run's share of the flat pushes
+       buildings from the flat onto foothill, the buildings stand on foothill
+       they did not before, and a building on foothill needs a pad cut. The
+       run prepares nothing itself, but allocate() raises preparedSqFt by the
+       rise in buildingsOnFoothill (foothillDisplacedByRunSqFt()), so the
+       next building is quoted only its own pad and not the pads the run
+       displaced. Nobody pays for those pads: the run's works (RunWorks)
+       price its own ground and carry no pad, and the buildings it pushes
+       onto foothill stand there as if their pads were cut. The model has no
+       positions, so the push is the split's arithmetic rather than a building
+       moved; charging it would bill a pad no crew cuts (ET4-notes, call 5).
 
        WHY ONE POOL AND NOT ONE A RELIEF. Three pools would have made every
        zone, the forest law, the land market's crowding and every save read
@@ -1824,10 +1916,13 @@ public class LandManager {
        ice waits for the ground that owns it.
        ===================================================================== */
 
-    /** One reading of the ground by relief and by use (split()), square feet. */
+    /** What a square foot of ground is used for (ET2, ET4): a building's, a works's (a mine, a quarry, a well: Game.standsAnywhere()), or a run's (a highway or a railway line: Game.isRun()). */
+    public enum Use { BUILDING, WORKS, RUN }
+
+    /** One reading of the ground by relief and by use (split()), square feet: flat, foothill and slope are the owned ground, the runs' part of each (ET4) taken off before the rest is placed. */
     private record Split(double flat, double foothill, double slope, double works, double worksOnSlope,
                          double worksOnFoothill, double worksOnFlat, double buildings, double buildingsOnFoothill,
-                         double idleSlope) { }
+                         double idleSlope, double runs, double runsOnFlat, double runsOnFoothill, double runsOnSlope) { }
 
     /** The city's dry ground of one relief, square feet (CityLand.RELIEF_FLAT to RELIEF_VERY_STEEP), centre and purchases; 0 before the land is founded, which reads flat. */
     private double reliefSqFt(int relief) {
@@ -1840,27 +1935,39 @@ public class LandManager {
     }
 
     /**
-     * What the ground is used for if `allocated` square feet were taken, `works` of them by works (the pool as it
-     * stands, or after an allocation): works on the slope first, then foothill, then flat; buildings on flat first,
-     * then foothill. Pure. Every figure but flat and works is 0 where there is no slope and no foothill.
+     * What the ground is used for if `allocated` square feet were taken, `works` of them by works and `runs` by
+     * highways and railway lines (the pool as it stands, or after an allocation): the runs first, over flat, foothill
+     * and slope in the city's proportions of them; then works on what is left of the slope first, then foothill, then
+     * flat; buildings on flat first, then foothill. Pure. Every figure but flat and works is 0 where there is no slope
+     * and no foothill. Where there are none (flatOnly()), or no runs, the runs are part of the buildings and nothing
+     * is taken off: the old arithmetic, to the bit.
      */
-    private Split split(double allocated, double works) {
+    private Split split(double allocated, double works, double runs) {
         double flat = reliefSqFt(CityLand.RELIEF_FLAT);
         double foothill = reliefSqFt(CityLand.RELIEF_FOOTHILL);
         double slope = slopeSqFt();
         double w = Math.min(Math.max(works, 0), Math.max(allocated, 0));
-        double onSlope = Math.min(w, slope);
+        double r = 0, runsOnFlat = 0, runsOnFoothill = 0, runsOnSlope = 0;
+        double total = flat + foothill + slope;
+        if (runs > 0 && total > 0 && (foothill > 0 || slope > 0)) {
+            r = Math.min(runs, Math.max(allocated - w, 0));
+            runsOnFlat = Math.min(r * flat / total, flat);
+            runsOnFoothill = Math.min(r * foothill / total, foothill);
+            runsOnSlope = Math.min(r * slope / total, slope);
+        }
+        double flatLeft = flat - runsOnFlat, foothillLeft = foothill - runsOnFoothill, slopeLeft = slope - runsOnSlope;
+        double onSlope = Math.min(w, slopeLeft);
         double excess = w - onSlope;
-        double onFoothill = Math.min(excess, foothill);
+        double onFoothill = Math.min(excess, foothillLeft);
         double onFlat = excess - onFoothill;
-        double buildings = allocated - w;
-        double roomOnFoothill = foothill - onFoothill;
-        double buildingsOnFoothill = Math.max(0, Math.min(buildings - (flat - onFlat), roomOnFoothill));
+        double buildings = allocated - w - r;
+        double roomOnFoothill = foothillLeft - onFoothill;
+        double buildingsOnFoothill = Math.max(0, Math.min(buildings - (flatLeft - onFlat), roomOnFoothill));
         return new Split(flat, foothill, slope, w, onSlope, onFoothill, onFlat, buildings, buildingsOnFoothill,
-                Math.max(0, slope - onSlope));
+                Math.max(0, slopeLeft - onSlope), r, runsOnFlat, runsOnFoothill, runsOnSlope);
     }
 
-    private Split split() { return split(allocatedSqFt, worksSqFt); }
+    private Split split() { return split(allocatedSqFt, worksSqFt, runsSqFt); }
 
     /** The city's flat ground, foothill and steep ground (steep and very steep together), square feet: CityLand's relief, centre and purchases. */
     public double getFlatSqFt()     { return reliefSqFt(CityLand.RELIEF_FLAT); }
@@ -1879,6 +1986,21 @@ public class LandManager {
     /** The foothill buildings stand on now, square feet: what the pads are cut in. */
     public double getBuildingsOnFoothillSqFt() { return split().buildingsOnFoothill(); }
 
+    /** The ground the standing highways and railway lines hold, square feet, whatever the terrain (ET4): the figure a save keeps (DataSave's landRunsSqFt). */
+    public double getRunsSqFt()             { return runsSqFt; }
+
+    /** ...the runs' part on the flat, on the foothill and on the steep ground: their ground over the classes in the city's proportions. All 0 in a city with neither foothill nor steep ground, where the runs are counted among the buildings (flatOnly()). */
+    public double getRunsOnFlatSqFt()       { return split().runsOnFlat(); }
+    public double getRunsOnFoothillSqFt()   { return split().runsOnFoothill(); }
+    public double getRunsOnSlopeSqFt()      { return split().runsOnSlope(); }
+
+    /** The share of the city's dry ground that is steep or very steep (ET4): the part of a run's ground that falls on the steep; 0 in a city with neither foothill nor steep ground. */
+    public double getSlopeShare() {
+        if (flatOnly()) return 0;
+        double total = reliefSqFt(CityLand.RELIEF_FLAT) + reliefSqFt(CityLand.RELIEF_FOOTHILL) + slopeSqFt();
+        return total > 0 ? slopeSqFt() / total : 0;
+    }
+
     /** The foothill prepared so far, square feet: never falls. */
     public double getPreparedSqFt()        { return preparedSqFt; }
 
@@ -1893,10 +2015,16 @@ public class LandManager {
      * less what is prepared already, never below nothing - read BEFORE allocate(), changing nothing, so the quote and
      * the charge read one figure (allocate() raises preparedSqFt by exactly this). 0 for a works, which stands on
      * any ground without preparing it (spec 4.4: a pit and its benches are dug as part of the mine's own cost), and
-     * 0 with no foothill. `sector` is not read: preparing does not depend on a zone.
+     * for a run (ET4), which cuts and bridges its own way (the pads it displaces are foothillDisplacedByRunSqFt()),
+     * and 0 with no foothill. `sector` is not read: preparing does not depend on a zone.
      */
     public double foothillToPrepareSqFt(double sqFt, String sector, boolean works) {
-        return foothillToPrepareSqFt(sqFt, sector, works, 0, 0, 0);
+        return foothillToPrepareSqFt(sqFt, sector, works ? Use.WORKS : Use.BUILDING);
+    }
+
+    /** ...for what the ground is to be used for (ET4): only a building's is anything. */
+    public double foothillToPrepareSqFt(double sqFt, String sector, Use use) {
+        return foothillToPrepareSqFt(sqFt, sector, use, 0, 0, 0, 0);
     }
 
     /**
@@ -1906,13 +2034,37 @@ public class LandManager {
      */
     public double foothillToPrepareSqFt(double sqFt, String sector, boolean works,
                                         double groundAhead, double worksAhead, double preparedAhead) {
-        if (works || !(sqFt > 0) || !(reliefSqFt(CityLand.RELIEF_FOOTHILL) > 0)) return 0;
-        return Math.max(0, split(allocatedSqFt + groundAhead + sqFt, worksSqFt + worksAhead).buildingsOnFoothill()
-                - (preparedSqFt + preparedAhead));
+        return foothillToPrepareSqFt(sqFt, sector, works ? Use.WORKS : Use.BUILDING, groundAhead, worksAhead, 0, preparedAhead);
+    }
+
+    /** ...with the runs ahead too (ET4): `runsAhead` of the ground ahead is highways' and railway lines', which take their share of the flat from the buildings. */
+    public double foothillToPrepareSqFt(double sqFt, String sector, Use use,
+                                        double groundAhead, double worksAhead, double runsAhead, double preparedAhead) {
+        if (use != Use.BUILDING || !(sqFt > 0) || !(reliefSqFt(CityLand.RELIEF_FOOTHILL) > 0)) return 0;
+        return Math.max(0, split(allocatedSqFt + groundAhead + sqFt, worksSqFt + worksAhead, runsSqFt + runsAhead)
+                .buildingsOnFoothill() - (preparedSqFt + preparedAhead));
+    }
+
+    /**
+     * The foothill a run of this size would push buildings onto, square feet (ET4): the rise in what buildings stand
+     * on past the flat when the run takes its share of it, after the `groundAhead` square feet (`worksAhead` of them
+     * works's, `runsAhead` runs') of the orders before it. Read BEFORE allocate(), which raises preparedSqFt by exactly
+     * this, so the next building is quoted its own pad only; Game.buildRunInvoice() carries it ahead as it does a
+     * building's. 0 with neither foothill nor steep ground, where a run is counted among the buildings.
+     */
+    public double foothillDisplacedByRunSqFt(double sqFt, double groundAhead, double worksAhead, double runsAhead) {
+        if (!(sqFt > 0) || flatOnly()) return 0;
+        double before = split(allocatedSqFt + groundAhead, worksSqFt + worksAhead, runsSqFt + runsAhead).buildingsOnFoothill();
+        double after = split(allocatedSqFt + groundAhead + sqFt, worksSqFt + worksAhead, runsSqFt + runsAhead + sqFt)
+                .buildingsOnFoothill();
+        return Math.max(0, after - before);
     }
 
     /** Puts the works' ground back (Game's load path): the saved figure, or the standing works' land where a save has none. */
     void restoreWorks(double sqFt) { this.worksSqFt = Math.max(0, sqFt); }
+
+    /** ...and the runs' ground (ET4): the saved figure, or the standing highways' and railway lines' land where a save has none. */
+    void restoreRuns(double sqFt) { this.runsSqFt = Math.max(0, sqFt); }
 
     /** ...and the foothill prepared, null where a save has none: what the buildings on foothill stand on now, so a city saved before is not charged for pads it already has. */
     void restorePrepared(Double sqFt) {
@@ -1935,7 +2087,11 @@ public class LandManager {
        WHICH CLASS A PLOT IS. plotByRelief() reads the plot off the split
        (BUILDABLE BY SLOPE): the ground it would take, after the allocation
        less before it, a building's on flat first and then foothill, a works's
-       on steep ground first, then foothill, then flat. The zone's share
+       on steep ground first, then foothill, then flat. A run's (ET4) is its
+       own pro-rata parts, the ground times each class's share of the owned
+       ground, and not the ground in use after the allocation less before it,
+       which would price the buildings it pushes off the flat as its ground.
+       The zone's share
        applies to every class alike, as it did to the one price (Z3). A city
        with no foothill and no steep ground never gets here: it is priced by
        the old expression, so a flat world's figures do not move by a bit.
@@ -1994,30 +2150,34 @@ public class LandManager {
 
     /**
      * The ground in use by class, as the split has it (ET3, BUILDABLE BY SLOPE), square feet: the buildings' on flat and
-     * on foothill, the works' on flat, on foothill and on the steep and very steep ground. The books attribute it to
+     * on foothill, the works' on flat, on foothill and on the steep and very steep ground, and (ET4) the runs' - the
+     * highways' and railway lines' - on all three, in the city's proportions of them. The books attribute it to
      * the sectors pro rata (EconomyManager.landByReliefOf()); summed they are the split's own.
      */
     public record ReliefUse(double buildingsFlat, double buildingsFoothill, double worksFlat, double worksFoothill,
-                            double worksSlope) {
+                            double worksSlope, double runsFlat, double runsFoothill, double runsSlope) {
         /** The buildings' ground, flat and foothill. */
         public double buildings() { return buildingsFlat + buildingsFoothill; }
 
         /** The works' ground on every class. */
         public double works() { return worksFlat + worksFoothill + worksSlope; }
+
+        /** The runs' ground on every class (ET4). */
+        public double runs() { return runsFlat + runsFoothill + runsSlope; }
     }
 
     /** The ground in use by use and class now (ReliefUse), read off the one split(): nothing stored. */
     public ReliefUse reliefUse() {
         Split s = split();
         return new ReliefUse(Math.max(0, s.buildings() - s.buildingsOnFoothill()), s.buildingsOnFoothill(),
-                s.worksOnFlat(), s.worksOnFoothill(), s.worksOnSlope());
+                s.worksOnFlat(), s.worksOnFoothill(), s.worksOnSlope(), s.runsOnFlat(), s.runsOnFoothill(), s.runsOnSlope());
     }
 
-    /** The ground in use on each class under a reading of the split, square feet: {flat, foothill, slope} - works on steep ground, works and buildings on foothill, the rest of the built ground on flat. */
+    /** The ground in use on each class under a reading of the split, square feet: {flat, foothill, slope} - works and runs on steep ground, works, runs and buildings on foothill, the rest of the built ground on flat. */
     private static double[] classUse(Split s) {
-        double slope = s.worksOnSlope();
-        double foothill = s.worksOnFoothill() + s.buildingsOnFoothill();
-        return new double[] { s.works() + s.buildings() - slope - foothill, foothill, slope };
+        double slope = s.worksOnSlope() + s.runsOnSlope();
+        double foothill = s.worksOnFoothill() + s.buildingsOnFoothill() + s.runsOnFoothill();
+        return new double[] { s.works() + s.buildings() + s.runs() - slope - foothill, foothill, slope };
     }
 
     /** A change of ground in use as the square feet of `sqFt` on {flat, foothill, slope}: foothill and slope held between nothing and the plot, flat the rest, so the three sum to `sqFt`. */
@@ -2033,10 +2193,28 @@ public class LandManager {
      * first, then foothill, then flat. They sum to `sqFt`. Pure, read before allocate().
      */
     public double[] plotByRelief(double sqFt, boolean works) {
+        return plotByRelief(sqFt, works ? Use.WORKS : Use.BUILDING);
+    }
+
+    /**
+     * ...for what the ground is to be used for (ET4): a run's is its ground times each class's share of the owned
+     * ground - its own pro-rata parts, which split() takes off the classes - and NOT the ground in use after the
+     * allocation less before it, which would price the buildings it pushes off the flat as its ground.
+     */
+    public double[] plotByRelief(double sqFt, Use use) {
         if (!(sqFt > 0)) return new double[3];
+        if (use == Use.RUN) return runParts(sqFt);
         double[] before = classUse(split());
-        double[] after = classUse(split(allocatedSqFt + sqFt, worksSqFt + (works ? sqFt : 0)));
+        double[] after = classUse(split(allocatedSqFt + sqFt, worksSqFt + (use == Use.WORKS ? sqFt : 0), runsSqFt));
         return classParts(sqFt, after[1] - before[1], after[2] - before[2]);
+    }
+
+    /** A run's ground as {flat, foothill, slope}: `sqFt` times each class's share of the owned dry ground, summing to `sqFt`; all on flat where the city owns none. */
+    private double[] runParts(double sqFt) {
+        double flat = reliefSqFt(CityLand.RELIEF_FLAT), foothill = reliefSqFt(CityLand.RELIEF_FOOTHILL), slope = slopeSqFt();
+        double total = flat + foothill + slope;
+        if (!(total > 0)) return new double[] { sqFt, 0, 0 };
+        return classParts(sqFt, sqFt * foothill / total, sqFt * slope / total);
     }
 
     /**
@@ -2045,11 +2223,18 @@ public class LandManager {
      * off the steep ground first of the ground it stands on.
      */
     public double[] releasedByRelief(double sqFt, boolean works) {
+        return releasedByRelief(sqFt, works ? Use.WORKS : Use.BUILDING);
+    }
+
+    /** ...for what the ground was used for (ET4): a run's comes back at the same shares it took (plotByRelief(sqFt, Use.RUN)). */
+    public double[] releasedByRelief(double sqFt, Use use) {
         if (!(sqFt > 0)) return new double[3];
+        if (use == Use.RUN) return runParts(sqFt);
         double allocatedAfter = Math.max(allocatedSqFt - sqFt, 0);
-        double worksAfter = Math.min(works ? Math.max(worksSqFt - sqFt, 0) : worksSqFt, allocatedAfter);
+        double worksAfter = Math.min(use == Use.WORKS ? Math.max(worksSqFt - sqFt, 0) : worksSqFt, allocatedAfter);
+        double runsAfter = Math.min(runsSqFt, Math.max(allocatedAfter - worksAfter, 0));
         double[] before = classUse(split());
-        double[] after = classUse(split(allocatedAfter, worksAfter));
+        double[] after = classUse(split(allocatedAfter, worksAfter, runsAfter));
         return classParts(sqFt, before[1] - after[1], before[2] - after[2]);
     }
 
@@ -2226,18 +2411,50 @@ public class LandManager {
     }
 
     private double freeForAnyone(Zoning z) {
-        return freeForAnyone(z, false);
+        return freeForAnyone(z, Use.BUILDING);
     }
 
     /**
-     * ...for a works that may stand anywhere when `works` (ET2): free less what the zones hold, on any dry ground;
-     * for a building the same less the steep ground no works stands on yet (idleSlopeSqFt()), never below nothing.
+     * ...for a works that may stand anywhere (ET2): free less what the zones hold, on any dry ground; for a building
+     * the same less the steep ground no works stands on yet (idleSlopeSqFt()), never below nothing; for a run (ET4)
+     * the works' figure or the room runRoom() leaves, whichever is less - and a building's in a city with neither
+     * foothill nor steep ground, where a run is a building.
      */
-    private double freeForAnyone(Zoning z, boolean works) {
+    private double freeForAnyone(Zoning z, Use use) {
         double anyone = !z.hasZones() ? freeSqFt(z) : Math.max(0, freeSqFt(z) - heldTotal(z));
-        if (works) return anyone;
+        if (use == Use.RUN) return flatOnly() ? freeForAnyone(z, Use.BUILDING) : Math.min(anyone, runRoom());
+        if (use == Use.WORKS) return anyone;
         double idle = idleSlopeSqFt();
         return idle > 0 ? Math.max(0, anyone - idle) : anyone;
+    }
+
+    /**
+     * The largest run, square feet, the buildings and the works still fit beside (ET4; BUILDABLE BY SLOPE, THE ROOM
+     * FOR A RUN): the smaller of the ground still unbuilt and what the flat and foothill the run leaves hold of the
+     * buildings. After `groundAhead` square feet of the orders before it, `worksAhead` of them works's and `runsAhead`
+     * runs'. Never below nothing; meaningless (and unused) with neither foothill nor steep ground.
+     */
+    private double runRoom(double groundAhead, double worksAhead, double runsAhead) {
+        double flatFoothill = reliefSqFt(CityLand.RELIEF_FLAT) + reliefSqFt(CityLand.RELIEF_FOOTHILL);
+        double total = flatFoothill + slopeSqFt();
+        Split after = split(allocatedSqFt + groundAhead, worksSqFt + worksAhead, runsSqFt + runsAhead);
+        double room = ownedSqFt - allocatedSqFt - groundAhead;
+        double shareFlatFoothill = total > 0 ? flatFoothill / total : 0;
+        if (shareFlatFoothill > 0) room = Math.min(room, (flatFoothill - after.buildings()) / shareFlatFoothill - after.runs());
+        return Math.max(0, room);
+    }
+
+    private double runRoom() { return runRoom(0, 0, 0); }
+
+    /**
+     * Whether a run of this size can go ahead after `groundAhead` square feet of orders before it, `worksAhead` of them
+     * works's and `runsAhead` runs' (ET4; Game.runAhead()): the ground still unbuilt and the works' ground as ever, and
+     * the room the buildings leave it (runRoom()) counted after the orders ahead. With nothing ahead, canAllocate(sqFt,
+     * sector, Use.RUN).
+     */
+    public boolean canAllocateRunAfter(double sqFt, String sector, double groundAhead, double worksAhead, double runsAhead) {
+        if (flatOnly()) return groundAhead + sqFt <= freeFor(sector, Use.BUILDING);
+        return groundAhead + sqFt <= freeFor(sector, Use.WORKS) && sqFt <= runRoom(groundAhead, worksAhead, runsAhead);
     }
 
     /** The free ground a sector's zone holds for it, square feet: its size less what it has used, as far as the free ground goes (Z10); 0 with no zone. */
@@ -2259,19 +2476,26 @@ public class LandManager {
     public double freeForAnyone()         { return freeForAnyone(zoning); }
 
     /** ...for a works that may stand anywhere when `works` (ET2): on any dry ground, steep ground too; false is freeForAnyone(). */
-    public double freeForAnyone(boolean works) { return freeForAnyone(zoning, works); }
+    public double freeForAnyone(boolean works) { return freeForAnyone(zoning, works ? Use.WORKS : Use.BUILDING); }
+
+    /** ...for what the ground is to be used for (ET4): a run's is the works' less what the buildings' room leaves it. */
+    public double freeForAnyone(Use use) { return freeForAnyone(zoning, use); }
 
     /** The ground a sector may build on: free for anyone, and what its zone holds for it. */
-    public double freeFor(String sector)  { return freeFor(zoning, sector, false); }
+    public double freeFor(String sector)  { return freeFor(zoning, sector, Use.BUILDING); }
 
     /** ...a works's when `works` (ET2): today's figure, any dry ground; false is freeFor(sector). */
-    public double freeFor(String sector, boolean works) { return freeFor(zoning, sector, works); }
+    public double freeFor(String sector, boolean works) { return freeFor(zoning, sector, works ? Use.WORKS : Use.BUILDING); }
 
-    private double freeFor(Zoning z, String sector, boolean works) {
-        double anyone = freeForAnyone(z, works);
+    /** ...for what the ground is to be used for (ET4): a run's is the works' figure or the room the buildings leave it (runRoom()), whichever is less; a building's, in a city with neither foothill nor steep ground. */
+    public double freeFor(String sector, Use use) { return freeFor(zoning, sector, use); }
+
+    private double freeFor(Zoning z, String sector, Use use) {
+        if (use == Use.RUN) return flatOnly() ? freeFor(z, sector, Use.BUILDING) : Math.min(freeFor(z, sector, Use.WORKS), runRoom());
+        double anyone = freeForAnyone(z, use);
         double free = z.zone(sector) == null ? anyone : anyone + heldBy(z, sector);
         // ...a building's, never more than the free ground less the steep ground nothing of its kind may stand on (ET2).
-        double idle = works ? 0 : idleSlopeSqFt();
+        double idle = use == Use.WORKS ? 0 : idleSlopeSqFt();
         return idle > 0 ? Math.min(free, Math.max(0, freeSqFt(z) - idle)) : free;
     }
 
@@ -2567,6 +2791,7 @@ public class LandManager {
         ownedSqFt = STARTING_SQ_FT;
         allocatedSqFt = 0;
         worksSqFt = 0;
+        runsSqFt = 0;
         preparedSqFt = 0;
         blocksPurchased = 0;
         pricePerSqFt = defaultPricePerSqFt;

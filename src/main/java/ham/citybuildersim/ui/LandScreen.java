@@ -870,7 +870,7 @@ final class LandScreen {
             BuildingsTemplate t = ui.game.getBuildingManager().getTemplateByName(w[0]);
             if (t == null) continue;
             // ...at the price of the ground the next plot falls on (ET3): a house on the foothill once the flat is used, a works on the steep.
-            double ground = land.priceFor(t.getLandSqFt(), t.getSector(), Game.standsAnywhere(t));
+            double ground = land.priceFor(t.getLandSqFt(), t.getSector(), Game.groundUse(t));
             double build = t.getCashCost();
             double all = ground + build;
             out.add(new OnTop(w[1], ground, build,

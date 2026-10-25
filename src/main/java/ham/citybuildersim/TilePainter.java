@@ -32,6 +32,8 @@ import java.util.Arrays;
  *             plot (since 0.7.89 the city's runs, CityRuns: elevated
  *             highways with their ramps, the track bridging them, a mine on
  *             its site beneath; THE NETWORK's plan's in CityMap until 0.7.88);
+ *             since ET4 a run's plot on steep ground is a viaduct (a
+ *             bridge) and on very steep ground a tunnel (Painted.tunnel);
  *   STREETS   the plan's: each plot's surface - gravel, paved (or, to
  *             0.7.88, an Elevated Highway's plots no run took), half or
  *             full width - or a TRACK where the city has bought no road;
@@ -599,8 +601,10 @@ public final class TilePainter {
         public final boolean[] beneath = new boolean[PLOTS];
         /** What the city's runs lay on each plot, as Input.fixed (0.7.89): their track and highways under a building too - a yard over its track, a mine on its site beneath a highway or across a track. */
         public final byte[] run = new byte[PLOTS];
-        /** A road plot (or the track) that bridges fresh water. */
+        /** A road plot (or the track) that bridges fresh water - and, since ET4, a run's plot on STEEP ground: a viaduct, drawn as the bridge it is. */
         public final boolean[] bridge = new boolean[PLOTS];
+        /** A run's plot (a highway's, the track, the track over a highway) on VERY_STEEP dry ground (ET4; spec-earth2-terrain 4.3): a tunnel, drawn as its ground with a dashed line and a portal at each end (TileRaster's THE WAYS AS LINES). */
+        public final boolean[] tunnel = new boolean[PLOTS];
         /** The building on a plot, its index + 1; 0 for none. */
         public final short[] bld = new short[PLOTS];
         /** The site a plot lies in, its index + 1; 0 for none. */
@@ -634,6 +638,7 @@ public final class TilePainter {
             Arrays.fill(beneath, false);
             Arrays.fill(run, (byte) 0);
             Arrays.fill(bridge, false);
+            Arrays.fill(tunnel, false);
             Arrays.fill(bld, (short) 0);
             Arrays.fill(site, (short) 0);
             Arrays.fill(streets, 0);
@@ -703,6 +708,12 @@ public final class TilePainter {
         // The city's highways and track, plot for plot (0.7.89, its runs): every plot counted, a mine on its site standing under a
         // highway (elevated, drawn over it) or across the track; the railway over a highway is the highway's plot with its track on
         // a bridge (RAIL_OVER).
+        // ET4 (2026-10-25; spec-earth2-terrain 4.3, D10): the runs cross any relief (CityRuns lays on dry ground and reads none),
+        // and this is where the map says what they cross. A run's plot on STEEP ground is a viaduct, a bridge as one over fresh
+        // water is (p.bridge: its deck, and a straight plot in every pass that treats a bridge's so); on VERY_STEEP dry ground a
+        // tunnel (p.tunnel: the raster draws the ground, a dashed line and a portal at each end). The model prices the works at
+        // the city's mix of ground (RunWorks); the map draws where the run actually lies. A plan's streets never stand on steep
+        // ground (ET2's unfit[]), so the streets' loop below keeps its bridge rule: fresh water and the plan's own bridges.
         for (int i = 0; i < PLOTS; i++) {
             byte f = in.fixed[i];
             if (f == 0) continue;
@@ -717,7 +728,8 @@ public final class TilePainter {
                 p.use[i] = ROAD;
                 p.road[i] = (byte) BuildingVisual.HIGHWAY;
             }
-            p.bridge[i] = wet;
+            p.bridge[i] = wet || in.relief[i] == World.STEEP;
+            p.tunnel[i] = !wet && World.dry(in.terrain[i]) && in.relief[i] == World.VERY_STEEP;
         }
         // The sidings the district's plan laid (batch FR7 slice 5, D14): track over the open ground it chose, and under a street a level
         // crossing (the street loop below); the runs' own plots and a building keep theirs.
@@ -748,6 +760,7 @@ public final class TilePainter {
             p.width[i] = (byte) w;
             p.role[i] = roleOf(code);
             p.bridge[i] = (code & S_BRIDGE) != 0 || in.terrain[i] == World.FRESH;
+            p.tunnel[i] = false;
             p.streets[kind]++;
             if (kind != TRACK) p.halves[kind] += w;
         }

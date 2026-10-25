@@ -348,7 +348,7 @@ public final class Forestry extends ExtractionSector {
             plantingWord = "its zone holds no 100 ha free";
             return null;
         }
-        double cost = game.quoteBuild(t, 1).total + land.priceFor(t.getLandSqFt(), key(), Game.standsAnywhere(t));
+        double cost = game.quoteBuild(t, 1).total + land.priceFor(t.getLandSqFt(), key(), Game.groundUse(t));
         Investor payer = game.getSectorInvestor(key());
         if (!(payer.getCash() >= cost)) {
             plantingWord = String.format("its cash will not pay for %s", ProcessingSector.a(t.getName()));

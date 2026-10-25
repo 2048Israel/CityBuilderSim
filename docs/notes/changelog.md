@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.47 — ET4, highways and rail priced by slope — 2026-10-25, ready but MapCheck 8 (main's, FW11), see docs/queue/ET4-notes.md
+
+A highway or a railway line (the Elevated Highway, the Rail Spur, the Freight Line) is now a **run**: its land comes from
+every class of ground in the city's proportions, not the buildable pool alone, so a mountain city's highways use its steep
+ground (`LandManager.Use.RUN`, `runsSqFt` saved, `runRoom()` keeping the buildings room). An order pays the **cuts,
+viaducts and tunnels** its land needs at the city's mix (`RunWorks`: a highway's works $110 a m² on foothill, a $2,080
+viaduct on steep, a $2,330 tunnel on very steep; a railway's 2.7 times), as builders' work owed on the site, in the
+quote, Build's card and the Freight investor's cost. On the map a run on steep ground is a viaduct, on very steep a tunnel
+(portals, a dashed line). New RunWorksCheck. A flat city reads a run as a building: the default trace and Rotterdam's
+byte-identical (no ensemble); Medellín ends at 245,314 people (432,191), its Rail Spurs priced as runs (382,036 if not).
+
 ### 0.8.46 — FW6, a reloaded city plays its next month as the one that kept running — 2026-10-25, shipped, see docs/queue/FW6-notes.md
 Measured first: every history series already matched to the bit 24 months
 after a reload, but the save did not. Now saved and put back: each market's
