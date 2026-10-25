@@ -1,8 +1,8 @@
-# gate of Merge batch/ET3: a price for each class of ground, and the land line by class, 0.8.44
+# gate of Merge batch/FW5: two reads miss litres, and one check counts them twice: the railway draws its diesel before the strike wipes the rows (his 1008: 659M of 1,725M L), `Markets.draw()` records the forecourts' and vans' fuel before `startMonth()` wipes the trades, and OilCheck 6's "L shipped" adds exportBound and exported (seen, not fixed), 0.8.45
 # date: 2026-10-25
 # earth-2.bin: named
-# suite: 140 harnesses run in 995s: 139 passed, 1 failed
-# timing: 11 harnesses run in 313s: 10 passed, 1 failed
+# suite: 140 harnesses run in 1032s: 139 passed, 1 failed
+# timing: 11 harnesses run in 315s: 10 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

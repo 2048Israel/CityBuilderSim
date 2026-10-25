@@ -11153,6 +11153,8 @@ public class Game {
                 monthsSinceAutosave = 0;
             }
         }
+        // The month's draws were shown with its fills; a draw from here on is the next month's (FW5, 2026-10-25). Last, on purpose.
+        getMarkets().closeMonth();
     }
     
     private void startOfMonthUpdate(){
@@ -11329,6 +11331,8 @@ public class Game {
          * hand-written ledger.
          */
         economyManager.strikeSectors();
+        // ...the month's draws before the strike - the railway's diesel, its trucks', bitumen ordered between the presses - back on their sellers' rows the strike just cleared (FW5, 2026-10-25).
+        getMarkets().rowDrawsBeforeStrike(getSectors());
         // ...and the strategic reserve's month, beside the businesses it traded with (0.7.85).
         settleReserve();
         // ...and the sales tax a business claimed back on the buildings it

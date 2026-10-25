@@ -2152,6 +2152,7 @@ public abstract class Sector {
             if (lost > 0) struckWrittenOff.put(g, lost);
         }
         carriedWrittenOff.clear();
+        // The rows cleared here lose the draws made before the strike; Markets.rowDrawsBeforeStrike() puts the sellers' back (FW5, 2026-10-25).
         for (Output o : outputs.values()) {
             o.soldLocal = 0; o.exported = 0; o.writtenOff = 0; o.offered = 0; o.withheld = 0;
         }
