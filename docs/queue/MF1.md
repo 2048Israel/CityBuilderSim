@@ -22,6 +22,13 @@ eye check.
    business, and the run gets clean ground. The layout watch then flags the
    old works a run lands on, a restatement of its premise (FX7 named it); a
    building that is not under a run still never moves.
+   FW4 (0.8.42) found the same rule behind `PlanCheck <save>` section 9's
+   red ("every district keeps every check"): on the playtest's city at month
+   4,000, 233 boxes in 9 of 25 districts touch a highway laid after they
+   stood, 87 of them under it and 146 only on its verge (beside it, corners
+   included, the H5 rule no new box breaks). Moving the 87 leaves section 9
+   red on the 146: ask him whether "move off" takes the verge too, or the
+   check excuses a box beside a run laid after it arrived (FW4-C).
 2. **Works on the rail yard** (shot 13, the land office's map): industry
    drawn over the freight yard's tracks and platform. The same call as 1:
    what stands on a yard's ground moves off it.

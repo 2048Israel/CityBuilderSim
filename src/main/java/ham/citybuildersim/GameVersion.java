@@ -7338,7 +7338,7 @@ public final class GameVersion {
      *     missing key reads flat); SAVE_FORMAT 45 unchanged, every earth-1
      *     city refused by its identity.
      */
-    public static final String VERSION = "0.8.41";
+    public static final String VERSION = "0.8.42";
 
     /**
      * The save shape.
