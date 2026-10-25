@@ -1,8 +1,8 @@
-# gate of Merge batch/FW7: `AllChecks -q` hides a second failing assertion inside a known-red harness (HealthCheck's upkeep check showed only as "HealthCheck FAILED"): a per-label baseline for the known reds would catch it, 0.8.47
+# gate of Merge batch/FW8: wHAT IS BITING has no zoning flag (a zone short of what it wants would be one); the map's tint of a zone's districts is I14's, 0.8.48
 # date: 2026-10-25
 # earth-2.bin: named
-# suite: 143 harnesses run in 1062s: 142 passed, 1 failed
-# timing: 11 harnesses run in 316s: 10 passed, 1 failed
+# suite: 143 harnesses run in 1041s: 142 passed, 1 failed
+# timing: 11 harnesses run in 333s: 10 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

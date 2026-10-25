@@ -52,6 +52,13 @@ import java.util.Locale;
  *      zones hold (not the homes' own zone); the build card's land gate and
  *      an order's quote count a zoned sector's zone, and an unzoned
  *      building's gate says what is zoned for others.
+ *   9. WHAT IS BITING (FW8): a zone short of what it wants - one, or two
+ *      sharing the free ground alike - raises the Policy hub's zoning flag,
+ *      its figures the zones' rows and its words saying what it holds of
+ *      what it wants, and none is free for anyone else; the hub's own list
+ *      carries it, its door on Zoning; a zone the free ground covers, small
+ *      or large, and no zone at all raise none; with no free ground the
+ *      zone holds none of its want.
  *
  * Every fixture causes its condition.
  */
@@ -129,6 +136,7 @@ public class ZoningViewCheck {
         theForestLaw(g);
         theDecisionKind(g);
         theWordsElsewhere(g);
+        whatIsBiting(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -462,5 +470,137 @@ public class ZoningViewCheck {
         for (BuildCard.GateMark m : none.gates()) if (m.kind() == BuildCard.GateKind.LAND) unzoned = m.failure();
         assertTrue("with no zone and room, the shop passes the land gate as it always did",
                 none.at(BuildCard.GateKind.LAND) == BuildCard.Mark.PASS && unzoned == null);
+    }
+
+    /* ============================ 9. WHAT IS BITING ============================ */
+
+    /**
+     * The Policy hub's WHAT IS BITING flags as the hub lists them - area, heading, body, page, door - from its own
+     * policyFlags() on an interface bound to the city (no window: BuildMenuCheck's binding), by reflection, because the
+     * screen and its flags are the interface's own.
+     */
+    static List<String[]> hubFlags(Game g) {
+        try {
+            ham.citybuildersim.ui.UserInterface ui = new ham.citybuildersim.ui.UserInterface(g);
+            java.lang.reflect.Field field = ham.citybuildersim.ui.UserInterface.class.getDeclaredField("policyScreen");
+            field.setAccessible(true);
+            Object screen = field.get(ui);
+            java.lang.reflect.Method flags = screen.getClass().getDeclaredMethod("policyFlags");
+            flags.setAccessible(true);
+            String[] names = { "area", "heading", "body", "page", "door" };
+            List<String[]> out = new java.util.ArrayList<>();
+            for (Object f : (List<?>) flags.invoke(screen)) {
+                String[] parts = new String[names.length];
+                for (int i = 0; i < names.length; i++) {
+                    java.lang.reflect.Method m = f.getClass().getDeclaredMethod(names[i]);
+                    m.setAccessible(true);
+                    parts[i] = (String) m.invoke(f);
+                }
+                out.add(parts);
+            }
+            return out;
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("the hub's flags could not be read: " + e, e);
+        }
+    }
+
+    /** ...the ones in Zoning's area. */
+    static List<String[]> zoningFlags(Game g) {
+        List<String[]> out = new java.util.ArrayList<>();
+        for (String[] f : hubFlags(g)) if ("Zoning".equals(f[0])) out.add(f);
+        return out;
+    }
+
+    static void whatIsBiting(Game g) {
+        out.println("\n--- 9. what is biting: a zone short of what it wants raises the flag, a zone with enough raises none ---");
+        LandManager land = g.getLandManager();
+        assertTrue("fixture: no zone stands, and the city has free ground", !g.getZoning().hasZones() && land.getFreeSqFt() > 0);
+        assertTrue("with no zone nothing is short and the hub has no zoning flag",
+                ZoningView.shortfall(g) == null && zoningFlags(g).isEmpty());
+
+        quietly(() -> g.setZone(Sectors.MINING, Zoning.Size.SHARE, .02, .4));
+        ZoningView.Row small = ZoningView.row(g, Sectors.MINING);
+        assertTrue("fixture: a zone of 2% of the dry ground wants less than is free, and holds all it wants",
+                small.wantSqFt() > 0 && small.wantSqFt() < land.getFreeSqFt() && !small.isShort()
+                && same(small.heldSqFt(), small.wantSqFt()));
+        assertTrue("...so a zone with enough raises no flag", ZoningView.shortfall(g) == null && zoningFlags(g).isEmpty());
+
+        // One zone past the city's dry ground: Agriculture's, in km².
+        quietly(() -> {
+            g.removeZone(Sectors.MINING);
+            g.setZone(Sectors.AGRICULTURE, Zoning.Size.KM2, 1.25 * CITY_KM2, 1);
+        });
+        ZoningView.Row fields = ZoningView.row(g, Sectors.AGRICULTURE);
+        assertTrue("fixture: Agriculture's zone of " + LandManager.areaWords(fields.sizeSqFt()) + " wants more than the "
+                + LandManager.areaWords(land.getFreeSqFt()) + " free, so its row reads short",
+                fields.wantSqFt() > land.getFreeSqFt() && fields.isShort());
+        ZoningView.Shortfall one = ZoningView.shortfall(g);
+        assertTrue("a zone short of what it wants is flagged: one row, its own",
+                one != null && one.rows().size() == 1 && Sectors.AGRICULTURE.equals(one.rows().get(0).sector()));
+        assertTrue("...its want is the row's, and what it holds is all the free ground (heldBy(), getFreeSqFt())",
+                one != null && one.wantSqFt() == fields.wantSqFt() && one.heldSqFt() == land.heldBy(Sectors.AGRICULTURE)
+                && same(one.heldSqFt(), land.getFreeSqFt()) && land.freeForAnyone() < 1e-6 * land.getFreeSqFt()
+                && same(one.share(), land.getFreeSqFt() / fields.wantSqFt(), 1));
+        String label = g.getSectors().byKey(Sectors.AGRICULTURE).label();
+        String heading = one == null ? "" : one.heading(), body = one == null ? "" : one.body();
+        assertTrue("the heading names the zone: \"" + heading + "\"", heading.equals(label + "'s zone holds less than it wants"));
+        assertTrue("its first sentence is what it holds of what it wants: \"" + body + "\"",
+                one != null && body.startsWith("It holds " + LandManager.areaWords(one.heldSqFt()) + " of the "
+                        + LandManager.areaWords(one.wantSqFt()) + " it wants: all the free ground there is. ")
+                && body.contains("Nothing is left for anyone else to build on."));
+        List<String[]> hub = zoningFlags(g);
+        assertTrue("the hub's WHAT IS BITING carries it, once, in Zoning's area with the view's words",
+                hub.size() == 1 && heading.equals(hub.get(0)[1]) && body.equals(hub.get(0)[2]));
+        assertTrue("...its door opens the zone's page: \"" + (hub.isEmpty() ? "" : hub.get(0)[4]) + "\"",
+                hub.size() == 1 && ("zone:" + Sectors.AGRICULTURE).equals(hub.get(0)[3]) && (label + "'s zone").equals(hub.get(0)[4]));
+
+        // Two zones together past the free ground, each alone within it.
+        quietly(() -> {
+            g.setZone(Sectors.AGRICULTURE, Zoning.Size.SHARE, .6, 1);
+            g.setZone(Sectors.MINING, Zoning.Size.SHARE, .5, .4);
+        });
+        ZoningView.Row mine = ZoningView.row(g, Sectors.MINING), farm = ZoningView.row(g, Sectors.AGRICULTURE);
+        assertTrue("fixture: two zones that each want less than is free and together more",
+                mine.wantSqFt() < land.getFreeSqFt() && farm.wantSqFt() < land.getFreeSqFt()
+                && mine.wantSqFt() + farm.wantSqFt() > land.getFreeSqFt());
+        ZoningView.Shortfall two = ZoningView.shortfall(g);
+        List<ZoningView.Row> rows = ZoningView.zones(g);
+        assertTrue("both are flagged, in the zones' order", two != null && two.rows().size() == 2
+                && two.rows().get(0).sector().equals(rows.get(0).sector()) && two.rows().get(1).sector().equals(rows.get(1).sector()));
+        assertTrue("...each holding the same share of its want (Z10), together all the free ground",
+                two != null && same(mine.heldSqFt() / mine.wantSqFt(), two.share(), 1)
+                && same(farm.heldSqFt() / farm.wantSqFt(), two.share(), 1)
+                && same(two.wantSqFt(), mine.wantSqFt() + farm.wantSqFt()) && same(two.heldSqFt(), land.getFreeSqFt()));
+        String heading2 = two == null ? "" : two.heading(), body2 = two == null ? "" : two.body();
+        assertTrue("the heading counts them: \"" + heading2 + "\"", heading2.equals("2 zones hold less than they want"));
+        assertTrue("...and its first sentence says they share alike: \"" + body2 + "\"",
+                two != null && body2.startsWith("They hold " + LandManager.areaWords(two.heldSqFt()) + " of the "
+                        + LandManager.areaWords(two.wantSqFt()) + " they want: all the free ground there is, each the same share"));
+        List<String[]> hubTwo = zoningFlags(g);
+        assertTrue("the hub carries one flag for them, its door the ground's page",
+                hubTwo.size() == 1 && heading2.equals(hubTwo.get(0)[1]) && "The ground".equals(hubTwo.get(0)[3]));
+
+        // Agriculture's zone off: Mining's half of the dry ground alone is within the free ground.
+        quietly(() -> g.removeZone(Sectors.AGRICULTURE));
+        ZoningView.Row half = ZoningView.row(g, Sectors.MINING);
+        assertTrue("fixture: Mining's zone alone, half the dry ground, wants less than is free",
+                half.wantSqFt() < land.getFreeSqFt() && !half.isShort());
+        assertTrue("...so a large zone the free ground covers raises none", ZoningView.shortfall(g) == null && zoningFlags(g).isEmpty());
+
+        // No free ground at all, set by hand: the zone holds none of its want.
+        double allocated = land.getAllocatedSqFt();
+        land.setAllocatedSqFt(land.getOwnedSqFt());
+        try {
+            assertTrue("fixture: built to the edge, nothing is free", land.getFreeSqFt() == 0);
+            ZoningView.Shortfall none = ZoningView.shortfall(g);
+            assertTrue("the zone is flagged holding none of what it wants: \"" + (none == null ? "" : none.body()) + "\"",
+                    none != null && none.heldSqFt() == 0 && none.share() == 0
+                    && none.body().startsWith("It holds none of the " + LandManager.areaWords(none.wantSqFt())
+                            + " it wants: the city has no free ground."));
+        } finally {
+            land.setAllocatedSqFt(allocated);
+            quietly(() -> g.removeZone(Sectors.MINING));
+        }
+        assertTrue("every zone off, nothing is flagged again", ZoningView.shortfall(g) == null && zoningFlags(g).isEmpty());
     }
 }

@@ -1386,6 +1386,20 @@ final class PolicyScreen {
                     atStop.size() == 1 ? capitalised(atStop.get(0)) + " tax" : "Taxes"));
         }
 
+        /* ------------------------------- zoning (FW8) -------------------------------
+         * A zone short of what it wants: the zones want more than the free ground,
+         * so each holds the same share of its want and nothing is free for anyone
+         * else - ZoningView.shortfall(), its words with it. The door opens the
+         * zone's page, or the ground's when more than one is short.
+         */
+        ZoningView.Shortfall shortZones = ZoningView.shortfall(ui.game);
+        if (shortZones != null) {
+            String alone = shortZones.rows().size() == 1 ? shortZones.rows().get(0).sector() : null;
+            out.add(new Flag(Palette.WARN, shortZones.heading(), shortZones.body(), ZONING,
+                    alone != null ? ZoningScreen.zonePage(alone) : ZoningScreen.THE_GROUND,
+                    alone != null ? ZoningScreen.possessive(zoning.nameOf(alone)) + " zone" : ZoningScreen.THE_GROUND));
+        }
+
         return out;
     }
 

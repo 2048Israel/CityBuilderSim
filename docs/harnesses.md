@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**143 harness files, 14,732 labelled assertions.** AllChecks runs 143 of them.
+**143 harness files, 14,754 labelled assertions.** AllChecks runs 143 of them.
 
 ## Which harnesses read which class
 
@@ -271,7 +271,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UiProbe](map/UiProbe.md) | **none** |
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
-| [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck |
+| [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, ZoningViewCheck |
 | [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, LongPlaytest, MaterialsCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
 | [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ZoningCheck |
 | [Where](map/Where.md) | **none** |
@@ -19014,7 +19014,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L580 a Harvesting Operation cutting past the regrowth plants nothing with no Forestry zone - a zone for the fields
   - L589 with a Forestry zone of 12 km2 at 30% of the going price a plantation is planted on it: its 10 km2 the zone's used
 
-## ZoningViewCheck.java - 59 labelled assertions
+## ZoningViewCheck.java - 81 labelled assertions
 
 > Policy › Zoning's figures (0.7.109, batch Z2): ZoningView, and the words
 > zoning puts on the screens it does not own - NEEDS YOU's GROUND row, the
@@ -19030,71 +19030,94 @@ _(this harness does not label its checks through a helper - it prints its findin
 > another. Nothing in the default playtest sets a zone, so this is the
 > ...
 
-- **L140 1. nothing set: nothing zoned, held or given up, the forest kept \"none\", the bar the built and the free**
-  - L142 fixture: a played city with no zone and the law at 0 and 0, built on, with forest
-  - L145 the four: nothing zoned in no zone, nothing held, no price given up, no relief, no law
-  - L149 the bar: the built ground is the allocated; the bare ground and open forest are free for anyone
-  - L154 ...and it adds up to the dry ground the city owns
-  - L155 no zone has a row, and the closer bar is the bare ground alone
-- **L177 2. the hub's four figures are the model's**
-  - L180 fixture: two zones, one with ground used in it and both holding ground, and a law
-  - L185 ZONED: the zones' sizes together, two of them, and their share of the dry ground
-  - L187 HELD FOR THEM: what the zones hold, LandManager.heldByZones()
-  - L190 PRICE GIVEN UP: PolicyPreview's price given up and tax relief, summed over the zones
-  - L193 FOREST KEPT: the protected and the working forest, the law's two shares
-- **L205 3. the ground bar adds up to the dry ground, each part the model's**
-  - L209 its parts add up to the dry ground the city owns
-  - L215 each zone's used and held ground is its own, used before held, in the zones' order
-  - L218 the built ground and the zones' used ground are the allocated
-  - L221 the bare ground and the open forest free for anyone are freeForAnyone()
-  - L224 ...and the zones' held ground HELD FOR THEM
-  - L225 the working and protected forest are the law's
-  - L229 the closer bar: the zones' used and held ground and the bare ground free for anyone, no more
-  - L242 fixture: the city built over all but a tenth of the forest the law keeps
-  - L244 built past what the law keeps, the bar still adds up to the dry ground, no part below nothing
-  - L246 ...the built ground the allocated, the law's forest only the tenth the built ground left, nothing free
-- **L259 4. a zone's row is its zone, its taxes the sector's own**
-  - L263 a row a zone, in the zones' order
-  - L266 its size as given and as ground, its share of the dry ground
-  - L270 its used and held ground, and its price a square foot (groundPriceFor())
-  - L278 its three rates are the sector's (Game.zoneTaxRate())
-  - L279 what each raised last month: the books' profit tax, the ledger's net sales tax, the property charged
-  - L286 one dial, two doors: a move through the zone's door reads on its row and is Policy › Taxes' offset
-  - L290 neither zone is short while the free ground covers both
-  - L293 fixture: a zone of all the dry ground holds less than it wants
-  - L296 ...and its row reads short, holding what is free (Z10)
-  - L298 a sector with no zone has no row
-- **L311 5. a sector's page: staged it moves nothing, applied it reads as staged**
-  - L320 staged, the city is untouched: no Retail zone, the ground free for anyone and Mining's held as they were, no decision
-  - L324 before, no zone: it holds nothing and carries nothing, and a plot pays the going price
-  - L326 after: it holds the km² (the free ground covers it), the ground free for anyone falls by as much
-  - L328 ...it carries as many of the plot the sector builds most of as fit, and a plot pays half
-  - L333 applied, the city reads what was staged
-  - L338 a zone re-sized and re-priced, staged, keeps what it has used
-  - L342 ...and applied reads as staged
-  - L347 taken off, staged: it holds nothing, and its ground is free for anyone again
+- **L148 1. nothing set: nothing zoned, held or given up, the forest kept \"none\", the bar the built and the free**
+  - L150 fixture: a played city with no zone and the law at 0 and 0, built on, with forest
+  - L153 the four: nothing zoned in no zone, nothing held, no price given up, no relief, no law
+  - L157 the bar: the built ground is the allocated; the bare ground and open forest are free for anyone
+  - L162 ...and it adds up to the dry ground the city owns
+  - L163 no zone has a row, and the closer bar is the bare ground alone
+- **L185 2. the hub's four figures are the model's**
+  - L188 fixture: two zones, one with ground used in it and both holding ground, and a law
+  - L193 ZONED: the zones' sizes together, two of them, and their share of the dry ground
+  - L195 HELD FOR THEM: what the zones hold, LandManager.heldByZones()
+  - L198 PRICE GIVEN UP: PolicyPreview's price given up and tax relief, summed over the zones
+  - L201 FOREST KEPT: the protected and the working forest, the law's two shares
+- **L213 3. the ground bar adds up to the dry ground, each part the model's**
+  - L217 its parts add up to the dry ground the city owns
+  - L223 each zone's used and held ground is its own, used before held, in the zones' order
+  - L226 the built ground and the zones' used ground are the allocated
+  - L229 the bare ground and the open forest free for anyone are freeForAnyone()
+  - L232 ...and the zones' held ground HELD FOR THEM
+  - L233 the working and protected forest are the law's
+  - L237 the closer bar: the zones' used and held ground and the bare ground free for anyone, no more
+  - L250 fixture: the city built over all but a tenth of the forest the law keeps
+  - L252 built past what the law keeps, the bar still adds up to the dry ground, no part below nothing
+  - L254 ...the built ground the allocated, the law's forest only the tenth the built ground left, nothing free
+- **L267 4. a zone's row is its zone, its taxes the sector's own**
+  - L271 a row a zone, in the zones' order
+  - L274 its size as given and as ground, its share of the dry ground
+  - L278 its used and held ground, and its price a square foot (groundPriceFor())
+  - L286 its three rates are the sector's (Game.zoneTaxRate())
+  - L287 what each raised last month: the books' profit tax, the ledger's net sales tax, the property charged
+  - L294 one dial, two doors: a move through the zone's door reads on its row and is Policy › Taxes' offset
+  - L298 neither zone is short while the free ground covers both
+  - L301 fixture: a zone of all the dry ground holds less than it wants
+  - L304 ...and its row reads short, holding what is free (Z10)
+  - L306 a sector with no zone has no row
+- **L319 5. a sector's page: staged it moves nothing, applied it reads as staged**
+  - L328 staged, the city is untouched: no Retail zone, the ground free for anyone and Mining's held as they were, no decision
+  - L332 before, no zone: it holds nothing and carries nothing, and a plot pays the going price
+  - L334 after: it holds the km² (the free ground covers it), the ground free for anyone falls by as much
+  - L336 ...it carries as many of the plot the sector builds most of as fit, and a plot pays half
+  - L341 applied, the city reads what was staged
+  - L346 a zone re-sized and re-priced, staged, keeps what it has used
   - L350 ...and applied reads as staged
-- **L357 6. the forest law's page: staged it moves nothing, applied it reads as staged**
-  - L361 at the city's own law the page is the model's: the three kinds, the wood kept and the wood that may be cut
-  - L368 staged 40% protected and 30% kept, the kept is the protected (the model's clamp), and nothing in the city moves
-  - L371 ...more wood kept standing for ever, less that may be cut, less forest a building may take
-  - L376 applied, the city reads what was staged
-- **L397 7. zoning has a decision kind of its own**
-  - L398 a zone set: one ZONING line
-  - L400 ...re-priced: one ZONING line
-  - L405 ...set to what it already is: nothing
-  - L406 ...taken off: one ZONING line
-  - L407 the forest law: one ZONING line
-  - L408 a zone's tax row: one TAX line - the sector's own offset, as Policy › Taxes logs it
-- **L416 8. the words elsewhere: NEEDS YOU's GROUND row, the build card's land gate, an order's quote**
-  - L420 with room to build the GROUND row is not listed and names no zone
-  - L426 fixture: the zones hold all the free ground, so none is free for anyone
-  - L429 listed, the GROUND row names what the zones hold: \"
-  - L433 fixture: a Diner's plot fits in what Restaurants' zone holds, and is more than is free for anyone
-  - L435 the build card's land gate counts the zone: a Diner passes it
-  - L436 ...an order's quote reads the ground its sector may build on, freeFor()
-  - L442 an unzoned shop fails it, and its gate says what is zoned for others: \"
-  - L450 the homes' own zone is not named: the GROUND row says only what is free
-  - L455 ...though to a shop it is ground zoned for others
-  - L463 with no zone and room, the shop passes the land gate as it always did
+  - L355 taken off, staged: it holds nothing, and its ground is free for anyone again
+  - L358 ...and applied reads as staged
+- **L365 6. the forest law's page: staged it moves nothing, applied it reads as staged**
+  - L369 at the city's own law the page is the model's: the three kinds, the wood kept and the wood that may be cut
+  - L376 staged 40% protected and 30% kept, the kept is the protected (the model's clamp), and nothing in the city moves
+  - L379 ...more wood kept standing for ever, less that may be cut, less forest a building may take
+  - L384 applied, the city reads what was staged
+- **L405 7. zoning has a decision kind of its own**
+  - L406 a zone set: one ZONING line
+  - L408 ...re-priced: one ZONING line
+  - L413 ...set to what it already is: nothing
+  - L414 ...taken off: one ZONING line
+  - L415 the forest law: one ZONING line
+  - L416 a zone's tax row: one TAX line - the sector's own offset, as Policy › Taxes logs it
+- **L424 8. the words elsewhere: NEEDS YOU's GROUND row, the build card's land gate, an order's quote**
+  - L428 with room to build the GROUND row is not listed and names no zone
+  - L434 fixture: the zones hold all the free ground, so none is free for anyone
+  - L437 listed, the GROUND row names what the zones hold: \"
+  - L441 fixture: a Diner's plot fits in what Restaurants' zone holds, and is more than is free for anyone
+  - L443 the build card's land gate counts the zone: a Diner passes it
+  - L444 ...an order's quote reads the ground its sector may build on, freeFor()
+  - L450 an unzoned shop fails it, and its gate says what is zoned for others: \"
+  - L458 the homes' own zone is not named: the GROUND row says only what is free
+  - L463 ...though to a shop it is ground zoned for others
+  - L471 with no zone and room, the shop passes the land gate as it always did
+- **L515 9. what is biting: a zone short of what it wants raises the flag, a zone with enough raises none**
+  - L517 fixture: no zone stands, and the city has free ground
+  - L518 with no zone nothing is short and the hub has no zoning flag
+  - L523 fixture: a zone of 2% of the dry ground wants less than is free, and holds all it wants
+  - L526 ...so a zone with enough raises no flag
+  - L534 fixture: Agriculture's zone of
+  - L538 a zone short of what it wants is flagged: one row, its own
+  - L540 ...its want is the row's, and what it holds is all the free ground (heldBy(), getFreeSqFt())
+  - L546 the heading names the zone: \"
+  - L547 its first sentence is what it holds of what it wants: \"
+  - L552 the hub's WHAT IS BITING carries it, once, in Zoning's area with the view's words
+  - L554 ...its door opens the zone's page: \"
+  - L563 fixture: two zones that each want less than is free and together more
+  - L568 both are flagged, in the zones' order
+  - L570 ...each holding the same share of its want (Z10), together all the free ground
+  - L575 the heading counts them: \"
+  - L576 ...and its first sentence says they share alike: \"
+  - L580 the hub carries one flag for them, its door the ground's page
+  - L586 fixture: Mining's zone alone, half the dry ground, wants less than is free
+  - L588 ...so a large zone the free ground covers raises none
+  - L594 fixture: built to the edge, nothing is free
+  - L596 the zone is flagged holding none of what it wants: \"
+  - L604 every zone off, nothing is flagged again
 
