@@ -38,6 +38,26 @@ public class UtilitiesHandler {
      */
     private static final double BASE_WATER_SUPPLY = 8000;
 
+    /** The kilowatts the grid starts with, before a power plant is built (setWattsProduction()). */
+    private static final double BASE_GRID_KW = 10000;
+
+    /**
+     * How many founding endowments the city holds (FW9, 2026-10-25;
+     * BuildingManager.getFoundingEndowments()): 1 for a founded city. The
+     * grid's 10,000 kW and the wells' 8,000 units are one founded city's, as
+     * its hundred household places are, and a harness's copy K times over holds
+     * K of them: the playtest's town at month 812 lives on the grid and the
+     * wells almost alone, and its copy with one of each had 0.2% of its power
+     * and 0.3% of its water in its first month. Set by ServicesManager each
+     * time the services update.
+     */
+    private long foundingEndowments = 1;
+
+    public void setFoundingEndowments(long endowments) { this.foundingEndowments = Math.max(1, endowments); }
+
+    private double baseGrid()  { return BASE_GRID_KW * foundingEndowments; }
+    private double baseWater() { return BASE_WATER_SUPPLY * foundingEndowments; }
+
     /**
      * Per-resident draw, in units of 10,000 gallons/month. 0.3 units = 3,000
      * gallons = about 100 gallons/day, the standard US residential figure.
@@ -196,7 +216,7 @@ public class UtilitiesHandler {
 
     /** What the works would produce fully staffed, held to the fresh water limit: the Services page's "at full staff" (0.7.59; baseWaterProduction until then). */
     public double getWaterAtFullStaff() {
-        return freshNameplate > freshCap ? BASE_WATER_SUPPLY + desalNameplate + freshCap : baseWaterProduction;
+        return freshNameplate > freshCap ? baseWater() + desalNameplate + freshCap : baseWaterProduction;
     }
 
     /**
@@ -210,9 +230,15 @@ public class UtilitiesHandler {
      * did).
      */
     public static double waterOutput(double fresh, double desal, double fill, double cap) {
-        if (fill == 0) return BASE_WATER_SUPPLY;
-        if (fresh * fill > cap) return (BASE_WATER_SUPPLY + desal) * fill + cap;
-        return (fresh + desal + BASE_WATER_SUPPLY) * fill;
+        return waterOutput(fresh, desal, fill, cap, 1);
+    }
+
+    /** ...for a city holding that many founding endowments (FW9): the wells are one endowment's, times them. */
+    public static double waterOutput(double fresh, double desal, double fill, double cap, long endowments) {
+        double wells = BASE_WATER_SUPPLY * endowments;
+        if (fill == 0) return wells;
+        if (fresh * fill > cap) return (wells + desal) * fill + cap;
+        return (fresh + desal + wells) * fill;
     }
     public double getPricePerWaterUnit()   { return pricePerWaterUnit; }
 
@@ -417,7 +443,7 @@ public class UtilitiesHandler {
 
     //setters
     public void setWattsProduction(double watts) {
-        this.baseProduction = watts + 10000;
+        this.baseProduction = watts + baseGrid();
     }
 
     public void setWattsConsumption(double watts) {
@@ -426,7 +452,7 @@ public class UtilitiesHandler {
     }
 
     public void setWaterProduction(double water) {
-        this.baseWaterProduction = water + BASE_WATER_SUPPLY;
+        this.baseWaterProduction = water + baseWater();
     }
 
     /** The two parts of that nameplate (0.7.59): the fresh plants' and the desalination plants'. Set beside it by ServicesManager. */
@@ -467,7 +493,7 @@ public class UtilitiesHandler {
     //calculators
     public void updateEnergyRatio() {
         production = baseProduction * averageUtilityFill;
-        if(averageUtilityFill == 0) production = 10000;
+        if(averageUtilityFill == 0) production = baseGrid();
         // ...and what the works sell the grid, whatever the utility's staffing (0.7.112, THE POWER THE WORKS MAKE).
         if (worksPower > 0) production += worksPower;
         energyRatio = Math.min(production / consumption, 1);
@@ -488,12 +514,12 @@ public class UtilitiesHandler {
         // formula to the bit.
         if (freshDrawn > freshCap) {
             freshDrawn = freshCap;
-            waterProduction = (BASE_WATER_SUPPLY + desalNameplate) * averageUtilityFill + freshCap;
+            waterProduction = (baseWater() + desalNameplate) * averageUtilityFill + freshCap;
         }
 
         // The legacy wells keep running with nobody on shift, same as the base grid.
         if (averageUtilityFill == 0) {
-            waterProduction = BASE_WATER_SUPPLY;
+            waterProduction = baseWater();
             freshDrawn = 0;
             desalOutput = 0;
         }

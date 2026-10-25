@@ -33,13 +33,21 @@ import java.util.regex.Pattern;
  * city is saved and its save multiplied by K: the population, the workforce,
  * the pyramid, the families, the households in each cell, the buildings and
  * their sites, every sector's and market's stocks and flows, the loans, the
- * treasury, the bank, the foreign accounts and the central bank. What is per
- * household stays; a household's shares and bonds are divided by K so the
- * registers still add up. K is a whole number, so every building count, and
- * so every post and door, is exactly K times the founded city's. Its land's
- * books - each holding's five areas and its forest's timber - are K times the
- * founded city's too, as its square feet are (0.7.67): the books are drawn
- * plots, counted exactly, and a copy's ground of millions of square
+ * treasury, the bank, the foreign accounts and the central bank - and, since
+ * FW9 (2026-10-25), the rest of the money and the quantities: the bond
+ * market, the exchange's books, the register of shares, the fund, the bank's
+ * records, the national accounts, the old metal, the care and the police
+ * (registers()), and the founding endowments (the hundred household places,
+ * the founding care and police, the grid and the wells), of which the copy
+ * holds K. What is per household stays - its money, its shares, its paper and
+ * its bonds - and the registers are K times over, so they still add up to
+ * their holders (they were left at one city's size, and the households'
+ * shares and bonds divided by K to match, until FW9). K is a whole number, so
+ * every building count, and so every post and door, is exactly K times the
+ * founded city's. Its land's books - each holding's five areas and its
+ * forest's timber - are K times the founded city's too, as its square feet
+ * are (0.7.67): the books are drawn plots, counted exactly, and a copy's
+ * ground of millions of square
  * kilometres is not drawn and counted in a harness's time (until 0.7.66 the
  * load drew a centre to hold it from samples); its blocks, its fields and its
  * iron are the founded city's.
@@ -80,7 +88,15 @@ import java.util.regex.Pattern;
  *      size of the figures - the 4.7e9-unit cash-flow statement batch K's
  *      copy at month 430 missed by 1.3e-6, rounding alone, now passes - and
  *      exactly the floor at every size the other harnesses read it at; a cent
- *      never moves.
+ *      never moves;
+ *   9. a copy K = TRACK_TIMES times over tracks its city month by month (FW9,
+ *      2026-10-25): the grown city of section 6 read through scale() at K = 1
+ *      and at K = 1,000 and played FREE_MONTHS, the copy's people, treasury,
+ *      savings, GDP, bank deposits, price level, unemployment rate and policy
+ *      rate each K times the city's (or equal to it) within its TRACK_ dial in
+ *      every month, and the shares', the corporate bonds' and the city's paper
+ *      registers adding up to the households' holdings, the copy's as the
+ *      city's.
  */
 public class ScaleCheck {
 
@@ -119,9 +135,9 @@ public class ScaleCheck {
      *
      * ...AT 410 SINCE 0.7.62, WHERE ITS OWN RENTS PRICE NOBODY OUT. The rents'
      * pull is compared month for month, and a copy cannot follow the city
-     * into a squeeze its own growth makes: the copies take no arrivals
-     * (WHAT IT STILL LOSES, below - the founding care and police are one
-     * city's), so when the city's homes fill faster than its landlords
+     * into a squeeze its own growth makes: the copies took no arrivals
+     * (until FW9, WHAT IT STILL LOSES, below - the founding care and police
+     * were one city's), so when the city's homes fill faster than its landlords
      * build, its pull drops and theirs stays at 1. 0.7.55 to 0.7.61's town at
      * 400 never squeezed in the six months read; batch K's (the drivers'
      * fuel at the world's price level moved the run from month 26) is in its
@@ -260,6 +276,50 @@ public class ScaleCheck {
      * the second.
      */
     static final double MONTH_MEDIAN_MS = 1500;
+
+    /** The copy section 9 reads against its city: its factor, K (FW9, 2026-10-25). */
+    static final long TRACK_TIMES = 1000;
+
+    /**
+     * How far the copy's people may miss K times the city's, as a share of it, in any of FREE_MONTHS. Measured on the
+     * fix (FW9): worst 1.0e-2, in the sixth month, the copy's jobs a little under the city's (the Industry sheds its
+     * spare bakeries a quarter a month where the city's three are one granule - WHAT IT STILL LOSES). Main's scaler
+     * missed 1.3e-2 in the first month and 6.1e-2 in the sixth.
+     */
+    static final double TRACK_PEOPLE = .015;
+
+    /** How far the copy's treasury cash may miss K times the city's, as a share of it, in any of FREE_MONTHS. Measured: worst 8.4e-3; main's scaler missed by 3.15 (a treasury of -9.7e8 where K times the city's was 4.5e8). */
+    static final double TRACK_CASH = .0125;
+
+    /** How far the copy's household savings may miss K times the city's, as a share of it, in any of FREE_MONTHS. Measured: worst 1.0e-2; main's scaler missed by 8.4e-2 in the first month and .30 in the sixth. */
+    static final double TRACK_SAVINGS = .016;
+
+    /**
+     * How far the copy's month GDP may miss K times the city's, as a share of it, in any of FREE_MONTHS. Measured: worst
+     * 9.3e-2, which is the construction line (88% of this town's GDP): the city builds a house or a cemetery in a month
+     * and the copy builds their mean, so the two parts by a tenth in the later months. Main's scaler missed 9.3e-2 too,
+     * by other causes (no trade, no goods consumed); this figure does not tell the fix from main's, the others do.
+     */
+    static final double TRACK_GDP = .14;
+
+    /** How far the copy's bank deposits may miss K times the city's, as a share of it, in any of FREE_MONTHS. Measured: worst 1.7e-2; main's scaler missed by 2.0e-2 in the first month and .28 in the sixth. */
+    static final double TRACK_DEPOSITS = .026;
+
+    /** How far the copy's price level (PriceIndex.getIndex()) may miss the city's own, as a share of it, in any of FREE_MONTHS. Measured: worst 2.5e-3; main's scaler missed by 4.2e-2 in the sixth month. */
+    static final double TRACK_PRICES = .004;
+
+    /**
+     * How far the copy's unemployment rate may stand from the city's, in rate points (.01 is a point), in any of
+     * FREE_MONTHS. Measured: worst 2.2e-2, the jobs the Industry's shed bakeries and the bank's closed branches took
+     * (WHAT IT STILL LOSES); main's scaler stood 9.5e-3 off, with its jobs as unscaled as its people.
+     */
+    static final double TRACK_UNEMPLOYMENT = .033;
+
+    /** How far the copy's policy rate may stand from the city's, in rate points, in any of FREE_MONTHS. Measured: none; the rate is the central bank's, struck on the city's own inflation and target. */
+    static final double TRACK_POLICY = .0005;
+
+    /** The most a register may stand from what its holders hold of it, as a share of the larger: the shares, the corporate bonds and the city's paper against the households' own (section 9). Measured: 1e-14, the sums' rounding. */
+    static final double REGISTER_WITHIN = 1e-9;
 
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
@@ -404,8 +464,10 @@ public class ScaleCheck {
         out.println("\n--- posts, doors and household places add up exactly ---");
         same("every post is K times the founded city's", everyPost(g), k * posts1);
         same("every home is K times the founded city's", g.getBuildingManager().getTotalHomes(), k * homes1);
-        same("the household places are K times the founded city's, past the city's own 100",
-                g.getHouseholdCapacity() - 100, k * (capacity1 - 100));
+        same("the household places are K times the founded city's, its own hundred included (K endowments, FW9)",
+                g.getHouseholdCapacity(), k * capacity1);
+        same("...because the copy holds K founding endowments where the founded city holds one",
+                g.getBuildingManager().getFoundingEndowments() / one.getBuildingManager().getFoundingEndowments(), k);
         addsUp(g, "at load");
 
         /* ============== 4. three months at that size ============== */
@@ -448,6 +510,8 @@ public class ScaleCheck {
         same("...the people out of work", backPeople.getUnemployed(), people.getUnemployed());
         same("...the homes", back.getBuildingManager().getTotalHomes(), g.getBuildingManager().getTotalHomes());
         same("...the household places", back.getHouseholdCapacity(), g.getHouseholdCapacity());
+        same("...the founding endowments it holds (FW9)", back.getBuildingManager().getFoundingEndowments(),
+                g.getBuildingManager().getFoundingEndowments());
         HistorySave hb = back.getHistorySave();
         assertTrue("...and the history, month for month",
                 hb.getPopulation().equals(h.getPopulation()) && hb.getWorkforce().equals(h.getWorkforce())
@@ -493,6 +557,9 @@ public class ScaleCheck {
 
         /* ============== 8. the audit's floor at size ============== */
         auditFloor();
+
+        /* ============== 9. a copy tracks its city month by month ============== */
+        tracks(root, grown);
     }
 
     /**
@@ -580,17 +647,47 @@ public class ScaleCheck {
      * sixth month, rents having followed the land - and homes built, where
      * 0.7.54's built none.
      *
-     * WHAT IT STILL LOSES, AND WHY: NOT THE LAND. The copies lose about 0.85%
-     * of their people a month, with no arrivals at all. The city's founding
-     * endowments of care and of police (Healthcare.foundingCapacity(),
-     * SafetyType.foundingCapacity()) are one founded city's, not a building,
-     * so they do not scale: the playtest's town at month 400 has all its
-     * senior care from that endowment, and its copy K times over has a K-th
-     * of it - the senior-care pull on migrants (1.13 in the town) is gone,
-     * and crime climbs. Measured with both endowments scaled by K (a scratch
-     * probe, 2026-10-06), the 1,000-times copy grew 1.5% in six months
-     * against the town's 2.5%. Printed, not asserted: a fixture's age, not a
-     * fault at size - a real city at billions has built its care.
+     * WHAT IT STILL LOSES, AND WHY: THE CITY'S GRAINS, NOT THE LAND (FW9,
+     * 2026-10-25; until then it lost about 0.85% of its people a month and
+     * the copies took no arrivals). Measured on the playtest's town at month
+     * 812 (5,319 people), copied 1,000 times (section 9): on main's scaler the
+     * copy lost 1.3% of its people in its first month and 6.1% in six, its
+     * treasury went from 4.5e8 to -9.7e8 in the first, and by the third month
+     * it traded and consumed almost nothing. Two causes, both the scaler's.
+     * The founding endowments - the hundred household places; the founding
+     * doctor, nursery, almshouse, churchyard and constabulary
+     * (Healthcare.foundingCapacity(), SafetyType.foundingCapacity()); and the
+     * grid's 10,000 kW and the wells' 8,000 units (UtilitiesHandler) - were
+     * one founded city's, and a town of five thousand lives on them: its copy
+     * with one of each had 0.2% of its power and 0.3% of its water, so its
+     * works ran at nothing. The copy holds K of them now
+     * (BuildingManager.getFoundingEndowments(), saved; scale() sets it). And
+     * the scaler left much of the money state at one city's size, the bond
+     * market, the exchange, the register of shares, the fund and the bank's
+     * records among it: registers() scales them, with the shares, the paper
+     * and the bonds left per household in the cells, and section 9 holds that
+     * the registers add up to their holders.
+     *
+     * What is left, after six months the 1,000-times copy against K times its
+     * town: 1.0% short of its people (0.03% after one month), its cash 0.8%,
+     * its savings 1.05%, its deposits 1.7%, its price level 0.25% and its
+     * unemployment rate 2.2 points over; the 5 and 10 billion copies of
+     * section 6 grow 1.21% and 0.98% a month against the town's 1.38%
+     * (printed, not asserted). It is the town's grains, which no scaling can
+     * share, and not a stock left behind. The Industry's three bakeries are
+     * one granule to its retirement rule (a quarter of the biggest holding a
+     * month, at least one, on 36 times the capacity its town uses) and the
+     * copy's thousand are not: it sheds 500, 375, 282, 211 Bakeries and 250
+     * and 188 Industrial Bakeries in six months. The bank's first branch is
+     * the charter and never closes, and a copy's thousand are not: the fees
+     * cover about 90 of them, and 909 close in the first month; with the
+     * bakeries they take 1.5% of the town's posts by the second month. The
+     * town builds a house or a cemetery in a month, the copy their mean, and
+     * construction is 88% of its GDP, so the month's GDP stands up to a tenth
+     * off. The town's roads are not a
+     * grain: InfrastructureManager.BASE_CAPACITY (400), scaled by K as a scratch
+     * probe, moved the sixth month's people by 44 of 5.7 million, and the
+     * roads are left. Its blocks, fields and iron are the founded city's.
      */
     static void free(Path root, GameFiles small, long pop1, double target, Original original) throws Exception {
         long k = Math.round(target / Math.max(1, pop1));
@@ -666,6 +763,126 @@ public class ScaleCheck {
                 MONTH_MEDIAN_MS, median, sorted[FREE_MONTHS - 1]), Timing.below(median, MONTH_MEDIAN_MS));
     }
 
+    /**
+     * Section 9 (FW9, 2026-10-25): a copy K = TRACK_TIMES times over plays its
+     * city's months. The grown city's save (section 6's, in slot 10 of
+     * `grown`) is read twice through scale() and the same load: once at K = 1,
+     * which is the city but for the slot's name, and once at TRACK_TIMES. Both
+     * play FREE_MONTHS, and every month the copy's figures are read against K
+     * times the city's (or the city's own, for a price level or a rate): the
+     * people, the treasury's cash, the households' savings, the month's GDP,
+     * the bank's deposits, the price level, the unemployment rate and the
+     * policy rate, each through the getter a screen reads it by. And the
+     * registers must add up to their holders in the copy as they do in the city,
+     * since the households' shares, paper and bonds are no longer divided by K:
+     * the shares' register against the households' own, the corporate bonds'
+     * face the households hold against theirs, and the city's paper the same.
+     *
+     * WHY. Section 6 read the free copies against what the ground and the
+     * rents did and left their people and their money "printed, not asserted".
+     * On main's scaler (0.8.48) the playtest's town at month 812 and its
+     * 1,000-times copy parted at once: the copy lost 1.3% of its people in its
+     * first month and 6.1% in six, and its treasury went from 4.5e8 to -9.7e8
+     * in the first, because the scaler left much of the money state at one
+     * city's size (the bond market, the exchange, the register of shares, the
+     * fund, the bank's records, the price index's year of spending) and the
+     * model's founding endowments - the hundred household places, the founding
+     * care and police, the grid and the wells - were one founded city's. Its
+     * month-1 misses were people 1.3e-2, cash 3.15, savings 8.4e-2, GDP 2.5e-2,
+     * deposits 2.0e-2, prices 1.6e-3 and unemployment 1.3e-3 (rate points),
+     * and by month 6 people 6.1e-2, savings .30, GDP 9.3e-2, deposits .28,
+     * prices 4.2e-2 and unemployment 9.5e-3. A copy that does not track its
+     * city is a poor test of what size does.
+     */
+    static void tracks(Path root, GameFiles grown) throws Exception {
+        out.printf("%n--- a copy %,d times over tracks its city month by month ---%n", TRACK_TIMES);
+        long[] times = { 1, TRACK_TIMES };
+        Figures[][] seen = new Figures[2][FREE_MONTHS];
+        double[][] registers = new double[2][FREE_MONTHS + 1];
+        for (int c = 0; c < 2; c++) {
+            GameFiles files = new GameFiles(root.resolve("track" + times[c]), root.resolve("track" + times[c] + "-no-legacy"));
+            scale(grown.saveFile(10), files.saveFile(10), times[c]);
+            Files.copy(grown.historyFile(10), files.historyFile(10));
+            Game g = new Game(files);
+            quietly(() -> g.loadGameSave(10));
+            assertTrue("the copy at K = " + times[c] + " loads", g.getLoadFailure() == null);
+            registers[c][0] = registersMiss(g);
+            for (int i = 0; i < FREE_MONTHS; i++) {
+                quietly(() -> g.simulateMonths(1));
+                seen[c][i] = new Figures(g);
+                registers[c][i + 1] = registersMiss(g);
+            }
+        }
+        double[] worst = new double[Figures.NAMES.length];
+        for (int i = 0; i < FREE_MONTHS; i++) {
+            double[] miss = seen[1][i].missAgainst(seen[0][i], TRACK_TIMES);
+            StringBuilder line = new StringBuilder();
+            for (int f = 0; f < miss.length; f++) {
+                worst[f] = Math.max(worst[f], miss[f]);
+                line.append(String.format(" %s %.2e", Figures.NAMES[f], miss[f]));
+            }
+            out.printf("      month %d: %,d people against %,d x K;%s%n", i + 1, seen[1][i].people, seen[0][i].people, line);
+        }
+        for (int f = 0; f < worst.length; f++) {
+            assertTrue(String.format("...%s: the copy is %s the city's within %.3g in all %d months (worst %.2e)",
+                    Figures.NAMES[f], Figures.EXTENSIVE[f] ? "K times" : "equal to", Figures.WITHIN[f], FREE_MONTHS, worst[f]),
+                    worst[f] <= Figures.WITHIN[f]);
+        }
+        double worstRegister = 0;
+        for (double[] row : registers) for (double miss : row) worstRegister = Math.max(worstRegister, miss);
+        assertTrue(String.format("...and the registers add up to their holders, the city's and the copy's, at the load and in all %d"
+                + " months (shares, corporate bonds, the city's paper; worst %.1e of the register)", FREE_MONTHS, worstRegister),
+                worstRegister <= REGISTER_WITHIN);
+    }
+
+    /** The worst a register stands from what the households hold of it: the shares of each company, the corporate bonds' face and the city's paper, as a share of the larger. */
+    static double registersMiss(Game g) {
+        double worst = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            worst = Math.max(worst, apart(g.getEquity().getDomesticShares(c), g.getHouseholdBalance().sharesHeld(c)));
+        }
+        worst = Math.max(worst, apart(g.getBondMarket().faceHeldByHouseholds(), g.getHouseholdBalance().totalBonds()));
+        return Math.max(worst, apart(g.getDebtManager().householdPrincipal(), g.getHouseholdBalance().totalPaper()));
+    }
+
+    static double apart(double a, double b) {
+        return Math.abs(a - b) / Math.max(1e-9, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    /** The figures section 9 reads each month, by the getters a screen reads them by. */
+    static final class Figures {
+        static final String[] NAMES = { "people", "cash", "savings", "gdp", "deposits", "prices", "unemployment", "policy" };
+        /** Whether each figure is a quantity (K times the city's) or a level (the city's own). */
+        static final boolean[] EXTENSIVE = { true, true, true, true, true, false, false, false };
+        static final double[] WITHIN = { TRACK_PEOPLE, TRACK_CASH, TRACK_SAVINGS, TRACK_GDP, TRACK_DEPOSITS, TRACK_PRICES,
+                TRACK_UNEMPLOYMENT, TRACK_POLICY };
+        final long people;
+        final double[] v = new double[NAMES.length];
+
+        Figures(Game g) {
+            people = g.getPopulationManager().getPopulation();
+            v[0] = people;
+            v[1] = g.getCash();
+            v[2] = g.getHouseholdDeposits();
+            v[3] = g.getEconomyManager().getMonthGdp();
+            v[4] = g.getBank().getDeposits();
+            v[5] = g.getPriceIndex().getIndex();
+            v[6] = g.getPopulationManager().getUnemploymentRate();
+            v[7] = g.getDebtManager().getPolicyRate();
+        }
+
+        /** Each figure's miss: a quantity's as a share of K times the city's, the price level's as a share of the city's, a rate's in rate points. */
+        double[] missAgainst(Figures city, long k) {
+            double[] m = new double[v.length];
+            for (int f = 0; f < v.length; f++) {
+                if (EXTENSIVE[f]) m[f] = Math.abs(v[f] - k * city.v[f]) / Math.max(1e-9, Math.abs(k * city.v[f]));
+                else if (NAMES[f].equals("prices")) m[f] = Math.abs(v[f] - city.v[f]) / Math.max(1e-9, Math.abs(city.v[f]));
+                else m[f] = Math.abs(v[f] - city.v[f]);
+            }
+            return m;
+        }
+    }
+
     /** addsUp()'s sums, as a verdict rather than a list of lines: section 6 asks it every month. */
     static boolean sumsAgree(Game g) {
         BuildingManager bm = g.getBuildingManager();
@@ -688,7 +905,7 @@ public class ScaleCheck {
                 && people.getTotalJobs() == everyPost(g) - bm.getPostsWithheld()
                 && bm.getTotalHomes() == homesByStack && bySize == bm.getTotalHomes()
                 && landlords.getStudioHomes() + landlords.getFamilyHomes() == bm.getTotalHomes()
-                && g.getHouseholdCapacity() == 100 + placesByStack;
+                && g.getHouseholdCapacity() == 100 * bm.getFoundingEndowments() + placesByStack;
     }
 
     /**
@@ -962,8 +1179,8 @@ public class ScaleCheck {
         var landlords = g.getSectors().realEstate();
         same("...and the landlords' studio and family doors to it too",
                 landlords.getStudioHomes() + landlords.getFamilyHomes(), bm.getTotalHomes());
-        same("the household places are the city's 100 and the stacks' places", g.getHouseholdCapacity(),
-                100 + placesByStack);
+        same("the household places are the city's hundred for each founding endowment and the stacks' places",
+                g.getHouseholdCapacity(), 100 * bm.getFoundingEndowments() + placesByStack);
     }
 
     /** Every post the buildings have, offered or not. */
@@ -1011,7 +1228,10 @@ public class ScaleCheck {
      */
     static final Pattern INTENSIVE = Pattern.compile("(price|Price|rate|Rate|month|Month|Months|share|Share|ratio|Ratio|target|Target|"
             + "renewals|duration|Left$|^id$|Id$|factor|Factor|insured|key|sector|good|type|building|known|Known|"
-            + "^leverage$|Margin$|(^|\\.)quote$|(^|\\.)tightness$|^utilisation$|Multiple$|StruckOn$)");
+            + "^leverage$|Margin$|(^|\\.)quote$|(^|\\.)tightness$|^utilisation$|Multiple$|StruckOn$|"
+            // FW9, 2026-10-25: the refiners' crude mix is each grade's share of their run, and the pump's wholesale price and
+            // duty are dollars a litre; none of the three has a name the pattern knew, and the copy's refinery ran a mix of 1000.
+            + "^crudeMix\\.|(^|\\.)(wholesale|duty)$)");
 
     /*
      * THE NAMES THE PATTERN READ WRONG (0.7.54). The scaled copy's first month
@@ -1031,7 +1251,10 @@ public class ScaleCheck {
      * city's price until they were.
      */
     static final java.util.Set<String> EXTENSIVE = java.util.Set.of("recognisedThisMonth", "escalationThisMonth",
-            "repairsThisMonth", "lastMonthSales", "demandAtPrice", "buildings", "sharesBoughtBack", "zeroRated");
+            "repairsThisMonth", "lastMonthSales", "demandAtPrice", "buildings", "sharesBoughtBack", "zeroRated",
+            // FW9, 2026-10-25: the borrowing costs a business has yet to expense are dollars in a schedule, and the units of
+            // construction material a business holds are a quantity; "Left" and "building" read them as months and as a kind.
+            "borrowingChargesLeft", "buildingMaterials");
 
     /** The save's top-level keys scaled: scale_save.py's list, less the works yard. */
     static final String[] TOP = { "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxCharged",
@@ -1078,21 +1301,17 @@ public class ScaleCheck {
             JsonArray a = d.getAsJsonArray("treasuryMonth");
             for (int i = 0; i < Math.min(5, a.size()); i++) a.set(i, times(a.get(i), k));
         }
-        // The households' cells: per-household money stays; the households
-        // (slot 3) scale; shares, the city's paper and the bonds are per
-        // household and scale by 1/K; then the three city figures.
+        // The households' cells: what a cell holds is per household, its money, its shares, the city's paper and its bonds
+        // alike, and stays; the households (slot 3) scale; then the three city figures. FW9, 2026-10-25: the shares, the
+        // paper and the bonds used to be divided by K here, so the households' totals matched the registers the scaler
+        // left at one city's size. The registers scale now (registers(), below), the households are K times as many, and
+        // what is per household stays per household - the totals agree, and a per-share price, fair value or yield is
+        // the city's own.
         JsonArray keys = d.getAsJsonArray("householdCellKeys");
         JsonArray cells = d.getAsJsonArray("householdCells");
         int n = keys.size();
         int slots = (cells.size() - 3) / n;
-        int companies = d.has("equityKeys") ? d.getAsJsonArray("equityKeys").size() : 0;
-        for (int c = 0; c < n; c++) {
-            int b = c * slots;
-            cells.set(b + 3, times(cells.get(b + 3), k));
-            for (int j = 0; j < companies; j++) cells.set(b + 8 + j, over(cells.get(b + 8 + j), k));
-            cells.set(b + 8 + companies + 6, over(cells.get(b + 8 + companies + 6), k));
-            cells.set(b + 8 + companies + 7, over(cells.get(b + 8 + companies + 7), k));
-        }
+        for (int c = 0; c < n; c++) cells.set(c * slots + 3, times(cells.get(c * slots + 3), k));
         for (int j = 0; j < 3; j++) cells.set(n * slots + j, times(cells.get(n * slots + j), k));
         // The families: the household matrix and its counters.
         if (d.has("families")) {
@@ -1142,10 +1361,445 @@ public class ScaleCheck {
             java.util.Set<Integer> skip = java.util.Set.of(11, 12, 13 + 12 + 4);
             for (int i = 0; i < a.size(); i++) if (!skip.contains(i)) a.set(i, times(a.get(i), k));
         }
+        // The founding endowments (FW9, 2026-10-25): the copy holds K of them, as it holds K times the buildings. The hundred
+        // household places, the doctor, the nursery, the almshouse, the churchyard and the constabulary were one founded city's
+        // and a copy K times over had a K-th of them per head: it lost 1.3% of its people in its first month and 6.1% in six.
+        d.addProperty("foundingEndowments", k * (d.has("foundingEndowments") ? d.get("foundingEndowments").getAsLong() : 1L));
+        registers(d, k);
         d.addProperty("slotName", "scaled x" + k);
         Files.createDirectories(to.getParent());
         Gson gson = new GsonBuilder().serializeSpecialFloatingPointValues().create();
         Files.writeString(to, gson.toJson(d));
+    }
+
+    /* -----------------------------------------------------------------------
+       THE MONEY AND THE QUANTITIES THE STUDY'S LIST LEFT AT ONE CITY'S SIZE (FW9, 2026-10-25)
+
+       Jerus's rule for the copy: scale the money and the quantities (people,
+       households, buildings' units, tonnes, shares, a bond's face) by K; leave
+       the logs (the build and demolition logs, the decision log, the notices),
+       the rates, the prices, the ratios, the months, the ids, the flags and the
+       counts of events - a count of auctions or of orders is the city's, not its
+       size's. Each key below is named, with the slots or fields that scale; the
+       name pattern (INTENSIVE) cannot say whether a "month" array holds months or
+       a month's money flows, and a per-share "fair" matches nothing.
+
+       WHAT STAYS AT 1x, BY KEY, AND WHY: the logs (builds, demolitions,
+       decisionLog, notices, autoBuild, graphs, reports, the construction queue's
+       rushes, shells, demolitions and expropriations, which are the player's
+       events); the prices, rates and ratios (priceIndex but for its year of
+       spending, expectations, worldEconomy, worldTotals, worldSeaTheta,
+       taxPolicyState, rateHistory, curveBook, landMarketPrices, labour, health,
+       the fund's dial, a bond's coupon and its price paths, a share's price and
+       fair value, the exchange's fair values and split factors); the months and
+       counts (advancesCeilingMonths, sectorLossMonths, restructureCounts,
+       blockedMonths, rolloverMode and its cap, foreignStanding, the offers' ids,
+       the stacks' order);
+       the land office's offers and holdings (the city's ground, whose books the
+       land block above scales); the households' per-household figures
+       (householdCells, householdBondsByCell, householdPaperRatio,
+       householdBondRatio, carsPerHousehold, rememberedCommute, costOfLiving,
+       captiveShare, fuelPerJourney); and the sickness ring, which holds shares of
+       a band.
+       ----------------------------------------------------------------------- */
+
+    static void registers(JsonObject d, long k) {
+        // The treasury's month in progress and its paper (CD3 to CD6): the interest accrued and not yet charged, what it has
+        // raised and what it has retired for a gain since the last strike, the paper its bank has taken and not yet paid for
+        // with the discount on it, what its buybacks have not yet settled, its capital spending, the transit bill, the month's
+        // material imports (units and bill) and the shed's points of work: money and units, K times over as the cash is.
+        for (String key : new String[] { "cityInterestAccrued", "treasuryRaisedPending", "retiredGainPending", "cityPaperUnsettled",
+                "cityDiscountUnsettled", "buybackToHouseholdsUnsettled", "buybackAbroadUnsettled", "cityCapitalSpending",
+                "transitBill", "monthlyMaterialImports", "monthlyMaterialImportBill", "constructionShedPoints" }) {
+            scalar(d, key, k);
+        }
+        // The journal's month in progress, the arrears it owes and the month's interest on each kind of paper (all in thousands
+        // or dollars, signed as the treasury sees them), and the national accounts, whose every slot is money or units
+        // (the food, the materials, the luxuries and the goods held) with the ten years of GDP the growth rates read.
+        for (String key : new String[] { "treasuryJournalPendingAmounts", "treasuryArrearsAmounts", "interestBookedByKind",
+                "nationalAccounts", "gdpRolling", "bondWrittenOff" }) {
+            whole(d, key, k);
+        }
+        // The treasury's last month: the non-cash part of its balance (slot 6, CD3), past the five money figures TOP's loop
+        // scaled and the flag.
+        slots(d, "treasuryMonth", k, 6);
+        // The price index: each component's and each fee line's base, weight and last price are prices and stay; the trailing
+        // year of spending the next weights are struck on is a flow of money, carried, and scales (a ring of ones left in with
+        // a month of K times struck the copy's weights on the new month alone, and its prices drifted 4% in six).
+        if (d.has("priceIndex")) {
+            int ring = PriceIndex.SLOTS_BEFORE_CHAIN + 4 + PriceIndex.COMPONENTS * 3 + PriceIndex.FEE_LINES * 3 + 1;
+            fromTo(d, "priceIndex", k, ring, ring + PriceIndex.WEIGHT_MONTHS * (PriceIndex.COMPONENTS + PriceIndex.FEE_LINES));
+        }
+        // The debt market: GDP, tax revenue, overdraft and advances in slots 0 to 3; the rate and the struck figures after.
+        slots(d, "debtMarket", k, 0, 1, 2, 3);
+        // The auction tally: the face sold and asked (1, 2) and the last sale's (12, 13); the sales and their counts stay.
+        slots(d, "auctionTally", k, 1, 2, 12, 13);
+        // The rollover: what it netted by month (the odd slots of the ledger) and its record's money (1 to 7); the month, the
+        // issues and the dollar pieces counted (0, 8, 9) stay.
+        if (d.has("rolloverLedger")) {
+            JsonArray a = d.getAsJsonArray("rolloverLedger");
+            for (int i = 1; i < a.size(); i += 2) a.set(i, times(a.get(i), k));
+        }
+        slots(d, "rolloverRecord", k, 1, 2, 3, 4, 5, 6, 7);
+        // The city's bonds: face, who holds it, what is owed for it, its discount, books and sales, K times over. Its rates, its
+        // yields, its months and its per-100 price paths stay. A dollar piece is a quantity of dollars, so it scales too.
+        named(d.get("debts"), k, "faceValue", "outstandingPrincipal", "householdPrincipal", "centralBankPrincipal",
+                "firmPrincipal", "worldPrincipal", "settleDue", "unsettledFace", "allotHouseholdsFace", "allotHouseholdsCash",
+                "allotFirmsFace", "allotFirmsCash", "allotWorldFace", "allotWorldCash", "issueDiscount", "discountLeft",
+                "carryingValue", "lastExpenseOwn", "lastCouponOwn", "face", "proceeds", "lastUpliftOwn", "lastUpliftPaidOwn",
+                "principalPerSlice");
+        // The builders' contracts still on site: their value, the units of material still to draw and the allowance priced in.
+        named(d.get("contractRecords"), k, "value", "units", "allowance");
+        // The construction queue's runs: how many of a stack have opened and what its orders cost, K times as the stack is. Its
+        // order, rushes, shells, demolitions and expropriations are the player's events and stay.
+        if (d.has("constructionControl")) named(d.getAsJsonObject("constructionControl").get("runs"), k, "built", "billed");
+
+        bank(d, k);
+        registerOfShares(d, k);
+        exchange(d, k);
+        bonds(d, k);
+        fund(d, k);
+
+        // The hot money and the carry trade: the stock, what arrived and left, the carry book, the city's paper the world holds
+        // and what left on doubt, K times over; the panic's month, the deposit share and the count of stops stay.
+        allBut(d, "capitalFlows", k, 1, 2, 5, 6);
+        // The outward investment: its lifetime flows and its peak in dollars (1 to 4), each sector's dollars abroad, what moved
+        // and its interest, and each sector's paper (the 7 + 3 x sectors slots and the paper after them), and the paper bought
+        // and sold; its last rate, its spread, its target share, the paper's ratio and yield stay.
+        if (d.has("outwardInvestment")) {
+            JsonArray a = d.getAsJsonArray("outwardInvestment");
+            int sectors = Sectors.KEYS.length, paper = 7 + 3 * sectors;
+            expect(a, paper + sectors + 4, "outwardInvestment");
+            for (int i = 1; i <= 4; i++) a.set(i, times(a.get(i), k));
+            for (int i = 7; i < paper + sectors; i++) a.set(i, times(a.get(i), k));
+            a.set(paper + sectors + 2, times(a.get(paper + sectors + 2), k));
+            a.set(paper + sectors + 3, times(a.get(paper + sectors + 3), k));
+        }
+
+        // The business debts' books (R1, R2): each sector's interest, owed, within a year and within five, and the money moved
+        // this month and at the close (rows 0 to 3 and 6 to 11 of the twelve), this month and last; the rate and the runs-to
+        // months (rows 4, 5) stay. The credit the sectors moved by kind is money throughout.
+        for (String key : new String[] { "sectorDebt", "sectorDebtBefore" }) {
+            if (!d.has(key)) continue;
+            for (var e : d.getAsJsonObject(key).entrySet()) {
+                JsonArray rows = e.getValue().getAsJsonArray();
+                for (int r = 0; r < rows.size(); r++) if (r != 4 && r != 5 && !rows.get(r).isJsonNull()) rows.set(r, everyTimes(rows.get(r), k));
+            }
+        }
+        whole(d, "creditMoved", k);
+        // What each business held of each good as the month closed: {units, price}; the units scale, the price stays.
+        if (d.has("sectorStock")) {
+            for (var sector : d.getAsJsonObject("sectorStock").entrySet()) {
+                for (var good : sector.getValue().getAsJsonObject().entrySet()) {
+                    JsonArray a = good.getValue().getAsJsonArray();
+                    a.set(0, times(a.get(0), k));
+                }
+            }
+        }
+        // Each company's own shares {shares, outstanding, price, fair, traded, dividend, dividendYear} for this month and last:
+        // the shares in issue and outstanding scale and so does the month's dividend, the whole of it; the price, the fair
+        // value and the year's dividend a share are per share.
+        for (String key : new String[] { "sectorShares", "sectorSharesBefore" }) {
+            if (!d.has(key)) continue;
+            for (var e : d.getAsJsonObject(key).entrySet()) {
+                JsonArray a = e.getValue().getAsJsonArray();
+                for (int i : new int[] { 0, 1, 5 }) a.set(i, times(a.get(i), k));
+            }
+        }
+
+        // The strategic reserve: tonnes held, what they cost, the release and the fill ordered, the month's trades in tonnes and
+        // in money and what the last strike settled: all of it a quantity or money.
+        whole(d, "reserve", k);
+        // The ports' month: the tonnes by stream through the sea and the trade, what was held back and the crude (the streams'
+        // shares, the first-of-stream flags and the ship names stay).
+        if (d.has("portMonth")) {
+            JsonObject p = d.getAsJsonObject("portMonth");
+            for (String f : new String[] { "seaIn", "seaOut", "tradeIn", "tradeOut", "heldBack", "crudeSeaIn", "crudeSeaOut", "crudeTrade" }) whole(p, f, k);
+        }
+        // The old metal: the tonnes that arose, were bought and went to landfill and what is pending by seller, for the steel and
+        // for the copper beside it, and the money paid by seller; the price stays.
+        if (d.has("oldMetal")) {
+            JsonObject m = d.getAsJsonObject("oldMetal");
+            oldMetal(m, k);
+            if (m.has("copper")) oldMetal(m.getAsJsonObject("copper"), k);
+        }
+
+        people(d, k);
+    }
+
+    /**
+     * The bank: one bank for the city, so every figure it carries is K times, but for its rates, its months and flags and the
+     * per-branch figures (the upkeep a later branch carries and the pricing's months). Its balance sheet and its loan book are
+     * re-derived each month from the deposits and the sectors' and households' debts, and its saved year of statements and sheets,
+     * its provisions and its rings of costs are carried. The slots below are Bank's own: lastMonthToSave(), monthLinesToSave(),
+     * pricingHistoryToSave(), solvencyToSave(), capitalRecordToSave(), statementYearToSave() and sheetYearToSave().
+     */
+    static void bank(JsonObject d, long k) {
+        // The deposits as the month last set them, the branches whose capital is posted (a count of branches, which scale as the
+        // buildings do), the profit that landed after the close, and the equity's two parts at the top of the month.
+        for (String key : new String[] { "bankHouseholdDeposits", "bankSectorDeposits", "bankBranchesCapitalised", "bankLateProfit",
+                "bankPaidInOpening", "bankRetainedOpening" }) {
+            scalar(d, key, k);
+        }
+        // Last month: payroll, upkeep, interest, the book and what it kept (0 to 3, 6) and the charter's exemption (10); the
+        // funding rate, the cost of funds, the window's share, the running cost, the months uncovered and the upkeep a later
+        // branch carries (4, 5, 7, 8, 9, 11) stay.
+        slots(d, "bankLastMonth", k, 0, 1, 2, 3, 6, 10);
+        // The month's statement lines: money but for the deposit rate chosen (35) and the two flags (36, 49).
+        allBut(d, "bankMonthLines", k, 35, 36, 49);
+        // The pricing's cost ring and its book ring, in dollars; the months priced (0) stay.
+        fromSlot(d, "bankPricingHistory", k, 1);
+        // Failures (0) and the flag (2) stay; the losses, bailouts and shortfalls the city has met scale.
+        slots(d, "bankSolvency", k, 1, 3, 4);
+        // The capital target's record: the months of loss, the worst year's rate and the payout months (0 to 2) stay; the four
+        // rings of provisions, weighted book, dividends and buybacks scale.
+        fromSlot(d, "bankCapitalRecord", k, 3);
+        // The year of statements, past the count filed and the lines counted (0, 1), and of balance sheets, past the sheets
+        // filed and the two widths (0 to 2): every line is money.
+        fromSlot(d, "bankStatementYear", k, 2);
+        fromSlot(d, "bankSheetYear", k, 3);
+        // The allowance, book by book: what is set aside, as the month opened it and as written off (0 to 2); the flag (3) and
+        // the share in stage two (4) stay. The households' book has four slots, all money.
+        if (d.has("bankAllowance")) {
+            for (var e : d.getAsJsonObject("bankAllowance").entrySet()) {
+                JsonArray a = e.getValue().getAsJsonArray();
+                int money = Bank.HOUSEHOLD_BOOK.equals(e.getKey()) ? a.size() : 3;
+                for (int i = 0; i < Math.min(money, a.size()); i++) a.set(i, times(a.get(i), k));
+            }
+        }
+        // The city's preferred: its par and its arrears and the shares its warrants are for; the cap and strike a share stay.
+        named(d.get("bankPreferred"), k, "par", "arrears", "warrantShares");
+        whole(d, "bankPreferredRecord", k);
+    }
+
+    /** The register of shares (Equity.SLOTS a company, in toSaveArray()'s order): the shares and the money, K times; the price, the target share and the counts stay. */
+    static void registerOfShares(JsonObject d, long k) {
+        if (!d.has("equity")) return;
+        JsonArray a = d.getAsJsonArray("equity");
+        int r = Equity.RECORD_MONTHS, per = Equity.SLOTS;
+        if (per != 3 * r + 19 || a.size() % per != 0) {
+            throw new IllegalStateException("ScaleCheck.registerOfShares(): equity's slots a company are not the layout it reads");
+        }
+        for (int b = 0; b < a.size(); b += per) {
+            for (int i = 0; i < 2 * r; i++) a.set(b + i, times(a.get(b + i), k));                  // net income, spent on buildings
+            for (int i = 1; i <= 2; i++) a.set(b + 2 * r + i, times(a.get(b + 2 * r + i), k));      // shares, held abroad
+            for (int i = 5; i <= 8; i++) a.set(b + 2 * r + i, times(a.get(b + 2 * r + i), k));      // raised and paid out, home and abroad
+            for (int i = 10; i <= 11; i++) a.set(b + 2 * r + i, times(a.get(b + 2 * r + i), k));    // the desk's shares, bought back
+            for (int i = 0; i < r; i++) a.set(b + 2 * r + 12 + i, times(a.get(b + 2 * r + 12 + i), k)); // dividends paid
+            for (int i = 13; i <= 17; i++) a.set(b + 3 * r + i, times(a.get(b + 3 * r + i), k));    // the city's shares and rescue, its dividends, the founders' book, buybacks paid
+        }
+    }
+
+    /** One order book: the orders' quantities and the month's, K times; every price, the last trade's month and the counts stay. */
+    static void book(JsonObject b, long k) {
+        for (String side : new String[] { "bids", "asks" }) {
+            if (!b.has(side)) continue;
+            for (JsonElement o : b.getAsJsonArray(side)) {
+                JsonObject x = o.getAsJsonObject();
+                scalar(x, "quantity", k);
+                scalar(x, "submitted", k);
+            }
+        }
+        for (String f : new String[] { "postedBuy", "postedSell", "filledBuy", "filledSell", "volume", "turnover", "sellQuantityWaited", "dust" }) scalar(b, f, k);
+    }
+
+    /** The exchange: every book, the leavers' shares and the buyback budgets, and the record's money and volumes; the fair values and split factors are per share. */
+    static void exchange(JsonObject d, long k) {
+        if (!d.has("exchangeState")) return;
+        JsonObject e = d.getAsJsonObject("exchangeState");
+        for (JsonElement b : e.getAsJsonArray("books")) book(b.getAsJsonObject(), k);
+        whole(e, "emigrantShares", k);
+        whole(e, "buybackBudget", k);
+        // life: the volume and the values (0 to 4), the leavers (9, 10), the sellers (11 to 18), the rebalance and the excess
+        // (23 to 27) scale; the counts of sells and trades (5 to 8) and the desk-bound counts (19 to 22) stay.
+        allBut(e, "life", k, 5, 6, 7, 8, 19, 20, 21, 22);
+        // last month's posted and filled values (0, 1); the counts stay.
+        slots(e, "last", k, 0, 1);
+    }
+
+    /** The corporate bond market: each bond's issue, face and holders, its books, and the month's and life's money; the coupons, months and ids stay. */
+    static void bonds(JsonObject d, long k) {
+        if (!d.has("bondMarket")) return;
+        JsonObject m = d.getAsJsonObject("bondMarket");
+        named(m.get("bonds"), k, "issued", "face", "households", "bank", "bankCost", "world", "city", "companies", "writtenOff");
+        for (JsonElement b : m.getAsJsonArray("books")) book(b.getAsJsonObject(), k);
+        // the month: money but for the issues (20) and the counts of sells and trades (26, 27, 28, 31).
+        allBut(m, "month", k, 20, 26, 27, 28, 31);
+        // life: money but for the issues (15), the sells (16, 17) and the trades (19).
+        allBut(m, "life", k, 15, 16, 17, 19);
+        slots(m, "lastIssueFigures", k, 0);
+        for (String f : new String[] { "issuedBySector", "proceedsBySector", "repaidBySector", "boughtBySector", "couponsBySector" }) whole(m, f, k);
+    }
+
+    /** The city's fund: its cash and what it paid in and drew, its resolutions, orders and ledger; its dial, its months and its limits and prices stay. */
+    static void fund(JsonObject d, long k) {
+        if (!d.has("fund")) return;
+        JsonObject f = d.getAsJsonObject("fund");
+        for (String s : new String[] { "cash", "rescueCost", "lastPayInYearSurplus", "lastPayInFromSurplus", "lastPayInFromCash",
+                "transfersThisYear", "transferShortThisYear" }) scalar(f, s, k);
+        whole(f, "life", k);
+        whole(f, "month", k);
+        named(f.get("resolutions"), k, "paid", "fromCash", "advanced", "shortfall", "exitCapital", "shares", "householdsShares",
+                "householdsValue", "worldShares", "worldValue", "fundShares", "fundValue", "preferredCancelled", "warrantsCancelled");
+        named(f.get("hand"), k, "amount", "units", "filled", "spent");
+        named(f.get("posted"), k, "amount", "units", "filled", "spent");
+        if (f.has("ledger")) {
+            JsonObject l = f.getAsJsonObject("ledger");
+            named(l.get("lots"), k, "acb", "realized", "proceeds", "acbOut", "bought", "income", "incomeBefore", "boughtValue", "lastIncome");
+            named(l.get("activity"), k, "units", "money", "realized", "asked", "lapsed", "value");
+        }
+    }
+
+    /** The old metal's tonnes and the money paid for them; the price and the months stay. */
+    static void oldMetal(JsonObject m, long k) {
+        whole(m, "pending", k);
+        whole(m, "pendingBySource", k);
+        whole(m, "lastBySource", k);
+        for (String s : new String[] { "lastArisen", "lastBought", "lastLandfill" }) scalar(m, s, k);
+        whole(m, "lastPaid", k);
+    }
+
+    /**
+     * The people and what is done with them: the care and the burials, the police and the prisoners, the schools' pipeline, the
+     * licensed heads and last month's migration. The sick ring is shares of a band and stays, the health rates and the wages stay.
+     */
+    static void people(JsonObject d, long k) {
+        // The sickness: the dead booked to it last month by band (the six slots past the ring); the ring's shares, the recovery
+        // and the seeded flag stay.
+        if (d.has("sickness")) {
+            JsonArray a = d.getAsJsonArray("sickness");
+            int bands = AgeBand.values().length, first = bands * Sickness.RING;
+            expect(a, first + bands + 2, "sickness");
+            for (int i = first; i < first + bands; i++) a.set(i, times(a.get(i), k));
+        }
+        // The police and the prisons: the prisoners by months served, the people, officers and cells, the month's crimes and their
+        // theft, the caught and the released, the pay and the upkeep, and the lifetime counts; the coverage and the injured
+        // share stay.
+        if (d.has("crime")) {
+            JsonArray a = d.getAsJsonArray("crime");
+            int causes = Crime.Cause.values().length, base = Crime.SENTENCE_MONTHS + 5 + causes;
+            expect(a, base + 13 + 2 + 5, "crime");
+            for (int i = 0; i < a.size(); i++) if (i != Crime.SENTENCE_MONTHS + 3 && i != base + 4) a.set(i, times(a.get(i), k));
+        }
+        // The burials and the care: the plots used and the unburied, the money, the deaths and burials and cremations, the plots
+        // built and the cremation capacity, the full-service bill, and the people served by kind (16 to 18); the coverage by kind
+        // (13 to 15) stays.
+        if (d.has("healthcare")) {
+            JsonArray a = d.getAsJsonArray("healthcare");
+            expect(a, 19, "healthcare");
+            for (int i = 0; i < a.size(); i++) if (i < 13 || i > 15) a.set(i, times(a.get(i), k));
+        }
+        // The schools: past the tuition dial (0), the people who have ever graduated and every cohort in flight, the month's pay,
+        // upkeep, subsidy and tuition, the people enrolled and finished and what each kind cost and took in fees; the coverage by
+        // kind stays.
+        if (d.has("education")) {
+            JsonArray a = d.getAsJsonArray("education");
+            int kinds = EducationType.values().length, inFlight = 0;
+            for (EducationType type : EducationType.values()) inFlight += type.isAdult() ? type.months() : 0;
+            int coverage = 1 + WageBand.values().length + inFlight + 4;
+            expect(a, coverage + 4 * kinds + 1, "education");
+            for (int i = 1; i < a.size(); i++) if (i < coverage || i >= coverage + kinds) a.set(i, times(a.get(i), k));
+        }
+        // The people licensed to hold a gated job, by job.
+        whole(d, "licences", k);
+        // Last month's migration, past the wage history, the streaks and the months recorded: the target and the arrivals and
+        // departures, the crime's, the bankruptcies' and the work's departures, the jobs and homes counted and the two draws, and
+        // the arrivals and departures by band and the arrivals' licences; the crowding, the pulls and the shares stay.
+        if (d.has("migration")) {
+            JsonArray a = d.getAsJsonArray("migration");
+            int tiers = PayTier.values().length, history = tiers * Migration.DECLINE_MONTHS + tiers + 1;
+            java.util.Set<Integer> people = java.util.Set.of(0, 1, 2, 9, 10, 11, 12, 13, 14, 15);
+            for (int i = history; i < a.size(); i++) {
+                int j = i - history;
+                if (j >= 16 || people.contains(j)) a.set(i, times(a.get(i), k));
+            }
+        }
+        // The households' array past the rows (the older of the two saves of them): the households of each row, and the planned
+        // spend, the hungry and the total (the three figures the cells' end carries too) and the hungry at full shelves.
+        if (d.has("householdBalance")) {
+            JsonArray a = d.getAsJsonArray("householdBalance");
+            int rows = HouseholdBalance.ROWS;
+            expect(a, rows * 8 + 5, "householdBalance");
+            for (int i = 3 * rows; i < 4 * rows; i++) a.set(i, times(a.get(i), k));
+            for (int i : new int[] { 8 * rows, 8 * rows + 1, 8 * rows + 2, 8 * rows + 4 }) a.set(i, times(a.get(i), k));
+        }
+    }
+
+    /* ----- the helpers the blocks above are written with ----- */
+
+    /** One number at a key, K times; a key the save does not have is left. */
+    static void scalar(JsonObject d, String key, long k) {
+        if (d.has(key)) d.add(key, times(d.get(key), k));
+    }
+
+    /** Every number under a key, K times: a number, an array of them or a map of them. */
+    static void whole(JsonObject d, String key, long k) {
+        if (d.has(key)) d.add(key, everyTimes(d.get(key), k));
+    }
+
+    /** Every number in a value K times (a flag or a name is not a number and stays). */
+    static JsonElement everyTimes(JsonElement v, long k) {
+        if (v == null || v.isJsonNull()) return v;
+        if (v.isJsonPrimitive()) return times(v, k);
+        if (v.isJsonArray()) {
+            JsonArray r = new JsonArray();
+            for (JsonElement e : v.getAsJsonArray()) r.add(everyTimes(e, k));
+            return r;
+        }
+        JsonObject r = new JsonObject();
+        for (var e : v.getAsJsonObject().entrySet()) r.add(e.getKey(), everyTimes(e.getValue(), k));
+        return r;
+    }
+
+    /** The slots of an array at a key that scale; the others stay. */
+    static void slots(JsonObject d, String key, long k, int... at) {
+        if (!d.has(key)) return;
+        JsonArray a = d.getAsJsonArray(key);
+        for (int i : at) if (i < a.size()) a.set(i, times(a.get(i), k));
+    }
+
+    /** Every slot of an array at a key but the ones named. */
+    static void allBut(JsonObject d, String key, long k, int... stay) {
+        if (!d.has(key)) return;
+        JsonArray a = d.getAsJsonArray(key);
+        java.util.Set<Integer> keep = new java.util.HashSet<>();
+        for (int i : stay) keep.add(i);
+        for (int i = 0; i < a.size(); i++) if (!keep.contains(i)) a.set(i, times(a.get(i), k));
+    }
+
+    /** The slots of an array at a key from one to before another. */
+    static void fromTo(JsonObject d, String key, long k, int first, int end) {
+        if (!d.has(key)) return;
+        JsonArray a = d.getAsJsonArray(key);
+        for (int i = first; i < Math.min(end, a.size()); i++) a.set(i, times(a.get(i), k));
+    }
+
+    /** Every slot of an array at a key from one on. */
+    static void fromSlot(JsonObject d, String key, long k, int first) {
+        if (!d.has(key)) return;
+        JsonArray a = d.getAsJsonArray(key);
+        for (int i = first; i < a.size(); i++) a.set(i, times(a.get(i), k));
+    }
+
+    /** Each number under one of the names, wherever an object holds one, K times (a name's array or map of numbers too); the rest of the object stays. */
+    static void named(JsonElement v, long k, String... names) {
+        if (v == null || v.isJsonNull()) return;
+        java.util.Set<String> set = java.util.Set.of(names);
+        if (v.isJsonArray()) {
+            for (JsonElement e : v.getAsJsonArray()) named(e, k, names);
+        } else if (v.isJsonObject()) {
+            JsonObject o = v.getAsJsonObject();
+            for (String key : new java.util.ArrayList<>(o.keySet())) {
+                if (set.contains(key)) o.add(key, everyTimes(o.get(key), k));
+                else named(o.get(key), k, names);
+            }
+        }
+    }
+
+    /** A layout read by position has the length it was read at; a slot added to the model must be classed here, so the scaler stops and says so. */
+    static void expect(JsonArray a, int length, String key) {
+        if (a.size() != length) throw new IllegalStateException("ScaleCheck.registers(): " + key + " has " + a.size()
+                + " slots where the scaler reads " + length + ": a slot was added to the model, and the scaler has to class it");
     }
 
     static JsonElement sc(JsonElement v, String name, long k) {
@@ -1174,10 +1828,6 @@ public class ScaleCheck {
         return new JsonPrimitive(v.getAsDouble() * k);
     }
 
-    static JsonElement over(JsonElement v, long k) {
-        if (v == null || !v.isJsonPrimitive() || !v.getAsJsonPrimitive().isNumber()) return v;
-        return new JsonPrimitive(v.getAsDouble() / k);
-    }
 
     static void cleanUp(Path root) {
         try (var walk = Files.walk(root)) {

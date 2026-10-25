@@ -13701,6 +13701,8 @@ public class Game {
                 buildingManager.getContractValueById());
         // ...and who placed each part of it (0.7.19; see OLD CONTRACTS).
         dataSave.setContractRecords(buildingManager.getContractRecords());
+        // ...and how many founding endowments of household places, care and police it holds (FW9).
+        dataSave.setFoundingEndowments(buildingManager.getFoundingEndowments());
         // ...and the order the stacks stand in (0.7.43; DataSave.getStackOrder()).
         dataSave.setStackOrder(buildingManager.stackOrder());
         // ...and the player's hand on the queue (0.7.22): the order, the
@@ -17330,6 +17332,10 @@ public class Game {
              */
             int highestId = Math.max(loaded.getBuildingsLength(),
                     loaded.getConstructionByIdLength());
+
+            // The founding endowments the city holds (FW9), always set, so a save without the figure resets the
+            // manager to one; before the buildings, whose capacities it adds to.
+            buildingManager.setFoundingEndowments(loaded.getFoundingEndowments());
 
             for (int id = 0; id < highestId; id++) {
 

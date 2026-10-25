@@ -58,6 +58,10 @@ public enum SafetyType {
      *
      * Not discounted by staffing, like Healthcare.foundingCapacity(): nobody
      * is on the payroll for it, because it is not a building.
+     *
+     * ONE ENDOWMENT'S (FW9, 2026-10-25): BuildingManager reads it times the
+     * founding endowments the city holds, 1 for a founded city and K for a
+     * harness's copy of one K times over.
      */
     public double foundingCapacity() {
         if (this == POLICE) {

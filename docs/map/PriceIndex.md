@@ -29,7 +29,7 @@
 > a food-weighted index, and it should, because that is whose cost of living
 > this is.
 
-**Used by (20):** [ChartModel](ChartModel.md), [CityNeeds](CityNeeds.md), [CurrencyCheck](CurrencyCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [Expectations](Expectations.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GroceryCheck](GroceryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PassThroughCheck](PassThroughCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md)
+**Used by (21):** [ChartModel](ChartModel.md), [CityNeeds](CityNeeds.md), [CurrencyCheck](CurrencyCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [Expectations](Expectations.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GroceryCheck](GroceryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PassThroughCheck](PassThroughCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md)
 
 ## Sections
 

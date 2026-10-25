@@ -79,6 +79,11 @@ public class Healthcare {
      * Deliberately NOT discounted by staffing, unlike everything the player
      * builds - there is nobody on the payroll for it, because it is not a
      * building. It is what was already here.
+     *
+     * ONE ENDOWMENT'S (FW9, 2026-10-25): the figure for a city founded as the
+     * game founds it. BuildingManager reads it times the founding endowments
+     * the city holds, which is 1 for every city a player founds and K for a
+     * harness's copy of one K times over.
      */
     public static double foundingCapacity(CareType care) {
         if (care == null) return 0;
