@@ -4,7 +4,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 418 files, 446,812 lines, 18,996 methods, 4,203 constants. `GameVersion.VERSION` is "0.8.49", `SAVE_FORMAT` 46.
+**The tree:** 420 files, 447,172 lines, 19,011 methods, 4,209 constants. `GameVersion.VERSION` is "0.8.50", `SAVE_FORMAT` 46.
 
 ## model (194 files)
 
@@ -39,7 +39,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CapitalFlows.java](CapitalFlows.md) | 757 | 48 | Hot money: what comes in chasing a spread, and what happens when it leaves. | 19 |
 | [CareType.java](CareType.md) | 170 | 7 | What a healthcare building actually does. | 29 |
 | [CentralBank.java](CentralBank.md) | 954 | 95 | The city's central bank: the balance sheet its money is made on, and the one place money is made or destroyed. | 24 |
-| [ChartModel.java](ChartModel.md) | 717 | 49 | What a time chart shows, as numbers: the window of months it looks at and how a drag, a wheel, a range button and the overview move it; the ticks o... | 16 |
+| [ChartModel.java](ChartModel.md) | 717 | 49 | What a time chart shows, as numbers: the window of months it looks at and how a drag, a wheel, a range button and the overview move it; the ticks o... | 17 |
 | [CityBasket.java](CityBasket.md) | 120 | 2 | What the city eats: the basket per head, struck from the households' own statements, and the file's reference basket for a city that has none yet. | 1 |
 | [CityCalendar.java](CityCalendar.md) | 146 | 13 | Turns the month counter into a date a person can hold in their head. | 27 |
 | [CityLand.java](CityLand.md) | 1,295 | 93 | The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase sinc... | 49 |
@@ -240,20 +240,21 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [SpreadPlanner.java](SpreadPlanner.md) | 556 | 47 | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of t... | 32 |
 | [WoodProducts.java](WoodProducts.md) | 107 | 2 | Sawmills, and the panel, pulp, paper and pellet mills - Wood Products (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.7, 2.8, 2.12 and 5... | 6 |
 
-## interface (34 files)
+## interface (35 files)
 
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
 | [BankScreen.java](BankScreen.md) | 4,431 | 169 | The bank tab: whether the city's bank is healthy and what it charges, on an Overview - its state in a sentence, its capital in its band, eight figu... | 3 |
 | [BuildScreen.java](BuildScreen.md) | 5,564 | 186 | The build tab: the Overview it opens on and the city's five categories opened on their needs (both 0.7.24), the market's nine in their groups (0.7.... | 14 |
 | [CapChips.java](CapChips.md) | 190 | 8 | The highest yield a sale will take, as three chips and a yield box: fair plus a point (the default), a yield the player names, or Fill it (CD2, D28). | 2 |
+| [ChartFitBench.java](ChartFitBench.md) | 130 | 3 | The full-screen chart on a scene of its own - no stage, no window - laid out at a window's size with some lines picked, for ChartFitCheck (FW10): t... | 1 |
 | [CityBuilderSim.java](CityBuilderSim.md) | 55 | 2 | The way in. | 0 |
 | [ConstructionScreen.java](ConstructionScreen.md) | 1,122 | 39 | The construction page (0.7.22): the builders' gauge, every site with its order, its crews, its time and its money and the player's hand on it - pri... | 1 |
 | [FinancesScreen.java](FinancesScreen.md) | 6,386 | 254 | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece an... | 7 |
 | [FoundingScreen.java](FoundingScreen.md) | 1,357 | 60 | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. | 2 |
 | [FundScreen.java](FundScreen.md) | 2,441 | 99 | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with it... | 2 |
 | [GovernmentScreen.java](GovernmentScreen.md) | 2,457 | 105 | The government tab: where the city's money came from and went, the road from what it EARNED through the budget's SURPLUS to what the cash BANKED, w... | 2 |
-| [HistoryScreen.java](HistoryScreen.md) | 3,134 | 109 | City History: the city as a shape over time. | 10 |
+| [HistoryScreen.java](HistoryScreen.md) | 3,165 | 113 | City History: the city as a shape over time. | 11 |
 | [Icons.java](Icons.md) | 541 | 6 | The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one per category, and the few the frame draws (the money block, the "Needs... | 18 |
 | [InfrastructureScreen.java](InfrastructureScreen.md) | 1,982 | 73 | The infrastructure tab: the roads, the trams, the freight and the ports - four pages under the five figures the whole tab is about, each page led b... | 1 |
 | [Kept.java](Kept.md) | 620 | 63 | A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a screen's code made at its last draw, handed back to the... | 8 |
@@ -264,7 +265,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [MapView.java](MapView.md) | 3,041 | 134 | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's ... | 3 |
 | [MiniMap.java](MiniMap.md) | 471 | 20 | The minimap: a stamp of the city at the foot of the rail, above Menu, on screen from every tab; while the pointer is on it a preview beside it, 288... | 1 |
 | [Money.java](Money.md) | 384 | 30 | Every figure the interface prints as money, in one place. | 13 |
-| [Palette.java](Palette.md) | 726 | 27 | Every colour, size and spacing this game is allowed to use, in one place. | 29 |
+| [Palette.java](Palette.md) | 726 | 27 | Every colour, size and spacing this game is allowed to use, in one place. | 30 |
 | [PeopleScreen.java](PeopleScreen.md) | 4,562 | 156 | The People tab and its second page, Household money. | 3 |
 | [Pieces.java](Pieces.md) | 5,558 | 241 | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals ba... | 17 |
 | [PolicyScreen.java](PolicyScreen.md) | 5,334 | 270 | The Policy tab: every number the city sets for itself - the taxes, the wage floor, the price of money and the promises - each a dial with what it w... | 10 |
@@ -273,13 +274,13 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Statement.java](Statement.md) | 482 | 23 | The rows a statement is built from: a head, a line, a note, a total, a disclosure that opens, and the two-column book the sector pages and the bank... | 27 |
 | [StatementView.java](StatementView.md) | 587 | 36 | A formal statement on the page (0.7.74): SectorStatements' rows set as an accountant sets them - a title block, the columns (note, this month, last... | 2 |
 | [SummaryScreen.java](SummaryScreen.md) | 1,545 | 33 | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen... | 10 |
-| [TimeChart.java](TimeChart.md) | 1,560 | 85 | A chart of months (0.7.23): lines over a window the player drags, wheels and ranges through, years on its axis, recessions named on their bands, th... | 9 |
+| [TimeChart.java](TimeChart.md) | 1,603 | 89 | A chart of months (0.7.23): lines over a window the player drags, wheels and ranges through, years on its axis, recessions named on their bands, th... | 10 |
 | [TradeScreen.java](TradeScreen.md) | 3,332 | 144 | The Trade & the world tab: how the city stands against the world this month - what it sells and buys abroad, the month's balance of payments, what ... | 4 |
 | [UiProbe.java](UiProbe.md) | 726 | 23 | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on ... | 0 |
-| [UserInterface.java](UserInterface.md) | 6,645 | 177 | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating a... | 27 |
+| [UserInterface.java](UserInterface.md) | 6,645 | 177 | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating a... | 28 |
 | [ZoningScreen.java](ZoningScreen.md) | 1,087 | 71 | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial c... | 2 |
 
-## harnesses (144 files)
+## harnesses (145 files)
 
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
@@ -305,6 +306,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CementConcreteCheck.java](CementConcreteCheck.md) | 354 | 11 | Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-rese... | 0 |
 | [CentralBankCheck.java](CentralBankCheck.md) | 2,073 | 28 | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its tw... | 0 |
 | [ChartCheck.java](ChartCheck.md) | 959 | 28 | The charts (0.7.23): the player's decisions as the model records them, and the arithmetic City History's charts are drawn by - the window, the tick... | 0 |
+| [ChartFitCheck.java](ChartFitCheck.md) | 156 | 4 | The full-screen chart's foot is on the screen (FW10): with the legend wrapped to two rows or three, the chart still ends inside the window and the ... | 0 |
 | [ChildcareCheck.java](ChildcareCheck.md) | 553 | 20 | Childcare resized (0.7.71, batch N2): the three childcare centres, the build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS THE ... | 2 |
 | [ClockCheck.java](ClockCheck.md) | 455 | 17 | The clock's pace (UP2): a redraw is paced by what it cost, a frame spends a budget on months and drops what it could not run, the header's speed sa... | 0 |
 | [CoalMiningCheck.java](CoalMiningCheck.md) | 624 | 15 | Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1, 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.m... | 1 |
@@ -361,7 +363,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [InvestCheck.java](InvestCheck.md) | 1,606 | 8 | Verifies the private investment engine: forecasting, the demand tests, and the brake. | 0 |
 | [IslandNetCheck.java](IslandNetCheck.md) | 834 | 32 | A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5). | 0 |
 | [JunctionCheck.java](JunctionCheck.md) | 1,768 | 76 | Proves that the junctions and interchanges of spec-freight 4.6 are drawn by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19). | 3 |
-| [KeptCheck.java](KeptCheck.md) | 887 | 15 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 0 |
+| [KeptCheck.java](KeptCheck.md) | 887 | 15 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 1 |
 | [KnownRedsCheck.java](KnownRedsCheck.md) | 311 | 15 | The harness for AllChecks' known reds (batch FW7): a failed harness is said to be a known red or a NEW one against main's record, line by line, and... | 0 |
 | [LabourCheck.java](LabourCheck.md) | 1,181 | 14 | Verifies the labour market: who can hold a job, and what it costs. | 1 |
 | [LandCheck.java](LandCheck.md) | 3,023 | 43 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 5 |

@@ -17,7 +17,7 @@
 >     java -cp <classes> ham.citybuildersim.AllChecks --timing   the timing harnesses alone (Timing.HARNESSES)
 > 
 > Exit status is the number of harnesses that failed, so a build script can
-> stop on it. BuildMenuCheck and KeptCheck need JavaFX on the classpath and are skipped,
+> stop on it. BuildMenuCheck, KeptCheck and ChartFitCheck need JavaFX on the classpath and are skipped,
 > with a note, when it is not there.
 > 
 > -f is for an AI session, where every line printed is read and paid for

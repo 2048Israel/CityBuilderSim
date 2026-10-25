@@ -1902,15 +1902,12 @@ final class HistoryScreen {
         bigChart.unpin();
         if (on) {
             if (fullPane == null) {
-                fullPane = new VBox();
-                fullPane.setStyle("-fx-background-color: " + Palette.STAGE + "; -fx-padding: 14 22 12 22;");
+                fullPane = newFullPane();
                 fullPane.widthProperty().addListener((o, was, now) -> fitFull());
                 fullPane.heightProperty().addListener((o, was, now) -> fitFull());
-                fullClock = new Label();
-                fullClock.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                fullClock = newFullClock();
             }
-            Label title = new Label("City History");
-            title.setStyle(Palette.Fonts.sansSemiBold() + " -fx-font-size: 15px; -fx-text-fill: " + Palette.TEXT + ";");
+            Label title = newFullTitle();
             bigChart.lead().getChildren().setAll(title, fullClock);
             bigChart.setFull(true);
             fullPane.getChildren().setAll(bigChart);
@@ -1938,15 +1935,49 @@ final class HistoryScreen {
      * The chart sized to the pane: the whole width, and the plot whatever
      * height the rest leaves - read off the window (0.7.40), which the pane
      * is laid over and nothing in it can move, not off the pane, which a
-     * chart a pixel too big for it would stretch.
+     * chart a pixel too big for it would stretch. What the rest leaves is
+     * measured, not summed (FW10): TimeChart.fitTo() wraps the legend to the
+     * width, measures what then stands beside the plot, and gives the plot
+     * the height that is left, so a legend of three rows costs the plot three.
      */
     private void fitFull() {
         if (!chartFull || fullPane == null || bigChart == null) return;
         javafx.scene.Scene window = fullPane.getScene();
-        double w = (window != null ? window.getWidth() : fullPane.getWidth()) - 44,
-               h = (window != null ? window.getHeight() : fullPane.getHeight()) - 26;
+        fitToWindow(bigChart, window != null ? window.getWidth() : fullPane.getWidth(),
+                window != null ? window.getHeight() : fullPane.getHeight());
+    }
+
+    /** The full-screen pane's padding: above the chart, beside it on each side, and below it, in pixels; the chart gets the window less these. */
+    static final double FULL_PAD_TOP = 14, FULL_PAD_SIDE = 22, FULL_PAD_BOTTOM = 12;
+
+    /** The pane the chart is laid in over the whole window: the stage's colour, padded by FULL_PAD_*. */
+    static VBox newFullPane() {
+        VBox pane = new VBox();
+        pane.setStyle("-fx-background-color: " + Palette.STAGE + "; -fx-padding: " + (int) FULL_PAD_TOP + " "
+                + (int) FULL_PAD_SIDE + " " + (int) FULL_PAD_BOTTOM + " " + (int) FULL_PAD_SIDE + ";");
+        return pane;
+    }
+
+    /** The page's title in the full-screen toolbar. */
+    static Label newFullTitle() {
+        Label title = new Label("City History");
+        title.setStyle(Palette.Fonts.sansSemiBold() + " -fx-font-size: 15px; -fx-text-fill: " + Palette.TEXT + ";");
+        return title;
+    }
+
+    /** The clock's line in the full-screen toolbar, empty until the screen says the date. */
+    static Label newFullClock() {
+        Label clock = new Label();
+        clock.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        return clock;
+    }
+
+    /** The chart sized to a window of this size: the window less the pane's padding, the canvas SLACK short of that (nothing when the window has no room). */
+    static void fitToWindow(TimeChart chart, double windowW, double windowH) {
+        double w = windowW - 2 * FULL_PAD_SIDE,
+               h = windowH - (FULL_PAD_TOP + FULL_PAD_BOTTOM);
         if (w <= 0 || h <= 0) return;
-        bigChart.setSize(Math.floor(w) - 30 - SLACK, Math.floor(h - bigChart.heightBesidePlot()) - SLACK);
+        chart.fitTo(Math.floor(w) - 30 - SLACK, Math.floor(h) - SLACK);
     }
 
     /** A redraw in full screen: the clock's line, and the chart's size if the window moved. */

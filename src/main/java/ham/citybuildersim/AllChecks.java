@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  *     java -cp <classes> ham.citybuildersim.AllChecks --timing   the timing harnesses alone (Timing.HARNESSES)
  *
  * Exit status is the number of harnesses that failed, so a build script can
- * stop on it. BuildMenuCheck and KeptCheck need JavaFX on the classpath and are skipped,
+ * stop on it. BuildMenuCheck, KeptCheck and ChartFitCheck need JavaFX on the classpath and are skipped,
  * with a note, when it is not there.
  *
  * -f is for an AI session, where every line printed is read and paid for
@@ -73,7 +73,7 @@ public class AllChecks {
         "DenominationCheck",
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck", "ReloadCheck",
-        "SaveSlotCheck", "ScaleCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ClockCheck",
+        "SaveSlotCheck", "ScaleCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ChartFitCheck", "ClockCheck",
         "ConsumptionCheck", "SectorBooksCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
         "IslandNetCheck"
     };
@@ -140,7 +140,7 @@ public class AllChecks {
                 for (String o : only) if (name.toLowerCase().contains(o)) wanted = true;
                 if (!wanted) continue;
             }
-            if ((name.equals("BuildMenuCheck") || name.equals("KeptCheck")) && !haveFx) {
+            if ((name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("ChartFitCheck")) && !haveFx) {
                 System.out.printf("%-24s skipped (needs JavaFX on the classpath)%n", name);
                 continue;
             }
