@@ -436,6 +436,7 @@ public final class Markets {
                 double share = local * s.getStock(g) / held;
                 if (share <= 0) continue;
                 Trade t = m.record(s.key(), who, share, price);
+                m.logDraw(t);   // kept past the clearing (FW5, 2026-10-25)
                 s.bookSale(t);
                 s.takeFromStock(g, share);
                 if (buyer != null) buyer.bookPurchase(t);
@@ -447,6 +448,7 @@ public final class Markets {
         double shortfall = units - local;
         if (shortfall > 0 && g.importable()) {
             Trade t = m.record(Trade.WORLD, who, shortfall, m.importPrice());
+            m.logDraw(t);
             if (buyer != null) buyer.bookPurchase(t);
             imported = shortfall;
             importCost = t.value();
@@ -454,6 +456,43 @@ public final class Markets {
 
         m.noteDrawn(units);
         return new Draw(units, local, imported, localCost, importCost);
+    }
+
+    /**
+     * The month is over: every market forgets the draws it kept (FW5,
+     * 2026-10-25). Called last in Game.nextMonth(); the month's draws were
+     * shown with its fills, and a draw from here on - a hand order between
+     * the presses, the auto-builder at the top of the next month - is the
+     * next month's.
+     */
+    public void closeMonth() {
+        for (GoodsMarket m : markets.values()) m.closeDraws();
+    }
+
+    /**
+     * Puts the draws made before the strike back on their sellers' rows
+     * (FW5, 2026-10-25). Called right after the strike banks the month and
+     * clears the rows, so every draw logged at that moment was made before
+     * it: the railway's diesel and its trucks', bitumen ordered between the
+     * presses or by the auto-builder, which the strike's clearing of the
+     * rows would otherwise lose. Units only; the money is on the statements
+     * the strike has already struck.
+     *
+     * SELLER SIDE ONLY, and on purpose: the railway bills a month's trade at
+     * the top of the next from the BUYERS' rows (Sector.unitsBoughtLocal(),
+     * unitsImported(), Haulage.legTonnes()), and the month's trade a save
+     * carries is read off them too, so a buyer's row refilled here would be
+     * billed as freight nobody moved. A seller's soldLocal is read by no
+     * model code for a stockable good, only by the screens.
+     */
+    public void rowDrawsBeforeStrike(Sectors sectors) {
+        for (GoodsMarket m : markets.values()) {
+            for (Trade t : m.monthsDraws()) {
+                if (t.isImport()) continue;
+                Sector s = sectors.byKey(t.seller());
+                if (s != null) s.output(t.good()).soldLocal += t.units();
+            }
+        }
     }
 
     /* ===================================================================

@@ -176,6 +176,19 @@ import java.nio.file.Path;
  *      and the dial and the month's duty crossing a save, a policy from
  *      before it reading none.
  *
+ *  18. THE REFINERS' TANKS BALANCE (FW5, 2026-10-25), measured on section
+ *      6's months: each product's opening stock and what was made, less
+ *      what was written off, sold at home and shipped from the tanks, is
+ *      its closing stock every month - the railway's and its trucks'
+ *      diesel, drawn before the strike clears the rows, on the row
+ *      (Markets.rowDrawsBeforeStrike()).
+ *
+ *  19. EVERY DRAW IS A FILL (FW5), on the same months: the refiners'
+ *      fills of petrol and diesel in the market's month are what their
+ *      takers' own records drew - the forecourts', the vans' and the
+ *      railway's, which the clearing used to wipe - so the refinery's
+ *      buyers on the industry card sum to its row's sold at home.
+ *
  * Every fixture CAUSES its condition: the city is handed its oil the way
  * MiningCheck hands a city its ore (LandManager.restoreSites()), except in
  * section 2, which buys it.
@@ -1351,11 +1364,18 @@ public class OilCheck {
         double worstAudit = 0, worstImports = 0, worstDomestic = 0, worstGoods = 0, writtenOff = 0, shipped = 0, idled = 0;
         double ran = 0, made = 0, idledAll = 0;
         int months = 24, withImports = 0, withDomestic = 0, refusedByWhole = 0;
+        int exportBoundMonths = 0;
+        boolean exportedHoldsExportBound = true;
         boolean toTheLine = true;
+        FuelBooks books = new FuelBooks();
         for (int m = 0; m < months; m++) {
             // Every few months the petrol is emptied, so some months the drivers import and some they do not.
             if (m % 4 == 1) refiners.setStock(Good.PETROL, 0);
+            // The tanks as the month opens (FW5, 2026-10-25): sections 18 and 19 balance them product by product.
+            java.util.Map<Good, Double> opening = new java.util.EnumMap<>(Good.class);
+            for (Good p : refiners.goodsMade()) opening.put(p, refiners.getStock(p));
             quietly(() -> g.simulateMonths(1));
+            books.month(g, m + 1, opening);
             MoneyAudit.Result r = g.getLastMoneyAudit();
             worstAudit = Math.max(worstAudit, r.relative());
             // The forecourts' month the strike just banked (0.7.83): their petrol, its imported part, the drivers' bill.
@@ -1382,7 +1402,11 @@ public class OilCheck {
                     if (run - o.planned > 0 && g.getMarkets().get(p).netExportPrice() < whole) refusedByWhole++;
                 }
                 if (p == Good.PETROL || p == Good.DIESEL) continue;
-                shipped += o.exportBound + o.exported;
+                // Sector.produceStock() books the export-bound litres through bookSale() as an export, so `exported` holds
+                // them already; until FW5 (2026-10-25) this added `exportBound` too, the same litres twice.
+                shipped += o.exported;
+                if (o.exportBound > 0) exportBoundMonths++;
+                exportedHoldsExportBound &= o.exported >= o.exportBound * (1 - 1e-12) - 1e-9;
                 idled += o.idled;
                 toTheLine &= refiners.getStock(p) <= refiners.getStockCapacity(p) * Sector.DUMP_THRESHOLD * (1 + 1e-12);
             }
@@ -1447,6 +1471,118 @@ public class OilCheck {
                 String.format("worst %.2e of the bill", worstDomestic));
         report("...and the goods, fuel among them, foot to the balance of payments' imports", worstGoods < 1e-9,
                 String.format("worst %.2e", worstGoods));
+        report("the litres shipped are the rows' exported, the export-bound among them (Sector.produceStock() books them"
+                        + " as an export)", exportedHoldsExportBound,
+                exportBoundMonths + " product-months shipped straight from the line");
+        books.balanceOfTheTanks(months);
+        books.everyDrawIsAFill(months);
+    }
+
+    /**
+     * What section 6's 24 months measured for sections 18 and 19 (FW5, 2026-10-25): reads only, taken as each month closes.
+     *
+     * WHY: the refiners' row and the market's fills were read after a month that had struck the rows and cleared the
+     * trades, so the railway's diesel, the forecourts' petrol and the vans' diesel were on neither. Both sections are
+     * measured on the town section 6 already runs, because sections 9 to 11 reuse it.
+     */
+    static final class FuelBooks {
+        /** Worst gap of the tanks' balance, in litres, with its product and month and that month's railway litres. */
+        double worstBalance = 0, worstBalanceRail = 0;
+        Good worstBalanceGood = null;
+        int worstBalanceMonth = 0;
+        int railMonths = 0, forecourtMonths = 0, vanMonths = 0;
+        /** Worst miss of the fills against the takers' rows, in litres, and of the card's buyers against the row. */
+        double worstFill = 0, worstCard = 0;
+        Good worstFillGood = null, worstCardGood = null;
+        int worstFillMonth = 0, worstCardMonth = 0;
+        boolean balanced = true, filled = true, carded = true;
+
+        /** The railway's and its trucks' litres off the tanks, as RefineryViewCheck reads them. */
+        static double railLocal(Game g) {
+            Freight rail = g.getSectors().freight();
+            return rail.getFuelLitres() - rail.getFuelLitresImported()
+                    + rail.haulage().getDieselLitres() - rail.haulage().getDieselLitresImported();
+        }
+
+        void month(Game g, int month, java.util.Map<Good, Double> opening) {
+            Refining refiners = g.getSectors().refining();
+            double rail = railLocal(g);
+            if (rail > 0) railMonths++;
+            for (Good p : refiners.goodsMade()) {
+                if (!p.stockable()) continue;
+                Sector.Output o = refiners.outputRow(p);
+                if (o == null) continue;
+                double open = opening.getOrDefault(p, 0.0), close = refiners.getStock(p);
+                double gap = Math.abs(open + o.produced - o.writtenOff - o.soldLocal - (o.exported - o.exportBound) - close);
+                double tol = 1e-9 * Math.max(1, open + o.produced + o.soldLocal + o.exported);
+                if (gap > tol) balanced = false;
+                if (gap > worstBalance) {
+                    worstBalance = gap;
+                    worstBalanceGood = p;
+                    worstBalanceMonth = month;
+                    worstBalanceRail = rail;
+                }
+            }
+            for (Good p : new Good[] { Good.PETROL, Good.DIESEL }) {
+                Sector.Output o = refiners.outputRow(p);
+                double fills = 0;
+                for (Trade t : g.getMarkets().get(p).getTrades()) {
+                    if (Sectors.REFINING.equals(t.seller()) && !t.isExport()) fills += t.units();
+                }
+                double takers = p == Good.DIESEL ? rail : 0;
+                double bought = 0;
+                for (Sector s : g.getSectors().all()) {
+                    Sector.Input in = s.inputRow(p);
+                    if (in != null) bought += in.boughtLocal;
+                }
+                takers += bought;
+                if (p == Good.PETROL) {
+                    Sector.Input pump = g.getSectors().retail().inputRow(Good.PETROL);
+                    if (pump != null && pump.boughtLocal > 0) forecourtMonths++;
+                } else if (bought > 0) {
+                    vanMonths++;
+                }
+                double miss = Math.abs(fills - takers);
+                if (miss > 1e-9 * Math.max(1, takers)) filled = false;
+                if (miss > worstFill) {
+                    worstFill = miss;
+                    worstFillGood = p;
+                    worstFillMonth = month;
+                }
+                double card = 0;
+                for (IndustryView.Part part : IndustryView.parties(g.getMarkets(), p, Sectors.REFINING, true)) card += part.units();
+                double row = o == null ? 0 : o.soldLocal;
+                double off = Math.abs(card - row);
+                if (off > 1e-9 * Math.max(1, takers)) carded = false;
+                if (off > worstCard) {
+                    worstCard = off;
+                    worstCardGood = p;
+                    worstCardMonth = month;
+                }
+            }
+        }
+
+        void balanceOfTheTanks(int months) {
+            out.println("\n--- 18. the refiners' tanks balance, product by product, every month: the litres drawn before the strike"
+                    + " are on the row (FW5) ---");
+            report("fixture: months the railway or its trucks drew diesel off the refiners' tanks", railMonths > 0,
+                    railMonths + " of " + months);
+            report("every month, each product's opening stock and what was made, less what was written off, sold at home and"
+                            + " shipped from the tanks, is its closing stock (ConservationCheck's law, on the refiners' tanks)", balanced,
+                    String.format("worst gap %,.3f L (%s, month %d, that month's railway and trucks %,.3f L)", worstBalance,
+                            worstBalanceGood, worstBalanceMonth, worstBalanceRail));
+        }
+
+        void everyDrawIsAFill(int months) {
+            out.println("\n--- 19. every litre drawn off the refiners' tanks is among the month's fills: the forecourts', the vans'"
+                    + " and the railway's (FW5) ---");
+            report("fixture: months the forecourts drew petrol off the tanks and months the vans drew diesel off them",
+                    forecourtMonths > 0 && vanMonths > 0, forecourtMonths + " and " + vanMonths + " of " + months);
+            report("the refiners' fills of each fuel in the city are what its takers' own records drew, every month", filled,
+                    String.format("worst miss %,.3f L (%s, month %d)", worstFill, worstFillGood, worstFillMonth));
+            report("...so the refinery's buyers on the industry card sum to its row's sold at home", carded,
+                    String.format("worst miss %,.3f L (%s, month %d)", worstCard, worstCardGood, worstCardMonth));
+        }
     }
 
     /* ============================ 7. NO REFINERY ============================ */

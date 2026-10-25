@@ -367,7 +367,8 @@ public class RefineryViewCheck {
         Refining r = g.getSectors().refining();
         Freight rail = g.getSectors().freight();
         Retail shops = g.getSectors().retail();
-        // ...and its trucks' (FR2), drawn at the haul as the railway's is, so apart from the month's sales as the railway's is.
+        // ...and its trucks' (FR2), drawn at the haul as the railway's is, before the strike: the refiners' row holds them since FW5 (2026-10-25),
+        // Markets.rowDrawsBeforeStrike(); the railway's own records are what the card splits them off by, for the detail.
         double railLocal = rail.getFuelLitres() - rail.getFuelLitresImported()
                 + rail.haulage().getDieselLitres() - rail.haulage().getDieselLitresImported();
         boolean sold = true;
@@ -381,13 +382,13 @@ public class RefineryViewCheck {
                         || b.kind() == RefineryView.BuyerKind.ABROAD) continue;
                 viewLocal += b.local().getOrDefault(p, 0.0);
             }
-            double want = rowSold + (p == Good.DIESEL ? railLocal : 0);
+            double want = rowSold;   // the litres drawn before the strike are on the row (FW5, 2026-10-25)
             sold &= near(viewLocal, want);
             if (p == Good.DIESEL) detail = String.format("diesel: %s to the vans, the trucks and the railway, %s of it the haul's",
                     RefineryView.litres(viewLocal), RefineryView.litres(railLocal));
         }
-        report("what the refinery sold at home, product by product, is its takers' - its own vans' among them, the railway's"
-                + " and its trucks' haul apart", sold, detail);
+        report("what the refinery sold at home, product by product, is its takers' - its own vans', the railway's and its trucks'"
+                + " among them (FW5: the row holds the litres drawn before the strike)", sold, detail);
         RefineryView.Buyer cars = buyer(v, RefineryView.BuyerKind.CARS), railway = buyer(v, RefineryView.BuyerKind.RAIL);
         report("fixture: the households drive and the railway hauls", cars != null && railway != null,
                 String.format("cars %s, railway %s", cars == null ? "none" : RefineryView.buyerFigure(cars),
