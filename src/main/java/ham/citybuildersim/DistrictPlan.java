@@ -31,7 +31,8 @@ import java.util.List;
  *   ORDER   the cells with room (CELL_ROOM_LEAST) ranked outward from the hub,
  *           its cell nearest the founding site: each next the nearest that
  *           touches one taken, with a hashed nudge (NUDGE), so the open cells
- *           are one piece;
+ *           are one piece - and, since ET2, a cell's foothill share of its room
+ *           ranks it further out (FOOTHILL_RANK), flat before foothill;
  *   BANDS   the buildings in three bands - what follows people, industry, the
  *           outer kinds - each largest first, the first band's types dealt
  *           round its cells in turn from a hashed start a type (MIXED_SLOT);
@@ -400,6 +401,15 @@ public final class DistrictPlan {
     /** The hashed nudge on a cell's distance from the hub, in cells: up to 0.6, the prototype's - the open cells' edge ragged, not a disc. */
     public static final double NUDGE = 0.6;
 
+    /**
+     * How much further from the hub, in cells, a cell wholly on foothill ranks than a cell wholly flat (ET2,
+     * spec-earth2-terrain 4.2, flat first): a cell's distance gains this times its foothill share of its room, so
+     * the order takes flat cells before foothill ones where the distances are near - the map's side of the model's
+     * allocation, which gives a sector flat ground first. 1: a foothill cell ranks as one a cell further out. A cell
+     * with no foothill, every cell of a generated world, gains nothing.
+     */
+    public static final double FOOTHILL_RANK = 1.0;
+
     /** The first band's buildings are dealt round one slot for every this many plots of their footprints: 640, the prototype's - about a homes cell's room after its streets, so the slots are about its cells and a cell holds homes, shops, a school and a clinic rather than one kind (spec 2.4, R6). */
     public static final double MIXED_SLOT = 640;
 
@@ -563,6 +573,8 @@ public final class DistrictPlan {
         public double hubX, hubY;
         /** The ground, a World class a plot, row by row over the frame. */
         public final byte[] terrain = new byte[AREA];
+        /** The ground's relief beside it (ET2, spec-earth2-terrain 3.2): a World relief a plot (FLAT to VERY_STEEP), row by row over the frame, read as terrain is (CityMap.readGround()); FLAT everywhere where nothing fills it - a generated world's ground, and a harness's. A building stands on flat and foothill only (World.buildable()), a street too. */
+        public final byte[] relief = new byte[AREA];
         /** Which plots the city owns. */
         public final boolean[] owned = new boolean[AREA];
         /** Per plot of the frame (AREA, row by row), the month the city bought it (0 for the centre's ground, and for any plot it does not own), or null when it bought none of the frame's ground (or for a harness's input): with it the plan's ground grows month by month (THE GROUND BOUGHT, batch FX6); without it every owned plot is ground from the start, as before. */
@@ -1190,8 +1202,10 @@ public final class DistrictPlan {
         boolean busy;
         /** The plots the plan has as ground so far: Input.owned, less what the city bought after the month the plan stands on (THE GROUND BOUGHT, FX6), which growGround() adds as the events reach its month; every read of the city's ground in a build is of this. */
         final boolean[] owns = new boolean[AREA];
-        /** Dry owned ground: grass, forest or sand. */
+        /** Buildable owned ground (ET2: World.buildable() - dry, and flat or foothill): grass, forest, sand or desert off the steep slopes. */
         final boolean[] dry = new boolean[AREA];
+        /** Land no street lays on and no building stands on that is not water (ET2, spec-earth2-terrain 3.2): steep and very steep ground, and ice - owned or not. The streets treat it as they treat the sea: refused, a cut they run along (groundRow()). */
+        final boolean[] unfit = new boolean[AREA];
         /** Plots no building may take: not dry, a highway, its verge (H5), track, a mine's site; and a field, until the last pass. */
         final boolean[] blocked = new boolean[AREA];
         /** A field's plots a building may take once nothing else holds it: dry, off the highways, their verges and the track. */
@@ -2215,17 +2229,22 @@ public final class DistrictPlan {
             for (int cj = 0; cj < CELLS_A_SIDE; cj++) {
                 for (int ci = 0; ci < CELLS_A_SIDE; ci++) {
                     int c = ci + cj * CELLS_A_SIDE;
-                    int x0 = CELL * ci + 1, y0 = CELL * cj + 1, room = 0;
+                    int x0 = CELL * ci + 1, y0 = CELL * cj + 1, room = 0, foothill = 0;
                     for (int y = y0; y < y0 + INTERIOR; y++) {
                         for (int x = x0; x < x0 + INTERIOR; x++) {
                             int p = y * FRAME + x;
-                            if (dry[p] && fx[p] != FIXED_HIGHWAY && !works(fx[p]) && in.site[p] != SITE_MINED) room++;
+                            if (dry[p] && fx[p] != FIXED_HIGHWAY && !works(fx[p]) && in.site[p] != SITE_MINED) {
+                                room++;
+                                if (in.relief[p] == World.FOOTHILL) foothill++;
+                            }
                         }
                     }
                     usable[c] = room >= CELL_ROOM_LEAST;
                     // The box's middle, as the prototype's (x0 + x1) / 2 with x1 its end.
                     double mx = x0 + INTERIOR / 2.0, my = y0 + INTERIOR / 2.0;
                     dist[c] = Math.hypot(mx - in.hubX, my - in.hubY) / CELL + NUDGE * hash.cell(ci, cj);
+                    // Flat first (ET2): a cell on foothill ranks further out by its foothill share of its room.
+                    if (foothill > 0) dist[c] += FOOTHILL_RANK * foothill / room;
                     if (usable[c] && (start < 0 || dist[c] < dist[start])) start = c;
                 }
             }
@@ -3150,7 +3169,7 @@ public final class DistrictPlan {
 
         /** What an avenue makes of staircase plot p, by the ground the plan has now (owns): AVK_OFF to AVK_STREET. */
         int avKind(int p) {
-            if (!owns[p] || World.salt(in.terrain[p])) return AVK_OFF;
+            if (!owns[p] || World.salt(in.terrain[p]) || unfit[p]) return AVK_OFF;
             byte f = fx[p];
             if (works(f) || in.site[p] == SITE_MINED) return AVK_BROKEN;
             if (f == FIXED_HIGHWAY) return AVK_UNDER;
@@ -3550,7 +3569,7 @@ public final class DistrictPlan {
         /** Whether plot p of the cell whose interior starts at (x0, y0) is open dry ground a curve's band may keep free: in the interior, no street, dry land (owned or not yet). */
         boolean cvKeepable(int p, int x0, int y0) {
             int x = p % FRAME - x0, y = p / FRAME - y0;
-            return x >= 0 && y >= 0 && x < INTERIOR && y < INTERIOR && !str[p] && !under[p] && World.dry(in.terrain[p]);
+            return x >= 0 && y >= 0 && x < INTERIOR && y < INTERIOR && !str[p] && !under[p] && World.buildable(in.terrain[p], in.relief[p]);
         }
 
         /** The crescent's arc recorded, if all its plots are streets still, and its band's ground kept free. */
@@ -4180,7 +4199,7 @@ public final class DistrictPlan {
             int p = y * FRAME + x;
             if (!owns[p]) return true;
             byte t = in.terrain[p];
-            return World.salt(t) || (t == World.FRESH && !str[p]);
+            return World.salt(t) || unfit[p] || (t == World.FRESH && !str[p]);
         }
 
         /**
@@ -4327,18 +4346,20 @@ public final class DistrictPlan {
 
         /** Row y of the ground (THE GROUND, A ROW AT A TIME): dry, barred, its lay code from the ground, the runs' plots, the highways' and the parted streets' bits, an anchor. */
         void groundRow(int y) {
-            byte[] terrain = in.terrain, fixed = fx, site = in.site;
+            byte[] terrain = in.terrain, relief = in.relief, fixed = fx, site = in.site;
             boolean[] owned = owns, partedAnchor = in.partedAnchor, anchor = in.anchor;
             int base = y * WORDS;
             boolean anchors = false;
             for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
                 byte t = terrain[p];
-                boolean d = owned[p] & World.dry(t);
+                boolean fit = World.buildable(t, relief[p]);
+                boolean d = owned[p] & fit;
                 dry[p] = d;
+                unfit[p] = !fit & !World.salt(t) & t != World.FRESH;
                 byte f = fixed[p];
                 blocked[p] = !d | f != 0 | site[p] != 0;
                 // Its lay code from the ground (LAY CODES; fresh water's runs and the runs' plots added after).
-                layCode[p] = (byte) (!owned[p] | World.salt(t) ? LAY_REFUSED : proto ? (f == FIXED_HIGHWAY ? LAY_REFUSED : 0)
+                layCode[p] = (byte) (!owned[p] | World.salt(t) | unfit[p] ? LAY_REFUSED : proto ? (f == FIXED_HIGHWAY ? LAY_REFUSED : 0)
                         : site[p] == SITE_MINED ? LAY_REFUSED : 0);
                 if (f != 0) fixedPlot(p, x, base, f);
                 if (partedAnchor[p]) paRows[base + (x >>> 6)] |= 1L << (x & 63);
@@ -5158,7 +5179,7 @@ public final class DistrictPlan {
         boolean joinable(int a, boolean horizontal) {
             int x = a % FRAME, y = a / FRAME;
             if (x % LATTICE != 0 && y % LATTICE != 0) return false;
-            if (!owns[a] || World.salt(in.terrain[a]) || occ[a] > 0) return false;
+            if (!owns[a] || World.salt(in.terrain[a]) || unfit[a] || occ[a] > 0) return false;
             byte f = fx[a];
             if (proto) return f != FIXED_HIGHWAY;
             if (in.site[a] == SITE_MINED) return false;
@@ -5170,7 +5191,7 @@ public final class DistrictPlan {
         /** Whether a step onto plot a going horizontally (or not) may be laid off the lattice, where the join's lattice finds no way: as joinable(), on any plot (H2: a street follows the ground where it must). */
         boolean groundJoinable(int a, boolean horizontal) {
             int x = a % FRAME, y = a / FRAME;
-            if (!owns[a] || World.salt(in.terrain[a]) || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
+            if (!owns[a] || World.salt(in.terrain[a]) || unfit[a] || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
             boolean arterial = horizontal ? y % CELL == 0 : x % CELL == 0;
             if (in.terrain[a] == World.FRESH && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
             return fx[a] == 0 || (!works(fx[a]) && !along(fx, a, horizontal));

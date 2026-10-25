@@ -1,6 +1,6 @@
 # ClockPace.java - 259 lines · 16 methods · 7 constants · model
 
-`ham/citybuildersim/ClockPace.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ClockPace.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > The clock's pace (UP2): how much of each frame the months may take, how often the screen is
 > redrawn and what the redraw cost, and what speed the city is really running at.

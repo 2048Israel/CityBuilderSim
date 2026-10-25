@@ -1,6 +1,6 @@
 # OrderSearchCheck.java - 550 lines · 19 methods · 6 constants · harnesses
 
-`ham/citybuildersim/OrderSearchCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OrderSearchCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > The three order searches against the countdowns they replaced (0.7.54).
 > 

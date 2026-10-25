@@ -520,7 +520,7 @@ public final class MapTiles {
                             }
                         }
                         if (pic != null) code = pic.codeAtPlot((int) (x - dx0), (int) (y - dy0));
-                        else if (owned && World.dry(g)) {
+                        else if (owned && (relief == null ? World.dry(g) : World.buildable(g, relief[k]))) {
                             double[] s = shares.get(d);
                             if (s == null) {
                                 s = DistrictPicture.shares(d, types);
@@ -933,7 +933,7 @@ public final class MapTiles {
                     int code = DistrictPicture.GROUND;
                     DistrictPicture pic = keep.dPic[di];
                     if (pic != null) code = pic.codeAtPlot((int) (x - dx0), (int) (y - dy0));
-                    else if (owned && World.dry(g)) {
+                    else if (owned && (keep.relief == null ? World.dry(g) : World.buildable(g, keep.relief[k]))) {
                         double[] s = shares[di];
                         if (s == null) {
                             s = DistrictPicture.shares(keep.districts[di], types);

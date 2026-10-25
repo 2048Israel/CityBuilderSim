@@ -23,8 +23,9 @@ import java.util.Locale;
  *     generated world stays as an option (gameData(): the game runs without
  *     the file, and says where it goes and, since 0.7.125, how it gets there -
  *     dataWords()).
- *   - A spot in the sea or on ice is refused; a desert, or no fresh water
- *     within 5 km, is warned of (Card.refusal(), Card.warnings()).
+ *   - A spot in the sea or on ice is refused - and, since ET2, one among
+ *     slopes no building may stand on, none within 5 km; a desert, or no fresh
+ *     water within 5 km, is warned of (Card.refusal(), Card.warnings()).
  *   - No iron field is promised: the card names the nearest (Card.ironKm()).
  *   - Place names for searching only (search()), and no borders: a place is
  *     its name and its latitude and longitude, never a country.
@@ -47,7 +48,15 @@ import java.util.Locale;
  * steep kept apart in the Card's numbers and folded in its words), the
  * nearest shallow water with how deep the sea gets within 5 km, and the
  * landmass the site stands on, by its place's name and its area. The snap and
- * the refusal on ground no building may stand on are ET2's.
+ * the refusal on ground no building may stand on are ET2's (slice C, the
+ * founding on buildable ground): the snap's test 1 reads World.buildable() -
+ * dry, and flat or foothill - so a spot among steep slopes finds its site on
+ * the nearest buildable ground within 5 km, or none; with none the card is
+ * refused in noSiteWords(), which names the nearest buildable ground within
+ * 50 km (EarthTerrain.siteBeyond()), or that there is none. A save from before
+ * is refused (SLOPE_FORMAT, BEFORE_SLOPE_WORDS): the world's founding site
+ * is found again from the spot and the data each time, and would not be the
+ * one the city was built round.
  *
  * RANDOM SPOT (randomPlace()): the seed picks among the data's places that
  * pass the site test - a site within the snap and not on ice - trying them in
@@ -92,6 +101,19 @@ public final class EarthSite {
      * they were, and its save loads.
      */
     public static final int DEPOSITS_FORMAT = 41;
+
+    /**
+     * The save format the real Earth's founding site is first snapped to
+     * buildable ground in: 46 (ET2, spec-earth2-terrain 3.4; GameVersion's
+     * BUILDABLE GROUND, FOUNDED ON). The world's founding site is found again
+     * from the city's spot and the data each time the world is built - the
+     * boats' (BoatSchedule) and any new founding's - so an Earth city saved
+     * before it, whose site was snapped where steep ground counted as dry,
+     * would load into a world whose founding site is not the one it was built
+     * round: its save is refused (loadProblem()); a generated city's founding
+     * does not read relief, and its save loads.
+     */
+    public static final int SLOPE_FORMAT = 46;
 
     /** The stream Random spot draws its order from. */
     private static final long RANDOM_SALT = 0x5B07A11DL;
@@ -213,20 +235,23 @@ public final class EarthSite {
      * and then, since 0.7.125, how the file gets there (missingWords()) - or,
      * since 0.7.127, it was saved before ice was a kind of ground
      * (ICE_FORMAT), or, since 0.8.12, before its fields were drawn on the
-     * geology (DEPOSITS_FORMAT). Game's load refuses it with these words,
-     * nothing of it applied. This one asks of a save in this build's format.
+     * geology (DEPOSITS_FORMAT), or, since ET2, before its founding site was
+     * snapped to ground a building may stand on (SLOPE_FORMAT). Game's load
+     * refuses it with these words, nothing of it applied. This one asks of a
+     * save in this build's format.
      */
     public static String loadProblem(String identity, Double lat, Double lon) {
         return loadProblem(identity, lat, lon, GameVersion.SAVE_FORMAT);
     }
 
-    /** ...and of a save in a given format: one before ICE_FORMAT is refused first (0.7.127), then one before DEPOSITS_FORMAT (0.8.12), whatever its data (DataSave.earthProblem() passes the save's). */
+    /** ...and of a save in a given format: one before ICE_FORMAT is refused first (0.7.127), then one before DEPOSITS_FORMAT (0.8.12), then one before SLOPE_FORMAT (ET2), whatever its data (DataSave.earthProblem() passes the save's). */
     public static String loadProblem(String identity, Double lat, Double lon, int format) {
         if (identity == null || identity.isBlank() || lat == null || lon == null || !(lat >= -90 && lat <= 90) || !Double.isFinite(lon)) {
             return "This city stands on the real Earth, and its save does not say where.";
         }
         if (format < ICE_FORMAT) return BEFORE_ICE_WORDS;
         if (format < DEPOSITS_FORMAT) return BEFORE_DEPOSITS_WORDS;
+        if (format < SLOPE_FORMAT) return BEFORE_SLOPE_WORDS;
         if (available(identity)) return null;
         if (identity.equals(EarthData.EARTH_2)) return missingWords(EarthData.locate(), fromRepository());
         return otherDataWords(identity);
@@ -249,6 +274,11 @@ public final class EarthSite {
     /** The load's words for a city on the real Earth saved before its fields were drawn on the geology (DEPOSITS_FORMAT). */
     public static final String BEFORE_DEPOSITS_WORDS = "This city was founded on the real Earth before its oil, iron and other fields were drawn where the geology"
             + " says (0.8.12): its holdings and mines name fields that now lie elsewhere, so this build does not load it."
+            + " The build that saved it still opens it.";
+
+    /** The load's words for a city on the real Earth saved before its founding site was snapped to ground a building may stand on (SLOPE_FORMAT). */
+    public static final String BEFORE_SLOPE_WORDS = "This city was founded on the real Earth before slope decided where a building may stand: its founding site was"
+            + " found where steep ground counted as buildable, and this build would find it elsewhere, so it does not load it."
             + " The build that saved it still opens it.";
 
     /** The load's words for a city on other data than this build's. */
@@ -324,7 +354,7 @@ public final class EarthSite {
         return null;
     }
 
-    /** The site test (spec-earth 2): the snap finds dry ground within CARD_PLOTS of the spot, and it is not on ice. */
+    /** The site test (spec-earth 2): the snap finds buildable ground (ET2: dry, flat or foothill) within CARD_PLOTS of the spot, and it is not on ice. */
     public static boolean passes(World.Key key) {
         EarthTerrain e = World.of(key).earthTerrain();
         long[] s = e.siteNear();
@@ -334,9 +364,10 @@ public final class EarthSite {
     /**
      * Why a city cannot be founded on the world an Earth key names, or null
      * when it can (Founding.problem()): its data not here, no site within the
-     * snap (NO_SITE_WORDS), or ice under it (ICE_WORDS: since 0.7.127 a spot
-     * with no site whose own plot is ice) - the card's refusals, without the
-     * rest of the card.
+     * snap (noSiteWords(): NO_SITE_WORDS, or since ET2 SLOPE_WORDS and where
+     * the nearest buildable ground is), or ice under it (ICE_WORDS: since
+     * 0.7.127 a spot with no site whose own plot is ice) - the card's
+     * refusals, without the rest of the card.
      */
     public static String foundingProblem(World.Key key) {
         if (!available(key.data())) {
@@ -346,8 +377,25 @@ public final class EarthSite {
         EarthTerrain e = World.of(key).earthTerrain();
         long[] s = e.siteNear();
         long spot = EarthTerrain.spotPlot();
-        if (s[0] < 0) return onIce(e, spot, spot) ? ICE_WORDS : NO_SITE_WORDS;
+        if (s[0] < 0) return onIce(e, spot, spot) ? ICE_WORDS : noSiteWords(e);
         return onIce(e, s[0], s[1]) ? ICE_WORDS : null;
+    }
+
+    /**
+     * The words for a spot whose snap found no site and whose own plot is not ice (ET2, spec-earth2-terrain 3.4): where
+     * the dry ground within the snap is steep or very steep on half of it or more, SLOPE_WORDS and where the nearest
+     * buildable ground is - its distance and way from the spot, "The nearest buildable ground is 7.4 km north-east.",
+     * or "There is none within 50 km." (EarthTerrain.siteBeyond()); NO_SITE_WORDS otherwise, the spot in the sea or on
+     * an island too small. Ice keeps its own words (ICE_WORDS), asked first.
+     */
+    static String noSiteWords(EarthTerrain e) {
+        long[] g = e.snapGround();
+        if (g[0] == 0 || 2 * g[1] < g[0]) return NO_SITE_WORDS;
+        long[] b = e.siteBeyond();
+        if (b[0] < 0) return SLOPE_WORDS + " There is none within " + String.format(Locale.ROOT, "%.0f km", EarthTerrain.BEYOND_PLOTS * World.PLOT_M / 1000.0) + ".";
+        double east = b[0] - EarthTerrain.spotPlot(), south = b[1] - EarthTerrain.spotPlot();
+        String way = LandMap.COMPASS[(int) Math.floorMod(Math.round(StrictMath.toDegrees(StrictMath.atan2(east, -south)) / 45), 8L)];
+        return SLOPE_WORDS + " The nearest buildable ground is " + distanceWords(Math.hypot(east, south) * World.PLOT_M / 1000) + " " + way + ".";
     }
 
     /**
@@ -511,8 +559,11 @@ public final class EarthSite {
     /** How many rings of 15" cells (about 460 m each) landmassNear() looks through for land when the site's own cell has none: 8, 3.7 km. */
     static final int LANDMASS_RINGS = 8;
 
-    /** The card's words for a spot with no site. */
+    /** The card's words for a spot with no site: in the sea, or on an island too small (a spot among steep slopes has SLOPE_WORDS). */
     public static final String NO_SITE_WORDS = "No dry ground within 5 km to found a city on: the spot is in the sea, or on an island too small.";
+
+    /** The card's words for a spot among steep slopes (ET2): the first sentence of noSiteWords(), the nearest buildable ground after it. */
+    public static final String SLOPE_WORDS = "No ground a building may stand on within 5 km: the slopes here are steep.";
 
     /** ...on ice. */
     public static final String ICE_WORDS = "On ice: snow and ice cover half the ground here or more, and no city is founded on an ice sheet.";
@@ -550,7 +601,7 @@ public final class EarthSite {
             long spot = EarthTerrain.spotPlot();
             if (!onIce(e, spot, spot)) {
                 return new Card(key, false, -1, -1, Double.NaN, Double.NaN, Double.NaN, null, 0, 0, 0, 0, 0, Double.NaN,
-                        Double.NaN, 0, null, null, multipliers, Double.NaN, null, false, false, NO_SITE_WORDS,
+                        Double.NaN, 0, null, null, multipliers, Double.NaN, null, false, false, noSiteWords(e),
                         new long[World.RELIEFS], Double.NaN, Double.NaN, null, List.of());
             }
             // On an ice sheet with no dry ground within reach (0.7.127): the card is the spot's own plot's, refused on ice.

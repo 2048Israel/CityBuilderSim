@@ -1,6 +1,6 @@
 # MapTiles.java - 1,060 lines · 49 methods · 10 constants · model
 
-`ham/citybuildersim/MapTiles.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MapTiles.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > The map view's tiles without the toolkit: each tile's ground kept so it is read from the world once, its inputs stamped so a tile is painted again only when what it is painted from has changed, a few painted tiles kept for the hover and a change of level, the per-tile path from inputs to pixels, and the far view's node pixels from the world's ground, the districts' pictures and shares, and the city's runs and edge.
 > 
@@ -26,7 +26,7 @@
 > without one it wanted says so (nodePixels()'s count, wanted()), and the
 > view asks CityMap.pictureJobs() for them while picturesFit().
 
-**Uses:** [World](World.md) (88), [MapFrame](MapFrame.md) (44), [TilePainter](TilePainter.md) (37), [CityMap](CityMap.md) (28), [TileRaster](TileRaster.md) (22), [LandGrid](LandGrid.md) (21), [DistrictPicture](DistrictPicture.md) (18), [BuildingVisual](BuildingVisual.md) (12), [Kept](Kept.md) (6), [CityLand](CityLand.md) (6), [EarthProj](EarthProj.md) (6), [CityRuns](CityRuns.md) (6), [CityShore](CityShore.md) (3)
+**Uses:** [World](World.md) (90), [MapFrame](MapFrame.md) (44), [TilePainter](TilePainter.md) (37), [CityMap](CityMap.md) (28), [TileRaster](TileRaster.md) (22), [LandGrid](LandGrid.md) (21), [DistrictPicture](DistrictPicture.md) (18), [BuildingVisual](BuildingVisual.md) (12), [Kept](Kept.md) (6), [CityLand](CityLand.md) (6), [EarthProj](EarthProj.md) (6), [CityRuns](CityRuns.md) (6), [CityShore](CityShore.md) (3)
 
 **Used by (11):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [JunctionCheck](JunctionCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [RailDrawCheck](RailDrawCheck.md), [ReliefRenders](ReliefRenders.md)
 

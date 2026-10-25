@@ -14,6 +14,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.43 — ET2, buildable by slope — 2026-10-24, ready but MapCheck 8 (main's, FW11), see docs/queue/ET2-notes.md
+
+Buildings now stand on **flat and foothill ground only**; steep and very steep are refused them, and mines, quarries and wells
+take the steep first, then foothill, then flat (one land pool, the works' part and the foothill prepared saved beside it). A
+building on foothill pays for its **pad's cut, fill and wall as builders' work**: about $110 a m² at founding prices (a 19%
+grade, $20 a m³ of earth, $430 a m² of wall), priced in points on the House's price a point, in the quote, owed on the site
+before its first building finishes and billed to Construction (a House pad 3.1 points beside its 10). On the map buildings and
+streets keep off steep ground and ice, flat cells first; the founding snaps to buildable ground and refuses a spot with none,
+naming the nearest. Earth cities saved before are refused (the Earth floor at format 46). New SlopeCheck; the default trace and
+Rotterdam's byte-identical (no ensemble); Medellín ends at 257,761 people (main 278,258). Five calls under Pending as ET2-C.
 ### 0.8.42 — FW4, a young auto-built city measured, and PlanCheck's save section traced — 2026-10-24, ready but MapCheck 8 (main's, FW11), see docs/queue/FW4-notes.md
 
 Automatic building in a young city is measured: the autobuild playtest over 40 seeds to month 1,000 ends 66,270 to 209,195

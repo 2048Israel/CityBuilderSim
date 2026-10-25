@@ -1,6 +1,6 @@
 # EarthData.java - 962 lines · 87 methods · 35 constants · model
 
-`ham/citybuildersim/EarthData.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthData.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > The reader of earth-2.bin (and of earth-1.bin, whose layers it holds), the
 > real Earth's ground as data: its layers' 1-degree tiles inflated into an
@@ -66,7 +66,7 @@
 
 **Uses:** [Palette](Palette.md) (8)
 
-**Used by (23):** [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (25):** [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md)
 
 ## Sections
 

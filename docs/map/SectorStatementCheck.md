@@ -1,6 +1,6 @@
 # SectorStatementCheck.java - 908 lines · 22 methods · 4 constants · harnesses
 
-`ham/citybuildersim/SectorStatementCheck.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorStatementCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > The sector statements (0.7.74, batch S1): SectorStatements' formal
 > statements held to the model's own figures, every sector and the bank,
@@ -65,6 +65,8 @@
 > ... (3 more lines in the source)
 
 **Uses:** [SectorStatements](SectorStatements.md) (146), [Game](Game.md) (21), [SectorBooks](SectorBooks.md) (17), [LongPlaytest](LongPlaytest.md) (16), [Bank](Bank.md) (15), [Equity](Equity.md) (11), [BuildCard](BuildCard.md) (11), [Sector](Sector.md) (9), [Debt](Debt.md) (8), [Sectors](Sectors.md) (8), [GameVersion](GameVersion.md) (5), [GameFiles](GameFiles.md) (2), [JobType](JobType.md) (2), [TempDirs](TempDirs.md) (1), [TreasuryFund](TreasuryFund.md) (1), [EconomyManager](EconomyManager.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
+
+**Used by (1):** [SlopeCheck](SlopeCheck.md)
 
 ## Sections
 

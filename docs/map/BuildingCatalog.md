@@ -1,6 +1,6 @@
 # BuildingCatalog.java - 548 lines · 19 methods · 1 constants · model
 
-`ham/citybuildersim/BuildingCatalog.java` - generated 2026-10-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingCatalog.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
 > Reads the building definitions out of buildings.json.
 > 
@@ -30,7 +30,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (23), [Good](Good.md) (6), [Ports](Ports.md) (4), [BuildingType](BuildingType.md) (2), [Resource](Resource.md) (2), [Deposit](Deposit.md) (2), [JobType](JobType.md) (2), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1), [RefineryFlow](RefineryFlow.md) (1)
 
-**Used by (12):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [IslandNetCheck](IslandNetCheck.md), [JunctionCheck](JunctionCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [RailDrawCheck](RailDrawCheck.md), [WellCheck](WellCheck.md)
+**Used by (13):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [IslandNetCheck](IslandNetCheck.md), [JunctionCheck](JunctionCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [RailDrawCheck](RailDrawCheck.md), [SlopeCheck](SlopeCheck.md), [WellCheck](WellCheck.md)
 
 ## Constants
 

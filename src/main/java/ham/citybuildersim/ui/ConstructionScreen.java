@@ -389,7 +389,8 @@ final class ConstructionScreen {
             done = run == null ? 0 : run.built;
             total = done + stack.getUnderConstruction();
             double p = stack.getBuilding().getConstructionPoints();
-            fraction = total > 0 && p > 0 ? (done * p + stack.getConstructionProgress()) / (total * p) : 0;
+            // ...never below nothing: a foothill site owes its preparation first, progress below nothing (ET2), and a bar below nothing is the indeterminate one.
+            fraction = total > 0 && p > 0 ? Math.max(0, (done * p + stack.getConstructionProgress()) / (total * p)) : 0;
             doneWord = "built";
         }
         Label count = new Label(String.format("%,d of %,d %s", done, total, doneWord));
@@ -502,7 +503,7 @@ final class ConstructionScreen {
         Game g = ui.game;
         BuildingsTemplate t = g.getBuildingManager().getTemplate(shell.templateId);
         double p = t == null ? 0 : t.getConstructionPoints();
-        double fraction = p > 0 && shell.buildings > 0 ? shell.progress / (shell.buildings * p) : 0;
+        double fraction = p > 0 && shell.buildings > 0 ? Math.max(0, shell.progress / (shell.buildings * p)) : 0;
 
         Label title = new Label(shell.building);
         title.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_LABEL));
