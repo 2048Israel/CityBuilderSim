@@ -98,7 +98,12 @@ on purpose: it now asserts they read the saved city's (★2).
 
 ## 4. The checks
 
-{checks}
+`./batch-check.sh`, the whole suite (141 run): exit 3, red as main only -
+MapCheck (gate.txt's, FW11's walled street remnant); timing soft beside
+another batch's JVM and the game, MapCheck 1 SOFT. The Earth harnesses again
+with earth-2.bin named (EarthCheck, EarthTerrainCheck, EarthFoundingCheck,
+EarthDepositsCheck, GlobeCheck, GatewayCheck, LandCheck, MapCheck,
+ReloadCheck): exit 3, MapCheck alone. Stale 0 firm; the maps regenerated.
 
 **The trace:** the default playtest's is byte-identical to main's but for its
 run-time lines (and the layout watch's seconds), so no ensemble was run

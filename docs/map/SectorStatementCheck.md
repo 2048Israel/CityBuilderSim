@@ -1,4 +1,4 @@
-# SectorStatementCheck.java - 908 lines · 22 methods · 4 constants · harnesses
+# SectorStatementCheck.java - 913 lines · 22 methods · 4 constants · harnesses
 
 `ham/citybuildersim/SectorStatementCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -82,10 +82,10 @@
 | 454 | · 8, a month |
 | 488 | · 1-5 |
 | 521 | · 6 |
-| 717 | · 7 |
-| 757 | · 6, an older save |
-| 815 | · 8 |
-| 836 | · 9 |
+| 722 | · 7 |
+| 762 | · 6, an older save |
+| 820 | · 8 |
+| 841 | · 9 |
 
 ## Constants
 
@@ -94,7 +94,7 @@
 | 93 | `SectorStatementCheck.CENT` | `.00001` | A cent, in the model's thousands. |
 | 131 | `SectorStatementCheck.tallies` | `new LinkedHashMap<>()` | The tallies of one city's run, by identity. |
 | 240 | `SectorStatementCheck.bondsSoonBefore` | `new LinkedHashMap<>()` | Last month's bonds falling due within a year, by sector: what this month's bond repayments must be inside. |
-| 760 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", ...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
+| 765 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", ...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
 
 ## Fields (state)
 
@@ -115,7 +115,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 823 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
+| 86 | 828 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
 | 95 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 100 | 5 | `static void quietly(Runnable r)` |  |
 | 107 | 22 | **type** `static final class Tally` | One identity's tally over a run: how many times it was checked, how many missed by more than a cent, and the worst miss. |
@@ -150,7 +150,7 @@
 |---:|---:|---|---|
 | 490 | 30 | `static void everyMonth()` |  |
 
-### 6 (lines 521-716)
+### 6 (lines 521-721)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -159,29 +159,29 @@
 | 557 | 6 | `static boolean sameDebt(SectorBooks.Debt x, SectorBooks.Debt y)` | Two of R1 and R2's records the same to the cent, field by field: both null, or every array alike. |
 | 564 | 6 | `static boolean near(double[][] x, double[][] y)` |  |
 | 571 | 6 | `static boolean near(double[] x, double[] y)` |  |
-| 578 | 138 | `static void savedAndLoaded(Path root, Game g)` |  |
+| 578 | 143 | `static void savedAndLoaded(Path root, Game g)` |  |
 
-### 7 (lines 717-756)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 719 | 37 | `static void theFormats(Game g)` |  |
-
-### 6, an older save (lines 757-814)
+### 7 (lines 722-761)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 773 | 41 | `static void anOlderSave(Game g) throws Exception` | A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by taking out what 0.7.75 added - the register's three slots a company and the books' new fields - is refused since 0.7.120 (batch I3: the floor, Gam... |
+| 724 | 37 | `static void theFormats(Game g)` |  |
 
-### 8 (lines 815-835)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 817 | 18 | `static void theSchedule()` |  |
-
-### 9 (lines 836-908)
+### 6, an older save (lines 762-819)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 847 | 61 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
+| 778 | 41 | `static void anOlderSave(Game g) throws Exception` | A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by taking out what 0.7.75 added - the register's three slots a company and the books' new fields - is refused since 0.7.120 (batch I3: the floor, Gam... |
+
+### 8 (lines 820-840)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 822 | 18 | `static void theSchedule()` |  |
+
+### 9 (lines 841-913)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 852 | 61 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
 

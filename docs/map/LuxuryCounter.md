@@ -1,4 +1,4 @@
-# LuxuryCounter.java - 155 lines · 10 methods · 0 constants · model
+# LuxuryCounter.java - 160 lines · 10 methods · 0 constants · model
 
 `ham/citybuildersim/LuxuryCounter.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -52,15 +52,15 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 117 | **type** `public final class LuxuryCounter` | The households' discretionary spending: the boutiques and the restaurants, each striking its price against the queue. |
+| 39 | 122 | **type** `public final class LuxuryCounter` | The households' discretionary spending: the boutiques and the restaurants, each striking its price against the queue. |
 | 45 | 1 | `public double getMealsServed()` | Meals the kitchens served the households this month. |
 | 48 | 1 | `public double getMealSpend()` | ...and what the households paid for them. |
 | 51 | 1 | `public double getMealPrice()` | ...at this price a meal, struck against the queue at the door. |
 | 54 | 1 | `public double getMealsWanted()` | ...against this many meals they came for. |
-| 72 | 31 | `void dine(Game game)` | The month's dining out. |
-| 106 | 1 | `public double getLuxuriesSold()` | Pieces the households bought over a counter this month. |
-| 109 | 1 | `public double getLuxurySpend()` | ...what they paid for them... |
-| 112 | 1 | `public double getLuxuryPrice()` | ...what one went for... |
-| 115 | 1 | `public double getLuxuryWanted()` | ...and how many would buy at the price the shops struck (0.7.19; at the margin's floor until then), which in a city short of shops is more than were served. |
-| 118 | 37 | `void shop(Game game)` | The month's shopping. |
+| 72 | 34 | `void dine(Game game)` | The month's dining out. |
+| 109 | 1 | `public double getLuxuriesSold()` | Pieces the households bought over a counter this month. |
+| 112 | 1 | `public double getLuxurySpend()` | ...what they paid for them... |
+| 115 | 1 | `public double getLuxuryPrice()` | ...what one went for... |
+| 118 | 1 | `public double getLuxuryWanted()` | ...and how many would buy at the price the shops struck (0.7.19; at the margin's floor until then), which in a city short of shops is more than were served. |
+| 121 | 39 | `void shop(Game game)` | The month's shopping. |
 
