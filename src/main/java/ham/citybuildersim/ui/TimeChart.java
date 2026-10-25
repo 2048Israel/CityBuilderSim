@@ -377,10 +377,48 @@ final class TimeChart extends VBox {
         layoutCanvases();
     }
 
-    /** The height everything but the plot takes, for a caller fitting the chart to a space (full screen). */
+    /**
+     * The height everything but the plot takes, for a caller fitting the chart to a space (full
+     * screen): the chart's own preferred height at the width it is drawn at - the toolbar as its
+     * legend wraps there, the lanes, the overview, the caption, the padding, the border and the
+     * spacing, as JavaFX lays them - less the plot's. The chart is made current first (its CSS
+     * applied and the legend's wrap length set for the width, setSize() and fitTo() do that), so
+     * the measure is of what will be laid out.
+     *
+     * MEASURED, NOT SUMMED (FW10, 2026-10-25). This was a sum of constants that counted the toolbar
+     * as one row of 34: with many lines picked the legend wrapped to two rows, three, six, and the
+     * full-screen chart came out that much taller than the window gave it, its foot (the overview
+     * and the caption) cut off at the bottom; and the one row was really 27, so a chart with two
+     * lines stopped 8 pixels short of where the screen meant it to.
+     */
     double heightBesidePlot() {
-        double rows = Math.max(1, ChartModel.laneCount(lanes));
-        return 12 + 10 + 34 + 8 + BAND_ROW + TIME_ROW + 4 + rows * EPISODE_ROW + 4 + FLAG_ROW + 2 + 8 + OVERVIEW + 8 + 18;
+        if (getScene() != null) applyCss();
+        javafx.geometry.Insets in = getInsets();
+        return Math.max(0, prefHeight(width + in.getLeft() + in.getRight()) - plotH);
+    }
+
+    /**
+     * The chart drawn this wide and, all of it, this high (FW10): the width first, which sets how the
+     * legend wraps; then what stands beside the plot, measured at that wrap; then the plot whatever
+     * the height leaves - and one draw, not one for the width and another for the height.
+     */
+    void fitTo(double width, double height) {
+        this.width = Math.max(240, width);
+        geometry();
+        double beside = heightBesidePlot();
+        this.plotH = Math.max(80, Math.floor(height - beside));
+        geometry();
+        draw();
+    }
+
+    /** The plot's height as the chart was last given it (setSize), for the harness that checks a fit. */
+    double plotHeight() { return plotH; }
+
+    /** How many rows the laid-out legend holds: the distinct layoutY of its visible chips (0 with none). */
+    int legendRows() {
+        java.util.Set<Long> rows = new java.util.HashSet<>();
+        for (javafx.scene.Node chip : legend.getChildren()) if (chip.isVisible()) rows.add(Math.round(chip.getLayoutY()));
+        return rows.size();
     }
 
     /** Called with nothing when the window moves - a chart that shows the same window redraws. */
@@ -520,6 +558,12 @@ final class TimeChart extends VBox {
     private double flagRow()        { return main ? FLAG_ROW : SMALL_FLAG_ROW; }
 
     private void layoutCanvases() {
+        geometry();
+        draw();
+    }
+
+    /** The canvases' sizes and the legend's wrap length for the width and the plot's height, without the draw (fitTo() measures between the two). */
+    private void geometry() {
         top = main ? BAND_ROW : 6;
         plotLeft = AXIS_W;
         plotRight = width - (anyOnRight() ? AXIS_W : NO_AXIS_W);
@@ -533,7 +577,6 @@ final class TimeChart extends VBox {
         }
         setPrefWidth(main ? width + 30 : width);
         setMaxWidth(main ? width + 30 : width);
-        draw();
     }
 
     private double plotW() { return Math.max(1, plotRight - plotLeft); }

@@ -595,8 +595,10 @@ adds its line here, not in `CLAUDE.md`.
                                    and order, its boxes setting their children in one call where they
                                    differ; People's page the pilot, through UserInterface.keepMenu()) with
                                    KeptBench.java (the People page on a scene of its own, drawn kept and
-                                   built new, for KeptCheck). The model never imports it.
-        *Check.java                141 harnesses, each a main() with static helpers
+                                   built new, for KeptCheck), and ChartFitBench.java (FW10: City History's
+                                   full-screen chart on a scene of its own at a window's size, through the
+                                   screen's own fitToWindow(), for ChartFitCheck). The model never imports it.
+        *Check.java                142 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under
