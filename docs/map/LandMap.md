@@ -1,4 +1,4 @@
-# LandMap.java - 1,356 lines · 75 methods · 38 constants · model
+# LandMap.java - 1,363 lines · 76 methods · 38 constants · model
 
 `ham/citybuildersim/LandMap.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -26,9 +26,9 @@
 > COORDINATES: the world's plots. A plot x covers x to x + 1, so a rectangle
 > [x0, x1) is drawn from x0 to x1 and the outlines lie on plot edges.
 
-**Uses:** [World](World.md) (45), [CityLand](CityLand.md) (33), [BuildingVisual](BuildingVisual.md) (27), [TilePainter](TilePainter.md) (24), [Resource](Resource.md) (20), [TileRaster](TileRaster.md) (19), [Deposit](Deposit.md) (17), [LandParcel](LandParcel.md) (15), [Game](Game.md) (13), [LandMarket](LandMarket.md) (11), [EarthData](EarthData.md) (9), [LandManager](LandManager.md) (8), [LandGrid](LandGrid.md) (7), [MapFrame](MapFrame.md) (5), [CityMap](CityMap.md) (5), [ShipShapes](ShipShapes.md) (4), [GridOffers](GridOffers.md) (3), [EarthTerrain](EarthTerrain.md) (3), [GlobeFrame](GlobeFrame.md) (3), [DebtQuote](DebtQuote.md) (3), [GlobePicture](GlobePicture.md) (2), [Geology](Geology.md) (2), [Sectors](Sectors.md) (2), [EarthProj](EarthProj.md) (2), [Formats](Formats.md) (1), [Currency](Currency.md) (1), [TrainShapes](TrainShapes.md) (1), [Zoning](Zoning.md) (1), [CityRuns](CityRuns.md) (1)
+**Uses:** [World](World.md) (46), [CityLand](CityLand.md) (33), [BuildingVisual](BuildingVisual.md) (27), [TilePainter](TilePainter.md) (26), [Resource](Resource.md) (20), [TileRaster](TileRaster.md) (19), [Deposit](Deposit.md) (17), [LandParcel](LandParcel.md) (15), [Game](Game.md) (13), [LandMarket](LandMarket.md) (11), [EarthData](EarthData.md) (9), [LandManager](LandManager.md) (8), [LandGrid](LandGrid.md) (7), [MapFrame](MapFrame.md) (5), [CityMap](CityMap.md) (5), [ShipShapes](ShipShapes.md) (4), [GridOffers](GridOffers.md) (3), [EarthTerrain](EarthTerrain.md) (3), [GlobeFrame](GlobeFrame.md) (3), [DebtQuote](DebtQuote.md) (3), [GlobePicture](GlobePicture.md) (2), [Geology](Geology.md) (2), [Sectors](Sectors.md) (2), [EarthProj](EarthProj.md) (2), [Formats](Formats.md) (1), [Currency](Currency.md) (1), [TrainShapes](TrainShapes.md) (1), [Zoning](Zoning.md) (1), [CityRuns](CityRuns.md) (1)
 
-**Used by (13):** [BuildScreen](BuildScreen.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [SlopeCheck](SlopeCheck.md)
+**Used by (14):** [BuildScreen](BuildScreen.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md)
 
 ## Sections
 
@@ -41,7 +41,7 @@
 | 544 | · on Earth (0.7.119, batch E5) |
 | 614 | · the legend by tier (0.7.135, batch E9) |
 | 857 | · the zones by district (0.8.0, batch I14) |
-| 1078 | · buying from the map (0.7.137, batch M6) |
+| 1085 | · buying from the map (0.7.137, batch M6) |
 
 ## Constants
 
@@ -74,32 +74,32 @@
 | 912 | `LandMap.COMPASS` | `{ "north", "north-east", "east", "south-east", "south", "south-west", "west",...` | The eight directions a place is named from, clockwise from north. |
 | 915 | `LandMap.KIND_WORDS` | `{ "oceanic", "a shield", "a fold belt", "a rift", "a shelf", "a basin", "uncl...` | A geologic class in the hover's words, in Geology.Kind's order: ocean, shield, fold belt, rift, shelf, basin, other. |
 | 983 | `LandMap.CLASS_ONE` | `{ "Home", "Shop", "Offices", "Industry", "Farm", "Utility", "School", "Health...` | One building of each class, as the hover card names a type it has no name for. |
-| 1046 | `LandMap.QUAY_WORDS` | `"Quay: a terminal's berth, where its ships come alongside"` | A terminal's quay in the hover (0.7.97): where its ships come alongside. |
-| 1049 | `LandMap.JACKET_WORDS` | `"Offshore platform: its wells drilled from the jacket"` | An offshore platform's jacket in the hover (0.7.97). |
-| 1052 | `LandMap.WELL_WORDS` | `"Platform well, on its sea site"` | ...a platform well, on its sea site. |
-| 1055 | `LandMap.RING_WORDS` | `"A platform's 500 m safety zone"` | ...the ring of a platform's safety zone (the research's 3.3 [W32]). |
-| 1058 | `LandMap.PIPE_WORDS` | `"Crude pipeline, buried: the platforms' crude ashore without tankers"` | ...a crude pipeline, buried (spec-roads-and-ports.md 2.8). |
-| 1061 | `LandMap.ACCESS_WORDS` | `" · access road"` | An access road in the hover (batch FR7, D17): the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid. |
-| 1064 | `LandMap.RAMP_WORDS` | `" · a ramp"` | A highway's ramp in the hover (0.7.89; spec 2.7). |
-| 1067 | `LandMap.RAIL_OVER_WORDS` | `" · the railway over it"` | ...and the railway bridging it (0.7.89; spec 2.8). |
-| 1070 | `LandMap.TRACK_WORDS` | `"Unmade street: the city has bought no road here"` | An unmade street's words in the hover (0.7.88; spec 5; "Track: ..." until FX5, with TRACK_ENTRY). |
-| 1073 | `LandMap.HALF_WORDS` | `"15 m", FULL_WORDS = "30 m"` | A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). |
-| 1076 | `LandMap.PACKED_WORDS` | `" · packed without a street"` | A building packed without a street, in the hover (R7). |
+| 1053 | `LandMap.QUAY_WORDS` | `"Quay: a terminal's berth, where its ships come alongside"` | A terminal's quay in the hover (0.7.97): where its ships come alongside. |
+| 1056 | `LandMap.JACKET_WORDS` | `"Offshore platform: its wells drilled from the jacket"` | An offshore platform's jacket in the hover (0.7.97). |
+| 1059 | `LandMap.WELL_WORDS` | `"Platform well, on its sea site"` | ...a platform well, on its sea site. |
+| 1062 | `LandMap.RING_WORDS` | `"A platform's 500 m safety zone"` | ...the ring of a platform's safety zone (the research's 3.3 [W32]). |
+| 1065 | `LandMap.PIPE_WORDS` | `"Crude pipeline, buried: the platforms' crude ashore without tankers"` | ...a crude pipeline, buried (spec-roads-and-ports.md 2.8). |
+| 1068 | `LandMap.ACCESS_WORDS` | `" · access road"` | An access road in the hover (batch FR7, D17): the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid. |
+| 1071 | `LandMap.RAMP_WORDS` | `" · a ramp"` | A highway's ramp in the hover (0.7.89; spec 2.7). |
+| 1074 | `LandMap.RAIL_OVER_WORDS` | `" · the railway over it"` | ...and the railway bridging it (0.7.89; spec 2.8). |
+| 1077 | `LandMap.TRACK_WORDS` | `"Unmade street: the city has bought no road here"` | An unmade street's words in the hover (0.7.88; spec 5; "Track: ..." until FX5, with TRACK_ENTRY). |
+| 1080 | `LandMap.HALF_WORDS` | `"15 m", FULL_WORDS = "30 m"` | A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). |
+| 1083 | `LandMap.PACKED_WORDS` | `" · packed without a street"` | A building packed without a street, in the hover (R7). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 950 | `private static volatile Places places` |  |
-| 1108 | `private final List<Integer> ids` |  |
-| 1109 | `private LandManager office` |  |
-| 1110 | `private int month` |  |
+| 1115 | `private final List<Integer> ids` |  |
+| 1116 | `private LandManager office` |  |
+| 1117 | `private int month` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 1326 | **type** `public final class LandMap` | The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there... |
+| 31 | 1333 | **type** `public final class LandMap` | The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there... |
 | 33 | 1 | `private LandMap()` |  |
 | 39 | 1 | **type** `public record Pick(long x, long y, byte ground, int owner, int side, int place, int purchase, LandParcel of...` | What lies under a plot: its ground (a World class), whose it is, its side and place, the purchase (from 0, in the order bought) or the offer. |
 | 42 | 16 | `public static Pick pick(CityLand land, LandMarket market, long x, long y)` | The plot (x, y) on this land, against these offers: its holding on the grid, else the offer whose rectangle holds it. |
@@ -184,7 +184,7 @@
 | 807 | 4 | `private static void reliefEntries(List<Entry> out)` | The three greys' entries, then forest on a slope's: what an Earth world with relief (reliefDrawn()) adds to either legend. |
 | 813 | 43 | `public static List<Entry> planeLegend(boolean relief)` | ...for an Earth world with earth-2's layers (`relief`, reliefDrawn(); ET1 slice D): the three greys, forest on a slope and the shallow sea with ice and the desert; false is the plane's legend as it was. |
 
-### the zones by district (0.8.0, batch I14) (lines 857-1077)
+### the zones by district (0.8.0, batch I14) (lines 857-1084)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -199,28 +199,29 @@
 | 942 | 6 | `static Places of(EarthData d)` _(in LandMap.Places)_ |  |
 | 953 | 6 | `private static void unit(double lat, double lon, double[] v, int k)` | A point's unit vector on the sphere into v at k. |
 | 961 | 20 | `public static EarthData.Place nearestPlace(EarthData d, double lat, double lon)` | The nearest of a reader's places to a point - the least angle between them, the first in the data's order (by population) on a tie; null when it has none. |
-| 999 | 45 | `public static String plotWords(TilePainter.Input in, TilePainter.Painted p, int plot, java.util.function.IntFunction<String> na...` | What a painted plot holds, in the hover card's words, or null for bare ground: a building by its type's name (nameOf, by type id; its class when null) - since 0.7.64 every drawn building is one of the model's - and si... |
+| 987 | 5 | `private static String runWorksWords(TilePainter.Input in, TilePainter.Painted p, int plot)` | What carries a run's plot over its ground (ET4; spec-earth2-terrain 4.3), appended to "Highway" or "Railway": ", a tunnel" on very steep ground, ", a viaduct" on steep, ", a bridge" over fresh water, else nothing. |
+| 1006 | 45 | `public static String plotWords(TilePainter.Input in, TilePainter.Painted p, int plot, java.util.function.IntFunction<String> na...` | What a painted plot holds, in the hover card's words, or null for bare ground: a building by its type's name (nameOf, by type id; its class when null) - since 0.7.64 every drawn building is one of the model's - and si... |
 
-### buying from the map (0.7.137, batch M6) (lines 1078-1356)
+### buying from the map (0.7.137, batch M6) (lines 1085-1363)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1107 | 47 | **type** `public static final class Picks` | The offers picked on the expanded map, in the order picked (B1 a click takes one, B3 shift adds or drops one, B7 a box or Ctrl+A adds what it takes): the view's own, never saved (spec-earth 3.2, "no new model state"). |
-| 1113 | 13 | `public List<Integer> live(Game g)` _(in LandMap.Picks)_ | The picks for this city as it stands, in order: none once its month has turned or another city was founded or loaded, and only those still listed. |
-| 1128 | 5 | `public void only(Game g, int id)` _(in LandMap.Picks)_ | A plain click: this offer alone. |
-| 1135 | 6 | `public boolean toggle(Game g, int id)` _(in LandMap.Picks)_ | Shift and a click: the offer added at the end, or dropped when it is picked already; true when added. |
-| 1143 | 4 | `public void add(Game g, List<Integer> more)` _(in LandMap.Picks)_ | A box or Ctrl+A: these added at the end in their order, those picked already kept where they stand. |
-| 1149 | 1 | `public void drop(int id)` _(in LandMap.Picks)_ | A chip's ×: this one dropped. |
-| 1152 | 1 | `public void clear()` _(in LandMap.Picks)_ | Esc, a click off the offers, the map collapsed: none. |
-| 1156 | 1 | **type** `public interface ToScreen` | A point of the city's plane on a screen, {x, y} in pixels, or null where it is not seen: the plane's MapFrame (onScreen()), the globe's camera (GlobeFrame.screenOfPlot()). |
-| 1156 | 1 | `double[] at(double x, double y)` _(in LandMap.ToScreen)_ |  |
-| 1159 | 3 | `public static ToScreen onScreen(MapFrame f)` | ...the plane's: a MapFrame's. |
-| 1169 | 29 | `public static List<double[]> freeCells(CityLand land, LandParcel o)` | An offer's free ground as rectangles {x0, y0, x1, y1} in plots: its rectangle cut on the lines of the city's own ground in it (ownedIn()), the cuts the city owns left out - its whole rectangle when it takes in none. |
-| 1205 | 30 | `public static boolean meets(double[] xs, double[] ys, double x0, double y0, double x1, double y1)` | Whether a convex polygon - its corners xs, ys in order, either way round - and the box [x0, x1] x [y0, y1] share some area: no axis of the box's or of the polygon's edges parts them (the separating axis theorem). |
-| 1246 | 16 | `public static List<Integer> boxPicks(CityLand land, List<LandParcel> offers, ToScreen screen, double sx0, double sy0, double sx...` | The offers a box on the screen takes (B1b and B7: "every offer whose free ground it touches"), in the order given: each whose free ground (freeCells()) shares some area with the box between (sx0, sy0) and (sx1, sy1) o... |
-| 1270 | 9 | `public static List<Deposit> offerFields(CityLand land, LandParcel o)` | The fields an offer holds whole (board 7: the card rings their sites wherever they lie): those of every resource in fields centred on its free ground - a field goes whole with the ground holding its centre plot (field... |
-| 1281 | 12 | `public static List<double[]> siteSquares(Deposit f)` | A field's sites as the map draws them (fieldsAt(), CityMap's site squares): each a square of plots, {x0, y0, x1, y1}. |
-| 1311 | 7 | **type** `public record Card(List<Integer> ids, double km2, double dryKm2, double freshKm2, double seaKm2, double dry...` | The card's figures for some picked offers (spec-earth 3.1, boards 5, 7 and 8): those still listed, in the order given, once each, and what the land office's rows and "Buy the best N" read from the model for them, summ... |
-| 1316 | 1 | `public double price()` _(in LandMap.Card)_ | The price in the money the toggle pays in: US dollars from the vault, local money converting. |
-| 1320 | 36 | `public static Card card(Game g, List<Integer> picks)` | The card's figures for these picks, as the city stands. |
+| 1114 | 47 | **type** `public static final class Picks` | The offers picked on the expanded map, in the order picked (B1 a click takes one, B3 shift adds or drops one, B7 a box or Ctrl+A adds what it takes): the view's own, never saved (spec-earth 3.2, "no new model state"). |
+| 1120 | 13 | `public List<Integer> live(Game g)` _(in LandMap.Picks)_ | The picks for this city as it stands, in order: none once its month has turned or another city was founded or loaded, and only those still listed. |
+| 1135 | 5 | `public void only(Game g, int id)` _(in LandMap.Picks)_ | A plain click: this offer alone. |
+| 1142 | 6 | `public boolean toggle(Game g, int id)` _(in LandMap.Picks)_ | Shift and a click: the offer added at the end, or dropped when it is picked already; true when added. |
+| 1150 | 4 | `public void add(Game g, List<Integer> more)` _(in LandMap.Picks)_ | A box or Ctrl+A: these added at the end in their order, those picked already kept where they stand. |
+| 1156 | 1 | `public void drop(int id)` _(in LandMap.Picks)_ | A chip's ×: this one dropped. |
+| 1159 | 1 | `public void clear()` _(in LandMap.Picks)_ | Esc, a click off the offers, the map collapsed: none. |
+| 1163 | 1 | **type** `public interface ToScreen` | A point of the city's plane on a screen, {x, y} in pixels, or null where it is not seen: the plane's MapFrame (onScreen()), the globe's camera (GlobeFrame.screenOfPlot()). |
+| 1163 | 1 | `double[] at(double x, double y)` _(in LandMap.ToScreen)_ |  |
+| 1166 | 3 | `public static ToScreen onScreen(MapFrame f)` | ...the plane's: a MapFrame's. |
+| 1176 | 29 | `public static List<double[]> freeCells(CityLand land, LandParcel o)` | An offer's free ground as rectangles {x0, y0, x1, y1} in plots: its rectangle cut on the lines of the city's own ground in it (ownedIn()), the cuts the city owns left out - its whole rectangle when it takes in none. |
+| 1212 | 30 | `public static boolean meets(double[] xs, double[] ys, double x0, double y0, double x1, double y1)` | Whether a convex polygon - its corners xs, ys in order, either way round - and the box [x0, x1] x [y0, y1] share some area: no axis of the box's or of the polygon's edges parts them (the separating axis theorem). |
+| 1253 | 16 | `public static List<Integer> boxPicks(CityLand land, List<LandParcel> offers, ToScreen screen, double sx0, double sy0, double sx...` | The offers a box on the screen takes (B1b and B7: "every offer whose free ground it touches"), in the order given: each whose free ground (freeCells()) shares some area with the box between (sx0, sy0) and (sx1, sy1) o... |
+| 1277 | 9 | `public static List<Deposit> offerFields(CityLand land, LandParcel o)` | The fields an offer holds whole (board 7: the card rings their sites wherever they lie): those of every resource in fields centred on its free ground - a field goes whole with the ground holding its centre plot (field... |
+| 1288 | 12 | `public static List<double[]> siteSquares(Deposit f)` | A field's sites as the map draws them (fieldsAt(), CityMap's site squares): each a square of plots, {x0, y0, x1, y1}. |
+| 1318 | 7 | **type** `public record Card(List<Integer> ids, double km2, double dryKm2, double freshKm2, double seaKm2, double dry...` | The card's figures for some picked offers (spec-earth 3.1, boards 5, 7 and 8): those still listed, in the order given, once each, and what the land office's rows and "Buy the best N" read from the model for them, summ... |
+| 1323 | 1 | `public double price()` _(in LandMap.Card)_ | The price in the money the toggle pays in: US dollars from the vault, local money converting. |
+| 1327 | 36 | `public static Card card(Game g, List<Integer> picks)` | The card's figures for these picks, as the city stands. |
 

@@ -1,4 +1,4 @@
-# SlopeCheck.java - 909 lines · 32 methods · 15 constants · harnesses
+# SlopeCheck.java - 910 lines · 32 methods · 15 constants · harnesses
 
 `ham/citybuildersim/SlopeCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -46,6 +46,8 @@
 > does (-Dcbs.earth=<path>, or data/earth-2.bin).
 
 **Uses:** [World](World.md) (68), [Game](Game.md) (53), [DistrictPlan](DistrictPlan.md) (33), [LongPlaytest](LongPlaytest.md) (26), [LandManager](LandManager.md) (19), [EarthSite](EarthSite.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (11), [EarthData](EarthData.md) (11), [SitePreparation](SitePreparation.md) (11), [SectorStatementCheck](SectorStatementCheck.md) (7), [BuildingVisual](BuildingVisual.md) (7), [BuildingsStacks](BuildingsStacks.md) (4), [Sectors](Sectors.md) (4), [Construction](Construction.md) (4), [PlanCheck](PlanCheck.md) (4), [EarthTerrain](EarthTerrain.md) (4), [CityLand](CityLand.md) (3), [Mining](Mining.md) (3), [GameFiles](GameFiles.md) (2), [Resource](Resource.md) (2), [MoneyAudit](MoneyAudit.md) (2), [Founding](Founding.md) (2), [Sector](Sector.md) (1), [NationalAccounts](NationalAccounts.md) (1), [BuildingCatalog](BuildingCatalog.md) (1), [EarthTerrainCheck](EarthTerrainCheck.md) (1), [LandMap](LandMap.md) (1), [CityMap](CityMap.md) (1), [TreasuryFund](TreasuryFund.md) (1)
+
+**Used by (1):** [RunWorksCheck](RunWorksCheck.md)
 
 ## Sections
 
@@ -96,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 852 | **type** `public class SlopeCheck` | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill ground and on no steeper, a mine on any, a foothill pad is prepared and p... |
+| 58 | 853 | **type** `public class SlopeCheck` | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill ground and on no steeper, a mine on any, a foothill pad is prepared and p... |
 | 64 | 4 | `static void check(String label, boolean ok)` |  |
 | 69 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 74 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -171,9 +173,9 @@
 | 762 | 3 | `static World.Key key(double[] at)` |  |
 | 766 | 62 | `static void foundingOnBuildableGround(EarthData file)` |  |
 
-### 9. HOW OFTEN IT FIRES IN A REAL RUN (Medellin, the real Earth) (lines 829-909)
+### 9. HOW OFTEN IT FIRES IN A REAL RUN (Medellin, the real Earth) (lines 829-910)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 836 | 73 | `static void inARealRun(EarthData file)` |  |
+| 836 | 74 | `static void inARealRun(EarthData file)` |  |
 

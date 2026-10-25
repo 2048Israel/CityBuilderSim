@@ -66,7 +66,7 @@
 
 **Uses:** [SectorStatements](SectorStatements.md) (146), [Game](Game.md) (21), [SectorBooks](SectorBooks.md) (17), [LongPlaytest](LongPlaytest.md) (16), [Bank](Bank.md) (15), [Equity](Equity.md) (11), [BuildCard](BuildCard.md) (11), [Sector](Sector.md) (9), [Debt](Debt.md) (8), [Sectors](Sectors.md) (8), [GameVersion](GameVersion.md) (5), [GameFiles](GameFiles.md) (2), [JobType](JobType.md) (2), [TempDirs](TempDirs.md) (1), [TreasuryFund](TreasuryFund.md) (1), [EconomyManager](EconomyManager.md) (1), [SaveFileCheck](SaveFileCheck.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (1):** [SlopeCheck](SlopeCheck.md)
+**Used by (2):** [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md)
 
 ## Sections
 

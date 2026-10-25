@@ -2,9 +2,9 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,142 constants in 413 files.**
+**4,166 constants in 416 files.**
 
-## model (2078 constants)
+## model (2093 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -309,11 +309,11 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 64 | `BusinessInvestment.MAX_CONCURRENT_ORDERS` | `1` | Never start a second order for a sector while one is still on site - every sector but the landlords, who hold work by the month (0.7.17; withinMonthsOfWork()); the refiners count no crude unit on s... |
 | 113 | `BusinessInvestment.MAX_ORDER_MONTHS` | `12` | The largest order a sector will place, in months of the builders' work. |
 | 116 | `BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING` | `9` | Months of construction backlog above which the builders build themselves more capacity. |
-| 466 | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | `6` | Consecutive loss-making months before a sector starts selling capacity. |
-| 469 | `BusinessInvestment.RETIREMENT_SLACK` | `.25` | Capacity has to exceed demand by this much before any of it is spare. |
-| 472 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
-| 483 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
-| 1114 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
+| 481 | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | `6` | Consecutive loss-making months before a sector starts selling capacity. |
+| 484 | `BusinessInvestment.RETIREMENT_SLACK` | `.25` | Capacity has to exceed demand by this much before any of it is spare. |
+| 487 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
+| 498 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
+| 1129 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
 
 ### Buyback.java ([map](map/Buyback.md))
 
@@ -1038,14 +1038,14 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 295 | `EconomyManager.PASS_THROUGH` | `1 / 36.0` | How much of the gap, in logs, between the D$ the city's goods were last struck at and today's D$ they close in a month: a thirty-sixth, so half of a move in two years and 29% of it in the first - t... |
-| 829 | `EconomyManager.CITY_MAINTAINED` | `{ BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE, BuildingTy...` | EVERY BUILDING IN THE CITY, BILLED FOR STANDING THERE. |
-| 843 | `EconomyManager.MAINTENANCE_RATE` | `ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12` |  |
-| 1052 | `EconomyManager.PBRH_MIN_UNITS` | `4` | A building with this many dwellings or more is purpose-built rental housing (CRA: "at least 4 residential units each with a private kitchen, a private bathroom, and a private living area"). |
-| 1054 | `EconomyManager.NRRP_SHARE` | `.36` | The new residential rental property rebate's share of the tax on a unit: 36% (Excise Tax Act section 256.2(3)(a); CRA RC4231). |
-| 1056 | `EconomyManager.NRRP_CAP` | `6.3` | ...and its most a unit, in founding thousands: $6,300. |
-| 1058 | `EconomyManager.NRRP_FULL_BELOW` | `350` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
-| 1060 | `EconomyManager.NRRP_NONE_FROM` | `450` | ...and none for a unit worth this or more: $450,000. |
-| 2560 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 838 | `EconomyManager.CITY_MAINTAINED` | `{ BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE, BuildingTy...` | EVERY BUILDING IN THE CITY, BILLED FOR STANDING THERE. |
+| 852 | `EconomyManager.MAINTENANCE_RATE` | `ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12` |  |
+| 1061 | `EconomyManager.PBRH_MIN_UNITS` | `4` | A building with this many dwellings or more is purpose-built rental housing (CRA: "at least 4 residential units each with a private kitchen, a private bathroom, and a private living area"). |
+| 1063 | `EconomyManager.NRRP_SHARE` | `.36` | The new residential rental property rebate's share of the tax on a unit: 36% (Excise Tax Act section 256.2(3)(a); CRA RC4231). |
+| 1065 | `EconomyManager.NRRP_CAP` | `6.3` | ...and its most a unit, in founding thousands: $6,300. |
+| 1067 | `EconomyManager.NRRP_FULL_BELOW` | `350` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
+| 1069 | `EconomyManager.NRRP_NONE_FROM` | `450` | ...and none for a unit worth this or more: $450,000. |
+| 2569 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### Education.java ([map](map/Education.md))
 
@@ -1265,28 +1265,28 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 243 | `Game.MARKET_SEED_SALT` | `0x4D41524B45545852L` | Salt for the D$'s market seed, so the market's path is not the world's own seed spelled again ("MARKETXR"). |
-| 721 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
-| 843 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
-| 1119 | `Game.FOUNDING_CASH` | `100_000` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
-| 1122 | `Game.FOUNDING_RESERVE_USD` | `25_000` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
-| 1125 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
-| 2268 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 5080 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 5083 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 6541 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0)` |  |
-| 6655 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 7729 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 9260 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 9415 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 9451 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 9582 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 11362 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 11374 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 11377 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 11392 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
-| 11403 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 13012 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 13402 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 722 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 844 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
+| 1120 | `Game.FOUNDING_CASH` | `100_000` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
+| 1123 | `Game.FOUNDING_RESERVE_USD` | `25_000` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
+| 1126 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
+| 2269 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 5083 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 5086 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 6572 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 6750 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 7830 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 9396 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 9551 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 9587 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 9718 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
+| 11498 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 11510 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 11513 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 11528 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
+| 11539 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 13148 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 13538 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1746,10 +1746,10 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 185 | `LandManager.FOUNDING_FRESH_UNITS` | `60_000` | A new city's fresh water, in units a month: what one Water Treatment Plant treats, its 60,000 units of 10,000 gallons (buildings.json id 10's production1) - Jerus's A24 (0.7.106, 2026-10-10: "found... |
 | 188 | `LandManager.FOUNDING_FRESH_KM2` | `FOUNDING_FRESH_UNITS / UtilitiesHandler.FRESH_UNITS_PER_KM2` | ...as lake and river ground in its centre, in square kilometres: FOUNDING_FRESH_UNITS over what one yields a month (UtilitiesHandler.FRESH_UNITS_PER_KM2), 0.4934 km2 (CityLand.found()). |
 | 240 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
-| 315 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
-| 849 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
-| 2140 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
-| 2616 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 318 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
+| 855 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
+| 2321 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
+| 2837 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandMap.java ([map](map/LandMap.md))
 
@@ -1782,17 +1782,17 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 912 | `LandMap.COMPASS` | `{ "north", "north-east", "east", "south-east", "south", "south-west", "west", "north-we...` | The eight directions a place is named from, clockwise from north. |
 | 915 | `LandMap.KIND_WORDS` | `{ "oceanic", "a shield", "a fold belt", "a rift", "a shelf", "a basin", "unclassed" }` | A geologic class in the hover's words, in Geology.Kind's order: ocean, shield, fold belt, rift, shelf, basin, other. |
 | 983 | `LandMap.CLASS_ONE` | `{ "Home", "Shop", "Offices", "Industry", "Farm", "Utility", "School", "Health", "Safety...` | One building of each class, as the hover card names a type it has no name for. |
-| 1046 | `LandMap.QUAY_WORDS` | `"Quay: a terminal's berth, where its ships come alongside"` | A terminal's quay in the hover (0.7.97): where its ships come alongside. |
-| 1049 | `LandMap.JACKET_WORDS` | `"Offshore platform: its wells drilled from the jacket"` | An offshore platform's jacket in the hover (0.7.97). |
-| 1052 | `LandMap.WELL_WORDS` | `"Platform well, on its sea site"` | ...a platform well, on its sea site. |
-| 1055 | `LandMap.RING_WORDS` | `"A platform's 500 m safety zone"` | ...the ring of a platform's safety zone (the research's 3.3 [W32]). |
-| 1058 | `LandMap.PIPE_WORDS` | `"Crude pipeline, buried: the platforms' crude ashore without tankers"` | ...a crude pipeline, buried (spec-roads-and-ports.md 2.8). |
-| 1061 | `LandMap.ACCESS_WORDS` | `" · access road"` | An access road in the hover (batch FR7, D17): the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid. |
-| 1064 | `LandMap.RAMP_WORDS` | `" · a ramp"` | A highway's ramp in the hover (0.7.89; spec 2.7). |
-| 1067 | `LandMap.RAIL_OVER_WORDS` | `" · the railway over it"` | ...and the railway bridging it (0.7.89; spec 2.8). |
-| 1070 | `LandMap.TRACK_WORDS` | `"Unmade street: the city has bought no road here"` | An unmade street's words in the hover (0.7.88; spec 5; "Track: ..." until FX5, with TRACK_ENTRY). |
-| 1073 | `LandMap.HALF_WORDS` | `"15 m", FULL_WORDS = "30 m"` | A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). |
-| 1076 | `LandMap.PACKED_WORDS` | `" · packed without a street"` | A building packed without a street, in the hover (R7). |
+| 1053 | `LandMap.QUAY_WORDS` | `"Quay: a terminal's berth, where its ships come alongside"` | A terminal's quay in the hover (0.7.97): where its ships come alongside. |
+| 1056 | `LandMap.JACKET_WORDS` | `"Offshore platform: its wells drilled from the jacket"` | An offshore platform's jacket in the hover (0.7.97). |
+| 1059 | `LandMap.WELL_WORDS` | `"Platform well, on its sea site"` | ...a platform well, on its sea site. |
+| 1062 | `LandMap.RING_WORDS` | `"A platform's 500 m safety zone"` | ...the ring of a platform's safety zone (the research's 3.3 [W32]). |
+| 1065 | `LandMap.PIPE_WORDS` | `"Crude pipeline, buried: the platforms' crude ashore without tankers"` | ...a crude pipeline, buried (spec-roads-and-ports.md 2.8). |
+| 1068 | `LandMap.ACCESS_WORDS` | `" · access road"` | An access road in the hover (batch FR7, D17): the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid. |
+| 1071 | `LandMap.RAMP_WORDS` | `" · a ramp"` | A highway's ramp in the hover (0.7.89; spec 2.7). |
+| 1074 | `LandMap.RAIL_OVER_WORDS` | `" · the railway over it"` | ...and the railway bridging it (0.7.89; spec 2.8). |
+| 1077 | `LandMap.TRACK_WORDS` | `"Unmade street: the city has bought no road here"` | An unmade street's words in the hover (0.7.88; spec 5; "Track: ..." until FX5, with TRACK_ENTRY). |
+| 1080 | `LandMap.HALF_WORDS` | `"15 m", FULL_WORDS = "30 m"` | A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). |
+| 1083 | `LandMap.PACKED_WORDS` | `" · packed without a street"` | A building packed without a street, in the hover (R7). |
 
 ### LandMarket.java ([map](map/LandMarket.md))
 
@@ -2151,6 +2151,23 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 106 | `Rollover.NETTING_MONTHS` | `12` | How far back the surplus that nets a maturity is read, in months: Jerus's "net of last year's surplus" - a year. |
 | 109 | `Rollover.BILL_MONTHS` | `12` | The bill TWELVE_MONTH_BILL rolls into, in months: twelve, the longest bill the treasury sells (bills run 1 to 12 months, Auction.BILL_MONTHS). |
 
+### RunWorks.java ([map](map/RunWorks.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 31 | `RunWorks.SQ_FT_PER_M2` | `1 / LandManager.SQ_M_PER_SQ_FT` | Square feet in a square metre. |
+| 34 | `RunWorks.RUN_WIDTH_M` | `SitePreparation.PAD_WIDTH_M` | The width of a run across the ground, metres: one plot (30 m), as a foothill pad's (SitePreparation.PAD_WIDTH_M). |
+| 41 | `RunWorks.FOOTHILL_USD_PER_M2` | `SitePreparation.USD_PER_M2` | Foothill: a bench cut and filled across the slope, with its wall where it meets the ground above - a pad's arithmetic on the class's mean grade over the run's width, which is a pad's (SitePreparati... |
+| 48 | `RunWorks.DECK_USD_PER_M2` | `250 * SQ_FT_PER_M2` | A bridge's deck, US dollars a m2: Wisconsin DOT's 2025 planning cost to replace a structure is $220 a sq ft of deck (wisconsindot.gov, "bos-cost", June 2025) and Colorado DOT's 2025 cost data book'... |
+| 54 | `RunWorks.DECK_WIDTH_M` | `2 *(2 * 3.66 + 3.05 + 1.22)` | The deck a highway's viaduct carries, metres: four lanes of 3.66 m (12 ft), an outside shoulder of 3.05 m (10 ft) and an inside one of 1.22 m (4 ft) each way, the Interstate standard's - 23.2 m of ... |
+| 57 | `RunWorks.STEEP_USD_PER_M2` | `DECK_USD_PER_M2 * DECK_WIDTH_M / RUN_WIDTH_M` | Steep: the run carried on a viaduct, its deck over the run's width, about $2,080 a m2 of the run's land. |
+| 66 | `RunWorks.TUNNEL_BORE_USD_PER_KM` | `35e6` | One bore of a tunnel, US dollars a km: the European Commission's rail unit-cost study finds tunnels cost 25-30 million euros a km on average and over 80 million in very complex cases (Assessment of... |
+| 69 | `RunWorks.TUNNEL_BORES` | `2` | The bores a highway's tunnel needs: two, one a direction, its four lanes two to a bore. |
+| 72 | `RunWorks.VERY_STEEP_USD_PER_M2` | `TUNNEL_BORES * TUNNEL_BORE_USD_PER_KM /(1000 * RUN_WIDTH_M)` | Very steep: the run in tunnel, its bores over the run's width, about $2,330 a m2 of the run's land. |
+| 78 | `RunWorks.HIGHWAY_GRADE` | `0.06` | The steepest grade a highway climbs, 6%: the Interstate standard's in mountainous terrain (AASHTO's geometric design policy; WSDOT Design Manual M 22-01, chapter 1220). |
+| 84 | `RunWorks.RAIL_GRADE` | `0.022` | ...and a main-line railway, 2.2%: the practicable limit the Baltimore and Ohio set in the 1830s, and the ruling grades of the western US mountain main lines, about 2 to 2.4% (Trains, "Mountain rail... |
+| 92 | `RunWorks.RAIL_FACTOR` | `HIGHWAY_GRADE / RAIL_GRADE` | How many times a highway's works a m2 of a railway's land needs on any class above flat, about 2.7: a line gains a height in no less than the height over its grade of length, so to cross the same g... |
+
 ### SalesTaxLedger.java ([map](map/SalesTaxLedger.md))
 
 | line | constant | value | says |
@@ -2383,54 +2400,54 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 62 | `TilePainter.TILE` | `World.TILE` | Plots on a tile's side: World.TILE, 32. |
-| 65 | `TilePainter.PLOTS` | `TILE * TILE` | Plots on a tile: 1,024. |
-| 70 | `TilePainter.EMPTY` | `0` | Nothing on it. |
-| 72 | `TilePainter.ROAD` | `1` | A road: a street of the plan, or a highway. |
-| 74 | `TilePainter.BUILDING` | `2` | A building. |
-| 76 | `TilePainter.FIELD` | `4` | A resource's site with nothing on it. |
-| 78 | `TilePainter.RAIL` | `5` | A railway's track (0.7.72): its Painted.road is 0, or the kind of the street that crosses the track there. |
-| 81 | `TilePainter.RAIL_OVER` | `CityRuns.F_RAIL_OVER` | A plot of the runs where the railway bridges a highway (0.7.89, CityRuns.F_RAIL_OVER; spec 2.8): Input.fixed's code, the highway's plot with the track over it. |
-| 84 | `TilePainter.M_MAIN` | `32` | A plot of the main line, from the rail gateway to the freight station: drawn as the main line, and an arterial or boulevard crossing it on a bridge (spec 4.3, D18). |
-| 86 | `TilePainter.M_DOUBLE` | `64` | A main-line plot drawn as double track: the city has a Freight Line (spec 4.3). |
-| 88 | `TilePainter.SIDING_PLOT` | `1, SIDING_END = 2` | A plot of a siding laid inside a district's plan (Input.siding; batch FR7 slice 5, D14), and (SIDING_END) its first plot, beside the works' box, which carries the loading shed. |
-| 91 | `TilePainter.M_SHED` | `128` | A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING; and a district plan's siding's SIDING_END, s... |
-| 94 | `TilePainter.TRACK` | `4` | A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). |
-| 99 | `TilePainter.QUAY` | `1` | A plot's work at sea (Input.sea, Painted.sea's low two bits): a terminal's quay, out over the water from its box (CityShore)... |
-| 101 | `TilePainter.JACKET` | `2` | ...an offshore platform's jacket... |
-| 103 | `TilePainter.WELL` | `3` | ...a platform well, on the middle of its sea site. |
-| 105 | `TilePainter.SEA_WORK` | `3` | The low two bits of Painted.sea. |
-| 107 | `TilePainter.SEA_RING` | `4` | Painted.sea's bit for a plot a platform's safety ring crosses... |
-| 109 | `TilePainter.SEA_PIPE` | `8` | ...and for one a crude pipeline crosses (buried: it takes no plot, and is drawn over what stands there). |
-| 112 | `TilePainter.PLATFORM_ZONE_M` | `500` | A platform's safety zone, drawn as a faint ring about its jacket: 500 m (the research's 3.3 [W32]). |
-| 115 | `TilePainter.RING_PLOTS` | `PLATFORM_ZONE_M / World.PLOT_M` | ...its radius in plots: 16.7. |
-| 118 | `TilePainter.JACKET_PLOTS` | `2` | A jacket's side, in plots: 2, 60 m - mockup 3's platform, 12 px at 6 m a pixel (72 m), in whole plots (star O13-6). |
-| 123 | `TilePainter.UNOWNED` | `0` | A site on ground the city does not own. |
-| 125 | `TilePainter.UNWORKED` | `1` | ...on the city's ground, its holding not yet worked. |
-| 127 | `TilePainter.WORKING` | `2` | ...in the holding being worked: drawn half grey. |
-| 129 | `TilePainter.WORKED_OUT` | `3` | ...in a holding worked out: drawn grey (the mockup's star 7). |
-| 134 | `TilePainter.S_KIND` | `7` | A plot's street as its district's plan gives it the painter (CityMap.Drawn, Input.street), a byte: its kind in the low three bits - DistrictPlan's NONE to UNDER... |
-| 136 | `TilePainter.S_WIDTH_SHIFT` | `3` | ...its surface's width in bits 3 and 4: 1 half (15 m), 2 full (30 m), 0 none... |
-| 138 | `TilePainter.S_ROLE_SHIFT` | `5` | ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD, S_ACCESS... |
-| 140 | `TilePainter.S_ARTERIAL` | `1, S_BOULEVARD = 2, S_ACCESS = 3` | ...those roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD), and (batch FR7) an access road's 3 (ROLE_ACCESS)... |
-| 142 | `TilePainter.S_BRIDGE` | `0x80` | ...and a bridge over fresh water in bit 7. |
-| 145 | `TilePainter.STREET` | `1` | A painted street plot's role (Painted.role): a cell's street... |
-| 147 | `TilePainter.ARTERIAL` | `2` | ...an arterial, on a cell's ring (every 32 plots, 960 m)... |
-| 149 | `TilePainter.BOULEVARD` | `3` | ...a boulevard's, either row of a boulevard cell's arterials... |
-| 151 | `TilePainter.ACCESS` | `4` | ...and (batch FR7, D17) an access road, the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid: an arterial for the junctions it makes. |
-| 165 | `TilePainter.JUNCTION_APART` | `8` | The + junction floor: 8 plots - eight House footprints (a House's 8,000 sq ft is drawn on one whole plot, BuildingVisual.footprint()), Jerus's "about 8 houses' length" from one + junction to the ne... |
-| 168 | `TilePainter.REACH` | `JUNCTION_APART / 2` | A building is near a road when one lies within this many plots of it, across corners: 4, half the junction floor - a block between streets at the floor is 7 plots across, and its middle plot 4 from... |
-| 176 | `TilePainter.STREET_BRIDGE` | `6` | A street's longest crossing of fresh water, gravel or paved: 6 plots (180 m), the mockup's paved bridge (its star 1); gravel's too since 0.7.77 (batch N5; Jerus, 2026-10-08: "gravel road bridge riv... |
-| 179 | `TilePainter.MAX_BRIDGE` | `{ 0, STREET_BRIDGE, STREET_BRIDGE, 14 }` | The longest crossing of fresh water, in plots, by road kind: gravel and paved STREET_BRIDGE, a highway 14 (the mockup's star 1) - an arterial's since 0.7.87 (DistrictPlan.ARTERIAL_BRIDGE). |
-| 182 | `TilePainter.RAIL_BRIDGE` | `14` | The longest crossing of fresh water a railway's track makes: 14, as a highway's (star N3-6). |
-| 185 | `TilePainter.PART_BIT` | `1<<21` | A building's box in Input.boxes with this bit set is the part, on the tile, of a building counted on another (FX5 Y2): a yard whose box spans tiles is counted on the tile holding its first plot, an... |
-| 188 | `TilePainter.RING` | `TILE + 2 * REACH` | Plots: the side of Input.ring, the tile and REACH plots about it on every side (FX5). |
-| 196 | `TilePainter.DX` | `{ 0, 1, 0, - 1 }, DY = { - 1, 0, 1, 0 }` | North, east, south, west. |
-| 199 | `TilePainter.RESERVE_INTS` | `8` | The ints Input.reserve holds a reserve in: kind, stub, junction x and y, box x0, y0, w, h. |
-| 307 | `TilePainter.Input.CV_OWN` | `1, CV_BAND = 2, CV_END = 4` | A plot's curve mark (curve, curveRing; batch CL4, slice D): CV_OWN, a plot a curve is laid on (DistrictPlan.Curve.plots()); CV_BAND, a plot its band reaches that is not its own, kept free of buildi... |
-| 320 | `TilePainter.Input.CURVE_HEAD` | `3` | The numbers before a curve's geometry in curveGeom: its kind, its radius and the count of numbers after. |
-| 385 | `TilePainter.Input.YARD_INTS` | `10` | The ints Input.yard holds a yard in (FX5 Y2): its box (x0, y0, w, h), its type id, its layout (TileRaster.yardLayout()'s east-west, line, span start and end), and 1 when it is the freight station. |
-| 412 | `TilePainter.Input.BEND_DOUBLES` | `10` | The ints Input.bend holds a bend in (FX5): its net, corner x and y, incoming and outgoing headings (4), radius, tangent length, and 1 on double track. |
+| 64 | `TilePainter.TILE` | `World.TILE` | Plots on a tile's side: World.TILE, 32. |
+| 67 | `TilePainter.PLOTS` | `TILE * TILE` | Plots on a tile: 1,024. |
+| 72 | `TilePainter.EMPTY` | `0` | Nothing on it. |
+| 74 | `TilePainter.ROAD` | `1` | A road: a street of the plan, or a highway. |
+| 76 | `TilePainter.BUILDING` | `2` | A building. |
+| 78 | `TilePainter.FIELD` | `4` | A resource's site with nothing on it. |
+| 80 | `TilePainter.RAIL` | `5` | A railway's track (0.7.72): its Painted.road is 0, or the kind of the street that crosses the track there. |
+| 83 | `TilePainter.RAIL_OVER` | `CityRuns.F_RAIL_OVER` | A plot of the runs where the railway bridges a highway (0.7.89, CityRuns.F_RAIL_OVER; spec 2.8): Input.fixed's code, the highway's plot with the track over it. |
+| 86 | `TilePainter.M_MAIN` | `32` | A plot of the main line, from the rail gateway to the freight station: drawn as the main line, and an arterial or boulevard crossing it on a bridge (spec 4.3, D18). |
+| 88 | `TilePainter.M_DOUBLE` | `64` | A main-line plot drawn as double track: the city has a Freight Line (spec 4.3). |
+| 90 | `TilePainter.SIDING_PLOT` | `1, SIDING_END = 2` | A plot of a siding laid inside a district's plan (Input.siding; batch FR7 slice 5, D14), and (SIDING_END) its first plot, beside the works' box, which carries the loading shed. |
+| 93 | `TilePainter.M_SHED` | `128` | A siding's last plot, beside the works' box: drawn with the siding's loading shed, a small mark in TRANSPORT's colours (FR7 2026-10-18, CityRuns.SIDING; and a district plan's siding's SIDING_END, s... |
+| 96 | `TilePainter.TRACK` | `4` | A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). |
+| 101 | `TilePainter.QUAY` | `1` | A plot's work at sea (Input.sea, Painted.sea's low two bits): a terminal's quay, out over the water from its box (CityShore)... |
+| 103 | `TilePainter.JACKET` | `2` | ...an offshore platform's jacket... |
+| 105 | `TilePainter.WELL` | `3` | ...a platform well, on the middle of its sea site. |
+| 107 | `TilePainter.SEA_WORK` | `3` | The low two bits of Painted.sea. |
+| 109 | `TilePainter.SEA_RING` | `4` | Painted.sea's bit for a plot a platform's safety ring crosses... |
+| 111 | `TilePainter.SEA_PIPE` | `8` | ...and for one a crude pipeline crosses (buried: it takes no plot, and is drawn over what stands there). |
+| 114 | `TilePainter.PLATFORM_ZONE_M` | `500` | A platform's safety zone, drawn as a faint ring about its jacket: 500 m (the research's 3.3 [W32]). |
+| 117 | `TilePainter.RING_PLOTS` | `PLATFORM_ZONE_M / World.PLOT_M` | ...its radius in plots: 16.7. |
+| 120 | `TilePainter.JACKET_PLOTS` | `2` | A jacket's side, in plots: 2, 60 m - mockup 3's platform, 12 px at 6 m a pixel (72 m), in whole plots (star O13-6). |
+| 125 | `TilePainter.UNOWNED` | `0` | A site on ground the city does not own. |
+| 127 | `TilePainter.UNWORKED` | `1` | ...on the city's ground, its holding not yet worked. |
+| 129 | `TilePainter.WORKING` | `2` | ...in the holding being worked: drawn half grey. |
+| 131 | `TilePainter.WORKED_OUT` | `3` | ...in a holding worked out: drawn grey (the mockup's star 7). |
+| 136 | `TilePainter.S_KIND` | `7` | A plot's street as its district's plan gives it the painter (CityMap.Drawn, Input.street), a byte: its kind in the low three bits - DistrictPlan's NONE to UNDER... |
+| 138 | `TilePainter.S_WIDTH_SHIFT` | `3` | ...its surface's width in bits 3 and 4: 1 half (15 m), 2 full (30 m), 0 none... |
+| 140 | `TilePainter.S_ROLE_SHIFT` | `5` | ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD, S_ACCESS... |
+| 142 | `TilePainter.S_ARTERIAL` | `1, S_BOULEVARD = 2, S_ACCESS = 3` | ...those roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD), and (batch FR7) an access road's 3 (ROLE_ACCESS)... |
+| 144 | `TilePainter.S_BRIDGE` | `0x80` | ...and a bridge over fresh water in bit 7. |
+| 147 | `TilePainter.STREET` | `1` | A painted street plot's role (Painted.role): a cell's street... |
+| 149 | `TilePainter.ARTERIAL` | `2` | ...an arterial, on a cell's ring (every 32 plots, 960 m)... |
+| 151 | `TilePainter.BOULEVARD` | `3` | ...a boulevard's, either row of a boulevard cell's arterials... |
+| 153 | `TilePainter.ACCESS` | `4` | ...and (batch FR7, D17) an access road, the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid: an arterial for the junctions it makes. |
+| 167 | `TilePainter.JUNCTION_APART` | `8` | The + junction floor: 8 plots - eight House footprints (a House's 8,000 sq ft is drawn on one whole plot, BuildingVisual.footprint()), Jerus's "about 8 houses' length" from one + junction to the ne... |
+| 170 | `TilePainter.REACH` | `JUNCTION_APART / 2` | A building is near a road when one lies within this many plots of it, across corners: 4, half the junction floor - a block between streets at the floor is 7 plots across, and its middle plot 4 from... |
+| 178 | `TilePainter.STREET_BRIDGE` | `6` | A street's longest crossing of fresh water, gravel or paved: 6 plots (180 m), the mockup's paved bridge (its star 1); gravel's too since 0.7.77 (batch N5; Jerus, 2026-10-08: "gravel road bridge riv... |
+| 181 | `TilePainter.MAX_BRIDGE` | `{ 0, STREET_BRIDGE, STREET_BRIDGE, 14 }` | The longest crossing of fresh water, in plots, by road kind: gravel and paved STREET_BRIDGE, a highway 14 (the mockup's star 1) - an arterial's since 0.7.87 (DistrictPlan.ARTERIAL_BRIDGE). |
+| 184 | `TilePainter.RAIL_BRIDGE` | `14` | The longest crossing of fresh water a railway's track makes: 14, as a highway's (star N3-6). |
+| 187 | `TilePainter.PART_BIT` | `1<<21` | A building's box in Input.boxes with this bit set is the part, on the tile, of a building counted on another (FX5 Y2): a yard whose box spans tiles is counted on the tile holding its first plot, an... |
+| 190 | `TilePainter.RING` | `TILE + 2 * REACH` | Plots: the side of Input.ring, the tile and REACH plots about it on every side (FX5). |
+| 198 | `TilePainter.DX` | `{ 0, 1, 0, - 1 }, DY = { - 1, 0, 1, 0 }` | North, east, south, west. |
+| 201 | `TilePainter.RESERVE_INTS` | `8` | The ints Input.reserve holds a reserve in: kind, stub, junction x and y, box x0, y0, w, h. |
+| 309 | `TilePainter.Input.CV_OWN` | `1, CV_BAND = 2, CV_END = 4` | A plot's curve mark (curve, curveRing; batch CL4, slice D): CV_OWN, a plot a curve is laid on (DistrictPlan.Curve.plots()); CV_BAND, a plot its band reaches that is not its own, kept free of buildi... |
+| 322 | `TilePainter.Input.CURVE_HEAD` | `3` | The numbers before a curve's geometry in curveGeom: its kind, its radius and the count of numbers after. |
+| 387 | `TilePainter.Input.YARD_INTS` | `10` | The ints Input.yard holds a yard in (FX5 Y2): its box (x0, y0, w, h), its type id, its layout (TileRaster.yardLayout()'s east-west, line, span start and end), and 1 when it is the freight station. |
+| 414 | `TilePainter.Input.BEND_DOUBLES` | `10` | The ints Input.bend holds a bend in (FX5): its net, corner x and y, incoming and outgoing headings (4), radius, tangent length, and 1 on double track. |
 
 ### TileRaster.java ([map](map/TileRaster.md))
 
@@ -2469,73 +2486,76 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 256 | `TileRaster.ROUNDABOUT_ROADS` | `5` | Roads: the fewest that leave a crossing (counted by Crossings.roadsLeaving(): each run of streets along a side of its rectangle, each slanted street off a corner) for it to be a roundabout, not a s... |
 | 259 | `TileRaster.TICKS_FROM` | `2` | Pixels a plot from which the blocks' view draws the track's cross-ticks (the L1 raster). |
 | 262 | `TileRaster.DECK` | `0xff5d4c3c` | A bridge's deck, edging a road over fresh water from 4 px a plot: the mockup's. |
-| 265 | `TileRaster.UNOWNED_DIM` | `0.4` | Ground no one in the city owns is drawn this much of the way to the map's background: 40%. |
-| 268 | `TileRaster.VOID` | `0xff16222c` | The map's background, which unowned ground is dimmed toward: the mockup's --map-void. |
-| 271 | `TileRaster.SITE_TINT` | `0.36` | A site's tint over its ground, its resource's colour this much of the way: 36% (the mockup's most for a deposit's body). |
-| 274 | `TileRaster.SITE_SPECKLE` | `0.75` | ...and on the plots its own hash speckles, 75% (the mockup's ore showing through). |
-| 277 | `TileRaster.SPECKLE_SHARE` | `0.15` | The share of a site's plots speckled: 15%. |
-| 280 | `TileRaster.WORKED_GREY` | `0xff929496` | A worked-out site's grey: the mockup's mined grey. |
-| 283 | `TileRaster.RING` | `0xff2b2d31` | A mine's ring and centre mark: the mockup's ring. |
-| 286 | `TileRaster.INSET_FROM` | `3` | Pixels a plot from which a building of more than one plot is inset a pixel: 3 (a one-plot building takes its own land's side: SMALL_MOST). |
-| 289 | `TileRaster.EDGE_FROM` | `6` | ...and from which it is edged: 6 (the mockup's outlines). |
-| 292 | `TileRaster.ROAD_WIDTH` | `{ 0, 0.30, 0.52, 0.86 }` | A road's width as a share of its plot, by kind (gravel, paved, highway): the mockup's 0.3, 0.52 and 0.86 - since 0.7.88 the highway's and (as a paved road's) the track's; a street's surface is its ... |
-| 295 | `TileRaster.ROAD_LEAST_PX` | `{ 0, 1, 2, 3 }` | ...and its least, in pixels, at the near view: 1, 2 and 3 (the mockup's 1, 1.5 and 2.5, whole). |
-| 298 | `TileRaster.HIGHWAY_CASE` | `0xff1d2126` | A highway's casing, a pixel either side from 6 px (the mockup's highwayCase)... |
-| 301 | `TileRaster.CENTRE_LINE` | `0xfff0cf5a` | ...and its dashed centre line from 6 px a plot, a pixel wide, on the first 55% of each plot along it (the mockup's centre, its dash 0.7 on and 0.55 off). |
-| 304 | `TileRaster.LINES_FROM` | `4` | Pixels a plot from which a road is drawn as a line of its own width on its ground - a street as verge and surface (0.7.88) - and below, the whole plot in its colour: 4, the near view's image. |
-| 320 | `TileRaster.YARD_GROUND` | `0xff8c8478` | A yard's ground, light ballast (spec-freight 4.3's yard). |
-| 322 | `TileRaster.YARD_TRACKS` | `8` | The fan's sidings (spec-freight 4.3: 6 to 10). |
-| 324 | `TileRaster.DEPOT_TRACKS` | `3` | A Rail Depot's sidings (FR7 slice 3, "2 to 3 sidings and a shed"): 3 - its box is 8 plots by 7, a Rail Terminal's 24 by 24. |
-| 342 | `TileRaster.YARD_TRACK_APART` | `1.5` | Plots between the fan's tracks, middle to middle. |
-| 344 | `TileRaster.YARD_LADDER` | `3` | Plots at each end over which the fan closes to the line. |
-| 346 | `TileRaster.SHED_DEPTH` | `2.5, SHED_LENGTH = 0.6` | The freight shed: plots deep, and its share of the fan's length. |
-| 348 | `TileRaster.ORE_HEAP` | `0xffc9b68f` | A bulk yard's stockpiles, the spec's sand colour. |
-| 350 | `TileRaster.CONTAINER` | `0xffd6dde4` | A container yard's boxes, the boats' white. |
-| 352 | `TileRaster.GANTRY` | `0xff2b2f36` | Its two cranes. |
-| 354 | `TileRaster.WAGON` | `0xff7b4b3a` | A wagon standing. |
-| 356 | `TileRaster.WAGON_LENGTH` | `0.5` | Plots: a wagon about 15 m. |
-| 359 | `TileRaster.SMALL_MOST` | `0.92` | A one-plot building's side as a share of its plot: its own land's (BuildingVisual.plotSide(), 0.7.64 - a House 0.91 of the plot, a Convenience Store 0.72; the mockup's 0.6 to 0.92 by a hash before)... |
-| 362 | `TileRaster.SET_BACK` | `0.07` | ...and set this far from the road it faces: 0.07 of a plot, so it hugs its street (the mockup's). |
-| 366 | `TileRaster.VERGE` | `0xffbfd39a` | A street's verge, its right of way either side of its surface (0.7.88): the prototype's VERGE (spec-roads-and-ports.md 5, roads_proto.py). |
-| 369 | `TileRaster.TRACK_DASH` | `0xff8a6a3c` | A track's dashes, a street the city has bought no road for (0.7.88): the prototype's brown (spec 2.5, 5: "a dashed brown line on the verge"). |
-| 372 | `TileRaster.SURFACE` | `{ 0, DistrictPlan.HALF, DistrictPlan.FULL }` | A street's surface across its plot, by its width (Painted.width: 0, half, full): none, half the plot (15 m), the whole plot (30 m) - the right of way is 30 m (spec 2.1; the prototype's W_MIN and W_... |
-| 375 | `TileRaster.PACKED_DIM` | `0.35` | A building packed at the city's edge without a street (R7) is drawn this much of the way to the map's background: 35% (star RD2-2) - a shade darker, so it reads as standing apart from the streets, ... |
-| 636 | `TileRaster.YARD_CANVAS` | `ThreadLocal.withInitial(() -> new int [ 0 ])` |  |
-| 880 | `TileRaster.HEAP_LEAST` | `2` | The least share of the ground past a bulk yard's fan, in pixels either way, a heap is drawn on: 2. |
-| 914 | `TileRaster.LOOK_FROM` | `3` | Pixels a plot from which a materials building is drawn as its look rather than a box of its colour: 3 (TileRaster's INSET_FROM; the L0 image is 4). |
-| 917 | `TileRaster.BENCHES` | `6` | The benches a pit or a quarry steps down by from its rim to its middle: 6. |
-| 920 | `TileRaster.POND` | `0xff4f8fbf` | A leach plant's pond: #4f8fbf. |
-| 923 | `TileRaster.HEADFRAME` | `0xff2b2622, WINDING = 0xff8a7f72` | A shaft's headframe: #2b2622, and the winding house in it #8a7f72. |
-| 926 | `TileRaster.CONVEYOR` | `0xff9a9aa2` | The wash plant's conveyor: #9a9aa2. |
-| 929 | `TileRaster.LOGS` | `0xff5a3e22` | A camp's log stacks: #5a3e22. |
-| 932 | `TileRaster.CROWN` | `0xff6a9a55` | Planted forest's crowns, in rows over its darker floor: #6a9a55. |
-| 935 | `TileRaster.RIDGE_DARK` | `0.18` | How much darker a works' roof ridges are than its fill: 18%. |
-| 1018 | `TileRaster.QUAY_DECK` | `0xff3a4655` | A quay's deck: mockup 3's jetty, #3a4655... |
-| 1021 | `TileRaster.QUAY_EDGE` | `0xff5a6676` | ...and its edge from EDGE_FROM px a plot: the mockup's #5a6676. |
-| 1024 | `TileRaster.JACKET_FILL` | `0xff2a3540` | A platform's jacket: mockup 3's #2a3540... |
-| 1027 | `TileRaster.OIL_TAN` | `0xffc9b68f` | ...edged in the mockup's tan, #c9b68f - its ring's and the pipe's colour too (the ore's). |
-| 1030 | `TileRaster.RING_ALPHA` | `0.25` | A platform's 500 m ring over the water: the tan at the mockup's 25%... |
-| 1033 | `TileRaster.RING_DASH_PX` | `3` | ...dashed 3 px on, 3 off along its arc (the mockup's "3 3"). |
-| 1036 | `TileRaster.PIPE_ALPHA` | `0.5` | A crude pipeline: the tan at the mockup's 50%, dashed 2 px on and 4 off (its "2 4"), 1.5 px wide (drawn 1 below 4 px a plot, 2 from it). |
-| 1038 | `TileRaster.PIPE_ON_PX` | `2, PIPE_OFF_PX = 4` | ...its dash, 2 px on and 4 off along the pipe (the mockup's "2 4"). |
-| 1153 | `TileRaster.BLOCK_ALPHA` | `{ 0.4, 0.6, 0.8, 0.96 }` | A block's opacity over its ground by its share built: 40%, 60%, 80% and 96% (the mockup's ALPHA)... |
-| 1156 | `TileRaster.BLOCK_FILLS` | `{ 0.12, 0.28, 0.5 }` | ...at a share built under 12%, under 28%, under 50%, and above (the mockup's). |
-| 1159 | `TileRaster.BLOCK_MIDDLE` | `4` | Blocks the mockup drew at its middle view, in plots a side: 4 (120 m), from 1.4 to 3.2 px a plot... |
-| 1162 | `TileRaster.BLOCK_FAR` | `8` | ...and at its far view: 8 (240 m), below 1.4 px a plot, with gravel hidden. |
-| 1271 | `TileRaster.HIGHWAY_LEAST_PX` | `2` | The least a highway is drawn across, in pixels, in the blocks' views: 2 (the mockup's 1.8 at its far view, 2 at its middle). |
-| 1589 | `TileRaster.NOTCH` | `1<<24` | What marks an outer plot in avenueNotches(): bit 24, over the arm's code (low two bits) and the codes of the two steps either side of it (bits 8 to 15 and 16 to 23). |
-| 2422 | `TileRaster.RAMP_WIDTH` | `ROAD_WIDTH [ BuildingVisual.GRAVEL ]` | A ramp's slip road's width, as a share of a plot: a gravel street's, 0.3 (ROAD_WIDTH). |
-| 2559 | `TileRaster.Crossings.N` | `TilePainter.RING, R = TilePainter.REACH` | The side of Input.ring and how far it reaches past the tile on every side, in plots: TilePainter.RING and TilePainter.REACH. |
-| 2561 | `TileRaster.Crossings.NONE` | `new Crossings()` | A tile with no junction street about it: no crossings. |
-| 3103 | `TileRaster.LOOP_RADIUS` | `2.5, LOOP_AT = 5.0` | A loop's radius, in plots, and how far from the crossing's middle along each axis a cloverleaf's loop is centred (batch FR7): 2.5 and 5.0, so a loop fills its quadrant of the 19-plot reserve. |
-| 3106 | `TileRaster.TRUMPET_RADIUS` | `2.0, TRUMPET_OUT = 5.5, TRUMPET_ACROSS = 3.0` | A trumpet's loop: its radius and how far out along its stub and across it its centre lies, in plots - 2.0, and 5.5 and 3.0, inside the 11-plot reserve. |
-| 3109 | `TileRaster.LOOP_WIDTH` | `0.34` | A loop's and a slip's road across, as a share of a plot: 0.34, a pixel or two wider than a gravel street's, so it reads as a ramp at 8 px a plot and not as a street. |
-| 3112 | `TileRaster.SLIP_OFF` | `0.45, SLIP_OUT = 9.0, TRUMPET_SLIP_OUT = 10.0` | Where a slip leaves its highway, in plots from the junction's middle: just off the highway's band (0.45) and (along it) 9.0 out for a cloverleaf, 10.0 for a trumpet's stub. |
-| 3196 | `TileRaster.KERB_RADIUS` | `0.25` | A kerb corner's radius, in plots: 0.25 (7.5 m), the corner of a + of two streets in a homes cell - and of a street's T on an arterial there. |
-| 3199 | `TileRaster.ESTATE_T_RADIUS` | `0.5` | An estate T's corner radius, in plots: 0.5 (15 m) - wide, where trucks turn (spec-freight 4.6: "a T with wide radius corners"). |
-| 3336 | `TileRaster.SIDING_SHED` | `0.7` | A siding's loading shed, the share of a plot it fills (FR7 slice 3): 0.7, a small block at the siding's end beside the works. |
-| 3683 | `TileRaster.HIGHWAY_LEG` | `2` | How far the straight legs of a highway bend are drawn past its tangent points, in plots: two - past the last plot the bend replaces (a plot and a half out), where the plots' own bands take over. |
-| 3935 | `TileRaster.ROAD_SMALL` | `{ 0, 0xffbdb8ae, 0xff6a7077, 0xff3b4048 }` | A road plot's colour below LINES_FROM px a plot, where it fills its plot, by kind: gravel's and the highway's own, a paved road's casing - its own grey is the grass's brightness, and a pixel of it ... |
+| 267 | `TileRaster.TUNNEL_PORTAL` | `0xff090b0d` | A tunnel's portal (ET4): the near black band across a highway or a railway where it goes into the hill or comes out, on the last plot of the tunnel at its edge, a little wider than the run (its cro... |
+| 270 | `TileRaster.TUNNEL_DASH` | `0.6` | The share of a plot a tunnel's dashed line fills along the run, from the plot's start: 0.6 (the highway's centre line is .55), in the run's own colour - the highway's surface, the track's steel - a... |
+| 273 | `TileRaster.TUNNEL_PORTAL_DEPTH` | `0.25` | A portal's depth along the run, a share of a plot: 0.25, a pixel at least - 1 px at 4 px a plot, 2 at 8. |
+| 282 | `TileRaster.UNOWNED_DIM` | `0.4` | Ground no one in the city owns is drawn this much of the way to the map's background: 40%. |
+| 285 | `TileRaster.VOID` | `0xff16222c` | The map's background, which unowned ground is dimmed toward: the mockup's --map-void. |
+| 288 | `TileRaster.SITE_TINT` | `0.36` | A site's tint over its ground, its resource's colour this much of the way: 36% (the mockup's most for a deposit's body). |
+| 291 | `TileRaster.SITE_SPECKLE` | `0.75` | ...and on the plots its own hash speckles, 75% (the mockup's ore showing through). |
+| 294 | `TileRaster.SPECKLE_SHARE` | `0.15` | The share of a site's plots speckled: 15%. |
+| 297 | `TileRaster.WORKED_GREY` | `0xff929496` | A worked-out site's grey: the mockup's mined grey. |
+| 300 | `TileRaster.RING` | `0xff2b2d31` | A mine's ring and centre mark: the mockup's ring. |
+| 303 | `TileRaster.INSET_FROM` | `3` | Pixels a plot from which a building of more than one plot is inset a pixel: 3 (a one-plot building takes its own land's side: SMALL_MOST). |
+| 306 | `TileRaster.EDGE_FROM` | `6` | ...and from which it is edged: 6 (the mockup's outlines). |
+| 309 | `TileRaster.ROAD_WIDTH` | `{ 0, 0.30, 0.52, 0.86 }` | A road's width as a share of its plot, by kind (gravel, paved, highway): the mockup's 0.3, 0.52 and 0.86 - since 0.7.88 the highway's and (as a paved road's) the track's; a street's surface is its ... |
+| 312 | `TileRaster.ROAD_LEAST_PX` | `{ 0, 1, 2, 3 }` | ...and its least, in pixels, at the near view: 1, 2 and 3 (the mockup's 1, 1.5 and 2.5, whole). |
+| 315 | `TileRaster.HIGHWAY_CASE` | `0xff1d2126` | A highway's casing, a pixel either side from 6 px (the mockup's highwayCase)... |
+| 318 | `TileRaster.CENTRE_LINE` | `0xfff0cf5a` | ...and its dashed centre line from 6 px a plot, a pixel wide, on the first 55% of each plot along it (the mockup's centre, its dash 0.7 on and 0.55 off). |
+| 321 | `TileRaster.LINES_FROM` | `4` | Pixels a plot from which a road is drawn as a line of its own width on its ground - a street as verge and surface (0.7.88) - and below, the whole plot in its colour: 4, the near view's image. |
+| 337 | `TileRaster.YARD_GROUND` | `0xff8c8478` | A yard's ground, light ballast (spec-freight 4.3's yard). |
+| 339 | `TileRaster.YARD_TRACKS` | `8` | The fan's sidings (spec-freight 4.3: 6 to 10). |
+| 341 | `TileRaster.DEPOT_TRACKS` | `3` | A Rail Depot's sidings (FR7 slice 3, "2 to 3 sidings and a shed"): 3 - its box is 8 plots by 7, a Rail Terminal's 24 by 24. |
+| 359 | `TileRaster.YARD_TRACK_APART` | `1.5` | Plots between the fan's tracks, middle to middle. |
+| 361 | `TileRaster.YARD_LADDER` | `3` | Plots at each end over which the fan closes to the line. |
+| 363 | `TileRaster.SHED_DEPTH` | `2.5, SHED_LENGTH = 0.6` | The freight shed: plots deep, and its share of the fan's length. |
+| 365 | `TileRaster.ORE_HEAP` | `0xffc9b68f` | A bulk yard's stockpiles, the spec's sand colour. |
+| 367 | `TileRaster.CONTAINER` | `0xffd6dde4` | A container yard's boxes, the boats' white. |
+| 369 | `TileRaster.GANTRY` | `0xff2b2f36` | Its two cranes. |
+| 371 | `TileRaster.WAGON` | `0xff7b4b3a` | A wagon standing. |
+| 373 | `TileRaster.WAGON_LENGTH` | `0.5` | Plots: a wagon about 15 m. |
+| 376 | `TileRaster.SMALL_MOST` | `0.92` | A one-plot building's side as a share of its plot: its own land's (BuildingVisual.plotSide(), 0.7.64 - a House 0.91 of the plot, a Convenience Store 0.72; the mockup's 0.6 to 0.92 by a hash before)... |
+| 379 | `TileRaster.SET_BACK` | `0.07` | ...and set this far from the road it faces: 0.07 of a plot, so it hugs its street (the mockup's). |
+| 383 | `TileRaster.VERGE` | `0xffbfd39a` | A street's verge, its right of way either side of its surface (0.7.88): the prototype's VERGE (spec-roads-and-ports.md 5, roads_proto.py). |
+| 386 | `TileRaster.TRACK_DASH` | `0xff8a6a3c` | A track's dashes, a street the city has bought no road for (0.7.88): the prototype's brown (spec 2.5, 5: "a dashed brown line on the verge"). |
+| 389 | `TileRaster.SURFACE` | `{ 0, DistrictPlan.HALF, DistrictPlan.FULL }` | A street's surface across its plot, by its width (Painted.width: 0, half, full): none, half the plot (15 m), the whole plot (30 m) - the right of way is 30 m (spec 2.1; the prototype's W_MIN and W_... |
+| 392 | `TileRaster.PACKED_DIM` | `0.35` | A building packed at the city's edge without a street (R7) is drawn this much of the way to the map's background: 35% (star RD2-2) - a shade darker, so it reads as standing apart from the streets, ... |
+| 653 | `TileRaster.YARD_CANVAS` | `ThreadLocal.withInitial(() -> new int [ 0 ])` |  |
+| 897 | `TileRaster.HEAP_LEAST` | `2` | The least share of the ground past a bulk yard's fan, in pixels either way, a heap is drawn on: 2. |
+| 931 | `TileRaster.LOOK_FROM` | `3` | Pixels a plot from which a materials building is drawn as its look rather than a box of its colour: 3 (TileRaster's INSET_FROM; the L0 image is 4). |
+| 934 | `TileRaster.BENCHES` | `6` | The benches a pit or a quarry steps down by from its rim to its middle: 6. |
+| 937 | `TileRaster.POND` | `0xff4f8fbf` | A leach plant's pond: #4f8fbf. |
+| 940 | `TileRaster.HEADFRAME` | `0xff2b2622, WINDING = 0xff8a7f72` | A shaft's headframe: #2b2622, and the winding house in it #8a7f72. |
+| 943 | `TileRaster.CONVEYOR` | `0xff9a9aa2` | The wash plant's conveyor: #9a9aa2. |
+| 946 | `TileRaster.LOGS` | `0xff5a3e22` | A camp's log stacks: #5a3e22. |
+| 949 | `TileRaster.CROWN` | `0xff6a9a55` | Planted forest's crowns, in rows over its darker floor: #6a9a55. |
+| 952 | `TileRaster.RIDGE_DARK` | `0.18` | How much darker a works' roof ridges are than its fill: 18%. |
+| 1035 | `TileRaster.QUAY_DECK` | `0xff3a4655` | A quay's deck: mockup 3's jetty, #3a4655... |
+| 1038 | `TileRaster.QUAY_EDGE` | `0xff5a6676` | ...and its edge from EDGE_FROM px a plot: the mockup's #5a6676. |
+| 1041 | `TileRaster.JACKET_FILL` | `0xff2a3540` | A platform's jacket: mockup 3's #2a3540... |
+| 1044 | `TileRaster.OIL_TAN` | `0xffc9b68f` | ...edged in the mockup's tan, #c9b68f - its ring's and the pipe's colour too (the ore's). |
+| 1047 | `TileRaster.RING_ALPHA` | `0.25` | A platform's 500 m ring over the water: the tan at the mockup's 25%... |
+| 1050 | `TileRaster.RING_DASH_PX` | `3` | ...dashed 3 px on, 3 off along its arc (the mockup's "3 3"). |
+| 1053 | `TileRaster.PIPE_ALPHA` | `0.5` | A crude pipeline: the tan at the mockup's 50%, dashed 2 px on and 4 off (its "2 4"), 1.5 px wide (drawn 1 below 4 px a plot, 2 from it). |
+| 1055 | `TileRaster.PIPE_ON_PX` | `2, PIPE_OFF_PX = 4` | ...its dash, 2 px on and 4 off along the pipe (the mockup's "2 4"). |
+| 1170 | `TileRaster.BLOCK_ALPHA` | `{ 0.4, 0.6, 0.8, 0.96 }` | A block's opacity over its ground by its share built: 40%, 60%, 80% and 96% (the mockup's ALPHA)... |
+| 1173 | `TileRaster.BLOCK_FILLS` | `{ 0.12, 0.28, 0.5 }` | ...at a share built under 12%, under 28%, under 50%, and above (the mockup's). |
+| 1176 | `TileRaster.BLOCK_MIDDLE` | `4` | Blocks the mockup drew at its middle view, in plots a side: 4 (120 m), from 1.4 to 3.2 px a plot... |
+| 1179 | `TileRaster.BLOCK_FAR` | `8` | ...and at its far view: 8 (240 m), below 1.4 px a plot, with gravel hidden. |
+| 1290 | `TileRaster.HIGHWAY_LEAST_PX` | `2` | The least a highway is drawn across, in pixels, in the blocks' views: 2 (the mockup's 1.8 at its far view, 2 at its middle). |
+| 1608 | `TileRaster.NOTCH` | `1<<24` | What marks an outer plot in avenueNotches(): bit 24, over the arm's code (low two bits) and the codes of the two steps either side of it (bits 8 to 15 and 16 to 23). |
+| 2461 | `TileRaster.RAMP_WIDTH` | `ROAD_WIDTH [ BuildingVisual.GRAVEL ]` | A ramp's slip road's width, as a share of a plot: a gravel street's, 0.3 (ROAD_WIDTH). |
+| 2598 | `TileRaster.Crossings.N` | `TilePainter.RING, R = TilePainter.REACH` | The side of Input.ring and how far it reaches past the tile on every side, in plots: TilePainter.RING and TilePainter.REACH. |
+| 2600 | `TileRaster.Crossings.NONE` | `new Crossings()` | A tile with no junction street about it: no crossings. |
+| 3142 | `TileRaster.LOOP_RADIUS` | `2.5, LOOP_AT = 5.0` | A loop's radius, in plots, and how far from the crossing's middle along each axis a cloverleaf's loop is centred (batch FR7): 2.5 and 5.0, so a loop fills its quadrant of the 19-plot reserve. |
+| 3145 | `TileRaster.TRUMPET_RADIUS` | `2.0, TRUMPET_OUT = 5.5, TRUMPET_ACROSS = 3.0` | A trumpet's loop: its radius and how far out along its stub and across it its centre lies, in plots - 2.0, and 5.5 and 3.0, inside the 11-plot reserve. |
+| 3148 | `TileRaster.LOOP_WIDTH` | `0.34` | A loop's and a slip's road across, as a share of a plot: 0.34, a pixel or two wider than a gravel street's, so it reads as a ramp at 8 px a plot and not as a street. |
+| 3151 | `TileRaster.SLIP_OFF` | `0.45, SLIP_OUT = 9.0, TRUMPET_SLIP_OUT = 10.0` | Where a slip leaves its highway, in plots from the junction's middle: just off the highway's band (0.45) and (along it) 9.0 out for a cloverleaf, 10.0 for a trumpet's stub. |
+| 3235 | `TileRaster.KERB_RADIUS` | `0.25` | A kerb corner's radius, in plots: 0.25 (7.5 m), the corner of a + of two streets in a homes cell - and of a street's T on an arterial there. |
+| 3238 | `TileRaster.ESTATE_T_RADIUS` | `0.5` | An estate T's corner radius, in plots: 0.5 (15 m) - wide, where trucks turn (spec-freight 4.6: "a T with wide radius corners"). |
+| 3452 | `TileRaster.SIDING_SHED` | `0.7` | A siding's loading shed, the share of a plot it fills (FR7 slice 3): 0.7, a small block at the siding's end beside the works. |
+| 3802 | `TileRaster.HIGHWAY_LEG` | `2` | How far the straight legs of a highway bend are drawn past its tangent points, in plots: two - past the last plot the bend replaces (a plot and a half out), where the plots' own bands take over. |
+| 4054 | `TileRaster.ROAD_SMALL` | `{ 0, 0xffbdb8ae, 0xff6a7077, 0xff3b4048 }` | A road plot's colour below LINES_FROM px a plot, where it fills its plot, by kind: gravel's and the highway's own, a paved road's casing - its own grey is the grass's brightness, and a pixel of it ... |
 
 ### TimeSkipReport.java ([map](map/TimeSkipReport.md))
 
@@ -3192,18 +3212,18 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 910 | `BuildScreen.PAVE_INFO` | `"Paving lays a Paved Road on a gravel road's ground: a Paved Road's price, less the" + ...` | ...and the (i) on its two figures: what it costs and why it may win. |
 | 1020 | `BuildScreen.ROAD_TAG` | `"cheapest per trip over its life"` | A road card's first tag (0.7.70): the cheapest a trip off the road over its life, its ground in it - BuildCard.ROAD_PER, shortened. |
 | 1023 | `BuildScreen.ROAD_OFF` | `"trip off the road"` | ...and what its land bar is per: a trip it takes off the road (BuildAdvice.unit()). |
-| 2168 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
-| 2834 | `BuildScreen.AUTO_CHIP` | `"Automatic building on ›"` | Build's heading chip on every page but the Overview while it is on: the way back to its cards. |
-| 2837 | `BuildScreen.AUTO_INFO` | `"Turned on, it orders every month what this page advises for the city's works - " + "po...` | The section's (i). |
-| 2863 | `BuildScreen.AUTO_DIAL` | `(1389 - Palette.RAIL - 36 - 20) / 3.0 - 24` | A dial's width in its card at the 1,389 window: a third of the page less the card's padding. |
-| 3004 | `BuildScreen.AUTO_CAP_TITLE` | `"THE HIGHEST YIELD ITS BOND WILL TAKE"` | The cap block's caption and (i) on automatic building's debt card (CD2, D28 and D30). |
-| 3005 | `BuildScreen.AUTO_CAP_INFO` | `"The most automatic building will pay to sell the " + Game.BUILD_BOND_YEARS + "-year bo...` |  |
-| 3015 | `BuildScreen.AUTO_CAP_LINE` | `"A sale that falls short at the cap keeps its ask open, offered again every month; " + ...` | The line under the chips: what a short sale does here (D30). |
-| 3019 | `BuildScreen.ASKS_INFO` | `"An order whose bond sold short at the cap waits here for its money, and the rest " + "...` | THE OPEN ASKS' heading (i). |
-| 3227 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
-| 4565 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
-| 4866 | `BuildScreen.PAYBACK_LINE` | `2 * NEED_CARD` | The pay-back line's width on the no-deposit page (0.7.101): two of Build's need cards, about as wide as the WHY section's hand-wrapped lines above it. |
-| 5316 | `BuildScreen.FUND_CAP_INFO` | `"The previews above are the auction for the cash this run is short of, at the " + "high...` | The cap block's (i) on the funding page (CD2, D30). |
+| 2192 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
+| 2858 | `BuildScreen.AUTO_CHIP` | `"Automatic building on ›"` | Build's heading chip on every page but the Overview while it is on: the way back to its cards. |
+| 2861 | `BuildScreen.AUTO_INFO` | `"Turned on, it orders every month what this page advises for the city's works - " + "po...` | The section's (i). |
+| 2887 | `BuildScreen.AUTO_DIAL` | `(1389 - Palette.RAIL - 36 - 20) / 3.0 - 24` | A dial's width in its card at the 1,389 window: a third of the page less the card's padding. |
+| 3028 | `BuildScreen.AUTO_CAP_TITLE` | `"THE HIGHEST YIELD ITS BOND WILL TAKE"` | The cap block's caption and (i) on automatic building's debt card (CD2, D28 and D30). |
+| 3029 | `BuildScreen.AUTO_CAP_INFO` | `"The most automatic building will pay to sell the " + Game.BUILD_BOND_YEARS + "-year bo...` |  |
+| 3039 | `BuildScreen.AUTO_CAP_LINE` | `"A sale that falls short at the cap keeps its ask open, offered again every month; " + ...` | The line under the chips: what a short sale does here (D30). |
+| 3043 | `BuildScreen.ASKS_INFO` | `"An order whose bond sold short at the cap waits here for its money, and the rest " + "...` | THE OPEN ASKS' heading (i). |
+| 3251 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
+| 4589 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
+| 4890 | `BuildScreen.PAYBACK_LINE` | `2 * NEED_CARD` | The pay-back line's width on the no-deposit page (0.7.101): two of Build's need cards, about as wide as the WHY section's hand-wrapped lines above it. |
+| 5340 | `BuildScreen.FUND_CAP_INFO` | `"The previews above are the auction for the cash this run is short of, at the " + "high...` | The cap block's (i) on the funding page (CD2, D30). |
 
 ### ConstructionScreen.java ([map](map/ConstructionScreen.md))
 
@@ -4244,7 +4264,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (905 constants)
+## harnesses (913 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5049,9 +5069,9 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5438 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
 | 5491 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
 | 5499 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
-| 7355 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
-| 7504 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
-| 7510 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
+| 7365 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
+| 7514 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
+| 7520 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
 
 ### MainLineCheck.java ([map](map/MainLineCheck.md))
 
@@ -5459,6 +5479,19 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 156 | `RoadCheck.GRAVEL` | `ConstructionControl.PAVE_FROM, PAVED = ConstructionControl.PAVE_TO, HIGHWAY = "Elevated...` | The three roads by name: the paving's from and to, and the highway. |
 | 160 | `RoadCheck.ROADS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS)` | The advice's measure for roads, which the sections here read the site, the units and the cards through. |
 
+### RunWorksCheck.java ([map](map/RunWorksCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 114 | `RunWorksCheck.CASH` | `1e10` | A fixture city's treasury: more than any order here costs, so a refusal is never for cash. |
+| 117 | `RunWorksCheck.TOL` | `1e-9` | What a fixture of figures near one another can be told apart by: a rounding, not ground. |
+| 120 | `RunWorksCheck.OWNED` | `24_000_000` | The ground a fixture city owns, square feet: a Freight Line (2.4 million) and the buildings beside it fit in it. |
+| 122 | `RunWorksCheck.HOUSE` | `"House", HIGHWAY = "Elevated Highway", SPUR = "Rail Spur", LINE = "Freight Line"` |  |
+| 644 | `RunWorksCheck.BUSINESS_CASH` | `4e6` | The cash a business is given to pay a run's order from by fiat, thousands: the Freight Line's price and more, in a figure small enough for the sectors' statements to be exact to the cent. |
+| 886 | `RunWorksCheck.HIGHWAY_DEPOTS` | `20, FREIGHT_DEPOTS = 100` | The depots a fixture's builders are given for 10: enough that a few highways (a Freight Line) take them some years, not centuries. |
+| 1103 | `RunWorksCheck.T` | `TilePainter.TILE` |  |
+| 1106 | `RunWorksCheck.HY` | `6, HX0 = 8, TX = 4, BARE = 20` | The fixture's rows and columns: the highway along row HY from column HX0, the track down column TX, and row BARE with no run. |
+
 ### SaveFileCheck.java ([map](map/SaveFileCheck.md))
 
 | line | constant | value | says |
@@ -5676,7 +5709,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 86 | `ZoningViewCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | ZoningCheck's orders: a small city with homes, shops, diners and works. |
 | 92 | `ZoningViewCheck.CITY_KM2` | `80` | The ground the city is drawn to round the default world's founding site: ZoningCheck's land office's 80 km², forest and bare ground both. |
 
-## tools (53 constants)
+## tools (54 constants)
 
 ### HarnessMap.java ([map](map/HarnessMap.md))
 
@@ -5741,6 +5774,12 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 45 | `ReliefRenders.SEED` | `1` | The world's seed the plot-zoom renders are drawn on: any (the cover and relief noise are the world's); EarthTerrainCheck's. |
 | 48 | `ReliefRenders.W` | `1000, H = 750` | The renders' size in pixels: 1,000 x 750, inside the 800 x 600 to 1,200 x 900 the review asked. |
+
+### RunRenders.java ([map](map/RunRenders.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 56 | `RunRenders.PX` | `8, ACROSS = 4, DOWN = 3` | Pixels a plot, and the window in tiles: 8 x 32 x 4 by 8 x 32 x 3, 1,024 x 768. |
 
 ### SlopeRenders.java ([map](map/SlopeRenders.md))
 
