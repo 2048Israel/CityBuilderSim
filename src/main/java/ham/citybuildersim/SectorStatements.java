@@ -468,8 +468,8 @@ public final class SectorStatements {
             // ...and since 0.7.102 (A16) what its borrowing cost it up front and it is still to expense.
             BORROWING_TO_EXPENSE = "borrowingToExpense";
 
-    /** The stock's note, the buildings' and what it holds abroad - and since 0.7.75 its share capital's (R3). */
-    public static final int STOCK_NOTE = 7, BUILDINGS_NOTE = 8, ABROAD_NOTE = 9, CAPITAL_NOTE = 10;
+    /** The stock's note, the buildings' and what it holds abroad - and since 0.7.75 its share capital's (R3), and since ET3 its land's, by the ground it stands on. */
+    public static final int STOCK_NOTE = 7, BUILDINGS_NOTE = 8, ABROAD_NOTE = 9, CAPITAL_NOTE = 10, LAND_NOTE = 11;
 
     /** A kind of debt's line on the sheet, due later: "later.0" for bank loans, in Debt.KINDS' order. */
     public static String laterId(int kind) { return "later." + kind; }
@@ -486,7 +486,10 @@ public final class SectorStatements {
         b.line(RECEIVABLES, "Owed by its buyers", now.tradeReceivables(), then.tradeReceivables(), 0);
         b.groupTotal(CURRENT, "Total current assets");
         b.head(LONG_HEAD, "Long-lived assets").group();
-        b.line(LAND, "Land", now.land(), then.land(), 0);
+        // ...in a city with foothill or steep ground, by the ground it stands on (note 11, ET3); the sheet's land is the note's sum.
+        List<Row> landRows = landNote(now);
+        b.line(LAND, "Land", now.land(), then.land(), landRows.isEmpty() ? 0 : LAND_NOTE);
+        if (!landRows.isEmpty()) b.note(LAND_NOTE, landRows);
         b.line(BUILDINGS, "Buildings, at cost", now.buildings(), then.buildings(), BUILDINGS_NOTE);
         b.line(ABROAD, "Held abroad", now.foreignAssets(), then.foreignAssets(), ABROAD_NOTE);
         b.line(BONDS_HELD, "Bonds it holds: other businesses' and the city's", now.bondAssets(), then.bondAssets(), 0);
@@ -658,9 +661,23 @@ public final class SectorStatements {
         return now.stockCounted() ? now.stockRevalued() : Double.NaN;
     }
 
-    /** Last month's land at this month's price a square foot, less at last month's - NaN when either month's price was not read. */
+    /**
+     * Last month's land at this month's price a square foot, less at last month's - NaN when either month's price was not
+     * read. Where both months valued it by the ground it stands on and either stood on any foothill or steep ground (ET3,
+     * landByClass()), the sum over the classes of last month's area on each x the change in that class's price; otherwise
+     * the one price, to the bit.
+     */
     public static double landRevalued(SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
-        return now.landPrice() > 0 && then.landPrice() > 0 ? then.landSqFt() * (now.landPrice() - then.landPrice()) : Double.NaN;
+        if (!(now.landPrice() > 0 && then.landPrice() > 0)) return Double.NaN;
+        if (!landByClass(now, then)) return then.landSqFt() * (now.landPrice() - then.landPrice());
+        double v = 0;
+        for (int c = 0; c < LAND_CLASSES; c++) v += then.landSqFtOf(c) * (now.landPriceOf(c) - then.landPriceOf(c));
+        return v;
+    }
+
+    /** Whether the land's revaluation is read by class of ground: both months carry it and either has any land on foothill or steep ground (ET3). */
+    public static boolean landByClass(SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+        return now.hasLandByRelief() && then.hasLandByRelief() && (now.landOnHills() || then.landOnHills());
     }
 
     /** ...the materials in last month's buildings at this month's price a unit, less at last month's. */
@@ -687,7 +704,8 @@ public final class SectorStatements {
         b.split(EQ_BOUGHT, "Its own shares bought back", -now.sharesBoughtBack(), 0, 0);
         double[] revalued = { stockRevalued(now), landRevalued(now, then), buildingsRevalued(now, then),
                 abroadRevalued(now, then) };
-        String[] words = { "Its stock at the start, at today's prices", "Its land at the start, at today's price",
+        String[] words = { "Its stock at the start, at today's prices",
+                landByClass(now, then) ? "Its land at the start, at today's prices" : "Its land at the start, at today's price",
                 "Its buildings at the start, at today's materials", "What it holds abroad, revalued" };
         for (int i = 0; i < revalued.length; i++) {
             if (Double.isFinite(revalued[i])) b.split(REVALUED_IDS[i], words[i], 0, revalued[i], 0);
@@ -706,6 +724,35 @@ public final class SectorStatements {
             if (Double.isFinite(v)) sum += v;
         }
         return sum;
+    }
+
+    /** The classes of ground the books value land on (ET3): flat, foothill, and the steep and very steep ground only works stand on. SectorMonth.landSqFtOf(c) and landPriceOf(c) read them by this index. */
+    public static final int LAND_CLASSES = 3;
+
+    /** Note 11's rows, by class: ids and labels. */
+    public static final String[] LAND_IDS = { "land.flat", "land.foothill", "land.steep" };
+    public static final String[] LAND_LABELS = { "Flat", "Foothill", "Steep (its mines)" };
+
+    /** In a land note's row, `parts` holds {square kilometres, the price a square metre}; `now` is its value, and the rows add to the sheet's land. */
+    public static final int LAND_AREA = 0, LAND_PRICE = 1;
+
+    /**
+     * Note 11 (ET3, spec-earth2-terrain 5.3), its land by the ground it stands on: one row for each class that holds any
+     * of it, as the sheet valued the month - its square kilometres, its price a square metre (LandManager.perM2()) and
+     * its value, which together add up to the sheet's Land line. Empty where the month did not read it: a city with only
+     * flat ground, or a save from before. The words and the layout are the screen's.
+     */
+    public static List<Row> landNote(SectorBooks.SectorMonth now) {
+        if (now == null || !now.hasLandByRelief()) return List.of();
+        List<Row> out = new ArrayList<>();
+        for (int c = 0; c < LAND_CLASSES; c++) {
+            double sqFt = now.landSqFtOf(c);
+            if (!(sqFt > 0)) continue;
+            double price = now.landPriceOf(c);
+            out.add(new Row(LAND_IDS[c], LAND_LABELS[c], Kind.LINE, sqFt * price, Double.NaN, 0, 0,
+                    new double[] { LandManager.km2(sqFt), LandManager.perM2(price) }));
+        }
+        return out;
     }
 
     /**

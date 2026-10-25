@@ -1,8 +1,8 @@
-# gate of Merge batch/BP1: the batch process, cheaper and quicker, 0.8.43
+# gate of Merge batch/ET3: a price for each class of ground, and the land line by class, 0.8.44
 # date: 2026-10-25
 # earth-2.bin: named
-# suite: exit 3, main's recorded reds only (the line above the reds is the full suite's verdict; its harness count was overwritten by the timing run before it was copied)
-# timing: by hand, under the old ship.sh; two misses (MapCheck's 10-billion month, KeptCheck's whole chrome) that main itself missed on this PC the same day; BP1 changes no game code
+# suite: 140 harnesses run in 995s: 139 passed, 1 failed
+# timing: 11 harnesses run in 313s: 10 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

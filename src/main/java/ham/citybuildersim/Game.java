@@ -423,6 +423,12 @@ public class Game {
                 () -> this.founding.getWorldKey(), () -> month);
         // ...and its zones, which the roll and a new building's ground read (0.7.107, batch Z1).
         economyManager.setZoning(landManager.getZoning(), landManager::heldBy);
+        // ...and a foothill's price reads the preparation the quote charges a square foot of it (ET3), so the price and the quote are one number.
+        landManager.setPreparationPerSqFt(() -> preparationCost(preparationPoints(1)));
+        // ...and the books value a business's land by the ground it stands on (ET3): which templates are works, and what a
+        // square foot of one more of a template's plot costs where it would fall - the number buildFor() charges.
+        economyManager.wireLandByRelief(Game::standsAnywhere,
+                t -> landManager.priceFor(t.getLandSqFt(), t.getSector(), standsAnywhere(t)) / t.getLandSqFt());
         // ...and the fresh water limit is the land's and the rights' (0.7.59,
         // batch J2): read each time the services update, on every path. A new
         // city has no rights; a load sets its own (readTheSave()).
@@ -2056,21 +2062,27 @@ public class Game {
             case COAST:
                 return market.cheapestWithSea();
             case SHORTFALL: {
+                // ...the buildable ground (flat and foothill) must cover it, and offers rank by price with their foothill
+                // prepared (ET3, spec-earth2-terrain 5.2); all flat, the dry ground and the price themselves.
                 LandParcel cheapest = null;
                 for (LandParcel p : market.getListing()) {
-                    if (p.getSizeSqFt() < need.drySqFt() || !LandMarket.bareGround(p)) continue;
-                    if (cheapest == null || p.getPriceUsd() < cheapest.getPriceUsd()
-                            || (p.getPriceUsd() == cheapest.getPriceUsd() && market.nearer(p, cheapest))) cheapest = p;
+                    if (LandMarket.buildableSqFt(p) < need.drySqFt() || !LandMarket.bareGround(p)) continue;
+                    if (cheapest == null || market.priceWithPrepUsd(p) < market.priceWithPrepUsd(cheapest)
+                            || (market.priceWithPrepUsd(p) == market.priceWithPrepUsd(cheapest) && market.nearer(p, cheapest))) cheapest = p;
                 }
                 if (cheapest != null) return cheapest;
                 return bestOffer(LandNeed.room());
             }
             default: {
+                // ...ranked by the buildable ground a dollar, preparation counted (ET3), while any offer in the running
+                // has some; the dry ground a dollar otherwise, and for all flat ground always.
+                java.util.List<LandParcel> running = new java.util.ArrayList<>();
+                for (LandParcel p : market.getListing()) if (!p.isMostlySea() && canAffordParcel(p)) running.add(p);
+                boolean byBuildable = LandMarket.anyBuildable(running);
                 LandParcel best = null;
-                for (LandParcel p : market.getListing()) {
-                    if (p.isMostlySea() || !canAffordParcel(p)) continue;
-                    if (best == null || p.getDryKm2PerUsd() > best.getDryKm2PerUsd()
-                            || (p.getDryKm2PerUsd() == best.getDryKm2PerUsd() && market.nearer(p, best))) best = p;
+                for (LandParcel p : running) {
+                    if (best == null || market.rankPerUsd(p, byBuildable) > market.rankPerUsd(best, byBuildable)
+                            || (market.rankPerUsd(p, byBuildable) == market.rankPerUsd(best, byBuildable) && market.nearer(p, best))) best = p;
                 }
                 return best != null ? best : market.bestValue();
             }
@@ -4538,7 +4550,7 @@ public class Game {
         // ...its zone's part bought back at the zone's price and handed back
         // to the zone (0.7.107): priced before the release takes it out.
         double landFreed = decision.template.getLandSqFt() * scrapped;
-        double proceeds = landManager.buybackPriceFor(landFreed, decision.template.getSector());
+        double proceeds = landManager.buybackPriceFor(landFreed, decision.template.getSector(), standsAnywhere(decision.template));
         landManager.release(landFreed, decision.template.getSector(), standsAnywhere(decision.template));
 
         if (proceeds > 0 && proceeds <= cash) {
@@ -7068,7 +7080,7 @@ public class Game {
         double each = t.getCashCost() + t.getConstructionMaterials() * buildingManager.getConstructionMaterialPrice();
         double buildingValue = each * n;
         // ...its zone's part at the zone's price since 0.7.107 (LandManager.buybackPriceFor()).
-        double ground = landManager.buybackPriceFor(t.getLandSqFt() * n, owner.key());
+        double ground = landManager.buybackPriceFor(t.getLandSqFt() * n, owner.key(), standsAnywhere(t));
         double book = buildingManager.getBookValueBySector(owner.key());
         double share = book > 0 ? Math.min(1, buildingValue / book) : 0;
         double operating = owner.statement().operatingIncome;
@@ -7889,6 +7901,24 @@ public class Game {
     }
 
     /**
+     * Hands the books the land office's classes of ground (ET3, spec-earth2-terrain 5.3): the prices of a square foot of
+     * foothill and of steep ground (flat's is the land's price, pushed beside it), whether the city owns only flat ground,
+     * and the ground in use by class. Pushed with the land's price at the top of each month and on a load, so the classes
+     * are priced off the price the books hold; pushLandUse() reads the use again as the month closes.
+     */
+    void pushLandByRelief() {
+        boolean flatOnly = landManager.isFlatOnly();
+        economyManager.setLandByRelief(flatOnly, landManager.getFoothillPricePerSqFt(), landManager.getSteepPricePerSqFt(),
+                flatOnly ? null : landManager.reliefUse());
+    }
+
+    /** ...and the ground in use alone, as the month closes (the buildings its orders put up included), the prices staying the ones the month began with. */
+    private void pushLandUse() {
+        boolean flatOnly = landManager.isFlatOnly();
+        economyManager.setLandUse(flatOnly, flatOnly ? null : landManager.reliefUse());
+    }
+
+    /**
      * Whether this order can go ahead on the ore the city owns.
      *
      * A mine needs ground with iron under it. Buying a land parcel with a
@@ -8078,7 +8108,7 @@ public class Game {
         // A business buys its plot from the city. This is the one part of a
         // private build the player actually receives - its zone's part at the
         // zone's price since 0.7.107 (Z3), asked before the zone's ground is taken.
-        double landPrice = landManager.priceFor(landNeeded, zoned);
+        double landPrice = landManager.priceFor(landNeeded, zoned, works);
 
         double totalCost = quote.total + landPrice;
 
@@ -11077,6 +11107,7 @@ public class Game {
         landManager.updateMarket(populationManager.getPopulation());
 
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
+        pushLandByRelief();
 
         /*
          * THE BANK PRICES THE MONEY, BEFORE ANYTHING IS PRICED OFF IT.
@@ -13334,6 +13365,8 @@ public class Game {
          * through them the register's reading of a company's equity
          * (Equity.raiseFor()), read the close.
          */
+        // ...and the ground in use by class as it stands at the close (ET3), the buildings the month's orders put up included.
+        pushLandUse();
         economyManager.pushBalanceSheetInputs();
         sectorBooks.takeMonth(this);
 
@@ -17586,6 +17619,7 @@ public class Game {
          * report, and those reports have to see the expense.
          */
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
+        pushLandByRelief();
 
         // An older save's contracts, read as their owners' (OLD CONTRACTS),
         // now the land price the rebate on a new rental home reads is back.

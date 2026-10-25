@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**139 harness files, 14,377 labelled assertions.** AllChecks runs 139 of them.
+**140 harness files, 14,536 labelled assertions.** AllChecks runs 140 of them.
 
 ## Which harnesses read which class
 
@@ -14,7 +14,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, LongPlaytest, ZoningCheck |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DeskCheck, FloatLinkCheck, HoldersCheck, NewGameCheck, RestructureCheck, SaveFileCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
-| [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, LongPlaytest, SaveSlotCheck |
+| [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, LandClassCheck, LongPlaytest, SaveSlotCheck |
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
 | [Bank](map/Bank.md) | AuctionCheck, BankCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MortgageCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, WoodProductsCheck |
@@ -28,11 +28,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildScreen](map/BuildScreen.md) | **none** |
 | [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, SlopeCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
-| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LongPlaytest, RefineryCheck, RoadCheck, SaveFileCheck, SlopeCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | BankCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, IndustryViewCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RestaurantsCheck, ScaleCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
@@ -50,7 +50,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, YearBookCheck |
-| [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, IslandNetCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
+| [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, IslandNetCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
 | [CityRuns](map/CityRuns.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
@@ -66,7 +66,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, MoneyCheck, ReadPathCheck |
 | [CorporateBond](map/CorporateBond.md) | BondCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest |
-| [Currency](map/Currency.md) | DenominationCheck, HistoryCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
+| [Currency](map/Currency.md) | DenominationCheck, HistoryCheck, LandClassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | EarthTerrainCheck, MapCheck, PopulationCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurveCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SectorStatementCheck, TreasuryCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, PolicyPreviewCheck, ReadPathCheck, TreasuryCheck |
@@ -82,7 +82,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, MapCheck |
 | [EarthSite](map/EarthSite.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, LandCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorStatementCheck, WoodProductsCheck |
@@ -106,8 +106,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
-| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeskCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeskCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
 | [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -147,12 +147,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [KeptBench](map/KeptBench.md) | KeptCheck |
 | [LabourMarket](map/LabourMarket.md) | ExpectationsCheck, LabourCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ladder](map/Ladder.md) | BankCheck, ForeignDebtCheck, MortgageCheck |
+| [LandClassRenders](map/LandClassRenders.md) | **none** |
+| [LandClassView](map/LandClassView.md) | LandClassCheck |
 | [LandConversion](map/LandConversion.md) | ConversionCheck, LandCheck, ScaleCheck, WaterCheck |
 | [LandGrid](map/LandGrid.md) | ConversionCheck, GridCheck, LandCheck, MapCheck |
-| [LandManager](map/LandManager.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [LandManager](map/LandManager.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, IndustryViewCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, LandCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, SlopeCheck |
-| [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
-| [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
+| [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
+| [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
 | [LandScreen](map/LandScreen.md) | **none** |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
 | [Levers](map/Levers.md) | **none** |
@@ -171,8 +173,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Migration](map/Migration.md) | CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck, ReadPathCheck, SaveFileCheck |
 | [MiniMap](map/MiniMap.md) | **none** |
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
-| [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, ConservationCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PlanCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
-| [Money](map/Money.md) | TradeBandCheck |
+| [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, ConservationCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PlanCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
+| [Money](map/Money.md) | LandClassCheck, TradeBandCheck |
 | [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BondCheck, BuildersFirstCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, DeathCareFirstCheck, EducationCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FundCheck, GroceryCheck, HistoryCheck, HoldersCheck, InvestCheck, LandCheck, LongPlaytest, MaterialsCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PortCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TreasuryCheck, WoodProductsCheck |
 | [MonthOrder](map/MonthOrder.md) | **none** |
 | [Mortgage](map/Mortgage.md) | BooksCheck, CreditCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
@@ -206,7 +208,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [RefineryView](map/RefineryView.md) | IndustryViewCheck, OilViewCheck, RefineryCheck, RefineryViewCheck |
 | [Refining](map/Refining.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, LongPlaytest, OilCheck, OilViewCheck, PortCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck |
 | [ReliefRenders](map/ReliefRenders.md) | **none** |
-| [Resource](map/Resource.md) | AutoBuildCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LandCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Resource](map/Resource.md) | AutoBuildCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BondCheck, BuildCardCheck, BuildingDataCheck, CarCheck, ExpectationsCheck, ForeignCheck, GdpCheck, GroceryCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SupplierCreditCheck, WaterCheck |
 | [RetiredHousehold](map/RetiredHousehold.md) | HouseholdCheck |
@@ -218,13 +220,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SaveHeader](map/SaveHeader.md) | SaveFileCheck, SaveSlotCheck, ScaleCheck |
 | [SaveWriter](map/SaveWriter.md) | SaveSlotCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
-| [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, HomeRailCheck, RailCheck, SectorBooksCheck, TruckCheck, VanCheck |
-| [SectorStatements](map/SectorStatements.md) | CentralBankCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
+| [SectorStatements](map/SectorStatements.md) | CentralBankCheck, LandClassCheck, SectorStatementCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
@@ -232,7 +234,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ShortTermTBill](map/ShortTermTBill.md) | AuctionCheck, BankCheck, CentralBankCheck, DeskCheck, FloatLinkCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
 | [Sickness](map/Sickness.md) | LongPlaytest, PopulationCheck, ReadPathCheck, SicknessCheck |
 | [SimulationEngine](map/SimulationEngine.md) | **none** |
-| [SitePreparation](map/SitePreparation.md) | SlopeCheck |
+| [SitePreparation](map/SitePreparation.md) | LandClassCheck, SlopeCheck |
 | [SlopeRenders](map/SlopeRenders.md) | **none** |
 | [SocialSecurity](map/SocialSecurity.md) | HouseholdCheck, PolicyPreviewCheck |
 | [SourceTree](map/SourceTree.md) | StaleCheck |
@@ -273,11 +275,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Where](map/Where.md) | **none** |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
-| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, IslandNetCheck, JunctionCheck, LandCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
+| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, IslandNetCheck, JunctionCheck, LandCheck, LandClassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, ReadPathCheck, ScaleCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurveCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
-| [Zoning](map/Zoning.md) | ForestryCheck, LandCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
+| [Zoning](map/Zoning.md) | ForestryCheck, LandCheck, LandClassCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
 | [ZoningScreen](map/ZoningScreen.md) | **none** |
 | [ZoningView](map/ZoningView.md) | ZoningViewCheck |
 
@@ -11626,6 +11628,190 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2992 Perth (the fixture)
   - L2999 Medellin
   - L3000 Halifax
+
+## LandClassCheck.java - 159 labelled assertions
+
+> A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going
+> price stays the price of flat ground, foothill is that price less its preparation and never under the base price of
+> unwanted ground, steep and very steep ground is the base price - no class dearer than flat. The land office prices
+> its offers by the ground they hold, the pickers rank them by the ground a building can stand on with its preparation
+> counted, and a business pays the city for its plot class by class.
+> 
+> WHAT THIS HAS TO PROVE, every fixture causing the condition it tests and every figure worked out from the model's own
+> constants and getters (LandMarket.openingUsdPerSqFt(), SitePreparation, LandManager's square feet) and never typed:
+> 
+>   1. THE RULE. LandMarket.reliefPrice() for each class with the going price above the base plus the preparation
+>      (foothill = going less the preparation), between the base and base plus the preparation (foothill = base) and
+>      below the base (every class = going), at a price level other than 1; never above flat.
+> ...
+
+- **L222 1. the rule: foothill is the going price less its preparation, never under the base; steep is the base; none dearer than flat**
+  - L225 fixture: the preparation of a square foot is SitePreparation's dollars a m2, in thousands, over a m2's share of a foot, and is more than the base price
+  - L228 ...and it follows the world's price level: at 3 times the prices it costs 3 times
+  - L231 going above the base and the preparation: flat is the going price
+  - L232 ...foothill is the going price less the preparation, which is above the base
+  - L234 ...steep and very steep are the base price
+  - L238 going between the base and the base plus the preparation: flat is the going price, foothill the base price (going less the preparation is under it)
+  - L241 ...steep and very steep the base price too
+  - L244 going exactly the base plus the preparation: foothill is the base price, no step between the two cases
+  - L250 going below the base price: every class is the going price - no class is ever dearer than flat
+  - L263 over every going price from a quarter of the base to 200 times it: no class dearer than flat, steep never above foothill
+  - L264 ...foothill never under the base price (or the going price where that is lower), steep exactly the lesser of the two, foothill rising with the going price
+- **L275 2. the office prices an offer by the ground it holds, and the city buys each class at that price**
+  - L279 fixture: crowding has lifted the going price past the base plus the preparation, at a price level of
+  - L282 the office's flat price is the going price it quotes
+  - L283 ...its foothill price the going price less the preparation
+  - L284 ...its steep price the base price at the price level
+  - L285 ...so flat is dearer than foothill and foothill than steep
+  - L297 an offer of
+  - L300 ...flat dearer than foothill, foothill than steep, very steep the steep's
+  - L305 a mixed offer (50% flat, 30% foothill, 10% steep, 10% very steep) is the sum of its classes' square feet at their prices
+  - L311 ...with fresh water and sea besides, those at their shares of the FLAT price (0.45 and 0.08), not the hill's
+  - L319 a resource under the ground is priced as before: its share of its good's price at the price level, on hills as on the plain
+  - L342 fixture: the city's own office is crowded to a going price above the base plus the preparation
+  - L347 fixture: three real offers with dry ground to give a relief to
+  - L362 an offer of the real shelf, its ground made all
+  - L374 the city buys the
+  - L380 ...and the city's
+- **L390 3. the pickers rank by the ground a building can stand on, preparation counted; flat ground ranks as it always did**
+  - L401 fixture: two offers of one dry area, a valley floor and a mountain, the mountain cheaper a dry km2 - the old rule's best is the mountain
+  - L406 bestValue() takes the valley floor: the buildable ground a dollar is what counts
+  - L407 ...the mountain's buildable km2 a dollar is its flat ground over its price
+  - L408 ...against the valley floor's, which is its dry km2 a dollar, and the mountain's is the lower
+  - L413 fixture: an all-foothill offer and an all-flat offer at the same dry area and price - tied on the dry rule, the foothill one (lower id, the nearer) wins it
+  - L417 bestValue() takes the flat one: the foothill offer loses by its preparation
+  - L418 ...the foothill offer's buildable km2 a dollar counts the pad: its ground over its price and the preparation of its square feet
+  - L420 ...and its price with the preparation is the price and that much
+  - L423 a foothill offer cheaper than the flat one by half its preparation still loses to it
+  - L426 ...and cheaper by twice its preparation it wins
+  - L437 a listing of flat ground, free offer and empty offer among it: every offer's buildable km2 a dollar is its dry km2 a dollar, to the bit
+  - L438 ...and bestValue() is the old rule's pick, to the offer
+  - L440 ...also among offers tied on the rate (the nearer, the lower id, wins as before)
+  - L450 fixture: three offers of steep and very steep ground only - no buildable ground in any
+  - L451 a city in the mountains still has a best: bestValue() falls back to the old dry rule and is not null
+  - L476 fixture: on the city's own shelf a mountain, a valley floor and a foothill offer of one dry area - the mountain cheapest, the foothill under the valley's pri...
+  - L481 Game.bestOffer() for room takes the valley floor, not the mountain the old rule would buy
+  - L484 ...for a shortfall of half the offers' ground it takes the valley floor: the mountain's buildable ground is short of it, and the foothill's price with its pa...
+  - L486 the auto-builder's land shortcut for the same lack takes the valley floor too
+  - L487 ...and for a lack no offer covers, the best value by buildable ground - the valley floor
+  - L489 ...with the valley floor passed over, the foothill offer (the best buildable ground a dollar left)
+- **L512 4. a business pays the city for its plot class by class: buildings flat first, works steep first, the zone's share on each**
+  - L522 fixture: 40% flat, 30% foothill, 30% steep owned, all free, the business price four preparations over the base - flat dearer than foothill dearer than steep
+  - L526 the classes' prices are the rule's, read at the city's own base: foothill the going price less the preparation, steep the base
+  - L528 ...and reliefPricePerSqFt() answers the three by class, very steep as steep
+  - L535 the foothill's preparation the price takes off is the quote's own: a House order onto foothill is charged exactly that a square foot
+  - L544 a building allocated while flat is free is all flat ground
+  - L545 ...and pays the flat price
+  - L552 a business's House order (buildFor()) pays the city the flat price for its plot
+  - L553 ...and the order went through
+  - L558 once the flat is used, a building's plot is all foothill
+  - L559 ...and pays the foothill price - the going price less the preparation
+  - L562 a business's House order then pays the foothill price for its plot
+  - L567 a plot of a building that straddles the end of the flat is 40% flat and 60% foothill, and the parts add up to the plot
+  - L571 ...and pays the sum: its flat at the flat price, its foothill at the foothill price
+  - L579 a works's plot on a city with idle steep ground is all steep
+  - L580 ...and pays the steep price - the base price
+  - L581 ...while a building of the same size would pay the flat price
+  - L587 a business's Iron Mine order pays the city the steep price for its plot
+  - L597 a works's plot that straddles the end of the steep is 30% steep and 70% foothill
+  - L600 ...and pays the sum, its steep at the base and its foothill at the foothill price
+  - L604 once the steep is used a works pays the foothill price
+  - L607 ...and when the foothill is used too, the flat price
+  - L620 a zone's price share applies to each class's price: the zone's flat, foothill and steep ground are sold at the share of those prices
+  - L629 fixture: a zone holds more ground than a plot of
+  - L632 a plot wholly in the zone pays the share of the sum of its classes' prices
+  - L639 a plot larger than the zone holds pays the share on the part the zone holds and the full price on the rest, class by class
+  - L641 ...the sum of its classes' prices, the share on the zone's part of each
+  - L643 ...which is between the share's sum and the full one
+  - L655 a building's plot given back comes off the foothill first: half foothill, half flat when half of it stands past the flat
+  - L660 ...and is bought back at the sum of its classes' prices
+  - L662 ...which is what the same plot would be sold at into the ground it leaves: the buyback is the sale's reverse
+  - L667 a works's plot given back, standing half on the steep and half past it, returns half steep and half foothill
+  - L671 ...and is bought back at the base and the foothill price
+  - L674 ...the same as selling it again into what it leaves
+  - L684 a plot given back out of its zone's used ground is bought back at the share of its classes' prices
+- **L696 5. a city of flat ground is priced exactly as before, to the bit**
+  - L702 fixture: the city owns neither foothill nor steep ground
+  - L719 fixture: the office has its offers standing
+  - L720 every offer standing, measured again: its price is the four-argument price() of its ground, with its relief row and with none
+  - L721 ...its buildable km2 a dollar is its dry km2 a dollar, its buildable square feet its size, its price with the pad its price - to the bit
+  - L723 bestValue() is the old rule's pick
+  - L730 ...and Game.bestOffer() for room is the old loop's
+  - L739 ...and for a shortfall the old loop's cheapest that covers it
+  - L753 a plot's price, sold and bought back, with and without a works, is its square feet at the going price: the old expression, to the bit
+  - L754 ...and the plot falls wholly on flat, whatever it is for
+  - L755 the classes' prices of a flat city are still defined, and none dearer than flat
+  - L773 with a zone, the plot sold and bought back is priced by the old expression, to the bit
+- **L826 6. the books value a sector's land by the ground it stands on: pro rata to the city's use, in the sheet, its note and the equity**
+  - L848 fixture: a city of
+  - L862 fixture: the going price four preparations over the base, so flat is dearer than foothill and foothill than steep; the books read the city as hilly
+  - L880 a sector's land by class adds up to the land it holds (getLandSqFtBySector())
+  - L881 ...its buildings' ground at the city's buildings' mix and its works' at the works' mix: the houses and diners flat then foothill, the mines steep then foothi...
+  - L896 summed over every sector and the ground no business holds, the areas by class are the split's own (LandManager.reliefUse()) and the fixture's design
+  - L905 ...and summed over the city's categories likewise; a category holding one sector's buildings has that sector's land
+  - L913 the class prices the books use ARE the land office's (flat, foothill, steep and very steep): office, books and buyer one price a class
+  - L920 a sector's land is worth its areas at the land office's class prices (landValueOf())
+  - L921 ...which is under the one-price figure for every sector that stands on foothill or steep ground
+  - L922 a city category's land is valued the same way: the mines' category is the Mining sector's
+  - L924 ...the mines' land is worth its foothill at the foothill price and its steep at the steep price, from the design
+  - L956 the books' month carries the land by class as the sheet valued it: its areas and the three prices, the sheet's land their products
+  - L957 note 11 has a row for each class that holds any of the land: flat and foothill for the houses and the diners, foothill and steep for the mines
+  - L958 ...only the works' sector has a steep row; its rows' values add up to the sheet's land
+  - L959 ...each row's square kilometres and price a square metre are the area's and LandManager.perM2() of the class price, its value area x price
+  - L960 ...and the sheet's Land line opens note 11, with the note's rows in the table
+  - L983 the equity statement's land row is last month's area on each class times that class's price change (flat and foothill rose by two preparations, steep not at ...
+  - L985 ...worded \"at today's prices\", since it is read by class
+  - L986 ...and the sheet's land moved by exactly that, the ground being the same in both months
+  - L989 ...the mines' is under what the one flat price would have said (their steep ground did not rise), the houses' the same as it
+  - L997 the ground price the investors read for one more house is the price a square foot the business is charged: the foothill price, since the flat is used
+  - L1000 ...and for a works, the steep ground used up, the foothill price too
+  - L1013 without a zone the roll's land is the sheet's: assessedLandValueOf() is landValueOf()
+  - L1018 a zone's price share applies to every class alike: the zone's used part of the houses' land (flat and foothill) at the share of its price, the rest at the cl...
+  - L1021 ...which is between the share's worth and the whole, and the sheet's own land keeps the going price (the roll is the tax's, not the sheet's)
+  - L1024 ...and a sector with no zone is assessed at its land's worth
+  - L1040 a save written and loaded keeps each sector's land by class, this month's (SectorBooks' months are saved whole)
+  - L1041 ...and last month's, which the equity statement's revaluation reads
+  - L1066 a save with no land by class in its months loads them with none (Gson leaves a missing key null), and still loads
+  - L1067 ...its equity statement reads the land's revaluation at the one price, in the old words, to the bit
+  - L1068 ...and its Land line opens no note
+  - L1070 an older save could be written back for the test:
+  - L1088 redenominated by a factor of ten, the books' and the sheet's prices a class are ten times and the areas are as they were
+- **L1094 6b. a city of flat ground keeps the books it had: the one price, to the bit, no land by class, no note**
+  - L1111 fixture: a city with neither foothill nor steep ground and fifty houses, the going price moved between two closes
+  - L1114 a sector's land by class is all flat, the whole of it
+  - L1115 its land is worth its square feet at the one price, to the bit
+  - L1117 ...the books carry no land by class, the economy no values by class
+  - L1118 ...the sheet's land is that, and its Land line opens no note, note 11 being empty
+  - L1121 the equity statement's land row is last month's square feet times the change in the one price, to the bit, in the old words
+  - L1129 with a zone, the roll's land is the old expression, to the bit
+  - L1131 the ground price the investors read for one more house is the going price, as it was
+- **L1160 7. the screens' words are the model's: the office's prices by class, an offer's ground and note 11**
+  - L1181 the view's ground prices a square metre are ui.Money's, to the digit: under a dollar to four places, to a thousand to the cent, past it whole
+  - L1182 ...its sums are ui.Money.money()'s (k from ten thousand, M, B, T, Q), and its US$ marks ui.Money.usd()'s
+  - L1183 ...and the mark replaces the dollar sign as ui.Money.marked() does it
+  - L1197 fixture: a city owning flat, foothill and steep ground, the going price four preparations over the base
+  - L1200 the office has a line for each class the city owns, flat first, each price the land manager's and each US$ price the land market's
+  - L1201 ...the foothill's line says it is the flat price less its preparation, and the steep's that only works use it
+  - L1206 with the going price between the base and the base plus the preparation, the foothill is the base price and its line says why
+  - L1210 ...with it under the base, every class is the going price and the foothill's line says so
+  - L1219 fixture: a city of flat ground and a shelf of flat offers
+  - L1221 the office has no lines for it: the screen draws what it drew
+  - L1232 a foothill offer on the shelf of a flat city brings the foothill's line, and no steep one
+  - L1235 ...a steep and very steep one the steep line and no foothill one
+  - L1238 ...and both, all three
+  - L1250 an offer all flat, or none, has no line
+  - L1255 a mixed offer (50% flat, 30% foothill, 10% steep, 10% very steep) says each class in the dry ground's unit, the steep and very steep as one, what a building ...
+  - L1257 ...the buildable ground is the flat and foothill (LandMarket.buildableSqFt()) and the price the market's priceWithPrepUsd(), over the listed price by the foo...
+  - L1260 an offer with steep ground and no foothill has no preparation to price: its buildable ground is its flat, and the line stops there
+  - L1262 an offer of mountain says its steep ground and that no building can stand on it, with no price for preparation
+  - L1264 an offer all foothill opens with the foothill, capitalised, and is all buildable
+  - L1272 an offer of a few thousand square metres reads in them, every figure in its dry ground's unit
+  - L1312 fixture: houses on flat and foothill ground and mines on steep, the books closed with the going price four preparations over the base
+  - L1333 note 11's lines are the books' land by class in words: a row for each class that holds any, its square kilometres, its price a square metre and its value, in...
+  - L1335 ...each line opens with the label the statement's row is drawn under (landNoteLabel()), the value after it the statement's own
+  - L1337 ...only the works' sector has a steep line, and its line says whose it is
+  - L1339 the game's overload says the same with the city's own mark
+  - L1346 a city of flat ground has no note 11 lines, nor does a month that is not there
 
 ## LandlordPortCheck.java - 52 labelled assertions
 

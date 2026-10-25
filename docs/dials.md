@@ -2,9 +2,9 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,128 constants in 410 files.**
+**4,142 constants in 413 files.**
 
-## model (2073 constants)
+## model (2078 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -191,7 +191,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5555 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
 | 5736 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
 | 6777 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 7929 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 7954 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -1038,14 +1038,14 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 295 | `EconomyManager.PASS_THROUGH` | `1 / 36.0` | How much of the gap, in logs, between the D$ the city's goods were last struck at and today's D$ they close in a month: a thirty-sixth, so half of a move in two years and 29% of it in the first - t... |
-| 722 | `EconomyManager.CITY_MAINTAINED` | `{ BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE, BuildingTy...` | EVERY BUILDING IN THE CITY, BILLED FOR STANDING THERE. |
-| 736 | `EconomyManager.MAINTENANCE_RATE` | `ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12` |  |
-| 945 | `EconomyManager.PBRH_MIN_UNITS` | `4` | A building with this many dwellings or more is purpose-built rental housing (CRA: "at least 4 residential units each with a private kitchen, a private bathroom, and a private living area"). |
-| 947 | `EconomyManager.NRRP_SHARE` | `.36` | The new residential rental property rebate's share of the tax on a unit: 36% (Excise Tax Act section 256.2(3)(a); CRA RC4231). |
-| 949 | `EconomyManager.NRRP_CAP` | `6.3` | ...and its most a unit, in founding thousands: $6,300. |
-| 951 | `EconomyManager.NRRP_FULL_BELOW` | `350` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
-| 953 | `EconomyManager.NRRP_NONE_FROM` | `450` | ...and none for a unit worth this or more: $450,000. |
-| 2453 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 829 | `EconomyManager.CITY_MAINTAINED` | `{ BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE, BuildingTy...` | EVERY BUILDING IN THE CITY, BILLED FOR STANDING THERE. |
+| 843 | `EconomyManager.MAINTENANCE_RATE` | `ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12` |  |
+| 1052 | `EconomyManager.PBRH_MIN_UNITS` | `4` | A building with this many dwellings or more is purpose-built rental housing (CRA: "at least 4 residential units each with a private kitchen, a private bathroom, and a private living area"). |
+| 1054 | `EconomyManager.NRRP_SHARE` | `.36` | The new residential rental property rebate's share of the tax on a unit: 36% (Excise Tax Act section 256.2(3)(a); CRA RC4231). |
+| 1056 | `EconomyManager.NRRP_CAP` | `6.3` | ...and its most a unit, in founding thousands: $6,300. |
+| 1058 | `EconomyManager.NRRP_FULL_BELOW` | `350` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
+| 1060 | `EconomyManager.NRRP_NONE_FROM` | `450` | ...and none for a unit worth this or more: $450,000. |
+| 2560 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### Education.java ([map](map/Education.md))
 
@@ -1265,28 +1265,28 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 243 | `Game.MARKET_SEED_SALT` | `0x4D41524B45545852L` | Salt for the D$'s market seed, so the market's path is not the world's own seed spelled again ("MARKETXR"). |
-| 715 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
-| 837 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
-| 1113 | `Game.FOUNDING_CASH` | `100_000` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
-| 1116 | `Game.FOUNDING_RESERVE_USD` | `25_000` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
-| 1119 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
-| 2256 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 5068 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 5071 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 6529 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0)` |  |
-| 6643 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 7717 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 9230 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 9385 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 9421 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 9552 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 11327 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 11339 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 11342 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 11357 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
-| 11368 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 12977 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 13365 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 721 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 843 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
+| 1119 | `Game.FOUNDING_CASH` | `100_000` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
+| 1122 | `Game.FOUNDING_RESERVE_USD` | `25_000` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
+| 1125 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
+| 2268 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 5080 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 5083 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 6541 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0)` |  |
+| 6655 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 7729 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 9260 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 9415 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 9451 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 9582 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
+| 11358 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 11370 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 11373 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 11388 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
+| 11399 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 13008 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 13398 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1323,10 +1323,10 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7356 | `GameVersion.VERSION` | `"0.8.43"` | Bump on release. |
-| 8153 | `GameVersion.SAVE_FORMAT` | `46` | The save shape. |
-| 8193 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `45` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 8195 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 7372 | `GameVersion.VERSION` | `"0.8.44"` | Bump on release. |
+| 8169 | `GameVersion.SAVE_FORMAT` | `46` | The save shape. |
+| 8209 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `45` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 8211 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ### Gateways.java ([map](map/Gateways.md))
 
@@ -1696,6 +1696,12 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 351 | `LabourMarket.DRIFT_PER_MONTH` | `1.0 / 24` | How fast they chase it. |
 | 396 | `LabourMarket.EXPECTED_SHARE` | `.5` | The share of a wage's monthly indexing taken from expected inflation; the rest chases the index at the old speed's share. |
 
+### LandClassView.java ([map](map/LandClassView.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 160 | `LandClassView.GROUPED` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+
 ### LandConversion.java ([map](map/LandConversion.md))
 
 | line | constant | value | says |
@@ -1742,8 +1748,8 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 240 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
 | 315 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
 | 849 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
-| 1970 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
-| 2440 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 2140 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
+| 2616 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandMap.java ([map](map/LandMap.md))
 
@@ -2200,8 +2206,8 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 423 | `SectorBooks.Debt.KINDS` | `BusinessDebtManager.DEBT_KINDS` | The four kinds, as the statements name them: BusinessDebtManager.DEBT_KINDS. |
-| 750 | `SectorBooks.DEBT_ROWS` | `12` | The rows a saved Debt is written as: six arrays, then moved's three and movedAtClose's three. |
+| 462 | `SectorBooks.Debt.KINDS` | `BusinessDebtManager.DEBT_KINDS` | The four kinds, as the statements name them: BusinessDebtManager.DEBT_KINDS. |
+| 792 | `SectorBooks.DEBT_ROWS` | `12` | The rows a saved Debt is written as: six arrays, then moved's three and movedAtClose's three. |
 
 ### SectorFlow.java ([map](map/SectorFlow.md))
 
@@ -2222,15 +2228,19 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 374 | `SectorStatements.OUTSIDE_IDS` | `{ SUBSIDY, ARREARS, DEPOSIT_INTEREST, COUPONS, FOREIGN_INTEREST, FORGIVEN, WRITTEN_OFF,...` | The outside lines' row ids, in outside()'s order. |
 | 378 | `SectorStatements.OUTSIDE_LABELS` | `{ "Subsidy from the city", "Arrears the city paid", "Interest on its bank balance", "Co...` | ...and their labels, in the same order. |
 | 460 | `SectorStatements.ASSETS_HEAD` | `"assetsHead", CURRENT_HEAD = "currentHead", CASH = "cash", STOCK = "stock", RECEIVABLES...` | The balance sheet's row ids, which the screens and SectorStatementCheck look a row up by. |
-| 472 | `SectorStatements.STOCK_NOTE` | `7, BUILDINGS_NOTE = 8, ABROAD_NOTE = 9, CAPITAL_NOTE = 10` | The stock's note, the buildings' and what it holds abroad - and since 0.7.75 its share capital's (R3). |
-| 545 | `SectorStatements.OPERATING_HEAD` | `"operatingHead", NET_INCOME = "netIncome", PAID_EARLIER = "paidEarlier", BORROWING_PAID...` | The cash flow statement's row ids, which the screens and SectorStatementCheck look a row up by. |
-| 645 | `SectorStatements.EQ_START` | `"eq.start", EQ_PROFIT = "eq.profit", EQ_OUTSIDE = "eq.outside", EQ_FOUNDED = "eq.founde...` | The statement of changes in equity's row ids, which the screens and SectorStatementCheck look a row up by. |
-| 651 | `SectorStatements.CAPITAL` | `0, KEPT = 1` | The equity statement's two columns, each row's parts: share capital, and what it kept and revalued. |
-| 654 | `SectorStatements.REVALUED_IDS` | `{ EQ_STOCK, EQ_LAND, EQ_BUILDINGS, EQ_ABROAD }` | R6's four parts, ids: what the prices did to what it began the month with. |
-| 854 | `SectorStatements.B_INCOME_HEAD` | `"b.incomeHead", B_OTHER_INTEREST = "b.otherInterest", B_INTEREST = "b.interest", B_EXPE...` | The bank's statement of profit or loss's row ids, which the screens and SectorStatementCheck look a row up by. |
-| 862 | `SectorStatements.BANK_INTEREST` | `{ { "From the businesses", Bank.Line.FROM_BUSINESSES }, { "On the businesses' bonds it ...` | The interest income lines: {label, line}. |
-| 872 | `SectorStatements.BANK_FEES` | `{ { "On the families' accounts", Bank.Line.ACCOUNT_FEES }, { "On the businesses' new lo...` | ...and the fees. |
-| 937 | `SectorStatements.BS_ASSETS_HEAD` | `"bs.assetsHead", BS_LOANS_HEAD = "bs.loansHead", BS_GROSS = "bs.gross", BS_NET = "bs.ne...` | The bank's balance sheet's row ids, which the screens and SectorStatementCheck look a row up by. |
+| 472 | `SectorStatements.STOCK_NOTE` | `7, BUILDINGS_NOTE = 8, ABROAD_NOTE = 9, CAPITAL_NOTE = 10, LAND_NOTE = 11` | The stock's note, the buildings' and what it holds abroad - and since 0.7.75 its share capital's (R3), and since ET3 its land's, by the ground it stands on. |
+| 548 | `SectorStatements.OPERATING_HEAD` | `"operatingHead", NET_INCOME = "netIncome", PAID_EARLIER = "paidEarlier", BORROWING_PAID...` | The cash flow statement's row ids, which the screens and SectorStatementCheck look a row up by. |
+| 648 | `SectorStatements.EQ_START` | `"eq.start", EQ_PROFIT = "eq.profit", EQ_OUTSIDE = "eq.outside", EQ_FOUNDED = "eq.founde...` | The statement of changes in equity's row ids, which the screens and SectorStatementCheck look a row up by. |
+| 654 | `SectorStatements.CAPITAL` | `0, KEPT = 1` | The equity statement's two columns, each row's parts: share capital, and what it kept and revalued. |
+| 657 | `SectorStatements.REVALUED_IDS` | `{ EQ_STOCK, EQ_LAND, EQ_BUILDINGS, EQ_ABROAD }` | R6's four parts, ids: what the prices did to what it began the month with. |
+| 730 | `SectorStatements.LAND_CLASSES` | `3` | The classes of ground the books value land on (ET3): flat, foothill, and the steep and very steep ground only works stand on. |
+| 733 | `SectorStatements.LAND_IDS` | `{ "land.flat", "land.foothill", "land.steep" }` | Note 11's rows, by class: ids and labels. |
+| 734 | `SectorStatements.LAND_LABELS` | `{ "Flat", "Foothill", "Steep(its mines)" }` |  |
+| 737 | `SectorStatements.LAND_AREA` | `0, LAND_PRICE = 1` | In a land note's row, `parts` holds {square kilometres, the price a square metre}; `now` is its value, and the rows add to the sheet's land. |
+| 901 | `SectorStatements.B_INCOME_HEAD` | `"b.incomeHead", B_OTHER_INTEREST = "b.otherInterest", B_INTEREST = "b.interest", B_EXPE...` | The bank's statement of profit or loss's row ids, which the screens and SectorStatementCheck look a row up by. |
+| 909 | `SectorStatements.BANK_INTEREST` | `{ { "From the businesses", Bank.Line.FROM_BUSINESSES }, { "On the businesses' bonds it ...` | The interest income lines: {label, line}. |
+| 919 | `SectorStatements.BANK_FEES` | `{ { "On the families' accounts", Bank.Line.ACCOUNT_FEES }, { "On the businesses' new lo...` | ...and the fees. |
+| 984 | `SectorStatements.BS_ASSETS_HEAD` | `"bs.assetsHead", BS_LOANS_HEAD = "bs.loansHead", BS_GROSS = "bs.gross", BS_NET = "bs.ne...` | The bank's balance sheet's row ids, which the screens and SectorStatementCheck look a row up by. |
 
 ### Sectors.java ([map](map/Sectors.md))
 
@@ -3138,7 +3148,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (933 constants)
+## interface (934 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -3587,26 +3597,26 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 286 | `LandScreen.WHO_PAYS` | `"Investors build only on ground the city owns, and pay the city for each " + "plot they...` | The page's (i): who pays for the ground, and who does not. |
 | 295 | `LandScreen.PAY_TIPS` | `{ "Pay by converting cash", "Pay from the vault" }` | The toggle's tooltips: its 0.7.6 names, which the chips shortened. |
-| 494 | `LandScreen.BEST_HEAD` | `"THE BEST OFFERS · cheapest dry ground first, from every side"` | The section's head over THE GROUND: the best N, from every side. |
-| 635 | `LandScreen.EMPTY_PLACE` | `"no room on this edge yet: it lists when the city grows here"` | A place waiting for room, as its row says it (spec-grid 2.5): one muted line where its offer would stand. |
-| 638 | `LandScreen.ROW_DEPOSITS` | `2` | Deposits a row shows by name before "+N": 2... |
-| 641 | `LandScreen.ROW_DEPOSIT_CHARS` | `20` | ...while their words run to no more than this many characters together, else one: 20 - "8 · 136 Mt" and "1 · 179 kt" and "+1" measured 152.8 px in the column's 158 at 9 px Plex Mono. |
-| 767 | `LandScreen.WHOLE_FIELDS` | `" in the ground: every field of it centred in this offer, whole, paid for in its price."` | What a row's tooltip says after each resource's sites and tonnes (0.7.64, batch L): an offer holds every field centred on its ground whole, all its sites and tonnes, wherever its sites lie (CityLan... |
-| 872 | `LandScreen.ON_TOP_INFO` | `"The ground is charged on top of the build, so a cheap building on" + " expensive land ...` | The second card's (i), the 0.7.6 note word for word, and what the bars are. |
-| 896 | `LandScreen.ORE_INFO` | `"A mine stands on one deposit, a large one on twenty of one field, and each draws on th...` | The Ore card's (i). |
-| 914 | `LandScreen.WAITING_INFO` | `"As of last month — the sectors decide once a month, so ground bought" + " now shows up...` | The Waiting card's (i), the 0.7.6 note word for word. |
-| 927 | `LandScreen.DETAILS_INFO` | `"What the world asks for a square metre of ground, as each month recorded" + " it - in ...` | The chart's (i). |
-| 1213 | `LandScreen.MAP_W` | `MapView.SMALL_W, HERO_H = MapView.SMALL_H` | The map's width and the hero row's height (spec-land 2.8). |
-| 1216 | `LandScreen.HERO_GAP` | `16` | The gap between the map and THE CITY... |
-| 1219 | `LandScreen.CITY_PANEL` | `657` | ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). |
-| 1222 | `LandScreen.ROW_H` | `28` | A row's height: 28 px (spec-land 2.8), six of them, their heads and THE CITY's inside HERO_H. |
-| 1225 | `LandScreen.ROW_COLUMNS` | `{ 24, 74, 64, 158, 82, 78, 76, 58 }` | The rows' columns, in pixels: the place (#), size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. |
-| 1228 | `LandScreen.ROW_GAP` | `4` | The gap between a row's columns. |
-| 1231 | `LandScreen.ROW_HEADS` | `{ "#", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" }` | The rows' column names. |
-| 1471 | `LandScreen.WORTH_CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + " -fx-backg...` | A worth card's style, its edge's colour last. |
-| 1690 | `LandScreen.ABROAD_INFO` | `"Issued abroad; the dollars are in reserve, and the " + "vault pays for the land.On the...` | The dollar offers' (i), the 0.7.13 note word for word. |
-| 1942 | `LandScreen.MAP_CARD_W` | `320` | The map's card, its width: 320 px, the pay toggle's wrap (payToggle()), so the toggle lies on one line in it. |
-| 1945 | `LandScreen.MAP_CARD_PAD` | `12` | The map's card's padding, a side: the hover card's 9 px, and 3 more for the buttons' edges. |
+| 503 | `LandScreen.BEST_HEAD` | `"THE BEST OFFERS · cheapest dry ground first, from every side"` | The section's head over THE GROUND: the best N, from every side. |
+| 644 | `LandScreen.EMPTY_PLACE` | `"no room on this edge yet: it lists when the city grows here"` | A place waiting for room, as its row says it (spec-grid 2.5): one muted line where its offer would stand. |
+| 647 | `LandScreen.ROW_DEPOSITS` | `2` | Deposits a row shows by name before "+N": 2... |
+| 650 | `LandScreen.ROW_DEPOSIT_CHARS` | `20` | ...while their words run to no more than this many characters together, else one: 20 - "8 · 136 Mt" and "1 · 179 kt" and "+1" measured 152.8 px in the column's 158 at 9 px Plex Mono. |
+| 778 | `LandScreen.WHOLE_FIELDS` | `" in the ground: every field of it centred in this offer, whole, paid for in its price."` | What a row's tooltip says after each resource's sites and tonnes (0.7.64, batch L): an offer holds every field centred on its ground whole, all its sites and tonnes, wherever its sites lie (CityLan... |
+| 884 | `LandScreen.ON_TOP_INFO` | `"The ground is charged on top of the build, so a cheap building on" + " expensive land ...` | The second card's (i), the 0.7.6 note word for word, and what the bars are. |
+| 908 | `LandScreen.ORE_INFO` | `"A mine stands on one deposit, a large one on twenty of one field, and each draws on th...` | The Ore card's (i). |
+| 926 | `LandScreen.WAITING_INFO` | `"As of last month — the sectors decide once a month, so ground bought" + " now shows up...` | The Waiting card's (i), the 0.7.6 note word for word. |
+| 939 | `LandScreen.DETAILS_INFO` | `"What the world asks for a square metre of ground, as each month recorded" + " it - in ...` | The chart's (i). |
+| 1227 | `LandScreen.MAP_W` | `MapView.SMALL_W, HERO_H = MapView.SMALL_H` | The map's width and the hero row's height (spec-land 2.8). |
+| 1230 | `LandScreen.HERO_GAP` | `16` | The gap between the map and THE CITY... |
+| 1233 | `LandScreen.CITY_PANEL` | `657` | ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). |
+| 1236 | `LandScreen.ROW_H` | `28` | A row's height: 28 px (spec-land 2.8), six of them, their heads and THE CITY's inside HERO_H. |
+| 1239 | `LandScreen.ROW_COLUMNS` | `{ 24, 74, 64, 158, 82, 78, 76, 58 }` | The rows' columns, in pixels: the place (#), size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. |
+| 1242 | `LandScreen.ROW_GAP` | `4` | The gap between a row's columns. |
+| 1245 | `LandScreen.ROW_HEADS` | `{ "#", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" }` | The rows' column names. |
+| 1485 | `LandScreen.WORTH_CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + " -fx-backg...` | A worth card's style, its edge's colour last. |
+| 1704 | `LandScreen.ABROAD_INFO` | `"Issued abroad; the dollars are in reserve, and the " + "vault pays for the land.On the...` | The dollar offers' (i), the 0.7.13 note word for word. |
+| 1956 | `LandScreen.MAP_CARD_W` | `320` | The map's card, its width: 320 px, the pay toggle's wrap (payToggle()), so the toggle lies on one line in it. |
+| 1959 | `LandScreen.MAP_CARD_PAD` | `12` | The map's card's padding, a side: the hover card's 9 px, and 3 more for the buttons' edges. |
 
 ### Levers.java ([map](map/Levers.md))
 
@@ -3947,50 +3957,51 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2771 | `SectorScreen.DERIVED_INFO` | `"Derived when the city was loaded: its save was made before share capital was " + "kept...` | Share capital's line and note, when a save from before 0.7.75 was loaded (R3). |
 | 2777 | `SectorScreen.CAPITAL_INFO` | `"What its owners put in: the book its founders' shares were issued against, and " + "ev...` | Share capital's line and note (R3). |
 | 2782 | `SectorScreen.STOCK_WORDS` | `"Stock is held at what it would fetch today, so a price collapse shrinks this " + "busi...` | Note 7: the stock. |
-| 2786 | `SectorScreen.ABROAD_WORDS` | `"What it has sent abroad for the world's rate, in the city's money at the rate it " + "...` | Note 9: what it holds abroad. |
-| 2791 | `SectorScreen.DUE_WORDS` | `"What its loans, bonds and mortgages ask at the twelve settles ahead: a loan whole in "...` | What falls due within a year (R2), behind its line's and its card's (i). |
-| 2796 | `SectorScreen.NOT_SPLIT_WORDS` | `"When it falls due is counted at the next month's books: a load keeps the debt, " + "no...` | The month after a load, R2's line. |
-| 2927 | `SectorScreen.EQUITY_HEADS` | `{ "share capital", "kept, revalued", "total" }` | The equity statement's columns (R3). |
-| 2930 | `SectorScreen.REVALUED_INFO` | `"Whatever else moved its equity, worked out as what is left: a building bought " + "for...` | The equity statement's remainder's (i). |
-| 2995 | `SectorScreen.SCHEDULE_RATE` | `70, SCHEDULE_RUNS = 80` | The debt schedule's columns (R7): the kind (DEBT_KIND), five figures (DEBT_FIGURE), the rate and when the last of it falls due. |
-| 2998 | `SectorScreen.SCHEDULE_INFO` | `"What it owed of each kind at last month's sheet, what it borrowed, repaid and had " + ...` | The schedule's (i). |
-| 3110 | `SectorScreen.DEBT_KIND` | `130, DEBT_FIGURE = 100` | The debt card's columns: the kind, then owed, within a year, in one to five, after five, and the month's interest. |
-| 3199 | `SectorScreen.EVERY_GATE_INFO` | `"Each building it can put up at every gate investors ask - ore, a licence, " + "staff, ...` | EVERY BUILDING AT EVERY GATE's (i): since 0.7.122 the last gate the interest on its whole cost, consider()'s brake (batch C1). |
-| 3210 | `SectorScreen.GATE_NAME` | `200, GATE_MARK = 44, GATE_FIGURE = 96, GATE_PAYBACK = 84, GATE_PAYS = 210` | The grid's columns: the building, a gate's mark, a figure, the payback, how it would pay. |
-| 3213 | `SectorScreen.GATE_HEADS` | `{ "ore", "licence", "staff", "land", "pays", "interest" }` | The gates' heads, in BuildCard.GateKind's order: the last, since 0.7.122, the interest on its whole cost. |
-| 3371 | `SectorScreen.SHARE_ROWS` | `{ { "Shares", "n" }, { "Earnings a share, the month", "$" }, { "Dividend a share, the m...` | The report's rows: {label, kind} - "n" a count, "$" money a share, "%" a share, "x" times, "M" money. |
-| 3415 | `SectorScreen.SHARE_LABEL` | `220, SHARE_FIGURE = 120` | The report's columns. |
-| 3529 | `SectorScreen.CONTROL_INFO` | `"None of this is yours to set.These are private companies deciding for " + "themselves ...` | WHAT YOU CONTROL's (i): the old page's last paragraph. |
-| 3534 | `SectorScreen.WAITING_INFO` | `"This business wants to build and there is nowhere to put it.It is the one " + "refusal...` | The waiting-on-ground alert's (i). |
-| 3885 | `SectorScreen.FLOW_INFO` | `"Each row's money is the month the books closed on - the Income page's - and its " + "u...` | The flow's money and units: which month each is (SectorFlow's two months). |
-| 3958 | `SectorScreen.TONNES_INFO` | `"How this business's freight went in the month billed, good by good.Tonnes it " + "boug...` | What the strip's (i) says. |
-| 3968 | `SectorScreen.PELLET_INFO` | `"The Pelletising Plant's city legs at nameplate - every tonne of the bulk goods it uses...` | The siding line's (i) is its own sentence; the plant card's. |
-| 3975 | `SectorScreen.MOVE_NAME` | `150` | The width of a line's name column. |
-| 4247 | `SectorScreen.REFINERY_HEAD` | `"THE REFINERY THIS MONTH"` | The card's heading, its line, and what its (i) says. |
-| 4249 | `SectorScreen.REFINERY_SUB` | `"where the crude went · ribbons to scale"` | ...the line beside the heading... |
-| 4251 | `SectorScreen.REFINERY_INFO` | `"The month's crude comes in on the left, from the wells, the reserve or the world." + "...` | ...and the (i)'s words: the picture read from left to right. |
-| 4457 | `SectorScreen.HATCHES` | `new java.util.HashMap<>()` | The hatchings made so far, by colour and opacity (hatch()'s cache). |
-| 4554 | `SectorScreen.INDUSTRY_INFO` | `"On the left is what the month worked: a mine's fields, each a vessel filled to " + "wh...` | What the materials card's (i) says: the picture read from left to right. |
-| 4738 | `SectorScreen.OIL_WELLS_INFO` | `"The city's wells by kind.A land well lifts the ground pool - the oil under the city's ...` | What the oil industry's (i)s say. |
-| 4744 | `SectorScreen.OIL_UNITS_INFO` | `"Every kind of refinery unit.Its spread is what it makes of a litre of its feed, less" ...` | ...THE REFINERY's, its units' table... |
-| 4749 | `SectorScreen.OIL_PRODUCTS_INFO` | `"Every product of the refinery, and crude: its price here and the world's, the" + " wor...` | ...PRODUCTS', crude's and the nine products' table... |
-| 4753 | `SectorScreen.OIL_RESERVE_INFO` | `"The city's own crude, in its Strategic Reserves' tanks.Fill orders crude for the next"...` | ...and THE STRATEGIC RESERVE's, which the Fill and Release cards' (i)s say too. |
-| 4759 | `SectorScreen.RESERVE_CAVEAT` | `"bought at the next clearing at what crude then costs; what the room cannot take lapses"` | The Fill card's caveat under its effects... |
-| 4761 | `SectorScreen.RESERVE_CAVEAT_INFO` | `"A fill is an order for the next clearing: the wells' crude pro rata with the" + " refi...` | ...and what its (i) says: an order for the next clearing, paid at the next strike. |
-| 4765 | `SectorScreen.RELEASE_CAVEAT` | `"offered to the refiners; what they do not take stays in the tanks"` | The Release card's caveat; its (i) is OIL_RESERVE_INFO. |
-| 4768 | `SectorScreen.RESERVE_LADDER` | `380` | The lever's ladder width on its dial card. |
-| 5178 | `SectorScreen.FREIGHT_STRIP_INFO` | `"Freight is three businesses in one set of books: Haulage's trucks, the " + "railway an...` | What the division strip's (i) says. |
-| 5184 | `SectorScreen.FREIGHT_LEGS_INFO` | `"Every tonne that crossed the city's boundary went the long haul by the " + "world's lo...` | The legs card's (i). |
-| 5192 | `SectorScreen.FREIGHT_SHIPPERS_INFO` | `"The sectors billed by this division this month, largest bill first: the " + "line each...` | The shippers card's (i). |
-| 5370 | `SectorScreen.LEG_NAME` | `120` | The width of a leg's name column. |
-| 5395 | `SectorScreen.LegBar.BAND` | `26` | The bar's height, in pixels: 26. |
-| 5506 | `SectorScreen.FREIGHT_TRUCKS_INFO` | `"The trucks Haulage owns against the trucks the plant standing asks for to " + "carry t...` | Haulage's fleet card's (i). |
-| 5511 | `SectorScreen.FREIGHT_HAULAGE_QUOTE_INFO` | `"What a tonne's city leg costs the shipper.The rule: Haulage's running " + "cost plus a...` | Haulage's price card's (i). |
-| 5648 | `SectorScreen.FREIGHT_RAIL_INFO` | `"The wagon sets the railway owns against the sets its track standing needs." + "The tra...` | The railway's fleet card's (i). |
-| 5655 | `SectorScreen.FREIGHT_RAIL_QUOTE_INFO` | `"What the railway charges a tonne, as a share of what a lorry charges the " + "same ton...` | The railway's price card's (i). |
-| 5682 | `SectorScreen.FREIGHT_PORTS_INFO` | `"The terminals standing by kind, the tonnes each kind handled this month " + "against w...` | The berths card's (i). |
-| 5816 | `SectorScreen.SHELF_INFO` | `"A basket is one person's groceries for a month.The shelf moves a sixth of the way " + ...` | THE SHELF's (i). |
-| 5972 | `SectorScreen.FOLD_PAST` | `6` | The goods a column folds into one row past this many (the shops' and the kitchens' thirteen foods). |
+| 2786 | `SectorScreen.LAND_WORDS` | `"Its land at today's prices, by the ground it stands on: a share of the city's flat " +...` | Note 11 (ET3, spec-earth2-terrain 5.3): its land by the ground it stands on. |
+| 2804 | `SectorScreen.ABROAD_WORDS` | `"What it has sent abroad for the world's rate, in the city's money at the rate it " + "...` | Note 9: what it holds abroad. |
+| 2809 | `SectorScreen.DUE_WORDS` | `"What its loans, bonds and mortgages ask at the twelve settles ahead: a loan whole in "...` | What falls due within a year (R2), behind its line's and its card's (i). |
+| 2814 | `SectorScreen.NOT_SPLIT_WORDS` | `"When it falls due is counted at the next month's books: a load keeps the debt, " + "no...` | The month after a load, R2's line. |
+| 2946 | `SectorScreen.EQUITY_HEADS` | `{ "share capital", "kept, revalued", "total" }` | The equity statement's columns (R3). |
+| 2949 | `SectorScreen.REVALUED_INFO` | `"Whatever else moved its equity, worked out as what is left: a building bought " + "for...` | The equity statement's remainder's (i). |
+| 3014 | `SectorScreen.SCHEDULE_RATE` | `70, SCHEDULE_RUNS = 80` | The debt schedule's columns (R7): the kind (DEBT_KIND), five figures (DEBT_FIGURE), the rate and when the last of it falls due. |
+| 3017 | `SectorScreen.SCHEDULE_INFO` | `"What it owed of each kind at last month's sheet, what it borrowed, repaid and had " + ...` | The schedule's (i). |
+| 3129 | `SectorScreen.DEBT_KIND` | `130, DEBT_FIGURE = 100` | The debt card's columns: the kind, then owed, within a year, in one to five, after five, and the month's interest. |
+| 3218 | `SectorScreen.EVERY_GATE_INFO` | `"Each building it can put up at every gate investors ask - ore, a licence, " + "staff, ...` | EVERY BUILDING AT EVERY GATE's (i): since 0.7.122 the last gate the interest on its whole cost, consider()'s brake (batch C1). |
+| 3229 | `SectorScreen.GATE_NAME` | `200, GATE_MARK = 44, GATE_FIGURE = 96, GATE_PAYBACK = 84, GATE_PAYS = 210` | The grid's columns: the building, a gate's mark, a figure, the payback, how it would pay. |
+| 3232 | `SectorScreen.GATE_HEADS` | `{ "ore", "licence", "staff", "land", "pays", "interest" }` | The gates' heads, in BuildCard.GateKind's order: the last, since 0.7.122, the interest on its whole cost. |
+| 3390 | `SectorScreen.SHARE_ROWS` | `{ { "Shares", "n" }, { "Earnings a share, the month", "$" }, { "Dividend a share, the m...` | The report's rows: {label, kind} - "n" a count, "$" money a share, "%" a share, "x" times, "M" money. |
+| 3434 | `SectorScreen.SHARE_LABEL` | `220, SHARE_FIGURE = 120` | The report's columns. |
+| 3548 | `SectorScreen.CONTROL_INFO` | `"None of this is yours to set.These are private companies deciding for " + "themselves ...` | WHAT YOU CONTROL's (i): the old page's last paragraph. |
+| 3553 | `SectorScreen.WAITING_INFO` | `"This business wants to build and there is nowhere to put it.It is the one " + "refusal...` | The waiting-on-ground alert's (i). |
+| 3904 | `SectorScreen.FLOW_INFO` | `"Each row's money is the month the books closed on - the Income page's - and its " + "u...` | The flow's money and units: which month each is (SectorFlow's two months). |
+| 3977 | `SectorScreen.TONNES_INFO` | `"How this business's freight went in the month billed, good by good.Tonnes it " + "boug...` | What the strip's (i) says. |
+| 3987 | `SectorScreen.PELLET_INFO` | `"The Pelletising Plant's city legs at nameplate - every tonne of the bulk goods it uses...` | The siding line's (i) is its own sentence; the plant card's. |
+| 3994 | `SectorScreen.MOVE_NAME` | `150` | The width of a line's name column. |
+| 4266 | `SectorScreen.REFINERY_HEAD` | `"THE REFINERY THIS MONTH"` | The card's heading, its line, and what its (i) says. |
+| 4268 | `SectorScreen.REFINERY_SUB` | `"where the crude went · ribbons to scale"` | ...the line beside the heading... |
+| 4270 | `SectorScreen.REFINERY_INFO` | `"The month's crude comes in on the left, from the wells, the reserve or the world." + "...` | ...and the (i)'s words: the picture read from left to right. |
+| 4476 | `SectorScreen.HATCHES` | `new java.util.HashMap<>()` | The hatchings made so far, by colour and opacity (hatch()'s cache). |
+| 4573 | `SectorScreen.INDUSTRY_INFO` | `"On the left is what the month worked: a mine's fields, each a vessel filled to " + "wh...` | What the materials card's (i) says: the picture read from left to right. |
+| 4757 | `SectorScreen.OIL_WELLS_INFO` | `"The city's wells by kind.A land well lifts the ground pool - the oil under the city's ...` | What the oil industry's (i)s say. |
+| 4763 | `SectorScreen.OIL_UNITS_INFO` | `"Every kind of refinery unit.Its spread is what it makes of a litre of its feed, less" ...` | ...THE REFINERY's, its units' table... |
+| 4768 | `SectorScreen.OIL_PRODUCTS_INFO` | `"Every product of the refinery, and crude: its price here and the world's, the" + " wor...` | ...PRODUCTS', crude's and the nine products' table... |
+| 4772 | `SectorScreen.OIL_RESERVE_INFO` | `"The city's own crude, in its Strategic Reserves' tanks.Fill orders crude for the next"...` | ...and THE STRATEGIC RESERVE's, which the Fill and Release cards' (i)s say too. |
+| 4778 | `SectorScreen.RESERVE_CAVEAT` | `"bought at the next clearing at what crude then costs; what the room cannot take lapses"` | The Fill card's caveat under its effects... |
+| 4780 | `SectorScreen.RESERVE_CAVEAT_INFO` | `"A fill is an order for the next clearing: the wells' crude pro rata with the" + " refi...` | ...and what its (i) says: an order for the next clearing, paid at the next strike. |
+| 4784 | `SectorScreen.RELEASE_CAVEAT` | `"offered to the refiners; what they do not take stays in the tanks"` | The Release card's caveat; its (i) is OIL_RESERVE_INFO. |
+| 4787 | `SectorScreen.RESERVE_LADDER` | `380` | The lever's ladder width on its dial card. |
+| 5197 | `SectorScreen.FREIGHT_STRIP_INFO` | `"Freight is three businesses in one set of books: Haulage's trucks, the " + "railway an...` | What the division strip's (i) says. |
+| 5203 | `SectorScreen.FREIGHT_LEGS_INFO` | `"Every tonne that crossed the city's boundary went the long haul by the " + "world's lo...` | The legs card's (i). |
+| 5211 | `SectorScreen.FREIGHT_SHIPPERS_INFO` | `"The sectors billed by this division this month, largest bill first: the " + "line each...` | The shippers card's (i). |
+| 5389 | `SectorScreen.LEG_NAME` | `120` | The width of a leg's name column. |
+| 5414 | `SectorScreen.LegBar.BAND` | `26` | The bar's height, in pixels: 26. |
+| 5525 | `SectorScreen.FREIGHT_TRUCKS_INFO` | `"The trucks Haulage owns against the trucks the plant standing asks for to " + "carry t...` | Haulage's fleet card's (i). |
+| 5530 | `SectorScreen.FREIGHT_HAULAGE_QUOTE_INFO` | `"What a tonne's city leg costs the shipper.The rule: Haulage's running " + "cost plus a...` | Haulage's price card's (i). |
+| 5667 | `SectorScreen.FREIGHT_RAIL_INFO` | `"The wagon sets the railway owns against the sets its track standing needs." + "The tra...` | The railway's fleet card's (i). |
+| 5674 | `SectorScreen.FREIGHT_RAIL_QUOTE_INFO` | `"What the railway charges a tonne, as a share of what a lorry charges the " + "same ton...` | The railway's price card's (i). |
+| 5701 | `SectorScreen.FREIGHT_PORTS_INFO` | `"The terminals standing by kind, the tonnes each kind handled this month " + "against w...` | The berths card's (i). |
+| 5835 | `SectorScreen.SHELF_INFO` | `"A basket is one person's groceries for a month.The shelf moves a sixth of the way " + ...` | THE SHELF's (i). |
+| 5991 | `SectorScreen.FOLD_PAST` | `6` | The goods a column folds into one row past this many (the shops' and the kitchens' thirteen foods). |
 
 ### ServicesScreen.java ([map](map/ServicesScreen.md))
 
@@ -4233,7 +4244,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (897 constants)
+## harnesses (905 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -4914,6 +4925,19 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1720 | `LandCheck.IRON_IN_THE_GROUND` | `.0004` | Iron ore in the ground, a tonne in thousands: US$0.40, the land office's charge since 0.7.57, kept when ore fell to its world price (Jerus's D, 2026-10-08; 0.7.120). |
 | 2165 | `LandCheck.RESEARCH` | `{ new Research("city600 m612", 906013741141069877L, 32_635_000, 10, 36200450.60153519, ...` | The three research saves' land (the autosaves at months 612, 2412 and 1851), and a city whose mines outnumber its sites. |
 | 2267 | `LandCheck.DEAL` | `7` | Read by nothing since 0.7.67: the width of the bands section 19 tiled the plane with until then, 7 plots, which no offer was - the pieces are the holdings and the offers standing now. |
+
+### LandClassCheck.java ([map](map/LandClassCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 90 | `LandClassCheck.TOL` | `1e-9` | What a fixture of figures near one another can be told apart by: a rounding, not ground. |
+| 103 | `LandClassCheck.CASH` | `1e8` | A fixture city's treasury: more than any order here costs, so a refusal is never for cash. |
+| 106 | `LandClassCheck.BUSINESS_CASH` | `1e6` | ...and the cash a sector is given to pay a business's order from by fiat. |
+| 109 | `LandClassCheck.GROUND` | `{ "flat", "foothill", "steep", "very steep" }` | The relief classes in World's order (FLAT to VERY_STEEP). |
+| 111 | `LandClassCheck.HOUSE` | `"House"` |  |
+| 114 | `LandClassCheck.ROUNDING` | `2.5 + 1e-6` | An offer's price is rounded to US$5k; a figure worked out from the ground's price can be that far off. |
+| 272 | `LandClassCheck.DRY` | `0.5` | The dry ground the offers of 2 are of, square kilometres. |
+| 782 | `LandClassCheck.HOUSES` | `100, DINERS = 30, MINES = 2` | The orders the hilly city of 6 is built from: houses and diners on the buildings' ground, iron mines on the works'. |
 
 ### LandlordPortCheck.java ([map](map/LandlordPortCheck.md))
 

@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.44 — ET3, a price for each class of ground — 2026-10-25, ready but MapCheck 8 (main's, FW11), see docs/queue/ET3-notes.md
+
+Each class of ground now has a price, by the **residual rule**: flat at the going price, foothill at the going price less its
+pad's preparation (never under the base price of unwanted ground), steep and very steep at the base price, none dearer than flat.
+The land office prices its offers by the ground they hold, a business pays for its plot class by class (buildings on flat first,
+works on the steep first, a zone's share on each class), and the pickers rank offers by **buildable ground a dollar, preparation
+counted**, so a cheap mountain loses to the valley floor. The books value a sector's land at each class's price, pro rata to the
+city's split; the balance sheet's Land line has **note 11**, its land by class, and the equity's land row revalues by class
+(`SectorMonth.landByRelief`, null in an older save). The land office and the offer card show the classes. New LandClassCheck. A
+flat city is priced by the old expressions: the default trace and Rotterdam's byte-identical (no ensemble); Medellín ends at
+432,191 people, hunger 0% (main 257,761, 50%), with 37.7 km² of idle steep bought alongside. Four calls under Pending as ET3-C.
 ### BP1 — the batch process, cheaper and quicker — 2026-10-25, ready, no tag (tooling and documents), see docs/queue/BP1-notes.md
 
 A batch runs no baseline suite: `./batch-check.sh --pick` runs the harnesses that read what its diff changed (`tools/pick.sh`; a class most

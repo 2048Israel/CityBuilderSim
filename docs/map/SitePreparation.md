@@ -18,7 +18,7 @@
 
 **Uses:** [LandManager](LandManager.md) (1)
 
-**Used by (2):** [Game](Game.md), [SlopeCheck](SlopeCheck.md)
+**Used by (5):** [Game](Game.md), [LandClassCheck](LandClassCheck.md), [LandManager](LandManager.md), [LandMarket](LandMarket.md), [SlopeCheck](SlopeCheck.md)
 
 ## Constants
 

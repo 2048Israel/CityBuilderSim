@@ -406,6 +406,15 @@ final class LandScreen {
         return lines;
     }
 
+    /**
+     * What the office charges for each class of ground (ET3, spec-earth2-terrain 5.3), one line for each class the city
+     * owns or the shelf offers, empty while neither has any foothill or steep ground: LandClassView's words, from
+     * LandManager's and LandMarket's own prices.
+     */
+    List<String> officeLines() {
+        return LandClassView.officeLines(ui.game);
+    }
+
     /** The bar's scale: the ground free and the best N together. */
     double groundScale(Next next) {
         double scale = ui.game.getLandManager().getAvailableSqFt();
@@ -740,7 +749,9 @@ final class LandScreen {
         boolean funding = g.landNeedsFunding(List.of(p.getId()));
         String listedUsd = usd(p.getPriceUsd());
         String todayHere = marked(here(), money(p.localPrice(rate)));
-        String size = sizeWords(p);
+        // ...and, for an offer with foothill or steep ground, its ground by class on a line of its own (ET3; empty for an all-flat offer).
+        String ground = LandClassView.offerLine(p, g.getLandManager().getMarket());
+        String size = sizeWords(p) + (ground.isEmpty() ? "" : "\n" + ground);
         StringBuilder tip = new StringBuilder(String.format("%s: %s%nListed in month %,d at %s: %s at today's rate.",
                 p.where(), size, p.getListedMonth(), listedUsd, todayHere));
         for (DepositWords d : deposits) tip.append("\n").append(d.tip()).append(WHOLE_FIELDS);
@@ -858,7 +869,8 @@ final class LandScreen {
         for (String[] w : which) {
             BuildingsTemplate t = ui.game.getBuildingManager().getTemplateByName(w[0]);
             if (t == null) continue;
-            double ground = land.priceFor(t.getLandSqFt());
+            // ...at the price of the ground the next plot falls on (ET3): a house on the foothill once the flat is used, a works on the steep.
+            double ground = land.priceFor(t.getLandSqFt(), t.getSector(), Game.standsAnywhere(t));
             double build = t.getCashCost();
             double all = ground + build;
             out.add(new OnTop(w[1], ground, build,
@@ -1037,7 +1049,9 @@ final class LandScreen {
             VBox.setMargin(after, new javafx.geometry.Insets(4, 0, 0, 0));
             figures.getChildren().addAll(after, afterRoom);
         }
-        for (String line : reliefLines()) {
+        List<String> relieved = new ArrayList<>(reliefLines());
+        relieved.addAll(officeLines());
+        for (String line : relieved) {
             Label relief = new Label(line);
             relief.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
             relief.setWrapText(true);

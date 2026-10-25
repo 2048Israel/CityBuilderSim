@@ -287,7 +287,17 @@ public final class SectorBooks {
              * older save's months, where they moved its equity the month they
              * were paid and are its outside lines (SectorStatements.outside()).
              */
-            boolean borrowingCostsDeferred) {
+            boolean borrowingCostsDeferred,
+
+            /* -------------- and its land by the ground it stands on (ET3, spec-earth2-terrain 5.3) -------------- */
+            /**
+             * Its land by class of ground as the sheet valued it, in a city with foothill or steep ground:
+             * {flat, foothill, slope square feet; flat, foothill, slope price a square foot} - the sheet's land is
+             * the sum of their products (landSqFt() and landPrice() are the one-price figures). Null where the
+             * month did not read it: a city with only flat ground, or an older save's month (Gson leaves a missing
+             * key null), which fall back to the one price. At the end of the record.
+             */
+            double[] landByRelief) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -366,12 +376,41 @@ public final class SectorBooks {
                     0, 0, false,
                     0, 0, 0, 0,
                     0, 0, 0, 0, 0, false,
-                    0, 0, true);
+                    0, 0, true,
+                    null);
         }
 
         /** Its equity less its share capital: what it kept and what the model revalued (R3). */
         public double retained() {
             return equity() - paidIn;
+        }
+
+        /** Whether the sheet valued its land by the ground it stands on (landByRelief is read and has all six figures). */
+        public boolean hasLandByRelief() {
+            return landByRelief != null && landByRelief.length >= 6;
+        }
+
+        /** Its land on one class of ground, square feet: c is 0 flat, 1 foothill, 2 steep and very steep (the slope class, which only works stand on). 0 where the month did not read it. */
+        public double landSqFtOf(int c) {
+            return hasLandByRelief() && c >= 0 && c < 3 ? landByRelief[c] : 0;
+        }
+
+        /** ...and the price a square foot of that class was valued at. Where the month did not read it, the one price (landPrice()). */
+        public double landPriceOf(int c) {
+            return hasLandByRelief() && c >= 0 && c < 3 ? landByRelief[3 + c] : landPrice;
+        }
+
+        /** The sheet's land by class, each at its price: landSqFtOf(c) x landPriceOf(c) summed; the one-price figure (landSqFt() x landPrice()) where the month did not read it. */
+        public double landByClassValue() {
+            if (!hasLandByRelief()) return landSqFt * landPrice;
+            double v = 0;
+            for (int c = 0; c < 3; c++) v += landSqFtOf(c) * landPriceOf(c);
+            return v;
+        }
+
+        /** Whether any of its land stands on foothill or steep ground. */
+        public boolean landOnHills() {
+            return hasLandByRelief() && (landByRelief[1] > 0 || landByRelief[2] > 0);
         }
 
         /** The same month with its share capital put: a save from before 0.7.75, derived at the load (derivePaidIn()). */
@@ -384,7 +423,7 @@ public final class SectorBooks {
                     bondsRepaid, bondsBought, bondCoupons, tradeReceivables, tradePayables, tradeCredit, arrearsPaid,
                     capital, founded, derived, loanFees, premiums, bondCosts, bondsWrittenOff,
                     landSqFt, landPrice, buildingMaterials, materialsPrice, stockRevalued, stockCounted,
-                    borrowingCosts, borrowingCostsToExpense, borrowingCostsDeferred);
+                    borrowingCosts, borrowingCostsToExpense, borrowingCostsDeferred, landByRelief);
         }
 
         public boolean isEmpty() {
@@ -609,6 +648,8 @@ public final class SectorBooks {
         // ...the sheet's prices and quantities, as it was pushed (R6) - at the month's close since 0.7.102 (A16)...
         double[] valued = economy.getValuedAt(key);
         if (valued == null) valued = new double[4];
+        // ...and, in a city with foothill or steep ground, the same land by class and the prices it was valued at (ET3).
+        double[] byClass = economy.getValuedByClass(key);
         // ...and last month's stock at this month's prices.
         Map<Good, double[]> stock = sector.stockAtPrices();
         Map<Good, double[]> stockBefore = stockAtClose.get(key);
@@ -678,7 +719,8 @@ public final class SectorBooks {
                 valued[0], valued[1], valued[2], valued[3],
                 stockRevalued, stockBefore != null,
                 // ...and what its borrowing cost it up front: the month's share, and what is still to expense (0.7.102).
-                st.borrowingCosts, sector.getBorrowingCostsToExpense(), true);
+                st.borrowingCosts, sector.getBorrowingCostsToExpense(), true,
+                byClass == null ? null : byClass.clone());
     }
 
     /**
@@ -861,6 +903,15 @@ public final class SectorBooks {
                 m.loanFees() * s, m.premiums() * s, m.bondCosts() * s, m.bondsWrittenOff() * s,
                 m.landSqFt(), m.landPrice() * s, m.buildingMaterials(), m.materialsPrice() * s,
                 m.stockRevalued() * s, m.stockCounted(),
-                m.borrowingCosts() * s, m.borrowingCostsToExpense() * s, m.borrowingCostsDeferred());
+                m.borrowingCosts() * s, m.borrowingCostsToExpense() * s, m.borrowingCostsDeferred(),
+                scaledByRelief(m.landByRelief(), s));
+    }
+
+    /** The land by class with its three prices rescaled and its three areas left (ET3); null stays null. */
+    private static double[] scaledByRelief(double[] v, double s) {
+        if (v == null || v.length < 6) return v;
+        double[] out = v.clone();
+        out[3] *= s; out[4] *= s; out[5] *= s;
+        return out;
     }
 }

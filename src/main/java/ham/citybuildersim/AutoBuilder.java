@@ -1502,13 +1502,22 @@ public final class AutoBuilder {
      */
     public static LandParcel shortcutOffer(Game game, double lackSqFt, Set<Integer> taken) {
         LandMarket market = game.getLandManager().getMarket();
+        // ...by buildable ground, preparation counted (ET3, spec-earth2-terrain 5.2): the flat and foothill must cover
+        // the lack, offers rank by price with their foothill prepared, and the best value is the buildable ground a
+        // dollar while any offer in the running has some. All flat, every one of these is the dry figure itself.
         LandParcel cheapest = null, best = null;
+        List<LandParcel> running = new ArrayList<>();
         for (LandParcel p : market.getListing()) {
             if (taken.contains(p.getId()) || !LandMarket.bareGround(p) || !(p.getSizeSqFt() > 0)) continue;
-            if (p.getSizeSqFt() >= lackSqFt && (cheapest == null || p.getPriceUsd() < cheapest.getPriceUsd()
-                    || (p.getPriceUsd() == cheapest.getPriceUsd() && market.nearer(p, cheapest)))) cheapest = p;
-            if (!p.isMostlySea() && (best == null || p.getDryKm2PerUsd() > best.getDryKm2PerUsd()
-                    || (p.getDryKm2PerUsd() == best.getDryKm2PerUsd() && market.nearer(p, best)))) best = p;
+            if (LandMarket.buildableSqFt(p) >= lackSqFt && (cheapest == null
+                    || market.priceWithPrepUsd(p) < market.priceWithPrepUsd(cheapest)
+                    || (market.priceWithPrepUsd(p) == market.priceWithPrepUsd(cheapest) && market.nearer(p, cheapest)))) cheapest = p;
+            if (!p.isMostlySea()) running.add(p);
+        }
+        boolean byBuildable = LandMarket.anyBuildable(running);
+        for (LandParcel p : running) {
+            if (best == null || market.rankPerUsd(p, byBuildable) > market.rankPerUsd(best, byBuildable)
+                    || (market.rankPerUsd(p, byBuildable) == market.rankPerUsd(best, byBuildable) && market.nearer(p, best))) best = p;
         }
         return cheapest != null ? cheapest : best;
     }
