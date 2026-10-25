@@ -773,6 +773,16 @@ public class BuildingsTemplate {
         return cashCost;
     }
 
+    /**
+     * The cash cost as the catalogue states it (ET2): buildings.json's figure, in thousands of founding dollars,
+     * before the unit and the expected price level it is struck at (seedConstants()) - which the price level and a
+     * currency reform never move. The cash cost itself where none was struck. SitePreparation prices a foothill pad
+     * in points against a House's, so the points do not drift with prices.
+     */
+    public double getFoundingCashCost() {
+        return Double.isNaN(foundingCashCost) ? cashCost : foundingCashCost;
+    }
+
     public int getConstructionPoints() {
         return constructionPoints;
     }

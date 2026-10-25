@@ -7337,8 +7337,23 @@ public final class GameVersion {
      *   - Save: landCentreRelief, landHoldingsRelief, landOffersRelief (a
      *     missing key reads flat); SAVE_FORMAT 45 unchanged, every earth-1
      *     city refused by its identity.
+     *
+     * 0.8.43 (2026-10-24) - ET2, BUILDABLE BY SLOPE
+     * (docs/queue/ET2-notes.md; docs/studies/spec-earth2-terrain.md 3.2,
+     * 3.4, 4.1, 4.2, 4.4; D6, D7, D9, D21; E7 star 10).
+     *   - LandManager, BUILDABLE BY SLOPE: buildings on flat then foothill,
+     *     steep and very steep refused them; works (Game.standsAnywhere())
+     *     take steep first, then foothill, then flat.
+     *   - SitePreparation: a foothill pad's cut, fill and wall priced from
+     *     sourced rates on the House's price a point; in the quote, owed on
+     *     the site (BuildingsStacks.addPreparation()), billed to Construction.
+     *   - The map: buildings and streets off steep ground and ice, flat cells
+     *     first; the founding snap and its refusal on buildable ground.
+     *   - Save: landWorksSqFt, landPreparedSqFt; SAVE_FORMAT 46, the Earth
+     *     floor (EarthSite.SLOPE_FORMAT) 46, OLDEST_LOADABLE_FORMAT 45.
+     *   - Harness: SlopeCheck (new); SlopeRenders, docs/queue/ET2/.
      */
-    public static final String VERSION = "0.8.41";
+    public static final String VERSION = "0.8.43";
 
     /**
      * The save shape.
@@ -8113,8 +8128,29 @@ public final class GameVersion {
      *     THE FLOOR RISES TO 45 WITH IT (the rule): a save of format 44 or
      *     older is refused, naming the build that still opens it. No
      *     conversion is written.
+     *
+     * 46 - BUILDABLE GROUND, FOUNDED ON (batch ET2, slice C;
+     *     docs/studies/spec-earth2-terrain.md 3.4): the real Earth's founding
+     *     site is snapped to ground a building may stand on - dry, and flat or
+     *     foothill (EarthTerrain.siteBuildable()) - where it was snapped to
+     *     any dry ground. Nothing new is saved, but the world's founding
+     *     site is found again from the city's spot and the data each time the
+     *     world is built (the boats' reference, any new founding), so an
+     *     Earth city saved before, its site snapped among steep slopes,
+     *     would load into a world whose founding site is elsewhere than the
+     *     one it was built round, and its map (a street plan and a district's
+     *     room that refuse steep ground now) would stand differently from
+     *     the one its sidecar kept.
+     *
+     *     THE EARTH'S FLOOR RISES TO 46 WITH IT, AND ONLY THE EARTH'S
+     *     (EarthSite.SLOPE_FORMAT, as ICE_FORMAT and DEPOSITS_FORMAT did): an
+     *     Earth save of format 45 or older is refused with its own words
+     *     (EarthSite.BEFORE_SLOPE_WORDS), naming the build that still opens
+     *     it. A generated world is flat, its founding reads no relief, and
+     *     its saves load as they did, so OLDEST_LOADABLE_FORMAT stays at 45.
+     *     No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 45;
+    public static final int SAVE_FORMAT = 46;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT

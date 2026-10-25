@@ -53,7 +53,8 @@ import java.util.List;
  * seed deciding the detail below the data and the fields. The founding
  * screen offers Earth when the data is here (EarthSite.gameData()); saved as
  * DataSave's worldKind, earthLat, earthLon and earthData (SAVE_FORMAT 38). A
- * spot the founding card refuses - no dry ground within 5 km, or ice - is a
+ * spot the founding card refuses - no ground a building may stand on within
+ * 5 km (the sea, an island too small, or slopes too steep: ET2), or ice - is a
  * problem() like a bad name.
  *
  * @author Jerus
@@ -412,7 +413,7 @@ public final class Founding {
      * of the city's name, its money (a typed pair that did not pass leaves no
      * currency - the screen says which half), the two amounts and the world -
      * and on Earth (0.7.121) its spot: the data not here, or the founding
-     * card's refusal (EarthSite: no dry ground within 5 km, or ice), the
+     * card's refusal (EarthSite: no buildable ground within 5 km, or ice), the
      * snap's answer kept with the world once it is asked.
      */
     public String problem() {

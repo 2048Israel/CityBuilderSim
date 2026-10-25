@@ -4780,6 +4780,17 @@ public class BuildingManager {
         }
     }
 
+    /**
+     * Puts a foothill site's preparation on the template's stack as owed work (ET2; SitePreparation): called by
+     * Game once the order's stack exists (addStack()), with the points its quote carried. The stack owes them before
+     * its first building finishes (BuildingsStacks.addPreparation()), and nothing is owed for no points.
+     */
+    public void addPreparation(BuildingsTemplate template, double points) {
+        if (!(points > 0)) return;
+        BuildingsStacks stack = getStack(template);
+        if (stack != null) stack.addPreparation(points);
+    }
+
     /** Every template, in load order. */
     public List<BuildingsTemplate> getTemplates() {
         return templates;
@@ -5014,8 +5025,13 @@ public class BuildingManager {
      * (Game.quoteMonths()). MAX_VALUE with no output.
      */
     public double waitFor(BuildingsTemplate t, int quantity, double siteOutput) {
+        return waitFor(t, quantity, 0, siteOutput);
+    }
+
+    /** ...with `extraPoints` more owed on the order's site than its buildings' own (ET2: a foothill pad's preparation, SitePreparation); waitFor() exactly for none. */
+    public double waitFor(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
         if (t == null || quantity < 1) return 0;
-        return waitWith(t, quantity, siteOutput);
+        return waitWith(t, quantity, extraPoints, siteOutput);
     }
 
     /**
@@ -5028,25 +5044,31 @@ public class BuildingManager {
      */
     public double waitOnSite(BuildingsTemplate t, double siteOutput) {
         if (t == null) return 0;
-        return waitWith(t, 0, siteOutput);
+        return waitWith(t, 0, 0, siteOutput);
     }
 
-    /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone. */
-    private double waitWith(BuildingsTemplate t, int quantity, double siteOutput) {
+    /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone - and `extraPoints` more owed on its site (ET2). */
+    private double waitWith(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         // ...the first group's, with a depot served first on site or a depot
         // weighed that would be (0.7.130).
         if (firstOn(t, quantity)) {
             String key = ConstructionControl.keyOf(t);
-            double months = firstWait(key, withMore(t, quantity, quantity * (double) t.getConstructionPoints()),
+            double months = firstWait(key, withMore(t, quantity, orderPoints(t, quantity, extraPoints)),
                     !isOnSite(t), false, siteOutput);
             return Double.isNaN(months) ? Double.MAX_VALUE : months;
         }
-        return ruleWait(t, quantity, siteOutput);
+        return ruleWait(t, quantity, extraPoints, siteOutput);
     }
 
-    /** The crews' rule's own wait, held steady, for an order of `quantity` - none, for what is on site alone: waitWith() before 0.7.130, and still, with no depot served first. */
-    private double ruleWait(BuildingsTemplate t, int quantity, double siteOutput) {
+    /** The points an order of `quantity` owes: its buildings' own, and `extraPoints` more on its site (ET2) - the buildings' alone, to the bit, for none. */
+    private static double orderPoints(BuildingsTemplate t, int quantity, double extraPoints) {
+        double points = quantity * (double) t.getConstructionPoints();
+        return extraPoints > 0 ? points + extraPoints : points;
+    }
+
+    /** The crews' rule's own wait, held steady, for an order of `quantity` - none, for what is on site alone: waitWith() before 0.7.130, and still, with no depot served first - and `extraPoints` more owed on its site (ET2). */
+    private double ruleWait(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         double others = 0, aheadOwed = 0;
         int aheadUnits = 0;
@@ -5070,7 +5092,7 @@ public class BuildingManager {
         // billion people, which on top of a site would wrap an int.
         double mine = weightOf(t, (long) aheadUnits + quantity);
         if (!(mine > 0)) return 0;
-        double owedWith = aheadOwed + quantity * (double) t.getConstructionPoints();
+        double owedWith = aheadOwed + orderPoints(t, quantity, extraPoints);
         return owedWith * (others + mine) / (siteOutput * mine);
     }
 
@@ -5754,7 +5776,7 @@ public class BuildingManager {
         if (buildersCouldStaff != null && !buildersCouldStaff.test(t, n)) return false;
         if (sitesAtEveryPost == null) return true;
         double sites = sitesAtEveryPost.getAsDouble();
-        return !(sites > 0) || ruleWait(t, Math.max(0, extra), sites) > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
+        return !(sites > 0) || ruleWait(t, Math.max(0, extra), 0, sites) > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
     }
 
     /** The builders' own sites served first, in the stacks' order: every stack that adds to their capacity with buildings on site, whoever paid for them, while the city could staff them (goesFirst()). */
@@ -5970,7 +5992,7 @@ public class BuildingManager {
         // ...the first group's, with a depot on site (0.7.130).
         if (firstOn(null, 0)) return firstWait(key, null, false, false, siteOutput);
         // The rule's wait, to the bit, with the player's hand off the site.
-        if (s != null && !handOn(key)) return waitWith(s.getBuilding(), 0, siteOutput);
+        if (s != null && !handOn(key)) return waitWith(s.getBuilding(), 0, 0, siteOutput);
         return handWait(key, null, false, siteOutput);
     }
 
@@ -5982,16 +6004,22 @@ public class BuildingManager {
      * order. MAX_VALUE with no output.
      */
     public double cityOrderWait(BuildingsTemplate t, int quantity, double siteOutput) {
+        return cityOrderWait(t, quantity, 0, siteOutput);
+    }
+
+    /** ...with `extraPoints` more owed on its site than its buildings' own (ET2: a foothill pad's preparation, SitePreparation); cityOrderWait() exactly for none. */
+    public double cityOrderWait(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
         if (t == null || quantity < 1) return 0;
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
+        double points = orderPoints(t, quantity, extraPoints);
         // ...the first group's, with a depot served first on site or a depot
         // quoted that would be (0.7.130).
         if (firstOn(t, quantity)) {
-            return firstWait(ConstructionControl.keyOf(t), withMore(t, quantity, quantity * (double) t.getConstructionPoints()),
+            return firstWait(ConstructionControl.keyOf(t), withMore(t, quantity, points),
                     !isOnSite(t), true, siteOutput);
         }
-        double[] mine = joined(t, quantity, quantity * (double) t.getConstructionPoints());
-        if (mine == null) return waitFor(t, quantity, siteOutput);
+        double[] mine = joined(t, quantity, points);
+        if (mine == null) return waitFor(t, quantity, extraPoints, siteOutput);
         return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
     }
 
@@ -7535,6 +7563,29 @@ public class BuildingManager {
         if (control.paving() > 0) {
             BuildingsTemplate paved = getTemplateByName(ConstructionControl.PAVE_TO);
             if (paved != null) total -= paved.getLandSqFt() * (double) control.paving();
+        }
+        return total;
+    }
+
+    /**
+     * The part of getTotalLandFootprint() that the buildings `works` picks stand on (ET2): the same sum, over the
+     * standing and on site, the stopped shells and the demolitions on site, of those templates alone - the ground
+     * LandManager counts as works's (Game.standsAnywhere()), which a load without it puts back. A paving's gravel
+     * road is never one.
+     */
+    public double getWorksLandFootprint(java.util.function.Predicate<BuildingsTemplate> works) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (works.test(stack.getBuilding())) {
+                total += stack.getBuilding().getLandSqFt() * (stack.getQuantity() + stack.getUnderConstruction());
+            }
+        }
+        for (ConstructionControl.Shell shell : control.shells()) {
+            BuildingsTemplate t = getTemplate(shell.templateId);
+            if (t != null && works.test(t)) total += t.getLandSqFt() * shell.buildings;
+        }
+        for (ConstructionControl.Demolition site : control.demolitions()) {
+            if (!site.closing && works.test(getTemplate(site.templateId))) total += site.landSqFt;
         }
         return total;
     }

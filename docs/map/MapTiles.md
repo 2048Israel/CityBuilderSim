@@ -26,7 +26,7 @@
 > without one it wanted says so (nodePixels()'s count, wanted()), and the
 > view asks CityMap.pictureJobs() for them while picturesFit().
 
-**Uses:** [World](World.md) (88), [MapFrame](MapFrame.md) (44), [TilePainter](TilePainter.md) (37), [CityMap](CityMap.md) (28), [TileRaster](TileRaster.md) (22), [LandGrid](LandGrid.md) (21), [DistrictPicture](DistrictPicture.md) (18), [BuildingVisual](BuildingVisual.md) (12), [Kept](Kept.md) (6), [CityLand](CityLand.md) (6), [EarthProj](EarthProj.md) (6), [CityRuns](CityRuns.md) (6), [CityShore](CityShore.md) (3)
+**Uses:** [World](World.md) (90), [MapFrame](MapFrame.md) (44), [TilePainter](TilePainter.md) (37), [CityMap](CityMap.md) (28), [TileRaster](TileRaster.md) (22), [LandGrid](LandGrid.md) (21), [DistrictPicture](DistrictPicture.md) (18), [BuildingVisual](BuildingVisual.md) (12), [Kept](Kept.md) (6), [CityLand](CityLand.md) (6), [EarthProj](EarthProj.md) (6), [CityRuns](CityRuns.md) (6), [CityShore](CityShore.md) (3)
 
 **Used by (11):** [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [JunctionCheck](JunctionCheck.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [RailDrawCheck](RailDrawCheck.md), [ReliefRenders](ReliefRenders.md)
 

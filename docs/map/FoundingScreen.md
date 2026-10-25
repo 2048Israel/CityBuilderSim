@@ -66,7 +66,7 @@
 
 **Uses:** [Palette](Palette.md) (125), [Founding](Founding.md) (47), [EarthSite](EarthSite.md) (28), [World](World.md) (20), [GlobeFrame](GlobeFrame.md) (15), [EarthProj](EarthProj.md) (14), [Currency](Currency.md) (12), [EarthData](EarthData.md) (12), [WorldEconomy](WorldEconomy.md) (5), [MapFrame](MapFrame.md) (4), [GlobePicture](GlobePicture.md) (4), [UserInterface](UserInterface.md) (2), [Resource](Resource.md) (2), [TileRaster](TileRaster.md) (2), [Icons](Icons.md) (1), [Geology](Geology.md) (1), [MapTiles](MapTiles.md) (1)
 
-**Used by (1):** [UserInterface](UserInterface.md)
+**Used by (2):** [SlopeRenders](SlopeRenders.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -153,7 +153,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 112 | 1246 | **type** `final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. |
+| 112 | 1246 | **type** `public final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. |
 | 120 | 1 | `FoundingScreen(UserInterface ui)` |  |
 
 ### the choices, between redraws (lines 122-147)
@@ -192,12 +192,12 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 629 | 38 | `private void fillCard()` | The card's words under the globe: where the spot is, then what is within 5 km, its geology and iron, and why not or what to know. |
-| 673 | 3 | `static String seedWords(long seed)` | The card's last line: what the seed decides on Earth. |
-| 678 | 10 | `static String geologyWords(EarthSite.Card c)` | The card's geology line: the province and its class, and the multiplier of each resource in fields. |
-| 690 | 4 | `static String siteWords(EarthSite.Card c)` | The card's first line: where the site is, from the nearest place, and how far the snap moved it. |
-| 696 | 4 | `static String groundWords(EarthSite.Card c)` | The card's ground line; ice's share after the sea's where there is any (0.7.127). |
-| 702 | 4 | `static String waterWords(EarthSite.Card c)` | The card's water line. |
-| 708 | 5 | `static String ironWords(EarthSite.Card c)` | The card's iron line. |
+| 673 | 3 | `public static String seedWords(long seed)` | The card's last line: what the seed decides on Earth. |
+| 678 | 10 | `public static String geologyWords(EarthSite.Card c)` | The card's geology line: the province and its class, and the multiplier of each resource in fields. |
+| 690 | 4 | `public static String siteWords(EarthSite.Card c)` | The card's first line: where the site is, from the nearest place, and how far the snap moved it. |
+| 696 | 4 | `public static String groundWords(EarthSite.Card c)` | The card's ground line; ice's share after the sea's where there is any (0.7.127). |
+| 702 | 4 | `public static String waterWords(EarthSite.Card c)` | The card's water line. |
+| 708 | 5 | `public static String ironWords(EarthSite.Card c)` | The card's iron line. |
 | 714 | 7 | `private static Label cardLine(String words, String colour)` |  |
 | 723 | 11 | `static String kindWords(Geology.Kind k)` | A geologic class in the card's words, as the map's hover writes it. |
 | 736 | 5 | `static String share(double s)` | A share as the card writes it: a whole per cent, and "under 1%" for a little. |

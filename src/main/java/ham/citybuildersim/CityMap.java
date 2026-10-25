@@ -30,7 +30,8 @@ import java.util.zip.InflaterInputStream;
  * needs it (TilePainter), so its cost follows the screen, never the
  * population. NOTHING IN THE MODEL READS IT.
  *
- * A DISTRICT holds its free plots - owned and dry, a resource's sites among
+ * A DISTRICT holds its free plots - owned and buildable (World.buildable(),
+ * since ET2: dry, flat or foothill), a resource's sites among
  * them (a mine or well takes its own site's; the painter builds on a site
  * last) - counted plot by plot on each of its tiles since 0.7.64 (32 x 32
  * samples before), recounted in every district a purchase touches; the
@@ -230,7 +231,7 @@ public final class CityMap {
         public final int dx, dy;
         final long key;
         final double order;
-        /** Its free plots: owned and dry, counted plot by plot (0.7.64; from 32 x 32 samples before) - or, for a harness's square city, given. */
+        /** Its free plots: owned and buildable (since ET2: dry, flat or foothill), counted plot by plot (0.7.64; from 32 x 32 samples before) - or, for a harness's square city, given. */
         int owned;
         /** The ground its buildings use, in half square feet: each type's count x its land, kept exactly. */
         long usedHalf;
@@ -243,7 +244,7 @@ public final class CityMap {
         final int[] counts;
         /** Its owned sites of each slot (SLOTS; of each SITED resource until 0.8.0). */
         final int[] sites = new int[SLOTS];
-        /** Each tile's free plots, row by row: owned and dry; null until measured or asked for. */
+        /** Each tile's free plots, row by row: owned and buildable (World.buildable()); null until measured or asked for. */
         short[] tileFree;
         /** ...and those inside its edge ring, where alone the painter laid a road until 0.7.87 (the counts' room for roads still measures it). */
         short[] tileInner;
@@ -300,7 +301,7 @@ public final class CityMap {
             this.counts = new int[types];
         }
 
-        /** Its free plots (owned and dry, its sites' plots among them). */
+        /** Its free plots (owned and buildable, its sites' plots among them). */
         public int owned()       { return owned; }
         /** The plots of ground its buildings use: each type's count x its land in plots. */
         public double used()     { return usedHalf / (double) HALF_SQ_FT_PER_PLOT; }
@@ -734,13 +735,18 @@ public final class CityMap {
 
     /**
      * Counts a district's free plots, tile by tile and plot by plot (0.7.64):
-     * owned and dry - the ground the model builds on, a resource's sites with
-     * it (a mine stands on its site; another building takes a site's plot only
-     * when its tile has no other) - and each site's plots on each tile, which
-     * a mine standing on it takes. So a district's room is exactly the ground
-     * its tiles can draw buildings and roads on. 64 tiles' ground read from
-     * the world (World.tileTerrain()), about 8 ms a district (L2's scratch
+     * owned and buildable - the ground the model builds on, a resource's sites
+     * with it (a mine stands on its site; another building takes a site's plot
+     * only when its tile has no other) - and each site's plots on each tile,
+     * which a mine standing on it takes. So a district's room is exactly the
+     * ground its tiles can draw buildings and roads on. 64 tiles' ground read
+     * from the world (World.tileTerrain()), about 8 ms a district (L2's scratch
      * L2Cap); J3's 32 x 32 samples could put more on a tile than it held.
+     * Since ET2 buildable is World.buildable(), dry and flat or foothill (the
+     * tile's relief read beside its cover, World.tileRelief()), so steep ground
+     * is no room; a site's own plots stay World.dry() - a mine may stand on
+     * steep ground (spec-earth2-terrain 3.2) - and on a generated world, all
+     * flat, the two are one count.
      */
     private void measure(District d, int own) {
         d.tileFree = new short[TILES];
@@ -752,7 +758,7 @@ public final class CityMap {
         if (own == NONE) return;
         long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
         List<long[]> squares = siteSquares(x0, y0, x0 + DISTRICT - 1, y0 + DISTRICT - 1);
-        byte[] ground = new byte[TilePainter.PLOTS];
+        byte[] ground = new byte[TilePainter.PLOTS], relief = new byte[TilePainter.PLOTS];
         boolean[] owns = new boolean[TilePainter.PLOTS], field = new boolean[TilePainter.PLOTS];
         World world = World.of(worldKey);
         int total = 0;
@@ -763,6 +769,7 @@ public final class CityMap {
             for (boolean b : owns) if (b) { any = true; break; }
             if (!any) continue;
             world.tileTerrain(tx, ty, ground);
+            world.tileRelief(tx, ty, relief);
             Arrays.fill(field, false);
             long px0 = tx * World.TILE, py0 = ty * World.TILE;
             List<long[]> here = new ArrayList<>();
@@ -784,7 +791,7 @@ public final class CityMap {
             }
             int n = 0, inner = 0;
             for (int i = 0; i < TilePainter.PLOTS; i++) {
-                if (!owns[i] || !World.dry(ground[i])) continue;
+                if (!owns[i] || !World.buildable(ground[i], relief[i])) continue;
                 n++;
                 int x = i % World.TILE, y = i / World.TILE;
                 if (x >= 1 && y >= 1 && x < World.TILE - 1 && y < World.TILE - 1) inner++;
@@ -3269,7 +3276,8 @@ public final class CityMap {
 
     /**
      * A plan's free ground (R7), for an edge district: a bit a plot of the
-     * district's 256 x 256, set where the city owns dry ground no street,
+     * district's 256 x 256, set where the city owns ground a building may
+     * stand on (ET2: World.buildable(), dry and flat or foothill) no street,
      * building, highway or its verge (H5), track or mine's site takes - a
      * field's plots among it, built on last as the plan builds on them.
      */
@@ -3283,7 +3291,7 @@ public final class CityMap {
         for (int y = 0; y < DISTRICT; y++) {
             for (int x = 0; x < DISTRICT; x++) {
                 int q = y * f + x;
-                if (!in.owned[q] || !World.dry(in.terrain[q])) continue;
+                if (!in.owned[q] || !World.buildable(in.terrain[q], in.relief[q])) continue;
                 if (taken[q] || p.street[q] != 0 || in.fixed[q] != 0 || in.site[q] == DistrictPlan.SITE_MINED || p.siding != null && p.siding[q] != 0) continue;
                 boolean verge = false;
                 for (int dy = -1; dy <= 1 && !verge; dy++) {
@@ -5428,6 +5436,7 @@ public final class CityMap {
         int m = World.TILE, ww = World.TILE + 2 * m, tile = World.TILE;
         byte[] fixed = new byte[ww * ww];
         int[] ground = new int[ww * ww];
+        byte[] shoreRelief = new byte[World.TILE * World.TILE];
         int scanned = 0;
         Integer[] order = new Integer[TILES];
         // A terminal's water must open to the sea (SeaRoutes.opensToSea(), star O13-5): the routes' own grid, and the water found
@@ -5457,6 +5466,17 @@ public final class CityMap {
                 long wx0 = tx * tile - m, wy0 = ty * tile - m;
                 runs.fill(wx0, wy0, ww, ww, fixed, null, true);
                 for (int j = 0; j < ww * ww; j++) ground[j] = runGround.at(wx0 + j % ww, wy0 + j / ww, -1);
+                // A terminal or a tank farm is a building (ET2): it stands on flat and foothill only, so steep ground is read as a mine's site is, ground no work takes.
+                for (int ry = 0; ry < 3; ry++) {
+                    for (int rx = 0; rx < 3; rx++) {
+                        World.of(worldKey).tileRelief(tx - 1 + rx, ty - 1 + ry, shoreRelief);
+                        for (int i = 0; i < tile * tile; i++) {
+                            if (shoreRelief[i] <= World.FOOTHILL) continue;
+                            int j = (ry * tile + i / tile) * ww + rx * tile + i % tile;
+                            if (CityRuns.dry(ground[j])) ground[j] = -2;
+                        }
+                    }
+                }
                 for (long[] s : mines) {
                     for (long y = Math.max(s[1], wy0); y <= Math.min(s[3], wy0 + ww - 1); y++) {
                         for (long x = Math.max(s[0], wx0); x <= Math.min(s[2], wx0 + ww - 1); x++) ground[(int) ((y - wy0) * ww + (x - wx0))] = -2;
@@ -5491,7 +5511,7 @@ public final class CityMap {
         return null;
     }
 
-    /** Whether a work fits where c puts it, on the window's ground and runs from (wx0, wy0), ww a side: its box in one cell's interior on owned dry ground no run, mine or other work takes, no highway beside it, and its quay all owned salt water. */
+    /** Whether a work fits where c puts it, on the window's ground and runs from (wx0, wy0), ww a side: its box in one cell's interior on owned dry ground no run, mine or other work takes (and, since ET2, not steep: shoreSpot() reads steep ground as a mine's site), no highway beside it, and its quay all owned salt water. */
     private static boolean shoreFits(CityShore.Work c, int[] ground, byte[] fixed, long wx0, long wy0, int ww) {
         long cx = Math.floorDiv(c.x0(), World.TILE) * World.TILE, cy = Math.floorDiv(c.y0(), World.TILE) * World.TILE;
         if (c.x0() - cx < 1 || c.y0() - cy < 1 || c.x0() + c.w() > cx + World.TILE || c.y0() + c.h() > cy + World.TILE) return false;
@@ -6481,18 +6501,20 @@ public final class CityMap {
         return in;
     }
 
-    /** The ground over a plan's frame, a World class a plot, read from the world the key names (0.7.115; the input's seed's until then): any thread (World is safe), so a plan's job reads it away from the screen's (0.7.88). */
+    /** The ground over a plan's frame, a World class a plot, read from the world the key names (0.7.115; the input's seed's until then), and its relief beside it (ET2: World.tileRelief(), a tile at a time as the cover is; FLAT on a generated world): any thread (World is safe), so a plan's job reads it away from the screen's (0.7.88). */
     static void readGround(DistrictPlan.Input in, World.Key world) {
         int f = DistrictPlan.FRAME;
-        byte[] ter = new byte[TilePainter.PLOTS];
+        byte[] ter = new byte[TilePainter.PLOTS], rel = new byte[TilePainter.PLOTS];
         int tiles = (f + World.TILE - 1) / World.TILE;
         World w = World.of(world);
         for (int j = 0; j < tiles; j++) {
             for (int i = 0; i < tiles; i++) {
                 long tx = Math.floorDiv(in.x0, World.TILE) + i, ty = Math.floorDiv(in.y0, World.TILE) + j;
                 w.tileTerrain(tx, ty, ter);
+                w.tileRelief(tx, ty, rel);
                 for (int y = 0; y < World.TILE && j * World.TILE + y < f; y++) {
                     System.arraycopy(ter, y * World.TILE, in.terrain, (j * World.TILE + y) * f + i * World.TILE, Math.min(World.TILE, f - i * World.TILE));
+                    System.arraycopy(rel, y * World.TILE, in.relief, (j * World.TILE + y) * f + i * World.TILE, Math.min(World.TILE, f - i * World.TILE));
                 }
             }
         }
@@ -6683,13 +6705,13 @@ public final class CityMap {
        THE PYRAMID (spec-land 2.5): TEN CLASSES, USED AND OWNED, 2 x 2
        ===================================================================== */
 
-    /** How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned dry plots. */
+    /** How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned buildable plots. */
     public static final int NODE_WIDTH = BuildingVisual.CLASSES + 2;
 
     /** Where a node keeps the ground used, in half square feet. */
     public static final int NODE_USED = BuildingVisual.CLASSES;
 
-    /** ...and its owned dry plots. */
+    /** ...and its owned buildable plots. */
     public static final int NODE_OWNED = BuildingVisual.CLASSES + 1;
 
     /**
@@ -6752,7 +6774,7 @@ public final class CityMap {
             count = n;
         }
 
-        /** A district's numbers: its buildings by class, its ground used (half square feet) and its owned dry plots. */
+        /** A district's numbers: its buildings by class, its ground used (half square feet) and its owned buildable plots. */
         long[] vector(District d) {
             long[] v = new long[NODE_WIDTH];
             for (int t = 0; t < map.types.length; t++) {

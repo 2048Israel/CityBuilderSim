@@ -133,6 +133,17 @@ public class BuildingsStacks {
         materialsOwed += template.getConstructionMaterials() * (double) n;
     }
 
+    /**
+     * A foothill site's preparation, owed as work (ET2; SitePreparation): the stack owes `points` more before its
+     * first building finishes, which is progress below nothing - advanceConstruction() reads it as
+     * owedPoints = on site x points - progress, and the crews' output pays it down before any building gains a
+     * point. Every reader of the progress takes it as the work done, so a negative figure is work still owed
+     * (BuildingManager's owed sums; resumeShell() keeps it through a shell). Nothing for no points.
+     */
+    void addPreparation(double points) {
+        if (points > 0) constructionProgress -= points;
+    }
+
     /** The builders' price for an order just placed on this stack. See contractValue. */
     public void bookContract(double amount) {
         contractValue += Math.max(0, amount);
@@ -213,7 +224,8 @@ public class BuildingsStacks {
      */
     void resumeShell(int buildings, double progress, double owedUnits) {
         underConstruction += Math.max(0, buildings);
-        constructionProgress += Math.max(0, progress);
+        // ...a shell cancelled before its site's preparation was done holds it owed, progress below nothing (addPreparation()): it goes back as owed.
+        constructionProgress += progress;
         materialsOwed += Math.max(0, owedUnits);
     }
 

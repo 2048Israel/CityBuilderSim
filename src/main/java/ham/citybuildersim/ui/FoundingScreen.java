@@ -109,7 +109,7 @@ import static ham.citybuildersim.ui.Pieces.*;
  * The seed decides an Earth city's detail below the data, its fields and its
  * streets; it is shown under the card, and the dice beside it rolls it.
  */
-final class FoundingScreen {
+public final class FoundingScreen {
 
     /** This screen's name for clearMenu(), the key filter and isGameMenu(). */
     static final String SCREEN = "showFoundingScreen";
@@ -670,12 +670,12 @@ final class FoundingScreen {
             + " or search for a place, or press Random spot.";
 
     /** The card's last line: what the seed decides on Earth. */
-    static String seedWords(long seed) {
+    public static String seedWords(long seed) {
         return String.format("World seed %,d: the detail below the data, the fields and the streets.", seed);
     }
 
     /** The card's geology line: the province and its class, and the multiplier of each resource in fields. */
-    static String geologyWords(EarthSite.Card c) {
+    public static String geologyWords(EarthSite.Card c) {
         StringBuilder geo = new StringBuilder(c.provinceName() != null ? "Geology: " + c.provinceName() + ", " + kindWords(c.kind()) : "Geology: no province mapped here");
         String sep = " · deposits ";
         for (Resource r : Resource.values()) {
@@ -687,25 +687,25 @@ final class FoundingScreen {
     }
 
     /** The card's first line: where the site is, from the nearest place, and how far the snap moved it. */
-    static String siteWords(EarthSite.Card c) {
+    public static String siteWords(EarthSite.Card c) {
         return (c.near() != null ? c.near() + " · " : "") + EarthSite.latLonWords(c.siteLat(), c.siteLon())
                 + (c.snappedM() >= 50 ? String.format(" · the site %s from the spot", distance(c.snappedM() / 1000)) : "");
     }
 
     /** The card's ground line; ice's share after the sea's where there is any (0.7.127). */
-    static String groundWords(EarthSite.Card c) {
+    public static String groundWords(EarthSite.Card c) {
         return String.format("Within 5 km: %s dry · %s rivers and lakes · %s sea", share(c.dryShare()), share(c.freshShare()), share(c.seaShare()))
                 + (c.icePlots() > 0 ? " · " + share(c.iceShare()) + " ice" : "");
     }
 
     /** The card's water line. */
-    static String waterWords(EarthSite.Card c) {
+    public static String waterWords(EarthSite.Card c) {
         return (Double.isNaN(c.freshKm()) ? "No river or lake within 5 km" : "Fresh water " + distance(c.freshKm()) + " away")
                 + " · " + (Double.isNaN(c.seaKm()) ? "no sea within 5 km" : "the sea " + distance(c.seaKm()) + " away");
     }
 
     /** The card's iron line. */
-    static String ironWords(EarthSite.Card c) {
+    public static String ironWords(EarthSite.Card c) {
         return Double.isNaN(c.ironKm())
                 ? String.format("No iron field within %,.0f km", EarthSite.IRON_RINGS * World.CELL * World.PLOT_M / 1000.0)
                 : "The nearest iron field: " + distance(c.ironKm()) + " " + c.ironWay();

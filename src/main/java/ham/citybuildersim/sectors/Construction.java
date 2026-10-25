@@ -70,6 +70,9 @@ public final class Construction extends Sector {
     private double unearnedRevenue;
     private double backlogPoints;
 
+    /** The construction points ever billed (ET2: what the foothill's preparation is a share of, in SlopeCheck 9 and LongPlaytest's summary): every order's, restarts and pavings too. Not saved - a reading of a run, so a game loaded from a save counts from nothing. */
+    private double billedPoints;
+
     /** How much of the crew had something to do this month. */
     private double utilisation = 1;
 
@@ -258,7 +261,11 @@ public final class Construction extends Sector {
     public void bill(double amount, double points) {
         unearnedRevenue += amount;
         backlogPoints += points;
+        if (points > 0) billedPoints += points;
     }
+
+    /** The construction points ever billed, from this game's start (ET2): not saved. */
+    public double getBilledPoints() { return billedPoints; }
 
     /**
      * Recognise the month's work.

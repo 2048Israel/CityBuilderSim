@@ -96,6 +96,16 @@ import java.util.Map;
  *      pass weighed - the same after a save and a load, gone when it is
  *      switched off - and once given room the next pass orders that school,
  *      and its card carries none.
+ *   7. A YOUNG CITY REFUSED FOR A SMALL SUM KEEPS BUILDING (FW4): a young city
+ *      played to its month 60 with it on, its debt limit pinned where no bond
+ *      fits and its cash set short of the order its pass would place by the
+ *      0.7.89 city's $0.28M - the pass refuses that order for the money; the
+ *      refusal does not stop the pass (0.7.101: every measure it keeps that
+ *      ranks after the refused one still has its step that month); and a
+ *      twin, its limit put back to the default once the pass has refused,
+ *      orders the refused building within a look and has more people two
+ *      years on. At 0.7.89 such a refusal held the whole measure, month after
+ *      month: no jobs, deficits, 2,626 people at the end.
  *
  * Every fixture causes its condition.
  */
@@ -139,6 +149,7 @@ public class AutoBuildCheck {
         groundSavedAndLoaded(root);
         whatHoldsIt(root);
         theCardsVerdict(root);
+        youngRefused(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1030,6 +1041,236 @@ public class AutoBuildCheck {
                         && sr.payback().paysBack() && sr.building().equals(card.template().getName()));
         assertTrue("a building automatic building builds carries no such line", card != null
                 && ab.heldForPayback(card) == null && ab.heldBackWords(card) == null);
+    }
+
+    /* ---------------------------------------------------------------- 7 */
+
+    /** The month the young city is played to before the refusal: the 0.7.89 city that stalled was refused at month 60. */
+    static final int YOUNG_MONTH = 60;
+
+    /** What the refused order is short of, in thousands, the game's money: $0.28M, the 0.7.89 city's ($24.11M of treasury against $24.39M of order). */
+    static final double SHORT = 280;
+
+    /** The months the city plays on after the refusal, its debt limit left where the fixture pinned it. */
+    static final int AFTER_MONTHS = 24;
+
+    /** The months between the test player's looks, as section 3's loop plays: it plays on, then moves. */
+    static final int LOOK_MONTHS = 6;
+
+    /** A young city has fewer people than this at the refusal: a town, not the city it grows into. */
+    static final int YOUNG_PEOPLE = 100_000;
+
+    /** The test player's game for some months: the pass, the economy, and (every LOOK_MONTHS) its moves. */
+    static void youngMonths(Game g, int months) {
+        for (int i = 0; i < months; i++) {
+            LongPlaytest.run(g, 1);
+            if ((i + 1) % LOOK_MONTHS != 0) continue;
+            for (int move = 0; move < LongPlaytest.movesPerLook(); move++) {
+                if (LongPlaytest.advise(g) == null) break;
+                LongPlaytest.run(g, 1);
+            }
+        }
+    }
+
+    /** The young city: the test player's founding and rhythm as decades() plays them, automatic building on, played to YOUNG_MONTH (LongPlaytest.AUTOBUILD set by the caller). */
+    static Game youngCity(GameFiles files) {
+        Game g = new Game(files, LongPlaytest.founding());
+        AutoBuilder ab = g.getAutoBuilder();
+        quietly(() -> {
+            g.run();
+            // As decades() (XR1): the rate is held where the founding leaves it, this harness measures the builder.
+            g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
+            g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
+            g.setRolloverMode(LongPlaytest.ROLLOVER);
+            g.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
+            ab.setOn(true, g.getDecisions());
+            // The test player's founding, by hand, as decades() plays it.
+            LongPlaytest.villageBuild(g, "House", 40);
+            LongPlaytest.villageBuild(g, "Convenience Store", 3);
+            LongPlaytest.villageBuild(g, "Mixed Farm", 2);
+            LongPlaytest.run(g, 3);
+            LongPlaytest.villageBuild(g, "House", 20);
+            LongPlaytest.run(g, 4);
+            LongPlaytest.villageBuild(g, "Convenience Store", 2);
+            LongPlaytest.villageBuild(g, "Construction Depot", 1);
+            LongPlaytest.run(g, 5);
+            LongPlaytest.advise(g);
+            LongPlaytest.run(g, 6);
+            while (g.getMonth() < YOUNG_MONTH) youngMonths(g, Math.min(LOOK_MONTHS, YOUNG_MONTH - g.getMonth()));
+        });
+        return g;
+    }
+
+    /** The first step of a pass that was held for the money, none ordered ahead of it: the order the pass would place, were the money there. */
+    static AutoBuilder.Step firstRefused(AutoBuilder ab) {
+        for (AutoBuilder.Step s : ab.steps()) {
+            if (s.outcome() == AutoBuilder.Outcome.ORDERED) return null;
+            if (s.outcome() == AutoBuilder.Outcome.HELD && (s.cut() == AutoBuilder.Cut.DEBT || s.cut() == AutoBuilder.Cut.CASH)) return s;
+        }
+        return null;
+    }
+
+    /**
+     * One of a step's building, its ground and all, as the pass weighs it before it holds or walks on (total(),
+     * groundFor()): a hold's step carries no cost (the pass holds before it prices an order), so it is priced here, on
+     * the city as it stands before the pass. +infinity with none to be had.
+     */
+    static double oneOf(Game g, AutoBuilder.Step s) {
+        if (s.building().equals(ConstructionControl.PAVE_FROM + ", paved")) return g.quotePave(1).total;
+        BuildingsTemplate t = g.getBuildingManager().getTemplateByName(s.building());
+        AutoBuilder.Ground ground = t == null ? null : AutoBuilder.groundFor(g, t, 1);
+        Game.BuildQuote q = ground == null ? null : g.quoteBuild(t, 1);
+        return q == null ? Double.POSITIVE_INFINITY : q.total + ground.cash();
+    }
+
+    /**
+     * A YOUNG CITY REFUSED FOR A SMALL SUM KEEPS BUILDING (FW4). At 0.7.89, with automatic building on, a young city
+     * at month 60 had an order refused for $0.28M (the treasury $24.11M against $24.39M) and never recovered: AutoBuilder
+     * held the whole measure on a refusal, and with no jobs and deficits the city ended with 2,626 people. 0.7.101
+     * (P2) passes a refused order to the next in the ranking and put the limit at 240%; the autobuild playtest's forty
+     * seeds, run on 2026-10-24, none stalled - and nothing held it. This is the fixture: a young city played to
+     * month 60 as section 3 plays its own; its debt limit pinned by nearTheLimit() so that no bond bridges the
+     * shortfall; and its cash set at the reserve and one of the order its pass would place (found by a saved and
+     * loaded copy of the city, its cash at the reserve, run one pass: the hold names the order, and the hold's step
+     * carries no cost, so oneOf() prices it) less SHORT. The pass must refuse that order and go on (every measure it
+     * keeps that ranks after the refused one has its step that month); and the same city, its limit put back to
+     * DEFAULT_DEBT_LIMIT once the pass has refused, must order the refused building again within LOOK_MONTHS and have
+     * more people AFTER_MONTHS on.
+     *
+     * WHY THE LIMIT IS PUT BACK, AND NOT LEFT PINNED (the first draft of this section left it, and failed). The pin is
+     * the current debt over a year's GDP, and a young city's year of GDP falls by more than half in the months after its
+     * founding settles ($195M to $90M by month 80; the debt is $136.6M throughout), so the pinned limit is passed within
+     * a month and the pass is over it: "builds nothing and borrows nothing", whatever the cash. That is the limit's
+     * design, not the refusal's; it is printed as an info line, and the twin is what the refusal alone does.
+     */
+    static void youngRefused(Path root) {
+        out.println("\n--- 7. a young city refused for a small sum keeps building (FW4) ---");
+        Path dir = root.resolve("young");
+        GameFiles files = new GameFiles(dir.resolve("data"), dir.resolve("no-legacy"));
+        PrintStream was = LongPlaytest.out;
+        boolean flag = LongPlaytest.AUTOBUILD;
+        LongPlaytest.out = quiet;
+        LongPlaytest.AUTOBUILD = true;
+        try {
+            Game g = youngCity(files);
+            AutoBuilder ab = g.getAutoBuilder();
+            // The limit pinned where no bond fits, and the city saved so, for the copies.
+            double[] pinned = new double[1];
+            quietly(() -> pinned[0] = nearTheLimit(g));
+            ab.setDebtLimit(pinned[0], null);
+            boolean[] saved = new boolean[1];
+            quietly(() -> saved[0] = g.saveGame(10, "autobuildcheck, a young city").ok);
+            Game probe = loaded(files, g), twin = loaded(files, g);
+            // The copy at the reserve: its pass holds the orders it would place, the first for the money names the one.
+            probe.setCashForTest(AutoBuilder.reserve(probe));
+            quietly(() -> LongPlaytest.run(probe, 1));
+            AutoBuilder.Step target = firstRefused(probe.getAutoBuilder());
+
+            double limit = ab.getDebtLimit();
+            long people = g.getPopulationManager().getPopulation();
+            assertTrue(String.format("fixture: a young city, played %d months with automatic building on: %,d people (under %,d), its"
+                            + " debt %.1f%% of a year's GDP, the limit pinned at %.0f%% where no bond fits", g.getMonth(), people,
+                            YOUNG_PEOPLE, AutoBuilder.ratio(g) * 100, limit * 100),
+                    saved[0] && g.getMonth() >= YOUNG_MONTH && people < YOUNG_PEOPLE && ab.isOn() && ab.within(g));
+            if (target == null) {
+                assertTrue("fixture: at the reserve its pass holds an order for the money, none ordered ahead of it", false);
+                return;
+            }
+            double one = oneOf(g, target);
+            double cash = AutoBuilder.reserve(g) + one - SHORT;
+            g.setCashForTest(cash);
+            double gap = AutoBuilder.gapFor(g, one);
+            DebtQuote bond = AutoBuilder.bondFor(g, gap);
+            assertTrue(String.format("fixture: the order its pass holds first for the money is %d %s (%s) at %s for one; the cash over the"
+                            + " reserve is short of it by %s (at most %s), and the bond for that, on the books, would take the debt to"
+                            + " %.1f%% against the limit of %.1f%%", target.wanted(), target.building(), target.measure().label(),
+                            DecisionLog.money(one), DecisionLog.money(gap), DecisionLog.money(SHORT),
+                            bond == null ? Double.NaN : AutoBuilder.ratioAfter(g, bond) * 100, limit * 100),
+                    Double.isFinite(one) && one > SHORT && gap > 0 && gap <= SHORT + 1e-6
+                            && (bond == null || AutoBuilder.ratioAfter(g, bond) > limit));
+
+            // The pass that refuses it: the measures it keeps, in its order, read as it reads them, before it runs.
+            List<BuildAdvice.Measure> kept = AutoBuilder.remit(g, CityNeeds.measure(g, CityNeeds.PLAIN));
+            double ratioPin = AutoBuilder.ratio(g), gdpPin = AutoBuilder.annualGdp(g);
+            quietly(() -> LongPlaytest.run(g, 1));
+            int refusedAt = ab.getLastPass();
+            AutoBuilder.Step then = stepFor(ab, target.measure());
+            AutoBuilder.Entry walk = null;
+            for (AutoBuilder.Entry e : ab.log()) if (e.month() == refusedAt && e.measure().equals(target.measure().label())) walk = e;
+            boolean ordersAhead = false;
+            for (AutoBuilder.Step s : ab.steps()) {
+                if (s.measure().equals(target.measure())) break;
+                if (s.outcome() == AutoBuilder.Outcome.ORDERED) ordersAhead = true;
+            }
+            boolean held = then != null && then.outcome() == AutoBuilder.Outcome.HELD && then.building().equals(target.building())
+                    && (then.cut() == AutoBuilder.Cut.DEBT || then.cut() == AutoBuilder.Cut.CASH);
+            boolean walked = then != null && then.outcome() == AutoBuilder.Outcome.ORDERED && walk != null
+                    && walk.why().contains("the advice ranks " + target.wanted() + " " + target.building() + " first, which the money"
+                    + " would not pay for, so the next in its ranking");
+            assertTrue(String.format("the pass refuses it for the money, %s: %s", ordersAhead ? "orders ahead of it spent its cash"
+                            : "nothing ordered ahead of it", held ? "held on it, " + then.cut() : walked
+                            ? "and orders " + then.ordered() + " " + then.building() + ", the next in the ranking" : "neither held nor walked past"),
+                    !ordersAhead && (held || walked));
+
+            // ...and the pass went on: the measures it keeps that rank after the refused one each have their step that month,
+            // in the ranking's order (steps() lists them as the pass walks them).
+            int idx = kept.indexOf(target.measure());
+            List<BuildAdvice.Measure> after = idx < 0 ? List.of() : kept.subList(idx + 1, kept.size());
+            List<BuildAdvice.Measure> stepped = new ArrayList<>();
+            boolean seen = false;
+            for (AutoBuilder.Step st : ab.steps()) {
+                if (seen) stepped.add(st.measure());
+                if (st.measure().equals(target.measure())) seen = true;
+            }
+            assertTrue(String.format("the refusal did not stop the pass: of the %d measures it kept, %d rank after the refused %s and all %d"
+                            + " have their step that month, in the ranking's order", kept.size(), after.size(), target.measure().label(),
+                            stepped.size()),
+                    idx >= 0 && !after.isEmpty() && stepped.equals(after));
+
+            // Left pinned the city is another matter (info): the limit is passed as the young year's GDP falls.
+            double ratioThen = AutoBuilder.ratio(g);
+            int ordersAfter = ab.getOrders();
+            quietly(() -> youngMonths(g, 1));
+            double ratioMonth = AutoBuilder.ratio(g);
+            quietly(() -> youngMonths(g, AFTER_MONTHS - 1));
+            out.printf("    (left pinned at %.0f%%, the limit is passed as the young year's GDP falls: the debt %.0f%% of a year's GDP"
+                            + " at the pin, %.0f%% after the refusing pass, %.0f%% a month on, %.0f%% after %d more (the year's GDP %s to %s);"
+                            + " %d orders in them, over the limit the pass builds nothing)%n", limit * 100, ratioPin * 100, ratioThen * 100,
+                    ratioMonth * 100, AutoBuilder.ratio(g) * 100, AFTER_MONTHS, DecisionLog.money(gdpPin),
+                    DecisionLog.money(AutoBuilder.annualGdp(g)), ab.getOrders() - ordersAfter);
+
+            // The twin: the same refusal, the limit put back after it.
+            AutoBuilder at = twin.getAutoBuilder();
+            twin.setCashForTest(cash);
+            quietly(() -> LongPlaytest.run(twin, 1));
+            at.setDebtLimit(AutoBuilder.DEFAULT_DEBT_LIMIT, null);
+            int twinBefore = at.getOrders();
+            int refusedTwin = at.getLastPass();
+            quietly(() -> youngMonths(twin, AFTER_MONTHS));
+            long twinPeople = twin.getPopulationManager().getPopulation();
+            AutoBuilder.Entry again = null;
+            for (AutoBuilder.Entry e : at.log()) {
+                if (e.month() > refusedTwin && e.measure().equals(target.measure().label()) && e.building().equals(target.building())
+                        && again == null) again = e;
+            }
+            assertTrue(String.format("it keeps building: with the limit put back to %.0f%% once the pass has refused, the refused %s is"
+                            + " ordered %s (within %d months of it), %d orders in the %d months, and the city has %,d people against %,d at the"
+                            + " refusal", AutoBuilder.DEFAULT_DEBT_LIMIT * 100, target.building(),
+                            again == null ? "never" : "in month " + again.month() + ", " + (again.month() - refusedTwin) + " after the refusal",
+                            LOOK_MONTHS, at.getOrders() - twinBefore, AFTER_MONTHS, twinPeople, people),
+                    again != null && again.month() - refusedTwin <= LOOK_MONTHS && twinPeople > people);
+        } finally {
+            LongPlaytest.AUTOBUILD = flag;
+            LongPlaytest.out = was;
+        }
+    }
+
+    /** A copy of a city saved to slot 10 in `files`, loaded: its rate held where the city's is (XR1, a fixture's pin that no save carries). */
+    static Game loaded(GameFiles files, Game of) {
+        Game copy = new Game(files);
+        quietly(() -> copy.loadGameSave(10));
+        copy.getForeignAccounts().pinRate(of.getForeignAccounts().getRate());
+        return copy;
     }
 
     /** ChildcareCheck's town with its elementary schools retired: its first school one that would not pay back (section 5). */

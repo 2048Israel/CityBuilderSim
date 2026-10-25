@@ -2043,6 +2043,55 @@ public class LongPlaytest {
     /** The place --earth named, for the report; null for a spot given as figures. */
     static String earthPlace;
 
+    /**
+     * A city founded on the real Earth round a spot and played `months` months as the playtest plays it (ET2: the
+     * run SlopeCheck 9 counts, for tools.SlopeRenders, which draws the map of the city this returns): the village's
+     * first orders, then the advice's moves between runs of 6 to 120 months, every line of the game's log sent to
+     * `silent`. `files` is a scratch folder's (GameFiles.scratch()), never the real saves'. The run's findings are
+     * left in `findings`; a caller that wants them clean clears them first.
+     */
+    public static Game earthCity(String spot, int months, GameFiles files, PrintStream silent) {
+        PrintStream was = out, realOut = System.out;
+        out = silent;
+        System.setOut(silent);
+        try {
+            Game g = new Game(files, earthFounding(spot));
+            g.run();
+            g.getDebtManager().setAutopilot(AUTOPILOT);
+            g.setRolloverMode(ROLLOVER);
+            g.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
+            g.getCityMap();
+            layoutOn = true;
+            villageBuild(g, "House", 40);
+            villageBuild(g, "Convenience Store", 3);
+            villageBuild(g, "Mixed Farm", 2);
+            run(g, 3);
+            villageBuild(g, "House", 20);
+            run(g, 4);
+            villageBuild(g, "Convenience Store", 2);
+            villageBuild(g, "Construction Depot", 1);
+            run(g, 5);
+            advise(g);
+            run(g, 6);
+            int stop = 0;
+            while (g.getMonth() < months) {
+                stop++;
+                int skip = switch (stop % 6) { case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120; };
+                run(g, Math.min(skip, months - g.getMonth()));
+                if (g.getMonth() >= months) break;
+                for (int move = 0; move < movesPerLook(); move++) {
+                    if (advise(g) == null) break;
+                    run(g, 1);
+                }
+                run(g, 2);
+            }
+            return g;
+        } finally {
+            out = was;
+            System.setOut(realOut);
+        }
+    }
+
     /* =====================================================================
        THE TRACE, BESIDE THE REPORT (0.7.10)
 
@@ -3810,7 +3859,8 @@ public class LongPlaytest {
      */
     static double roomToGrow(Game g) {
         LandManager land = g.getLandManager();
-        double used = land.getOwnedSqFt() > 0 ? land.getAllocatedSqFt() / land.getOwnedSqFt() : 1;
+        // ...of the ground a building may use since ET2 (LandManager.getUsedShare(): the steep is not room).
+        double used = land.getUsedShare();
         double line = groundAheadUtilisation(g);
         if (!(used > line)) return 0;
         return Math.max(1, g.getEconomyManager().getMonthGdp()) * Math.min(1, (used - line) / (1 - line));
@@ -3831,7 +3881,7 @@ public class LongPlaytest {
         double most = groundAheadUtilisation(g);
         double budget = Math.max(0, g.getCash()) * GROUND_AHEAD_CASH_SHARE;
         int guard = 0;
-        while (land.getOwnedSqFt() > 0 && land.getAllocatedSqFt() / land.getOwnedSqFt() > most
+        while (land.getOwnedSqFt() > 0 && land.getUsedShare() > most
                 && guard++ < 60) {
             LandParcel best = g.bestOffer(Game.LandNeed.room());
             if (best == null) break;
@@ -5893,6 +5943,12 @@ public class LongPlaytest {
                     + EarthSite.latLonWords(g.getFounding().getEarthLat(), g.getFounding().getEarthLon()) + ", the site "
                     + String.format("%.0f m", Math.hypot(g.getCityLand().siteX() + 0.5 - World.SIDE / 2.0, g.getCityLand().siteY() + 0.5 - World.SIDE / 2.0) * World.PLOT_M)
                     + " from it; data " + EarthSite.shortId(g.getFounding().getEarthData()));
+            // ...and the ground it owns at the end by relief, and what the works stand on of the steep (ET2, BUILDABLE BY SLOPE): a generated world's is all flat, and prints none of this.
+            LandManager ground = g.getLandManager();
+            out.printf("  ITS GROUND AT THE END: flat %.3f km2, foothill %.3f, steep %.3f (of it very steep %.3f); works on the steep %.3f km2, steep ground no works stands on %.3f%n",
+                    LandManager.km2(ground.getFlatSqFt()), LandManager.km2(ground.getFoothillSqFt()), LandManager.km2(ground.getSlopeSqFt()),
+                    g.getCityLand().totalReliefKm2(CityLand.RELIEF_VERY_STEEP), LandManager.km2(ground.getWorksOnSlopeSqFt()),
+                    LandManager.km2(ground.idleSlopeSqFt()));
         }
         out.println("=================================================================\n");
 
@@ -6995,6 +7051,13 @@ public class LongPlaytest {
         out.printf("  ...room to grow past the ground-ahead line (0.7.67, M3b): %,d offer(s) bought by the move; %,d Bus"
                 + " Network(s), %,d Light Rail Line(s), %,d Metro Line(s) standing at the end%n", roomMovesBought,
                 qty(g, "Bus Network"), qty(g, "Light Rail Line"), qty(g, "Metro Line"));
+        // ...and the foothill prepared for buildings (ET2, SitePreparation): only when the city prepared any - a generated world is all flat, and its trace is what it was.
+        if (g.getLandManager().getPreparedSqFt() > 0) {
+            double billedAll = g.getSectors().construction().getBilledPoints();
+            out.printf("  ...foothill prepared (ET2): %.3f km2, %,.1f points (%.2f%% of the %,.1f points billed), $%,.0fk before the builders' tax, in %,d order(s)%n",
+                    LandManager.km2(g.getLandManager().getPreparedSqFt()), g.preparationPointsBilled(),
+                    billedAll > 0 ? 100 * g.preparationPointsBilled() / billedAll : 0, billedAll, g.preparationMoneyBilled(), g.preparationOrders());
+        }
         out.printf("  ...the road by its life (0.7.70, N1): %,d Gravel Road(s), %,d Paved Road(s), %,d Elevated Highway(s)"
                 + " standing at the end; %,d paving(s) of %,d gravel road(s) ordered, %,d being paved%n",
                 qty(g, "Gravel Road"), qty(g, "Paved Road"), qty(g, "Elevated Highway"), pavings, roadsPaved,
