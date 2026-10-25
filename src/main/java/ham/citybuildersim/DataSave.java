@@ -543,6 +543,13 @@ public class DataSave implements Cloneable {
      */
     private Double landWorksSqFt;
     private Double landPreparedSqFt;
+    /*
+     * ET4 (spec-earth2-terrain 4.3): the part of what is built on that highways and
+     * railway lines stand on (LandManager.getRunsSqFt()). Boxed: a save from before
+     * it reads null and the load puts back the standing runs' ground, which is
+     * what its runs were.
+     */
+    private Double landRunsSqFt;
 
     /*
      * Tax rates. Zero means "written before these were saved" rather than "a
@@ -792,6 +799,8 @@ public class DataSave implements Cloneable {
         this.landWorksSqFt = worksSqFt;
         this.landPreparedSqFt = preparedSqFt;
     }
+    /** The runs' ground (ET4): LandManager.getRunsSqFt(). */
+    public void setLandRuns(double runsSqFt) { this.landRunsSqFt = runsSqFt; }
 
     public double getLandOwned()          { return landOwned; }
     public int    getLandBlocksPurchased(){ return landBlocksPurchased; }
@@ -800,6 +809,8 @@ public class DataSave implements Cloneable {
     public Double getLandWorksSqFt()      { return landWorksSqFt; }
     /** The foothill prepared as saved (ET2), or null on a save without it. */
     public Double getLandPreparedSqFt()   { return landPreparedSqFt; }
+    /** The runs' ground as saved (ET4), or null on a save without it: read from the standing highways and railway lines. */
+    public Double getLandRunsSqFt()       { return landRunsSqFt; }
 
     public void setIncomeTaxRate(double rate)   { this.incomeTaxRate = rate; }
     public void setPropertyTaxRate(double rate) { this.propertyTaxRate = rate; }

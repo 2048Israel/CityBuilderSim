@@ -983,6 +983,13 @@ public final class LandMap {
     public static final String[] CLASS_ONE = { "Home", "Shop", "Offices", "Industry", "Farm", "Utility", "School",
             "Health", "Safety", "Mine", "Transport" };
 
+    /** What carries a run's plot over its ground (ET4; spec-earth2-terrain 4.3), appended to "Highway" or "Railway": ", a tunnel" on very steep ground, ", a viaduct" on steep, ", a bridge" over fresh water, else nothing. */
+    private static String runWorksWords(TilePainter.Input in, TilePainter.Painted p, int plot) {
+        if (p.tunnel[plot]) return ", a tunnel";
+        if (!p.bridge[plot]) return "";
+        return in.terrain[plot] == World.FRESH ? ", a bridge" : ", a viaduct";
+    }
+
     /**
      * What a painted plot holds, in the hover card's words, or null for bare
      * ground: a building by its type's name (nameOf, by type id; its class
@@ -994,7 +1001,7 @@ public final class LandMap {
      * "crossing the railway" across the track - since 0.8.1 "bridging the
      * railway" where an arterial or boulevard crosses the main line; a
      * highway, a street beneath it, its ramp and (0.7.89) the railway
-     * bridging it; the railway's track.
+     * bridging it; the railway's track; and (ET4) a highway's or the railway's plot on steep ground "a viaduct", on very steep "a tunnel".
      */
     public static String plotWords(TilePainter.Input in, TilePainter.Painted p, int plot,
                                    java.util.function.IntFunction<String> nameOf) {
@@ -1010,7 +1017,7 @@ public final class LandMap {
         }
         boolean road = p.use[plot] == TilePainter.ROAD || (p.use[plot] == TilePainter.RAIL && p.road[plot] != 0);
         if (road && p.road[plot] == BuildingVisual.HIGHWAY && p.role[plot] == 0) {
-            String w = p.bridge[plot] ? "Highway, a bridge" : "Highway";
+            String w = "Highway" + runWorksWords(in, p, plot);
             if (p.beneath[plot]) w += " · a street beneath";
             if ((in.marks[plot] & CityRuns.M_RAMP) != 0 && p.beneath[plot]) w += RAMP_WORDS;
             if (p.run[plot] == TilePainter.RAIL_OVER) w += RAIL_OVER_WORDS;
@@ -1028,7 +1035,7 @@ public final class LandMap {
                     : "Street of highway plots";
             return kind + ", " + (p.width[plot] >= 2 ? FULL_WORDS : HALF_WORDS) + role + more;
         }
-        if (p.use[plot] == TilePainter.RAIL) return p.bridge[plot] ? "Railway, a bridge" : "Railway";
+        if (p.use[plot] == TilePainter.RAIL) return "Railway" + runWorksWords(in, p, plot);
         // The works at sea (0.7.97): a quay, a platform and its wells, its safety zone's ring, a pipe.
         int sea = p.sea[plot];
         switch (sea & TilePainter.SEA_WORK) {

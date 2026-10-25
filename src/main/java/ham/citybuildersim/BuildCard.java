@@ -527,7 +527,7 @@ public final class BuildCard {
         double running = runningCost(game, t);
         double land = t.getLandSqFt();
         // ...on the ground its sector may build on (0.7.109, Z2): free for anyone, and its zone's (LandManager.freeFor()) - a works's, any dry ground (ET2).
-        double free = game.getLandManager().freeFor(t.getSector(), Game.standsAnywhere(t));
+        double free = game.getLandManager().freeFor(t.getSector(), Game.groundUse(t));
         BuildingManager bm = game.getBuildingManager();
         int owned = bm.getQuantity(t.getId());
         BuildingsStacks stack = bm.getStack(t);
@@ -1143,7 +1143,7 @@ public final class BuildCard {
         }
         Sector.Staffing staffing = owner.staffing(t);
         if (!staffing.passes()) return new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()));
-        double free = ground.freeFor(t.getSector(), Game.standsAnywhere(t));
+        double free = ground.freeFor(t.getSector(), Game.groundUse(t));
         if (t.getLandSqFt() > free) return landGate(ground, t, free);
         if (estimate <= 0) return lossGate(game, t, estimate);
         // ...and consider()'s brake, the interest on its whole cost (0.7.122).
@@ -1238,7 +1238,7 @@ public final class BuildCard {
                 : new GateMark(GateKind.STAFFING, Mark.FAIL,
                         new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()))));
         // The ground.
-        double free = ground.freeFor(t.getSector(), Game.standsAnywhere(t));
+        double free = ground.freeFor(t.getSector(), Game.groundUse(t));
         gates.add(!(t.getLandSqFt() > 0) ? new GateMark(GateKind.LAND, Mark.NONE, null)
                 : t.getLandSqFt() <= free ? new GateMark(GateKind.LAND, Mark.PASS, null)
                 : new GateMark(GateKind.LAND, Mark.FAIL, landGate(ground, t, free)));

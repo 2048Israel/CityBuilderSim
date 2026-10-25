@@ -1,0 +1,1 @@
+No plot of the runs of a Medellin city played 2000 months lies on very steep ground (182 run plots, 123 on foothill, 37 on steep): there is no tunnel to draw in the city. The harness's fixture tile is drawn instead, as et4-b-fixture-tunnel.png.

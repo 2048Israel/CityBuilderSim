@@ -1268,7 +1268,7 @@ public final class AutoBuilder {
         double over = overFull(game);
         if (over > 0) return "the city's buildings stand on " + LandManager.areaWords(over) + " more ground than it owns, so"
                 + " no order fits on ground of its own, and it buys only an order's own. Buy that at the land office.";
-        double free = game.getLandManager().freeForAnyone(Game.standsAnywhere(t));
+        double free = game.getLandManager().freeForAnyone(Game.groundUse(t));
         return "the city has no ground for one (" + LandManager.areaWords(t.getLandSqFt()) + " each, "
                 + LandManager.areaWords(Math.max(0, free)) + " free) and no bare ground on offer to buy for it. Buy land at"
                 + " the land office.";
@@ -1482,8 +1482,8 @@ public final class AutoBuilder {
      * none and says why (groundFor(), groundWords(); star P2-7).
      */
     public static double lacks(Game game, BuildingsTemplate t, int n) {
-        // ...a works's on any dry ground (Game.standsAnywhere(), ET2); every building the city builds on flat and foothill, as ever.
-        return game.landNeededFor(t, n) - game.getLandManager().freeForAnyone(Game.standsAnywhere(t));
+        // ...a works's on any dry ground (Game.groundUse(), ET2, ET4: a run on every class); every building the city builds on flat and foothill, as ever.
+        return game.landNeededFor(t, n) - game.getLandManager().freeForAnyone(Game.groundUse(t));
     }
 
     /** How much more ground the city's buildings stand on than it owns, in square feet (0.7.101): 0 for a city within its ground. */

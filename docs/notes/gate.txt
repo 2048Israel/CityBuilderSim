@@ -1,8 +1,8 @@
-# gate of Merge batch/FW6: a reload is not exact a month on: 12 of 229 series differed by at most 8.3e-5 at 0.7.49 (sector net incomes, `bankDeposits`, the sectors' energy ratio, Retail's purchase budget the candidates), city2400 off 0.23k and his old city -7,447k at 0.7.64, 0.8.46
+# gate of Merge batch/ET4: highways and rail priced by slope: cuts, viaducts, tunnels, 0.8.47
 # date: 2026-10-25
 # earth-2.bin: named
-# suite: 141 harnesses run in 1054s: 140 passed, 1 failed
-# timing: 11 harnesses run in 315s: 10 passed, 1 failed
+# suite: 142 harnesses run in 1061s: 141 passed, 1 failed
+# timing: 11 harnesses run in 316s: 10 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

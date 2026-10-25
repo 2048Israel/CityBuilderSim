@@ -7058,6 +7058,16 @@ public class LongPlaytest {
                     LandManager.km2(g.getLandManager().getPreparedSqFt()), g.preparationPointsBilled(),
                     billedAll > 0 ? 100 * g.preparationPointsBilled() / billedAll : 0, billedAll, g.preparationMoneyBilled(), g.preparationOrders());
         }
+        // ...and the highways' and railways' cuts, viaducts and tunnels (ET4, RunWorks): only when a run was ordered on slopes - on flat ground there are none, and the trace is what it was.
+        if (g.runWorksOrders() > 0) {
+            double billedAll = g.getSectors().construction().getBilledPoints();
+            LandManager lm = g.getLandManager();
+            out.printf("  ...the runs' works on the slopes (ET4): %,d order(s), %,.1f points (%.2f%% of the %,.1f points billed), $%,.0fk before the builders' tax;"
+                            + " the runs' ground at the end flat %.3f km2, foothill %.3f, steep %.3f%n",
+                    g.runWorksOrders(), g.runWorksPointsBilled(), billedAll > 0 ? 100 * g.runWorksPointsBilled() / billedAll : 0, billedAll,
+                    g.runWorksMoneyBilled(), LandManager.km2(lm.getRunsOnFlatSqFt()), LandManager.km2(lm.getRunsOnFoothillSqFt()),
+                    LandManager.km2(lm.getRunsOnSlopeSqFt()));
+        }
         out.printf("  ...the road by its life (0.7.70, N1): %,d Gravel Road(s), %,d Paved Road(s), %,d Elevated Highway(s)"
                 + " standing at the end; %,d paving(s) of %,d gravel road(s) ordered, %,d being paved%n",
                 qty(g, "Gravel Road"), qty(g, "Paved Road"), qty(g, "Elevated Highway"), pavings, roadsPaved,

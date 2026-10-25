@@ -1754,9 +1754,11 @@ final class BuildScreen {
                 // THE REBATES ON A NEW HOME, AND THE CITY'S): the builders remit it to the
                 // treasury as they bill the work.
                 String prep = prepWords(v.quote());
+                String works = worksWords(v.quote());
                 quoted.setText(money(v.quote().total) + " with " + money(v.quote().salesTax)
                         + " sales tax, back to the treasury as it is built  ·  " + said[0]
-                        + (prep == null ? "" : "\n" + prep));
+                        + (prep == null ? "" : "\n" + prep)
+                        + (works == null ? "" : "\n" + works));
                 quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, said[1]));
             }
             refreshOrderBar();
@@ -1831,6 +1833,28 @@ final class BuildScreen {
         if (q == null || !(q.prepSqFt > 0)) return null;
         return "Preparing " + LandManager.areaWords(q.prepSqFt) + " of foothill: "
                 + String.format("%.1f", q.prepPoints) + " points of builders' work, " + money(q.prepCost);
+    }
+
+    /**
+     * The quote's line for a highway or a railway over the city's slopes (ET4; Game.BuildQuote's worksSqFt, worksPoints,
+     * worksCost and worksMix): "Cuts, viaducts and tunnels for its 5,853 m² over the city's ground (foothill 48%, steep
+     * 24%, very steep 1%): 3,780.5 points of builders' work, $3.6M" - the run's land, the classes above flat the city's
+     * ground holds in their shares (RunWorks prices the works at that mix), the construction points that is and the money
+     * in the quote's sticker. null for every order that has no works, a building, a run on a flat city, so their quote
+     * reads as it did.
+     */
+    static String worksWords(Game.BuildQuote q) {
+        if (q == null || !(q.worksPoints > 0) || !(q.worksSqFt > 0) || q.worksMix == null || q.worksMix.length < 4) return null;
+        String[] names = { "flat", "foothill", "steep", "very steep" };
+        StringBuilder mix = new StringBuilder();
+        for (int i = 1; i < 4; i++) {
+            if (!(q.worksMix[i] > 0)) continue;
+            double percent = q.worksMix[i] * 100;
+            mix.append(mix.length() == 0 ? "" : ", ").append(names[i]).append(' ')
+                    .append(percent < 0.5 ? "under 1%" : String.format("%.0f%%", percent));
+        }
+        return "Cuts, viaducts and tunnels for its " + LandManager.areaWords(q.worksSqFt) + " over the city's ground ("
+                + mix + "): " + String.format("%,.1f", q.worksPoints) + " points of builders' work, " + money(q.worksCost);
     }
 
     /**
