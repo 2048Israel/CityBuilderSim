@@ -52,8 +52,21 @@ has rows for ui/ and tools/ classes.
 - `tools/ship-selftest.sh`: 81 of 81 under bash and under dash (stubbed
   checks, a local bare origin); the same cases give 65 of 81 against the
   first `ship.sh`, the 16 failing being the review's fixes.
-- SUITE-RESULT
-- DRY-RUN-RESULT
+- The one full suite, on the final tree merged with origin/main (0.8.43)
+  and with earth-2.bin named as a gate names it: 139 harnesses in 1,025 s,
+  138 passed, MapCheck 8 red (main's, FW11). With no `gate.txt` anywhere
+  yet it said exit 4. Its red lines seeded `docs/notes/gate.txt`, and a
+  batch now reads them as exit 3.
+- The real `./ship.sh --dry-run batch/TST -- StaleCheck` in a temp clone
+  whose origin was a local bare copy at BP1's tip (main 0.8.43). TST was a
+  throwaway branch with a comment in Mining.java, a ship file headed
+  `### {next}` with a Pending row, a notes file with `{next}`, and a Queued
+  row on main. It printed `{next}=0.8.44 in 2 file(s), TST's block on top,
+  1 Pending row(s), its Queued row out`. The suite step was green. The hard
+  timing run read MapCheck's lines as "red as main only", which needs no run
+  of main's. It ended `would commit "Merge batch/TST: ..., 0.8.44", tag
+  0.8.44 and push` and `the tree is as it was`: no change, HEAD unchanged,
+  no worktree left, no tag. The clone was then deleted.
 - The merge of origin/main (FW4, ET2) met conflicts only in
   `docs/harnesses.md` and `docs/map/README.md`, the generated docs, which the
   new gate takes from the branch and regenerates.
@@ -90,12 +103,12 @@ has rows for ui/ and tools/ classes.
 
 ## Shipping BP1 (for the orchestrator)
 
-BP1 ships `--no-tag` under main's OLD `ship.sh`; the merge rewrites
-`ship.sh` and `batch-check.sh` under it, as TM1's and RV1's did. Main
-carries MapCheck 8 (FW11), so the new `batch-check.sh` on the merge exits 3
-(main's reds only, from the `gate.txt` this branch seeds), which the old
-script reads as a failure: finish by hand in the same `%TEMP%\cbs-BP1`
-clone, in Git Bash, one last time:
+BP1 ships with no tag, and **by hand, without `ship.sh`, this once**:
+- Main's `ship.sh` is the old one.
+- Main carries MapCheck 8 (FW11), so the new `batch-check.sh` on the merge exits 3. That means main's reds only, read from the `gate.txt` this branch seeds.
+- The old script reads any exit but 0 as a failure. It would spend a 17-minute suite and then stop.
+
+So do it in a fresh `%TEMP%\cbs-BP1` clone of origin with main checked out (`pc-shipping.md`), in Git Bash:
 
 ```
 git merge --no-ff --no-commit origin/batch/BP1
