@@ -119,5 +119,8 @@ against the town's 1.38% (printed, as before).
 
 The slice was coded by a Sonnet 5.5 subagent at xhigh (657k tokens, 61
 minutes); Opus wrote the probe and the brief and reviewed the diff. Checks:
-`./batch-check.sh --pick` (see the report). The trace did not move, so no
-ensemble.
+`./batch-check.sh --pick` exit 3, 30 of 143 harnesses, 29 passed and MapCheck
+8 red, main's recorded red. BuildingManager and Game were left to the gate's
+suite, with LongPlaytest in their place (passed: every month audited, every
+reload matched). The review line names `DataSave.java` (saves). The trace did
+not move, so no ensemble.
