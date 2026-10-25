@@ -456,7 +456,24 @@ public class BusinessInvestment {
         String why = "no land - needs " + LandManager.areaWords(template.getLandSqFt()) + ", "
                 + LandManager.areaWords(landAvailableFor(template) + zoneHeldFor(template.getSector())) + " free";
         double others = zoneLand.isEmpty() ? 0 : zonedForOthers(template.getSector());
-        return others > 0 ? why + "; " + zonedForOthersWords(others) : why;
+        String reason = others > 0 ? why + "; " + zonedForOthersWords(others) : why;
+        // ...and, since ET5, the ground the city owns across the water that no port links: owned, but not room.
+        return unlinkedFree > 0 ? reason + "; " + LandmassView.unlinkedWords(unlinkedFree, unlinkedNames) : reason;
+    }
+
+    /*
+     * THE GROUND ACROSS THE WATER (ET5, 2026-10-25). The dry ground the city owns on landmasses it has not linked is
+     * owned and counted, but no room for a building (LandManager's linked view), so it is not in landAvailable. A refusal
+     * says so - "...; 12.0 km² is free on Island 2, which no port links" - instead of reading as a city with no ground at
+     * all. Handed in with the land each time a sector plans (Game.refreshLand()); 0 and empty, every read is what it was.
+     */
+    private double unlinkedFree;
+    private String unlinkedNames = "";
+
+    /** The unbuilt dry ground the city owns on landmasses it has not linked, square feet, and their names for a sentence (LandManager.getUnlinkedFreeSqFt(), getUnlinkedNames()); 0 and empty for none. */
+    public void setUnlinkedLand(double sqFt, String names) {
+        this.unlinkedFree = sqFt > 0 ? sqFt : 0;
+        this.unlinkedNames = names == null ? "" : names;
     }
 
     /** What the other sectors' zones hold, as a land refusal names it (0.7.107's words, shared since 0.7.109 with the build card's own land gate and the "Could not build" word): "55.9 km² is zoned for others". */

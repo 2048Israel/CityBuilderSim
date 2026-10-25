@@ -171,6 +171,13 @@ import java.util.Random;
  *      its 256 cells, far nodes at four strides, the globe's camera and the
  *      picture's draw the relief within SCREEN_MS and FRAME_MS.
  *
+ * ...and since ET5 (2026-10-25; the ET5 design, D2 to D4) the landmass of a plot:
+ *  18. A TILE'S LANDMASS in no more than LANDMASS_TILE_MS: each round a world
+ *      of its own (another seed, the same data), the cover's tiles kept as a map
+ *      keeps them, then the landmass of each tile drawn beside it - the data's
+ *      cell at every dry plot's blend point, and for a dry plot on a cell with
+ *      no land the nearest land cell's (LandmassCheck holds the rule itself).
+ *
  * Every fixture causes its condition: the windows hold coasts (Rotterdam,
  * Perth), rivers (the Maas and the Seine), small lakes, lakes of 10 km2 and
  * more (Rotterdam's delta), beaches (Perth) and the date line (Fiji); the
@@ -193,6 +200,9 @@ public class EarthTerrainCheck {
 
     /** A tile's ground in no more than this, ms (spec-earth 8: 0.3; the study measured 0.09 to 0.20). */
     static final double TILE_MS = 0.3;
+
+    /** A tile's landmass (ET5) in no more than this, ms, its cover kept: the data's cell at each of its 1,024 plots' blend points, the nearest land cell's for a dry plot on a cell with none (the median of TILE_ROUNDS rounds over each window's middle TIMED_TILES x TIMED_TILES tiles). */
+    static final double LANDMASS_TILE_MS = 0.3;
 
     /** The cells pass in no more than this, ms of the main thread's CPU since batch EC1 (spec-earth 8: 1 s; the study measured 0.37 to 0.45 s on the wall clock). */
     static final double CELLS_PASS_MS = 1000;
@@ -288,6 +298,7 @@ public class EarthTerrainCheck {
         iceAndDesert(file, windows, id);
         shallowSea(file, windows, data, id);
         reliefPlane(file, spots, data, id);
+        landmassTime(three, id);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -561,6 +572,41 @@ public class EarthTerrainCheck {
             report(s.name() + ": a tile's ground in no more than TILE_MS", Timing.within(median, TILE_MS),
                     String.format("%.3f ms a tile (rounds %.3f to %.3f; the study %s)", median, ms[0], ms[TILE_ROUNDS - 1],
                             s.name().equals("Rotterdam") ? "0.152-0.202" : "0.090-0.125"));
+        }
+    }
+
+    /* =====================================================================
+       18. A TILE'S LANDMASS (ET5)
+       ===================================================================== */
+
+    static void landmassTime(List<Spot> spots, String id) {
+        out.println("\n--- 18. a tile's landmass in no more than " + LANDMASS_TILE_MS + " ms: the median of " + TILE_ROUNDS + " rounds over each window's middle " + TIMED_TILES
+                + " x " + TIMED_TILES + " tiles, its cover kept ---");
+        int[] ids = new int[World.TILE * World.TILE];
+        for (Spot s : spots) {
+            long tx0 = EarthTerrain.spotPlot() / World.TILE - TIMED_TILES / 2, ty0 = tx0;
+            double[] ms = new double[TILE_ROUNDS];
+            for (int round = -1; round < TILE_ROUNDS; round++) {
+                // A world of its own each round (another seed, the same data), so no tile of the landmass is kept; the cover's tiles first, kept as a map keeps them.
+                World w = World.of(World.Key.earth(SEED + 2000 + round, s.lat(), s.lon(), id));
+                for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) w.terrainAt((tx0 + i) * World.TILE, (ty0 + j) * World.TILE);
+                long t0 = System.nanoTime();
+                for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) w.tileLandmass(tx0 + i, ty0 + j, ids);
+                if (round >= 0) ms[round] = (System.nanoTime() - t0) / 1e6 / (TIMED_TILES * TIMED_TILES);
+            }
+            // The premise: the tiles timed hold land, or the figure is the cost of drawing nothing.
+            World w = World.of(World.Key.earth(SEED + 2000, s.lat(), s.lon(), id));
+            long land = 0;
+            for (int j = 0; j < TIMED_TILES; j++) {
+                for (int i = 0; i < TIMED_TILES; i++) {
+                    w.tileLandmass(tx0 + i, ty0 + j, ids);
+                    for (int v : ids) if (v != 0) land++;
+                }
+            }
+            Arrays.sort(ms);
+            double median = ms[TILE_ROUNDS / 2];
+            report(s.name() + ": a tile's landmass in no more than LANDMASS_TILE_MS, over tiles that hold land", land > 0 && Timing.within(median, LANDMASS_TILE_MS),
+                    String.format("%.3f ms a tile (rounds %.3f to %.3f), %,d land plots in the %d tiles", median, ms[0], ms[TILE_ROUNDS - 1], land, TIMED_TILES * TIMED_TILES));
         }
     }
 

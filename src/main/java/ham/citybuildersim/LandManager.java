@@ -275,6 +275,9 @@ public class LandManager {
     /** Twenty-four offers standing, six a side, and what the ground costs. */
     private final LandMarket market = new LandMarket();
 
+    /** The city's ground by landmass and the landmasses it has linked (ET5): derived from the land and the Earth's data, never saved here; a bare one is a single landmass, and every figure below is then the old one. */
+    private final Landmasses landmasses = new Landmasses();
+
     /* ------------------------------ the ground ------------------------------
      *
      * THE CITY'S LAND ON THE WORLD (0.7.57): founded the first time anything
@@ -358,6 +361,7 @@ public class LandManager {
         this.usPrices = usPrices == null ? () -> 1.0 : usPrices;
         this.worldKey = worldKey == null ? () -> World.Key.generated(Founding.DEFAULT_WORLD_SEED) : worldKey;
         this.month = month == null ? () -> 0 : month;
+        market.setLandmasses(landmasses);
     }
 
     private int month() { return month.getAsInt(); }
@@ -372,6 +376,111 @@ public class LandManager {
     private double usPrices() {
         double w = usPrices.getAsDouble();
         return w > 0 && Double.isFinite(w) ? w : 1;
+    }
+
+    /* =====================================================================
+       THE LINKED VIEW OF THE GROUND (ET5, 2026-10-25; the ET5 design, D6-D7)
+
+       The model's ground is one pool of square feet with no positions: owned,
+       allocated, and the owned ground's relief and forest. ET5 keeps it one
+       pool and says which part of it is not room: the dry ground on a landmass
+       the city has not linked (Landmasses), which is owned, counted and priced
+       like any other but is no room for a building, a works, a run or a zone
+       until a port stands there and one at home. So every figure of the FREE
+       ground - and of the share used, the zones, the forest law and the split
+       by relief - reads the pool through four accessors that take that ground
+       off: the owned, the allocated (less the ports already standing on it),
+       each relief class and the forest. The public owned, relief and forest
+       getters, the sea and fresh water and the market's price (update()) stay
+       the city's whole: what the city owns is what it owns.
+
+       THE GUARD. While the city owns nothing on an unlinked landmass
+       (anyUnlinked(): every generated world, and every Earth city whose
+       ground lies on its home landmass or its linked ones), each accessor
+       answers the field or call it stands for, exactly as written before, so
+       every expression that reads one is the old expression to the bit.
+       ===================================================================== */
+
+    /** The dry ground the city owns that is room for something: the owned less the unlinked landmasses' dry ground, square feet; the owned itself while nothing is unlinked. */
+    private double linkedOwned() {
+        return !landmasses.anyUnlinked() ? ownedSqFt : Math.max(0, ownedSqFt - landmasses.unlinkedDrySqFt());
+    }
+
+    /** The ground built on that is on linked ground: the allocated less the ports standing on unlinked landmasses, square feet; the allocated itself while nothing is unlinked. */
+    private double linkedAllocated() {
+        return !landmasses.anyUnlinked() ? allocatedSqFt : Math.max(0, allocatedSqFt - landmasses.unlinkedPortsSqFt());
+    }
+
+    /** The owned ground of one relief (CityLand.RELIEF_FLAT to RELIEF_VERY_STEEP) on linked landmasses, square feet; reliefSqFt() itself while nothing is unlinked. */
+    private double linkedRelief(int relief) {
+        return !landmasses.anyUnlinked() ? reliefSqFt(relief) : Math.max(0, reliefSqFt(relief) - landmasses.unlinkedReliefSqFt(relief));
+    }
+
+    /** The forest on linked landmasses, square feet; getForestSqFt() itself while nothing is unlinked. */
+    private double linkedForest() {
+        return !landmasses.anyUnlinked() ? getForestSqFt() : Math.max(0, getForestSqFt() - landmasses.unlinkedForestSqFt());
+    }
+
+    /** The steep and very steep ground on linked landmasses, square feet. */
+    private double linkedSlopeSqFt() {
+        return linkedRelief(CityLand.RELIEF_STEEP) + linkedRelief(CityLand.RELIEF_VERY_STEEP);
+    }
+
+    /** The dry ground that is room for something (ET5): the owned less the unlinked landmasses' - getOwnedSqFt() while nothing is unlinked. What the free ground, the share used and the zones read. */
+    public double getLinkedOwnedSqFt() { return linkedOwned(); }
+
+    /** The built ground that is on linked landmasses (ET5): getAllocatedSqFt() while nothing is unlinked. */
+    public double getLinkedAllocatedSqFt() { return linkedAllocated(); }
+
+    /** The forest on linked landmasses (ET5): getForestSqFt() while nothing is unlinked. What the forest law's shares are taken of. */
+    public double getLinkedForestSqFt() { return linkedForest(); }
+
+    /** The dry ground the city owns on landmasses it has not linked and nothing stands on, square feet (ET5): 0 while nothing is unlinked. Owned, and priced, but no room for anyone until a port links it. */
+    public double getUnlinkedFreeSqFt() { return landmasses.unlinkedFreeSqFt(); }
+
+    /** The unlinked landmasses' names for a sentence, "Island 2" or "Island 2 and Island 3"; empty while nothing is unlinked. */
+    public String getUnlinkedNames() { return landmasses.unlinkedNames(); }
+
+    /** The city's ground by landmass (ET5): its books, which it has linked, and what is unlinked. */
+    public Landmasses getLandmasses() { return landmasses; }
+
+    /**
+     * The land changed (ET5): counted by landmass again, the offers standing split against the linked set again, the
+     * sites of the fields across the water worked out again. Called wherever the ground does change - a purchase, a
+     * land put in place (founded, converted, saved, restated: install()) - and never by a read.
+     */
+    void landChanged() {
+        if (land == null) return;
+        landmasses.recount(World.of(land.key()), land);
+        linkChanged();
+    }
+
+    /**
+     * The linked set may have moved (ET5): the linked set and the unlinked ground worked out again, the sites across the
+     * water, the offers standing split against them. What landChanged() ends with, and what anything that moves a port
+     * (the next slice) calls. Eager, never in a read.
+     */
+    void linkChanged() {
+        if (land == null) return;
+        landmasses.refresh();
+        refreshUnlinkedSites();
+        market.restateOffers();
+    }
+
+    /**
+     * Harnesses only (ET5 D17): the city buys a rectangle of plots as if an offer of it had been listed and bought - its
+     * ground counted as an offer's is (LandMarket.measure()), added to the books through buyParcel()'s own steps - at no
+     * price, no offer taken from the shelf and no cash moved. The only door to ground across the water a harness has:
+     * an island 20 km off is never on the shelf. Returns what was bought.
+     */
+    LandParcel buyRectForTest(long x0, long y0, long x1, long y1, int month) {
+        land();
+        LandParcel parcel = market.measure(new GridOffers.Rect(0, 0, land.level(), x0, y0, x1, y1));
+        land.extend(parcel, month, 0);
+        ownedSqFt += parcel.getSizeSqFt();
+        blocksPurchased++;
+        landChanged();
+        return parcel;
     }
 
     /* ------------------------------ ore ------------------------------
@@ -431,13 +540,13 @@ public class LandManager {
      * more room than a works's is. 1 with no ground; on a generated world (no steep) allocated over owned, to the bit.
      */
     public double getUsedShare() {
-        if (!(ownedSqFt > 0)) return 1;
-        double slope = slopeSqFt();
-        if (!(slope > 0)) return allocatedSqFt / ownedSqFt;
-        double room = ownedSqFt - slope;
+        if (!(linkedOwned() > 0)) return 1;
+        double slope = linkedSlopeSqFt();
+        if (!(slope > 0)) return linkedAllocated() / linkedOwned();
+        double room = linkedOwned() - slope;
         if (!(room > 0)) return 1;
         Split s = split();
-        return (allocatedSqFt - s.worksOnSlope() - s.runsOnSlope()) / room;
+        return (linkedAllocated() - s.worksOnSlope() - s.runsOnSlope()) / room;
     }
 
     public double getAvailableBlocks()  { return getAvailableSqFt() / BLOCK_SQ_FT; }
@@ -535,6 +644,7 @@ public class LandManager {
         this.worldTotals = totals != null && totals.length == CityLand.KINDS ? totals.clone() : World.of(land.key()).totals();
         this.worldSeaTheta = seaTheta;
         market.attach(land);
+        landChanged();
     }
 
     /** Whether the land has been founded or put back yet - a bare office's has not until something asks. */
@@ -602,6 +712,8 @@ public class LandManager {
         ownedSqFt += parcel.getSizeSqFt();
         blocksPurchased++;
         landPurchasesThisMonth += cost;
+        // ...counted by landmass again (ET5): ground across the water is owned and priced as ever, and no room until it is linked.
+        landChanged();
 
         // List the place's next and re-price AFTER the purchase, so a city that
         // just got bigger sees the next offer at its new size.
@@ -613,14 +725,18 @@ public class LandManager {
     /* ------------------------------ ore ------------------------------ */
 
     /** The iron sites the city owns, centre and purchases: how many Iron Mines can stand. */
-    public int getIronDeposits()          { return (int) Math.min(Integer.MAX_VALUE, land().totalSites(Resource.IRON)); }
+    public int getIronDeposits()          { return getSites(Resource.IRON); }
 
     /** The iron still in its ground, in tonnes: O - E. */
     public double getIronReserveTonnes()  { return getRemaining(Resource.IRON); }
     public double getIronMinedThisMonth() { return ironMinedThisMonth; }
 
     /** The sites of a resource the city owns, centre and purchases (0.7.62): how many of its mines or wells can stand. */
-    public int getSites(Resource r)       { return (int) Math.min(Integer.MAX_VALUE, land().totalSites(r)); }
+    public int getSites(Resource r) {
+        // ...less the fields centred on a landmass the city has not linked (ET5 D9): no works stands on a field across the water.
+        if (landmasses.anyUnlinked()) return (int) Math.min(Integer.MAX_VALUE, Math.max(0, land().totalSites(r) - unlinkedSitesBy[r.ordinal()]));
+        return (int) Math.min(Integer.MAX_VALUE, land().totalSites(r));
+    }
 
     /** The oil sites the city owns (0.7.62): how many Oil Wells can stand. */
     public int getOilSites()              { return getSites(Resource.OIL); }
@@ -912,6 +1028,8 @@ public class LandManager {
         CityLand l = land();
         long all = l.totalSites(r);
         long sea = Math.min(all, seaSites(l, r));
+        // ...the dry sites less the fields across the water (ET5 D9); the sea's stay the sea's.
+        if (dry && landmasses.anyUnlinked()) return (int) Math.min(Integer.MAX_VALUE, Math.max(0, all - sea - unlinkedSitesBy[r.ordinal()]));
         return (int) Math.min(Integer.MAX_VALUE, dry ? all - sea : sea);
     }
 
@@ -1275,6 +1393,7 @@ public class LandManager {
         int i = typeIndex(r, type);
         if (i < 0) return 0;
         if (!r.hasTypes()) return getSites(r);
+        if (landmasses.anyUnlinked() && unlinkedSitesByType[r.ordinal()] != null) return (int) Math.min(Integer.MAX_VALUE, Math.max(0, typed(r).sites[i] - unlinkedSitesByType[r.ordinal()][i]));
         return (int) Math.min(Integer.MAX_VALUE, typed(r).sites[i]);
     }
 
@@ -1493,7 +1612,7 @@ public class LandManager {
         }
         works.sort(LandManager::packingOrder);
         int[] free = new int[pieces.size()];
-        for (int i = 0; i < free.length; i++) free[i] = pieces.get(i).sites();
+        for (int i = 0; i < free.length; i++) free[i] = freeSites(pieces.get(i));
         int[] probe = free.clone();
         java.util.List<int[]> placed = new java.util.ArrayList<>(), unplaced = new java.util.ArrayList<>();
         for (int[] w : works) (place(r, pieces, probe, w, false) ? placed : unplaced).add(w);
@@ -1533,7 +1652,7 @@ public class LandManager {
         }
         works.sort(LandManager::packingOrder);
         int[] free = new int[pieces.size()];
-        for (int i = 0; i < free.length; i++) free[i] = pieces.get(i).sites();
+        for (int i = 0; i < free.length; i++) free[i] = freeSites(pieces.get(i));
         int[] probe = free.clone();
         java.util.List<int[]> placed = new java.util.ArrayList<>(), unplaced = new java.util.ArrayList<>();
         for (int[] w : works) (place(r, pieces, probe, w, false) ? placed : unplaced).add(w);
@@ -1601,6 +1720,47 @@ public class LandManager {
             }
         }
         return false;
+    }
+
+    /**
+     * The sites a piece of the ground offers a works to stand on (ET5 D9): its sites, or none where its field is centred
+     * on a plot of a landmass the city has not linked - ground across the water is owned and counted, but no works stands
+     * on it. A pure read of the field's plot (World.landmassAt()).
+     */
+    private int freeSites(CityLand.Piece p) {
+        return pieceUnlinked(p) ? 0 : p.sites();
+    }
+
+    /** Whether a piece of the ground is a field centred on a plot of a landmass the city has not linked (always false while nothing is unlinked, and for ground by fiat, which has no field). */
+    private boolean pieceUnlinked(CityLand.Piece p) {
+        return landmasses.anyUnlinked() && p.field() != null && land != null
+                && !landmasses.linked(World.of(land.key()).landmassAt(p.field().x(), p.field().y()));
+    }
+
+    /** The sites of each resource on fields centred on a landmass the city has not linked, by Resource's ordinal (ET5 D9): worked out by refreshUnlinkedSites() when the land changes, never by a read. */
+    private final long[] unlinkedSitesBy = new long[CityLand.KINDS];
+
+    /** ...and by type, in Resource.typesOf()'s order (null for a resource with no field). */
+    private final long[][] unlinkedSitesByType = new long[CityLand.KINDS][];
+
+    /** Works the sites across the water out again: every resource's pieces, the sites of those centred on an unlinked landmass, in all and by type. All nothing while nothing is unlinked. */
+    private void refreshUnlinkedSites() {
+        java.util.Arrays.fill(unlinkedSitesBy, 0);
+        java.util.Arrays.fill(unlinkedSitesByType, null);
+        if (land == null || !landmasses.anyUnlinked()) return;
+        for (Resource r : Resource.values()) {
+            if (!r.inFields()) continue;
+            java.util.List<Deposit.FieldType> kinds = r.typesOf();
+            long[] byType = new long[kinds.size()];
+            long all = 0;
+            for (CityLand.Piece p : land.typedPieces(r)) {
+                if (!pieceUnlinked(p)) continue;
+                all += p.sites();
+                byType[kinds.indexOf(p.type())] += p.sites();
+            }
+            unlinkedSitesBy[r.ordinal()] = all;
+            unlinkedSitesByType[r.ordinal()] = byType;
+        }
     }
 
     /** Margin per square foot at the current sale price. Negative sells at a loss. */
@@ -1943,9 +2103,9 @@ public class LandManager {
      * is taken off: the old arithmetic, to the bit.
      */
     private Split split(double allocated, double works, double runs) {
-        double flat = reliefSqFt(CityLand.RELIEF_FLAT);
-        double foothill = reliefSqFt(CityLand.RELIEF_FOOTHILL);
-        double slope = slopeSqFt();
+        double flat = linkedRelief(CityLand.RELIEF_FLAT);
+        double foothill = linkedRelief(CityLand.RELIEF_FOOTHILL);
+        double slope = linkedSlopeSqFt();
         double w = Math.min(Math.max(works, 0), Math.max(allocated, 0));
         double r = 0, runsOnFlat = 0, runsOnFoothill = 0, runsOnSlope = 0;
         double total = flat + foothill + slope;
@@ -1967,7 +2127,7 @@ public class LandManager {
                 Math.max(0, slopeLeft - onSlope), r, runsOnFlat, runsOnFoothill, runsOnSlope);
     }
 
-    private Split split() { return split(allocatedSqFt, worksSqFt, runsSqFt); }
+    private Split split() { return split(linkedAllocated(), worksSqFt, runsSqFt); }
 
     /** The city's flat ground, foothill and steep ground (steep and very steep together), square feet: CityLand's relief, centre and purchases. */
     public double getFlatSqFt()     { return reliefSqFt(CityLand.RELIEF_FLAT); }
@@ -1997,8 +2157,8 @@ public class LandManager {
     /** The share of the city's dry ground that is steep or very steep (ET4): the part of a run's ground that falls on the steep; 0 in a city with neither foothill nor steep ground. */
     public double getSlopeShare() {
         if (flatOnly()) return 0;
-        double total = reliefSqFt(CityLand.RELIEF_FLAT) + reliefSqFt(CityLand.RELIEF_FOOTHILL) + slopeSqFt();
-        return total > 0 ? slopeSqFt() / total : 0;
+        double total = linkedRelief(CityLand.RELIEF_FLAT) + linkedRelief(CityLand.RELIEF_FOOTHILL) + linkedSlopeSqFt();
+        return total > 0 ? linkedSlopeSqFt() / total : 0;
     }
 
     /** The foothill prepared so far, square feet: never falls. */
@@ -2006,7 +2166,7 @@ public class LandManager {
 
     /** The steep ground no works stands on yet, square feet: not free for a building, free for a works. */
     public double idleSlopeSqFt() {
-        double slope = slopeSqFt();
+        double slope = linkedSlopeSqFt();
         return slope > 0 ? split().idleSlope() : 0;
     }
 
@@ -2040,8 +2200,8 @@ public class LandManager {
     /** ...with the runs ahead too (ET4): `runsAhead` of the ground ahead is highways' and railway lines', which take their share of the flat from the buildings. */
     public double foothillToPrepareSqFt(double sqFt, String sector, Use use,
                                         double groundAhead, double worksAhead, double runsAhead, double preparedAhead) {
-        if (use != Use.BUILDING || !(sqFt > 0) || !(reliefSqFt(CityLand.RELIEF_FOOTHILL) > 0)) return 0;
-        return Math.max(0, split(allocatedSqFt + groundAhead + sqFt, worksSqFt + worksAhead, runsSqFt + runsAhead)
+        if (use != Use.BUILDING || !(sqFt > 0) || !(linkedRelief(CityLand.RELIEF_FOOTHILL) > 0)) return 0;
+        return Math.max(0, split(linkedAllocated() + groundAhead + sqFt, worksSqFt + worksAhead, runsSqFt + runsAhead)
                 .buildingsOnFoothill() - (preparedSqFt + preparedAhead));
     }
 
@@ -2054,8 +2214,8 @@ public class LandManager {
      */
     public double foothillDisplacedByRunSqFt(double sqFt, double groundAhead, double worksAhead, double runsAhead) {
         if (!(sqFt > 0) || flatOnly()) return 0;
-        double before = split(allocatedSqFt + groundAhead, worksSqFt + worksAhead, runsSqFt + runsAhead).buildingsOnFoothill();
-        double after = split(allocatedSqFt + groundAhead + sqFt, worksSqFt + worksAhead, runsSqFt + runsAhead + sqFt)
+        double before = split(linkedAllocated() + groundAhead, worksSqFt + worksAhead, runsSqFt + runsAhead).buildingsOnFoothill();
+        double after = split(linkedAllocated() + groundAhead + sqFt, worksSqFt + worksAhead, runsSqFt + runsAhead + sqFt)
                 .buildingsOnFoothill();
         return Math.max(0, after - before);
     }
@@ -2142,7 +2302,7 @@ public class LandManager {
 
     /** Whether the city owns neither foothill nor steep ground: then every price by class is the one old price. */
     private boolean flatOnly() {
-        return !(reliefSqFt(CityLand.RELIEF_FOOTHILL) > 0) && !(slopeSqFt() > 0);
+        return !(linkedRelief(CityLand.RELIEF_FOOTHILL) > 0) && !(linkedSlopeSqFt() > 0);
     }
 
     /** Whether the city owns neither foothill nor steep ground (ET3): every figure by class is then the one flat price's, to the bit - the books read it to keep a flat city's statements as they were. */
@@ -2205,13 +2365,13 @@ public class LandManager {
         if (!(sqFt > 0)) return new double[3];
         if (use == Use.RUN) return runParts(sqFt);
         double[] before = classUse(split());
-        double[] after = classUse(split(allocatedSqFt + sqFt, worksSqFt + (use == Use.WORKS ? sqFt : 0), runsSqFt));
+        double[] after = classUse(split(linkedAllocated() + sqFt, worksSqFt + (use == Use.WORKS ? sqFt : 0), runsSqFt));
         return classParts(sqFt, after[1] - before[1], after[2] - before[2]);
     }
 
     /** A run's ground as {flat, foothill, slope}: `sqFt` times each class's share of the owned dry ground, summing to `sqFt`; all on flat where the city owns none. */
     private double[] runParts(double sqFt) {
-        double flat = reliefSqFt(CityLand.RELIEF_FLAT), foothill = reliefSqFt(CityLand.RELIEF_FOOTHILL), slope = slopeSqFt();
+        double flat = linkedRelief(CityLand.RELIEF_FLAT), foothill = linkedRelief(CityLand.RELIEF_FOOTHILL), slope = linkedSlopeSqFt();
         double total = flat + foothill + slope;
         if (!(total > 0)) return new double[] { sqFt, 0, 0 };
         return classParts(sqFt, sqFt * foothill / total, sqFt * slope / total);
@@ -2230,7 +2390,7 @@ public class LandManager {
     public double[] releasedByRelief(double sqFt, Use use) {
         if (!(sqFt > 0)) return new double[3];
         if (use == Use.RUN) return runParts(sqFt);
-        double allocatedAfter = Math.max(allocatedSqFt - sqFt, 0);
+        double allocatedAfter = Math.max(linkedAllocated() - sqFt, 0);
         double worksAfter = Math.min(use == Use.WORKS ? Math.max(worksSqFt - sqFt, 0) : worksSqFt, allocatedAfter);
         double runsAfter = Math.min(runsSqFt, Math.max(allocatedAfter - worksAfter, 0));
         double[] before = classUse(split());
@@ -2354,27 +2514,27 @@ public class LandManager {
     public double getSalvagePending()      { return salvagePendingM3; }
 
     private double protectedSqFt(Zoning z) {
-        return z.protectedShare() > 0 ? z.protectedShare() * getForestSqFt() : 0;
+        return z.protectedShare() > 0 ? z.protectedShare() * linkedForest() : 0;
     }
 
     /** What the law keeps from building: the protected and the working forest. Nothing, with no forest read, at 0. */
     private double keptFromBuildingSqFt(Zoning z) {
-        return z.keptShare() > 0 ? z.keptShare() * getForestSqFt() : 0;
+        return z.keptShare() > 0 ? z.keptShare() * linkedForest() : 0;
     }
 
     private double openSqFt(Zoning z) {
-        return Math.max(0, getForestSqFt() - keptFromBuildingSqFt(z));
+        return Math.max(0, linkedForest() - keptFromBuildingSqFt(z));
     }
 
     /** The ground that may be built on: the dry ground owned less what the law keeps. */
-    public double getBuildableSqFt() { return ownedSqFt - keptFromBuildingSqFt(zoning); }
+    public double getBuildableSqFt() { return linkedOwned() - keptFromBuildingSqFt(zoning); }
 
     /** Free ground, for anyone and the zones together: buildable less built, never below nothing. */
     public double getFreeSqFt() { return freeSqFt(zoning); }
 
     private double freeSqFt(Zoning z) {
-        if (!(z.keptShare() > 0)) return Math.max(ownedSqFt - allocatedSqFt, 0);
-        return Math.max(ownedSqFt - keptFromBuildingSqFt(z) - allocatedSqFt, 0);
+        if (!(z.keptShare() > 0)) return Math.max(linkedOwned() - linkedAllocated(), 0);
+        return Math.max(linkedOwned() - keptFromBuildingSqFt(z) - linkedAllocated(), 0);
     }
 
     /* ----- the zones ----- */
@@ -2386,7 +2546,7 @@ public class LandManager {
         double wanted = 0;
         for (int i = 0; i < held.length; i++) {
             Zoning.Zone zone = list.get(i);
-            held[i] = Math.max(0, zone.targetSqFt(ownedSqFt) - zone.usedSqFt());
+            held[i] = Math.max(0, zone.targetSqFt(linkedOwned()) - zone.usedSqFt());
             wanted += held[i];
         }
         double free = freeSqFt(z);
@@ -2435,10 +2595,10 @@ public class LandManager {
      * runs'. Never below nothing; meaningless (and unused) with neither foothill nor steep ground.
      */
     private double runRoom(double groundAhead, double worksAhead, double runsAhead) {
-        double flatFoothill = reliefSqFt(CityLand.RELIEF_FLAT) + reliefSqFt(CityLand.RELIEF_FOOTHILL);
-        double total = flatFoothill + slopeSqFt();
-        Split after = split(allocatedSqFt + groundAhead, worksSqFt + worksAhead, runsSqFt + runsAhead);
-        double room = ownedSqFt - allocatedSqFt - groundAhead;
+        double flatFoothill = linkedRelief(CityLand.RELIEF_FLAT) + linkedRelief(CityLand.RELIEF_FOOTHILL);
+        double total = flatFoothill + linkedSlopeSqFt();
+        Split after = split(linkedAllocated() + groundAhead, worksSqFt + worksAhead, runsSqFt + runsAhead);
+        double room = linkedOwned() - linkedAllocated() - groundAhead;
         double shareFlatFoothill = total > 0 ? flatFoothill / total : 0;
         if (shareFlatFoothill > 0) room = Math.min(room, (flatFoothill - after.buildings()) / shareFlatFoothill - after.runs());
         return Math.max(0, room);
@@ -2466,7 +2626,7 @@ public class LandManager {
     /** What a sector's zone is to be, square feet: its share of the dry ground or its square kilometres; 0 with no zone. */
     public double zoneSizeOf(String sector) {
         Zoning.Zone z = zoning.zone(sector);
-        return z == null ? 0 : z.targetSqFt(ownedSqFt);
+        return z == null ? 0 : z.targetSqFt(linkedOwned());
     }
 
     /** What all the zones hold together. */
@@ -2577,9 +2737,9 @@ public class LandManager {
      */
     private void clearFor(double sqFt, double fromZone, String sector) {
         if (land == null || !(sqFt > 0)) return;
-        double forest = getForestSqFt();
+        double forest = linkedForest();
         if (!(forest > 0)) return;
-        double freeBare = Math.max(0, Math.max(0, ownedSqFt - forest) + clearedSqFt - allocatedSqFt);
+        double freeBare = Math.max(0, Math.max(0, linkedOwned() - forest) + clearedSqFt - linkedAllocated());
         double zoneBare = 0, anyoneBare = freeBare;
         if (zoning.hasZones()) {
             java.util.List<Zoning.Zone> list = zoning.zones();
@@ -2605,10 +2765,10 @@ public class LandManager {
      */
     private void settleClearing() {
         if (land == null) return;
-        double forest = getForestSqFt();
+        double forest = linkedForest();
         if (!(forest > 0)) return;
-        double past = allocatedSqFt - Math.max(0, ownedSqFt - forest) - clearedSqFt;
-        if (past > CLEARING_ROUNDING * ownedSqFt) clear(past);
+        double past = linkedAllocated() - Math.max(0, linkedOwned() - forest) - clearedSqFt;
+        if (past > CLEARING_ROUNDING * linkedOwned()) clear(past);
     }
 
     /**
@@ -2800,6 +2960,9 @@ public class LandManager {
         extractedAtSea = 0;
         java.util.Arrays.fill(extractedByType, null);
         zoning.clear();
+        landmasses.reset();
+        java.util.Arrays.fill(unlinkedSitesBy, 0);
+        java.util.Arrays.fill(unlinkedSitesByType, null);
         clearedSqFt = 0;
         clearedM3 = 0;
         salvagePendingM3 = 0;

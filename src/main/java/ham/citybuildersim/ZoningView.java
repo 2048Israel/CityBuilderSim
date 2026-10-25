@@ -49,7 +49,7 @@ public final class ZoningView {
     /**
      * The four.
      *
-     * @param drySqFt        the dry ground the city owns (LandManager.getOwnedSqFt())
+     * @param drySqFt        the dry ground the city owns that is room (LandManager.getLinkedOwnedSqFt(), ET5: getOwnedSqFt() while no landmass is unlinked)
      * @param zonedSqFt      the zones' sizes together, square feet (LandManager.zoneSizeOf())
      * @param zones          how many zones stand
      * @param heldSqFt       the free ground they hold for their sectors, no other business may take (heldByZones())
@@ -82,7 +82,7 @@ public final class ZoningView {
             relief += at.taxRelief();
         }
         double prot = land.getProtectedForestSqFt();
-        return new Figures(land.getOwnedSqFt(), zoned, z.zones().size(), land.heldByZones(), given, relief,
+        return new Figures(land.getLinkedOwnedSqFt(), zoned, z.zones().size(), land.heldByZones(), given, relief,
                 land.getForestSqFt(), prot + land.getWorkingForestSqFt(), prot, z.protectedShare(), z.keptShare());
     }
 
@@ -137,8 +137,9 @@ public final class ZoningView {
     public static List<Part> ground(Game g) {
         LandManager land = g.getLandManager();
         Zoning z = g.getZoning();
-        double dry = Math.max(0, land.getOwnedSqFt());
-        double built = Math.min(Math.max(0, land.getAllocatedSqFt()), dry);
+        // ...the linked ground (ET5): what the zones, the free ground and the law read; the whole of it while no landmass is unlinked.
+        double dry = Math.max(0, land.getLinkedOwnedSqFt());
+        double built = Math.min(Math.max(0, land.getLinkedAllocatedSqFt()), dry);
         double protect = land.getProtectedForestSqFt(), work = land.getWorkingForestSqFt();
         // The law's forest, as far as the dry ground goes past the built; the free ground the rest.
         double kept = Math.min(protect + work, dry - built);
@@ -155,8 +156,8 @@ public final class ZoningView {
         }
         // Free for anyone: bare and cleared ground not built on - less what the zones hold of it, bare first - then open forest.
         double anyone = free - held;
-        double bareFree = Math.max(0, land.getOwnedSqFt() - land.getForestSqFt() + land.getForestClearedSqFt()
-                - land.getAllocatedSqFt());
+        double bareFree = Math.max(0, land.getLinkedOwnedSqFt() - land.getLinkedForestSqFt() + land.getForestClearedSqFt()
+                - land.getLinkedAllocatedSqFt());
         double bare = Math.min(anyone, Math.max(0, bareFree - Math.min(held, bareFree)));
         double prot = Math.min(protect, kept);
         List<Part> out = new ArrayList<>();
@@ -244,7 +245,7 @@ public final class ZoningView {
         double[] offset = { p.getProfitOffset(sector), p.getSalesOffset(sector), p.getPropertyOffset(sector) };
         double[] paid = { g.getSectorBooks().get(sector).tax(), em.getSalesTaxLedger().getNet(sector),
                 em.getPropertyTaxCharged(sector) };
-        return new Row(sector, z.kind(), z.size(), land.zoneSizeOf(sector), land.getOwnedSqFt(), land.usedBy(sector),
+        return new Row(sector, z.kind(), z.size(), land.zoneSizeOf(sector), land.getLinkedOwnedSqFt(), land.usedBy(sector),
                 land.heldBy(sector), z.priceShare(), land.groundPriceFor(sector), at.priceGivenUp(), at.taxRelief(),
                 rate, offset, paid);
     }

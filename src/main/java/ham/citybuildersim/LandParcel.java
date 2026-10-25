@@ -64,6 +64,22 @@ public final class LandParcel {
     /** The month it was listed in. */
     private final int listedMonth;
 
+    /*
+     * WHAT OF IT IS ON GROUND THE CITY HAS NOT LINKED (ET5, 2026-10-25). Derived from the world and the city's linked
+     * landmasses (Landmasses.offerSplit()) every time the offer is listed, restored or the linked set moves, never saved
+     * and in no record (offerRow(), same() and the relief row are as they were): 0 on a generated world and for every
+     * offer of home's ground. The pickers rank an offer by what is left of its ground once these are taken off.
+     */
+
+    /** Its dry ground on landmasses the city has not linked, square kilometres (Landmasses.offerSplit()). */
+    private transient double unlinkedDryKm2;
+
+    /** ...the part of it a building could stand on: its flat and foothill, or all of it where the offer is all flat. */
+    private transient double unlinkedBuildableKm2;
+
+    /** ...and the id of the unlinked landmass holding most of it, 0 for none. */
+    private transient int unlinkedLargest;
+
     /** The share of an offer's area that, when sea, tags it "mostly sea": 70% - listed, because sea is cheap, but never the best value (spec-land 2.2). */
     public static final double MOSTLY_SEA = 0.70;
 
@@ -189,6 +205,22 @@ public final class LandParcel {
 
     /** Its dry ground, in square kilometres. */
     public double getDryKm2()      { return km2[CityLand.DRY]; }
+
+    /** Sets what is on unlinked ground (Landmasses.offerSplit()): its dry ground and the buildable part of it, square kilometres, and the landmass with most of it. */
+    void setUnlinked(double dryKm2, double buildableKm2, int largest) {
+        this.unlinkedDryKm2 = dryKm2;
+        this.unlinkedBuildableKm2 = buildableKm2;
+        this.unlinkedLargest = largest;
+    }
+
+    /** Its dry ground on landmasses the city has not linked, square kilometres; 0 for an offer of home's ground and on a generated world. */
+    public double getUnlinkedDryKm2() { return unlinkedDryKm2; }
+
+    /** ...the part of it a building could stand on (flat and foothill; all of it for an offer all flat), square kilometres. */
+    public double getUnlinkedBuildableKm2() { return unlinkedBuildableKm2; }
+
+    /** The id of the unlinked landmass holding most of its unlinked dry ground; 0 for none. */
+    public int getUnlinkedLargest() { return unlinkedLargest; }
 
     /** Its sites of a resource. */
     public int getSites(Resource r)      { return sites[r.ordinal()]; }

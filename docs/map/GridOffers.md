@@ -49,7 +49,7 @@
 
 **Uses:** [LandGrid](LandGrid.md) (6), [World](World.md) (3), [CityLand](CityLand.md) (1)
 
-**Used by (8):** [BuildCardCheck](BuildCardCheck.md), [ConversionCheck](ConversionCheck.md), [GridCheck](GridCheck.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandParcel](LandParcel.md), [MapCheck](MapCheck.md)
+**Used by (10):** [BuildCardCheck](BuildCardCheck.md), [ConversionCheck](ConversionCheck.md), [GridCheck](GridCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandParcel](LandParcel.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md)
 
 ## Sections
 

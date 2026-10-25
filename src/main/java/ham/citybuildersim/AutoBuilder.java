@@ -1461,11 +1461,16 @@ public final class AutoBuilder {
             if (o == null) return null;
             picks.add(o);
             taken.add(o.getId());
-            got += o.getSizeSqFt();
+            got += linkedSqFt(o);
         }
         List<Integer> ids = new ArrayList<>(taken);
         double cash = game.isLandPaidFromVault() ? game.landTopUpLocal(ids) : game.landPriceLocal(ids);
-        return new Ground(List.copyOf(picks), cash, picks.size() == 1 && picks.get(0).getSizeSqFt() >= lack);
+        return new Ground(List.copyOf(picks), cash, picks.size() == 1 && linkedSqFt(picks.get(0)) >= lack);
+    }
+
+    /** An offer's dry ground that is room for the order, square feet: its whole dry ground (getSizeSqFt()) less what of it is on a landmass the city has not linked (ET5; LandParcel.getUnlinkedDryKm2()); the whole of it for an offer with none. */
+    private static double linkedSqFt(LandParcel o) {
+        return o.getUnlinkedDryKm2() > 0 ? Math.max(0, o.getSizeSqFt() - o.getUnlinkedDryKm2() * LandManager.SQ_FT_PER_KM2) : o.getSizeSqFt();
     }
 
     /**
@@ -1486,10 +1491,10 @@ public final class AutoBuilder {
         return game.landNeededFor(t, n) - game.getLandManager().freeForAnyone(Game.groundUse(t));
     }
 
-    /** How much more ground the city's buildings stand on than it owns, in square feet (0.7.101): 0 for a city within its ground. */
+    /** How much more ground the city's buildings stand on than it owns, in square feet (0.7.101): 0 for a city within its ground. Since ET5 the ground it may stand on: the linked landmasses' (LandManager.getLinkedOwnedSqFt()), not the island ground across the water. */
     public static double overFull(Game game) {
         LandManager land = game.getLandManager();
-        return Math.max(0, land.getAllocatedSqFt() - land.getOwnedSqFt());
+        return Math.max(0, land.getLinkedAllocatedSqFt() - land.getLinkedOwnedSqFt());
     }
 
     /**

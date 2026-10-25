@@ -1,4 +1,4 @@
-# EarthData.java - 962 lines · 87 methods · 35 constants · model
+# EarthData.java - 1,073 lines · 97 methods · 36 constants · model
 
 `ham/citybuildersim/EarthData.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 > 
 > ... (5 more lines in the source)
 
-**Uses:** [Palette](Palette.md) (8)
+**Uses:** [Palette](Palette.md) (9)
 
-**Used by (28):** [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandCheck](LandCheck.md), [LandClassRenders](LandClassRenders.md), [LandMap](LandMap.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [ReloadCheck](ReloadCheck.md), [RunRenders](RunRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md)
+**Used by (30):** [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [LandCheck](LandCheck.md), [LandClassRenders](LandClassRenders.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [ReloadCheck](ReloadCheck.md), [RunRenders](RunRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md)
 
 ## Sections
 
@@ -77,6 +77,7 @@
 | 579 | THE LISTS - rivers and small lakes |
 | 754 | GEOLOGY, PROVINCES, PLACES AND THE META |
 | 816 | EARTH-2'S LAYERS - slope, shallow sea, depth and landmasses (ET1) |
+| 899 | · the landmass layer a tile at a time, lock-free (ET5, 2026-10-25) |
 
 ## Constants
 
@@ -117,6 +118,7 @@
 | 184 | `EarthData.EIGHTH_OCTAVES` | `{ 0x1.0p0, 0x1.172b83c7d517bp0, 0x1.306fe0a31b715p0, 0x1.4bfdad5362a27p0, 0x1...` | 2^(k/8) for k = 0 to 7, each the double nearest the true value (worked to 60 digits): a small lake's area is SMALL_LAKE_KM2 x 2^(code/8), and StrictMath.pow misses the nearest double by one unit at 63 of the 256 codes... |
 | 188 | `EarthData.LAKE_AREA` | `new double [ 256 ]` | The area a small lake's code stands for, km2, code by code. |
 | 864 | `EarthData.SHALLOW_M` | `30` | The depth, in metres, the shallow layer's share counts the sea to: 30 (FORMAT-2's depth.SHALLOW_M; the study's D11, ET1): the sea World.SHALLOW is drawn of. |
+| 933 | `EarthData.LANDMASS_GRIDS_KEPT` | `16` | How many landmass tiles landmassGrid() keeps read out: 16, about a megabyte (a 15" tile is 57,600 cells, a byte each). |
 
 ## Fields (state)
 
@@ -154,12 +156,18 @@
 | 834 | `private List<Landmass> landmasses` |  |
 | 836 | `private byte[] paletteBlob` | The palette read of the landmass tile last asked for, with the inflated bytes it was read from (the LRU's own array: a palette of a few ints kept beside it, not the cells widened). |
 | 837 | `private Palette paletteRead` |  |
+| 908 | `private final int cells` |  |
+| 909 | `private final int uniform` |  |
+| 910 | `private final int[] ids` |  |
+| 911 | `private final byte[] narrow` |  |
+| 912 | `private final char[] wide` |  |
+| 935 | `private final Map<Integer, LandmassGrid> landmassGrids` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 870 | **type** `public final class EarthData implements AutoCloseable` | The reader of earth-2.bin (and of earth-1.bin, whose layers it holds), the real Earth's ground as data: its layers' 1-degree tiles inflated into an LRU, the sea, lake, land-cover and far-view shares, rivers and small ... |
+| 93 | 981 | **type** `public final class EarthData implements AutoCloseable` | The reader of earth-2.bin (and of earth-1.bin, whose layers it holds), the real Earth's ground as data: its layers' 1-degree tiles inflated into an LRU, the sea, lake, land-cover and far-view shares, rivers and small ... |
 | 189 | 4 | `static { ... }` |  |
 
 ### THE FILE - where the bytes come from, the header and the layer table (lines 194-435)
@@ -256,7 +264,7 @@
 | 798 | 12 | `public synchronized List<Place> places()` | The places, most populous first. |
 | 812 | 3 | `public String meta()` | The meta layer: the build's date, sources, credits, fallbacks and counts, JSON. |
 
-### EARTH-2'S LAYERS - slope, shallow sea, depth and landmasses (ET1) (lines 816-962)
+### EARTH-2'S LAYERS - slope, shallow sea, depth and landmasses (ET1) (lines 816-898)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -275,11 +283,27 @@
 | 878 | 1 | `public double depthM(double lat, double lon)` | The mean depth of the sea in the 1' cell at a point, metres: 0 where there is no sea (or under half a metre), DEPTH_DEEPEST_M for 750 m or deeper. |
 | 881 | 9 | `public int landmassCell(int tile, int r, int c)` | The id of the landmass a tile's cell r (from the north), c (from the west) is land of, 0 for no land. |
 | 892 | 6 | `public int landmassAt(double lat, double lon)` | The id of the landmass at a point, the cell holding its north and west edges (WHERE A POINT FALLS), 0 for no land. |
-| 900 | 6 | `public int[] landmassIds(int tile)` | The ids a landmass tile holds, ascending, 0 (no land) among them where it has a cell without land: a uniform tile holds just its one. |
-| 908 | 7 | `private synchronized Palette paletteOf(byte[] blob, int cells)` | The palette read of an inflated landmass tile, the last one kept so that a scan of a tile reads it once. |
-| 917 | 14 | `private static Palette palette(byte[] b, int cells)` | An inflated landmass tile's palette (uvarint n, then n uvarints, the ids ascending as deltas from 0) and where its cells' indexes begin; the indexes must fill the rest of the blob. |
-| 933 | 5 | `private static int idAt(Palette p, byte[] b, int index)` | The id of the cell numbered index (row x cells a row + column) in a palette's tile. |
-| 940 | 1 | `static int landmassCellOf(byte[] blob, int cells, int index)` | The id of cell number index in an inflated landmass tile of that many cells, read without the LRU (EarthCheck holds the short-index form to it, which no tile of the file needs). |
-| 943 | 13 | `public synchronized List<Landmass> landmasses()` | The landmasses, in id order (id 1 first): from the landmasses layer's text, a line each, read once. |
-| 958 | 4 | `public Landmass landmass(int id)` | A landmass by its id (1 and up), null for 0 (no land) or an id the layer does not hold. |
+
+### the landmass layer a tile at a time, lock-free (ET5, 2026-10-25) (lines 899-1073)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 907 | 24 | **type** `public static final class LandmassGrid` | One landmass tile read out of its blob into arrays of its own (ET5): the ids it holds and an index a cell, copied, so a read takes no lock and shares nothing with the blob LRU or with paletteOf()'s one-slot memory. |
+| 914 | 3 | `private LandmassGrid(int cells, int uniform, int[] ids, byte[] narrow, char[] wide)` _(in EarthData.LandmassGrid)_ |  |
+| 919 | 5 | `public int id(int r, int c)` _(in EarthData.LandmassGrid)_ | The id of the cell at row r from the north, column c from the west of the tile (0 for no land); no bounds check beyond the arrays'. |
+| 926 | 1 | `public boolean isUniform()` _(in EarthData.LandmassGrid)_ | Whether every cell of the tile holds the one id (a uniform tile: no blob), which then is id(0, 0). |
+| 929 | 1 | `public int[] ids()` _(in EarthData.LandmassGrid)_ | The ids the tile holds, ascending, 0 among them where a cell has no land: a copy. |
+| 945 | 31 | `public LandmassGrid landmassGrid(int tile)` | A 1-degree tile of the landmass layer read out for lock-free reads (ET5): decoded once and kept (LANDMASS_GRIDS_KEPT). |
+| 978 | 1 | `public int landmassCellsPerDegree()` | The landmass layer's cells a degree (240, 15"): the grid landmassRow() and landmassCol() number in. |
+| 981 | 4 | `public long landmassRow(double lat)` | The row, counted in 15" cells from the north pole, of the cell holding a latitude: landmassAt()'s arithmetic, clamped to the planet. |
+| 987 | 4 | `public long landmassCol(double lon)` | The column, counted in 15" cells east from the 180th meridian, of the cell holding a longitude: landmassAt()'s arithmetic. |
+| 993 | 5 | `public int landmassTileOf(long g, long c)` | The 1-degree tile that holds the cell at row g, column c (as landmassRow() and landmassCol() number them; the column wraps round the planet). |
+| 1003 | 6 | `public int landmassOfCell(long g, long c)` | The id of the landmass at the cell in row g, column c (landmassRow(), landmassCol()), read through the kept grids without a lock: 0 for no land, and for a row off the planet's north or south. |
+| 1011 | 6 | `public int[] landmassIds(int tile)` | The ids a landmass tile holds, ascending, 0 (no land) among them where it has a cell without land: a uniform tile holds just its one. |
+| 1019 | 7 | `private synchronized Palette paletteOf(byte[] blob, int cells)` | The palette read of an inflated landmass tile, the last one kept so that a scan of a tile reads it once. |
+| 1028 | 14 | `private static Palette palette(byte[] b, int cells)` | An inflated landmass tile's palette (uvarint n, then n uvarints, the ids ascending as deltas from 0) and where its cells' indexes begin; the indexes must fill the rest of the blob. |
+| 1044 | 5 | `private static int idAt(Palette p, byte[] b, int index)` | The id of the cell numbered index (row x cells a row + column) in a palette's tile. |
+| 1051 | 1 | `static int landmassCellOf(byte[] blob, int cells, int index)` | The id of cell number index in an inflated landmass tile of that many cells, read without the LRU (EarthCheck holds the short-index form to it, which no tile of the file needs). |
+| 1054 | 13 | `public synchronized List<Landmass> landmasses()` | The landmasses, in id order (id 1 first): from the landmasses layer's text, a line each, read once. |
+| 1069 | 4 | `public Landmass landmass(int id)` | A landmass by its id (1 and up), null for 0 (no land) or an id the layer does not hold. |
 

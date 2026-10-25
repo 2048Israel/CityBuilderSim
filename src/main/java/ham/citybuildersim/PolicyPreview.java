@@ -527,7 +527,7 @@ public final class PolicyPreview {
         double built = Math.min(g.getBuildingManager().getLandSqFtBySector(sector), zone.usedSqFt());
         double relief = built * em.getLandPricePerSqFt() * (1 - zone.priceShare())
                 * p.assessedLandShare(sector) * p.effectiveMonthlyPropertyRate(sector);
-        return new ZoneAt(sector, zone.targetSqFt(land.getOwnedSqFt()), zone.usedSqFt(), held, zone.priceShare(),
+        return new ZoneAt(sector, zone.targetSqFt(land.getLinkedOwnedSqFt()), zone.usedSqFt(), held, zone.priceShare(),
                 held * going, held * going * (1 - zone.priceShare()), relief);
     }
 

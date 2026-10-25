@@ -4249,6 +4249,14 @@ public class Game {
         // ...and a run's (ET4): a railway line is laid across every class of ground, as much of it as the buildings' room allows.
         businessInvestment.setLandAvailableForRuns(landManager.freeForAnyone(LandManager.Use.RUN));
         businessInvestment.setZoneLand(landManager.zoneLand());
+        // ...and the ground owned across the water that no port links (ET5): not room, and the refusals say so.
+        businessInvestment.setUnlinkedLand(landManager.getUnlinkedFreeSqFt(), landManager.getUnlinkedNames());
+    }
+
+    /** The clause the "Could not build" words end with while the city owns ground it cannot build on (ET5): "; 12.0 km² is free on Island 2, which no port links"; empty while it owns none. */
+    private String unlinkedClause() {
+        double free = landManager.getUnlinkedFreeSqFt();
+        return free > 0 ? "; " + LandmassView.unlinkedWords(free, landManager.getUnlinkedNames()) : "";
     }
 
     /* =======================================================================
@@ -4974,10 +4982,10 @@ public class Game {
             // ...the ground its sector may build on, and since 0.7.109 (Z2) what the others' zones hold, as landReason() says it.
             String sector = decision.template.getSector();
             double others = landManager.heldByZones() - landManager.heldBy(sector);
-            String needs = String.format("needs %s, %s free%s",
+            String needs = String.format("needs %s, %s free%s%s",
                     LandManager.areaWords(decision.template.getLandSqFt() * (double) quantity),
                     LandManager.areaWords(landManager.freeFor(sector, groundUse(decision.template))),
-                    others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "");
+                    others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "", unlinkedClause());
             blockOnLand(decision.sector, needs);
             lastInvestment.put(slot, "Could not build " + decision.template.getName() + " - " + needs);
         }
@@ -5462,10 +5470,10 @@ public class Game {
         } else {
             // ...the ground its sector may build on, and since 0.7.109 (Z2) what the others' zones hold, as landReason() says it.
             double others = landManager.heldByZones() - landManager.heldBy(t.getSector());
-            String needs = String.format("needs %s, %s free%s",
+            String needs = String.format("needs %s, %s free%s%s",
                     LandManager.areaWords(t.getLandSqFt() * (double) quantity),
                     LandManager.areaWords(landManager.freeFor(t.getSector(), groundUse(t))),
-                    others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "");
+                    others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "", unlinkedClause());
             blockOnLand(decision.sector, needs);
             lastInvestment.put(slot, "Could not build " + t.getName() + " - " + needs);
         }
