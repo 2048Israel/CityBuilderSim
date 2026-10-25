@@ -44,6 +44,7 @@ condition the line asserts. The five-billion copy's 63 homes pass.
 
 ## Done when
 
-ScaleCheck green on main with no other harness moved, `./batch-check.sh`
-green but what was already red, the maps regenerated, this row out of
-QUEUE.md.
+ScaleCheck green on main with no other harness moved (the gate's suite),
+`./batch-check.sh --pick` green but main's recorded reds, the maps
+regenerated, its ship file pushed: `ship.sh` takes this row out of QUEUE.md
+(BP1).

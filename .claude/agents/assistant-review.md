@@ -35,9 +35,12 @@ The caller names the branch, and perhaps the batch or an issue. In order:
    `git worktree add -q --detach "${TMPDIR:-/tmp}/review" origin/<branch>`,
    `./batch-check.sh --fast` inside it (compile, maps, Stale, the tree), then
    `git worktree remove --force "${TMPDIR:-/tmp}/review"`. A branch that
-   changes Java also runs the harnesses `docs/harnesses.md` (grep it) names
-   for the classes it touched: `./batch-check.sh <names>`. On the PC,
-   `Batch check.bat --fast`.
+   changes Java also runs the harnesses that read what it changed:
+   `sh tools/pick.sh origin/main origin/<branch>` from the clone's root names
+   them without a JVM (BP1; ALL is the whole suite, NONE none), and
+   `./batch-check.sh <names>` in the worktree runs them - or
+   `./batch-check.sh --pick` alone, where the branch has BP1's scripts. On
+   the PC, the same in Git Bash; `Batch check.bat` has no `--pick`.
 5. **The claims.** What the text says about the code - what a method does,
    what runs before what in the month, a constant's value, a line number,
    which harness covers what - against the source: `Where Name -print` for

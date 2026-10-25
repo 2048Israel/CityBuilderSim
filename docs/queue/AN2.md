@@ -10,7 +10,7 @@ Jerus, 2026-10-23, at the review desk, on AN1-C's "left undone"
    public getter; a series in `HistorySave` if the screen charts it (a flow is
    saved, never rebuilt).
 2. **The Earth playtest** with AN1's anchor: `LongPlaytest --earth rotterdam`
-   on the PC, where earth-1.bin lies, 4,000 months; the notes give its end
+   on the PC, where earth-2.bin lies, 4,000 months; the notes give its end
    (prices against founding, people, the D$ against its guard) beside the
    default playtest's (13,374 times founding, 625,815 people, never at its
    guard). If it hyperinflates or stalls, that is the finding: say so and

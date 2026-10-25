@@ -45,7 +45,8 @@ Take work that needs reading and reasoning, not running:
   `Game.java` (16,000 lines) or `docs/harnesses.md` (800 KB) whole. The maps
   can be a batch behind: check the source before you state what it does.
 - **Do not touch:** `CLAUDE.md`'s standing rules, `QUEUE.md` (unless Jerus
-  asks), `GameVersion` (the shipping session bumps it), the generated files
+  asks), `GameVersion` (not the shipping session's to bump: `ship.sh` sets
+  it at a batch's gate, and your branch takes none), the generated files
   (`docs/map/`, `docs/dials.md`, `docs/month-order.md`, `docs/harnesses.md`,
   `docs/manual.*`), save slots, `buildings.json` ids, `Sectors.KEYS` order.
 - **Line endings LF**; the `.bat` files CRLF.

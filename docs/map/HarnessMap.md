@@ -1,4 +1,4 @@
-# HarnessMap.java - 133 lines · 3 methods · 2 constants · tools
+# HarnessMap.java - 135 lines · 3 methods · 2 constants · tools
 
 `ham/citybuildersim/tools/HarnessMap.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -12,7 +12,10 @@
 > other way up") and groups them under printed section headings; this
 > lifts those labels out, so the whole suite reads as a table of contents
 > of what the model promises. It also says which harnesses mention which
-> model class, and which harness files AllChecks does not run.
+> class - every class but the harnesses themselves, the interface's and the
+> tools' as well as the model's and the sectors' (BP1, 2026-10-25: tools/pick.sh
+> reads that table, and a changed ui/ or tools/ class had no row to read) -
+> and which harness files AllChecks does not run.
 > 
 > The labels are found by the helpers a harness declares - any
 > "static void NAME(String label, ...)" in the file - plus the usual names.
@@ -27,15 +30,15 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 33 | `HarnessMap.HELPERS` | `Set.of("assertTrue", "check", "close", "report", "assertEquals", "same", "wit...` |  |
-| 35 | `HarnessMap.SECTION` | `Pattern.compile("^\\s*(?:\\\\n)?\\s*(?:---\|===)+\\s*(.*?)\\s*(?:---\|===)+\\s*...` |  |
+| 36 | `HarnessMap.HELPERS` | `Set.of("assertTrue", "check", "close", "report", "assertEquals", "same", "wit...` |  |
+| 38 | `HarnessMap.SECTION` | `Pattern.compile("^\\s*(?:\\\\n)?\\s*(?:---\|===)+\\s*(.*?)\\s*(?:---\|===)+\\s*...` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 103 | **type** `public final class HarnessMap` | What every harness asserts, in its own words: docs/harnesses.md. |
-| 37 | 3 | `public static void main(String[] args) throws IOException` |  |
-| 41 | 42 | `static void run(SourceTree tree) throws IOException` |  |
-| 85 | 48 | `static int one(SourceTree tree, JavaScan h, StringBuilder sb, boolean registered)` | One harness's sections and labels; returns the number of labels. |
+| 34 | 102 | **type** `public final class HarnessMap` | What every harness asserts, in its own words: docs/harnesses.md. |
+| 40 | 3 | `public static void main(String[] args) throws IOException` |  |
+| 44 | 41 | `static void run(SourceTree tree) throws IOException` |  |
+| 87 | 48 | `static int one(SourceTree tree, JavaScan h, StringBuilder sb, boolean registered)` | One harness's sections and labels; returns the number of labels. |
 
