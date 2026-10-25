@@ -7352,8 +7352,24 @@ public final class GameVersion {
      *   - Save: landWorksSqFt, landPreparedSqFt; SAVE_FORMAT 46, the Earth
      *     floor (EarthSite.SLOPE_FORMAT) 46, OLDEST_LOADABLE_FORMAT 45.
      *   - Harness: SlopeCheck (new); SlopeRenders, docs/queue/ET2/.
+     *
+     * 0.8.44 (2026-10-25) - ET3, A PRICE FOR EACH CLASS OF GROUND
+     *   - The residual price (spec-earth2-terrain 5.1, LandMarket.reliefPrice()):
+     *     flat at the going price, foothill at it less its preparation and
+     *     never under the base price, steep at the base, none dearer than flat;
+     *     the office's offers, what a business pays (LandManager.priceFor(sqFt,
+     *     sector, works), plotByRelief()) and the zones' shares by class.
+     *   - The pickers by buildable ground a dollar, preparation counted
+     *     (LandMarket.buildableKm2PerUsd(), Game.bestOffer(), shortcutOffer()).
+     *   - The books: a sector's land pro rata to the split at each class's
+     *     price (EconomyManager.landByReliefOf()); note 11 and the equity's land
+     *     row by class (SectorStatements.landNote()); SectorMonth.landByRelief
+     *     saved (null in an older save, which reads the one price).
+     *   - Screens: LandClassView's words on the land office, the offer card and
+     *     note 11. A city of flat ground is priced by the old expressions.
+     *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.8.43";
+    public static final String VERSION = "0.8.44";
 
     /**
      * The save shape.

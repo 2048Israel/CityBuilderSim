@@ -1323,10 +1323,10 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7356 | `GameVersion.VERSION` | `"0.8.43"` | Bump on release. |
-| 8153 | `GameVersion.SAVE_FORMAT` | `46` | The save shape. |
-| 8193 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `45` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 8195 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 7372 | `GameVersion.VERSION` | `"0.8.44"` | Bump on release. |
+| 8169 | `GameVersion.SAVE_FORMAT` | `46` | The save shape. |
+| 8209 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `45` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 8211 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ### Gateways.java ([map](map/Gateways.md))
 

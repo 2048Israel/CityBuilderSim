@@ -1,4 +1,4 @@
-# LandClassRenders.java - 170 lines · 5 methods · 0 constants · tools
+# LandClassRenders.java - 175 lines · 6 methods · 0 constants · tools
 
 `ham/citybuildersim/tools/LandClassRenders.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -33,10 +33,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 119 | **type** `public final class LandClassRenders` | Renders what ET3 says about the classes of ground, for review: the land office's prices and offers by class and note 11 of the sector statements, in the words the screens use (LandClassView), for cities played on the ... |
+| 52 | 124 | **type** `public final class LandClassRenders` | Renders what ET3 says about the classes of ground, for review: the land office's prices and offers by class and note 11 of the sector statements, in the words the screens use (LandClassView), for cities played on the ... |
 | 54 | 1 | `private LandClassRenders()` |  |
 | 56 | 49 | `public static void main(String[] args) throws IOException` |  |
-| 106 | 9 | `private static Game play(String spot, int months, PrintStream silent)` |  |
-| 117 | 24 | `private static void office(List<String> text, Game g, String title)` | A city's ground, the office's prices by class and every offer on the shelf with its ground. |
-| 143 | 27 | `private static void notes(List<String> text, Game g, String title)` | Note 11 for every sector that holds any land by class, services and works, with the sheet's Land line it adds up to. |
+| 107 | 3 | `private static void writeLf(Path file, List<String> text) throws IOException` | Writes a render's lines with LF endings, as the tree stores text (Files.write() would use the PC's CRLF). |
+| 111 | 9 | `private static Game play(String spot, int months, PrintStream silent)` |  |
+| 122 | 24 | `private static void office(List<String> text, Game g, String title)` | A city's ground, the office's prices by class and every offer on the shelf with its ground. |
+| 148 | 27 | `private static void notes(List<String> text, Game g, String title)` | Note 11 for every sector that holds any land by class, services and works, with the sheet's Land line it adds up to. |
 

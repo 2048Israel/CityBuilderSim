@@ -78,7 +78,7 @@ public final class LandClassRenders {
                 office(text, g, "Medellin, month " + g.getMonth());
                 text.add("");
                 office(text, play("medellin", early, silent), "Medellin, month " + early + " (the going price low, foothill at the base)");
-                Files.write(outDir.resolve("et3-a-land-office.txt"), text);
+                writeLf(outDir.resolve("et3-a-land-office.txt"), text);
             }
             if (b) {
                 List<String> text = new ArrayList<>();
@@ -87,7 +87,7 @@ public final class LandClassRenders {
                 notes(text, g, "Medellin, month " + g.getMonth());
                 text.add("");
                 notes(text, LandClassCheck.hillyCity("landclassrenders-hilly"), "LandClassCheck's hilly fixture: 100 houses and 2 iron mines on flat, foothill and steep ground, the going price four preparations over the base");
-                Files.write(outDir.resolve("et3-b-note-11.txt"), text);
+                writeLf(outDir.resolve("et3-b-note-11.txt"), text);
             }
         }
         if (c) {
@@ -98,9 +98,14 @@ public final class LandClassRenders {
             office(text, g, "Rotterdam, month " + g.getMonth());
             text.add("");
             notes(text, g, "Rotterdam, month " + g.getMonth());
-            Files.write(outDir.resolve("et3-c-rotterdam.txt"), text);
+            writeLf(outDir.resolve("et3-c-rotterdam.txt"), text);
         }
         System.exit(0);
+    }
+
+    /** Writes a render's lines with LF endings, as the tree stores text (Files.write() would use the PC's CRLF). */
+    private static void writeLf(Path file, List<String> text) throws IOException {
+        Files.writeString(file, String.join("\n", text) + "\n");
     }
 
     private static Game play(String spot, int months, PrintStream silent) {
