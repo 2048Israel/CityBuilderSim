@@ -1723,11 +1723,26 @@ public class LandManager {
      * ...one sector's business (0.7.107, Z3): the part its zone holds at the
      * zone's price (groundPriceFor()), the rest at the going price - the
      * zone's ground first, as allocate() takes it. Asked before allocate().
+     * A building's plot, which stands on flat and foothill only; a works's is
+     * priceFor(sqFt, sector, true).
      */
     public double priceFor(double sqFt, String sector) {
+        return priceFor(sqFt, sector, false);
+    }
+
+    /**
+     * ...a plot priced by the ground it takes (ET3, spec-earth2-terrain 5.1, 5.2): each class part of it
+     * (plotByRelief(): where allocate() would put it, buildings on flat then foothill, `works` on steep ground first)
+     * at that class's price (reliefPricePerSqFt()), the zone's share applying to every class alike. A city with no
+     * foothill and no steep ground is priced exactly as it was, the old expression.
+     */
+    public double priceFor(double sqFt, String sector, boolean works) {
         double inZone = zoning.zone(sector) == null ? 0 : Math.min(Math.max(0, sqFt), heldBy(sector));
-        if (!(inZone > 0)) return priceFor(sqFt);
-        return (sqFt - inZone) * pricePerSqFt + inZone * groundPriceFor(sector);
+        if (flatOnly()) {
+            if (!(inZone > 0)) return priceFor(sqFt);
+            return (sqFt - inZone) * pricePerSqFt + inZone * groundPriceFor(sector);
+        }
+        return pricedByClass(plotByRelief(sqFt, works), sqFt, inZone, sector);
     }
 
     /**
@@ -1737,9 +1752,21 @@ public class LandManager {
      * price. Asked before release(); with no zone, priceFor().
      */
     public double buybackPriceFor(double sqFt, String sector) {
+        return buybackPriceFor(sqFt, sector, false);
+    }
+
+    /**
+     * ...a plot priced by the ground it frees (ET3): the part that comes back by the reverse of the split
+     * (releasedByRelief()), each class at its price, the zone's share applying to every class alike. Exactly the old
+     * expression for a city with no foothill and no steep ground.
+     */
+    public double buybackPriceFor(double sqFt, String sector, boolean works) {
         double inZone = Math.min(Math.max(0, sqFt), zoning.used(sector));
-        if (!(inZone > 0)) return priceFor(sqFt);
-        return (sqFt - inZone) * pricePerSqFt + inZone * groundPriceFor(sector);
+        if (flatOnly()) {
+            if (!(inZone > 0)) return priceFor(sqFt);
+            return (sqFt - inZone) * pricePerSqFt + inZone * groundPriceFor(sector);
+        }
+        return pricedByClass(releasedByRelief(sqFt, works), sqFt, inZone, sector);
     }
 
     /** Records a sale to a business. The caller moves the cash. */
@@ -1890,6 +1917,125 @@ public class LandManager {
     /** ...and the foothill prepared, null where a save has none: what the buildings on foothill stand on now, so a city saved before is not charged for pads it already has. */
     void restorePrepared(Double sqFt) {
         this.preparedSqFt = sqFt != null ? Math.max(0, sqFt) : split().buildingsOnFoothill();
+    }
+
+    /* =====================================================================
+       A PRICE FOR EACH CLASS OF GROUND (ET3, 2026-10-25; spec-earth2-terrain 5.1, 5.2)
+
+       WHAT A BUSINESS PAYS, BY THE GROUND IT STANDS ON. pricePerSqFt stays the
+       price of FLAT ground: the market's anchor times crowding, times the
+       scarcity inside the city. The other classes are its residual
+       (LandMarket.reliefPrice()): foothill the flat price less its
+       preparation, never under the base price of unwanted ground; steep and
+       very steep the base price, which only works use. No class is dearer
+       than flat. The preparation a square foot of foothill costs is the
+       quote's own figure, wired by the owner (setPreparationPerSqFt()): the
+       price and the quote read one number.
+
+       WHICH CLASS A PLOT IS. plotByRelief() reads the plot off the split
+       (BUILDABLE BY SLOPE): the ground it would take, after the allocation
+       less before it, a building's on flat first and then foothill, a works's
+       on steep ground first, then foothill, then flat. The zone's share
+       applies to every class alike, as it did to the one price (Z3). A city
+       with no foothill and no steep ground never gets here: it is priced by
+       the old expression, so a flat world's figures do not move by a bit.
+       ===================================================================== */
+
+    /** The foothill's preparation a square foot, thousands of local money (setPreparationPerSqFt()); null while the owner has wired none. */
+    private java.util.function.DoubleSupplier preparation;
+
+    /**
+     * Wires the preparation of a square foot of foothill, in thousands of local money: the figure the quote charges
+     * (Game.preparationCost()), so the price of foothill and the quote read one number. Unwired, or answering a figure
+     * that is not a price, the founding figure at the local price level (getPreparationPerSqFt()).
+     */
+    public void setPreparationPerSqFt(java.util.function.DoubleSupplier perSqFt) { this.preparation = perSqFt; }
+
+    /**
+     * What preparing a square foot of foothill costs, thousands of local money: the wired figure (setPreparationPerSqFt()),
+     * else SitePreparation's dollars a m2 at the founding, in the local unit and price level - the base price of the
+     * ground over its founding dollar price, the ratio that turns US dollars at the founding into today's money.
+     */
+    public double getPreparationPerSqFt() {
+        if (preparation != null) {
+            double v = preparation.getAsDouble();
+            if (v >= 0 && Double.isFinite(v)) return v;
+        }
+        return SitePreparation.USD_PER_M2 / 1000 * SQ_M_PER_SQ_FT * market.getBasePricePerSqFt() / LandMarket.openingUsdPerSqFt();
+    }
+
+    /** What a business pays for a square foot of foothill, thousands of local money: the flat price less the preparation, never under the base price (LandMarket.reliefPrice()). */
+    public double getFoothillPricePerSqFt() {
+        return LandMarket.reliefPrice(World.FOOTHILL, pricePerSqFt, market.getBasePricePerSqFt(), getPreparationPerSqFt());
+    }
+
+    /** ...and of steep and very steep ground, which only works use: the base price, never over the flat price. */
+    public double getSteepPricePerSqFt() {
+        return LandMarket.reliefPrice(World.STEEP, pricePerSqFt, market.getBasePricePerSqFt(), getPreparationPerSqFt());
+    }
+
+    /** The price a square foot of ground of one relief (World.FLAT, FOOTHILL, STEEP, VERY_STEEP) is sold at: flat's is getPricePerSqFt(). */
+    public double reliefPricePerSqFt(int relief) {
+        switch (relief) {
+            case World.FOOTHILL: return getFoothillPricePerSqFt();
+            case World.STEEP:
+            case World.VERY_STEEP: return getSteepPricePerSqFt();
+            default: return pricePerSqFt;
+        }
+    }
+
+    /** Whether the city owns neither foothill nor steep ground: then every price by class is the one old price. */
+    private boolean flatOnly() {
+        return !(reliefSqFt(CityLand.RELIEF_FOOTHILL) > 0) && !(slopeSqFt() > 0);
+    }
+
+    /** The ground in use on each class under a reading of the split, square feet: {flat, foothill, slope} - works on steep ground, works and buildings on foothill, the rest of the built ground on flat. */
+    private static double[] classUse(Split s) {
+        double slope = s.worksOnSlope();
+        double foothill = s.worksOnFoothill() + s.buildingsOnFoothill();
+        return new double[] { s.works() + s.buildings() - slope - foothill, foothill, slope };
+    }
+
+    /** A change of ground in use as the square feet of `sqFt` on {flat, foothill, slope}: foothill and slope held between nothing and the plot, flat the rest, so the three sum to `sqFt`. */
+    private static double[] classParts(double sqFt, double foothill, double slope) {
+        double s = Math.min(Math.max(slope, 0), sqFt);
+        double f = Math.min(Math.max(foothill, 0), sqFt - s);
+        return new double[] { sqFt - s - f, f, s };
+    }
+
+    /**
+     * The square feet of a plot of this size, taken now, on {flat, foothill, slope} (ET3): the ground in use after
+     * the allocation less before it (split()), buildings on flat first and then foothill, `works` on steep ground
+     * first, then foothill, then flat. They sum to `sqFt`. Pure, read before allocate().
+     */
+    public double[] plotByRelief(double sqFt, boolean works) {
+        if (!(sqFt > 0)) return new double[3];
+        double[] before = classUse(split());
+        double[] after = classUse(split(allocatedSqFt + sqFt, worksSqFt + (works ? sqFt : 0)));
+        return classParts(sqFt, after[1] - before[1], after[2] - before[2]);
+    }
+
+    /**
+     * ...and of a plot this size given back (release(), asked before it): the reverse of the split - the ground in
+     * use now less the ground in use after the release - so a building's comes off the foothill first, a works's
+     * off the steep ground first of the ground it stands on.
+     */
+    public double[] releasedByRelief(double sqFt, boolean works) {
+        if (!(sqFt > 0)) return new double[3];
+        double allocatedAfter = Math.max(allocatedSqFt - sqFt, 0);
+        double worksAfter = Math.min(works ? Math.max(worksSqFt - sqFt, 0) : worksSqFt, allocatedAfter);
+        double[] before = classUse(split());
+        double[] after = classUse(split(allocatedAfter, worksAfter));
+        return classParts(sqFt, before[1] - after[1], before[2] - after[2]);
+    }
+
+    /** A plot's parts {flat, foothill, slope} at their class prices, the zone's share on every class: `inZone` of its `sqFt` at the sector's price share (Z3). */
+    private double pricedByClass(double[] parts, double sqFt, double inZone, String sector) {
+        if (!(sqFt > 0)) return 0;
+        Zoning.Zone z = zoning.zone(sector);
+        double f = inZone > 0 && z != null ? inZone / sqFt : 0;
+        double keep = f > 0 ? (1 - f) + f * z.priceShare() : 1;
+        return (parts[0] * pricePerSqFt + parts[1] * getFoothillPricePerSqFt() + parts[2] * getSteepPricePerSqFt()) * keep;
     }
 
     /* =====================================================================
@@ -2105,10 +2251,16 @@ public class LandManager {
         return idle > 0 ? Math.min(free, Math.max(0, freeSqFt(z) - idle)) : free;
     }
 
-    /** What a square foot of a sector's zone is sold and assessed at: its price share of the going business price (Z3, Z4); the going price with no zone. */
+    /** What a square foot of a sector's zone is sold and assessed at: its price share of the going business price (Z3, Z4); the going price with no zone. That is flat ground's price; groundPriceFor(sector, relief) is a class's. */
     public double groundPriceFor(String sector) {
         Zoning.Zone z = zoning.zone(sector);
         return z == null ? pricePerSqFt : z.priceShare() * pricePerSqFt;
+    }
+
+    /** ...on ground of one relief (ET3, World.FLAT to World.VERY_STEEP): the zone's price share of that class's price (reliefPricePerSqFt()); the class's price with no zone. FLAT is groundPriceFor(sector). */
+    public double groundPriceFor(String sector, int relief) {
+        Zoning.Zone z = zoning.zone(sector);
+        return z == null ? reliefPricePerSqFt(relief) : z.priceShare() * reliefPricePerSqFt(relief);
     }
 
     /**

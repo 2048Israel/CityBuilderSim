@@ -590,7 +590,7 @@ public class LandMarket {
         double[] amounts = new double[CityLand.KINDS];
         land.fieldsOn(r.x0(), r.y0(), r.x1(), r.y1(), sites, amounts);
         amounts[Resource.FOREST.ordinal()] = Math.rint(km2[CityLand.FOREST] * World.FOREST_M3_PER_KM2);
-        double usd = price(km2, amounts, groundUsdPerSqFt, usPriceLevel);
+        double usd = price(km2, ground.relief(), amounts, groundUsdPerSqFt, usPriceLevel);
         return new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, ground.relief(), sites, amounts, usd, listedIn);
     }
 
@@ -635,12 +635,135 @@ public class LandMarket {
      */
     public static double price(double[] km2, double[] amounts, double groundUsdPerSqFt, double usPriceLevel) {
         double ground = groundKm2(km2);
-        double usd = groundUsdPerSqFt * ground * LandManager.SQ_FT_PER_KM2;
+        return plusResources(groundUsdPerSqFt * ground * LandManager.SQ_FT_PER_KM2, amounts, usPriceLevel);
+    }
+
+    /** The resources' share of an offer's price added to the ground's, in thousands of US dollars (price()'s second half), rounded to US$5k. Adds in Resource's order to the figure it is handed, as price() always did. */
+    private static double plusResources(double groundUsd, double[] amounts, double usPriceLevel) {
+        double usd = groundUsd;
         for (Resource r : Resource.values()) {
             if (r.good() == null || !(r.inGroundShare() > 0)) continue;
             usd += amounts[r.ordinal()] * r.good().worldExportPrice() * r.inGroundShare() * usPriceLevel;
         }
         return Math.round(usd / 5) * 5.0;
+    }
+
+    /* ----- a price for each class of ground (ET3; spec-earth2-terrain 5.1, 5.2) ----- */
+
+    /**
+     * THE RESIDUAL PRICE of a square foot of dry ground of one relief (ET3, spec-earth2-terrain 5.1), in the money
+     * the three prices are given in: `going` is flat ground's price (the market times crowding, times scarcity inside
+     * the city), `base` the price of unwanted ground (BASE_PRICE_PER_SQ_FT at the price level) and `prep` what
+     * preparing a square foot of foothill costs. FLAT is the going price; FOOTHILL the going price less its
+     * preparation, never below the base price; STEEP and VERY_STEEP the base price - only works use them, and none
+     * would pay more for ground it could as well put elsewhere. No class is ever dearer than flat: where the going
+     * price is under the base price, every class is the going price.
+     */
+    public static double reliefPrice(int relief, double going, double base, double prep) {
+        switch (relief) {
+            case World.FOOTHILL:
+                return Math.min(going, Math.max(base, going - prep));
+            case World.STEEP:
+            case World.VERY_STEEP:
+                return Math.min(going, base);
+            default:
+                return going;
+        }
+    }
+
+    /** What preparing a square foot of foothill costs at the world's price level, in thousands of US dollars: SitePreparation's dollars a m2, over a thousand, a square foot's worth of m2 (LandManager.SQ_M_PER_SQ_FT), at the price level. */
+    public static double prepUsdPerSqFt(double usPriceLevel) {
+        return SitePreparation.USD_PER_M2 / 1000 * LandManager.SQ_M_PER_SQ_FT * usPriceLevel;
+    }
+
+    /** Whether a ground's relief row has no foothill, steep or very steep ground in it: a null row, a row of another width, and every generated world's. Such an offer is priced and ranked exactly as it was before ET3. */
+    private static boolean allFlat(double[] relief) {
+        return relief == null || relief.length != CityLand.RELIEF_AREAS
+                || !(relief[CityLand.RELIEF_FOOTHILL] > 0 || relief[CityLand.RELIEF_STEEP] > 0 || relief[CityLand.RELIEF_VERY_STEEP] > 0);
+    }
+
+    /** ...for an offer: its own relief (LandParcel.getReliefKm2()). */
+    private static boolean allFlat(LandParcel p) {
+        return !(p.getReliefKm2(CityLand.RELIEF_FOOTHILL) > 0 || p.getReliefKm2(CityLand.RELIEF_STEEP) > 0
+                || p.getReliefKm2(CityLand.RELIEF_VERY_STEEP) > 0);
+    }
+
+    /**
+     * An offer's price with its dry ground by relief (ET3, spec-earth2-terrain 5.2), in thousands of US dollars:
+     * flat ground at the dollar price a square foot, foothill at its residual price (reliefPrice(): that price less
+     * the preparation, never under the base price), steep and very steep at the base price; fresh water and sea at
+     * their shares of the flat price, each resource at its share of its good's price, as price() prices them, rounded
+     * to US$5k. `relief` is the ground's CityLand.RELIEF_AREAS figures (LandParcel.reliefRow(), CityLand.Ground.relief());
+     * with none of foothill, steep or very steep in it, or no row, this is the four-argument price() to the bit.
+     */
+    public static double price(double[] km2, double[] relief, double[] amounts, double groundUsdPerSqFt, double usPriceLevel) {
+        if (allFlat(relief)) return price(km2, amounts, groundUsdPerSqFt, usPriceLevel);
+        double base = BASE_PRICE_PER_SQ_FT * usPriceLevel;
+        double prep = prepUsdPerSqFt(usPriceLevel);
+        double dry = relief[CityLand.RELIEF_FLAT] * reliefPrice(World.FLAT, groundUsdPerSqFt, base, prep)
+                + relief[CityLand.RELIEF_FOOTHILL] * reliefPrice(World.FOOTHILL, groundUsdPerSqFt, base, prep)
+                + (relief[CityLand.RELIEF_STEEP] + relief[CityLand.RELIEF_VERY_STEEP]) * reliefPrice(World.STEEP, groundUsdPerSqFt, base, prep);
+        double water = groundUsdPerSqFt * (FRESH_PRICE_SHARE * km2[CityLand.FRESH] + SEA_PRICE_SHARE * km2[CityLand.SEA]);
+        return plusResources((dry + water) * LandManager.SQ_FT_PER_KM2, amounts, usPriceLevel);
+    }
+
+    /** The ground flat at the going dollar price, in thousands of US dollars a square foot: what the office asks for flat ground now (getGroundUsdPerSqFt()). */
+    public double getFlatUsdPerSqFt() { return groundUsdPerSqFt; }
+
+    /** ...for foothill: the going price less its preparation, never under the base price (reliefPrice()). */
+    public double getFoothillUsdPerSqFt() {
+        return reliefPrice(World.FOOTHILL, groundUsdPerSqFt, BASE_PRICE_PER_SQ_FT * usPriceLevel, prepUsdPerSqFt(usPriceLevel));
+    }
+
+    /** ...for steep and very steep ground: the base price (reliefPrice()), never over the flat price. */
+    public double getSteepUsdPerSqFt() {
+        return reliefPrice(World.STEEP, groundUsdPerSqFt, BASE_PRICE_PER_SQ_FT * usPriceLevel, prepUsdPerSqFt(usPriceLevel));
+    }
+
+    /**
+     * An offer's ground that a building can stand on, in square kilometres (ET3): its flat and its foothill, which
+     * buildings may use (LandManager, BUILDABLE BY SLOPE); the steep and very steep ground is for works. An offer
+     * all flat is its whole dry ground.
+     */
+    public static double buildableKm2(LandParcel p) {
+        return allFlat(p) ? p.getDryKm2() : p.getReliefKm2(CityLand.RELIEF_FLAT) + p.getReliefKm2(CityLand.RELIEF_FOOTHILL);
+    }
+
+    /** ...in square feet. */
+    public static double buildableSqFt(LandParcel p) {
+        return allFlat(p) ? p.getSizeSqFt()
+                : (p.getReliefKm2(CityLand.RELIEF_FLAT) + p.getReliefKm2(CityLand.RELIEF_FOOTHILL)) * LandManager.SQ_FT_PER_KM2;
+    }
+
+    /** An offer's price with the preparation of its foothill added, in thousands of US dollars (ET3, spec 5.2): what a buyer who builds on all of it pays to have it ready. An offer without foothill is its price. */
+    public double priceWithPrepUsd(LandParcel p) {
+        double foothill = p.getReliefKm2(CityLand.RELIEF_FOOTHILL);
+        return foothill > 0 ? p.getPriceUsd() + foothill * LandManager.SQ_FT_PER_KM2 * prepUsdPerSqFt(usPriceLevel) : p.getPriceUsd();
+    }
+
+    /**
+     * The buildable square kilometres a thousand US dollars, counting preparation (ET3, spec-earth2-terrain 5.2):
+     * what the pickers rank offers by in place of the dry square kilometres a dollar. An offer's flat and foothill
+     * over its price with its foothill prepared (priceWithPrepUsd()), with getDryKm2PerUsd()'s conventions for a price
+     * of nothing: infinitely good with ground, worth nothing without. An offer all flat answers getDryKm2PerUsd()
+     * itself, to the bit.
+     */
+    public double buildableKm2PerUsd(LandParcel p) {
+        if (allFlat(p)) return p.getDryKm2PerUsd();
+        double buildable = buildableKm2(p);
+        double cost = priceWithPrepUsd(p);
+        return cost > 0 ? buildable / cost : (buildable > 0 ? Double.POSITIVE_INFINITY : 0);
+    }
+
+    /** Whether any of these offers has ground a building can stand on (buildableKm2()): when none has, the pickers rank by dry ground as they always did, so a city in the mountains still has a best. */
+    public static boolean anyBuildable(Iterable<LandParcel> offers) {
+        for (LandParcel p : offers) if (p != null && buildableKm2(p) > 0) return true;
+        return false;
+    }
+
+    /** What the pickers rank an offer by: buildableKm2PerUsd() where `byBuildable`, else its dry square kilometres a dollar (getDryKm2PerUsd()) - anyBuildable() says which. */
+    public double rankPerUsd(LandParcel p, boolean byBuildable) {
+        return byBuildable ? buildableKm2PerUsd(p) : p.getDryKm2PerUsd();
     }
 
     /** A piece of ground's square kilometres as the office charges them (0.7.106, out of price()): its dry ground, FRESH_PRICE_SHARE of its fresh water and SEA_PRICE_SHARE of its sea - what the ground's price a square foot is paid on; Insane's land bond prices a founding's centre by it (Founding.landBondUsd()). */
@@ -789,6 +912,13 @@ public class LandMarket {
      * the most dry ground a dollar among them all, so a city on a spit still
      * has a best. Null only with nothing listed. (Until 0.7.57: the cheapest
      * a square foot of the parcels with no ore.)
+     *
+     * BY BUILDABLE GROUND SINCE ET3 (spec-earth2-terrain 5.2): the dry
+     * square kilometres are counted as the buildable ones a dollar - flat and
+     * foothill over the price with the foothill's preparation (buildableKm2PerUsd())
+     * - so a cheap offer that is mostly mountain loses to a dearer one on
+     * the valley floor. All flat, the same number; with no buildable ground
+     * in any offer, the dry rule as before.
      */
     public LandParcel bestValue() {
         LandParcel best = bestDry(true);
@@ -796,11 +926,19 @@ public class LandMarket {
     }
 
     private LandParcel bestDry(boolean notMostlySea) {
+        // ...by the buildable ground a dollar, preparation counted (ET3, spec 5.2), while any offer in the running has
+        // some; otherwise by dry ground, as before. All flat, the two are one number.
+        List<LandParcel> running = new ArrayList<>(OFFERS);
+        for (LandParcel p : offers) if (p != null && !(notMostlySea && p.isMostlySea())) running.add(p);
+        boolean byBuildable = anyBuildable(running);
         LandParcel best = null;
-        for (LandParcel p : offers) {
-            if (p == null || (notMostlySea && p.isMostlySea())) continue;
-            if (best == null || p.getDryKm2PerUsd() > best.getDryKm2PerUsd()
-                    || (p.getDryKm2PerUsd() == best.getDryKm2PerUsd() && nearer(p, best))) best = p;
+        double bestRate = 0;
+        for (LandParcel p : running) {
+            double rate = rankPerUsd(p, byBuildable);
+            if (best == null || rate > bestRate || (rate == bestRate && nearer(p, best))) {
+                best = p;
+                bestRate = rate;
+            }
         }
         return best;
     }
