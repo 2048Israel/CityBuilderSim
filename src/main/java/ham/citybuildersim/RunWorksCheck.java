@@ -16,7 +16,7 @@ import java.util.Map;
  * for the cuts, the viaducts and the tunnels that ground needs, at the city's own mix of it.
  *
  * WHAT THIS HAS TO PROVE, every fixture causing the condition it tests and every figure the model's own getters
- * (sections 1 to 6 are slice A's, the land; 7 to 12 slice B's, the price of the works):
+ * (sections 1 to 6 are slice A's, the land; 7 to 12 slice B's, the price of the works; 13 and 14 slice C's, the map):
  *
  *   1. WHICH TEMPLATES ARE RUNS. Game.isRun() over the whole catalogue agrees with what the map draws as a highway or
  *      as track (BuildingVisual.Type's road() and track()); the Elevated Highway, the Rail Spur and the Freight Line are
@@ -51,6 +51,16 @@ import java.util.Map;
  *  11. A FLAT CITY TO THE BIT. On all-flat ground a run's quote, its order, the books and the investor's price are what
  *      they were before ET4: no works, no line, the counters at nothing.
  *  12. THE SCREEN'S WORDS. BuildScreen.worksWords() reads the quote's fields, the mix among them; nothing on flat ground.
+ *  13. ON THE MAP. A tile with an east-west highway and a north-south track each crossing flat, steep, very steep and flat
+ *      ground: Painted.bridge is true on exactly the runs' steep plots and Painted.tunnel on exactly their very steep plots,
+ *      neither on the flat; at 8 px a plot (and 4) a flat plot of the highway has its surface in the middle, a viaduct's
+ *      plot is cased in the deck's colour and the track's has its deck beside the bed, a tunnel's plot is its ground with
+ *      the run's dashed line, and TUNNEL_PORTAL pixels lie at each tunnel's two ends and nowhere inside it; a plot of the
+ *      same relief with no run is drawn as it is without the runs; in the blocks' views a tunnel is its ground and the
+ *      run's colour on every other plot; the hover says "a viaduct" and "a tunnel".
+ *  14. THE STREETS' RULE DID NOT MOVE. A street plot on fresh water is still a bridge and no tunnel, a street plot on steep
+ *      or very steep ground neither (the plans never lay one there), a run plot on foothill neither, and a run over fresh
+ *      water a bridge and never a tunnel, whatever relief the plot carries.
  *
  * WHY. ET2 made the land a pool of three classes with buildings on the flat and foothill only and works on any, and a
  * highway, a building of the pool, could therefore never stand on a steep slope; the spec says it does (4.3). Each
@@ -134,6 +144,8 @@ public class RunWorksCheck {
         inTheBooks();
         aFlatCityPaysNoWorks();
         theScreensWords();
+        onTheMap();
+        theStreetsRuleDidNotMove();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1081,5 +1093,210 @@ public class RunWorksCheck {
         } else {
             out.println("      (Build's source is not under the working folder: the line is not looked for in it)");
         }
+    }
+
+    /* =====================================================================
+       13. ON THE MAP, AND 14. THE STREETS' RULE (slice C; spec-earth2-terrain 4.3: "a run on very steep ground is drawn as a
+       tunnel (portals, a dashed line), on steep ground as a viaduct")
+       ===================================================================== */
+
+    static final int T = TilePainter.TILE;
+
+    /** The fixture's rows and columns: the highway along row HY from column HX0, the track down column TX, and row BARE with no run. */
+    static final int HY = 6, HX0 = 8, TX = 4, BARE = 20;
+
+    /** A fixture's relief at k along an axis: flat to 9, steep 10 to 15, very steep 16 to 23, flat from 24. */
+    static byte band(int k) {
+        return k < 10 ? World.FLAT : k < 16 ? World.STEEP : k < 24 ? World.VERY_STEEP : World.FLAT;
+    }
+
+    /** One owned tile of dry grass: relief in bands along x (and, down the track's column, along y), an east-west highway on row HY and a north-south track on column TX. */
+    public static TilePainter.Input mapTile() {
+        TilePainter.Input in = new TilePainter.Input();
+        java.util.Arrays.fill(in.owned, true);
+        for (int y = 0; y < T; y++) for (int x = 0; x < T; x++) in.relief[y * T + x] = x == TX ? band(y) : band(x);
+        for (int x = HX0; x < T; x++) in.fixed[HY * T + x] = (byte) BuildingVisual.HIGHWAY;
+        for (int y = 0; y < T; y++) in.fixed[y * T + TX] = TilePainter.RAIL;
+        return in;
+    }
+
+    static TilePainter.Painted paintTile(TilePainter.Input in) {
+        TilePainter.Painted p = new TilePainter.Painted();
+        TilePainter.paint(in, p);
+        return p;
+    }
+
+    static int[] rasterAt(TilePainter.Input in, TilePainter.Painted p, int px) {
+        int[] img = new int[T * px * T * px];
+        TileRaster.raster(in, p, px, img);
+        return img;
+    }
+
+    /** One pixel of plot (plotX, plotY), local (dx, dy), at px pixels a plot. */
+    static int pixel(int[] img, int px, int plotX, int plotY, int dx, int dy) {
+        return img[(plotY * px + dy) * (T * px) + plotX * px + dx];
+    }
+
+    /** How many pixels of plot (plotX, plotY) are TUNNEL_PORTAL. */
+    static int portals(int[] img, int px, int plotX, int plotY) {
+        int n = 0;
+        for (int dy = 0; dy < px; dy++) for (int dx = 0; dx < px; dx++) if (pixel(img, px, plotX, plotY, dx, dy) == TileRaster.TUNNEL_PORTAL) n++;
+        return n;
+    }
+
+    /** How many pixels of the whole image are TUNNEL_PORTAL. */
+    static int portals(int[] img) {
+        int n = 0;
+        for (int c : img) if (c == TileRaster.TUNNEL_PORTAL) n++;
+        return n;
+    }
+
+    static void onTheMap() {
+        out.println("\n--- 13. on the map: a run across steep ground is a viaduct, across very steep ground a tunnel with a dashed line and a portal at each end ---");
+        TilePainter.Input in = mapTile();
+        TilePainter.Painted p = paintTile(in);
+
+        // The painter's flags.
+        int wantBridges = 0, wantTunnels = 0, bridges = 0, tunnels = 0;
+        boolean exact = true, flatClear = true, both = false;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            boolean run = in.fixed[i] != 0;
+            boolean steep = run && in.relief[i] == World.STEEP, very = run && in.relief[i] == World.VERY_STEEP;
+            if (steep) wantBridges++;
+            if (very) wantTunnels++;
+            if (p.bridge[i]) bridges++;
+            if (p.tunnel[i]) tunnels++;
+            exact &= p.bridge[i] == steep && p.tunnel[i] == very;
+            if (!steep && !very) flatClear &= !p.bridge[i] && !p.tunnel[i];
+            both |= p.bridge[i] && p.tunnel[i];
+        }
+        check("fixture: both runs cross steep and very steep ground (more than one plot each) as well as flat", wantBridges > 2 && wantTunnels > 2
+                && in.relief[HY * T + 9] == World.FLAT && in.relief[HY * T + 27] == World.FLAT && in.relief[4 * T + TX] == World.FLAT);
+        report("Painted.bridge is true on exactly the runs' steep plots and Painted.tunnel on exactly their very steep plots",
+                exact && bridges == wantBridges && tunnels == wantTunnels, bridges + " bridges, " + tunnels + " tunnels, from the fixture " + wantBridges + " and " + wantTunnels);
+        check("...neither on a flat plot of a run nor on any plot that holds no run, and no plot is both", flatClear && !both);
+
+        // At 8 px a plot.
+        int px = 8, roadC = TileRaster.ROAD[BuildingVisual.HIGHWAY];
+        int[] cs = TileRaster.crossSection(BuildingVisual.HIGHWAY, px);
+        int row = (px - cs[0]) / 2 + cs[1];
+        int mid = px / 2, grey = TileRaster.colour(World.GRASS, World.VERY_STEEP), greySteep = TileRaster.colour(World.GRASS, World.STEEP);
+        int[] img = rasterAt(in, p, px);
+        check("at 8 px a flat plot of the highway has the highway's surface colour in the middle of its band",
+                pixel(img, px, 27, HY, 3, row) == roadC && pixel(img, px, 9, HY, 3, row) == roadC);
+        check("...a viaduct's plot has it too, its casing in the deck's colour where a flat plot's is the highway's own",
+                pixel(img, px, 12, HY, 3, row) == roadC && pixel(img, px, 12, HY, 3, 0) == TileRaster.DECK && pixel(img, px, 27, HY, 3, 0) == TileRaster.HIGHWAY_CASE);
+        check("...a tunnel's plot has not: where the surface lies on a flat plot it is the ground's grey, with the highway's colour only in the dashed line along the middle",
+                pixel(img, px, 19, HY, 3, row) == grey && pixel(img, px, 19, HY, 3, row) != roadC && pixel(img, px, 19, HY, 0, mid) == roadC && pixel(img, px, 19, HY, px - 1, mid) == grey);
+        int bedCol = (px - Math.min(px, Math.max(1, (int) Math.round(TileRaster.BED * px)))) / 2;
+        check("the track's flat plot has its ballast and no deck, its steep plot the deck beside the bed, its very steep plot its grey with the steel in the dashed line",
+                pixel(img, px, TX, 27, bedCol, 1) == TileRaster.BALLAST && pixel(img, px, TX, 27, 0, 3) == TileRaster.GROUND[World.GRASS]
+                        && pixel(img, px, TX, 12, bedCol, 1) == TileRaster.BALLAST && pixel(img, px, TX, 12, 0, 3) == TileRaster.DECK
+                        && pixel(img, px, TX, 19, bedCol, 1) == grey && pixel(img, px, TX, 19, mid, 0) == TileRaster.STEEL && pixel(img, px, TX, 19, mid, px - 1) == grey);
+
+        // The portals.
+        int depth = Math.max(1, (int) Math.round(TileRaster.TUNNEL_PORTAL_DEPTH * px));
+        int hAcross = Math.min(px, cs[0] + 2), tAcross = Math.min(px, TileRaster.crossSection(BuildingVisual.PAVED, px)[0] + 2);
+        boolean highwayEnds = portals(img, px, 16, HY) == hAcross * depth && portals(img, px, 23, HY) == hAcross * depth
+                && pixel(img, px, 16, HY, 0, mid) == TileRaster.TUNNEL_PORTAL && pixel(img, px, 16, HY, depth, mid) != TileRaster.TUNNEL_PORTAL
+                && pixel(img, px, 23, HY, px - 1, mid) == TileRaster.TUNNEL_PORTAL && pixel(img, px, 23, HY, px - depth - 1, mid) != TileRaster.TUNNEL_PORTAL;
+        boolean inside = true;
+        for (int x = 17; x <= 22; x++) inside &= portals(img, px, x, HY) == 0;
+        check("the highway's tunnel has a portal band across its way at the west edge of its first plot and the east edge of its last, TUNNEL_PORTAL, a little wider than the run, the dial's depth", highwayEnds);
+        check("...and none inside it, none on the viaduct or the flat plots beside it", inside && portals(img, px, 15, HY) == 0 && portals(img, px, 24, HY) == 0 && portals(img, px, 9, HY) == 0);
+        boolean trackEnds = portals(img, px, TX, 16) == tAcross * depth && portals(img, px, TX, 23) == tAcross * depth
+                && pixel(img, px, TX, 16, mid, 0) == TileRaster.TUNNEL_PORTAL && pixel(img, px, TX, 23, mid, px - 1) == TileRaster.TUNNEL_PORTAL;
+        boolean trackInside = true;
+        for (int y = 17; y <= 22; y++) trackInside &= portals(img, px, TX, y) == 0;
+        check("the track's tunnel has its portals at the north edge of its first plot and the south edge of its last, and none inside", trackEnds && trackInside);
+        check("...and the tile holds no other portal pixel: the two tunnels' four ends alone, from the dials", portals(img) == 2 * hAcross * depth + 2 * tAcross * depth);
+
+        // A plot with no run is drawn as it is without the runs.
+        TilePainter.Input bareIn = mapTile();
+        java.util.Arrays.fill(bareIn.fixed, (byte) 0);
+        TilePainter.Painted bareP = paintTile(bareIn);
+        boolean sameGround = true;
+        int[] bare8 = rasterAt(bareIn, bareP, 8), bare4 = rasterAt(bareIn, bareP, 4), img4 = rasterAt(in, p, 4);
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (in.fixed[i] != 0) continue;
+            int x = i % T, y = i / T;
+            for (int dy = 0; dy < 8; dy++) for (int dx = 0; dx < 8; dx++) sameGround &= pixel(img, 8, x, y, dx, dy) == pixel(bare8, 8, x, y, dx, dy);
+            for (int dy = 0; dy < 4; dy++) for (int dx = 0; dx < 4; dx++) sameGround &= pixel(img4, 4, x, y, dx, dy) == pixel(bare4, 4, x, y, dx, dy);
+        }
+        check("a plot with no run is drawn as it is without the runs, at 8 px and at 4: every pixel of every such plot is the same", sameGround);
+        check("...a plot of steep ground with none is its steep grey, of very steep its darker grey, of flat the grass",
+                pixel(img, px, 12, BARE, 3, 3) == greySteep && pixel(img, px, 20, BARE, 3, 3) == grey && pixel(img, px, 2, BARE, 3, 3) == TileRaster.GROUND[World.GRASS] && greySteep != grey);
+
+        // At 4 px a plot: a highway fills its plot's width, so the viaduct's casing is one pixel of the deck's colour.
+        int p4 = 4, roadF = TileRaster.ROAD[BuildingVisual.HIGHWAY];
+        int d4 = Math.max(1, (int) Math.round(TileRaster.TUNNEL_PORTAL_DEPTH * p4));
+        int h4 = Math.min(p4, TileRaster.crossSection(BuildingVisual.HIGHWAY, p4)[0] + 2), t4 = Math.min(p4, TileRaster.crossSection(BuildingVisual.PAVED, p4)[0] + 2);
+        check("at 4 px a flat plot of the highway is its surface across, a viaduct's plot has the deck's colour on the pixel either side of it",
+                pixel(img4, p4, 27, HY, 1, 1) == roadF && pixel(img4, p4, 27, HY, 1, 0) == roadF
+                        && pixel(img4, p4, 12, HY, 1, 1) == roadF && pixel(img4, p4, 12, HY, 1, 0) == TileRaster.DECK && pixel(img4, p4, 12, HY, 1, p4 - 1) == TileRaster.DECK);
+        check("...a tunnel's plot is its ground with the dashed line (the highway's colour on the first pixels along the middle row), and the portals are four ends of the dials' depth",
+                pixel(img4, p4, 19, HY, 1, p4 - 1) == grey && pixel(img4, p4, 19, HY, 0, p4 / 2) == roadF && portals(img4) == 2 * h4 * d4 + 2 * t4 * d4);
+        check("...the track's tunnel plot is ground and steel there too, its steep plot has the deck beside the bed",
+                pixel(img4, p4, TX, 19, 0, 3) == grey && pixel(img4, p4, TX, 19, p4 / 2, 0) == TileRaster.STEEL && pixel(img4, p4, TX, 12, 0, 1) == TileRaster.DECK);
+
+        // The blocks' views: a tunnel is its ground and, every other plot along the run, the run's colour.
+        int[] blocks = new int[T * 2 * T * 2];
+        TileRaster.blocks(in, p, 2, TileRaster.BLOCK_MIDDLE, false, blocks);
+        boolean dashed = true;
+        for (int x = 16; x <= 23; x++) {
+            boolean dash = TileRaster.tunnelDash(HY * T + x);
+            dashed &= pixel(blocks, 2, x, HY, 0, 0) == (dash ? roadC : grey);
+        }
+        check("in the blocks' views (2 px a plot) a tunnel of the highway is its bare ground but for every other plot, the highway's colour, and a viaduct is a highway like any",
+                dashed && pixel(blocks, 2, 12, HY, 0, 0) == roadC && pixel(blocks, 2, 27, HY, 0, 0) == roadC
+                        && TileRaster.tunnelDash(HY * T + 18) != TileRaster.tunnelDash(HY * T + 19));
+        int[] far = new int[T * T];
+        TileRaster.blocks(in, p, 1, TileRaster.BLOCK_FAR, false, far);
+        boolean farDashed = true;
+        for (int x = 16; x <= 23; x++) farDashed &= far[HY * T + x] == (TileRaster.tunnelDash(HY * T + x) ? roadC : grey);
+        check("...and in the far view (1 px a plot) likewise", farDashed);
+
+        // The hover says what carries the run.
+        java.util.function.IntFunction<String> noName = id -> null;
+        check("the hover card says \"a viaduct\" on a steep plot of a run and \"a tunnel\" on a very steep one, highway and railway alike, and nothing on the flat",
+                "Highway, a viaduct".equals(LandMap.plotWords(in, p, HY * T + 12, noName)) && "Highway, a tunnel".equals(LandMap.plotWords(in, p, HY * T + 19, noName))
+                        && "Highway".equals(LandMap.plotWords(in, p, HY * T + 27, noName))
+                        && "Railway, a viaduct".equals(LandMap.plotWords(in, p, 12 * T + TX, noName)) && "Railway, a tunnel".equals(LandMap.plotWords(in, p, 19 * T + TX, noName))
+                        && "Railway".equals(LandMap.plotWords(in, p, 27 * T + TX, noName)));
+    }
+
+    static void theStreetsRuleDidNotMove() {
+        out.println("\n--- 14. the streets' rule did not move: a street on fresh water is a bridge, a street or a run on foothill is none, a run over water a bridge and no tunnel ---");
+        TilePainter.Input in = new TilePainter.Input();
+        java.util.Arrays.fill(in.owned, true);
+        int sx = 3, code = DistrictPlan.PAVED | (1 << TilePainter.S_WIDTH_SHIFT);
+        for (int y = 0; y < T; y++) in.street[y * T + sx] = (byte) code;
+        for (int y = 5; y <= 9; y++) in.terrain[y * T + sx] = World.FRESH;
+        for (int y = 12; y <= 14; y++) in.relief[y * T + sx] = World.STEEP;
+        for (int y = 16; y <= 18; y++) in.relief[y * T + sx] = World.VERY_STEEP;
+        for (int y = 22; y <= 24; y++) in.relief[y * T + sx] = World.FOOTHILL;
+        // A highway along row 28 from column 8: foothill to column 15, then over fresh water on plots a hypothetical very steep relief marks (the water wins).
+        for (int x = 8; x < T; x++) in.fixed[28 * T + x] = (byte) BuildingVisual.HIGHWAY;
+        for (int x = 8; x <= 15; x++) in.relief[28 * T + x] = World.FOOTHILL;
+        for (int x = 16; x <= 19; x++) { in.terrain[28 * T + x] = World.FRESH; in.relief[28 * T + x] = World.VERY_STEEP; }
+        TilePainter.Painted p = paintTile(in);
+        boolean water = true, steep = true, very = true, foot = true, wetRun = true, footRun = true;
+        for (int y = 5; y <= 9; y++) water &= p.use[y * T + sx] == TilePainter.ROAD && p.bridge[y * T + sx] && !p.tunnel[y * T + sx];
+        for (int y = 12; y <= 14; y++) steep &= p.use[y * T + sx] == TilePainter.ROAD && !p.bridge[y * T + sx] && !p.tunnel[y * T + sx];
+        for (int y = 16; y <= 18; y++) very &= p.use[y * T + sx] == TilePainter.ROAD && !p.bridge[y * T + sx] && !p.tunnel[y * T + sx];
+        for (int y = 22; y <= 24; y++) foot &= p.use[y * T + sx] == TilePainter.ROAD && !p.bridge[y * T + sx] && !p.tunnel[y * T + sx];
+        for (int x = 8; x <= 15; x++) footRun &= p.use[28 * T + x] == TilePainter.ROAD && !p.bridge[28 * T + x] && !p.tunnel[28 * T + x];
+        for (int x = 16; x <= 19; x++) wetRun &= p.bridge[28 * T + x] && !p.tunnel[28 * T + x];
+        check("a street plot on fresh water is a bridge, as it was, and no tunnel", water);
+        check("...a street plot on steep ground, or on very steep, is neither (the plans never lay one there; its relief does not make it a bridge)", steep && very);
+        check("...a street plot on foothill is neither", foot);
+        check("a run plot on foothill is neither a bridge nor a tunnel", footRun);
+        check("a run plot over fresh water is a bridge and never a tunnel, whatever relief the plot carries", wetRun);
+        int viaducts = 0, tunnels = 0;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (p.bridge[i] && in.terrain[i] != World.FRESH) viaducts++;
+            if (p.tunnel[i]) tunnels++;
+        }
+        check("...and this tile has no run on steep ground, so it has no viaduct and no tunnel: the bridges are over water alone", viaducts == 0 && tunnels == 0);
     }
 }

@@ -261,6 +261,23 @@ public final class TileRaster {
     /** A bridge's deck, edging a road over fresh water from 4 px a plot: the mockup's. */
     public static final int DECK = 0xff5d4c3c;
 
+    /* ===== TUNNELS AND VIADUCTS (ET4, 2026-10-25; spec-earth2-terrain 4.3, D10) ===== */
+
+    /** A tunnel's portal (ET4): the near black band across a highway or a railway where it goes into the hill or comes out, on the last plot of the tunnel at its edge, a little wider than the run (its cross-section and a pixel either side, at most the plot) and TUNNEL_PORTAL_DEPTH of a plot deep. */
+    public static final int TUNNEL_PORTAL = 0xff090b0d;
+
+    /** The share of a plot a tunnel's dashed line fills along the run, from the plot's start: 0.6 (the highway's centre line is .55), in the run's own colour - the highway's surface, the track's steel - a pixel wide at the near view. */
+    public static final double TUNNEL_DASH = 0.6;
+
+    /** A portal's depth along the run, a share of a plot: 0.25, a pixel at least - 1 px at 4 px a plot, 2 at 8. */
+    public static final double TUNNEL_PORTAL_DEPTH = 0.25;
+
+    /** Whether tunnel plot i is a dash where the view draws no lines (the blocks' views, below LINES_FROM): every other plot along the run, the plots whose x + y is even, the rest its bare ground. */
+    static boolean tunnelDash(int i) {
+        int tile = TilePainter.TILE;
+        return (((i % tile) + (i / tile)) & 1) == 0;
+    }
+
     /** Ground no one in the city owns is drawn this much of the way to the map's background: 40%. */
     public static final double UNOWNED_DIM = 0.4;
 
@@ -1216,6 +1233,8 @@ public final class TileRaster {
             }
         }
         for (int i = 0; i < TilePainter.PLOTS; i++) {
+            // A tunnel's plot (ET4) is its bare ground but for every other plot along the run, the run's line dashed (tunnelDash()).
+            if (p.tunnel[i] && !tunnelDash(i)) continue;
             int kind = roadKind(p, i);
             boolean hidden = !gravel && (kind == BuildingVisual.GRAVEL || kind == TilePainter.TRACK);
             if (p.use[i] == TilePainter.RAIL && (kind == 0 || hidden)) {
@@ -1239,14 +1258,14 @@ public final class TileRaster {
             }
         }
         // The railway's bends, in RAIL_DARK where the plots they replace are not (FX5).
-        blockBends(in, px, img);
+        blockBends(in, p, px, img);
         // The track's cross-ticks (0.8.1, spec-freight 4.3): from 2 px a plot, a pixel beside the line at each block
         // boundary, so the dark line reads as rail and not a road.
         if (px >= TICKS_FROM) {
             for (int i = 0; i < TilePainter.PLOTS; i++) {
                 int kind = roadKind(p, i);
                 boolean hidden = !gravel && (kind == BuildingVisual.GRAVEL || kind == TilePainter.TRACK);
-                if (p.use[i] != TilePainter.RAIL || (kind != 0 && !hidden) || diagonal(in, i) || in.curved[i]) continue;
+                if (p.use[i] != TilePainter.RAIL || (kind != 0 && !hidden) || diagonal(in, i) || in.curved[i] || p.tunnel[i]) continue;
                 int x = i % tile, y = i / tile, x0 = x * px, y0 = y * px;
                 boolean ns = railAt(in, p, i, 0) || railAt(in, p, i, 2);
                 boolean ew = railAt(in, p, i, 1) || railAt(in, p, i, 3);
@@ -1428,7 +1447,7 @@ public final class TileRaster {
         int tile = TilePainter.TILE, mark;
         if (x >= 0 && y >= 0 && x < tile && y < tile) {
             int j = y * tile + x;
-            if (!isHighway(p, j)) return -1;
+            if (!isHighway(p, j) || p.tunnel[j]) return -1;
             mark = in.marks[j];
         } else {
             if ((x < 0 || x >= tile) && (y < 0 || y >= tile)) return -1;
@@ -1478,7 +1497,7 @@ public final class TileRaster {
      * fresh water is left as the plain staircase or straight it was.
      */
     private static boolean bendReplaces(TilePainter.Input in, TilePainter.Painted p, int i) {
-        return in.curved[i] && !p.bridge[i];
+        return in.curved[i] && !p.bridge[i] && !p.tunnel[i];
     }
 
     /** Whether plot (x, y), in the tile or just across one of its edges on an axis, is a highway's own. */
@@ -2214,6 +2233,17 @@ public final class TileRaster {
      * curves (CL4, slice D, THE CURVES above) likewise: the open ground their bands
      * reach has its verge with the streets', a plot they draw only the bars of the
      * streets that cross it, and their bands come after the streets' surfaces.
+     *
+     * VIADUCTS AND TUNNELS (ET4, 2026-10-25; spec-earth2-terrain 4.3, D10: "all rec"). The runs cross any relief, and the
+     * model prices the works at the city's mix of ground (RunWorks); the map draws where the run actually lies
+     * (TilePainter's loop of the runs). A run's plot on steep ground (Painted.bridge, beside the bridges over fresh water)
+     * is a viaduct, drawn as a bridge is: the deck pass lays its deck, and the bends, which never replace a bridge's plot,
+     * leave it straight. The deck under a highway is hidden by the highway's own width, which fills its plot, so a viaduct's
+     * highway is cased in the deck's colour instead, a pixel at least (its casing otherwise is HIGHWAY_CASE, and from 6 px a plot alone).
+     * A run's plot on very steep dry ground (Painted.tunnel) is a tunnel: the passes leave it as its ground, and tunnels()
+     * draws a dashed line along the run in its own colour and a TUNNEL_PORTAL band across it where the run comes out. In the
+     * blocks' views and below LINES_FROM a tunnel is its bare ground but for every other plot along the run, whose line
+     * is drawn as before (tunnelDash()); no portal there.
      */
     private static void ways(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
@@ -2344,25 +2374,32 @@ public final class TileRaster {
         // The highways: cased, their middles and their arms to the highway beside them, across the tile's edge too.
         int[] cs = crossSection(BuildingVisual.HIGHWAY, px);
         int width = cs[0], cas = cs[1], o = (px - width) / 2;
-        for (int pass = cas > 0 ? 0 : 1; pass < 2; pass++) {
+        for (int pass = 0; pass < 2; pass++) {
             int in0 = pass == 0 ? 0 : cas;
             for (int i = 0; i < TilePainter.PLOTS; i++) {
                 int x0 = (i % tile) * px, y0 = (i / tile) * px;
-                int c = pass == 0 ? HIGHWAY_CASE : ROAD[BuildingVisual.HIGHWAY];
+                // A viaduct (ET4: a highway's plot on steep ground, a bridge over dry land) is cased in the deck's colour, a pixel at
+                // least even where the highway has none: it fills its plot's width, so its deck could not otherwise be seen.
+                boolean viaduct = p.bridge[i] && in.terrain[i] != World.FRESH && isHighway(p, i);
+                int ci = viaduct ? Math.max(1, cas) : cas, inI = pass == 0 ? 0 : ci;
+                if (pass == 0 && ci == 0) continue;
+                int c = pass == 0 ? (viaduct ? DECK : HIGHWAY_CASE) : ROAD[BuildingVisual.HIGHWAY];
                 if (!in.owned[i]) c = blend(c, VOID, UNOWNED_DIM);
                 if (!isHighway(p, i)) {
                     // Open ground between two steps of a 45-degree stretch: the band the corners leave out (FX3).
-                    diagOpen(in, p, i, px, (width - 2 * in0) / 2.0, c, img);
-                    diagEndOpen(in, p, i, px, (width - 2 * in0) / 2.0, c, img);
+                    diagOpen(in, p, i, px, (width - 2 * inI) / 2.0, c, img);
+                    diagEndOpen(in, p, i, px, (width - 2 * inI) / 2.0, c, img);
                     continue;
                 }
-                // A plot a bend replaces is the arc's (FX5 slice D), drawn after the plots; a bridge's plot never is.
+                // A tunnel's plot (ET4) is its ground: tunnels() draws its dashed line and portals.
+                if (p.tunnel[i]) continue;
+                // A plot a bend replaces is the arc's (FX5 slice D), drawn after the plots; a bridge's or a tunnel's plot never is.
                 if (bendReplaces(in, p, i)) continue;
                 if (diagonal(in, i)) {
-                    diagBand(img, w, i, px, in.marks[i], (width - 2 * in0) / 2.0, c);
+                    diagBand(img, w, i, px, in.marks[i], (width - 2 * inI) / 2.0, c);
                     continue;
                 }
-                int a = o + in0, z = o + width - in0;
+                int a = o + inI, z = o + width - inI;
                 fillRect(img, w, x0 + a, y0 + a, x0 + z, y0 + z, c);
                 if (highwayAt(in, p, i, 0)) fillRect(img, w, x0 + a, y0, x0 + z, y0 + a, c);
                 if (highwayAt(in, p, i, 2)) fillRect(img, w, x0 + a, y0 + z, x0 + z, y0 + px, c);
@@ -2370,7 +2407,7 @@ public final class TileRaster {
                 if (highwayAt(in, p, i, 1)) fillRect(img, w, x0 + z, y0 + a, x0 + px, y0 + z, c);
             }
             // ...and the bends' arcs over them, the casing and then the surface (FX5 slice D).
-            highwayBends(in, p, px, img, (width - 2 * in0) / 2.0, pass == 0 ? HIGHWAY_CASE : ROAD[BuildingVisual.HIGHWAY]);
+            if (pass == 1 || cas > 0) highwayBends(in, p, px, img, (width - 2 * in0) / 2.0, pass == 0 ? HIGHWAY_CASE : ROAD[BuildingVisual.HIGHWAY]);
         }
         // A highway arm's end, from 4 px a plot as every way is (spec 2.7's ramp at an arm's end, which no street need pass
         // beneath), and a stack, drawn over the highways.
@@ -2382,7 +2419,7 @@ public final class TileRaster {
         // The railway bridging a highway (0.7.89; spec 2.8): its deck and, drawn as rail (0.8.1), the track across the highway.
         int[] rs = crossSection(BuildingVisual.PAVED, px);
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (p.run[i] != TilePainter.RAIL_OVER || p.use[i] == TilePainter.BUILDING) continue;
+            if (p.run[i] != TilePainter.RAIL_OVER || p.use[i] == TilePainter.BUILDING || p.tunnel[i]) continue;
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             boolean ns = railAt(in, p, i, 0) || railAt(in, p, i, 2);
             int deck = Math.min(px, rs[0] + 2), od = (px - deck) / 2;
@@ -2395,11 +2432,13 @@ public final class TileRaster {
             drawTrackLook(in, p, i, px, img);
         }
         ramps(in, p, px, img);
+        // The tunnels (ET4): their dashed lines and portals, over the ground the passes above left bare.
+        tunnels(in, p, px, img);
         // The highways' dashed centre line, from 6 px a plot.
         if (px < 6) return;
         int dash = (int) Math.round(0.55 * px), mid = px / 2;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i) || p.run[i] == TilePainter.RAIL_OVER || bendReplaces(in, p, i)) continue;
+            if (!isHighway(p, i) || p.tunnel[i] || p.run[i] == TilePainter.RAIL_OVER || bendReplaces(in, p, i)) continue;
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             int c = in.owned[i] ? CENTRE_LINE : blend(CENTRE_LINE, VOID, UNOWNED_DIM);
             if (diagonal(in, i)) {
@@ -2981,7 +3020,7 @@ public final class TileRaster {
         int full = fullCs[0], cas = fullCs[1];
         int paved = crossSection(BuildingVisual.PAVED, px)[0];
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i) || (in.marks[i] & CityRuns.M_RAMP) == 0 || p.beneath[i] || diagonal(in, i)) continue;
+            if (!isHighway(p, i) || p.tunnel[i] || (in.marks[i] & CityRuns.M_RAMP) == 0 || p.beneath[i] || diagonal(in, i)) continue;
             boolean n = runHighwayAt(in, p, i, 0), s = runHighwayAt(in, p, i, 2);
             boolean e = runHighwayAt(in, p, i, 1), west = runHighwayAt(in, p, i, 3);
             boolean ns = n || s;
@@ -3062,7 +3101,7 @@ public final class TileRaster {
         int[] cs = crossSection(BuildingVisual.HIGHWAY, px);
         int width = cs[0], cas = cs[1], o = (px - width) / 2;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (!isHighway(p, i) || diagonal(in, i) || in.curved[i]) continue;
+            if (!isHighway(p, i) || p.tunnel[i] || diagonal(in, i) || in.curved[i]) continue;
             boolean ns = straightHighwayAt(in, p, i, 0) || straightHighwayAt(in, p, i, 2);
             boolean ew = straightHighwayAt(in, p, i, 1) || straightHighwayAt(in, p, i, 3);
             if (!ns || !ew) continue;
@@ -3327,9 +3366,86 @@ public final class TileRaster {
      */
     private static void track(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (p.use[i] != TilePainter.RAIL || in.curved[i]) continue;
+            if (p.use[i] != TilePainter.RAIL || in.curved[i] || p.tunnel[i]) continue;
             drawTrackLook(in, p, i, px, img);
         }
+    }
+
+    /**
+     * The tunnels (ET4, 2026-10-25; spec-earth2-terrain 4.3: "a run on very steep ground is drawn as a tunnel (portals, a
+     * dashed line)"): each plot of a run that lies on very steep dry ground (Painted.tunnel) is its ground, the highway's
+     * casing and surface and the track's bed and rails left out by the passes above, and here a dashed line along the run's
+     * way in the run's own colour (the highway's surface, the track's steel; TUNNEL_DASH of every plot from its start, so
+     * it runs on across plots) and, at each end of the tunnel, a portal: a TUNNEL_PORTAL band across the way on the last
+     * plot's edge. An end is the edge toward a plot of the run that is no tunnel's, or where the run ends - a plot with one
+     * neighbour ends opposite it, a lone plot at both ends of its east-west way. Across the tile's edge the neighbour's
+     * relief is not in the tile's input, so the tunnel is taken to go on and the tile draws no portal there. The track over
+     * a highway (RAIL_OVER) in a tunnel draws both lines; a 45-degree stretch only its dash, no portal.
+     */
+    private static void tunnels(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int highway = crossSection(BuildingVisual.HIGHWAY, px)[0], rail = crossSection(BuildingVisual.PAVED, px)[0];
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            if (!p.tunnel[i] || (p.use[i] != TilePainter.ROAD && p.use[i] != TilePainter.RAIL)) continue;
+            int arms = 0;
+            if (isHighway(p, i)) {
+                for (int d = 0; d < 4; d++) if (highwayAt(in, p, i, d)) arms |= 1 << d;
+                tunnelWay(in, p, i, px, img, arms, ROAD[BuildingVisual.HIGHWAY], highway);
+                if (p.run[i] != TilePainter.RAIL_OVER) continue;
+                // The track bridging the highway runs across it (as the deck pass above reads it: the other axis).
+                int across = (arms & 5) != 0 ? 10 : 5, track = 0;
+                for (int d = 0; d < 4; d++) if (railAt(in, p, i, d)) track |= 1 << d;
+                tunnelWay(in, p, i, px, img, track & across, STEEL, rail);
+            } else if (p.use[i] == TilePainter.RAIL) {
+                for (int d = 0; d < 4; d++) if (railAt(in, p, i, d)) arms |= 1 << d;
+                tunnelWay(in, p, i, px, img, arms, STEEL, rail);
+            }
+        }
+    }
+
+    /** One run's way through tunnel plot i, `arms` its neighbours (bit d for direction d) and `cross` its cross-section in pixels: the dashed line and the portals of tunnels(). */
+    private static void tunnelWay(TilePainter.Input in, TilePainter.Painted p, int i, int px, int[] img, int arms, int colour, int cross) {
+        int tile = TilePainter.TILE, w = tile * px, x0 = (i % tile) * px, y0 = (i / tile) * px;
+        int line = in.owned[i] ? colour : blend(colour, VOID, UNOWNED_DIM);
+        int portal = in.owned[i] ? TUNNEL_PORTAL : blend(TUNNEL_PORTAL, VOID, UNOWNED_DIM);
+        int mid = px / 2, thick = Math.max(1, px / 8), lo = mid - thick / 2;
+        int dash = Math.max(1, (int) Math.round(TUNNEL_DASH * px)), depth = Math.max(1, (int) Math.round(TUNNEL_PORTAL_DEPTH * px));
+        if (diagonal(in, i)) {
+            // A 45-degree stretch: the centre line's dash along its diagonal, as the highway's own is drawn (a staircase's corner none).
+            if ((in.marks[i] & CityRuns.M_CORNER) == 0) {
+                int code = (in.marks[i] >> CityRuns.M_DIAG_SHIFT) & 3;
+                diagLine(img, w, i, px, code, 0.5 * px, 0.5 * px, 0.5, 0.275 * Math.sqrt(2) * px, line);
+            }
+            return;
+        }
+        // The ends: an arm's edge whose plot is no tunnel's (not known across the tile's edge); the opposite edge of a lone arm; both of a lone plot's.
+        int ways = arms, ends = 0, n = Integer.bitCount(arms);
+        for (int d = 0; d < 4; d++) {
+            if ((arms >> d & 1) == 0) continue;
+            int x = i % tile + TilePainter.DX[d], y = i / tile + TilePainter.DY[d];
+            if (x >= 0 && y >= 0 && x < tile && y < tile && !p.tunnel[y * tile + x]) ends |= 1 << d;
+        }
+        if (n == 1) {
+            ways |= 1 << ((Integer.numberOfTrailingZeros(arms) + 2) & 3);
+            ends |= ways & ~arms;
+        } else if (n == 0) {
+            ways = ends = 10;
+        }
+        // The line: from the plot's middle to the edge of each way, a dash on the first TUNNEL_DASH of the plot along the run.
+        for (int d = 0; d < 4; d++) {
+            if ((ways >> d & 1) == 0) continue;
+            boolean vertical = d == 0 || d == 2, first = d == 0 || d == 3;
+            for (int u = first ? 0 : mid; u < (first ? mid : px); u++) {
+                if (u >= dash) continue;
+                if (vertical) fillRect(img, w, x0 + lo, y0 + u, x0 + lo + thick, y0 + u + 1, line);
+                else fillRect(img, w, x0 + u, y0 + lo, x0 + u + 1, y0 + lo + thick, line);
+            }
+        }
+        // The portals: across the way at the edge, a little wider than the run (its cross-section and a pixel either side, at most the plot).
+        int across = Math.min(px, cross + 2), oa = (px - across) / 2;
+        if ((ends & 1) != 0) fillRect(img, w, x0 + oa, y0, x0 + oa + across, y0 + depth, portal);
+        if ((ends & 4) != 0) fillRect(img, w, x0 + oa, y0 + px - depth, x0 + oa + across, y0 + px, portal);
+        if ((ends & 8) != 0) fillRect(img, w, x0, y0 + oa, x0 + depth, y0 + oa + across, portal);
+        if ((ends & 2) != 0) fillRect(img, w, x0 + px - depth, y0 + oa, x0 + px, y0 + oa + across, portal);
     }
 
     /** A siding's loading shed, the share of a plot it fills (FR7 slice 3): 0.7, a small block at the siding's end beside the works. */
@@ -3614,6 +3730,8 @@ public final class TileRaster {
         for (int Y = y0; Y < y1; Y++) {
             for (int X = x0; X < x1; X++) {
                 int i = (Y / px) * tile + X / px;
+                // A tunnel's plot (ET4) is never drawn over: its dashed line is tunnels()'s.
+                if (p.tunnel[i]) continue;
                 // A plot of straight track draws itself: the arc of a bend on the plot grid and its straights lie on the plots they replace and on ground, not over a plot that runs on. (A 45-degree turn's arc is drawn over its staircase.)
                 if (grid && !in.curved[i] && (p.use[i] == TilePainter.RAIL || p.run[i] == TilePainter.RAIL || p.run[i] == TilePainter.RAIL_OVER)) continue;
                 if (crossingsOnly) {
@@ -3655,7 +3773,7 @@ public final class TileRaster {
      * RAIL_DARK at the width the blocks draw track (a plot, px pixels), in
      * place of the cells of the plots it replaces.
      */
-    private static void blockBends(TilePainter.Input in, int px, int[] img) {
+    private static void blockBends(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         if (in.bends == 0) return;
         int tile = TilePainter.TILE, w = tile * px;
         double[] at = new double[2];
@@ -3673,6 +3791,7 @@ public final class TileRaster {
                 for (int X = x0; X < x1; X++) {
                     if (pathLateral(s, back, back, X + 0.5, Y + 0.5, at) >= half) continue;
                     int i = (Y / px) * tile + X / px;
+                    if (p.tunnel[i] && !tunnelDash(i)) continue;
                     img[Y * w + X] = in.owned[i] ? RAIL_DARK : blend(RAIL_DARK, VOID, UNOWNED_DIM);
                 }
             }
@@ -3711,7 +3830,7 @@ public final class TileRaster {
             for (int Y = y0; Y < y1; Y++) {
                 for (int X = x0; X < x1; X++) {
                     int i = (Y / px) * tile + X / px;
-                    if (p.bridge[i]) continue;
+                    if (p.bridge[i] || p.tunnel[i]) continue;
                     if (pathLateral(s, back, back, X + 0.5, Y + 0.5, at) >= half) continue;
                     // The legs' straights only on the plots the bend replaces: the others draw their own.
                     if (at[1] != 0 && !in.curved[i]) continue;
@@ -3746,7 +3865,7 @@ public final class TileRaster {
             for (int Y = y0; Y < y1; Y++) {
                 for (int X = x0; X < x1; X++) {
                     int i = (Y / px) * tile + X / px;
-                    if (p.bridge[i] || p.run[i] == TilePainter.RAIL_OVER) continue;
+                    if (p.bridge[i] || p.tunnel[i] || p.run[i] == TilePainter.RAIL_OVER) continue;
                     if (pathLateral(s, back, back, X + shift, Y + shift, at) >= 0.5) continue;
                     if (at[1] != 0 && !in.curved[i]) continue;
                     if (Math.floorMod((long) Math.floor(at[0]), px) >= dash) continue;
@@ -3936,6 +4055,8 @@ public final class TileRaster {
 
     /** A plot's colour before its building: its ground, its site's tint or grey, its road's colour - a track's brown (0.7.88) - or (0.7.72) its track's, where no street crosses it - and dimmed when unowned. */
     static int plotColour(TilePainter.Input in, TilePainter.Painted p, int i) {
+        // A tunnel's plot (ET4): its ground, but for every other plot along the run, which is the run's colour - the line dashed.
+        if (p.tunnel[i] && !tunnelDash(i)) return groundColour(in, p, i);
         int kind = roadKind(p, i);
         if (kind == 0 && p.use[i] != TilePainter.RAIL) return groundColour(in, p, i);
         int c = kind == 0 ? RAIL_LINE : kind == TilePainter.TRACK ? TRACK_DASH : ROAD_SMALL[kind];
