@@ -1,4 +1,4 @@
-# LandManager.java - 2,867 lines · 250 methods · 13 constants · model
+# LandManager.java - 2,871 lines · 250 methods · 13 constants · model
 
 `ham/citybuildersim/LandManager.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -80,22 +80,22 @@
 | 824 | THE TWO OIL POOLS (0.7.93, batch O10b; Jerus, 2026-10-09: "each oil |
 | 1157 | THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) |
 | 1828 | BUILDABLE BY SLOPE (ET2, 2026-10-24; ET4, 2026-10-25; spec-earth2-terrain 3.2, 4.2, 4.3, 4.4) |
-| 2070 | A PRICE FOR EACH CLASS OF GROUND (ET3, 2026-10-25; spec-earth2-terrain 5.1, 5.2) |
-| 2246 | ZONES AND THE FOREST LAW (0.7.107, batch Z1; Jerus, 2026-10-08, the |
-| 2323 | · the ground, by kind |
-| 2376 | · the zones |
-| 2544 | · the forest's wood |
-| 2564 | · clearing |
-| 2632 | · the salvage cut and the planted stands (0.7.138, batch I9) |
-| 2677 | · the save |
+| 2074 | A PRICE FOR EACH CLASS OF GROUND (ET3, 2026-10-25; spec-earth2-terrain 5.1, 5.2) |
+| 2250 | ZONES AND THE FOREST LAW (0.7.107, batch Z1; Jerus, 2026-10-08, the |
+| 2327 | · the ground, by kind |
+| 2380 | · the zones |
+| 2548 | · the forest's wood |
+| 2568 | · clearing |
+| 2636 | · the salvage cut and the planted stands (0.7.138, batch I9) |
+| 2681 | · the save |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 1916 | `LandManager.Use.BUILDING` |  |
-| 1916 | `LandManager.Use.WORKS` |  |
-| 1916 | `LandManager.Use.RUN` |  |
+| 1920 | `LandManager.Use.BUILDING` |  |
+| 1920 | `LandManager.Use.WORKS` |  |
+| 1920 | `LandManager.Use.RUN` |  |
 
 ## Constants
 
@@ -112,8 +112,8 @@
 | 240 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
 | 318 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
 | 855 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
-| 2321 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
-| 2837 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 2325 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
+| 2841 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -169,19 +169,19 @@
 | 1214 | `final int[] types` |  |
 | 1245 | `private final TypedGround[] typedKept` | The ground by type, kept by resource with the land it was laid out on. |
 | 1246 | `private CityLand typedLand` |  |
-| 2097 | `private java.util.function.DoubleSupplier preparation` | The foothill's preparation a square foot, thousands of local money (setPreparationPerSqFt()); null while the owner has wired none. |
-| 2295 | `private final Zoning zoning` | The city's zones and its forest law (0.7.107): empty for a new city - the ground free for anyone, as it always was. |
-| 2298 | `private double clearedSqFt` | Forest cleared for building, in square feet of ground (C's area, Z7): never regrowing, never un-cleared. |
-| 2301 | `private double clearedM3` | ...and its wood, in cubic metres: the cut-over wood it took from E and the standing wood it took out (C). |
-| 2304 | `private double forestClearedThisMonth` | The standing wood cleared this month, cubic metres: what the month cleared for Forestry's salvage cut since materials I9 (takeSalvage() hands it over), lost until then. |
-| 2312 | `private double salvagePendingM3` | The standing wood cleared and not yet sold, cubic metres (0.7.138, batch I9): what Forestry's next salvage cut takes (takeSalvage()) - the month's clearing, and a clearing between two presses or past the month's marke... |
-| 2315 | `private double plantedGrowthThisMonth` | The planted stands' growth this month, cubic metres (0.7.138, batch I9): Forestry's plantations and woodlots, taken off E at the month's end with the regrowth (THE PLANTED STANDS). |
+| 2101 | `private java.util.function.DoubleSupplier preparation` | The foothill's preparation a square foot, thousands of local money (setPreparationPerSqFt()); null while the owner has wired none. |
+| 2299 | `private final Zoning zoning` | The city's zones and its forest law (0.7.107): empty for a new city - the ground free for anyone, as it always was. |
+| 2302 | `private double clearedSqFt` | Forest cleared for building, in square feet of ground (C's area, Z7): never regrowing, never un-cleared. |
+| 2305 | `private double clearedM3` | ...and its wood, in cubic metres: the cut-over wood it took from E and the standing wood it took out (C). |
+| 2308 | `private double forestClearedThisMonth` | The standing wood cleared this month, cubic metres: what the month cleared for Forestry's salvage cut since materials I9 (takeSalvage() hands it over), lost until then. |
+| 2316 | `private double salvagePendingM3` | The standing wood cleared and not yet sold, cubic metres (0.7.138, batch I9): what Forestry's next salvage cut takes (takeSalvage()) - the month's clearing, and a clearing between two presses or past the month's marke... |
+| 2319 | `private double plantedGrowthThisMonth` | The planted stands' growth this month, cubic metres (0.7.138, batch I9): Forestry's plantations and woodlots, taken off E at the month's end with the regrowth (THE PLANTED STANDS). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 2795 | **type** `public class LandManager` | The city's land: what it owns, what is built on, and what it sells. |
+| 73 | 2799 | **type** `public class LandManager` | The city's land: what it owns, what is built on, and what it sells. |
 | 90 | 1 | `public static double km2(double sqFt)` | An area in square feet, in square kilometres (0.7.13): what the land office shows in place of blocks. |
 | 96 | 1 | `public static double sqFt(double km2)` | An area in square kilometres, in square feet: what an offer's dry ground adds to the city's (0.7.57). |
 | 105 | 5 | `public static String km2Words(double sqFt)` | ...written to three significant figures, so a small area does not read "0.00", and the largest reads no more digits than a player compares plots by: 0.00929, 0.214, 2.79, 27.9, each with its unit - grouped from a thou... |
@@ -364,161 +364,161 @@
 | 1817 | 4 | `public void recordSale(double sqFt)` | Records a sale to a business. |
 | 1823 | 4 | `public void recordSale(double sqFt, double price)` | ...at the price it was sold at (0.7.107: a zone's part at its price, priceFor(sqFt, sector)). |
 
-### BUILDABLE BY SLOPE (ET2, 2026-10-24; ET4, 2026-10-25; spec-earth2-terrain 3.2, 4.2, 4.3, 4.4) (lines 1828-2069)
+### BUILDABLE BY SLOPE (ET2, 2026-10-24; ET4, 2026-10-25; spec-earth2-terrain 3.2, 4.2, 4.3, 4.4) (lines 1828-2073)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1916 | 1 | **type** `public enum Use` | What a square foot of ground is used for (ET2, ET4): a building's, a works's (a mine, a quarry, a well: Game.standsAnywhere()), or a run's (a highway or a railway line: Game.isRun()). |
-| 1919 | 3 | **type** `private record Split(double flat, double foothill, double slope, double works, double worksOnSlope, double ...` | One reading of the ground by relief and by use (split()), square feet: flat, foothill and slope are the owned ground, the runs' part of each (ET4) taken off before the rest is placed. |
-| 1924 | 3 | `private double reliefSqFt(int relief)` | The city's dry ground of one relief, square feet (CityLand.RELIEF_FLAT to RELIEF_VERY_STEEP), centre and purchases; 0 before the land is founded, which reads flat. |
-| 1929 | 3 | `private double slopeSqFt()` | The steep and very steep ground the city owns, square feet. |
-| 1941 | 24 | `private Split split(double allocated, double works, double runs)` | What the ground is used for if `allocated` square feet were taken, `works` of them by works and `runs` by highways and railway lines (the pool as it stands, or after an allocation): the runs first, over flat, foothill... |
-| 1966 | 1 | `private Split split()` |  |
-| 1969 | 1 | `public double getFlatSqFt()` | The city's flat ground, foothill and steep ground (steep and very steep together), square feet: CityLand's relief, centre and purchases. |
-| 1970 | 1 | `public double getFoothillSqFt()` |  |
-| 1971 | 1 | `public double getSlopeSqFt()` |  |
-| 1974 | 1 | `public double getWorksSqFt()` | The part of the built ground that works stand on, square feet (never more than is built). |
-| 1977 | 1 | `public double getWorksOnSlopeSqFt()` | ...the works' part on the steep ground: what no building could use. |
-| 1980 | 1 | `public double getWorksOnFoothillSqFt()` | ...and on the foothill, which works take after the slope. |
-| 1983 | 1 | `public double getBuildingsOnFoothillSqFt()` | The foothill buildings stand on now, square feet: what the pads are cut in. |
-| 1986 | 1 | `public double getRunsSqFt()` | The ground the standing highways and railway lines hold, square feet, whatever the terrain (ET4): the figure a save keeps (DataSave's landRunsSqFt). |
-| 1989 | 1 | `public double getRunsOnFlatSqFt()` | ...the runs' part on the flat, on the foothill and on the steep ground: their ground over the classes in the city's proportions. |
-| 1990 | 1 | `public double getRunsOnFoothillSqFt()` |  |
-| 1991 | 1 | `public double getRunsOnSlopeSqFt()` |  |
-| 1994 | 5 | `public double getSlopeShare()` | The share of the city's dry ground that is steep or very steep (ET4): the part of a run's ground that falls on the steep; 0 in a city with neither foothill nor steep ground. |
-| 2001 | 1 | `public double getPreparedSqFt()` | The foothill prepared so far, square feet: never falls. |
-| 2004 | 4 | `public double idleSlopeSqFt()` | The steep ground no works stands on yet, square feet: not free for a building, free for a works. |
-| 2017 | 3 | `public double foothillToPrepareSqFt(double sqFt, String sector, boolean works)` | The foothill a building of this size would have to prepare, square feet: what stands on foothill after it less what is prepared already, never below nothing - read BEFORE allocate(), changing nothing, so the quote and... |
-| 2022 | 3 | `public double foothillToPrepareSqFt(double sqFt, String sector, Use use)` | ...for what the ground is to be used for (ET4): only a building's is anything. |
-| 2031 | 4 | `public double foothillToPrepareSqFt(double sqFt, String sector, boolean works, double groundAhead, double worksAhead, double pr...` | ...for an order placed after others in a run (Game.buildRunInvoice()), which have taken their ground and prepared their foothill by then: `groundAhead` square feet, `worksAhead` of them works's, and `preparedAhead` th... |
-| 2037 | 6 | `public double foothillToPrepareSqFt(double sqFt, String sector, Use use, double groundAhead, double worksAhead, double runsAhea...` | ...with the runs ahead too (ET4): `runsAhead` of the ground ahead is highways' and railway lines', which take their share of the flat from the buildings. |
-| 2051 | 7 | `public double foothillDisplacedByRunSqFt(double sqFt, double groundAhead, double worksAhead, double runsAhead)` | The foothill a run of this size would push buildings onto, square feet (ET4): the rise in what buildings stand on past the flat when the run takes its share of it, after the `groundAhead` square feet (`worksAhead` of ... |
-| 2060 | 1 | `void restoreWorks(double sqFt)` | Puts the works' ground back (Game's load path): the saved figure, or the standing works' land where a save has none. |
-| 2063 | 1 | `void restoreRuns(double sqFt)` | ...and the runs' ground (ET4): the saved figure, or the standing highways' and railway lines' land where a save has none. |
-| 2066 | 3 | `void restorePrepared(Double sqFt)` | ...and the foothill prepared, null where a save has none: what the buildings on foothill stand on now, so a city saved before is not charged for pads it already has. |
+| 1920 | 1 | **type** `public enum Use` | What a square foot of ground is used for (ET2, ET4): a building's, a works's (a mine, a quarry, a well: Game.standsAnywhere()), or a run's (a highway or a railway line: Game.isRun()). |
+| 1923 | 3 | **type** `private record Split(double flat, double foothill, double slope, double works, double worksOnSlope, double ...` | One reading of the ground by relief and by use (split()), square feet: flat, foothill and slope are the owned ground, the runs' part of each (ET4) taken off before the rest is placed. |
+| 1928 | 3 | `private double reliefSqFt(int relief)` | The city's dry ground of one relief, square feet (CityLand.RELIEF_FLAT to RELIEF_VERY_STEEP), centre and purchases; 0 before the land is founded, which reads flat. |
+| 1933 | 3 | `private double slopeSqFt()` | The steep and very steep ground the city owns, square feet. |
+| 1945 | 24 | `private Split split(double allocated, double works, double runs)` | What the ground is used for if `allocated` square feet were taken, `works` of them by works and `runs` by highways and railway lines (the pool as it stands, or after an allocation): the runs first, over flat, foothill... |
+| 1970 | 1 | `private Split split()` |  |
+| 1973 | 1 | `public double getFlatSqFt()` | The city's flat ground, foothill and steep ground (steep and very steep together), square feet: CityLand's relief, centre and purchases. |
+| 1974 | 1 | `public double getFoothillSqFt()` |  |
+| 1975 | 1 | `public double getSlopeSqFt()` |  |
+| 1978 | 1 | `public double getWorksSqFt()` | The part of the built ground that works stand on, square feet (never more than is built). |
+| 1981 | 1 | `public double getWorksOnSlopeSqFt()` | ...the works' part on the steep ground: what no building could use. |
+| 1984 | 1 | `public double getWorksOnFoothillSqFt()` | ...and on the foothill, which works take after the slope. |
+| 1987 | 1 | `public double getBuildingsOnFoothillSqFt()` | The foothill buildings stand on now, square feet: what the pads are cut in. |
+| 1990 | 1 | `public double getRunsSqFt()` | The ground the standing highways and railway lines hold, square feet, whatever the terrain (ET4): the figure a save keeps (DataSave's landRunsSqFt). |
+| 1993 | 1 | `public double getRunsOnFlatSqFt()` | ...the runs' part on the flat, on the foothill and on the steep ground: their ground over the classes in the city's proportions. |
+| 1994 | 1 | `public double getRunsOnFoothillSqFt()` |  |
+| 1995 | 1 | `public double getRunsOnSlopeSqFt()` |  |
+| 1998 | 5 | `public double getSlopeShare()` | The share of the city's dry ground that is steep or very steep (ET4): the part of a run's ground that falls on the steep; 0 in a city with neither foothill nor steep ground. |
+| 2005 | 1 | `public double getPreparedSqFt()` | The foothill prepared so far, square feet: never falls. |
+| 2008 | 4 | `public double idleSlopeSqFt()` | The steep ground no works stands on yet, square feet: not free for a building, free for a works. |
+| 2021 | 3 | `public double foothillToPrepareSqFt(double sqFt, String sector, boolean works)` | The foothill a building of this size would have to prepare, square feet: what stands on foothill after it less what is prepared already, never below nothing - read BEFORE allocate(), changing nothing, so the quote and... |
+| 2026 | 3 | `public double foothillToPrepareSqFt(double sqFt, String sector, Use use)` | ...for what the ground is to be used for (ET4): only a building's is anything. |
+| 2035 | 4 | `public double foothillToPrepareSqFt(double sqFt, String sector, boolean works, double groundAhead, double worksAhead, double pr...` | ...for an order placed after others in a run (Game.buildRunInvoice()), which have taken their ground and prepared their foothill by then: `groundAhead` square feet, `worksAhead` of them works's, and `preparedAhead` th... |
+| 2041 | 6 | `public double foothillToPrepareSqFt(double sqFt, String sector, Use use, double groundAhead, double worksAhead, double runsAhea...` | ...with the runs ahead too (ET4): `runsAhead` of the ground ahead is highways' and railway lines', which take their share of the flat from the buildings. |
+| 2055 | 7 | `public double foothillDisplacedByRunSqFt(double sqFt, double groundAhead, double worksAhead, double runsAhead)` | The foothill a run of this size would push buildings onto, square feet (ET4): the rise in what buildings stand on past the flat when the run takes its share of it, after the `groundAhead` square feet (`worksAhead` of ... |
+| 2064 | 1 | `void restoreWorks(double sqFt)` | Puts the works' ground back (Game's load path): the saved figure, or the standing works' land where a save has none. |
+| 2067 | 1 | `void restoreRuns(double sqFt)` | ...and the runs' ground (ET4): the saved figure, or the standing highways' and railway lines' land where a save has none. |
+| 2070 | 3 | `void restorePrepared(Double sqFt)` | ...and the foothill prepared, null where a save has none: what the buildings on foothill stand on now, so a city saved before is not charged for pads it already has. |
 
-### A PRICE FOR EACH CLASS OF GROUND (ET3, 2026-10-25; spec-earth2-terrain 5.1, 5.2) (lines 2070-2245)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2104 | 1 | `public void setPreparationPerSqFt(java.util.function.DoubleSupplier perSqFt)` | Wires the preparation of a square foot of foothill, in thousands of local money: the figure the quote charges (Game.preparationCost()), so the price of foothill and the quote read one number. |
-| 2111 | 7 | `public double getPreparationPerSqFt()` | What preparing a square foot of foothill costs, thousands of local money: the wired figure (setPreparationPerSqFt()), else SitePreparation's dollars a m2 at the founding, in the local unit and price level - the base p... |
-| 2120 | 3 | `public double getFoothillPricePerSqFt()` | What a business pays for a square foot of foothill, thousands of local money: the flat price less the preparation, never under the base price (LandMarket.reliefPrice()). |
-| 2125 | 3 | `public double getSteepPricePerSqFt()` | ...and of steep and very steep ground, which only works use: the base price, never over the flat price. |
-| 2130 | 8 | `public double reliefPricePerSqFt(int relief)` | The price a square foot of ground of one relief (World.FLAT, FOOTHILL, STEEP, VERY_STEEP) is sold at: flat's is getPricePerSqFt(). |
-| 2140 | 3 | `private boolean flatOnly()` | Whether the city owns neither foothill nor steep ground: then every price by class is the one old price. |
-| 2145 | 1 | `public boolean isFlatOnly()` | Whether the city owns neither foothill nor steep ground (ET3): every figure by class is then the one flat price's, to the bit - the books read it to keep a flat city's statements as they were. |
-| 2153 | 11 | **type** `public record ReliefUse(double buildingsFlat, double buildingsFoothill, double worksFlat, double worksFooth...` | The ground in use by class, as the split has it (ET3, BUILDABLE BY SLOPE), square feet: the buildings' on flat and on foothill, the works' on flat, on foothill and on the steep and very steep ground, and (ET4) the run... |
-| 2156 | 1 | `public double buildings()` _(in LandManager.ReliefUse)_ | The buildings' ground, flat and foothill. |
-| 2159 | 1 | `public double works()` _(in LandManager.ReliefUse)_ | The works' ground on every class. |
-| 2162 | 1 | `public double runs()` _(in LandManager.ReliefUse)_ | The runs' ground on every class (ET4). |
-| 2166 | 5 | `public ReliefUse reliefUse()` | The ground in use by use and class now (ReliefUse), read off the one split(): nothing stored. |
-| 2173 | 5 | `private static double[] classUse(Split s)` | The ground in use on each class under a reading of the split, square feet: {flat, foothill, slope} - works and runs on steep ground, works, runs and buildings on foothill, the rest of the built ground on flat. |
-| 2180 | 5 | `private static double[] classParts(double sqFt, double foothill, double slope)` | A change of ground in use as the square feet of `sqFt` on {flat, foothill, slope}: foothill and slope held between nothing and the plot, flat the rest, so the three sum to `sqFt`. |
-| 2191 | 3 | `public double[] plotByRelief(double sqFt, boolean works)` | The square feet of a plot of this size, taken now, on {flat, foothill, slope} (ET3): the ground in use after the allocation less before it (split()), buildings on flat first and then foothill, `works` on steep ground ... |
-| 2200 | 7 | `public double[] plotByRelief(double sqFt, Use use)` | ...for what the ground is to be used for (ET4): a run's is its ground times each class's share of the owned ground - its own pro-rata parts, which split() takes off the classes - and NOT the ground in use after the al... |
-| 2209 | 6 | `private double[] runParts(double sqFt)` | A run's ground as {flat, foothill, slope}: `sqFt` times each class's share of the owned dry ground, summing to `sqFt`; all on flat where the city owns none. |
-| 2221 | 3 | `public double[] releasedByRelief(double sqFt, boolean works)` | ...and of a plot this size given back (release(), asked before it): the reverse of the split - the ground in use now less the ground in use after the release - so a building's comes off the foothill first, a works's o... |
-| 2226 | 10 | `public double[] releasedByRelief(double sqFt, Use use)` | ...for what the ground was used for (ET4): a run's comes back at the same shares it took (plotByRelief(sqFt, Use.RUN)). |
-| 2238 | 7 | `private double pricedByClass(double[] parts, double sqFt, double inZone, String sector)` | A plot's parts {flat, foothill, slope} at their class prices, the zone's share on every class: `inZone` of its `sqFt` at the sector's price share (Z3). |
-
-### ZONES AND THE FOREST LAW (0.7.107, batch Z1; Jerus, 2026-10-08, the (lines 2246-2322)
+### A PRICE FOR EACH CLASS OF GROUND (ET3, 2026-10-25; spec-earth2-terrain 5.1, 5.2) (lines 2074-2249)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2318 | 1 | `public Zoning getZoning()` | The city's zones and its forest law. |
+| 2108 | 1 | `public void setPreparationPerSqFt(java.util.function.DoubleSupplier perSqFt)` | Wires the preparation of a square foot of foothill, in thousands of local money: the figure the quote charges (Game.preparationCost()), so the price of foothill and the quote read one number. |
+| 2115 | 7 | `public double getPreparationPerSqFt()` | What preparing a square foot of foothill costs, thousands of local money: the wired figure (setPreparationPerSqFt()), else SitePreparation's dollars a m2 at the founding, in the local unit and price level - the base p... |
+| 2124 | 3 | `public double getFoothillPricePerSqFt()` | What a business pays for a square foot of foothill, thousands of local money: the flat price less the preparation, never under the base price (LandMarket.reliefPrice()). |
+| 2129 | 3 | `public double getSteepPricePerSqFt()` | ...and of steep and very steep ground, which only works use: the base price, never over the flat price. |
+| 2134 | 8 | `public double reliefPricePerSqFt(int relief)` | The price a square foot of ground of one relief (World.FLAT, FOOTHILL, STEEP, VERY_STEEP) is sold at: flat's is getPricePerSqFt(). |
+| 2144 | 3 | `private boolean flatOnly()` | Whether the city owns neither foothill nor steep ground: then every price by class is the one old price. |
+| 2149 | 1 | `public boolean isFlatOnly()` | Whether the city owns neither foothill nor steep ground (ET3): every figure by class is then the one flat price's, to the bit - the books read it to keep a flat city's statements as they were. |
+| 2157 | 11 | **type** `public record ReliefUse(double buildingsFlat, double buildingsFoothill, double worksFlat, double worksFooth...` | The ground in use by class, as the split has it (ET3, BUILDABLE BY SLOPE), square feet: the buildings' on flat and on foothill, the works' on flat, on foothill and on the steep and very steep ground, and (ET4) the run... |
+| 2160 | 1 | `public double buildings()` _(in LandManager.ReliefUse)_ | The buildings' ground, flat and foothill. |
+| 2163 | 1 | `public double works()` _(in LandManager.ReliefUse)_ | The works' ground on every class. |
+| 2166 | 1 | `public double runs()` _(in LandManager.ReliefUse)_ | The runs' ground on every class (ET4). |
+| 2170 | 5 | `public ReliefUse reliefUse()` | The ground in use by use and class now (ReliefUse), read off the one split(): nothing stored. |
+| 2177 | 5 | `private static double[] classUse(Split s)` | The ground in use on each class under a reading of the split, square feet: {flat, foothill, slope} - works and runs on steep ground, works, runs and buildings on foothill, the rest of the built ground on flat. |
+| 2184 | 5 | `private static double[] classParts(double sqFt, double foothill, double slope)` | A change of ground in use as the square feet of `sqFt` on {flat, foothill, slope}: foothill and slope held between nothing and the plot, flat the rest, so the three sum to `sqFt`. |
+| 2195 | 3 | `public double[] plotByRelief(double sqFt, boolean works)` | The square feet of a plot of this size, taken now, on {flat, foothill, slope} (ET3): the ground in use after the allocation less before it (split()), buildings on flat first and then foothill, `works` on steep ground ... |
+| 2204 | 7 | `public double[] plotByRelief(double sqFt, Use use)` | ...for what the ground is to be used for (ET4): a run's is its ground times each class's share of the owned ground - its own pro-rata parts, which split() takes off the classes - and NOT the ground in use after the al... |
+| 2213 | 6 | `private double[] runParts(double sqFt)` | A run's ground as {flat, foothill, slope}: `sqFt` times each class's share of the owned dry ground, summing to `sqFt`; all on flat where the city owns none. |
+| 2225 | 3 | `public double[] releasedByRelief(double sqFt, boolean works)` | ...and of a plot this size given back (release(), asked before it): the reverse of the split - the ground in use now less the ground in use after the release - so a building's comes off the foothill first, a works's o... |
+| 2230 | 10 | `public double[] releasedByRelief(double sqFt, Use use)` | ...for what the ground was used for (ET4): a run's comes back at the same shares it took (plotByRelief(sqFt, Use.RUN)). |
+| 2242 | 7 | `private double pricedByClass(double[] parts, double sqFt, double inZone, String sector)` | A plot's parts {flat, foothill, slope} at their class prices, the zone's share on every class: `inZone` of its `sqFt` at the sector's price share (Z3). |
 
-### the ground, by kind (lines 2323-2375)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2326 | 1 | `public double getForestSqFt()` | The city's forest ground, in square feet: the forest class of its dry ground as drawn, cleared or standing (getForestKm2()). |
-| 2329 | 1 | `public double getBareSqFt()` | ...its bare ground: the dry ground owned less the forest, never below nothing. |
-| 2332 | 1 | `public double getProtectedForestSqFt()` | The forest the law protects: never cut, never built on (Z6). |
-| 2335 | 1 | `public double getWorkingForestSqFt()` | ...the working forest: cut, never built on. |
-| 2338 | 1 | `public double getOpenForestSqFt()` | ...and the open forest: cut or built on - all of it with the law at 0 and 0. |
-| 2341 | 1 | `public double getForestClearedSqFt()` | Forest cleared for building, square feet (C): built on, or built on once. |
-| 2344 | 1 | `public double getForestClearedM3()` | ...and the wood that stood or had been cut on it, cubic metres. |
-| 2347 | 1 | `public double getForestClearedThisMonth()` | The standing wood cleared this month, cubic metres: Forestry's salvage cut since 0.7.138 (batch I9; takeSalvage()). |
-| 2350 | 1 | `public double getSalvagePending()` | The standing wood cleared and not yet sold as Forestry's salvage cut, cubic metres (0.7.138): what takeSalvage() would hand over, before the month's floor. |
-| 2352 | 3 | `private double protectedSqFt(Zoning z)` |  |
-| 2357 | 3 | `private double keptFromBuildingSqFt(Zoning z)` | What the law keeps from building: the protected and the working forest. |
-| 2361 | 3 | `private double openSqFt(Zoning z)` |  |
-| 2366 | 1 | `public double getBuildableSqFt()` | The ground that may be built on: the dry ground owned less what the law keeps. |
-| 2369 | 1 | `public double getFreeSqFt()` | Free ground, for anyone and the zones together: buildable less built, never below nothing. |
-| 2371 | 4 | `private double freeSqFt(Zoning z)` |  |
-
-### the zones (lines 2376-2543)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2379 | 15 | `private double[] heldByZone(Zoning z)` | What each zone holds, square feet, in Zoning.zones()'s order: its want - its size less what it has used - out of the free ground, every want scaled alike when the ground is short (Z10). |
-| 2395 | 5 | `private double heldTotal(Zoning z)` |  |
-| 2401 | 7 | `private double heldBy(Zoning z, String sector)` |  |
-| 2409 | 3 | `private double freeForAnyone(Zoning z)` |  |
-| 2419 | 7 | `private double freeForAnyone(Zoning z, Use use)` | ...for a works that may stand anywhere (ET2): free less what the zones hold, on any dry ground; for a building the same less the steep ground no works stands on yet (idleSlopeSqFt()), never below nothing; for a run (E... |
-| 2433 | 9 | `private double runRoom(double groundAhead, double worksAhead, double runsAhead)` | The largest run, square feet, the buildings and the works still fit beside (ET4; BUILDABLE BY SLOPE, THE ROOM FOR A RUN): the smaller of the ground still unbuilt and what the flat and foothill the run leaves hold of t... |
-| 2443 | 1 | `private double runRoom()` |  |
-| 2451 | 4 | `public boolean canAllocateRunAfter(double sqFt, String sector, double groundAhead, double worksAhead, double runsAhead)` | Whether a run of this size can go ahead after `groundAhead` square feet of orders before it, `worksAhead` of them works's and `runsAhead` runs' (ET4; Game.runAhead()): the ground still unbuilt and the works' ground as... |
-| 2457 | 1 | `public double heldBy(String sector)` | The free ground a sector's zone holds for it, square feet: its size less what it has used, as far as the free ground goes (Z10); 0 with no zone. |
-| 2460 | 1 | `public double usedBy(String sector)` | ...and what its sector has built in it (used). |
-| 2463 | 4 | `public double zoneSizeOf(String sector)` | What a sector's zone is to be, square feet: its share of the dry ground or its square kilometres; 0 with no zone. |
-| 2469 | 1 | `public double heldByZones()` | What all the zones hold together. |
-| 2472 | 1 | `public double freeForAnyone()` | The ground free for anyone: free, less what the zones hold - and since ET2, for a building, less the steep ground only a works may stand on (idleSlopeSqFt()). |
-| 2475 | 1 | `public double freeForAnyone(boolean works)` | ...for a works that may stand anywhere when `works` (ET2): on any dry ground, steep ground too; false is freeForAnyone(). |
-| 2478 | 1 | `public double freeForAnyone(Use use)` | ...for what the ground is to be used for (ET4): a run's is the works' less what the buildings' room leaves it. |
-| 2481 | 1 | `public double freeFor(String sector)` | The ground a sector may build on: free for anyone, and what its zone holds for it. |
-| 2484 | 1 | `public double freeFor(String sector, boolean works)` | ...a works's when `works` (ET2): today's figure, any dry ground; false is freeFor(sector). |
-| 2487 | 1 | `public double freeFor(String sector, Use use)` | ...for what the ground is to be used for (ET4): a run's is the works' figure or the room the buildings leave it (runRoom()), whichever is less; a building's, in a city with neither foothill nor steep ground. |
-| 2489 | 8 | `private double freeFor(Zoning z, String sector, Use use)` |  |
-| 2499 | 4 | `public double groundPriceFor(String sector)` | What a square foot of a sector's zone is sold and assessed at: its price share of the going business price (Z3, Z4); the going price with no zone. |
-| 2505 | 4 | `public double groundPriceFor(String sector, int relief)` | ...on ground of one relief (ET3, World.FLAT to World.VERY_STEEP): the zone's price share of that class's price (reliefPricePerSqFt()); the class's price with no zone. |
-| 2515 | 8 | `public java.util.Map<String, double[]> zoneLand()` | The zones' ground, for the investors' month (Game.refreshLand(), BusinessInvestment.setZoneLand()): each zoned sector's {held square feet, price share}; empty with no zones. |
-| 2530 | 2 | **type** `public record GroundUnder(double freeForAnyone, double heldByZones, double protectedSqFt, double workingSqF...` | THE GROUND UNDER ANOTHER ZONING (0.7.107), for PolicyPreview's before and after: a staged copy's free ground for anyone, a sector's held and free ground, and the forest's three kinds - the land as it stands, read thro... |
-| 2534 | 6 | `public GroundUnder groundUnder(Zoning z)` | ...the whole of it. |
-| 2542 | 1 | `public double heldUnder(Zoning z, String sector)` | ...and one sector's held ground under it. |
-
-### the forest's wood (lines 2544-2563)
+### ZONES AND THE FOREST LAW (0.7.107, batch Z1; Jerus, 2026-10-08, the (lines 2250-2326)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2547 | 1 | `public double getProtectedWood()` | The wood the law keeps standing, cubic metres: the protected share of the forest's full stock, from the fullest forest first, never more than stands (Z6, Z8). |
-| 2549 | 4 | `private double protectedWood(Zoning z)` |  |
-| 2560 | 3 | `public double cuttableForest()` | THE CUTTABLE FOREST (Z8, Z13), cubic metres: what stands less the protected wood - the working and the open forest's. |
+| 2322 | 1 | `public Zoning getZoning()` | The city's zones and its forest law. |
 
-### clearing (lines 2564-2631)
+### the ground, by kind (lines 2327-2379)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2574 | 20 | `private void clearFor(double sqFt, double fromZone, String sector)` | Clears the open forest an allocation lies on (Z7), asked before it is made: the zone's part on what its zone holds of the bare ground, the rest on the bare ground free for anyone - the bare and cleared ground not buil... |
-| 2602 | 7 | `private void settleClearing()` | The month's floor (Z7): the cleared ground at least what the built ground past the bare ground needs, as far as the open forest goes - the same as allocate() leaves it, and what ground set by hand (a fixture, an older... |
-| 2617 | 14 | `private void clear(double sqFt)` | Clears this much open forest, as far as it goes: cut-over ground first - its wood moves from E to C - then standing forest, whose wood is taken out into C, never past what may be cut (the protected wood stands on grou... |
+| 2330 | 1 | `public double getForestSqFt()` | The city's forest ground, in square feet: the forest class of its dry ground as drawn, cleared or standing (getForestKm2()). |
+| 2333 | 1 | `public double getBareSqFt()` | ...its bare ground: the dry ground owned less the forest, never below nothing. |
+| 2336 | 1 | `public double getProtectedForestSqFt()` | The forest the law protects: never cut, never built on (Z6). |
+| 2339 | 1 | `public double getWorkingForestSqFt()` | ...the working forest: cut, never built on. |
+| 2342 | 1 | `public double getOpenForestSqFt()` | ...and the open forest: cut or built on - all of it with the law at 0 and 0. |
+| 2345 | 1 | `public double getForestClearedSqFt()` | Forest cleared for building, square feet (C): built on, or built on once. |
+| 2348 | 1 | `public double getForestClearedM3()` | ...and the wood that stood or had been cut on it, cubic metres. |
+| 2351 | 1 | `public double getForestClearedThisMonth()` | The standing wood cleared this month, cubic metres: Forestry's salvage cut since 0.7.138 (batch I9; takeSalvage()). |
+| 2354 | 1 | `public double getSalvagePending()` | The standing wood cleared and not yet sold as Forestry's salvage cut, cubic metres (0.7.138): what takeSalvage() would hand over, before the month's floor. |
+| 2356 | 3 | `private double protectedSqFt(Zoning z)` |  |
+| 2361 | 3 | `private double keptFromBuildingSqFt(Zoning z)` | What the law keeps from building: the protected and the working forest. |
+| 2365 | 3 | `private double openSqFt(Zoning z)` |  |
+| 2370 | 1 | `public double getBuildableSqFt()` | The ground that may be built on: the dry ground owned less what the law keeps. |
+| 2373 | 1 | `public double getFreeSqFt()` | Free ground, for anyone and the zones together: buildable less built, never below nothing. |
+| 2375 | 4 | `private double freeSqFt(Zoning z)` |  |
 
-### the salvage cut and the planted stands (0.7.138, batch I9) (lines 2632-2676)
+### the zones (lines 2380-2547)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2641 | 6 | `public double takeSalvage()` | THE SALVAGE CUT (Z7; spec-materials 2.11): the standing wood a building cleared, handed to Forestry once, to be sold as its month's sawlogs and pulpwood - the month's floor settled first (settleClearing()), so ground ... |
-| 2659 | 3 | `public void setPlantedGrowth(double m3)` | The planted stands' growth this month, cubic metres, as Forestry's month's end sets it (Forestry.endOfMonth()); cleared with the month's flows. |
-| 2664 | 1 | `public double getPlantedGrowth()` | ...as set this month. |
-| 2667 | 3 | `public double regrowthDue()` | The wood the month's end will grow back (pure): the regrowth of what was cut, FOREST_REGROWTH of E, and the planted stands' growth as set - never more than was cut. |
-| 2672 | 4 | `public double regrowthDue(double planted)` | ...with `planted` cubic metres of planted growth in place of the month's (pure): what Forestry's planting weighs with its stands on site counted as grown. |
+| 2383 | 15 | `private double[] heldByZone(Zoning z)` | What each zone holds, square feet, in Zoning.zones()'s order: its want - its size less what it has used - out of the free ground, every want scaled alike when the ground is short (Z10). |
+| 2399 | 5 | `private double heldTotal(Zoning z)` |  |
+| 2405 | 7 | `private double heldBy(Zoning z, String sector)` |  |
+| 2413 | 3 | `private double freeForAnyone(Zoning z)` |  |
+| 2423 | 7 | `private double freeForAnyone(Zoning z, Use use)` | ...for a works that may stand anywhere (ET2): free less what the zones hold, on any dry ground; for a building the same less the steep ground no works stands on yet (idleSlopeSqFt()), never below nothing; for a run (E... |
+| 2437 | 9 | `private double runRoom(double groundAhead, double worksAhead, double runsAhead)` | The largest run, square feet, the buildings and the works still fit beside (ET4; BUILDABLE BY SLOPE, THE ROOM FOR A RUN): the smaller of the ground still unbuilt and what the flat and foothill the run leaves hold of t... |
+| 2447 | 1 | `private double runRoom()` |  |
+| 2455 | 4 | `public boolean canAllocateRunAfter(double sqFt, String sector, double groundAhead, double worksAhead, double runsAhead)` | Whether a run of this size can go ahead after `groundAhead` square feet of orders before it, `worksAhead` of them works's and `runsAhead` runs' (ET4; Game.runAhead()): the ground still unbuilt and the works' ground as... |
+| 2461 | 1 | `public double heldBy(String sector)` | The free ground a sector's zone holds for it, square feet: its size less what it has used, as far as the free ground goes (Z10); 0 with no zone. |
+| 2464 | 1 | `public double usedBy(String sector)` | ...and what its sector has built in it (used). |
+| 2467 | 4 | `public double zoneSizeOf(String sector)` | What a sector's zone is to be, square feet: its share of the dry ground or its square kilometres; 0 with no zone. |
+| 2473 | 1 | `public double heldByZones()` | What all the zones hold together. |
+| 2476 | 1 | `public double freeForAnyone()` | The ground free for anyone: free, less what the zones hold - and since ET2, for a building, less the steep ground only a works may stand on (idleSlopeSqFt()). |
+| 2479 | 1 | `public double freeForAnyone(boolean works)` | ...for a works that may stand anywhere when `works` (ET2): on any dry ground, steep ground too; false is freeForAnyone(). |
+| 2482 | 1 | `public double freeForAnyone(Use use)` | ...for what the ground is to be used for (ET4): a run's is the works' less what the buildings' room leaves it. |
+| 2485 | 1 | `public double freeFor(String sector)` | The ground a sector may build on: free for anyone, and what its zone holds for it. |
+| 2488 | 1 | `public double freeFor(String sector, boolean works)` | ...a works's when `works` (ET2): today's figure, any dry ground; false is freeFor(sector). |
+| 2491 | 1 | `public double freeFor(String sector, Use use)` | ...for what the ground is to be used for (ET4): a run's is the works' figure or the room the buildings leave it (runRoom()), whichever is less; a building's, in a city with neither foothill nor steep ground. |
+| 2493 | 8 | `private double freeFor(Zoning z, String sector, Use use)` |  |
+| 2503 | 4 | `public double groundPriceFor(String sector)` | What a square foot of a sector's zone is sold and assessed at: its price share of the going business price (Z3, Z4); the going price with no zone. |
+| 2509 | 4 | `public double groundPriceFor(String sector, int relief)` | ...on ground of one relief (ET3, World.FLAT to World.VERY_STEEP): the zone's price share of that class's price (reliefPricePerSqFt()); the class's price with no zone. |
+| 2519 | 8 | `public java.util.Map<String, double[]> zoneLand()` | The zones' ground, for the investors' month (Game.refreshLand(), BusinessInvestment.setZoneLand()): each zoned sector's {held square feet, price share}; empty with no zones. |
+| 2534 | 2 | **type** `public record GroundUnder(double freeForAnyone, double heldByZones, double protectedSqFt, double workingSqF...` | THE GROUND UNDER ANOTHER ZONING (0.7.107), for PolicyPreview's before and after: a staged copy's free ground for anyone, a sector's held and free ground, and the forest's three kinds - the land as it stands, read thro... |
+| 2538 | 6 | `public GroundUnder groundUnder(Zoning z)` | ...the whole of it. |
+| 2546 | 1 | `public double heldUnder(Zoning z, String sector)` | ...and one sector's held ground under it. |
 
-### the save (lines 2677-2867)
+### the forest's wood (lines 2548-2567)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2680 | 9 | `public Zoning.State zoningState()` | DataSave's zoning (0.7.107): the zones, the law and the forest cleared; null when nothing is set and nothing cleared, as an older save reads. |
-| 2691 | 6 | `public void restoreZoning(Zoning.State s)` | Puts them back (Game's load path, after the land and its allocation): null, none, 0 and 0, nothing cleared. |
-| 2713 | 4 | `public void recordBuyback(double sqFt)` | Records the city buying a plot back from a business that scrapped what stood on it. |
-| 2719 | 4 | `public void recordBuyback(double sqFt, double price)` | ...at the price it was bought back at (0.7.107: a zone's part at its price, buybackPriceFor()). |
-| 2729 | 3 | `public double buyBlock(double availableCash)` | Annexes one block. |
-| 2743 | 13 | `public double buyBlock(double availableCash, long population)` | Buys the cheapest thing on offer. |
-| 2766 | 6 | `public void endMonth()` | The month's end for the ground (0.7.57): forest's stored depletion grows back by FOREST_REGROWTH, then the month's flows are cleared. |
-| 2774 | 11 | `public void clearMonth()` | Called once a month, after the government accounts have read the flows. |
-| 2786 | 21 | `public void reset()` |  |
-| 2810 | 26 | `public void printLandInfo()` | The land to the log, in the player's units since 0.7.68 (areaWords(), prices a square metre) - nothing in the game calls it; a console's view of the office. |
-| 2839 | 4 | `static { ... }` |  |
-| 2852 | 7 | `public void redenominate(double scale)` | The city's own land prices and this month's land flows, in the new unit. |
-| 2862 | 4 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
+| 2551 | 1 | `public double getProtectedWood()` | The wood the law keeps standing, cubic metres: the protected share of the forest's full stock, from the fullest forest first, never more than stands (Z6, Z8). |
+| 2553 | 4 | `private double protectedWood(Zoning z)` |  |
+| 2564 | 3 | `public double cuttableForest()` | THE CUTTABLE FOREST (Z8, Z13), cubic metres: what stands less the protected wood - the working and the open forest's. |
+
+### clearing (lines 2568-2635)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2578 | 20 | `private void clearFor(double sqFt, double fromZone, String sector)` | Clears the open forest an allocation lies on (Z7), asked before it is made: the zone's part on what its zone holds of the bare ground, the rest on the bare ground free for anyone - the bare and cleared ground not buil... |
+| 2606 | 7 | `private void settleClearing()` | The month's floor (Z7): the cleared ground at least what the built ground past the bare ground needs, as far as the open forest goes - the same as allocate() leaves it, and what ground set by hand (a fixture, an older... |
+| 2621 | 14 | `private void clear(double sqFt)` | Clears this much open forest, as far as it goes: cut-over ground first - its wood moves from E to C - then standing forest, whose wood is taken out into C, never past what may be cut (the protected wood stands on grou... |
+
+### the salvage cut and the planted stands (0.7.138, batch I9) (lines 2636-2680)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2645 | 6 | `public double takeSalvage()` | THE SALVAGE CUT (Z7; spec-materials 2.11): the standing wood a building cleared, handed to Forestry once, to be sold as its month's sawlogs and pulpwood - the month's floor settled first (settleClearing()), so ground ... |
+| 2663 | 3 | `public void setPlantedGrowth(double m3)` | The planted stands' growth this month, cubic metres, as Forestry's month's end sets it (Forestry.endOfMonth()); cleared with the month's flows. |
+| 2668 | 1 | `public double getPlantedGrowth()` | ...as set this month. |
+| 2671 | 3 | `public double regrowthDue()` | The wood the month's end will grow back (pure): the regrowth of what was cut, FOREST_REGROWTH of E, and the planted stands' growth as set - never more than was cut. |
+| 2676 | 4 | `public double regrowthDue(double planted)` | ...with `planted` cubic metres of planted growth in place of the month's (pure): what Forestry's planting weighs with its stands on site counted as grown. |
+
+### the save (lines 2681-2871)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2684 | 9 | `public Zoning.State zoningState()` | DataSave's zoning (0.7.107): the zones, the law and the forest cleared; null when nothing is set and nothing cleared, as an older save reads. |
+| 2695 | 6 | `public void restoreZoning(Zoning.State s)` | Puts them back (Game's load path, after the land and its allocation): null, none, 0 and 0, nothing cleared. |
+| 2717 | 4 | `public void recordBuyback(double sqFt)` | Records the city buying a plot back from a business that scrapped what stood on it. |
+| 2723 | 4 | `public void recordBuyback(double sqFt, double price)` | ...at the price it was bought back at (0.7.107: a zone's part at its price, buybackPriceFor()). |
+| 2733 | 3 | `public double buyBlock(double availableCash)` | Annexes one block. |
+| 2747 | 13 | `public double buyBlock(double availableCash, long population)` | Buys the cheapest thing on offer. |
+| 2770 | 6 | `public void endMonth()` | The month's end for the ground (0.7.57): forest's stored depletion grows back by FOREST_REGROWTH, then the month's flows are cleared. |
+| 2778 | 11 | `public void clearMonth()` | Called once a month, after the government accounts have read the flows. |
+| 2790 | 21 | `public void reset()` |  |
+| 2814 | 26 | `public void printLandInfo()` | The land to the log, in the player's units since 0.7.68 (areaWords(), prices a square metre) - nothing in the game calls it; a console's view of the office. |
+| 2843 | 4 | `static { ... }` |  |
+| 2856 | 7 | `public void redenominate(double scale)` | The city's own land prices and this month's land flows, in the new unit. |
+| 2866 | 4 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
 

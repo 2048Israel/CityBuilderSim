@@ -1,4 +1,4 @@
-# SlopeCheck.java - 910 lines · 32 methods · 15 constants · harnesses
+# SlopeCheck.java - 912 lines · 32 methods · 15 constants · harnesses
 
 `ham/citybuildersim/SlopeCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 853 | **type** `public class SlopeCheck` | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill ground and on no steeper, a mine on any, a foothill pad is prepared and p... |
+| 58 | 855 | **type** `public class SlopeCheck` | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill ground and on no steeper, a mine on any, a foothill pad is prepared and p... |
 | 64 | 4 | `static void check(String label, boolean ok)` |  |
 | 69 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 74 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -173,9 +173,9 @@
 | 762 | 3 | `static World.Key key(double[] at)` |  |
 | 766 | 62 | `static void foundingOnBuildableGround(EarthData file)` |  |
 
-### 9. HOW OFTEN IT FIRES IN A REAL RUN (Medellin, the real Earth) (lines 829-910)
+### 9. HOW OFTEN IT FIRES IN A REAL RUN (Medellin, the real Earth) (lines 829-912)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 836 | 74 | `static void inARealRun(EarthData file)` |  |
+| 836 | 76 | `static void inARealRun(EarthData file)` |  |
 

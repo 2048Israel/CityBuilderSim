@@ -17372,13 +17372,13 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L802 ...it is refused in the slope words, naming the nearest buildable ground and its way (EarthTerrain.siteBeyond()), which is buildable
   - L806 ...and the card says so: no site, not foundable, the same words
   - L823 a plan over Medellin's real ground, read as the map reads it: the district has steep ground, and streets and buildings stand on its buildable plots and on no...
-  - L895 the run played its months and found nothing: every month passed the playtest's audit and the layout watcher,
-  - L897 the preparation fires: orders charged one, foothill prepared, its points billed
-  - L898 ...its points are a share of the points billed, more than nothing and less than the whole
-  - L899 ...the foothill buildings stand on never exceeds the foothill, and it is all prepared
-  - L901 fixture: the city owns steep ground by the end, which the land office's offers carry with the rest - more than the flat and foothill it can build on
-  - L904 ...and no building stands on it: buildings never exceed the flat and foothill, the works' and the runs' parts on the steep alone, and the steep not used is idle
-  - L907 ...the points billed for preparation are what the foothill prepared comes to (an instant build prepares without charge, so never more)
+  - L897 the run played its months and found nothing: every month passed the playtest's audit and the layout watcher,
+  - L899 the preparation fires: orders charged one, foothill prepared, its points billed
+  - L900 ...its points are a share of the points billed, more than nothing and less than the whole
+  - L901 ...the foothill buildings stand on never exceeds the foothill, and it is all prepared
+  - L903 fixture: the city owns steep ground by the end, which the land office's offers carry with the rest - more than the flat and foothill it can build on
+  - L906 ...and no building stands on it: buildings and the runs off the steep never exceed the flat and foothill, the works' and the runs' parts on the steep alone, ...
+  - L909 ...the points billed for preparation are what the foothill prepared comes to (an instant build prepares without charge, so never more)
 
 ## StaleCheck.java - 22 labelled assertions
 

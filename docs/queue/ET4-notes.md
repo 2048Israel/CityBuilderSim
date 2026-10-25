@@ -61,7 +61,9 @@ sources: 1.5 to 3); a Freight Line in tunnel about $8,700 a m², $261M a km, whe
   the displaced pads; the price and the books; a flat city to the bit (the land); saved; the rates against their
   constants; a run on each class of ground; the mix; builders' work in the books (the city's highway and Freight's line,
   owed, billed, audited); a flat city to the bit (the quote); the card's words; the map's viaduct and tunnel; the street's
-  rule unmoved. SlopeCheck 9's steep identity counts the runs' steep part beside the works' (its premise unmoved).
+  rule unmoved. SlopeCheck 9: the steep identity counts the runs' steep part beside the works'; its bound stays faithful,
+  everything off the steep (the buildings and the runs' flat and foothill parts) within the flat and foothill, only the
+  runs' steep part excused (the gate's review caught a first form that excused all of the runs).
 - `./batch-check.sh --pick` with earth-2 named: see the report; MapCheck 8 is main's recorded red (FW11).
 - The default playtest: byte-identical but the run-time lines, so no ensemble. `--earth rotterdam`: the same (flat).
 - `--earth medellin`, before (main, 0.8.44) and after: **432,191** people at month 4,005 and **245,314**; slice A alone (the
@@ -78,13 +80,30 @@ sources: 1.5 to 3); a Freight Line in tunnel about $8,700 a m², $261M a km, whe
 
 1. **The rates**: foothill $110 a m² (the pad's bench), steep a viaduct $2,080, very steep a tunnel $2,330, from cost
    guides, DOT unit costs and the EC's study. Keep (rec.), or name better sources.
-2. **Rail's factor 2.7** (the grade limits 6% and 2.2%). It is what moves Medellín: a Rail Spur, a siding into one works,
-   is priced at the city's mix like a main line and nearly doubles. Keep (rec.: the rule as decided, and Medellín ends
-   near ET2's 257,761), or the spec's midpoints 6.5% / 3% (2.2), or a spur priced as yard ground.
+2. **Rail: its factor, and the Rail Spur** (no recommendation; the gate's review). The factor 2.7 (grade limits 6% and
+   2.2%) multiplies the per-m² rates while the land is not made longer, and the tunnel's bore already comes from the EC's
+   rail study, so a rail tunnel costs about 2 x 2.7 EC bores, about $191M a km (Gotthard's class), and a rail viaduct on a
+   highway's deck about $170M a km. Medellín at month 4,005, each run on this branch but the one change:
+
+   | variant | people | highways | spurs |
+   |---|---|---|---|
+   | main (0.8.45), no ET4 | 432,191 | 141 | 12 |
+   | the land alone (slice A, no works) | 454,499 | 159 | 18 |
+   | **as built**: factor 2.7, a spur a run | **245,314** | 47 | 8 |
+   | factor 2.2 | 216,886 | 36 | 7 |
+   | factor 1.0 | 268,137 | 60 | 9 |
+   | factor 2.7, a spur priced as yard ground (no works, a building's land) | 382,036 | 115 | 14 |
+
+   The factor does not order the result (2.2 ends lowest); what moves Medellín is the Rail Spur, a siding into one works,
+   priced as a run: its works at the city's mix (+95% of its price at 2.7, +35% at 1.0) and its land pro rata. The live
+   options: a factor of 2.2 or less, or a spur priced as yard ground (the main lines, the Freight Line, still runs).
 3. **The points at the run's own founding price a point**, not the House's as a pad's: a highway's works at Medellín's mix
    are 46% of its points, so they take the builders as long as they cost. Keep (rec.).
 4. **Tunnel portals at a tile's edge and on a 45-degree stretch** are not drawn (the tile's input holds no neighbour's
    relief). A small follow-up with an eye check (rec.), or as is.
+5. **The pads a run displaces are paid by nobody.** Where a run's flat share pushes buildings onto foothill, `allocate()`
+   counts their pads as cut, so the next building is quoted its own pad only. The model has no positions, so the push is
+   the split's arithmetic, not a building moved; charging it would bill a pad no crew cuts. Keep (rec.), or charge the run.
 
 ## Not done
 
@@ -95,3 +114,5 @@ sources: 1.5 to 3); a Freight Line in tunnel about $8,700 a m², $261M a km, whe
 
 - `BusinessInvestment.totalCostOf()` mirrors Game's charge by hand and still leaves out a building's foothill pad (ET2):
   the investor now sees a run's works but not a pad's preparation.
+- For ET3-C: `BusinessInvestment.groundCostOf()` estimates every plot, a run's included, at the flat price, while
+  `buildFor()` charges it class by class.

@@ -890,8 +890,10 @@ public class SlopeCheck {
                 LandManager.km2(lm.getFlatSqFt()), LandManager.km2(lm.getFoothillSqFt()), LandManager.km2(lm.getSlopeSqFt()),
                 g.getCityLand().totalReliefKm2(CityLand.RELIEF_VERY_STEEP), LandManager.km2(lm.getAllocatedSqFt()), LandManager.km2(lm.getWorksSqFt()),
                 LandManager.km2(lm.getWorksOnSlopeSqFt()));
-        // ...the buildings are what is neither works' nor a run's (ET4): a highway or a railway line is laid across every class of ground, the steep too.
-        double buildings = lm.getAllocatedSqFt() - lm.getWorksSqFt() - lm.getRunsSqFt(), eps = TOL * Math.max(1, lm.getOwnedSqFt());
+        // ...what is neither works' nor on the steep: the buildings and the runs' flat and foothill parts (ET4: a highway or a railway line is laid
+        // across every class of ground, and only its steep part is excused). All of it must fit on the flat and foothill, as the buildings with
+        // the runs among them had to before (runRoom() keeps it so).
+        double buildings = lm.getAllocatedSqFt() - lm.getWorksSqFt() - lm.getRunsOnSlopeSqFt(), eps = TOL * Math.max(1, lm.getOwnedSqFt());
         check("the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, "
                         + LongPlaytest.findings.keySet(), g.getMonth() >= RUN_MONTHS && LongPlaytest.findings.isEmpty());
         check("the preparation fires: orders charged one, foothill prepared, its points billed", g.preparationOrders() > 0 && prepared > 0 && billed > 0);
@@ -901,7 +903,7 @@ public class SlopeCheck {
         report("fixture: the city owns steep ground by the end, which the land office's offers carry with the rest - more than the flat and foothill it can build on",
                 lm.getSlopeSqFt() > 0 && lm.getOwnedSqFt() > lm.getFlatSqFt() + lm.getFoothillSqFt(),
                 String.format("%.3f km2 steep of %.3f km2 owned", LandManager.km2(lm.getSlopeSqFt()), LandManager.km2(lm.getOwnedSqFt())));
-        check("...and no building stands on it: buildings never exceed the flat and foothill, the works' and the runs' parts on the steep alone, and the steep not used is idle",
+        check("...and no building stands on it: buildings and the runs off the steep never exceed the flat and foothill, the works' and the runs' parts on the steep alone, and the steep not used is idle",
                 buildings <= lm.getFlatSqFt() + lm.getFoothillSqFt() + eps && lm.getWorksOnSlopeSqFt() <= lm.getSlopeSqFt() + eps
                         && Math.abs(lm.getWorksOnSlopeSqFt() + lm.getRunsOnSlopeSqFt() + lm.idleSlopeSqFt() - lm.getSlopeSqFt()) <= eps);
         check("...the points billed for preparation are what the foothill prepared comes to (an instant build prepares without charge, so never more)",

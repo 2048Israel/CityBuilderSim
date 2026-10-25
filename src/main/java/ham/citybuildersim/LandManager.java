@@ -1901,7 +1901,11 @@ public class LandManager {
        run prepares nothing itself, but allocate() raises preparedSqFt by the
        rise in buildingsOnFoothill (foothillDisplacedByRunSqFt()), so the
        next building is quoted only its own pad and not the pads the run
-       displaced. Who pays for those pads is the price of the run (4.3).
+       displaced. Nobody pays for those pads: the run's works (RunWorks)
+       price its own ground and carry no pad, and the buildings it pushes
+       onto foothill stand there as if their pads were cut. The model has no
+       positions, so the push is the split's arithmetic rather than a building
+       moved; charging it would bill a pad no crew cuts (ET4-notes, call 5).
 
        WHY ONE POOL AND NOT ONE A RELIEF. Three pools would have made every
        zone, the forest law, the land market's crowding and every save read
