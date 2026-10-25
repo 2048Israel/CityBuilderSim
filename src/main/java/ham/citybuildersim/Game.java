@@ -13660,6 +13660,7 @@ public class Game {
                 arrears.values().stream().mapToDouble(Double::doubleValue).toArray());
         dataSave.setForeignStanding(debtManager.foreignStandingToSave());
         dataSave.setCapitalFlows(hotMoney.toSaveArray());
+        dataSave.setCapitalFlowsStopReason(hotMoney.getStopReason());   // ...and the stop's words, which the array cannot hold (FW6)
         dataSave.setOutwardInvestment(outward.toSaveArray());
         dataSave.setEquity(equity.keys(), equity.toSaveArray());
         dataSave.setExchangeState(exchange.toState());
@@ -13830,6 +13831,9 @@ public class Game {
         dataSave.setSectorBooksBefore(sectorBooks.lastMonth());
         // ...the debt their sheets split, both months, and what had moved it so far (FW2; R1, R2 and R7).
         dataSave.setSectorDebt(sectorBooks.debtToSave(true), sectorBooks.debtToSave(false));
+        // ...the shares of the two months and the stock they revalue next month (FW6).
+        dataSave.setSectorShares(sectorBooks.sharesToSave(true), sectorBooks.sharesToSave(false));
+        dataSave.setSectorStock(sectorBooks.stockToSave());
         dataSave.setCreditMoved(economyManager.getBusinessDebtManager().movedToSave());
         dataSave.setTreasuryMonth(treasuryMonthToSave());
         dataSave.setTreasuryJournal(treasuryJournal.closedLabels(), treasuryJournal.closedAmounts(),
@@ -17048,6 +17052,7 @@ public class Game {
             centralBank.setAdvancesCeilingMonths(loaded.getAdvancesCeilingMonths() != null
                     ? loaded.getAdvancesCeilingMonths() : CentralBank.DEFAULT_ADVANCES_MONTHS);
             hotMoney.restore(loaded.getCapitalFlows());
+            hotMoney.restoreStopReason(loaded.getCapitalFlowsStopReason());   // an older save has none: blank, as it was (FW6)
             hotMoney.setMonth(month);
             bank.setForeignDeposits(hotMoney.getStock());
             // Absent from an older save: a city that never invested abroad.
@@ -17139,6 +17144,9 @@ public class Game {
                     loaded.getSectorBooksBefore());
             // ...and the debt their sheets split, both months (FW2): an older save has none, and reads not counted.
             sectorBooks.restoreDebt(loaded.getSectorDebt(), loaded.getSectorDebtBefore());
+            // ...the shares of the two months, and last month's stock for the revaluation (FW6): an older save has none, and reads as before.
+            sectorBooks.restoreShares(loaded.getSectorShares(), loaded.getSectorSharesBefore());
+            sectorBooks.restoreStock(loaded.getSectorStock());
             // ...whose share capital a save from before 0.7.75 did not keep: derived from the register's (R3).
             if (loaded.getSaveFormat() < Equity.PAID_IN_FORMAT) sectorBooks.derivePaidIn(equity);
             restoreTreasuryMonth(loaded.getTreasuryMonth());

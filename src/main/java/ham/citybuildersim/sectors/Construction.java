@@ -470,12 +470,16 @@ public final class Construction extends Sector {
     /** Whether the month last struck's materials are known: false after loading a save from before 0.7.46, until its first strike. */
     public boolean isDrawnKnown()       { return drawnKnown; }
 
-    /** The materials row as it stands at the strike, kept before bank() clears it (A5). */
+    /**
+     * The materials as they stand at the strike, kept before bank() clears them (A5). Read through the sector's month, not
+     * the raw row (FW6, 2026-10-25): in a city just loaded the row holds only the draws since the load, and the month the
+     * save closed in is carried beside it (Sector, THE MONTH'S TRADE ACROSS A SAVE), so the first strike after a load
+     * read 113 units where the city that kept running read 420. In a city never loaded the two are the row, to the bit.
+     */
     @Override
     protected void beforeBank() {
-        Input row = inputRow(Good.MATERIALS);
-        rDrawnLocal = row == null ? 0 : row.boughtLocal;
-        rDrawnImported = row == null ? 0 : row.imported;
+        rDrawnLocal = unitsBoughtLocal(Good.MATERIALS);
+        rDrawnImported = unitsImported(Good.MATERIALS);
         drawnKnown = true;
     }
 

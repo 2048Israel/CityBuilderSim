@@ -595,8 +595,8 @@ public class SectorStatementCheck {
                         && back.getBuildingManager().getStackCount() == g.getBuildingManager().getStackCount());
         SectorBooks a = g.getSectorBooks(), b = back.getSectorBooks();
         double worstIncome = 0, worstCash = 0, worstSheet = 0, worstEquity = 0;
-        boolean debtKept = true, sharesNot = true, split = false;
-        int compared = 0;
+        boolean debtKept = true, sharesKept = true, split = false;
+        int compared = 0, listed = 0;
         for (Sector s : g.getSectors().all()) {
             Sector t = back.getSectors().byKey(s.key());
             SectorBooks.SectorMonth n1 = a.get(s), p1 = a.previous(s), n2 = b.get(t), p2 = b.previous(t);
@@ -613,7 +613,10 @@ public class SectorStatementCheck {
                     rows(loaded), Set.of()));
             debtKept &= sameDebt(a.debt(s.key()), b.debt(t.key())) && sameDebt(a.debtBefore(s.key()), b.debtBefore(t.key()));
             split |= a.debt(s.key()) != null && a.debt(s.key()).owedTotal() > 0 && loaded.row(SectorStatements.DEBT_SOON) != null;
-            sharesNot &= b.shares(t.key()) == null;
+            // FW6 (2026-10-25): the shares are saved, both months, as the debt is - until then a load read both as not counted.
+            sharesKept &= java.util.Objects.equals(a.shares(s.key()), b.shares(t.key()))
+                    && java.util.Objects.equals(a.sharesBefore(s.key()), b.sharesBefore(t.key()));
+            if (a.shares(s.key()) != null && a.sharesBefore(s.key()) != null) listed++;
         }
         assertTrue(String.format("every sector's income statement, both months, is the same after a load (%d sectors; worst %.2g)",
                 compared, worstIncome), compared > 0 && worstIncome <= CENT);
@@ -636,7 +639,9 @@ public class SectorStatementCheck {
                 worstPaidIn <= CENT && flags && GameVersion.SAVE_FORMAT >= Equity.PAID_IN_FORMAT);
         assertTrue("a sector owes, and its loaded sheet splits the debt by when it falls due", split);
         assertTrue("R1 and R2 are saved (FW2): after a load every sector's interest and debt by kind, both months, read the"
-                + " saved city's to the cent; the shares are not saved, and read not counted", debtKept && sharesNot);
+                + " saved city's to the cent", debtKept);
+        assertTrue("the shares are saved (FW6): after a load every sector's share, this month's and last month's, reads the"
+                + " saved city's (" + listed + " companies with both months)", sharesKept && listed > 0);
         double worstBank = compare(rows(SectorStatements.bankIncome(g.getBank())), rows(SectorStatements.bankIncome(back.getBank())), Set.of());
         assertTrue(String.format("the bank's income statement, both columns, is the same after a load (worst %.2g%s)",
                 worstBank, worstBank > CENT ? ", " + worstRow : ""), worstBank <= CENT);

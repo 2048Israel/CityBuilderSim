@@ -76,6 +76,9 @@ public final class LuxuryCounter {
         mealSpend = 0;
         mealPrice = 0;
         mealsWanted = 0;
+        // ...and the households' own record of the month's meals, which only takeMeals() clears and the returns below skip:
+        // the price index reads it (Game.indexSpends()) and booked an older month's as this month's (FW6).
+        householdBalance.clearMealsBought();
 
         ham.citybuildersim.sectors.Restaurants kitchens = game.getSectors().restaurants();
         if (kitchens == null) return;
@@ -122,6 +125,8 @@ public final class LuxuryCounter {
         luxurySpend = 0;
         luxuryPrice = 0;
         luxuryWanted = 0;
+        // ...and the households' record of the month's pieces, as dine() clears the meals' (FW6).
+        householdBalance.clearLuxuriesBought();
 
         ham.citybuildersim.sectors.LuxuryRetail shops = game.getSectors().luxuryRetail();
         if (shops == null) return;

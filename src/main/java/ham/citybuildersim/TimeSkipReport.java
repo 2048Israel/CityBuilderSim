@@ -131,6 +131,14 @@ public class TimeSkipReport {
         worstEnergyRatio = 1;
         worstRoadRatio = 1;
         peakPopulation = 0;
+        // ...and the health counters (FW6, 2026-10-25): a long-lived city's report added every earlier skip's outbreaks,
+        // sick months and worst ratios into this one's, which a reloaded city (a fresh report) never showed.
+        outbreaks = 0;
+        monthsInOutbreak = 0;
+        wasOutbreak = false;
+        monthsSick = 0;
+        worstWorkRatio = 1;
+        peakUnburied = 0;
 
         before = null;
         after = null;

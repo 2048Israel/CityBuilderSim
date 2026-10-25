@@ -702,6 +702,15 @@ public class CapitalFlows {
         }
     }
 
+    /**
+     * The words the stop gave, put back on load (FW6, 2026-10-25): a String, so it cannot ride in the array above, and
+     * a city saved during a stop showed a blank reason on the Trade screen's card for the rest of it (PANIC_MONTHS at most).
+     * Null, as an older save has, reads none.
+     */
+    public void restoreStopReason(String reason) {
+        panicReason = reason == null ? "" : reason;
+    }
+
     public void reset() {
         stock = target = spread = arrived = departed = 0;
         panicUntil = -1;

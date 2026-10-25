@@ -298,9 +298,21 @@ public final class Quarrying extends ExtractionSector {
         carried += unsold;
     }
 
-    /** Limestone carried into aggregate at the last clearing, tonnes (THE CARRY): what the works that burn limestone weigh it at its export price for (ProcessingSector.values()). Not saved, as a market's month of trade is not: a city just loaded reads none until it clears. */
+    /** Limestone carried into aggregate at the last clearing, tonnes (THE CARRY): what the works that burn limestone weigh it at its export price for (ProcessingSector.values()). Saved since FW6 (2026-10-25), as a market's month of trade is: a city just loaded reads the carry of the month it was saved in. */
     public double carried() {
         return carried;
+    }
+
+    /** The carry crosses a save (FW6, 2026-10-25): the first investment pass after a load weighs limestone by it. */
+    @Override
+    protected void saveExtras(Map<String, Double> extras) {
+        extras.put("carried", carried);
+    }
+
+    /** A save without it reads none. */
+    @Override
+    protected void restoreExtras(Map<String, Double> extras) {
+        carried = extras.getOrDefault("carried", 0.0);
     }
 
     /* ----- the estimate ----- */
