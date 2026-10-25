@@ -507,11 +507,16 @@ public final class Markets {
        SAVE, RESET, THE REFORM
        =================================================================== */
 
-    /** One market as a save carries it: the price it traded at and the strike behind it. */
+    /**
+     * One market as a save carries it: the price it traded at, the strike behind it and, since FW6 (2026-10-25), the
+     * month's tally (units imported, exported, filled at home, offered, bid) and the units drawn since the last clearing.
+     * An older save lacks the tally's keys and reads none, as it did.
+     */
     public static final class State {
         public String good;
         public double price, flow, stock, demand;
         public double[] taken;
+        public double imported, exported, localFilled, offered, bid, drawn;
     }
 
     public List<State> toState() {
@@ -524,6 +529,12 @@ public final class Markets {
             s.stock = m.getSupplyStock();
             s.demand = m.getDemand();
             s.taken = m.getTakenHistory();
+            s.imported = m.getImported();
+            s.exported = m.getExported();
+            s.localFilled = m.getLocalFilled();
+            s.offered = m.getOffered();
+            s.bid = m.getBid();
+            s.drawn = m.getDrawn();
             out.add(s);
         }
         return out;
@@ -538,6 +549,7 @@ public final class Markets {
             GoodsMarket m = markets.get(g);
             m.setLocalPrice(s.price);
             m.restoreStrike(s.flow, s.stock, s.demand);
+            m.restoreTally(s.imported, s.exported, s.localFilled, s.offered, s.bid, s.drawn);
             m.restoreTakenHistory(s.taken);
         }
     }

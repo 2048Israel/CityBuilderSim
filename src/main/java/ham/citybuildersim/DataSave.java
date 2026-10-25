@@ -483,6 +483,30 @@ public class DataSave implements Cloneable {
     public void setCreditMoved(java.util.Map<String, double[][]> moved)  { this.creditMoved = moved; }
     public java.util.Map<String, double[][]> getCreditMoved()            { return creditMoved; }
 
+    /**
+     * The stock each sector's books revalue next month (FW6, 2026-10-25): every business's stock by good as the month
+     * closed, {units, price} under the good's name (SectorBooks.stockToSave()). Null on an older save, whose first
+     * month after the load counts no revaluation.
+     */
+    private java.util.Map<String, java.util.Map<String, double[]>> sectorStock;
+
+    public void setSectorStock(java.util.Map<String, java.util.Map<String, double[]>> stock) { this.sectorStock = stock; }
+    public java.util.Map<String, java.util.Map<String, double[]>> getSectorStock()           { return sectorStock; }
+
+    /**
+     * Each listed company's share as this month closed and as last month did (FW6, 2026-10-25), by sector, in
+     * SectorBooks.SHARES_SLOTS slots (SectorBooks.sharesToSave()). Null on an older save, whose share report reads
+     * "not counted" until a month has run.
+     */
+    private java.util.Map<String, double[]> sectorShares, sectorSharesBefore;
+
+    public void setSectorShares(java.util.Map<String, double[]> now, java.util.Map<String, double[]> before) {
+        this.sectorShares = now;
+        this.sectorSharesBefore = before;
+    }
+    public java.util.Map<String, double[]> getSectorShares()       { return sectorShares; }
+    public java.util.Map<String, double[]> getSectorSharesBefore() { return sectorSharesBefore; }
+
     //settings
     private boolean reports = true;
     private boolean graphs = true;
@@ -1379,6 +1403,12 @@ public class DataSave implements Cloneable {
 
     public void setCapitalFlows(double[] state) { this.capitalFlows = state; }
     public double[] getCapitalFlows()           { return capitalFlows; }
+
+    /** The words the sudden stop gave when it began (FW6, 2026-10-25): a String the capital flows' array cannot hold, for the Trade screen's card. Null on an older save, which reads it blank. */
+    private String capitalFlowsStopReason;
+
+    public void setCapitalFlowsStopReason(String reason) { this.capitalFlowsStopReason = reason; }
+    public String getCapitalFlowsStopReason()            { return capitalFlowsStopReason; }
 
     /**
      * The city's own savings abroad, per sector. See OutwardInvestment.

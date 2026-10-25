@@ -653,6 +653,9 @@ public class PriceIndex {
          * on, the level unbroken.
          */
         restoreChain(saved);
+        // rentWeight = 1 - foodWeight, above, is the two-part basket's rule; a based index with no link pending runs the
+        // chained basket, whose rent weight is its own (relink() sets it so): the old rule read 0.771 where the live city read 0.436 (FW6).
+        if (based && !linkPending) rentWeight = weight[RENT];
 
         /*
          * A save from before the marks existed has no tail. Opening them on the
