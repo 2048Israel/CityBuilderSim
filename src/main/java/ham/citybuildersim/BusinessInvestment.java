@@ -1213,14 +1213,29 @@ public class BusinessInvestment {
      * market price, with the builders' sales tax on both, plus the land.
      * What the owner pays up front and finances: the tax a business claims
      * back comes back as the work is billed, after the loan is written.
+     * A highway's or a railway's cuts, viaducts and tunnels on the city's slopes (ET4) are among the builders'
+     * work, taxed with it, as the quote has them (runWorksCost).
      */
     private double totalCostOf(BuildingsTemplate t, int quantity) {
         double stock = buildingManager.getConstructionMaterials();
         double required = t.getConstructionMaterials() * (double) quantity;
         double shortfall = Math.max(required - stock, 0);
+        double works = Game.isRun(t) ? runWorksCost.applyAsDouble(t, quantity) : 0;
         return economyManager.withBuildersTax(buildingManager.nonMaterialCost(t) * quantity
-                        + shortfall * buildingManager.getConstructionMaterialPrice())
+                        + shortfall * buildingManager.getConstructionMaterialPrice() + works)
                 + groundCostOf(t, quantity);
+    }
+
+    /**
+     * What the cuts, viaducts and tunnels of an order of a run would cost the builders' customer before the builders'
+     * tax (ET4; Game.runWorksCost(), wired by Game): the Freight sector's investor sees what a rail line costs on the
+     * hills. Nothing until handed in, as on a city of flat ground.
+     */
+    private java.util.function.ToDoubleBiFunction<BuildingsTemplate, Integer> runWorksCost = (t, n) -> 0;
+
+    /** Hands in the price of a run's works on the city's slopes (Game.runWorksCost()); null clears it. */
+    public void setRunWorksCost(java.util.function.ToDoubleBiFunction<BuildingsTemplate, Integer> price) {
+        this.runWorksCost = price == null ? (t, n) -> 0 : price;
     }
 
     /**

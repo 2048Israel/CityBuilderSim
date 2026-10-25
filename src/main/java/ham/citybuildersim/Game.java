@@ -340,6 +340,7 @@ public class Game {
         debtManager.setPriceIndexSource(() -> priceIndex.getIndex());   // a linked bond is indexed on the city's price index (CD5)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
+        businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
 
         // Every sector gets a handle on the city, for the few hooks that need
         // more than the buildings and the markets - the mines and the ground.
@@ -6321,6 +6322,18 @@ public class Game {
          */
         public final double prepSqFt, prepPoints, prepCost;
 
+        /**
+         * The cuts, viaducts and tunnels a highway or a railway order needs (ET4; RunWorks, spec-earth2-terrain 4.3):
+         * the run's land the works are priced on, square feet; the construction points they are, owed by the order's
+         * site before its first building finishes, as the foothill pad's are; and their money before the builders' tax,
+         * which is in the sticker and so grossed up in the total like all the work (the run's own builders' price a
+         * point). worksMix is the city's dry ground they were priced at, the shares of {flat, foothill, steep, very
+         * steep} (adding up to 1). All 0 for every quote but a run's on a city with ground above flat: a flat
+         * city's highway is the old quote to the bit.
+         */
+        public final double worksSqFt, worksPoints, worksCost;
+        public final double[] worksMix;
+
         BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
@@ -6344,9 +6357,25 @@ public class Game {
                    double landNeeded, double landFree, double months,
                    double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
                    double prepSqFt, double prepPoints, double prepCost) {
+            this(quantity, sticker, materialsNeeded, materialsInStock, boughtIn, plantPrice, materialsPrice,
+                    landNeeded, landFree, months, buildersRate, plantRate, bitumen, refinersRate,
+                    prepSqFt, prepPoints, prepCost, 0, 0, 0, new double[4]);
+        }
+
+        /** ...with the works a run's land needs on the city's ground (ET4): the sticker already holds worksCost, the money for worksPoints. */
+        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+                   Markets.Draw boughtIn, double plantPrice, double materialsPrice,
+                   double landNeeded, double landFree, double months,
+                   double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
+                   double prepSqFt, double prepPoints, double prepCost,
+                   double worksSqFt, double worksPoints, double worksCost, double[] worksMix) {
             this.prepSqFt = prepSqFt;
             this.prepPoints = prepPoints;
             this.prepCost = prepCost;
+            this.worksSqFt = worksSqFt;
+            this.worksPoints = worksPoints;
+            this.worksCost = worksCost;
+            this.worksMix = worksMix;
             this.quantity = quantity;
             this.sticker = sticker;
             this.materialsNeeded = materialsNeeded;
@@ -6559,6 +6588,11 @@ public class Game {
         double prepCost = prepPoints > 0 ? preparationCost(prepPoints) : 0;
         double sticker = buildingManager.nonMaterialCost(selected) * quantity;
         if (prepCost > 0) sticker += prepCost;
+        // ...and a highway's or a railway's cuts, viaducts and tunnels (ET4), priced at the city's mix of ground and owed
+        // on the site like the pad; its money joins the sticker, taxed with the work. Nothing for a building, or on flat.
+        RunWorksNeed need = runWorksFor(selected, quantity);
+        double worksPoints = need == null ? 0 : need.points(), worksCost = need == null ? 0 : need.cost();
+        if (worksCost > 0) sticker += worksCost;
         return new BuildQuote(
                 quantity,
                 sticker,
@@ -6573,13 +6607,16 @@ public class Game {
                 // The city's own order's wait (0.7.22, after the docs pass):
                 // quoteMonths() exactly with no order set and no rush, and with
                 // one, where the order would land in it (quoteCityMonths()) -
-                // the foothill's preparation owed on its site too (ET2).
-                quoteCityMonths(selected, quantity, prepPoints),
+                // the foothill's preparation owed on its site too (ET2),
+                // and a run's works on the slopes (ET4).
+                quoteCityMonths(selected, quantity, prepPoints + worksPoints),
                 buildersSalesRate(),
                 plantSalesRate(),
                 bitumen,
                 refinersSalesRate(),
-                prepSqFt, prepPoints, prepCost);
+                prepSqFt, prepPoints, prepCost,
+                need == null ? 0 : need.sqFt(), worksPoints, worksCost,
+                need == null ? new double[4] : need.mix());
     }
 
     /**
@@ -6635,6 +6672,62 @@ public class Game {
 
     /** ...and their money, before the builders' tax. */
     public double preparationMoneyBilled() { return preparationMoneyBilled; }
+
+    /** What a run's order needs built on the city's slopes (ET4): the land priced, the construction points, their money before the builders' tax, and the shares of {flat, foothill, steep, very steep} they were priced at. */
+    private record RunWorksNeed(double sqFt, double points, double cost, double[] mix) { }
+
+    /**
+     * The cuts, viaducts and tunnels a highway or a railway order needs (ET4; RunWorks, spec-earth2-terrain 4.3): the
+     * run's land times the works a m2 needs at the city's own mix of dry ground (RunWorks.usdPerM2OfMix(): the ground
+     * the run's land is spread over, LandManager's BUILDABLE BY SLOPE), as construction points at the run's own founding
+     * price a point, and their money at the builders' price a point today (the run's non-material cost over its points,
+     * so it keeps up with wages as the pad's does). Null for what is not a run, for a city with neither foothill nor
+     * steep ground, and for a template with no points to price them on.
+     */
+    private RunWorksNeed runWorksFor(BuildingsTemplate run, int quantity) {
+        if (!isRun(run) || landManager.isFlatOnly() || run.getConstructionPoints() <= 0 || quantity < 1) return null;
+        CityLand ground = landManager.getCityLand();
+        double flat = ground.totalReliefKm2(CityLand.RELIEF_FLAT), foothill = ground.totalReliefKm2(CityLand.RELIEF_FOOTHILL);
+        double steep = ground.totalReliefKm2(CityLand.RELIEF_STEEP), verySteep = ground.totalReliefKm2(CityLand.RELIEF_VERY_STEEP);
+        double usd = RunWorks.usdPerM2OfMix(flat, foothill, steep, verySteep, run.getCategory() == BuildingType.RAIL);
+        double sqFt = run.getLandSqFt() * (double) quantity;
+        double points = RunWorks.points(sqFt, usd, run.getFoundingCashCost() / (double) run.getConstructionPoints());
+        if (!(points > 0)) return null;
+        double total = flat + foothill + steep + verySteep;
+        return new RunWorksNeed(sqFt, points,
+                points * buildingManager.nonMaterialCost(run) / (double) run.getConstructionPoints(),
+                new double[] { flat / total, foothill / total, steep / total, verySteep / total });
+    }
+
+    /** What the cuts, viaducts and tunnels of an order of these would cost, before the builders' tax (runWorksFor()); 0 for every order but a run's on a city with ground above flat. Reads. */
+    public double runWorksCost(BuildingsTemplate run, int quantity) {
+        RunWorksNeed need = runWorksFor(run, quantity);
+        return need == null ? 0 : need.cost();
+    }
+
+    /**
+     * The cuts, viaducts and tunnels billed over this game's life (ET4, RunWorksCheck 10 and LongPlaytest's summary): the
+     * highway and railway orders that carried works, the points they owed, and their money before the builders' tax
+     * (BuildQuote.worksCost). Counted where the order puts its works on the site (noteRunWorks()), the city's and a
+     * business's alike. Not saved, as the preparation's: a reading of a run, so a game loaded from a save counts from nothing.
+     */
+    private int runWorksOrders;
+    private double runWorksPointsBilled, runWorksMoneyBilled;
+
+    private void noteRunWorks(BuildQuote quote) {
+        runWorksOrders++;
+        runWorksPointsBilled += quote.worksPoints;
+        runWorksMoneyBilled += quote.worksCost;
+    }
+
+    /** How many orders carried the works of a run over a city's slopes over this game's life: counted from this game's start, not saved. */
+    public int runWorksOrders() { return runWorksOrders; }
+
+    /** ...the construction points they owed. */
+    public double runWorksPointsBilled() { return runWorksPointsBilled; }
+
+    /** ...and their money, before the builders' tax. */
+    public double runWorksMoneyBilled() { return runWorksMoneyBilled; }
 
     /* ---------------------------------------------------------------------
        BITUMEN FOR THE PAVING (0.7.83, batch O6; docs/studies/spec-oil.md 2.5)
@@ -7662,6 +7755,11 @@ public class Game {
                     buildingManager.addPreparation(selected, quote.prepPoints);
                     notePreparation(quote);
                 }
+                // ...and a run's cuts, viaducts and tunnels, owed the same way (ET4).
+                if (quote.worksPoints > 0) {
+                    buildingManager.addPreparation(selected, quote.worksPoints);
+                    noteRunWorks(quote);
+                }
                 double fromYard = deliverYardToSites(selected, totalMaterialsRequired);
                 // ...and a paved road's bitumen, bought by the builders with the
                 // yard's material and billed in the quote (0.7.83; drawBitumen()).
@@ -7691,9 +7789,10 @@ public class Game {
             if (!noConstruction) {
                 // Earned as the work is delivered, material included - the
                 // crews buy it as they go. See sectors.Construction.bill().
-                // ...the foothill's preparation among the points (ET2), as the stack owes it.
+                // ...the foothill's preparation among the points (ET2), as the stack owes it, and a run's works (ET4).
                 double billedPoints = selected.getConstructionPoints() * (double) quantity;
                 if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
+                if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
                 getSectors().construction().bill(totalCost, billedPoints);
             }
 
@@ -8164,6 +8263,11 @@ public class Game {
             buildingManager.addPreparation(template, quote.prepPoints);
             notePreparation(quote);
         }
+        // ...and a run's cuts, viaducts and tunnels, owed the same way (ET4); in the quote too.
+        if (quote.worksPoints > 0) {
+            buildingManager.addPreparation(template, quote.worksPoints);
+            noteRunWorks(quote);
+        }
         double fromYard = deliverYardToSites(template, quote.materialsNeeded);
         // ...and a paved road's bitumen, should a business ever order one (0.7.83; drawBitumen()).
         drawBitumen(quote.bitumenNeeded);
@@ -8180,9 +8284,10 @@ public class Game {
         // Construction is paid for the building work only - the land was the
         // city's, not theirs to be paid for. The material beyond the yard is
         // drawn as the crews build, see drawSiteMaterials().
-        // ...the foothill's preparation among the points (ET2), as the stack owes it.
+        // ...the foothill's preparation among the points (ET2), as the stack owes it, and a run's works (ET4).
         double billedPoints = template.getConstructionPoints() * (double) quantity;
         if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
+        if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
         getSectors().construction().bill(totalCost - landPrice, billedPoints);
 
         return true;

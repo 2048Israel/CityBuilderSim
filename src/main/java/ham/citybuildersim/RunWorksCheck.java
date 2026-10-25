@@ -10,12 +10,13 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Highways and rail on the slopes (ET4, slice A; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a highway's
- * or a railway line's ground comes from every class of ground in the city's proportions, not from the buildings' pool
- * alone, so a mountain city's highways use its steep ground as real ones do.
+ * Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a
+ * highway's or a railway line's ground comes from every class of ground in the city's proportions, not from the
+ * buildings' pool alone, so a mountain city's highways use its steep ground as real ones do; and an order for one pays
+ * for the cuts, the viaducts and the tunnels that ground needs, at the city's own mix of it.
  *
  * WHAT THIS HAS TO PROVE, every fixture causing the condition it tests and every figure the model's own getters
- * (slice B adds the price of the cuts, the viaducts and the tunnels, and its sections after these):
+ * (sections 1 to 6 are slice A's, the land; 7 to 12 slice B's, the price of the works):
  *
  *   1. WHICH TEMPLATES ARE RUNS. Game.isRun() over the whole catalogue agrees with what the map draws as a highway or
  *      as track (BuildingVisual.Type's road() and track()); the Elevated Highway, the Rail Spur and the Freight Line are
@@ -36,6 +37,20 @@ import java.util.Map;
  *   5. A FLAT CITY TO THE BIT. A city with neither foothill nor steep ground reads a run as a building: the ground free,
  *      the price, the ground in use, the utilisation and the preparation are the same doubles as the buildings' path.
  *   6. SAVED. landRunsSqFt goes through a save and a load to the bit; a save without it reads the standing runs' ground.
+ *   7. THE RATES. RunWorks' dollars a m2 on each class against their constants: none on the flat, a highway's foothill
+ *      a pad's, foothill under steep under very steep, a railway's a highway's times RAIL_FACTOR and above it on every
+ *      class above flat; the rate at a mix is the weighted sum written from the rates, and the points are its arithmetic.
+ *   8. A RUN OVER EACH CLASS. A city of one class of ground, an Elevated Highway and a Freight Line quoted: the works
+ *      are the land at the class's rate in points at the template's own founding price, their money the builders'
+ *      price of those points, and the quote exceeds the same city's flat quote by exactly that money, taxed with the work.
+ *   9. THE MIX. A city of all four classes: the works at the rate of its mix of dry ground, the mix the quote reports,
+ *      a railway's a m2 above a highway's by RAIL_FACTOR; and what is no run carries no works at all.
+ *  10. BUILDERS' WORK IN THE BOOKS. The city's highways and the Freight sector's Freight Line through the real paths:
+ *      the works owed on the site before the first building finishes, billed to Construction and earned as the crews
+ *      deliver them, the money audit and the GDP identity closing month by month; the investor's price includes them.
+ *  11. A FLAT CITY TO THE BIT. On all-flat ground a run's quote, its order, the books and the investor's price are what
+ *      they were before ET4: no works, no line, the counters at nothing.
+ *  12. THE SCREEN'S WORDS. BuildScreen.worksWords() reads the quote's fields, the mix among them; nothing on flat ground.
  *
  * WHY. ET2 made the land a pool of three classes with buildings on the flat and foothill only and works on any, and a
  * highway, a building of the pool, could therefore never stand on a steep slope; the spec says it does (4.3). Each
@@ -113,6 +128,12 @@ public class RunWorksCheck {
         thePriceAndTheBooks();
         aFlatCityToTheBit();
         saved();
+        theRates();
+        overEachClass();
+        theMix();
+        inTheBooks();
+        aFlatCityPaysNoWorks();
+        theScreensWords();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -601,5 +622,464 @@ public class RunWorksCheck {
         report("a save without the key reads the standing highways' and railway lines' ground, as the allocation is read from the buildings",
                 had && standing > 0 && same(without.getLandManager().getRunsSqFt(), standing) && !same(without.getLandManager().getRunsSqFt(), fiat),
                 String.format("the key was there: %b; read back %,.0f sq ft of %,.0f standing", had, without.getLandManager().getRunsSqFt(), standing));
+    }
+
+    /* =====================================================================
+       slice B: the price of the cuts, the viaducts and the tunnels
+       ===================================================================== */
+
+    /** The cash a business is given to pay a run's order from by fiat, thousands: the Freight Line's price and more, in a figure small enough for the sectors' statements to be exact to the cent. */
+    static final double BUSINESS_CASH = 4e6;
+
+    /** The city's ground made all flat, as SlopeCheck 4 does it: the relief is read live, so the same order can be asked again as a flat city's. */
+    static void flatten(Game g) {
+        double dry = g.getCityLand().totalKm2(CityLand.DRY);
+        g.getCityLand().setCentreRelief(new double[] { dry, 0, 0, 0, 0 });
+    }
+
+    /** The city's own dry ground by relief (CityLand.setCentreRelief()'s five figures, km2), to put back after a fixture has been flattened. */
+    static double[] reliefOf(Game g) {
+        double[] relief = new double[CityLand.RELIEF_AREAS];
+        for (int i = 0; i < relief.length; i++) relief[i] = g.getCityLand().centreReliefKm2(i);
+        return relief;
+    }
+
+    /** The founding cash a point of a template's own work, thousands: what RunWorks.points() is struck at. */
+    static double perPoint(BuildingsTemplate t) {
+        return t.getFoundingCashCost() / (double) t.getConstructionPoints();
+    }
+
+    /** The dollars a m2 of the run's land that a quote's works come to: its points at the founding price a point, over the land it priced. */
+    static double usdPerM2Of(Game.BuildQuote q, BuildingsTemplate t) {
+        return q.worksPoints * perPoint(t) * 1000 / (q.worksSqFt * LandManager.SQ_M_PER_SQ_FT);
+    }
+
+    /* =====================================================================
+       7. THE RATES
+       ===================================================================== */
+
+    static void theRates() {
+        out.println("\n--- 7. the works a m2 of a run's land needs on each class: RunWorks' rates against their constants ---");
+        for (int net = 0; net < 2; net++) {
+            boolean rail = net == 1;
+            String who = rail ? "a railway's" : "a highway's";
+            check(who + " flat m2 needs no works", RunWorks.usdPerM2(World.FLAT, rail) == 0);
+            double foothill = RunWorks.usdPerM2(World.FOOTHILL, rail), steep = RunWorks.usdPerM2(World.STEEP, rail),
+                    very = RunWorks.usdPerM2(World.VERY_STEEP, rail);
+            report("...and the works rise with the class: foothill under steep under very steep, each above nothing",
+                    foothill > 0 && foothill < steep && steep < very,
+                    String.format("%s: $%,.1f, $%,.1f, $%,.1f a m2", who, foothill, steep, very));
+        }
+        report("a highway's foothill m2 is a foothill pad's, SitePreparation's dollars a m2",
+                same(RunWorks.usdPerM2(World.FOOTHILL, false), SitePreparation.USD_PER_M2) && RunWorks.FOOTHILL_USD_PER_M2 == SitePreparation.USD_PER_M2,
+                String.format("$%,.4f against $%,.4f", RunWorks.usdPerM2(World.FOOTHILL, false), SitePreparation.USD_PER_M2));
+        check("...its steep m2 is a viaduct's deck over the run's width, its very steep m2 the bores of a tunnel over the same",
+                same(RunWorks.usdPerM2(World.STEEP, false), RunWorks.DECK_USD_PER_M2 * RunWorks.DECK_WIDTH_M / RunWorks.RUN_WIDTH_M)
+                        && same(RunWorks.usdPerM2(World.VERY_STEEP, false),
+                                RunWorks.TUNNEL_BORES * RunWorks.TUNNEL_BORE_USD_PER_KM / (1000 * RunWorks.RUN_WIDTH_M))
+                        && RunWorks.RUN_WIDTH_M == SitePreparation.PAD_WIDTH_M);
+        check("a railway's rate is a highway's times RAIL_FACTOR on every class above flat, and above it; RAIL_FACTOR is the grades' ratio",
+                RunWorks.RAIL_FACTOR == RunWorks.HIGHWAY_GRADE / RunWorks.RAIL_GRADE && RunWorks.RAIL_FACTOR > 1
+                        && same(RunWorks.usdPerM2(World.FOOTHILL, true), RunWorks.usdPerM2(World.FOOTHILL, false) * RunWorks.RAIL_FACTOR)
+                        && same(RunWorks.usdPerM2(World.STEEP, true), RunWorks.usdPerM2(World.STEEP, false) * RunWorks.RAIL_FACTOR)
+                        && same(RunWorks.usdPerM2(World.VERY_STEEP, true), RunWorks.usdPerM2(World.VERY_STEEP, false) * RunWorks.RAIL_FACTOR)
+                        && RunWorks.usdPerM2(World.FOOTHILL, true) > RunWorks.usdPerM2(World.FOOTHILL, false)
+                        && RunWorks.usdPerM2(World.STEEP, true) > RunWorks.usdPerM2(World.STEEP, false)
+                        && RunWorks.usdPerM2(World.VERY_STEEP, true) > RunWorks.usdPerM2(World.VERY_STEEP, false));
+
+        // The rate at a mix is each class's share of the four times that class's rate, in any unit of area.
+        double[][] mixes = { { 40, 30, 20, 10 }, { 4, 3, 2, 1 }, { 0.5, 0.25, 0.125, 0.125 }, { 0, 1, 0, 0 }, { 0, 0, 3, 0 }, { 0, 0, 0, 7 }, { 9, 0, 1, 0 } };
+        boolean weighted = true;
+        String wrong = "";
+        for (double[] m : mixes) {
+            double total = m[0] + m[1] + m[2] + m[3];
+            for (int net = 0; net < 2; net++) {
+                boolean rail = net == 1;
+                double want = (m[1] * RunWorks.usdPerM2(World.FOOTHILL, rail) + m[2] * RunWorks.usdPerM2(World.STEEP, rail)
+                        + m[3] * RunWorks.usdPerM2(World.VERY_STEEP, rail)) / total;
+                double got = RunWorks.usdPerM2OfMix(m[0], m[1], m[2], m[3], rail);
+                if (!near(got, want)) { weighted = false; wrong += String.format(" %s%s: %.6f against %.6f;", java.util.Arrays.toString(m), rail ? " rail" : "", got, want); }
+            }
+        }
+        report("the rate at a mix of ground is the weighted sum of the classes' rates, in any unit of area, for a highway and a railway",
+                weighted, weighted ? mixes.length + " mixes, both nets" : wrong);
+        check("...none where the mix holds no ground, none above flat, or only flat; a negative area counts for nothing",
+                RunWorks.usdPerM2OfMix(0, 0, 0, 0, false) == 0 && RunWorks.usdPerM2OfMix(5, 0, 0, 0, true) == 0
+                        && near(RunWorks.usdPerM2OfMix(-5, 2, 0, 0, false), RunWorks.usdPerM2(World.FOOTHILL, false))
+                        && RunWorks.usdPerM2OfMix(-5, -1, 0, 0, true) == 0);
+        check("...a mix of one class above flat is that class's own rate; flat ground in the mix dilutes it, steeper ground raises it",
+                near(RunWorks.usdPerM2OfMix(0, 0, 8, 0, true), RunWorks.usdPerM2(World.STEEP, true))
+                        && near(RunWorks.usdPerM2OfMix(1, 1, 0, 0, false), RunWorks.usdPerM2(World.FOOTHILL, false) / 2)
+                        && RunWorks.usdPerM2OfMix(1, 1, 0, 0, false) < RunWorks.usdPerM2OfMix(0, 1, 0, 0, false)
+                        && RunWorks.usdPerM2OfMix(0, 1, 1, 0, false) > RunWorks.usdPerM2OfMix(0, 1, 0, 0, false));
+
+        // The points are the dollars in thousands over the template's own founding price a point.
+        double land = 63_000, price = 0.96;
+        double usd = RunWorks.usdPerM2(World.STEEP, false);
+        close("the points of a run's works are its square metres at the rate, in thousands, over the founding cash a point",
+                RunWorks.points(land, usd, price), land * LandManager.SQ_M_PER_SQ_FT * usd / 1000 / price, TOL);
+        check("...twice the land, twice the points; a dearer point, fewer",
+                near(RunWorks.points(2 * land, usd, price), 2 * RunWorks.points(land, usd, price))
+                        && RunWorks.points(land, usd, 2 * price) < RunWorks.points(land, usd, price));
+        check("...none for no land, no works, or a price a point that is not a positive figure",
+                RunWorks.points(0, usd, price) == 0 && RunWorks.points(land, 0, price) == 0 && RunWorks.points(land, usd, 0) == 0
+                        && RunWorks.points(land, usd, -1) == 0 && RunWorks.points(land, usd, Double.NaN) == 0
+                        && RunWorks.points(land, usd, Double.POSITIVE_INFINITY) == 0 && RunWorks.points(-land, usd, price) == 0);
+    }
+
+    /* =====================================================================
+       8. A RUN OVER EACH CLASS OF GROUND
+       ===================================================================== */
+
+    static void overEachClass() {
+        out.println("\n--- 8. a run over each class of ground: the works at the class's rate, in points, owed on the site and in the sticker ---");
+        int n = 2;
+        double[][] points = new double[2][World.RELIEFS], dollars = new double[2][World.RELIEFS];
+        for (int relief = World.FLAT; relief < World.RELIEFS; relief++) {
+            double[] share = new double[World.RELIEFS];
+            share[relief] = 1;
+            Game g = SlopeCheck.city("runworks-8-" + relief, share[0], share[1], share[2], share[3]);
+            EconomyManager em = g.getEconomyManager();
+            String ground = SlopeCheck.GROUND[relief];
+            double[] hilly = reliefOf(g);
+            for (int net = 0; net < 2; net++) {
+                boolean rail = net == 1;
+                BuildingsTemplate t = template(g, rail ? LINE : HIGHWAY);
+                String run = "an order of " + n + " x " + t.getName() + " on all-" + ground + " ground";
+                double nm = g.getBuildingManager().nonMaterialCost(t), land = t.getLandSqFt() * n;
+                Game.BuildQuote q = g.quoteBuild(t, n);
+                if (relief == World.FLAT) {
+                    report(run + ": no works at all - no land priced, no points, no money, no mix - and the sticker is the builders' work alone",
+                            q.worksSqFt == 0 && q.worksPoints == 0 && q.worksCost == 0 && java.util.Arrays.equals(q.worksMix, new double[4])
+                                    && q.prepPoints == 0 && same(q.sticker, nm * n) && Game.isRun(t),
+                            String.format("sticker %,.3f of %,.3f", q.sticker, nm * n));
+                    continue;
+                }
+                double want = RunWorks.points(land, RunWorks.usdPerM2(relief, rail), perPoint(t));
+                close(run + ": the works are its land at the class's rate, in points at the template's own founding price a point",
+                        q.worksPoints, want, TOL);
+                boolean wholeClass = near(q.worksMix[relief], 1);
+                for (int i = 0; i < World.RELIEFS; i++) if (i != relief && q.worksMix[i] != 0) wholeClass = false;
+                check("...on the run's whole land, at a mix that is this class whole, and the order prepares no pad of its own",
+                        want > 0 && near(q.worksSqFt, land) && wholeClass && q.prepSqFt == 0 && q.prepPoints == 0);
+                close("...their money is those points at the builders' price a point of the run's own work today (non-material cost over points)",
+                        q.worksCost, q.worksPoints * nm / t.getConstructionPoints(), TOL);
+                check("...in the sticker, summed as the quote sums it: the builders' work, then the works' money", same(q.sticker, nm * n + q.worksCost));
+                points[net][relief] = q.worksPoints;
+                dollars[net][relief] = usdPerM2Of(q, t);
+
+                // The same city, flat: the relief is read live, so the order is quoted again as a flat city's.
+                flatten(g);
+                Game.BuildQuote flat = g.quoteBuild(t, n);
+                check("...the same order quoted on flat has none, and is the builders' work alone",
+                        flat.worksPoints == 0 && flat.worksCost == 0 && same(flat.sticker, nm * n));
+                close("...so the total exceeds the flat one by the works' money grossed up by the builders' sales tax, as all the work is",
+                        q.total - flat.total, em.withBuildersTax(q.worksCost), TOL);
+                check("...and the wait is longer: the works are owed on the site before the first building finishes (quote months)",
+                        q.months > flat.months);
+                g.getCityLand().setCentreRelief(hilly);
+            }
+        }
+        check("the works rise with the class of ground, for a highway and for a railway: foothill under steep under very steep",
+                points[0][1] > 0 && points[0][1] < points[0][2] && points[0][2] < points[0][3]
+                        && points[1][1] > 0 && points[1][1] < points[1][2] && points[1][2] < points[1][3]);
+        boolean rails = true;
+        String detail = "";
+        for (int relief = World.FOOTHILL; relief < World.RELIEFS; relief++) {
+            rails &= dollars[1][relief] > dollars[0][relief] && near(dollars[1][relief] / dollars[0][relief], RunWorks.RAIL_FACTOR)
+                    && near(dollars[0][relief], RunWorks.usdPerM2(relief, false)) && near(dollars[1][relief], RunWorks.usdPerM2(relief, true));
+            detail += String.format(" %s $%,.0f and $%,.0f;", SlopeCheck.GROUND[relief], dollars[0][relief], dollars[1][relief]);
+        }
+        report("a railway's works a m2 of its land are a highway's times RAIL_FACTOR on every class above flat, the quotes' own dollars a m2", rails, "a m2:" + detail);
+    }
+
+    /* =====================================================================
+       9. THE CITY'S MIX OF GROUND
+       ===================================================================== */
+
+    static void theMix() {
+        out.println("\n--- 9. the city's mix of ground: the works at the mix of its dry ground; a railway's above a highway's; what is no run pays none ---");
+        Game g = hills("runworks-9", OWNED, 0.3, 0.4, 0.25, 0.05);
+        LandManager lm = g.getLandManager();
+        BuildingManager bm = g.getBuildingManager();
+        double[] area = new double[World.RELIEFS];
+        double total = 0;
+        for (int i = 0; i < World.RELIEFS; i++) { area[i] = SlopeCheck.ofClass(g, i); total += area[i]; }
+        report("fixture: 30% flat, 40% foothill, 25% steep and 5% very steep owned, the city hilly",
+                Math.abs(area[0] / total - 0.3) <= 1e-6 && Math.abs(area[1] / total - 0.4) <= 1e-6 && Math.abs(area[2] / total - 0.25) <= 1e-6
+                        && Math.abs(area[3] / total - 0.05) <= 1e-6 && !lm.isFlatOnly(),
+                String.format("flat %,.0f, foothill %,.0f, steep %,.0f, very steep %,.0f sq ft", area[0], area[1], area[2], area[3]));
+
+        double[] usd = new double[2];
+        for (int net = 0; net < 2; net++) {
+            boolean rail = net == 1;
+            for (String name : rail ? new String[] { SPUR, LINE } : new String[] { HIGHWAY }) {
+                BuildingsTemplate t = template(g, name);
+                int n = rail ? 1 : 3;
+                double nm = bm.nonMaterialCost(t);
+                Game.BuildQuote q = g.quoteBuild(t, n);
+                usd[net] = RunWorks.usdPerM2OfMix(area[0], area[1], area[2], area[3], rail);
+                double want = RunWorks.points(t.getLandSqFt() * n, usd[net], perPoint(t));
+                String run = "an order of " + n + " x " + name + " on the mixed city";
+                close(run + ": the works are its land at the rate of the city's mix of ground, in points", q.worksPoints, want, TOL);
+                boolean shares = q.worksMix.length == 4;
+                double sum = 0;
+                for (int i = 0; shares && i < 4; i++) { shares &= near(q.worksMix[i], area[i] / total); sum += q.worksMix[i]; }
+                check("...at the mix the quote reports, the shares of the city's dry ground by class, adding up to one",
+                        want > 0 && shares && near(sum, 1) && near(q.worksSqFt, t.getLandSqFt() * n));
+                close("...which is RunWorks' rate at the mix, dollars a m2 of the run's land", usdPerM2Of(q, t), usd[net], TOL);
+                check("...its money the builders' price of the points, in the sticker, summed as the quote sums it",
+                        near(q.worksCost, q.worksPoints * nm / t.getConstructionPoints()) && same(q.sticker, nm * n + q.worksCost));
+            }
+        }
+        check("a railway's works a m2 of land are a highway's times RAIL_FACTOR at the city's mix, and more than a highway's",
+                usd[1] > usd[0] && near(usd[1], usd[0] * RunWorks.RAIL_FACTOR));
+        BuildingsTemplate highway = template(g, HIGHWAY);
+        close("an order of 3 highways owes three times one's works: the land scales it",
+                g.quoteBuild(highway, 3).worksPoints, 3 * g.quoteBuild(highway, 1).worksPoints, TOL);
+        // The works are in every price the player is shown or charged: the card's verdict, the invoice of a run of orders, the cost the treasury checks.
+        Game.BuildQuote three = g.quoteBuild(highway, 3);
+        Map<BuildingsTemplate, Integer> invoiced = new LinkedHashMap<>();
+        invoiced.put(highway, 3);
+        report("...and they are in every price: the build card's verdict, the invoice of a run of orders and the treasury's cost are the quote's total",
+                three.worksCost > 0 && same(BuildCard.verdict(g, highway, 3).quote().total, three.total)
+                        && same(g.buildRunInvoice(invoiced), three.total) && same(g.calculateTotalCost(highway, 3), three.total),
+                String.format("quote %,.3fk, of it the works %,.3fk before the tax", three.total, three.worksCost));
+
+        boolean none = true;
+        String paid = "";
+        for (String name : new String[] { HOUSE, "Paved Road", "Gravel Road", "Light Rail Line", "Metro Line", "Rail Terminal", "Rail Depot", "Diner" }) {
+            BuildingsTemplate t = template(g, name);
+            Game.BuildQuote q = g.quoteBuild(t, 4);
+            double sticker = bm.nonMaterialCost(t) * 4;
+            if (q.prepCost > 0) sticker += q.prepCost;
+            if (Game.isRun(t) || q.worksSqFt != 0 || q.worksPoints != 0 || q.worksCost != 0 || !java.util.Arrays.equals(q.worksMix, new double[4])
+                    || !same(q.sticker, sticker)) {
+                none = false;
+                paid += " " + name;
+            }
+        }
+        BuildingsTemplate mine = bm.getTemplate(ham.citybuildersim.sectors.Mining.IRON_MINE);
+        Game.BuildQuote m = g.quoteBuild(mine, 1);
+        none &= m.worksPoints == 0 && m.worksCost == 0 && !Game.isRun(mine);
+        report("what is no run - the Houses and streets, the transit lines and the yards, a works - pays no works on the same city, its sticker the old one",
+                none, none ? "9 templates" : "paid:" + paid);
+    }
+
+    /* =====================================================================
+       10. BUILDERS' WORK IN THE BOOKS
+       ===================================================================== */
+
+    /** The depots a fixture's builders are given for 10: enough that a few highways (a Freight Line) take them some years, not centuries. */
+    static final int HIGHWAY_DEPOTS = 20, FREIGHT_DEPOTS = 100;
+
+    static void inTheBooks() {
+        out.println("\n--- 10. builders' work in the books: the city's highways and the Freight sector's Freight Line, the works owed on the site, billed to Construction, audited month by month ---");
+        for (int who = 0; who < 2; who++) {
+            SectorStatementCheck.bondsSoonBefore.clear();
+            SectorStatementCheck.tallies.clear();
+            boolean business = who == 1;
+            String by = business ? "the Freight sector's Freight Line (buildFor())" : "the city's Elevated Highways (buildStack())";
+            Game g = hills("runworks-10-" + who, OWNED, 0.4, 0.3, 0.2, 0.1);
+            g.setCashForTest(SlopeCheck.CASH);
+            if (business) g.getEconomyManager().setSectorCash(Sectors.FREIGHT, BUSINESS_CASH);
+            EconomyManager em = g.getEconomyManager();
+            BuildingManager bm = g.getBuildingManager();
+            ham.citybuildersim.sectors.Construction construction = g.getSectors().construction();
+            BuildingsTemplate t = template(g, business ? LINE : HIGHWAY);
+            // The founding's builders do 156 points a month: a run's order would take them centuries. Depots are put up by fiat (the
+            // instant build), so the order is built in a few years - and its first month is all the depots could do at every post.
+            int depots = business ? FREIGHT_DEPOTS : HIGHWAY_DEPOTS;
+            quietly(() -> g.buildStack(template(g, "Construction Depot"), depots, true));
+            double crews = g.getBuildingOutputAtEveryPost();
+            Game.BuildQuote one = g.quoteBuild(t, 1);
+            // ...and the order is the fewest runs whose works are more than that first month: they cannot be paid in the month they are ordered.
+            int n = business ? 1 : (int) Math.max(1, Math.min(20, Math.floor(crews / one.worksPoints) + 1));
+            Game.BuildQuote q = g.quoteBuild(t, n);
+            double own = n * (double) t.getConstructionPoints(), works = q.worksPoints;
+            report("fixture (" + by + "): the works alone are more than a month of the crews' work, so they cannot be paid in the month they are ordered",
+                    works > crews && works > 0 && !g.getLandManager().isFlatOnly() && bm.countByName("Construction Depot") >= depots,
+                    String.format("%d ordered; the works %.1f points, the crews' first month %,d with %d depots, the order's own %.1f", n, works, (int) crews, depots, own));
+
+            // What the investor sees: the same price on flat ground less the works, grossed up by the builders' tax.
+            BusinessInvestment bi = g.getBusinessInvestment();
+            double withWorks = bi.getCostOf(t, n);
+            double[] relief = reliefOf(g);
+            flatten(g);
+            double withoutWorks = bi.getCostOf(t, n);
+            g.getCityLand().setCentreRelief(relief);
+            report("the investor's price (BusinessInvestment.getCostOf()) includes the works, taxed with the builders' work: the flat price and the works' money grossed up",
+                    q.worksCost > 0 && withWorks > withoutWorks && Math.abs((withWorks - withoutWorks) - em.withBuildersTax(q.worksCost)) <= TOL * withWorks
+                            && same(g.runWorksCost(t, n), q.worksCost),
+                    String.format("%,.3fk on hills, %,.3fk on flat, the works %,.3fk before the tax", withWorks, withoutWorks, q.worksCost));
+
+            double backlog0 = construction.getBacklogPoints(), unearned0 = construction.getUnearnedRevenue(), billed0 = construction.getBilledPoints();
+            boolean[] ordered = new boolean[1];
+            quietly(() -> ordered[0] = business ? g.buildFor(g.getSectorInvestor(Sectors.FREIGHT), t, n)
+                    : g.buildStack(t, n, false) == Game.BuildResult.SUCCESS);
+            BuildingsStacks stack = bm.getStack(t);
+            report(by + ": Construction's backlog rises by the buildings' points and the works', its unearned revenue by the bill",
+                    ordered[0] && Math.abs(construction.getBacklogPoints() - backlog0 - (own + works)) <= TOL * (own + works)
+                            && Math.abs(construction.getUnearnedRevenue() - unearned0 - q.total) <= TOL * q.total
+                            && Math.abs(construction.getBilledPoints() - billed0 - (own + works)) <= TOL * (own + works),
+                    String.format("backlog +%.3f of %.3f + %.3f, unearned +%,.3fk of the quote's %,.3fk", construction.getBacklogPoints() - backlog0,
+                            own, works, construction.getUnearnedRevenue() - unearned0, q.total));
+            check("...and the site owes the works: its progress is below nothing by their points, none of the buildings finished",
+                    stack != null && Math.abs(stack.getConstructionProgress() + works) <= TOL * works
+                            && stack.getQuantity() == 0 && stack.getUnderConstruction() == n);
+            check("...the counters read it: one order, its points and its money", g.runWorksOrders() == 1
+                    && same(g.runWorksPointsBilled(), q.worksPoints) && same(g.runWorksMoneyBilled(), q.worksCost) && g.preparationOrders() == 0);
+
+            SlopeCheck.Months m = new SlopeCheck.Months();
+            while (stack.getUnderConstruction() > 0 && m.played < SlopeCheck.PATIENCE) SlopeCheck.month(g, stack, m);
+            report(by + ": the first building finishes only once the works are paid - the crews' points up to then are at least the works and a building",
+                    m.firstFinished > 1 && m.appliedAtFirst >= works + t.getConstructionPoints() - 1e-6,
+                    String.format("month %d, %.3f points applied against works %.3f + building %d", m.firstFinished, m.appliedAtFirst, works,
+                            t.getConstructionPoints()));
+            report("...and every building is built, the points applied the order's whole - the buildings' and the works'",
+                    stack.getUnderConstruction() == 0 && stack.getQuantity() == n && Math.abs(m.applied - (own + works)) <= 1e-6 * (own + works),
+                    String.format("%d months, %.3f applied of %.3f", m.played, m.applied, own + works));
+            report("...all that was billed is earned: the order book is back to what it was, in points and in money",
+                    Math.abs(construction.getBacklogPoints() - backlog0) <= 1e-6 * (own + works)
+                            && Math.abs(construction.getUnearnedRevenue() - unearned0) <= 1e-6 * q.total,
+                    String.format("backlog %+.6f, unearned %+.6fk", construction.getBacklogPoints() - backlog0,
+                            construction.getUnearnedRevenue() - unearned0));
+            double recognised = 0;
+            for (double r : m.recognised) recognised += r;
+            report("...and Construction's earnings are the order's money: the work it recognised over the months is the bill, off by no more than the material the price allowed for (BuildQuote.allowance), which is trued up as the crews draw it",
+                    Math.abs(recognised - q.total) <= q.allowance && q.allowance < q.total,
+                    String.format("%,.3fk recognised of the quote's %,.3fk, the material allowed for %,.3fk", recognised, q.total, q.allowance));
+            double firstWork = m.recognised.get(0), counted = m.counted.size() > 1 ? m.counted.get(1) : Double.NaN;
+            report("...GDP counted the works as construction: the first month's work, when no building had finished, is what GDP counts the month after",
+                    firstWork > 0 && m.firstFinished > 1 && Math.abs(counted - firstWork) <= 1e-9 * firstWork,
+                    String.format("%,.3fk recognised in month 1, %,.3fk counted in month 2", firstWork, counted));
+            int[] statements = SlopeCheck.statements();
+            report("over those months the money audit closed, the GDP identity held and GDP's construction was the builders' recognised work, post-audit drift"
+                            + " was nil, and every sector's statements held",
+                    m.played > 0 && m.moneyOff == 0 && m.gdpOff == 0 && SlopeCheck.gdpOffTheBooks(m) == 0 && m.driftOff == 0
+                            && statements[1] == 0 && statements[0] > 0,
+                    String.format("%d months; the audit off %d, GDP off %d + %d, drift off %d; %,d statement identities checked, %d missed (%s); worst residual %.2e",
+                            m.played, m.moneyOff, m.gdpOff, SlopeCheck.gdpOffTheBooks(m), m.driftOff, statements[0], statements[1],
+                            SlopeCheck.statementsMissed(), m.worstResidual));
+        }
+    }
+
+    /* =====================================================================
+       11. A FLAT CITY TO THE BIT
+       ===================================================================== */
+
+    static void aFlatCityPaysNoWorks() {
+        out.println("\n--- 11. a flat city to the bit: a run's quote, order, books and investor's price are what they were before ET4 ---");
+        Game g = SlopeCheck.city("runworks-11", 1, 0, 0, 0);
+        g.getEconomyManager().setSectorCash(Sectors.FREIGHT, BUSINESS_CASH);
+        BuildingManager bm = g.getBuildingManager();
+        ham.citybuildersim.sectors.Construction construction = g.getSectors().construction();
+        BuildingsTemplate highway = template(g, HIGHWAY), line = template(g, LINE);
+        g.getLandManager().restoreWorks(0);
+        g.getLandManager().restoreRuns(0);
+        int highways = 3;
+        double nmHighway = bm.nonMaterialCost(highway), nmLine = bm.nonMaterialCost(line);
+        Game.BuildQuote hq = g.quoteBuild(highway, highways), lq = g.quoteBuild(line, 1);
+        report("fixture: a city of neither foothill nor steep ground, no works counted yet",
+                g.getLandManager().isFlatOnly() && g.runWorksOrders() == 0 && Game.isRun(highway) && Game.isRun(line),
+                "flat only: " + g.getLandManager().isFlatOnly());
+        boolean quotes = true;
+        for (Game.BuildQuote q : new Game.BuildQuote[] { hq, lq }) {
+            quotes &= q.worksSqFt == 0 && q.worksPoints == 0 && q.worksCost == 0 && java.util.Arrays.equals(q.worksMix, new double[4]);
+        }
+        check("the quotes carry no works: no land priced, no points, no money, no mix - for a highway and a Freight Line",
+                quotes && g.runWorksCost(highway, highways) == 0 && g.runWorksCost(line, 1) == 0);
+        check("...the sticker is the builders' non-material cost times the order, to the bit, and the wait asks the crews for the buildings' points alone",
+                same(hq.sticker, nmHighway * highways) && same(lq.sticker, nmLine) && same(hq.months, g.quoteCityMonths(highway, highways))
+                        && same(lq.months, g.quoteCityMonths(line, 1)));
+
+        // The investor's price: the same double with the works' supplier cleared, which is the arithmetic before ET4.
+        BusinessInvestment bi = g.getBusinessInvestment();
+        double priced = bi.getCostOf(line, 1), pricedHighways = bi.getCostOf(highway, highways);
+        bi.setRunWorksCost(null);
+        double before = bi.getCostOf(line, 1), beforeHighways = bi.getCostOf(highway, highways);
+        bi.setRunWorksCost(g::runWorksCost);
+        check("the investor's price of a Freight Line and of highways is the old price, to the bit (BusinessInvestment.getCostOf())",
+                same(priced, before) && same(pricedHighways, beforeHighways) && priced > 0);
+
+        double backlog0 = construction.getBacklogPoints(), unearned0 = construction.getUnearnedRevenue(), billed0 = construction.getBilledPoints();
+        Game.BuildResult hw = order(g, highway, highways);
+        // ...the Freight Line quoted after the highways' order, which leaves the yard what it leaves.
+        lq = g.quoteBuild(line, 1);
+        boolean lined = businessOrder(g, Sectors.FREIGHT, line, 1);
+        double own = highways * (double) highway.getConstructionPoints() + line.getConstructionPoints();
+        report("the city's highways and the Freight Line go through; Construction's backlog and billed points rise by the buildings' points alone, its unearned revenue by the bills",
+                hw == Game.BuildResult.SUCCESS && lined && Math.abs(construction.getBacklogPoints() - backlog0 - own) <= TOL * own
+                        && Math.abs(construction.getBilledPoints() - billed0 - own) <= TOL * own
+                        && Math.abs(construction.getUnearnedRevenue() - unearned0 - hq.total - lq.total) <= TOL * (hq.total + lq.total),
+                String.format("%s, %b; backlog +%.3f of %.3f", hw, lined, construction.getBacklogPoints() - backlog0, own));
+        BuildingsStacks hStack = bm.getStack(highway), lStack = bm.getStack(line);
+        check("...no site owes anything before its first building: the progress is nothing, not below it",
+                hStack != null && lStack != null && hStack.getConstructionProgress() == 0 && lStack.getConstructionProgress() == 0
+                        && hStack.getUnderConstruction() == highways && lStack.getUnderConstruction() == 1);
+        check("...and the counters of works and of preparation stand at nothing",
+                g.runWorksOrders() == 0 && g.runWorksPointsBilled() == 0 && g.runWorksMoneyBilled() == 0
+                        && g.preparationOrders() == 0 && g.preparationPointsBilled() == 0 && g.preparationMoneyBilled() == 0);
+    }
+
+    /* =====================================================================
+       12. THE SCREEN'S WORDS
+       ===================================================================== */
+
+    /** BuildScreen.worksWords(), a package-private static of the build screen, read through reflection: it must not need a toolkit. */
+    static String worksWords(Game.BuildQuote q) {
+        try {
+            Class<?> screen = Class.forName("ham.citybuildersim.ui.BuildScreen");
+            java.lang.reflect.Method words = screen.getDeclaredMethod("worksWords", Game.BuildQuote.class);
+            words.setAccessible(true);
+            return (String) words.invoke(null, q);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            return "(BuildScreen.worksWords() could not be called: " + e + ")";
+        }
+    }
+
+    static void theScreensWords() {
+        out.println("\n--- 12. the screen's words: BuildScreen.worksWords() reads the quote's fields; nothing on flat ground, for a building, or for no quote ---");
+        Game g = hills("runworks-12", OWNED, 0.3, 0.4, 0.25, 0.05);
+        BuildingsTemplate highway = template(g, HIGHWAY), house = template(g, HOUSE);
+        Game.BuildQuote q = g.quoteBuild(highway, 5);
+        String words = worksWords(q);
+        String land = LandManager.areaWords(q.worksSqFt), points = String.format("%,.1f", q.worksPoints), money = ham.citybuildersim.ui.Money.money(q.worksCost);
+        report("on the mixed city a highway order is worded from the quote: the run's land, the points and the money, as the screen writes them",
+                words != null && q.worksPoints > 0 && words.startsWith("Cuts, viaducts and tunnels for its " + land + " over the city's ground (")
+                        && words.contains(points + " points of builders' work, " + money),
+                String.valueOf(words));
+        String foothill = "foothill " + String.format("%.0f%%", q.worksMix[1] * 100), steep = "steep " + String.format("%.0f%%", q.worksMix[2] * 100),
+                very = "very steep " + String.format("%.0f%%", q.worksMix[3] * 100);
+        check("...the city's ground in its shares by class above flat, each from the quote's mix - foothill 40%, steep 25%, very steep 5% - and not the flat",
+                words != null && words.contains("(" + foothill + ", " + steep + ", " + very + ")") && foothill.equals("foothill 40%")
+                        && steep.equals("steep 25%") && very.equals("very steep 5%") && !words.contains("flat"));
+        check("a building's quote on the same city, a quote with no works and no quote at all have no line, so a flat city's card reads as it did",
+                worksWords(g.quoteBuild(house, 5)) == null && worksWords(null) == null);
+
+        // The same highway on a flat city.
+        Game flat = SlopeCheck.city("runworks-12-flat", 1, 0, 0, 0);
+        check("the same order on a flat city has no line", worksWords(flat.quoteBuild(template(flat, HIGHWAY), 5)) == null
+                && worksWords(flat.quoteBuild(template(flat, LINE), 1)) == null);
+
+        // A mix with a sliver of very steep ground reads under 1%, not 0%.
+        Game sliver = hills("runworks-12-sliver", OWNED, 0.6, 0.3959, 0.004, 0.0001);
+        String thin = worksWords(sliver.quoteBuild(template(sliver, LINE), 1));
+        check("a class that is under a half per cent of the ground reads \"under 1%\", never \"0%\"",
+                thin != null && thin.contains("(foothill 40%, steep under 1%, very steep under 1%)") && !thin.contains(" 0%"));
+
+        // ...and it is drawn where the preparation's words are, under the quote on the build card.
+        java.nio.file.Path screen = java.nio.file.Path.of("src/main/java/ham/citybuildersim/ui/BuildScreen.java");
+        if (Files.exists(screen)) {
+            try {
+                String source = Files.readString(screen);
+                check("the build card draws it with the preparation's line: worksWords(v.quote()) beside prepWords(v.quote())",
+                        source.contains("prepWords(v.quote())") && source.contains("worksWords(v.quote())"));
+            } catch (java.io.IOException e) {
+                check("could not read Build's source: " + e, false);
+            }
+        } else {
+            out.println("      (Build's source is not under the working folder: the line is not looked for in it)");
+        }
     }
 }
