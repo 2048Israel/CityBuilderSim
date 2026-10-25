@@ -6938,6 +6938,20 @@ public class BuildingManager {
         return total;
     }
 
+    /**
+     * ...the part of it that works stand on (ET3: `works` is Game.standsAnywhere()), which the books attribute to the
+     * steep ground first (EconomyManager.landByReliefOf()); getLandSqFtBySector() less this is its buildings'.
+     */
+    public double getWorksLandSqFtBySector(String sector, java.util.function.Predicate<BuildingsTemplate> works) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector) || !works.test(t)) continue;
+            total += t.getLandSqFt() * (stack.getQuantity() + stack.getUnderConstruction());
+        }
+        return total;
+    }
+
     /** Finished and unfinished together, at cash plus materials at market - what the sector's buildings are worth. */
     public double getBuildingsValueBySector(String sector) {
         double total = 0;
@@ -7080,6 +7094,17 @@ public class BuildingManager {
                 total += stack.getBuilding().getLandSqFt()
                         * (stack.getQuantity() + stack.getUnderConstruction());
             }
+        }
+        return total;
+    }
+
+    /** ...the part of a category's land that works stand on (ET3: `works` is Game.standsAnywhere()); getLandSqFtByCategory() less this is its buildings'. */
+    public double getWorksLandSqFtByCategory(BuildingType category, java.util.function.Predicate<BuildingsTemplate> works) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getCategory() != category || !works.test(t)) continue;
+            total += t.getLandSqFt() * (stack.getQuantity() + stack.getUnderConstruction());
         }
         return total;
     }

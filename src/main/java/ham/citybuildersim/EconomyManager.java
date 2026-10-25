@@ -337,9 +337,14 @@ public class EconomyManager {
     public void setLandPricePerSqFt(double price) { this.landPricePerSqFt = price; }
     public double getLandPricePerSqFt()           { return landPricePerSqFt; }
 
-    /** What a sector's land is worth at the city's current price - on its books; the roll reads assessedLandValueOf() since 0.7.107. */
+    /**
+     * What a sector's land is worth at the city's current price - on its books; the roll reads assessedLandValueOf() since 0.7.107.
+     * Since ET3 a city with foothill or steep ground values it by the ground it stands on (landByReliefOf()): each class at its
+     * own price (priceOfClass()). A city with neither, or before the land is pushed, the one price, as it always was.
+     */
     public double landValueOf(Sector s) {
-        return buildingManager.getLandSqFtBySector(s.key()) * landPricePerSqFt;
+        if (!valuesByRelief()) return buildingManager.getLandSqFtBySector(s.key()) * landPricePerSqFt;
+        return valueOfAreas(landByReliefOf(s));
     }
 
     /*
@@ -370,11 +375,18 @@ public class EconomyManager {
         if (z == null || !(z.usedSqFt() > 0)) return landValueOf(s);
         double all = buildingManager.getLandSqFtBySector(s.key());
         double inZone = Math.min(all, z.usedSqFt());
+        // ...in a city with foothill or steep ground the zone's share applies to every class alike (ET3), as LandManager.priceFor() prices a plot.
+        if (valuesByRelief()) return all > 0 ? landValueOf(s) * ((all - inZone) + inZone * z.priceShare()) / all : 0;
         return (all - inZone) * landPricePerSqFt + inZone * z.priceShare() * landPricePerSqFt;
     }
 
     /** What a square foot of ground under one more of these costs its owner and is assessed at: its zone's price while the zone holds its plot, the going price past it - never below nothing. */
     public double groundPriceFor(BuildingsTemplate t) {
+        // ...in a city with foothill or steep ground, the price a square foot of the plot would fall on (ET3: LandManager.priceFor() over its size, zone included), the one number buildFor() charges.
+        if (valuesByRelief() && plotPrice != null && t != null && t.getLandSqFt() > 0) {
+            double byClass = plotPrice.applyAsDouble(t);
+            if (byClass >= 0 && Double.isFinite(byClass)) return byClass;
+        }
         double going = Math.max(0, landPricePerSqFt);
         if (zoning == null || t == null || !zoning.hasZones()) return going;
         Zoning.Zone z = zoning.zone(t.getSector());
@@ -382,9 +394,93 @@ public class EconomyManager {
         return going * z.priceShare();
     }
 
-    /** What a city-owned category's land is worth. */
+    /** What a city-owned category's land is worth (by the ground it stands on in a city with foothill or steep ground, ET3). */
     public double landValueOf(BuildingType category) {
-        return buildingManager.getLandSqFtByCategory(category) * landPricePerSqFt;
+        if (!valuesByRelief()) return buildingManager.getLandSqFtByCategory(category) * landPricePerSqFt;
+        return valueOfAreas(landByReliefOf(category));
+    }
+
+    /* ------------------------------ the land by class of ground (ET3, 2026-10-25) ------------------------------
+
+       THE BOOKS VALUE A BUSINESS'S LAND BY THE GROUND IT STANDS ON (spec-earth2-terrain 5.3). LandManager prices
+       three classes of ground (flat, foothill, steep: the residual rule, 5.1) and splits the city's one pool of
+       built ground by use (BUILDABLE BY SLOPE): works on the steep first, buildings on the flat first. Nothing
+       records which sector's plot lies on which class, so a sector's land is attributed PRO RATA: its buildings'
+       ground at the city's buildings' mix (flat, foothill), its works' (Game.standsAnywhere()) at the city's works'
+       mix (steep, foothill, flat). Summed over every sector and the city's own categories the areas by class are the
+       split's own (LandClassCheck). Game pushes the class prices and the use with the land's price each month
+       (setLandByRelief()) and the use again as the books close (setLandUse()); a city that owns neither foothill nor steep ground, or a bare
+       economy that was pushed none, values every square foot at the one price by the OLD EXPRESSION, to the bit. */
+
+    private boolean landFlatOnly = true;
+    private double foothillPricePerSqFt, steepPricePerSqFt;
+    private LandManager.ReliefUse landUse;
+    private java.util.function.Predicate<BuildingsTemplate> worksTest = t -> false;
+    private java.util.function.ToDoubleFunction<BuildingsTemplate> plotPrice;
+
+    /** Wired once by Game: which templates are works (Game.standsAnywhere()), and what a square foot of one more of a template's plot costs where it would fall (LandManager.priceFor() over its size). */
+    public void wireLandByRelief(java.util.function.Predicate<BuildingsTemplate> works,
+                                 java.util.function.ToDoubleFunction<BuildingsTemplate> plotPricePerSqFt) {
+        this.worksTest = works != null ? works : t -> false;
+        this.plotPrice = plotPricePerSqFt;
+    }
+
+    /**
+     * The land office's classes of ground as the books are to read them: whether the city owns only flat ground, what a
+     * square foot of foothill and of steep ground sells at (LandManager.getFoothillPricePerSqFt(),
+     * getSteepPricePerSqFt(); flat's is getLandPricePerSqFt()), and the ground in use by class (LandManager.reliefUse()).
+     */
+    public void setLandByRelief(boolean flatOnly, double foothillPrice, double steepPrice, LandManager.ReliefUse use) {
+        this.foothillPricePerSqFt = foothillPrice;
+        this.steepPricePerSqFt = steepPrice;
+        setLandUse(flatOnly, use);
+    }
+
+    /** ...the ground alone, the prices as they were pushed: Game reads it again as the month closes, when the month's orders have put up their buildings. */
+    public void setLandUse(boolean flatOnly, LandManager.ReliefUse use) {
+        this.landFlatOnly = flatOnly;
+        this.landUse = use;
+    }
+
+    /** Whether the books value land by class: the city owns foothill or steep ground and its use has been pushed. */
+    public boolean valuesByRelief() { return landUse != null && !landFlatOnly; }
+
+    /** The price a square foot of one class of ground is valued at: 0 flat (getLandPricePerSqFt()), 1 foothill, 2 steep and very steep. */
+    public double priceOfClass(int c) {
+        return c == 1 ? foothillPricePerSqFt : c == 2 ? steepPricePerSqFt : landPricePerSqFt;
+    }
+
+    /** The class areas {flat, foothill, slope} of `buildings` square feet of buildings' ground and `works` of works', pro rata to the city's use of each. A mix with no ground in use puts its ground on flat. */
+    private double[] landByRelief(double buildings, double works) {
+        double b = landUse.buildings(), w = landUse.works();
+        // ...each class its own share of the ground (so a class the split leaves empty is empty, not a rounding), a mix with nothing in use all flat.
+        double bFlat = b > 0 ? buildings * landUse.buildingsFlat() / b : buildings;
+        double bFoot = b > 0 ? buildings * landUse.buildingsFoothill() / b : 0;
+        double wFlat = w > 0 ? works * landUse.worksFlat() / w : works;
+        double wFoot = w > 0 ? works * landUse.worksFoothill() / w : 0;
+        double wSlope = w > 0 ? works * landUse.worksSlope() / w : 0;
+        return new double[] { bFlat + wFlat, bFoot + wFoot, wSlope };
+    }
+
+    /** A sector's land, square feet, by the ground it stands on: {flat, foothill, slope} - its buildings' ground at the city's buildings' mix, its works' at the city's works' (above). Sums to getLandSqFtBySector(). */
+    public double[] landByReliefOf(Sector s) {
+        double all = buildingManager.getLandSqFtBySector(s.key());
+        if (!valuesByRelief()) return new double[] { all, 0, 0 };
+        double works = Math.min(all, buildingManager.getWorksLandSqFtBySector(s.key(), worksTest));
+        return landByRelief(all - works, works);
+    }
+
+    /** ...and a city-owned category's, the same way. */
+    public double[] landByReliefOf(BuildingType category) {
+        double all = buildingManager.getLandSqFtByCategory(category);
+        if (!valuesByRelief()) return new double[] { all, 0, 0 };
+        double works = Math.min(all, buildingManager.getWorksLandSqFtByCategory(category, worksTest));
+        return landByRelief(all - works, works);
+    }
+
+    /** Areas {flat, foothill, slope} at the three class prices. */
+    private double valueOfAreas(double[] a) {
+        return a[0] * landPricePerSqFt + a[1] * foothillPricePerSqFt + a[2] * steepPricePerSqFt;
     }
 
     /* ===================================================================
@@ -607,6 +703,13 @@ public class EconomyManager {
             debtMovedAtSheet.put(s.key(), businessDebtManager.debtMovedByKind(s.key()));
             valuedAt.put(s.key(), new double[] { buildingManager.getLandSqFtBySector(s.key()), landPricePerSqFt,
                     buildingManager.getBuildingMaterialsBySector(s.key()), buildingManager.getConstructionMaterialPrice() });
+            // ...and, in a city with foothill or steep ground, the same land by class and the three prices it was valued at (ET3).
+            if (valuesByRelief()) {
+                double[] a = landByReliefOf(s);
+                valuedByClass.put(s.key(), new double[] { a[0], a[1], a[2], landPricePerSqFt, foothillPricePerSqFt, steepPricePerSqFt });
+            } else {
+                valuedByClass.remove(s.key());
+            }
         }
     }
 
@@ -650,12 +753,16 @@ public class EconomyManager {
      */
     private final Map<String, double[][]> debtMovedAtSheet = new LinkedHashMap<>();
     private final Map<String, double[]> valuedAt = new LinkedHashMap<>();
+    private final Map<String, double[]> valuedByClass = new LinkedHashMap<>();
 
     /** What had moved one sector's debt so far when its sheet was last pushed (R7): {borrowed, repaid, written off} by kind, or null before one was. */
     public double[][] getDebtMovedAtSheet(String key) { return debtMovedAtSheet.get(key); }
 
     /** ...and its land and buildings as the sheet priced them (R6): {land, sq ft; its price a sq ft; the materials in its buildings, units; their price a unit}, or null. */
     public double[] getValuedAt(String key) { return valuedAt.get(key); }
+
+    /** ...and, where the city has foothill or steep ground (ET3), the same land by class as the sheet valued it: {flat, foothill, slope square feet; flat, foothill, slope price a square foot}, or null. Its products add to the sheet's land. */
+    public double[] getValuedByClass(String key) { return valuedByClass.get(key); }
 
     /* ------------------------------ property tax ------------------------------ */
 
@@ -2467,9 +2574,12 @@ public class EconomyManager {
     public void redenominate(double scale) {
         cash *= scale;
         landPricePerSqFt *= scale;
+        foothillPricePerSqFt *= scale;
+        steepPricePerSqFt *= scale;
         // ...and the statements' reads at the last push (0.7.75): money moves, square feet and units do not.
         for (double[][] m : debtMovedAtSheet.values()) for (double[] row : m) for (int i = 0; i < row.length; i++) row[i] *= scale;
         for (double[] v : valuedAt.values()) { v[1] *= scale; v[3] *= scale; }
+        for (double[] v : valuedByClass.values()) { v[3] *= scale; v[4] *= scale; v[5] *= scale; }
         totalPropertyTax *= scale;
         totalBankTax *= scale;
         totalWageTax *= scale;

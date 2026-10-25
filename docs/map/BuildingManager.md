@@ -1,4 +1,4 @@
-# BuildingManager.java - 7,963 lines · 211 methods · 6 constants · model
+# BuildingManager.java - 7,988 lines · 213 methods · 6 constants · model
 
 `ham/citybuildersim/BuildingManager.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -7,9 +7,9 @@
 > them, the yard's material, and what the work costs today
 > (nonMaterialCost(), since 0.7.19).
 
-**Uses:** [JobType](JobType.md) (506), [BuildingsTemplate](BuildingsTemplate.md) (348), [Good](Good.md) (216), [BuildingType](BuildingType.md) (164), [BuildingsStacks](BuildingsStacks.md) (111), [ConstructionControl](ConstructionControl.md) (68), [CareType](CareType.md) (24), [EducationType](EducationType.md) (18), [Resource](Resource.md) (16), [RefineryFlow](RefineryFlow.md) (14), [SafetyType](SafetyType.md) (12), [Deposit](Deposit.md) (11), [Ports](Ports.md) (10), [BuildingInstance](BuildingInstance.md) (4), [Automotive](Automotive.md) (4), [Manufacturing](Manufacturing.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [Healthcare](Healthcare.md) (2), [BuildingCatalog](BuildingCatalog.md) (1)
+**Uses:** [JobType](JobType.md) (506), [BuildingsTemplate](BuildingsTemplate.md) (352), [Good](Good.md) (216), [BuildingType](BuildingType.md) (165), [BuildingsStacks](BuildingsStacks.md) (113), [ConstructionControl](ConstructionControl.md) (68), [CareType](CareType.md) (24), [EducationType](EducationType.md) (18), [Resource](Resource.md) (16), [RefineryFlow](RefineryFlow.md) (14), [SafetyType](SafetyType.md) (12), [Deposit](Deposit.md) (11), [Ports](Ports.md) (10), [BuildingInstance](BuildingInstance.md) (4), [Automotive](Automotive.md) (4), [Manufacturing](Manufacturing.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [Healthcare](Healthcare.md) (2), [BuildingCatalog](BuildingCatalog.md) (1)
 
-**Used by (101):** [AgricultureCheck](AgricultureCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [CoalMiningCheck](CoalMiningCheck.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [DataSave](DataSave.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EconomyManager](EconomyManager.md), [ExpectationsCheck](ExpectationsCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [FoundingYardCheck](FoundingYardCheck.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HomeRailCheck](HomeRailCheck.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HousingCheck](HousingCheck.md), [Inbox](Inbox.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [InvestCheck](InvestCheck.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [PortCheck](PortCheck.md), [PortDivision](PortDivision.md), [Ports](Ports.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [RestructureCheck](RestructureCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md), [SimulationEngine](SimulationEngine.md), [StrategicReserve](StrategicReserve.md), [SummaryScreen](SummaryScreen.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TradeCostCheck](TradeCostCheck.md), [UserInterface](UserInterface.md), [VanCheck](VanCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningView](ZoningView.md)
+**Used by (102):** [AgricultureCheck](AgricultureCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [CoalMiningCheck](CoalMiningCheck.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [DataSave](DataSave.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EconomyManager](EconomyManager.md), [ExpectationsCheck](ExpectationsCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [FoundingYardCheck](FoundingYardCheck.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HomeRailCheck](HomeRailCheck.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HousingCheck](HousingCheck.md), [Inbox](Inbox.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [InvestCheck](InvestCheck.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [PortCheck](PortCheck.md), [PortDivision](PortDivision.md), [Ports](Ports.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [RestructureCheck](RestructureCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md), [SimulationEngine](SimulationEngine.md), [StrategicReserve](StrategicReserve.md), [SummaryScreen](SummaryScreen.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TradeCostCheck](TradeCostCheck.md), [UserInterface](UserInterface.md), [VanCheck](VanCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningView](ZoningView.md)
 
 ## Sections
 
@@ -67,8 +67,8 @@
 | 5943 | · ONE WAIT FOR A SITE (0.7.22, after the docs pass). Everything that |
 | 6284 | · THE POSTS A SECTOR OFFERS (0.7.17, revised to Jerus's answer): the |
 | 6828 | BY SECTOR (2026-09-11, the sector template) |
-| 7296 | THE SAME TWO SUMS, NARROWED TO ONE SERVICE. |
-| 7645 | · Construction state for the save, keyed by template id. |
+| 7321 | THE SAME TWO SUMS, NARROWED TO ONE SERVICE. |
+| 7670 | · Construction state for the save, keyed by template id. |
 
 ## Constants
 
@@ -79,7 +79,7 @@
 | 5555 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
 | 5736 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
 | 6777 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 7929 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 7954 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -116,17 +116,17 @@
 | 6372 | `private final java.util.List<BuildingsStacks.Due> contractsDue` | ...and payer by payer (0.7.19): each order's share of the month's work, units and allowance. |
 | 6383 | `public final String building` |  |
 | 6384 | `public final int quantity` |  |
-| 7734 | `public int templateId` |  |
-| 7735 | `public String payer` |  |
-| 7736 | `public boolean creditable` |  |
-| 7738 | `public Double recovered` | The share of the tax on it the payer gets back; absent from a save written before the rebates, which read it off creditable. |
-| 7739 | `public double value, units, allowance` |  |
+| 7759 | `public int templateId` |  |
+| 7760 | `public String payer` |  |
+| 7761 | `public boolean creditable` |  |
+| 7763 | `public Double recovered` | The share of the tax on it the payer gets back; absent from a save written before the rebates, which read it off creditable. |
+| 7764 | `public double value, units, allowance` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 19 | 7945 | **type** `public class BuildingManager` | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed them, the yard's material, and what the work costs today (nonMaterialCost... |
+| 19 | 7970 | **type** `public class BuildingManager` | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed them, the yard's material, and what the work costs today (nonMaterialCost... |
 
 ### THE LABOUR IN A PRICE KEEPS UP WITH WAGES (0.7.19) (lines 60-237)
 
@@ -306,7 +306,7 @@
 | 6820 | 3 | `public long getFoodProduction()` | Kilograms of bakery goods the city's own ovens turn out a month. |
 | 6824 | 3 | `public long getFoodCapacity()` |  |
 
-### BY SECTOR (2026-09-11, the sector template) (lines 6828-7295)
+### BY SECTOR (2026-09-11, the sector template) (lines 6828-7320)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -319,83 +319,85 @@
 | 6909 | 9 | `public long[] getCrewArrayBySector(String sector)` | ...and the posts it works but does not own, per tier: the crews of the city's berths for Freight (FR3), none for any other sector. |
 | 6920 | 9 | `public long[] getCrewArrayByCargo(Ports.Cargo kind)` | The posts of the city's sea terminals that handle one kind of cargo, per tier (FR3): the crews of that kind's berths, for the Ports division's per-kind figures. |
 | 6931 | 9 | `public double getLandSqFtBySector(String sector)` | Square feet a sector holds, standing and on site - the plot is occupied the day it is bought. |
-| 6942 | 10 | `public double getBuildingsValueBySector(String sector)` | Finished and unfinished together, at cash plus materials at market - what the sector's buildings are worth. |
-| 6959 | 9 | `public double getBuildingMaterialsBySector(String sector)` | The construction materials in a sector's buildings, finished and on site, in units (0.7.75, the sector statements' R6): what getBuildingsValueBySector() prices at today's materials, so a move in that price moves the s... |
-| 6970 | 9 | `public long getCapacityInPortfolioBySector(String sector)` | People a sector's buildings hold, sites included. |
-| 6981 | 5 | `public List<BuildingsTemplate> getTemplatesBySector(String sector)` | Every template a sector may build. |
-| 6988 | 5 | `public java.util.Set<String> sectorsNamed()` | Every sector name any template answers to, for the catalogue check. |
-| 7005 | 13 | `public double getTotalByCategoryDouble(BuildingType category, ToDoubleFunction<BuildingsTemplate> getter)` | Universal methods |
-| 7019 | 13 | `public long getTotalByCategoryInteger(BuildingType category, ToIntFunction<BuildingsTemplate> getter)` |  |
-| 7033 | 12 | `public double getTotalDouble(ToDoubleFunction<BuildingsTemplate> getter)` |  |
-| 7059 | 9 | `public long getCapacityInPortfolio(BuildingType category)` | People a category's buildings hold, plus those its SITES will hold. |
-| 7076 | 10 | `public double getLandSqFtByCategory(BuildingType category)` | Square feet of lot held by one category, standing and under construction. |
-| 7101 | 14 | `public double getCareCapacity(CareType care)` | How many people the city's finished buildings of one care type have room for. |
-| 7133 | 25 | `public double getStaffedCareCapacity(CareType care, double[] jobFillRate)` | The same capacity, discounted by how much of it is actually staffed. |
-| 7171 | 24 | `public double[] getStaffedEducationPlaces(double[] jobFillRate)` | School places, discounted by how much of the teaching staff turned up. |
-| 7207 | 20 | `public double getStaffedSafetyCapacity(SafetyType safety, double[] jobFillRate)` | Officers or cells, discounted by how much of the staff turned up. |
-| 7229 | 10 | `public double getSafetyCapacity(SafetyType safety)` | ...and without the discount: what the buildings would hold, the founding constabulary included. |
-| 7241 | 10 | `public double getSafetyPayroll(SafetyType safety, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the police, or just the prisons. |
-| 7253 | 9 | `public double getSafetyUpkeep(SafetyType safety)` | ...and their upkeep. |
-| 7264 | 10 | `public double[] getBuiltEducationPlaces()` | Places without the staffing discount - what the buildings would seat. |
-| 7283 | 12 | `public double getCategoryPayroll(BuildingType category, double[] wagePerType, double[] jobFillRate)` | The healthcare service's wage bill, with the fill rate applied. |
+| 6945 | 9 | `public double getWorksLandSqFtBySector(String sector, java.util.function.Predicate<BuildingsTemplate> works)` | ...the part of it that works stand on (ET3: `works` is Game.standsAnywhere()), which the books attribute to the steep ground first (EconomyManager.landByReliefOf()); getLandSqFtBySector() less this is its buildings'. |
+| 6956 | 10 | `public double getBuildingsValueBySector(String sector)` | Finished and unfinished together, at cash plus materials at market - what the sector's buildings are worth. |
+| 6973 | 9 | `public double getBuildingMaterialsBySector(String sector)` | The construction materials in a sector's buildings, finished and on site, in units (0.7.75, the sector statements' R6): what getBuildingsValueBySector() prices at today's materials, so a move in that price moves the s... |
+| 6984 | 9 | `public long getCapacityInPortfolioBySector(String sector)` | People a sector's buildings hold, sites included. |
+| 6995 | 5 | `public List<BuildingsTemplate> getTemplatesBySector(String sector)` | Every template a sector may build. |
+| 7002 | 5 | `public java.util.Set<String> sectorsNamed()` | Every sector name any template answers to, for the catalogue check. |
+| 7019 | 13 | `public double getTotalByCategoryDouble(BuildingType category, ToDoubleFunction<BuildingsTemplate> getter)` | Universal methods |
+| 7033 | 13 | `public long getTotalByCategoryInteger(BuildingType category, ToIntFunction<BuildingsTemplate> getter)` |  |
+| 7047 | 12 | `public double getTotalDouble(ToDoubleFunction<BuildingsTemplate> getter)` |  |
+| 7073 | 9 | `public long getCapacityInPortfolio(BuildingType category)` | People a category's buildings hold, plus those its SITES will hold. |
+| 7090 | 10 | `public double getLandSqFtByCategory(BuildingType category)` | Square feet of lot held by one category, standing and under construction. |
+| 7102 | 9 | `public double getWorksLandSqFtByCategory(BuildingType category, java.util.function.Predicate<BuildingsTemplate> works)` | ...the part of a category's land that works stand on (ET3: `works` is Game.standsAnywhere()); getLandSqFtByCategory() less this is its buildings'. |
+| 7126 | 14 | `public double getCareCapacity(CareType care)` | How many people the city's finished buildings of one care type have room for. |
+| 7158 | 25 | `public double getStaffedCareCapacity(CareType care, double[] jobFillRate)` | The same capacity, discounted by how much of it is actually staffed. |
+| 7196 | 24 | `public double[] getStaffedEducationPlaces(double[] jobFillRate)` | School places, discounted by how much of the teaching staff turned up. |
+| 7232 | 20 | `public double getStaffedSafetyCapacity(SafetyType safety, double[] jobFillRate)` | Officers or cells, discounted by how much of the staff turned up. |
+| 7254 | 10 | `public double getSafetyCapacity(SafetyType safety)` | ...and without the discount: what the buildings would hold, the founding constabulary included. |
+| 7266 | 10 | `public double getSafetyPayroll(SafetyType safety, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the police, or just the prisons. |
+| 7278 | 9 | `public double getSafetyUpkeep(SafetyType safety)` | ...and their upkeep. |
+| 7289 | 10 | `public double[] getBuiltEducationPlaces()` | Places without the staffing discount - what the buildings would seat. |
+| 7308 | 12 | `public double getCategoryPayroll(BuildingType category, double[] wagePerType, double[] jobFillRate)` | The healthcare service's wage bill, with the fill rate applied. |
 
-### THE SAME TWO SUMS, NARROWED TO ONE SERVICE. (lines 7296-7644)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 7311 | 10 | `public double getCarePayroll(CareType care, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the buildings providing one kind of care. |
-| 7323 | 9 | `public double getCareUpkeep(CareType care)` | ...and what those same buildings cost to keep standing. |
-| 7334 | 11 | `public double getSchoolPayroll(EducationType teaches, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the schools teaching one course. |
-| 7347 | 9 | `public double getSchoolUpkeep(EducationType teaches)` | ...and their upkeep. |
-| 7358 | 12 | `private static double jobBill(BuildingsTemplate t, double[] wagePerType, double[] jobFillRate)` | One building's monthly wage bill, with the fill rate applied per post. |
-| 7372 | 3 | `public double getUpkeepByCategory(BuildingType category)` | What the standing buildings of one category cost to run each month. |
-| 7388 | 5 | `public double getBookValueByCategory(BuildingType category)` | Gross book value of everything standing in a category: cash paid plus the materials it consumed, valued at market. |
-| 7395 | 4 | `public double getBookValueBySector(String sector)` | The same, for the buildings one sector owns - finished ones only. |
-| 7407 | 9 | `public double getPortBookValueByCargo(Ports.Cargo kind)` | What the terminals of one kind of cargo standing are worth on the books (FR3, docs/queue/FR3.md 2, port dues): each PORTS building with a berth of this kind at its cash cost plus its materials at market, as getBookVal... |
-| 7436 | 10 | `public double getWorkInProgressByCategory(BuildingType category)` | What a category has PAID FOR and not yet got: buildings on site, at the same valuation the finished ones carry. |
-| 7448 | 3 | `public double getBuildingsValueByCategory(BuildingType category)` | Finished and unfinished together - what the sector's buildings are worth. |
-| 7460 | 10 | `public long[] getJobArrayByName(String name)` | The same array, for one named building rather than a whole category. |
-| 7471 | 16 | `public long[] getJobArrayPerCategory(BuildingType category)` |  |
-| 7491 | 3 | `public int getConstructionMaterials()` | --------------------------------------------------------------------------- |
-| 7495 | 4 | `public int getStackIndex(BuildingsTemplate template)` |  |
-| 7500 | 8 | `public BuildingsTemplate getTemplate(int i)` |  |
-| 7510 | 8 | `public int getQuantity(int i)` | How many of template id {@code i} are finished and standing. |
-| 7519 | 3 | `public int getTemplateCount()` |  |
-| 7523 | 9 | `public double[] getConstructionProgress()` |  |
-| 7542 | 27 | `public double getTotalLandFootprint()` | Every square foot the city has committed to buildings - standing and on site both, since a half-built plant is occupying its plot. |
-| 7576 | 16 | `public double getWorksLandFootprint(java.util.function.Predicate<BuildingsTemplate> works)` | The part of getTotalLandFootprint() that the buildings `works` picks stand on (ET2): the same sum, over the standing and on site, the stopped shells and the demolitions on site, of those templates alone - the ground L... |
-| 7611 | 18 | `public int retire(BuildingsTemplate template, int quantity)` | Scraps finished buildings. |
-| 7631 | 3 | `public int getStackCount()` | How many stacks exist, for callers checking a save's arrays line up. |
-| 7635 | 9 | `public int[] getUnderConstructionArray()` |  |
-
-### Construction state for the save, keyed by template id. (lines 7645-7963)
+### THE SAME TWO SUMS, NARROWED TO ONE SERVICE. (lines 7321-7669)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 7669 | 7 | `public int getMaxTemplateId()` | The highest id in the catalogue, not the number of templates. |
-| 7677 | 10 | `public double[] getConstructionProgressById()` |  |
-| 7688 | 10 | `public int[] getUnderConstructionById()` |  |
-| 7700 | 10 | `public double[] getMaterialsOwedById()` | Material the sites still have to draw, by template id. |
-| 7712 | 4 | `public void deliverToSites(BuildingsTemplate template, double units)` | Material delivered to a template's sites from the yard: off what they owe. |
-| 7718 | 4 | `public void bookContract(BuildingsTemplate template, double amount)` | The builders' price for an order, on the stack it was placed on. |
-| 7724 | 7 | `public void bookContract(BuildingsTemplate template, String payer, double recovered, double amount, double units, double allowa...` | ...and who placed it, with the material units it will draw beyond the yard and the allowance priced in for them (0.7.19), and the share of the tax on it the payer gets back (EconomyManager.taxRecoveredShare()). |
-| 7733 | 8 | **type** `public static final class ContractRecord` | One payer's contract on one template's sites, as the save carries it (0.7.19). |
-| 7743 | 17 | `public java.util.List<ContractRecord> getContractRecords()` | Every payer's contract on site, for the save. |
-| 7762 | 10 | `public void restoreContractRecords(java.util.List<ContractRecord> records)` | ...and back onto the stacks the load path has put up. |
-| 7781 | 15 | `public void inferContracts(java.util.function.Function<BuildingsTemplate, String> payerOf, java.util.function.ToDoubleBiFunctio...` | Every stack's contract read as one payer's, for a save from before the payers were kept (0.7.19; Game, OLD CONTRACTS): the whole contract left, the material its sites still owe, and an allowance of the contract less t... |
-| 7798 | 10 | `public void spreadContracts(double unearned)` | One order book, spread over the sites by the points they still owe. |
-| 7810 | 10 | `public double[] getContractValueById()` | The builders' contracts still on site, by template id. |
-| 7822 | 5 | `public double getMaterialsOwed()` | ...and in total, for the screens. |
-| 7835 | 13 | `public boolean restoreConstruction(int templateId, int underConstruction, double progress, double materialsOwed, double contrac...` | Puts a template's in-progress work back onto its stack. |
-| 7849 | 9 | `public void setConstructionProgress(double[] progress)` |  |
-| 7859 | 9 | `public void setUnderConstructionArray(int[] progress)` |  |
-| 7869 | 3 | `public void setConstructionMaterials(int constructionMaterials)` |  |
-| 7873 | 3 | `public void clearStacks()` |  |
-| 7902 | 3 | `public void handleConstructionMaterials(int required)` | Takes the order's materials out of the yard, importing whatever is short. |
-| 7913 | 5 | `public int takeFromYard(int required)` | Takes what the yard has, up to what was asked. |
-| 7919 | 9 | `public BuildingsStacks getStack(BuildingsTemplate template)` |  |
-| 7931 | 4 | `static { ... }` |  |
-| 7936 | 7 | `public void resetBuildingManager()` |  |
-| 7946 | 8 | `public void redenominate(double scale)` | Every template's price, and the materials the city is holding, in the new unit. |
-| 7957 | 5 | `public void seedConstants(double unit)` | Re-seeds every template's price at a given unit - since 0.7.42 the unit over the expected price level, every month (Game.restrikeMoneyConstants()). |
+| 7336 | 10 | `public double getCarePayroll(CareType care, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the buildings providing one kind of care. |
+| 7348 | 9 | `public double getCareUpkeep(CareType care)` | ...and what those same buildings cost to keep standing. |
+| 7359 | 11 | `public double getSchoolPayroll(EducationType teaches, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the schools teaching one course. |
+| 7372 | 9 | `public double getSchoolUpkeep(EducationType teaches)` | ...and their upkeep. |
+| 7383 | 12 | `private static double jobBill(BuildingsTemplate t, double[] wagePerType, double[] jobFillRate)` | One building's monthly wage bill, with the fill rate applied per post. |
+| 7397 | 3 | `public double getUpkeepByCategory(BuildingType category)` | What the standing buildings of one category cost to run each month. |
+| 7413 | 5 | `public double getBookValueByCategory(BuildingType category)` | Gross book value of everything standing in a category: cash paid plus the materials it consumed, valued at market. |
+| 7420 | 4 | `public double getBookValueBySector(String sector)` | The same, for the buildings one sector owns - finished ones only. |
+| 7432 | 9 | `public double getPortBookValueByCargo(Ports.Cargo kind)` | What the terminals of one kind of cargo standing are worth on the books (FR3, docs/queue/FR3.md 2, port dues): each PORTS building with a berth of this kind at its cash cost plus its materials at market, as getBookVal... |
+| 7461 | 10 | `public double getWorkInProgressByCategory(BuildingType category)` | What a category has PAID FOR and not yet got: buildings on site, at the same valuation the finished ones carry. |
+| 7473 | 3 | `public double getBuildingsValueByCategory(BuildingType category)` | Finished and unfinished together - what the sector's buildings are worth. |
+| 7485 | 10 | `public long[] getJobArrayByName(String name)` | The same array, for one named building rather than a whole category. |
+| 7496 | 16 | `public long[] getJobArrayPerCategory(BuildingType category)` |  |
+| 7516 | 3 | `public int getConstructionMaterials()` | --------------------------------------------------------------------------- |
+| 7520 | 4 | `public int getStackIndex(BuildingsTemplate template)` |  |
+| 7525 | 8 | `public BuildingsTemplate getTemplate(int i)` |  |
+| 7535 | 8 | `public int getQuantity(int i)` | How many of template id {@code i} are finished and standing. |
+| 7544 | 3 | `public int getTemplateCount()` |  |
+| 7548 | 9 | `public double[] getConstructionProgress()` |  |
+| 7567 | 27 | `public double getTotalLandFootprint()` | Every square foot the city has committed to buildings - standing and on site both, since a half-built plant is occupying its plot. |
+| 7601 | 16 | `public double getWorksLandFootprint(java.util.function.Predicate<BuildingsTemplate> works)` | The part of getTotalLandFootprint() that the buildings `works` picks stand on (ET2): the same sum, over the standing and on site, the stopped shells and the demolitions on site, of those templates alone - the ground L... |
+| 7636 | 18 | `public int retire(BuildingsTemplate template, int quantity)` | Scraps finished buildings. |
+| 7656 | 3 | `public int getStackCount()` | How many stacks exist, for callers checking a save's arrays line up. |
+| 7660 | 9 | `public int[] getUnderConstructionArray()` |  |
+
+### Construction state for the save, keyed by template id. (lines 7670-7988)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 7694 | 7 | `public int getMaxTemplateId()` | The highest id in the catalogue, not the number of templates. |
+| 7702 | 10 | `public double[] getConstructionProgressById()` |  |
+| 7713 | 10 | `public int[] getUnderConstructionById()` |  |
+| 7725 | 10 | `public double[] getMaterialsOwedById()` | Material the sites still have to draw, by template id. |
+| 7737 | 4 | `public void deliverToSites(BuildingsTemplate template, double units)` | Material delivered to a template's sites from the yard: off what they owe. |
+| 7743 | 4 | `public void bookContract(BuildingsTemplate template, double amount)` | The builders' price for an order, on the stack it was placed on. |
+| 7749 | 7 | `public void bookContract(BuildingsTemplate template, String payer, double recovered, double amount, double units, double allowa...` | ...and who placed it, with the material units it will draw beyond the yard and the allowance priced in for them (0.7.19), and the share of the tax on it the payer gets back (EconomyManager.taxRecoveredShare()). |
+| 7758 | 8 | **type** `public static final class ContractRecord` | One payer's contract on one template's sites, as the save carries it (0.7.19). |
+| 7768 | 17 | `public java.util.List<ContractRecord> getContractRecords()` | Every payer's contract on site, for the save. |
+| 7787 | 10 | `public void restoreContractRecords(java.util.List<ContractRecord> records)` | ...and back onto the stacks the load path has put up. |
+| 7806 | 15 | `public void inferContracts(java.util.function.Function<BuildingsTemplate, String> payerOf, java.util.function.ToDoubleBiFunctio...` | Every stack's contract read as one payer's, for a save from before the payers were kept (0.7.19; Game, OLD CONTRACTS): the whole contract left, the material its sites still owe, and an allowance of the contract less t... |
+| 7823 | 10 | `public void spreadContracts(double unearned)` | One order book, spread over the sites by the points they still owe. |
+| 7835 | 10 | `public double[] getContractValueById()` | The builders' contracts still on site, by template id. |
+| 7847 | 5 | `public double getMaterialsOwed()` | ...and in total, for the screens. |
+| 7860 | 13 | `public boolean restoreConstruction(int templateId, int underConstruction, double progress, double materialsOwed, double contrac...` | Puts a template's in-progress work back onto its stack. |
+| 7874 | 9 | `public void setConstructionProgress(double[] progress)` |  |
+| 7884 | 9 | `public void setUnderConstructionArray(int[] progress)` |  |
+| 7894 | 3 | `public void setConstructionMaterials(int constructionMaterials)` |  |
+| 7898 | 3 | `public void clearStacks()` |  |
+| 7927 | 3 | `public void handleConstructionMaterials(int required)` | Takes the order's materials out of the yard, importing whatever is short. |
+| 7938 | 5 | `public int takeFromYard(int required)` | Takes what the yard has, up to what was asked. |
+| 7944 | 9 | `public BuildingsStacks getStack(BuildingsTemplate template)` |  |
+| 7956 | 4 | `static { ... }` |  |
+| 7961 | 7 | `public void resetBuildingManager()` |  |
+| 7971 | 8 | `public void redenominate(double scale)` | Every template's price, and the materials the city is holding, in the new unit. |
+| 7982 | 5 | `public void seedConstants(double unit)` | Re-seeds every template's price at a given unit - since 0.7.42 the unit over the expected price level, every month (Game.restrikeMoneyConstants()). |
 

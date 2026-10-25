@@ -1989,6 +1989,30 @@ public class LandManager {
         return !(reliefSqFt(CityLand.RELIEF_FOOTHILL) > 0) && !(slopeSqFt() > 0);
     }
 
+    /** Whether the city owns neither foothill nor steep ground (ET3): every figure by class is then the one flat price's, to the bit - the books read it to keep a flat city's statements as they were. */
+    public boolean isFlatOnly() { return flatOnly(); }
+
+    /**
+     * The ground in use by class, as the split has it (ET3, BUILDABLE BY SLOPE), square feet: the buildings' on flat and
+     * on foothill, the works' on flat, on foothill and on the steep and very steep ground. The books attribute it to
+     * the sectors pro rata (EconomyManager.landByReliefOf()); summed they are the split's own.
+     */
+    public record ReliefUse(double buildingsFlat, double buildingsFoothill, double worksFlat, double worksFoothill,
+                            double worksSlope) {
+        /** The buildings' ground, flat and foothill. */
+        public double buildings() { return buildingsFlat + buildingsFoothill; }
+
+        /** The works' ground on every class. */
+        public double works() { return worksFlat + worksFoothill + worksSlope; }
+    }
+
+    /** The ground in use by use and class now (ReliefUse), read off the one split(): nothing stored. */
+    public ReliefUse reliefUse() {
+        Split s = split();
+        return new ReliefUse(Math.max(0, s.buildings() - s.buildingsOnFoothill()), s.buildingsOnFoothill(),
+                s.worksOnFlat(), s.worksOnFoothill(), s.worksOnSlope());
+    }
+
     /** The ground in use on each class under a reading of the split, square feet: {flat, foothill, slope} - works on steep ground, works and buildings on foothill, the rest of the built ground on flat. */
     private static double[] classUse(Split s) {
         double slope = s.worksOnSlope();

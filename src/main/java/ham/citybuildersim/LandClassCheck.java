@@ -38,6 +38,14 @@ import java.util.Set;
  *      the bit: the price by class against the four-argument price(), buildableKm2PerUsd() against getDryKm2PerUsd(),
  *      priceFor() and buybackPriceFor() with and without a works and a zone against the old expression, the pickers
  *      against the old loops.
+ *   6. THE BOOKS BY CLASS (slice B, spec 5.3). On a city of buildings on flat and foothill and mines on the steep: a
+ *      sector's land by class is its buildings' ground at the city's buildings' mix and its works' at the works' mix,
+ *      adding to what it holds and, over every sector and category, to the split's own; the books' class prices are the
+ *      land office's, so a sector's land is worth its areas at them; the sheet's land is that, note 11's rows add up to
+ *      it and only the mines have a steep row; a zone's share applies to every class alike in the roll's land; the equity
+ *      statement's land revaluation is last month's area on each class times that class's price change; a save keeps
+ *      the land by class and one without it reads the one price; redenominating rescales its prices. On a flat city
+ *      (6b) every one of them is the old one-price figure, to the bit, and there is no note.
  *
  * WHY. ET1 gave every plot a relief and ET2 made buildings stand by it, so a city on hills owns ground that is worth
  * less than the valley floor and was still priced as if it were not: its offers cost as much a square foot on a
@@ -110,6 +118,7 @@ public class LandClassCheck {
         thePickers();
         aBusinessBuysEachClass();
         flatWorldsUnchanged();
+        booksByClass();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -757,5 +766,362 @@ public class LandClassCheck {
         }
         check("with a zone, the plot sold and bought back is priced by the old expression, to the bit", zoneSame);
         lm.getZoning().remove(zoned);
+    }
+
+    /* =====================================================================
+       6. THE BOOKS VALUE A SECTOR'S LAND BY THE GROUND IT STANDS ON
+       ===================================================================== */
+
+    /** The orders the hilly city of 6 is built from: houses and diners on the buildings' ground, iron mines on the works'. */
+    static final int HOUSES = 100, DINERS = 30, MINES = 2;
+
+    /** The two figures agree to a rounding of the split's arithmetic, relative to the larger. */
+    static boolean near(double a, double b) {
+        return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    static boolean near(double[] a, double[] b) {
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) if (!near(a[i], b[i])) return false;
+        return true;
+    }
+
+    /** A business's order, built by hand from cash it is given, as section 4's are. */
+    static boolean order(Game g, String sector, BuildingsTemplate t, int n) {
+        g.getEconomyManager().setSectorCash(sector, 1e9);
+        boolean[] ok = new boolean[1];
+        quietly(() -> ok[0] = g.buildFor(g.getSectorInvestor(sector), t, n));
+        return ok[0];
+    }
+
+    /** The books as a month's close leaves them (Game.recordMonth(): the land's price and its classes pushed, the sheets pushed, the books taken), without playing the month. */
+    static void closeBooks(Game g) {
+        EconomyManager em = g.getEconomyManager();
+        em.setLandPricePerSqFt(g.getLandManager().getPricePerSqFt());
+        g.pushLandByRelief();
+        em.pushBalanceSheetInputs();
+        quietly(() -> g.getSectorBooks().takeMonth(g));
+    }
+
+    /** The classes' prices the land office asks now, {flat, foothill, steep}. */
+    static double[] officePrices(LandManager lm) {
+        return new double[] { lm.reliefPricePerSqFt(World.FLAT), lm.reliefPricePerSqFt(World.FOOTHILL), lm.reliefPricePerSqFt(World.STEEP) };
+    }
+
+    static double dot(double[] areas, double[] prices) {
+        return areas[0] * prices[0] + areas[1] * prices[1] + areas[2] * prices[2];
+    }
+
+    static double total(double[] a) {
+        return a[0] + a[1] + a[2];
+    }
+
+    static void booksByClass() {
+        out.println("\n--- 6. the books value a sector's land by the ground it stands on: pro rata to the city's use, in the sheet, its note and the equity ---");
+        Game g = city("landclass-6", 1, 0, 0, 0);
+        LandManager lm = g.getLandManager();
+        EconomyManager em = g.getEconomyManager();
+        BuildingManager bm = g.getBuildingManager();
+        ironSites(g, 10);
+        BuildingsTemplate house = template(g, HOUSE), diner = template(g, "Diner"), mine = bm.getTemplate(Mining.IRON_MINE);
+        double h = house.getLandSqFt(), d = diner.getLandSqFt(), m = mine.getLandSqFt();
+        // ...with the founding's own buildings standing (city() cleared the allocation by fiat; the load path's reading of it is put back).
+        double existingWorks = bm.getWorksLandFootprint(Game::standsAnywhere), existingBuildings = bm.getTotalLandFootprint() - existingWorks;
+        double houses = HOUSES * h, diners = DINERS * d, buildings = existingBuildings + houses + diners, works = existingWorks + MINES * m;
+        // ...ground for them: the flat holds two thirds of the buildings, the steep one and a half mines, the foothill what is left over and a third more.
+        double flat = 0.65 * buildings, slope = 1.5 * m;
+        double foothill = 1.3 * ((buildings - flat) + (works - slope));
+        g.getCityLand().setCentreRelief(new double[] { LandManager.km2(flat), LandManager.km2(foothill), LandManager.km2(slope), 0, 0 });
+        lm.setAllocatedSqFt(existingBuildings + existingWorks);
+        lm.restoreWorks(existingWorks);
+        boolean built = order(g, Sectors.REAL_ESTATE, house, HOUSES);
+        built &= order(g, Sectors.RESTAURANTS, diner, DINERS);
+        built &= order(g, Sectors.MINING, mine, MINES);
+
+        LandManager.ReliefUse use = lm.reliefUse();
+        report("fixture: a city of " + HOUSES + " houses, " + DINERS + " diners and " + MINES + " iron mines on flat, foothill and steep ground; the buildings fill the flat and spill onto the foothill, "
+                        + "the works fill the steep and spill onto the foothill",
+                built && !lm.isFlatOnly() && near(lm.getFlatSqFt(), flat) && near(lm.getFoothillSqFt(), foothill) && near(lm.getSlopeSqFt(), slope)
+                        && near(lm.getAllocatedSqFt(), buildings + works) && near(bm.getTotalLandFootprint(), lm.getAllocatedSqFt())
+                        && near(use.buildingsFlat(), flat) && near(use.buildingsFoothill(), buildings - flat)
+                        && near(use.worksSlope(), slope) && near(use.worksFoothill(), works - slope) && use.worksFlat() == 0,
+                String.format("built %b; flat %,.0f of %,.0f, buildings on foothill %,.0f, works on steep %,.0f and foothill %,.0f sq ft",
+                        built, use.buildingsFlat(), flat, use.buildingsFoothill(), use.worksSlope(), use.worksFoothill()));
+
+        double base = lm.getMarket().getBasePricePerSqFt(), prep = lm.getPreparationPerSqFt();
+        double going1 = base + 4 * prep;
+        setGoing(lm, going1);
+        double[] p1 = officePrices(lm);
+        closeBooks(g);
+        report("fixture: the going price four preparations over the base, so flat is dearer than foothill and foothill than steep; the books read the city as hilly",
+                p1[0] > p1[1] && p1[1] > p1[2] && em.valuesByRelief(), String.format("flat %.6f, foothill %.6f, steep %.6f a sq ft", p1[0], p1[1], p1[2]));
+
+        String[] keys = { Sectors.REAL_ESTATE, Sectors.RESTAURANTS, Sectors.MINING };
+        double[][] expected = new double[3][];
+        for (int i = 0; i < keys.length; i++) {
+            double worksOf = bm.getWorksLandSqFtBySector(keys[i], Game::standsAnywhere), buildingsOf = bm.getLandSqFtBySector(keys[i]) - worksOf;
+            expected[i] = new double[] { buildingsOf * flat / buildings, buildingsOf * (buildings - flat) / buildings + worksOf * (works - slope) / works,
+                    worksOf * slope / works };
+        }
+        double[][] areas = new double[3][];
+        boolean sums = true, shares = true;
+        for (int i = 0; i < keys.length; i++) {
+            Sector s = g.getSectors().byKey(keys[i]);
+            areas[i] = em.landByReliefOf(s);
+            sums &= near(total(areas[i]), bm.getLandSqFtBySector(keys[i]));
+            shares &= near(areas[i], expected[i]);
+        }
+        check("a sector's land by class adds up to the land it holds (getLandSqFtBySector())", sums);
+        check("...its buildings' ground at the city's buildings' mix and its works' at the works' mix: the houses and diners flat then foothill, the mines steep then foothill, none flat",
+                shares && areas[2][0] == 0);
+        double[] sectorsSum = new double[3];
+        for (Sector s : g.getSectors().all()) {
+            double[] a = em.landByReliefOf(s);
+            for (int c = 0; c < 3; c++) sectorsSum[c] += a[c];
+        }
+        // ...and the ground no business holds (the bank's branches, which belong to no sector): buildings' ground, at the buildings' mix.
+        double sectorLand = 0;
+        for (Sector s : g.getSectors().all()) sectorLand += bm.getLandSqFtBySector(s.key());
+        double unheld = bm.getTotalLandFootprint() - sectorLand;
+        double[] split = { use.buildingsFlat() + use.worksFlat(), use.buildingsFoothill() + use.worksFoothill(), use.worksSlope() };
+        double[] design = { flat, (buildings - flat) + (works - slope), slope };
+        double[] rest = { unheld * use.buildingsFlat() / use.buildings(), unheld * use.buildingsFoothill() / use.buildings(), 0 };
+        double[] all3 = { sectorsSum[0] + rest[0], sectorsSum[1] + rest[1], sectorsSum[2] };
+        report("summed over every sector and the ground no business holds, the areas by class are the split's own (LandManager.reliefUse()) and the fixture's design",
+                unheld >= 0 && near(all3, split) && near(all3, design),
+                String.format("flat %,.0f, foothill %,.0f, steep %,.0f sq ft, of which no business's %,.0f; the split's %,.0f, %,.0f, %,.0f",
+                        all3[0], all3[1], all3[2], unheld, split[0], split[1], split[2]));
+        double[] categoriesSum = new double[3];
+        for (BuildingType c : BuildingType.values()) {
+            double[] a = em.landByReliefOf(c);
+            for (int k = 0; k < 3; k++) categoriesSum[k] += a[k];
+        }
+        check("...and summed over the city's categories likewise; a category holding one sector's buildings has that sector's land",
+                near(categoriesSum, split) && near(em.landByReliefOf(BuildingType.RESIDENTIAL), areas[0])
+                        && near(em.landByReliefOf(BuildingType.HOSPITALITY), areas[1]) && near(em.landByReliefOf(BuildingType.MINING), areas[2]));
+
+        // The prices the books use are the land office's.
+        boolean office = em.priceOfClass(0) == lm.getPricePerSqFt() && em.priceOfClass(1) == lm.getFoothillPricePerSqFt()
+                && em.priceOfClass(2) == lm.getSteepPricePerSqFt() && em.priceOfClass(2) == lm.reliefPricePerSqFt(World.VERY_STEEP)
+                && em.priceOfClass(0) == em.getLandPricePerSqFt();
+        check("the class prices the books use ARE the land office's (flat, foothill, steep and very steep): office, books and buyer one price a class", office);
+        boolean valued = true, below = true;
+        for (int i = 0; i < keys.length; i++) {
+            Sector s = g.getSectors().byKey(keys[i]);
+            valued &= Math.abs(em.landValueOf(s) - dot(areas[i], p1)) <= 1e-12 * Math.max(1, dot(areas[i], p1));
+            below &= em.landValueOf(s) < bm.getLandSqFtBySector(keys[i]) * going1 || areas[i][1] + areas[i][2] == 0;
+        }
+        check("a sector's land is worth its areas at the land office's class prices (landValueOf())", valued);
+        check("...which is under the one-price figure for every sector that stands on foothill or steep ground", below);
+        close("a city category's land is valued the same way: the mines' category is the Mining sector's", em.landValueOf(BuildingType.MINING),
+                em.landValueOf(g.getSectors().byKey(Sectors.MINING)), 1e-12);
+        close("...the mines' land is worth its foothill at the foothill price and its steep at the steep price, from the design", em.landValueOf(g.getSectors().byKey(Sectors.MINING)),
+                (works - slope) * (going1 - prep) + slope * base, 1e-9);
+
+        // The sheet and its note.
+        SectorBooks books = g.getSectorBooks();
+        boolean sheetLand = true, noteAdds = true, noteRows = true, steepOnlyMines = true, noteWired = true, areaPrice = true;
+        for (int i = 0; i < keys.length; i++) {
+            Sector s = g.getSectors().byKey(keys[i]);
+            SectorBooks.SectorMonth month = books.get(s);
+            sheetLand &= month.hasLandByRelief() && Math.abs(month.land() - em.landValueOf(s)) <= 1e-12 * Math.max(1, month.land())
+                    && near(new double[] { month.landSqFtOf(0), month.landSqFtOf(1), month.landSqFtOf(2) }, areas[i])
+                    && month.landPriceOf(0) == p1[0] && month.landPriceOf(1) == p1[1] && month.landPriceOf(2) == p1[2];
+            List<SectorStatements.Row> rows = SectorStatements.landNote(month);
+            double sum = 0;
+            for (SectorStatements.Row r : rows) sum += r.now();
+            noteAdds &= Math.abs(sum - month.land()) <= 1e-12 * Math.max(1, month.land());
+            boolean flatRow = rows.stream().anyMatch(r -> r.id().equals(SectorStatements.LAND_IDS[0]));
+            boolean footRow = rows.stream().anyMatch(r -> r.id().equals(SectorStatements.LAND_IDS[1]));
+            boolean steepRow = rows.stream().anyMatch(r -> r.id().equals(SectorStatements.LAND_IDS[2]));
+            noteRows &= i < 2 ? rows.size() == 2 && flatRow && footRow && !steepRow : rows.size() == 2 && !flatRow && footRow && steepRow;
+            for (SectorStatements.Row r : rows) {
+                int c = java.util.Arrays.asList(SectorStatements.LAND_IDS).indexOf(r.id());
+                areaPrice &= c >= 0 && near(r.part(SectorStatements.LAND_AREA), LandManager.km2(areas[i][c]))
+                        && same(r.part(SectorStatements.LAND_PRICE), LandManager.perM2(p1[c]))
+                        && Math.abs(r.now() - areas[i][c] * p1[c]) <= 1e-12 * Math.max(1, r.now());
+            }
+            steepOnlyMines &= (i == 2) == rows.stream().anyMatch(r -> r.id().equals(SectorStatements.LAND_IDS[2]));
+            SectorStatements.Table sheet = SectorStatements.sheet(month, books.previous(s), books.debt(keys[i]), books.debtBefore(keys[i]));
+            noteWired &= sheet.row(SectorStatements.LAND).note() == SectorStatements.LAND_NOTE && SectorStatements.LAND_NOTE == 11
+                    && sheet.notes().get(SectorStatements.LAND_NOTE) != null && sheet.notes().get(SectorStatements.LAND_NOTE).size() == rows.size()
+                    && Math.abs(sheet.now(SectorStatements.LAND) - month.land()) <= 1e-12 * Math.max(1, month.land());
+        }
+        check("the books' month carries the land by class as the sheet valued it: its areas and the three prices, the sheet's land their products", sheetLand);
+        check("note 11 has a row for each class that holds any of the land: flat and foothill for the houses and the diners, foothill and steep for the mines", noteRows);
+        check("...only the works' sector has a steep row; its rows' values add up to the sheet's land", noteAdds && steepOnlyMines);
+        check("...each row's square kilometres and price a square metre are the area's and LandManager.perM2() of the class price, its value area x price", areaPrice);
+        check("...and the sheet's Land line opens note 11, with the note's rows in the table", noteWired);
+
+        zoneOnEachClass(g, em, bm, areas[0], p1);
+
+        // The revaluation: the going price moves between two months.
+        double going2 = base + 6 * prep;
+        setGoing(lm, going2);
+        double[] p2 = officePrices(lm);
+        closeBooks(g);
+        boolean eqLand = true, wordsNew = true, closes = true;
+        double[] revalued = new double[3];
+        for (int i = 0; i < keys.length; i++) {
+            Sector s = g.getSectors().byKey(keys[i]);
+            SectorBooks.SectorMonth now = books.get(s), then = books.previous(s);
+            SectorStatements.Table eq = SectorStatements.equity(now, then);
+            double want = areas[i][0] * (p2[0] - p1[0]) + areas[i][1] * (p2[1] - p1[1]) + areas[i][2] * (p2[2] - p1[2]);
+            revalued[i] = want;
+            SectorStatements.Row row = eq == null ? null : eq.row(SectorStatements.EQ_LAND);
+            eqLand &= row != null && Math.abs(row.now() - want) <= 1e-9 * Math.max(1, Math.abs(want))
+                    && Math.abs(SectorStatements.landRevalued(now, then) - want) <= 1e-9 * Math.max(1, Math.abs(want));
+            wordsNew &= row != null && row.label().equals("Its land at the start, at today's prices") && SectorStatements.landByClass(now, then);
+            closes &= Math.abs((now.land() - then.land()) - want) <= 1e-9 * Math.max(1, Math.abs(want));
+        }
+        report("the equity statement's land row is last month's area on each class times that class's price change (flat and foothill rose by two preparations, steep not at all)",
+                eqLand && revalued[0] > 0 && revalued[2] > 0, String.format("houses %,.3f, diners %,.3f, mines %,.3f thousand", revalued[0], revalued[1], revalued[2]));
+        check("...worded \"at today's prices\", since it is read by class", wordsNew);
+        check("...and the sheet's land moved by exactly that, the ground being the same in both months", closes);
+        SectorBooks.SectorMonth minesNow = books.get(g.getSectors().byKey(Sectors.MINING)), minesThen = books.previous(g.getSectors().byKey(Sectors.MINING));
+        double onePrice = minesThen.landSqFt() * (minesNow.landPrice() - minesThen.landPrice());
+        check("...the mines' is under what the one flat price would have said (their steep ground did not rise), the houses' the same as it", revalued[2] < onePrice
+                && Math.abs(revalued[0] - books.previous(Sectors.REAL_ESTATE).landSqFt() * (p2[0] - p1[0])) <= 1e-9 * revalued[0]);
+
+        // The investors read the number the business is charged.
+        double read = em.groundPriceFor(house);
+        double sold0 = lm.getLandSalesThisMonth();
+        boolean more = order(g, Sectors.REAL_ESTATE, house, 1);
+        double charged = (lm.getLandSalesThisMonth() - sold0) / h;
+        report("the ground price the investors read for one more house is the price a square foot the business is charged: the foothill price, since the flat is used",
+                more && Math.abs(read - charged) <= 1e-12 * charged && Math.abs(charged - p2[1]) <= 1e-12 * charged && charged < p2[0],
+                String.format("read %.9f, charged %.9f, foothill %.9f, flat %.9f a sq ft", read, charged, p2[1], p2[0]));
+        check("...and for a works, the steep ground used up, the foothill price too", Math.abs(em.groundPriceFor(mine) - lm.priceFor(m, Sectors.MINING, true) / m) <= 1e-12 * p2[1]
+                && em.groundPriceFor(mine) < p2[0] && em.groundPriceFor(mine) >= p2[2]);
+        savedAndLoaded(g, keys, books);
+        redenominated(g, em, books, keys, p2);
+        flatCityKeepsTheOnePrice();
+    }
+
+    /** A zone's share applies to every class alike in the roll's land. */
+    static void zoneOnEachClass(Game g, EconomyManager em, BuildingManager bm, double[] houseAreas, double[] p) {
+        LandManager lm = g.getLandManager();
+        Sector re = g.getSectors().byKey(Sectors.REAL_ESTATE), mining = g.getSectors().byKey(Sectors.MINING);
+        double all = bm.getLandSqFtBySector(Sectors.REAL_ESTATE);
+        double share = 0.5, used = 0.4 * all;
+        check("without a zone the roll's land is the sheet's: assessedLandValueOf() is landValueOf()", em.assessedLandValueOf(re) == em.landValueOf(re));
+        lm.getZoning().set(Sectors.REAL_ESTATE, Zoning.Size.SHARE, 0.05, share);
+        lm.getZoning().addUsed(Sectors.REAL_ESTATE, used);
+        double f = Math.min(all, lm.getZoning().zone(Sectors.REAL_ESTATE).usedSqFt()) / all;
+        double want = dot(houseAreas, p) * ((1 - f) + f * share);
+        report("a zone's price share applies to every class alike: the zone's used part of the houses' land (flat and foothill) at the share of its price, the rest at the class prices",
+                f > 0.39 && f < 0.41 && Math.abs(em.assessedLandValueOf(re) - want) <= 1e-9 * want,
+                String.format("%,.3f against %,.3f, %.0f%% in the zone", em.assessedLandValueOf(re), want, 100 * f));
+        check("...which is between the share's worth and the whole, and the sheet's own land keeps the going price (the roll is the tax's, not the sheet's)",
+                em.assessedLandValueOf(re) < em.landValueOf(re) && em.assessedLandValueOf(re) > share * em.landValueOf(re)
+                        && Math.abs(em.landValueOf(re) - dot(houseAreas, p)) <= 1e-12 * em.landValueOf(re));
+        check("...and a sector with no zone is assessed at its land's worth", em.assessedLandValueOf(mining) == em.landValueOf(mining));
+        lm.getZoning().remove(Sectors.REAL_ESTATE);
+    }
+
+    /** A save keeps the land by class; a save without it reads as the one price. */
+    static void savedAndLoaded(Game g, String[] keys, SectorBooks books) {
+        quietly(() -> g.saveGame(10));
+        Game back = new Game(g.getGameFiles());
+        quietly(() -> back.loadGameSave(10));
+        boolean kept = back.getLoadFailure() == null, keptBefore = true;
+        for (String key : keys) {
+            SectorBooks.SectorMonth was = books.get(key), is = back.getSectorBooks().get(key);
+            SectorBooks.SectorMonth wasThen = books.previous(key), isThen = back.getSectorBooks().previous(key);
+            kept &= is.hasLandByRelief() && java.util.Arrays.equals(was.landByRelief(), is.landByRelief());
+            keptBefore &= isThen.hasLandByRelief() && java.util.Arrays.equals(wasThen.landByRelief(), isThen.landByRelief());
+        }
+        check("a save written and loaded keeps each sector's land by class, this month's (SectorBooks' months are saved whole)", kept);
+        check("...and last month's, which the equity statement's revaluation reads", keptBefore);
+
+        // A save without the key (an older one): the months read null and fall back to the one price.
+        try {
+            java.nio.file.Path file = g.getGameFiles().saveFile(10);
+            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
+                    java.nio.file.Files.readString(file, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            for (String field : new String[] { "sectorBooks", "sectorBooksBefore" }) {
+                for (com.google.gson.JsonElement month : json.getAsJsonArray(field)) month.getAsJsonObject().remove("landByRelief");
+            }
+            java.nio.file.Files.writeString(file, new com.google.gson.GsonBuilder().create().toJson(json), java.nio.charset.StandardCharsets.UTF_8);
+            Game old = new Game(g.getGameFiles());
+            quietly(() -> old.loadGameSave(10));
+            boolean none = old.getLoadFailure() == null, oneWord = true, onePrice = true, noNote = true;
+            for (String key : keys) {
+                SectorBooks.SectorMonth now = old.getSectorBooks().get(key), then = old.getSectorBooks().previous(key);
+                none &= now.landByRelief() == null && then.landByRelief() == null && !now.hasLandByRelief() && now.landSqFt() > 0;
+                SectorStatements.Table eq = SectorStatements.equity(now, then);
+                SectorStatements.Row row = eq == null ? null : eq.row(SectorStatements.EQ_LAND);
+                oneWord &= row != null && row.label().equals("Its land at the start, at today's price") && !SectorStatements.landByClass(now, then);
+                onePrice &= row != null && same(row.now(), then.landSqFt() * (now.landPrice() - then.landPrice()))
+                        && now.landPriceOf(1) == now.landPrice() && now.landSqFtOf(1) == 0 && same(now.landByClassValue(), now.landSqFt() * now.landPrice());
+                noNote &= SectorStatements.landNote(now).isEmpty()
+                        && SectorStatements.sheet(now, then, old.getSectorBooks().debt(key), old.getSectorBooks().debtBefore(key)).row(SectorStatements.LAND).note() == 0;
+            }
+            check("a save with no land by class in its months loads them with none (Gson leaves a missing key null), and still loads", none);
+            check("...its equity statement reads the land's revaluation at the one price, in the old words, to the bit", oneWord && onePrice);
+            check("...and its Land line opens no note", noNote);
+        } catch (java.io.IOException e) {
+            check("an older save could be written back for the test: " + e, false);
+        }
+    }
+
+    /** Redenominating the money rescales the three prices and leaves the areas. */
+    static void redenominated(Game g, EconomyManager em, SectorBooks books, String[] keys, double[] p) {
+        String key = Sectors.MINING;
+        double[] was = books.get(key).landByRelief().clone(), wasThen = books.previous(key).landByRelief().clone();
+        double[] valuedWas = em.getValuedByClass(key).clone();
+        double scale = 10;
+        books.redenominate(scale);
+        em.redenominate(scale);
+        double[] is = books.get(key).landByRelief(), isThen = books.previous(key).landByRelief(), valued = em.getValuedByClass(key);
+        boolean ok = true;
+        for (int i = 0; i < 6; i++) {
+            double k = i < 3 ? 1 : scale;
+            ok &= is[i] == was[i] * k && isThen[i] == wasThen[i] * k && valued[i] == valuedWas[i] * k;
+        }
+        check("redenominated by a factor of ten, the books' and the sheet's prices a class are ten times and the areas are as they were", ok
+                && em.priceOfClass(1) == p[1] * scale && books.get(key).landPriceOf(2) == p[2] * scale);
+    }
+
+    /** A city with only flat ground keeps the one price: the old expression, to the bit, and no land by class. */
+    static void flatCityKeepsTheOnePrice() {
+        out.println("\n--- 6b. a city of flat ground keeps the books it had: the one price, to the bit, no land by class, no note ---");
+        Game g = city("landclass-6b", 1, 0, 0, 0);
+        LandManager lm = g.getLandManager();
+        EconomyManager em = g.getEconomyManager();
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate house = template(g, HOUSE);
+        boolean built = order(g, Sectors.REAL_ESTATE, house, 50);
+        double base = lm.getMarket().getBasePricePerSqFt(), prep = lm.getPreparationPerSqFt();
+        double going1 = base + 4 * prep, going2 = base + 6 * prep;
+        setGoing(lm, going1);
+        closeBooks(g);
+        setGoing(lm, going2);
+        closeBooks(g);
+        Sector re = g.getSectors().byKey(Sectors.REAL_ESTATE);
+        SectorBooks books = g.getSectorBooks();
+        SectorBooks.SectorMonth now = books.get(re), then = books.previous(re);
+        double all = bm.getLandSqFtBySector(Sectors.REAL_ESTATE);
+        report("fixture: a city with neither foothill nor steep ground and fifty houses, the going price moved between two closes",
+                built && lm.isFlatOnly() && all > 0 && !em.valuesByRelief() && going2 > going1, String.format("%,.0f sq ft", all));
+        double[] a = em.landByReliefOf(re);
+        check("a sector's land by class is all flat, the whole of it", a[0] == all && a[1] == 0 && a[2] == 0);
+        check("its land is worth its square feet at the one price, to the bit", same(em.landValueOf(re), all * lm.getPricePerSqFt())
+                && same(em.landValueOf(BuildingType.RESIDENTIAL), bm.getLandSqFtByCategory(BuildingType.RESIDENTIAL) * lm.getPricePerSqFt()));
+        check("...the books carry no land by class, the economy no values by class", now.landByRelief() == null && then.landByRelief() == null && em.getValuedByClass(Sectors.REAL_ESTATE) == null);
+        check("...the sheet's land is that, and its Land line opens no note, note 11 being empty", same(now.land(), em.landValueOf(re)) && SectorStatements.landNote(now).isEmpty()
+                && SectorStatements.sheet(now, then, books.debt(Sectors.REAL_ESTATE), books.debtBefore(Sectors.REAL_ESTATE)).row(SectorStatements.LAND).note() == 0);
+        SectorStatements.Table eq = SectorStatements.equity(now, then);
+        check("the equity statement's land row is last month's square feet times the change in the one price, to the bit, in the old words",
+                eq != null && same(eq.now(SectorStatements.EQ_LAND), then.landSqFt() * (now.landPrice() - then.landPrice()))
+                        && eq.row(SectorStatements.EQ_LAND).label().equals("Its land at the start, at today's price") && !SectorStatements.landByClass(now, then));
+        double used = 0.3 * all, share = 0.5;
+        lm.getZoning().set(Sectors.REAL_ESTATE, Zoning.Size.SHARE, 0.05, share);
+        lm.getZoning().addUsed(Sectors.REAL_ESTATE, used);
+        double inZone = Math.min(all, lm.getZoning().zone(Sectors.REAL_ESTATE).usedSqFt());
+        double old = (all - inZone) * em.getLandPricePerSqFt() + inZone * share * em.getLandPricePerSqFt();
+        check("with a zone, the roll's land is the old expression, to the bit", inZone > 0 && same(em.assessedLandValueOf(re), old));
+        lm.getZoning().remove(Sectors.REAL_ESTATE);
+        check("the ground price the investors read for one more house is the going price, as it was", same(em.groundPriceFor(house), Math.max(0, em.getLandPricePerSqFt())));
     }
 }

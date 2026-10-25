@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**140 harness files, 14,469 labelled assertions.** AllChecks runs 140 of them.
+**140 harness files, 14,510 labelled assertions.** AllChecks runs 140 of them.
 
 ## Which harnesses read which class
 
@@ -26,8 +26,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, SlopeCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
-| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LongPlaytest, RefineryCheck, RoadCheck, SaveFileCheck, SlopeCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
@@ -75,7 +75,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, MapCheck |
 | [EarthSite](map/EarthSite.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, LandCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorStatementCheck, WoodProductsCheck |
@@ -185,10 +185,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SaveWriter](map/SaveWriter.md) | SaveSlotCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck |
 | [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, ForeignCheck, ForestryCheck, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
-| [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
+| [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, HomeRailCheck, RailCheck, SectorBooksCheck, TruckCheck, VanCheck |
-| [SectorStatements](map/SectorStatements.md) | CentralBankCheck, SectorStatementCheck |
+| [SectorStatements](map/SectorStatements.md) | CentralBankCheck, LandClassCheck, SectorStatementCheck |
 | [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
@@ -11579,7 +11579,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2999 Medellin
   - L3000 Halifax
 
-## LandClassCheck.java - 92 labelled assertions
+## LandClassCheck.java - 133 labelled assertions
 
 > A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going
 > price stays the price of flat ground, foothill is that price less its preparation and never under the base price of
@@ -11595,103 +11595,146 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      below the base (every class = going), at a price level other than 1; never above flat.
 > ...
 
-- **L207 1. the rule: foothill is the going price less its preparation, never under the base; steep is the base; none dearer than flat**
-  - L210 fixture: the preparation of a square foot is SitePreparation's dollars a m2, in thousands, over a m2's share of a foot, and is more than the base price
-  - L213 ...and it follows the world's price level: at 3 times the prices it costs 3 times
-  - L216 going above the base and the preparation: flat is the going price
-  - L217 ...foothill is the going price less the preparation, which is above the base
-  - L219 ...steep and very steep are the base price
-  - L223 going between the base and the base plus the preparation: flat is the going price, foothill the base price (going less the preparation is under it)
-  - L226 ...steep and very steep the base price too
-  - L229 going exactly the base plus the preparation: foothill is the base price, no step between the two cases
-  - L235 going below the base price: every class is the going price - no class is ever dearer than flat
-  - L248 over every going price from a quarter of the base to 200 times it: no class dearer than flat, steep never above foothill
-  - L249 ...foothill never under the base price (or the going price where that is lower), steep exactly the lesser of the two, foothill rising with the going price
-- **L260 2. the office prices an offer by the ground it holds, and the city buys each class at that price**
-  - L264 fixture: crowding has lifted the going price past the base plus the preparation, at a price level of
-  - L267 the office's flat price is the going price it quotes
-  - L268 ...its foothill price the going price less the preparation
-  - L269 ...its steep price the base price at the price level
-  - L270 ...so flat is dearer than foothill and foothill than steep
-  - L282 an offer of
-  - L285 ...flat dearer than foothill, foothill than steep, very steep the steep's
-  - L290 a mixed offer (50% flat, 30% foothill, 10% steep, 10% very steep) is the sum of its classes' square feet at their prices
-  - L296 ...with fresh water and sea besides, those at their shares of the FLAT price (0.45 and 0.08), not the hill's
-  - L304 a resource under the ground is priced as before: its share of its good's price at the price level, on hills as on the plain
-  - L327 fixture: the city's own office is crowded to a going price above the base plus the preparation
-  - L332 fixture: three real offers with dry ground to give a relief to
-  - L347 an offer of the real shelf, its ground made all
-  - L359 the city buys the
-  - L365 ...and the city's
-- **L375 3. the pickers rank by the ground a building can stand on, preparation counted; flat ground ranks as it always did**
-  - L386 fixture: two offers of one dry area, a valley floor and a mountain, the mountain cheaper a dry km2 - the old rule's best is the mountain
-  - L391 bestValue() takes the valley floor: the buildable ground a dollar is what counts
-  - L392 ...the mountain's buildable km2 a dollar is its flat ground over its price
-  - L393 ...against the valley floor's, which is its dry km2 a dollar, and the mountain's is the lower
-  - L398 fixture: an all-foothill offer and an all-flat offer at the same dry area and price - tied on the dry rule, the foothill one (lower id, the nearer) wins it
-  - L402 bestValue() takes the flat one: the foothill offer loses by its preparation
-  - L403 ...the foothill offer's buildable km2 a dollar counts the pad: its ground over its price and the preparation of its square feet
-  - L405 ...and its price with the preparation is the price and that much
-  - L408 a foothill offer cheaper than the flat one by half its preparation still loses to it
-  - L411 ...and cheaper by twice its preparation it wins
-  - L422 a listing of flat ground, free offer and empty offer among it: every offer's buildable km2 a dollar is its dry km2 a dollar, to the bit
-  - L423 ...and bestValue() is the old rule's pick, to the offer
-  - L425 ...also among offers tied on the rate (the nearer, the lower id, wins as before)
-  - L435 fixture: three offers of steep and very steep ground only - no buildable ground in any
-  - L436 a city in the mountains still has a best: bestValue() falls back to the old dry rule and is not null
-  - L461 fixture: on the city's own shelf a mountain, a valley floor and a foothill offer of one dry area - the mountain cheapest, the foothill under the valley's pri...
-  - L466 Game.bestOffer() for room takes the valley floor, not the mountain the old rule would buy
-  - L469 ...for a shortfall of half the offers' ground it takes the valley floor: the mountain's buildable ground is short of it, and the foothill's price with its pa...
-  - L471 the auto-builder's land shortcut for the same lack takes the valley floor too
-  - L472 ...and for a lack no offer covers, the best value by buildable ground - the valley floor
-  - L474 ...with the valley floor passed over, the foothill offer (the best buildable ground a dollar left)
-- **L497 4. a business pays the city for its plot class by class: buildings flat first, works steep first, the zone's share on each**
-  - L507 fixture: 40% flat, 30% foothill, 30% steep owned, all free, the business price four preparations over the base - flat dearer than foothill dearer than steep
-  - L511 the classes' prices are the rule's, read at the city's own base: foothill the going price less the preparation, steep the base
-  - L513 ...and reliefPricePerSqFt() answers the three by class, very steep as steep
-  - L520 the foothill's preparation the price takes off is the quote's own: a House order onto foothill is charged exactly that a square foot
-  - L529 a building allocated while flat is free is all flat ground
-  - L530 ...and pays the flat price
-  - L537 a business's House order (buildFor()) pays the city the flat price for its plot
-  - L538 ...and the order went through
-  - L543 once the flat is used, a building's plot is all foothill
-  - L544 ...and pays the foothill price - the going price less the preparation
-  - L547 a business's House order then pays the foothill price for its plot
-  - L552 a plot of a building that straddles the end of the flat is 40% flat and 60% foothill, and the parts add up to the plot
-  - L556 ...and pays the sum: its flat at the flat price, its foothill at the foothill price
-  - L564 a works's plot on a city with idle steep ground is all steep
-  - L565 ...and pays the steep price - the base price
-  - L566 ...while a building of the same size would pay the flat price
-  - L572 a business's Iron Mine order pays the city the steep price for its plot
-  - L582 a works's plot that straddles the end of the steep is 30% steep and 70% foothill
-  - L585 ...and pays the sum, its steep at the base and its foothill at the foothill price
-  - L589 once the steep is used a works pays the foothill price
-  - L592 ...and when the foothill is used too, the flat price
-  - L605 a zone's price share applies to each class's price: the zone's flat, foothill and steep ground are sold at the share of those prices
-  - L614 fixture: a zone holds more ground than a plot of
-  - L617 a plot wholly in the zone pays the share of the sum of its classes' prices
-  - L624 a plot larger than the zone holds pays the share on the part the zone holds and the full price on the rest, class by class
-  - L626 ...the sum of its classes' prices, the share on the zone's part of each
-  - L628 ...which is between the share's sum and the full one
-  - L640 a building's plot given back comes off the foothill first: half foothill, half flat when half of it stands past the flat
-  - L645 ...and is bought back at the sum of its classes' prices
-  - L647 ...which is what the same plot would be sold at into the ground it leaves: the buyback is the sale's reverse
-  - L652 a works's plot given back, standing half on the steep and half past it, returns half steep and half foothill
-  - L656 ...and is bought back at the base and the foothill price
-  - L659 ...the same as selling it again into what it leaves
-  - L669 a plot given back out of its zone's used ground is bought back at the share of its classes' prices
-- **L681 5. a city of flat ground is priced exactly as before, to the bit**
-  - L687 fixture: the city owns neither foothill nor steep ground
-  - L704 fixture: the office has its offers standing
-  - L705 every offer standing, measured again: its price is the four-argument price() of its ground, with its relief row and with none
-  - L706 ...its buildable km2 a dollar is its dry km2 a dollar, its buildable square feet its size, its price with the pad its price - to the bit
-  - L708 bestValue() is the old rule's pick
-  - L715 ...and Game.bestOffer() for room is the old loop's
-  - L724 ...and for a shortfall the old loop's cheapest that covers it
-  - L738 a plot's price, sold and bought back, with and without a works, is its square feet at the going price: the old expression, to the bit
-  - L739 ...and the plot falls wholly on flat, whatever it is for
-  - L740 the classes' prices of a flat city are still defined, and none dearer than flat
-  - L758 with a zone, the plot sold and bought back is priced by the old expression, to the bit
+- **L216 1. the rule: foothill is the going price less its preparation, never under the base; steep is the base; none dearer than flat**
+  - L219 fixture: the preparation of a square foot is SitePreparation's dollars a m2, in thousands, over a m2's share of a foot, and is more than the base price
+  - L222 ...and it follows the world's price level: at 3 times the prices it costs 3 times
+  - L225 going above the base and the preparation: flat is the going price
+  - L226 ...foothill is the going price less the preparation, which is above the base
+  - L228 ...steep and very steep are the base price
+  - L232 going between the base and the base plus the preparation: flat is the going price, foothill the base price (going less the preparation is under it)
+  - L235 ...steep and very steep the base price too
+  - L238 going exactly the base plus the preparation: foothill is the base price, no step between the two cases
+  - L244 going below the base price: every class is the going price - no class is ever dearer than flat
+  - L257 over every going price from a quarter of the base to 200 times it: no class dearer than flat, steep never above foothill
+  - L258 ...foothill never under the base price (or the going price where that is lower), steep exactly the lesser of the two, foothill rising with the going price
+- **L269 2. the office prices an offer by the ground it holds, and the city buys each class at that price**
+  - L273 fixture: crowding has lifted the going price past the base plus the preparation, at a price level of
+  - L276 the office's flat price is the going price it quotes
+  - L277 ...its foothill price the going price less the preparation
+  - L278 ...its steep price the base price at the price level
+  - L279 ...so flat is dearer than foothill and foothill than steep
+  - L291 an offer of
+  - L294 ...flat dearer than foothill, foothill than steep, very steep the steep's
+  - L299 a mixed offer (50% flat, 30% foothill, 10% steep, 10% very steep) is the sum of its classes' square feet at their prices
+  - L305 ...with fresh water and sea besides, those at their shares of the FLAT price (0.45 and 0.08), not the hill's
+  - L313 a resource under the ground is priced as before: its share of its good's price at the price level, on hills as on the plain
+  - L336 fixture: the city's own office is crowded to a going price above the base plus the preparation
+  - L341 fixture: three real offers with dry ground to give a relief to
+  - L356 an offer of the real shelf, its ground made all
+  - L368 the city buys the
+  - L374 ...and the city's
+- **L384 3. the pickers rank by the ground a building can stand on, preparation counted; flat ground ranks as it always did**
+  - L395 fixture: two offers of one dry area, a valley floor and a mountain, the mountain cheaper a dry km2 - the old rule's best is the mountain
+  - L400 bestValue() takes the valley floor: the buildable ground a dollar is what counts
+  - L401 ...the mountain's buildable km2 a dollar is its flat ground over its price
+  - L402 ...against the valley floor's, which is its dry km2 a dollar, and the mountain's is the lower
+  - L407 fixture: an all-foothill offer and an all-flat offer at the same dry area and price - tied on the dry rule, the foothill one (lower id, the nearer) wins it
+  - L411 bestValue() takes the flat one: the foothill offer loses by its preparation
+  - L412 ...the foothill offer's buildable km2 a dollar counts the pad: its ground over its price and the preparation of its square feet
+  - L414 ...and its price with the preparation is the price and that much
+  - L417 a foothill offer cheaper than the flat one by half its preparation still loses to it
+  - L420 ...and cheaper by twice its preparation it wins
+  - L431 a listing of flat ground, free offer and empty offer among it: every offer's buildable km2 a dollar is its dry km2 a dollar, to the bit
+  - L432 ...and bestValue() is the old rule's pick, to the offer
+  - L434 ...also among offers tied on the rate (the nearer, the lower id, wins as before)
+  - L444 fixture: three offers of steep and very steep ground only - no buildable ground in any
+  - L445 a city in the mountains still has a best: bestValue() falls back to the old dry rule and is not null
+  - L470 fixture: on the city's own shelf a mountain, a valley floor and a foothill offer of one dry area - the mountain cheapest, the foothill under the valley's pri...
+  - L475 Game.bestOffer() for room takes the valley floor, not the mountain the old rule would buy
+  - L478 ...for a shortfall of half the offers' ground it takes the valley floor: the mountain's buildable ground is short of it, and the foothill's price with its pa...
+  - L480 the auto-builder's land shortcut for the same lack takes the valley floor too
+  - L481 ...and for a lack no offer covers, the best value by buildable ground - the valley floor
+  - L483 ...with the valley floor passed over, the foothill offer (the best buildable ground a dollar left)
+- **L506 4. a business pays the city for its plot class by class: buildings flat first, works steep first, the zone's share on each**
+  - L516 fixture: 40% flat, 30% foothill, 30% steep owned, all free, the business price four preparations over the base - flat dearer than foothill dearer than steep
+  - L520 the classes' prices are the rule's, read at the city's own base: foothill the going price less the preparation, steep the base
+  - L522 ...and reliefPricePerSqFt() answers the three by class, very steep as steep
+  - L529 the foothill's preparation the price takes off is the quote's own: a House order onto foothill is charged exactly that a square foot
+  - L538 a building allocated while flat is free is all flat ground
+  - L539 ...and pays the flat price
+  - L546 a business's House order (buildFor()) pays the city the flat price for its plot
+  - L547 ...and the order went through
+  - L552 once the flat is used, a building's plot is all foothill
+  - L553 ...and pays the foothill price - the going price less the preparation
+  - L556 a business's House order then pays the foothill price for its plot
+  - L561 a plot of a building that straddles the end of the flat is 40% flat and 60% foothill, and the parts add up to the plot
+  - L565 ...and pays the sum: its flat at the flat price, its foothill at the foothill price
+  - L573 a works's plot on a city with idle steep ground is all steep
+  - L574 ...and pays the steep price - the base price
+  - L575 ...while a building of the same size would pay the flat price
+  - L581 a business's Iron Mine order pays the city the steep price for its plot
+  - L591 a works's plot that straddles the end of the steep is 30% steep and 70% foothill
+  - L594 ...and pays the sum, its steep at the base and its foothill at the foothill price
+  - L598 once the steep is used a works pays the foothill price
+  - L601 ...and when the foothill is used too, the flat price
+  - L614 a zone's price share applies to each class's price: the zone's flat, foothill and steep ground are sold at the share of those prices
+  - L623 fixture: a zone holds more ground than a plot of
+  - L626 a plot wholly in the zone pays the share of the sum of its classes' prices
+  - L633 a plot larger than the zone holds pays the share on the part the zone holds and the full price on the rest, class by class
+  - L635 ...the sum of its classes' prices, the share on the zone's part of each
+  - L637 ...which is between the share's sum and the full one
+  - L649 a building's plot given back comes off the foothill first: half foothill, half flat when half of it stands past the flat
+  - L654 ...and is bought back at the sum of its classes' prices
+  - L656 ...which is what the same plot would be sold at into the ground it leaves: the buyback is the sale's reverse
+  - L661 a works's plot given back, standing half on the steep and half past it, returns half steep and half foothill
+  - L665 ...and is bought back at the base and the foothill price
+  - L668 ...the same as selling it again into what it leaves
+  - L678 a plot given back out of its zone's used ground is bought back at the share of its classes' prices
+- **L690 5. a city of flat ground is priced exactly as before, to the bit**
+  - L696 fixture: the city owns neither foothill nor steep ground
+  - L713 fixture: the office has its offers standing
+  - L714 every offer standing, measured again: its price is the four-argument price() of its ground, with its relief row and with none
+  - L715 ...its buildable km2 a dollar is its dry km2 a dollar, its buildable square feet its size, its price with the pad its price - to the bit
+  - L717 bestValue() is the old rule's pick
+  - L724 ...and Game.bestOffer() for room is the old loop's
+  - L733 ...and for a shortfall the old loop's cheapest that covers it
+  - L747 a plot's price, sold and bought back, with and without a works, is its square feet at the going price: the old expression, to the bit
+  - L748 ...and the plot falls wholly on flat, whatever it is for
+  - L749 the classes' prices of a flat city are still defined, and none dearer than flat
+  - L767 with a zone, the plot sold and bought back is priced by the old expression, to the bit
+- **L820 6. the books value a sector's land by the ground it stands on: pro rata to the city's use, in the sheet, its note and the equity**
+  - L842 fixture: a city of
+  - L856 fixture: the going price four preparations over the base, so flat is dearer than foothill and foothill than steep; the books read the city as hilly
+  - L874 a sector's land by class adds up to the land it holds (getLandSqFtBySector())
+  - L875 ...its buildings' ground at the city's buildings' mix and its works' at the works' mix: the houses and diners flat then foothill, the mines steep then foothi...
+  - L890 summed over every sector and the ground no business holds, the areas by class are the split's own (LandManager.reliefUse()) and the fixture's design
+  - L899 ...and summed over the city's categories likewise; a category holding one sector's buildings has that sector's land
+  - L907 the class prices the books use ARE the land office's (flat, foothill, steep and very steep): office, books and buyer one price a class
+  - L914 a sector's land is worth its areas at the land office's class prices (landValueOf())
+  - L915 ...which is under the one-price figure for every sector that stands on foothill or steep ground
+  - L916 a city category's land is valued the same way: the mines' category is the Mining sector's
+  - L918 ...the mines' land is worth its foothill at the foothill price and its steep at the steep price, from the design
+  - L950 the books' month carries the land by class as the sheet valued it: its areas and the three prices, the sheet's land their products
+  - L951 note 11 has a row for each class that holds any of the land: flat and foothill for the houses and the diners, foothill and steep for the mines
+  - L952 ...only the works' sector has a steep row; its rows' values add up to the sheet's land
+  - L953 ...each row's square kilometres and price a square metre are the area's and LandManager.perM2() of the class price, its value area x price
+  - L954 ...and the sheet's Land line opens note 11, with the note's rows in the table
+  - L977 the equity statement's land row is last month's area on each class times that class's price change (flat and foothill rose by two preparations, steep not at ...
+  - L979 ...worded \"at today's prices\", since it is read by class
+  - L980 ...and the sheet's land moved by exactly that, the ground being the same in both months
+  - L983 ...the mines' is under what the one flat price would have said (their steep ground did not rise), the houses' the same as it
+  - L991 the ground price the investors read for one more house is the price a square foot the business is charged: the foothill price, since the flat is used
+  - L994 ...and for a works, the steep ground used up, the foothill price too
+  - L1007 without a zone the roll's land is the sheet's: assessedLandValueOf() is landValueOf()
+  - L1012 a zone's price share applies to every class alike: the zone's used part of the houses' land (flat and foothill) at the share of its price, the rest at the cl...
+  - L1015 ...which is between the share's worth and the whole, and the sheet's own land keeps the going price (the roll is the tax's, not the sheet's)
+  - L1018 ...and a sector with no zone is assessed at its land's worth
+  - L1034 a save written and loaded keeps each sector's land by class, this month's (SectorBooks' months are saved whole)
+  - L1035 ...and last month's, which the equity statement's revaluation reads
+  - L1060 a save with no land by class in its months loads them with none (Gson leaves a missing key null), and still loads
+  - L1061 ...its equity statement reads the land's revaluation at the one price, in the old words, to the bit
+  - L1062 ...and its Land line opens no note
+  - L1064 an older save could be written back for the test:
+  - L1082 redenominated by a factor of ten, the books' and the sheet's prices a class are ten times and the areas are as they were
+- **L1088 6b. a city of flat ground keeps the books it had: the one price, to the bit, no land by class, no note**
+  - L1105 fixture: a city with neither foothill nor steep ground and fifty houses, the going price moved between two closes
+  - L1108 a sector's land by class is all flat, the whole of it
+  - L1109 its land is worth its square feet at the one price, to the bit
+  - L1111 ...the books carry no land by class, the economy no values by class
+  - L1112 ...the sheet's land is that, and its Land line opens no note, note 11 being empty
+  - L1115 the equity statement's land row is last month's square feet times the change in the one price, to the bit, in the old words
+  - L1123 with a zone, the roll's land is the old expression, to the bit
+  - L1125 the ground price the investors read for one more house is the going price, as it was
 
 ## LandlordPortCheck.java - 52 labelled assertions
 

@@ -425,6 +425,10 @@ public class Game {
         economyManager.setZoning(landManager.getZoning(), landManager::heldBy);
         // ...and a foothill's price reads the preparation the quote charges a square foot of it (ET3), so the price and the quote are one number.
         landManager.setPreparationPerSqFt(() -> preparationCost(preparationPoints(1)));
+        // ...and the books value a business's land by the ground it stands on (ET3): which templates are works, and what a
+        // square foot of one more of a template's plot costs where it would fall - the number buildFor() charges.
+        economyManager.wireLandByRelief(Game::standsAnywhere,
+                t -> landManager.priceFor(t.getLandSqFt(), t.getSector(), standsAnywhere(t)) / t.getLandSqFt());
         // ...and the fresh water limit is the land's and the rights' (0.7.59,
         // batch J2): read each time the services update, on every path. A new
         // city has no rights; a load sets its own (readTheSave()).
@@ -7897,6 +7901,24 @@ public class Game {
     }
 
     /**
+     * Hands the books the land office's classes of ground (ET3, spec-earth2-terrain 5.3): the prices of a square foot of
+     * foothill and of steep ground (flat's is the land's price, pushed beside it), whether the city owns only flat ground,
+     * and the ground in use by class. Pushed with the land's price at the top of each month and on a load, so the classes
+     * are priced off the price the books hold; pushLandUse() reads the use again as the month closes.
+     */
+    void pushLandByRelief() {
+        boolean flatOnly = landManager.isFlatOnly();
+        economyManager.setLandByRelief(flatOnly, landManager.getFoothillPricePerSqFt(), landManager.getSteepPricePerSqFt(),
+                flatOnly ? null : landManager.reliefUse());
+    }
+
+    /** ...and the ground in use alone, as the month closes (the buildings its orders put up included), the prices staying the ones the month began with. */
+    private void pushLandUse() {
+        boolean flatOnly = landManager.isFlatOnly();
+        economyManager.setLandUse(flatOnly, flatOnly ? null : landManager.reliefUse());
+    }
+
+    /**
      * Whether this order can go ahead on the ore the city owns.
      *
      * A mine needs ground with iron under it. Buying a land parcel with a
@@ -11085,6 +11107,7 @@ public class Game {
         landManager.updateMarket(populationManager.getPopulation());
 
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
+        pushLandByRelief();
 
         /*
          * THE BANK PRICES THE MONEY, BEFORE ANYTHING IS PRICED OFF IT.
@@ -13342,6 +13365,8 @@ public class Game {
          * through them the register's reading of a company's equity
          * (Equity.raiseFor()), read the close.
          */
+        // ...and the ground in use by class as it stands at the close (ET3), the buildings the month's orders put up included.
+        pushLandUse();
         economyManager.pushBalanceSheetInputs();
         sectorBooks.takeMonth(this);
 
@@ -17594,6 +17619,7 @@ public class Game {
          * report, and those reports have to see the expense.
          */
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
+        pushLandByRelief();
 
         // An older save's contracts, read as their owners' (OLD CONTRACTS),
         // now the land price the rebate on a new rental home reads is back.
