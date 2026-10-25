@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**143 harness files, 14,757 labelled assertions.** AllChecks runs 143 of them.
+**144 harness files, 14,758 labelled assertions.** AllChecks runs 144 of them.
 
 ## Which harnesses read which class
 
@@ -46,6 +46,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, ChildcareCheck, ExpectationsCheck, HealthCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
 | [CentralBank](map/CentralBank.md) | BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, FloatLinkCheck, ForeignCheck, FundCheck, HoldersCheck, LongPlaytest, MortgageCheck, PolicyPreviewCheck, ScaleCheck |
+| [ChartFitBench](map/ChartFitBench.md) | ChartFitCheck |
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, ReadPathCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
@@ -3497,6 +3498,29 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L952 a series with a negative low still gets its air below it, as before
   - L955 ...and one that crosses zero is not floored at it
   - L957 the from-zero path is unchanged: floor 0, top over the largest
+
+## ChartFitCheck.java - 1 labelled assertions
+
+> The full-screen chart's foot is on the screen (FW10): with the legend wrapped to two rows or three,
+> the chart still ends inside the window and the plot takes the room that is left.
+> 
+> WHY THIS EXISTS. Full screen gives the City History chart the whole window and sizes its plot to
+> the window's height less what stands beside the plot (TimeChart.heightBesidePlot()). That was a sum
+> of constants that counted the toolbar as one row; with many lines picked the legend, a flow pane in
+> the toolbar, wraps to two rows and more, and the chart came out a row taller than the window gave it:
+> the overview strip and the caption line were cut off the bottom of the screen (found in 0.7.40 and
+> 0.7.41, open until FW10). Nothing in the model is involved, so no city is played: the chart is laid
+> out on a scene of its own at four window sizes (ChartFitBench, through the screen's own fitToWindow)
+> and the harness reads where its foot lands. Run alone with -Dchartfit.out=DIR it also writes the
+> pictures.
+> ...
+
+- **L57 ChartFitCheck: the full-screen chart's foot is on the screen (FW10)**
+- **L76 the fixture causes the condition: the legend wraps**
+  - L107 three rows are reached at some window size
+- **L109 the foot stands inside the screen**
+- **L121 and the plot takes the room**
+- **L138 the renders**
 
 ## ChildcareCheck.java - 33 labelled assertions
 

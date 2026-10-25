@@ -66,6 +66,8 @@
 
 **Uses:** [KeptBench](KeptBench.md) (12), [Notice](Notice.md) (12), [Timing](Timing.md) (6), [Game](Game.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [LongPlaytest](LongPlaytest.md) (2), [BuildingManager](BuildingManager.md) (1)
 
+**Used by (1):** [ChartFitCheck](ChartFitCheck.md)
+
 ## Constants
 
 | line | constant | value | says |

@@ -1,4 +1,4 @@
-# TimeChart.java - 1,560 lines · 85 methods · 20 constants · interface
+# TimeChart.java - 1,603 lines · 89 methods · 20 constants · interface
 
 `ham/citybuildersim/ui/TimeChart.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -27,9 +27,9 @@
 > DecisionLog's; each line's values the screen's, in its stored units, with
 > the screen's own formatter to read them. This draws and listens.
 
-**Uses:** [Palette](Palette.md) (94), [ChartModel](ChartModel.md) (72), [YearBook](YearBook.md) (35), [CityCalendar](CityCalendar.md) (18), [DecisionLog](DecisionLog.md) (5), [HistoryScreen](HistoryScreen.md) (2), [UserInterface](UserInterface.md) (1), [GameLog](GameLog.md) (1)
+**Uses:** [Palette](Palette.md) (94), [ChartModel](ChartModel.md) (71), [YearBook](YearBook.md) (35), [CityCalendar](CityCalendar.md) (18), [DecisionLog](DecisionLog.md) (5), [HistoryScreen](HistoryScreen.md) (2), [UserInterface](UserInterface.md) (1), [GameLog](GameLog.md) (1)
 
-**Used by (9):** [BankScreen](BankScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (10):** [BankScreen](BankScreen.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -41,14 +41,14 @@
 | 199 | · geometry |
 | 204 | · interaction |
 | 305 | WHAT IT DRAWS, HANDED OVER ON EVERY REBUILD |
-| 443 | THE LEGEND AND THE RANGES |
-| 495 | THE GEOMETRY |
-| 545 | THE SCALES, FIT TO WHAT IS SHOWN |
-| 614 | DRAWING |
-| 1081 | · the overview |
-| 1180 | WHAT IS UNDER THE POINTER, AND THE CARD |
-| 1401 | LISTENING: THE DRAG, THE WHEEL, THE CLICK, THE OVERVIEW |
-| 1533 | · small helpers |
+| 481 | THE LEGEND AND THE RANGES |
+| 533 | THE GEOMETRY |
+| 588 | THE SCALES, FIT TO WHAT IS SHOWN |
+| 657 | DRAWING |
+| 1124 | · the overview |
+| 1223 | WHAT IS UNDER THE POINTER, AND THE CARD |
+| 1444 | LISTENING: THE DRAG, THE WHEEL, THE CLICK, THE OVERVIEW |
+| 1576 | · small helpers |
 
 ## Constants
 
@@ -71,9 +71,9 @@
 | 107 | `TimeChart.NOTCH` | `40` | A wheel notch, in the pixels JavaFX reports it as. |
 | 110 | `TimeChart.WHEEL_OWNER` | `"TimeChart.wheel"` | Which node owns the wheel: the window's page-scroll filter leaves a wheel over this alone (UserInterface). |
 | 113 | `TimeChart.OVERHANG` | `2000` | How far above and below its own box the chart's clip reaches (0.7.40): it cuts the sides only. |
-| 782 | `TimeChart.MARK_REACH` | `5` | How near a mark the pointer must be, in pixels, for the card to say it (0.7.45). |
-| 1364 | `TimeChart.CARD_DECISIONS` | `10` | At most this many decisions are listed on a flag's card; the rest are counted. |
-| 1536 | `TimeChart.MEASURE` | `new javafx.scene.text.Text()` | One Text node, reused to measure a string's width in a font (textWidth()). |
+| 825 | `TimeChart.MARK_REACH` | `5` | How near a mark the pointer must be, in pixels, for the card to say it (0.7.45). |
+| 1407 | `TimeChart.CARD_DECISIONS` | `10` | At most this many decisions are listed on a flag's card; the rest are counted. |
+| 1579 | `TimeChart.MEASURE` | `new javafx.scene.text.Text()` | One Text node, reused to measure a string's width in a font (textWidth()). |
 
 ## Fields (state)
 
@@ -118,13 +118,13 @@
 | 214 | `private final List<Runnable> followers` |  |
 | 215 | `private Runnable onSettled, onFullScreen` |  |
 | 216 | `private final javafx.animation.PauseTransition settle` |  |
-| 641 | `private boolean faultLogged` | Whether this chart has written a fault to the log: once a chart, so a fault on every frame is one entry (0.7.50). |
+| 684 | `private boolean faultLogged` | Whether this chart has written a fault to the log: once a chart, so a fault on every frame is one entry (0.7.50). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1501 | **type** `final class TimeChart extends VBox` | A chart of months (0.7.23): lines over a window the player drags, wheels and ranges through, years on its axis, recessions named on their bands, the episodes on a lane under it, the player's decisions as flags, a cros... |
+| 60 | 1544 | **type** `final class TimeChart extends VBox` | A chart of months (0.7.23): lines over a window the player drags, wheels and ranges through, years on its axis, recessions named on their bands, the episodes on a lane under it, the player's decisions as flags, a cros... |
 
 ### the dials (lines 62-114)
 
@@ -152,7 +152,7 @@
 |---:|---:|---|---|
 | 225 | 79 | `TimeChart(ChartModel window, Set<String> hidden, boolean main)` | one draws the decision lane alone, and only when it is handed flags) |
 
-### WHAT IT DRAWS, HANDED OVER ON EVERY REBUILD (lines 305-442)
+### WHAT IT DRAWS, HANDED OVER ON EVERY REBUILD (lines 305-480)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -161,117 +161,121 @@
 | 364 | 3 | `private static<T> List<T> fixed(List<T> list)` | A list as the chart keeps it: its own copy, so the caller's can change afterwards. |
 | 368 | 4 | `private Object sameBand(YearBook.Band b)` |  |
 | 374 | 5 | `void setSize(double width, double plotHeight)` | The width the chart is drawn at, and the plot's height; the lanes and the overview take what they need. |
-| 381 | 4 | `double heightBesidePlot()` | The height everything but the plot takes, for a caller fitting the chart to a space (full screen). |
-| 387 | 1 | `void follow(TimeChart leader)` | Called with nothing when the window moves - a chart that shows the same window redraws. |
-| 390 | 1 | `void onSettled(Runnable r)` | What runs once the window has rested: the screen's redraw, for the readings that follow the window. |
-| 393 | 1 | `void onFullScreen(Runnable r)` | What the full-screen button does. |
-| 396 | 1 | `void withoutFullScreen()` | A big chart on another tab (0.7.35: Trade's rate over time) has no full-screen button: only City History lays a chart out full screen. |
-| 399 | 1 | `boolean isDragging()` | True while a drag is in hand on a chart that is on screen: a month's redraw waits for the release. |
-| 409 | 7 | `void letGo()` | Leaves the chart at rest (after the docs pass): no drag in hand, no overview edge held, no redraw waiting. |
-| 418 | 1 | `HBox lead()` | The slot at the left of the toolbar: the title and the date, in full screen. |
-| 421 | 21 | `void setFull(boolean full)` | Full screen or not: the button's words and icon. |
+| 394 | 5 | `double heightBesidePlot()` | The height everything but the plot takes, for a caller fitting the chart to a space (full screen): the chart's own preferred height at the width it is drawn at - the toolbar as its legend wraps there, the lanes, the o... |
+| 405 | 8 | `void fitTo(double width, double height)` | The chart drawn this wide and, all of it, this high (FW10): the width first, which sets how the legend wraps; then what stands beside the plot, measured at that wrap; then the plot whatever the height leaves - and one... |
+| 415 | 1 | `double plotHeight()` | The plot's height as the chart was last given it (setSize), for the harness that checks a fit. |
+| 418 | 5 | `int legendRows()` | How many rows the laid-out legend holds: the distinct layoutY of its visible chips (0 with none). |
+| 425 | 1 | `void follow(TimeChart leader)` | Called with nothing when the window moves - a chart that shows the same window redraws. |
+| 428 | 1 | `void onSettled(Runnable r)` | What runs once the window has rested: the screen's redraw, for the readings that follow the window. |
+| 431 | 1 | `void onFullScreen(Runnable r)` | What the full-screen button does. |
+| 434 | 1 | `void withoutFullScreen()` | A big chart on another tab (0.7.35: Trade's rate over time) has no full-screen button: only City History lays a chart out full screen. |
+| 437 | 1 | `boolean isDragging()` | True while a drag is in hand on a chart that is on screen: a month's redraw waits for the release. |
+| 447 | 7 | `void letGo()` | Leaves the chart at rest (after the docs pass): no drag in hand, no overview edge held, no redraw waiting. |
+| 456 | 1 | `HBox lead()` | The slot at the left of the toolbar: the title and the date, in full screen. |
+| 459 | 21 | `void setFull(boolean full)` | Full screen or not: the button's words and icon. |
 
-### THE LEGEND AND THE RANGES (lines 443-494)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 447 | 24 | `private void buildLegend()` |  |
-| 472 | 11 | `private void buildRanges()` |  |
-| 485 | 9 | `private void paintRanges()` | The range button lit is the one the window still shows exactly; a pan or a wheel lights none. |
-
-### THE GEOMETRY (lines 495-544)
+### THE LEGEND AND THE RANGES (lines 481-532)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 499 | 1 | `private int laneRows()` |  |
-| 501 | 5 | `private boolean anyOnRight()` |  |
-| 507 | 1 | `private double plotBottom()` |  |
-| 508 | 1 | `private double episodesTop()` |  |
-| 509 | 1 | `private double flagsTop()` |  |
-| 510 | 1 | `private double canvasHeight()` |  |
-| 517 | 1 | `private boolean flagLane()` | Whether the decision lane is drawn: always on the big chart, and on a small one handed a decision to show (0.7.38: the Bank's rates and Finances' debt and rate were handed theirs and drew none). |
-| 520 | 1 | `private double flagRow()` | The lane's height: the big chart's, or a small chart's. |
-| 522 | 16 | `private void layoutCanvases()` |  |
-| 539 | 1 | `private double plotW()` |  |
-| 541 | 1 | `private double xOf(double month)` |  |
-| 543 | 1 | `private double monthAt(double x)` |  |
+| 485 | 24 | `private void buildLegend()` |  |
+| 510 | 11 | `private void buildRanges()` |  |
+| 523 | 9 | `private void paintRanges()` | The range button lit is the one the window still shows exactly; a pan or a wheel lights none. |
 
-### THE SCALES, FIT TO WHAT IS SHOWN (lines 545-613)
+### THE GEOMETRY (lines 533-587)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 549 | 1 | `private boolean shown(Line l)` |  |
-| 552 | 11 | `private double plotted(Line l, int i, double[] own)` | A line's value at index i in the axis's units, or NaN: through toPlot, the log, or its own low-to-high. |
-| 565 | 5 | `private double[][] ownRanges()` | Each shown line's low and high in the window, for the squashed chart. |
-| 572 | 36 | `private ChartModel.Scale[] scales(double[][] own)` | The two axes' scales for the window: {left, right}; null for a side with nothing on it. |
-| 610 | 3 | `private double[] stackReach()` | What the stack's first three layers reach in the window, summed from zero (ChartModel.stackReach()). |
+| 537 | 1 | `private int laneRows()` |  |
+| 539 | 5 | `private boolean anyOnRight()` |  |
+| 545 | 1 | `private double plotBottom()` |  |
+| 546 | 1 | `private double episodesTop()` |  |
+| 547 | 1 | `private double flagsTop()` |  |
+| 548 | 1 | `private double canvasHeight()` |  |
+| 555 | 1 | `private boolean flagLane()` | Whether the decision lane is drawn: always on the big chart, and on a small one handed a decision to show (0.7.38: the Bank's rates and Finances' debt and rate were handed theirs and drew none). |
+| 558 | 1 | `private double flagRow()` | The lane's height: the big chart's, or a small chart's. |
+| 560 | 4 | `private void layoutCanvases()` |  |
+| 566 | 15 | `private void geometry()` | The canvases' sizes and the legend's wrap length for the width and the plot's height, without the draw (fitTo() measures between the two). |
+| 582 | 1 | `private double plotW()` |  |
+| 584 | 1 | `private double xOf(double month)` |  |
+| 586 | 1 | `private double monthAt(double x)` |  |
 
-### DRAWING (lines 614-1080)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 632 | 7 | `void draw()` | Draws the chart, its overview and its card, and lights the range button the window still matches. |
-| 644 | 5 | `private void fault(String what, RuntimeException e)` | A fault in this chart, written to the log with its stack trace the first time only. |
-| 655 | 15 | `private void skipFrame(RuntimeException e)` | A frame that failed, skipped: the state a drawing step saved put back (each saves one at a time, and a restore with nothing saved does nothing), the canvases cleared, the card hidden, and the fault logged. |
-| 676 | 9 | `private<T extends javafx.event.Event> javafx.event.EventHandler<T> guarded(javafx.event.EventHandler<T> h)` | A handler that cannot throw into JavaFX's event dispatch (0.7.50): what it throws is the chart's fault, logged once, and the event is dropped. |
-| 687 | 65 | `private void paint()` | One frame: draw()'s, which catches what it throws. |
-| 753 | 27 | `private void drawBands(GraphicsContext g, double bottom)` |  |
-| 785 | 17 | `private void drawMarks(GraphicsContext g, double bottom)` | The marks in view: a dashed hairline in the muted ink through the plot, and its word at the plot's top (0.7.45). |
-| 804 | 8 | `private ChartModel.Mark markAt(double x)` | The mark within MARK_REACH of the pointer, or null. |
-| 813 | 19 | `private void drawStack(GraphicsContext g, ChartModel.Scale s, double bottom)` |  |
-| 833 | 12 | `private void fillRun(GraphicsContext g, List<double[]> run)` |  |
-| 846 | 5 | `private void clipToPlot(GraphicsContext g)` |  |
-| 853 | 45 | `private boolean drawLines(GraphicsContext g, ChartModel.Scale[] scale, double[][] own, double bottom)` | The lines, each month a point, or each bucket of months one where they outnumber the pixels. |
-| 899 | 25 | `private void drawAxes(GraphicsContext g, ChartModel.Scale[] scale, double bottom)` |  |
-| 925 | 20 | `private void drawTime(GraphicsContext g, List<ChartModel.Tick> ticks, double bottom)` |  |
-| 952 | 3 | `public static String episodeColour(String kind)` | An episode's colour: a crisis or a depression is bad news, the rest are a watch - verdicts, which is what these are. |
-| 956 | 33 | `private void drawEpisodes(GraphicsContext g)` |  |
-| 996 | 8 | `static String flagColour(String kind)` | A flag's colour: the area its decision is about - money blue, people teal, building pink - and since 0.7.109 (batch Z2) zoning's in the ground's sand (Palette.ORE, the land office's colour for what the ground holds), ... |
-| 1005 | 3 | `private List<ChartModel.Cluster> clusters()` |  |
-| 1009 | 47 | `private void drawFlags(GraphicsContext g)` |  |
-| 1057 | 23 | `private void drawCrosshair(GraphicsContext g, ChartModel.Scale[] scale, double[][] own, double bottom)` |  |
-
-### the overview (lines 1081-1179)
+### THE SCALES, FIT TO WHAT IS SHOWN (lines 588-656)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1083 | 3 | `private double stripX(double month)` |  |
-| 1087 | 3 | `private double stripMonth(double x)` |  |
-| 1091 | 88 | `private void drawStrip()` |  |
+| 592 | 1 | `private boolean shown(Line l)` |  |
+| 595 | 11 | `private double plotted(Line l, int i, double[] own)` | A line's value at index i in the axis's units, or NaN: through toPlot, the log, or its own low-to-high. |
+| 608 | 5 | `private double[][] ownRanges()` | Each shown line's low and high in the window, for the squashed chart. |
+| 615 | 36 | `private ChartModel.Scale[] scales(double[][] own)` | The two axes' scales for the window: {left, right}; null for a side with nothing on it. |
+| 653 | 3 | `private double[] stackReach()` | What the stack's first three layers reach in the window, summed from zero (ChartModel.stackReach()). |
 
-### WHAT IS UNDER THE POINTER, AND THE CARD (lines 1180-1400)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1184 | 3 | `private boolean inPlot(double x, double y)` |  |
-| 1189 | 1 | `private Object hovered()` | The band, the episode or the flag under the pointer, or null. |
-| 1191 | 33 | `private Object itemAt(double x, double y)` |  |
-| 1226 | 34 | `private void fillCard(ChartModel.Scale[] scale, double[][] own)` | Fills the card for what is pinned, or else what is under the pointer; hides it when there is nothing. |
-| 1261 | 7 | `private static Label caption(String text, String colour)` |  |
-| 1269 | 7 | `private static Label head(String text)` |  |
-| 1277 | 19 | `private static HBox row(String colour, String name, String value)` |  |
-| 1298 | 1 | `void setYearly(int years)` | The folded years at the front of the months this chart is handed (0.7.55; HistorySave.yearlyPoints()). |
-| 1300 | 33 | `private void crosshairCard(YearBook.Band in)` |  |
-| 1334 | 17 | `private void bandCard(YearBook.Band b)` |  |
-| 1352 | 10 | `private void episodeCard(YearBook.Episode e)` |  |
-| 1366 | 32 | `private void flagCard(ChartModel.Cluster c)` |  |
-| 1399 | 1 | `private static String months(int n)` |  |
-
-### LISTENING: THE DRAG, THE WHEEL, THE CLICK, THE OVERVIEW (lines 1401-1532)
+### DRAWING (lines 657-1123)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1405 | 56 | `private void listen()` |  |
-| 1462 | 13 | `private void wheel(ScrollEvent e)` |  |
-| 1476 | 43 | `private void listenToStrip()` |  |
-| 1521 | 5 | `private void moved(boolean settled)` | The window moved: this chart, the charts that follow it, and - once it rests - the page. |
-| 1528 | 4 | `void unpin()` | Drops a pinned card: going into full screen and coming out of it, Esc's way out included (HistoryScreen.setChartFull()). |
+| 675 | 7 | `void draw()` | Draws the chart, its overview and its card, and lights the range button the window still matches. |
+| 687 | 5 | `private void fault(String what, RuntimeException e)` | A fault in this chart, written to the log with its stack trace the first time only. |
+| 698 | 15 | `private void skipFrame(RuntimeException e)` | A frame that failed, skipped: the state a drawing step saved put back (each saves one at a time, and a restore with nothing saved does nothing), the canvases cleared, the card hidden, and the fault logged. |
+| 719 | 9 | `private<T extends javafx.event.Event> javafx.event.EventHandler<T> guarded(javafx.event.EventHandler<T> h)` | A handler that cannot throw into JavaFX's event dispatch (0.7.50): what it throws is the chart's fault, logged once, and the event is dropped. |
+| 730 | 65 | `private void paint()` | One frame: draw()'s, which catches what it throws. |
+| 796 | 27 | `private void drawBands(GraphicsContext g, double bottom)` |  |
+| 828 | 17 | `private void drawMarks(GraphicsContext g, double bottom)` | The marks in view: a dashed hairline in the muted ink through the plot, and its word at the plot's top (0.7.45). |
+| 847 | 8 | `private ChartModel.Mark markAt(double x)` | The mark within MARK_REACH of the pointer, or null. |
+| 856 | 19 | `private void drawStack(GraphicsContext g, ChartModel.Scale s, double bottom)` |  |
+| 876 | 12 | `private void fillRun(GraphicsContext g, List<double[]> run)` |  |
+| 889 | 5 | `private void clipToPlot(GraphicsContext g)` |  |
+| 896 | 45 | `private boolean drawLines(GraphicsContext g, ChartModel.Scale[] scale, double[][] own, double bottom)` | The lines, each month a point, or each bucket of months one where they outnumber the pixels. |
+| 942 | 25 | `private void drawAxes(GraphicsContext g, ChartModel.Scale[] scale, double bottom)` |  |
+| 968 | 20 | `private void drawTime(GraphicsContext g, List<ChartModel.Tick> ticks, double bottom)` |  |
+| 995 | 3 | `public static String episodeColour(String kind)` | An episode's colour: a crisis or a depression is bad news, the rest are a watch - verdicts, which is what these are. |
+| 999 | 33 | `private void drawEpisodes(GraphicsContext g)` |  |
+| 1039 | 8 | `static String flagColour(String kind)` | A flag's colour: the area its decision is about - money blue, people teal, building pink - and since 0.7.109 (batch Z2) zoning's in the ground's sand (Palette.ORE, the land office's colour for what the ground holds), ... |
+| 1048 | 3 | `private List<ChartModel.Cluster> clusters()` |  |
+| 1052 | 47 | `private void drawFlags(GraphicsContext g)` |  |
+| 1100 | 23 | `private void drawCrosshair(GraphicsContext g, ChartModel.Scale[] scale, double[][] own, double bottom)` |  |
 
-### small helpers (lines 1533-1560)
+### the overview (lines 1124-1222)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1538 | 5 | `static double textWidth(String s, Font f)` |  |
-| 1545 | 9 | `static String fit(String text, double room, Font f)` | The text, cut with an ellipsis to fit `room` pixels; empty when not even a few letters fit. |
-| 1555 | 5 | `private static String trim(double v)` |  |
+| 1126 | 3 | `private double stripX(double month)` |  |
+| 1130 | 3 | `private double stripMonth(double x)` |  |
+| 1134 | 88 | `private void drawStrip()` |  |
+
+### WHAT IS UNDER THE POINTER, AND THE CARD (lines 1223-1443)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1227 | 3 | `private boolean inPlot(double x, double y)` |  |
+| 1232 | 1 | `private Object hovered()` | The band, the episode or the flag under the pointer, or null. |
+| 1234 | 33 | `private Object itemAt(double x, double y)` |  |
+| 1269 | 34 | `private void fillCard(ChartModel.Scale[] scale, double[][] own)` | Fills the card for what is pinned, or else what is under the pointer; hides it when there is nothing. |
+| 1304 | 7 | `private static Label caption(String text, String colour)` |  |
+| 1312 | 7 | `private static Label head(String text)` |  |
+| 1320 | 19 | `private static HBox row(String colour, String name, String value)` |  |
+| 1341 | 1 | `void setYearly(int years)` | The folded years at the front of the months this chart is handed (0.7.55; HistorySave.yearlyPoints()). |
+| 1343 | 33 | `private void crosshairCard(YearBook.Band in)` |  |
+| 1377 | 17 | `private void bandCard(YearBook.Band b)` |  |
+| 1395 | 10 | `private void episodeCard(YearBook.Episode e)` |  |
+| 1409 | 32 | `private void flagCard(ChartModel.Cluster c)` |  |
+| 1442 | 1 | `private static String months(int n)` |  |
+
+### LISTENING: THE DRAG, THE WHEEL, THE CLICK, THE OVERVIEW (lines 1444-1575)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1448 | 56 | `private void listen()` |  |
+| 1505 | 13 | `private void wheel(ScrollEvent e)` |  |
+| 1519 | 43 | `private void listenToStrip()` |  |
+| 1564 | 5 | `private void moved(boolean settled)` | The window moved: this chart, the charts that follow it, and - once it rests - the page. |
+| 1571 | 4 | `void unpin()` | Drops a pinned card: going into full screen and coming out of it, Esc's way out included (HistoryScreen.setChartFull()). |
+
+### small helpers (lines 1576-1603)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1581 | 5 | `static double textWidth(String s, Font f)` |  |
+| 1588 | 9 | `static String fit(String text, double room, Font f)` | The text, cut with an ellipsis to fit `room` pixels; empty when not even a few letters fit. |
+| 1598 | 5 | `private static String trim(double v)` |  |
 
