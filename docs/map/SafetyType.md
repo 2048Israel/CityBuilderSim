@@ -1,4 +1,4 @@
-# SafetyType.java - 68 lines · 4 methods · 0 constants · model
+# SafetyType.java - 72 lines · 4 methods · 0 constants · model
 
 `ham/citybuildersim/SafetyType.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -46,9 +46,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 25 | 44 | **type** `public enum SafetyType` | What a safety building does: police, or prison cells. |
+| 25 | 48 | **type** `public enum SafetyType` | What a safety building does: police, or prison cells. |
 | 39 | 4 | `SafetyType(String label, String unit)` |  |
 | 44 | 1 | `public String getLabel()` |  |
 | 47 | 1 | `public String getUnit()` | What one unit of capacity is: "officers", "cells". |
-| 62 | 6 | `public double foundingCapacity()` | What the city has before it builds anything. |
+| 66 | 6 | `public double foundingCapacity()` | What the city has before it builds anything. |
 

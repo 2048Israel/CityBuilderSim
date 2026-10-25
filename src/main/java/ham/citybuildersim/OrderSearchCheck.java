@@ -72,12 +72,33 @@ public class OrderSearchCheck {
      * past them, the deepest by 71,823. At 0.8.37 (PT1-M4, the copy's D$ floating
      * as the city's does: ScaleCheck.scale()): 53 judged, 38 refused; the twin 37
      * judged, 13 trimmed, 23 past the counted slices, the deepest by 100,840.
+     * At FW9 (2026-10-25: the copy a faithful thousand times over, with the
+     * money state and the founding endowments scaled): the copy 99 judged,
+     * 40 refused, 21 past the counted slices; the twin 83 judged and none
+     * trimmed at the policy rate its city holds, and at TWIN_RATE 90 judged,
+     * 2 trimmed, both past the counted slices, the deepest by 172.
      */
     static final int COPY_MONTH = 400;
     /** ...how many times over it is copied... */
     static final long COPY_TIMES = 1000;
     /** ...and the months the copy plays. */
     static final int COPY_MONTHS = 24;
+
+    /**
+     * The policy rate the twin's months are held at (FW9, 2026-10-25). The
+     * twin's deep trims used to come of its copy being a bad one: the copy
+     * left its power, its water and its money at one town's size, needed two
+     * billion units and ordered a hundred thousand buildings in one order,
+     * far past any till.
+     * A faithful copy orders as its city does, and the city's orders - on the
+     * rule to 0.7.112 too - are built whole or refused (22 judged, 17 refused,
+     * none trimmed): an order's earnings are over or under the interest on
+     * what it borrows, and a till that covers the order or not at all is not
+     * a line a trim stops at. So the interest test is made to bind: at 35% a
+     * year the twin trims one order, by 29 slices, at 40% two, the deepest by
+     * 172 (the long run's dear stretch, DEAR_RATE, trims none: 0 of 86).
+     */
+    static final double TWIN_RATE = .40;
 
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
@@ -190,8 +211,14 @@ public class OrderSearchCheck {
         twin.setOrderGate(ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_BORROWING);
         Watch wt = new Watch(twin);
         twin.watchOrders(wt);
-        quietly(() -> twin.simulateMonths(COPY_MONTHS));
-        out.printf("      the twin on the rule to 0.7.112: month %d, %,d people%n", twin.getMonth(), twin.getPopulationManager().getPopulation());
+        quietly(() -> {
+            for (int i = 0; i < COPY_MONTHS; i++) {
+                twin.getDebtManager().takeTheDial(TWIN_RATE);
+                twin.simulateMonths(1);
+            }
+        });
+        out.printf("      the twin on the rule to 0.7.112, at a %.0f%% policy rate: month %d, %,d people%n", TWIN_RATE * 100,
+                twin.getMonth(), twin.getPopulationManager().getPopulation());
         wt.report("the twin");
         assertTrue("fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest",
                 wt.largestInvested > Game.COUNTDOWN_SLICES && wt.trimmed > 0);

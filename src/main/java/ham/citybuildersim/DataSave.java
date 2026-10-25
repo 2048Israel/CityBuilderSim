@@ -114,6 +114,11 @@ public class DataSave implements Cloneable {
     /** ...and who placed each part of it, with its material still to draw and the allowance priced in for it (0.7.19). Absent on an older save - see Game, OLD CONTRACTS. */
     private java.util.List<BuildingManager.ContractRecord> contractRecords;
     /**
+     * How many founding endowments the city holds (FW9; BuildingManager.getFoundingEndowments()): 1 for every city a player founds, K for a
+     * harness's copy of one K times over. Boxed, so a save without it reads as 1 (getFoundingEndowments()).
+     */
+    private Long foundingEndowments;
+    /**
      * The player's hand on the queue (0.7.22; ConstructionControl): the
      * city's order of its own sites, the rushes and their months on
      * overtime, the cancels waiting for the month's end, the stopped
@@ -1038,6 +1043,10 @@ public class DataSave implements Cloneable {
     public void setContractRecords(java.util.List<BuildingManager.ContractRecord> records) { this.contractRecords = records; }
     /** Null on a save from before 0.7.19. */
     public java.util.List<BuildingManager.ContractRecord> getContractRecords() { return contractRecords; }
+
+    public void setFoundingEndowments(long endowments) { this.foundingEndowments = endowments; }
+    /** The founding endowments as saved, or 1 on a save without the figure (FW9). */
+    public long getFoundingEndowments() { return foundingEndowments != null ? foundingEndowments : 1L; }
 
     // UP1: a copy - toState() is the control's own live state.
     public void setConstructionControl(ConstructionControl.State state) { this.constructionControl = state == null ? null : state.copy(); }

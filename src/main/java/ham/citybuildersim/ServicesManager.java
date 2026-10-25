@@ -59,6 +59,9 @@ public class ServicesManager {
 
     private void updateProduction() {
 
+        // The grid and the wells the city was founded with, one set for each founding endowment it holds (FW9, 2026-10-25).
+        utilitiesHandler.setFoundingEndowments(buildingManager.getFoundingEndowments());
+
         // electricity
         updateByCategoryHandlerDouble(
                 BuildingType.ELECTRICITY,

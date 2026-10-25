@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**143 harness files, 14,754 labelled assertions.** AllChecks runs 143 of them.
+**143 harness files, 14,757 labelled assertions.** AllChecks runs 143 of them.
 
 ## Which harnesses read which class
 
@@ -10,7 +10,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 
 | class | harnesses that mention it |
 |---|---|
-| [AgeBand](map/AgeBand.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck |
+| [AgeBand](map/AgeBand.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, LongPlaytest, ZoningCheck |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DeskCheck, FloatLinkCheck, HoldersCheck, NewGameCheck, RestructureCheck, SaveFileCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
@@ -65,7 +65,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, IndustryViewCheck |
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, MoneyCheck, ReadPathCheck |
 | [CorporateBond](map/CorporateBond.md) | BondCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
-| [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest |
+| [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest, ScaleCheck |
 | [Currency](map/Currency.md) | DenominationCheck, HistoryCheck, LandClassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | EarthTerrainCheck, MapCheck, PopulationCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurveCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SectorStatementCheck, TreasuryCheck |
@@ -84,8 +84,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthTerrain](map/EarthTerrain.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
-| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck |
-| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorStatementCheck, WoodProductsCheck |
+| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck, ScaleCheck |
+| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck |
@@ -130,7 +130,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [HistoryScreen](map/HistoryScreen.md) | **none** |
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyPreviewCheck, ReadPathCheck |
-| [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BondCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, WoodProductsCheck |
+| [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BondCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, WoodProductsCheck |
 | [Icons](map/Icons.md) | **none** |
 | [Inbox](map/Inbox.md) | InboxCheck, PlaytestFixCheck |
 | [IndustryPicture](map/IndustryPicture.md) | IndustryViewCheck |
@@ -170,7 +170,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Markets](map/Markets.md) | BooksCheck, BuildMenuCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, RailDepotCheck, WoodProductsCheck |
 | [Materials](map/Materials.md) | **none** |
 | [MediumTermBond](map/MediumTermBond.md) | AuctionCheck, BankCheck, CentralBankCheck, DeskCheck, MoneyCheck, RestructureCheck, TreasuryCheck |
-| [Migration](map/Migration.md) | CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck, ReadPathCheck, SaveFileCheck |
+| [Migration](map/Migration.md) | CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck |
 | [MiniMap](map/MiniMap.md) | **none** |
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, ConservationCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PlanCheck, RailDepotCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
@@ -190,7 +190,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [OrphanHousehold](map/OrphanHousehold.md) | OutsideCheck |
 | [OutwardInvestment](map/OutwardInvestment.md) | AuctionCheck, BondCheck, BuybackCheck, CapitalFlowCheck, ExchangeCheck, HoldersCheck, LongPlaytest |
 | [Palette](map/Palette.md) | **none** |
-| [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, TradeCostCheck, WoodProductsCheck |
+| [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, TradeCostCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, GroceryCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
@@ -199,7 +199,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, PopulationCheck, SaveFileCheck, ScaleCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MainLineCheck, MapCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
-| [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck |
+| [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck, ScaleCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [ProcessingSector](map/ProcessingSector.md) | BuildCardCheck, CementConcreteCheck, CopperRefiningCheck, HaulageCheck, IndustryViewCheck, MaterialsCheck, WoodProductsCheck |
 | [Quarrying](map/Quarrying.md) | BuildCardCheck, BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
@@ -228,13 +228,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, HomeRailCheck, RailCheck, SectorBooksCheck, TruckCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
 | [ShipShapes](map/ShipShapes.md) | **none** |
 | [ShortTermTBill](map/ShortTermTBill.md) | AuctionCheck, BankCheck, CentralBankCheck, DeskCheck, FloatLinkCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
-| [Sickness](map/Sickness.md) | LongPlaytest, PopulationCheck, ReadPathCheck, SicknessCheck |
+| [Sickness](map/Sickness.md) | LongPlaytest, PopulationCheck, ReadPathCheck, ScaleCheck, SicknessCheck |
 | [SimulationEngine](map/SimulationEngine.md) | **none** |
 | [SitePreparation](map/SitePreparation.md) | LandClassCheck, RunWorksCheck, SlopeCheck |
 | [SlopeRenders](map/SlopeRenders.md) | **none** |
@@ -273,7 +273,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
 | [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, ZoningViewCheck |
 | [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, LongPlaytest, MaterialsCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
-| [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ZoningCheck |
+| [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ScaleCheck, ZoningCheck |
 | [Where](map/Where.md) | **none** |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
@@ -13949,37 +13949,37 @@ _(this harness does not label its checks through a helper - it prints its findin
 > doubles down and halves (Game, THE LARGEST SLICE, WITHOUT COUNTING TO IT).
 > ...
 
-- **L117 1. a long run, every order watched**
-  - L142 the long run
-  - L143 fixture: the run sized orders, and judged them on their interest, refusing some
-  - L145 fixture: ...and bought on a mortgage, trimmed and refused some
-  - L147 the long run
-- **L149 2. the same city, a thousand times over**
-  - L162 the copy loads
-  - L167 the copy
-  - L168 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
-  - L170 the copy
-  - L174 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
-  - L189 the twin loads, at the copy's month
-  - L195 the twin
-  - L196 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
-  - L198 fixture: ...some by more than the counted slices, so the search found them
-  - L199 the twin
-  - L200 fixture: ...and the twin's too
-- **L269 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
-  - L302 on a test that holds on a run from one, the search finds the countdown's slice every time
-  - L303 ...and never asks more than deskCallsMost() times
-  - L327 fixture: some were decided inside the counted slices, and some below them
-  - L329 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
-  - L330 ...and below them it finds a slice that passes with the next one up failing
-- **L336 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
-  - L379 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
-  - L381 every order on the grid is the count's: its size, what trimmed it and the facts for one
-  - L382 ...reading fewer costs than the count
-  - L460 every order's size in
-  - L461 every trim and refusal in
-  - L462 every mortgage in
-  - L463 no order in
+- **L138 1. a long run, every order watched**
+  - L163 the long run
+  - L164 fixture: the run sized orders, and judged them on their interest, refusing some
+  - L166 fixture: ...and bought on a mortgage, trimmed and refused some
+  - L168 the long run
+- **L170 2. the same city, a thousand times over**
+  - L183 the copy loads
+  - L188 the copy
+  - L189 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
+  - L191 the copy
+  - L195 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
+  - L210 the twin loads, at the copy's month
+  - L222 the twin
+  - L223 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
+  - L225 fixture: ...some by more than the counted slices, so the search found them
+  - L226 the twin
+  - L227 fixture: ...and the twin's too
+- **L296 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
+  - L329 on a test that holds on a run from one, the search finds the countdown's slice every time
+  - L330 ...and never asks more than deskCallsMost() times
+  - L354 fixture: some were decided inside the counted slices, and some below them
+  - L356 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
+  - L357 ...and below them it finds a slice that passes with the next one up failing
+- **L363 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
+  - L406 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
+  - L408 every order on the grid is the count's: its size, what trimmed it and the facts for one
+  - L409 ...reading fewer costs than the count
+  - L487 every order's size in
+  - L488 every trim and refusal in
+  - L489 every mortgage in
+  - L490 no order in
 
 ## OutsideCheck.java - 104 labelled assertions
 
@@ -17002,7 +17002,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1384 ...two months on, its history ends at the city's
   - L1385 ...with no month missing (
 
-## ScaleCheck.java - 83 labelled assertions
+## ScaleCheck.java - 86 labelled assertions
 
 > A city past 2^31 people (0.7.53): its counts read back whole, its posts,
 > doors and household places add up to the last one, and a save gives them
@@ -17018,99 +17018,103 @@ _(this harness does not label its checks through a helper - it prints its findin
 > model, the save, the history and the screens.
 > ...
 
-- **L315 1. the fixture, and its copy K times over**
-  - L352 fixture: the founded city has people, posts and homes
-  - L354 fixture: K times its people passes 2^31
-- **L360 2. the counts read back whole**
-  - L364 the slot header of a save past 2^31 people reads (an int could not parse it)
-  - L365 ...and its population is K times the founded city's
-  - L371 the copy loads
-  - L372 its population is K times the founded city's, past 2^31
-  - L373 ...its workforce too, not stuck at 2,147,483,647
-  - L374 ...both past the int ceiling
-  - L387 its ground is K times the founded city's
-  - L388 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
-  - L399 ...its iron as the founded city's: sites and tonnes
-- **L403 3. posts, doors and household places**
-  - L405 every post is K times the founded city's
-  - L406 every home is K times the founded city's
-  - L407 the household places are K times the founded city's, past the city's own 100
-- **L411 4. three months at that size**
-  - L420 the months ran
-  - L421 the population is still past 2^31
-  - L422 ...and is the pyramid's, rounded once
-  - L423 the workforce is still past 2^31
-  - L426 the history's last population is the city's
-  - L427 ...its workforce
-  - L428 ...its posts
-  - L429 ...the people out of work
-  - L430 ...and its homes
-- **L432 5. the save round-trips them**
-  - L434 the city past 2^31 saves
-  - L436 its header reads
-  - L437 ...with the population it was saved with
-  - L443 it loads at the month it was saved
-  - L444 the population came back
-  - L445 ...the workforce
-  - L446 ...the posts
-  - L447 ...the posts filled
-  - L448 ...the people out of work
-  - L449 ...the homes
-  - L450 ...the household places
-  - L452 ...and the history, month for month
-  - L459 the loaded city plays its next month to the same population
-  - L461 ...the same workforce
-  - L462 ...and the same people out of work
-- **L464 6. the sectors free, at 5 and 10 billion**
-  - L479 fixture: the city is growing - more people than a year before
-  - L483 fixture: ...with ground free for a home
-  - L487 fixture: ...and its own rents price no migrant out in the months its copies are read against
-- **L491 7. money at that size reads**
-- **L494 8. the audit's floor at size**
-- **L506 the audit's floor is never under the figures' own step (0.7.63)**
-  - L516 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
-  - L517 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
-  - L521 ...so the cash-flow statement K's copy missed on rounding alone is within it
-  - L527 a cent never moves: a cent or a part in a trillion, at every size, as before
-  - L528 ...and a size that is not a number keeps the floor alone
-- **L534 money at that size reads in its own unit**
-  - L536 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
-  - L537 ...a thousand quadrillion and more is grouped
-  - L538 ...a negative one keeps its sign
-  - L539 ...and a trillion still reads as one
-  - L541 cash() prints every whole dollar a double holds, as before
-  - L543 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
-  - L544 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
-  - L603 the copy loads
-  - L639 every month the population is past 2^31, whole, and the pyramid's rounded once
-  - L640 ...and the posts, the doors and the household places add up exactly, every month
-  - L649 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
-  - L652 ...and its businesses pay the city's price for it
-  - L662 ...and it builds: more homes at the end than at the start
-  - L663 fixture: the free copy ordered - an order sized from more than a million needed,
-  - L796 the month's money audit closes, to the cent (BankCheck and four more)
-  - L805 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
-  - L811 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
-  - L816 the money the audit saw made is the central bank's (LongPlaytest)
-  - L820 M0 moved by the money made (LongPlaytest, already relative)
-  - L828 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
-  - L833 the treasury's window opens where it closed (TreasuryCheck)
-  - L837 the treasury's closing balance is its cash (TreasuryCheck)
-  - L843 the treasury's bridge foots (TreasuryCheck)
-  - L861 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
-  - L864 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
-  - L870 the history's net income is the sector books', to the cent (HistoryCheck)
-  - L877 the history's bank figures are the bank's own, to the cent (HistoryCheck)
-  - L890 ...
-  - L928 no order sized read more waits than one a bit of what it needed, and one more
-  - L929 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
-  - L951 every post,
-  - L954 ...the posts on offer by job type add up to the total
-  - L955 ...and the total is every post less those withheld
-  - L960 every home is the stacks' quantity times their doors
-  - L961 ...and the homes by size add up to it
-  - L963 ...and the landlords' studio and family doors to it too
-  - L965 the household places are the city's 100 and the stacks' places
+- **L375 1. the fixture, and its copy K times over**
+  - L412 fixture: the founded city has people, posts and homes
+  - L414 fixture: K times its people passes 2^31
+- **L420 2. the counts read back whole**
+  - L424 the slot header of a save past 2^31 people reads (an int could not parse it)
+  - L425 ...and its population is K times the founded city's
+  - L431 the copy loads
+  - L432 its population is K times the founded city's, past 2^31
+  - L433 ...its workforce too, not stuck at 2,147,483,647
+  - L434 ...both past the int ceiling
+  - L447 its ground is K times the founded city's
+  - L448 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
+  - L459 ...its iron as the founded city's: sites and tonnes
+- **L463 3. posts, doors and household places**
+  - L465 every post is K times the founded city's
+  - L466 every home is K times the founded city's
+  - L467 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
+  - L469 ...because the copy holds K founding endowments where the founded city holds one
+- **L473 4. three months at that size**
+  - L482 the months ran
+  - L483 the population is still past 2^31
+  - L484 ...and is the pyramid's, rounded once
+  - L485 the workforce is still past 2^31
+  - L488 the history's last population is the city's
+  - L489 ...its workforce
+  - L490 ...its posts
+  - L491 ...the people out of work
+  - L492 ...and its homes
+- **L494 5. the save round-trips them**
+  - L496 the city past 2^31 saves
+  - L498 its header reads
+  - L499 ...with the population it was saved with
+  - L505 it loads at the month it was saved
+  - L506 the population came back
+  - L507 ...the workforce
+  - L508 ...the posts
+  - L509 ...the posts filled
+  - L510 ...the people out of work
+  - L511 ...the homes
+  - L512 ...the household places
+  - L513 ...the founding endowments it holds (FW9)
+  - L516 ...and the history, month for month
+  - L523 the loaded city plays its next month to the same population
+  - L525 ...the same workforce
+  - L526 ...and the same people out of work
+- **L528 6. the sectors free, at 5 and 10 billion**
+  - L543 fixture: the city is growing - more people than a year before
+  - L547 fixture: ...with ground free for a home
+  - L551 fixture: ...and its own rents price no migrant out in the months its copies are read against
+- **L555 7. money at that size reads**
+- **L558 8. the audit's floor at size**
+- **L561 9. a copy tracks its city month by month**
+- **L573 the audit's floor is never under the figures' own step (0.7.63)**
+  - L583 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
+  - L584 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
+  - L588 ...so the cash-flow statement K's copy missed on rounding alone is within it
+  - L594 a cent never moves: a cent or a part in a trillion, at every size, as before
+  - L595 ...and a size that is not a number keeps the floor alone
+- **L601 money at that size reads in its own unit**
+  - L603 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
+  - L604 ...a thousand quadrillion and more is grouped
+  - L605 ...a negative one keeps its sign
+  - L606 ...and a trillion still reads as one
+  - L608 cash() prints every whole dollar a double holds, as before
+  - L610 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
+  - L611 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
+  - L700 the copy loads
+  - L736 every month the population is past 2^31, whole, and the pyramid's rounded once
+  - L737 ...and the posts, the doors and the household places add up exactly, every month
+  - L746 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
+  - L749 ...and its businesses pay the city's price for it
+  - L759 ...and it builds: more homes at the end than at the start
+  - L760 fixture: the free copy ordered - an order sized from more than a million needed,
+  - L808 the copy at K =
+  - L1013 the month's money audit closes, to the cent (BankCheck and four more)
+  - L1022 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
+  - L1028 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
+  - L1033 the money the audit saw made is the central bank's (LongPlaytest)
+  - L1037 M0 moved by the money made (LongPlaytest, already relative)
+  - L1045 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
+  - L1050 the treasury's window opens where it closed (TreasuryCheck)
+  - L1054 the treasury's closing balance is its cash (TreasuryCheck)
+  - L1060 the treasury's bridge foots (TreasuryCheck)
+  - L1078 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
+  - L1081 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
+  - L1087 the history's net income is the sector books', to the cent (HistoryCheck)
+  - L1094 the history's bank figures are the bank's own, to the cent (HistoryCheck)
+  - L1107 ...
+  - L1145 no order sized read more waits than one a bit of what it needed, and one more
+  - L1146 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
+  - L1168 every post,
+  - L1171 ...the posts on offer by job type add up to the total
+  - L1172 ...and the total is every post less those withheld
+  - L1177 every home is the stacks' quantity times their doors
+  - L1178 ...and the homes by size add up to it
+  - L1180 ...and the landlords' studio and family doors to it too
+  - L1182 the household places are the city's hundred for each founding endowment and the stacks' places
 
 ## SectorBooksCheck.java - 16 labelled assertions
 

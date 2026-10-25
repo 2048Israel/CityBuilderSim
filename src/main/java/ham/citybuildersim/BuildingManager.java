@@ -22,6 +22,19 @@ public class BuildingManager {
     private List<BuildingsStacks> stacks;
     private List<BuildingInstance> instances;
     private JobType[] jobTypes = JobType.values();
+    /**
+     * How many founding endowments the city holds (FW9, 2026-10-25): the
+     * hundred household places, the doctor, the nursery, the almshouse, the
+     * churchyard and the constabulary a city is founded with
+     * (getTotalHouseCapacity(), Healthcare.foundingCapacity(),
+     * SafetyType.foundingCapacity()). One for every city a player founds. A
+     * harness's copy of a city K times over (ScaleCheck.scale()) holds K, as
+     * it holds K times the buildings: an endowment that stayed one city's was
+     * a K-th of what the copy's people were founded on, and the copy lost its
+     * people to it. Saved (DataSave.foundingEndowments); a save without it
+     * holds one.
+     */
+    private long foundingEndowments = 1;
     private int constructionMaterials;
     /**
      * What a unit of construction material costs, in the city's money.
@@ -6722,10 +6735,17 @@ public class BuildingManager {
         return homes;
     }
 
+    /** How many founding endowments the city holds: 1 for a founded city, K for a harness's copy K times over (FW9; see the field). */
+    public long getFoundingEndowments() { return foundingEndowments; }
+
+    /** The load's (and ScaleCheck's) way to hold K endowments: the city's hundred places and its founding care and police, K times over. */
+    public void setFoundingEndowments(long endowments) { this.foundingEndowments = Math.max(1, endowments); }
+
+    /** The household places: the founding hundred (per endowment, FW9) and every residential building's. */
     public long getTotalHouseCapacity() {
         // was a hand-rolled loop over RESIDENTIAL stacks summing quantity*capacity;
         // that's exactly what getTotalByCategoryInteger already does.
-        return 100 + getTotalByCategoryInteger(BuildingType.RESIDENTIAL, BuildingsTemplate::getCapacity);
+        return 100 * foundingEndowments + getTotalByCategoryInteger(BuildingType.RESIDENTIAL, BuildingsTemplate::getCapacity);
     }
 
     /*Commercial Methods
@@ -7122,14 +7142,19 @@ public class BuildingManager {
      * Keyed on the care type rather than the category, so a future non-HEALTHCARE
      * building that happens to provide care (a company clinic, say) counts
      * without this method changing.
+     *
+     * The founding endowment it starts from is one for each the city holds
+     * (getFoundingEndowments(), FW9): one for a founded city, K for a copy.
      */
     public double getCareCapacity(CareType care) {
         if (care == null || care == CareType.NONE) return 0;
 
         // The doctor, the nursery, the almshouse and the churchyard the city was
         // founded with, exactly as getTotalHouseCapacity() starts at 100 and the
-        // road network at 400. See Healthcare.foundingCapacity().
-        double total = Healthcare.foundingCapacity(care);
+        // road network at 400, one set for each founding endowment the city holds
+        // (FW9: one for a founded city, K for a copy K times over). See
+        // Healthcare.foundingCapacity().
+        double total = Healthcare.foundingCapacity(care) * foundingEndowments;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getCare() == care) {
                 total += stack.getQuantity() * (double) stack.getBuilding().getCapacity();
@@ -7153,6 +7178,9 @@ public class BuildingManager {
      * says. A building with no jobs at all counts as fully staffed, which is the
      * right answer for a cemetery that needs nobody.
      *
+     * The founding endowment is undiscounted and one for each the city holds
+     * (getFoundingEndowments(), FW9).
+     *
      * @param jobFillRate the per-JobType fill, from PopulationManager
      */
     public double getStaffedCareCapacity(CareType care, double[] jobFillRate) {
@@ -7160,8 +7188,9 @@ public class BuildingManager {
         if (jobFillRate == null) return getCareCapacity(care);
 
         // Undiscounted, because nobody is on the payroll for it - the founding
-        // endowment is not a building and has no fill rate to be short of.
-        double total = Healthcare.foundingCapacity(care);
+        // endowment is not a building and has no fill rate to be short of. One
+        // for each endowment the city holds (FW9).
+        double total = Healthcare.foundingCapacity(care) * foundingEndowments;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             if (t.getCare() != care) continue;
@@ -7225,13 +7254,14 @@ public class BuildingManager {
      * police station with nobody on shift patrols nothing, and a jail with no
      * guards holds nobody. Per building, from its own job mix. The founding
      * constabulary is not a building and is not discounted - see
-     * SafetyType.foundingCapacity().
+     * SafetyType.foundingCapacity() - and the city holds one for each founding
+     * endowment (FW9: one for a founded city, K for a copy K times over).
      *
      * FINISHED ONLY. A half-built jail holds nobody.
      */
     public double getStaffedSafetyCapacity(SafetyType safety, double[] jobFillRate) {
         if (safety == null || safety == SafetyType.NONE) return 0;
-        double total = safety.foundingCapacity();
+        double total = safety.foundingCapacity() * foundingEndowments;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             if (t.getSafety() != safety) continue;
@@ -7250,10 +7280,10 @@ public class BuildingManager {
         return total;
     }
 
-    /** ...and without the discount: what the buildings would hold, the founding constabulary included. */
+    /** ...and without the discount: what the buildings would hold, the founding constabulary included (one for each founding endowment, FW9). */
     public double getSafetyCapacity(SafetyType safety) {
         if (safety == null || safety == SafetyType.NONE) return 0;
-        double total = safety.foundingCapacity();
+        double total = safety.foundingCapacity() * foundingEndowments;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getSafety() == safety) {
                 total += stack.getQuantity() * (double) stack.getBuilding().getCapacity();
