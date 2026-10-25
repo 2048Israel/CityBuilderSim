@@ -46,6 +46,11 @@ import java.util.Set;
  *      statement's land revaluation is last month's area on each class times that class's price change; a save keeps
  *      the land by class and one without it reads the one price; redenominating rescales its prices. On a flat city
  *      (6b) every one of them is the old one-price figure, to the bit, and there is no note.
+ *   7. THE SCREENS' WORDS ARE THE MODEL'S (slice C, spec 5.3). LandClassView's money words are ui.Money's to the digit; the land
+ *      office's lines are the getters' prices in the screens' money, a line for each class the city owns or the shelf offers
+ *      and none for a flat city and a flat shelf, the foothill's line saying how it comes to its price; an offer's line
+ *      is its relief's figures in its dry ground's unit with the buildable ground and the price with the foothill prepared,
+ *      empty for an offer all flat; note 11's lines are the books' areas, prices and values, one for each class held.
  *
  * WHY. ET1 gave every plot a relief and ET2 made buildings stand by it, so a city on hills owns ground that is worth
  * less than the valley floor and was still priced as if it were not: its offers cost as much a square foot on a
@@ -119,6 +124,7 @@ public class LandClassCheck {
         aBusinessBuysEachClass();
         flatWorldsUnchanged();
         booksByClass();
+        screensWords();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1123,5 +1129,221 @@ public class LandClassCheck {
         check("with a zone, the roll's land is the old expression, to the bit", inZone > 0 && same(em.assessedLandValueOf(re), old));
         lm.getZoning().remove(Sectors.REAL_ESTATE);
         check("the ground price the investors read for one more house is the going price, as it was", same(em.groundPriceFor(house), Math.max(0, em.getLandPricePerSqFt())));
+    }
+
+    /* =====================================================================
+       7. THE SCREENS' WORDS ARE THE MODEL'S (slice C, spec 5.3)
+       ===================================================================== */
+
+    /** The city's money's mark, then a ground price a square metre as the screens write it (LandScreen.local()): "D$41.20". */
+    static String localWords(Game g, double thousandsPerSqFt) {
+        return ham.citybuildersim.ui.Money.marked(g.getCurrency().qualifiedSymbol(), ham.citybuildersim.ui.Money.groundPrice(thousandsPerSqFt));
+    }
+
+    /** ...in the world's (LandScreen.dollars()): "US$3.10". */
+    static String usdWords(double thousandsPerSqFt) {
+        return ham.citybuildersim.ui.Money.marked(Currency.FOREIGN_SYMBOL, ham.citybuildersim.ui.Money.groundPrice(thousandsPerSqFt));
+    }
+
+    /** The office's lines for a city as the screens' own money words write them, from the getters alone: flat first, then the foothill's and the steep's where asked. */
+    static List<String> expectedOffice(Game g, boolean foothill, boolean steep, String foothillHow) {
+        LandManager lm = g.getLandManager();
+        LandMarket m = lm.getMarket();
+        List<String> want = new ArrayList<>();
+        want.add("Flat: " + localWords(g, lm.getPricePerSqFt()) + " a m² to a business · the office asks " + usdWords(m.getFlatUsdPerSqFt()) + " a m²");
+        if (foothill) want.add("Foothill: " + localWords(g, lm.getFoothillPricePerSqFt()) + " a m² (" + foothillHow + ") · " + usdWords(m.getFoothillUsdPerSqFt()) + " a m²");
+        if (steep) want.add("Steep (only mines, quarries and wells): " + localWords(g, lm.getSteepPricePerSqFt()) + " a m² · " + usdWords(m.getSteepUsdPerSqFt()) + " a m²");
+        return want;
+    }
+
+    static void screensWords() {
+        out.println("\n--- 7. the screens' words are the model's: the office's prices by class, an offer's ground and note 11 ---");
+        moneyWordsAreTheScreens();
+        officeWords();
+        offerWords();
+        noteWords();
+    }
+
+    /** The view's money words are ui.Money's, over figures from a ten-thousandth of a cent a square metre to a quadrillion dollars. */
+    static void moneyWordsAreTheScreens() {
+        double[] prices = { 0, 1e-9, 4.4e-8, 3e-6, 2.1e-5, 0.0004, 0.00093, 0.003, 0.0773, 0.4, 1, 17.2, 480, 1.2e4, 3.3e6, 7e9, -0.00004, -0.013 };
+        boolean ground = true, sums = true, marked = true;
+        StringBuilder bad = new StringBuilder();
+        for (double x : prices) {
+            if (!LandClassView.groundPrice(x).equals(ham.citybuildersim.ui.Money.groundPrice(x))) { ground = false; bad.append(" groundPrice(").append(x).append(")"); }
+            if (!LandClassView.unitPrice(x).equals(ham.citybuildersim.ui.Money.unitPrice(x))) { ground = false; bad.append(" unitPrice(").append(x).append(")"); }
+            if (!LandClassView.money(x).equals(ham.citybuildersim.ui.Money.money(x))) { sums = false; bad.append(" money(").append(x).append(")"); }
+            if (!LandClassView.usd0(x).equals(ham.citybuildersim.ui.Money.usd(x))) { marked = false; bad.append(" usd(").append(x).append(")"); }
+        }
+        for (double x : new double[] { 9.99, 10, 123.4, 999.6, 12345, 999_600, 1e6, 2.5e9, 3e12, 4.2e15, -17 }) {
+            if (!LandClassView.money(x).equals(ham.citybuildersim.ui.Money.money(x))) { sums = false; bad.append(" money(").append(x).append(")"); }
+        }
+        report("the view's ground prices a square metre are ui.Money's, to the digit: under a dollar to four places, to a thousand to the cent, past it whole", ground, bad.toString());
+        report("...its sums are ui.Money.money()'s (k from ten thousand, M, B, T, Q), and its US$ marks ui.Money.usd()'s", sums && marked, bad.toString());
+        check("...and the mark replaces the dollar sign as ui.Money.marked() does it", LandClassView.marked("D$", "$41.20").equals(ham.citybuildersim.ui.Money.marked("D$", "$41.20"))
+                && LandClassView.marked("D$", "-$5").equals(ham.citybuildersim.ui.Money.marked("D$", "-$5")));
+    }
+
+    /** The land office's lines: every price the getter's, a line for each class owned or on the shelf, none for a flat city. */
+    static void officeWords() {
+        Game g = city("landclass-7a", 0.4, 0.3, 0.3, 0);
+        LandManager lm = g.getLandManager();
+        LandMarket m = lm.getMarket();
+        double base = m.getBasePricePerSqFt(), prep = lm.getPreparationPerSqFt();
+        setGoing(lm, base + 4 * prep);
+        double going = lm.getPricePerSqFt();
+        String how = "flat less its preparation, " + localWords(g, prep) + " a m²";
+        List<String> lines = LandClassView.officeLines(g);
+        report("fixture: a city owning flat, foothill and steep ground, the going price four preparations over the base",
+                lm.getFoothillSqFt() > 0 && lm.getSlopeSqFt() > 0 && going - prep > base && going > lm.getFoothillPricePerSqFt() && lm.getFoothillPricePerSqFt() > lm.getSteepPricePerSqFt(),
+                String.format("flat %.6f, foothill %.6f, steep %.6f a sq ft", going, lm.getFoothillPricePerSqFt(), lm.getSteepPricePerSqFt()));
+        check("the office has a line for each class the city owns, flat first, each price the land manager's and each US$ price the land market's", lines.equals(expectedOffice(g, true, true, how)));
+        check("...the foothill's line says it is the flat price less its preparation, and the steep's that only works use it",
+                lines.size() == 3 && lines.get(1).contains("(" + how + ")") && lines.get(2).startsWith("Steep (only mines, quarries and wells): "));
+
+        setGoing(lm, base + 0.5 * prep);
+        String baseWords = "the base price: flat less its preparation, " + localWords(g, prep) + " a m², would be under it";
+        check("with the going price between the base and the base plus the preparation, the foothill is the base price and its line says why",
+                lm.getFoothillPricePerSqFt() == base && LandClassView.officeLines(g).equals(expectedOffice(g, true, true, baseWords)));
+        setGoing(lm, 0.5 * base);
+        String sameWords = "the flat price: flat ground is worth no more than the base price";
+        check("...with it under the base, every class is the going price and the foothill's line says so",
+                lm.getFoothillPricePerSqFt() == lm.getPricePerSqFt() && LandClassView.officeLines(g).equals(expectedOffice(g, true, true, sameWords)));
+
+        // A city of flat ground and a flat shelf says nothing; a hill on the shelf, and the class it offers is there.
+        Game flat = city("landclass-7b", 1, 0, 0, 0);
+        LandManager flm = flat.getLandManager();
+        LandMarket fm = flm.getMarket();
+        boolean shelfFlat = true;
+        for (LandParcel p : flat.landShelf()) shelfFlat &= LandClassView.offerLine(p, fm).isEmpty();
+        report("fixture: a city of flat ground and a shelf of flat offers", flm.getFoothillSqFt() == 0 && flm.getSlopeSqFt() == 0 && shelfFlat && !flat.landShelf().isEmpty(),
+                flat.landShelf().size() + " offers");
+        check("the office has no lines for it: the screen draws what it drew", LandClassView.officeLines(flat).isEmpty());
+        List<LandParcel> real = new ArrayList<>();
+        for (LandParcel p : fm.getListing()) if (real.size() < 3 && p.getDryKm2() > 0 && !p.isMostlySea()) real.add(p);
+        double[] footRow = relief(DRY, 0.5, 0.5, 0, 0), steepRow = relief(DRY, 0.5, 0, 0.3, 0.2);
+        LandParcel foot = place(real.get(0), DRY, footRow, priced(fm, DRY, footRow));
+        LandParcel steep = place(real.get(1), DRY, steepRow, priced(fm, DRY, steepRow));
+        double fprep = flm.getPreparationPerSqFt(), fgoing = flm.getPricePerSqFt(), fbase = fm.getBasePricePerSqFt();
+        String fhow = fgoing - fprep > fbase ? "flat less its preparation, " + localWords(flat, fprep) + " a m²"
+                : fgoing > fbase ? "the base price: flat less its preparation, " + localWords(flat, fprep) + " a m², would be under it"
+                : "the flat price: flat ground is worth no more than the base price";
+        fm.putOffers(List.of(foot));
+        check("a foothill offer on the shelf of a flat city brings the foothill's line, and no steep one", flat.landShelf().contains(foot)
+                && LandClassView.officeLines(flat).equals(expectedOffice(flat, true, false, fhow)));
+        fm.putOffers(List.of(steep));
+        check("...a steep and very steep one the steep line and no foothill one", flat.landShelf().contains(steep)
+                && LandClassView.officeLines(flat).equals(expectedOffice(flat, false, true, fhow)));
+        fm.putOffers(List.of(foot, steep));
+        check("...and both, all three", LandClassView.officeLines(flat).equals(expectedOffice(flat, true, true, fhow)));
+    }
+
+    /** An offer's ground by class: the figures its relief's, the buildable the flat and foothill, the price with the foothill prepared the market's. */
+    static void offerWords() {
+        double level = 1.7;
+        LandMarket m = market(60, level);
+        double[] allFlat = relief(DRY, 1, 0, 0, 0), mixRow = relief(DRY, 0.5, 0.3, 0.1, 0.1), steepRow = relief(DRY, 0.5, 0, 0.3, 0.2),
+                mountainRow = relief(DRY, 0, 0, 0.6, 0.4), footRow = relief(DRY, 0, 1, 0, 0);
+        LandParcel flat = offer(1, DRY, allFlat, priced(m, DRY, allFlat)), mix = offer(2, DRY, mixRow, priced(m, DRY, mixRow)),
+                noFoothill = offer(3, DRY, steepRow, priced(m, DRY, steepRow)), mountain = offer(4, DRY, mountainRow, priced(m, DRY, mountainRow)),
+                foothill = offer(5, DRY, footRow, priced(m, DRY, footRow));
+        check("an offer all flat, or none, has no line", LandClassView.offerLine(flat, m).isEmpty() && LandClassView.offerLine(null, m).isEmpty());
+        double whole = LandManager.sqFt(DRY);
+        java.util.function.DoubleFunction<String> part = km2 -> LandManager.partFigure(LandManager.sqFt(km2), whole);
+        String want = "Flat " + part.apply(0.5 * DRY) + " km² · foothill " + part.apply(0.3 * DRY) + " · steep " + part.apply(0.2 * DRY)
+                + " · buildable " + part.apply(0.8 * DRY) + " km², " + ham.citybuildersim.ui.Money.usd(m.priceWithPrepUsd(mix)) + " with its foothill prepared";
+        report("a mixed offer (50% flat, 30% foothill, 10% steep, 10% very steep) says each class in the dry ground's unit, the steep and very steep as one, what a building can stand on, and its price with the foothill prepared",
+                LandClassView.offerLine(mix, m).equals(want), LandClassView.offerLine(mix, m));
+        check("...the buildable ground is the flat and foothill (LandMarket.buildableSqFt()) and the price the market's priceWithPrepUsd(), over the listed price by the foothill's preparation",
+                near(LandMarket.buildableSqFt(mix), LandManager.sqFt(0.8 * DRY)) && m.priceWithPrepUsd(mix) > mix.getPriceUsd()
+                        && near(m.priceWithPrepUsd(mix) - mix.getPriceUsd(), 0.3 * DRY * LandManager.SQ_FT_PER_KM2 * LandMarket.prepUsdPerSqFt(level)));
+        check("an offer with steep ground and no foothill has no preparation to price: its buildable ground is its flat, and the line stops there",
+                LandClassView.offerLine(noFoothill, m).equals("Flat " + part.apply(0.5 * DRY) + " km² · steep " + part.apply(0.5 * DRY) + " · buildable " + part.apply(0.5 * DRY) + " km²"));
+        check("an offer of mountain says its steep ground and that no building can stand on it, with no price for preparation",
+                LandClassView.offerLine(mountain, m).equals("Steep " + part.apply(DRY) + " km² · nothing a building can stand on"));
+        check("an offer all foothill opens with the foothill, capitalised, and is all buildable",
+                LandClassView.offerLine(foothill, m).equals("Foothill " + part.apply(DRY) + " km² · buildable " + part.apply(DRY) + " km², "
+                        + ham.citybuildersim.ui.Money.usd(m.priceWithPrepUsd(foothill)) + " with its foothill prepared"));
+        // ...in the unit of its own dry ground: an offer of a few thousand square metres reads in them.
+        double small = 0.004;
+        double[] smallRow = relief(small, 0.5, 0.25, 0.25, 0);
+        LandParcel tiny = offer(6, small, smallRow, priced(m, small, smallRow));
+        String tinyWords = LandClassView.offerLine(tiny, m);
+        check("an offer of a few thousand square metres reads in them, every figure in its dry ground's unit",
+                LandManager.areaWords(LandManager.sqFt(small)).endsWith(" m²") && !tinyWords.contains("km²")
+                        && tinyWords.startsWith("Flat " + LandManager.partFigure(LandManager.sqFt(0.5 * small), LandManager.sqFt(small)) + " m² · foothill "));
+    }
+
+    /**
+     * A city on hills with its books closed (slice C's fixture, and tools.LandClassRenders' second block): HOUSES houses
+     * and a Real Estate sector on flat and foothill ground, MINES iron mines on the steep ground with their foothill
+     * spill, the going price four preparations over the base - the ground sized to the buildings as section 6 sizes it.
+     */
+    public static Game hillyCity(String label) {
+        if (quiet == null) quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        if (out == null) out = System.out;
+        Game g = city(label, 1, 0, 0, 0);
+        LandManager lm = g.getLandManager();
+        BuildingManager bm = g.getBuildingManager();
+        ironSites(g, 10);
+        BuildingsTemplate house = template(g, HOUSE), mine = bm.getTemplate(Mining.IRON_MINE);
+        double h = house.getLandSqFt(), m = mine.getLandSqFt();
+        double existingWorks = bm.getWorksLandFootprint(Game::standsAnywhere), existingBuildings = bm.getTotalLandFootprint() - existingWorks;
+        double buildings = existingBuildings + HOUSES * h, works = existingWorks + MINES * m;
+        double flat = 0.65 * buildings, slope = 1.5 * m;
+        double foothill = 1.3 * ((buildings - flat) + (works - slope));
+        g.getCityLand().setCentreRelief(new double[] { LandManager.km2(flat), LandManager.km2(foothill), LandManager.km2(slope), 0, 0 });
+        lm.setAllocatedSqFt(existingBuildings + existingWorks);
+        lm.restoreWorks(existingWorks);
+        boolean built = order(g, Sectors.REAL_ESTATE, house, HOUSES);
+        built &= order(g, Sectors.MINING, mine, MINES);
+        if (!built) throw new IllegalStateException("the hilly fixture could not build its houses and mines");
+        setGoing(lm, lm.getMarket().getBasePricePerSqFt() + 4 * lm.getPreparationPerSqFt());
+        closeBooks(g);
+        return g;
+    }
+
+    /** Note 11 as words: its rows' figures the statement's, for the sector that builds on flat and foothill and the sector that works the steep. */
+    static void noteWords() {
+        Game g = hillyCity("landclass-7c");
+        SectorBooks books = g.getSectorBooks();
+        String mark = g.getCurrency().qualifiedSymbol();
+        SectorBooks.SectorMonth houses = books.get(g.getSectors().byKey(Sectors.REAL_ESTATE)), mines = books.get(g.getSectors().byKey(Sectors.MINING));
+        report("fixture: houses on flat and foothill ground and mines on steep, the books closed with the going price four preparations over the base",
+                houses.hasLandByRelief() && mines.hasLandByRelief() && houses.landSqFtOf(1) > 0 && mines.landSqFtOf(2) > 0,
+                String.format("houses: flat %,.0f, foothill %,.0f; mines: foothill %,.0f, steep %,.0f sq ft", houses.landSqFtOf(0), houses.landSqFtOf(1), mines.landSqFtOf(1), mines.landSqFtOf(2)));
+
+        boolean words = true, labels = true, counted = true;
+        StringBuilder shown = new StringBuilder();
+        for (SectorBooks.SectorMonth month : List.of(houses, mines)) {
+            List<String> lines = LandClassView.landNoteLines(month, mark);
+            List<String> want = new ArrayList<>();
+            for (int c = 0; c < SectorStatements.LAND_CLASSES; c++) {
+                double sqFt = month.landSqFtOf(c), price = month.landPriceOf(c);
+                if (!(sqFt > 0)) continue;
+                want.add(SectorStatements.LAND_LABELS[c] + " " + LandManager.areaWords(sqFt) + " at " + localWords(g, price) + " a m² · "
+                        + ham.citybuildersim.ui.Money.marked(mark, ham.citybuildersim.ui.Money.money(sqFt * price)));
+            }
+            words &= lines.equals(want);
+            List<SectorStatements.Row> rows = SectorStatements.landNote(month);
+            counted &= lines.size() == rows.size();
+            for (int i = 0; i < rows.size() && i < lines.size(); i++) labels &= lines.get(i).startsWith(LandClassView.landNoteLabel(rows.get(i), mark) + " · ");
+            shown.append(month == houses ? "houses: " : " mines: ").append(lines);
+        }
+        report("note 11's lines are the books' land by class in words: a row for each class that holds any, its square kilometres, its price a square metre and its value, in the screens' money",
+                words && counted, shown.toString());
+        check("...each line opens with the label the statement's row is drawn under (landNoteLabel()), the value after it the statement's own",
+                labels && LandClassView.landNoteLines(houses, mark).size() == 2 && LandClassView.landNoteLines(mines, mark).size() == 2);
+        check("...only the works' sector has a steep line, and its line says whose it is", LandClassView.landNoteLines(mines, mark).stream().anyMatch(l -> l.startsWith("Steep (its mines) "))
+                && LandClassView.landNoteLines(houses, mark).stream().noneMatch(l -> l.startsWith("Steep")));
+        check("the game's overload says the same with the city's own mark", LandClassView.landNoteLines(g, houses).equals(LandClassView.landNoteLines(houses, mark)));
+
+        // A flat city's books carry no land by class, and there is no note to say.
+        Game plain = city("landclass-7d", 1, 0, 0, 0);
+        order(plain, Sectors.REAL_ESTATE, template(plain, HOUSE), 20);
+        closeBooks(plain);
+        SectorBooks.SectorMonth flatMonth = plain.getSectorBooks().get(plain.getSectors().byKey(Sectors.REAL_ESTATE));
+        check("a city of flat ground has no note 11 lines, nor does a month that is not there", !flatMonth.hasLandByRelief()
+                && LandClassView.landNoteLines(flatMonth, mark).isEmpty() && LandClassView.landNoteLines(null, mark).isEmpty());
     }
 }

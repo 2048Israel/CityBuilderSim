@@ -1,0 +1,100 @@
+ET3 render A - the land office's prices and offers by class (LandClassView.officeLines(), offerLine())
+
+== Medellin, month 2000 ==
+The city owns 51.9 km²: flat 17.1 km², foothill 25 km², steep and very steep 9.74 km² (0 m² of it worked).
+The going price a m2: D$11,370 flat; the base price D$324.39; a foothill m2's preparation D$4,760.
+
+officeLines() - 3 lines:
+  Flat: D$11,370 a m² to a business · the office asks US$234.48 a m²
+  Foothill: D$6,611 a m² (flat less its preparation, D$4,760 a m²) · US$107.33 a m²
+  Steep (only mines, quarries and wells): D$324.39 a m² · US$8.69 a m²
+
+The shelf, 24 offers, each with offerLine():
+  East 3                 0.461 km² dry, listed US$4.0M:
+      Steep 0.461 km² · nothing a building can stand on
+  North 4                1.84 km² dry, listed US$16.2M:
+      Foothill 0.0036 km² · steep 1.84 · buildable 0.0036 km², US$16.6M with its foothill prepared
+  South 1                1.38 km² dry, listed US$12.3M:
+      Foothill 0.0045 km² · steep 1.38 · buildable 0.0045 km², US$12.9M with its foothill prepared
+  West 6                 0.288 km² dry, listed US$2.6M:
+      Steep 0.288 km² · nothing a building can stand on
+  South 5                1.84 km² dry, listed US$283.7M - all flat, no line
+  North 1                0.461 km² dry, listed US$76.1M:
+      Foothill 0.132 km² · steep 0.329 · buildable 0.132 km², US$92.9M with its foothill prepared
+  North 5                0.23 km² dry, listed US$118.5M:
+      Foothill 0.23 km² · buildable 0.23 km², US$147.8M with its foothill prepared
+  East 2                 0.23 km² dry, listed US$119.6M:
+      Flat 0.0018 km² · foothill 0.229 · buildable 0.23 km², US$148.6M with its foothill prepared
+  West 5                 0.173 km² dry, listed US$93.2M:
+      Foothill 0.173 km² · buildable 0.173 km², US$115.1M with its foothill prepared
+  North 3                0.346 km² dry, listed US$186.5M:
+      Foothill 0.346 km² · buildable 0.346 km², US$230.4M with its foothill prepared
+  West 2                 0.374 km² dry, listed US$203.1M:
+      Flat 0.0414 km² · foothill 0.333 · buildable 0.374 km², US$245.4M with its foothill prepared
+  East 5                 0.403 km² dry, listed US$220.0M:
+      Flat 0.0099 km² · foothill 0.393 · buildable 0.403 km², US$270.0M with its foothill prepared
+  West 3                 0.461 km² dry, listed US$255.2M:
+      Foothill 0.461 km² · buildable 0.461 km², US$313.8M with its foothill prepared
+  North 2                0.403 km² dry, listed US$226.2M:
+      Foothill 0.403 km² · buildable 0.403 km², US$277.4M with its foothill prepared
+  West 1                 0.461 km² dry, listed US$258.5M:
+      Flat 0.0918 km² · foothill 0.351 · steep 0.018 · buildable 0.443 km², US$303.1M with its foothill prepared
+  East 1                 0.403 km² dry, listed US$231.8M:
+      Foothill 0.403 km² · buildable 0.403 km², US$283.1M with its foothill prepared
+  East 6                 0.461 km² dry, listed US$270.3M:
+      Foothill 0.461 km² · buildable 0.461 km², US$328.9M with its foothill prepared
+  West 4                 0.461 km² dry, listed US$275.4M:
+      Foothill 0.461 km² · buildable 0.461 km², US$333.9M with its foothill prepared
+  East 4                 0.389 km² dry, listed US$234.3M:
+      Flat 0.0477 km² · foothill 0.341 · buildable 0.389 km², US$277.7M with its foothill prepared
+  South 4                0.346 km² dry, listed US$212.3M:
+      Flat 0.226 km² · foothill 0.12 · buildable 0.346 km², US$227.5M with its foothill prepared
+  North 6                0.461 km² dry, listed US$292.7M:
+      Flat 0.139 km² · foothill 0.322 · buildable 0.461 km², US$333.7M with its foothill prepared
+  South 3                0.274 km² dry, listed US$177.1M - all flat, no line
+  South 6                0.461 km² dry, listed US$309.4M - all flat, no line
+  South 2                0.461 km² dry, listed US$314.4M - all flat, no line
+
+== Medellin, month 120 (the going price low, foothill at the base) ==
+The city owns 1.16 km²: flat 0.644 km², foothill 0.516 km², steep and very steep 0 m² (0 m² of it worked).
+The going price a m2: D$28.44 flat; the base price D$8.53; a foothill m2's preparation D$124.53.
+
+officeLines() - 2 lines:
+  Flat: D$28.44 a m² to a business · the office asks US$18.88 a m²
+  Foothill: D$8.53 a m² (the base price: flat less its preparation, D$124.53 a m², would be under it) · US$8.18 a m²
+
+The shelf, 22 offers, each with offerLine():
+  North 2                0.0288 km² dry, listed US$215k:
+      Foothill 0.0288 km² · buildable 0.0288 km², US$3.7M with its foothill prepared
+  North 3                0.0288 km² dry, listed US$215k:
+      Foothill 0.0288 km² · buildable 0.0288 km², US$3.7M with its foothill prepared
+  North 4                0.0288 km² dry, listed US$215k:
+      Foothill 0.0288 km² · buildable 0.0288 km², US$3.7M with its foothill prepared
+  North 6                0.0288 km² dry, listed US$215k:
+      Flat 0.0063 km² · foothill 0.0225 · buildable 0.0288 km², US$2.9M with its foothill prepared
+  South 2                0.0288 km² dry, listed US$215k - all flat, no line
+  South 3                0.0288 km² dry, listed US$215k - all flat, no line
+  South 4                0.0288 km² dry, listed US$215k - all flat, no line
+  South 6                0.0288 km² dry, listed US$215k - all flat, no line
+  West 1                 0.0288 km² dry, listed US$215k:
+      Flat 0.0252 km² · foothill 0.0036 · buildable 0.0288 km², US$646k with its foothill prepared
+  West 2                 0.0288 km² dry, listed US$215k:
+      Foothill 0.0288 km² · buildable 0.0288 km², US$3.7M with its foothill prepared
+  West 3                 0.0288 km² dry, listed US$215k:
+      Foothill 0.0288 km² · buildable 0.0288 km², US$3.7M with its foothill prepared
+  West 4                 0.0288 km² dry, listed US$215k:
+      Foothill 0.0288 km² · buildable 0.0288 km², US$3.7M with its foothill prepared
+  East 1                 0.0864 km² dry, listed US$650k:
+      Flat 0.0117 km² · foothill 0.0747 · buildable 0.0864 km², US$9.6M with its foothill prepared
+  East 3                 0.0864 km² dry, listed US$650k - all flat, no line
+  East 2                 0.101 km² dry, listed US$760k:
+      Flat 0.0882 km² · foothill 0.0126 · buildable 0.101 km², US$2.3M with its foothill prepared
+  North 1                0.115 km² dry, listed US$870k:
+      Foothill 0.115 km² · buildable 0.115 km², US$14.6M with its foothill prepared
+  North 5                0.115 km² dry, listed US$870k:
+      Foothill 0.115 km² · buildable 0.115 km², US$14.6M with its foothill prepared
+  East 5                 0.0576 km² dry, listed US$435k - all flat, no line
+  South 1                0.115 km² dry, listed US$870k - all flat, no line
+  South 5                0.115 km² dry, listed US$870k - all flat, no line
+  East 6                 0.072 km² dry, listed US$545k - all flat, no line
+  East 4                 0.0144 km² dry, listed US$110k - all flat, no line

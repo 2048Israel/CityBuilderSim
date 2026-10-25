@@ -1,0 +1,60 @@
+ET3 render B - note 11 of the sector balance sheets, a sector's land by the ground it stands on (LandClassView.landNoteLines())
+
+== Medellin, month 2000 ==
+Retail (buildings only) - the sheet's Land D$3.0B, note 11:
+  Flat 0.142 km² at D$11,370 a m² · D$1.6B
+  Foothill 0.207 km² at D$6,611 a m² · D$1.4B
+Real Estate (buildings only) - the sheet's Land D$55.1B, note 11:
+  Flat 2.62 km² at D$11,370 a m² · D$29.8B
+  Foothill 3.82 km² at D$6,611 a m² · D$25.3B
+Industry (buildings only) - the sheet's Land D$190.6M, note 11:
+  Flat 9,070 m² at D$11,370 a m² · D$103.1M
+  Foothill 0.0132 km² at D$6,611 a m² · D$87.5M
+Construction (buildings only) - the sheet's Land D$4.2B, note 11:
+  Flat 0.199 km² at D$11,370 a m² · D$2.3B
+  Foothill 0.29 km² at D$6,611 a m² · D$1.9B
+Materials (buildings only) - the sheet's Land D$1.9B, note 11:
+  Flat 0.0907 km² at D$11,370 a m² · D$1.0B
+  Foothill 0.132 km² at D$6,611 a m² · D$874.6M
+Manufacturing (buildings only) - the sheet's Land D$86.3B, note 11:
+  Flat 4.11 km² at D$11,370 a m² · D$46.7B
+  Foothill 5.99 km² at D$6,611 a m² · D$39.6B
+Agriculture (buildings only) - the sheet's Land D$6.7B, note 11:
+  Flat 0.317 km² at D$11,370 a m² · D$3.6B
+  Foothill 0.463 km² at D$6,611 a m² · D$3.1B
+Food Processing (buildings only) - the sheet's Land D$451.0M, note 11:
+  Flat 0.0215 km² at D$11,370 a m² · D$244.0M
+  Foothill 0.0313 km² at D$6,611 a m² · D$207.0M
+Freight (buildings only) - the sheet's Land D$7.4B, note 11:
+  Flat 0.354 km² at D$11,370 a m² · D$4.0B
+  Foothill 0.517 km² at D$6,611 a m² · D$3.4B
+Automotive (buildings only) - the sheet's Land D$93.8B, note 11:
+  Flat 4.47 km² at D$11,370 a m² · D$50.8B
+  Foothill 6.52 km² at D$6,611 a m² · D$43.1B
+Luxury Retail (buildings only) - the sheet's Land D$309.6M, note 11:
+  Flat 0.0147 km² at D$11,370 a m² · D$167.5M
+  Foothill 0.0215 km² at D$6,611 a m² · D$142.1M
+Restaurants (buildings only) - the sheet's Land D$1.4B, note 11:
+  Flat 0.0684 km² at D$11,370 a m² · D$777.5M
+  Foothill 0.0998 km² at D$6,611 a m² · D$659.6M
+Cement & Concrete (buildings only) - the sheet's Land D$1.3B, note 11:
+  Flat 0.0596 km² at D$11,370 a m² · D$677.5M
+  Foothill 0.0869 km² at D$6,611 a m² · D$574.7M
+Copper Refining (buildings only) - the sheet's Land D$667.8M, note 11:
+  Flat 0.0318 km² at D$11,370 a m² · D$361.3M
+  Foothill 0.0464 km² at D$6,611 a m² · D$306.5M
+
+14 sectors hold land by class; none of them has works: this run has no works sector holding land by class.
+
+== LandClassCheck's hilly fixture: 100 houses and 2 iron mines on flat, foothill and steep ground, the going price four preparations over the base ==
+Real Estate (buildings only) - the sheet's Land D$30.5M, note 11:
+  Flat 0.0483 km² at D$448.33 a m² · D$21.7M
+  Foothill 0.026 km² at D$338.13 a m² · D$8.8M
+Construction (buildings only) - the sheet's Land D$914k, note 11:
+  Flat 1,450 m² at D$448.33 a m² · D$650k
+  Foothill 780 m² at D$338.13 a m² · D$264k
+Iron Mining (with works) - the sheet's Land D$6.7M, note 11:
+  Foothill 0.0186 km² at D$338.13 a m² · D$6.3M
+  Steep (its mines) 0.0557 km² at D$7.53 a m² · D$420k
+
+3 sectors hold land by class; 1 of them has works.

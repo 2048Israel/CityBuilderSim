@@ -2782,6 +2782,24 @@ final class SectorScreen {
     static final String STOCK_WORDS = "Stock is held at what it would fetch today, so a price collapse shrinks this "
             + "business's balance sheet without anything being sold, and a rise lifts it.";
 
+    /** Note 11 (ET3, spec-earth2-terrain 5.3): its land by the ground it stands on. */
+    static final String LAND_WORDS = "Its land at today's prices, by the ground it stands on: a share of the city's flat "
+            + "and foothill for its buildings and of its steep ground for its works.";
+
+    /**
+     * Note 11's rows for the screen: SectorStatements.landNote()'s, each labelled with its square kilometres and its
+     * price a square metre (LandClassView.landNoteLabel()); the value is the statement's own column.
+     */
+    List<SectorStatements.Row> landNoteRows(List<SectorStatements.Row> rows) {
+        String mark = ui.game.getCurrency().qualifiedSymbol();
+        List<SectorStatements.Row> out = new ArrayList<>();
+        for (SectorStatements.Row r : rows) {
+            out.add(new SectorStatements.Row(r.id(), LandClassView.landNoteLabel(r, mark), r.kind(), r.now(), r.then(), r.note(),
+                    r.showFrom(), r.parts()));
+        }
+        return out;
+    }
+
     /** Note 9: what it holds abroad. */
     static final String ABROAD_WORDS = "What it has sent abroad for the world's rate, in the city's money at the rate it "
             + "was last valued at, with the interest it earned there rolled in. It comes home before the business "
@@ -2897,6 +2915,7 @@ final class SectorScreen {
                     + "materials price moves the whole estate, which the equity statement counts as a revaluation. "
                     + "Nothing here depreciates.", sector.buildingsStanding()));
             case SectorStatements.ABROAD_NOTE -> StatementView.noteSentence(ABROAD_WORDS);
+            case SectorStatements.LAND_NOTE -> StatementView.noteRows(landNoteRows(t.note(n)), millions, LAND_WORDS);
             case SectorStatements.CAPITAL_NOTE -> StatementView.noteRows(
                     SectorStatements.capitalNote(ui.game.getEquity(), sector.key()), millions,
                     now.paidInDerived() ? DERIVED_INFO : CAPITAL_INFO + " As it stands now.");

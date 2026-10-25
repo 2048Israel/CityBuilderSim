@@ -1,0 +1,36 @@
+ET3 render C - the same lines for Rotterdam's city, which stands on flat ground only
+
+== Rotterdam, month 2000 ==
+The city owns 33.8 km²: flat 33.8 km², foothill 0 m², steep and very steep 0 m² (0 m² of it worked).
+The going price a m2: D$61,313 flat; the base price D$546.57; a foothill m2's preparation D$8,036.
+
+officeLines() - none: no foothill and no steep ground owned or on the shelf:
+
+The shelf, 24 offers, each with offerLine():
+  West 5                 0.23 km² dry, listed US$77.5M - all flat, no line
+  South 6                1.29 km² dry, listed US$625.2M - all flat, no line
+  South 3                0.0585 km² dry, listed US$51.2M - all flat, no line
+  East 3                 0.115 km² dry, listed US$102.7M - all flat, no line
+  West 4                 0.0288 km² dry, listed US$26.2M - all flat, no line
+  West 6                 0.0288 km² dry, listed US$26.5M - all flat, no line
+  East 6                 0.105 km² dry, listed US$97.3M - all flat, no line
+  East 1                 0.115 km² dry, listed US$107.9M - all flat, no line
+  North 6                0.115 km² dry, listed US$108.7M - all flat, no line
+  North 5                0.0288 km² dry, listed US$27.3M - all flat, no line
+  North 2                0.101 km² dry, listed US$95.9M - all flat, no line
+  West 3                 0.0288 km² dry, listed US$27.5M - all flat, no line
+  North 4                0.0288 km² dry, listed US$27.7M - all flat, no line
+  West 2                 0.101 km² dry, listed US$97.2M - all flat, no line
+  West 1                 0.115 km² dry, listed US$112.0M - all flat, no line
+  North 1                0.115 km² dry, listed US$112.0M - all flat, no line
+  South 5                0.0576 km² dry, listed US$56.2M - all flat, no line
+  North 3                0.115 km² dry, listed US$112.8M - all flat, no line
+  South 4                0.0864 km² dry, listed US$86.1M - all flat, no line
+  South 1                0.0234 km² dry, listed US$23.4M - all flat, no line
+  South 2                0.0675 km² dry, listed US$70.8M - all flat, no line
+  East 5                 0.0549 km² dry, listed US$64.3M - all flat, no line
+  East 2                 0.0432 km² dry, listed US$62.0M - all flat, no line
+  East 4                 900 m² dry, listed US$24.3M - all flat, no line
+
+== Rotterdam, month 2000 ==
+No sector's books carry its land by class: the city owns no foothill and no steep ground, so the sheet's Land is one line with no note 11.
