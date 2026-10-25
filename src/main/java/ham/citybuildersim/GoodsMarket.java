@@ -98,6 +98,14 @@ public final class GoodsMarket {
     private final List<Trade> trades = new ArrayList<>();
 
     /**
+     * The month's draws (Markets.draw()) since the month last closed: kept
+     * past the clearing among the month's fills, and put back on their
+     * sellers' rows after the strike (FW5, 2026-10-25). Units only: the
+     * tally above and the sectors' ledgers are not touched by them.
+     */
+    private final List<Trade> draws = new ArrayList<>();
+
+    /**
      * Units taken on demand since the last clearing - the builders' orders,
      * the repair bill - which count as demand when the month is next priced.
      * Kept apart from the month's tally because a draw happens at any time
@@ -341,7 +349,20 @@ public final class GoodsMarket {
         imported = 0;
         exported = 0;
         trades.clear();
+        // The month's draws so far are the month's fills too (FW5, 2026-10-25).
+        trades.addAll(draws);
     }
+
+    /** A draw's fill, kept with the month's (Markets.draw(); FW5, 2026-10-25). Null is nothing. */
+    void logDraw(Trade t) {
+        if (t != null) draws.add(t);
+    }
+
+    /** The month's draws since it last closed (FW5, 2026-10-25): read-only. */
+    List<Trade> monthsDraws() { return java.util.Collections.unmodifiableList(draws); }
+
+    /** The month is over: its draws were shown with its fills, and the next draw is the next month's (FW5, 2026-10-25). Not closeMonth() below, which is the clearing's own. */
+    void closeDraws() { draws.clear(); }
 
     /** A draw since the last clearing, counted toward the next strike's demand. */
     void noteDrawn(double units) { drawn += Math.max(0, units); }
@@ -420,6 +441,7 @@ public final class GoodsMarket {
     public double getLocalFilled()  { return localFilled; }
     public double getImported()     { return imported; }
     public double getExported()     { return exported; }
+    /** The month's fills: the clearing's and, since FW5 (2026-10-25), the month's draws too, which the clearing no longer wipes. */
     public List<Trade> getTrades()  { return trades; }
 
     /** Where in the band the price sits: 0 the floor, 1 the ceiling. */
@@ -478,6 +500,7 @@ public final class GoodsMarket {
         java.util.Arrays.fill(taken, 0);
         takenAt = 0;
         drawn = 0;
+        draws.clear();
         startMonth();
     }
 
