@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### BP1 — the batch process, cheaper and quicker — 2026-10-25, ready, no tag (tooling and documents), see docs/queue/BP1-notes.md
+
+A batch runs no baseline suite: `./batch-check.sh --pick` runs the harnesses that read what its diff changed (`tools/pick.sh`; a class most
+harnesses read, Game.java and the like, left to the gate with LongPlaytest in its place), every run but `--timing` times soft, and the one full
+suite is the gate's. A batch writes `{next}` and its records in `docs/queue/<id>-ship.md`; `ship.sh` sets the version (the last tag's patch + 1),
+splices the changelog block and the queue rows, takes a conflict only in the generated docs from the branch, passes main's reds recorded in the new
+`docs/notes/gate.txt` word for word (a new one only with `--red-ok` and Jerus's words), compares a timing red with main's own run that day, gates a
+docs-only merge on `--fast`, pushes main and the tag at once, and its dry run now shows the branch's version; `tools/ship-selftest.sh` tests it with
+no JVM. `tools/day.sh` is the orchestrator's morning and the hourly check-in's probe, `tools/wait.sh` a wait inside a turn. "How a batch is done"
+moved from CLAUDE.md to `docs/batch.md`, with the fresh orchestrator each day, the screen-check session (slots 7-9), the orchestrator taking the
+recommended ★ calls and the night's lessons. Built with ultracode workflows, 58 agents; no game file; five calls under Pending as BP1-C.
+
 ### 0.8.43 — ET2, buildable by slope — 2026-10-24, ready but MapCheck 8 (main's, FW11), see docs/queue/ET2-notes.md
 
 Buildings now stand on **flat and foothill ground only**; steep and very steep are refused them, and mines, quarries and wells

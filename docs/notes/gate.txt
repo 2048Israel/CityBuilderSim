@@ -1,0 +1,8 @@
+# gate of batch/BP1's own full suite, the seed: BP1 changes no game file, so its reds are main's (82b3ec02, 0.8.43)
+# date: 2026-10-25
+# earth-2.bin: named
+# suite: 139 harnesses run in 1025s: 138 passed, 1 failed
+# timing: not run (the gate's own --timing judges it); the orchestrator rewrites this file at BP1's gate
+MapCheck | exit 1
+MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
+MapCheck | 1 FAILED
