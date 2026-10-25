@@ -4,7 +4,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 414 files, 443,116 lines, 18,842 methods, 4,152 constants. `GameVersion.VERSION` is "0.8.46", `SAVE_FORMAT` 46.
+**The tree:** 415 files, 443,603 lines, 18,867 methods, 4,164 constants. `GameVersion.VERSION` is "0.8.46", `SAVE_FORMAT` 46.
 
 ## model (193 files)
 
@@ -176,7 +176,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [StudentHousehold.java](StudentHousehold.md) | 57 | 10 | Full-time students, as one ledger. | 6 |
 | [SupplierCredit.java](SupplierCredit.md) | 255 | 21 | What a buyer owes its suppliers for stock they let it have on credit (0.7.44): the grocers' trade credit, struck and repaid a month at a time. | 8 |
 | [TaxPolicy.java](TaxPolicy.md) | 1,749 | 109 | The city's tax rates - the revenue half of what the player actually decides. | 53 |
-| [TempDirs.java](TempDirs.md) | 141 | 7 | The one place a harness, or a scratch city, gets a temporary folder from: one folder per JVM under the system temp folder, deleted when that JVM ex... | 75 |
+| [TempDirs.java](TempDirs.md) | 141 | 7 | The one place a harness, or a scratch city, gets a temporary folder from: one folder per JVM under the system temp folder, deleted when that JVM ex... | 76 |
 | [TilePainter.java](TilePainter.md) | 868 | 42 | Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, widt... | 17 |
 | [TileRaster.java](TileRaster.md) | 3,953 | 148 | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixe... | 23 |
 | [TimeSkipReport.java](TimeSkipReport.md) | 682 | 68 | What happened while you were not watching. | 7 |
@@ -278,12 +278,12 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [UserInterface.java](UserInterface.md) | 6,645 | 177 | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating a... | 26 |
 | [ZoningScreen.java](ZoningScreen.md) | 1,087 | 71 | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial c... | 2 |
 
-## harnesses (142 files)
+## harnesses (143 files)
 
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
 | [AgricultureCheck.java](AgricultureCheck.md) | 413 | 7 | The ground under the loaf. | 0 |
-| [AllChecks.java](AllChecks.md) | 203 | 4 | Runs every harness, one JVM each, and says which failed. | 1 |
+| [AllChecks.java](AllChecks.md) | 379 | 14 | Runs every harness, one JVM each, and says which failed. | 2 |
 | [AuctionCheck.java](AuctionCheck.md) | 1,654 | 42 | The city's paper sold at auction: one clearing yield, and what it costs. | 0 |
 | [AutoBuildCheck.java](AutoBuildCheck.md) | 1,811 | 41 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
 | [BankCheck.java](BankCheck.md) | 4,325 | 22 | The commercial bank, and the families it discharges. | 1 |
@@ -361,6 +361,7 @@ Generated 2026-10-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [IslandNetCheck.java](IslandNetCheck.md) | 834 | 32 | A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5). | 0 |
 | [JunctionCheck.java](JunctionCheck.md) | 1,768 | 76 | Proves that the junctions and interchanges of spec-freight 4.6 are drawn by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19). | 3 |
 | [KeptCheck.java](KeptCheck.md) | 887 | 15 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 0 |
+| [KnownRedsCheck.java](KnownRedsCheck.md) | 311 | 15 | The harness for AllChecks' known reds (batch FW7): a failed harness is said to be a known red or a NEW one against main's record, line by line, and... | 0 |
 | [LabourCheck.java](LabourCheck.md) | 1,181 | 14 | Verifies the labour market: who can hold a job, and what it costs. | 1 |
 | [LandCheck.java](LandCheck.md) | 3,023 | 43 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 5 |
 | [LandClassCheck.java](LandClassCheck.md) | 1,349 | 51 | A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going price stays the price of flat ... | 1 |

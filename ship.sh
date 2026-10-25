@@ -83,8 +83,8 @@
 #       would write, then takes the merge back: the tree and HEAD as they were;
 #   12. the merge committed as "Merge <branch>: <title>, <version>", the title
 #       QUEUE.md's on main unless -m gives one, the body the -F file then
-#       "Gate: ..." lines (green, red as main's recorded, new red on his
-#       word, or docs only);
+#       "Gate: ..." lines (green, known red only, NEW red on his word, or
+#       docs only);
 #   13. tagged NEXT (or, the old way, the branch's VERSION unless tagged
 #       already);
 #   14. main and the tag pushed together (git push --atomic), a failed push
@@ -445,9 +445,9 @@ else
     esac
     case "$CHECKED" in
         0) GATE="green" ;;
-        3) GATE="red as main's recorded: $(heads "$T/suite-reds.txt")" ;;
-        4) if [ -n "$REDOK" ]; then GATE="new red on Jerus's word: $REDOK"
-           else die "new red line(s) on the merge, main's recorded reds aside (above); main is where it was. On his word only: --red-ok \"his words\""; fi ;;
+        3) GATE="known red only: $(heads "$T/suite-reds.txt")" ;;
+        4) if [ -n "$REDOK" ]; then GATE="NEW red on Jerus's word: $REDOK"
+           else die "NEW red line(s) on the merge, the known reds aside (above); main is where it was. On his word only: --red-ok \"his words\""; fi ;;
         *) die "the checks failed on the merge (above, exit $CHECKED); main is where it was" ;;
     esac
     say "gate: $GATE"

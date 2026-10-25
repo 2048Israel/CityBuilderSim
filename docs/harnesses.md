@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**141 harness files, 14,569 labelled assertions.** AllChecks runs 141 of them.
+**142 harness files, 14,612 labelled assertions.** AllChecks runs 142 of them.
 
 ## Which harnesses read which class
 
@@ -248,7 +248,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
-| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
+| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, InboxCheck, InfrastructureCheck, InvestCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
@@ -10953,6 +10953,73 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L820 ...and the next kept draw sets it right again
 - **L822 4: what reshapes the page**
 - **L857 5: what the kept month costs**
+
+## KnownRedsCheck.java - 43 labelled assertions
+
+> The harness for AllChecks' known reds (batch FW7): a failed harness is said
+> to be a known red or a NEW one against main's record, line by line, and
+> batch-check.sh judges the same logs the same way.
+> 
+> WHY (FW7, 2026-10-25): HealthCheck was a recorded red of main's, and a second
+> assertion in it went red. AllChecks -q printed "HealthCheck FAILED" as it had
+> the day before and nobody saw it. batch-check.sh already compared the red
+> lines against gate.txt word for word, but AllChecks itself knew nothing of
+> the record, so what a session read of -q and -f could not tell its own reds
+> from main's. A fixture harness (Fixture, below) fails one assertion and then,
+> on request, a second, and this runs it as AllChecks runs a harness, so both
+> cases are caused and not assumed: the same red again is a known red, a second
+> ...
+
+- **L82 1. the fixture's known red**
+- **L88 3. the second**
+- **L164 1. the gate's record of a red harness: its exit, its failing line and its count**
+  - L165 the fixture's first run exits 1
+  - L166 it has exactly three red lines
+  - L168 the first red line is its exit
+  - L169 the second is the failing assertion's line
+  - L171 the third is its count of failures, its last line
+  - L172 the passing line that says FAILS in its words is not a red line
+  - L173 no section title is a red line
+  - L174 the failing lines AllChecks prints do hold a section title, so the walk skipped one
+- **L183 2. the same red again is a known red, under -q and -f**
+  - L184 the record reads back as a set
+  - L186 it holds three lines: the comment and the blank one are not in it
+  - L187 every red line of the fixture's run is in it
+  - L189 under -q the report is one line
+  - L190 and it ends in the words known red
+  - L192 under -f the header ends in the words known red
+  - L195 under -f there are lines under the header besides section titles
+  - L196 every one of them is tagged [known]
+  - L197 none is tagged [NEW]
+  - L198 a section title is printed as it was, with no tag
+- **L207 3. a second failing assertion is a NEW red, and -f names it**
+  - L208 the record was read
+  - L211 the fixture's second run exits 2
+  - L212 some of its red lines are not in the record
+  - L213 the line of the second assertion is one of them
+  - L217 the header says NEW red
+  - L218 it states how many red lines are new and how many there are
+  - L220 the second assertion's line is tagged [NEW]
+  - L222 the first assertion's line is still tagged [known]
+  - L226 the header's count is the [NEW] tags plus one for a new exit line
+  - L228 under -q the report is the header alone, with the same verdict
+- **L236 4. with no record nothing is tagged: -f prints as before FW7**
+  - L237 a record that does not exist reads as null
+  - L239 the header has no verdict, it ends with the time
+  - L240 there are as many lines as the header and the failing lines
+  - L243 each is the failing line, indented four spaces and nothing else
+  - L244 none has a tag
+  - L245 the line under the summary says no record was read
+- **L287 5. batch-check.sh judges the same logs: exit 3 for the known red, exit 4 and the NEW line for the second**
+  - L288 the record was read
+  - L302 the known red, tagged by AllChecks, is judged exit 3
+  - L303 and its verdict line says known red
+  - L304 the second run, tagged, is judged exit 4
+  - L305 and its verdict line says NEW red
+  - L306 and it prints the second assertion's line
+  - L307 a log from before FW7, with no tags, is judged exit 3 as well
+  - L308 a header whose count is not the one batch-check.sh finds is refused, exit 1
+  - L309 and the line says the two judges disagree
 
 ## LabourCheck.java - 94 labelled assertions
 

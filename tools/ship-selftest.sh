@@ -229,8 +229,8 @@ LABEL="TS2: both blocks, newest on top"; ok sh -c "grep -n '^### $V2 \\|^### $V1
 LABEL="TS2: Pending rows newest first"; ok sh -c "grep -n '^| TS2-C \\|^| TST-C ' $TA/main/QUEUE.md | head -2 | tr -d '\\n' | grep -q 'TS2-C.*TST-C'"
 LABEL="a real (non-generated) conflict stops and names the file"; run --dry-run batch/CQ; ok sh -c "[ $RC = 1 ] && grep -q -F \"conflicts with main in: src/main/java/ham/citybuildersim/SimulationEngine.java\" $TA/out.txt"; LABEL="...and the tree is clean"; ok clean
 LABEL="red: exit 4 stops without --red-ok";     STUB_EXIT=4 STUB_REDS='MapCheck | exit 1' run --dry-run batch/RED;  ok sh -c "[ $RC = 1 ] && grep -q -F 'red-ok' $TA/out.txt"
-LABEL="red: exit 4 passes with --red-ok";       STUB_EXIT=4 STUB_REDS='MapCheck | exit 1' run --dry-run --red-ok "his words" batch/RED;  ok sh -c "[ $RC = 0 ] && grep -q -F \"gate: new red on Jerus's word: his words\" $TA/out.txt"
-LABEL="red: exit 3 passes";                     STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' run --dry-run batch/RED;  ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: red as main' $TA/out.txt"
+LABEL="red: exit 4 passes with --red-ok";       STUB_EXIT=4 STUB_REDS='MapCheck | exit 1' run --dry-run --red-ok "his words" batch/RED;  ok sh -c "[ $RC = 0 ] && grep -q -F \"gate: NEW red on Jerus's word: his words\" $TA/out.txt"
+LABEL="red: exit 3 passes";                     STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' run --dry-run batch/RED;  ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt"
 LABEL="red: exit 1 stops";                      STUB_EXIT=1 run --dry-run batch/RED; ok rc_is 1
 
 # timing: judged once, hard, and only what the suite step did not judge
@@ -242,7 +242,7 @@ LABEL="timing: main's worktree removed on every path"; ok sh -c "[ ! -d $TA/main
 R2='PlanCheck | exit 1;PlanCheck | FAIL: a new thing'
 LABEL="timing: --red-ok for a red in a timing harness ships, main's timing not run"; : > "$STUB_LOG"
 STUB_EXIT=4 STUB_REDS="$R2" STUB_TEXIT=4 STUB_TREDS="$R2" STUB_MT_EXIT=0 run --dry-run --red-ok "his words" batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F \"gate: new red on Jerus's word: his words\" $TA/out.txt && ! grep -q 'main passes' $TA/out.txt && ! grep -q 'red on main too' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
+ok sh -c "[ $RC = 0 ] && grep -q -F \"gate: NEW red on Jerus's word: his words\" $TA/out.txt && ! grep -q 'main passes' $TA/out.txt && ! grep -q 'red on main too' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
 LABEL="timing: that red and a timing miss of its own (main green) stops"
 STUB_EXIT=4 STUB_REDS="$R2" STUB_TEXIT=4 STUB_TREDS="$R2;PlanCheck | the plan is within PLAN_MS (40 ms) FAIL" STUB_MT_EXIT=0 run --dry-run --red-ok "his words" batch/RED
 ok sh -c "[ $RC = 1 ] && grep -q -F 'main passes PlanCheck today' $TA/out.txt"
@@ -275,7 +275,7 @@ STUB_TEXIT=4 STUB_TREDS="$T4" STUB_MT_EXIT=0 run --dry-run batch/RED
 ok sh -c "[ $RC = 1 ] && grep -q -F 'main passes TimingCheck today' $TA/out.txt"
 LABEL="timing: main's recorded red, repeated by the timing run, is not judged again"; : > "$STUB_LOG"
 STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' STUB_TEXIT=3 STUB_TREDS='MapCheck | exit 1' run --dry-run batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: red as main' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
+ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
 echo "selftest: $((N - FAILS)) of $N passed"
 [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ] || { cd /; rm -rf "$TA"; }
 exit "$FAILS"
