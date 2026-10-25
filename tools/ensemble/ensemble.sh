@@ -243,8 +243,10 @@ FENCE='```'
     else
         printf 'Scored with no baseline: T1, T2 and F1 report this run only. '
     fi
-    printf 'Commit this file as `docs/ensemble/%s.md` in the batch'"'"'s merge when its playtest trace moved; ' "$VERSION"
-    printf 'a batch whose trace is byte-identical to main'"'"'s does not rerun the ensemble.\n\n'
+    printf 'Commit this file on the batch'"'"'s branch as `docs/ensemble/<batch id>.md` when its playtest trace moved, '
+    printf 'with the version above (this heading and the line under it) written as the next-version token in braces, as the batch'"'"'s ship file writes it: '
+    printf 'ship.sh gives the file its version at the gate, renames it to `docs/ensemble/<version>.md` and fills the token. '
+    printf 'A batch whose trace is byte-identical to main'"'"'s does not rerun the ensemble.\n\n'
     tr -d '\r' < "$RUN/score.md" | sed '1d' | sed '/./,$!d'
     printf '\n## summary.json\n\n'
     printf 'What `--baseline` reads: T1, T2 and F1 compare with it.\n\n'

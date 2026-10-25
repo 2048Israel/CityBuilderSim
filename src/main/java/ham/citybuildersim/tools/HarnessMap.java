@@ -21,7 +21,10 @@ import java.util.regex.Pattern;
  * other way up") and groups them under printed section headings; this
  * lifts those labels out, so the whole suite reads as a table of contents
  * of what the model promises. It also says which harnesses mention which
- * model class, and which harness files AllChecks does not run.
+ * class - every class but the harnesses themselves, the interface's and the
+ * tools' as well as the model's and the sectors' (BP1, 2026-10-25: tools/pick.sh
+ * reads that table, and a changed ui/ or tools/ class had no row to read) -
+ * and which harness files AllChecks does not run.
  *
  * The labels are found by the helpers a harness declares - any
  * "static void NAME(String label, ...)" in the file - plus the usual names.
@@ -48,11 +51,10 @@ public final class HarnessMap {
         sb.append("# The harnesses\n\n");
         sb.append("Generated ").append(SourceTree.stamp()).append(" by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.\n\n");
 
-        // the reverse index first: which harnesses mention which model class
+        // the reverse index first: which harnesses mention which class (every area but the harnesses themselves)
         Map<String, List<String>> readers = new TreeMap<>();
         for (JavaScan f : tree.files) {
-            String a = tree.area(f);
-            if (!a.equals("model") && !a.equals("sectors")) continue;
+            if (tree.area(f).equals("harnesses")) continue;
             List<String> who = new ArrayList<>();
             for (JavaScan h : harnesses) if (!h.typeName.equals("AllChecks") && h.identifiers.contains(f.typeName)) who.add(h.typeName);
             readers.put(f.typeName, who);

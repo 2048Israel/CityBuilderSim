@@ -4,7 +4,11 @@ The live changelog since 2026-10-20 (Jerus: the record "in GitHub", so no
 session has to paste into the claude.ai project). One block per version, at
 most 12 lines (CLAUDE.md, "Each batch is told once"), in the house shape:
 `### version - batch, title - date, state, see notes`, then one paragraph.
-A batch or a docs pass adds its block at the top in its own merge.
+Since BP1 (2026-10-24) a batch's block comes from its
+`docs/queue/<id>-ship.md`, its `{next}` the version: `ship.sh` puts it at the
+top in the merge, and the branch leaves this file alone. A branch with no
+ship file - a docs pass that writes none, an old-style branch - still adds
+its own block at the top in its own merge.
 
 The older record: the project's `claude/changelog.md` ("Civic Ledger: Java
 Game") holds the blocks from 2026-09-11 up to the batch before I12, and
@@ -25,6 +29,18 @@ city's split; the balance sheet's Land line has **note 11**, its land by class, 
 (`SectorMonth.landByRelief`, null in an older save). The land office and the offer card show the classes. New LandClassCheck. A
 flat city is priced by the old expressions: the default trace and Rotterdam's byte-identical (no ensemble); Medellín ends at
 432,191 people, hunger 0% (main 257,761, 50%), with 37.7 km² of idle steep bought alongside. Four calls under Pending as ET3-C.
+### BP1 — the batch process, cheaper and quicker — 2026-10-25, ready, no tag (tooling and documents), see docs/queue/BP1-notes.md
+
+A batch runs no baseline suite: `./batch-check.sh --pick` runs the harnesses that read what its diff changed (`tools/pick.sh`; a class most
+harnesses read, Game.java and the like, left to the gate with LongPlaytest in its place), every run but `--timing` times soft, and the one full
+suite is the gate's. A batch writes `{next}` and its records in `docs/queue/<id>-ship.md`; `ship.sh` sets the version (the last tag's patch + 1),
+splices the changelog block and the queue rows, takes a conflict only in the generated docs from the branch, passes main's reds recorded in the new
+`docs/notes/gate.txt` word for word (a new one only with `--red-ok` and Jerus's words), compares a timing red with main's own run that day, gates a
+docs-only merge on `--fast`, pushes main and the tag at once, and its dry run now shows the branch's version; `tools/ship-selftest.sh` tests it with
+no JVM. `tools/day.sh` is the orchestrator's morning and the hourly check-in's probe, `tools/wait.sh` a wait inside a turn. "How a batch is done"
+moved from CLAUDE.md to `docs/batch.md`, with the fresh orchestrator each day, the screen-check session (slots 7-9), the orchestrator taking the
+recommended ★ calls and the night's lessons. Built with ultracode workflows, 58 agents; no game file; five calls under Pending as BP1-C.
+
 ### 0.8.43 — ET2, buildable by slope — 2026-10-24, ready but MapCheck 8 (main's, FW11), see docs/queue/ET2-notes.md
 
 Buildings now stand on **flat and foothill ground only**; steep and very steep are refused them, and mines, quarries and wells

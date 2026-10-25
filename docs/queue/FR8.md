@@ -1,8 +1,8 @@
 # FR8 - the trucks' share dealt per industry
 
 Jerus, 2026-10-20, at the review desk, on FR2's call ★5 (one carried share
-for the city): "pool per industry". A model batch, player-visible: bump
-`GameVersion.VERSION`.
+for the city): "pool per industry". A model batch, player-visible: a new version
+(`{next}` in its ship file; `ship.sh` sets `GameVersion.VERSION`, BP1).
 
 ## What is there (FR2, 0.8.5)
 
@@ -36,7 +36,7 @@ the trade's shares are struck at the haul and saved (★9).
   had; and the converse, a town whose fleet has room, everyone whole. Count,
   in the default playtest, the months a sector other than the newest runs
   short, against main's.
-- **The ensemble**, if the trace moves (EN1's rule, CLAUDE.md step 4):
+- **The ensemble**, if the trace moves (EN1's rule, docs/batch.md):
   `tools/ensemble/ensemble.sh` once on the final model, against the newest
   `docs/ensemble/<version>.md` rather than main rerun: AUTO2's median
   against the baseline's, and no new red.
@@ -50,4 +50,5 @@ the per-sector ones if FR8 lands first).
 
 The suite green but what was already red (ScaleCheck until SC1), the
 playtests' audits and reload green, the maps regenerated, the changelog's
-block in `docs/notes/changelog.md`, this row out of `QUEUE.md`.
+block in its ship file, `docs/queue/FR8-ship.md` (`ship.sh` puts it in
+`docs/notes/changelog.md` and takes this row out of `QUEUE.md`, BP1).

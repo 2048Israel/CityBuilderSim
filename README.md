@@ -93,8 +93,10 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
 - `-f` prints only what failed: nothing for a harness that passed, and for one
   that failed its failing lines under their sections, each harness's whole
   output kept in `target/checks/NAME.log`. `batch-check.sh` runs it with the
-  build, the maps and Stale; `Batch check.bat` is the same on Windows, the
-  maps only with `--maps`.
+  build, the maps and Stale, and with `--pick` only the harnesses that read
+  what the branch changed (`tools/pick.sh` picks them from the diff against
+  main; BP1, 2026-10-24); `Batch check.bat` is the same on Windows without
+  `--pick`, the maps only with `--maps`.
 - `--timing` runs only the harnesses that time something (`Timing.HARNESSES`):
   what the ship gate runs, alone and hard, before it commits.
 - `-Dcbs.timing=soft` makes timing soft: a timing figure over its budget says
@@ -124,7 +126,8 @@ roadmap's criteria: `tools/ensemble/ensemble.sh <label>`, about twenty
 minutes five at a time (`tools/ensemble/README.md`). It runs only for a
 batch whose playtest trace moves (EN1, 2026-10-20), once, on the batch's
 final model, against the newest stored score in `docs/ensemble/`, and that
-batch commits its own score there. `EnsembleCheck` keeps the driver
+batch commits its own score there, under its id; `ship.sh` names it by the
+version at the gate (BP1). `EnsembleCheck` keeps the driver
 compiling against the tree and the stored score readable.
 
 Three rules the harnesses are written to, and worth keeping:
@@ -363,8 +366,8 @@ half of it in the suite). A fourth, `tools.ManualToMarkdown`, turns the
 published manual into the two files under `docs/` described above, and a
 fifth, `tools.Names`, lists the names a branch's new text uses that the tree
 does not declare (`ship.sh` runs it on ChatGPT's and Gemini's branches). `CLAUDE.md` at the root is the
-briefing an AI session reads first — the standing rules, the working loop and
-where everything is.
+briefing an AI session reads first — the standing rules and where everything
+is; how a batch is done, checked and shipped is `docs/batch.md`.
 
 Beyond that, the code is the documentation. Class headers carry a `WHY` section
 explaining what the thing replaced and what went wrong with the previous

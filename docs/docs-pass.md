@@ -69,7 +69,15 @@ from the code.
      the project): a block at the top in the house shape —
      `### TITLE — date, state, see doc.md` then one paragraph: what shipped,
      what it found, the verification (compile, `BuildMenuCheck`, the suite's
-     count against its baseline, files verified on the PC). Newest first.
+     count against the gate's record, `docs/notes/gate.txt`, files verified
+     on the PC). Newest first. A `{next}` on a branch is not stale: it is
+     the version `ship.sh` fills in at the gate (BP1, 2026-10-24). Your own
+     block may go in a ship file of yours in `docs/queue/`, under
+     `## changelog`, which `ship.sh` puts at the top in the merge. Its name
+     is your branch's with each `/` a `-`, then `-ship.md`: on
+     `docs/pass-2026-10-26` it is `docs-pass-2026-10-26-ship.md`, and
+     `ship.sh` stops a branch carrying a ship file of any other name. A docs
+     pass ships `--no-tag`, so its block writes no `{next}`.
    - `claude/todo.md`: strike the line the batch closed (`~~…~~ — done
      <date>`), add a line for anything the batch opened and did not do.
      Section 0 if it is a thing to do on the PC this week.
@@ -82,9 +90,12 @@ from the code.
    them over and empties the file.
 
 5. **The two front doors.** `README.md` and `CLAUDE.md` state counts and
-   shapes — files, harnesses, sectors, the tree — and each batch that changes
-   one leaves the other wrong. `grep -c` the real number; fix the sentence.
-   `AGENTS.md` only points at `CLAUDE.md` and should stay that way. Each
+   shapes — files, harnesses, sectors, the tree — and so does `docs/batch.md`
+   beside them, the batch procedure out of `CLAUDE.md` since 2026-10-24; each
+   batch that changes one leaves another wrong. `grep -c` the real number;
+   fix the sentence (`Stale` checks the counts of the first two only).
+   `AGENTS.md` only points at `CLAUDE.md` and `docs/batch.md` and should stay
+   that way. Each
    file's entry and history is `docs/tree.md`'s since 2026-10-13, not
    `CLAUDE.md`'s: a new or reshaped file gets its line there, and `CLAUDE.md`
    stays short, because every session pays for it on every turn.
@@ -122,8 +133,8 @@ needed changing, say that — it is a result.
 - **From a cloud session (the git era, since 2026-10-10):** a batch of its
   own, on its own branch and worktree, by an agent with a fresh context,
   given this file, the range and the batches' notes; the orchestrator gates
-  it and merges it like any batch. It is a step in `CLAUDE.md`'s "How a
-  batch is done".
+  it and merges it like any batch. It is a step in `docs/batch.md`, "The
+  docs pass".
 - **From Claude Code on the PC:** `Docs pass.bat` runs it headless against
   the last commit, which is the fully automatic version — it cannot ask
   questions, so it flags rather than guesses. `docs/docs-pass-agent.md` is

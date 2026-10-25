@@ -2,8 +2,8 @@
 
 A batch's Claude session hands the coding a brief can pin down to DeepSeek V4
 Pro, through `tools/deepseek/agent.py`: Claude decides the design, writes the
-brief, reviews the diff, runs the checks and commits; DeepSeek does the
-reading and writing in between, at about a ninth of Claude's price per token.
+brief, reviews the diff, runs the checks and commits (in a small fix batch
+Sonnet is the whole session, below); DeepSeek does the reading and writing in between, at about a ninth of Claude's price per token.
 Jerus, 2026-10-17: "update the required docs so that new batches with claude
 remember to use deepseek". DeepSeek is not an assistant like ChatGPT or Gemini:
 it has no branch and no brief of its own, and nothing it writes is committed
@@ -16,13 +16,23 @@ more agents every slice goes to an Agent subagent with model "sonnet"
 (Sonnet 5.5) and effort "xhigh", handled as this page handles DeepSeek: the
 same brief, the subagent edits the worktree and commits nothing, runs only
 the harness its brief names, and Claude reviews the diff as a stranger's and
-commits. The trial ran from FR1 to FX4 (2026-10-18/19), about forty slices
+commits. Since BP1 (2026-10-24) the slices are fewer and larger, and Claude
+reviews the diff without re-reading what the brief sent the subagent to
+read: an Opus batch session cost 400k-770k tokens with Sonnet already doing
+the edits, much of it that re-reading and its own context re-sent on every
+slice. A small fix batch - no money, saves or threading, a few hundred
+lines - runs on Sonnet as the whole batch session, Opus seeing it only at
+the gate (which amends "Which model", `docs/batch.md`). The trial ran from FR1 to FX4 (2026-10-18/19), about forty slices
 in eight batches, each batch's notes keeping a table of what the review
 changed: about half needed nothing; the map, drawing and harness slices
 were nearly always right, and the slices sometimes corrected the brief; the
 model slices needed real fixes (FR3's dues never reaching the treasury,
 FR2's Haulage rules, every id across a save). So a model slice's review is
-the careful one. When DeepSeek returns, Sonnet is its fallback whenever
+the careful one, and most of all where money, saves or threading change
+(BP1): the bank, bonds, the treasury and funds; `DataSave`, `HistorySave`,
+the load path and `SAVE_FORMAT`; threads and anything UI-wide. Those get a
+stranger's review at the gate as well, and `tools/pick.sh`'s review line
+names them. When DeepSeek returns, Sonnet is its fallback whenever
 `DEEPSEEK_API_KEY` is unset or the API fails.
 
 ## What to hand it, and what to keep
@@ -35,9 +45,12 @@ then checks by eye.
 
 **Keep** anything that waits on Jerus or decides what the spec leaves open;
 where a line goes in the month, unless the brief names the place
-(`docs/month-order.md`); a `SAVE_FORMAT` bump; `QUEUE.md`, the changelog, the
-todo, `GameVersion`, README's counts and the maps; the review, the full suite,
-the commit and the ship. A fix of a few lines is cheaper made than briefed.
+(`docs/month-order.md`); a `SAVE_FORMAT` bump; the batch's ship file
+(`docs/queue/<id>-ship.md`, its changelog block and queue rows), its notes,
+the todo, README's counts and the maps; the review, the checks and the
+commit. A batch writes no version: `ship.sh` sets `GameVersion.VERSION` at
+the gate, and the full suite is the gate's (BP1). A fix of a few lines is
+cheaper made than briefed.
 
 ## What it costs (the test, 2026-10-17)
 
@@ -71,7 +84,9 @@ the commit and the ship. A fix of a few lines is cheaper made than briefed.
    `python3 tools/deepseek/agent.py --followup target/deepseek/review-<slice>.md`
    continues the newest run (`--run <folder>` another). Make the last small
    fixes yourself rather than brief a third round.
-5. **Your checks** (`./batch-check.sh`), then commit; the commit body names
+5. **Your checks** (`./batch-check.sh --pick`: the build, the maps, Stale
+   and the harnesses that read what the batch changed; the full suite is
+   the gate's), then commit; the commit body names
    the files DeepSeek drafted ("drafted by DeepSeek V4 Pro through
    tools/deepseek, reviewed by Claude").
 
@@ -139,3 +154,6 @@ What the gate sent back in the test, and what DeepSeek cannot do itself:
   PC has no lock: batches check side by side (TM1), and a harness the script
   runs times hard, so a timing red it reports while another batch or the game
   runs is rerun through `batch-check.sh` or `Batch check.bat`, which time soft.
+  They decide soft or hard once, as the suite starts, never per harness
+  (lesson d, `docs/batch.md`); a timing red at the gate `ship.sh` compares
+  with main's own timing run, the same day on the same machine.
