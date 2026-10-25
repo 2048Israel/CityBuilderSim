@@ -407,7 +407,8 @@ public class EconomyManager {
        built ground by use (BUILDABLE BY SLOPE): works on the steep first, buildings on the flat first. Nothing
        records which sector's plot lies on which class, so a sector's land is attributed PRO RATA: its buildings'
        ground at the city's buildings' mix (flat, foothill), its works' (Game.standsAnywhere()) at the city's works'
-       mix (steep, foothill, flat). Summed over every sector and the city's own categories the areas by class are the
+       mix (steep, foothill, flat), and (ET4) its runs' - the Freight sector's railway track, the city's highways
+       (Game.isRun()) - at the city's runs' mix (flat, foothill, steep: the city's proportions of them). Summed over every sector and the city's own categories the areas by class are the
        split's own (LandClassCheck). Game pushes the class prices and the use with the land's price each month
        (setLandByRelief()) and the use again as the books close (setLandUse()); a city that owns neither foothill nor steep ground, or a bare
        economy that was pushed none, values every square foot at the one price by the OLD EXPRESSION, to the bit. */
@@ -416,12 +417,15 @@ public class EconomyManager {
     private double foothillPricePerSqFt, steepPricePerSqFt;
     private LandManager.ReliefUse landUse;
     private java.util.function.Predicate<BuildingsTemplate> worksTest = t -> false;
+    private java.util.function.Predicate<BuildingsTemplate> runsTest = t -> false;
     private java.util.function.ToDoubleFunction<BuildingsTemplate> plotPrice;
 
-    /** Wired once by Game: which templates are works (Game.standsAnywhere()), and what a square foot of one more of a template's plot costs where it would fall (LandManager.priceFor() over its size). */
+    /** Wired once by Game: which templates are works (Game.standsAnywhere()) and which are runs (Game.isRun(), ET4), and what a square foot of one more of a template's plot costs where it would fall (LandManager.priceFor() over its size). */
     public void wireLandByRelief(java.util.function.Predicate<BuildingsTemplate> works,
+                                 java.util.function.Predicate<BuildingsTemplate> runs,
                                  java.util.function.ToDoubleFunction<BuildingsTemplate> plotPricePerSqFt) {
         this.worksTest = works != null ? works : t -> false;
+        this.runsTest = runs != null ? runs : t -> false;
         this.plotPrice = plotPricePerSqFt;
     }
 
@@ -450,24 +454,28 @@ public class EconomyManager {
         return c == 1 ? foothillPricePerSqFt : c == 2 ? steepPricePerSqFt : landPricePerSqFt;
     }
 
-    /** The class areas {flat, foothill, slope} of `buildings` square feet of buildings' ground and `works` of works', pro rata to the city's use of each. A mix with no ground in use puts its ground on flat. */
-    private double[] landByRelief(double buildings, double works) {
-        double b = landUse.buildings(), w = landUse.works();
+    /** The class areas {flat, foothill, slope} of `buildings` square feet of buildings' ground, `works` of works' and `runs` of runs' (ET4), pro rata to the city's use of each. A mix with no ground in use puts its ground on flat. */
+    private double[] landByRelief(double buildings, double works, double runs) {
+        double b = landUse.buildings(), w = landUse.works(), r = landUse.runs();
         // ...each class its own share of the ground (so a class the split leaves empty is empty, not a rounding), a mix with nothing in use all flat.
         double bFlat = b > 0 ? buildings * landUse.buildingsFlat() / b : buildings;
         double bFoot = b > 0 ? buildings * landUse.buildingsFoothill() / b : 0;
         double wFlat = w > 0 ? works * landUse.worksFlat() / w : works;
         double wFoot = w > 0 ? works * landUse.worksFoothill() / w : 0;
         double wSlope = w > 0 ? works * landUse.worksSlope() / w : 0;
-        return new double[] { bFlat + wFlat, bFoot + wFoot, wSlope };
+        double rFlat = r > 0 ? runs * landUse.runsFlat() / r : runs;
+        double rFoot = r > 0 ? runs * landUse.runsFoothill() / r : 0;
+        double rSlope = r > 0 ? runs * landUse.runsSlope() / r : 0;
+        return new double[] { bFlat + wFlat + rFlat, bFoot + wFoot + rFoot, wSlope + rSlope };
     }
 
-    /** A sector's land, square feet, by the ground it stands on: {flat, foothill, slope} - its buildings' ground at the city's buildings' mix, its works' at the city's works' (above). Sums to getLandSqFtBySector(). */
+    /** A sector's land, square feet, by the ground it stands on: {flat, foothill, slope} - its buildings' ground at the city's buildings' mix, its works' at the city's works', its runs' (ET4) at the city's runs' (above). Sums to getLandSqFtBySector(). */
     public double[] landByReliefOf(Sector s) {
         double all = buildingManager.getLandSqFtBySector(s.key());
         if (!valuesByRelief()) return new double[] { all, 0, 0 };
         double works = Math.min(all, buildingManager.getWorksLandSqFtBySector(s.key(), worksTest));
-        return landByRelief(all - works, works);
+        double runs = Math.min(all - works, buildingManager.getWorksLandSqFtBySector(s.key(), runsTest));
+        return landByRelief(Math.max(0, all - works - runs), works, runs);
     }
 
     /** ...and a city-owned category's, the same way. */
@@ -475,7 +483,8 @@ public class EconomyManager {
         double all = buildingManager.getLandSqFtByCategory(category);
         if (!valuesByRelief()) return new double[] { all, 0, 0 };
         double works = Math.min(all, buildingManager.getWorksLandSqFtByCategory(category, worksTest));
-        return landByRelief(all - works, works);
+        double runs = Math.min(all - works, buildingManager.getWorksLandSqFtByCategory(category, runsTest));
+        return landByRelief(Math.max(0, all - works - runs), works, runs);
     }
 
     /** Areas {flat, foothill, slope} at the three class prices. */

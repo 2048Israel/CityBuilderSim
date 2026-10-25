@@ -131,6 +131,7 @@ public class BusinessInvestment {
         this.landAvailable = sqFt;
         this.landPricePerSqFt = pricePerSqFt;
         this.landAvailableForWorks = Double.NaN;
+        this.landAvailableForRuns = Double.NaN;
     }
 
     /**
@@ -145,9 +146,23 @@ public class BusinessInvestment {
         this.landAvailableForWorks = sqFt;
     }
 
-    /** The ground free for anyone that this building may take: a works's (ET2) where one is handed in, the buildings' otherwise. */
+    /**
+     * ...and what a run has (ET4, Game.isRun(); LandManager.freeForAnyone(Use.RUN)): a railway line is laid across every
+     * class of ground in the city's proportions, as much of it as the room the buildings leave it. NaN until handed in,
+     * which is the buildings' figure (setLandAvailable() clears it), as it is wherever the land is flat.
+     */
+    private double landAvailableForRuns = Double.NaN;
+
+    /** The ground free for anyone for a run, square feet - handed in after setLandAvailable(). */
+    public void setLandAvailableForRuns(double sqFt) {
+        this.landAvailableForRuns = sqFt;
+    }
+
+    /** The ground free for anyone that this building may take: a works's (ET2) or a run's (ET4) where one is handed in, the buildings' otherwise. */
     private double landAvailableFor(BuildingsTemplate template) {
-        return Game.standsAnywhere(template) && !Double.isNaN(landAvailableForWorks) ? landAvailableForWorks : landAvailable;
+        if (Game.standsAnywhere(template) && !Double.isNaN(landAvailableForWorks)) return landAvailableForWorks;
+        if (Game.isRun(template) && !Double.isNaN(landAvailableForRuns)) return landAvailableForRuns;
+        return landAvailable;
     }
 
     /*

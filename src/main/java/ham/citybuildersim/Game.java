@@ -427,8 +427,8 @@ public class Game {
         landManager.setPreparationPerSqFt(() -> preparationCost(preparationPoints(1)));
         // ...and the books value a business's land by the ground it stands on (ET3): which templates are works, and what a
         // square foot of one more of a template's plot costs where it would fall - the number buildFor() charges.
-        economyManager.wireLandByRelief(Game::standsAnywhere,
-                t -> landManager.priceFor(t.getLandSqFt(), t.getSector(), standsAnywhere(t)) / t.getLandSqFt());
+        economyManager.wireLandByRelief(Game::standsAnywhere, Game::isRun,
+                t -> landManager.priceFor(t.getLandSqFt(), t.getSector(), groundUse(t)) / t.getLandSqFt());
         // ...and the fresh water limit is the land's and the rights' (0.7.59,
         // batch J2): read each time the services update, on every path. A new
         // city has no rights; a load sets its own (readTheSave()).
@@ -4245,6 +4245,8 @@ public class Game {
                 landManager.getPricePerSqFt());
         // ...and a works's, which may stand on the steep ground too (ET2).
         businessInvestment.setLandAvailableForWorks(landManager.freeForAnyone(true));
+        // ...and a run's (ET4): a railway line is laid across every class of ground, as much of it as the buildings' room allows.
+        businessInvestment.setLandAvailableForRuns(landManager.freeForAnyone(LandManager.Use.RUN));
         businessInvestment.setZoneLand(landManager.zoneLand());
     }
 
@@ -4550,8 +4552,8 @@ public class Game {
         // ...its zone's part bought back at the zone's price and handed back
         // to the zone (0.7.107): priced before the release takes it out.
         double landFreed = decision.template.getLandSqFt() * scrapped;
-        double proceeds = landManager.buybackPriceFor(landFreed, decision.template.getSector(), standsAnywhere(decision.template));
-        landManager.release(landFreed, decision.template.getSector(), standsAnywhere(decision.template));
+        double proceeds = landManager.buybackPriceFor(landFreed, decision.template.getSector(), groundUse(decision.template));
+        landManager.release(landFreed, decision.template.getSector(), groundUse(decision.template));
 
         if (proceeds > 0 && proceeds <= cash) {
             treasuryPays(TreasuryLine.LAND, proceeds);
@@ -4973,7 +4975,7 @@ public class Game {
             double others = landManager.heldByZones() - landManager.heldBy(sector);
             String needs = String.format("needs %s, %s free%s",
                     LandManager.areaWords(decision.template.getLandSqFt() * (double) quantity),
-                    LandManager.areaWords(landManager.freeFor(sector, standsAnywhere(decision.template))),
+                    LandManager.areaWords(landManager.freeFor(sector, groundUse(decision.template))),
                     others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "");
             blockOnLand(decision.sector, needs);
             lastInvestment.put(slot, "Could not build " + decision.template.getName() + " - " + needs);
@@ -5461,7 +5463,7 @@ public class Game {
             double others = landManager.heldByZones() - landManager.heldBy(t.getSector());
             String needs = String.format("needs %s, %s free%s",
                     LandManager.areaWords(t.getLandSqFt() * (double) quantity),
-                    LandManager.areaWords(landManager.freeFor(t.getSector(), standsAnywhere(t))),
+                    LandManager.areaWords(landManager.freeFor(t.getSector(), groundUse(t))),
                     others > 0 ? "; " + BusinessInvestment.zonedForOthersWords(others) : "");
             blockOnLand(decision.sector, needs);
             lastInvestment.put(slot, "Could not build " + t.getName() + " - " + needs);
@@ -6535,10 +6537,10 @@ public class Game {
         return quoteBuild(selected, quantity, yardHolds, bitumenAhead, NO_GROUND_AHEAD);
     }
 
-    /** What the orders before one in a run have taken of the ground (ET2): their square feet, the part of it works's, and the foothill their orders prepare (buildRunInvoice()). */
-    private record GroundAhead(double ground, double works, double prepared) { }
+    /** What the orders before one in a run have taken of the ground (ET2): their square feet, the part of it works's (and, ET4, the part runs'), and the foothill their orders prepare (buildRunInvoice()). */
+    private record GroundAhead(double ground, double works, double runs, double prepared) { }
 
-    private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0);
+    private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0, 0);
 
     /** ...and with the ground the orders before it in a run take (ET2): the foothill it prepares is what placing it after them would ask. */
     private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds, double bitumenAhead,
@@ -6552,7 +6554,7 @@ public class Game {
         // ...and a building's foothill preparation (ET2): read here, before allocate() raises the prepared figure by
         // exactly it, so the quote and the charge read one; its money joins the sticker, taxed with the work.
         double prepSqFt = landManager.foothillToPrepareSqFt(selected.getLandSqFt() * (double) quantity,
-                selected.getSector(), standsAnywhere(selected), ahead.ground(), ahead.works(), ahead.prepared());
+                selected.getSector(), groundUse(selected), ahead.ground(), ahead.works(), ahead.runs(), ahead.prepared());
         double prepPoints = prepSqFt > 0 ? preparationPoints(prepSqFt) : 0;
         double prepCost = prepPoints > 0 ? preparationCost(prepPoints) : 0;
         double sticker = buildingManager.nonMaterialCost(selected) * quantity;
@@ -6567,7 +6569,7 @@ public class Game {
                 buildingManager.getConstructionMaterialPrice(),
                 selected.getLandSqFt() * (double) quantity,
                 // ...on the ground its sector may build on (0.7.109, Z2): what buildFor()'s canAllocate() asks - a works's any dry ground, steep too (ET2).
-                landManager.freeFor(selected.getSector(), standsAnywhere(selected)),
+                landManager.freeFor(selected.getSector(), groundUse(selected)),
                 // The city's own order's wait (0.7.22, after the docs pass):
                 // quoteMonths() exactly with no order set and no rush, and with
                 // one, where the order would land in it (quoteCityMonths()) -
@@ -7080,7 +7082,7 @@ public class Game {
         double each = t.getCashCost() + t.getConstructionMaterials() * buildingManager.getConstructionMaterialPrice();
         double buildingValue = each * n;
         // ...its zone's part at the zone's price since 0.7.107 (LandManager.buybackPriceFor()).
-        double ground = landManager.buybackPriceFor(t.getLandSqFt() * n, owner.key(), standsAnywhere(t));
+        double ground = landManager.buybackPriceFor(t.getLandSqFt() * n, owner.key(), groundUse(t));
         double book = buildingManager.getBookValueBySector(owner.key());
         double share = book > 0 ? Math.min(1, buildingValue / book) : 0;
         double operating = owner.statement().operatingIncome;
@@ -7542,8 +7544,8 @@ public class Game {
             // in one month are two sales, not one read twice.
             c.sold(bought, paid);
             // ...a bought building's ground back to its zone, if its sector has one (0.7.107).
-            // ...a works's ground leaves the works' part of the pool (standsAnywhere(), ET2).
-            landManager.release(d.landSqFt, d.from, standsAnywhere(buildingManager.getTemplate(d.templateId)));
+            // ...a works's ground leaves the works' part of the pool (standsAnywhere(), ET2), a run's the runs' (isRun(), ET4).
+            landManager.release(d.landSqFt, d.from, groundUse(buildingManager.getTemplate(d.templateId)));
             GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for $%,.0fk, %s freed.",
                     d.buildings, d.building, bought, paid, LandManager.areaWords(d.landSqFt)));
         }
@@ -7629,8 +7631,8 @@ public class Game {
 
         // ...the city's own works on the ground free for anyone, a sector's
         // building (a fixture's) on its zone's first (0.7.107).
-        // ...a works that may stand anywhere on any ground, steep too (standsAnywhere(), ET2).
-        boolean works = standsAnywhere(selected);
+        // ...a works that may stand anywhere on any ground, steep too (standsAnywhere(), ET2), a run on every class (isRun(), ET4).
+        LandManager.Use works = groundUse(selected);
         if (!landManager.canAllocate(landNeeded, selected.getSector(), works)) {
             this.hasNewReceipt = false;
             System.out.println("Not enough land (need "
@@ -7901,6 +7903,25 @@ public class Game {
     }
 
     /**
+     * Whether a building is a run (ET4, spec-earth2-terrain 4.3): a highway or a railway line, laid in a line across
+     * the land - the Elevated Highway, and the rail TRACK (the Rail Spur, the Freight Line), not the Rail Terminal and
+     * Depot, which are yards and stay buildings. A run's ground comes from every class of ground in the city's
+     * proportions (LandManager's BUILDABLE BY SLOPE), "so a mountain city's highways use its steep ground as real ones
+     * do". The Gravel and Paved Roads are streets, the Light Rail and the Metro are transit: buildings. Never a
+     * template with a site (standsAnywhere()). It is the map's highway and track (BuildingVisual.Type's road() and track()).
+     */
+    public static boolean isRun(BuildingsTemplate t) {
+        if (t == null || standsAnywhere(t)) return false;
+        BuildingType c = t.getCategory();
+        return (c == BuildingType.INFRASTRUCTURE && t.isHighway()) || (c == BuildingType.RAIL && !t.isStation());
+    }
+
+    /** What a template's ground is used for (ET4): a works's if it stands anywhere (standsAnywhere()), a run's if it is a highway or a railway line (isRun()), a building's otherwise. */
+    public static LandManager.Use groundUse(BuildingsTemplate t) {
+        return standsAnywhere(t) ? LandManager.Use.WORKS : isRun(t) ? LandManager.Use.RUN : LandManager.Use.BUILDING;
+    }
+
+    /**
      * Hands the books the land office's classes of ground (ET3, spec-earth2-terrain 5.3): the prices of a square foot of
      * foothill and of steep ground (flat's is the land's price, pushed beside it), whether the city owns only flat ground,
      * and the ground in use by class. Pushed with the land's price at the top of each month and on a load, so the classes
@@ -8099,8 +8120,8 @@ public class Game {
         // ...on the ground free for anyone and, since 0.7.107, what the
         // building's sector's zone holds (LandManager.freeFor()).
         String zoned = template.getSector();
-        // ...a works that may stand anywhere on any ground, steep too (standsAnywhere(), ET2).
-        boolean works = standsAnywhere(template);
+        // ...a works that may stand anywhere on any ground, steep too (standsAnywhere(), ET2), a run on every class (isRun(), ET4).
+        LandManager.Use works = groundUse(template);
         if (!landManager.canAllocate(landNeeded, zoned, works)) {
             return false;   // the city has no plot to sell them
         }
@@ -8213,7 +8234,7 @@ public class Game {
             return BuildResult.NO_LICENCE;
         }
 
-        if (!landManager.canAllocate(template.getLandSqFt() * quantity, template.getSector(), standsAnywhere(template))) {
+        if (!landManager.canAllocate(template.getLandSqFt() * quantity, template.getSector(), groundUse(template))) {
             this.hasNewReceipt = false;
             return BuildResult.NO_LAND;
         }
@@ -8287,15 +8308,20 @@ public class Game {
         int yard = buildingManager.getConstructionMaterials();
         double total = 0, bitumenAhead = 0;
         // ...and the ground the orders before it take and the foothill they prepare, which the next is asked for after them (ET2).
-        double groundAhead = 0, worksAhead = 0, preparedAhead = 0;
+        // ...and (ET4) the part of it that is runs', which take their share of every class and push buildings off the flat.
+        double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0;
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
             BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead,
-                    new GroundAhead(groundAhead, worksAhead, preparedAhead));
+                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead));
             total += q.total;
             double land = e.getKey().getLandSqFt() * (double) e.getValue();
+            LandManager.Use use = groundUse(e.getKey());
+            // ...a run prepares no pad itself, but the pads it displaces are cut for the buildings (allocate()), so the next building is not quoted them.
+            if (use == LandManager.Use.RUN) preparedAhead += landManager.foothillDisplacedByRunSqFt(land, groundAhead, worksAhead, runsAhead);
             groundAhead += land;
-            if (standsAnywhere(e.getKey())) worksAhead += land;
+            if (use == LandManager.Use.WORKS) worksAhead += land;
+            if (use == LandManager.Use.RUN) runsAhead += land;
             preparedAhead += q.prepSqFt;
             // What deliverYardToSites() will take: BuildingManager.takeFromYard()'s own rule.
             yard -= Math.max(0, Math.min((int) Math.round(q.materialsNeeded), yard));
@@ -8331,19 +8357,23 @@ public class Game {
         java.util.Map<Resource, java.util.List<LandManager.Claim>> claimsAhead = new java.util.EnumMap<>(Resource.class);
         double ground = 0;
         // ...and how much of it is works's (ET2): a works takes the steep ground no building may have, so it is not all of it off a building's free ground.
-        double worksAhead = 0;
+        // A run's (ET4) takes its share of the steep ground likewise, the rest of its share off the flat and foothill the buildings stand on.
+        double worksAhead = 0, runsAhead = 0;
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             BuildingsTemplate t = e.getKey();
             int n = e.getValue() == null ? 0 : e.getValue();
             int pool = sitePool(t);
             if (t != null && n > 0) {
-                boolean works = standsAnywhere(t);
-                double onIdleSlope = works ? 0 : Math.min(worksAhead, landManager.idleSlopeSqFt());
+                LandManager.Use use = groundUse(t);
+                double onIdleSlope = use != LandManager.Use.BUILDING ? 0
+                        : Math.min(worksAhead + runsAhead * landManager.getSlopeShare(), landManager.idleSlopeSqFt());
                 java.util.List<LandManager.Claim> packedAhead = packs(t) ? claimsAhead.get(t.site().resource()) : null;
                 BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
-                        : !landManager.canAllocate(ground - onIdleSlope + t.getLandSqFt() * (double) n, t.getSector(), works) ? BuildResult.NO_LAND
+                        : !(use == LandManager.Use.RUN
+                                ? landManager.canAllocateRunAfter(t.getLandSqFt() * (double) n, t.getSector(), ground, worksAhead, runsAhead)
+                                : landManager.canAllocate(ground - onIdleSlope + t.getLandSqFt() * (double) n, t.getSector(), use)) ? BuildResult.NO_LAND
                         : null;
                 if (refused != null) {
                     if (stop != null) stop[0] = refused;
@@ -8356,7 +8386,8 @@ public class Game {
                     onSites[pool] += n;
                 }
                 ground += t.getLandSqFt() * (double) n;
-                if (works) worksAhead += t.getLandSqFt() * (double) n;
+                if (use == LandManager.Use.WORKS) worksAhead += t.getLandSqFt() * (double) n;
+                if (use == LandManager.Use.RUN) runsAhead += t.getLandSqFt() * (double) n;
             }
             ahead++;
         }
@@ -13819,6 +13850,8 @@ public class Game {
         dataSave.setLandPricePerSqFt(landManager.getPricePerSqFt());
         // ...the works' ground and the foothill prepared (ET2).
         dataSave.setLandWorks(landManager.getWorksSqFt(), landManager.getPreparedSqFt());
+        // ...and the runs' (ET4).
+        dataSave.setLandRuns(landManager.getRunsSqFt());
         dataSave.setIncomeTaxRate(economyManager.getTaxPolicy().getIncomeTaxRate());
         dataSave.setPropertyTaxRate(economyManager.getTaxPolicy().getPropertyTaxRate());
         dataSave.setNotices(inbox.all());
@@ -17386,6 +17419,10 @@ public class Game {
             // foothill the buildings stand on now.
             landManager.restoreWorks(loaded.getLandWorksSqFt() != null ? loaded.getLandWorksSqFt()
                     : buildingManager.getWorksLandFootprint(Game::standsAnywhere));
+            // ...and the runs' (ET4), read back before the prepared figure; a save from before them has the standing
+            // highways' and railway lines' land, which is what its runs were.
+            landManager.restoreRuns(loaded.getLandRunsSqFt() != null ? loaded.getLandRunsSqFt()
+                    : buildingManager.getWorksLandFootprint(Game::isRun));
             landManager.restorePrepared(loaded.getLandPreparedSqFt());
             // ...and its zones, the forest law and the forest cleared (0.7.107): a save from before
             // them has none, and loads with the ground free for anyone, as it always was.
