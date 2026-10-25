@@ -492,6 +492,22 @@ public final class GoodsMarket {
         rDemand = Math.max(0, demand);
     }
 
+    /**
+     * The month's tally and the draws not yet struck, put back so a city just loaded reads what the one that kept running
+     * does: the goods imported, exported and filled at home in the month last closed (SpreadPlanner.values() prices a
+     * works' feed and output off them), what was offered and bid for, and the units drawn on demand since (the next
+     * strike counts them). The trades list is not put back: the screens that read it say "not counted" until a month
+     * has run (FW6, 2026-10-25).
+     */
+    public void restoreTally(double imported, double exported, double localFilled, double offered, double bid, double drawn) {
+        this.imported = Math.max(0, imported);
+        this.exported = Math.max(0, exported);
+        this.localFilled = Math.max(0, localFilled);
+        this.offered = Math.max(0, offered);
+        this.bid = Math.max(0, bid);
+        this.drawn = Math.max(0, drawn);
+    }
+
     public void reset() {
         localPrice = openingPrice();
         // A city with no railway quotes the literal it always quoted. See above.

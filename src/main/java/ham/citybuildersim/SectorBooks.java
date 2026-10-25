@@ -269,9 +269,11 @@ public final class SectorBooks {
             /**
              * Last month's stock at this month's prices, less at last month's:
              * what the prices did to the stock it began the month with. Counted
-             * when last month's stock was in memory (stockCounted) - not the
-             * month after a load, nor in a save from before 0.7.75, which reads
-             * false there.
+             * when last month's stock was in memory (stockCounted) - and since
+             * FW6 (2026-10-25) a save carries it (SectorBooks.stockToSave()), so
+             * the month after a load counts it as the city that kept running
+             * does; only in a save from before FW6 (or 0.7.75) it reads false
+             * there.
              */
             double stockRevalued,
             boolean stockCounted,
@@ -498,7 +500,9 @@ public final class SectorBooks {
      * its shares, those outside the bank's desk, the last trade or fair
      * value with whether it has traded, the register's fair value, the
      * month's dividend and a year's of it a share - Equity's and Exchange's
-     * reads. In memory for this month and last, NOT SAVED, as Debt.
+     * reads. Kept for this month and last, and SAVED since FW6 (2026-10-25;
+     * sharesToSave(), restoreShares()), as Debt is: until then a load read
+     * both as not counted for two months. A save from before FW6 still reads so.
      */
     public record Shares(double shares, double outstanding, double price, double fair, boolean traded,
                          double dividend, double dividendYear) {
@@ -518,11 +522,11 @@ public final class SectorBooks {
     /** Closing cash from the month just recorded, which is next month's opening. */
     private final Map<String, Double> lastCash = new LinkedHashMap<>();
 
-    /** R1 and R2 for this month and last, and each company's share (0.7.74): in memory only - see Debt and Shares. */
+    /** R1 and R2 for this month and last, and each company's share (0.7.74): saved since FW2 and FW6 - see Debt and Shares. */
     private final Map<String, Debt> debtNow = new LinkedHashMap<>(), debtBefore = new LinkedHashMap<>();
     private final Map<String, Shares> sharesNow = new LinkedHashMap<>(), sharesBefore = new LinkedHashMap<>();
 
-    /** Each business's stock by good as the month closed, {units, price} (0.7.75, R6): next month's revaluation is last month's units at its prices. In memory only. */
+    /** Each business's stock by good as the month closed, {units, price} (0.7.75, R6): next month's revaluation is last month's units at its prices. Saved since FW6 (stockToSave(), restoreStock()). */
     private final Map<String, Map<Good, double[]>> stockAtClose = new LinkedHashMap<>();
 
     /** This month's R1 and R2 for one business, or null while not counted (a load, a founding). */
@@ -833,17 +837,93 @@ public final class SectorBooks {
         if (savedBefore != null) savedBefore.forEach((k, v) -> { Debt d = debtOf(v); if (k != null && d != null) debtBefore.put(k, d); });
     }
 
+    /** The slots a saved Shares is written as: shares, outstanding, price, fair value, traded (1 or 0), dividend, dividend a year. */
+    public static final int SHARES_SLOTS = 7;
+
+    /**
+     * Each company's share as the books took it, this month's or last month's (FW6, 2026-10-25), for the save: the
+     * record's figures in SHARES_SLOTS slots, as fresh arrays. Only the records whose every figure a save can hold
+     * (a NaN would fail the whole save); one left out reads not counted, as every one did before FW6.
+     */
+    public Map<String, double[]> sharesToSave(boolean thisMonth) {
+        Map<String, double[]> out = new LinkedHashMap<>();
+        for (Map.Entry<String, Shares> e : (thisMonth ? sharesNow : sharesBefore).entrySet()) {
+            Shares s = e.getValue();
+            if (s == null) continue;
+            double[] a = { s.shares(), s.outstanding(), s.price(), s.fair(), s.traded() ? 1 : 0, s.dividend(), s.dividendYear() };
+            boolean ok = true;
+            for (double v : a) ok &= Double.isFinite(v);
+            if (ok) out.put(e.getKey(), a);
+        }
+        return out;
+    }
+
+    /**
+     * ...and put back by the load path after restoreFrom() (FW6): the Sectors screen's share report reads this month and
+     * last as the saved city's did, not "not counted" for two months. A save from before FW6 has none and reads as before.
+     */
+    public void restoreShares(Map<String, double[]> saved, Map<String, double[]> savedBefore) {
+        sharesNow.clear();
+        sharesBefore.clear();
+        if (saved != null) saved.forEach((k, v) -> { Shares s = sharesOf(v); if (k != null && s != null) sharesNow.put(k, s); });
+        if (savedBefore != null) savedBefore.forEach((k, v) -> { Shares s = sharesOf(v); if (k != null && s != null) sharesBefore.put(k, s); });
+    }
+
+    private static Shares sharesOf(double[] a) {
+        if (a == null || a.length != SHARES_SLOTS) return null;
+        return new Shares(a[0], a[1], a[2], a[3], a[4] != 0, a[5], a[6]);
+    }
+
+    /**
+     * Each business's stock by good as the month closed, for the save (FW6, 2026-10-25): {units, price} by the good's name,
+     * as fresh arrays, a business with no stock as an empty map (it was counted: its next revaluation is the stock it
+     * began the month with, which is none). Only the figures a save can hold; a good with a NaN or infinite one is
+     * left out, and the revaluation then reads it as a good the business did not hold.
+     */
+    public Map<String, Map<String, double[]>> stockToSave() {
+        Map<String, Map<String, double[]>> out = new LinkedHashMap<>();
+        for (Map.Entry<String, Map<Good, double[]>> e : stockAtClose.entrySet()) {
+            Map<String, double[]> goods = new LinkedHashMap<>();
+            for (Map.Entry<Good, double[]> g : e.getValue().entrySet()) {
+                double[] a = g.getValue();
+                if (a != null && a.length == 2 && Double.isFinite(a[0]) && Double.isFinite(a[1])) goods.put(g.getKey().name(), a.clone());
+            }
+            out.put(e.getKey(), goods);
+        }
+        return out;
+    }
+
+    /**
+     * ...and put back by the load path after restoreFrom() (FW6): the month after a load counts its revaluation, last
+     * month's units at this month's prices, as the city that kept running does. A save from before FW6 has none and
+     * the month after its load counts none, as before.
+     */
+    public void restoreStock(Map<String, Map<String, double[]>> saved) {
+        stockAtClose.clear();
+        if (saved == null) return;
+        for (Map.Entry<String, Map<String, double[]>> e : saved.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null) continue;
+            Map<Good, double[]> goods = new java.util.EnumMap<>(Good.class);
+            for (Map.Entry<String, double[]> g : e.getValue().entrySet()) {
+                Good good = g.getKey() == null ? null : Good.byName(g.getKey());
+                double[] a = g.getValue();
+                if (good != null && a != null && a.length == 2) goods.put(good, a.clone());
+            }
+            stockAtClose.put(e.getKey(), goods);
+        }
+    }
+
     public void restoreFrom(java.util.List<SectorMonth> saved,
                             java.util.List<SectorMonth> savedBefore) {
         now.clear();
         before.clear();
         lastCash.clear();
-        // ...and R1 and R2, which the load puts back after this (restoreDebt(), FW2); the shares are not saved (0.7.74): not counted until a month runs.
+        // ...and R1 and R2, which the load puts back after this (restoreDebt(), FW2), and the shares (restoreShares(), FW6): a save from before those has none, and reads not counted until a month runs.
         debtNow.clear();
         debtBefore.clear();
         sharesNow.clear();
         sharesBefore.clear();
-        // ...nor last month's stock by good (0.7.75, R6): the month after a load does not count its revaluation.
+        // ...nor last month's stock by good (0.7.75, R6), which the load puts back after this too (restoreStock(), FW6): a save from before that counts no revaluation in the month after its load.
         stockAtClose.clear();
         if (saved != null) {
             for (SectorMonth m : saved) {

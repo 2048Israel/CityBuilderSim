@@ -141,8 +141,8 @@ public final class SpreadPlanner {
      * what the spec names): a planner weighs at the top of the month, after
      * every statement has been struck and banked, and bank() has cleared
      * those rows by then; the market's tally stands until the good next
-     * clears. Not saved, as cityValue()'s is not: a city just loaded reads
-     * none until its first month.
+     * clears. Saved since FW6 (2026-10-25), as cityValue()'s is: a city just
+     * loaded reads the tally of the month it was saved in (Markets.State).
      */
 
     /** A price for one part of a split: itself, or the local price where it is not a number, or nothing where neither is (cityValue()'s fallback). */

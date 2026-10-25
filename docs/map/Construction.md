@@ -1,4 +1,4 @@
-# Construction.java - 998 lines · 55 methods · 1 constants · sectors
+# Construction.java - 1,002 lines · 55 methods · 1 constants · sectors
 
 `ham/citybuildersim/sectors/Construction.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -34,9 +34,9 @@
 > municipal works department's free points were retired at PT1-M4, and the
 > city founds with a Builders' Yard standing instead (Game.foundingYard()).
 
-**Uses:** [Good](Good.md) (18), [BusinessInvestment](BusinessInvestment.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (5), [Game](Game.md) (3), [BuildingManager](BuildingManager.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [JobType](JobType.md) (1)
+**Uses:** [Good](Good.md) (19), [BusinessInvestment](BusinessInvestment.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (5), [Game](Game.md) (3), [BuildingManager](BuildingManager.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [JobType](JobType.md) (1)
 
-**Used by (19):** [BankCheck](BankCheck.md), [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [FoundingYardCheck](FoundingYardCheck.md), [Game](Game.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [RobustnessCheck](RobustnessCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [SlopeCheck](SlopeCheck.md), [UserInterface](UserInterface.md)
+**Used by (20):** [BankCheck](BankCheck.md), [BuildersFirstCheck](BuildersFirstCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [FoundingYardCheck](FoundingYardCheck.md), [Game](Game.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReloadCheck](ReloadCheck.md), [RobustnessCheck](RobustnessCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [SlopeCheck](SlopeCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -44,11 +44,11 @@
 |---:|---|
 | 250 | THE ORDER BOOK |
 | 343 | · THE OVERTIME AND THE CANCELS (0.7.22; ConstructionControl, B and C) |
-| 489 | WHAT IT COSTS TO STAND |
-| 518 | MATERIALS ARE DRAWN, NOT BID FOR |
-| 586 | PLANNING - off the order book |
-| 794 | THE SCREEN |
-| 912 | SAVE |
+| 493 | WHAT IT COSTS TO STAND |
+| 522 | MATERIALS ARE DRAWN, NOT BID FOR |
+| 590 | PLANNING - off the order book |
+| 798 | THE SCREEN |
+| 916 | SAVE |
 
 ## Constants
 
@@ -76,13 +76,13 @@
 | 353 | `private double overtimeThisMonth` | What the city paid this month for overtime on its rushed sites, with the builders' tax in it (Game.settleConstructionControl()): earned beside the work, as the escalation is - the price of the hours the work was done ... |
 | 376 | `private double[] overtimeWages` | The overtime's wages, by job type, that the crews on the rushed sites were paid this month on top of their posts' (0.7.22): the premium, the whole of it, in a depot's mix of posts at today's wages. |
 | 438 | `private double salvageCutThisMonth` | ...this month's: booked at the month's market after recogniseWork() cleared it, named at the next strike (nameOtherRevenue()). |
-| 549 | `private double salvageCost` | What the builders paid for the salvage on hand, in money: its cost basis. |
+| 553 | `private double salvageCost` | What the builders paid for the salvage on hand, in money: its cost basis. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 951 | **type** `public final class Construction extends Sector` | The builders. |
+| 48 | 955 | **type** `public final class Construction extends Sector` | The builders. |
 | 154 | 13 | `public void strikeCrews(double work, double depots)` | Strikes the month's crews. |
 | 169 | 1 | `public double getPostsOfferedShare()` | The share of the depots' posts on offer this month. |
 | 172 | 1 | `public double getCrewsNeeded()` | The work over the depots' full-staffing output, as struck - above 1 when the work is more than they can do. |
@@ -102,7 +102,7 @@
 | 332 | 7 | `public void recogniseEscalation(double amount)` | The owners' material escalation on the month's work (0.7.19): earned beside it, in the same month and on the same line of the accounts - it is the price of the material the work was built with - or, for a refund, give... |
 | 341 | 1 | `public double getEscalationThisMonth()` | ...this month's, for the screens. |
 
-### THE OVERTIME AND THE CANCELS (0.7.22; ConstructionControl, B and C) (lines 343-488)
+### THE OVERTIME AND THE CANCELS (0.7.22; ConstructionControl, B and C) (lines 343-492)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -124,53 +124,53 @@
 | 465 | 1 | `public double getDrawnLocal()` | Materials bought from the plant in the month last struck, in units - the statement's month; NaN until a loaded older save's first strike. |
 | 468 | 1 | `public double getDrawnImported()` | ...and imported in it. |
 | 471 | 1 | `public boolean isDrawnKnown()` | Whether the month last struck's materials are known: false after loading a save from before 0.7.46, until its first strike. |
-| 475 | 6 | `protected void beforeBank()` | The materials row as it stands at the strike, kept before bank() clears it (A5). |
-| 483 | 5 | `public void restoreOrderBook(double cash, double unearned, double backlog)` | The order book, put back on load. |
+| 480 | 5 | `protected void beforeBank()` | The materials as they stand at the strike, kept before bank() clears them (A5). |
+| 487 | 5 | `public void restoreOrderBook(double cash, double unearned, double backlog)` | The order book, put back on load. |
 
-### WHAT IT COSTS TO STAND (lines 489-517)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 505 | 7 | `public double getStandingCostPerCapacity(double capacity)` | What it costs to keep one point of capacity standing for a month. |
-| 514 | 3 | `public double getConstructionCapacity()` | Points a month the depots could deliver, before staffing and roads. |
-
-### MATERIALS ARE DRAWN, NOT BID FOR (lines 518-585)
+### WHAT IT COSTS TO STAND (lines 493-521)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 524 | 1 | `public double bid(Good g)` | Nothing bid: the crews draw what the month's work needs, as they build. |
-| 552 | 1 | `public double getSalvage()` | Units of scrapped plant's material on hand. |
-| 555 | 1 | `public double getSalvageCost()` | ...and what they paid for it. |
-| 558 | 5 | `public void addSalvage(double units, double paid)` | Takes material bought from plant being scrapped into the stock, at what was paid for it (nothing for the builders' own). |
-| 570 | 11 | `public double takeSalvage(double units)` | Draws from the stock, up to what it holds, and books what the units drawn cost - their share of the cost basis - as this month's input. |
-| 584 | 1 | `public double getInventoryValue()` | Its stock of scrapped plant's material at today's price; the yard is the city's and the plant is the plant's. |
+| 509 | 7 | `public double getStandingCostPerCapacity(double capacity)` | What it costs to keep one point of capacity standing for a month. |
+| 518 | 3 | `public double getConstructionCapacity()` | Points a month the depots could deliver, before staffing and roads. |
 
-### PLANNING - off the order book (lines 586-793)
+### MATERIALS ARE DRAWN, NOT BID FOR (lines 522-589)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 625 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Everyone else's lead times are its output, so when the queue gets long it is the constraint on the whole city. |
-| 714 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
-| 750 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
-| 774 | 12 | `public boolean mayRetire(BuildingsTemplate t)` | THE LAST DEPOT IS NOT FOR SALE (PT1-M4). |
-| 789 | 4 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything: the builders have the one depot. |
+| 528 | 1 | `public double bid(Good g)` | Nothing bid: the crews draw what the month's work needs, as they build. |
+| 556 | 1 | `public double getSalvage()` | Units of scrapped plant's material on hand. |
+| 559 | 1 | `public double getSalvageCost()` | ...and what they paid for it. |
+| 562 | 5 | `public void addSalvage(double units, double paid)` | Takes material bought from plant being scrapped into the stock, at what was paid for it (nothing for the builders' own). |
+| 574 | 11 | `public double takeSalvage(double units)` | Draws from the stock, up to what it holds, and books what the units drawn cost - their share of the cost basis - as this month's input. |
+| 588 | 1 | `public double getInventoryValue()` | Its stock of scrapped plant's material at today's price; the yard is the city's and the plant is the plant's. |
 
-### THE SCREEN (lines 794-911)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 800 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
-| 803 | 1 | `public String inputLabel()` |  |
-| 819 | 11 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
-| 832 | 1 | `public boolean hasPlantBlock()` |  |
-| 835 | 76 | `public List<Line> ownLines(Game game)` |  |
-
-### SAVE (lines 912-998)
+### PLANNING - off the order book (lines 590-797)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 917 | 28 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 947 | 27 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 976 | 10 | `protected void resetExtras()` |  |
-| 989 | 9 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
+| 629 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Everyone else's lead times are its output, so when the queue gets long it is the constraint on the whole city. |
+| 718 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
+| 754 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
+| 778 | 12 | `public boolean mayRetire(BuildingsTemplate t)` | THE LAST DEPOT IS NOT FOR SALE (PT1-M4). |
+| 793 | 4 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything: the builders have the one depot. |
+
+### THE SCREEN (lines 798-915)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 804 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
+| 807 | 1 | `public String inputLabel()` |  |
+| 823 | 11 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
+| 836 | 1 | `public boolean hasPlantBlock()` |  |
+| 839 | 76 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE (lines 916-1002)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 921 | 28 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 951 | 27 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 980 | 10 | `protected void resetExtras()` |  |
+| 993 | 9 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
 

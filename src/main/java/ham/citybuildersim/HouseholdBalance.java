@@ -2671,6 +2671,16 @@ public class HouseholdBalance {
 
     private double lastMealsBought, lastMealSpend, lastMealsEaten;
 
+    /**
+     * The month starts with no meals bought (FW6, 2026-10-25). takeMeals() clears them only when it is called, and the
+     * counter's dine() returns before it when no kitchen is priced, wanted or served, so the price index's spend
+     * (Game.indexSpends()) booked an older month's meals as this month's - and a city loaded, which holds none, booked 0.
+     */
+    public void clearMealsBought() {
+        lastMealsBought = 0;
+        lastMealSpend = 0;
+    }
+
     /** Meals the city ate out in the month the hunger measure just read. */
     public double getMealsEaten() { return lastMealsEaten; }
 
@@ -2681,6 +2691,12 @@ public class HouseholdBalance {
     public double getMealSpend() { return lastMealSpend; }
 
     private double lastLuxuriesBought, lastLuxurySpend;
+
+    /** ...and none of the pieces (FW6, 2026-10-25): see clearMealsBought(), and the counter's shop(). */
+    public void clearLuxuriesBought() {
+        lastLuxuriesBought = 0;
+        lastLuxurySpend = 0;
+    }
 
     /** Pieces the households took this month. */
     public double getLuxuriesBought() { return lastLuxuriesBought; }

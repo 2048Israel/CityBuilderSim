@@ -1,4 +1,4 @@
-# CapitalFlows.java - 748 lines · 47 methods · 14 constants · model
+# CapitalFlows.java - 757 lines · 48 methods · 14 constants · model
 
 `ham/citybuildersim/CapitalFlows.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 716 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
+| 33 | 725 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
 
 ### HOW MUCH WANTS TO COME (lines 35-133)
 
@@ -176,12 +176,13 @@
 | 651 | 1 | `public void setMonth(int month)` |  |
 | 654 | 1 | `public int stopMonthsLeft()` | Months of the stop still to run, or 0. |
 
-### carrying (lines 656-748)
+### carrying (lines 656-757)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 658 | 15 | `public double[] toSaveArray()` |  |
 | 674 | 30 | `public void restore(double[] saved)` |  |
-| 705 | 15 | `public void reset()` |  |
-| 722 | 25 | `public void redenominate(double scale)` | Hot money, in the new unit. |
+| 710 | 3 | `public void restoreStopReason(String reason)` | The words the stop gave, put back on load (FW6, 2026-10-25): a String, so it cannot ride in the array above, and a city saved during a stop showed a blank reason on the Trade screen's card for the rest of it (PANIC_MO... |
+| 714 | 15 | `public void reset()` |  |
+| 731 | 25 | `public void redenominate(double scale)` | Hot money, in the new unit. |
 

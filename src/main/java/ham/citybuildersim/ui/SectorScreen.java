@@ -3392,7 +3392,7 @@ final class SectorScreen {
             { "Last trade, or fair value", "$" }, { "Fair value, the register's", "$" }, { "Price to earnings, a year", "x" },
             { "Price to book", "x" }, { "Yield, on a year's dividend", "%" }, { "Market value", "M" } };
 
-    /** A SHARE: the report's first block, this month against last; not counted the month after a load. */
+    /** A SHARE: the report's first block, this month against last; saved since FW6, so counted after a load too (a save from before it reads "not counted" until a month has run). */
     VBox shareReport(Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
         SectorBooks books = ui.game.getSectorBooks();
         double[] a = shareFigures(books.shares(sector.key()), now), b = shareFigures(books.sharesBefore(sector.key()), then);

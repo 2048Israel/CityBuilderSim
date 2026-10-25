@@ -60,7 +60,7 @@
 
 **Uses:** [World](World.md) (46), [EarthData](EarthData.md) (33), [EarthTerrain](EarthTerrain.md) (17), [Resource](Resource.md) (5), [LandMap](LandMap.md) (4), [Geology](Geology.md) (2), [GameVersion](GameVersion.md) (1), [Deposit](Deposit.md) (1), [EarthProj](EarthProj.md) (1)
 
-**Used by (14):** [DataSave](DataSave.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md)
+**Used by (15):** [DataSave](DataSave.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReloadCheck](ReloadCheck.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md)
 
 ## Sections
 

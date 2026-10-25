@@ -1,4 +1,4 @@
-# Markets.java - 552 lines · 28 methods · 0 constants · model
+# Markets.java - 564 lines · 28 methods · 0 constants · model
 
 `ham/citybuildersim/Markets.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -67,15 +67,16 @@
 |---:|---|---|
 | 57 | `private final Map<Good, GoodsMarket> markets` |  |
 | 81 | `private CityTrader city` | The city's trader, or null - a harness's bare market (0.7.85). |
-| 512 | `public String good` |  |
-| 513 | `public double price, flow, stock, demand` |  |
-| 514 | `public double[] taken` |  |
+| 516 | `public String good` |  |
+| 517 | `public double price, flow, stock, demand` |  |
+| 518 | `public double[] taken` |  |
+| 519 | `public double imported, exported, localFilled, offered, bid, drawn` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 498 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
+| 55 | 510 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
 | 67 | 12 | **type** `public interface CityTrader` | The city as a trader in a market (0.7.85): what it bids for and offers in the month's clearing of a good, and what it bought and sold there - its strategic reserve's crude (StrategicReserve). |
 | 69 | 1 | `double cityBid(Good g)` _(in Markets.CityTrader)_ | Units of a good the city bids for in this month's clearing. |
 | 71 | 1 | `double cityOffer(Good g)` _(in Markets.CityTrader)_ | ...and offers in it. |
@@ -118,13 +119,13 @@
 | 503 | 1 | `public double importedUnits(Good g)` | Units the world sold the city this month, of one good, from the markets' own record. |
 | 504 | 1 | `public double exportedUnits(Good g)` |  |
 
-### SAVE, RESET, THE REFORM (lines 506-552)
+### SAVE, RESET, THE REFORM (lines 506-564)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 511 | 5 | **type** `public static final class State` | One market as a save carries it: the price it traded at and the strike behind it. |
-| 517 | 14 | `public List<State> toState()` |  |
-| 532 | 12 | `public void restore(List<State> saved)` |  |
-| 545 | 3 | `public void reset()` |  |
-| 549 | 3 | `public void redenominate(double scale)` |  |
+| 515 | 6 | **type** `public static final class State` | One market as a save carries it: the price it traded at, the strike behind it and, since FW6 (2026-10-25), the month's tally (units imported, exported, filled at home, offered, bid) and the units drawn since the last ... |
+| 522 | 20 | `public List<State> toState()` |  |
+| 543 | 13 | `public void restore(List<State> saved)` |  |
+| 557 | 3 | `public void reset()` |  |
+| 561 | 3 | `public void redenominate(double scale)` |  |
 

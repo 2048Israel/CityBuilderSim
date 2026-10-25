@@ -1,4 +1,4 @@
-# Quarrying.java - 400 lines · 19 methods · 3 constants · sectors
+# Quarrying.java - 412 lines · 21 methods · 3 constants · sectors
 
 `ham/citybuildersim/sectors/Quarrying.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -70,9 +70,9 @@
 | 103 | · which field a quarry is on |
 | 231 | · the ground |
 | 271 | · the carry |
-| 306 | · the estimate |
-| 332 | · the plan and the retirement |
-| 376 | · the page |
+| 318 | · the estimate |
+| 344 | · the plan and the retirement |
+| 388 | · the page |
 
 ## Constants
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 323 | **type** `public final class Quarrying extends ExtractionSector` | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's digging industry, on Sectors.KEYS after Coal Mining - its end when it ... |
+| 78 | 335 | **type** `public final class Quarrying extends ExtractionSector` | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's digging industry, on Sectors.KEYS after Coal Mining - its end when it ... |
 | 92 | 10 | `public Quarrying()` |  |
 
 ### which field a quarry is on (lines 103-230)
@@ -114,32 +114,34 @@
 | 243 | 10 | `protected double groundLimit(Good g, double asked)` | The ground decides what comes up, by type: the month's ask of a good - limestone out of limestone ground, aggregate and blocks out of hard rock - at its quarries' dig (one tonne of field a tonne of stone, three a tonn... |
 | 255 | 15 | `double digOf(Good g)` | The tonnes of field a tonne of a good takes: its quarries' dig, weighted by their nameplate of it (a tonne a tonne for limestone and aggregate, three for blocks); 1 with none standing. |
 
-### the carry (lines 271-305)
+### the carry (lines 271-317)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 275 | 4 | `public void produceFlow(Good g)` | The month's limestone is made: and the last month's carry is spent, so carried() is this month's from here (THE CARRY). |
 | 288 | 12 | `public void shipUnsoldFlow(Good g, GoodsMarket market)` | A flow good's unsold units, once its market has taken what it wants: LIMESTONE's carried into the month's AGGREGATE output, tonne for tonne, booking nothing (THE CARRY) - aggregate clears after it and sells them at ho... |
 | 302 | 3 | `public double carried()` | Limestone carried into aggregate at the last clearing, tonnes (THE CARRY): what the works that burn limestone weigh it at its export price for (ProcessingSector.values()). |
+| 308 | 3 | `protected void saveExtras(Map<String, Double> extras)` | The carry crosses a save (FW6, 2026-10-25): the first investment pass after a load weighs limestone by it. |
+| 314 | 3 | `protected void restoreExtras(Map<String, Double> extras)` | A save without it reads none. |
 
-### the estimate (lines 306-331)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 315 | 16 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its quarries would clear a month: ExtractionSector's estimate on what it adds to the packing (madeBy()), not its row's makes - limestone the city would buy at the makers' rule, and the rest of it as a... |
-
-### the plan and the retirement (lines 332-375)
+### the estimate (lines 318-343)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 336 | 3 | `protected boolean lifts(BuildingsTemplate t)` | A quarry of its digs stone: aggregate or limestone, or the Dimension Stone Quarry's blocks. |
-| 342 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its quarries contributes to the measures it is retired on: the tonnes it digs a month at nameplate. |
-| 354 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Stone worked out leaves its quarries spare, measured in the tonnes they dig: all of them once the city's stone is out; while some is left, those over a type worked out (ExtractionSector's workedOut(): the Dimension St... |
-| 366 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each digs (unitsOf()): the blocks' once the hard rock is out. |
+| 327 | 16 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its quarries would clear a month: ExtractionSector's estimate on what it adds to the packing (madeBy()), not its row's makes - limestone the city would buy at the makers' rule, and the rest of it as a... |
 
-### the page (lines 376-400)
+### the plan and the retirement (lines 344-387)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 379 | 21 | `public List<Line> ownLines(Game game)` |  |
+| 348 | 3 | `protected boolean lifts(BuildingsTemplate t)` | A quarry of its digs stone: aggregate or limestone, or the Dimension Stone Quarry's blocks. |
+| 354 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its quarries contributes to the measures it is retired on: the tonnes it digs a month at nameplate. |
+| 366 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Stone worked out leaves its quarries spare, measured in the tonnes they dig: all of them once the city's stone is out; while some is left, those over a type worked out (ExtractionSector's workedOut(): the Dimension St... |
+| 378 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each digs (unitsOf()): the blocks' once the hard rock is out. |
+
+### the page (lines 388-412)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 391 | 21 | `public List<Line> ownLines(Game game)` |  |
 

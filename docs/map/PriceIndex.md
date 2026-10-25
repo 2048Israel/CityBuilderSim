@@ -1,4 +1,4 @@
-# PriceIndex.java - 778 lines · 37 methods · 15 constants · model
+# PriceIndex.java - 781 lines · 37 methods · 15 constants · model
 
 `ham/citybuildersim/PriceIndex.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -93,7 +93,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 746 | **type** `public class PriceIndex` | What a month costs a household, against what it cost at founding. |
+| 33 | 749 | **type** `public class PriceIndex` | What a month costs a household, against what it cost at founding. |
 
 ### WHAT IS IN THE BASKET (0.7.43; the project's spec-inflation.md 2.8) (lines 60-172)
 
@@ -138,14 +138,14 @@
 | 557 | 1 | `public boolean hasRate()` | True once there is a year of readings and the rate means anything. |
 | 567 | 5 | `public int monthsUntilRate()` | How many more months before hasRate() (0.7.20): the settling months still to come, then the readings after the basket is fixed - for the header, which says when the first rate comes rather than printing a placeholder ... |
 
-### carrying (lines 573-778)
+### carrying (lines 573-781)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 584 | 47 | `public double[] toSaveArray()` |  |
-| 632 | 43 | `public void restore(double[] saved)` |  |
-| 677 | 37 | `private void restoreChain(double[] saved)` | The chained basket behind the marker, or a link pending on an older save; the array is read whole or not at all. |
-| 716 | 17 | `private void clearChain()` | Nothing linked, nothing spent: a basket still to be struck. |
-| 734 | 12 | `public void reset()` |  |
-| 760 | 17 | `public void redenominate(double scale)` | The basket's base prices, in the new unit. |
+| 632 | 46 | `public void restore(double[] saved)` |  |
+| 680 | 37 | `private void restoreChain(double[] saved)` | The chained basket behind the marker, or a link pending on an older save; the array is read whole or not at all. |
+| 719 | 17 | `private void clearChain()` | Nothing linked, nothing spent: a basket still to be struck. |
+| 737 | 12 | `public void reset()` |  |
+| 763 | 17 | `public void redenominate(double scale)` | The basket's base prices, in the new unit. |
 
