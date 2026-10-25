@@ -25,7 +25,9 @@ every call after it.
   Git Bash; `Batch check.bat`, Jerus's double-click, has no `--pick` and no
   exit 3.
 - **The suite alone:** `AllChecks -f` prints only the failing assertions,
-  under their sections. Run it in the background and wait for it; never
+  under their sections, each tagged `[known]` (main's, by
+  `docs/notes/gate.txt`) or `[NEW]`; `-q` says `known red` or `NEW red`
+  for a red harness (FW7). Run it in the background and wait for it; never
   poll it, and never rerun a red harness in full to find its assertion.
 - **Ship:** `./ship.sh batch/<id>` is the orchestrator's merge, checks,
   timing harnesses hard, tag and push (`--dry-run` gates alone). Since BP1
