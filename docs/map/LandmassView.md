@@ -13,7 +13,7 @@
 
 **Uses:** [LandParcel](LandParcel.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (3):** [BusinessInvestment](BusinessInvestment.md), [Game](Game.md), [LandmassCheck](LandmassCheck.md)
+**Used by (5):** [BuildCard](BuildCard.md), [BusinessInvestment](BusinessInvestment.md), [Game](Game.md), [LandmassCheck](LandmassCheck.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Constants
 

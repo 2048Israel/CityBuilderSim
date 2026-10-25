@@ -1328,8 +1328,10 @@ public final class AutoBuilder {
             hold(m, s, Cut.NONE, wanted, m.label() + ": the ground for " + n + " " + name + " could not be bought.", weighed);
             return false;
         }
+        // ...a sea terminal by the rule alone (ET5 D10): home if the city owns shore on it, else a landmass it has linked - never an island no port
+        // links, so the automatic builder never links one; the card's pick (Game.choosePortLandmass()) is the player's.
         boolean placed = s.paving() ? game.paveRoads(n)
-                : game.buildStack(s.template(), n, false) == Game.BuildResult.SUCCESS;
+                : game.buildStack(s.template(), n, false, Landmasses.RULE) == Game.BuildResult.SUCCESS;
         if (!placed) {
             if (!got.isEmpty()) bought.add(boughtWords(m, name, n, got, landCost, landShort, ground) + " Its order could not be placed.");
             hold(m, s, Cut.NONE, wanted, m.label() + ": " + n + " " + name + " could not be placed.", weighed);
@@ -1527,15 +1529,15 @@ public final class AutoBuilder {
         return cheapest != null ? cheapest : best;
     }
 
-    /** An order's wait for n: a paving's on the Paved Road site, a building's in the queue. */
+    /** An order's wait for n: a paving's on the Paved Road site, a building's in the queue (a sea terminal's quoted on the landmass the rule gives it, as buildStack() is asked, ET5). */
     static double wait(Game game, BuildAdvice.Suggestion s, int n) {
-        Game.BuildQuote q = s.paving() ? game.quotePave(n) : game.quoteBuild(s.template(), n);
+        Game.BuildQuote q = s.paving() ? game.quotePave(n) : game.quoteBuildOn(s.template(), n, Landmasses.RULE);
         return q == null ? Double.NaN : q.months;
     }
 
-    /** What n of the order costs: Game.quoteBuild(), or Game.quotePave() for a paving. */
+    /** What n of the order costs: Game.quoteBuildOn() by the rule (ET5; Game.quoteBuild() for everything but a sea terminal), or Game.quotePave() for a paving. */
     static double total(Game game, BuildAdvice.Suggestion s, int n) {
-        Game.BuildQuote q = s.paving() ? game.quotePave(n) : game.quoteBuild(s.template(), n);
+        Game.BuildQuote q = s.paving() ? game.quotePave(n) : game.quoteBuildOn(s.template(), n, Landmasses.RULE);
         return q == null ? Double.POSITIVE_INFINITY : q.total;
     }
 

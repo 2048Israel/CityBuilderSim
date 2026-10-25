@@ -115,6 +115,14 @@ public final class EarthSite {
      */
     public static final int SLOPE_FORMAT = 46;
 
+    /**
+     * The save format the city's ground is first counted by landmass in: 47 (ET5; Landmasses, GameVersion's LANDMASSES).
+     * An Earth city saved before it that owns ground across the water would load that ground as room for any building,
+     * and every sea terminal it holds as standing at home - wrongly, not merely incompletely - so its save is refused
+     * (loadProblem()); a generated city has one landmass, always home, and its save loads.
+     */
+    public static final int LANDMASS_FORMAT = 47;
+
     /** The stream Random spot draws its order from. */
     private static final long RANDOM_SALT = 0x5B07A11DL;
 
@@ -244,7 +252,7 @@ public final class EarthSite {
         return loadProblem(identity, lat, lon, GameVersion.SAVE_FORMAT);
     }
 
-    /** ...and of a save in a given format: one before ICE_FORMAT is refused first (0.7.127), then one before DEPOSITS_FORMAT (0.8.12), then one before SLOPE_FORMAT (ET2), whatever its data (DataSave.earthProblem() passes the save's). */
+    /** ...and of a save in a given format: one before ICE_FORMAT is refused first (0.7.127), then one before DEPOSITS_FORMAT (0.8.12), then one before SLOPE_FORMAT (ET2), then one before LANDMASS_FORMAT (ET5), whatever its data (DataSave.earthProblem() passes the save's). */
     public static String loadProblem(String identity, Double lat, Double lon, int format) {
         if (identity == null || identity.isBlank() || lat == null || lon == null || !(lat >= -90 && lat <= 90) || !Double.isFinite(lon)) {
             return "This city stands on the real Earth, and its save does not say where.";
@@ -252,6 +260,7 @@ public final class EarthSite {
         if (format < ICE_FORMAT) return BEFORE_ICE_WORDS;
         if (format < DEPOSITS_FORMAT) return BEFORE_DEPOSITS_WORDS;
         if (format < SLOPE_FORMAT) return BEFORE_SLOPE_WORDS;
+        if (format < LANDMASS_FORMAT) return BEFORE_LANDMASS_WORDS;
         if (available(identity)) return null;
         if (identity.equals(EarthData.EARTH_2)) return missingWords(EarthData.locate(), fromRepository());
         return otherDataWords(identity);
@@ -279,6 +288,11 @@ public final class EarthSite {
     /** The load's words for a city on the real Earth saved before its founding site was snapped to ground a building may stand on (SLOPE_FORMAT). */
     public static final String BEFORE_SLOPE_WORDS = "This city was founded on the real Earth before slope decided where a building may stand: its founding site was"
             + " found where steep ground counted as buildable, and this build would find it elsewhere, so it does not load it."
+            + " The build that saved it still opens it.";
+
+    /** The load's words for a city on the real Earth saved before its ground was counted by landmass (LANDMASS_FORMAT). */
+    public static final String BEFORE_LANDMASS_WORDS = "This city was founded on the real Earth before its ground was counted by landmass: ground across the"
+            + " water would load as ground to build on, and its ports as standing at home, so this build does not load it."
             + " The build that saved it still opens it.";
 
     /** The load's words for a city on other data than this build's. */

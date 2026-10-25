@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**143 harness files, 14,774 labelled assertions.** AllChecks runs 143 of them.
+**143 harness files, 14,899 labelled assertions.** AllChecks runs 143 of them.
 
 ## Which harnesses read which class
 
@@ -28,10 +28,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildScreen](map/BuildScreen.md) | **none** |
 | [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, SlopeCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
-| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LongPlaytest, RefineryCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck |
+| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LandmassCheck, LongPlaytest, RefineryCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | BankCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck |
@@ -59,7 +59,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck |
 | [CodeMap](map/CodeMap.md) | **none** |
 | [Construction](map/Construction.md) | BankCheck, BuildersFirstCheck, ConstructionControlCheck, FoundingYardCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, ReloadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SectorBooksCheck, SlopeCheck |
-| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, DeathCareFirstCheck, LongPlaytest, RoadCheck, SaveSlotCheck |
+| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, DeathCareFirstCheck, LandmassCheck, LongPlaytest, RoadCheck, SaveSlotCheck |
 | [ConstructionScreen](map/ConstructionScreen.md) | **none** |
 | [Consumption](map/Consumption.md) | ConsumptionCheck, ForeignCheck |
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, IndustryViewCheck |
@@ -110,7 +110,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
-| [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
+| [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
 | [Gateways](map/Gateways.md) | GatewayCheck |
 | [Geology](map/Geology.md) | CoalMiningCheck, EarthDepositsCheck, EarthTerrainCheck |
 | [GlobeFrame](map/GlobeFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
@@ -156,8 +156,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
 | [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
 | [LandScreen](map/LandScreen.md) | **none** |
-| [LandmassView](map/LandmassView.md) | LandmassCheck |
-| [Landmasses](map/Landmasses.md) | LandmassCheck |
+| [LandmassView](map/LandmassView.md) | LandmassCheck, ReadPathCheck |
+| [Landmasses](map/Landmasses.md) | LandmassCheck, NewGameCheck, ReadPathCheck, SaveSlotCheck |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
 | [Levers](map/Levers.md) | **none** |
 | [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, CallCheck, CentralBankCheck, CreditCheck, DeskCheck, FloatLinkCheck, FundCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
@@ -200,7 +200,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PopulationCohorts](map/PopulationCohorts.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck |
 | [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, PopulationCheck, SaveFileCheck, ScaleCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
-| [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MainLineCheck, MapCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
+| [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [ProcessingSector](map/ProcessingSector.md) | BuildCardCheck, CementConcreteCheck, CopperRefiningCheck, HaulageCheck, IndustryViewCheck, MaterialsCheck, WoodProductsCheck |
@@ -265,7 +265,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckCheck, VanCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, RailCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TrainShapes](map/TrainShapes.md) | ReadPathCheck |
-| [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, HomeRailCheck, LongPlaytest, MapCheck, OrderSearchCheck, PlanCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, SlopeCheck |
+| [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, HomeRailCheck, LandmassCheck, LongPlaytest, MapCheck, OrderSearchCheck, PlanCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, SlopeCheck |
 | [TreasuryJournal](map/TreasuryJournal.md) | CentralBankCheck, ConstructionControlCheck, CurrencyRegimeCheck, EducationCheck, FloatLinkCheck, FundCheck, LandCheck, OilCheck, SaveFileCheck, TreasuryCheck |
 | [TreasuryLine](map/TreasuryLine.md) | BankCheck, CentralBankCheck, FundCheck, GroceryCheck, LongPlaytest |
 | [TruckSchedule](map/TruckSchedule.md) | TruckCheck, TruckRouteCheck |
@@ -5805,7 +5805,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L645 the city buys the ground to it: its sites the sea's, the field on the sea's list at World's depth
   - L670 a platform and its wells stand on it, the city plays two months more, the investors planning at sea, and the oil's page
 
-## EarthTerrainCheck.java - 90 labelled assertions
+## EarthTerrainCheck.java - 91 labelled assertions
 
 > The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world - and since 0.7.117 (batch E3) its deposits on the Earth's geology (Geology), and since 0.7.127 (batch E7) its ice and desert.
 > 
@@ -5884,46 +5884,47 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1456 the runs (CityRuns): the desert is dry ground where grass is, ice is not, and off the ground is not
   - L1469 a district's plan: PlanCheck's test district with its grass made desert is the same plan, every building and street
   - L1476 ...and with the grass of its west half ice, no building stands on a plot of ice
-  - L1488 the saves: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so; from there to before
-  - L1498 ...and a generated city's save at the floor, its ground as it was, still loads: no Earth problem; and an Earth save
-  - L1504 ...and the slope floor is the Earth's alone: an Earth save at the general floor is refused in the slope words while the floor is below
-  - L1523 the card: Greenland's sheet has no dry ground within 5 km, so no site; the card is the spot's own plot's, ice, refused on ice - its ice the plot's
-  - L1534 ...on south Greenland's margin, a site on grass in a 2' cell with the ice bit (the bit's rule refused it): not on ice, as its plot is not, and foundable
-  - L1541 ...and a spot on the ice there: the snap finds its site on dry ground off the ice, never on it, and the card agrees
-  - L1550 ...and a holding's books there: a tile of ice offered is its whole area and no dry ground, fresh, sea or forest
-  - L1562 the Sahara: the site a plot of desert, dry ground the snap founds on, the card warns of a desert, and a tile of it is all dry ground on the books
-  - L1567 the far view draws them: far nodes on Greenland's sheet ice, on the Sahara desert - all of it at WATER_STRIDE and FAR_STRIDE / 4, the most of it from the 4' ...
-- **L1588 16. the shallow sea: sea no deeper than 30 m, sea to every rule, drawn where the data's share beats its noise, weighted by the sea**
-  - L1592 World.SHALLOW is the byte after DESERT, 7, and World.salt() is SALT and SHALLOW alone: not fresh water, not ice, not what is not a class; never dry
-  - L1594 ...with its own colour 0x4f87b5, lighter than the deep sea's and darker than the lakes', and its own words on the hover and in the legend
-  - L1601 the books: a shallow sea's plots count as a sea's in the sea area and the whole, never dry, fresh or forest
-  - L1604 the runs (CityRuns): the shallow sea is not dry ground, as the sea is not
-  - L1618 ...and a window holds both kinds of sea, so the share is no mere all or nothing (a share between 5% and 95% in the data)
-  - L1659 Halifax: the Narrows (44.67 N, 63.59 W) is shallow sea and Bedford Basin's middle (44.70 N, 63.64 W) deep, every sea plot within SPOT_REACH of each
-  - L1689 Halifax: no fringe of deep sea along a shallow coast - a sea plot whose cells' sea is all shallow is shallow, with land in those cells too (the sea-weighted ...
-  - L1700 Halifax: a tile's ground, its shallow sea drawn, in no more than TILE_MS
-  - L1715 a generated world draws no shallow sea (D19): its whole far view holds sea and no SHALLOW, nor do the tiles about its founding site
-  - L1750 an earth-1 file, which has no shallow layer, draws no SHALLOW where it draws the sea (
-- **L1885 17. the relief plane: four classes of slope beside the cover, drawn from the data's shares of the land, none on water or ice, the cover u...**
-  - L1888 World's relief classes are FLAT 0, FOOTHILL 1, STEEP 2 and VERY_STEEP 3, RELIEFS 4 in all: a second plane, its own bytes
-  - L1898 World.buildable(cover, relief) is dry ground on a FLAT or FOOTHILL plot: no sea, fresh water or ice, and no STEEP or VERY_STEEP ground, forest or not
-  - L1900 World.workable(cover) is any land, ice and the beach among it: not the sea (SALT, SHALLOW), not fresh water, not what is not a cover
-  - L1926 a generated world's relief is FLAT everywhere (D19): every plot of the 32 x 32 tiles about its founding site, a far region, off the world - and asking for it...
-  - L1946 Medellin's valley floor (6.25 N, 75.57 W) reads FLAT: every dry plot within FLOOR_REACH of it, nearly all within FLOOR_WIDE, while the hills about it (9 km) ...
-  - L1971 Everest: the summit's own ground, a kilometre round, is ice and FLAT in the plane (D4: snow wins over slope), and the rock about it, 9 km round, has VERY_STE...
-  - L1976 ...and Medellin's valley floor reads FLAT on the full file too, every dry plot within FLOOR_REACH and nearly all within FLOOR_WIDE
-  - L2013 an earth-1 file, which has no slope layer, draws every plot FLAT (
-  - L2092 the cover is untouched: tileTerrain() is as it was after every reader of the relief has run on its tile, and a far node's cover is the same byte for byte wit...
-  - L2094 the readers agree: reliefAt() is tileRelief() plot by plot; far nodes and regions give every pixel a relief class, and none to a pixel that is not dry ground
-  - L2111 the classes nest: at every point the share at or above foothill is no less than the steep share and that no less than the very steep, in 0 to 1 - on the cell...
-  - L2139 ...and the drawn classes lie where the data has them: a foothill plot beside a cell with foothill ground, a steep one beside steep, a very steep one beside v...
-  - L2155 the tile rule and the point rule give a dry plot the same relief on all but RELIEF_COPIES_POINTS of the plots
-  - L2176 a hilly tile's ground and its relief together in no more than TILE_MS (the median of
-  - L2215 the far summary: a 4' block's shares are the land-weighted mean of its 256 cells' (within a level of a byte, 1/255), at
-  - L2259 a far node over Medellin at
-  - L2288 the globe's camera at the handoff draws the plane's relief shares: its dry pixels within RELIEF_POINTS x 2 of the plane's node over the same ground, none on ...
-  - L2318 the picture's camera (a band of 10 degrees at 4'): the cover is the same byte for byte, the relief is none on water, and the band's relief costs a first sigh...
-  - L2458 ...its edge frayed both ways about the bit's half-contour, and never past the cells that agree
+  - L1489 the saves: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so; from there to before
+  - L1501 ...and a generated city's save at the floor, its ground as it was, still loads: no Earth problem; and an Earth save
+  - L1507 ...and the slope floor is the Earth's alone: an Earth save at the general floor is refused in the slope words while the floor is below
+  - L1513 ...and the landmass floor is the Earth's alone: a generated save of the format before LANDMASS_FORMAT loads (no Earth problem), the general floor stays below it
+  - L1530 the card: Greenland's sheet has no dry ground within 5 km, so no site; the card is the spot's own plot's, ice, refused on ice - its ice the plot's
+  - L1541 ...on south Greenland's margin, a site on grass in a 2' cell with the ice bit (the bit's rule refused it): not on ice, as its plot is not, and foundable
+  - L1548 ...and a spot on the ice there: the snap finds its site on dry ground off the ice, never on it, and the card agrees
+  - L1557 ...and a holding's books there: a tile of ice offered is its whole area and no dry ground, fresh, sea or forest
+  - L1569 the Sahara: the site a plot of desert, dry ground the snap founds on, the card warns of a desert, and a tile of it is all dry ground on the books
+  - L1574 the far view draws them: far nodes on Greenland's sheet ice, on the Sahara desert - all of it at WATER_STRIDE and FAR_STRIDE / 4, the most of it from the 4' ...
+- **L1595 16. the shallow sea: sea no deeper than 30 m, sea to every rule, drawn where the data's share beats its noise, weighted by the sea**
+  - L1599 World.SHALLOW is the byte after DESERT, 7, and World.salt() is SALT and SHALLOW alone: not fresh water, not ice, not what is not a class; never dry
+  - L1601 ...with its own colour 0x4f87b5, lighter than the deep sea's and darker than the lakes', and its own words on the hover and in the legend
+  - L1608 the books: a shallow sea's plots count as a sea's in the sea area and the whole, never dry, fresh or forest
+  - L1611 the runs (CityRuns): the shallow sea is not dry ground, as the sea is not
+  - L1625 ...and a window holds both kinds of sea, so the share is no mere all or nothing (a share between 5% and 95% in the data)
+  - L1666 Halifax: the Narrows (44.67 N, 63.59 W) is shallow sea and Bedford Basin's middle (44.70 N, 63.64 W) deep, every sea plot within SPOT_REACH of each
+  - L1696 Halifax: no fringe of deep sea along a shallow coast - a sea plot whose cells' sea is all shallow is shallow, with land in those cells too (the sea-weighted ...
+  - L1707 Halifax: a tile's ground, its shallow sea drawn, in no more than TILE_MS
+  - L1722 a generated world draws no shallow sea (D19): its whole far view holds sea and no SHALLOW, nor do the tiles about its founding site
+  - L1757 an earth-1 file, which has no shallow layer, draws no SHALLOW where it draws the sea (
+- **L1892 17. the relief plane: four classes of slope beside the cover, drawn from the data's shares of the land, none on water or ice, the cover u...**
+  - L1895 World's relief classes are FLAT 0, FOOTHILL 1, STEEP 2 and VERY_STEEP 3, RELIEFS 4 in all: a second plane, its own bytes
+  - L1905 World.buildable(cover, relief) is dry ground on a FLAT or FOOTHILL plot: no sea, fresh water or ice, and no STEEP or VERY_STEEP ground, forest or not
+  - L1907 World.workable(cover) is any land, ice and the beach among it: not the sea (SALT, SHALLOW), not fresh water, not what is not a cover
+  - L1933 a generated world's relief is FLAT everywhere (D19): every plot of the 32 x 32 tiles about its founding site, a far region, off the world - and asking for it...
+  - L1953 Medellin's valley floor (6.25 N, 75.57 W) reads FLAT: every dry plot within FLOOR_REACH of it, nearly all within FLOOR_WIDE, while the hills about it (9 km) ...
+  - L1978 Everest: the summit's own ground, a kilometre round, is ice and FLAT in the plane (D4: snow wins over slope), and the rock about it, 9 km round, has VERY_STE...
+  - L1983 ...and Medellin's valley floor reads FLAT on the full file too, every dry plot within FLOOR_REACH and nearly all within FLOOR_WIDE
+  - L2020 an earth-1 file, which has no slope layer, draws every plot FLAT (
+  - L2099 the cover is untouched: tileTerrain() is as it was after every reader of the relief has run on its tile, and a far node's cover is the same byte for byte wit...
+  - L2101 the readers agree: reliefAt() is tileRelief() plot by plot; far nodes and regions give every pixel a relief class, and none to a pixel that is not dry ground
+  - L2118 the classes nest: at every point the share at or above foothill is no less than the steep share and that no less than the very steep, in 0 to 1 - on the cell...
+  - L2146 ...and the drawn classes lie where the data has them: a foothill plot beside a cell with foothill ground, a steep one beside steep, a very steep one beside v...
+  - L2162 the tile rule and the point rule give a dry plot the same relief on all but RELIEF_COPIES_POINTS of the plots
+  - L2183 a hilly tile's ground and its relief together in no more than TILE_MS (the median of
+  - L2222 the far summary: a 4' block's shares are the land-weighted mean of its 256 cells' (within a level of a byte, 1/255), at
+  - L2266 a far node over Medellin at
+  - L2295 the globe's camera at the handoff draws the plane's relief shares: its dry pixels within RELIEF_POINTS x 2 of the plane's node over the same ground, none on ...
+  - L2325 the picture's camera (a band of 10 degrees at 4'): the cover is the same byte for byte, the relief is none on water, and the band's relief costs a first sigh...
+  - L2465 ...its edge frayed both ways about the bit's half-contour, and never past the cells that agree
 
 ## EducationCheck.java - 164 labelled assertions
 
@@ -11894,11 +11895,13 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L704 A CITY SAVED AND RELOADED READS THE SAME QUOTES, TONNES AND BILLS, to the bit
   - L706 ...the same dues paid and handling billed, the treasury's tax take line and the national accounts' line, and the dial
 
-## LandmassCheck.java - 85 labelled assertions
+## LandmassCheck.java - 194 labelled assertions
 
-> The city's ground counted by landmass, and the island rule, checked (ET5, slice A; the ET5 design): a landmass is read
-> from the Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city has not linked
-> is owned, counted and priced as ever but is no room for anyone, and no works stands on its fields.
+> The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the
+> Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city has not linked is owned,
+> counted and priced as ever but is no room for anyone except a sea terminal, and no works stands on its fields; a terminal
+> ordered for an island takes the island's room, two standing terminals link it, nothing unlinks, and where the terminals
+> stand is saved.
 > 
 > WHY THIS EXISTS. Until ET5 the model's ground was one pool with no place in it: an island bought across a strait was
 > room for any building, and the Rotterdam city could "build" on Goeree-Overflakkee from its own streets. Nothing could
@@ -11906,103 +11909,216 @@ _(this harness does not label its checks through a helper - it prints its findin
 > CAUSE each condition (an island square found by search with the model's own reader, bought through the harness door
 > LandManager.buyRectForTest(); a city founded on the island, so that the mainland is across the water), and every
 > figure worked out again from the model's constants and getters, never typed.
-> 
-> WHAT IT HAS TO PROVE (this slice: sections 0 to 4 and 8; the ports, the save, the map and the words are the other slices'):
 > ...
 
-- **L190 the fixture**
-  - L192 EarthCheck's fixture is beside the classes (
-- **L246 0. a generated world has no landmasses**
-  - L252 a generated world reads no landmass: hasLandmasses() false, every plot of a tile 0, no ids near a tile, none at a plot
-  - L269 a land of three holdings far apart on a generated world: one landmass, nothing read, nothing unlinked, every offer's figure 0
-  - L273 ...its free ground, share used, zone size and the unlinked figures the old expressions written out inline
-  - L273 three holdings
-  - L285 default
-  - L286 the default seed after 120 months: one landmass, nothing read, no offer with a figure, the old expressions for the free ground, the share used, the coast (fi...
-- **L322 1. the reader: a plot's landmass, and the nearest land cell for a dry plot on a cell with none**
-  - L325 the Earth fixture's world has landmasses to read
-  - L376 tileLandmass() is landmassAt() at every plot of
-  - L377 premise: dry plots on a cell the layer calls no land exist, and some resolve to the island, some to the mainland
-  - L379 every land plot is the nearest land cell's id (a brute-force loop over the data's own landmassAt(), the lowest id on a tie)
-  - L380 premise: tiles exist whose plots resolve to an id none of the tile's own cells holds, only a cell within the reach does
-  - L381 idsNear() holds every id the tile's plots resolve to, the reach's included (the gate reads a tile whose idsNear() is home's alone as all home's)
-  - L394 two worlds of one key agree on a window of tiles (the reader is a pure function of the key)
-  - L399 home is the id the founding card reads at the snapped site: Afro-Eurasia's, 1
-  - L422 the card's landmass is the reader's at the snapped site, for each window of the fixture
-- **L439 the fixture cities: Rotterdam with the island square (A) and without it (B), the squares found by search**
-  - L447 fixture: an island square with dry ground of 648 and salt beside it (the island's north-west tip), pure
-  - L449 fixture: an island square of 648 with no salt in it (Overflakkee's fresh Haringvliet side), pure
-  - L451 fixture: a home square with salt beside its dry ground, pure
-  - L456 the founded Rotterdam city, a single landmass: its free ground, share used, coast and overFull are the old expressions written out inline
-  - L457 rotterdam
-- **L508 2. the books by landmass: counted plot by plot, adding up to the land's dry ground, named, and the linked set**
-  - L509 fixtures were found
-  - L514 premise: the founded Rotterdam twin owns nothing near another landmass - its tiles hold no landmass but home's - and reads no plot
-  - L522 each landmass's dry plots by relief, forest, shore and first holding equal a brute-force count over every owned plot
-  - L527 the landmasses' dry plots, home's included, add up to the land's dry ground to the plot - and to the dry plots the grid owns
-  - L531 premise: the island square's dry plots are on the island, and its shore is on it
-  - L538 a recount after a purchase is a fresh recount: the same rows, the same unlinked ground
-  - L541 the city that owns the island read plots (it had to); the founded twin read none
-  - L546 names: home is \"Home\", an island the data leaves unnamed is \"Island 2\" (N from 2 in the order the city first owned them)
-  - L550 ...rows() lists home first, the island's row linked false, home's linked
-  - L551 the island is unlinked (no port stands): home and 'no land' (0) are linked, 648 is not; the linked set is home
-  - L553 the unlinked sums are the island's: dry, by relief, forest, in square feet
-  - L578 no ports: the closure is home alone
-  - L579 a port on an island and none at home links nothing: two ports make a route, one makes none
-  - L580 a port at home and one on the island link the island
-  - L581 ...and a port on a third landmass is linked by home's port with the island's, whatever they number
-  - L582 two islands each with a port, and none at home, link nothing
-  - L583 a landmass whose ports are all gone (count 0) is not linked by them
-  - L584 a join reaches from a linked landmass to the ones it joins, and on from those (ET6's slot): 1 to 77 to 88
-  - L585 ...and a port on a landmass the joins reach links every landmass with one
-  - L617 a block of home's coast beside the island: the books equal the brute-force count, the recount after it and a fresh recount
-  - L620 ...and the tiles wholly owned with wholly owned neighbours are read once: the next recount reads fewer plots than the one that bought them
-  - L672 premise: a dry plot of home's with salt across the edge of its tile exists on each side of a tile, near the coast (found by search)
-  - L684 a dry plot at a tile's edge beside owned salt across it is shore though its own tile holds none: one more shore plot for each of the four pairs, as the brute...
-- **L700 3. free ground is linked only: the island is owned and priced, and no room for anyone**
-  - L701 fixtures were found
-  - L705 premise: A owns the island's ground and B does not - A's owned ground is B's and the island's, priced as ever
-  - L709 the free ground is the same with the island and without it: getAvailableSqFt, the free ground and the buildable ground
-  - L718 ...for each use of the ground, the zoned sector's and anyone's: freeFor and freeForAnyone
-  - L719 ...and a works's: freeForAnyone(true) and a run's
-  - L720 the share used, the utilisation and the zone's size are the same: the island is not in them
-  - L723 the linked ground is the owned less the island's: getLinkedOwnedSqFt, getLinkedAllocatedSqFt
-  - L731 premise: a plot past B's free ground fits A's owned less built ground (the island would hold it)
-  - L734 canAllocate(B's free ground and one plot) is refused on A as it is on B - for anyone and for the zoned sector - and B's whole free ground is allowed on both
-  - L741 AutoBuilder.overFull() sees the linked ground: 5,000 sq ft built past it is over full though the island is unbuilt
-  - L744 ...and the twins' overFull is 0 both (nothing built past the linked ground)
-  - L752 the plots the investors see for a House are the same with the island and without it
-  - L756 getUnlinkedFreeSqFt() is the square's dry plots in square feet (the island's, nothing built on it)
-  - L764 the investors' refusal ends with the clause, word for word: \"...; N km2 is free on Island 2, which no port links\"
-  - L766 ...and the clause names the island and says no port links it
-- **L827 4. only a port on unlinked ground: a House past the linked free ground, and a works on a field across the water**
-  - L833 premise: the island would hold the order -
-  - L837 a House order past the linked free ground gets NO_LAND on A though the island would hold it
-  - L840 ...and an order that fits the linked ground is placed (SUCCESS): the refusal is the island's, not the order's
-  - L844 fixture: a city founded on Goeree-Overflakkee whose mainland across the water holds a field of iron (found by search)
-  - L855 premise: the square holds the mainland's field whole, and the field is centred on a dry plot of a landmass that is not home's
-  - L859 premise: the books hold the field's sites (the land owns them), and the model counts none of them as a site a mine may stand on
-  - L862 getSites(), getSites(r, true) and getSites(r, type) all leave the field out
-  - L866 a works on a field centred on an unlinked plot gets NO_DEPOSIT
-  - L870 control: a field of iron on the home landmass is a deposit - its sites count, and the same works is not refused for a deposit
-  - L875 ...and the order is placed or wants only money or land, never NO_DEPOSIT
-- **L886 8. the pickers: an island offer is never the best for room, a shortfall or a deposit**
-  - L887 fixtures were found
-  - L897 fixture: two squares of home's ground, each with less dry ground than the island square, for the shelf
-  - L905 premise: the shelf holds an all-island offer and two offers of home's ground; the island's is split as unlinked, home's are not
-  - L909 the island offer is all on the island: its unlinked dry ground is its dry ground, its largest landmass 648, and its price is as listed (priced as today)
-  - L911 it has no buildable ground: buildableKm2() and buildableSqFt() are 0, and a home offer has some
-  - L915 ranked by the buildable ground a dollar, the island offer is worth nothing; by dry ground a dollar, nothing
-  - L924 bestValue() is a home offer, never the island's
-  - L926 premise: only the island's dry ground would cover this shortfall - the island offer is the only one whose dry ground does
-  - L929 bestOffer(SHORTFALL) of it is not the island's - its dry ground is no ground a building could stand on
-  - L933 buying what the shortfall's picker offered buys no island: the offer is bought, and the city still owns ground on one landmass
-  - L937 ISLAND is tagged for the island offer and for no offer of home's ground
-  - L945 ISLAND is tagged when the unlinked share reaches ISLAND_TAG_SHARE of the offer's dry ground, not below it, and never at 0
-  - L949 fixture: a city on the island with a field across the water for the DEPOSIT picker
-  - L956 premise: the one offer holds the mainland's field of iron and is split as unlinked (the city is on the island)
-  - L958 bestOffer(DEPOSIT iron) passes over the offer with a field across the water: nothing to buy
-  - L964 ...and with a field on the home landmass beside it, the deposit picker takes that one
+- **L217 the fixture**
+  - L219 EarthCheck's fixture is beside the classes (
+- **L280 0. a generated world has no landmasses**
+  - L286 a generated world reads no landmass: hasLandmasses() false, every plot of a tile 0, no ids near a tile, none at a plot
+  - L303 a land of three holdings far apart on a generated world: one landmass, nothing read, nothing unlinked, every offer's figure 0
+  - L307 ...its free ground, share used, zone size and the unlinked figures the old expressions written out inline
+  - L307 three holdings
+  - L319 default
+  - L320 the default seed after 120 months: one landmass, nothing read, no offer with a figure, the old expressions for the free ground, the share used, the coast (fi...
+- **L356 1. the reader: a plot's landmass, and the nearest land cell for a dry plot on a cell with none**
+  - L359 the Earth fixture's world has landmasses to read
+  - L410 tileLandmass() is landmassAt() at every plot of
+  - L411 premise: dry plots on a cell the layer calls no land exist, and some resolve to the island, some to the mainland
+  - L413 every land plot is the nearest land cell's id (a brute-force loop over the data's own landmassAt(), the lowest id on a tie)
+  - L414 premise: tiles exist whose plots resolve to an id none of the tile's own cells holds, only a cell within the reach does
+  - L415 idsNear() holds every id the tile's plots resolve to, the reach's included (the gate reads a tile whose idsNear() is home's alone as all home's)
+  - L428 two worlds of one key agree on a window of tiles (the reader is a pure function of the key)
+  - L433 home is the id the founding card reads at the snapped site: Afro-Eurasia's, 1
+  - L456 the card's landmass is the reader's at the snapped site, for each window of the fixture
+- **L473 the fixture cities: Rotterdam with the island square (A) and without it (B), the squares found by search**
+  - L481 fixture: an island square with dry ground of 648 and salt beside it (the island's north-west tip), pure
+  - L483 fixture: an island square of 648 with no salt in it (Overflakkee's fresh Haringvliet side), pure
+  - L485 fixture: a home square with salt beside its dry ground, pure
+  - L490 the founded Rotterdam city, a single landmass: its free ground, share used, coast and overFull are the old expressions written out inline
+  - L491 rotterdam
+- **L542 2. the books by landmass: counted plot by plot, adding up to the land's dry ground, named, and the linked set**
+  - L543 fixtures were found
+  - L548 premise: the founded Rotterdam twin owns nothing near another landmass - its tiles hold no landmass but home's - and reads no plot
+  - L556 each landmass's dry plots by relief, forest, shore and first holding equal a brute-force count over every owned plot
+  - L561 the landmasses' dry plots, home's included, add up to the land's dry ground to the plot - and to the dry plots the grid owns
+  - L565 premise: the island square's dry plots are on the island, and its shore is on it
+  - L572 a recount after a purchase is a fresh recount: the same rows, the same unlinked ground
+  - L575 the city that owns the island read plots (it had to); the founded twin read none
+  - L580 names: home is \"Home\", an island the data leaves unnamed is \"Island 2\" (N from 2 in the order the city first owned them)
+  - L584 ...rows() lists home first, the island's row linked false, home's linked
+  - L585 the island is unlinked (no port stands): home and 'no land' (0) are linked, 648 is not; the linked set is home
+  - L587 the unlinked sums are the island's: dry, by relief, forest, in square feet
+  - L612 no ports: the closure is home alone
+  - L613 a port on an island and none at home links nothing: two ports make a route, one makes none
+  - L614 a port at home and one on the island link the island
+  - L615 ...and a port on a third landmass is linked by home's port with the island's, whatever they number
+  - L616 two islands each with a port, and none at home, link nothing
+  - L617 a landmass whose ports are all gone (count 0) is not linked by them
+  - L618 a join reaches from a linked landmass to the ones it joins, and on from those (ET6's slot): 1 to 77 to 88
+  - L619 ...and a port on a landmass the joins reach links every landmass with one
+  - L651 a block of home's coast beside the island: the books equal the brute-force count, the recount after it and a fresh recount
+  - L654 ...and the tiles wholly owned with wholly owned neighbours are read once: the next recount reads fewer plots than the one that bought them
+  - L706 premise: a dry plot of home's with salt across the edge of its tile exists on each side of a tile, near the coast (found by search)
+  - L718 a dry plot at a tile's edge beside owned salt across it is shore though its own tile holds none: one more shore plot for each of the four pairs, as the brute...
+- **L734 3. free ground is linked only: the island is owned and priced, and no room for anyone**
+  - L735 fixtures were found
+  - L739 premise: A owns the island's ground and B does not - A's owned ground is B's and the island's, priced as ever
+  - L743 the free ground is the same with the island and without it: getAvailableSqFt, the free ground and the buildable ground
+  - L752 ...for each use of the ground, the zoned sector's and anyone's: freeFor and freeForAnyone
+  - L753 ...and a works's: freeForAnyone(true) and a run's
+  - L754 the share used, the utilisation and the zone's size are the same: the island is not in them
+  - L757 the linked ground is the owned less the island's: getLinkedOwnedSqFt, getLinkedAllocatedSqFt
+  - L765 premise: a plot past B's free ground fits A's owned less built ground (the island would hold it)
+  - L768 canAllocate(B's free ground and one plot) is refused on A as it is on B - for anyone and for the zoned sector - and B's whole free ground is allowed on both
+  - L775 AutoBuilder.overFull() sees the linked ground: 5,000 sq ft built past it is over full though the island is unbuilt
+  - L778 ...and the twins' overFull is 0 both (nothing built past the linked ground)
+  - L783 getUnlinkedFreeSqFt() is the square's dry plots in square feet (the island's, nothing built on it)
+  - L792 the plots the investors see for a House, fed by the month's own refreshLand(), are the same with the island and without it - and are some
+  - L796 the investors' refusal ends with the clause, word for word: \"...; N km2 is free on Island 2, which no port links\"
+  - L798 ...and the clause names the island and says no port links it
+- **L859 4. only a port on unlinked ground: a House past the linked free ground, and a works on a field across the water**
+  - L865 premise: the island would hold the order -
+  - L869 a House order past the linked free ground gets NO_LAND on A though the island would hold it
+  - L872 ...and an order that fits the linked ground is placed (SUCCESS): the refusal is the island's, not the order's
+  - L876 fixture: a city founded on Goeree-Overflakkee whose mainland across the water holds a field of iron (found by search)
+  - L887 premise: the square holds the mainland's field whole, and the field is centred on a dry plot of a landmass that is not home's
+  - L891 premise: the books hold the field's sites (the land owns them), and the model counts none of them as a site a mine may stand on
+  - L894 getSites(), getSites(r, true) and getSites(r, type) all leave the field out
+  - L898 a works on a field centred on an unlinked plot gets NO_DEPOSIT
+  - L902 control: a field of iron on the home landmass is a deposit - its sites count, and the same works is not refused for a deposit
+  - L907 ...and the order is placed or wants only money or land, never NO_DEPOSIT
+- **L918 8. the pickers: an island offer is never the best for room, a shortfall or a deposit**
+  - L919 fixtures were found
+  - L929 fixture: two squares of home's ground, each with less dry ground than the island square, for the shelf
+  - L937 premise: the shelf holds an all-island offer and two offers of home's ground; the island's is split as unlinked, home's are not
+  - L941 the island offer is all on the island: its unlinked dry ground is its dry ground, its largest landmass 648, and its price is as listed (priced as today)
+  - L943 it has no buildable ground: buildableKm2() and buildableSqFt() are 0, and a home offer has some
+  - L947 ranked by the buildable ground a dollar, the island offer is worth nothing; by dry ground a dollar, nothing
+  - L967 premise: without its split the island offer would be the best for room (at both cash levels) and the best value - its buildable ground a dollar beats every h...
+  - L970 ...and the split is back: the island offer is unlinked again
+  - L978 bestValue() is a home offer, never the island's
+  - L980 premise: only the island's dry ground would cover this shortfall - the island offer is the only one whose dry ground does
+  - L983 bestOffer(SHORTFALL) of it is not the island's - its dry ground is no ground a building could stand on
+  - L987 buying what the shortfall's picker offered buys no island: the offer is bought, and the city still owns ground on one landmass
+  - L991 ISLAND is tagged for the island offer and for no offer of home's ground
+  - L999 ISLAND is tagged when the unlinked share reaches ISLAND_TAG_SHARE of the offer's dry ground, not below it, and never at 0
+  - L1003 fixture: a city on the island with a field across the water for the DEPOSIT picker
+  - L1010 premise: the one offer holds the mainland's field of iron and is split as unlinked (the city is on the island)
+  - L1012 bestOffer(DEPOSIT iron) passes over the offer with a field across the water: nothing to buy
+  - L1013 ...and so does richest() (the test player buys its oil with it): no works stands on a field across the water
+  - L1019 ...and with a field on the home landmass beside it, the deposit picker takes that one
+- **L1053 4b. a field centred on a lake plot of an island is on the island: the works gate reads the plot's cell, not the plot**
+  - L1054 fixtures were found
+  - L1074 the plot's cell reader agrees with landmassAt() at every dry plot of the island squares, and puts the fresh water plots about the island on the island (landm...
+  - L1076 premise: a fresh water plot of the island was found to centre a field on
+  - L1088 premise: the lake plot is not the sea's, its plot reads landmass 0 and its cell the island, which the city owns and no port links; there is a sea plot and a ...
+  - L1097 a field centred on a lake plot of the unlinked island gives no site to a works: the gate reads the plot's cell, which landmassAt() gives home's
+  - L1098 ...as a field centred on a dry plot of the island gives none
+  - L1099 ...while a field centred on a dry plot of home gives its sites, and a field in the sea gives its own
+  - L1111 premise: the square holds the field whole, its centre is a water plot that is not the sea's, the plot reads landmass 0 (home) and its cell the island, which ...
+  - L1116 the land owns the field, and no dry site counts it: getSites(r, true) is as it was before the purchase
+- **L1198 5. two ports link: a terminal for the island takes the island's room, links nothing alone or on site, and with home's standing links it**
+  - L1199 fixtures were found
+  - L1207 premise: the city owns the island square - shore on it, none at home - with room on it for several terminals, and nothing is placed or linked
+  - L1210 by the rule alone the order is NO_COAST: home owns no shore, and the rule never takes an island no port links
+  - L1214 the card offers the landmasses the city owns shore on: the island alone (home owns none); nothing for a building that is no terminal
+  - L1217 with the island chosen the coast test passes - by the choice, not by the rule
+  - L1222 the quote's free ground is the island's room, not the linked pool's
+  - L1223 the order is placed (SUCCESS) with the card's pick, which it spends
+  - L1224 it takes the island's room: the room fell by exactly one terminal's land and the allocated ground rose by it, but the ground the linked buildings stand on, t...
+  - L1229 it is on site, not standing, and a terminal on site links nothing: the island holds none of the city's standing terminals
+  - L1232 the terminal stands after some months
+  - L1233 standing alone on the island it links nothing: one port makes no sea route, and it is counted on the island
+  - L1238 premise: the city now owns shore at home
+  - L1239 by the rule the order is home's now: the coast test passes without a pick
+  - L1240 a terminal for home is placed (SUCCESS) and is on site: the island is not linked while it is
+  - L1249 the island stayed unlinked every month the home terminal was on site
+  - L1250 the month it stood the island was linked: the linked set moved once, nothing is unlinked, each landmass holds its terminal
+  - L1260 premise: the island's ground is all flat or foothill (no steep ground to sit idle) and home owns shore
+  - L1262 a terminal built at once for the island stands and links nothing
+  - L1266 one built at home at once links the island, the moment it stands (the same order)
+  - L1268 the free ground rose by the island's unbuilt ground less the terminal built at home: the island's buildable ground less its own terminal, less the home one
+  - L1275 the island's terminal is ordered and stopped the same month: its site is a shell on the island, nothing on site
+  - L1279 ...a stopped order is a shell of one, nothing is on site, nothing stands
+  - L1280 a terminal at home then stands (built at once)
+  - L1282 a shell never links (the island's stopped terminal is not a standing one): one terminal stands, it is home's, and the island is unlinked; the saved row names...
+  - L1286 the shell restarted is on site for the island again, oldest first, and the island is still unlinked
+  - L1289 ...and when it stands the island is linked
+  - L1299 premise: the city owns a third landmass, with shore on it; none is linked and no terminal stands
+  - L1301 a terminal on the island and one at home link the island
+  - L1303 ...and one terminal on the third landmass links it (a linked landmass has a port standing): the closure is home, the island and the third
+  - L1310 short of cash the order is NEEDS_FUNDING, and the card's pick waits for the money (it survives the funding page)
+  - L1313 ...funded, the same order lands on the island
+  - L1321 an order past the island's room is NO_LAND, and nothing is placed
+  - L1323 premise: the island holds several bulk terminals, the linked pool not even two - so what is placed on the island below was admitted by the island's room, not...
+  - L1332 premise: each order alone fits the island, together they do not
+  - L1335 runAhead() counts both against the island's room: the first order passes (the pool could not hold it), the second is NO_LAND
+  - L1338 ...a run that fits the island passes whole
+  - L1341 premise: the linked pool is full
+  - L1342 a house at home is NO_LAND; a terminal for the island is placed (the island's room is the gate)
+  - L1349 an order of every bulk terminal the island's room holds is placed (SUCCESS) though the linked pool is full: the island's room, and it alone, is asked
+- **L1359 6. demolition: the port that links an island cannot be demolished; an island's port keeps its ground until its demolition is done**
+  - L1360 fixtures were found
+  - L1369 premise: a terminal stands on the island and one at home, and they link it
+  - L1371 neither may be demolished: demolishable() leaves both out (the island's would unlink it, and so would home's)
+  - L1373 demolish() is refused with the words \"it is the port that links Island 2\", and puts nothing on site
+  - L1376 a spare at home and a second on the island are built at once
+  - L1378 the two newest may go, the older pair may not: demolishable() is 2, and asking for 3 is refused
+  - L1383 demolishing one takes the newest unit whose loss unlinks nothing - the island's second - and keeps it among the units leaving, by the demolition's id
+  - L1388 ...it holds its ground on the island while it is demolished: the island's room is as it was, the island still linked
+  - L1393 saved and read back with the demolition on site, the same units are leaving, by the same id, and the island's room is the same
+  - L1398 the demolition finishes: the ground is released and the island's room returns by exactly one terminal's land; nothing is leaving
+  - L1404 premise: a lone terminal stands on the island, which it links nothing
+  - L1406 it may be demolished (it links nothing)
+  - L1407 ...the ground it holds is the island's still while the demolition is on site: the unlinked sums, the linked allocated ground and the room are as they were
+  - L1410 ...when it is done the terminal's ground is released from the island: the unlinked terminals hold none, the built ground the linked view takes off is none, t...
+  - L1419 an island terminal ordered and stopped is a shell on the island, holding its ground
+  - L1422 ...the shell's ground is the island's (the room is less than whole)
+  - L1426 demolishing the shell keeps its units leaving by the demolition's id, holding the island's ground until it is done
+  - L1430 ...and when it is done the room is whole again and nothing is placed
+- **L1451 7. the choice: the card's pick is one order's, the rule never takes an island no port links**
+  - L1452 fixtures were found
+  - L1459 the card offers the landmasses the city owns shore on, home first: home, then the island
+  - L1460 by the rule the terminal is home's - home owns shore - and a card's pick of the island is read by CHOSEN alone
+  - L1463 a pick is read: CHOSEN is the island, RULE is still home
+  - L1464 an order by the rule (the automatic builder's, the advice's) lands on home though the card picked the island, and the pick is spent
+  - L1468 a pick not used is forgotten at the month's settle
+  - L1470 a pick of a landmass the city owns no shore on is passed over: the rule answers
+  - L1472 a pick by an order for the island lands there
+  - L1473 the rule's answer for a landmass named: an id with shore is itself, an id without is none
+  - L1477 with the island's shore owned and none at home, the rule is none, however it is asked, until a port links the island
+  - L1494 the rule's second leg: home owns no shore but the island, linked by the pair, does - the answer is the linked island with shore
+  - L1499 ...and with one terminal at home the island is unlinked, and the answer is none
+  - L1504 the island with no salt in the square owns no shore: a terminal chosen for it is NO_COAST (the pick is passed over, the rule has none)
+  - L1514 a desalination plant needs shore on a LINKED landmass: the island's shore alone (unlinked) is NO_COAST, home's shore or a linked island's passes
+  - L1523 premise: with the island picked, the card's quote stands on the island's room and the rule's on home's free ground, and the two rooms are not one figure
+  - L1526 quoteBuildOn() asks for what the order is for: the island's is the card's quote with the island picked, and the rule's is home's whatever is picked
+  - L1531 an order by the rule with the pick standing is placed and is charged its own quote, the rule's
+  - L1533 ...and it takes home's ground and nothing of the island's (no terminal is placed off home), and the pick is spent
+- **L1542 9. the save: the placements under one key, absent for a city on one landmass; read back, resaved, played on; a save without the key reads...**
+  - L1543 fixtures were found
+  - L1555 fixture: standing [island, home, home, island], a shell of the island's, and the newest island terminal being demolished - the island linked
+  - L1561 the save carries the key \"landmasses\": a row for the terminal's template and the demolition leaving
+  - L1565 a city on one landmass writes no such key (its save is the old bytes)
+  - L1570 read back: the same placements, the same landmasses linked, the same rooms and unlinked ground
+  - L1578 ...and written again it is the same bytes but for its time and name
+  - L1581 a reload equals the city played on: loaded into a second game and both played a month and two, every figure of the save and of the history is the same
+  - L1593 a save without the key loads - it is not refused - and reads every terminal at home: none placed, none on the island, the island unlinked
+  - L1612 a bad row is passed over, not refused: a template that is no terminal is skipped, a list shorter than the buildings' count is made up with home's
+  - L1633 fixture: the island city is saved
+- **L1716 12. grown across landmasses: 24 months with the island owned and unlinked, the two terminals by the card's path, then 96 months, the book...**
+  - L1717 fixtures were found
+  - L1743 premise: the 24 months moved the city - ground was allocated and buildings stand that did not
+  - L1758 24 months with the island owned and no terminal: it stays unlinked, owned and counted, and no investor's refusal hides it
+  - L1759 the two terminals by the card's path (the island's, then home's) are placed, and the island is linked once both stand
+  - L1766 fixture: a city on the island with a field across the water
+  - L1782 premise: the island city owns the mainland's field across the water - sites no works may use - and its 24 months moved it: ground allocated, buildings standi...
+  - L1831 the Rotterdam delta's islands read Rotterdam's landmass in the model's own reader: Voorne-Putten, Rozenburg, IJsselmonde, the Hoeksche Waard
+  - L1832 ...and Goeree-Overflakkee does not
+  - L1834 Prince Edward Island is a landmass of its own (101), apart from the mainland across the strait
+  - L1835 Halifax and Dartmouth are one landmass; Medellin is on the Americas (2)
+  - L1880 the run played its months and found nothing: every month passed the playtest's audit,
+  - L1882 the test player never builds a terminal off its home landmass (it never links an island)
 
 ## LongPlaytest.java - 0 labelled assertions
 
@@ -13398,171 +13514,171 @@ _(this harness does not label its checks through a helper - it prints its findin
 > of construction cash, $15,402k of business debt, 1,868 units of the previous
 > ...
 
-- **L263 1. what a city that never existed looks like**
-  - L271 it has no people
-  - L272 it has its starting cash
-  - L273 ...and the founders' dollars in the vault
-  - L275 ...bought on day one, at the opening rate
-  - L278 it is at month 1
-- **L280 2. live in one, hard**
-  - L351 the used city really is used
-  - L354 ...and its vault is not the founders' any more
-  - L356 ...and it paid for land out of it, and pays that way still
-  - L360 ...and its landlords owe insured mortgages, and have paid the city premiums on them
-- **L364 3. start a new one**
-- **L385 4. and it is actually playable**
-  - L389 the building catalogue is loaded
-  - L393 houses can be ordered
-  - L399 and so can shops
-  - L404 months pass
-  - L405 and people move in
-  - L408 its history starts from this city, not the last one
-- **L411 5. a new game after a LOAD, too**
-  - L421 saved
-  - L425 loaded
-  - L430 ...with the vault it was saved with, not a new city's
-  - L453 starting a new game does not delete the save it left
-- **L456 6-11. FOUNDING A CITY (0.7.10)**
-- **L459 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13)**
-- **L462 13. THE GROUND IT STANDS ON (0.7.56)**
-- **L465 14. THE REAL EARTH (0.7.121)**
-- **L468 15. A NEW CITY AFTER A REFORMED ONE (FX4)**
-- **L512 6**
-  - L516 the defaults are the two constants
-  - L518 ...in the default world, Danzik, its money named after it
-  - L522 the Standard preset is the constants
-  - L526 ...and Lean and Wealthy are their own constants
-  - L533 a city founded on the defaults opens with exactly them
-  - L538 ...named Danzik, in money named after it
-  - L553 fixture:
-  - L576 each preset and a custom founding opens with exactly its treasury and vault
-  - L577 ...the vault bought at the opening rate, booked as the purchase it is
-  - L578 ...an Insane one lives it without borrowing, overdrawn for the central bank's advance
-  - L579 ...and lives its first month with the audit closed
-  - L596 a city at the
-  - L598 ...and runs two years, every month audited
-  - L621 an Insane city places nothing before it borrows
-  - L622 ...borrows the village's invoice on the build screen's bond and places ten houses and a shop
-  - L624 ...and runs two years, every month audited
-  - L628 newGame() with a founding - the menu's door - founds exactly it
-  - L639 an empty treasury is not a custom city: refused at the door
-  - L641 ...but nothing at all is the Insane preset, the one founding under the bounds
-  - L643 ...as is one under the floor or over the ceiling
-  - L646 ...and a vault below nothing or over its ceiling
-  - L650 ...and a city with no name, or a name too long for the title
-- **L655 7**
-  - L668 fixture: Arden, in its crown, founded and lived in
-  - L670 saved
-  - L672 the city's name comes back
-  - L673 ...and its money, whole: name, plural, code and both symbols
-  - L675 ...and the treasury and vault it was founded with, not what it has now
-  - L678 ...and the world it was founded into, which the world's own save carries
-  - L680 the slot list names the city
-  - L691 fixture: the save carried all eight of the founding's keys
-  - L695 fixture: the stripped save loads
-  - L696 a save from before 0.7.10 loads as Danzik
-  - L697 ...in the Danzik dollar, every city's before: Danzik dollars, DZD, $ and D$
-  - L701 ...founded with D$2.5B and US$1B, the Wealthy preset's
-  - L703 ...and otherwise the city it was: its own cash and vault
-  - L706 ...and the slot list says Danzik too
-- **L708 8**
-  - L712 Arden gives the Arden dollar, the Arden dollars
-  - L714 ...A$ beside a US dollar and $ alone, ARD
-  - L733 the edges: accents, other scripts, stops, short names and the world's code
-  - L738 the world's code is never derived
-  - L741 typed by hand: its name, an s for the plural, and the code upper-cased
-  - L743 ...written $ alone and its initial and $ beside a US dollar
-  - L746 ...a name that ends in s is its own plural
-  - L747 the world's code is never accepted, in any case
-  - L750 ...nor a code that is not exactly three letters A to Z
-  - L754 ...nor a name with no letter in it
-  - L756 a founding in the world's money is no founding
-  - L759 the foreign money stays the US dollar, US$, USD
-- **L763 9**
-  - L768 a city founded on the defaults beside Arden is Danzik, in its own money
-  - L770 ...and Arden is still Arden, in its crown, with its own founding
-  - L774 Start New Game on Arden's own object founds Danzik on the defaults, nothing of Arden's
-  - L777 ...and after loading Arden: its name, its money and its world all left behind
-- **L780 10**
-  - L791 founding at each of the screen's worlds sets the world's mean
-  - L792 ...and back-casts its first year at that mean
-  - L793 ...and the default is among them
-  - L802 a new city after a
-- **L806 11**
-  - L831 fixture: a new city places the founding village
-  - L832 ...and is charged for it exactly what whatItBuys() says
-  - L837 ...and quoted for each first work exactly what it says, the yard spent
-  - L842 (a) the Standard treasury pays for the village and at least one of the first works
-  - L859 (b) ...and not the others as well: after any one of them, the rest need a bond
-  - L874 (c) fixture: a year on, the water plant is more than its treasury holds
-  - L877 (c) the page's gap is the plant's invoice less the treasury
-  - L879 (c) the page's bond is at one of the five maturities
-  - L886 (c) the page's note is still quoted: six months, covering the gap
-  - L900 (c) a Standard city short of the water plant is quoted the bond
-  - L903 ...whose cash covers the gap
-  - L904 ...by no more than one issue granule plus the fees
-  - L929 ...and so at every maturity and size, not this one alone: a short quote is asserted short, and any other covers its
-  - L935 (c) a new city borrowing for it gets it: the bond issues
-  - L937 ...and lands exactly the cash it was quoted
-  - L939 ...on the books as a term bond of BUILD_BOND_YEARS, at the face quoted
-  - L942 ...and the plant is ordered
-  - L951 ...and built
-  - L952 ...and every month of it the audit closed
-- **L996 12. the dial and the rollover a player founds with**
-  - L1000 \"Found with defaults\": the dial is the autopilot's
-  - L1001 ...and the treasury rolls what falls due in the same structure
-  - L1006 the founding screen's own city, likewise
-  - L1010 a city built bare keeps the hand on the dial and rolls nothing, for its builder to state
-  - L1014 fixture: a month played on the autopilot
-  - L1016 fixture: the player's hand takes the dial
-  - L1017 saved
-  - L1020 a save with the hand on the dial reloads with the hand on it
-  - L1027 saved
-  - L1029 ...one on the autopilot reloads on it
-  - L1030 ...and its rollover as it was set
-  - L1034 fixture: the save carried both keys
-  - L1040 fixture: the older save loads
-  - L1041 a save from before either key loads with the hand on the dial
-  - L1043 ...and rolls nothing, as it was played
-- **L1064 13. the ground a city stands on**
-  - L1075 the defaults, every preset and a custom city: the default world
-  - L1077 ...and a city founded on the defaults stands on it
-  - L1083 fixture: a founding on world
-  - L1086 a city founded on another world stands on it
-  - L1088 ...and its World is that seed's, the one every asker shares
-  - L1091 ...and its land is on it: a centre round that world's founding site (0.7.57)
-  - L1094 ...while the founding's other choices are as they were
-  - L1098 saved
-  - L1101 the save carries the seed
-  - L1103 ...and the city it loads stands on the same world
-  - L1113 fixture: the save without the seed loads
-  - L1114 a save from before 0.7.56 reads the seed its name, treasury, ground and month make
-  - L1116 ...the same one on every load
-  - L1117 saved
-  - L1118 ...and its next save keeps it
-  - L1120 a save one month on derives another: the month is in it
-  - L1125 Start New Game after a city on world
-  - L1135 the dice rolls 1 to ROLLED_SEED_MAX (
-  - L1136 a typed seed is a whole number: 4127, 1,234, -5
-  - L1140 ...and nothing else: a word, a fraction, nothing, past a long
-- **L1166 14. the real Earth**
-  - L1174 the defaults and every preset stand on a generated world: no spot, no data
-  - L1177 onEarth() puts a founding on the Earth round a spot, the game's data, its seed and choices kept
-  - L1183 fixture: EarthCheck's fixture is beside the classes
-  - L1189 fixture: Rotterdam's spot on the fixture has no problem
-  - L1192 a city founded on the Earth stands on it: its World the key's, its land the snap's site
-  - L1195 ...its record the spot and the data
-  - L1198 saved
-  - L1200 the save carries the kind, the spot and the data
-  - L1204 ...and the city it loads stands on the same Earth
-  - L1209 a spot in the sea is a problem, in the founding card's words
-  - L1217 ...which the game will not found, the city on screen left as it was
-  - L1221 Start New Game after an Earth city founds on the default generated world
-- **L1264 15. a new city after a reformed one founds at the founding unit (FX4)**
-  - L1269 the fixture: the first city is reformed, its unit no longer 1
-  - L1272 the new city founds at the founding unit
-  - L1278 ...and reads the parity a city never reformed reads
-  - L1280 ...and its rate is not pulled away from that city's
+- **L270 1. what a city that never existed looks like**
+  - L278 it has no people
+  - L279 it has its starting cash
+  - L280 ...and the founders' dollars in the vault
+  - L282 ...bought on day one, at the opening rate
+  - L285 it is at month 1
+- **L287 2. live in one, hard**
+  - L358 the used city really is used
+  - L361 ...and its vault is not the founders' any more
+  - L363 ...and it paid for land out of it, and pays that way still
+  - L367 ...and its landlords owe insured mortgages, and have paid the city premiums on them
+- **L371 3. start a new one**
+- **L392 4. and it is actually playable**
+  - L396 the building catalogue is loaded
+  - L400 houses can be ordered
+  - L406 and so can shops
+  - L411 months pass
+  - L412 and people move in
+  - L415 its history starts from this city, not the last one
+- **L418 5. a new game after a LOAD, too**
+  - L428 saved
+  - L432 loaded
+  - L437 ...with the vault it was saved with, not a new city's
+  - L460 starting a new game does not delete the save it left
+- **L463 6-11. FOUNDING A CITY (0.7.10)**
+- **L466 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13)**
+- **L469 13. THE GROUND IT STANDS ON (0.7.56)**
+- **L472 14. THE REAL EARTH (0.7.121)**
+- **L475 15. A NEW CITY AFTER A REFORMED ONE (FX4)**
+- **L519 6**
+  - L523 the defaults are the two constants
+  - L525 ...in the default world, Danzik, its money named after it
+  - L529 the Standard preset is the constants
+  - L533 ...and Lean and Wealthy are their own constants
+  - L540 a city founded on the defaults opens with exactly them
+  - L545 ...named Danzik, in money named after it
+  - L560 fixture:
+  - L583 each preset and a custom founding opens with exactly its treasury and vault
+  - L584 ...the vault bought at the opening rate, booked as the purchase it is
+  - L585 ...an Insane one lives it without borrowing, overdrawn for the central bank's advance
+  - L586 ...and lives its first month with the audit closed
+  - L603 a city at the
+  - L605 ...and runs two years, every month audited
+  - L628 an Insane city places nothing before it borrows
+  - L629 ...borrows the village's invoice on the build screen's bond and places ten houses and a shop
+  - L631 ...and runs two years, every month audited
+  - L635 newGame() with a founding - the menu's door - founds exactly it
+  - L646 an empty treasury is not a custom city: refused at the door
+  - L648 ...but nothing at all is the Insane preset, the one founding under the bounds
+  - L650 ...as is one under the floor or over the ceiling
+  - L653 ...and a vault below nothing or over its ceiling
+  - L657 ...and a city with no name, or a name too long for the title
+- **L662 7**
+  - L675 fixture: Arden, in its crown, founded and lived in
+  - L677 saved
+  - L679 the city's name comes back
+  - L680 ...and its money, whole: name, plural, code and both symbols
+  - L682 ...and the treasury and vault it was founded with, not what it has now
+  - L685 ...and the world it was founded into, which the world's own save carries
+  - L687 the slot list names the city
+  - L698 fixture: the save carried all eight of the founding's keys
+  - L702 fixture: the stripped save loads
+  - L703 a save from before 0.7.10 loads as Danzik
+  - L704 ...in the Danzik dollar, every city's before: Danzik dollars, DZD, $ and D$
+  - L708 ...founded with D$2.5B and US$1B, the Wealthy preset's
+  - L710 ...and otherwise the city it was: its own cash and vault
+  - L713 ...and the slot list says Danzik too
+- **L715 8**
+  - L719 Arden gives the Arden dollar, the Arden dollars
+  - L721 ...A$ beside a US dollar and $ alone, ARD
+  - L740 the edges: accents, other scripts, stops, short names and the world's code
+  - L745 the world's code is never derived
+  - L748 typed by hand: its name, an s for the plural, and the code upper-cased
+  - L750 ...written $ alone and its initial and $ beside a US dollar
+  - L753 ...a name that ends in s is its own plural
+  - L754 the world's code is never accepted, in any case
+  - L757 ...nor a code that is not exactly three letters A to Z
+  - L761 ...nor a name with no letter in it
+  - L763 a founding in the world's money is no founding
+  - L766 the foreign money stays the US dollar, US$, USD
+- **L770 9**
+  - L775 a city founded on the defaults beside Arden is Danzik, in its own money
+  - L777 ...and Arden is still Arden, in its crown, with its own founding
+  - L781 Start New Game on Arden's own object founds Danzik on the defaults, nothing of Arden's
+  - L784 ...and after loading Arden: its name, its money and its world all left behind
+- **L787 10**
+  - L798 founding at each of the screen's worlds sets the world's mean
+  - L799 ...and back-casts its first year at that mean
+  - L800 ...and the default is among them
+  - L809 a new city after a
+- **L813 11**
+  - L838 fixture: a new city places the founding village
+  - L839 ...and is charged for it exactly what whatItBuys() says
+  - L844 ...and quoted for each first work exactly what it says, the yard spent
+  - L849 (a) the Standard treasury pays for the village and at least one of the first works
+  - L866 (b) ...and not the others as well: after any one of them, the rest need a bond
+  - L881 (c) fixture: a year on, the water plant is more than its treasury holds
+  - L884 (c) the page's gap is the plant's invoice less the treasury
+  - L886 (c) the page's bond is at one of the five maturities
+  - L893 (c) the page's note is still quoted: six months, covering the gap
+  - L907 (c) a Standard city short of the water plant is quoted the bond
+  - L910 ...whose cash covers the gap
+  - L911 ...by no more than one issue granule plus the fees
+  - L936 ...and so at every maturity and size, not this one alone: a short quote is asserted short, and any other covers its
+  - L942 (c) a new city borrowing for it gets it: the bond issues
+  - L944 ...and lands exactly the cash it was quoted
+  - L946 ...on the books as a term bond of BUILD_BOND_YEARS, at the face quoted
+  - L949 ...and the plant is ordered
+  - L958 ...and built
+  - L959 ...and every month of it the audit closed
+- **L1003 12. the dial and the rollover a player founds with**
+  - L1007 \"Found with defaults\": the dial is the autopilot's
+  - L1008 ...and the treasury rolls what falls due in the same structure
+  - L1013 the founding screen's own city, likewise
+  - L1017 a city built bare keeps the hand on the dial and rolls nothing, for its builder to state
+  - L1021 fixture: a month played on the autopilot
+  - L1023 fixture: the player's hand takes the dial
+  - L1024 saved
+  - L1027 a save with the hand on the dial reloads with the hand on it
+  - L1034 saved
+  - L1036 ...one on the autopilot reloads on it
+  - L1037 ...and its rollover as it was set
+  - L1041 fixture: the save carried both keys
+  - L1047 fixture: the older save loads
+  - L1048 a save from before either key loads with the hand on the dial
+  - L1050 ...and rolls nothing, as it was played
+- **L1071 13. the ground a city stands on**
+  - L1082 the defaults, every preset and a custom city: the default world
+  - L1084 ...and a city founded on the defaults stands on it
+  - L1090 fixture: a founding on world
+  - L1093 a city founded on another world stands on it
+  - L1095 ...and its World is that seed's, the one every asker shares
+  - L1098 ...and its land is on it: a centre round that world's founding site (0.7.57)
+  - L1101 ...while the founding's other choices are as they were
+  - L1105 saved
+  - L1108 the save carries the seed
+  - L1110 ...and the city it loads stands on the same world
+  - L1120 fixture: the save without the seed loads
+  - L1121 a save from before 0.7.56 reads the seed its name, treasury, ground and month make
+  - L1123 ...the same one on every load
+  - L1124 saved
+  - L1125 ...and its next save keeps it
+  - L1127 a save one month on derives another: the month is in it
+  - L1132 Start New Game after a city on world
+  - L1142 the dice rolls 1 to ROLLED_SEED_MAX (
+  - L1143 a typed seed is a whole number: 4127, 1,234, -5
+  - L1147 ...and nothing else: a word, a fraction, nothing, past a long
+- **L1173 14. the real Earth**
+  - L1181 the defaults and every preset stand on a generated world: no spot, no data
+  - L1184 onEarth() puts a founding on the Earth round a spot, the game's data, its seed and choices kept
+  - L1190 fixture: EarthCheck's fixture is beside the classes
+  - L1196 fixture: Rotterdam's spot on the fixture has no problem
+  - L1199 a city founded on the Earth stands on it: its World the key's, its land the snap's site
+  - L1202 ...its record the spot and the data
+  - L1205 saved
+  - L1207 the save carries the kind, the spot and the data
+  - L1211 ...and the city it loads stands on the same Earth
+  - L1216 a spot in the sea is a problem, in the founding card's words
+  - L1224 ...which the game will not found, the city on screen left as it was
+  - L1228 Start New Game after an Earth city founds on the default generated world
+- **L1271 15. a new city after a reformed one founds at the founding unit (FX4)**
+  - L1276 the fixture: the first city is reformed, its unit no longer 1
+  - L1279 the new city founds at the founding unit
+  - L1285 ...and reads the parity a city never reformed reads
+  - L1287 ...and its rate is not pulled away from that city's
 
 ## OilCheck.java - 214 labelled assertions
 
@@ -15443,7 +15559,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1634 ...drawn in the blocks' views as the yard's class on every plot of every part:
   - L1635 ...and counted on the tile holding its first plot:
 
-## ReadPathCheck.java - 30 labelled assertions
+## ReadPathCheck.java - 32 labelled assertions
 
 > Reading the city must not change the city.
 > 
@@ -15459,44 +15575,46 @@ _(this harness does not label its checks through a helper - it prints its findin
 >                              reloaded city collected $0 where the live one
 > ...
 
-- **L1491 a city with money moving in every sector**
-  - L1577 fixture: the businesses owe bonds, and orders rest on their books
-  - L1579 fixture: the city's fund holds shares and bonds
-  - L1588 every sector is actually trading
-- **L1594 the FIRST read, which is the hard one**
-  - L1650 one pass over the screens moved nothing
-  - L1667 the live sale figure IS the one in the ledger
-- **L1671 read it, and read it again**
-  - L1698 reading the city fifty times changed nothing
-- **L1700 and the specific one item 7 was about**
-  - L1756 every one of the thirteen pantries fell by what sold and rose by what arrived
-  - L1763 ...and the statement never sold more than was in stock
-  - L1765 ...and the shelf never goes negative
-- **L1768 the tax the city takes is the tax it shows**
-  - L1776 business tax collected == business tax printed
-  - L1780 ...and it is the companies taxed separately, not netted
-- **L1785 a rate change reaches the treasury at once**
-  - L1815 doubling the rate moves the very next month's commercial tax
-- **L1818 the build advice's reads, after a load (0.7.51)**
-  - L1908 fixture: the city holds hills by hand - the centre,
-  - L1917 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
-  - L1927 fixture: the city has suggestions to compare
-  - L1928 every one of them the same after a load, to the bit
-  - L1929 ...the high schools' leavers a number, not NaN
-  - L1931 the land on the world is the same after a load: its centre, its blocks and purchases
-  - L1933 ...its offers, field for field
-  - L1935 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
-  - L1949 the save carries the three keys of the ground by relief, and they are what the load read
-  - L1961 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
-  - L1964 the saved file reads:
-  - L1966 ...and what was taken out of its ground
-  - L1968 ...and out of its offshore pool (0.7.93)
-  - L1970 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
-- **L1985 and a city on the real Earth: reading its world fifty times**
-  - L1987 fixture: EarthCheck's fixture is beside the classes
-  - L2004 fixture: a town on the Earth, played a year
-  - L2008 fixture: a plot of the North Sea west of it
-  - L2035 reading an Earth city's world fifty times changed nothing (
+- **L1504 a city with money moving in every sector**
+  - L1590 fixture: the businesses owe bonds, and orders rest on their books
+  - L1592 fixture: the city's fund holds shares and bonds
+  - L1601 every sector is actually trading
+- **L1607 the FIRST read, which is the hard one**
+  - L1663 one pass over the screens moved nothing
+  - L1680 the live sale figure IS the one in the ledger
+- **L1684 read it, and read it again**
+  - L1711 reading the city fifty times changed nothing
+- **L1713 and the specific one item 7 was about**
+  - L1769 every one of the thirteen pantries fell by what sold and rose by what arrived
+  - L1776 ...and the statement never sold more than was in stock
+  - L1778 ...and the shelf never goes negative
+- **L1781 the tax the city takes is the tax it shows**
+  - L1789 business tax collected == business tax printed
+  - L1793 ...and it is the companies taxed separately, not netted
+- **L1798 a rate change reaches the treasury at once**
+  - L1828 doubling the rate moves the very next month's commercial tax
+- **L1831 the build advice's reads, after a load (0.7.51)**
+  - L1921 fixture: the city holds hills by hand - the centre,
+  - L1930 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
+  - L1940 fixture: the city has suggestions to compare
+  - L1941 every one of them the same after a load, to the bit
+  - L1942 ...the high schools' leavers a number, not NaN
+  - L1944 the land on the world is the same after a load: its centre, its blocks and purchases
+  - L1946 ...its offers, field for field
+  - L1948 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
+  - L1962 the save carries the three keys of the ground by relief, and they are what the load read
+  - L1974 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
+  - L1977 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
+  - L1982 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
+  - L1987 the saved file reads:
+  - L1989 ...and what was taken out of its ground
+  - L1991 ...and out of its offshore pool (0.7.93)
+  - L1993 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
+- **L2008 and a city on the real Earth: reading its world fifty times**
+  - L2010 fixture: EarthCheck's fixture is beside the classes
+  - L2036 fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links
+  - L2042 fixture: a plot of the North Sea west of it
+  - L2069 reading an Earth city's world fifty times changed nothing (
 
 ## RefineryCheck.java - 108 labelled assertions
 
@@ -16272,7 +16390,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1294 a run plot over fresh water is a bridge and never a tunnel, whatever relief the plot carries
   - L1300 ...and this tile has no run on steep ground, so it has no viaduct and no tunnel: the bridges are over water alone
 
-## SaveFileCheck.java - 553 labelled assertions
+## SaveFileCheck.java - 564 labelled assertions
 
 > Verifies where saves go and how they are written.
 > 
@@ -16854,19 +16972,30 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3071 ...reads all flat: the dry ground flat in the centre, in the total and in every holding, nothing steep, nothing shallow (never refused)
   - L3078 a relief row of the wrong width reads that holding flat and leaves the rest as saved
   - L3087 a land office restoring an offer reads its relief row, and with none reads it all flat
-  - L3113 a save with
-  - L3115 ...nothing of it applied, and every file as it was
-- **L3133 and a refused save loaded into a running city leaves that city as it was**
-  - L3144 fixture: the city is loaded and running, past month 1
-  - L3145 fixture: slot 2 is below the floor and slot 5 from a newer build
-  - L3153 the save below the floor is refused, naming the build that still opens it
-  - L3155 ...and the city in play is the same city: its managers the same objects, its month and cash
-  - L3160 the newer build's save is refused, naming the build that opens it
-  - L3162 ...words that name that build and this one
-  - L3165 ...and the city in play is still the same city
-  - L3174 ...and what it saves after both refusals is what it saved before them, key for key
+  - L3097 a city on one landmass writes no \"landmasses\" key (its save is the old bytes)
+  - L3102 fixture: a square of Goeree-Overflakkee with dry ground and shore, found by search with the model's own reader
+  - L3115 fixture: a terminal stands on the island, which owns shore the city bought and no port at home links
+  - L3117 saved
+  - L3120 the save carries the key \"landmasses\", a row for the terminal's template with the island's id for its one standing unit, and nothing leaving
+  - L3127 read back, the terminal stands on the island again and the land is the same
+  - L3130 saved again
+  - L3133 ...and writes the same bytes but its time
+  - L3141 a save without the key loads - it is not refused - and reads every terminal at home: none on the island, none placed
+  - L3156 a row of a template that is no terminal is passed over (not refused): the terminal's row stands alone
+  - L3165 an Earth save of the format before the landmasses (
+  - L3189 a save with
+  - L3191 ...nothing of it applied, and every file as it was
+- **L3209 and a refused save loaded into a running city leaves that city as it was**
+  - L3220 fixture: the city is loaded and running, past month 1
+  - L3221 fixture: slot 2 is below the floor and slot 5 from a newer build
+  - L3229 the save below the floor is refused, naming the build that still opens it
+  - L3231 ...and the city in play is the same city: its managers the same objects, its month and cash
+  - L3236 the newer build's save is refused, naming the build that opens it
+  - L3238 ...words that name that build and this one
+  - L3241 ...and the city in play is still the same city
+  - L3250 ...and what it saves after both refusals is what it saved before them, key for key
 
-## SaveSlotCheck.java - 146 labelled assertions
+## SaveSlotCheck.java - 148 labelled assertions
 
 > Verifies the slot system: ten saves plus an autosave, the version stamp, and
 > the labels the menu is drawn from.
@@ -16972,80 +17101,82 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L500 the licensed heads (setLicences)
   - L501 the skilled heads (setSkilledWorkforce)
   - L504 the automatic builder's log, as its toState() copies it
-  - L508 a state held uncopied is caught: all
-  - L511 every field of every class above was given a value (
-  - L524 ...and writes what the source writes
-- **L741 the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS**
-  - L748 fixture: the city's own history (
-  - L749 fixture: ...and has folded no year
-  - L754 fixture: the history holds MONTHLY_KEPT months
-  - L763 fixture: the old way saved
-  - L796 every due month, warm-ups too, wrote one autosave named for its month
-- **L812 the autosave off the clock: written behind the months, the same files as the old way**
-  - L819 the old way saved slot 3 from the live objects
-  - L830 fixture: three months ran while the snapshot waited
-  - L831 fixture: and they changed the city (cash
-  - L832 fixture: the writer was held: the autosave on disk is still the one before
-  - L833 fixture: ...and nothing was written meanwhile
-  - L837 released, the writer wrote the one snapshot
-  - L838 ...named as it was asked
-  - L841 both saves read back as whole JSON
-  - L853 the save: all
-  - L855 ...and the two trees are equal
-  - L862 ...and the same tree
-  - L864 the city map exists beside both
-  - L865 ...and is the same bytes
-  - L870 the autosave loads with no failure
-  - L871 ...at the month it was asked at, not three on
-  - L872 ...with the cash it was asked at
-  - L873 ...and the history it was asked at
-- **L884 the autosave off the clock: back to back, one at a time, always whole**
-  - L895 held, two autosaves asked for write once
-  - L896 ...and the file holds the second
-  - L904 not held, two autosaves asked for write once or twice (
-  - L905 ...and the file holds the second
-  - L906 ...and the writer never wrote two at once, in the whole run
-- **L918 the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it**
-  - L930 fixture: the autosave on disk (month
-  - L937 fixture: the held autosave is not on disk yet
-  - L942 a load straight after an autosave returns after the writer was released
-  - L943 ...and loads that autosave: its month
-  - L944 ...its name
-  - L945 ...with no failure
-  - L951 fixture: the held autosave is not on disk yet
-  - L956 a numbered save returns after the writer was released
-  - L957 ...slot 4 is saved
-  - L958 ...and the held autosave is on disk
-  - L971 a skip returns after the writer was released
-  - L972 ...the held autosave and the skip's own were both written (without the wait the skip's replaces the held)
-  - L974 ...and the file holds the skip's
-  - L984 Quit returns after the writer was released
-  - L985 ...and its autosave is on disk
-  - L986 ...at the city's month
-- **L997 the autosave off the clock: a write that fails is reported, and the next one writes**
-  - L1004 fixture: the autosave's .tmp is a folder with a file in it
-  - L1019 the failed write is the last save result, not ok
-  - L1020 ...naming the autosave file
-  - L1021 ...and the calling thread said \"Autosave failed:\"
-  - L1022 the autosave on disk is still the one before
-  - L1030 fixture: the obstacle is gone
-  - L1034 with the obstacle gone, the next autosave writes
-  - L1035 ...and the file holds it
-- **L1049 the autosave off the clock: the floor of real time**
-  - L1067 fixture: each of the
-  - L1068 with the clock still,
-  - L1069 ...each due month started its counter again, at
-  - L1074 one second short of the floor, the next due month writes nothing
-  - L1075 ...and its counter starts again
-  - L1080 one second past the floor, the next due month writes exactly one
-  - L1081 ...at its month
-  - L1082 ...named for it
-  - L1102 fixture: the five due months came inside one floor of real time
-  - L1104 on the real clock,
-  - L1107 ...the first due month's, month
-  - L1374 ...and its history ends at it
-  - L1384 ...two months on, its history ends at the city's
-  - L1385 ...with no month missing (
+  - L511 the landmasses' placements, built fresh by toState() (DataSave.setLandmasses)
+  - L512 ...and two states of one table share nothing: each save is its own
+  - L516 a state held uncopied is caught: all
+  - L519 every field of every class above was given a value (
+  - L532 ...and writes what the source writes
+- **L749 the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS**
+  - L756 fixture: the city's own history (
+  - L757 fixture: ...and has folded no year
+  - L762 fixture: the history holds MONTHLY_KEPT months
+  - L771 fixture: the old way saved
+  - L804 every due month, warm-ups too, wrote one autosave named for its month
+- **L820 the autosave off the clock: written behind the months, the same files as the old way**
+  - L827 the old way saved slot 3 from the live objects
+  - L838 fixture: three months ran while the snapshot waited
+  - L839 fixture: and they changed the city (cash
+  - L840 fixture: the writer was held: the autosave on disk is still the one before
+  - L841 fixture: ...and nothing was written meanwhile
+  - L845 released, the writer wrote the one snapshot
+  - L846 ...named as it was asked
+  - L849 both saves read back as whole JSON
+  - L861 the save: all
+  - L863 ...and the two trees are equal
+  - L870 ...and the same tree
+  - L872 the city map exists beside both
+  - L873 ...and is the same bytes
+  - L878 the autosave loads with no failure
+  - L879 ...at the month it was asked at, not three on
+  - L880 ...with the cash it was asked at
+  - L881 ...and the history it was asked at
+- **L892 the autosave off the clock: back to back, one at a time, always whole**
+  - L903 held, two autosaves asked for write once
+  - L904 ...and the file holds the second
+  - L912 not held, two autosaves asked for write once or twice (
+  - L913 ...and the file holds the second
+  - L914 ...and the writer never wrote two at once, in the whole run
+- **L926 the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it**
+  - L938 fixture: the autosave on disk (month
+  - L945 fixture: the held autosave is not on disk yet
+  - L950 a load straight after an autosave returns after the writer was released
+  - L951 ...and loads that autosave: its month
+  - L952 ...its name
+  - L953 ...with no failure
+  - L959 fixture: the held autosave is not on disk yet
+  - L964 a numbered save returns after the writer was released
+  - L965 ...slot 4 is saved
+  - L966 ...and the held autosave is on disk
+  - L979 a skip returns after the writer was released
+  - L980 ...the held autosave and the skip's own were both written (without the wait the skip's replaces the held)
+  - L982 ...and the file holds the skip's
+  - L992 Quit returns after the writer was released
+  - L993 ...and its autosave is on disk
+  - L994 ...at the city's month
+- **L1005 the autosave off the clock: a write that fails is reported, and the next one writes**
+  - L1012 fixture: the autosave's .tmp is a folder with a file in it
+  - L1027 the failed write is the last save result, not ok
+  - L1028 ...naming the autosave file
+  - L1029 ...and the calling thread said \"Autosave failed:\"
+  - L1030 the autosave on disk is still the one before
+  - L1038 fixture: the obstacle is gone
+  - L1042 with the obstacle gone, the next autosave writes
+  - L1043 ...and the file holds it
+- **L1057 the autosave off the clock: the floor of real time**
+  - L1075 fixture: each of the
+  - L1076 with the clock still,
+  - L1077 ...each due month started its counter again, at
+  - L1082 one second short of the floor, the next due month writes nothing
+  - L1083 ...and its counter starts again
+  - L1088 one second past the floor, the next due month writes exactly one
+  - L1089 ...at its month
+  - L1090 ...named for it
+  - L1110 fixture: the five due months came inside one floor of real time
+  - L1112 on the real clock,
+  - L1115 ...the first due month's, month
+  - L1382 ...and its history ends at it
+  - L1392 ...two months on, its history ends at the city's
+  - L1393 ...with no month missing (
 
 ## ScaleCheck.java - 83 labelled assertions
 

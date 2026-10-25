@@ -424,6 +424,8 @@ public class Game {
                 () -> this.founding.getWorldKey(), () -> month);
         // ...and its zones, which the roll and a new building's ground read (0.7.107, batch Z1).
         economyManager.setZoning(landManager.getZoning(), landManager::heldBy);
+        // ...and where its sea terminals stand reads the buildings' counts (ET5; Landmasses).
+        landManager.getLandmasses().setStock(portStock());
         // ...and a foothill's price reads the preparation the quote charges a square foot of it (ET3), so the price and the quote are one number.
         landManager.setPreparationPerSqFt(() -> preparationCost(preparationPoints(1)));
         // ...and the books value a business's land by the ground it stands on (ET3): which templates are works, and what a
@@ -6575,13 +6577,30 @@ public class Game {
     }
 
     /** What the orders before one in a run have taken of the ground (ET2): their square feet, the part of it works's (and, ET4, the part runs'), and the foothill their orders prepare (buildRunInvoice()). */
-    private record GroundAhead(double ground, double works, double runs, double prepared) { }
+    private record GroundAhead(double ground, double works, double runs, double prepared, java.util.Map<Integer, Double> islands) {
+        GroundAhead(double ground, double works, double runs, double prepared) { this(ground, works, runs, prepared, java.util.Map.of()); }
+    }
 
     private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0, 0);
 
     /** ...and with the ground the orders before it in a run take (ET2): the foothill it prepares is what placing it after them would ask. */
     private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds, double bitumenAhead,
                                   GroundAhead ahead) {
+        return quoteBuild(selected, quantity, yardHolds, bitumenAhead, ahead, Landmasses.CHOSEN);
+    }
+
+    /**
+     * What an order for a landmass costs (ET5): the quote of a sea terminal ordered for `asked` - Landmasses.CHOSEN (the
+     * card's pick, else the rule), RULE or an id - priced on that landmass's pad and the room it stands on, the landmass
+     * buildStack() and processBuildOrder() place it on. quoteBuild() is this asked for CHOSEN, and every other building
+     * is quoted the same whatever is asked.
+     */
+    public BuildQuote quoteBuildOn(BuildingsTemplate selected, int quantity, int asked) {
+        return quoteBuild(selected, quantity, buildingManager.getConstructionMaterials(), 0, NO_GROUND_AHEAD, asked);
+    }
+
+    private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds, double bitumenAhead,
+                                  GroundAhead ahead, int asked) {
         double needed = selected.constructionMaterials * (double) quantity;
         double yard = yardHolds;
         double beyondYard = Math.max(0, needed - yard);
@@ -6590,7 +6609,11 @@ public class Game {
                 bitumenAhead);
         // ...and a building's foothill preparation (ET2): read here, before allocate() raises the prepared figure by
         // exactly it, so the quote and the charge read one; its money joins the sticker, taxed with the work.
-        double prepSqFt = landManager.foothillToPrepareSqFt(selected.getLandSqFt() * (double) quantity,
+        // ...a sea terminal for an island no port links is cut into that island's foothill, past its flat (ET5; Landmasses.padSqFt()), the ports of its run before it counted.
+        int island = islandPortLandmass(selected, asked);
+        double prepSqFt = island != Landmasses.NO_LANDMASS
+                ? landManager.getLandmasses().padSqFt(island, selected.getLandSqFt() * (double) quantity, ahead.islands().getOrDefault(island, 0.0))
+                : landManager.foothillToPrepareSqFt(selected.getLandSqFt() * (double) quantity,
                 selected.getSector(), groundUse(selected), ahead.ground(), ahead.works(), ahead.runs(), ahead.prepared());
         double prepPoints = prepSqFt > 0 ? preparationPoints(prepSqFt) : 0;
         double prepCost = prepPoints > 0 ? preparationCost(prepPoints) : 0;
@@ -6611,7 +6634,7 @@ public class Game {
                 buildingManager.getConstructionMaterialPrice(),
                 selected.getLandSqFt() * (double) quantity,
                 // ...on the ground its sector may build on (0.7.109, Z2): what buildFor()'s canAllocate() asks - a works's any dry ground, steep too (ET2).
-                landManager.freeFor(selected.getSector(), groundUse(selected)),
+                freeGroundFor(selected, asked),
                 // The city's own order's wait (0.7.22, after the docs pass):
                 // quoteMonths() exactly with no order set and no rush, and with
                 // one, where the order would land in it (quoteCityMonths()) -
@@ -7202,7 +7225,12 @@ public class Game {
     public boolean demolish(BuildingsTemplate t, int n) {
         lastHandRefusal = null;
         if (!isCitysToDemolish(t)) { lastHandRefusal = "not the city's to demolish"; return false; }
-        if (n < 1 || demolishable(t) < n) { lastHandRefusal = "not that many standing"; return false; }
+        if (n < 1 || demolishable(t) < n) {
+            // ...a port the standing count would allow but the linked landmasses do not (ET5 D11) says so.
+            String links = n >= 1 && buildingManager.getQuantity(t.getId()) - buildingManager.getControl().closingOf(t.getId()) >= n ? linkingWords(t, n) : null;
+            lastHandRefusal = links != null ? links : "not that many standing";
+            return false;
+        }
         DemolitionQuote q = quoteDemolition(t, n);
         if (q.price().total > cash) { lastHandRefusal = "the treasury is short of the quote"; return false; }
         placeDemolition(q, "City", 0);
@@ -7263,7 +7291,20 @@ public class Game {
          * with none can never build another.
          */
         if (n > 0 && isBuildersDepot(t) && otherBuildersDepotsStanding(t) == 0) return n - 1;
+        /*
+         * THE PORT THAT LINKS AN ISLAND CANNOT BE DEMOLISHED (ET5 D11): under pooled ground nobody knows what stands on
+         * an island that would be unlinked again, so no landmass the city has linked leaves the linked set - the shape
+         * of the builders' last depot above. A city that owns nothing off its home landmass is not asked.
+         */
+        if (n > 0 && Ports.isPort(t) && !landManager.getLandmasses().single()) return Math.min(n, landManager.getLandmasses().freeToGo(t.getId()));
         return n;
+    }
+
+    /** Why a port cannot be demolished, if it is the one that links a landmass (ET5 D11): "it is the port that links Island 2"; null when it is not. */
+    private String linkingWords(BuildingsTemplate t, int n) {
+        if (!Ports.isPort(t) || landManager.getLandmasses().single()) return null;
+        String linked = landManager.getLandmasses().linkedBy(t.getId());
+        return linked.isEmpty() ? null : "it is the port that links " + linked;
     }
 
     /** Whether this template is a builders' depot: owned by Construction and making building work. */
@@ -7294,9 +7335,17 @@ public class Game {
         double paid = treasuryPays(TreasuryLine.BUILDINGS, q.price().total);
         cityCapitalSpending += paid;
         getSectors().construction().bill(paid, q.points());
+        // ...a sea terminal's units have their places fitted to the buildings before the order moves the count (ET5).
+        boolean terminal = Ports.isPort(t) && landManager.getLandmasses().hasPlacements();
+        if (terminal) landManager.getLandmasses().reconcile();
         ConstructionControl.Demolition d = buildingManager.getControl().addDemolition(t, q.buildings(), q.points(),
                 q.salvageUnits(), q.landSqFt(), paid, from, month, true);
         d.groundPaid = groundPaid;
+        // ...and the newest whose loss unlinks nothing go to leaving, holding their ground until the demolition is done.
+        if (terminal) {
+            landManager.getLandmasses().demolishing(t.getId(), q.buildings(), d.id);
+            landManager.portsChanged();
+        }
     }
 
     /**
@@ -7334,9 +7383,16 @@ public class Game {
         double paid = treasuryPays(TreasuryLine.BUILDINGS, q.price().total);
         cityCapitalSpending += paid;
         getSectors().construction().bill(paid, q.points());
+        boolean terminal = Ports.isPort(q.template()) && landManager.getLandmasses().hasPlacements();
+        if (terminal) landManager.getLandmasses().reconcile();
         buildingManager.getControl().removeShell(shell);
-        buildingManager.getControl().addDemolition(q.template(), shell.buildings, q.points(), q.salvageUnits(),
+        ConstructionControl.Demolition d = buildingManager.getControl().addDemolition(q.template(), shell.buildings, q.points(), q.salvageUnits(),
                 q.landSqFt(), paid, "Shell", month, false);
+        // ...a sea terminal's stopped units go to leaving too, holding their island's ground until the demolition is done (ET5).
+        if (terminal) {
+            landManager.getLandmasses().shellDemolishing(q.template().getId(), d.id);
+            landManager.portsChanged();
+        }
         decisions.record(DecisionLog.CONSTRUCTION, "Demolished the " + q.template().getName() + " shell for "
                 + DecisionLog.money(paid));
         return true;
@@ -7379,7 +7435,14 @@ public class Game {
         if (q.total > cash) { lastHandRefusal = "the treasury is short of the quote"; return false; }
         BuildingsTemplate t = buildingManager.getTemplate(templateId);
         double pointsLeft = Math.max(0, shell.buildings * (double) t.getConstructionPoints() - shell.progress);
+        boolean terminal = Ports.isPort(t) && landManager.getLandmasses().hasPlacements();
+        if (terminal) landManager.getLandmasses().reconcile();
         buildingManager.resumeShell(shell);
+        // ...a sea terminal's stopped units are on site again, oldest first (ET5).
+        if (terminal) {
+            landManager.getLandmasses().restarted(t.getId());
+            landManager.portsChanged();
+        }
         // The yard's share to the sites now, free, as the quote priced it; the
         // rest drawn as the crews build - see processBuildOrder().
         double fromYard = deliverYardToSites(t, q.materialsNeeded);
@@ -7647,6 +7710,8 @@ public class Game {
             // ...a bought building's ground back to its zone, if its sector has one (0.7.107).
             // ...a works's ground leaves the works' part of the pool (standsAnywhere(), ET2), a run's the runs' (isRun(), ET4).
             landManager.release(d.landSqFt, d.from, groundUse(buildingManager.getTemplate(d.templateId)));
+            // ...a sea terminal's units no longer hold their island's ground (ET5).
+            if (Ports.isPort(buildingManager.getTemplate(d.templateId))) landManager.getLandmasses().demolished(d.id);
             GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for $%,.0fk, %s freed.",
                     d.buildings, d.building, bought, paid, LandManager.areaWords(d.landSqFt)));
         }
@@ -7659,6 +7724,11 @@ public class Game {
             GameLog.note(String.format("Paved %d %s: %s freed.", p.roads(), ConstructionControl.PAVE_FROM,
                     LandManager.areaWords(Math.max(0, p.landFreedSqFt()))));
         }
+
+        // G. Where the sea terminals stand (ET5): the units' places fitted to the buildings' counts - a completion took the
+        // oldest on site to standing, a stop the newest to the shell - the card's choices forgotten, and, if a port that
+        // now stands moved the linked set, the offers and the sites across the water read against it.
+        if (landManager.getLandmasses().settle()) landManager.linkChanged();
     }
 
     /** The overtime's wages by job type: the premium in the mix of a Construction Depot's posts at today's wages - the bill the premium was struck on (depotWageBillPerPoint()). */
@@ -7697,7 +7767,7 @@ public class Game {
      * other order rather than around them.
      */
     private void processBuildOrder(BuildingsTemplate selected, int quantity,
-                                   boolean noConstruction) {
+                                   boolean noConstruction, int landmass) {
         /*
          * QUOTED AND CHARGED BY THE SAME METHOD.
          *
@@ -7712,7 +7782,8 @@ public class Game {
          * The materials figure is still needed separately for the receipt and
          * the import count, so it stays - but the money comes from one place.
          */
-        BuildQuote quote = quoteBuild(selected, quantity);
+        // ...of the landmass the order stands on (ET5), so the pad it prices is the pad it is charged and the room it quotes the room it takes.
+        BuildQuote quote = quoteBuildOn(selected, quantity, landmass);
         double totalMaterialsRequired = noConstruction ? 0 : quote.materialsNeeded;
 
         double totalCost = noConstruction
@@ -7734,16 +7805,20 @@ public class Game {
         // building (a fixture's) on its zone's first (0.7.107).
         // ...a works that may stand anywhere on any ground, steep too (standsAnywhere(), ET2), a run on every class (isRun(), ET4).
         LandManager.Use works = groundUse(selected);
-        if (!landManager.canAllocate(landNeeded, selected.getSector(), works)) {
+        // ...a sea terminal on an island no port links stands on that island's own room, not the linked pool's (ET5).
+        Landmasses lms = landManager.getLandmasses();
+        boolean island = landmass != Landmasses.NO_LANDMASS && !lms.linked(landmass);
+        if (island ? !landManager.canAllocateOn(landmass, landNeeded) : !landManager.canAllocate(landNeeded, selected.getSector(), works)) {
             this.hasNewReceipt = false;
             System.out.println("Not enough land (need "
                     + LandManager.areaWords(landNeeded) + ", have "
-                    + LandManager.areaWords(landManager.freeFor(selected.getSector(), works)) + ")");
+                    + LandManager.areaWords(island ? lms.portRoomSqFt(landmass) : landManager.freeFor(selected.getSector(), works)) + ")");
             return;
         }
 
         if (totalCost <= cash) {
-            landManager.allocate(landNeeded, selected.getSector(), works);
+            if (island) landManager.allocateOn(landmass, landNeeded);
+            else landManager.allocate(landNeeded, selected.getSector(), works);
             this.hasNewReceipt = true;
             this.receiptSerial++;
             lastBuildingName = buildingManager.getName(selected);
@@ -7756,6 +7831,14 @@ public class Game {
             // or is refunded it (MATERIAL AT THE PRICE WHEN IT IS USED); the
             // builders carried it until then, as a fixed-price contractor does.
             buildingManager.addStack(selected, quantity, noConstruction);
+            // ...and where a sea terminal stands is kept (ET5): no row is made for an order at home on a city that owns nothing off it.
+            if (landmass != Landmasses.NO_LANDMASS) {
+                if (!(lms.single() && landmass == lms.home())) {
+                    lms.ordered(selected.getId(), landmass, quantity, noConstruction);
+                    landManager.portsChanged();
+                }
+                lms.clearChoice(selected.getId());
+            }
             if (!noConstruction) {
                 // ...a foothill site's preparation, owed by the stack before its first building finishes (ET2); it is
                 // in the price and billed below. An instant build has none: it charges and owes none.
@@ -8194,7 +8277,115 @@ public class Game {
 
     /** Whether this order can stand on the city's coast: true for everything but a desalination plant and a sea terminal (0.7.86), which need owned sea. */
     public boolean hasCoastFor(BuildingsTemplate template, int quantity) {
-        return template == null || !template.needsCoast() || landManager.getSeaKm2() > 0;
+        return hasCoastFor(template, quantity, Landmasses.CHOSEN);
+    }
+
+    /* ===== THE PORT'S LANDMASS (ET5, 2026-10-25; the ET5 design, D10) =====
+
+       A sea terminal stands on a landmass, and a city that owns ground on more than one has to say which. The coast test
+       was one line - the city owns some sea, anywhere - and it stays that line, character for character, while the city
+       owns nothing off its home landmass (every generated world, and every Earth city whose ground lies on one landmass).
+       Once it does, a terminal needs SHORE on its own landmass: owned flat or foothill dry ground beside owned salt water
+       (Landmasses.shorePlots()), and a desalination plant shore on a LINKED one (D9). `asked` is the landmass the order is
+       for: Landmasses.CHOSEN - the card's pick (choosePortLandmass()) else the rule - RULE - the rule alone, which the
+       automatic builder and the advice order by, so they never link an island - or an id. */
+
+    /** Whether this order can stand on the city's coast, on the landmass asked for (Landmasses.CHOSEN, RULE or an id). */
+    public boolean hasCoastFor(BuildingsTemplate template, int quantity, int asked) {
+        Landmasses lms = landManager.getLandmasses();
+        if (lms.single()) return template == null || !template.needsCoast() || landManager.getSeaKm2() > 0;
+        if (template == null || !template.needsCoast()) return true;
+        if (Ports.isPort(template)) return lms.portLandmass(template.getId(), asked) != Landmasses.NO_LANDMASS;
+        return lms.linkedShore();
+    }
+
+    /**
+     * The landmass a sea terminal's order stands on when it is an island no port links (so that it takes that island's own
+     * room, not the linked pool's), else Landmasses.NO_LANDMASS: for every other building, for a city on one landmass, and
+     * for a terminal on home or a linked landmass.
+     */
+    private int islandPortLandmass(BuildingsTemplate t, int asked) {
+        if (!Ports.isPort(t)) return Landmasses.NO_LANDMASS;
+        Landmasses lms = landManager.getLandmasses();
+        if (lms.single()) return Landmasses.NO_LANDMASS;
+        int l = lms.portLandmass(t.getId(), asked);
+        return l != Landmasses.NO_LANDMASS && !lms.linked(l) ? l : Landmasses.NO_LANDMASS;
+    }
+
+    /** The landmass a sea terminal's order stands on, linked or not: home for a city on one landmass; NO_LANDMASS for a building that is no sea terminal or when none will do. */
+    private int portLandmassOf(BuildingsTemplate t, int asked) {
+        if (!Ports.isPort(t)) return Landmasses.NO_LANDMASS;
+        return landManager.getLandmasses().portLandmass(t.getId(), asked);
+    }
+
+    /** The card's pick of a landmass for the next order of this sea terminal (ONE order's: spent by it, forgotten at the month's settle); the order then stands there if the city owns shore on it (hasCoastFor()). */
+    public void choosePortLandmass(BuildingsTemplate t, int landmass) {
+        if (Ports.isPort(t)) landManager.getLandmasses().choose(t.getId(), landmass);
+    }
+
+    /** The landmasses the card offers a sea terminal: those the city owns shore on, home first; empty for a building that is no sea terminal and for a city on one landmass. */
+    public java.util.List<Landmasses.Row> portLandmassChoices(BuildingsTemplate t) {
+        return Ports.isPort(t) ? landManager.getLandmasses().portChoices() : java.util.List.of();
+    }
+
+    /** The ground this building's order has to stand on, square feet: an island's room for a sea terminal ordered for an island no port links, else what its sector may build on (LandManager.freeFor()). */
+    public double freeGroundFor(BuildingsTemplate t) {
+        return freeGroundFor(t, Landmasses.CHOSEN);
+    }
+
+    /** ...for the landmass asked (Landmasses.CHOSEN, RULE or an id): the room an order placed there stands on, as quoteBuildOn() reads it. */
+    public double freeGroundFor(BuildingsTemplate t, int asked) {
+        int island = islandPortLandmass(t, asked);
+        return island != Landmasses.NO_LANDMASS ? landManager.getLandmasses().portRoomSqFt(island)
+                : landManager.freeFor(t.getSector(), groundUse(t));
+    }
+
+    /** The city's ground by landmass and its linked set as the map is handed them; null while the city owns nothing off its home landmass (Landmasses.picture()). */
+    public Landmasses.Picture getLandmassPicture() {
+        return landManager.getLandmasses().picture();
+    }
+
+    /** What Landmasses reads of the buildings (ET5): the counts of each sea terminal's template - standing, on site, stopped, being demolished. */
+    private Landmasses.Stock portStock() {
+        return new Landmasses.Stock() {
+            @Override public int[] portTemplates() {
+                java.util.List<BuildingsTemplate> all = buildingManager == null ? java.util.List.of() : buildingManager.getTemplates();
+                int[] out = new int[all.size()];
+                int k = 0;
+                for (BuildingsTemplate t : all) if (Ports.isPort(t)) out[k++] = t.getId();
+                return java.util.Arrays.copyOf(out, k);
+            }
+            @Override public boolean known(int template) {
+                return buildingManager != null && Ports.isPort(buildingManager.getTemplate(template));
+            }
+            @Override public int standing(int template) {
+                return Math.max(0, buildingManager.getQuantity(template) - buildingManager.getControl().closingOf(template));
+            }
+            @Override public int onSite(int template) {
+                BuildingsTemplate t = buildingManager.getTemplate(template);
+                BuildingsStacks stack = t == null ? null : buildingManager.getStack(t);
+                return stack == null ? 0 : stack.getUnderConstruction();
+            }
+            @Override public int shell(int template) {
+                ConstructionControl.Shell shell = buildingManager.getControl().shellOf(template);
+                return shell == null ? 0 : shell.buildings;
+            }
+            @Override public java.util.List<int[]> demolitions(int template) {
+                java.util.List<int[]> out = new java.util.ArrayList<>();
+                for (ConstructionControl.Demolition d : buildingManager.getControl().demolitions()) {
+                    if (d.templateId == template) out.add(new int[] { d.id, d.buildings });
+                }
+                return out;
+            }
+            @Override public double landSqFt(int template) {
+                BuildingsTemplate t = buildingManager.getTemplate(template);
+                return t == null ? 0 : t.getLandSqFt();
+            }
+            @Override public int cargo(int template) {
+                BuildingsTemplate t = buildingManager.getTemplate(template);
+                return t == null || t.berthCargo() == null ? 0 : t.berthCargo().ordinal();
+            }
+        };
     }
 
     /**
@@ -8316,9 +8507,19 @@ public class Game {
     public Investor getSectorInvestor(String sector) { return sectorInvestor(sector); }
     
     public BuildResult buildStack(BuildingsTemplate template, int quantity, boolean noConstruction){
+        return buildStack(template, quantity, noConstruction, Landmasses.CHOSEN);
+    }
+
+    /**
+     * ...for a landmass (ET5): a sea terminal stands on `asked` - Landmasses.CHOSEN (the card's pick, else the rule), RULE
+     * (the rule alone: the automatic builder never links an island) or an id - resolved once here, after the ore and the
+     * coast are known, and carried into the order. For an island no port links the ground it needs is that island's own room
+     * (LandManager.canAllocateOn()), not the linked pool's; every other order is asked what it always was.
+     */
+    public BuildResult buildStack(BuildingsTemplate template, int quantity, boolean noConstruction, int asked){
         double totalCost = noConstruction
                 ? template.getCashCost() * quantity
-                : calculateTotalCost(template, quantity);
+                : quoteBuildOn(template, quantity, asked).total;
 
         // Land before money. processBuildOrder() checks it too, but by then the
         // caller has already been offered a T-Bill: without this the player can
@@ -8334,7 +8535,7 @@ public class Game {
 
         // ...and the sea before land and money, for the same reason (0.7.59):
         // a desalination plant with no coast is not a funding problem.
-        if (!hasCoastFor(template, quantity)) {
+        if (!hasCoastFor(template, quantity, asked)) {
             this.hasNewReceipt = false;
             return BuildResult.NO_COAST;
         }
@@ -8347,13 +8548,17 @@ public class Game {
             return BuildResult.NO_LICENCE;
         }
 
-        if (!landManager.canAllocate(template.getLandSqFt() * quantity, template.getSector(), groundUse(template))) {
+        // ...a sea terminal's landmass, once (ET5): an island no port links holds it on its own room.
+        int landmass = portLandmassOf(template, asked);
+        boolean island = landmass != Landmasses.NO_LANDMASS && !landManager.getLandmasses().linked(landmass);
+        if (island ? !landManager.canAllocateOn(landmass, template.getLandSqFt() * quantity)
+                : !landManager.canAllocate(template.getLandSqFt() * quantity, template.getSector(), groundUse(template))) {
             this.hasNewReceipt = false;
             return BuildResult.NO_LAND;
         }
 
         if(totalCost <= cash){
-            processBuildOrder(template, quantity, noConstruction);
+            processBuildOrder(template, quantity, noConstruction, landmass);
             return BuildResult.SUCCESS;
         } else{
             return BuildResult.NEEDS_FUNDING;
@@ -8423,13 +8628,22 @@ public class Game {
         // ...and the ground the orders before it take and the foothill they prepare, which the next is asked for after them (ET2).
         // ...and (ET4) the part of it that is runs', which take their share of every class and push buildings off the flat.
         double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0;
+        // ...and (ET5) the sea terminals ahead of it that stand on an island no port links, by island: they take its room, not the linked ground.
+        java.util.Map<Integer, Double> islandsAhead = new java.util.HashMap<>();
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
             BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead,
-                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead));
+                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead));
             total += q.total;
             double land = e.getKey().getLandSqFt() * (double) e.getValue();
             LandManager.Use use = groundUse(e.getKey());
+            int island = islandPortLandmass(e.getKey(), Landmasses.CHOSEN);
+            if (island != Landmasses.NO_LANDMASS) {
+                islandsAhead.merge(island, land, Double::sum);
+                yard -= Math.max(0, Math.min((int) Math.round(q.materialsNeeded), yard));
+                bitumenAhead += q.bitumenFromRefiners;
+                continue;
+            }
             // ...a run prepares no pad itself, but the pads it displaces are cut for the buildings (allocate()), so the next building is not quoted them.
             if (use == LandManager.Use.RUN) preparedAhead += landManager.foothillDisplacedByRunSqFt(land, groundAhead, worksAhead, runsAhead);
             groundAhead += land;
@@ -8472,6 +8686,8 @@ public class Game {
         // ...and how much of it is works's (ET2): a works takes the steep ground no building may have, so it is not all of it off a building's free ground.
         // A run's (ET4) takes its share of the steep ground likewise, the rest of its share off the flat and foothill the buildings stand on.
         double worksAhead = 0, runsAhead = 0;
+        // ...and (ET5) the ground the run's sea terminals take on each island no port links: that island's room, never the linked ground.
+        java.util.Map<Integer, Double> aheadOn = new java.util.HashMap<>();
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             BuildingsTemplate t = e.getKey();
             int n = e.getValue() == null ? 0 : e.getValue();
@@ -8481,10 +8697,13 @@ public class Game {
                 double onIdleSlope = use != LandManager.Use.BUILDING ? 0
                         : Math.min(worksAhead + runsAhead * landManager.getSlopeShare(), landManager.idleSlopeSqFt());
                 java.util.List<LandManager.Claim> packedAhead = packs(t) ? claimsAhead.get(t.site().resource()) : null;
+                int island = islandPortLandmass(t, Landmasses.CHOSEN);
                 BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
-                        : !(use == LandManager.Use.RUN
+                        : !(island != Landmasses.NO_LANDMASS
+                                ? landManager.canAllocateOn(island, aheadOn.getOrDefault(island, 0.0) + t.getLandSqFt() * (double) n)
+                                : use == LandManager.Use.RUN
                                 ? landManager.canAllocateRunAfter(t.getLandSqFt() * (double) n, t.getSector(), ground, worksAhead, runsAhead)
                                 : landManager.canAllocate(ground - onIdleSlope + t.getLandSqFt() * (double) n, t.getSector(), use)) ? BuildResult.NO_LAND
                         : null;
@@ -8498,9 +8717,13 @@ public class Game {
                 } else if (pool >= 0) {
                     onSites[pool] += n;
                 }
-                ground += t.getLandSqFt() * (double) n;
-                if (use == LandManager.Use.WORKS) worksAhead += t.getLandSqFt() * (double) n;
-                if (use == LandManager.Use.RUN) runsAhead += t.getLandSqFt() * (double) n;
+                if (island != Landmasses.NO_LANDMASS) {
+                    aheadOn.merge(island, t.getLandSqFt() * (double) n, Double::sum);
+                } else {
+                    ground += t.getLandSqFt() * (double) n;
+                    if (use == LandManager.Use.WORKS) worksAhead += t.getLandSqFt() * (double) n;
+                    if (use == LandManager.Use.RUN) runsAhead += t.getLandSqFt() * (double) n;
+                }
             }
             ahead++;
         }
@@ -13890,6 +14113,8 @@ public class Game {
         dataSave.setFreshRights(freshRights);
         // ...and its zones, the forest law and the forest cleared for building (0.7.107, batch Z1).
         dataSave.setZoning(landManager.zoningState());
+        // ...and where its sea terminals stand, when one stands off its home landmass (ET5; absent otherwise).
+        dataSave.setLandmasses(landManager.landmassState());
         dataSave.setConstructionShedding(constructionShedMonth, constructionShedPoints);
 
         dataSave.setNationalAccounts(economyManager.getNationalAccountsState());
@@ -17552,6 +17777,9 @@ public class Game {
             // ...and its zones, the forest law and the forest cleared (0.7.107): a save from before
             // them has none, and loads with the ground free for anyone, as it always was.
             landManager.restoreZoning(loaded.getZoning());
+            // ...and where its sea terminals stand (ET5): a save from before them, and any city with none off its home
+            // landmass, has no key and reads every terminal at home.
+            landManager.restoreLandmasses(loaded.getLandmasses());
             // A converted city's offers (0.7.67, spec-grid 2.6): twenty-four
             // places listed afresh, once, with the buildings back, at the
             // prices the save last struck (settled above for an older save's

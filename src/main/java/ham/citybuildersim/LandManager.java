@@ -457,14 +457,61 @@ public class LandManager {
 
     /**
      * The linked set may have moved (ET5): the linked set and the unlinked ground worked out again, the sites across the
-     * water, the offers standing split against them. What landChanged() ends with, and what anything that moves a port
-     * (the next slice) calls. Eager, never in a read.
+     * water, the offers standing split against them. What landChanged() ends with, and what the month's settle calls when a port that
+     * now stands moved the linked set (portsChanged() is the cheaper call for a port event that did not). Eager, never in a read.
      */
     void linkChanged() {
         if (land == null) return;
         landmasses.refresh();
         refreshUnlinkedSites();
         market.restateOffers();
+    }
+
+    /**
+     * A sea terminal's placement moved (ET5, slice B): ordered, stopped, restarted, demolished or fitted to the buildings.
+     * The unlinked ground's sums are worked out again - the ports on an island are part of what the allocated ground holds
+     * of it - and, if the linked set moved, the sites across the water and the offers standing are split against it again.
+     * Eager, never in a read.
+     */
+    void portsChanged() {
+        if (land == null) return;
+        int before = landmasses.version();
+        landmasses.refresh();
+        if (landmasses.version() != before) {
+            refreshUnlinkedSites();
+            market.restateOffers();
+        }
+    }
+
+    /**
+     * Whether a sea terminal's ground fits an island no port links (ET5): its room is that island's own flat and foothill
+     * ground less the ports already on it (Landmasses.portRoomSqFt()), not the linked pool's - the only building that may
+     * stand across the water.
+     */
+    public boolean canAllocateOn(int landmass, double sqFt) {
+        return sqFt <= landmasses.portRoomSqFt(landmass);
+    }
+
+    /**
+     * Takes a terminal's ground on an island no port links: the allocated ground rises by it and nothing else - no zone's
+     * ground, no forest cleared, no pad prepared (the pad is priced in the quote and owed on the site; ET5-C9). The
+     * linked view takes it off again (Landmasses.unlinkedPortsSqFt()), so the linked free ground does not move. Released by
+     * the ordinary release() when its demolition is done.
+     */
+    public void allocateOn(int landmass, double sqFt) {
+        allocatedSqFt += sqFt;
+    }
+
+    /** DataSave's landmasses (ET5): where the terminals stand; null when none stands off home, as an older save reads. */
+    public Landmasses.State landmassState() {
+        return landmasses.toState();
+    }
+
+    /** Puts the placements back (Game's load path, after the buildings and the land): fitted to the buildings' counts, and the linked set and the unlinked sums worked out again. */
+    public void restoreLandmasses(Landmasses.State s) {
+        landmasses.restore(s);
+        landmasses.reconcile();
+        if (land != null) linkChanged();
     }
 
     /**
@@ -1725,16 +1772,19 @@ public class LandManager {
     /**
      * The sites a piece of the ground offers a works to stand on (ET5 D9): its sites, or none where its field is centred
      * on a plot of a landmass the city has not linked - ground across the water is owned and counted, but no works stands
-     * on it. A pure read of the field's plot (World.landmassAt()).
+     * on it. A pure read of the field's centre plot (Landmasses.fieldLandmass(): its 15" cell, a sea field home's). Package-private, for LandmassCheck 4b to ask of a field made up for the purpose.
      */
-    private int freeSites(CityLand.Piece p) {
+    int freeSites(CityLand.Piece p) {
         return pieceUnlinked(p) ? 0 : p.sites();
     }
 
     /** Whether a piece of the ground is a field centred on a plot of a landmass the city has not linked (always false while nothing is unlinked, and for ground by fiat, which has no field). */
     private boolean pieceUnlinked(CityLand.Piece p) {
-        return landmasses.anyUnlinked() && p.field() != null && land != null
-                && !landmasses.linked(World.of(land.key()).landmassAt(p.field().x(), p.field().y()));
+        if (!landmasses.anyUnlinked() || p.field() == null || land == null) return false;
+        World world = World.of(land.key());
+        long x = p.field().x(), y = p.field().y();
+        // A field in the sea stays the sea's (a platform's); every other is read by its centre plot's 15" cell, resolved as a dry plot's is, so a field centred on a lake plot of an island is on the island, not on home (landmassAt() gives a water plot 0): Landmasses.fieldLandmass(), the one read the map's site index shares.
+        return !landmasses.linked(Landmasses.fieldLandmass(world, x, y));
     }
 
     /** The sites of each resource on fields centred on a landmass the city has not linked, by Resource's ordinal (ET5 D9): worked out by refreshUnlinkedSites() when the land changes, never by a read. */

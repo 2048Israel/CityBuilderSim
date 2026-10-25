@@ -1224,6 +1224,11 @@ public final class World {
         return earth != null ? earth.landmassAt(x, y) : 0;
     }
 
+    /** A plot's landmass by its 15" cell alone, water plots too (EarthTerrain.landmassOfPlot()): what a field centred on a lake plot of an island is on. 0 where hasLandmasses() is false. */
+    public int landmassOfPlot(long x, long y) {
+        return earth != null ? earth.landmassOfPlot(x, y) : 0;
+    }
+
     /** One tile's landmass, an id a plot in rows (out[py x 32 + px]) as tileRelief() lays its relief: what landmassAt() gives each of its plots. All 0 where hasLandmasses() is false. */
     public void tileLandmass(long tx, long ty, int[] out) {
         if (earth != null) earth.tileLandmass(tx, ty, out);

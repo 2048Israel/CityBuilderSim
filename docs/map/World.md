@@ -1,4 +1,4 @@
-# World.java - 2,143 lines · 118 methods · 103 constants · model
+# World.java - 2,148 lines · 119 methods · 103 constants · model
 
 `ham/citybuildersim/World.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -88,9 +88,9 @@
 | 905 | THE FOUNDING SITE |
 | 1051 | THE FOUNDING LAKE AND RIVER |
 | 1165 | THE TERRAIN, A PLOT, A TILE OR A REGION AT A TIME |
-| 1568 | THE DEPOSITS |
-| 1730 | FEWER AND BIGGER DEPOSITS: THE POOLS AND THEIR CLUSTERS (0.7.99; the |
-| 1798 | · EG1's counters: how often the Earth rules fire (they feed no draw) |
+| 1573 | THE DEPOSITS |
+| 1735 | FEWER AND BIGGER DEPOSITS: THE POOLS AND THEIR CLUSTERS (0.7.99; the |
+| 1803 | · EG1's counters: how often the Earth rules fire (they feed no draw) |
 
 ## Enum constants
 
@@ -200,12 +200,12 @@
 | 744 | `World.F_ELEV` | `0x1111, F_ELEV_FINE = F_ELEV ^ 0x55, F_LAKE = 0x2222, F_FOREST = 0x3333` | The fields' keys: what makes one field's octaves another's. |
 | 747 | `World.AMP` | `new double [ ELEV_COARSE_HI + 1 ]` | OCTAVE_FALLOFF to the power n, by repeated multiplication - the order fbm() has always summed in. |
 | 763 | `World.NORM_COARSE` | `norm(ELEV_COARSE_HI, ELEV_COARSE_LO), NORM_FINE = norm(ELEV_FINE_HI, ELEV_FIN...` |  |
-| 1249 | `World.SMOOTH` | `new double [ ELEV_COARSE_HI + 1 ][]` | The smoothstep at a plot's centre within an octave's lattice cell, for every wavelength 2^k: SMOOTH[k][f] for f = 0 .. |
-| 1268 | `World.SCRATCH` | `ThreadLocal.withInitial(TileScratch : : new)` |  |
-| 1410 | `World.LineScratch.CORNERS` | `64` | The corners it keeps: 64 slots, picked by the top six bits of the corner's hash. |
-| 1427 | `World.LINE_SCRATCH` | `ThreadLocal.withInitial(LineScratch : : new)` | Each thread's LineScratch, made on its first line. |
-| 1736 | `World.POOL_SIDE` | `new int [ Resource.values().length ]` | Each resource's pool side in cells, in Resource's order (poolCells()). |
-| 1789 | `World.NO_POOL` | `new Pool(new long [ 0 ], new long [ 0 ], new int [ 0 ], new double [ 0 ], 0, 0)` | The pool of a place whose land cells hold no old draw of the resource: no field, no tonnes. |
+| 1254 | `World.SMOOTH` | `new double [ ELEV_COARSE_HI + 1 ][]` | The smoothstep at a plot's centre within an octave's lattice cell, for every wavelength 2^k: SMOOTH[k][f] for f = 0 .. |
+| 1273 | `World.SCRATCH` | `ThreadLocal.withInitial(TileScratch : : new)` |  |
+| 1415 | `World.LineScratch.CORNERS` | `64` | The corners it keeps: 64 slots, picked by the top six bits of the corner's hash. |
+| 1432 | `World.LINE_SCRATCH` | `ThreadLocal.withInitial(LineScratch : : new)` | Each thread's LineScratch, made on its first line. |
+| 1741 | `World.POOL_SIDE` | `new int [ Resource.values().length ]` | Each resource's pool side in cells, in Resource's order (poolCells()). |
+| 1794 | `World.NO_POOL` | `new Pool(new long [ 0 ], new long [ 0 ], new int [ 0 ], new double [ 0 ], 0, 0)` | The pool of a place whose land cells hold no old draw of the resource: no field, no tonnes. |
 
 ## Fields (state)
 
@@ -223,30 +223,30 @@
 | 635 | `private double[] riverX, riverY, riverW` |  |
 | 636 | `private double lakeX, lakeY, lakeR` |  |
 | 637 | `private double riverBox0x, riverBox0y, riverBox1x, riverBox1y` |  |
-| 1263 | `final double[] e` |  |
-| 1264 | `final double[] lat` |  |
-| 1265 | `int[] segs` |  |
-| 1406 | `final double[] e` |  |
-| 1407 | `final double[] lat` |  |
-| 1408 | `int[] segs` |  |
-| 1411 | `final long[] cornerX` |  |
-| 1412 | `final boolean[] cornerSet` |  |
-| 1413 | `final double[][] cornerV` |  |
-| 1772 | `final long[] xs, ys` |  |
-| 1773 | `final int[] sites` |  |
-| 1774 | `final double[] amounts` |  |
-| 1775 | `final double total` |  |
-| 1776 | `final long old` |  |
-| 1792 | `private final Map<Long, Pool> pools` | The pools drawn, kept: by resource and place, the last POOLS_KEPT asked for. |
-| 1800 | `private final AtomicLong centresByWeight` |  |
-| 1801 | `private final AtomicLong fieldRedraws` |  |
-| 2108 | `private double[] totals` | The totals once computed (0.7.57): what every city founded on this world stores. |
+| 1268 | `final double[] e` |  |
+| 1269 | `final double[] lat` |  |
+| 1270 | `int[] segs` |  |
+| 1411 | `final double[] e` |  |
+| 1412 | `final double[] lat` |  |
+| 1413 | `int[] segs` |  |
+| 1416 | `final long[] cornerX` |  |
+| 1417 | `final boolean[] cornerSet` |  |
+| 1418 | `final double[][] cornerV` |  |
+| 1777 | `final long[] xs, ys` |  |
+| 1778 | `final int[] sites` |  |
+| 1779 | `final double[] amounts` |  |
+| 1780 | `final double total` |  |
+| 1781 | `final long old` |  |
+| 1797 | `private final Map<Long, Pool> pools` | The pools drawn, kept: by resource and place, the last POOLS_KEPT asked for. |
+| 1805 | `private final AtomicLong centresByWeight` |  |
+| 1806 | `private final AtomicLong fieldRedraws` |  |
+| 2113 | `private double[] totals` | The totals once computed (0.7.57): what every city founded on this world stores. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 2070 | **type** `public final class World` | The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and river, and the fields of the seven resources - every one of them a pure ... |
+| 74 | 2075 | **type** `public final class World` | The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and river, and the fields of the seven resources - every one of them a pure ... |
 
 ### THE GRID (lines 76-103)
 
@@ -359,7 +359,7 @@
 | 1151 | 7 | `private boolean onSegment(int k, double x, double y)` | Whether a point is within the river's half-width of its k-th step. |
 | 1160 | 4 | `private boolean inLake(double x, double y)` | Whether a point is in the founding lake: within its radius (the mockup's halo past it never reaches the lake's level). |
 
-### THE TERRAIN, A PLOT, A TILE OR A REGION AT A TIME (lines 1165-1567)
+### THE TERRAIN, A PLOT, A TILE OR A REGION AT A TIME (lines 1165-1572)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -369,80 +369,81 @@
 | 1206 | 4 | `public void tileRelief(long tx, long ty, byte[] out)` | One tile's relief, a byte a plot in rows (out[py x 32 + px]) as tileTerrain() lays its cover: what reliefAt() gives each of its plots. |
 | 1216 | 1 | `public boolean hasLandmasses()` | Whether this world has landmasses to read (ET5): the real Earth drawn from data that has the landmass layer (earth-2). |
 | 1223 | 3 | `public int landmassAt(long x, long y)` | One plot's landmass (ET5): the id of the landmass layer's cell it lies in, a dry plot on a cell with no land taking the nearest land cell's within EarthTerrain.LANDMASS_REACH; 0 on water, off the world, on a generated... |
-| 1228 | 4 | `public void tileLandmass(long tx, long ty, int[] out)` | One tile's landmass, an id a plot in rows (out[py x 32 + px]) as tileRelief() lays its relief: what landmassAt() gives each of its plots. |
-| 1234 | 3 | `public int[] idsNear(long tx, long ty)` | The landmass ids a tile's plots can take (ET5): the non-zero ids ascending of the land cells under the tile widened by EarthTerrain.LANDMASS_REACH cells, read as a window of cells without drawing a plot; empty where h... |
-| 1243 | 4 | `public void regionRelief(long x0, long y0, int stride, int n, byte[] out)` | A region's relief at a stride, as regionTerrain() lays its cover: n x n pixels from plot (x0, y0), each `stride` plots wide, out[py x n + px] - FLAT where the pixel's cover is not dry ground. |
-| 1250 | 10 | `static { ... }` |  |
-| 1262 | 5 | **type** `private static final class TileScratch` | One thread's working arrays for a tile. |
-| 1283 | 52 | `public void tileTerrain(long tx, long ty, byte[] out)` | One tile's ground, a byte a plot in rows (out[py x 32 + px]): what terrainAt() gives each of its plots, on 99.9 to 100% of them, five times faster - each fine octave's lattice is hashed once a tile, and the coarse oct... |
-| 1346 | 57 | `public void lineTerrain(long tx, long ty, boolean column, int at, byte[] out)` | One row (or, `column`, one column) of a tile's ground, its `at`-th: the TILE plots tileTerrain() gives that line, byte for byte - the same corners, octaves and sums in the same order, evaluated on the line's plots alo... |
-| 1405 | 20 | **type** `private static final class LineScratch` | One thread's working arrays for a line, and the tile corners it met last (their elevation's coarse octaves and lake's, as tileTerrain() reads them). |
-| 1416 | 8 | `double[] corner(World w, long x, long y)` _(in World.LineScratch)_ | A tile corner's {elevation's coarse octaves, lake's corner octaves}, as tileTerrain()'s c00 and l00 at (x, y): kept by place and world. |
-| 1430 | 8 | `private static void bilinearLine(double c00, double c10, double c01, double c11, double scale, boolean column, int at, double[]...` | bilinear() on one line of the tile's plots: acc[i] is the line's i-th plot's value. |
-| 1440 | 19 | `private static void octaveLine(double[] lat, long os, int k, long x0, long y0, double amp, boolean column, int at, double[] acc)` | octaveTile() on one line of the tile's plots: the same lattice, the same sum at each of its plots. |
-| 1461 | 9 | `private static void bilinear(double c00, double c10, double c01, double c11, double scale, double[] acc)` | Sets acc to scale x the bilinear blend of four corner values at each plot's centre. |
-| 1472 | 20 | `private static void octaveTile(double[] lat, long os, int k, long x0, long y0, double amp, double[] acc)` | Adds amp x one octave's value noise at a tile's 32 x 32 plot centres: its lattice hashed once, the smoothstep from SMOOTH. |
-| 1494 | 8 | `private double part(long field, double x, double y, int top, int lo)` | Octaves hi to lo of a field at a point, at the amplitudes fbm() gives them under the field's top octave, not normalised. |
-| 1513 | 24 | `public void regionTerrain(long x0, long y0, int stride, int n, byte[] out)` | A region's ground at a stride, for the far view (spec-land 2.6, L2): n x n pixels from plot (x0, y0), each `stride` plots wide, classed at its centre (out[py x n + px]). |
-| 1539 | 28 | `private void regionOctave(long field, int k, long x0, long y0, int stride, int n, double amp, double[] acc)` | Adds amp x one octave over a region's pixel centres, or amp x its mean, 0.5, when the octave is no wider than a pixel. |
+| 1228 | 3 | `public int landmassOfPlot(long x, long y)` | A plot's landmass by its 15" cell alone, water plots too (EarthTerrain.landmassOfPlot()): what a field centred on a lake plot of an island is on. |
+| 1233 | 4 | `public void tileLandmass(long tx, long ty, int[] out)` | One tile's landmass, an id a plot in rows (out[py x 32 + px]) as tileRelief() lays its relief: what landmassAt() gives each of its plots. |
+| 1239 | 3 | `public int[] idsNear(long tx, long ty)` | The landmass ids a tile's plots can take (ET5): the non-zero ids ascending of the land cells under the tile widened by EarthTerrain.LANDMASS_REACH cells, read as a window of cells without drawing a plot; empty where h... |
+| 1248 | 4 | `public void regionRelief(long x0, long y0, int stride, int n, byte[] out)` | A region's relief at a stride, as regionTerrain() lays its cover: n x n pixels from plot (x0, y0), each `stride` plots wide, out[py x n + px] - FLAT where the pixel's cover is not dry ground. |
+| 1255 | 10 | `static { ... }` |  |
+| 1267 | 5 | **type** `private static final class TileScratch` | One thread's working arrays for a tile. |
+| 1288 | 52 | `public void tileTerrain(long tx, long ty, byte[] out)` | One tile's ground, a byte a plot in rows (out[py x 32 + px]): what terrainAt() gives each of its plots, on 99.9 to 100% of them, five times faster - each fine octave's lattice is hashed once a tile, and the coarse oct... |
+| 1351 | 57 | `public void lineTerrain(long tx, long ty, boolean column, int at, byte[] out)` | One row (or, `column`, one column) of a tile's ground, its `at`-th: the TILE plots tileTerrain() gives that line, byte for byte - the same corners, octaves and sums in the same order, evaluated on the line's plots alo... |
+| 1410 | 20 | **type** `private static final class LineScratch` | One thread's working arrays for a line, and the tile corners it met last (their elevation's coarse octaves and lake's, as tileTerrain() reads them). |
+| 1421 | 8 | `double[] corner(World w, long x, long y)` _(in World.LineScratch)_ | A tile corner's {elevation's coarse octaves, lake's corner octaves}, as tileTerrain()'s c00 and l00 at (x, y): kept by place and world. |
+| 1435 | 8 | `private static void bilinearLine(double c00, double c10, double c01, double c11, double scale, boolean column, int at, double[]...` | bilinear() on one line of the tile's plots: acc[i] is the line's i-th plot's value. |
+| 1445 | 19 | `private static void octaveLine(double[] lat, long os, int k, long x0, long y0, double amp, boolean column, int at, double[] acc)` | octaveTile() on one line of the tile's plots: the same lattice, the same sum at each of its plots. |
+| 1466 | 9 | `private static void bilinear(double c00, double c10, double c01, double c11, double scale, double[] acc)` | Sets acc to scale x the bilinear blend of four corner values at each plot's centre. |
+| 1477 | 20 | `private static void octaveTile(double[] lat, long os, int k, long x0, long y0, double amp, double[] acc)` | Adds amp x one octave's value noise at a tile's 32 x 32 plot centres: its lattice hashed once, the smoothstep from SMOOTH. |
+| 1499 | 8 | `private double part(long field, double x, double y, int top, int lo)` | Octaves hi to lo of a field at a point, at the amplitudes fbm() gives them under the field's top octave, not normalised. |
+| 1518 | 24 | `public void regionTerrain(long x0, long y0, int stride, int n, byte[] out)` | A region's ground at a stride, for the far view (spec-land 2.6, L2): n x n pixels from plot (x0, y0), each `stride` plots wide, classed at its centre (out[py x n + px]). |
+| 1544 | 28 | `private void regionOctave(long field, int k, long x0, long y0, int stride, int n, double amp, double[] acc)` | Adds amp x one octave over a region's pixel centres, or amp x its mean, 0.5, when the octave is no wider than a pixel. |
 
-### THE DEPOSITS (lines 1568-1729)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1573 | 5 | `private static double meanSites()` | The mean of the capped tail: P(sites >= k) summed over k = 1 .. |
-| 1580 | 3 | `static int sites(double u)` | One of the old world's fields' sites from a uniform draw: floor((1-u)^(-1/FIELD_TAIL)), at most LEGACY_MAX_SITES - and since 0.7.99 each of the FIELD_SCALE draws a field's sites add up. |
-| 1585 | 17 | `static long poisson(long h, double m)` | A Poisson count from a hash: by inversion for a small mean, a rounded normal above POISSON_NORMAL_ABOVE. |
-| 1604 | 3 | `private long cellHash(int cell, Resource r)` | A cell's stream for a resource. |
-| 1609 | 1 | `private double landKm2(int cell)` | A cell's land, in square kilometres: its land share times its area. |
-| 1620 | 1 | `private double fieldKm2(int cell, Resource r)` | The ground a resource's fields are drawn on in a cell, km2: its land (landKm2()) on a generated world; on Earth (0.7.117, batch E3; spec-earth 4) its field land, the land at each of the cells pass's points times its p... |
-| 1623 | 4 | `double cellFieldShare(int cell, Resource r)` | A cell's field land for a resource as a share of its area (0.7.117): its land share on a generated world, on Earth EarthTerrain.cellFieldLand() - EarthTerrainCheck's door. |
-| 1629 | 1 | `public Geology geology()` | An Earth world's geology (0.7.117): its data's provinces, classes and multipliers; null on a generated world. |
-| 1632 | 1 | `public int provinceAt(long x, long y)` | The province under a plot's centre on Earth, its row in the data (0 for none); 0 on a generated world (0.7.117). |
-| 1635 | 1 | `public Geology.Kind geologyAt(long x, long y)` | The class of the ground under a plot's centre on Earth (0.7.117; Geology.Kind.OTHER where no province is); null on a generated world - what a field's type leans on (Deposit.type()). |
-| 1638 | 4 | `public long cellFieldCount(int cell, Resource r)` | How many fields of a resource a cell lists (fieldsInCell(); since 0.7.99 the fewer and bigger ones). |
-| 1644 | 4 | `public long legacyCellFieldCount(int cell, Resource r)` | ...and how many of the old world's it held (to 0.7.98): a Poisson count, its mean the resource's density times the cell's land - what its total is drawn from, and what legacyFieldsInCell() lists. |
-| 1649 | 4 | `private long countOf(int cell, Resource r)` |  |
-| 1662 | 4 | `public double cellTotal(int cell, Resource r)` | What a cell holds of a resource, in whole tonnes (forest, whole cubic metres): its old count x MEAN_SITES x the amount a site x the cell's richness, drawn without drawing a field. |
-| 1667 | 10 | `private double totalOf(int cell, Resource r)` |  |
-| 1679 | 3 | `private double richnessOf(int cell, Resource r)` | A cell's richness for a resource, RICHNESS_MIN to + RICHNESS_SPAN: the draw its total is struck at (totalOf()), and since 0.7.99 the richness of a cluster standing in it. |
-| 1691 | 4 | `public List<Deposit> legacyFieldsInCell(int cell, Resource r)` | A cell's fields of a resource as the old world drew them (to 0.7.98), from the cell's own stream: each one's centre (drawn again, up to SEA_REDRAWS times, while it is in the sea - but oil's), its sites, and its share ... |
-| 1696 | 33 | `private List<Deposit> legacyFieldsOf(int cell, Resource r)` |  |
-
-### FEWER AND BIGGER DEPOSITS: THE POOLS AND THEIR CLUSTERS (0.7.99; the (lines 1730-1797)
+### THE DEPOSITS (lines 1573-1734)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1737 | 8 | `static { ... }` |  |
-| 1752 | 1 | `public static int poolCells(Resource r)` | The side of a resource's pool, in cells (0.7.99): the fewest whose square of land holds POOL_CLUSTERS clusters on the mean, POOL_CLUSTERS x CLUSTER_FIELDS x FIELD_SCALE of the old world's fields - iron 2, oil 4, stone... |
-| 1755 | 4 | `public static int poolsOnSide(Resource r)` | A resource's pools on the world's side: CELLS over poolCells(), rounded up (the last a part pool); 0 for forest. |
-| 1766 | 3 | `public static double clusterKm(Resource r)` | A cluster's radius for a resource, in km (0.7.99): the disc that holds CLUSTER_FIELDS fields at the old world's density, sqrt(CLUSTER_FIELDS / (pi x its fields a km2)) - iron 4.0, oil 12.6, stone 17.8, coal 39.9, copp... |
-| 1771 | 16 | **type** `private static final class Pool` | A pool's fields as drawn: each one's centre plot, sites and amount, in the order drawn; the pool's total and its old count. |
-| 1778 | 8 | `Pool(long[] xs, long[] ys, int[] sites, double[] amounts, double total, long old)` _(in World.Pool)_ |  |
+| 1578 | 5 | `private static double meanSites()` | The mean of the capped tail: P(sites >= k) summed over k = 1 .. |
+| 1585 | 3 | `static int sites(double u)` | One of the old world's fields' sites from a uniform draw: floor((1-u)^(-1/FIELD_TAIL)), at most LEGACY_MAX_SITES - and since 0.7.99 each of the FIELD_SCALE draws a field's sites add up. |
+| 1590 | 17 | `static long poisson(long h, double m)` | A Poisson count from a hash: by inversion for a small mean, a rounded normal above POISSON_NORMAL_ABOVE. |
+| 1609 | 3 | `private long cellHash(int cell, Resource r)` | A cell's stream for a resource. |
+| 1614 | 1 | `private double landKm2(int cell)` | A cell's land, in square kilometres: its land share times its area. |
+| 1625 | 1 | `private double fieldKm2(int cell, Resource r)` | The ground a resource's fields are drawn on in a cell, km2: its land (landKm2()) on a generated world; on Earth (0.7.117, batch E3; spec-earth 4) its field land, the land at each of the cells pass's points times its p... |
+| 1628 | 4 | `double cellFieldShare(int cell, Resource r)` | A cell's field land for a resource as a share of its area (0.7.117): its land share on a generated world, on Earth EarthTerrain.cellFieldLand() - EarthTerrainCheck's door. |
+| 1634 | 1 | `public Geology geology()` | An Earth world's geology (0.7.117): its data's provinces, classes and multipliers; null on a generated world. |
+| 1637 | 1 | `public int provinceAt(long x, long y)` | The province under a plot's centre on Earth, its row in the data (0 for none); 0 on a generated world (0.7.117). |
+| 1640 | 1 | `public Geology.Kind geologyAt(long x, long y)` | The class of the ground under a plot's centre on Earth (0.7.117; Geology.Kind.OTHER where no province is); null on a generated world - what a field's type leans on (Deposit.type()). |
+| 1643 | 4 | `public long cellFieldCount(int cell, Resource r)` | How many fields of a resource a cell lists (fieldsInCell(); since 0.7.99 the fewer and bigger ones). |
+| 1649 | 4 | `public long legacyCellFieldCount(int cell, Resource r)` | ...and how many of the old world's it held (to 0.7.98): a Poisson count, its mean the resource's density times the cell's land - what its total is drawn from, and what legacyFieldsInCell() lists. |
+| 1654 | 4 | `private long countOf(int cell, Resource r)` |  |
+| 1667 | 4 | `public double cellTotal(int cell, Resource r)` | What a cell holds of a resource, in whole tonnes (forest, whole cubic metres): its old count x MEAN_SITES x the amount a site x the cell's richness, drawn without drawing a field. |
+| 1672 | 10 | `private double totalOf(int cell, Resource r)` |  |
+| 1684 | 3 | `private double richnessOf(int cell, Resource r)` | A cell's richness for a resource, RICHNESS_MIN to + RICHNESS_SPAN: the draw its total is struck at (totalOf()), and since 0.7.99 the richness of a cluster standing in it. |
+| 1696 | 4 | `public List<Deposit> legacyFieldsInCell(int cell, Resource r)` | A cell's fields of a resource as the old world drew them (to 0.7.98), from the cell's own stream: each one's centre (drawn again, up to SEA_REDRAWS times, while it is in the sea - but oil's), its sites, and its share ... |
+| 1701 | 33 | `private List<Deposit> legacyFieldsOf(int cell, Resource r)` |  |
 
-### EG1's counters: how often the Earth rules fire (they feed no draw) (lines 1798-2143)
+### FEWER AND BIGGER DEPOSITS: THE POOLS AND THEIR CLUSTERS (0.7.99; the (lines 1735-1802)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1804 | 1 | `long clustersByWeight()` | Clusters whose centre was drawn among its cell's points by their weights, on Earth, since this world began drawing pools (EG1). |
-| 1807 | 1 | `long centreRedraws()` | Times a cluster's centre was drawn again inside its point's square for lying on ground that holds none of the resource (EG1). |
-| 1810 | 1 | `long centresOnNone()` | Clusters whose centre still lay on ground that holds none after SEA_REDRAWS draws again (EG1). |
-| 1813 | 1 | `long fieldRedraws()` | Times a field was drawn again in its cluster's disc for lying on ground that holds none of the resource (EG1). |
-| 1816 | 1 | `long fieldsOnNone()` | Fields that still lay on ground that holds none after SEA_REDRAWS draws again (EG1). |
-| 1819 | 12 | `private Pool pool(Resource r, int px, int py)` | A pool, drawn once and kept: its place in pools (px east, py south, each 0 to poolsOnSide() - 1). |
-| 1833 | 3 | `private long poolHash(Resource r, int px, int py)` | A pool's stream for a resource. |
-| 1838 | 1 | `private int fieldScale()` | How many of the old world's fields one field stands for in this world: FIELD_SCALE on a generated world, FIELD_SCALE x EARTH_FIELD_SCALE on Earth (EG1). |
-| 1841 | 5 | `static int atLeastOne(long count, int per, double u)` | `count` over `per`, its fraction a draw (u under it adds one), at least one when `count` is not nought: how many fields N old ones make, and how many clusters those fields lie in. |
-| 1862 | 132 | `private Pool drawPool(Resource r, int px, int py)` | Draws a pool (0.7.99): its cells' old counts and totals, row by row; its fields, N / fieldScale() of the old count's N; its clusters, one for every CLUSTER_FIELDS fields, each centred in a cell drawn as its share of t... |
-| 1996 | 5 | `public static int[] poolOf(int cell, Resource r)` | The pool holding a cell, as {px, py}, for a resource; null for forest or off the world. |
-| 2003 | 12 | `public double poolTotal(Resource r, int px, int py)` | What a pool shares among its fields: its cells' totals added (cellTotal()), whole tonnes, row by row - without drawing a field. |
-| 2017 | 8 | `public long poolFieldCount(Resource r, int px, int py)` | How many fields a pool holds (fewer and bigger, 0.7.99) - computed from its cells' old counts without drawing them. |
-| 2027 | 13 | `public long poolLegacyCount(Resource r, int px, int py)` | ...and how many of the old world's fields its cells held: their old counts added. |
-| 2042 | 5 | `public long fieldCount(Resource r)` | The fields of a resource the whole world holds (0.7.99): every pool's, from their old counts, without drawing one. |
-| 2049 | 6 | `public long legacyFieldCount(Resource r)` | ...and the old world's: every cell's old count. |
-| 2057 | 15 | `public List<Deposit> poolFields(Resource r, int px, int py)` | A pool's fields, each as the cell its centre is in lists it (fieldsInCell()), in the order the pool drew them; one not found there is left out. |
-| 2080 | 4 | `public List<Deposit> fieldsInCell(int cell, Resource r)` | A cell's fields of a resource (since 0.7.99, FEWER AND BIGGER DEPOSITS): every field of every pool whose clusters reach the cell whose centre plot is in it, pool by pool (north to south, west to east) in the order eac... |
-| 2085 | 21 | `private List<Deposit> fieldsOf(int cell, Resource r)` |  |
-| 2115 | 6 | `public double[] totals()` | The world's totals, computed once and kept (0.7.57): computeTotals()'s figures, a copy - what a city founded or converted on this world stores, so a load needs no pass (spec-land 2.1). |
-| 2129 | 14 | `public double[] computeTotals()` | The world's totals, a resource at a time in Resource's order: every cell's cellTotal(), summed in cell order - one pass over 135,424 cells, about 30 ms, the same every time. |
+| 1742 | 8 | `static { ... }` |  |
+| 1757 | 1 | `public static int poolCells(Resource r)` | The side of a resource's pool, in cells (0.7.99): the fewest whose square of land holds POOL_CLUSTERS clusters on the mean, POOL_CLUSTERS x CLUSTER_FIELDS x FIELD_SCALE of the old world's fields - iron 2, oil 4, stone... |
+| 1760 | 4 | `public static int poolsOnSide(Resource r)` | A resource's pools on the world's side: CELLS over poolCells(), rounded up (the last a part pool); 0 for forest. |
+| 1771 | 3 | `public static double clusterKm(Resource r)` | A cluster's radius for a resource, in km (0.7.99): the disc that holds CLUSTER_FIELDS fields at the old world's density, sqrt(CLUSTER_FIELDS / (pi x its fields a km2)) - iron 4.0, oil 12.6, stone 17.8, coal 39.9, copp... |
+| 1776 | 16 | **type** `private static final class Pool` | A pool's fields as drawn: each one's centre plot, sites and amount, in the order drawn; the pool's total and its old count. |
+| 1783 | 8 | `Pool(long[] xs, long[] ys, int[] sites, double[] amounts, double total, long old)` _(in World.Pool)_ |  |
+
+### EG1's counters: how often the Earth rules fire (they feed no draw) (lines 1803-2148)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1809 | 1 | `long clustersByWeight()` | Clusters whose centre was drawn among its cell's points by their weights, on Earth, since this world began drawing pools (EG1). |
+| 1812 | 1 | `long centreRedraws()` | Times a cluster's centre was drawn again inside its point's square for lying on ground that holds none of the resource (EG1). |
+| 1815 | 1 | `long centresOnNone()` | Clusters whose centre still lay on ground that holds none after SEA_REDRAWS draws again (EG1). |
+| 1818 | 1 | `long fieldRedraws()` | Times a field was drawn again in its cluster's disc for lying on ground that holds none of the resource (EG1). |
+| 1821 | 1 | `long fieldsOnNone()` | Fields that still lay on ground that holds none after SEA_REDRAWS draws again (EG1). |
+| 1824 | 12 | `private Pool pool(Resource r, int px, int py)` | A pool, drawn once and kept: its place in pools (px east, py south, each 0 to poolsOnSide() - 1). |
+| 1838 | 3 | `private long poolHash(Resource r, int px, int py)` | A pool's stream for a resource. |
+| 1843 | 1 | `private int fieldScale()` | How many of the old world's fields one field stands for in this world: FIELD_SCALE on a generated world, FIELD_SCALE x EARTH_FIELD_SCALE on Earth (EG1). |
+| 1846 | 5 | `static int atLeastOne(long count, int per, double u)` | `count` over `per`, its fraction a draw (u under it adds one), at least one when `count` is not nought: how many fields N old ones make, and how many clusters those fields lie in. |
+| 1867 | 132 | `private Pool drawPool(Resource r, int px, int py)` | Draws a pool (0.7.99): its cells' old counts and totals, row by row; its fields, N / fieldScale() of the old count's N; its clusters, one for every CLUSTER_FIELDS fields, each centred in a cell drawn as its share of t... |
+| 2001 | 5 | `public static int[] poolOf(int cell, Resource r)` | The pool holding a cell, as {px, py}, for a resource; null for forest or off the world. |
+| 2008 | 12 | `public double poolTotal(Resource r, int px, int py)` | What a pool shares among its fields: its cells' totals added (cellTotal()), whole tonnes, row by row - without drawing a field. |
+| 2022 | 8 | `public long poolFieldCount(Resource r, int px, int py)` | How many fields a pool holds (fewer and bigger, 0.7.99) - computed from its cells' old counts without drawing them. |
+| 2032 | 13 | `public long poolLegacyCount(Resource r, int px, int py)` | ...and how many of the old world's fields its cells held: their old counts added. |
+| 2047 | 5 | `public long fieldCount(Resource r)` | The fields of a resource the whole world holds (0.7.99): every pool's, from their old counts, without drawing one. |
+| 2054 | 6 | `public long legacyFieldCount(Resource r)` | ...and the old world's: every cell's old count. |
+| 2062 | 15 | `public List<Deposit> poolFields(Resource r, int px, int py)` | A pool's fields, each as the cell its centre is in lists it (fieldsInCell()), in the order the pool drew them; one not found there is left out. |
+| 2085 | 4 | `public List<Deposit> fieldsInCell(int cell, Resource r)` | A cell's fields of a resource (since 0.7.99, FEWER AND BIGGER DEPOSITS): every field of every pool whose clusters reach the cell whose centre plot is in it, pool by pool (north to south, west to east) in the order eac... |
+| 2090 | 21 | `private List<Deposit> fieldsOf(int cell, Resource r)` |  |
+| 2120 | 6 | `public double[] totals()` | The world's totals, computed once and kept (0.7.57): computeTotals()'s figures, a copy - what a city founded or converted on this world stores, so a load needs no pass (spec-land 2.1). |
+| 2134 | 14 | `public double[] computeTotals()` | The world's totals, a resource at a time in Resource's order: every cell's cellTotal(), summed in cell order - one pass over 135,424 cells, about 30 ms, the same every time. |
 

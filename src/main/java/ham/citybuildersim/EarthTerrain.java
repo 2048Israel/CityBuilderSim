@@ -1367,6 +1367,22 @@ public final class EarthTerrain {
     }
 
     /**
+     * A plot's landmass by its 15" cell alone, whether the plot is dry or water: the cell's own id, or the nearest land
+     * cell's within LANDMASS_REACH (resolvedCell(), the rule landmassAt() gives a dry plot), read at the plot's blend point
+     * as the tile is drawn. What a field centred on a lake plot of an island is on (landmassAt() gives a water plot 0, which
+     * the city reads as home). Not kept: asked of a few fields' centres (LandManager's works gate), never of a tile's plots.
+     */
+    public int landmassOfPlot(long x, long y) {
+        if (!relief || x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE) return 0;
+        int n = World.TILE;
+        long x0 = Math.floorDiv(x, n) * n, y0 = Math.floorDiv(y, n) * n;
+        EarthProj.Blend b = proj.blend(x0, y0, n);
+        double[] ll = new double[2];
+        if (!b.latLon(x + 0.5, y + 0.5, ll)) return 0;
+        return resolvedCell(data.landmassRow(ll[0]), data.landmassCol(ll[1]));
+    }
+
+    /**
      * The landmass ids a tile's plots can take, the non-zero ones ascending: those of the land cells under the tile's blend
      * box widened by LANDMASS_REACH cells every way. A pure read of a window of cells - no plot of the tile is drawn - and a
      * superset of what landmassAt() gives any plot of the tile, which is why a tile whose ids are all one landmass can be

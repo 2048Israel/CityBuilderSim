@@ -172,6 +172,15 @@ public class DataSave implements Cloneable {
      */
     private Zoning.State zoning;
 
+    /**
+     * Where the city's sea terminals stand (ET5, 2026-10-25; Landmasses): per terminal template the landmass ids of its
+     * standing, on-site and stopped units, oldest first, and of the units a demolition on site is taking down. Absent on an
+     * older save and on every city with no port off its home landmass: every port at home. The books by landmass are
+     * recounted from the land and the Earth's data at every load and are not saved. Format 47 (an Earth save of an older
+     * format that owns ground off its home landmass is refused: EarthSite.LANDMASS_FORMAT); a generated world needs none.
+     */
+    private Landmasses.State landmasses;
+
     /*
      * The property tax the city CHARGED this month, rather than a figure
      * derived from its state.
@@ -1059,6 +1068,10 @@ public class DataSave implements Cloneable {
     public void setZoning(Zoning.State state) { this.zoning = state; }
     /** Null on a save from before 0.7.107, or with nothing zoned, no law and no forest cleared. */
     public Zoning.State getZoning() { return zoning; }
+
+    public void setLandmasses(Landmasses.State state) { this.landmasses = state; }
+
+    public Landmasses.State getLandmasses() { return landmasses; }
 
     public void setPortMonth(Ports.State state) { this.portMonth = state; }
     /** Null on a save from before 0.7.86. */

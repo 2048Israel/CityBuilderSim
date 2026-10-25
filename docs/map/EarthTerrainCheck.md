@@ -1,4 +1,4 @@
-# EarthTerrainCheck.java - 2,499 lines · 60 methods · 50 constants · harnesses
+# EarthTerrainCheck.java - 2,506 lines · 60 methods · 50 constants · harnesses
 
 `ham/citybuildersim/EarthTerrainCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      within EarthTerrain.WATER_PAD_DEG.
 > ... (114 more lines in the source)
 
-**Uses:** [World](World.md) (626), [Geology](Geology.md) (112), [EarthData](EarthData.md) (101), [Resource](Resource.md) (82), [EarthTerrain](EarthTerrain.md) (59), [EarthSite](EarthSite.md) (37), [CityLand](CityLand.md) (34), [MapCheck](MapCheck.md) (23), [Deposit](Deposit.md) (21), [EarthProj](EarthProj.md) (19), [DistrictPlan](DistrictPlan.md) (12), [DataSave](DataSave.md) (12), [LandMap](LandMap.md) (10), [Timing](Timing.md) (9), [TileRaster](TileRaster.md) (8), [GridConversion](GridConversion.md) (8), [CityRuns](CityRuns.md) (8), [GameVersion](GameVersion.md) (8), [GlobeFrame](GlobeFrame.md) (7), [CityMap](CityMap.md) (6), [MapFrame](MapFrame.md) (6), [EarthCheck](EarthCheck.md) (5), [LandManager](LandManager.md) (5), [BuildingVisual](BuildingVisual.md) (5), [TilePainter](TilePainter.md) (5), [GlobePicture](GlobePicture.md) (5), [PlanCheck](PlanCheck.md) (3), [Founding](Founding.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [WorldCheck](WorldCheck.md) (1)... and 2 more
+**Uses:** [World](World.md) (626), [Geology](Geology.md) (112), [EarthData](EarthData.md) (101), [Resource](Resource.md) (82), [EarthTerrain](EarthTerrain.md) (59), [EarthSite](EarthSite.md) (46), [CityLand](CityLand.md) (34), [MapCheck](MapCheck.md) (23), [Deposit](Deposit.md) (21), [EarthProj](EarthProj.md) (19), [DataSave](DataSave.md) (15), [DistrictPlan](DistrictPlan.md) (12), [LandMap](LandMap.md) (10), [GameVersion](GameVersion.md) (10), [Timing](Timing.md) (9), [TileRaster](TileRaster.md) (8), [GridConversion](GridConversion.md) (8), [CityRuns](CityRuns.md) (8), [GlobeFrame](GlobeFrame.md) (7), [CityMap](CityMap.md) (6), [MapFrame](MapFrame.md) (6), [EarthCheck](EarthCheck.md) (5), [LandManager](LandManager.md) (5), [BuildingVisual](BuildingVisual.md) (5), [TilePainter](TilePainter.md) (5), [GlobePicture](GlobePicture.md) (5), [PlanCheck](PlanCheck.md) (3), [Founding](Founding.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [WorldCheck](WorldCheck.md) (1)... and 2 more
 
 **Used by (4):** [GatewayCheck](GatewayCheck.md), [GlobeCheck](GlobeCheck.md), [MapCheck](MapCheck.md), [SlopeCheck](SlopeCheck.md)
 
@@ -84,8 +84,8 @@
 | 829 | 9. THE FULL FILE |
 | 926 | 10 TO 14. THE DEPOSITS ON THE EARTH'S GEOLOGY (0.7.117, batch E3; |
 | 1416 | 15. ICE AND DESERT AS KINDS OF GROUND (0.7.127, batch E7; the |
-| 1571 | 16. THE SHALLOW SEA (ET1, spec-earth2-terrain 6.1, D11 and 12's 6) |
-| 1754 | 17. THE RELIEF PLANE (ET1, spec-earth2-terrain 3.1, D4, D5 and D19) |
+| 1578 | 16. THE SHALLOW SEA (ET1, spec-earth2-terrain 6.1, D11 and 12's 6) |
+| 1761 | 17. THE RELIEF PLANE (ET1, spec-earth2-terrain 3.1, D4, D5 and D19) |
 
 ## Constants
 
@@ -125,22 +125,22 @@
 | 1431 | `EarthTerrainCheck.MARGIN` | `{ 61.48, - 45.68 }` | A spot on south Greenland's ice margin whose snapped site lies on grass in a 2' cell with the ice bit - the bit's rule (E4's) refused it, the plot's does not (found by E7's probe, the default seed; moved about 9 km fr... |
 | 1434 | `EarthTerrainCheck.OFF_THE_ICE` | `{ 61.42, - 45.62 }` | A spot on the ice there whose site the snap finds off it, on dry ground over a kilometre away (E7's probe). |
 | 1437 | `EarthTerrainCheck.SAHARA` | `{ 23, 10 }` | The Sahara's spot, EarthFoundingCheck 3's desert. |
-| 1576 | `EarthTerrainCheck.SHALLOW_POINTS` | `COVER_POINTS` | The shallow share of a window's sea drawn is the data's within this, in points: COVER_POINTS, the bound ice's and the desert's share of a cell is held to (the sea-weighted share of cells whose coast the fray moves a p... |
-| 1579 | `EarthTerrainCheck.TWO_COPIES_POINTS` | `0.5` | The tile rule (draw()) and the point rule (classAt()) split the sea alike on all but this share of the plots both call sea, in points: half a point (the lattice blends the shares between points 120 m apart, the point ... |
-| 1582 | `EarthTerrainCheck.SPOT_REACH` | `5` | How far round a spot the Narrows' and the Basin's plots are all held to their class, in plots: 5 (150 m, a Narrows is a few hundred metres across). |
-| 1585 | `EarthTerrainCheck.NARROWS` | `{ 44.67, - 63.59 }, BASIN = { 44.70, - 63.64 }` | The Halifax Narrows between Bedford Basin and the harbour, and Bedford Basin's middle (the fixture holds the Narrows' tiles: tools/earth/fixture.py NARROWS). |
-| 1759 | `EarthTerrainCheck.RELIEF_POINTS` | `SHARE_POINTS` | Each relief class's share of a window's dry ground drawn is the data's within this, in points, for a window of RELIEF_REF_PLOTS dry plots: SHARE_POINTS, section 15's bound - and more for a window with less dry ground,... |
-| 1762 | `EarthTerrainCheck.RELIEF_REF_PLOTS` | `(long) WINDOW * WINDOW` | The dry plots a 61 km window of land holds: 2,048 squared, 4,194,304 - the size RELIEF_POINTS is the bound for. |
-| 1765 | `EarthTerrainCheck.RELIEF_COPIES_POINTS` | `1.0` | The relief's two copies (the tile's drawRelief() and the point's reliefOf()) give a dry plot the same class on all but this share of the plots both draw dry, in points: 1 (the lattice blends the shares between points ... |
-| 1768 | `EarthTerrainCheck.FAR_POINTS` | `2 * RELIEF_POINTS` | A far node's relief shares are the data's cells' at its dry pixels within this, in points: twice RELIEF_POINTS (a node's 16,384 pixels are a sample, a pixel a hash's draw against the share), where it holds at least FA... |
-| 1769 | `EarthTerrainCheck.FAR_DRY_LEAST` | `2000` |  |
-| 1772 | `EarthTerrainCheck.FLOOR` | `{ 6.25, - 75.57 }, VALLEY = { 6.25, - 75.58 }` | Medellin's valley floor, the centre of the city (the study's 2.3: 98% flat in a 3 x 3 of 15" cells, 1,482 m), and the middle of the fixture's window about it (tools/earth/fixture.py MEDELLIN, one 1-degree tile). |
-| 1775 | `EarthTerrainCheck.SUMMIT` | `{ 27.99, 86.93 }` | Everest's summit area: snow and ice on all its high ground (the study's 12, 7), the rock between its glaciers the only dry land. |
-| 1778 | `EarthTerrainCheck.HILLS` | `{ VALLEY, SUMMIT, { 46.7, 10.3 }, { 22.3, 114.2 }, { - 16.5, - 68.1 }, { 27.7...` | The full file's hilly spots, {lat, lon}: Medellin, Everest's, the Upper Engadin, Hong Kong (a steep coast), La Paz and Kathmandu - their classes in the study's table of 2.3. |
-| 1779 | `EarthTerrainCheck.HILL_NAMES` | `{ "Medellin", "Everest", "the Upper Engadin", "Hong Kong", "La Paz", "Kathman...` |  |
-| 1782 | `EarthTerrainCheck.FLOOR_REACH` | `5, FLOOR_WIDE = 17` | How far round the floor's spot the plots are all held FLAT, in plots: 5 (150 m); and the share of the plots within FLOOR_WIDE (17: 510 m) that are flat, at least. |
-| 1783 | `EarthTerrainCheck.FLOOR_FLAT` | `0.95` |  |
-| 2325 | `EarthTerrainCheck.SHELVES` | `{ { 52.0, 3.0 }, { - 32.0, 115.4 }, { 28.5, - 94.0 }, { 27.0, 50.5 } }` | Four coasts of the full file, {lat, lon}, each a 61 km window with sea of both depths: the North Sea at the Flemish banks, the shelf off Perth, the Texas shelf off Galveston and the Gulf off Ras Tanura. |
+| 1583 | `EarthTerrainCheck.SHALLOW_POINTS` | `COVER_POINTS` | The shallow share of a window's sea drawn is the data's within this, in points: COVER_POINTS, the bound ice's and the desert's share of a cell is held to (the sea-weighted share of cells whose coast the fray moves a p... |
+| 1586 | `EarthTerrainCheck.TWO_COPIES_POINTS` | `0.5` | The tile rule (draw()) and the point rule (classAt()) split the sea alike on all but this share of the plots both call sea, in points: half a point (the lattice blends the shares between points 120 m apart, the point ... |
+| 1589 | `EarthTerrainCheck.SPOT_REACH` | `5` | How far round a spot the Narrows' and the Basin's plots are all held to their class, in plots: 5 (150 m, a Narrows is a few hundred metres across). |
+| 1592 | `EarthTerrainCheck.NARROWS` | `{ 44.67, - 63.59 }, BASIN = { 44.70, - 63.64 }` | The Halifax Narrows between Bedford Basin and the harbour, and Bedford Basin's middle (the fixture holds the Narrows' tiles: tools/earth/fixture.py NARROWS). |
+| 1766 | `EarthTerrainCheck.RELIEF_POINTS` | `SHARE_POINTS` | Each relief class's share of a window's dry ground drawn is the data's within this, in points, for a window of RELIEF_REF_PLOTS dry plots: SHARE_POINTS, section 15's bound - and more for a window with less dry ground,... |
+| 1769 | `EarthTerrainCheck.RELIEF_REF_PLOTS` | `(long) WINDOW * WINDOW` | The dry plots a 61 km window of land holds: 2,048 squared, 4,194,304 - the size RELIEF_POINTS is the bound for. |
+| 1772 | `EarthTerrainCheck.RELIEF_COPIES_POINTS` | `1.0` | The relief's two copies (the tile's drawRelief() and the point's reliefOf()) give a dry plot the same class on all but this share of the plots both draw dry, in points: 1 (the lattice blends the shares between points ... |
+| 1775 | `EarthTerrainCheck.FAR_POINTS` | `2 * RELIEF_POINTS` | A far node's relief shares are the data's cells' at its dry pixels within this, in points: twice RELIEF_POINTS (a node's 16,384 pixels are a sample, a pixel a hash's draw against the share), where it holds at least FA... |
+| 1776 | `EarthTerrainCheck.FAR_DRY_LEAST` | `2000` |  |
+| 1779 | `EarthTerrainCheck.FLOOR` | `{ 6.25, - 75.57 }, VALLEY = { 6.25, - 75.58 }` | Medellin's valley floor, the centre of the city (the study's 2.3: 98% flat in a 3 x 3 of 15" cells, 1,482 m), and the middle of the fixture's window about it (tools/earth/fixture.py MEDELLIN, one 1-degree tile). |
+| 1782 | `EarthTerrainCheck.SUMMIT` | `{ 27.99, 86.93 }` | Everest's summit area: snow and ice on all its high ground (the study's 12, 7), the rock between its glaciers the only dry land. |
+| 1785 | `EarthTerrainCheck.HILLS` | `{ VALLEY, SUMMIT, { 46.7, 10.3 }, { 22.3, 114.2 }, { - 16.5, - 68.1 }, { 27.7...` | The full file's hilly spots, {lat, lon}: Medellin, Everest's, the Upper Engadin, Hong Kong (a steep coast), La Paz and Kathmandu - their classes in the study's table of 2.3. |
+| 1786 | `EarthTerrainCheck.HILL_NAMES` | `{ "Medellin", "Everest", "the Upper Engadin", "Hong Kong", "La Paz", "Kathman...` |  |
+| 1789 | `EarthTerrainCheck.FLOOR_REACH` | `5, FLOOR_WIDE = 17` | How far round the floor's spot the plots are all held FLAT, in plots: 5 (150 m); and the share of the plots within FLOOR_WIDE (17: 510 m) that are flat, at least. |
+| 1790 | `EarthTerrainCheck.FLOOR_FLAT` | `0.95` |  |
+| 2332 | `EarthTerrainCheck.SHELVES` | `{ { 52.0, 3.0 }, { - 32.0, 115.4 }, { 28.5, - 94.0 }, { 27.0, 50.5 } }` | Four coasts of the full file, {lat, lon}, each a 61 km window with sea of both depths: the North Sea at the Flemish banks, the shelf off Perth, the Texas shelf off Galveston and the Gulf off Ras Tanura. |
 
 ## Fields (state)
 
@@ -159,24 +159,24 @@
 | 328 | `final double seaPoints, dataSea, dataLake, dataForest` |  |
 | 330 | `final double dataShallow` | The shallow share of the window's sea in the data (ET1): its cells' shallow levels weighted by each cell's sea and the plots laid on it; NaN where the file has no shallow layer or the window no sea. |
 | 331 | `final long dryForestData` |  |
-| 1791 | `final World world` |  |
-| 1792 | `final EarthData data` |  |
-| 1793 | `final long x0, y0` |  |
-| 1794 | `final int side` |  |
-| 1795 | `final byte[] cover, relief` |  |
-| 1796 | `final long[] drawn` |  |
-| 1797 | `final double[] want` |  |
-| 1798 | `long dry, lost` |  |
-| 1800 | `final long[] sloped` | Dry plots of each cover with a relief above FLAT, by cover class. |
-| 2466 | `final EarthData d` |  |
-| 2467 | `final int cpd` |  |
-| 2468 | `final Map<Integer, byte[]> grids` |  |
+| 1798 | `final World world` |  |
+| 1799 | `final EarthData data` |  |
+| 1800 | `final long x0, y0` |  |
+| 1801 | `final int side` |  |
+| 1802 | `final byte[] cover, relief` |  |
+| 1803 | `final long[] drawn` |  |
+| 1804 | `final double[] want` |  |
+| 1805 | `long dry, lost` |  |
+| 1807 | `final long[] sloped` | Dry plots of each cover with a relief above FLAT, by cover class. |
+| 2473 | `final EarthData d` |  |
+| 2474 | `final int cpd` |  |
+| 2475 | `final Map<Integer, byte[]> grids` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 190 | 2310 | **type** `public class EarthTerrainCheck` | The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key h... |
+| 190 | 2317 | **type** `public class EarthTerrainCheck` | The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key h... |
 | 235 | 4 | `static void check(String label, boolean ok)` |  |
 | 240 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 246 | 1 | **type** `record Spot(String name, double lat, double lon)` | The fixture's windows: name, latitude, longitude. |
@@ -270,46 +270,46 @@
 | 1223 | 67 | `static void planet(EarthData file, Spot rotterdam)` | Section 13, on the full file: Z and the odds are its own to their rounding, and the study's figures on the rules' classes; section 12 on the whole planet. |
 | 1292 | 123 | `static void types(String id, Map<String, Spot> spots)` | Section 14: the totals exact on Earth and every field typed by the class under it. |
 
-### 15. ICE AND DESERT AS KINDS OF GROUND (0.7.127, batch E7; the (lines 1416-1570)
+### 15. ICE AND DESERT AS KINDS OF GROUND (0.7.127, batch E7; the (lines 1416-1577)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1439 | 131 | `static void iceAndDesert(EarthData file, Map<String, Window> windows, String id)` |  |
+| 1439 | 138 | `static void iceAndDesert(EarthData file, Map<String, Window> windows, String id)` |  |
 
-### 16. THE SHALLOW SEA (ET1, spec-earth2-terrain 6.1, D11 and 12's 6) (lines 1571-1753)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1587 | 166 | `static void shallowSea(EarthData file, Map<String, Window> windows, EarthData fixture, String id) throws Exception` |  |
-
-### 17. THE RELIEF PLANE (ET1, spec-earth2-terrain 3.1, D4, D5 and D19) (lines 1754-2499)
+### 16. THE SHALLOW SEA (ET1, spec-earth2-terrain 6.1, D11 and 12's 6) (lines 1578-1760)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1790 | 79 | **type** `static final class ReliefWindow` | A window of plots - the world cell's middle, side x side of them - drawn (cover and relief) and laid on the data's slope: its dry plots counted by relief against what the data's cells say of them (each plot's own 15" ... |
-| 1802 | 41 | `ReliefWindow(World world, EarthData data, int side)` _(in EarthTerrainCheck.ReliefWindow)_ |  |
-| 1844 | 1 | `double drawnShare(int k)` _(in EarthTerrainCheck.ReliefWindow)_ |  |
-| 1846 | 1 | `double wantShare(int k)` _(in EarthTerrainCheck.ReliefWindow)_ |  |
-| 1849 | 5 | `double points()` _(in EarthTerrainCheck.ReliefWindow)_ | The largest gap between a class's share drawn and the data's, in points. |
-| 1856 | 1 | `double tolerance()` _(in EarthTerrainCheck.ReliefWindow)_ | The bound on points(): RELIEF_POINTS, and past it by the root of the window's dry ground against RELIEF_REF_PLOTS. |
-| 1859 | 1 | `boolean hilly()` _(in EarthTerrainCheck.ReliefWindow)_ | Whether the data holds slope under the window: at least 5% of its dry ground at or above foothill. |
-| 1862 | 1 | `boolean steep()` _(in EarthTerrainCheck.ReliefWindow)_ | Whether it holds steep ground: at least 5% of its dry ground at or above steep. |
-| 1864 | 4 | `String shares(boolean data)` _(in EarthTerrainCheck.ReliefWindow)_ |  |
-| 1871 | 12 | `static long[] reliefAbout(World w, double lat, double lon, int reach)` | The relief about a point (its lat, lon), plots dx, dy of it, for a window's world: counted by class over the dry plots within `reach`. |
-| 1884 | 132 | `static void reliefPlane(EarthData file, Map<String, Spot> spots, EarthData fixture, String id) throws Exception` |  |
-| 2018 | 27 | `static void reliefWindows(String where, List<String> names, List<ReliefWindow> ws, boolean fixtureWindows)` | The share check on each window, the checks that hold of all of them, and which hold slope. |
-| 2047 | 134 | `static void reliefRule(EarthData fixture, EarthData file, String id) throws Exception` | The rule's own: the cover untouched, the readers one another's, the classes nested within the data, the point rule the tile's, a tile's time. |
-| 2183 | 140 | `static void reliefFar(EarthData file) throws Exception` | The far views' relief: a far node at a stride, the globe's camera, the picture's, their cost against SCREEN_MS and FRAME_MS. |
-| 2328 | 1 | `static int luma(int c)` | A colour's luma, the plain sum of its channels. |
-| 2331 | 5 | `static long[] only(byte cls, long n)` | A count of n plots of one class, World.CLASSES long. |
-| 2338 | 3 | `static boolean adds(EarthSite.Card c)` | A card's plots add up: dry, fresh, sea and ice. |
-| 2343 | 5 | `static int westOf(DistrictPlan p)` | How many of a plan's buildings stand west of its district's middle. |
-| 2350 | 16 | `static long[] tileOf(World w, CityLand land, byte cls)` | The nearest whole tile to a city's founding site, ring by ring of tiles out to 48 (46 km), that the city owns no plot of and whose every plot is of one class: its north-west plot, or null. |
-| 2368 | 16 | `static boolean far(World.Key key, byte cls, String[] words)` | Whether the far nodes about a world's spot draw a class: every pixel of it at WATER_STRIDE and FAR_STRIDE / 4 (61 and 246 km a node), and at FAR_STRIDE (983 km, which reaches past the sheet's coast) more of it than of... |
-| 2395 | 68 | `static void cover(EarthData d, boolean ice, int lat0, int lon0)` | One kind's 1-degree cell on the full file, on a world centred there: every plot whose centre lies in the cell drawn, and among those the kind could take (ice any ground not water; the desert grass or desert, which for... |
-| 2465 | 34 | **type** `static final class Cover` | Land cover's 2' cells read from the file's grids, kept by tile: a cell's value, and a bit's share between the cells' centres as EarthTerrain reads it. |
-| 2470 | 4 | `Cover(EarthData d)` _(in EarthTerrainCheck.Cover)_ |  |
-| 2476 | 7 | `int cell(long r, long c)` _(in EarthTerrainCheck.Cover)_ | The value of the cell in global row r (from 90 N) and column c (from 180 W). |
-| 2485 | 3 | `int at(double lat, double lon)` _(in EarthTerrainCheck.Cover)_ | The value of the cell a point lies in. |
-| 2490 | 8 | `double share(double lat, double lon, int bit)` _(in EarthTerrainCheck.Cover)_ | A bit read 0 or 1 at each cell and interpolated between the four cells' centres about a point. |
+| 1594 | 166 | `static void shallowSea(EarthData file, Map<String, Window> windows, EarthData fixture, String id) throws Exception` |  |
+
+### 17. THE RELIEF PLANE (ET1, spec-earth2-terrain 3.1, D4, D5 and D19) (lines 1761-2506)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1797 | 79 | **type** `static final class ReliefWindow` | A window of plots - the world cell's middle, side x side of them - drawn (cover and relief) and laid on the data's slope: its dry plots counted by relief against what the data's cells say of them (each plot's own 15" ... |
+| 1809 | 41 | `ReliefWindow(World world, EarthData data, int side)` _(in EarthTerrainCheck.ReliefWindow)_ |  |
+| 1851 | 1 | `double drawnShare(int k)` _(in EarthTerrainCheck.ReliefWindow)_ |  |
+| 1853 | 1 | `double wantShare(int k)` _(in EarthTerrainCheck.ReliefWindow)_ |  |
+| 1856 | 5 | `double points()` _(in EarthTerrainCheck.ReliefWindow)_ | The largest gap between a class's share drawn and the data's, in points. |
+| 1863 | 1 | `double tolerance()` _(in EarthTerrainCheck.ReliefWindow)_ | The bound on points(): RELIEF_POINTS, and past it by the root of the window's dry ground against RELIEF_REF_PLOTS. |
+| 1866 | 1 | `boolean hilly()` _(in EarthTerrainCheck.ReliefWindow)_ | Whether the data holds slope under the window: at least 5% of its dry ground at or above foothill. |
+| 1869 | 1 | `boolean steep()` _(in EarthTerrainCheck.ReliefWindow)_ | Whether it holds steep ground: at least 5% of its dry ground at or above steep. |
+| 1871 | 4 | `String shares(boolean data)` _(in EarthTerrainCheck.ReliefWindow)_ |  |
+| 1878 | 12 | `static long[] reliefAbout(World w, double lat, double lon, int reach)` | The relief about a point (its lat, lon), plots dx, dy of it, for a window's world: counted by class over the dry plots within `reach`. |
+| 1891 | 132 | `static void reliefPlane(EarthData file, Map<String, Spot> spots, EarthData fixture, String id) throws Exception` |  |
+| 2025 | 27 | `static void reliefWindows(String where, List<String> names, List<ReliefWindow> ws, boolean fixtureWindows)` | The share check on each window, the checks that hold of all of them, and which hold slope. |
+| 2054 | 134 | `static void reliefRule(EarthData fixture, EarthData file, String id) throws Exception` | The rule's own: the cover untouched, the readers one another's, the classes nested within the data, the point rule the tile's, a tile's time. |
+| 2190 | 140 | `static void reliefFar(EarthData file) throws Exception` | The far views' relief: a far node at a stride, the globe's camera, the picture's, their cost against SCREEN_MS and FRAME_MS. |
+| 2335 | 1 | `static int luma(int c)` | A colour's luma, the plain sum of its channels. |
+| 2338 | 5 | `static long[] only(byte cls, long n)` | A count of n plots of one class, World.CLASSES long. |
+| 2345 | 3 | `static boolean adds(EarthSite.Card c)` | A card's plots add up: dry, fresh, sea and ice. |
+| 2350 | 5 | `static int westOf(DistrictPlan p)` | How many of a plan's buildings stand west of its district's middle. |
+| 2357 | 16 | `static long[] tileOf(World w, CityLand land, byte cls)` | The nearest whole tile to a city's founding site, ring by ring of tiles out to 48 (46 km), that the city owns no plot of and whose every plot is of one class: its north-west plot, or null. |
+| 2375 | 16 | `static boolean far(World.Key key, byte cls, String[] words)` | Whether the far nodes about a world's spot draw a class: every pixel of it at WATER_STRIDE and FAR_STRIDE / 4 (61 and 246 km a node), and at FAR_STRIDE (983 km, which reaches past the sheet's coast) more of it than of... |
+| 2402 | 68 | `static void cover(EarthData d, boolean ice, int lat0, int lon0)` | One kind's 1-degree cell on the full file, on a world centred there: every plot whose centre lies in the cell drawn, and among those the kind could take (ice any ground not water; the desert grass or desert, which for... |
+| 2472 | 34 | **type** `static final class Cover` | Land cover's 2' cells read from the file's grids, kept by tile: a cell's value, and a bit's share between the cells' centres as EarthTerrain reads it. |
+| 2477 | 4 | `Cover(EarthData d)` _(in EarthTerrainCheck.Cover)_ |  |
+| 2483 | 7 | `int cell(long r, long c)` _(in EarthTerrainCheck.Cover)_ | The value of the cell in global row r (from 90 N) and column c (from 180 W). |
+| 2492 | 3 | `int at(double lat, double lon)` _(in EarthTerrainCheck.Cover)_ | The value of the cell a point lies in. |
+| 2497 | 8 | `double share(double lat, double lon, int bit)` _(in EarthTerrainCheck.Cover)_ | A bit read 0 or 1 at each cell and interpolated between the four cells' centres about a point. |
 

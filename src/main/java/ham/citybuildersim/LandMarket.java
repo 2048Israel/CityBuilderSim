@@ -985,12 +985,15 @@ public class LandMarket {
      * sites a dollar, then the most of it, then the nearer; null when no
      * offer holds any. (Until 0.7.57 the office's richest deposit was the
      * parcel with the most iron tonnes.)
+     * Never an offer with dry ground on a landmass the city has not linked (ET5), as cheapestWith(): the test player buys
+     * its oil with this, and no works stands on a field across the water.
      */
     public LandParcel richest(Resource r) {
         LandParcel best = null;
         double bestRate = 0;
         for (LandParcel p : offers) {
             if (p == null || p.getSites(r) <= 0 || !(p.getAmount(r) > 0)) continue;
+            if (p.getUnlinkedDryKm2() > 0) continue;
             double rate = p.getPriceUsd() > 0 ? p.getSites(r) / p.getPriceUsd() : Double.POSITIVE_INFINITY;
             if (best == null || rate > bestRate
                     || (rate == bestRate && (p.getAmount(r) > best.getAmount(r)

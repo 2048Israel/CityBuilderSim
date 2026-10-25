@@ -1413,6 +1413,19 @@ public class ReadPathCheck {
         }
         g.getInfrastructureManager().getSeaShare(Traffic.BULK);
         BuildCard.of(g, portT, null); BuildCard.citys(portT); g.hasCoastFor(portT, 1); refiners.ownLines(g);
+        // ...and where the terminals stand (ET5; Landmasses): the books by landmass, the linked set, the card's choices, the coast on a landmass,
+        // the ground across the water that is no room, the map's picture, the placements as saved, and the words that say it
+        Landmasses lms = lm.getLandmasses();
+        lms.rows(); lms.linked(0); lms.linked(lms.home()); lms.home(); lms.single(); lms.anyUnlinked(); lms.unlinkedIds(); lms.unlinkedNames(); lms.version(); lms.plotsRead(); lms.active();
+        lms.unlinkedDrySqFt(); lms.unlinkedForestSqFt(); lms.unlinkedPortsSqFt(); lms.unlinkedFreeSqFt(); lms.unlinkedFreeSqFt(lms.home()); lms.unlinkedReliefSqFt(World.FLAT);
+        lms.portRoomSqFt(lms.home()); lms.shorePlots(lms.home()); lms.dryPlots(lms.home()); lms.name(lms.home()); lms.portsOn(lms.home()); lms.portsGroundSqFt(lms.home());
+        lms.padSqFt(lms.home(), 1_000, 0); lms.portChoices(); lms.linkedShore(); lms.hasPlacements();
+        for (Landmasses.Row row : lms.rows()) { lms.linked(row.id()); lms.portsOn(row.id()); lms.portRoomSqFt(row.id()); lms.portLandmass(portT.getId(), row.id()); lms.name(row.id()); g.hasCoastFor(portT, 1, row.id()); }
+        lms.portLandmass(portT.getId(), Landmasses.CHOSEN); lms.portLandmass(portT.getId(), Landmasses.RULE); lms.chosen(portT.getId()); lms.freeToGo(portT.getId()); lms.linkedBy(portT.getId());
+        lms.picture(); lms.toState();
+        g.hasCoastFor(portT, 1, Landmasses.CHOSEN); g.hasCoastFor(portT, 1, Landmasses.RULE); g.portLandmassChoices(portT); g.freeGroundFor(portT); g.getLandmassPicture();
+        lm.getUnlinkedFreeSqFt(); lm.getUnlinkedNames(); lm.getLinkedOwnedSqFt(); lm.getLinkedAllocatedSqFt(); lm.getLinkedForestSqFt(); lm.landmassState(); g.demolishable(portT); g.quoteBuild(portT, 1);
+        for (LandParcel offer : lmk.getListing()) { LandmassView.islandTagged(offer); offer.getUnlinkedDryKm2(); offer.getUnlinkedBuildableKm2(); offer.getUnlinkedLargest(); }
         // ...and the oil at sea (0.7.91): the platforms, their slots and wells, the pipelines, the shuttle tankers, the
         // planner's cases, the cards and the counts the orders are weighed against
         BuildingsTemplate jacketT = g.getBuildingManager().getTemplateByName("Offshore Platform");
@@ -1960,6 +1973,16 @@ public class ReadPathCheck {
             for (CityLand.Purchase p : flat.purchases()) allFlat &= p.offer().getReliefKm2(CityLand.RELIEF_FLAT) == p.offer().getDryKm2();
             assertTrue("...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,"
                     + " nothing steep and nothing shallow", allFlat);
+            // ...and, since ET5, a city on one landmass writes no "landmasses" key: stripped or not, it loads as the one landmass it is.
+            assertTrue("a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground",
+                    !json.has("landmasses") && loaded.getLandManager().landmassState() == null && loaded.getLandManager().getLandmasses().single()
+                            && !loaded.getLandManager().getLandmasses().anyUnlinked() && bare.getLandManager().getLandmasses().single()
+                            && loaded.getLandManager().getAvailableSqFt() == g.getLandManager().getAvailableSqFt());
+            // ...and, since ET5, a city on one landmass writes no "landmasses" key: stripped or not, it loads as the one landmass it is.
+            assertTrue("a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground",
+                    !json.has("landmasses") && loaded.getLandManager().landmassState() == null && loaded.getLandManager().getLandmasses().single()
+                            && !loaded.getLandManager().getLandmasses().anyUnlinked() && bare.getLandManager().getLandmasses().single()
+                            && loaded.getLandManager().getAvailableSqFt() == g.getLandManager().getAvailableSqFt());
         } catch (java.io.IOException e) {
             assertTrue("the saved file reads: " + e, false);
         }
@@ -1996,12 +2019,23 @@ public class ReadPathCheck {
             g.buildStack(template(g, "House"), 150, true);
             g.buildStack(template(g, "Convenience Store"), 3, true);
             g.buildStack(template(g, "Water Treatment Plant"), 1, true);
+            // ...and, since ET5, ground across the water with a terminal on it, so that the reads of the landmasses below are not all trivial.
+            World islandWorld = World.of(key);
+            long[] tip = LandmassCheck.plotOf(islandWorld, 51.848, 3.998);
+            LandmassCheck.Square island = LandmassCheck.squareWith(islandWorld, 648, tip[0], tip[1], 40, s -> s.pure() && s.onId() >= 2000 && s.shore() >= 20);
+            if (island != null) {
+                g.getLandManager().buyRectForTest(island.x0(), island.y0(), island.x0() + LandmassCheck.SQUARE, island.y0() + LandmassCheck.SQUARE, g.getMonth());
+                g.choosePortLandmass(template(g, "General Cargo Terminal"), 648);
+                g.buildStack(template(g, "General Cargo Terminal"), 1, true);
+            }
             g.simulateMonths(12);
             g.getCityMap();
         } finally {
             System.setOut(out);
         }
-        assertTrue("fixture: a town on the Earth, played a year", g.getWorld().isEarth() && g.getMonth() == 13);
+        assertTrue("fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links",
+                g.getWorld().isEarth() && g.getMonth() == 13 && !g.getLandManager().getLandmasses().single() && g.getLandManager().getLandmasses().anyUnlinked()
+                        && g.getLandManager().landmassState() != null);
         World w = g.getWorld();
         long sx = g.getCityLand().siteX(), sy = g.getCityLand().siteY();
         long seaX = sx - 2_000;
