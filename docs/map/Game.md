@@ -1,4 +1,4 @@
-# Game.java - 18,875 lines · 803 methods · 23 constants · model
+# Game.java - 18,881 lines · 803 methods · 23 constants · model
 
 `ham/citybuildersim/Game.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -74,21 +74,21 @@
 | 13375 | THE WORLD, THE BANK, AND THE FIELDS THE MONTH KEEPS |
 | 13781 | the save system |
 | 13831 | THE AUTOSAVE OFF THE CLOCK (UP1, 2026-10-22) |
-| 14394 | PAYING THE WORLD BACK |
-| 14535 | THE HOLDERS ARE PAID (0.7.1) |
-| 14661 | · the desk, for the households |
-| 14757 | · THE HOUSEHOLDS TAKE THEIR SHARE (0.7.1) |
-| 14890 | THE HOLDINGS DIAL, AT THE TOP OF THE MONTH (0.7.1) |
-| 15154 | · THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) |
-| 15409 | · a buyback's holders outside the pools |
-| 15434 | WHAT THE TREASURY ACTUALLY DID |
-| 15628 | · FROM EARNED TO THE BUDGET (0.7.31) |
-| 15770 | THE CENTRAL BANK AND THE TREASURY (0.7.0) |
-| 16058 | BUYING YOUR OWN DEBT BACK |
-| 16331 | · the call (CD4, spec-city-debt.md section 6.4; D22, D23, D24) |
-| 16473 | WHY LAND IS NOT IN THE RENT FLOOR |
-| 16854 | · · the three the monthly path sets and this did not |
-| 18586 | THE CURRENCY REFORM |
+| 14396 | PAYING THE WORLD BACK |
+| 14537 | THE HOLDERS ARE PAID (0.7.1) |
+| 14663 | · the desk, for the households |
+| 14759 | · THE HOUSEHOLDS TAKE THEIR SHARE (0.7.1) |
+| 14892 | THE HOLDINGS DIAL, AT THE TOP OF THE MONTH (0.7.1) |
+| 15156 | · THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) |
+| 15411 | · a buyback's holders outside the pools |
+| 15436 | WHAT THE TREASURY ACTUALLY DID |
+| 15630 | · FROM EARNED TO THE BUDGET (0.7.31) |
+| 15772 | THE CENTRAL BANK AND THE TREASURY (0.7.0) |
+| 16060 | BUYING YOUR OWN DEBT BACK |
+| 16333 | · the call (CD4, spec-city-debt.md section 6.4; D22, D23, D24) |
+| 16475 | WHY LAND IS NOT IN THE RENT FLOOR |
+| 16856 | · · the three the monthly path sets and this did not |
+| 18592 | THE CURRENCY REFORM |
 
 ## Enum constants
 
@@ -325,56 +325,56 @@
 | 13864 | `private java.util.function.LongSupplier saveClock` | The clock the floor is measured on (nanoseconds); checks give a city their own. |
 | 13867 | `private long lastAutosaveAt` | When the last autosave was asked for, on saveClock; meaningless until autosavedYet. |
 | 13869 | `private boolean autosavedYet` |  |
-| 14267 | `private String skipFailure` | Why the last fast-forward stopped early, or null. |
-| 14281 | `private GameFiles.Result lastSaveResult` | What the last write attempt did. |
-| 14417 | `private double foreignDebtRaisedThisMonth` |  |
-| 14418 | `private double foreignPrincipalRepaidThisMonth` |  |
-| 14419 | `private double foreignInterestPaidThisMonth` |  |
-| 14471 | `private double cityDebtRaisedThisMonth` | WHAT THE CITY HAS SOLD ITS BANK AND THE BANK HAS NOT YET PAID FOR. |
-| 14491 | `private double cityDiscountThisMonth` | Face value less cash paid, on everything the city issued this month. |
-| 14492 | `private double cityPrincipalRepaidThisMonth` |  |
-| 14506 | `private double cityDebtRaisedForBank` | What the treasury raised, as it stood when the month began. |
-| 14507 | `private double cityDiscountForBank` |  |
-| 14510 | `private double legacyDiscountDue` | A 0.7.0 save's discount on paper saved between its issue and its settle, booked whole at the settle as that save's bank would have. |
-| 14527 | `private double cityPaperSettled` | What the bank handed the treasury for its paper at this month's settle. |
-| 14533 | `private double bankPrincipalRepaidThisMonth` |  |
-| 14571 | `private double couponsToHouseholds, principalToHouseholds, householdsBoughtPaper` | Coupons and principal paid to the households on their paper, and what they paid for it at issue - this month's, for MoneyAudit. |
-| 14580 | `private double couponsToFirms, principalToFirms, firmsBoughtPaper` | ...and the businesses' (CD2, slice 4): the same three figures, for the playtest and the harness. |
-| 14590 | `private double couponsToWorld, principalToWorld, worldBoughtPaper, paperBoughtFromWorld` | ...and the world's (CD2, slice 5), which are declared: its coupon (an income debit) and its principal (a financial outflow) leave the pools for abroad, what it paid at the settle (worldBoughtPaper) is a financial infl... |
-| 14775 | `java.util.function.Consumer<Boolean> settleProbeForTest` | A harness's look at the households either side of their share of the settle (HoldersCheck): false before, true after. |
-| 15253 | `private double centralBankTender` | What the central bank rolls of its own this month: struck at the press (rollMaturities()), taken in the window (rollCentralBankAtIssue()). |
-| 15256 | `private final java.util.List<ParAlone> centralBankAlone` | ...and, with none of the city's term paper sold to add it on to, its par alone, quoted at the press: one issue per paper. |
-| 15422 | `private double buybackToHouseholdsUnsettled, buybackAbroadUnsettled` | What a buyback between two presses paid the households and the world (the holders of a dollar bond among them), carried in the treasury's pool until the next month declares it leaving (MoneyAudit.pools()) - the shape ... |
-| 15424 | `private double buybackToHouseholds, buybackAbroad` | ...and declared this month. |
-| 15477 | `private double treasuryOpening` |  |
-| 15478 | `private double treasuryClosing` |  |
-| 15479 | `private double treasuryRaised` |  |
-| 15480 | `private double treasuryRepaid` |  |
-| 15481 | `private double treasurySurplus` |  |
-| 15482 | `private boolean treasuryRecorded` |  |
-| 15501 | `private double treasuryRaisedSoFar` | What the treasury has raised by issuing paper since the last strike, in local money - the bridge's own counter, press to press. |
-| 15513 | `private double retiredGainSoFar` | The gain (below nothing, a loss) on paper the treasury has retired since the last strike, in local money - the carrying value less the price paid, counted as each buyback happens (repurchaseDebt()), press to press lik... |
-| 15522 | `private double treasuryNotCash` | The part of the month's budget balance that is not cash (CD3): the discount amortised, which the budget charges and the treasury never pays, less the gain on paper retired, which the budget books and the treasury neve... |
-| 15525 | `private final TreasuryJournal treasuryJournal` | The named non-budget movements, this month and last. |
-| 15731 | `private double[] loadedGovernmentMonth` | The government's month as the save carried it, waiting for the rebuild. |
-| 15734 | `private MoneyAudit.Result lastMoneyAudit` | Last month's money-conservation residual. |
-| 15742 | `private double postAuditDrift` | How much moved after the audit struck, which must be nothing. |
-| 15743 | `private String postAuditDriftPool` |  |
-| 15744 | `private double postAuditDriftWorst` |  |
-| 15808 | `private final java.util.Map<String, Double> arrears` | What the treasury owes and has not paid, by line and by whom it is owed - "LINE" or "LINE:sector" - in thousands. |
-| 15811 | `private double arrearsRefusedThisMonth, arrearsPaidThisMonth` | This month's arrears: refused and booked, and paid down. |
-| 15814 | `private double arrearsRefusedLifetime, arrearsPaidLifetime` | Refused and paid down since founding, for the playtest's record. |
-| 15822 | `private final java.util.Map<String, Double> arrearsPaidTo` | This month's arrears paid down, by the sector whose till they reached (0.7.55): what its statement's arrears line reads (SectorBooks, arrearsPaid), struck at the settle and read when the month is recorded, both inside... |
-| 16471 | `private long pendingWorkforce` | Set by loadGame() from the save, consumed by the next rebuildSimulationState(). |
-| 18541 | `private boolean bankAllowanceToOpen` | True between reading a save from before 0.7.8 and the end of its load: its bank's allowance is set up there. |
-| 18590 | `private final Denomination denomination` |  |
-| 18868 | `private boolean forcedReform` |  |
+| 14269 | `private String skipFailure` | Why the last fast-forward stopped early, or null. |
+| 14283 | `private GameFiles.Result lastSaveResult` | What the last write attempt did. |
+| 14419 | `private double foreignDebtRaisedThisMonth` |  |
+| 14420 | `private double foreignPrincipalRepaidThisMonth` |  |
+| 14421 | `private double foreignInterestPaidThisMonth` |  |
+| 14473 | `private double cityDebtRaisedThisMonth` | WHAT THE CITY HAS SOLD ITS BANK AND THE BANK HAS NOT YET PAID FOR. |
+| 14493 | `private double cityDiscountThisMonth` | Face value less cash paid, on everything the city issued this month. |
+| 14494 | `private double cityPrincipalRepaidThisMonth` |  |
+| 14508 | `private double cityDebtRaisedForBank` | What the treasury raised, as it stood when the month began. |
+| 14509 | `private double cityDiscountForBank` |  |
+| 14512 | `private double legacyDiscountDue` | A 0.7.0 save's discount on paper saved between its issue and its settle, booked whole at the settle as that save's bank would have. |
+| 14529 | `private double cityPaperSettled` | What the bank handed the treasury for its paper at this month's settle. |
+| 14535 | `private double bankPrincipalRepaidThisMonth` |  |
+| 14573 | `private double couponsToHouseholds, principalToHouseholds, householdsBoughtPaper` | Coupons and principal paid to the households on their paper, and what they paid for it at issue - this month's, for MoneyAudit. |
+| 14582 | `private double couponsToFirms, principalToFirms, firmsBoughtPaper` | ...and the businesses' (CD2, slice 4): the same three figures, for the playtest and the harness. |
+| 14592 | `private double couponsToWorld, principalToWorld, worldBoughtPaper, paperBoughtFromWorld` | ...and the world's (CD2, slice 5), which are declared: its coupon (an income debit) and its principal (a financial outflow) leave the pools for abroad, what it paid at the settle (worldBoughtPaper) is a financial infl... |
+| 14777 | `java.util.function.Consumer<Boolean> settleProbeForTest` | A harness's look at the households either side of their share of the settle (HoldersCheck): false before, true after. |
+| 15255 | `private double centralBankTender` | What the central bank rolls of its own this month: struck at the press (rollMaturities()), taken in the window (rollCentralBankAtIssue()). |
+| 15258 | `private final java.util.List<ParAlone> centralBankAlone` | ...and, with none of the city's term paper sold to add it on to, its par alone, quoted at the press: one issue per paper. |
+| 15424 | `private double buybackToHouseholdsUnsettled, buybackAbroadUnsettled` | What a buyback between two presses paid the households and the world (the holders of a dollar bond among them), carried in the treasury's pool until the next month declares it leaving (MoneyAudit.pools()) - the shape ... |
+| 15426 | `private double buybackToHouseholds, buybackAbroad` | ...and declared this month. |
+| 15479 | `private double treasuryOpening` |  |
+| 15480 | `private double treasuryClosing` |  |
+| 15481 | `private double treasuryRaised` |  |
+| 15482 | `private double treasuryRepaid` |  |
+| 15483 | `private double treasurySurplus` |  |
+| 15484 | `private boolean treasuryRecorded` |  |
+| 15503 | `private double treasuryRaisedSoFar` | What the treasury has raised by issuing paper since the last strike, in local money - the bridge's own counter, press to press. |
+| 15515 | `private double retiredGainSoFar` | The gain (below nothing, a loss) on paper the treasury has retired since the last strike, in local money - the carrying value less the price paid, counted as each buyback happens (repurchaseDebt()), press to press lik... |
+| 15524 | `private double treasuryNotCash` | The part of the month's budget balance that is not cash (CD3): the discount amortised, which the budget charges and the treasury never pays, less the gain on paper retired, which the budget books and the treasury neve... |
+| 15527 | `private final TreasuryJournal treasuryJournal` | The named non-budget movements, this month and last. |
+| 15733 | `private double[] loadedGovernmentMonth` | The government's month as the save carried it, waiting for the rebuild. |
+| 15736 | `private MoneyAudit.Result lastMoneyAudit` | Last month's money-conservation residual. |
+| 15744 | `private double postAuditDrift` | How much moved after the audit struck, which must be nothing. |
+| 15745 | `private String postAuditDriftPool` |  |
+| 15746 | `private double postAuditDriftWorst` |  |
+| 15810 | `private final java.util.Map<String, Double> arrears` | What the treasury owes and has not paid, by line and by whom it is owed - "LINE" or "LINE:sector" - in thousands. |
+| 15813 | `private double arrearsRefusedThisMonth, arrearsPaidThisMonth` | This month's arrears: refused and booked, and paid down. |
+| 15816 | `private double arrearsRefusedLifetime, arrearsPaidLifetime` | Refused and paid down since founding, for the playtest's record. |
+| 15824 | `private final java.util.Map<String, Double> arrearsPaidTo` | This month's arrears paid down, by the sector whose till they reached (0.7.55): what its statement's arrears line reads (SectorBooks, arrearsPaid), struck at the settle and read when the month is recorded, both inside... |
+| 16473 | `private long pendingWorkforce` | Set by loadGame() from the save, consumed by the next rebuildSimulationState(). |
+| 18547 | `private boolean bankAllowanceToOpen` | True between reading a save from before 0.7.8 and the end of its load: its bank's allowance is set up there. |
+| 18596 | `private final Denomination denomination` |  |
+| 18874 | `private boolean forcedReform` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 18851 | **type** `public class Game` |  |
+| 20 | 18857 | **type** `public class Game` |  |
 | 69 | 1 | `public DecisionLog getDecisions()` | The player's decisions, oldest first (0.7.23): what the chart's flags are drawn from. |
 | 80 | 1 | `public AutoBuilder getAutoBuilder()` | Automatic building (0.7.73): its settings, its log and its last pass. |
 | 92 | 1 | `public StrategicReserve getReserve()` | The city's strategic reserve (0.7.85). |
@@ -1334,7 +1334,7 @@
 | 13792 | 3 | `public int getMonthsUntilAutosave()` |  |
 | 13813 | 17 | `public void autosave(String reason)` | Writes the autosave slot, if there is a city to write. |
 
-### THE AUTOSAVE OFF THE CLOCK (UP1, 2026-10-22) (lines 13831-14393)
+### THE AUTOSAVE OFF THE CLOCK (UP1, 2026-10-22) (lines 13831-14395)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -1344,206 +1344,206 @@
 | 13905 | 4 | `public void save(int slot, String slotName)` | Saves to a slot, now, on the calling thread: the live objects, after any background write has finished. |
 | 13915 | 3 | `SaveWriter.Job prepareSaveForChecks(int slot, String slotName)` | For SaveSlotCheck (UP1): the save filled as an autosave fills it, the snapshot taken and nothing written, so a check can read what the writer thread would be handed. |
 | 13920 | 3 | `DataSave liveSaveForChecks()` | For SaveSlotCheck (UP1): the persistent save the setters fill, to measure what a snapshot shares with it. |
-| 13930 | 330 | `private SaveWriter.Job prepareSave(int slot, String slotName, boolean snapshot)` | Fills the save from the city as it stands, asks the map for its bytes and stamps it; everything save() did before it wrote anything. |
-| 14269 | 5 | `public String takeSkipFailure()` |  |
-| 14283 | 1 | `public GameFiles.Result getLastSaveResult()` |  |
-| 14285 | 1 | `public GameFiles getGameFiles()` |  |
-| 14304 | 17 | `public GameFiles.Result[][] writeBooks()` | Writes the run out as plain text, one row a year and one row a decade, and each book's two tables again as CSV beside it (0.7.16). |
-| 14332 | 18 | `public void sendBuildingSave()` | EVERY ID TO THE HIGHEST, NOT AS MANY AS THERE ARE (FR3, 2026-10-19). |
-| 14353 | 17 | `public void loadBuildings()` |  |
-| 14384 | 9 | `public void subtractCash(double amount)` | calculations |
+| 13930 | 332 | `private SaveWriter.Job prepareSave(int slot, String slotName, boolean snapshot)` | Fills the save from the city as it stands, asks the map for its bytes and stamps it; everything save() did before it wrote anything. |
+| 14271 | 5 | `public String takeSkipFailure()` |  |
+| 14285 | 1 | `public GameFiles.Result getLastSaveResult()` |  |
+| 14287 | 1 | `public GameFiles getGameFiles()` |  |
+| 14306 | 17 | `public GameFiles.Result[][] writeBooks()` | Writes the run out as plain text, one row a year and one row a decade, and each book's two tables again as CSV beside it (0.7.16). |
+| 14334 | 18 | `public void sendBuildingSave()` | EVERY ID TO THE HIGHEST, NOT AS MANY AS THERE ARE (FR3, 2026-10-19). |
+| 14355 | 17 | `public void loadBuildings()` |  |
+| 14386 | 9 | `public void subtractCash(double amount)` | calculations |
 
-### PAYING THE WORLD BACK (lines 14394-14534)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 14421 | 1 | `double getForeignDebtRaisedThisMonth()` |  |
-| 14422 | 1 | `public double getForeignPrincipalRepaidThisMonth()` |  |
-| 14423 | 1 | `public double getForeignInterestPaidThisMonth()` |  |
-| 14430 | 5 | `public void repayForeignPrincipal(double usd)` | A slice of USD principal, repaid. |
-| 14452 | 5 | `public void payForeignInterest(double usd)` | A USD coupon. |
-| 14519 | 1 | `public double getCityPaperUnsettled()` | What the bank owes the treasury for paper it has taken and not yet settled: sold between the presses and not yet paid for at the bottom of a month. |
-| 14528 | 1 | `public double getCityPaperSettled()` |  |
-| 14529 | 1 | `double getCityDebtRaisedThisMonth()` |  |
-| 14530 | 1 | `public double getCityPrincipalRepaidThisMonth()` |  |
-| 14532 | 1 | `public double getBankPrincipalRepaidThisMonth()` | ...of which the commercial bank's share, which is what it takes at the settle (0.7.1). |
-
-### THE HOLDERS ARE PAID (0.7.1) (lines 14535-14660)
+### PAYING THE WORLD BACK (lines 14396-14536)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14592 | 1 | `public double getCouponsToHouseholds()` |  |
-| 14593 | 1 | `public double getPrincipalToHouseholds()` |  |
-| 14594 | 1 | `public double getHouseholdsBoughtPaper()` |  |
-| 14595 | 1 | `public double getCouponsToFirms()` |  |
-| 14596 | 1 | `public double getPrincipalToFirms()` |  |
-| 14597 | 1 | `public double getFirmsBoughtPaper()` |  |
-| 14598 | 1 | `public double getCouponsToWorld()` |  |
-| 14599 | 1 | `public double getPrincipalToWorld()` |  |
-| 14600 | 1 | `public double getWorldBoughtPaper()` |  |
-| 14601 | 1 | `public double getPaperBoughtFromWorld()` |  |
-| 14612 | 7 | `private double[] holderShares(Debt paper, double owed)` | Of a payment on this paper, the households', the central bank's and (CD2, slice 4) the businesses' and (slice 5) the world's shares, struck before it: each holder's principal over what is outstanding, times the payment. |
-| 14621 | 16 | `public void payDomesticCoupon(Debt paper, double owed)` | A coupon on the city's own paper, split by holder. |
-| 14639 | 21 | `public void payDomesticPrincipal(Debt paper, double owed)` | Principal on the city's own paper, split by holder: the bank's through subtractCash(), the rest paid now and taken off their holdings. |
+| 14423 | 1 | `double getForeignDebtRaisedThisMonth()` |  |
+| 14424 | 1 | `public double getForeignPrincipalRepaidThisMonth()` |  |
+| 14425 | 1 | `public double getForeignInterestPaidThisMonth()` |  |
+| 14432 | 5 | `public void repayForeignPrincipal(double usd)` | A slice of USD principal, repaid. |
+| 14454 | 5 | `public void payForeignInterest(double usd)` | A USD coupon. |
+| 14521 | 1 | `public double getCityPaperUnsettled()` | What the bank owes the treasury for paper it has taken and not yet settled: sold between the presses and not yet paid for at the bottom of a month. |
+| 14530 | 1 | `public double getCityPaperSettled()` |  |
+| 14531 | 1 | `double getCityDebtRaisedThisMonth()` |  |
+| 14532 | 1 | `public double getCityPrincipalRepaidThisMonth()` |  |
+| 14534 | 1 | `public double getBankPrincipalRepaidThisMonth()` | ...of which the commercial bank's share, which is what it takes at the settle (0.7.1). |
 
-### the desk, for the households (lines 14661-14756)
+### THE HOLDERS ARE PAID (0.7.1) (lines 14537-14662)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14671 | 15 | `private void desksBuysHouseholdPaper(double face, double cash)` | THE BANK BUYS THE HOUSEHOLDS' PAPER (0.7.1), for the waterfall, the spread gone, or a household on its way out of the city: this much face for this much cash, off every piece's household share pro rata, onto the bank'... |
-| 14695 | 15 | `private void desksBuysFirmPaper(double face, double cash)` | THE BANK BUYS THE BUSINESSES' PAPER (CD2, slice 4), for the spread gone, a sector that borrows, or one that wants the money: this much face for this much cash, off every piece's businesses' share pro rata, onto the ba... |
-| 14724 | 19 | `private double desksBuysWorldPaper(double face)` | THE BANK BUYS THE WORLD'S PAPER (CD2, slice 5), when the hot money leaves and takes it with it (worldPaperLeavesWithTheMoney()): this much face, off every piece's world share pro rata, onto the bank's book with the un... |
-| 14752 | 4 | `private void worldPaperLeavesWithTheMoney(double stockBefore)` | ...AND THE PAPER LEAVES WITH THE MONEY (CD2, slice 5, D7). |
+| 14594 | 1 | `public double getCouponsToHouseholds()` |  |
+| 14595 | 1 | `public double getPrincipalToHouseholds()` |  |
+| 14596 | 1 | `public double getHouseholdsBoughtPaper()` |  |
+| 14597 | 1 | `public double getCouponsToFirms()` |  |
+| 14598 | 1 | `public double getPrincipalToFirms()` |  |
+| 14599 | 1 | `public double getFirmsBoughtPaper()` |  |
+| 14600 | 1 | `public double getCouponsToWorld()` |  |
+| 14601 | 1 | `public double getPrincipalToWorld()` |  |
+| 14602 | 1 | `public double getWorldBoughtPaper()` |  |
+| 14603 | 1 | `public double getPaperBoughtFromWorld()` |  |
+| 14614 | 7 | `private double[] holderShares(Debt paper, double owed)` | Of a payment on this paper, the households', the central bank's and (CD2, slice 4) the businesses' and (slice 5) the world's shares, struck before it: each holder's principal over what is outstanding, times the payment. |
+| 14623 | 16 | `public void payDomesticCoupon(Debt paper, double owed)` | A coupon on the city's own paper, split by holder. |
+| 14641 | 21 | `public void payDomesticPrincipal(Debt paper, double owed)` | Principal on the city's own paper, split by holder: the bank's through subtractCash(), the rest paid now and taken off their holdings. |
 
-### THE HOUSEHOLDS TAKE THEIR SHARE (0.7.1) (lines 14757-14889)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 14777 | 32 | `private double householdsTakeTheirShare()` |  |
-| 14826 | 34 | `private double firmsTakeTheirShare(java.util.List<Debt> settling)` | THE BUSINESSES TAKE THEIR SHARE (CD2, slice 4, D33), at the same settle and from the same allotment (Debt.allotFirmsCash(), the auction's fill for them at the clearing yield). |
-| 14877 | 12 | `private double worldTakesItsShare(java.util.List<Debt> settling)` | THE WORLD TAKES ITS SHARE (CD2, slice 5, D7; star 2), at the same settle and from the same allotment (Debt.allotWorldCash(), the auction's fill for the world at the clearing yield - CapitalFlows' rule, the stock it wo... |
-
-### THE HOLDINGS DIAL, AT THE TOP OF THE MONTH (0.7.1) (lines 14890-15153)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 14962 | 67 | `private void openMarketOperation()` |  |
-| 15039 | 29 | `private double buyPaperFromHouseholds(double wanted)` | The rest of a purchase the bank could not fill, from the households' term paper (0.7.15; see THE HOLDINGS DIAL, AT THE TOP OF THE MONTH): pro rata across the pieces they hold that are settled and pay no principal this... |
-| 15081 | 29 | `private double buyPaperFromFirms(double wanted)` | The rest of a purchase the bank and the households could not fill, from the businesses' term paper (CD2, slice 4): the households' path with the businesses' share in its place - pro rata across the pieces they hold th... |
-| 15124 | 29 | `private double buyPaperFromWorld(double wanted)` | The rest of a purchase the others could not fill, from the world (CD2, slice 5): the businesses' path with the world's share in its place - pro rata across the pieces it holds that are settled and pay no principal thi... |
-
-### THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) (lines 15154-15408)
+### the desk, for the households (lines 14663-14758)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15259 | 1 | **type** `private record ParAlone(RollsInto into, double par, DebtQuote quote)` | Its par alone in one paper, on the terms of the rollover's quote for it. |
-| 15262 | 5 | `private static double centralBankShareOf(Debt paper, double principal)` | Its share of a payment of this much principal on this paper: the principal times what it holds over what is outstanding - the split the payment makes (holderShares()). |
-| 15269 | 6 | `public double centralBankParFallingDue()` | The central bank's par in what falls due next month, whether it rolls it or not. |
-| 15281 | 5 | `public double centralBankOverItsDial()` | How far the central bank's holding is over its dial: what it holds past the dial's share of the term paper, or nothing within the holdings step's own tolerance (openMarketOperation()). |
-| 15288 | 4 | `private double centralBankRolls(double par)` | Of this much par of its own falling due, what it rolls at issue: all of it, less what it holds over its dial. |
-| 15294 | 4 | `private boolean termPaperSoldBetweenPresses()` | True if any of the city's own term paper has been sold between the presses and not yet settled: what the central bank's par is added on to. |
-| 15307 | 23 | `private void strikeParAlone()` | At the press, with nothing to add its par on to: the paper each maturing piece it holds part of rolls into in the same structure (rollsInto(), at home), its par in each, priced at the rollover's quote for that paper a... |
-| 15338 | 70 | `private void rollCentralBankAtIssue()` | THE CENTRAL BANK'S ADD-ON, inside the month's window: the par struck at the press, added on to the city's term paper sold between the presses, pro rata to its face, each at its issue's price on each unit of face; or i... |
+| 14673 | 15 | `private void desksBuysHouseholdPaper(double face, double cash)` | THE BANK BUYS THE HOUSEHOLDS' PAPER (0.7.1), for the waterfall, the spread gone, or a household on its way out of the city: this much face for this much cash, off every piece's household share pro rata, onto the bank'... |
+| 14697 | 15 | `private void desksBuysFirmPaper(double face, double cash)` | THE BANK BUYS THE BUSINESSES' PAPER (CD2, slice 4), for the spread gone, a sector that borrows, or one that wants the money: this much face for this much cash, off every piece's businesses' share pro rata, onto the ba... |
+| 14726 | 19 | `private double desksBuysWorldPaper(double face)` | THE BANK BUYS THE WORLD'S PAPER (CD2, slice 5), when the hot money leaves and takes it with it (worldPaperLeavesWithTheMoney()): this much face, off every piece's world share pro rata, onto the bank's book with the un... |
+| 14754 | 4 | `private void worldPaperLeavesWithTheMoney(double stockBefore)` | ...AND THE PAPER LEAVES WITH THE MONEY (CD2, slice 5, D7). |
 
-### a buyback's holders outside the pools (lines 15409-15433)
+### THE HOUSEHOLDS TAKE THEIR SHARE (0.7.1) (lines 14759-14891)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15427 | 3 | `public double getBuybackUnsettled()` | What the treasury has paid out of the pools for a buyback and the audit has not yet seen leave. |
-| 15431 | 1 | `public double getBuybackToHouseholds()` |  |
-| 15432 | 1 | `public double getBuybackAbroad()` |  |
+| 14779 | 32 | `private double householdsTakeTheirShare()` |  |
+| 14828 | 34 | `private double firmsTakeTheirShare(java.util.List<Debt> settling)` | THE BUSINESSES TAKE THEIR SHARE (CD2, slice 4, D33), at the same settle and from the same allotment (Debt.allotFirmsCash(), the auction's fill for them at the clearing yield). |
+| 14879 | 12 | `private double worldTakesItsShare(java.util.List<Debt> settling)` | THE WORLD TAKES ITS SHARE (CD2, slice 5, D7; star 2), at the same settle and from the same allotment (Debt.allotWorldCash(), the auction's fill for the world at the clearing yield - CapitalFlows' rule, the stock it wo... |
 
-### WHAT THE TREASURY ACTUALLY DID (lines 15434-15627)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 15527 | 16 | `private void takeTreasuryMonth()` |  |
-| 15545 | 1 | `public boolean hasTreasuryMonth()` | True once a month has closed. |
-| 15547 | 1 | `public double getTreasuryOpening()` |  |
-| 15548 | 1 | `public double getTreasuryClosing()` |  |
-| 15549 | 1 | `public double getTreasuryRaised()` |  |
-| 15550 | 1 | `public double getTreasuryRepaid()` |  |
-| 15551 | 1 | `public double getTreasurySurplus()` |  |
-| 15554 | 1 | `public double getTreasuryNotCash()` | What the balance charged or booked that the cash did not (CD3): the discount amortised, less the gain on paper retired. |
-| 15557 | 1 | `public double getTreasuryChange()` | What the balance actually did, which is the figure a player watches. |
-| 15567 | 3 | `public double getNetPosition()` | The city's net position (0.7.32, the Finances tab's THE BALANCE): its cash - below nothing when it is overdrawn - less the paper it owes and what its central bank has advanced it. |
-| 15577 | 3 | `public double getNetPositionAtCarrying()` | The same net position with the paper at what the books carry it at (CD3, spec-city-debt.md 5.4): its face less the discount not yet worn off, plus any premium. |
-| 15599 | 4 | `public double getTreasuryUnexplained()` | Everything the three named flows do not explain - the whole of the bridge's last row, "Everything else the treasury did". |
-| 15611 | 3 | `public java.util.List<TreasuryJournal.Entry> getTreasuryJournal()` | Last month's journal: the non-budget movements by name, in the order they happened, signed as the treasury sees them. |
-| 15616 | 1 | `public TreasuryJournal getTreasuryJournalBook()` | The journal itself, for the harnesses that read past the getter above. |
-| 15624 | 3 | `public double getTreasuryResidual()` | What the journal does not explain: the residual after the three named rows AND the journal's lines. |
-
-### FROM EARNED TO THE BUDGET (0.7.31) (lines 15628-15769)
+### THE HOLDINGS DIAL, AT THE TOP OF THE MONTH (0.7.1) (lines 14892-15155)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15665 | 31 | `public java.util.List<TreasuryJournal.Entry> getEarnedToBudget()` | The steps from EARNED to the budget's balance, in the Government bridge's order, signed as they move EARNED (+ adds, - takes away); every line, at nothing too. |
-| 15698 | 5 | `public double getEarnedResidual()` | What the steps leave between EARNED and the budget: the dials moved since the month was struck, and nothing in a month nobody moved one. |
-| 15704 | 7 | `double[] treasuryMonthToSave()` |  |
-| 15712 | 10 | `void restoreTreasuryMonth(double[] saved)` |  |
-| 15747 | 1 | `public double getPostAuditDrift()` | Money that moved after the audit struck. |
-| 15750 | 1 | `public String getPostAuditDriftPool()` | Which pool moved most after the strike, for naming the culprit. |
-| 15752 | 1 | `public double getPostAuditDriftWorst()` |  |
-| 15753 | 1 | `public MoneyAudit.Result getLastMoneyAudit()` |  |
-| 15754 | 4 | `public void InterestExpense(double amount)` |  |
-| 15759 | 3 | `public DebtManager getDebtManager()` |  |
-| 15764 | 4 | `public void printEndOfTurn()` |  |
+| 14964 | 67 | `private void openMarketOperation()` |  |
+| 15041 | 29 | `private double buyPaperFromHouseholds(double wanted)` | The rest of a purchase the bank could not fill, from the households' term paper (0.7.15; see THE HOLDINGS DIAL, AT THE TOP OF THE MONTH): pro rata across the pieces they hold that are settled and pay no principal this... |
+| 15083 | 29 | `private double buyPaperFromFirms(double wanted)` | The rest of a purchase the bank and the households could not fill, from the businesses' term paper (CD2, slice 4): the households' path with the businesses' share in its place - pro rata across the pieces they hold th... |
+| 15126 | 29 | `private double buyPaperFromWorld(double wanted)` | The rest of a purchase the others could not fill, from the world (CD2, slice 5): the businesses' path with the world's share in its place - pro rata across the pieces it holds that are settled and pay no principal thi... |
 
-### THE CENTRAL BANK AND THE TREASURY (0.7.0) (lines 15770-16057)
+### THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) (lines 15156-15410)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15838 | 46 | `private void settleTreasury()` | The treasury's month with its central bank, first thing - inside the audit's window, so every dollar made or destroyed here is one the month declares. |
-| 15896 | 3 | `public double treasuryPays(TreasuryLine line, double amount)` | EVERY PAYMENT THE TREASURY MAKES, through one door (0.7.0). |
-| 15901 | 13 | `double treasuryPays(TreasuryLine line, double amount, String payee)` | ...and with whom a refusal is owed to - a sector's key, or null. |
-| 15923 | 4 | `public double discretionaryRoom()` | What the treasury may spend on something that is not a promise, now. |
-| 15935 | 19 | `private void payDownArrears()` | Pays down what is owed, oldest first, out of cash above zero. |
-| 15963 | 15 | `private double payStudentGrants(double bill)` | The month's student grants, arrears first. |
-| 15988 | 6 | `private double payEiBenefits()` | The month's EI, struck again on the pool the month opens with at the dial as the player left it (Unemployment.restrikeBenefits()) and paid in full - a promise - at the top of the month, where the out of work are credi... |
-| 15995 | 3 | `private static String arrearsKey(TreasuryLine line, String payee)` |  |
-| 15999 | 8 | `private static TreasuryLine arrearsLine(String key)` |  |
-| 16009 | 8 | `private Sector arrearsPayee(String key)` | Whose till an arrear is owed to: the named sector, or the builders for the construction lines. |
-| 16019 | 1 | `public boolean hasArrears()` | True while anything is owed and unpaid. |
-| 16022 | 5 | `public double getArrearsTotal()` | Everything owed and unpaid. |
-| 16029 | 8 | `public java.util.Map<TreasuryLine, Double> getArrearsByLine()` | Owed and unpaid, by line - the Government tab's list, in TreasuryLine's order. |
-| 16039 | 10 | `public double getArrearsOwedTo(String sectorKey)` | Owed and unpaid to one sector's till (0.7.55): every line payDownArrears() would pay it, by the payee it would pay. |
-| 16051 | 1 | `public double getArrearsPaidTo(String sectorKey)` | What the treasury paid this sector's till of its arrears this month (0.7.55) - its statement's arrears line. |
-| 16053 | 1 | `public double getArrearsRefusedThisMonth()` |  |
-| 16054 | 1 | `public double getArrearsPaidThisMonth()` |  |
-| 16055 | 1 | `public double getArrearsRefusedLifetime()` |  |
-| 16056 | 1 | `public double getArrearsPaidLifetime()` |  |
+| 15261 | 1 | **type** `private record ParAlone(RollsInto into, double par, DebtQuote quote)` | Its par alone in one paper, on the terms of the rollover's quote for it. |
+| 15264 | 5 | `private static double centralBankShareOf(Debt paper, double principal)` | Its share of a payment of this much principal on this paper: the principal times what it holds over what is outstanding - the split the payment makes (holderShares()). |
+| 15271 | 6 | `public double centralBankParFallingDue()` | The central bank's par in what falls due next month, whether it rolls it or not. |
+| 15283 | 5 | `public double centralBankOverItsDial()` | How far the central bank's holding is over its dial: what it holds past the dial's share of the term paper, or nothing within the holdings step's own tolerance (openMarketOperation()). |
+| 15290 | 4 | `private double centralBankRolls(double par)` | Of this much par of its own falling due, what it rolls at issue: all of it, less what it holds over its dial. |
+| 15296 | 4 | `private boolean termPaperSoldBetweenPresses()` | True if any of the city's own term paper has been sold between the presses and not yet settled: what the central bank's par is added on to. |
+| 15309 | 23 | `private void strikeParAlone()` | At the press, with nothing to add its par on to: the paper each maturing piece it holds part of rolls into in the same structure (rollsInto(), at home), its par in each, priced at the rollover's quote for that paper a... |
+| 15340 | 70 | `private void rollCentralBankAtIssue()` | THE CENTRAL BANK'S ADD-ON, inside the month's window: the par struck at the press, added on to the city's term paper sold between the presses, pro rata to its face, each at its issue's price on each unit of face; or i... |
 
-### BUYING YOUR OWN DEBT BACK (lines 16058-16330)
+### a buyback's holders outside the pools (lines 15411-15435)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 16075 | 6 | `public double fairValueOf(Debt debt)` | What one piece is worth to somebody who does not care to hold it, right now: at the curve's rate for the months it has left (0.7.1) - DebtManager.marketValue(), the same curve it was issued on. |
-| 16087 | 5 | `public BookDesk bookDesk()` | THE DEBT DESK (CD6): the book page's figures, a line a piece (BookDesk). |
-| 16094 | 5 | `public BookDesk.Line bookLine(Debt debt)` | ...and one line of it, for a line's page (CD6): the market struck once, as bookDesk() strikes it, and the line read (BookDesk.line()). |
-| 16110 | 3 | `public double quoteRepurchase(Debt debt)` | What clearing the whole of one piece that can be cleared would cost right now (CD4): the reverse auction's price for everything its holders offer, the central bank's face excepted (D18), at any price - the sum of the ... |
-| 16122 | 3 | `public double repurchaseGain(Debt debt)` | What the city would book as a gain (positive) or loss (negative) from clearing what quoteRepurchase() clears: the carrying value of that face less the price (CD3) - what the books hold it at against what buying it bac... |
-| 16127 | 5 | `public double buybackOfferable(Debt debt)` | The face of a piece its holders can offer: the principal less the central bank's, which does not sell (D18); a dollar piece's all of it, the world's alone (D26). |
-| 16156 | 23 | `public Buyback.Result quoteBuyback(Debt debt, double face, double maxPer100)` | THE REVERSE AUCTION, QUOTED (CD4, spec-city-debt.md section 6.2): what buying back this much face of one piece, at no more than this per 100, would take and cost, struck once on the market as it stands - nothing is mo... |
-| 16187 | 7 | `public Buyback.HonestLine honestLine(Debt debt, Buyback.Result q)` | THE HONEST LINE (CD6, spec-city-debt.md section 6.3), struck from a quote: a buyback's gain is real on the statement, but the cash to pay for it costs today's rate. |
-| 16196 | 3 | `private static boolean takesTheWholePiece(double taken, double principal)` | True when this much face is the whole of a piece's principal: all of it but the dust that slices of a holding leave. |
-| 16225 | 95 | `public Buyback.Result buyBack(Debt debt, double face, double maxPer100)` | Buys one bond back, in whole or in part, and takes what it bought off the books: the reverse auction of quoteBuyback(), struck and paid. |
-| 16327 | 3 | `public double repurchaseDebt(Debt debt)` | Buys back everything the holders offer of one bond, at any price: the thin form of buyBack() the buttons before CD4 knew. |
+| 15429 | 3 | `public double getBuybackUnsettled()` | What the treasury has paid out of the pools for a buyback and the audit has not yet seen leave. |
+| 15433 | 1 | `public double getBuybackToHouseholds()` |  |
+| 15434 | 1 | `public double getBuybackAbroad()` |  |
 
-### the call (CD4, spec-city-debt.md section 6.4; D22, D23, D24) (lines 16331-16472)
+### WHAT THE TREASURY ACTUALLY DID (lines 15436-15629)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 16344 | 3 | `public double rateVolatility()` | The volatility of the city's own short rate, a year (D23): the standard deviation of the monthly changes of History's "interestRate" series over the last CallTree.VOL_MONTHS, times the square root of twelve, never und... |
-| 16355 | 7 | `public boolean canCall(Debt debt)` | True when this piece can be called now: a callable bond of the city's own, on the books, whose first call month has come (LongTermBond .isCallableNow()) and which has nothing unsettled - a line sold last month has buy... |
-| 16364 | 3 | `public double callCost(Debt debt)` | What calling this piece costs: its outstanding principal, 100 per 100 (CallTree.CALL_PRICE), paid to every holder, the central bank's too. |
-| 16374 | 3 | `public double callGain(Debt debt)` | What calling the line books as a gain (a loss below nothing) against its carrying value (CD6): what it is carried at less callCost() - the figure callLine() adds to the month's gain on debt retired (NationalAccounts.g... |
-| 16385 | 5 | `public double callSaving(Debt debt)` | The present value a call would save (D24): the line's remaining payments at today's curve, as a bond that cannot be called, less what the call pays and less what selling the paper again costs - the auction's fee (issu... |
-| 16397 | 4 | `public boolean worthCalling(Debt debt)` | True when calling this callable line is worth it (D24): the saving (callSaving()) passes CallTree.WORTH_CALLING of the face, 3%. |
-| 16424 | 40 | `public double callLine(Debt debt)` | Calls one line whole at 100 (CD4): every holder is paid its face - the bank, the households, the businesses, the world and the central bank, which has no say in it (a call is the paper's own term, not a sale a holder ... |
+| 15529 | 16 | `private void takeTreasuryMonth()` |  |
+| 15547 | 1 | `public boolean hasTreasuryMonth()` | True once a month has closed. |
+| 15549 | 1 | `public double getTreasuryOpening()` |  |
+| 15550 | 1 | `public double getTreasuryClosing()` |  |
+| 15551 | 1 | `public double getTreasuryRaised()` |  |
+| 15552 | 1 | `public double getTreasuryRepaid()` |  |
+| 15553 | 1 | `public double getTreasurySurplus()` |  |
+| 15556 | 1 | `public double getTreasuryNotCash()` | What the balance charged or booked that the cash did not (CD3): the discount amortised, less the gain on paper retired. |
+| 15559 | 1 | `public double getTreasuryChange()` | What the balance actually did, which is the figure a player watches. |
+| 15569 | 3 | `public double getNetPosition()` | The city's net position (0.7.32, the Finances tab's THE BALANCE): its cash - below nothing when it is overdrawn - less the paper it owes and what its central bank has advanced it. |
+| 15579 | 3 | `public double getNetPositionAtCarrying()` | The same net position with the paper at what the books carry it at (CD3, spec-city-debt.md 5.4): its face less the discount not yet worn off, plus any premium. |
+| 15601 | 4 | `public double getTreasuryUnexplained()` | Everything the three named flows do not explain - the whole of the bridge's last row, "Everything else the treasury did". |
+| 15613 | 3 | `public java.util.List<TreasuryJournal.Entry> getTreasuryJournal()` | Last month's journal: the non-budget movements by name, in the order they happened, signed as the treasury sees them. |
+| 15618 | 1 | `public TreasuryJournal getTreasuryJournalBook()` | The journal itself, for the harnesses that read past the getter above. |
+| 15626 | 3 | `public double getTreasuryResidual()` | What the journal does not explain: the residual after the three named rows AND the journal's lines. |
 
-### WHY LAND IS NOT IN THE RENT FLOOR (lines 16473-18585)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 16541 | 20 | `public double marginalHousingCost()` | What it costs to supply one more person of dwelling capacity, today. |
-| 16562 | 330 | `private void rebuildSimulationState()` |  |
-| 16956 | 26 | `private static String refusal(int slot, DataSave loaded)` | Why a save would not load, or null when it would: the three refusals below, each logged, its file untouched. |
-| 16992 | 21 | `private String refusalBeforeRebuild(int slot)` | Why loadGameSave() must not rebuild the world for this slot, or null when it may (FW1, 0.8.37). |
-| 17015 | 10 | `public void loadGame(int slot)` | Load game |
-| 17033 | 22 | `private void readTheMap(int slot, Long stamp)` | THE CITY MAP, READ BACK (0.7.60): from the slot's sidecar when the save's stamp is its stamp and it was drawn on this land in this month (CityMap.readSidecar()); a save that had a map whose sidecar is missing or stale... |
-| 17092 | 11 | `private void restoreOilPools(DataSave loaded)` | THE TWO OIL POOLS ON A LOAD (0.7.93, batch O10b; LandManager's THE TWO OIL POOLS): once the land is in place, the offshore pool's E as saved - or, on a save from before SAVE_FORMAT 35, the one pool's E charged to the ... |
-| 17104 | 60 | `private boolean restoreLandOnTheWorld(DataSave loaded, double owned)` |  |
-| 17166 | 1362 | `private void readTheSave(int slot)` | The load itself; see loadGame(). |
-| 18535 | 4 | `void seedFundLedger()` | THE FUND'S COST BASIS FOR A SAVE FROM BEFORE IT (0.7.39; the project's spec-fund-0739.md, 3.5): each market lot and bond at its market value this month, flagged as such, the rescue lot exact from the counters, one TRA... |
-| 18544 | 41 | `public void loadHistory(int slot)` |  |
-
-### THE CURRENCY REFORM (lines 18586-18875)
+### FROM EARNED TO THE BUDGET (0.7.31) (lines 15630-15771)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 18597 | 17 | `private void seedMoneyConstants(double unit)` | Seeds every money constant struck in founding dollars at a unit: the load path's list since the reform, and since FX4 also buildWorld()'s at 1, so a new city does not keep the last loaded city's unit. |
-| 18615 | 1 | `public Denomination getDenomination()` |  |
-| 18618 | 3 | `public boolean canReformCurrency()` | Whether the reform button should be showing. |
-| 18649 | 203 | `public boolean reformCurrency(double factor)` | Lops zeros off the currency: one new dollar for `factor` old ones. |
-| 18863 | 4 | `boolean reformCurrencyForTest(double factor)` | The reform without the price-level gate, for a harness. |
+| 15667 | 31 | `public java.util.List<TreasuryJournal.Entry> getEarnedToBudget()` | The steps from EARNED to the budget's balance, in the Government bridge's order, signed as they move EARNED (+ adds, - takes away); every line, at nothing too. |
+| 15700 | 5 | `public double getEarnedResidual()` | What the steps leave between EARNED and the budget: the dials moved since the month was struck, and nothing in a month nobody moved one. |
+| 15706 | 7 | `double[] treasuryMonthToSave()` |  |
+| 15714 | 10 | `void restoreTreasuryMonth(double[] saved)` |  |
+| 15749 | 1 | `public double getPostAuditDrift()` | Money that moved after the audit struck. |
+| 15752 | 1 | `public String getPostAuditDriftPool()` | Which pool moved most after the strike, for naming the culprit. |
+| 15754 | 1 | `public double getPostAuditDriftWorst()` |  |
+| 15755 | 1 | `public MoneyAudit.Result getLastMoneyAudit()` |  |
+| 15756 | 4 | `public void InterestExpense(double amount)` |  |
+| 15761 | 3 | `public DebtManager getDebtManager()` |  |
+| 15766 | 4 | `public void printEndOfTurn()` |  |
+
+### THE CENTRAL BANK AND THE TREASURY (0.7.0) (lines 15772-16059)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 15840 | 46 | `private void settleTreasury()` | The treasury's month with its central bank, first thing - inside the audit's window, so every dollar made or destroyed here is one the month declares. |
+| 15898 | 3 | `public double treasuryPays(TreasuryLine line, double amount)` | EVERY PAYMENT THE TREASURY MAKES, through one door (0.7.0). |
+| 15903 | 13 | `double treasuryPays(TreasuryLine line, double amount, String payee)` | ...and with whom a refusal is owed to - a sector's key, or null. |
+| 15925 | 4 | `public double discretionaryRoom()` | What the treasury may spend on something that is not a promise, now. |
+| 15937 | 19 | `private void payDownArrears()` | Pays down what is owed, oldest first, out of cash above zero. |
+| 15965 | 15 | `private double payStudentGrants(double bill)` | The month's student grants, arrears first. |
+| 15990 | 6 | `private double payEiBenefits()` | The month's EI, struck again on the pool the month opens with at the dial as the player left it (Unemployment.restrikeBenefits()) and paid in full - a promise - at the top of the month, where the out of work are credi... |
+| 15997 | 3 | `private static String arrearsKey(TreasuryLine line, String payee)` |  |
+| 16001 | 8 | `private static TreasuryLine arrearsLine(String key)` |  |
+| 16011 | 8 | `private Sector arrearsPayee(String key)` | Whose till an arrear is owed to: the named sector, or the builders for the construction lines. |
+| 16021 | 1 | `public boolean hasArrears()` | True while anything is owed and unpaid. |
+| 16024 | 5 | `public double getArrearsTotal()` | Everything owed and unpaid. |
+| 16031 | 8 | `public java.util.Map<TreasuryLine, Double> getArrearsByLine()` | Owed and unpaid, by line - the Government tab's list, in TreasuryLine's order. |
+| 16041 | 10 | `public double getArrearsOwedTo(String sectorKey)` | Owed and unpaid to one sector's till (0.7.55): every line payDownArrears() would pay it, by the payee it would pay. |
+| 16053 | 1 | `public double getArrearsPaidTo(String sectorKey)` | What the treasury paid this sector's till of its arrears this month (0.7.55) - its statement's arrears line. |
+| 16055 | 1 | `public double getArrearsRefusedThisMonth()` |  |
+| 16056 | 1 | `public double getArrearsPaidThisMonth()` |  |
+| 16057 | 1 | `public double getArrearsRefusedLifetime()` |  |
+| 16058 | 1 | `public double getArrearsPaidLifetime()` |  |
+
+### BUYING YOUR OWN DEBT BACK (lines 16060-16332)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 16077 | 6 | `public double fairValueOf(Debt debt)` | What one piece is worth to somebody who does not care to hold it, right now: at the curve's rate for the months it has left (0.7.1) - DebtManager.marketValue(), the same curve it was issued on. |
+| 16089 | 5 | `public BookDesk bookDesk()` | THE DEBT DESK (CD6): the book page's figures, a line a piece (BookDesk). |
+| 16096 | 5 | `public BookDesk.Line bookLine(Debt debt)` | ...and one line of it, for a line's page (CD6): the market struck once, as bookDesk() strikes it, and the line read (BookDesk.line()). |
+| 16112 | 3 | `public double quoteRepurchase(Debt debt)` | What clearing the whole of one piece that can be cleared would cost right now (CD4): the reverse auction's price for everything its holders offer, the central bank's face excepted (D18), at any price - the sum of the ... |
+| 16124 | 3 | `public double repurchaseGain(Debt debt)` | What the city would book as a gain (positive) or loss (negative) from clearing what quoteRepurchase() clears: the carrying value of that face less the price (CD3) - what the books hold it at against what buying it bac... |
+| 16129 | 5 | `public double buybackOfferable(Debt debt)` | The face of a piece its holders can offer: the principal less the central bank's, which does not sell (D18); a dollar piece's all of it, the world's alone (D26). |
+| 16158 | 23 | `public Buyback.Result quoteBuyback(Debt debt, double face, double maxPer100)` | THE REVERSE AUCTION, QUOTED (CD4, spec-city-debt.md section 6.2): what buying back this much face of one piece, at no more than this per 100, would take and cost, struck once on the market as it stands - nothing is mo... |
+| 16189 | 7 | `public Buyback.HonestLine honestLine(Debt debt, Buyback.Result q)` | THE HONEST LINE (CD6, spec-city-debt.md section 6.3), struck from a quote: a buyback's gain is real on the statement, but the cash to pay for it costs today's rate. |
+| 16198 | 3 | `private static boolean takesTheWholePiece(double taken, double principal)` | True when this much face is the whole of a piece's principal: all of it but the dust that slices of a holding leave. |
+| 16227 | 95 | `public Buyback.Result buyBack(Debt debt, double face, double maxPer100)` | Buys one bond back, in whole or in part, and takes what it bought off the books: the reverse auction of quoteBuyback(), struck and paid. |
+| 16329 | 3 | `public double repurchaseDebt(Debt debt)` | Buys back everything the holders offer of one bond, at any price: the thin form of buyBack() the buttons before CD4 knew. |
+
+### the call (CD4, spec-city-debt.md section 6.4; D22, D23, D24) (lines 16333-16474)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 16346 | 3 | `public double rateVolatility()` | The volatility of the city's own short rate, a year (D23): the standard deviation of the monthly changes of History's "interestRate" series over the last CallTree.VOL_MONTHS, times the square root of twelve, never und... |
+| 16357 | 7 | `public boolean canCall(Debt debt)` | True when this piece can be called now: a callable bond of the city's own, on the books, whose first call month has come (LongTermBond .isCallableNow()) and which has nothing unsettled - a line sold last month has buy... |
+| 16366 | 3 | `public double callCost(Debt debt)` | What calling this piece costs: its outstanding principal, 100 per 100 (CallTree.CALL_PRICE), paid to every holder, the central bank's too. |
+| 16376 | 3 | `public double callGain(Debt debt)` | What calling the line books as a gain (a loss below nothing) against its carrying value (CD6): what it is carried at less callCost() - the figure callLine() adds to the month's gain on debt retired (NationalAccounts.g... |
+| 16387 | 5 | `public double callSaving(Debt debt)` | The present value a call would save (D24): the line's remaining payments at today's curve, as a bond that cannot be called, less what the call pays and less what selling the paper again costs - the auction's fee (issu... |
+| 16399 | 4 | `public boolean worthCalling(Debt debt)` | True when calling this callable line is worth it (D24): the saving (callSaving()) passes CallTree.WORTH_CALLING of the face, 3%. |
+| 16426 | 40 | `public double callLine(Debt debt)` | Calls one line whole at 100 (CD4): every holder is paid its face - the bank, the households, the businesses, the world and the central bank, which has no say in it (a call is the paper's own term, not a sale a holder ... |
+
+### WHY LAND IS NOT IN THE RENT FLOOR (lines 16475-18591)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 16543 | 20 | `public double marginalHousingCost()` | What it costs to supply one more person of dwelling capacity, today. |
+| 16564 | 330 | `private void rebuildSimulationState()` |  |
+| 16958 | 26 | `private static String refusal(int slot, DataSave loaded)` | Why a save would not load, or null when it would: the three refusals below, each logged, its file untouched. |
+| 16994 | 21 | `private String refusalBeforeRebuild(int slot)` | Why loadGameSave() must not rebuild the world for this slot, or null when it may (FW1, 0.8.37). |
+| 17017 | 10 | `public void loadGame(int slot)` | Load game |
+| 17035 | 22 | `private void readTheMap(int slot, Long stamp)` | THE CITY MAP, READ BACK (0.7.60): from the slot's sidecar when the save's stamp is its stamp and it was drawn on this land in this month (CityMap.readSidecar()); a save that had a map whose sidecar is missing or stale... |
+| 17094 | 11 | `private void restoreOilPools(DataSave loaded)` | THE TWO OIL POOLS ON A LOAD (0.7.93, batch O10b; LandManager's THE TWO OIL POOLS): once the land is in place, the offshore pool's E as saved - or, on a save from before SAVE_FORMAT 35, the one pool's E charged to the ... |
+| 17106 | 60 | `private boolean restoreLandOnTheWorld(DataSave loaded, double owned)` |  |
+| 17168 | 1366 | `private void readTheSave(int slot)` | The load itself; see loadGame(). |
+| 18541 | 4 | `void seedFundLedger()` | THE FUND'S COST BASIS FOR A SAVE FROM BEFORE IT (0.7.39; the project's spec-fund-0739.md, 3.5): each market lot and bond at its market value this month, flagged as such, the rescue lot exact from the counters, one TRA... |
+| 18550 | 41 | `public void loadHistory(int slot)` |  |
+
+### THE CURRENCY REFORM (lines 18592-18881)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 18603 | 17 | `private void seedMoneyConstants(double unit)` | Seeds every money constant struck in founding dollars at a unit: the load path's list since the reform, and since FX4 also buildWorld()'s at 1, so a new city does not keep the last loaded city's unit. |
+| 18621 | 1 | `public Denomination getDenomination()` |  |
+| 18624 | 3 | `public boolean canReformCurrency()` | Whether the reform button should be showing. |
+| 18655 | 203 | `public boolean reformCurrency(double factor)` | Lops zeros off the currency: one new dollar for `factor` old ones. |
+| 18869 | 4 | `boolean reformCurrencyForTest(double factor)` | The reform without the price-level gate, for a harness. |
 

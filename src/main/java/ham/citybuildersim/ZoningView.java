@@ -10,7 +10,8 @@ import java.util.List;
  * held ground, the bare ground and the open forest free for anyone, and the
  * forest the law keeps - the zones a row each, a sector's page before and
  * after a staged zone, and the forest law's page before and after a staged
- * law.
+ * law; since FW8, the zones short of what they want, the Policy hub's
+ * WHAT IS BITING flag.
  *
  * WHY. Z1 (0.7.107) built zoning and the forest law as a model with doors
  * (Game.setZone(), removeZone(), setForestLaw(), setZoneTax()) and a preview
@@ -249,6 +250,66 @@ public final class ZoningView {
                 land.heldBy(sector), z.priceShare(), land.groundPriceFor(sector), at.priceGivenUp(), at.taxRelief(),
                 rate, offset, paid);
     }
+
+    /* =====================================================================
+       WHAT IS BITING'S ZONING FLAG (FW8, 2026-10-25)
+
+       The Policy hub's WHAT IS BITING names the levers forcing somebody's
+       hand, and zoning was not one of them (Z2 left it, 0.7.109). A zone
+       forces it when it is short: the zones together want more than the
+       free ground, so each holds the same share of its want (Z10), its
+       sector cannot build out its zone, and nothing is left free for anyone
+       else. The flag's figures and its words are here, held by
+       ZoningViewCheck 9, as NEEDS YOU's GROUND row's are CityNeeds'; the hub
+       (ui/PolicyScreen.policyFlags()) only paints them.
+       ===================================================================== */
+
+    /**
+     * The zones short of what they want, as WHAT IS BITING flags them.
+     *
+     * @param rows     the short zones' rows (Row.isShort()), in the zones' order
+     * @param wantSqFt what they want together: each one's size less what its sector has built in it
+     * @param heldSqFt ...and what they hold of it: all the free ground there is (LandManager.getFreeSqFt())
+     * @param heading  the flag's heading: "Mining's zone holds less than it wants", "2 zones hold less than they want"
+     * @param body     ...and what it means, the figures its first sentence
+     */
+    public record Shortfall(List<Row> rows, double wantSqFt, double heldSqFt, String heading, String body) {
+        /** The share of its want each holds, the same for every short zone (Z10). */
+        public double share() { return wantSqFt > 0 ? heldSqFt / wantSqFt : 1; }
+    }
+
+    /** The zones short of what they want; null when every zone holds what it wants (no zone, or the free ground covers them). */
+    public static Shortfall shortfall(Game g) {
+        List<Row> rows = new ArrayList<>();
+        double want = 0, held = 0;
+        for (Row r : zones(g)) {
+            if (!r.isShort()) continue;
+            rows.add(r);
+            want += r.wantSqFt();
+            held += r.heldSqFt();
+        }
+        if (rows.isEmpty()) return null;
+        boolean one = rows.size() == 1;
+        String heading = one ? possessive(nameOf(g, rows.get(0).sector())) + " zone holds less than it wants"
+                : rows.size() + " zones hold less than they want";
+        String body = (one ? "It holds " : "They hold ")
+                + (held > 0 ? LandManager.areaWords(held) + " of the " : "none of the ")
+                + LandManager.areaWords(want) + (one ? " it wants" : " they want")
+                + (held > 0 ? ": all the free ground there is" + (one ? "" : ", each the same share of what it wants")
+                        + ". Nothing is left for anyone else to build on."
+                        : ": the city has no free ground.")
+                + (one ? " Buying land fills it; a smaller zone wants less." : " Buying land fills them; smaller zones want less.");
+        return new Shortfall(List.copyOf(rows), want, held, heading, body);
+    }
+
+    /** A sector's name as the screens write it: its label, or its key for a sector the city does not have. */
+    static String nameOf(Game g, String sector) {
+        Sector s = g.getSectors().byKey(sector);
+        return s == null ? sector : s.label();
+    }
+
+    /** "Agriculture's", "Restaurants'". */
+    static String possessive(String name) { return name + (name.endsWith("s") ? "'" : "'s"); }
 
     /* =====================================================================
        A SECTOR'S PAGE (board 2), BEFORE AND AFTER

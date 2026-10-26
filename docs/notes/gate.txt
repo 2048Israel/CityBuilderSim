@@ -1,8 +1,8 @@
-# gate of Merge batch/ET4: highways and rail priced by slope: cuts, viaducts, tunnels, 0.8.47
+# gate of Merge batch/FW10: a full-screen chart with a wrapped legend is a row too tall: `TimeChart.heightBesidePlot()` assumes a one-row toolbar, so the foot is cut, 0.8.50
 # date: 2026-10-25
 # earth-2.bin: named
-# suite: 142 harnesses run in 1061s: 141 passed, 1 failed
-# timing: 11 harnesses run in 316s: 10 passed, 1 failed
+# suite: 144 harnesses run in 1067s: 143 passed, 1 failed
+# timing: 11 harnesses run in 331s: 10 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

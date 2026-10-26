@@ -18,6 +18,55 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.50 — FW10, the full-screen chart's foot stays on the screen — 2026-10-25, ready, see docs/queue/FW10-notes.md
+City History's chart in full screen, with many lines picked, ran past the
+window's foot: `TimeChart.heightBesidePlot()` counted the toolbar as one row of
+34 px, where a row is 27 and each row the legend wraps to adds about 29, so from
+three rows the overview strip and the caption were cut (at 1280x720, 16 lines
+ended 43 px below the window). The chart now measures what stands beside its
+plot at the width it is drawn at, and `fitTo()` gives the plot what is left.
+ChartFitCheck lays it out at four window sizes with 2 to 16 lines: red on
+main's sizing (23 FAIL), green on the fix. Renders in `docs/queue/FW10/`. The
+model is untouched; no ensemble.
+
+### 0.8.49 — FW9, ScaleCheck's copy tracks its city — 2026-10-25, ready, see docs/queue/FW9-notes.md
+ScaleCheck's copies lost their people: a 1,000-times copy of the playtest's
+town lost 1.3% of them in its first month and 6.1% in six, and its treasury
+went negative. The founding endowments were one founded city's: the 100
+household places, the founding care and police, the grid and the wells. A city
+now holds a saved count of them, 1 for every founded city, and `scale()` gives
+its copy K; at 1 nothing moves, and the trace is byte-identical. The scaler now
+scales the bond market, the exchange, the register of shares, the fund, the
+bank's records and about fifty more keys. The households' shares and bonds stay
+per household, and the registers still add up. ScaleCheck 9 holds the copy to K
+times its town within 1.5% for six months (red on main's scaler, 5 FAIL).
+OrderSearchCheck's twin trims at a 40% policy rate. No ensemble.
+
+### 0.8.48 — FW8, WHAT IS BITING flags a zone short of what it wants — 2026-10-25, ready, see docs/queue/FW8-notes.md
+The Policy hub's WHAT IS BITING had no zoning flag. Now a zone short of what
+it wants raises one: the zones together want more than the free ground, so
+each holds the same share of its want and nothing is free for anyone else.
+"Agriculture's zone holds less than it wants" ("It holds 78.5 km² of the 90
+km² it wants"), or "2 zones hold less than they want", with a door to the
+zone's page or to Zoning's The ground. The figures and words are the model's
+(`ZoningView.shortfall()`); the hub is not drawn kept. ZoningViewCheck 9
+makes one zone and then two short and asserts the flag, on the hub's own list
+too, and none for a zone with enough or for no zone. The map's zone tint was
+I14's (0.8.0), so nothing is left undone. The month is untouched: no trace
+moved, no ensemble.
+
+### FW7 — a known red told from a NEW one — 2026-10-25, ready, no tag (tooling), see docs/queue/FW7-notes.md
+`AllChecks -q` once showed a second red inside a harness that was already
+red (HealthCheck's upkeep check) as only "HealthCheck FAILED". Now
+`AllChecks -q` and `-f` read main's record of its reds (`docs/notes/gate.txt`,
+which BP1 began and only `ship.sh` writes) and say `known red` or `NEW red: N
+of M red lines` of each failed harness, and `-f` tags every red line `[known]`
+or `[NEW]`. `batch-check.sh` hands AllChecks the record it judges against,
+fails a run where the two judges count differently, and gains `--judge LOG`;
+`ship.sh`'s gate line says `known red only` or `NEW red`. KnownRedsCheck (new)
+causes both cases with a fixture harness and judges its logs through the
+script. The model is untouched: no trace moved, no ensemble.
+
 ### 0.8.47 — ET4, highways and rail priced by slope — 2026-10-25, ready but MapCheck 8 (main's, FW11), see docs/queue/ET4-notes.md
 
 A highway or a railway line (the Elevated Highway, the Rail Spur, the Freight Line) is now a **run**: its land comes from

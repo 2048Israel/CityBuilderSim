@@ -7,7 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -26,7 +28,7 @@ import java.util.regex.Pattern;
  *     java -cp <classes> ham.citybuildersim.AllChecks --timing   the timing harnesses alone (Timing.HARNESSES)
  *
  * Exit status is the number of harnesses that failed, so a build script can
- * stop on it. BuildMenuCheck and KeptCheck need JavaFX on the classpath and are skipped,
+ * stop on it. BuildMenuCheck, KeptCheck and ChartFitCheck need JavaFX on the classpath and are skipped,
  * with a note, when it is not there.
  *
  * -f is for an AI session, where every line printed is read and paid for
@@ -43,6 +45,20 @@ import java.util.regex.Pattern;
  * not counted (Timing). -f counts the SOFT lines in every log, a passing
  * harness's too, and says how many under the summary. --timing runs only the
  * harnesses that time something: what the ship gate runs, hard.
+ *
+ * Known reds (FW7, 2026-10-25): HealthCheck was once a recorded red of main's
+ * and a second assertion in it went red; -q threw each harness's output away
+ * and printed "HealthCheck FAILED", the same as the day before, so nobody saw
+ * it. -q now keeps each output in target/checks/NAME.log as -f does, and both
+ * read main's record of its reds (docs/notes/gate.txt as ship.sh writes it,
+ * or the file named by -Dcbs.knownReds, which is what batch-check.sh gives
+ * it) and say of every failed harness "known red" when each of its red lines
+ * is in the record, "NEW red: N of M red lines" when not. -f also tags each
+ * failing line [known] or [NEW], and a last line names the harnesses of each
+ * kind. A red line is what batch-check.sh's reds_of reads from this output,
+ * word for word (redLines), so the two judges count the same. With no record
+ * nothing is tagged and -f prints as it did before. KnownRedsCheck causes both
+ * cases with a fixture of its own.
  */
 public class AllChecks {
 
@@ -57,15 +73,15 @@ public class AllChecks {
         "DenominationCheck",
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck", "ReloadCheck",
-        "SaveSlotCheck", "ScaleCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ClockCheck",
-        "ConsumptionCheck", "SectorBooksCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "StaleCheck", "EnsembleCheck", "TruckCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
+        "SaveSlotCheck", "ScaleCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ChartFitCheck", "ClockCheck",
+        "ConsumptionCheck", "SectorBooksCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
         "IslandNetCheck"
     };
 
     /** The most lines -f prints for one failed harness; the rest stays in its log. */
     static final int FAIL_LINES = 40;
 
-    /** Where -f keeps each harness's whole output. */
+    /** Where -q and -f keep each harness's whole output. */
     static final Path LOGS = Paths.get("target", "checks");
 
     /** A harness's section title, "--- what it proves ---". */
@@ -77,6 +93,24 @@ public class AllChecks {
     /** A line that says something failed: an assertion's FAIL, the "N FAILED" summary, an exception. */
     static final Pattern FAILING = Pattern.compile("\\bFAIL(ED)?\\b|Exception|^\\S*Error\\b|^Caused by");
 
+    /** The line failingLines prints when it left failing lines out: "... 52 failing lines in all: <log>". */
+    static final Pattern IN_ALL = Pattern.compile("^\\.\\.\\. [0-9]+ failing lines in all: ");
+
+    /** Main's recorded reds, one line each after the "#" lines: what ship.sh writes at every gate. */
+    static final Path GATE = Paths.get("docs", "notes", "gate.txt");
+
+    /** The system property that names the record when it is not GATE; batch-check.sh gives it the record it judges against. */
+    static final String KNOWN_PROPERTY = "cbs.knownReds";
+
+    /** The line a log says before the last lines of a harness that died with no failing line of its own. */
+    static final String NO_FAIL_LINE = "(no FAIL line; its last lines:)";
+
+    /** The tag -f puts before a failing line that is in the record; the same width as NEW_TAG. */
+    static final String KNOWN_TAG = "[known] ";
+
+    /** The tag -f puts before a failing line that is not in the record. */
+    static final String NEW_TAG = "[NEW]   ";
+
     public static void main(String[] args) throws Exception {
         boolean quiet = false, failuresOnly = false, timingOnly = false;
         List<String> only = new ArrayList<>();
@@ -86,7 +120,10 @@ public class AllChecks {
             else if (a.equals("--timing")) timingOnly = true;
             else only.add(a.toLowerCase());
         }
-        if (failuresOnly) Files.createDirectories(LOGS);
+        boolean logged = quiet || failuresOnly;   // both keep each harness's output in LOGS, so a verdict can be read from it
+        if (logged) Files.createDirectories(LOGS);
+        Path record = recordFile();
+        Set<String> known = logged ? knownReds(record) : null;
 
         String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         String classpath = System.getProperty("java.class.path");
@@ -94,6 +131,7 @@ public class AllChecks {
 
         int failed = 0, ran = 0, soft = 0;
         List<String> softIn = new ArrayList<>();
+        List<String> knownOnly = new ArrayList<>(), newRed = new ArrayList<>();
         long started = System.currentTimeMillis();
         for (String name : HARNESSES) {
             if (timingOnly && !Timing.HARNESSES.contains(name)) continue;
@@ -102,60 +140,198 @@ public class AllChecks {
                 for (String o : only) if (name.toLowerCase().contains(o)) wanted = true;
                 if (!wanted) continue;
             }
-            if ((name.equals("BuildMenuCheck") || name.equals("KeptCheck")) && !haveFx) {
+            if ((name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("ChartFitCheck")) && !haveFx) {
                 System.out.printf("%-24s skipped (needs JavaFX on the classpath)%n", name);
                 continue;
             }
             long t = System.currentTimeMillis();
-            ProcessBuilder pb = new ProcessBuilder(command(java, classpath, name, failuresOnly));
+            ProcessBuilder pb = new ProcessBuilder(command(java, classpath, name, logged));
             pb.redirectErrorStream(true);
             Path log = LOGS.resolve(name + ".log");
-            if (failuresOnly) {
+            if (logged) {
                 pb.redirectOutput(log.toFile());
-            } else if (quiet) {
-                pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
             } else {
                 pb.inheritIO();
             }
             int code = pb.start().waitFor();
             ran++;
             if (code != 0) failed++;
-            if (failuresOnly) {
+            if (logged) {
                 int n = softLines(log);
                 if (n > 0) { soft += n; softIn.add(name + " " + n); }
             }
-            if (failuresOnly && code == 0) continue;
-            System.out.printf("%-24s %s  (%.1fs)%n", name, code == 0 ? "OK" : "FAILED - exit " + code,
-                    (System.currentTimeMillis() - t) / 1000.0);
-            if (failuresOnly) {
-                try {
-                    for (String line : failingLines(log)) System.out.println("    " + line);
-                } catch (IOException e) {
-                    System.out.println("    (its log could not be read: " + e + "; it is " + log + ")");
-                }
+            double seconds = (System.currentTimeMillis() - t) / 1000.0;
+            if (code == 0) {
+                if (!failuresOnly) System.out.println(header(name, code, seconds));
+                continue;
+            }
+            if (!logged) {   // plain mode: the header, nothing read
+                System.out.println(header(name, code, seconds));
+                continue;
+            }
+            List<String> printed;
+            try {
+                printed = failingLines(log);
+            } catch (IOException e) {   // the one line said instead is a red line of its own, never in the record: a NEW red
+                printed = List.of("(its log could not be read: " + e + "; it is " + log + ")");
+            }
+            for (String line : report(name, code, seconds, printed, failuresOnly, known)) System.out.println(line);
+            if (known != null) {
+                if (newCount(redLines(name, code, printed), known) == 0) knownOnly.add(name);
+                else newRed.add(name);
             }
         }
-        System.out.printf("%n%d harness%s run in %.0fs: %d passed, %d failed%n",
-                ran, ran == 1 ? "" : "es", (System.currentTimeMillis() - started) / 1000.0,
-                ran - failed, failed);
+        System.out.println();
+        System.out.println(summaryLine(ran, failed, (System.currentTimeMillis() - started) / 1000.0));
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
                 soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
-        if (failuresOnly && failed > 0) System.out.println("Whole output of each: " + LOGS + File.separator + "NAME.log");
+        if (logged && failed > 0) {
+            System.out.println(againstLine(record, known, knownOnly, newRed));
+            System.out.println("Whole output of each: " + LOGS + File.separator + "NAME.log");
+        }
         System.exit(failed);
+    }
+
+    /** The first line of a harness's entry: its name, its verdict as a number or OK, and how long it took. */
+    static String header(String name, int code, double seconds) {
+        return String.format("%-24s %s  (%.1fs)", name, code == 0 ? "OK" : "FAILED - exit " + code, seconds);
+    }
+
+    /** The line under the last harness: how many ran and how they ended. */
+    static String summaryLine(int ran, int failed, double seconds) {
+        return String.format("%d harness%s run in %.0fs: %d passed, %d failed",
+                ran, ran == 1 ? "" : "es", seconds, ran - failed, failed);
+    }
+
+    /**
+     * The record this run reads: the file named by -Dcbs.knownReds when that
+     * is set, else GATE.
+     */
+    static Path recordFile() {
+        String named = System.getProperty(KNOWN_PROPERTY);
+        return named == null || named.isBlank() ? GATE : Paths.get(named);
+    }
+
+    /**
+     * Main's recorded reds, as batch-check.sh reads them: the lines of the
+     * file, each exactly as written, but for the lines that start with # and
+     * the blank ones. Null when there is no such file, so that nothing is
+     * tagged. A byte that is not UTF-8 is read as a replacement character,
+     * never thrown.
+     */
+    static Set<String> knownReds(Path file) throws IOException {
+        if (!Files.isRegularFile(file)) return null;
+        Set<String> known = new LinkedHashSet<>();
+        for (String line : new String(Files.readAllBytes(file), StandardCharsets.UTF_8).split("\\R")) {
+            if (line.startsWith("#") || line.isBlank()) continue;
+            known.add(line);
+        }
+        return known;
+    }
+
+    /** How a red line is cut of its blanks: batch-check.sh's reds_of strips spaces and tabs from the front and spaces, tabs and returns from the back. */
+    private static String trimBlanks(String s) {
+        int from = 0, to = s.length();
+        while (from < to && (s.charAt(from) == ' ' || s.charAt(from) == '\t')) from++;
+        while (to > from && (s.charAt(to - 1) == ' ' || s.charAt(to - 1) == '\t' || s.charAt(to - 1) == '\r')) to--;
+        return s.substring(from, to);
+    }
+
+    /**
+     * For each printed line of a failed harness (failingLines, untagged), the
+     * red line it makes, or null when it makes none: a section title, a
+     * blank, and every line after the "(no FAIL line...)" one, which are the
+     * harness's last lines and no failures. The one walk that redLines counts
+     * and report tags from, so the two cannot disagree.
+     */
+    private static String[] redOf(String name, List<String> printed) {
+        String[] red = new String[printed.size()];
+        boolean noFailLine = false;
+        for (int i = 0; i < red.length; i++) {
+            if (noFailLine) break;
+            String p = printed.get(i);
+            if (SECTION.matcher(p).matches()) continue;
+            String t = trimBlanks(p);
+            if (t.equals(NO_FAIL_LINE)) { red[i] = name + " | (no FAIL line)"; noFailLine = true; continue; }
+            if (IN_ALL.matcher(t).find()) t = t.substring(0, t.indexOf(": "));   // the log's path differs by machine
+            if (!t.isEmpty()) red[i] = name + " | " + t;
+        }
+        return red;
+    }
+
+    /**
+     * The red lines of one failed harness, the same lines batch-check.sh's
+     * reds_of makes of the log: "Name | exit N", then "Name | <line>" for each
+     * failing line printed, a section title and the last lines of a harness
+     * with no failing line of its own left out.
+     */
+    static List<String> redLines(String name, int code, List<String> printed) {
+        List<String> red = new ArrayList<>();
+        red.add(name + " | exit " + code);
+        for (String r : redOf(name, printed)) if (r != null) red.add(r);
+        return red;
+    }
+
+    /** How many of the red lines are not in the record. */
+    static int newCount(List<String> red, Set<String> known) {
+        int n = 0;
+        for (String r : red) if (!known.contains(r)) n++;
+        return n;
+    }
+
+    /**
+     * What -q and -f print of one failed harness. The header, then its verdict
+     * when there is a record (known is not null): "known red" when every red
+     * line is in it, else "NEW red: N of M red lines". When lines is true (-f)
+     * the failing lines under it, indented four spaces, each red one tagged
+     * [known] or [NEW]; with no record, untagged as -f always printed them.
+     */
+    static List<String> report(String name, int code, double seconds, List<String> printed, boolean lines, Set<String> known) {
+        String[] redOf = redOf(name, printed);
+        String verdict = "";
+        if (known != null) {
+            List<String> red = redLines(name, code, printed);
+            int fresh = newCount(red, known);
+            verdict = fresh == 0 ? "  known red" : "  NEW red: " + fresh + " of " + red.size() + " red lines";
+        }
+        List<String> out = new ArrayList<>();
+        out.add(header(name, code, seconds) + verdict);
+        if (lines) {
+            for (int i = 0; i < printed.size(); i++) {
+                String tag = redOf[i] == null || known == null ? "" : known.contains(redOf[i]) ? KNOWN_TAG : NEW_TAG;
+                out.add("    " + tag + printed.get(i));
+            }
+        }
+        return out;
+    }
+
+    /**
+     * The one line under the summary that says which harnesses were known reds
+     * only and which had a NEW red; with no record, that none was read. It has
+     * no "harness" in it and does not end in "0 failed": batch-check.sh and
+     * ship.sh find the summary by those.
+     */
+    static String againstLine(Path record, Set<String> known, List<String> knownOnly, List<String> newRed) {
+        String file = record.toString().replace('\\', '/');
+        if (known == null) return "No known reds read (" + file + " not found): every red is untagged";
+        List<String> parts = new ArrayList<>();
+        if (!knownOnly.isEmpty()) parts.add("known red only - " + String.join(", ", knownOnly));
+        if (!newRed.isEmpty()) parts.add("NEW red - " + String.join(", ", newRed));
+        return "Against " + file + ": " + String.join("; ", parts);
     }
 
     /**
      * How a harness is started: the JVM and classpath this one was, the timing
      * property if it is set here (a child JVM inherits no system property, only
-     * JDK_JAVA_OPTIONS), and under -f its output in UTF-8 whatever the
-     * machine's own charset is - on Windows a redirected System.out is Cp1252,
-     * and the first non-ASCII label stopped the run (2026-10-13, MapCheck on
-     * the PC).
+     * JDK_JAVA_OPTIONS), and when its output is kept (-q and -f) in UTF-8
+     * whatever the machine's own charset is - on Windows a redirected
+     * System.out is Cp1252, and the first non-ASCII label stopped the run
+     * (2026-10-13, MapCheck on the PC).
      */
-    static List<String> command(String java, String classpath, String name, boolean failuresOnly) {
+    static List<String> command(String java, String classpath, String name, boolean logged) {
         List<String> c = new ArrayList<>(List.of(java));
         if (Timing.forwarded() != null) c.add(Timing.forwarded());
-        if (failuresOnly) c.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"));
+        if (logged) c.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"));
         c.addAll(List.of("-cp", classpath, "ham.citybuildersim." + name));
         return c;
     }

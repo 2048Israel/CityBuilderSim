@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**143 harness files, 15,006 labelled assertions.** AllChecks runs 143 of them.
+**145 harness files, 15,075 labelled assertions.** AllChecks runs 145 of them.
 
 ## Which harnesses read which class
 
@@ -10,7 +10,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 
 | class | harnesses that mention it |
 |---|---|
-| [AgeBand](map/AgeBand.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck |
+| [AgeBand](map/AgeBand.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, LongPlaytest, ZoningCheck |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DeskCheck, FloatLinkCheck, HoldersCheck, NewGameCheck, RestructureCheck, SaveFileCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
@@ -46,6 +46,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, ChildcareCheck, ExpectationsCheck, HealthCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
 | [CentralBank](map/CentralBank.md) | BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, FloatLinkCheck, ForeignCheck, FundCheck, HoldersCheck, LongPlaytest, MortgageCheck, PolicyPreviewCheck, ScaleCheck |
+| [ChartFitBench](map/ChartFitBench.md) | ChartFitCheck |
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, ReadPathCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
@@ -65,7 +66,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, IndustryViewCheck |
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, MoneyCheck, ReadPathCheck |
 | [CorporateBond](map/CorporateBond.md) | BondCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
-| [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest |
+| [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest, ScaleCheck |
 | [Currency](map/Currency.md) | DenominationCheck, HistoryCheck, LandClassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | EarthTerrainCheck, LandmassCheck, MapCheck, PopulationCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurveCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SectorStatementCheck, TreasuryCheck |
@@ -84,8 +85,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthTerrain](map/EarthTerrain.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
-| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck |
-| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorStatementCheck, WoodProductsCheck |
+| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, EducationCheck, ExpectationsCheck, LongPlaytest, ReadPathCheck, ScaleCheck |
+| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck |
@@ -130,7 +131,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [HistoryScreen](map/HistoryScreen.md) | **none** |
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyPreviewCheck, ReadPathCheck |
-| [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BondCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, WoodProductsCheck |
+| [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BondCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, WoodProductsCheck |
 | [Icons](map/Icons.md) | **none** |
 | [Inbox](map/Inbox.md) | InboxCheck, LandmassCheck, PlaytestFixCheck |
 | [IndustryPicture](map/IndustryPicture.md) | IndustryViewCheck |
@@ -172,7 +173,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Markets](map/Markets.md) | BooksCheck, BuildMenuCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, RailDepotCheck, WoodProductsCheck |
 | [Materials](map/Materials.md) | **none** |
 | [MediumTermBond](map/MediumTermBond.md) | AuctionCheck, BankCheck, CentralBankCheck, DeskCheck, MoneyCheck, RestructureCheck, TreasuryCheck |
-| [Migration](map/Migration.md) | CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck, ReadPathCheck, SaveFileCheck |
+| [Migration](map/Migration.md) | CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck |
 | [MiniMap](map/MiniMap.md) | **none** |
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, ConservationCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PlanCheck, RailDepotCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
@@ -192,7 +193,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [OrphanHousehold](map/OrphanHousehold.md) | OutsideCheck |
 | [OutwardInvestment](map/OutwardInvestment.md) | AuctionCheck, BondCheck, BuybackCheck, CapitalFlowCheck, ExchangeCheck, HoldersCheck, LongPlaytest |
 | [Palette](map/Palette.md) | **none** |
-| [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, TradeCostCheck, WoodProductsCheck |
+| [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OutsideCheck, PopulationCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, TradeCostCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, GroceryCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
@@ -201,7 +202,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, PopulationCheck, SaveFileCheck, ScaleCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
-| [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck |
+| [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck, ScaleCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [ProcessingSector](map/ProcessingSector.md) | BuildCardCheck, CementConcreteCheck, CopperRefiningCheck, HaulageCheck, IndustryViewCheck, MaterialsCheck, WoodProductsCheck |
 | [Quarrying](map/Quarrying.md) | BuildCardCheck, BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
@@ -230,13 +231,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, HomeRailCheck, RailCheck, SectorBooksCheck, TruckCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CementConcreteCheck, ChartCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, HaulageCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, MortgageCheck, OilCheck, OilViewCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
 | [ShipShapes](map/ShipShapes.md) | **none** |
 | [ShortTermTBill](map/ShortTermTBill.md) | AuctionCheck, BankCheck, CentralBankCheck, DeskCheck, FloatLinkCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
-| [Sickness](map/Sickness.md) | LongPlaytest, PopulationCheck, ReadPathCheck, SicknessCheck |
+| [Sickness](map/Sickness.md) | LongPlaytest, PopulationCheck, ReadPathCheck, ScaleCheck, SicknessCheck |
 | [SimulationEngine](map/SimulationEngine.md) | **none** |
 | [SitePreparation](map/SitePreparation.md) | LandClassCheck, RunWorksCheck, SlopeCheck |
 | [SlopeRenders](map/SlopeRenders.md) | **none** |
@@ -252,7 +253,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
-| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
+| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, InboxCheck, InfrastructureCheck, InvestCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
@@ -273,9 +274,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UiProbe](map/UiProbe.md) | **none** |
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
-| [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck |
+| [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, ZoningViewCheck |
 | [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, LongPlaytest, MaterialsCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
-| [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ZoningCheck |
+| [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ScaleCheck, ZoningCheck |
 | [Where](map/Where.md) | **none** |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
@@ -3499,6 +3500,29 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L952 a series with a negative low still gets its air below it, as before
   - L955 ...and one that crosses zero is not floored at it
   - L957 the from-zero path is unchanged: floor 0, top over the largest
+
+## ChartFitCheck.java - 1 labelled assertions
+
+> The full-screen chart's foot is on the screen (FW10): with the legend wrapped to two rows or three,
+> the chart still ends inside the window and the plot takes the room that is left.
+> 
+> WHY THIS EXISTS. Full screen gives the City History chart the whole window and sizes its plot to
+> the window's height less what stands beside the plot (TimeChart.heightBesidePlot()). That was a sum
+> of constants that counted the toolbar as one row; with many lines picked the legend, a flow pane in
+> the toolbar, wraps to two rows and more, and the chart came out a row taller than the window gave it:
+> the overview strip and the caption line were cut off the bottom of the screen (found in 0.7.40 and
+> 0.7.41, open until FW10). Nothing in the model is involved, so no city is played: the chart is laid
+> out on a scene of its own at four window sizes (ChartFitBench, through the screen's own fitToWindow)
+> and the harness reads where its foot lands. Run alone with -Dchartfit.out=DIR it also writes the
+> pictures.
+> ...
+
+- **L57 ChartFitCheck: the full-screen chart's foot is on the screen (FW10)**
+- **L76 the fixture causes the condition: the legend wraps**
+  - L107 three rows are reached at some window size
+- **L109 the foot stands inside the screen**
+- **L121 and the plot takes the room**
+- **L138 the renders**
 
 ## ChildcareCheck.java - 33 labelled assertions
 
@@ -10959,6 +10983,73 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L822 4: what reshapes the page**
 - **L857 5: what the kept month costs**
 
+## KnownRedsCheck.java - 43 labelled assertions
+
+> The harness for AllChecks' known reds (batch FW7): a failed harness is said
+> to be a known red or a NEW one against main's record, line by line, and
+> batch-check.sh judges the same logs the same way.
+> 
+> WHY (FW7, 2026-10-25): HealthCheck was a recorded red of main's, and a second
+> assertion in it went red. AllChecks -q printed "HealthCheck FAILED" as it had
+> the day before and nobody saw it. batch-check.sh already compared the red
+> lines against gate.txt word for word, but AllChecks itself knew nothing of
+> the record, so what a session read of -q and -f could not tell its own reds
+> from main's. A fixture harness (Fixture, below) fails one assertion and then,
+> on request, a second, and this runs it as AllChecks runs a harness, so both
+> cases are caused and not assumed: the same red again is a known red, a second
+> ...
+
+- **L82 1. the fixture's known red**
+- **L88 3. the second**
+- **L164 1. the gate's record of a red harness: its exit, its failing line and its count**
+  - L165 the fixture's first run exits 1
+  - L166 it has exactly three red lines
+  - L168 the first red line is its exit
+  - L169 the second is the failing assertion's line
+  - L171 the third is its count of failures, its last line
+  - L172 the passing line that says FAILS in its words is not a red line
+  - L173 no section title is a red line
+  - L174 the failing lines AllChecks prints do hold a section title, so the walk skipped one
+- **L183 2. the same red again is a known red, under -q and -f**
+  - L184 the record reads back as a set
+  - L186 it holds three lines: the comment and the blank one are not in it
+  - L187 every red line of the fixture's run is in it
+  - L189 under -q the report is one line
+  - L190 and it ends in the words known red
+  - L192 under -f the header ends in the words known red
+  - L195 under -f there are lines under the header besides section titles
+  - L196 every one of them is tagged [known]
+  - L197 none is tagged [NEW]
+  - L198 a section title is printed as it was, with no tag
+- **L207 3. a second failing assertion is a NEW red, and -f names it**
+  - L208 the record was read
+  - L211 the fixture's second run exits 2
+  - L212 some of its red lines are not in the record
+  - L213 the line of the second assertion is one of them
+  - L217 the header says NEW red
+  - L218 it states how many red lines are new and how many there are
+  - L220 the second assertion's line is tagged [NEW]
+  - L222 the first assertion's line is still tagged [known]
+  - L226 the header's count is the [NEW] tags plus one for a new exit line
+  - L228 under -q the report is the header alone, with the same verdict
+- **L236 4. with no record nothing is tagged: -f prints as before FW7**
+  - L237 a record that does not exist reads as null
+  - L239 the header has no verdict, it ends with the time
+  - L240 there are as many lines as the header and the failing lines
+  - L243 each is the failing line, indented four spaces and nothing else
+  - L244 none has a tag
+  - L245 the line under the summary says no record was read
+- **L287 5. batch-check.sh judges the same logs: exit 3 for the known red, exit 4 and the NEW line for the second**
+  - L288 the record was read
+  - L302 the known red, tagged by AllChecks, is judged exit 3
+  - L303 and its verdict line says known red
+  - L304 the second run, tagged, is judged exit 4
+  - L305 and its verdict line says NEW red
+  - L306 and it prints the second assertion's line
+  - L307 a log from before FW7, with no tags, is judged exit 3 as well
+  - L308 a header whose count is not the one batch-check.sh finds is refused, exit 1
+  - L309 and the line says the two judges disagree
+
 ## LabourCheck.java - 94 labelled assertions
 
 > Verifies the labour market: who can hold a job, and what it costs. Not part
@@ -14219,37 +14310,37 @@ _(this harness does not label its checks through a helper - it prints its findin
 > doubles down and halves (Game, THE LARGEST SLICE, WITHOUT COUNTING TO IT).
 > ...
 
-- **L117 1. a long run, every order watched**
-  - L142 the long run
-  - L143 fixture: the run sized orders, and judged them on their interest, refusing some
-  - L145 fixture: ...and bought on a mortgage, trimmed and refused some
-  - L147 the long run
-- **L149 2. the same city, a thousand times over**
-  - L162 the copy loads
-  - L167 the copy
-  - L168 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
-  - L170 the copy
-  - L174 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
-  - L189 the twin loads, at the copy's month
-  - L195 the twin
-  - L196 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
-  - L198 fixture: ...some by more than the counted slices, so the search found them
-  - L199 the twin
-  - L200 fixture: ...and the twin's too
-- **L269 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
-  - L302 on a test that holds on a run from one, the search finds the countdown's slice every time
-  - L303 ...and never asks more than deskCallsMost() times
-  - L327 fixture: some were decided inside the counted slices, and some below them
-  - L329 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
-  - L330 ...and below them it finds a slice that passes with the next one up failing
-- **L336 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
-  - L379 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
-  - L381 every order on the grid is the count's: its size, what trimmed it and the facts for one
-  - L382 ...reading fewer costs than the count
-  - L460 every order's size in
-  - L461 every trim and refusal in
-  - L462 every mortgage in
-  - L463 no order in
+- **L138 1. a long run, every order watched**
+  - L163 the long run
+  - L164 fixture: the run sized orders, and judged them on their interest, refusing some
+  - L166 fixture: ...and bought on a mortgage, trimmed and refused some
+  - L168 the long run
+- **L170 2. the same city, a thousand times over**
+  - L183 the copy loads
+  - L188 the copy
+  - L189 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
+  - L191 the copy
+  - L195 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
+  - L210 the twin loads, at the copy's month
+  - L222 the twin
+  - L223 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
+  - L225 fixture: ...some by more than the counted slices, so the search found them
+  - L226 the twin
+  - L227 fixture: ...and the twin's too
+- **L296 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
+  - L329 on a test that holds on a run from one, the search finds the countdown's slice every time
+  - L330 ...and never asks more than deskCallsMost() times
+  - L354 fixture: some were decided inside the counted slices, and some below them
+  - L356 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
+  - L357 ...and below them it finds a slice that passes with the next one up failing
+- **L363 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
+  - L406 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
+  - L408 every order on the grid is the count's: its size, what trimmed it and the facts for one
+  - L409 ...reading fewer costs than the count
+  - L487 every order's size in
+  - L488 every trim and refusal in
+  - L489 every mortgage in
+  - L490 no order in
 
 ## OutsideCheck.java - 104 labelled assertions
 
@@ -17287,7 +17378,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1392 ...two months on, its history ends at the city's
   - L1393 ...with no month missing (
 
-## ScaleCheck.java - 83 labelled assertions
+## ScaleCheck.java - 86 labelled assertions
 
 > A city past 2^31 people (0.7.53): its counts read back whole, its posts,
 > doors and household places add up to the last one, and a save gives them
@@ -17303,99 +17394,103 @@ _(this harness does not label its checks through a helper - it prints its findin
 > model, the save, the history and the screens.
 > ...
 
-- **L315 1. the fixture, and its copy K times over**
-  - L352 fixture: the founded city has people, posts and homes
-  - L354 fixture: K times its people passes 2^31
-- **L360 2. the counts read back whole**
-  - L364 the slot header of a save past 2^31 people reads (an int could not parse it)
-  - L365 ...and its population is K times the founded city's
-  - L371 the copy loads
-  - L372 its population is K times the founded city's, past 2^31
-  - L373 ...its workforce too, not stuck at 2,147,483,647
-  - L374 ...both past the int ceiling
-  - L387 its ground is K times the founded city's
-  - L388 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
-  - L399 ...its iron as the founded city's: sites and tonnes
-- **L403 3. posts, doors and household places**
-  - L405 every post is K times the founded city's
-  - L406 every home is K times the founded city's
-  - L407 the household places are K times the founded city's, past the city's own 100
-- **L411 4. three months at that size**
-  - L420 the months ran
-  - L421 the population is still past 2^31
-  - L422 ...and is the pyramid's, rounded once
-  - L423 the workforce is still past 2^31
-  - L426 the history's last population is the city's
-  - L427 ...its workforce
-  - L428 ...its posts
-  - L429 ...the people out of work
-  - L430 ...and its homes
-- **L432 5. the save round-trips them**
-  - L434 the city past 2^31 saves
-  - L436 its header reads
-  - L437 ...with the population it was saved with
-  - L443 it loads at the month it was saved
-  - L444 the population came back
-  - L445 ...the workforce
-  - L446 ...the posts
-  - L447 ...the posts filled
-  - L448 ...the people out of work
-  - L449 ...the homes
-  - L450 ...the household places
-  - L452 ...and the history, month for month
-  - L459 the loaded city plays its next month to the same population
-  - L461 ...the same workforce
-  - L462 ...and the same people out of work
-- **L464 6. the sectors free, at 5 and 10 billion**
-  - L479 fixture: the city is growing - more people than a year before
-  - L483 fixture: ...with ground free for a home
-  - L487 fixture: ...and its own rents price no migrant out in the months its copies are read against
-- **L491 7. money at that size reads**
-- **L494 8. the audit's floor at size**
-- **L506 the audit's floor is never under the figures' own step (0.7.63)**
-  - L516 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
-  - L517 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
-  - L521 ...so the cash-flow statement K's copy missed on rounding alone is within it
-  - L527 a cent never moves: a cent or a part in a trillion, at every size, as before
-  - L528 ...and a size that is not a number keeps the floor alone
-- **L534 money at that size reads in its own unit**
-  - L536 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
-  - L537 ...a thousand quadrillion and more is grouped
-  - L538 ...a negative one keeps its sign
-  - L539 ...and a trillion still reads as one
-  - L541 cash() prints every whole dollar a double holds, as before
-  - L543 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
-  - L544 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
-  - L603 the copy loads
-  - L639 every month the population is past 2^31, whole, and the pyramid's rounded once
-  - L640 ...and the posts, the doors and the household places add up exactly, every month
-  - L649 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
-  - L652 ...and its businesses pay the city's price for it
-  - L662 ...and it builds: more homes at the end than at the start
-  - L663 fixture: the free copy ordered - an order sized from more than a million needed,
-  - L796 the month's money audit closes, to the cent (BankCheck and four more)
-  - L805 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
-  - L811 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
-  - L816 the money the audit saw made is the central bank's (LongPlaytest)
-  - L820 M0 moved by the money made (LongPlaytest, already relative)
-  - L828 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
-  - L833 the treasury's window opens where it closed (TreasuryCheck)
-  - L837 the treasury's closing balance is its cash (TreasuryCheck)
-  - L843 the treasury's bridge foots (TreasuryCheck)
-  - L861 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
-  - L864 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
-  - L870 the history's net income is the sector books', to the cent (HistoryCheck)
-  - L877 the history's bank figures are the bank's own, to the cent (HistoryCheck)
-  - L890 ...
-  - L928 no order sized read more waits than one a bit of what it needed, and one more
-  - L929 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
-  - L951 every post,
-  - L954 ...the posts on offer by job type add up to the total
-  - L955 ...and the total is every post less those withheld
-  - L960 every home is the stacks' quantity times their doors
-  - L961 ...and the homes by size add up to it
-  - L963 ...and the landlords' studio and family doors to it too
-  - L965 the household places are the city's 100 and the stacks' places
+- **L375 1. the fixture, and its copy K times over**
+  - L412 fixture: the founded city has people, posts and homes
+  - L414 fixture: K times its people passes 2^31
+- **L420 2. the counts read back whole**
+  - L424 the slot header of a save past 2^31 people reads (an int could not parse it)
+  - L425 ...and its population is K times the founded city's
+  - L431 the copy loads
+  - L432 its population is K times the founded city's, past 2^31
+  - L433 ...its workforce too, not stuck at 2,147,483,647
+  - L434 ...both past the int ceiling
+  - L447 its ground is K times the founded city's
+  - L448 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
+  - L459 ...its iron as the founded city's: sites and tonnes
+- **L463 3. posts, doors and household places**
+  - L465 every post is K times the founded city's
+  - L466 every home is K times the founded city's
+  - L467 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
+  - L469 ...because the copy holds K founding endowments where the founded city holds one
+- **L473 4. three months at that size**
+  - L482 the months ran
+  - L483 the population is still past 2^31
+  - L484 ...and is the pyramid's, rounded once
+  - L485 the workforce is still past 2^31
+  - L488 the history's last population is the city's
+  - L489 ...its workforce
+  - L490 ...its posts
+  - L491 ...the people out of work
+  - L492 ...and its homes
+- **L494 5. the save round-trips them**
+  - L496 the city past 2^31 saves
+  - L498 its header reads
+  - L499 ...with the population it was saved with
+  - L505 it loads at the month it was saved
+  - L506 the population came back
+  - L507 ...the workforce
+  - L508 ...the posts
+  - L509 ...the posts filled
+  - L510 ...the people out of work
+  - L511 ...the homes
+  - L512 ...the household places
+  - L513 ...the founding endowments it holds (FW9)
+  - L516 ...and the history, month for month
+  - L523 the loaded city plays its next month to the same population
+  - L525 ...the same workforce
+  - L526 ...and the same people out of work
+- **L528 6. the sectors free, at 5 and 10 billion**
+  - L543 fixture: the city is growing - more people than a year before
+  - L547 fixture: ...with ground free for a home
+  - L551 fixture: ...and its own rents price no migrant out in the months its copies are read against
+- **L555 7. money at that size reads**
+- **L558 8. the audit's floor at size**
+- **L561 9. a copy tracks its city month by month**
+- **L573 the audit's floor is never under the figures' own step (0.7.63)**
+  - L583 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
+  - L584 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
+  - L588 ...so the cash-flow statement K's copy missed on rounding alone is within it
+  - L594 a cent never moves: a cent or a part in a trillion, at every size, as before
+  - L595 ...and a size that is not a number keeps the floor alone
+- **L601 money at that size reads in its own unit**
+  - L603 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
+  - L604 ...a thousand quadrillion and more is grouped
+  - L605 ...a negative one keeps its sign
+  - L606 ...and a trillion still reads as one
+  - L608 cash() prints every whole dollar a double holds, as before
+  - L610 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
+  - L611 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
+  - L700 the copy loads
+  - L736 every month the population is past 2^31, whole, and the pyramid's rounded once
+  - L737 ...and the posts, the doors and the household places add up exactly, every month
+  - L746 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
+  - L749 ...and its businesses pay the city's price for it
+  - L759 ...and it builds: more homes at the end than at the start
+  - L760 fixture: the free copy ordered - an order sized from more than a million needed,
+  - L808 the copy at K =
+  - L1013 the month's money audit closes, to the cent (BankCheck and four more)
+  - L1022 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
+  - L1028 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
+  - L1033 the money the audit saw made is the central bank's (LongPlaytest)
+  - L1037 M0 moved by the money made (LongPlaytest, already relative)
+  - L1045 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
+  - L1050 the treasury's window opens where it closed (TreasuryCheck)
+  - L1054 the treasury's closing balance is its cash (TreasuryCheck)
+  - L1060 the treasury's bridge foots (TreasuryCheck)
+  - L1078 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
+  - L1081 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
+  - L1087 the history's net income is the sector books', to the cent (HistoryCheck)
+  - L1094 the history's bank figures are the bank's own, to the cent (HistoryCheck)
+  - L1107 ...
+  - L1145 no order sized read more waits than one a bit of what it needed, and one more
+  - L1146 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
+  - L1168 every post,
+  - L1171 ...the posts on offer by job type add up to the total
+  - L1172 ...and the total is every post less those withheld
+  - L1177 every home is the stacks' quantity times their doors
+  - L1178 ...and the homes by size add up to it
+  - L1180 ...and the landlords' studio and family doors to it too
+  - L1182 the household places are the city's hundred for each founding endowment and the stacks' places
 
 ## SectorBooksCheck.java - 16 labelled assertions
 
@@ -19299,7 +19394,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L580 a Harvesting Operation cutting past the regrowth plants nothing with no Forestry zone - a zone for the fields
   - L589 with a Forestry zone of 12 km2 at 30% of the going price a plantation is planted on it: its 10 km2 the zone's used
 
-## ZoningViewCheck.java - 59 labelled assertions
+## ZoningViewCheck.java - 81 labelled assertions
 
 > Policy › Zoning's figures (0.7.109, batch Z2): ZoningView, and the words
 > zoning puts on the screens it does not own - NEEDS YOU's GROUND row, the
@@ -19315,71 +19410,94 @@ _(this harness does not label its checks through a helper - it prints its findin
 > another. Nothing in the default playtest sets a zone, so this is the
 > ...
 
-- **L140 1. nothing set: nothing zoned, held or given up, the forest kept \"none\", the bar the built and the free**
-  - L142 fixture: a played city with no zone and the law at 0 and 0, built on, with forest
-  - L145 the four: nothing zoned in no zone, nothing held, no price given up, no relief, no law
-  - L149 the bar: the built ground is the allocated; the bare ground and open forest are free for anyone
-  - L154 ...and it adds up to the dry ground the city owns
-  - L155 no zone has a row, and the closer bar is the bare ground alone
-- **L177 2. the hub's four figures are the model's**
-  - L180 fixture: two zones, one with ground used in it and both holding ground, and a law
-  - L185 ZONED: the zones' sizes together, two of them, and their share of the dry ground
-  - L187 HELD FOR THEM: what the zones hold, LandManager.heldByZones()
-  - L190 PRICE GIVEN UP: PolicyPreview's price given up and tax relief, summed over the zones
-  - L193 FOREST KEPT: the protected and the working forest, the law's two shares
-- **L205 3. the ground bar adds up to the dry ground, each part the model's**
-  - L209 its parts add up to the dry ground the city owns
-  - L215 each zone's used and held ground is its own, used before held, in the zones' order
-  - L218 the built ground and the zones' used ground are the allocated
-  - L221 the bare ground and the open forest free for anyone are freeForAnyone()
-  - L224 ...and the zones' held ground HELD FOR THEM
-  - L225 the working and protected forest are the law's
-  - L229 the closer bar: the zones' used and held ground and the bare ground free for anyone, no more
-  - L242 fixture: the city built over all but a tenth of the forest the law keeps
-  - L244 built past what the law keeps, the bar still adds up to the dry ground, no part below nothing
-  - L246 ...the built ground the allocated, the law's forest only the tenth the built ground left, nothing free
-- **L259 4. a zone's row is its zone, its taxes the sector's own**
-  - L263 a row a zone, in the zones' order
-  - L266 its size as given and as ground, its share of the dry ground
-  - L270 its used and held ground, and its price a square foot (groundPriceFor())
-  - L278 its three rates are the sector's (Game.zoneTaxRate())
-  - L279 what each raised last month: the books' profit tax, the ledger's net sales tax, the property charged
-  - L286 one dial, two doors: a move through the zone's door reads on its row and is Policy › Taxes' offset
-  - L290 neither zone is short while the free ground covers both
-  - L293 fixture: a zone of all the dry ground holds less than it wants
-  - L296 ...and its row reads short, holding what is free (Z10)
-  - L298 a sector with no zone has no row
-- **L311 5. a sector's page: staged it moves nothing, applied it reads as staged**
-  - L320 staged, the city is untouched: no Retail zone, the ground free for anyone and Mining's held as they were, no decision
-  - L324 before, no zone: it holds nothing and carries nothing, and a plot pays the going price
-  - L326 after: it holds the km² (the free ground covers it), the ground free for anyone falls by as much
-  - L328 ...it carries as many of the plot the sector builds most of as fit, and a plot pays half
-  - L333 applied, the city reads what was staged
-  - L338 a zone re-sized and re-priced, staged, keeps what it has used
-  - L342 ...and applied reads as staged
-  - L347 taken off, staged: it holds nothing, and its ground is free for anyone again
+- **L148 1. nothing set: nothing zoned, held or given up, the forest kept \"none\", the bar the built and the free**
+  - L150 fixture: a played city with no zone and the law at 0 and 0, built on, with forest
+  - L153 the four: nothing zoned in no zone, nothing held, no price given up, no relief, no law
+  - L157 the bar: the built ground is the allocated; the bare ground and open forest are free for anyone
+  - L162 ...and it adds up to the dry ground the city owns
+  - L163 no zone has a row, and the closer bar is the bare ground alone
+- **L185 2. the hub's four figures are the model's**
+  - L188 fixture: two zones, one with ground used in it and both holding ground, and a law
+  - L193 ZONED: the zones' sizes together, two of them, and their share of the dry ground
+  - L195 HELD FOR THEM: what the zones hold, LandManager.heldByZones()
+  - L198 PRICE GIVEN UP: PolicyPreview's price given up and tax relief, summed over the zones
+  - L201 FOREST KEPT: the protected and the working forest, the law's two shares
+- **L213 3. the ground bar adds up to the dry ground, each part the model's**
+  - L217 its parts add up to the dry ground the city owns
+  - L223 each zone's used and held ground is its own, used before held, in the zones' order
+  - L226 the built ground and the zones' used ground are the allocated
+  - L229 the bare ground and the open forest free for anyone are freeForAnyone()
+  - L232 ...and the zones' held ground HELD FOR THEM
+  - L233 the working and protected forest are the law's
+  - L237 the closer bar: the zones' used and held ground and the bare ground free for anyone, no more
+  - L250 fixture: the city built over all but a tenth of the forest the law keeps
+  - L252 built past what the law keeps, the bar still adds up to the dry ground, no part below nothing
+  - L254 ...the built ground the allocated, the law's forest only the tenth the built ground left, nothing free
+- **L267 4. a zone's row is its zone, its taxes the sector's own**
+  - L271 a row a zone, in the zones' order
+  - L274 its size as given and as ground, its share of the dry ground
+  - L278 its used and held ground, and its price a square foot (groundPriceFor())
+  - L286 its three rates are the sector's (Game.zoneTaxRate())
+  - L287 what each raised last month: the books' profit tax, the ledger's net sales tax, the property charged
+  - L294 one dial, two doors: a move through the zone's door reads on its row and is Policy › Taxes' offset
+  - L298 neither zone is short while the free ground covers both
+  - L301 fixture: a zone of all the dry ground holds less than it wants
+  - L304 ...and its row reads short, holding what is free (Z10)
+  - L306 a sector with no zone has no row
+- **L319 5. a sector's page: staged it moves nothing, applied it reads as staged**
+  - L328 staged, the city is untouched: no Retail zone, the ground free for anyone and Mining's held as they were, no decision
+  - L332 before, no zone: it holds nothing and carries nothing, and a plot pays the going price
+  - L334 after: it holds the km² (the free ground covers it), the ground free for anyone falls by as much
+  - L336 ...it carries as many of the plot the sector builds most of as fit, and a plot pays half
+  - L341 applied, the city reads what was staged
+  - L346 a zone re-sized and re-priced, staged, keeps what it has used
   - L350 ...and applied reads as staged
-- **L357 6. the forest law's page: staged it moves nothing, applied it reads as staged**
-  - L361 at the city's own law the page is the model's: the three kinds, the wood kept and the wood that may be cut
-  - L368 staged 40% protected and 30% kept, the kept is the protected (the model's clamp), and nothing in the city moves
-  - L371 ...more wood kept standing for ever, less that may be cut, less forest a building may take
-  - L376 applied, the city reads what was staged
-- **L397 7. zoning has a decision kind of its own**
-  - L398 a zone set: one ZONING line
-  - L400 ...re-priced: one ZONING line
-  - L405 ...set to what it already is: nothing
-  - L406 ...taken off: one ZONING line
-  - L407 the forest law: one ZONING line
-  - L408 a zone's tax row: one TAX line - the sector's own offset, as Policy › Taxes logs it
-- **L416 8. the words elsewhere: NEEDS YOU's GROUND row, the build card's land gate, an order's quote**
-  - L420 with room to build the GROUND row is not listed and names no zone
-  - L426 fixture: the zones hold all the free ground, so none is free for anyone
-  - L429 listed, the GROUND row names what the zones hold: \"
-  - L433 fixture: a Diner's plot fits in what Restaurants' zone holds, and is more than is free for anyone
-  - L435 the build card's land gate counts the zone: a Diner passes it
-  - L436 ...an order's quote reads the ground its sector may build on, freeFor()
-  - L442 an unzoned shop fails it, and its gate says what is zoned for others: \"
-  - L450 the homes' own zone is not named: the GROUND row says only what is free
-  - L455 ...though to a shop it is ground zoned for others
-  - L463 with no zone and room, the shop passes the land gate as it always did
+  - L355 taken off, staged: it holds nothing, and its ground is free for anyone again
+  - L358 ...and applied reads as staged
+- **L365 6. the forest law's page: staged it moves nothing, applied it reads as staged**
+  - L369 at the city's own law the page is the model's: the three kinds, the wood kept and the wood that may be cut
+  - L376 staged 40% protected and 30% kept, the kept is the protected (the model's clamp), and nothing in the city moves
+  - L379 ...more wood kept standing for ever, less that may be cut, less forest a building may take
+  - L384 applied, the city reads what was staged
+- **L405 7. zoning has a decision kind of its own**
+  - L406 a zone set: one ZONING line
+  - L408 ...re-priced: one ZONING line
+  - L413 ...set to what it already is: nothing
+  - L414 ...taken off: one ZONING line
+  - L415 the forest law: one ZONING line
+  - L416 a zone's tax row: one TAX line - the sector's own offset, as Policy › Taxes logs it
+- **L424 8. the words elsewhere: NEEDS YOU's GROUND row, the build card's land gate, an order's quote**
+  - L428 with room to build the GROUND row is not listed and names no zone
+  - L434 fixture: the zones hold all the free ground, so none is free for anyone
+  - L437 listed, the GROUND row names what the zones hold: \"
+  - L441 fixture: a Diner's plot fits in what Restaurants' zone holds, and is more than is free for anyone
+  - L443 the build card's land gate counts the zone: a Diner passes it
+  - L444 ...an order's quote reads the ground its sector may build on, freeFor()
+  - L450 an unzoned shop fails it, and its gate says what is zoned for others: \"
+  - L458 the homes' own zone is not named: the GROUND row says only what is free
+  - L463 ...though to a shop it is ground zoned for others
+  - L471 with no zone and room, the shop passes the land gate as it always did
+- **L515 9. what is biting: a zone short of what it wants raises the flag, a zone with enough raises none**
+  - L517 fixture: no zone stands, and the city has free ground
+  - L518 with no zone nothing is short and the hub has no zoning flag
+  - L523 fixture: a zone of 2% of the dry ground wants less than is free, and holds all it wants
+  - L526 ...so a zone with enough raises no flag
+  - L534 fixture: Agriculture's zone of
+  - L538 a zone short of what it wants is flagged: one row, its own
+  - L540 ...its want is the row's, and what it holds is all the free ground (heldBy(), getFreeSqFt())
+  - L546 the heading names the zone: \"
+  - L547 its first sentence is what it holds of what it wants: \"
+  - L552 the hub's WHAT IS BITING carries it, once, in Zoning's area with the view's words
+  - L554 ...its door opens the zone's page: \"
+  - L563 fixture: two zones that each want less than is free and together more
+  - L568 both are flagged, in the zones' order
+  - L570 ...each holding the same share of its want (Z10), together all the free ground
+  - L575 the heading counts them: \"
+  - L576 ...and its first sentence says they share alike: \"
+  - L580 the hub carries one flag for them, its door the ground's page
+  - L586 fixture: Mining's zone alone, half the dry ground, wants less than is free
+  - L588 ...so a large zone the free ground covers raises none
+  - L594 fixture: built to the edge, nothing is free
+  - L596 the zone is flagged holding none of what it wants: \"
+  - L604 every zone off, nothing is flagged again
 

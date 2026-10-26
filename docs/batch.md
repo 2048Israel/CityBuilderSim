@@ -98,6 +98,12 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
    Stale and the tree. Exit 0 is green. Exit 3 means nothing failed but
    main's recorded reds, word for word: green, for a batch. Exit 4 prints
    the red lines that are not main's, and they are the batch's to mend.
+   Since FW7 `AllChecks -q` and `-f` read the same record (`gate.txt`, or
+   `-Dcbs.knownReds=<file>`) and say `known red` or `NEW red: N of M red
+   lines` after a failed harness's time, and `-f` tags each red line
+   `[known]` or `[NEW]`: a known-red harness with a second failing line says
+   NEW. `./batch-check.sh --judge <log>` judges a saved `-f` log again
+   without running anything.
    Exit 1 is anything else (the compile, the maps, Stale, line endings, a
    harness `AllChecks` does not register), and 2 a mistake in the options.
    A class most harnesses read (`Game.java` and the like) is left to the
@@ -219,7 +225,7 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
      `ship.sh` again, and it takes the next number from the tags it
      fetches.
 5. **Reds** (the calls below, 4). Main's recorded reds pass, word for word,
-   and the body says `Gate: red as main's recorded: <harnesses>`. A new red
+   and the body says `Gate: known red only: <harnesses>`. A NEW red
    line ships only with `--red-ok "his words"`, his words in the body, even
    in a timing harness: the timing step does not judge it again. Any other
    red goes back to the batch as its failing lines (`target/checks/reds.txt`
