@@ -1426,6 +1426,16 @@ public class ReadPathCheck {
         g.hasCoastFor(portT, 1, Landmasses.CHOSEN); g.hasCoastFor(portT, 1, Landmasses.RULE); g.portLandmassChoices(portT); g.freeGroundFor(portT); g.getLandmassPicture();
         lm.getUnlinkedFreeSqFt(); lm.getUnlinkedNames(); lm.getLinkedOwnedSqFt(); lm.getLinkedAllocatedSqFt(); lm.getLinkedForestSqFt(); lm.landmassState(); g.demolishable(portT); g.quoteBuild(portT, 1);
         for (LandParcel offer : lmk.getListing()) { LandmassView.islandTagged(offer); offer.getUnlinkedDryKm2(); offer.getUnlinkedBuildableKm2(); offer.getUnlinkedLargest(); }
+        // ...and the long bridges (ET6; Bridges): the list as saved, the card's far landmass and its choices, the survey of the crossing (kept, never
+        // filled by a figure the save holds), the gate, the span, the quote, the verdict and the words that say a refusal
+        BuildingsTemplate bridgeT = g.getBuildingManager().getTemplateByName("Road Bridge");
+        Bridges bridges = lm.getBridges();
+        bridges.all(); bridges.size(); bridges.count(Bridges.STANDING); bridges.count(Bridges.ON_SITE); bridges.count(Bridges.SHELL); bridges.count(bridgeT.getId(), Bridges.STANDING);
+        bridges.standingLengthM(); bridges.joins(lms.home()); bridges.joinedTo(lms.home()); bridges.chosen(bridgeT.getId()); lm.bridgeState(); lms.linkedIds();
+        g.bridgeChoices(bridgeT); g.bridgeLandmass(bridgeT); g.hasBridgeFor(bridgeT, 1); g.bridgeSpan(bridgeT, 1); g.quoteBuild(bridgeT, 1); g.demolishable(bridgeT);
+        BridgeSurvey.Result crossing = g.bridgeSurvey(bridgeT);
+        BridgeView.refusal(crossing, lms); BridgeView.crossingWords(crossing, lms); BuildCard.bridge(g, bridgeT); BuildCard.verdict(g, bridgeT, 1);
+        BuildCard.groups(g, BuildAdvice.ROADS, BuildAdvice.measuresOf(BuildAdvice.ROADS).get(0));
         // ...and the oil at sea (0.7.91): the platforms, their slots and wells, the pipelines, the shuttle tankers, the
         // planner's cases, the cards and the counts the orders are weighed against
         BuildingsTemplate jacketT = g.getBuildingManager().getTemplateByName("Offshore Platform");

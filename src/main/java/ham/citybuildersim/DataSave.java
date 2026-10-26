@@ -186,6 +186,14 @@ public class DataSave implements Cloneable {
      */
     private Landmasses.State landmasses;
 
+    /**
+     * The city's long bridges (ET6, 2026-10-26; Bridges): each one built or building - its template, kind, the two landings and
+     * the landmass at each end, its length, the deepest and mean depth of the water under it, the corner plots of the chain it
+     * runs along, and whether it stands, is on site or is a stopped shell. Absent on an older save and on every city with none.
+     * No format bump: an older save has no bridge, and a missing key reads none.
+     */
+    private Bridges.State bridges;
+
     /*
      * The property tax the city CHARGED this month, rather than a figure
      * derived from its state.
@@ -1081,6 +1089,11 @@ public class DataSave implements Cloneable {
     public void setLandmasses(Landmasses.State state) { this.landmasses = state; }
 
     public Landmasses.State getLandmasses() { return landmasses; }
+
+    public void setBridges(Bridges.State state) { this.bridges = state; }
+
+    /** Null on a save from before ET6, and for a city with no bridge. */
+    public Bridges.State getBridges() { return bridges; }
 
     public void setPortMonth(Ports.State state) { this.portMonth = state; }
     /** Null on a save from before 0.7.86. */

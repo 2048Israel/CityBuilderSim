@@ -74,8 +74,8 @@ public final class Landmasses {
        ===================================================================== */
 
     /**
-     * Which landmasses a landmass joins, other than by a port: nothing in ET5, and ET6's bridges (and any ferry) when they
-     * come. A join is read both ways by closure(): a landmass joined to a linked one is linked.
+     * Which landmasses a landmass joins, other than by a port: nothing in ET5, and since ET6 the standing long bridges
+     * (Bridges), and any ferry when it comes. A join is read both ways by closure(): a landmass joined to a linked one is linked.
      */
     public interface Joins {
         /** The landmasses this one is joined to (the ids it can reach in one join); empty for none. */
@@ -169,6 +169,8 @@ public final class Landmasses {
 
     /** What Landmasses reads of the buildings: Game wires it; a bare one has none and no port is placed. */
     private Stock stock;
+    /** The joins other than a port, read by every closure (ET6: the standing long bridges, LandManager wires them); none for a bare one. */
+    private Joins joins = Joins.NONE;
     /** Where each port template's units stand, by template id: only for a template with a unit off home (or on a city that owns ground off home). */
     private final TreeMap<Integer, Segments> ports = new TreeMap<>();
     /** The units a demolition on site is taking down, by the demolition's id. */
@@ -577,7 +579,7 @@ public final class Landmasses {
      * port (never in a getter: ReadPathCheck holds that no read fills a cache). version() rises when the linked set moved.
      */
     void refresh() {
-        SortedSet<Integer> now = closure(home, standingPorts(), Joins.NONE);
+        SortedSet<Integer> now = closure(home, standingPorts(), joins);
         if (!now.equals(linkedSet)) {
             linkedSet = now;
             version++;
@@ -692,6 +694,9 @@ public final class Landmasses {
 
     /** Wires the buildings' counts (Game, once). */
     void setStock(Stock stock) { this.stock = stock; }
+
+    /** Wires the joins the closure reads besides the ports (ET6: LandManager's Bridges, once); null, none. */
+    void setJoins(Joins joins) { this.joins = joins == null ? Joins.NONE : joins; }
 
     /** Whether any terminal has a place of its own: a row, or a demolition taking some down. */
     public boolean hasPlacements() { return !ports.isEmpty() || !leaving.isEmpty(); }
@@ -868,12 +873,12 @@ public final class Landmasses {
     private List<Integer> removable(int template, boolean raw) {
         List<Integer> units = standingUnits(template, raw);
         TreeMap<Integer, Integer> now = new TreeMap<>(standingPorts());
-        SortedSet<Integer> before = closure(home, now, Joins.NONE);
+        SortedSet<Integer> before = closure(home, now, joins);
         List<Integer> out = new ArrayList<>();
         for (int i = units.size() - 1; i >= 0; i--) {
             TreeMap<Integer, Integer> after = new TreeMap<>(now);
             after.merge(units.get(i), -1, Integer::sum);
-            if (closure(home, after, Joins.NONE).containsAll(before)) {
+            if (closure(home, after, joins).containsAll(before)) {
                 out.add(i);
                 now = after;
             }
@@ -896,9 +901,9 @@ public final class Landmasses {
     public String linkedBy(int template) {
         if (stock == null || !stock.known(template)) return "";
         TreeMap<Integer, Integer> now = new TreeMap<>(standingPorts());
-        SortedSet<Integer> before = closure(home, now, Joins.NONE);
+        SortedSet<Integer> before = closure(home, now, joins);
         for (int id : standingUnits(template, false)) now.merge(id, -1, Integer::sum);
-        SortedSet<Integer> after = closure(home, now, Joins.NONE);
+        SortedSet<Integer> after = closure(home, now, joins);
         List<String> names = new ArrayList<>();
         for (int id : before) if (!after.contains(id)) names.add(name(id));
         return joined(names);
@@ -1119,6 +1124,16 @@ public final class Landmasses {
 
     /** Whether a landmass is one the city's buildings may stand on: home, none (0) and the linked set (closure()). */
     public boolean linked(int id) { return id == 0 || id == home || linkedSet.contains(id); }
+
+    /** The ids of the landmasses the city's buildings may stand on, ascending (ET6): home and the linked set (closure()). */
+    public int[] linkedIds() {
+        java.util.TreeSet<Integer> all = new java.util.TreeSet<>(linkedSet);
+        all.add(home);
+        int[] out = new int[all.size()];
+        int i = 0;
+        for (int id : all) out[i++] = id;
+        return out;
+    }
 
     /** The ids of the landmasses the city owns dry ground on and has not linked, ascending. */
     public List<Integer> unlinkedIds() { return Collections.unmodifiableList(new ArrayList<>(unlinkedIds)); }

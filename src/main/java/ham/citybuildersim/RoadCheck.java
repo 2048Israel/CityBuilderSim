@@ -267,7 +267,8 @@ public class RoadCheck {
         boolean run = true, whole = true;
         int weighed = 0;
         for (BuildingsTemplate t : bm.getTemplates()) {
-            if (t.getCategory() != BuildingType.INFRASTRUCTURE) continue;
+            // ...the roads and the lines: not ET6's long bridges, which are Infrastructure's too but carry no trips (their own repairs are asserted below).
+            if (t.getCategory() != BuildingType.INFRASTRUCTURE || t.isBridge()) continue;
             double materials = Math.max(0, bm.getConstructionMaterialPrice());
             // FR7 2.2: a Gravel Road is repaired at the traffic on the streets the city would have with it (BuildingsTemplate
             // .gravelRepairsAt()); every other road and line at its flat share.
@@ -298,10 +299,19 @@ public class RoadCheck {
                 highwayT = template(g, "Elevated Highway");
         boolean lines = true;
         for (BuildingsTemplate t : bm.getTemplates()) {
-            if (t.getCategory() == BuildingType.INFRASTRUCTURE && t != gravelT && t != pavedT && t != highwayT) {
+            if (t.getCategory() == BuildingType.INFRASTRUCTURE && t != gravelT && t != pavedT && t != highwayT && !t.isBridge()) {
                 lines &= !t.hasOwnRepairs() && t.repairsPerYear() == ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR;
             }
         }
+        // ...and ET6's three long bridges have the Elevated Highway's rate, on their two landings.
+        boolean bridgeRepairs = true;
+        int bridgeCount = 0;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (!t.isBridge()) continue;
+            bridgeCount++;
+            bridgeRepairs &= t.hasOwnRepairs() && t.repairsPerYear() == highwayT.repairsPerYear();
+        }
+        assertTrue("the three long bridges (ET6) carry the Elevated Highway's own repairs a year, 1.25%, on their two landings", bridgeCount == 3 && bridgeRepairs);
         assertTrue("each road kind's repairs are its own share a year - gravel 3%, paved 2%, the highway 1.25% - and every"
                 + " line's the house's 1% (0.7.103)", gravelT.repairsPerYear() == .03 && pavedT.repairsPerYear() == .02
                 && highwayT.repairsPerYear() == .0125 && lines);

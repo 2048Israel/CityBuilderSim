@@ -204,6 +204,8 @@ public class BuildingCatalog {
                 .setSiding(flag(o, "siding"))
                 // ...and whether a power station needs a river with a drop (HY1): absent, no.
                 .setHydro(flag(o, "hydro"))
+                // ...and which long bridge it is (ET6): absent, none.
+                .setBridge(bridgeKind(o, name))
                 // ...and a Truck Depot's room for trucks (FR2): absent, none.
                 .setTruckRoom(number(o, "truckRoom"))
                 .setProduction1(number(o, "production1"))
@@ -528,6 +530,18 @@ public class BuildingCatalog {
             return (o.has(key) && !o.get(key).isJsonNull()) ? o.get(key).getAsDouble() : 0;
         } catch (Exception e) {
             return 0;
+        }
+    }
+
+    /** A long bridge's kind (ET6's "bridge": "HIGHWAY", "RAIL" or "ROAD"): absent, null; one the game does not know is reported and read as none. */
+    private BridgeWorks.Kind bridgeKind(JsonObject o, String name) {
+        String kind = string(o, "bridge");
+        if (kind.isEmpty()) return null;
+        try {
+            return BridgeWorks.Kind.valueOf(kind);
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" has unknown bridge kind \"" + kind + "\"; treated as no bridge.");
+            return null;
         }
     }
 

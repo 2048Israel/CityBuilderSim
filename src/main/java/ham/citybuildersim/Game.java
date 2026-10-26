@@ -426,6 +426,8 @@ public class Game {
         economyManager.setZoning(landManager.getZoning(), landManager::heldBy);
         // ...and where its sea terminals stand reads the buildings' counts (ET5; Landmasses).
         landManager.getLandmasses().setStock(portStock());
+        // ...and where its long bridges stand reads them too (ET6; Bridges).
+        landManager.getBridges().setStock(bridgeStock());
         // ...and a foothill's price reads the preparation the quote charges a square foot of it (ET3), so the price and the quote are one number.
         landManager.setPreparationPerSqFt(() -> preparationCost(preparationPoints(1)));
         // ...and the books value a business's land by the ground it stands on (ET3): which templates are works, and what a
@@ -6354,6 +6356,15 @@ public class Game {
         public final double worksSqFt, worksPoints, worksCost;
         public final double[] worksMix;
 
+        /**
+         * The span of a long bridge order (ET6; BridgeWorks, spec-earth2-terrain 6.4): the crossing's length, metres; the
+         * construction points its deck is, owed by the order's site before its first bridge finishes, as a pad's and a run's
+         * works are; and their money before the builders' tax, which is in the sticker and so grossed up in the total (the
+         * bridge's own builders' price a point). For an order of n, n parallel spans on the one survey. All 0 for every
+         * quote but a bridge's with a crossing the model found.
+         */
+        public final double bridgeLengthM, bridgePoints, bridgeCost;
+
         BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
@@ -6389,6 +6400,22 @@ public class Game {
                    double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
                    double prepSqFt, double prepPoints, double prepCost,
                    double worksSqFt, double worksPoints, double worksCost, double[] worksMix) {
+            this(quantity, sticker, materialsNeeded, materialsInStock, boughtIn, plantPrice, materialsPrice,
+                    landNeeded, landFree, months, buildersRate, plantRate, bitumen, refinersRate,
+                    prepSqFt, prepPoints, prepCost, worksSqFt, worksPoints, worksCost, worksMix, 0, 0, 0);
+        }
+
+        /** ...with the span of a long bridge (ET6): the sticker already holds bridgeCost, the money for bridgePoints. */
+        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+                   Markets.Draw boughtIn, double plantPrice, double materialsPrice,
+                   double landNeeded, double landFree, double months,
+                   double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
+                   double prepSqFt, double prepPoints, double prepCost,
+                   double worksSqFt, double worksPoints, double worksCost, double[] worksMix,
+                   double bridgeLengthM, double bridgePoints, double bridgeCost) {
+            this.bridgeLengthM = bridgeLengthM;
+            this.bridgePoints = bridgePoints;
+            this.bridgeCost = bridgeCost;
             this.prepSqFt = prepSqFt;
             this.prepPoints = prepPoints;
             this.prepCost = prepCost;
@@ -6634,6 +6661,10 @@ public class Game {
         RunWorksNeed need = runWorksFor(selected, quantity);
         double worksPoints = need == null ? 0 : need.points(), worksCost = need == null ? 0 : need.cost();
         if (worksCost > 0) sticker += worksCost;
+        // ...and a long bridge's span (ET6), over the crossing the model surveyed, billed and owed on the site the same way.
+        BridgeSpan span = bridgeWorksFor(selected, quantity);
+        double bridgePoints = span == null ? 0 : span.points(), bridgeCost = span == null ? 0 : span.cost();
+        if (bridgeCost > 0) sticker += bridgeCost;
         return new BuildQuote(
                 quantity,
                 sticker,
@@ -6649,15 +6680,16 @@ public class Game {
                 // quoteMonths() exactly with no order set and no rush, and with
                 // one, where the order would land in it (quoteCityMonths()) -
                 // the foothill's preparation owed on its site too (ET2),
-                // and a run's works on the slopes (ET4).
-                quoteCityMonths(selected, quantity, prepPoints + worksPoints),
+                // and a run's works on the slopes (ET4), and a bridge's span (ET6).
+                quoteCityMonths(selected, quantity, prepPoints + worksPoints + bridgePoints),
                 buildersSalesRate(),
                 plantSalesRate(),
                 bitumen,
                 refinersSalesRate(),
                 prepSqFt, prepPoints, prepCost,
                 need == null ? 0 : need.sqFt(), worksPoints, worksCost,
-                need == null ? new double[4] : need.mix());
+                need == null ? new double[4] : need.mix(),
+                span == null ? 0 : span.lengthM(), bridgePoints, bridgeCost);
     }
 
     /**
@@ -7292,6 +7324,8 @@ public class Game {
     /** How many of this kind stand that no demolition has been ordered for - nor, a gravel road, its paving (0.7.70). */
     public int demolishable(BuildingsTemplate t) {
         if (t == null) return 0;
+        // A long bridge stands for good (ET6-C): taking one down would unlink a landmass nobody could account for under pooled ground.
+        if (t.isBridge()) return 0;
         int paving = ConstructionControl.paves(t) ? buildingManager.getControl().paving() : 0;
         int n = Math.max(0, buildingManager.getQuantity(t.getId()) - buildingManager.getControl().closingOf(t.getId())
                 - paving);
@@ -7312,6 +7346,7 @@ public class Game {
 
     /** Why a port cannot be demolished, if it is the one that links a landmass (ET5 D11): "it is the port that links Island 2"; null when it is not. */
     private String linkingWords(BuildingsTemplate t, int n) {
+        if (t != null && t.isBridge()) return BRIDGE_FOR_GOOD;
         if (!Ports.isPort(t) || landManager.getLandmasses().single()) return null;
         String linked = landManager.getLandmasses().linkedBy(t.getId());
         return linked.isEmpty() ? null : "it is the port that links " + linked;
@@ -7738,6 +7773,8 @@ public class Game {
         // G. Where the sea terminals stand (ET5): the units' places fitted to the buildings' counts - a completion took the
         // oldest on site to standing, a stop the newest to the shell - the card's choices forgotten, and, if a port that
         // now stands moved the linked set, the offers and the sites across the water read against it.
+        // ...and the long bridges' records fitted the same way, first, so that the linked set is closed over the bridges that now stand (ET6).
+        landManager.getBridges().settle();
         if (landManager.getLandmasses().settle()) landManager.linkChanged();
     }
 
@@ -7841,6 +7878,12 @@ public class Game {
             // or is refunded it (MATERIAL AT THE PRICE WHEN IT IS USED); the
             // builders carried it until then, as a fixed-price contractor does.
             buildingManager.addStack(selected, quantity, noConstruction);
+            // ...and a long bridge's crossing is kept (ET6): n spans on the one survey, on site until the builders complete them.
+            if (selected.isBridge()) {
+                landManager.getBridges().ordered(selected.getId(), selected.bridgeKind(), bridgeSurvey(selected), quantity, noConstruction);
+                landManager.getBridges().clearChoice(selected.getId());
+                landManager.portsChanged();
+            }
             // ...and where a sea terminal stands is kept (ET5): no row is made for an order at home on a city that owns nothing off it.
             if (landmass != Landmasses.NO_LANDMASS) {
                 if (!(lms.single() && landmass == lms.home())) {
@@ -7861,6 +7904,8 @@ public class Game {
                     buildingManager.addPreparation(selected, quote.worksPoints);
                     noteRunWorks(quote);
                 }
+                // ...and a long bridge's span, owed the same way (ET6).
+                if (quote.bridgePoints > 0) buildingManager.addPreparation(selected, quote.bridgePoints);
                 double fromYard = deliverYardToSites(selected, totalMaterialsRequired);
                 // ...and a paved road's bitumen, bought by the builders with the
                 // yard's material and billed in the quote (0.7.83; drawBitumen()).
@@ -7894,6 +7939,7 @@ public class Game {
                 double billedPoints = selected.getConstructionPoints() * (double) quantity;
                 if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
                 if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
+                if (quote.bridgePoints > 0) billedPoints += quote.bridgePoints;
                 getSectors().construction().bill(totalCost, billedPoints);
             }
 
@@ -7914,7 +7960,7 @@ public class Game {
 
     
     
-    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER}
+    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER, NO_BRIDGE}
 
     /* =======================================================================
        HALF THE PRACTICE, BEFORE THE DOORS OPEN (2026-09-12)
@@ -8337,6 +8383,149 @@ public class Game {
         return t == null || !t.isHydro() || hydroSlotsFree(t) >= n;
     }
 
+    /* ===== THE LONG BRIDGES' CROSSING (ET6, 2026-10-26; BridgeSurvey, BridgeWorks, Bridges) =====
+
+       A Highway, Rail or Road Bridge is ordered toward a far landmass the card picks (chooseBridgeLandmass(): one order's,
+       spent by it and forgotten at the month's settle; the rule when nothing is picked: the first landmass no port links,
+       else the first that is not home, else home). The model surveys the crossing from the city's own dry ground on that
+       landmass to its own buildable ground on a linked one (BridgeSurvey, reading the World and the land, never the map),
+       all or nothing: an order with no crossing is refused NO_BRIDGE before land and money, so no bond is offered for an
+       impossible bridge. The span is billed per order by its length and depth (BridgeWorks), in the quote as a pad's and a
+       run's works are, owed on the order's site before its first bridge finishes; the bridges are recorded on site
+       (Bridges.ordered()) and join their two landmasses only when the builders complete them. The survey is kept against
+       the far landmass, the linked set and the land's stamp, so a card does not search every frame. A generated world, and
+       a city on one landmass, has no far end: every card there says so (refusal 4). */
+
+    /**
+     * What a long bridge order's span is: the crossing's length (metres, one bridge's), the span's dollars at the founding
+     * for the whole order, the construction points that is, and their money before the builders' tax, at the builders'
+     * price a point today.
+     */
+    public record BridgeSpan(double lengthM, double usd, double points, double cost) { }
+
+    private BridgeSurvey.Ground bridgeGroundForTest;
+    private BridgeSurvey.Result bridgeKept;
+    private int bridgeKeptFar, bridgeKeptVersion;
+    private long bridgeKeptStamp;
+    private CityLand bridgeKeptLand;
+    private BridgeSurvey.Ground bridgeKeptTest;
+
+    /** Harnesses only: hands the survey a ground of the harness's making in place of the World and the land (null restores the real one), so that a crossing can be made to exist where the map holds none. */
+    public void setBridgeGroundForTest(BridgeSurvey.Ground ground) {
+        bridgeGroundForTest = ground;
+        bridgeKept = null;
+    }
+
+    private BridgeSurvey.Ground bridgeGround() {
+        if (bridgeGroundForTest != null) return bridgeGroundForTest;
+        CityLand land = landManager.getCityLand();
+        return land == null ? null : new BridgeGround(World.of(land.key()), land, landManager.getLandmasses());
+    }
+
+    /** The landmasses the card offers a bridge to be ordered toward: those the city owns but home, and home alone where it owns no other; empty for a building that is no bridge. */
+    public java.util.List<Landmasses.Row> bridgeChoices(BuildingsTemplate t) {
+        if (t == null || !t.isBridge()) return java.util.List.of();
+        java.util.List<Landmasses.Row> rows = landManager.getLandmasses().rows();
+        java.util.List<Landmasses.Row> others = new java.util.ArrayList<>();
+        for (Landmasses.Row r : rows) if (!r.home()) others.add(r);
+        return others.isEmpty() ? java.util.List.of(rows.get(0)) : others;
+    }
+
+    /** The card's pick of the far landmass for the next order of this bridge (ONE order's: spent by it, forgotten at the month's settle); a pick that is not among the choices is passed over by the rule. */
+    public void chooseBridgeLandmass(BuildingsTemplate t, int landmass) {
+        if (t != null && t.isBridge()) landManager.getBridges().choose(t.getId(), landmass);
+    }
+
+    /** The landmass this bridge's order is for now: the card's pick if it is among the choices, else the rule - the first landmass no port links, else the first that is not home, else home. Landmasses.NO_LANDMASS for a building that is no bridge. */
+    public int bridgeLandmass(BuildingsTemplate t) {
+        if (t == null || !t.isBridge()) return Landmasses.NO_LANDMASS;
+        int picked = landManager.getBridges().chosen(t.getId());
+        java.util.List<Landmasses.Row> choices = bridgeChoices(t);
+        for (Landmasses.Row r : choices) if (r.id() == picked) return picked;
+        java.util.List<Landmasses.Row> rows = landManager.getLandmasses().rows();
+        for (Landmasses.Row r : rows) if (!r.linked()) return r.id();
+        return choices.get(0).id();
+    }
+
+    /**
+     * The crossing this bridge's next order would be built over (BridgeSurvey): the shortest chain of fresh or shallow water
+     * from the city's own dry ground on the far landmass to its own buildable ground on a linked one, or why there is none.
+     * Null for a building that is no bridge, and for a game with no city. Kept against the far landmass, the linked set and
+     * the land, so asking again does not search again.
+     */
+    public BridgeSurvey.Result bridgeSurvey(BuildingsTemplate t) {
+        if (t == null || !t.isBridge()) return null;
+        BridgeSurvey.Ground ground = bridgeGround();
+        if (ground == null) return null;
+        int far = bridgeLandmass(t);
+        CityLand land = landManager.getCityLand();
+        int version = landManager.getLandmasses().version();
+        long stamp = land == null ? 0 : land.stamp();
+        if (bridgeKept != null && bridgeKeptFar == far && bridgeKeptVersion == version && bridgeKeptStamp == stamp
+                && bridgeKeptLand == land && bridgeKeptTest == bridgeGroundForTest) return bridgeKept;
+        bridgeKept = BridgeSurvey.survey(ground, far);
+        bridgeKeptFar = far;
+        bridgeKeptVersion = version;
+        bridgeKeptStamp = stamp;
+        bridgeKeptLand = land;
+        bridgeKeptTest = bridgeGroundForTest;
+        return bridgeKept;
+    }
+
+    /** Whether this order has a crossing: true for every building but a bridge, whose order needs the survey to find one (before land and money: no bond for an impossible bridge). */
+    public boolean hasBridgeFor(BuildingsTemplate t, int n) {
+        if (t == null || !t.isBridge()) return true;
+        BridgeSurvey.Result r = bridgeSurvey(t);
+        return r != null && r.ok();
+    }
+
+    /**
+     * What the span of an order of these costs (BridgeWorks): the surveyed crossing's dollars for each bridge of the order,
+     * as construction points at the template's own founding price a point, and their money at the builders' price a point
+     * today (the template's non-material cost over its points, so it keeps up with wages as the pad's and the runs' do).
+     * Null for what is no bridge, a crossing the survey did not find, and a template with no points to price it on. Reads.
+     */
+    public BridgeSpan bridgeSpan(BuildingsTemplate t, int quantity) {
+        return bridgeWorksFor(t, quantity);
+    }
+
+    private BridgeSpan bridgeWorksFor(BuildingsTemplate t, int quantity) {
+        if (t == null || !t.isBridge() || t.getConstructionPoints() <= 0 || quantity < 1) return null;
+        BridgeSurvey.Result r = bridgeSurvey(t);
+        if (r == null || !r.ok()) return null;
+        double usd = BridgeWorks.spanUsd(t.bridgeKind(), r) * quantity;
+        double points = BridgeWorks.points(usd, t.getFoundingCashCost() / (double) t.getConstructionPoints());
+        if (!(points > 0)) return null;
+        return new BridgeSpan(r.lengthM(), usd, points, points * buildingManager.nonMaterialCost(t) / t.getConstructionPoints());
+    }
+
+    /** The city's long bridges (ET6): each one built or building, where it runs and whether it stands. */
+    public Bridges getBridges() { return landManager.getBridges(); }
+
+    /** Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. */
+    public static final String BRIDGE_FOR_GOOD = "A bridge stands for good: taking one down is not built yet";
+
+    /** What Bridges reads of the buildings (ET6): the counts of each bridge's template - standing, on site, stopped. */
+    private Bridges.Stock bridgeStock() {
+        return new Bridges.Stock() {
+            @Override public boolean known(int template) {
+                return buildingManager != null && buildingManager.getTemplate(template) != null && buildingManager.getTemplate(template).isBridge();
+            }
+            @Override public int standing(int template) {
+                return Math.max(0, buildingManager.getQuantity(template) - buildingManager.getControl().closingOf(template));
+            }
+            @Override public int onSite(int template) {
+                BuildingsTemplate t = buildingManager.getTemplate(template);
+                BuildingsStacks stack = t == null ? null : buildingManager.getStack(t);
+                return stack == null ? 0 : stack.getUnderConstruction();
+            }
+            @Override public int shell(int template) {
+                ConstructionControl.Shell shell = buildingManager.getControl().shellOf(template);
+                return shell == null ? 0 : shell.buildings;
+            }
+        };
+    }
+
     /**
      * The landmass a sea terminal's order stands on when it is an island no port links (so that it takes that island's own
      * room, not the linked pool's), else Landmasses.NO_LANDMASS: for every other building, for a city on one landmass, and
@@ -8460,6 +8649,10 @@ public class Game {
 
         if (!hasRiverFor(template, quantity)) {
             return false;   // no river with a drop to dam (HY1)
+        }
+
+        if (template.isBridge()) {
+            return false;   // a long bridge is the city's order alone (ET6): its crossing is the card's pick
         }
 
         if (!hasLicencesFor(template, quantity)) {
@@ -8598,6 +8791,12 @@ public class Game {
             return BuildResult.NO_RIVER;
         }
 
+        // ...and the crossing before land and money (ET6): a bridge with no path across the water is not a funding problem.
+        if (!hasBridgeFor(template, quantity)) {
+            this.hasNewReceipt = false;
+            return BuildResult.NO_BRIDGE;
+        }
+
         // Licences before land and before money, for the same reason as ore: a
         // firm with nobody to practise is not a funding problem, and offering a
         // bond to fix it would be a lie about what is wrong.
@@ -8726,7 +8925,7 @@ public class Game {
         return runAhead(run, null);
     }
 
-    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_RIVER, NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
+    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_RIVER, NO_BRIDGE (ET6), NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
     public BuildResult buildRunStop(java.util.Map<BuildingsTemplate, Integer> run) {
         BuildResult[] stop = { BuildResult.SUCCESS };
         runAhead(run, stop);
@@ -8761,6 +8960,7 @@ public class Game {
                 BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasRiverFor(t, hydroAhead + n) ? BuildResult.NO_RIVER
+                        : !hasBridgeFor(t, n) ? BuildResult.NO_BRIDGE
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
                         : !(island != Landmasses.NO_LANDMASS
                                 ? landManager.canAllocateOn(island, aheadOn.getOrDefault(island, 0.0) + t.getLandSqFt() * (double) n)
@@ -14179,6 +14379,8 @@ public class Game {
         dataSave.setZoning(landManager.zoningState());
         // ...and where its sea terminals stand, when one stands off its home landmass (ET5; absent otherwise).
         dataSave.setLandmasses(landManager.landmassState());
+        // ...and its long bridges, built or building (ET6; absent with none).
+        dataSave.setBridges(landManager.bridgeState());
         dataSave.setConstructionShedding(constructionShedMonth, constructionShedPoints);
 
         dataSave.setNationalAccounts(economyManager.getNationalAccountsState());
@@ -17847,6 +18049,8 @@ public class Game {
             landManager.restoreZoning(loaded.getZoning());
             // ...and where its sea terminals stand (ET5): a save from before them, and any city with none off its home
             // landmass, has no key and reads every terminal at home.
+            // ...after its long bridges, which the linked set is closed over (ET6; a save with none has no key).
+            landManager.restoreBridges(loaded.getBridges());
             landManager.restoreLandmasses(loaded.getLandmasses());
             // A converted city's offers (0.7.67, spec-grid 2.6): twenty-four
             // places listed afresh, once, with the buildings back, at the
