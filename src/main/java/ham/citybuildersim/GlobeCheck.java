@@ -53,6 +53,20 @@ import java.util.zip.CRC32;
  *      measured share (the thousandth of section 5 at the handoff); a view
  *      straddling longitude 180 is continuous, over Fiji's coast on the
  *      fixture and Chukotka's on the full file.
+ *  2c. THE NEAR VIEW PAST THE REACH IS THE PLANE'S GROUND (MS2, Jerus
+ *      2026-10-26: "look at the wierd resolution by just panning a few more
+ *      kms"): closer than the handoff the plane's far nodes are drawn through
+ *      the camera wherever the world's square holds the ground
+ *      (GlobeFrame.planeDrawnPastReach(), drawsHold(), planeHolds()) - the
+ *      pixels the square holds and no others, at its edge - and the legend is
+ *      the plane's; over views straddling the reach on the fixture's three
+ *      windows and, named, Cape Breton north of Baddeck, at his scale, 2, 4 and
+ *      8 plots a pixel and the closest, the classes the nodes give are the
+ *      plane's own plots' (exactly at one plot a pixel, within NEAR_PAST_FOLDED
+ *      and NEAR_PAST_CLASSES at 2 to 8) on both sides of the reach, no more
+ *      dithered than the plane's own (the far rule's speckle printed beside
+ *      them), and a small lake is the plane's frayed lake, not the far rule's
+ *      disc; a frame of the camera over the nodes held within FRAME_MS.
  *   3. THE HANDOFF: the plane and the globe facing the city part by under
  *      half a pixel on the expanded map at HANDOFF_PLOTS, and by more at twice
  *      it (the dial is the widest power of two that passes); at REACH_KM with
@@ -189,6 +203,7 @@ public class GlobeCheck {
         planeCamera(spots, id, full);
         cameras(spots, id, data);
         nearAnywhere(spots, id, full);
+        nearPastReach(spots, id, data, full);
         GlobePicture pic = picture(data, full);
         reliefInPicture(data, id, full, pic);
         frame(pic);
@@ -776,6 +791,348 @@ public class GlobeCheck {
         } else {
             out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Chukotka's coast on the antimeridian was not read");
         }
+    }
+
+    /* =====================================================================
+       2c. THE NEAR VIEW PAST THE REACH IS THE PLANE'S GROUND (MS2)
+       ===================================================================== */
+
+    /** Jerus's near scale, km a pixel: 2 km in the scale bar's 120 px (ui/MapView.SCALE_BAR_PX), 1.8 px a plot - the view of his two screenshots. */
+    static final double JERUS_KM = 2.0 / 120;
+
+    /**
+     * At one plot a pixel (his scale and the closest) the classes the plane's nodes give through the camera are the plane's own, plot for plot: the share
+     * of a view's pixels, either side of the reach, whose class is the class of the plot under them within 1e-5 (measured 1.0000000 on 1.1 million pixels
+     * a view - the camera's pixel centres fall where the plane's plots are, and a centre exactly on a plot's edge may fall to the next).
+     */
+    static final double NEAR_PAST_SAME = 1 - 1e-5;
+
+    /**
+     * At 2, 4 and 8 plots a pixel - where the plane draws a far node a pixel of which is one sample of its 2, 4 or 8 plots, and the camera reads that node -
+     * the share of pixels whose class is the class of the plot under their centre, the forest folded into the dry ground it stands on (its ranking at the
+     * node's stride is not the plot's own): 98 percent (measured 98.6 to 99.8% over the fixture's windows and the full file's Baddeck, either side
+     * of the reach - a coast's or a river's pixel samples the next plot of 2 to 8).
+     */
+    static final double NEAR_PAST_FOLDED = 0.98;
+
+    /** ...and with the forest and the grass told apart: 90 percent (measured 91.6 to 98.3% on the fixture, 96.7 to 97.6% on the full file). */
+    static final double NEAR_PAST_CLASSES = 0.90;
+
+    /** The share of pixels whose class differs from both horizontal neighbours the reprojected nodes may draw over the plane's own: a tenth of a percent - the camera reads the same node pixels the plane does, turned by a few degrees. */
+    static final double NEAR_PAST_SPECKLE = 0.001;
+
+    /** The far rule's speckle on a forested window the fixture must cause, for the comparison to mean anything: 5 percent of the pixels (measured 15.2% over Rotterdam and 11.9% over Paris at Jerus's scale; the plane's 0.04%). */
+    static final double FAR_SPECKLE_AT_LEAST = 0.05;
+
+    /** A small lake the far rule draws as a disc is one whose pixels part from the equal-area disc about their centroid by no more than this share of their number: 2 percent (the far rule's discs measured 0.000 at 1.6 to 7.4 px a plot; a frayed lake's 0.07 to 0.5 and more). */
+    static final double LAKE_IS_A_DISC = 0.02;
+
+    /** ...and the plane's frayed one parts by at least this: 10 percent (its fray is BLOB_FRAY of its own noise: measured 0.10 to 0.23 over the lakes picked). */
+    static final double LAKE_IS_FRAYED = 0.10;
+
+    /** The reprojected lake is the plane's: their pixels' intersection over their union at one plot a pixel, within a thousandth of 1 (the share of section 2c's first figure). */
+    static final double LAKE_SAME_IOU = 1 - 1e-3;
+
+    /** ...and the far rule's disc is not the plane's lake: at most this (measured 0.55 to 0.85 over the lakes picked). */
+    static final double LAKE_DISC_IOU = 0.9;
+
+    /** Small lakes at least this many plots across the radius are tried (smaller are a few pixels at his scale), the least of them picked in each source: 12 plots (0.4 km2), four of them. */
+    static final double LAKE_LEAST_PLOTS = 12;
+    static final int LAKES_PICKED = 4;
+
+    /** A lake view's side, pixels: 256, the lake's radius a quarter of it. */
+    static final int LAKE_VIEW_PX = 256;
+
+    /** The scales the views straddling the reach are drawn at, km a pixel: Jerus's (1.8 px a plot), then 2, 4 and 8 plots a pixel - NEAR_KM among them - and the closest, 16 px a plot. */
+    static final double[] NEAR_SCALES = { JERUS_KM, NEAR_KM / 2, NEAR_KM, NEAR_KM * 2, GlobeFrame.leastKmPx() };
+
+    /** A class as an int in the nodes ground() reads: the node's classes widened, so the camera's pixels are classes. */
+    static int[] widen(byte[] classes) {
+        int[] out = new int[classes.length];
+        for (int i = 0; i < out.length; i++) out[i] = classes[i];
+        return out;
+    }
+
+    /** What the camera draws of the plane's nodes (GlobeFrame.ground()) over a w x h view, a class a pixel (MapTiles.nodeTerrain()), NO_NODE where it drew none, OFF where it drew the far rule's place (beyond()) - and how many pixels found no node. */
+    static final int NO_NODE = -1;
+    static int[] cameraClasses(World.Key key, GlobeFrame f, int w, int h, int[] missing) {
+        long plots = MapFrame.nodePlotsAt(f.planeScale()), span = (long) MapFrame.NODE_PX * plots;
+        Map<Long, int[]> nodes = new java.util.HashMap<>();
+        int[] px = new int[w * h];
+        missing[0] = f.ground(plots, (nx, ny) -> nodes.computeIfAbsent(MapTiles.key(nx, ny), k -> widen(MapTiles.nodeTerrain(key, nx * span, ny * span, plots))),
+                (i, j, vx, vy, vz) -> NO_NODE, -2, px, w, 0, w, 0, h);
+        return px;
+    }
+
+    /** The class of the plot under each pixel, as the plane's own tiles hold it (World.terrainAt(), stride one) - -2 off the planet. */
+    static int[] plotClasses(World world, GlobeFrame f, int w, int h) {
+        int[] out = new int[w * h];
+        double[] xy = new double[2];
+        for (int j = 0; j < h; j++) {
+            for (int i = 0; i < w; i++) out[j * w + i] = f.planeAt(i + 0.5, j + 0.5, xy) ? world.terrainAt((long) Math.floor(xy[0]), (long) Math.floor(xy[1])) : -2;
+        }
+        return out;
+    }
+
+    /** What the plane draws over the same view at the same scale, its own frame unturned: each pixel the class of its far node's pixel at `plots` plots (planeClass()). */
+    static int[] planeDraws(World.Key key, GlobeFrame f, int w, int h) {
+        MapFrame mf = new MapFrame(w, h);
+        mf.set(f.planeX(), f.planeY(), f.planeScale());
+        long plots = MapFrame.nodePlotsAt(f.planeScale());
+        Map<Long, byte[]> nodes = new java.util.HashMap<>();
+        int[] out = new int[w * h];
+        for (int j = 0; j < h; j++) {
+            for (int i = 0; i < w; i++) out[j * w + i] = planeClass(key, plots, mf.plotX(i + 0.5), mf.plotY(j + 0.5), nodes);
+        }
+        return out;
+    }
+
+    /** The far rule's classes through the camera over the same view (GlobeFrame.groundPiece(): what the GROUND tier drew past the reach before MS2). */
+    static int[] farRuleDraws(World.Key key, GlobeFrame f, int w, int h) {
+        return widen(f.groundPiece(key, 0, 0, w, h));
+    }
+
+    /** The share of drawn pixels (a class, not NO_NODE or off the planet) whose class differs from both horizontal neighbours: the speckle of a dithered ground. */
+    static double speckle(int[] a, int w, int h) {
+        int isolated = 0, all = 0;
+        for (int j = 0; j < h; j++) {
+            for (int i = 1; i + 1 < w; i++) {
+                int c = a[j * w + i];
+                if (c < 0) continue;
+                all++;
+                if (c != a[j * w + i - 1] && c != a[j * w + i + 1]) isolated++;
+            }
+        }
+        return all == 0 ? 0 : isolated / (double) all;
+    }
+
+    /** The share of pixels drawn in both (a class each) whose classes agree, the forest and the desert folded into the grass if `fold`; `inside` restricts them to those within the reach (true), past it (false), or all (null). */
+    static double agree(int[] a, int[] b, boolean fold, GlobeFrame f, int w, Boolean inside) {
+        long same = 0, all = 0;
+        for (int k = 0; k < a.length; k++) {
+            if (a[k] < 0 || b[k] < 0) continue;
+            if (inside != null && f.reachHolds(k % w + 0.5, k / w + 0.5) != inside) continue;
+            all++;
+            if (fold ? folded((byte) a[k]) == folded((byte) b[k]) : a[k] == b[k]) same++;
+        }
+        return all == 0 ? Double.NaN : same / (double) all;
+    }
+
+    /** A lake's pixels - fresh water in `a` - their count, and how far they part from the equal-area disc about their centroid, as a share of their count: 0 for a disc, 2 at the most. */
+    static double[] discParting(int[] a, int w, int h) {
+        double n = 0, cx = 0, cy = 0;
+        for (int j = 0; j < h; j++) for (int i = 0; i < w; i++) if (a[j * w + i] == World.FRESH) { n++; cx += i + 0.5; cy += j + 0.5; }
+        if (n == 0) return new double[] { 0, Double.NaN };
+        cx /= n;
+        cy /= n;
+        double r = Math.sqrt(n / Math.PI), parted = 0;
+        for (int j = 0; j < h; j++) {
+            for (int i = 0; i < w; i++) if ((Math.hypot(i + 0.5 - cx, j + 0.5 - cy) <= r) != (a[j * w + i] == World.FRESH)) parted++;
+        }
+        return new double[] { n, parted / n };
+    }
+
+    /** Two views' fresh water, intersection over union. */
+    static double freshIoU(int[] a, int[] b) {
+        long both = 0, either = 0;
+        for (int k = 0; k < a.length; k++) {
+            boolean x = a[k] == World.FRESH, y = b[k] == World.FRESH;
+            if (x && y) both++;
+            if (x || y) either++;
+        }
+        return either == 0 ? 1 : both / (double) either;
+    }
+
+    /** One small lake picked: its place, its radius in plots, and what each rule drew of it. */
+    record LakePick(String where, double lat, double lon, double plots, double[] plane, double[] camera, double[] far, double cameraIoU, double farIoU, boolean inside) { }
+
+    /**
+     * The small lakes of the 1-degree tiles round (lat, lon) within `withinKm` of it, at least LAKE_LEAST_PLOTS across: each viewed through the camera at the
+     * scale that makes its radius a quarter of LAKE_VIEW_PX, the plane's own tiles, the camera's reprojected nodes and the far rule's disc drawn over the same
+     * pixels. The picks are the first LAKES_PICKED whose far disc is a disc (LAKE_IS_A_DISC) and whose plane lake is frayed (LAKE_IS_FRAYED): a lake with another
+     * water within its view is neither.
+     */
+    static List<LakePick> lakes(String where, EarthData data, World.Key key, double cityLat, double cityLon, double lat, double lon, double withinKm) {
+        World world = World.of(key);
+        EarthProj proj = world.earthTerrain().projection();
+        double[] xy = new double[2];
+        List<LakePick> picked = new java.util.ArrayList<>();
+        for (int dl = -1; dl <= 1; dl++) {
+            for (int dn = -1; dn <= 1; dn++) {
+                EarthData.SmallLakes sl = data.smallLakes(EarthData.tile((int) Math.floor(lat) + dl, (int) Math.floor(lon) + dn));
+                for (int k = 0; k < sl.size() && picked.size() < LAKES_PICKED; k++) {
+                    double plots = Math.sqrt(sl.areaKm2(k) * 1e6 / Math.PI) / World.PLOT_M;
+                    if (plots < LAKE_LEAST_PLOTS || EarthProj.distanceM(lat, lon, sl.lat(k), sl.lon(k)) / 1000 > withinKm || !proj.plotOf(sl.lat(k), sl.lon(k), xy)) continue;
+                    GlobeFrame f = new GlobeFrame(LAKE_VIEW_PX, LAKE_VIEW_PX, cityLat, cityLon);
+                    f.set(sl.lat(k), sl.lon(k), World.PLOT_M / (LAKE_VIEW_PX / 4.0 / plots) / 1000);
+                    int[] none = new int[1];
+                    int[] plane = plotClasses(world, f, LAKE_VIEW_PX, LAKE_VIEW_PX), camera = cameraClasses(key, f, LAKE_VIEW_PX, LAKE_VIEW_PX, none),
+                            far = farRuleDraws(key, f, LAKE_VIEW_PX, LAKE_VIEW_PX);
+                    double[] p = discParting(plane, LAKE_VIEW_PX, LAKE_VIEW_PX), c = discParting(camera, LAKE_VIEW_PX, LAKE_VIEW_PX), g = discParting(far, LAKE_VIEW_PX, LAKE_VIEW_PX);
+                    if (!(g[1] <= LAKE_IS_A_DISC) || !(p[1] >= LAKE_IS_FRAYED) || none[0] != 0) continue;
+                    picked.add(new LakePick(where, sl.lat(k), sl.lon(k), plots, p, c, g, freshIoU(camera, plane), freshIoU(far, plane), f.withinReach(sl.lat(k), sl.lon(k))));
+                }
+            }
+        }
+        return picked;
+    }
+
+    /** What the views straddling the reach drew, the worst of each figure (the lines print them). */
+    static final class Near {
+        /** The least share of pixels at one plot a pixel whose class is the plot's; at 2 to 8 plots a pixel the least folded, and the least told apart; the largest the camera's speckle goes over the plane's; the far rule's most at Jerus's scale; the widest the two sides of the reach part. */
+        double same = 1, folded = 1, classes = 1, speckleOver = -1, farMost = 0, gap = 0;
+        final List<String[]> lines = new java.util.ArrayList<>();
+
+        /** The view centred at `at` at `km`, the city at `city` on the world `key`: its classes through the camera against the plane's own plots, the plane's own picture and the far rule's. */
+        void view(String name, World.Key key, double[] city, double[] at, double km, int n, int m) {
+            World world = World.of(key);
+            GlobeFrame f = new GlobeFrame(n, m, city[0], city[1]);
+            f.set(at[0], at[1], km);
+            long plots = MapFrame.nodePlotsAt(f.planeScale());
+            int[] none = new int[1];
+            int[] cam = cameraClasses(key, f, n, m, none), own = plotClasses(world, f, n, m), pl = planeDraws(key, f, n, m), fr = farRuleDraws(key, f, n, m);
+            double within = agree(cam, own, true, f, n, true), beyond = agree(cam, own, true, f, n, false), exact = agree(cam, own, false, f, n, null);
+            double sCam = speckle(cam, n, m), sPlane = speckle(pl, n, m), sFar = speckle(fr, n, m);
+            if (plots == 1) same = Math.min(same, Math.min(agree(cam, own, false, f, n, true), agree(cam, own, false, f, n, false)));
+            else {
+                folded = Math.min(folded, Math.min(within, beyond));
+                classes = Math.min(classes, exact);
+            }
+            if (none[0] != 0) same = 0;
+            gap = Math.max(gap, Math.abs(within - beyond));
+            speckleOver = Math.max(speckleOver, sCam - sPlane);
+            if (km == JERUS_KM) farMost = Math.max(farMost, sFar);
+            lines.add(new String[] { name, String.format("%.5f", km), String.valueOf(plots), String.valueOf(none[0]), String.format("%.4f%%", 100 * within), String.format("%.4f%%", 100 * beyond),
+                    String.format("%.3f%%", 100 * sPlane), String.format("%.3f%%", 100 * sCam), String.format("%.2f%%", 100 * sFar) });
+        }
+    }
+
+    static void nearPastReach(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData data, EarthData full) {
+        out.println("\n--- 2c. the near view past the reach is the plane's ground (MS2): the plane's own far nodes at the scale's stride through the camera wherever the square holds the ground,"
+                + " not the far rule's dither and discs ---");
+        double w = MapTiles.DESIGN_W, h = MapTiles.DESIGN_H, hk = GlobeFrame.HANDOFF_KM, least = GlobeFrame.leastKmPx();
+        int n = (int) w, m = (int) h;
+
+        // The rule: every scale closer than the handoff, the plane's nodes are drawn wherever the square holds the ground; the handoff and wider keep planeDrawsKm().
+        GlobeFrame past = new GlobeFrame(w, h, CITIES[0][0], CITIES[0][1]);
+        double[] far2000 = GlobeFrame.destination(CITIES[0][0], CITIES[0][1], 135, 2000);
+        past.set(far2000[0], far2000[1], JERUS_KM);
+        GlobeFrame wide = new GlobeFrame(w, h, CITIES[0][0], CITIES[0][1]);
+        wide.set(far2000[0], far2000[1], hk);
+        int onPlanet = 0, drawn = 0, holds = 0, wideHolds = 0;
+        for (double sy = 0.5; sy < h; sy += 7) {
+            for (double sx = 0.5; sx < w; sx += 7) {
+                if (past.onPlanet(sx, sy)) onPlanet++;
+                if (past.drawsHold(sx, sy)) drawn++;
+                if (past.planeHolds(sx, sy)) holds++;
+                if (wide.drawsHold(sx, sy) || wide.planeHolds(sx, sy)) wideHolds++;
+            }
+        }
+        out.printf("      2,000 km from the city at %.4f km a pixel: %,d points on the planet, %,d drawn from the plane's nodes, %,d the plane's to hover and click; at the handoff %,d%n", JERUS_KM, onPlanet, drawn, holds, wideHolds);
+        check("closer than the handoff - his scale, a quarter of the handoff and the closest - the plane's nodes are drawn wherever the square holds the ground, the reach and planeDrawsKm() or not;"
+                + " the handoff keeps planeDrawsKm()",
+                GlobeFrame.planeDrawnPastReach(JERUS_KM) && GlobeFrame.planeDrawnPastReach(NEAR_KM) && GlobeFrame.planeDrawnPastReach(least) && GlobeFrame.planeDrawnPastReach(hk / 1.0001)
+                        && !GlobeFrame.planeDrawnPastReach(hk) && !GlobeFrame.planeDrawnPastReach(hk * 4) && past.planeDrawnPastReach() && !wide.planeDrawnPastReach()
+                        && past.tier() == GlobeFrame.GROUND && !past.withinReach(far2000[0], far2000[1]) && onPlanet > 0 && drawn == onPlanet && holds == onPlanet && wideHolds == 0
+                        && past.planeDrawsKm() == wide.planeDrawsKm());
+        check("...a half-resolution copy of a view keeps its rule (the frame a moving view is drawn at is 2 x the km a pixel: past the handoff on its own)",
+                GlobeFrame.planeDrawnPastReach(hk / 1.5) && !GlobeFrame.planeDrawnPastReach(hk / 1.5 * 2) && past.copy(w / 2, h / 2, hk / 1.5 * 2).planeDrawnPastReach()
+                        && past.copy(w / 2, h / 2, hk / 1.5 * 2).drawsHold(w / 4, h / 4));
+        check("...and the legend is the plane's at every scale closer than the handoff, past the reach too, the GROUND tier's from the handoff and the picture's wide",
+                past.tier() == GlobeFrame.GROUND && past.legendTier() == GlobeFrame.PLANE && wide.legendTier() == GlobeFrame.GROUND
+                        && new GlobeFrame(w, h, CITIES[0][0], CITIES[0][1]).legendTier() == GlobeFrame.PICTURE);
+
+        // The square's edge: the plane's nodes where the square holds the pixel, the far rule beyond it - the north edge of the world's square, a view straddling it.
+        GlobeFrame edge = new GlobeFrame(256, 256, CITIES[0][0], CITIES[0][1]);
+        double[] ll = new double[2];
+        edge.plane().latLonOfPlot(World.SIDE / 2.0, 3, ll);
+        edge.set(ll[0], ll[1], GlobeFrame.HANDOFF_KM / 8);
+        int[] px = new int[256 * 256];
+        int held = 0, farOnes = 0, mismatch = 0;
+        double[] xy = new double[2];
+        int missed = edge.ground(MapFrame.nodePlotsAt(edge.planeScale()), (nx, ny) -> new int[MapFrame.NODE_PX * MapFrame.NODE_PX], (i, j, vx, vy, vz) -> NO_NODE, -2, px, 256, 0, 256, 0, 256);
+        for (int j = 0; j < 256; j++) {
+            for (int i = 0; i < 256; i++) {
+                boolean square = edge.plotAt(i + 0.5, j + 0.5, xy) && xy[0] >= 0 && xy[1] >= 0 && xy[0] < World.SIDE && xy[1] < World.SIDE;
+                if (edge.drawsHold(i + 0.5, j + 0.5) != square || edge.planeHolds(i + 0.5, j + 0.5) != square || (px[j * 256 + i] == NO_NODE) == square) mismatch++;
+                if (square) held++;
+                else if (edge.onPlanet(i + 0.5, j + 0.5)) farOnes++;
+            }
+        }
+        out.printf("      the world's square's north edge at %.3f km a pixel: %,d pixels the square holds, %,d on the planet past it; %d disagreements, %d found no node%n", edge.kmPx(), held, farOnes, mismatch, missed);
+        check("at the square's edge the plane's nodes draw the pixels the square holds - drawsHold(), planeHolds() and ground() agree - and the far rule's place is left the rest",
+                held > 1000 && farOnes > 1000 && mismatch == 0 && missed == 0);
+
+        // The classes through the camera over a view straddling the reach: each of the fixture's windows, with the city its reach north of it - and on the
+        // full file Cape Breton north of Baddeck, Jerus's two screenshots, the city at Halifax.
+        Near near = new Near();
+        List<LakePick> lakes = new java.util.ArrayList<>();
+        for (String name : List.of("Rotterdam", "Paris", "Perth")) {
+            EarthTerrainCheck.Spot spot = spots.get(name);
+            double[] city = GlobeFrame.destination(spot.lat(), spot.lon(), 0, GlobeFrame.REACH_KM * (1 + 1e-6));
+            World.Key key = World.Key.earth(EarthTerrainCheck.SEED, city[0], city[1], id);
+            for (double km : NEAR_SCALES) near.view(name, key, city, new double[] { spot.lat(), spot.lon() }, km, n, m);
+            lakes.addAll(lakes(name, data, key, city[0], city[1], spot.lat(), spot.lon(), 25));
+        }
+        if (full != null) {
+            String fid = EarthTerrain.use(full);
+            double[] halifax = CITIES[0], baddeck = { 46.10 + 37 / 111.2, -60.75 };
+            double[] at = GlobeFrame.destination(halifax[0], halifax[1], GlobeFrame.bearing(halifax[0], halifax[1], baddeck[0], baddeck[1]), GlobeFrame.REACH_KM * (1 + 1e-6));
+            World.Key key = World.Key.earth(EarthTerrainCheck.SEED, halifax[0], halifax[1], fid);
+            for (double km : NEAR_SCALES) near.view("Baddeck", key, halifax, at, km, n, m);
+            lakes.addAll(lakes("Baddeck", full, key, halifax[0], halifax[1], at[0], at[1], 40));
+        } else {
+            out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Cape Breton north of Baddeck was not drawn");
+        }
+        double worstSame = near.same, worstFolded = near.folded, worstClasses = near.classes, worstSpeckle = near.speckleOver, mostFar = near.farMost, worstGap = near.gap;
+        out.printf("      %-9s %-8s %5s %5s  %-9s %-9s  %s%n", "window", "km/px", "plots", "none", "within", "past", "isolated pixels: the plane's, the reprojected nodes', the far rule's");
+        for (String[] l : near.lines) out.printf("      %-9s %-8s %5s %5s  %-9s %-9s  %s %s %s%n", (Object[]) l);
+        check("one plot a pixel (his scale and the closest): the classes the nodes give through the camera are the plane's own, plot for plot, on both sides of the reach - and no pixel without a node",
+                worstSame >= NEAR_PAST_SAME);
+        check("two, four and eight plots a pixel: within NEAR_PAST_FOLDED of the plane's own plots' classes (the forest folded), and within NEAR_PAST_CLASSES with it told apart",
+                worstFolded >= NEAR_PAST_FOLDED && worstClasses >= NEAR_PAST_CLASSES);
+        check("...and the two sides of the reach agree with the plane's plots as well as each other: no seam where the camera crosses it", worstGap < 0.01);
+        check("not dithered: the reprojected nodes' pixels that differ from both horizontal neighbours are no more of them than the plane's own, to NEAR_PAST_SPECKLE",
+                worstSpeckle <= NEAR_PAST_SPECKLE);
+        check("...where the far rule's own speckle - what Jerus's second screenshot shows - is at least FAR_SPECKLE_AT_LEAST of the pixels over a forested window, so the fixture causes it", mostFar >= FAR_SPECKLE_AT_LEAST);
+
+        // The small lakes: the plane's frayed lake, not the far rule's disc.
+        out.printf("      small lakes where the far rule draws a disc and the plane a frayed lake (%d picked):%n", lakes.size());
+        boolean same = !lakes.isEmpty(), notDisc = !lakes.isEmpty(), plane = !lakes.isEmpty(), disc = !lakes.isEmpty();
+        for (LakePick l : lakes) {
+            out.printf("      %-8s %.4f, %.4f (%s the reach), %.0f plots across: plane %,.0f px parted %.2f from a disc, camera %,.0f px parted %.2f (IoU with the plane's %.4f), far rule %,.0f px parted %.3f (IoU %.2f)%n",
+                    l.where(), l.lat(), l.lon(), l.inside() ? "within" : "past", l.plots(), l.plane()[0], l.plane()[1], l.camera()[0], l.camera()[1], l.cameraIoU(), l.far()[0], l.far()[1], l.farIoU());
+            same &= l.cameraIoU() >= LAKE_SAME_IOU;
+            notDisc &= l.camera()[1] >= LAKE_IS_FRAYED;
+            plane &= l.farIoU() <= LAKE_DISC_IOU;
+            disc &= l.far()[1] <= LAKE_IS_A_DISC;
+        }
+        check("fixture: lakes where the far rule draws a perfect disc and the plane's lake is frayed are found - at least LAKES_PICKED of them in the windows", lakes.size() >= LAKES_PICKED && disc);
+        check("a small lake through the camera is the plane's own lake, pixel for pixel at one plot a pixel (LAKE_SAME_IOU), frayed by its own noise - not the far rule's disc", same && notDisc && plane);
+
+        // The cost: a frame of the camera over nodes held, the whole design view at his scale, on the main thread's CPU.
+        EarthTerrainCheck.Spot rot = spots.get("Rotterdam");
+        double[] city = GlobeFrame.destination(rot.lat(), rot.lon(), 0, GlobeFrame.REACH_KM * (1 + 1e-6));
+        World.Key key = World.Key.earth(EarthTerrainCheck.SEED, city[0], city[1], id);
+        GlobeFrame f = new GlobeFrame(w, h, city[0], city[1]);
+        f.set(rot.lat(), rot.lon(), JERUS_KM);
+        long plots = MapFrame.nodePlotsAt(f.planeScale()), span = (long) MapFrame.NODE_PX * plots;
+        Map<Long, int[]> nodes = new java.util.HashMap<>();
+        int[] frame = new int[n * m];
+        double cpu = Double.MAX_VALUE, wall = Double.MAX_VALUE;
+        for (int k = 0; k < 2 * FRAME_ROUNDS; k++) {
+            long c0 = MapCheck.monthClock(), w0 = System.nanoTime();
+            f.ground(plots, (nx, ny) -> nodes.computeIfAbsent(MapTiles.key(nx, ny), q -> widen(MapTiles.nodeTerrain(key, nx * span, ny * span, plots))), (i, j, vx, vy, vz) -> NO_NODE, -2, frame, n, 0, n, 0, m);
+            long c1 = MapCheck.monthClock(), w1 = System.nanoTime();
+            if (k >= FRAME_ROUNDS) {
+                cpu = Math.min(cpu, (c1 - c0) / 1e6);
+                wall = Math.min(wall, (w1 - w0) / 1e6);
+            }
+        }
+        out.printf("      a frame %d x %d at %.4f km a pixel, %d nodes held: %.1f ms of %s (%.1f ms wall) on one thread%n", n, m, JERUS_KM, nodes.size(), cpu,
+                MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock", wall);
+        check("a frame of the plane's nodes through the camera at his scale is drawn in no more than FRAME_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock"),
+                Timing.within(cpu, FRAME_MS) && nodes.size() > 4);
     }
 
     /* =====================================================================

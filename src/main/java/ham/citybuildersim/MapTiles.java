@@ -411,6 +411,18 @@ public final class MapTiles {
     /** ...its white's alpha: 0.55, the view's own edge's since 0.7.61 - ui/MapView's EDGE_ALPHA reads this one since 0.7.128, so the two are one dial. */
     public static final double EDGE_ALPHA = 0.55;
 
+    /**
+     * The expanded map's far node tints the world's deposits' sites as the plane's tiles do (TileRaster.siteTint(): the resource's colour,
+     * speckled, grey where worked) on a node of this many plots a pixel or fewer: 1 (MS2, Jerus 2026-10-26: the ground past the reach must
+     * look as the plane draws it inside). The plane tints its sites in every tile it paints - L0, L1 from 1.4 px a plot, L2 to 1 px - which is the near view's one plot
+     * a pixel (MapFrame.nodePlotsAt()), so the near view past the reach, laid from the nodes through the globe's camera, shows the same fields;
+     * from 2 plots a pixel the plane draws far nodes (and a dot a field would bury the city, MapView's overlays()), and so do they, untinted.
+     */
+    public static final long SITES_AT_MOST = 1;
+
+    /** How far past a node's box a site's district is looked for, in plots: 16 - a site is under 8 plots wide and is listed under the district of its centre. */
+    private static final long SITE_PAD = 16;
+
     /** The districts the last nodePixels() drew at PICTURE_FROM_PX or more with no current picture: what the view asks the pictures of (CityMap.pictureJobs()). */
     private final java.util.Set<CityMap.District> wanted = new java.util.LinkedHashSet<>();
 
@@ -453,6 +465,15 @@ public final class MapTiles {
      * generated world's (all FLAT), are the pixels as they were before.
      */
     public int nodePixels(long x0, long y0, long plots, byte[] ground, byte[] relief, int[] out) {
+        return nodePixels(x0, y0, plots, ground, relief, false, out);
+    }
+
+    /**
+     * ...and, where `sites` is true, the world's deposits' sites tinted from SITES_AT_MOST plots a pixel down as the plane's tiles tint
+     * them (MS2): the expanded map's own colouring (ui/MapView). The minimap's kept nodes (KeptNode) draw no site, and MapCheck 18 holds
+     * them equal to this without.
+     */
+    public int nodePixels(long x0, long y0, long plots, byte[] ground, byte[] relief, boolean sites, int[] out) {
         CityLand land = map.land();
         LandGrid grid = land == null ? null : land.grid();
         int n = MapFrame.NODE_PX, w = n + 2;
@@ -483,6 +504,10 @@ public final class MapTiles {
         Map<CityMap.District, DistrictPicture> pics = new java.util.HashMap<>();
         Map<CityMap.District, double[]> shares = new java.util.HashMap<>();
         BuildingVisual.Type[] types = map.types();
+        // The deposits' sites on the node (MS2): which pixels hold one, by index into `sites` plus one - none from SITES_AT_MOST + 1 plots a pixel.
+        java.util.List<CityMap.DrawnSite> siteList = sites && plots <= SITES_AT_MOST ? sitesIn(x0, y0, (long) n * plots) : java.util.List.of();
+        int[] siteAt = siteList.isEmpty() ? null : siteMarks(siteList, x0, y0, plots, n);
+        TilePainter.Input siteIn = siteAt == null ? null : siteInput();
         long lastKey = Long.MIN_VALUE;
         CityMap.District d = null;
         long dx0 = 0, dy0 = 0;
@@ -497,6 +522,7 @@ public final class MapTiles {
                 }
                 byte g = ground[k];
                 int c = relief == null ? TileRaster.GROUND[g] : TileRaster.colour(g, relief[k]);
+                if (siteAt != null && siteAt[k] > 0) c = siteTinted(siteIn, siteList.get(siteAt[k] - 1), g, x, y, c);
                 int cv = cover[(j + 1) * w + i + 1];
                 boolean owned = city[(j + 1) * w + i + 1];
                 if (!owned) c = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
@@ -1022,6 +1048,11 @@ public final class MapTiles {
      * where the node draws pictures, as nodePixels() asks.
      */
     public long nodeKey(long x0, long y0, long plots) {
+        return nodeKey(x0, y0, plots, false);
+    }
+
+    /** ...and, where `sites` is true, with the sites nodePixels(..., sites, ...) tints folded in (MS2): each one's kind, state and mine. */
+    public long nodeKey(long x0, long y0, long plots, boolean sites) {
         boolean pictures = World.DISTRICT / plots >= PICTURE_FROM_PX;
         long span = MapFrame.NODE_PX * plots, bdx = map.baseDX(), bdy = map.baseDY();
         long fx0 = Math.floorDiv(x0, World.DISTRICT), fx1 = Math.floorDiv(x0 + span - 1, World.DISTRICT);
@@ -1042,7 +1073,58 @@ public final class MapTiles {
         }
         long h = World.mix(landKey(x0, y0, plots) ^ 0x4B4559L);
         h = World.mix(h ^ runsKey());
+        if (sites && plots <= SITES_AT_MOST) {
+            // The sites a node tints (MS2): each one's kind, state and mine, summed so their order does not matter.
+            long sitesSum = 0;
+            for (CityMap.DrawnSite site : sitesIn(x0, y0, span)) {
+                sitesSum += World.mix(((long) site.kind() << 40) ^ ((long) site.state() << 32) ^ ((site.mine() + 1L) << 8) ^ site.x0() * 0x9E3779B97F4A7C15L ^ site.y0());
+            }
+            h = World.mix(h ^ sitesSum ^ 0x5349544553L);
+        }
         return World.mix(h ^ sum);
+    }
+
+    /** The deposits' sites overlapping the box [x0, x0 + span) each way, every resource's, owned or not (CityMap.siteList(), as the plane's tiles list them). */
+    private java.util.List<CityMap.DrawnSite> sitesIn(long x0, long y0, long span) {
+        long bdx = map.baseDX(), bdy = map.baseDY();
+        java.util.List<CityMap.DrawnSite> out = new java.util.ArrayList<>();
+        for (long fy = Math.floorDiv(y0 - SITE_PAD, World.DISTRICT); fy <= Math.floorDiv(y0 + span + SITE_PAD - 1, World.DISTRICT); fy++) {
+            for (long fx = Math.floorDiv(x0 - SITE_PAD, World.DISTRICT); fx <= Math.floorDiv(x0 + span + SITE_PAD - 1, World.DISTRICT); fx++) {
+                for (CityMap.DrawnSite site : map.siteList((int) (fx - bdx), (int) (fy - bdy))) {
+                    if (site.x1() >= x0 && site.x0() < x0 + span && site.y1() >= y0 && site.y0() < y0 + span) out.add(site);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** Each pixel of a node, the index plus one of the site whose square holds the plot at its middle, else 0. */
+    private static int[] siteMarks(java.util.List<CityMap.DrawnSite> sites, long x0, long y0, long plots, int n) {
+        int[] marks = new int[n * n];
+        for (int s = 0; s < sites.size(); s++) {
+            CityMap.DrawnSite site = sites.get(s);
+            long i0 = Math.max(0, Math.floorDiv(site.x0() - x0 - plots / 2 + plots - 1, plots)), i1 = Math.min(n - 1, Math.floorDiv(site.x1() - x0 - plots / 2, plots));
+            long j0 = Math.max(0, Math.floorDiv(site.y0() - y0 - plots / 2 + plots - 1, plots)), j1 = Math.min(n - 1, Math.floorDiv(site.y1() - y0 - plots / 2, plots));
+            for (long j = j0; j <= j1; j++) for (long i = i0; i <= i1; i++) marks[(int) (j * n + i)] = s + 1;
+        }
+        return marks;
+    }
+
+    /** The scratch tile input a site's tint is asked of: the plane's own function (TileRaster.siteTint()) reads a site's kind and state, the plot's place in its tile and the world's seed from one. */
+    private TilePainter.Input siteInput() {
+        TilePainter.Input in = new TilePainter.Input();
+        in.seed = map.seed();
+        return in;
+    }
+
+    /** A plot's ground colour under a site, as the plane tints it (TileRaster.groundColour()): the resource's colour, speckled, grey where worked - on water only an oil site's. */
+    private static int siteTinted(TilePainter.Input in, CityMap.DrawnSite site, byte ground, long x, long y, int c) {
+        if ((World.salt(ground) || ground == World.FRESH) && site.kind() != Resource.OIL.ordinal()) return c;
+        in.siteKind[0] = site.kind();
+        in.siteState[0] = site.state();
+        in.tx = Math.floorDiv(x, World.TILE);
+        in.ty = Math.floorDiv(y, World.TILE);
+        return TileRaster.siteTint(in, (int) (Math.floorMod(y, (long) World.TILE) * World.TILE + Math.floorMod(x, (long) World.TILE)), 0, c);
     }
 
     /** One district's part of nodeKey(): its place, version, built and owned plots, and (`pictures`) its current picture's stamp or NO_PICTURE. */
