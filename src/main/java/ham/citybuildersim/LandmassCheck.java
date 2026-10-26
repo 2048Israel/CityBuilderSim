@@ -74,6 +74,15 @@ import java.util.function.Predicate;
  *      the model's works gate leaves and draws no works on the field across the water; the terminals are laid on the landmass each
  *      is counted for, a leaving unit keeps its work, and the count falling takes the newest work on its landmass; home filled to what
  *      the model allows with the island unlinked draws nothing on the island.
+ *  11. THE WORDS (ET5 slice D). Every string of LandmassView rebuilt from the books' getters: the LANDMASSES table's heads, widths
+ *      and rows (home's, an island's no port links, and the same island linked); an offer's line (wholly or partly on a landmass no
+ *      port links, named "another landmass" until the city owns ground there), the room it adds and the clause its receipt ends with
+ *      (Game.buyLandParcel() end to end); the strip's line and its striped segment; the map's hover, chip and legend; the zoning
+ *      view's forest on linked ground; the card's chooser and its three link sentences, in the order the terminals go up; the notice
+ *      a month on (its key "island:648", title, body and button), settled the month a port links the island and never raised for a
+ *      landmass that is linked or for a city on one; the refusals' words; and the playtest's report line, which a city on one
+ *      landmass does not print. The mode `--probe <folder>` (not a section) reads the newest save under a folder with no Game and
+ *      prints what the city owns off its home landmass; it runs only when asked.
  *  12. GROWN ACROSS LANDMASSES. A city that owns the island for 24 months, then the two terminals by the card's path,
  *      then 96 months: every month the books are consistent (the linked free ground fits, the unlinked terminals' ground
  *      is the placements', the placements are the buildings' counts, and no works stands on a field across the water: getSites() is
@@ -225,6 +234,14 @@ public class LandmassCheck {
        ===================================================================== */
 
     public static void main(String[] args) throws Exception {
+        // --probe <folder>: what a kept city owns across the water, read from its save alone; runs only when asked, never in the suite.
+        if (args.length > 0 && args[0].equals("--probe")) {
+            if (args.length < 2) {
+                out.println("usage: LandmassCheck --probe <folder of a kept city's saves>");
+                System.exit(2);
+            }
+            System.exit(probe(args[1]));
+        }
         out.println("--- the fixture ---");
         byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);
         check("EarthCheck's fixture is beside the classes (" + EarthCheck.FIXTURE + ")", fixture != null);
@@ -249,11 +266,91 @@ public class LandmassCheck {
         thePickers(f, id);
         theSave(f);
         theMap(f);
+        theWords(f);
         grown(f);
         fullFile(theEarth());
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* =====================================================================
+       THE PROBE: --probe <folder>
+       ===================================================================== */
+
+    /** The newest save under a folder: a .json file that is no history, the latest written; null for none. */
+    static java.nio.file.Path newestSave(java.nio.file.Path folder) throws java.io.IOException {
+        java.nio.file.Path best = null;
+        long newest = Long.MIN_VALUE;
+        try (var walk = java.nio.file.Files.walk(folder, 8)) {
+            for (java.nio.file.Path p : (Iterable<java.nio.file.Path>) walk::iterator) {
+                String name = p.getFileName().toString();
+                if (!java.nio.file.Files.isRegularFile(p) || !name.endsWith(".json") || name.endsWith("-history.json")) continue;
+                long at = java.nio.file.Files.getLastModifiedTime(p).toMillis();
+                if (at > newest) { newest = at; best = p; }
+            }
+        }
+        return best;
+    }
+
+    /**
+     * What a kept city owns across the water, from its save alone (ET5, the roll-out's check on whether the playtests' cities
+     * reach another landmass): the newest save under the folder read through DataSave and CityLand.restore() and
+     * LandMarket.restoreOffers() with no Game, so that a save from before this build (format 46, which the load refuses for an
+     * Earth city) is read too, then counted by landmass with the model's own reader (Landmasses.recount(), LandMarket's
+     * offerSplit()). Every landmass off home counts, linked or not: no terminal is read. Prints one line - "owned off home:
+     * 0.000 km² (ids none); offers off home: 0 of 24" - and, for each landmass off home, its name and area, in UTF-8 whatever the
+     * console is. Writes nothing. Runs only when asked: the suite does not call it.
+     */
+    static int probe(String folder) throws Exception {
+        PrintStream out = new PrintStream(new java.io.FileOutputStream(java.io.FileDescriptor.out), true, StandardCharsets.UTF_8);
+        java.nio.file.Path dir = java.nio.file.Path.of(folder);
+        java.nio.file.Path file = java.nio.file.Files.isDirectory(dir) ? newestSave(dir) : java.nio.file.Files.isRegularFile(dir) ? dir : null;
+        if (file == null) {
+            out.println("probe: no save found under " + folder);
+            return 1;
+        }
+        DataSave save = new com.google.gson.Gson().fromJson(java.nio.file.Files.readString(file), DataSave.class);
+        if (save == null) {
+            out.println("probe: " + file + " is empty");
+            return 1;
+        }
+        World.Key key = save.getFounding(0).getWorldKey();
+        CityLand land = CityLand.restore(key, save.getLandCentre(), save.getLandCentreRects(), save.getLandHoldings(), save.getLandPartFields(),
+                save.getLandConverted(), save.getLandCentreRelief(), save.getLandHoldingsRelief());
+        if (land == null) {
+            out.println("probe: the save carries no land on the block grid (an older format)");
+            return 1;
+        }
+        Landmasses lms = new Landmasses();
+        LandMarket market = new LandMarket();
+        try {
+            lms.recount(World.of(key), land);
+            market.attach(land);
+            market.setLandmasses(lms);
+            market.restoreOffers(save.getLandOffers(), save.getLandOffersRelief(), save.getNextOfferId());
+        } catch (RuntimeException e) {
+            out.println("probe: the save's world could not be read: " + e.getMessage());
+            return 1;
+        }
+        int offers = 0, off = 0;
+        for (LandParcel p : market.getListing()) {
+            offers++;
+            if (p.getUnlinkedDryKm2() > 0) off++;
+        }
+        StringBuilder ids = new StringBuilder();
+        double owned = 0;
+        for (Landmasses.Row r : lms.rows()) {
+            if (r.home()) continue;
+            owned += LandManager.km2(r.drySqFt());
+            ids.append(ids.length() == 0 ? "" : ", ").append(r.id());
+        }
+        out.printf(java.util.Locale.ROOT, "owned off home: %.3f km² (ids %s); offers off home: %d of %d%n", owned, ids.length() == 0 ? "none" : ids.toString(), off, offers);
+        for (Landmasses.Row r : lms.rows()) {
+            if (r.home()) continue;
+            out.printf(java.util.Locale.ROOT, "  %d: %s, %.3f km²%n", r.id(), r.name(), LandManager.km2(r.drySqFt()));
+        }
+        return 0;
     }
 
     /* =====================================================================
@@ -2159,6 +2256,332 @@ public class LandmassCheck {
         report("home filled to what the model allows with the island unlinked: " + ordered + " houses more, nothing is drawn on the island - no box, street, run or siding",
                 ordered > 0 && e.books().anyUnlinked() && e.lm.getAvailableSqFt() < house.getLandSqFt() && filled[0] == 0 && filled[1] == 0 && filled[2] == 0 && filled[3] == 0 && e.g.getMapFailures() == 0,
                 String.format("%d houses; %d under boxes, %d streets, %d runs, %d sidings on %d island plots; linked free %,.0f sq ft", ordered, filled[0], filled[1], filled[2], filled[3], filled[4], e.lm.getAvailableSqFt()));
+    }
+
+    /* =====================================================================
+       11. THE WORDS
+       ===================================================================== */
+
+    /** A km2 figure as the report line writes it. */
+    static String km2Words(double sqFt) { return String.format(java.util.Locale.ROOT, "%.1f km2", LandManager.km2(sqFt)); }
+
+    /** The landmass kinds of terminal ordered by the card's path: the general cargo terminal, on the island. */
+    static boolean islandPort(City c, BuildingsTemplate gc) {
+        return orderOn(c, gc, 1, true, 648) == Game.BuildResult.SUCCESS && c.books().portsOn(648)[Ports.Cargo.GENERAL.ordinal()] >= 1;
+    }
+
+    static void theWords(Fixtures f) {
+        out.println("\n--- 11. the words: every LandmassView string rebuilt from getters; the notice's key, body and button; the card's three link sentences ---");
+        if (!f.ok) { check("fixtures were found", false); return; }
+        World w = World.of(f.key);
+
+        // The city of the words: the island (unlinked, Island 2) and a stretch of home's shore, no terminal standing.
+        City x = portCity(f, "landmass-words", true);
+        Game g = x.g;
+        LandManager lm = x.lm;
+        Landmasses lms = x.books();
+        CityLand land = lm.getCityLand();
+        BuildingsTemplate gc = tpl(x, "General Cargo Terminal");
+        int tid = gc.getId(), home = lms.home();
+        List<Landmasses.Row> rows = lms.rows();
+        report("premise: the city owns home and Island 2 (648), the island unlinked, and no terminal stands on either",
+                rows.size() == 2 && rows.get(0).home() && rows.get(1).id() == 648 && rows.get(1).name().equals("Island 2") && !lms.linked(648)
+                        && LandmassView.terminalsOn(lms, home) == 0 && LandmassView.terminalsOn(lms, 648) == 0 && lms.anyUnlinked(),
+                describe(rows));
+        if (rows.size() != 2 || !rows.get(0).home()) return;
+        Landmasses.Row homeRow = rows.get(0), isleRow = rows.get(1);
+
+        // ---- the small words
+        check("the names: an owned landmass is 'Home' or 'Island 2'; one the city owns nothing on is 'another landmass'",
+                LandmassView.landmassName(lms, home).equals("Home") && LandmassView.landmassName(lms, 0).equals("Home") && LandmassView.landmassName(lms, 648).equals("Island 2")
+                        && LandmassView.landmassName(f.b.books(), 648).equals("another landmass") && LandmassView.landmassName(null, 648).equals("another landmass"));
+        check("ordinals read 1st 2nd 3rd 4th 11th 12th 13th 21st 22nd 101st 111th",
+                LandmassView.ordinal(1).equals("1st") && LandmassView.ordinal(2).equals("2nd") && LandmassView.ordinal(3).equals("3rd") && LandmassView.ordinal(4).equals("4th")
+                        && LandmassView.ordinal(11).equals("11th") && LandmassView.ordinal(12).equals("12th") && LandmassView.ordinal(13).equals("13th")
+                        && LandmassView.ordinal(21).equals("21st") && LandmassView.ordinal(22).equals("22nd") && LandmassView.ordinal(101).equals("101st") && LandmassView.ordinal(111).equals("111th"));
+
+        // ---- the table
+        check("the table's heads, widths and alignment are one set of five columns: landmass, dry owned, free, ports, linked",
+                LandmassView.HEADS.length == 5 && LandmassView.WIDTHS.length == 5 && LandmassView.RIGHT.length == 5
+                        && Arrays.equals(LandmassView.HEADS, new String[] { "landmass", "dry owned", "free", "ports", "linked" }) && LandmassView.WIDTHS[0] == 0);
+        check("the table is drawn at two landmasses and not at one: the twin on one landmass, a bare books and the generated world's have none",
+                LandmassView.shown(lms) && !LandmassView.shown(f.b.books()) && !LandmassView.shown(new Landmasses()) && !LandmassView.shown(null));
+        List<LandmassView.Line> lines = LandmassView.rows(lm);
+        String linkedFree = LandManager.areaWords(lm.getAvailableSqFt());
+        LandmassView.Line h = lines.get(0), i = lines.get(1);
+        check("home's row: its name, its dry ground from the books, the linked ground's one free figure, no terminal, 'home' in green",
+                lines.size() == 2 && h.id() == home && h.name().equals("Home") && h.dry().equals(LandManager.areaWords(homeRow.drySqFt()))
+                        && h.free().equals(linkedFree + " free on linked ground") && h.freeTone() == LandmassView.Tone.PLAIN && h.ports().equals("none")
+                        && h.linked().equals("home") && h.linkedTone() == LandmassView.Tone.GOOD);
+        check("the island's row: its dry ground, its own unbuilt ground and 'only a port', and in amber why it is not linked - no port here and none at home",
+                i.id() == 648 && i.name().equals("Island 2") && i.dry().equals(LandManager.areaWords(isleRow.drySqFt()))
+                        && i.free().equals(LandManager.areaWords(lms.unlinkedFreeSqFt(648)) + " free · only a port") && i.freeTone() == LandmassView.Tone.WARN
+                        && i.ports().equals("none") && i.linked().equals(LandmassView.needsWords(lms, 648)) && i.linked().equals("no: needs a port here and one at home")
+                        && i.linkedTone() == LandmassView.Tone.WARN && i.tip().startsWith("Island 2: ") && h.tip().startsWith("Home: "));
+        check("...and its tooltip reads as one sentence to its end: '... no works on its fields, until a port links it (needs a port here and one at home).'",
+                i.tip().equals("Island 2: " + i.dry() + " of dry ground owned that no port links. It is owned, counted and priced as ever, but no building may stand on it"
+                        + " except a sea terminal, and no works on its fields, until a port links it (needs a port here and one at home)."));
+
+        // ---- an offer, the strip, the receipt
+        City o = new City("landmass-words-offers", f.key, 0);
+        LandMarket market = o.lm.getMarket();
+        long[] near0 = plotOf(o.w, RLAT, 4.2667);
+        Square h1 = squareWith(o.w, 1, near0[0], near0[1], 30, s -> s.pure() && s.onId() >= 500 && s.onId() <= 3000);
+        Square isl = f.withoutShore;
+        report("fixture: a square of home's ground for an offer", h1 != null, h1 == null ? "none" : h1.onId() + " dry plots");
+        if (h1 == null) return;
+        LandParcel islandOffer = market.measure(new GridOffers.Rect(0, 0, o.lm.getCityLand().level(), isl.x0, isl.y0, isl.x0 + SQUARE, isl.y0 + SQUARE));
+        LandParcel homeOffer = market.measure(new GridOffers.Rect(0, 1, o.lm.getCityLand().level(), h1.x0, h1.y0, h1.x0 + SQUARE, h1.y0 + SQUARE));
+        quietly(() -> market.putOffers(List.of(islandOffer, homeOffer)));
+        LandParcel isle = market.find(islandOffer.getId()), near = market.find(homeOffer.getId());
+        report("premise: the city owns nothing off home (single), and its shelf holds an offer wholly on the island and one of home's ground",
+                isle != null && near != null && o.books().single() && isle.getUnlinkedDryKm2() > 0 && near.getUnlinkedDryKm2() == 0 && LandmassView.islandTagged(isle) && !LandmassView.islandTagged(near),
+                isle == null ? "none" : String.format("%.4f km2 of %.4f dry unlinked", isle.getUnlinkedDryKm2(), isle.getDryKm2()));
+        if (isle == null || near == null) return;
+        double keptSize = near.getSizeSqFt();
+        String clause = ", which no port links: only a port can be built there until it has one";
+        check("an offer wholly on a landmass the city owns nothing on is worded 'On another landmass', and one of home's ground has no line",
+                LandmassView.offerLine(isle, o.books()).equals("On another landmass" + clause) && LandmassView.offerLine(near, o.books()).isEmpty());
+        check("room: an island offer adds its size less its unlinked dry ground, which is less than its size; an offer of home's ground adds exactly its size",
+                LandmassView.roomSqFt(isle) == Math.max(0, isle.getSizeSqFt() - LandManager.sqFt(isle.getUnlinkedDryKm2())) && LandmassView.roomSqFt(isle) < isle.getSizeSqFt()
+                        && LandmassView.roomSqFt(near) == keptSize);
+        // A mixed offer: part of its dry ground on the island (named from the books of the city that owns it).
+        double dry = 10;
+        LandParcel mixed = new LandParcel(900, 0, 3, 0, 0, 0, 0, 0, dryArea(dry), null, new int[CityLand.KINDS], new double[CityLand.KINDS], 100, 0);
+        mixed.setUnlinked(dry * 0.4, dry * 0.4, 648);
+        check("an offer partly on the island says how much: '4.00 km2 of its dry ground is on Island 2, which no port links', and its receipt the same share",
+                LandmassView.offerLine(mixed, lms).equals(LandMap.area(dry * 0.4) + " of its dry ground is on Island 2" + clause)
+                        && LandmassView.receiptWords(mixed, lms).equals(" - " + LandMap.area(dry * 0.4) + " of it on Island 2, which no port links"));
+        mixed.setUnlinked(dry, dry, 648);
+        check("...and one wholly on it says 'On Island 2' and its receipt ' - on Island 2, which no port links'",
+                LandmassView.offerLine(mixed, lms).equals("On Island 2" + clause) && LandmassView.receiptWords(mixed, lms).equals(" - on Island 2, which no port links"));
+        // Several picks on the map card: one line for all of them, as one offer's tooltip says it.
+        check("several picks: the map card's line says 'Their dry ground is on Island 2' for picks wholly on it, how much of it for a mixed set, and nothing for picks of home's ground",
+                LandmassView.picksLine(List.of(mixed), lms).equals("Their dry ground is on Island 2" + clause)
+                        && LandmassView.picksLine(List.of(mixed, near), lms).equals(LandMap.area(mixed.getUnlinkedDryKm2()) + " of their dry ground is on Island 2" + clause)
+                        && LandmassView.picksLine(List.of(near), lms).isEmpty() && LandmassView.picksLine(List.of(), lms).isEmpty());
+        mixed.setUnlinked(0, 0, 0);
+        check("an offer with no unlinked ground has no line, no clause and the tag is not its", LandmassView.offerLine(mixed, lms).isEmpty() && LandmassView.receiptWords(mixed, lms).isEmpty() && !LandmassView.islandTagged(mixed));
+        // The receipt, end to end: Game.buyLandParcel() on an island offer and on one of home's.
+        quietly(() -> o.g.setCashForTest(1e13));
+        boolean[] bought = new boolean[2];
+        quietly(() -> bought[0] = o.g.buyLandParcel(isle.getId()));
+        String islandReceipt = o.g.getLastLandReceipt();
+        String receiptClause = LandmassView.receiptWords(isle, o.books());
+        report("premise: the island offer was bought, and the city now owns Island 2 unlinked", bought[0] && o.books().anyUnlinked() && o.books().rows().size() == 2, islandReceipt);
+        check("the island offer's receipt ends with the clause, ' - on Island 2, which no port links.', and the clause names it from the books after the purchase",
+                receiptClause.equals(" - on Island 2, which no port links") && islandReceipt != null && islandReceipt.startsWith("Bought ") && islandReceipt.endsWith(receiptClause + "."));
+        quietly(() -> bought[1] = o.g.buyLandParcel(near.getId()));
+        String homeReceipt = o.g.getLastLandReceipt();
+        check("an offer of home's ground is bought with the receipt it always had: no clause", bought[1] && homeReceipt != null && homeReceipt.startsWith("Bought ") && !homeReceipt.contains("no port links")
+                && !homeReceipt.equals(islandReceipt));
+        check("...and the offer line names the island once the city owns it: 'On Island 2, which no port links ...'", LandmassView.offerLine(isle, o.books()).equals("On Island 2" + clause));
+
+        // The strip's lines.
+        List<String> strip = LandmassView.unlinkedLines(lm);
+        check("the strip has a line for the landmass no port links: its name, what the city owns of it, what is free, and that only a port may be built",
+                strip.size() == 1 && strip.get(0).equals("Island 2: " + LandManager.areaWords(lms.dryPlots(648) * SQ_FT_PER_PLOT) + " owned, " + LandManager.areaWords(lms.unlinkedFreeSqFt(648))
+                        + " free, no port links it: only a port can be built there"));
+        check("...its striped segment's tip and key, and no line at all for the twin on one landmass",
+                LandmassView.segmentWords(lm).equals("free, no port links it · " + LandManager.areaWords(lm.getUnlinkedFreeSqFt()) + " on " + lm.getUnlinkedNames()
+                        + "\nOnly a port can be built there until it has one.") && LandmassView.SEGMENT_KEY.equals("free, no port links it") && LandmassView.unlinkedLines(f.b.lm).isEmpty());
+        // The refusal page's lines and the report line, before the terminals.
+        List<String> noLand = LandmassView.noLandLines(lm);
+        check("the not-enough-land page has the investors' clause and the way to link: none for the twin",
+                noLand.size() == 2 && noLand.get(0).equals(LandmassView.unlinkedWords(lm.getUnlinkedFreeSqFt(), lm.getUnlinkedNames()) + ".")
+                        && noLand.get(1).startsWith("Only a sea terminal can be built there") && LandmassView.noLandLines(f.b.lm).isEmpty());
+        String report = LandmassView.reportLine(lms);
+        String expectedReport = "ITS LANDMASSES AT THE END: Home " + km2Words(homeRow.drySqFt()) + ", Island 2 " + km2Words(isleRow.drySqFt()) + " (not linked); terminals off home 0";
+        check("the playtest's line after ITS GROUND AT THE END lists the landmasses, the unlinked one marked, and the terminals off home",
+                expectedReport.equals(report) && expectedReport.startsWith("ITS LANDMASSES AT THE END: Home ") && LongPlaytest.landmassesLine(lm).equals("  " + expectedReport));
+        check("...and a city on one landmass prints nothing of it: the line is null for the twin, a bare books, null books and the founded single city (a one-landmass city's report is what it was)",
+                LandmassView.reportLine(f.b.books()) == null && LandmassView.reportLine(new Landmasses()) == null && LandmassView.reportLine(null) == null
+                        && LongPlaytest.landmassesLine(f.b.lm) == null && LongPlaytest.landmassesLine(new City("landmass-words-single", f.key, 0).lm) == null);
+
+        // ---- the map's words: the hover, the legend, the chip
+        List<LandMap.Chip> chips = LandMap.unlinkedChips(lms, x.w, land);
+        Square sq = f.withShore;
+        long px = -1, py = -1;
+        search:
+        for (long y = sq.y0(); y < sq.y0() + SQUARE; y++) {
+            for (long xx = sq.x0(); xx < sq.x0() + SQUARE; xx++) {
+                if (ownedDryOn(x.w, land, 648, xx, y)) { px = xx; py = y; break search; }
+            }
+        }
+        report("premise: a plot of owned dry ground on the island, and one chip for the island", px >= 0 && chips.size() == 1 && chips.get(0).id() == 648 && chips.get(0).plots() == lms.dryPlots(648),
+                chips.isEmpty() ? "no chip" : chips.get(0).plots() + " plots");
+        if (px >= 0 && chips.size() == 1) {
+            List<String> card = LandMap.hoverWords(land, lm.getMarket(), lms, px, py, LandMap.CARD_FIELDS);
+            List<String> plain = LandMap.hoverWords(land, lm.getMarket(), px, py, LandMap.CARD_FIELDS);
+            List<String> without = new ArrayList<>(card);
+            if (without.size() > 2) without.remove(2);
+            check("the hover over owned ground on the island has one line more, under whose it is: 'On Island 2, which no port links: only a port can be built here'",
+                    card.size() == plain.size() + 1 && card.get(2).equals(LandmassView.hoverWords(lms, 648))
+                            && card.get(2).equals("On Island 2, which no port links: only a port can be built here") && without.equals(plain));
+            long hx = land.siteX(), hy = land.siteY();
+            List<String> atHome = LandMap.hoverWords(land, lm.getMarket(), lms, hx, hy, LandMap.CARD_FIELDS);
+            check("...none over home's ground, none for books of a city on one landmass or no books, and the old five-argument card is the card with no books",
+                    atHome.equals(LandMap.hoverWords(land, lm.getMarket(), hx, hy, LandMap.CARD_FIELDS)) && LandMap.hoverWords(land, lm.getMarket(), null, px, py, LandMap.CARD_FIELDS).equals(plain)
+                            && LandMap.hoverWords(land, lm.getMarket(), f.b.books(), px, py, LandMap.CARD_FIELDS).equals(plain));
+            check("the chip says the landmass, what the city owns of it and why it is not linked, in the model's words: 'Island 2 · <its area> · not linked: needs a port here and one at home'",
+                    LandmassView.chipWords(lms, chips.get(0)).equals("Island 2 · " + LandMap.area(chips.get(0).plots() * World.KM2_PER_PLOT) + " · not linked: needs a port here and one at home"));
+        }
+        List<LandMap.Entry> legend = LandMap.unlinkedLegend(lms);
+        check("the legend has one entry while a landmass is unlinked, 'Not linked: only a port' in the warning amber, and none for a city on one landmass or none",
+                legend.size() == 1 && legend.get(0).words().equals("Not linked: only a port") && legend.get(0).colour() == LandMap.UNLINKED_COLOUR
+                        && LandMap.unlinkedLegend(f.b.books()).isEmpty() && LandMap.unlinkedLegend(null).isEmpty());
+
+        // ---- the zoning view reads the forest on linked ground
+        ZoningView.Figures figs = ZoningView.figures(g);
+        ZoningView.Forest forest = ZoningView.forest(g, g.getZoning());
+        ZoningView.Figures twinFigs = ZoningView.figures(f.b.g);
+        ZoningView.Forest twinForest = ZoningView.forest(f.b.g, f.b.g.getZoning());
+        report("premise: the island holds forest, so the forest on linked ground is less than the city's whole forest",
+                lms.unlinkedForestSqFt() > 0 && lm.getLinkedForestSqFt() < lm.getForestSqFt(),
+                String.format("island forest %,.0f sq ft, linked %,.0f of the city's %,.0f", lms.unlinkedForestSqFt(), lm.getLinkedForestSqFt(), lm.getForestSqFt()));
+        report("the zoning view's forest figures are the forest on linked ground (LandManager.getLinkedForestSqFt()); the twin's are the city's whole forest to the bit",
+                figs.forestSqFt() == lm.getLinkedForestSqFt() && forest.forestSqFt() == lm.getLinkedForestSqFt()
+                        && twinFigs.forestSqFt() == f.b.lm.getForestSqFt() && twinForest.forestSqFt() == f.b.lm.getForestSqFt(),
+                String.format("island forest %,.0f sq ft of the city's %,.0f", lms.unlinkedForestSqFt(), lm.getForestSqFt()));
+        // The cleared figure: the built ground on linked ground that stands on forest, worked out here from the books' getters.
+        double linkedBare = Math.max(0, lm.getLinkedOwnedSqFt() - lm.getLinkedForestSqFt());
+        double linkedCleared = Math.max(lm.getForestClearedSqFt(), Math.min(lm.getLinkedForestSqFt(), Math.max(0, lm.getLinkedAllocatedSqFt() - linkedBare)));
+        double twinCleared = Math.max(f.b.lm.getForestClearedSqFt(),
+                Math.min(f.b.lm.getForestSqFt(), Math.max(0, f.b.lm.getAllocatedSqFt() - f.b.lm.getBareSqFt())));
+        report("...and the cleared forest is worked out on linked ground, never past it (the island's forest is no forest the city can clear); the twin's is the old expression to the bit",
+                forest.clearedSqFt() == linkedCleared && forest.clearedSqFt() <= Math.max(lm.getForestClearedSqFt(), lm.getLinkedForestSqFt())
+                        && twinForest.clearedSqFt() == twinCleared,
+                String.format("cleared %,.0f sq ft of the linked forest's %,.0f", forest.clearedSqFt(), lm.getLinkedForestSqFt()));
+
+        // ---- the card's chooser and its three link sentences, in the order the terminals go up
+        List<Landmasses.Row> choices = g.portLandmassChoices(gc);
+        check("the chooser's chips are the landmasses with shore, home first, the island marked while no port links it; home is the one lit by default and the island once picked",
+                choices.size() == 2 && Arrays.equals(LandmassView.choiceNames(choices), new String[] { "Home", "Island 2 (not linked)" })
+                        && "Home".equals(LandmassView.currentChoice(choices, lms.portLandmass(tid, Landmasses.CHOSEN))));
+        g.choosePortLandmass(gc, 648);
+        check("...once the card picks the island, its chip is the one lit", "Island 2 (not linked)".equals(LandmassView.currentChoice(choices, lms.portLandmass(tid, Landmasses.CHOSEN))));
+        check("a terminal on the island with no port standing anywhere links nothing: 'links nothing until home has a port too'; at home it links nothing yet",
+                LandmassView.linkWords(lms, 648).equals("links nothing until home has a port too") && LandmassView.linkWords(lms, home).isEmpty()
+                        && LandmassView.linkWords(lms, Landmasses.NO_LANDMASS).isEmpty() && LandmassView.linkWords(f.b.books(), f.b.books().home()).isEmpty());
+
+        // The notice, a month on: raised, its words the view's, its button the port card's.
+        quietly(() -> g.simulateMonths(1));
+        Notice notice = g.getInbox().live(LandmassView.noticeKey(648));
+        int islandNotices = 0;
+        for (Notice n : g.getInbox().all()) if (n.getKey().startsWith("island:") && !n.isResolved()) islandNotices++;
+        check("a month on, one notice stands for the island: key 'island:648', its title and body the view's, in lines of at most " + Inbox.BODY_COLUMNS + " characters",
+                notice != null && islandNotices == 1 && notice.getKey().equals("island:648") && notice.getTitle().equals(LandmassView.noticeTitle(lms, 648))
+                        && notice.getTitle().equals("Island 2: owned, but no port links it") && notice.getBody().equals(LandmassView.noticeBody(lms, 648))
+                        && notice.getBody().stream().allMatch(l -> l.length() <= Inbox.BODY_COLUMNS) && !notice.isResolved());
+        check("its body says what the city owns there and what links it, in the books' own figures",
+                notice != null && notice.getBody().get(0).startsWith("The city owns " + LandManager.areaWords(lms.dryPlots(648) * SQ_FT_PER_PLOT) + " of dry ground on Island 2")
+                        && String.join(" ", notice.getBody()).contains(LandmassView.needsWords(lms, 648).substring("no: ".length())));
+        check("its button is 'Build a port there ›', the key's id is read back, and no other key is an island's",
+                LandmassView.NOTICE_BUTTON.equals("Build a port there ›") && LandmassView.noticeKey(648).equals("island:648") && LandmassView.noticeId("island:648") == 648
+                        && LandmassView.noticeId("island:12025") == 12025 && LandmassView.noticeId("landlock") == -1 && LandmassView.noticeId("island:x") == -1
+                        && LandmassView.noticeId("island:") == -1 && LandmassView.noticeId(null) == -1 && LandmassView.noticeId("autobuild-land") == -1);
+        BuildingsTemplate door = LandmassView.portFor(g.getBuildingManager().getTemplates());
+        check("the button opens the General Cargo Terminal's card (the first terminal of that kind in the catalogue); no terminal in the catalogue is none",
+                door != null && door.getName().equals("General Cargo Terminal") && LandmassView.portFor(List.of()) == null);
+        City single = new City("landmass-words-single2", f.key, 40);
+        quietly(() -> single.g.simulateMonths(1));
+        boolean any = false;
+        for (Notice n : single.g.getInbox().all()) any |= n.getKey().startsWith("island:");
+        check("a city on one landmass raises no island notice, ever", !any);
+
+        // An island terminal first: it has a port and needs one at home.
+        quietly(() -> g.choosePortLandmass(gc, 648));
+        check("a terminal ordered for the island by the card's path is placed there", islandPort(x, gc) && lms.portsOn(648)[Ports.Cargo.GENERAL.ordinal()] == 1 && !lms.linked(648));
+        check("the island has a port and no linked landmass has one: 'no: it has a port, and needs one at home', and a terminal at home 'links Island 2, which has a port'",
+                LandmassView.needsWords(lms, 648).equals("no: it has a port, and needs one at home") && LandmassView.linkWords(lms, home).equals("links Island 2, which has a port")
+                        && LandmassView.portsWords(lms, 648).equals("1 general cargo") && LandmassView.rows(lm).get(1).ports().equals("1 general cargo")
+                        && LandmassView.reportLine(lms).endsWith("; terminals off home 1"));
+        // ...and home's, which links it.
+        check("a terminal at home is placed by the rule and links the island", order(x, gc, 1, true, Landmasses.RULE) == Game.BuildResult.SUCCESS && lms.linked(648) && lms.portsOn(home)[Ports.Cargo.GENERAL.ordinal()] == 1);
+        List<LandmassView.Line> linkedLines = LandmassView.rows(lm);
+        check("linked, the island's row says 'yes' in green and shares the linked free ground's one figure with home; the chooser no longer marks it; nothing more is linked by either",
+                linkedLines.get(1).linked().equals("yes") && linkedLines.get(1).linkedTone() == LandmassView.Tone.GOOD
+                        && linkedLines.get(1).free().equals(LandManager.areaWords(lm.getAvailableSqFt()) + " free on linked ground") && linkedLines.get(0).free().equals(linkedLines.get(1).free())
+                        && Arrays.equals(LandmassView.choiceNames(g.portLandmassChoices(gc)), new String[] { "Home", "Island 2" })
+                        && LandmassView.linkWords(lms, 648).isEmpty() && LandmassView.linkWords(lms, home).isEmpty()
+                        && LandmassView.unlinkedLines(lm).isEmpty() && LandmassView.noLandLines(lm).isEmpty() && LandMap.unlinkedLegend(lms).isEmpty()
+                        && LandmassView.reportLine(lms).equals("ITS LANDMASSES AT THE END: Home " + km2Words(lms.rows().get(0).drySqFt()) + ", Island 2 " + km2Words(lms.rows().get(1).drySqFt()) + "; terminals off home 1"));
+        // The notice is settled the month a port links the landmass, and none is raised for a landmass that is linked.
+        quietly(() -> g.simulateMonths(1));
+        Notice settled = g.getInbox().latest(LandmassView.noticeKey(648));
+        int liveNow = 0;
+        for (Notice n : g.getInbox().all()) if (n.getKey().startsWith("island:") && !n.isResolved()) liveNow++;
+        check("the month a port links the island its notice is settled, and no island notice stands for a landmass that is linked",
+                settled != null && settled.isResolved() && g.getInbox().live("island:648") == null && liveNow == 0);
+        quietly(() -> g.simulateMonths(2));
+        check("...and it stays settled, none raised again while the island is linked", g.getInbox().live("island:648") == null && g.getInbox().latest("island:648").isResolved());
+
+        // A terminal at home first: the island then becomes the city's second linked landmass.
+        City y = portCity(f, "landmass-words-y", true);
+        BuildingsTemplate gcY = tpl(y, "General Cargo Terminal");
+        check("a terminal at home is placed and stands", order(y, gcY, 1, true, Landmasses.RULE) == Game.BuildResult.SUCCESS && y.books().portsOn(y.books().home())[Ports.Cargo.GENERAL.ordinal()] == 1);
+        y.g.choosePortLandmass(gcY, 648);
+        check("with home's port standing the island is unlinked still, 'no: needs a port here (home has one)', and a terminal there 'Island 2 becomes the city's 2nd linked landmass'",
+                !y.books().linked(648) && LandmassView.needsWords(y.books(), 648).equals("no: needs a port here (home has one)")
+                        && LandmassView.linkWords(y.books(), y.books().portLandmass(gcY.getId(), Landmasses.CHOSEN)).equals("Island 2 becomes the city's 2nd linked landmass")
+                        && LandmassView.chipWords(y.books(), LandMap.unlinkedChips(y.books(), y.w, y.lm.getCityLand()).get(0)).endsWith("not linked: needs a port here (home has one)")
+                        && LandmassView.noticeBody(y.books(), 648).stream().anyMatch(l -> l.contains("home has one")));
+
+        // ---- the refusals
+        City n = new City("landmass-words-noshore", f.key, 40);
+        n.buy(f.withoutShore);
+        BuildingsTemplate gcN = tpl(n, "General Cargo Terminal");
+        BuildingsTemplate plant = null;
+        for (BuildingsTemplate t : n.g.getBuildingManager().getTemplates()) if (t.isSeaWater()) { plant = t; break; }
+        Landmasses nl = n.books();
+        report("premise: the city owns the island's ground with no shore and none at home, so a terminal is refused for its coast",
+                !nl.single() && nl.shorePlots(648) == 0 && nl.portLandmass(gcN.getId(), Landmasses.CHOSEN) == Landmasses.NO_LANDMASS && BuildCard.verdict(n.g, gcN, 1).kind() == BuildCard.VerdictKind.NO_COAST,
+                "verdict " + BuildCard.verdict(n.g, gcN, 1).kind());
+        int bare = nl.chosen(gcN.getId());
+        n.g.choosePortLandmass(gcN, 648);
+        int picked = nl.chosen(gcN.getId());
+        check("a refused terminal names where: 'No shore owned' with no pick, 'No shore on Island 2' with the island picked, the quote line the same in lower case; a plant 'No shore on linked ground'",
+                LandmassView.noShoreTitle(nl, true, bare).equals("No shore owned") && LandmassView.noShoreTitle(nl, true, picked).equals("No shore on Island 2")
+                        && LandmassView.noShoreQuote(nl, true, bare).equals("no shore owned for it") && LandmassView.noShoreQuote(nl, true, picked).equals("no shore on Island 2")
+                        && LandmassView.noShoreTitle(nl, false, bare).equals("No shore on linked ground") && LandmassView.noShoreQuote(nl, false, picked).equals("no shore on linked ground")
+                        && LandmassView.NO_SHORE_WAY.equals("own some sea in front of dry shore, on the landmass it serves: the Land office ›"));
+        check("a city on one landmass keeps the old words: no title, no quote, no paragraph, no clause on the terminal's description",
+                LandmassView.noShoreTitle(f.b.books(), true, Landmasses.NO_LANDMASS) == null && LandmassView.noShoreQuote(f.b.books(), true, Landmasses.NO_LANDMASS) == null
+                        && LandmassView.noCoastParagraph(f.b.books()) == null && LandmassView.seaClause(f.b.books()).isEmpty() && LandmassView.seaClause(null).isEmpty());
+        check("on more than one landmass the NO COAST page adds its paragraph and the terminal's description its clause: the shore is on the landmass it serves",
+                LandmassView.noCoastParagraph(nl) != null && LandmassView.noCoastParagraph(nl).startsWith("The city owns ground on more than one landmass")
+                        && LandmassView.seaClause(nl).equals(", in front of dry shore on the landmass it serves"));
+        // The island with no shore owned: its notice says so and sends the player to the Land office, not to a card that would put the terminal at home.
+        List<String> noShoreBody = LandmassView.noticeBody(nl, 648);
+        check("a notice for an island the city owns no shore on says so and its button goes to the Land office; one with shore keeps the port card's door and says nothing of shore",
+                LandmassView.noticeButton(nl, 648).equals(LandmassView.NOTICE_BUTTON_NO_SHORE) && LandmassView.noticeButton(lms, 648).equals(LandmassView.NOTICE_BUTTON)
+                        && noShoreBody.stream().anyMatch(l -> l.startsWith("The city owns no shore on Island 2")) && noShoreBody.stream().allMatch(l -> l.length() <= Inbox.BODY_COLUMNS)
+                        && LandmassView.noticeBody(lms, 648).stream().noneMatch(l -> l.contains("no shore")));
+        // A city whose only shore is on the island: the chooser is shown so that the island can be picked, and the refusal does not say that no shore is owned.
+        City m = portCity(f, "landmass-words-islandonly", false);
+        BuildingsTemplate gcM = tpl(m, "General Cargo Terminal");
+        Landmasses ml = m.books();
+        report("premise: the city owns shore on the island and none at home, so the rule finds no landmass for a terminal and the verdict is NO_COAST",
+                !ml.single() && ml.shorePlots(648) > 0 && ml.shorePlots(ml.home()) == 0 && ml.portLandmass(gcM.getId(), Landmasses.RULE) == Landmasses.NO_LANDMASS
+                        && BuildCard.verdict(m.g, gcM, 1).kind() == BuildCard.VerdictKind.NO_COAST, "verdict " + BuildCard.verdict(m.g, gcM, 1).kind());
+        List<Landmasses.Row> mChoices = m.g.portLandmassChoices(gcM);
+        check("the chooser is shown for the island alone (a card with no pick could never order there), not for home alone and not for none",
+                mChoices.size() == 1 && !mChoices.get(0).home() && mChoices.get(0).id() == 648 && LandmassView.chooserShown(mChoices)
+                        && !LandmassView.chooserShown(List.of(lms.rows().get(0))) && !LandmassView.chooserShown(List.of()) && LandmassView.chooserShown(g.portLandmassChoices(gc)));
+        check("with no pick the refusal says 'No shore on linked ground' (the city owns shore, on an island no port links), the quote the same; a city that owns none says 'No shore owned'",
+                LandmassView.noShoreTitle(ml, true, ml.chosen(gcM.getId())).equals("No shore on linked ground")
+                        && LandmassView.noShoreQuote(ml, true, ml.chosen(gcM.getId())).equals("no shore on linked ground")
+                        && LandmassView.noShoreTitle(nl, true, Landmasses.NO_LANDMASS).equals("No shore owned"));
+        m.g.choosePortLandmass(gcM, 648);
+        check("...and once the island is picked the terminal has a landmass to stand on, the island's room is the ground it measures, and the link sentence warns that it links nothing yet",
+                ml.portLandmass(gcM.getId(), Landmasses.CHOSEN) == 648 && BuildCard.verdict(m.g, gcM, 1).kind() != BuildCard.VerdictKind.NO_COAST
+                        && m.g.isIslandPortOrder(gcM) && m.g.freeGroundFor(gcM) == ml.portRoomSqFt(648)
+                        && LandmassView.linkWords(ml, 648).equals("links nothing until home has a port too"));
+        check("an order is an island-port order only for a sea terminal on an island no port links: not a house, not a terminal of the twin's on one landmass",
+                !m.g.isIslandPortOrder(tpl(m, "House")) && !f.b.g.isIslandPortOrder(tpl(f.b, "General Cargo Terminal")));
+        if (plant == null) out.println("  no desalination plant in the catalogue: the plant's refusal was not run");
+        else check("a desalination plant refused for its coast is the same verdict, and the words say linked ground", BuildCard.verdict(n.g, plant, 1).kind() == BuildCard.VerdictKind.NO_COAST);
+        // The sea terminal's description, from the interface's own words, is not asked here: it is a JavaFX screen's (BuildMenuCheck holds that card's).
     }
 
     /* =====================================================================

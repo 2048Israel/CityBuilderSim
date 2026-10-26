@@ -203,6 +203,9 @@ final class LandScreen {
         page.getChildren().addAll(
                 sectionHead(BEST_HEAD, offerInfo(), nextPlots(next)),
                 groundPanel(next));
+        // The city's ground by landmass (ET5), once it owns ground on a second: nothing for a city on one.
+        VBox landmasses = landmassesTable();
+        if (landmasses != null) page.getChildren().addAll(sectionHead(LandmassView.TABLE_TITLE, hint(LandmassView.TABLE_HINT)), landmasses);
         page.getChildren().addAll(
                 sectionHead("WHAT THE GROUND IS WORTH", hint("to the city, today")),
                 worthCards(),
@@ -343,7 +346,7 @@ final class LandScreen {
         return new Cell[] {
                 new Cell("GROUND FREE", LandManager.areaWords(free),
                         String.format("%.1f%%", land.getUtilisation() * 100)
-                                + " of " + LandManager.areaWords(land.getOwnedSqFt()) + " built on",
+                                + " of " + LandManager.areaWords(land.getLinkedOwnedSqFt()) + " built on",
                         BuildScreen.verdict(ground.level())),
                 new Cell("WAITING ON GROUND", waiting + (waiting == 1 ? " sector" : " sectors"),
                         waiting == 0 ? "every sector has room" : String.join(", ", waitingNames()),
@@ -378,7 +381,7 @@ final class LandScreen {
     String[] groundFigures(Next next) {
         double free = ui.game.getLandManager().getAvailableSqFt();
         double after = free;
-        for (LandParcel p : nextShelf(next)) after += p.getSizeSqFt();
+        for (LandParcel p : nextShelf(next)) after += LandmassView.roomSqFt(p);
         boolean any = !next.ids().isEmpty();
         return new String[] {
                 LandManager.areaWords(free) + " free",
@@ -418,7 +421,10 @@ final class LandScreen {
     /** The bar's scale: the ground free and the best N together. */
     double groundScale(Next next) {
         double scale = ui.game.getLandManager().getAvailableSqFt();
-        for (LandParcel p : nextShelf(next)) scale += p.getSizeSqFt();
+        // ...with the ground no port links beside it (ET5), and each offer for the room it adds, not the whole of its size.
+        double islands = ui.game.getLandManager().getUnlinkedFreeSqFt();
+        if (islands > 0) scale += islands;
+        for (LandParcel p : nextShelf(next)) scale += LandmassView.roomSqFt(p);
         return scale;
     }
 
@@ -434,13 +440,19 @@ final class LandScreen {
         List<Segment> parts = new ArrayList<>();
         parts.add(new Segment(free, Palette.BUILDING, false, null, null,
                 "free now · " + LandManager.areaWords(free) + (roomFree.isEmpty() ? "" : " · " + roomFree), null));
+        // The ground the city owns that no port links (ET5): free, and no room, so a striped stretch of its own after the room.
+        double islands = ui.game.getLandManager().getUnlinkedFreeSqFt();
+        if (islands > 0) {
+            parts.add(new Segment(islands, Palette.WARN, true, Palette.WARN, null, LandmassView.segmentWords(ui.game.getLandManager()), null));
+        }
         List<LandParcel> plots = nextShelf(next);
         for (int i = 0; i < plots.size(); i++) {
             LandParcel p = plots.get(i);
-            parts.add(new Segment(p.getSizeSqFt(), Palette.BUILDING_LIGHT, true, p.hasIron() ? Palette.ORE : null,
+            String island = LandmassView.offerLine(p, ui.game.getLandManager().getLandmasses());
+            parts.add(new Segment(LandmassView.roomSqFt(p), Palette.BUILDING_LIGHT, true, p.hasIron() ? Palette.ORE : null,
                     String.valueOf(i + 1),
                     "offer " + (i + 1) + " · " + p.where() + " · " + LandManager.areaWords(p.getSizeSqFt()) + " dry · " + priceInToggle(p)
-                            + (p.hasIron() ? " · ore under it" : "") + "\nClick to pick it on the map.",
+                            + (p.hasIron() ? " · ore under it" : "") + (island.isEmpty() ? "" : "\n" + island) + "\nClick to pick it on the map.",
                     go == null ? null : go.apply(i)));
         }
         return parts;
@@ -742,7 +754,9 @@ final class LandScreen {
         int shown = Math.min(deposits.size(), ROW_DEPOSITS);
         if (shown == 2 && deposits.get(0).words().length() + deposits.get(1).words().length() > ROW_DEPOSIT_CHARS) shown = 1;
         String more = deposits.size() > shown ? "+" + (deposits.size() - shown) : "";
-        TagWords tag = office != null && office.getId() == p.getId() ? new TagWords("BEST VALUE", Palette.GOOD)
+        // ISLAND comes first (ET5): an offer that is mostly ground no port links would otherwise be BEST VALUE and hide that it buys no room.
+        TagWords tag = LandmassView.islandTagged(p) ? new TagWords(LandmassView.ISLAND_TAG, Palette.WARN)
+                : office != null && office.getId() == p.getId() ? new TagWords("BEST VALUE", Palette.GOOD)
                 : isNew(p) ? new TagWords("NEW", Palette.BUILDING)
                 : richest != null && richest.getId() == p.getId() ? new TagWords("MOST ORE", Palette.ORE)
                 : p.isMostlySea() ? new TagWords("MOSTLY SEA", Palette.TEXT_MUTED) : null;
@@ -751,6 +765,9 @@ final class LandScreen {
         String todayHere = marked(here(), money(p.localPrice(rate)));
         // ...and, for an offer with foothill or steep ground, its ground by class on a line of its own (ET3; empty for an all-flat offer).
         String ground = LandClassView.offerLine(p, g.getLandManager().getMarket());
+        // ...and, for an offer with dry ground on a landmass no port links, the line saying so (ET5), under it: the row's tooltip and the map card's size words carry it.
+        String island = LandmassView.offerLine(p, g.getLandManager().getLandmasses());
+        if (!island.isEmpty()) ground = ground.isEmpty() ? island : ground + "\n" + island;
         String size = sizeWords(p) + (ground.isEmpty() ? "" : "\n" + ground);
         StringBuilder tip = new StringBuilder(String.format("%s: %s%nListed in month %,d at %s: %s at today's rate.",
                 p.where(), size, p.getListedMonth(), listedUsd, todayHere));
@@ -1058,6 +1075,14 @@ final class LandScreen {
             VBox.setMargin(relief, new javafx.geometry.Insets(4, 0, 0, 0));
             figures.getChildren().add(relief);
         }
+        // ...and a line for each landmass no port links (ET5), amber: owned, free, and no room for anyone but a port.
+        for (String line : LandmassView.unlinkedLines(ui.game.getLandManager())) {
+            Label island = new Label(line);
+            island.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.WARN));
+            island.setWrapText(true);
+            VBox.setMargin(island, new javafx.geometry.Insets(4, 0, 0, 0));
+            figures.getChildren().add(island);
+        }
         figures.setMinWidth(0);
         figures.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(figures, Priority.ALWAYS);
@@ -1075,6 +1100,7 @@ final class LandScreen {
         zero.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         HBox key = new HBox(Palette.GAP_LOOSE, keySwatch(Palette.BUILDING, "free now"));
         key.setAlignment(Pos.CENTER);
+        if (ui.game.getLandManager().getUnlinkedFreeSqFt() > 0) key.getChildren().add(ghostSwatch(Palette.WARN, LandmassView.SEGMENT_KEY));
         if (!next.ids().isEmpty()) {
             key.getChildren().add(ghostSwatch(Palette.BUILDING_LIGHT,
                     next.n() == 1 ? "the best offer" : "the best " + next.n() + ", cheapest dry ground first"));
@@ -1109,6 +1135,49 @@ final class LandScreen {
         HBox row = Kept.row(5, dot, text);
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
+    }
+
+    /* ----------------------------- THE LANDMASSES (ET5, 2026-10-25) ----------------------------- */
+
+    /** A table cell's tone as a colour. */
+    static String toneColour(LandmassView.Tone tone) {
+        switch (tone) {
+            case GOOD: return Palette.GOOD;
+            case WARN: return Palette.WARN;
+            case MUTED: return Palette.TEXT_MUTED;
+            default:   return Palette.TEXT_LABEL;
+        }
+    }
+
+    /**
+     * The city's ground by landmass, a row each in SectorScreen.oilTable()'s shape: its dry ground, its free ground (the linked
+     * landmasses share one figure, an island no port links says its own and "only a port"), the terminals standing on it, and
+     * whether it is linked - or, in amber, what links it. Every word is LandmassView's, from LandManager's own figures. Null for
+     * a city on one landmass (LandmassView.shown()): the page is the page it was.
+     */
+    VBox landmassesTable() {
+        LandManager land = ui.game.getLandManager();
+        if (!LandmassView.shown(land.getLandmasses())) return null;
+        javafx.scene.layout.GridPane t = SectorScreen.oilTable(LandmassView.WIDTHS, LandmassView.HEADS, LandmassView.RIGHT);
+        int row = 1;
+        for (LandmassView.Line l : LandmassView.rows(land)) {
+            t.add(SectorScreen.oilRule(), 0, row++, LandmassView.WIDTHS.length, 1);
+            Label name = new Label(l.name());
+            name.setStyle(Palette.Fonts.sansMedium() + " -fx-font-size: " + OilView.CELL + "px; -fx-text-fill: " + Palette.TEXT + ";");
+            name.setMinWidth(Region.USE_PREF_SIZE);
+            HBox first = SectorScreen.oilCell(name, false);
+            HBox dry = SectorScreen.oilCell(SectorScreen.oilFigure(l.dry(), OilView.CELL, Palette.TEXT_LABEL), true);
+            HBox free = SectorScreen.oilCell(SectorScreen.oilWords(l.free(), OilView.CELL_NOTE, toneColour(l.freeTone())), false);
+            HBox ports = SectorScreen.oilCell(SectorScreen.oilWords(l.ports(), OilView.CELL_NOTE, Palette.TEXT_LABEL), false);
+            HBox linked = SectorScreen.oilCell(SectorScreen.oilWords(l.linked(), OilView.CELL_NOTE, toneColour(l.linkedTone())), false);
+            for (HBox cell : new HBox[] { first, dry, free, ports, linked }) SectorScreen.oilTip(cell, l.tip());
+            t.add(first, 0, row);
+            t.add(dry, 1, row);
+            t.add(free, 2, row);
+            t.add(ports, 3, row);
+            t.add(linked, 4, row++);
+        }
+        return SectorScreen.oilBox(t);
     }
 
     /** The page brought to a card: the menu's scroller set so it sits near the top. */
@@ -1993,10 +2062,19 @@ final class LandScreen {
         java.util.function.DoubleFunction<String> inMoney = v -> vault ? usd(v) : marked(here, money(v));
         String cash = (vault ? "vault " : "cash ") + inMoney.apply(c.before())
                 + (c.funding() ? " · short " + inMoney.apply(c.gap()) : " → " + inMoney.apply(c.after()));
+        // The room the picks add is their dry ground less what lies on a landmass no port links (ET5): c.drySqFt() to the bit where none does,
+        // and for several picks the line saying so, as one offer's tooltip says it.
+        double roomSqFt = 0;
+        boolean unlinkedPick = false;
+        for (LandParcel p : parcels) {
+            roomSqFt += LandmassView.roomSqFt(p);
+            unlinkedPick |= p.getUnlinkedDryKm2() > 0;
+        }
+        String picksIsland = one ? "" : LandmassView.picksLine(parcels, g.getLandManager().getLandmasses());
         return new MapCard(c.ids(), first, title, one ? row.tag() : null, one ? List.<LandParcel>of() : parcels,
-                one ? row.sizeTip() : sizeWords(c),
+                one ? row.sizeTip() : sizeWords(c) + (picksIsland.isEmpty() ? "" : "\n" + picksIsland),
                 km2 > 0 ? c.dryKm2() / km2 : 0, km2 > 0 ? c.freshKm2() / km2 : 0, km2 > 0 ? c.seaKm2() / km2 : 0,
-                room(c.drySqFt()),
+                room(unlinkedPick ? roomSqFt : c.drySqFt()),
                 depositWords(r -> c.sites()[r.ordinal()], r -> c.amounts()[r.ordinal()], r -> typesOn(g.getCityLand(), parcels, r)),
                 price, one ? row.priceTone() : g.canAffordLandParcels(c.ids()) ? Palette.TEXT_HEAD : Palette.BAD,
                 other, one ? row.perKm2() : c.dryKm2() > 0 ? inToggle(c.usd() / c.dryKm2()) : "—",

@@ -1820,6 +1820,9 @@ public class Game {
                     area, usdWords(usd), usdWords(paidFromVault), usdWords(converted),
                     localWords(here, convertedLocal));
         }
+        // ...and (ET5) when the ground bought lies on a landmass no port links, where: "... - on Island 2, which no port links."
+        String island = LandmassView.receiptWords(parcel, landManager.getLandmasses());
+        if (!island.isEmpty()) lastLandReceipt = lastLandReceipt.substring(0, lastLandReceipt.length() - 1) + island + ".";
         lastLandReceiptMonth = month;
         GameLog.note(lastLandReceipt);
         return true;
@@ -8345,6 +8348,15 @@ public class Game {
         int island = islandPortLandmass(t, asked);
         return island != Landmasses.NO_LANDMASS ? landManager.getLandmasses().portRoomSqFt(island)
                 : landManager.freeFor(t.getSector(), groundUse(t));
+    }
+
+    /**
+     * Whether this building's next order is a sea terminal for an island no port links (ET5): the order that takes that island's
+     * own room (freeGroundFor()), not the linked pool's, and that the not-enough-land page measures so. False for every other
+     * building, for a city on one landmass, and for a terminal on home or a linked landmass.
+     */
+    public boolean isIslandPortOrder(BuildingsTemplate t) {
+        return islandPortLandmass(t, Landmasses.CHOSEN) != Landmasses.NO_LANDMASS;
     }
 
     /** The city's ground by landmass and its linked set as the map is handed them; null while the city owns nothing off its home landmass (Landmasses.picture()). */

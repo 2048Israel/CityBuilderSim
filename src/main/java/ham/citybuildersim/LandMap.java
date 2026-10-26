@@ -647,10 +647,21 @@ public final class LandMap {
 
     /** ...with no more than `fieldsMost` fields (the expanded map's card lists CARD_FIELDS; since 0.7.135 its card is this). */
     public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y, int fieldsMost) {
+        return hoverWords(land, market, null, x, y, fieldsMost);
+    }
+
+    /**
+     * ...and, once the city owns ground on a landmass no port links (ET5), a line under whose it is for a plot of owned or
+     * offered ground on such a landmass: "On Island 2, which no port links: only a port can be built here"
+     * (LandmassView.hoverWords()). `lms` null, or the city owning nothing off its home landmass, adds nothing: the card is the old one.
+     */
+    public static List<String> hoverWords(CityLand land, LandMarket market, Landmasses lms, long x, long y, int fieldsMost) {
         Pick p = pick(land, market, x, y);
         List<String> lines = new ArrayList<>();
         lines.add(plotGroundWords(land, p.ground(), x, y));
         lines.add(ownerWords(land, p));
+        String island = islandWords(land, lms, p);
+        if (island != null) lines.add(island);
         lines.addAll(earthWords(land, x, y));
         List<FieldAt> under = fieldsAt(land, x, y);
         for (int i = 0; i < under.size() && i < fieldsMost; i++) lines.add(fieldWords(under.get(i), land, market));
@@ -1003,6 +1014,27 @@ public final class LandMap {
             String label = labelOf == null ? null : labelOf.apply(z.sector());
             out.add(new Entry(zoneColour(z.sector()), zoneWords(label != null ? label : z.sector())));
         }
+        return out;
+    }
+
+    /* ----- the ground no port links (ET5, slice D) ----- */
+
+    /** The legend's colour for the hatch over ground no port links: the warning amber (Palette.WARN's #e3b341). */
+    public static final int UNLINKED_COLOUR = 0xffe3b341;
+
+    /** The hover's line for a plot of owned or offered dry ground on a landmass no port links, or null: none for a city that owns nothing off home, for water, for home's own ground and for ground that is nobody's. */
+    public static String islandWords(CityLand land, Landmasses lms, Pick p) {
+        if (lms == null || !lms.anyUnlinked() || (p.owner() != BOUGHT && p.owner() != OFFER) || !World.dry(p.ground())) return null;
+        World world = World.of(land.key());
+        if (!world.hasLandmasses()) return null;
+        int id = world.landmassAt(p.x(), p.y());
+        return id == 0 || lms.linked(id) ? null : LandmassView.hoverWords(lms, id);
+    }
+
+    /** The legend's entry for the hatch, "Not linked: only a port", while the city owns ground on a landmass no port links; none otherwise. */
+    public static List<Entry> unlinkedLegend(Landmasses lms) {
+        List<Entry> out = new ArrayList<>();
+        if (lms != null && lms.anyUnlinked()) out.add(new Entry(UNLINKED_COLOUR, LandmassView.LEGEND_WORDS));
         return out;
     }
 

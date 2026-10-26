@@ -337,6 +337,9 @@ final class MapView {
 
     private final ImagePattern hatch;
 
+    /** The amber hatch over the city's ground that no port links (ET5): the offers' hatch drawn in the warning colour. */
+    private final ImagePattern islandHatch;
+
     /* ----------------------------- the globe (0.7.135, batch E9) ----------------------------- */
 
     /** The expanded map's view on an Earth world, and the world and data it is of; null on a generated world. */
@@ -381,6 +384,7 @@ final class MapView {
         this.picker = picker;
         this.onClose = onClose;
         hatch = hatchPattern();
+        islandHatch = islandHatchPattern();
         canvas.setFocusTraversable(true);
         readout.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT) + " -fx-background-color: #0b1118cc;"
                 + " -fx-background-radius: 4; -fx-padding: 2 7 3 7;");
@@ -1339,6 +1343,7 @@ final class MapView {
         LandMarket market = g.getLandManager().getMarket();
         shapes(land, market);
         zoneTints(gc, f, g);
+        islandHatch(gc, f, g, land);
         blockLines(gc, f, market.getLevel());
         List<LandParcel> listing = market.getListing();
         double ax = Math.floorMod((long) Math.floor(f.screenX(0)), 8), ay = Math.floorMod((long) Math.floor(f.screenY(0)), 8);
@@ -1446,6 +1451,86 @@ final class MapView {
             gc.setFill(colour(LandMap.zoneColour(zones.get(t.zone()).sector()), LandMap.ZONE_ALPHA));
             gc.fillRect(box[0], box[1], box[2] - box[0], box[3] - box[1]);
         }
+    }
+
+    /* ----- the ground no port links (ET5, slice D; the ET5 design, section 5) ----- */
+
+    /** The runs of owned dry ground on landmasses no port links, as LandMap.unlinkedRuns() gave them, the chips beside them, and what they were worked out for: the linked set's version and the land's stamp. Fetched again only when either moves. */
+    private List<long[]> islandRuns = List.of();
+    private List<LandMap.Chip> islandChips = List.of();
+    private long islandFor = Long.MIN_VALUE;
+
+    /**
+     * The city's ground that no port links, hatched in amber over the ground (under the offers and the city's edge) and
+     * named on a chip at the middle of each landmass: "Island 2 · 12.0 km² · not linked: needs a port here (home has one)".
+     * Drawn from the model's runs (LandMap.unlinkedRuns(), plot-exact) and nothing with the city on one landmass: it returns
+     * before it reads anything, and the map draws what it always drew.
+     */
+    private void islandHatch(GraphicsContext gc, MapFrame f, Game g, CityLand land) {
+        Landmasses lms = g.getLandManager().getLandmasses();
+        if (!lms.anyUnlinked()) {
+            islandFor = Long.MIN_VALUE;
+            return;
+        }
+        World world = World.of(land.key());
+        long key = (lms.version() * 31L + land.stamp()) * 31L + land.purchases().size();
+        if (key != islandFor) {
+            islandFor = key;
+            islandRuns = LandMap.unlinkedRuns(lms, world, land);
+            islandChips = LandMap.unlinkedChips(lms, world, land);
+        }
+        if (islandRuns.isEmpty()) return;
+        double ax = Math.floorMod((long) Math.floor(f.screenX(0)), 8), ay = Math.floorMod((long) Math.floor(f.screenY(0)), 8);
+        ImagePattern pattern = new ImagePattern(islandHatch.getImage(), ax, ay, 8, 8, false);
+        gc.setFillRule(FillRule.NON_ZERO);
+        gc.beginPath();
+        boolean any = false;
+        for (long[] r : islandRuns) {
+            double[] box = f.onScreen(r[1], r[0], r[2], r[0] + 1);
+            if (box == null) continue;
+            gc.rect(box[0], box[1], box[2] - box[0], box[3] - box[1]);
+            any = true;
+        }
+        if (any) {
+            gc.setFill(Color.web(Palette.WARN, 0.12));
+            gc.fill();
+            gc.setFill(pattern);
+            gc.fill();
+        }
+        islandChips(gc, f, lms);
+    }
+
+    /** Each such landmass's chip (LandmassView.chipWords()), mono caption on a dark stroke, as newTag() writes NEW: centred on the middle of its owned tiles, kept inside the view. */
+    private void islandChips(GraphicsContext gc, MapFrame f, Landmasses lms) {
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_CAPTION));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.setLineWidth(3);
+        for (LandMap.Chip chip : islandChips) {
+            double x = f.screenX(chip.x()), y = f.screenY(chip.y());
+            if (x < 0 || y < 0 || x > f.width() || y > f.height()) continue;
+            String words = LandmassView.chipWords(lms, chip);
+            double half = words.length() * Palette.SIZE_CAPTION * 0.31 + 4;
+            x = half * 2 >= f.width() ? f.width() / 2 : Math.max(half, Math.min(f.width() - half, x));
+            x = Math.rint(x);
+            y = Math.rint(y);
+            gc.setStroke(Color.rgb(11, 17, 24, 0.85));
+            gc.strokeText(words, x, y);
+            gc.setFill(Color.web(Palette.WARN));
+            gc.fillText(words, x, y);
+        }
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.BASELINE);
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+    }
+
+    /** The amber legend entry for that hatch (LandMap.unlinkedLegend()) while any landmass is unlinked, as the zones' entries are given: {css colour, words}. */
+    private List<String[]> islandEntries() {
+        Game g = ui.game;
+        List<String[]> out = new ArrayList<>();
+        if (g == null) return out;
+        for (LandMap.Entry e : LandMap.unlinkedLegend(g.getLandManager().getLandmasses())) out.add(new String[] { css(e.colour()), e.words() });
+        return out;
     }
 
     /** The zones' legend entries on the plane (0.8.0): each zone set, by its sector's label. */
@@ -1600,6 +1685,17 @@ final class MapView {
         for (int i = 0; i < 8; i++) {
             img.getPixelWriter().setArgb(i, 7 - i, line);
             if (i < 7) img.getPixelWriter().setArgb(i + 1, 7 - i, 0x2bffffff);
+        }
+        return new ImagePattern(img, 0, 0, 8, 8, false);
+    }
+
+    /** The hatch over the ground no port links (ET5): the offers' diagonals drawn in the warning amber (Palette.WARN, #e3b341) at the same weights. */
+    private static ImagePattern islandHatchPattern() {
+        WritableImage img = new WritableImage(8, 8);
+        int line = 0xa0e3b341, shoulder = 0x50e3b341;
+        for (int i = 0; i < 8; i++) {
+            img.getPixelWriter().setArgb(i, 7 - i, line);
+            if (i < 7) img.getPixelWriter().setArgb(i + 1, 7 - i, shoulder);
         }
         return new ImagePattern(img, 0, 0, 8, 8, false);
     }
@@ -2290,7 +2386,9 @@ final class MapView {
             what = LandMap.plotWords(pin == null ? in : pin, painted, plot, this::nameOf);
         }
         if (!expanded) {
-            readout.setText(LandMap.ownerWords(land, p) + " · " + (what != null ? what : LandMap.plotGroundWords(land, p.ground(), x, y)));
+            String island = LandMap.islandWords(land, ui.game.getLandManager().getLandmasses(), p);
+            readout.setText(LandMap.ownerWords(land, p) + " · " + (what != null ? what : LandMap.plotGroundWords(land, p.ground(), x, y))
+                    + (island == null ? "" : " · " + island));
             showIf(readout, true);
             return;
         }
@@ -2298,7 +2396,7 @@ final class MapView {
         // where it is by the nearest place and its geology, the fields - with at L0 the building or road first.
         List<String> lines = new ArrayList<>();
         if (what != null) lines.add(what);
-        lines.addAll(LandMap.hoverWords(land, market, x, y, CARD_FIELDS));
+        lines.addAll(LandMap.hoverWords(land, market, ui.game.getLandManager().getLandmasses(), x, y, CARD_FIELDS));
         // ...and over an offer, how to buy it (0.7.137, board 4).
         if (os >= 0 && canPick()) lines.add(CLICK_TO_BUY);
         showCard(lines, sx, sy, f.width(), f.height());
@@ -2988,6 +3086,14 @@ final class MapView {
     private void legendFor(int tier) {
         // ...and (0.8.0) on the plane the zones set, drawn again when they move.
         List<String[]> zones = tier == GlobeFrame.PLANE ? zoneEntries() : List.of();
+        // ...and (ET5) the amber hatch's entry while the city owns ground no port links, in the same list so the legend is drawn again when it comes or goes.
+        if (tier == GlobeFrame.PLANE) {
+            List<String[]> islands = islandEntries();
+            if (!islands.isEmpty()) {
+                zones = new ArrayList<>(zones);
+                zones.addAll(islands);
+            }
+        }
         String zoneKey = String.join("|", zones.stream().map(z -> z[1]).toList());
         boolean relief = shownMap != null && LandMap.reliefDrawn(shownMap.worldKey());
         if (tier == legendTier && zoneKey.equals(legendZones) && relief == legendRelief) return;

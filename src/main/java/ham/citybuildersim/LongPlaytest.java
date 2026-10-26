@@ -5949,6 +5949,9 @@ public class LongPlaytest {
                     LandManager.km2(ground.getFlatSqFt()), LandManager.km2(ground.getFoothillSqFt()), LandManager.km2(ground.getSlopeSqFt()),
                     g.getCityLand().totalReliefKm2(CityLand.RELIEF_VERY_STEEP), LandManager.km2(ground.getWorksOnSlopeSqFt()),
                     LandManager.km2(ground.idleSlopeSqFt()));
+            // ...and (ET5) where that ground lies, by landmass, when the city owns any off its home one: a city on one landmass prints nothing here, exactly what it printed before.
+            String landmasses = landmassesLine(ground);
+            if (landmasses != null) out.println(landmasses);
         }
         out.println("=================================================================\n");
 
@@ -7263,6 +7266,17 @@ public class LongPlaytest {
         if (keep != null) keepCity(g, root, Path.of(keep));
         cleanUp(root);
         System.exit(findings.isEmpty() ? 0 : 1);
+    }
+
+    /**
+     * The report's line for the city's ground by landmass (ET5), printed after ITS GROUND AT THE END: "  ITS LANDMASSES AT THE END:
+     * Home 177.7 km2, Island 2 3.1 km2 (not linked); terminals off home 0" (LandmassView.reportLine()). Null for a city that owns ground
+     * on one landmass - every generated world, and an Earth city whose ground lies on its home landmass - which prints nothing here,
+     * exactly what it printed before the line was made (LandmassCheck 11 holds that).
+     */
+    static String landmassesLine(LandManager ground) {
+        String line = LandmassView.reportLine(ground.getLandmasses());
+        return line == null ? null : "  " + line;
     }
 
     /**

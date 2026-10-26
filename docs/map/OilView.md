@@ -40,7 +40,7 @@
 
 **Uses:** [RefineryView](RefineryView.md) (100), [Good](Good.md) (23), [Oil](Oil.md) (19), [Refining](Refining.md) (16), [RefineryFlow](RefineryFlow.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (10), [SpreadPlanner](SpreadPlanner.md) (9), [LandManager](LandManager.md) (7), [Sectors](Sectors.md) (6), [Game](Game.md) (5), [GoodsMarket](GoodsMarket.md) (3), [StrategicReserve](StrategicReserve.md) (3), [CityLand](CityLand.md) (3), [ChartModel](ChartModel.md) (3), [Trade](Trade.md) (2), [World](World.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [CityCalendar](CityCalendar.md) (2), [YearBook](YearBook.md) (1), [Resource](Resource.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Formats](Formats.md) (1)
 
-**Used by (4):** [EarthFoundingCheck](EarthFoundingCheck.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (5):** [EarthFoundingCheck](EarthFoundingCheck.md), [LandScreen](LandScreen.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

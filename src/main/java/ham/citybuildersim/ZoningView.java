@@ -56,7 +56,7 @@ public final class ZoningView {
      * @param priceGivenUp   what selling that ground at the zones' prices gives up against the going price
      *                       (PolicyPreview.zoneAt(), summed)
      * @param taxRelief      the property tax a month the zones' prices forgo on the ground built in them (ditto)
-     * @param forestSqFt     the city's forest ground
+     * @param forestSqFt     the city's forest ground on linked landmasses (LandManager.getLinkedForestSqFt(), ET5: getForestSqFt() while none is unlinked)
      * @param keptSqFt       ...of it kept from building: the protected and the working forest
      * @param protectedSqFt  ...of that, protected: never cut either
      * @param protectedShare the law's protected share
@@ -83,7 +83,7 @@ public final class ZoningView {
         }
         double prot = land.getProtectedForestSqFt();
         return new Figures(land.getLinkedOwnedSqFt(), zoned, z.zones().size(), land.heldByZones(), given, relief,
-                land.getForestSqFt(), prot + land.getWorkingForestSqFt(), prot, z.protectedShare(), z.keptShare());
+                land.getLinkedForestSqFt(), prot + land.getWorkingForestSqFt(), prot, z.protectedShare(), z.keptShare());
     }
 
     /* =====================================================================
@@ -334,7 +334,7 @@ public final class ZoningView {
      *
      * @param at          PolicyPreview.forestAt(): the three kinds, the ground free for anyone, the wood kept standing
      *                    for ever, the wood that may be cut, and the share of the full stock kept standing
-     * @param forestSqFt  the city's forest ground
+     * @param forestSqFt  the city's forest ground on linked landmasses (ET5)
      * @param clearedSqFt ...of it cleared for building (C, Z7): open forest that is built on, or was - or,
      *                    on an older save whose first month has not yet settled it, the built ground past the
      *                    bare ground, if more (LandManager.settleClearing()'s floor)
@@ -349,8 +349,11 @@ public final class ZoningView {
 
     public static Forest forest(Game g, Zoning z) {
         LandManager land = g.getLandManager();
-        double onForest = Math.min(land.getForestSqFt(), Math.max(0, land.getAllocatedSqFt() - land.getBareSqFt()));
-        return new Forest(PolicyPreview.forestAt(g, z), land.getForestSqFt(),
+        // ...the forest on linked ground (ET5): the whole of it while no landmass is unlinked, and then the very expressions it always was.
+        double forest = land.getLinkedForestSqFt();
+        double bare = land.getLandmasses().anyUnlinked() ? Math.max(0, land.getLinkedOwnedSqFt() - forest) : land.getBareSqFt();
+        double onForest = Math.min(forest, Math.max(0, land.getLinkedAllocatedSqFt() - bare));
+        return new Forest(PolicyPreview.forestAt(g, z), forest,
                 Math.max(land.getForestClearedSqFt(), onForest),
                 land.getRemaining(Resource.FOREST), land.getOwnedAmount(Resource.FOREST));
     }

@@ -1,4 +1,4 @@
-# ZoningView.java - 357 lines · 20 methods · 1 constants · model
+# ZoningView.java - 360 lines · 20 methods · 1 constants · model
 
 `ham/citybuildersim/ZoningView.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
 
@@ -34,7 +34,7 @@
 
 **Uses:** [Zoning](Zoning.md) (22), [PolicyPreview](PolicyPreview.md) (9), [Game](Game.md) (8), [LandManager](LandManager.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [Resource](Resource.md) (2), [EconomyManager](EconomyManager.md) (1), [TaxPolicy](TaxPolicy.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
-**Used by (3):** [LandScreen](LandScreen.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (4):** [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
@@ -68,7 +68,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 321 | **type** `public final class ZoningView` | Policy › Zoning as figures (0.7.109, batch Z2; the project's spec-zoning.md 4, the zoning study's three boards): the hub's four figures, the city's dry ground as one bar - built, each zone's used and held ground, the ... |
+| 37 | 324 | **type** `public final class ZoningView` | Policy › Zoning as figures (0.7.109, batch Z2; the project's spec-zoning.md 4, the zoning study's three boards): the hub's four figures, the city's dry ground as one bar - built, each zone's used and held ground, the ... |
 | 39 | 1 | `private ZoningView()` |  |
 
 ### THE HUB'S FOUR FIGURES (board 1): ZONED, HELD FOR THEM, PRICE GIVEN (lines 44-88)
@@ -113,11 +113,11 @@
 | 312 | 2 | **type** `public record Page(PolicyPreview.ZoneAt zone, double freeForAnyone, BuildingsTemplate plot, long carries, d...` | One sector's zone under a zoning, on the land as it stands. |
 | 316 | 11 | `public static Page page(Game g, Zoning z, String sector)` | ...struck from PolicyPreview.zoneAt() and LandManager.groundUnder() on `z` - the city's zoning or a staged copy. |
 
-### THE FOREST LAW (board 3), BEFORE AND AFTER (lines 328-357)
+### THE FOREST LAW (board 3), BEFORE AND AFTER (lines 328-360)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 344 | 5 | **type** `public record Forest(PolicyPreview.ForestAt at, double forestSqFt, double clearedSqFt, double standingM3, d...` | The forest under a zoning's law. |
 | 347 | 1 | `public double openStandingSqFt()` _(in ZoningView.Forest)_ | The open forest still standing: what a building may take, and clear. |
-| 350 | 7 | `public static Forest forest(Game g, Zoning z)` |  |
+| 350 | 10 | `public static Forest forest(Game g, Zoning z)` |  |
 

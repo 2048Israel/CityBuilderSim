@@ -789,6 +789,12 @@ final class BuildScreen {
         face.getChildren().addAll(cardBars(f, group, m));
         // ...a sea terminal's payback, which ports never had (FR4; the advice's own read, BuildAdvice.berthPayback()).
         if (f.kind() == BuildCard.Kind.BERTHS) face.getChildren().add(paybackLine(BuildCard.payback(ui.game, template)));
+        // ...and (ET5), once the city owns shore on more than one landmass, where it stands: a chip for each, and what that links.
+        Runnable[] repriced = new Runnable[1];
+        if (f.kind() == BuildCard.Kind.BERTHS) {
+            VBox where = portChooser(template, () -> { if (repriced[0] != null) repriced[0].run(); });
+            if (where != null) face.getChildren().add(where);
+        }
         if (f.market()) face.getChildren().add(investorsLine(template));
         // ...and a materials building's own lines (0.7.142, batch I13): where it stands, how its sector weighs it, its power,
         // its old metal and who buys what it makes (THE MATERIALS' LINES).
@@ -801,6 +807,7 @@ final class BuildScreen {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: "
                 + (orderQty.getOrDefault(key, 0) > 0 ? Palette.BUILDING : Palette.EDGE) + ";");
         Order order = orderControls(template, key, c.name(), c.types(), dress);
+        repriced[0] = order.reprice();
         face.getChildren().addAll(order.steps(), order.build(), order.quoted());
         // ...and on the Gravel Road's, paving them (0.7.70; ConstructionControl, F).
         if (m != null && m.kind() == BuildAdvice.Kind.ROADS && ConstructionControl.paves(template) && f.owned() > 0) {
@@ -1429,6 +1436,70 @@ final class BuildScreen {
         return row;
     }
 
+    /**
+     * WHERE A SEA TERMINAL STANDS, once the city owns shore on more than one landmass (ET5, 2026-10-25): a chip for each landmass
+     * with shore (Game.portLandmassChoices(), home first; an island no port links says so), the one the order would stand on
+     * lit, and under them what a terminal there links (LandmassView.linkWords()). A pick is the model's (Game.choosePortLandmass():
+     * one order's, forgotten at the month's settle), so it survives the funding page and a redraw; this only reads it back, and
+     * `after` reprices the card's quote line for it. Null for a city on one landmass and where only home has shore (there is
+     * nothing to choose): the card is the card it was. A city whose only shore is on an island is shown it, so that the island
+     * can be picked.
+     */
+    VBox portChooser(BuildingsTemplate template, Runnable after) {
+        List<Landmasses.Row> choices = ui.game.portLandmassChoices(template);
+        if (!LandmassView.chooserShown(choices)) return null;
+        Landmasses lms = ui.game.getLandManager().getLandmasses();
+        VBox box = new VBox(3);
+        Runnable[] draw = new Runnable[1];
+        draw[0] = () -> {
+            box.getChildren().clear();
+            int at = lms.portLandmass(template.getId(), Landmasses.CHOSEN);
+            Label where = new Label(LandmassView.CHOOSER_LABEL);
+            where.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            String[] names = LandmassView.choiceNames(choices);
+            javafx.scene.layout.FlowPane chips = Pieces.chipStrip(names, LandmassView.currentChoice(choices, at), Palette.SIZE_CAPTION, name -> {
+                for (int i = 0; i < names.length; i++) {
+                    if (names[i].equals(name)) ui.game.choosePortLandmass(template, choices.get(i).id());
+                }
+                draw[0].run();
+                after.run();
+            });
+            chips.setAlignment(Pos.CENTER_LEFT);
+            box.getChildren().addAll(where, chips);
+            String links = LandmassView.linkWords(lms, at);
+            if (!links.isEmpty()) {
+                Label words = new Label(links.substring(0, 1).toUpperCase() + links.substring(1) + ".");
+                words.setWrapText(true);
+                words.setStyle(Palette.words(Palette.SIZE_CAPTION, lms.linked(at) ? Palette.GOOD : Palette.WARN));
+                box.getChildren().add(words);
+            }
+        };
+        draw[0].run();
+        return box;
+    }
+
+    /**
+     * "Build a port there" (ET5): the sea terminal's card on the Infrastructure page, with the landmass chosen for its next order
+     * (Game.choosePortLandmass(): one order's), so that a notice's button and the no-land page's door land on the card ready to
+     * order a terminal on the ground no port links. The category alone where the catalogue has no terminal.
+     */
+    void openPortCardFor(int landmass) {
+        BuildingsTemplate port = LandmassView.portFor(ui.game.getBuildingManager().getTemplates());
+        if (port == null) {
+            openCategory(BuildAdvice.ROADS);
+            return;
+        }
+        ui.game.choosePortLandmass(port, landmass);
+        openOnBuilding(BuildAdvice.ROADS, port.getName());
+    }
+
+    /** NO_COAST's reason for an order in the words of the old refusal (`old`), or - once the city owns ground on more than one landmass - on the landmass the card picked (LandmassView.noShoreQuote()). */
+    String noCoastWhy(BuildingsTemplate t, String old) {
+        Landmasses lms = ui.game.getLandManager().getLandmasses();
+        String island = t == null ? null : LandmassView.noShoreQuote(lms, Ports.isPort(t), lms.chosen(t.getId()));
+        return island != null ? island : old;
+    }
+
     /** Years as a payback says them: "11 years", "1.5 years", "over 100 years". */
     static String yearsWords(double years) {
         if (!Double.isFinite(years)) return "no years";
@@ -1748,8 +1819,8 @@ final class BuildScreen {
                 quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
             } else {
                 BuildCard.Verdict v = BuildCard.verdict(ui.game, template, n);
-                build.show(orderPress(v, n));
-                String[] said = quoteVerdict(v);
+                build.show(orderPress(v, n, template));
+                String[] said = quoteVerdict(v, template);
                 // The city's rebate is the tax coming home (revised 0.7.19; EconomyManager,
                 // THE REBATES ON A NEW HOME, AND THE CITY'S): the builders remit it to the
                 // treasury as they bill the work.
@@ -1869,14 +1940,23 @@ final class BuildScreen {
      * press's page offers. A pure read: no node, so a probe reads it.
      */
     Pieces.Press orderPress(BuildCard.Verdict v, int n) {
+        return orderPress(v, n, null);
+    }
+
+    /** ...for the building ordered (ET5): once the city owns ground on more than one landmass a sea terminal's NO_COAST names the landmass it was asked for ("No shore on Island 2"), a plant's the linked ground; `t` null, or a city on one landmass, is the old words. */
+    Pieces.Press orderPress(BuildCard.Verdict v, int n, BuildingsTemplate t) {
         if (n <= 0 || v == null) return new Pieces.Press(Pieces.Look.CHOOSE, "Build", "choose how many");
         String count = formatter.format(n), total = money(v.quote().total);
         switch (v.kind()) {
             case NO_DEPOSIT: return new Pieces.Press(Pieces.Look.HELD, "No " + BuildCard.depositWord(v.site()) + " deposit",
                     "whole fields of " + (v.site() == Resource.OIL ? "oil" : "ore") + " come with land: the Land office ›");
             // ...a desalination plant's or, since 0.7.86, a sea terminal's: the words fit both.
-            case NO_COAST:   return new Pieces.Press(Pieces.Look.HELD, "No sea owned",
-                    "sea comes with land: the Land office ›");
+            case NO_COAST: {
+                Landmasses lms = ui.game.getLandManager().getLandmasses();
+                String island = t == null ? null : LandmassView.noShoreTitle(lms, Ports.isPort(t), lms.chosen(t.getId()));
+                return island != null ? new Pieces.Press(Pieces.Look.HELD, island, LandmassView.NO_SHORE_WAY)
+                        : new Pieces.Press(Pieces.Look.HELD, "No sea owned", "sea comes with land: the Land office ›");
+            }
             case NO_LICENCE: return new Pieces.Press(Pieces.Look.HELD, "Nobody licensed to work in it",
                     "a school licenses them: Education ›");
             case NO_LAND:    return new Pieces.Press(Pieces.Look.HELD, v.quote().landFree <= 0 ? "No land free"
@@ -1895,9 +1975,14 @@ final class BuildScreen {
      * click), else the wait at today's queue in green.
      */
     String[] quoteVerdict(BuildCard.Verdict v) {
+        return quoteVerdict(v, null);
+    }
+
+    /** ...for the building ordered (ET5): NO_COAST on a city that owns ground on more than one landmass says which ("no shore on Island 2"); `t` null, or a city on one landmass, is the old words. */
+    String[] quoteVerdict(BuildCard.Verdict v, BuildingsTemplate t) {
         switch (v.kind()) {
             case NO_DEPOSIT: return new String[] {"no " + BuildCard.depositWord(v.site()) + " deposit", Palette.BAD};
-            case NO_COAST:   return new String[] {"no sea owned", Palette.BAD};
+            case NO_COAST:   return new String[] {noCoastWhy(t, "no sea owned"), Palette.BAD};
             case NO_LICENCE: return new String[] {"nobody licensed", Palette.BAD};
             case NO_LAND:    return new String[] {"short " + LandManager.areaWords(v.figure()) + " of land", Palette.BAD};
             case BILL:       return new String[] {"short " + money(v.figure()) + " — you will be offered a bill", Palette.WARN};
@@ -2533,7 +2618,7 @@ final class BuildScreen {
                 // ...its own resource named since 0.7.142: "no coal left to dig", not the ore.
                 case NO_DEPOSIT -> Game.siteOf(stopAt) == Resource.OIL ? "no oil left to drill"
                         : "no " + ham.citybuildersim.sectors.ExtractionSector.oreWords(Game.siteOf(stopAt), null) + " left to dig";
-                case NO_COAST   -> "no sea owned for it";
+                case NO_COAST   -> noCoastWhy(stopAt, "no sea owned for it");
                 case NO_LICENCE -> "nobody licensed to practise";
                 default         -> "short of land - buy it at the land office first";
             };
@@ -2818,7 +2903,7 @@ final class BuildScreen {
             if (p != null) return pavePress(p, s.count());
         }
         BuildCard.Verdict v = BuildCard.verdict(ui.game, s.template(), s.count());
-        Pieces.Press p = orderPress(v, s.count());
+        Pieces.Press p = orderPress(v, s.count(), s.template());
         if (s.needsCredit() && p.look() == Pieces.Look.GO) {
             return new Pieces.Press(Pieces.Look.CREDIT, "Build " + formatter.format(s.count()) + " on credit · "
                     + money(v.quote().total), null);
@@ -4099,6 +4184,8 @@ final class BuildScreen {
                     + " share the berths cover, their freight at %.0f%% of what a lorry charges.",
                     formatter.format(t.berthTonnesAYear()), k.label().toLowerCase(), cargoWords(k), k.seaFreightShare() * 100));
             out.add("The city builds it and pays its crews with transit's. It needs the city to own some sea"
+                    // ...and (ET5), once the city owns ground on more than one landmass, in front of dry shore on the landmass it serves.
+                    + LandmassView.seaClause(ui.game.getLandManager().getLandmasses())
                     + (k == ham.citybuildersim.Ports.Cargo.LIQUID
                             ? ", and crude lands only where a Tank Farm has room for a tanker's cargo." : "."));
             return out;
@@ -4947,6 +5034,9 @@ final class BuildScreen {
                 "that run out to the sea carry some, its square kilometre priced",
                 String.format("at %.0f%% of dry ground's.", LandMarket.SEA_PRICE_SHARE * 100));
 
+        // ...and (ET5), once the city owns ground on more than one landmass, that the shore is the landmass's own.
+        String shore = LandmassView.noCoastParagraph(ui.game.getLandManager().getLandmasses());
+
         Label cheapest = monoLabel(coast == null
                 ? "No offer standing reaches the sea."
                 : String.format("Cheapest with sea: %s, %s of sea for %s",
@@ -4959,7 +5049,15 @@ final class BuildScreen {
         Button back = new Button("Back");
         back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
 
-        ui.rootMenu.getChildren().addAll(title, explanation, cheapest);
+        ui.rootMenu.getChildren().addAll(title, explanation);
+        if (shore != null) {
+            Label landmasses = new Label(shore);
+            landmasses.setWrapText(true);
+            landmasses.setMaxWidth(560);
+            landmasses.setStyle(Palette.words(Palette.SIZE_BODY, Palette.WARN) + " -fx-padding: 6 0 0 0;");
+            ui.rootMenu.getChildren().add(landmasses);
+        }
+        ui.rootMenu.getChildren().add(cheapest);
         // The Build shortcut (0.7.61, star 14): the cheapest offer with sea, then back to the order.
         if (coast != null) {
             ui.rootMenu.getChildren().add(bestLandButton(coast, "Buy the cheapest with sea: " + coast.where() + " for "
@@ -5036,7 +5134,11 @@ final class BuildScreen {
 
         LandManager land = ui.game.getLandManager();
         double needed = ui.game.landNeededFor(selected, quantity);
-        double have = land.getAvailableSqFt();
+        // A sea terminal ordered for an island no port links takes that island's own room, not the linked pool's (ET5): its figure,
+        // and none of the island lines below, which would point the player back at the very terminal that was refused.
+        Landmasses lms = land.getLandmasses();
+        boolean islandPort = ui.game.isIslandPortOrder(selected);
+        double have = islandPort ? ui.game.freeGroundFor(selected) : land.getAvailableSqFt();
         double short_ = Math.max(needed - have, 0);
 
         Label warning = new Label("NOT ENOUGH LAND");
@@ -5055,6 +5157,27 @@ final class BuildScreen {
         back.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
 
         ui.rootMenu.getChildren().addAll(warning, details);
+        // The ground the city owns that no port links (ET5): free, and no room for this, with the door to the port that would link it.
+        List<String> islands = islandPort ? List.of() : LandmassView.noLandLines(land);
+        for (String line : islands) {
+            Label island = new Label(line);
+            island.setWrapText(true);
+            island.setMaxWidth(560);
+            island.setStyle(Palette.words(Palette.SIZE_BODY, Palette.WARN));
+            ui.rootMenu.getChildren().add(island);
+        }
+        if (!islands.isEmpty()) {
+            // ...to the first of them with shore the city owns: a terminal can stand on no other (the Land office's door below is theirs).
+            int first = -1;
+            for (int id : lms.unlinkedIds()) {
+                if (lms.shorePlots(id) > 0) {
+                    first = id;
+                    break;
+                }
+            }
+            int at = first;
+            if (at >= 0) ui.rootMenu.getChildren().add(doorPill(LandmassView.PORT_DOOR, Icons.BUILD, Palette.BUILDING, () -> openPortCardFor(at)));
+        }
         // The Build shortcut (0.7.61, star 14): the cheapest bare ground that covers the shortfall - back to the
         // order once it is covered, this page again (its next best) while it is not.
         LandParcel best = ui.game.bestOffer(Game.LandNeed.shortfall(short_));
@@ -5272,7 +5395,7 @@ final class BuildScreen {
             }
             String why = switch (g.buildRunStop(run)) {
                 case NO_DEPOSIT -> "no " + BuildCard.depositWord(Game.siteOf(at.getKey())) + " deposit is free for it";
-                case NO_COAST   -> "the city owns no sea for it";
+                case NO_COAST   -> noCoastWhy(at.getKey(), "the city owns no sea for it");
                 case NO_LICENCE -> "nobody is licensed to work in it";
                 default         -> "not enough ground is free for it";
             };
