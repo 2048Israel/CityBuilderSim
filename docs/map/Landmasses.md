@@ -35,7 +35,7 @@
 
 **Uses:** [World](World.md) (61), [LandGrid](LandGrid.md) (15), [CityLand](CityLand.md) (8), [EarthData](EarthData.md) (4), [LandManager](LandManager.md) (1), [EarthTerrain](EarthTerrain.md) (1), [EarthProj](EarthProj.md) (1), [LandParcel](LandParcel.md) (1), [LandMarket](LandMarket.md) (1), [Ports](Ports.md) (1)
 
-**Used by (11):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [DataSave](DataSave.md), [Game](Game.md), [LandManager](LandManager.md), [LandMarket](LandMarket.md), [LandmassCheck](LandmassCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (13):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [CityMap](CityMap.md), [DataSave](DataSave.md), [Game](Game.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandmassCheck](LandmassCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Sections
 

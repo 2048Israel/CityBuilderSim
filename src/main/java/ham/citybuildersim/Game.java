@@ -1196,6 +1196,7 @@ public class Game {
             mapAtSeaStale = false;
             cityMap.atSea(mapAtSea());
             cityMap.railPicture(mapRail());
+            cityMap.landmassPicture(getLandmassPicture());
         }
         return cityMap;
     }
@@ -1324,6 +1325,8 @@ public class Game {
         private final long[] counts;
         /** The game's month when the draft was made: what the map's logs date the deal by (CL3). */
         private final int month;
+        /** The landmasses as they stood (ET5): what the map is measured under; null for a city on one landmass. */
+        private final Landmasses.Picture landmasses;
         private volatile CityMap map;
 
         private MapDraft(Game game) {
@@ -1334,11 +1337,12 @@ public class Game {
             for (Resource r : Resource.values()) remaining.put(r, game.landManager.remainingByHolding(r).clone());
             this.types = game.getMapTypes();
             this.counts = game.getMapCounts();
+            this.landmasses = game.getLandmassPicture();
         }
 
         /** Draws the map on the copy: any thread, once. */
         public void draw() {
-            if (map == null) map = CityMap.canonical(land, r -> remaining.get(r), types, counts, month);
+            if (map == null) map = CityMap.canonical(land, r -> remaining.get(r), types, counts, month, landmasses);
         }
 
         /** Whether it has been drawn. */
@@ -1374,6 +1378,7 @@ public class Game {
         CityMap map = draft.map;
         map.rebind(live, landManager::remainingByHolding);
         try {
+            map.landmassPicture(getLandmassPicture());   // ET5: the landmasses as they stand now, a link since the draft re-measured
             if (!map.reconcile(getMapCounts(), month)) return false;
         } catch (RuntimeException e) {
             mapFailures++;
@@ -1403,7 +1408,7 @@ public class Game {
     /** The map drawn canonically from the city as it stands. */
     private CityMap drawMap() {
         mapAtSeaStale = true;
-        return CityMap.canonical(landManager.getCityLand(), landManager::remainingByHolding, getMapTypes(), getMapCounts(), month);
+        return CityMap.canonical(landManager.getCityLand(), landManager::remainingByHolding, getMapTypes(), getMapCounts(), month, getLandmassPicture());
     }
 
     /**
@@ -1419,6 +1424,8 @@ public class Game {
             // The oil at sea as it stands this month (0.7.97): none, read without touching the ground, in a city with none; then the railway's picture (0.8.1).
             cityMap.atSea(mapAtSea());
             cityMap.railPicture(mapRail());
+            // The landmasses (ET5): the ground no port links is owned but no room, a link measures every district again (CityMap, THE ISLAND RULE ON THE MAP); null for a city on one landmass.
+            cityMap.landmassPicture(getLandmassPicture());
             if (!cityMap.reconcile(getMapCounts(), month)) cityMap = drawMap();
         } catch (RuntimeException e) {
             mapFailures++;
@@ -17020,7 +17027,7 @@ public class Game {
             Path file = gameFiles.mapFile(slot);
             if (Files.isRegularFile(file)) {
                 cityMap = CityMap.readSidecar(Files.readAllBytes(file), landManager.getCityLand(),
-                        landManager::remainingByHolding, getMapTypes(), month, stamp);
+                        landManager::remainingByHolding, getMapTypes(), month, stamp, getLandmassPicture());
             }
             if (cityMap == null) {
                 long t0 = System.nanoTime();

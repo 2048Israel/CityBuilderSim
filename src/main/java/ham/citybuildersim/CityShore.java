@@ -149,6 +149,21 @@ public final class CityShore {
         return false;
     }
 
+    /**
+     * The newest work of type t that `which` accepts taken away; false when there is none (ET5, 2026-10-25: a city that
+     * stands on more than one landmass takes a landmass's terminal from that landmass, CityMap's layShore()). With a
+     * predicate that accepts every work it is removeNewest(t).
+     */
+    boolean removeNewest(int t, java.util.function.Predicate<Work> which) {
+        for (int i = works.size() - 1; i >= 0; i--) {
+            if (works.get(i).type() != t || !which.test(works.get(i))) continue;
+            works.remove(i);
+            version++;
+            return true;
+        }
+        return false;
+    }
+
     /** The work whose box holds world plot (x, y), or null. */
     public Work at(long x, long y) {
         for (Work w : works) if (w.holds(x, y)) return w;

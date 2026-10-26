@@ -2,7 +2,7 @@
 
 Generated 2026-10-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**143 harness files, 14,899 labelled assertions.** AllChecks runs 143 of them.
+**143 harness files, 14,945 labelled assertions.** AllChecks runs 143 of them.
 
 ## Which harnesses read which class
 
@@ -51,10 +51,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, IslandNetCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
-| [CityMap](map/CityMap.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
+| [CityMap](map/CityMap.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
 | [CityRuns](map/CityRuns.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
-| [CityShore](map/CityShore.md) | MapCheck, RailDrawCheck, TruckRouteCheck |
+| [CityShore](map/CityShore.md) | LandmassCheck, MapCheck, RailDrawCheck, TruckRouteCheck |
 | [ClockPace](map/ClockPace.md) | ClockCheck |
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck |
 | [CodeMap](map/CodeMap.md) | **none** |
@@ -77,7 +77,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, IndustryViewCheck, LandCheck, LandmassCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
 | [Dials](map/Dials.md) | **none** |
 | [DistrictPicture](map/DistrictPicture.md) | MapCheck |
-| [DistrictPlan](map/DistrictPlan.md) | EarthTerrainCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
+| [DistrictPlan](map/DistrictPlan.md) | EarthTerrainCheck, JunctionCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [EarthData](map/EarthData.md) | EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LandmassCheck, LongPlaytest, MapCheck, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandmassCheck, MapCheck |
 | [EarthSite](map/EarthSite.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, LandCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
@@ -152,7 +152,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandConversion](map/LandConversion.md) | ConversionCheck, LandCheck, ScaleCheck, WaterCheck |
 | [LandGrid](map/LandGrid.md) | ConversionCheck, GridCheck, LandCheck, LandmassCheck, MapCheck |
 | [LandManager](map/LandManager.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
-| [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, LandCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck |
+| [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, LandCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
 | [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
 | [LandScreen](map/LandScreen.md) | **none** |
@@ -253,7 +253,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
-| [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, TruckRouteCheck |
+| [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
 | [TimeSkipReport](map/TimeSkipReport.md) | AuctionCheck, HealthCheck, ReloadCheck, SkipReportCheck |
@@ -11895,7 +11895,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L704 A CITY SAVED AND RELOADED READS THE SAME QUOTES, TONNES AND BILLS, to the bit
   - L706 ...the same dues paid and handling billed, the treasury's tax take line and the national accounts' line, and the dial
 
-## LandmassCheck.java - 194 labelled assertions
+## LandmassCheck.java - 240 labelled assertions
 
 > The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the
 > Earth's data at every plot, the city's books are kept by landmass, ground on a landmass the city has not linked is owned,
@@ -11911,214 +11911,261 @@ _(this harness does not label its checks through a helper - it prints its findin
 > figure worked out again from the model's constants and getters, never typed.
 > ...
 
-- **L217 the fixture**
-  - L219 EarthCheck's fixture is beside the classes (
-- **L280 0. a generated world has no landmasses**
-  - L286 a generated world reads no landmass: hasLandmasses() false, every plot of a tile 0, no ids near a tile, none at a plot
-  - L303 a land of three holdings far apart on a generated world: one landmass, nothing read, nothing unlinked, every offer's figure 0
-  - L307 ...its free ground, share used, zone size and the unlinked figures the old expressions written out inline
-  - L307 three holdings
-  - L319 default
-  - L320 the default seed after 120 months: one landmass, nothing read, no offer with a figure, the old expressions for the free ground, the share used, the coast (fi...
-- **L356 1. the reader: a plot's landmass, and the nearest land cell for a dry plot on a cell with none**
-  - L359 the Earth fixture's world has landmasses to read
-  - L410 tileLandmass() is landmassAt() at every plot of
-  - L411 premise: dry plots on a cell the layer calls no land exist, and some resolve to the island, some to the mainland
-  - L413 every land plot is the nearest land cell's id (a brute-force loop over the data's own landmassAt(), the lowest id on a tie)
-  - L414 premise: tiles exist whose plots resolve to an id none of the tile's own cells holds, only a cell within the reach does
-  - L415 idsNear() holds every id the tile's plots resolve to, the reach's included (the gate reads a tile whose idsNear() is home's alone as all home's)
-  - L428 two worlds of one key agree on a window of tiles (the reader is a pure function of the key)
-  - L433 home is the id the founding card reads at the snapped site: Afro-Eurasia's, 1
-  - L456 the card's landmass is the reader's at the snapped site, for each window of the fixture
-- **L473 the fixture cities: Rotterdam with the island square (A) and without it (B), the squares found by search**
-  - L481 fixture: an island square with dry ground of 648 and salt beside it (the island's north-west tip), pure
-  - L483 fixture: an island square of 648 with no salt in it (Overflakkee's fresh Haringvliet side), pure
-  - L485 fixture: a home square with salt beside its dry ground, pure
-  - L490 the founded Rotterdam city, a single landmass: its free ground, share used, coast and overFull are the old expressions written out inline
-  - L491 rotterdam
-- **L542 2. the books by landmass: counted plot by plot, adding up to the land's dry ground, named, and the linked set**
-  - L543 fixtures were found
-  - L548 premise: the founded Rotterdam twin owns nothing near another landmass - its tiles hold no landmass but home's - and reads no plot
-  - L556 each landmass's dry plots by relief, forest, shore and first holding equal a brute-force count over every owned plot
-  - L561 the landmasses' dry plots, home's included, add up to the land's dry ground to the plot - and to the dry plots the grid owns
-  - L565 premise: the island square's dry plots are on the island, and its shore is on it
-  - L572 a recount after a purchase is a fresh recount: the same rows, the same unlinked ground
-  - L575 the city that owns the island read plots (it had to); the founded twin read none
-  - L580 names: home is \"Home\", an island the data leaves unnamed is \"Island 2\" (N from 2 in the order the city first owned them)
-  - L584 ...rows() lists home first, the island's row linked false, home's linked
-  - L585 the island is unlinked (no port stands): home and 'no land' (0) are linked, 648 is not; the linked set is home
-  - L587 the unlinked sums are the island's: dry, by relief, forest, in square feet
-  - L612 no ports: the closure is home alone
-  - L613 a port on an island and none at home links nothing: two ports make a route, one makes none
-  - L614 a port at home and one on the island link the island
-  - L615 ...and a port on a third landmass is linked by home's port with the island's, whatever they number
-  - L616 two islands each with a port, and none at home, link nothing
-  - L617 a landmass whose ports are all gone (count 0) is not linked by them
-  - L618 a join reaches from a linked landmass to the ones it joins, and on from those (ET6's slot): 1 to 77 to 88
-  - L619 ...and a port on a landmass the joins reach links every landmass with one
-  - L651 a block of home's coast beside the island: the books equal the brute-force count, the recount after it and a fresh recount
-  - L654 ...and the tiles wholly owned with wholly owned neighbours are read once: the next recount reads fewer plots than the one that bought them
-  - L706 premise: a dry plot of home's with salt across the edge of its tile exists on each side of a tile, near the coast (found by search)
-  - L718 a dry plot at a tile's edge beside owned salt across it is shore though its own tile holds none: one more shore plot for each of the four pairs, as the brute...
-- **L734 3. free ground is linked only: the island is owned and priced, and no room for anyone**
-  - L735 fixtures were found
-  - L739 premise: A owns the island's ground and B does not - A's owned ground is B's and the island's, priced as ever
-  - L743 the free ground is the same with the island and without it: getAvailableSqFt, the free ground and the buildable ground
-  - L752 ...for each use of the ground, the zoned sector's and anyone's: freeFor and freeForAnyone
-  - L753 ...and a works's: freeForAnyone(true) and a run's
-  - L754 the share used, the utilisation and the zone's size are the same: the island is not in them
-  - L757 the linked ground is the owned less the island's: getLinkedOwnedSqFt, getLinkedAllocatedSqFt
-  - L765 premise: a plot past B's free ground fits A's owned less built ground (the island would hold it)
-  - L768 canAllocate(B's free ground and one plot) is refused on A as it is on B - for anyone and for the zoned sector - and B's whole free ground is allowed on both
-  - L775 AutoBuilder.overFull() sees the linked ground: 5,000 sq ft built past it is over full though the island is unbuilt
-  - L778 ...and the twins' overFull is 0 both (nothing built past the linked ground)
-  - L783 getUnlinkedFreeSqFt() is the square's dry plots in square feet (the island's, nothing built on it)
-  - L792 the plots the investors see for a House, fed by the month's own refreshLand(), are the same with the island and without it - and are some
-  - L796 the investors' refusal ends with the clause, word for word: \"...; N km2 is free on Island 2, which no port links\"
-  - L798 ...and the clause names the island and says no port links it
-- **L859 4. only a port on unlinked ground: a House past the linked free ground, and a works on a field across the water**
-  - L865 premise: the island would hold the order -
-  - L869 a House order past the linked free ground gets NO_LAND on A though the island would hold it
-  - L872 ...and an order that fits the linked ground is placed (SUCCESS): the refusal is the island's, not the order's
-  - L876 fixture: a city founded on Goeree-Overflakkee whose mainland across the water holds a field of iron (found by search)
-  - L887 premise: the square holds the mainland's field whole, and the field is centred on a dry plot of a landmass that is not home's
-  - L891 premise: the books hold the field's sites (the land owns them), and the model counts none of them as a site a mine may stand on
-  - L894 getSites(), getSites(r, true) and getSites(r, type) all leave the field out
-  - L898 a works on a field centred on an unlinked plot gets NO_DEPOSIT
-  - L902 control: a field of iron on the home landmass is a deposit - its sites count, and the same works is not refused for a deposit
-  - L907 ...and the order is placed or wants only money or land, never NO_DEPOSIT
-- **L918 8. the pickers: an island offer is never the best for room, a shortfall or a deposit**
-  - L919 fixtures were found
-  - L929 fixture: two squares of home's ground, each with less dry ground than the island square, for the shelf
-  - L937 premise: the shelf holds an all-island offer and two offers of home's ground; the island's is split as unlinked, home's are not
-  - L941 the island offer is all on the island: its unlinked dry ground is its dry ground, its largest landmass 648, and its price is as listed (priced as today)
-  - L943 it has no buildable ground: buildableKm2() and buildableSqFt() are 0, and a home offer has some
-  - L947 ranked by the buildable ground a dollar, the island offer is worth nothing; by dry ground a dollar, nothing
-  - L967 premise: without its split the island offer would be the best for room (at both cash levels) and the best value - its buildable ground a dollar beats every h...
-  - L970 ...and the split is back: the island offer is unlinked again
-  - L978 bestValue() is a home offer, never the island's
-  - L980 premise: only the island's dry ground would cover this shortfall - the island offer is the only one whose dry ground does
-  - L983 bestOffer(SHORTFALL) of it is not the island's - its dry ground is no ground a building could stand on
-  - L987 buying what the shortfall's picker offered buys no island: the offer is bought, and the city still owns ground on one landmass
-  - L991 ISLAND is tagged for the island offer and for no offer of home's ground
-  - L999 ISLAND is tagged when the unlinked share reaches ISLAND_TAG_SHARE of the offer's dry ground, not below it, and never at 0
-  - L1003 fixture: a city on the island with a field across the water for the DEPOSIT picker
-  - L1010 premise: the one offer holds the mainland's field of iron and is split as unlinked (the city is on the island)
-  - L1012 bestOffer(DEPOSIT iron) passes over the offer with a field across the water: nothing to buy
-  - L1013 ...and so does richest() (the test player buys its oil with it): no works stands on a field across the water
-  - L1019 ...and with a field on the home landmass beside it, the deposit picker takes that one
-- **L1053 4b. a field centred on a lake plot of an island is on the island: the works gate reads the plot's cell, not the plot**
-  - L1054 fixtures were found
-  - L1074 the plot's cell reader agrees with landmassAt() at every dry plot of the island squares, and puts the fresh water plots about the island on the island (landm...
-  - L1076 premise: a fresh water plot of the island was found to centre a field on
-  - L1088 premise: the lake plot is not the sea's, its plot reads landmass 0 and its cell the island, which the city owns and no port links; there is a sea plot and a ...
-  - L1097 a field centred on a lake plot of the unlinked island gives no site to a works: the gate reads the plot's cell, which landmassAt() gives home's
-  - L1098 ...as a field centred on a dry plot of the island gives none
-  - L1099 ...while a field centred on a dry plot of home gives its sites, and a field in the sea gives its own
-  - L1111 premise: the square holds the field whole, its centre is a water plot that is not the sea's, the plot reads landmass 0 (home) and its cell the island, which ...
-  - L1116 the land owns the field, and no dry site counts it: getSites(r, true) is as it was before the purchase
-- **L1198 5. two ports link: a terminal for the island takes the island's room, links nothing alone or on site, and with home's standing links it**
-  - L1199 fixtures were found
-  - L1207 premise: the city owns the island square - shore on it, none at home - with room on it for several terminals, and nothing is placed or linked
-  - L1210 by the rule alone the order is NO_COAST: home owns no shore, and the rule never takes an island no port links
-  - L1214 the card offers the landmasses the city owns shore on: the island alone (home owns none); nothing for a building that is no terminal
-  - L1217 with the island chosen the coast test passes - by the choice, not by the rule
-  - L1222 the quote's free ground is the island's room, not the linked pool's
-  - L1223 the order is placed (SUCCESS) with the card's pick, which it spends
-  - L1224 it takes the island's room: the room fell by exactly one terminal's land and the allocated ground rose by it, but the ground the linked buildings stand on, t...
-  - L1229 it is on site, not standing, and a terminal on site links nothing: the island holds none of the city's standing terminals
-  - L1232 the terminal stands after some months
-  - L1233 standing alone on the island it links nothing: one port makes no sea route, and it is counted on the island
-  - L1238 premise: the city now owns shore at home
-  - L1239 by the rule the order is home's now: the coast test passes without a pick
-  - L1240 a terminal for home is placed (SUCCESS) and is on site: the island is not linked while it is
-  - L1249 the island stayed unlinked every month the home terminal was on site
-  - L1250 the month it stood the island was linked: the linked set moved once, nothing is unlinked, each landmass holds its terminal
-  - L1260 premise: the island's ground is all flat or foothill (no steep ground to sit idle) and home owns shore
-  - L1262 a terminal built at once for the island stands and links nothing
-  - L1266 one built at home at once links the island, the moment it stands (the same order)
-  - L1268 the free ground rose by the island's unbuilt ground less the terminal built at home: the island's buildable ground less its own terminal, less the home one
-  - L1275 the island's terminal is ordered and stopped the same month: its site is a shell on the island, nothing on site
-  - L1279 ...a stopped order is a shell of one, nothing is on site, nothing stands
-  - L1280 a terminal at home then stands (built at once)
-  - L1282 a shell never links (the island's stopped terminal is not a standing one): one terminal stands, it is home's, and the island is unlinked; the saved row names...
-  - L1286 the shell restarted is on site for the island again, oldest first, and the island is still unlinked
-  - L1289 ...and when it stands the island is linked
-  - L1299 premise: the city owns a third landmass, with shore on it; none is linked and no terminal stands
-  - L1301 a terminal on the island and one at home link the island
-  - L1303 ...and one terminal on the third landmass links it (a linked landmass has a port standing): the closure is home, the island and the third
-  - L1310 short of cash the order is NEEDS_FUNDING, and the card's pick waits for the money (it survives the funding page)
-  - L1313 ...funded, the same order lands on the island
-  - L1321 an order past the island's room is NO_LAND, and nothing is placed
-  - L1323 premise: the island holds several bulk terminals, the linked pool not even two - so what is placed on the island below was admitted by the island's room, not...
-  - L1332 premise: each order alone fits the island, together they do not
-  - L1335 runAhead() counts both against the island's room: the first order passes (the pool could not hold it), the second is NO_LAND
-  - L1338 ...a run that fits the island passes whole
-  - L1341 premise: the linked pool is full
-  - L1342 a house at home is NO_LAND; a terminal for the island is placed (the island's room is the gate)
-  - L1349 an order of every bulk terminal the island's room holds is placed (SUCCESS) though the linked pool is full: the island's room, and it alone, is asked
-- **L1359 6. demolition: the port that links an island cannot be demolished; an island's port keeps its ground until its demolition is done**
-  - L1360 fixtures were found
-  - L1369 premise: a terminal stands on the island and one at home, and they link it
-  - L1371 neither may be demolished: demolishable() leaves both out (the island's would unlink it, and so would home's)
-  - L1373 demolish() is refused with the words \"it is the port that links Island 2\", and puts nothing on site
-  - L1376 a spare at home and a second on the island are built at once
-  - L1378 the two newest may go, the older pair may not: demolishable() is 2, and asking for 3 is refused
-  - L1383 demolishing one takes the newest unit whose loss unlinks nothing - the island's second - and keeps it among the units leaving, by the demolition's id
-  - L1388 ...it holds its ground on the island while it is demolished: the island's room is as it was, the island still linked
-  - L1393 saved and read back with the demolition on site, the same units are leaving, by the same id, and the island's room is the same
-  - L1398 the demolition finishes: the ground is released and the island's room returns by exactly one terminal's land; nothing is leaving
-  - L1404 premise: a lone terminal stands on the island, which it links nothing
-  - L1406 it may be demolished (it links nothing)
-  - L1407 ...the ground it holds is the island's still while the demolition is on site: the unlinked sums, the linked allocated ground and the room are as they were
-  - L1410 ...when it is done the terminal's ground is released from the island: the unlinked terminals hold none, the built ground the linked view takes off is none, t...
-  - L1419 an island terminal ordered and stopped is a shell on the island, holding its ground
-  - L1422 ...the shell's ground is the island's (the room is less than whole)
-  - L1426 demolishing the shell keeps its units leaving by the demolition's id, holding the island's ground until it is done
-  - L1430 ...and when it is done the room is whole again and nothing is placed
-- **L1451 7. the choice: the card's pick is one order's, the rule never takes an island no port links**
-  - L1452 fixtures were found
-  - L1459 the card offers the landmasses the city owns shore on, home first: home, then the island
-  - L1460 by the rule the terminal is home's - home owns shore - and a card's pick of the island is read by CHOSEN alone
-  - L1463 a pick is read: CHOSEN is the island, RULE is still home
-  - L1464 an order by the rule (the automatic builder's, the advice's) lands on home though the card picked the island, and the pick is spent
-  - L1468 a pick not used is forgotten at the month's settle
-  - L1470 a pick of a landmass the city owns no shore on is passed over: the rule answers
-  - L1472 a pick by an order for the island lands there
-  - L1473 the rule's answer for a landmass named: an id with shore is itself, an id without is none
-  - L1477 with the island's shore owned and none at home, the rule is none, however it is asked, until a port links the island
-  - L1494 the rule's second leg: home owns no shore but the island, linked by the pair, does - the answer is the linked island with shore
-  - L1499 ...and with one terminal at home the island is unlinked, and the answer is none
-  - L1504 the island with no salt in the square owns no shore: a terminal chosen for it is NO_COAST (the pick is passed over, the rule has none)
-  - L1514 a desalination plant needs shore on a LINKED landmass: the island's shore alone (unlinked) is NO_COAST, home's shore or a linked island's passes
-  - L1523 premise: with the island picked, the card's quote stands on the island's room and the rule's on home's free ground, and the two rooms are not one figure
-  - L1526 quoteBuildOn() asks for what the order is for: the island's is the card's quote with the island picked, and the rule's is home's whatever is picked
-  - L1531 an order by the rule with the pick standing is placed and is charged its own quote, the rule's
-  - L1533 ...and it takes home's ground and nothing of the island's (no terminal is placed off home), and the pick is spent
-- **L1542 9. the save: the placements under one key, absent for a city on one landmass; read back, resaved, played on; a save without the key reads...**
-  - L1543 fixtures were found
-  - L1555 fixture: standing [island, home, home, island], a shell of the island's, and the newest island terminal being demolished - the island linked
-  - L1561 the save carries the key \"landmasses\": a row for the terminal's template and the demolition leaving
-  - L1565 a city on one landmass writes no such key (its save is the old bytes)
-  - L1570 read back: the same placements, the same landmasses linked, the same rooms and unlinked ground
-  - L1578 ...and written again it is the same bytes but for its time and name
-  - L1581 a reload equals the city played on: loaded into a second game and both played a month and two, every figure of the save and of the history is the same
-  - L1593 a save without the key loads - it is not refused - and reads every terminal at home: none placed, none on the island, the island unlinked
-  - L1612 a bad row is passed over, not refused: a template that is no terminal is skipped, a list shorter than the buildings' count is made up with home's
-  - L1633 fixture: the island city is saved
-- **L1716 12. grown across landmasses: 24 months with the island owned and unlinked, the two terminals by the card's path, then 96 months, the book...**
-  - L1717 fixtures were found
-  - L1743 premise: the 24 months moved the city - ground was allocated and buildings stand that did not
-  - L1758 24 months with the island owned and no terminal: it stays unlinked, owned and counted, and no investor's refusal hides it
-  - L1759 the two terminals by the card's path (the island's, then home's) are placed, and the island is linked once both stand
-  - L1766 fixture: a city on the island with a field across the water
-  - L1782 premise: the island city owns the mainland's field across the water - sites no works may use - and its 24 months moved it: ground allocated, buildings standi...
-  - L1831 the Rotterdam delta's islands read Rotterdam's landmass in the model's own reader: Voorne-Putten, Rozenburg, IJsselmonde, the Hoeksche Waard
-  - L1832 ...and Goeree-Overflakkee does not
-  - L1834 Prince Edward Island is a landmass of its own (101), apart from the mainland across the strait
-  - L1835 Halifax and Dartmouth are one landmass; Medellin is on the Americas (2)
-  - L1880 the run played its months and found nothing: every month passed the playtest's audit,
-  - L1882 the test player never builds a terminal off its home landmass (it never links an island)
+- **L228 the fixture**
+  - L230 EarthCheck's fixture is beside the classes (
+- **L292 0. a generated world has no landmasses**
+  - L298 a generated world reads no landmass: hasLandmasses() false, every plot of a tile 0, no ids near a tile, none at a plot
+  - L315 a land of three holdings far apart on a generated world: one landmass, nothing read, nothing unlinked, every offer's figure 0
+  - L319 ...its free ground, share used, zone size and the unlinked figures the old expressions written out inline
+  - L319 three holdings
+  - L331 default
+  - L332 the default seed after 120 months: one landmass, nothing read, no offer with a figure, the old expressions for the free ground, the share used, the coast (fi...
+- **L368 1. the reader: a plot's landmass, and the nearest land cell for a dry plot on a cell with none**
+  - L371 the Earth fixture's world has landmasses to read
+  - L422 tileLandmass() is landmassAt() at every plot of
+  - L423 premise: dry plots on a cell the layer calls no land exist, and some resolve to the island, some to the mainland
+  - L425 every land plot is the nearest land cell's id (a brute-force loop over the data's own landmassAt(), the lowest id on a tie)
+  - L426 premise: tiles exist whose plots resolve to an id none of the tile's own cells holds, only a cell within the reach does
+  - L427 idsNear() holds every id the tile's plots resolve to, the reach's included (the gate reads a tile whose idsNear() is home's alone as all home's)
+  - L440 two worlds of one key agree on a window of tiles (the reader is a pure function of the key)
+  - L445 home is the id the founding card reads at the snapped site: Afro-Eurasia's, 1
+  - L468 the card's landmass is the reader's at the snapped site, for each window of the fixture
+- **L485 the fixture cities: Rotterdam with the island square (A) and without it (B), the squares found by search**
+  - L493 fixture: an island square with dry ground of 648 and salt beside it (the island's north-west tip), pure
+  - L495 fixture: an island square of 648 with no salt in it (Overflakkee's fresh Haringvliet side), pure
+  - L497 fixture: a home square with salt beside its dry ground, pure
+  - L502 the founded Rotterdam city, a single landmass: its free ground, share used, coast and overFull are the old expressions written out inline
+  - L503 rotterdam
+- **L554 2. the books by landmass: counted plot by plot, adding up to the land's dry ground, named, and the linked set**
+  - L555 fixtures were found
+  - L560 premise: the founded Rotterdam twin owns nothing near another landmass - its tiles hold no landmass but home's - and reads no plot
+  - L568 each landmass's dry plots by relief, forest, shore and first holding equal a brute-force count over every owned plot
+  - L573 the landmasses' dry plots, home's included, add up to the land's dry ground to the plot - and to the dry plots the grid owns
+  - L577 premise: the island square's dry plots are on the island, and its shore is on it
+  - L584 a recount after a purchase is a fresh recount: the same rows, the same unlinked ground
+  - L587 the city that owns the island read plots (it had to); the founded twin read none
+  - L592 names: home is \"Home\", an island the data leaves unnamed is \"Island 2\" (N from 2 in the order the city first owned them)
+  - L596 ...rows() lists home first, the island's row linked false, home's linked
+  - L597 the island is unlinked (no port stands): home and 'no land' (0) are linked, 648 is not; the linked set is home
+  - L599 the unlinked sums are the island's: dry, by relief, forest, in square feet
+  - L624 no ports: the closure is home alone
+  - L625 a port on an island and none at home links nothing: two ports make a route, one makes none
+  - L626 a port at home and one on the island link the island
+  - L627 ...and a port on a third landmass is linked by home's port with the island's, whatever they number
+  - L628 two islands each with a port, and none at home, link nothing
+  - L629 a landmass whose ports are all gone (count 0) is not linked by them
+  - L630 a join reaches from a linked landmass to the ones it joins, and on from those (ET6's slot): 1 to 77 to 88
+  - L631 ...and a port on a landmass the joins reach links every landmass with one
+  - L663 a block of home's coast beside the island: the books equal the brute-force count, the recount after it and a fresh recount
+  - L666 ...and the tiles wholly owned with wholly owned neighbours are read once: the next recount reads fewer plots than the one that bought them
+  - L718 premise: a dry plot of home's with salt across the edge of its tile exists on each side of a tile, near the coast (found by search)
+  - L730 a dry plot at a tile's edge beside owned salt across it is shore though its own tile holds none: one more shore plot for each of the four pairs, as the brute...
+- **L746 3. free ground is linked only: the island is owned and priced, and no room for anyone**
+  - L747 fixtures were found
+  - L751 premise: A owns the island's ground and B does not - A's owned ground is B's and the island's, priced as ever
+  - L755 the free ground is the same with the island and without it: getAvailableSqFt, the free ground and the buildable ground
+  - L764 ...for each use of the ground, the zoned sector's and anyone's: freeFor and freeForAnyone
+  - L765 ...and a works's: freeForAnyone(true) and a run's
+  - L766 the share used, the utilisation and the zone's size are the same: the island is not in them
+  - L769 the linked ground is the owned less the island's: getLinkedOwnedSqFt, getLinkedAllocatedSqFt
+  - L777 premise: a plot past B's free ground fits A's owned less built ground (the island would hold it)
+  - L780 canAllocate(B's free ground and one plot) is refused on A as it is on B - for anyone and for the zoned sector - and B's whole free ground is allowed on both
+  - L787 AutoBuilder.overFull() sees the linked ground: 5,000 sq ft built past it is over full though the island is unbuilt
+  - L790 ...and the twins' overFull is 0 both (nothing built past the linked ground)
+  - L795 getUnlinkedFreeSqFt() is the square's dry plots in square feet (the island's, nothing built on it)
+  - L804 the plots the investors see for a House, fed by the month's own refreshLand(), are the same with the island and without it - and are some
+  - L808 the investors' refusal ends with the clause, word for word: \"...; N km2 is free on Island 2, which no port links\"
+  - L810 ...and the clause names the island and says no port links it
+- **L871 4. only a port on unlinked ground: a House past the linked free ground, and a works on a field across the water**
+  - L877 premise: the island would hold the order -
+  - L881 a House order past the linked free ground gets NO_LAND on A though the island would hold it
+  - L884 ...and an order that fits the linked ground is placed (SUCCESS): the refusal is the island's, not the order's
+  - L888 fixture: a city founded on Goeree-Overflakkee whose mainland across the water holds a field of iron (found by search)
+  - L899 premise: the square holds the mainland's field whole, and the field is centred on a dry plot of a landmass that is not home's
+  - L903 premise: the books hold the field's sites (the land owns them), and the model counts none of them as a site a mine may stand on
+  - L906 getSites(), getSites(r, true) and getSites(r, type) all leave the field out
+  - L910 a works on a field centred on an unlinked plot gets NO_DEPOSIT
+  - L914 control: a field of iron on the home landmass is a deposit - its sites count, and the same works is not refused for a deposit
+  - L919 ...and the order is placed or wants only money or land, never NO_DEPOSIT
+- **L930 8. the pickers: an island offer is never the best for room, a shortfall or a deposit**
+  - L931 fixtures were found
+  - L941 fixture: two squares of home's ground, each with less dry ground than the island square, for the shelf
+  - L949 premise: the shelf holds an all-island offer and two offers of home's ground; the island's is split as unlinked, home's are not
+  - L953 the island offer is all on the island: its unlinked dry ground is its dry ground, its largest landmass 648, and its price is as listed (priced as today)
+  - L955 it has no buildable ground: buildableKm2() and buildableSqFt() are 0, and a home offer has some
+  - L959 ranked by the buildable ground a dollar, the island offer is worth nothing; by dry ground a dollar, nothing
+  - L979 premise: without its split the island offer would be the best for room (at both cash levels) and the best value - its buildable ground a dollar beats every h...
+  - L982 ...and the split is back: the island offer is unlinked again
+  - L990 bestValue() is a home offer, never the island's
+  - L992 premise: only the island's dry ground would cover this shortfall - the island offer is the only one whose dry ground does
+  - L995 bestOffer(SHORTFALL) of it is not the island's - its dry ground is no ground a building could stand on
+  - L999 buying what the shortfall's picker offered buys no island: the offer is bought, and the city still owns ground on one landmass
+  - L1003 ISLAND is tagged for the island offer and for no offer of home's ground
+  - L1011 ISLAND is tagged when the unlinked share reaches ISLAND_TAG_SHARE of the offer's dry ground, not below it, and never at 0
+  - L1015 fixture: a city on the island with a field across the water for the DEPOSIT picker
+  - L1022 premise: the one offer holds the mainland's field of iron and is split as unlinked (the city is on the island)
+  - L1024 bestOffer(DEPOSIT iron) passes over the offer with a field across the water: nothing to buy
+  - L1025 ...and so does richest() (the test player buys its oil with it): no works stands on a field across the water
+  - L1031 ...and with a field on the home landmass beside it, the deposit picker takes that one
+- **L1065 4b. a field centred on a lake plot of an island is on the island: the works gate reads the plot's cell, not the plot**
+  - L1066 fixtures were found
+  - L1086 the plot's cell reader agrees with landmassAt() at every dry plot of the island squares, and puts the fresh water plots about the island on the island (landm...
+  - L1088 premise: a fresh water plot of the island was found to centre a field on
+  - L1100 premise: the lake plot is not the sea's, its plot reads landmass 0 and its cell the island, which the city owns and no port links; there is a sea plot and a ...
+  - L1109 a field centred on a lake plot of the unlinked island gives no site to a works: the gate reads the plot's cell, which landmassAt() gives home's
+  - L1110 ...as a field centred on a dry plot of the island gives none
+  - L1111 ...while a field centred on a dry plot of home gives its sites, and a field in the sea gives its own
+  - L1123 premise: the square holds the field whole, its centre is a water plot that is not the sea's, the plot reads landmass 0 (home) and its cell the island, which ...
+  - L1128 the land owns the field, and no dry site counts it: getSites(r, true) is as it was before the purchase
+- **L1210 5. two ports link: a terminal for the island takes the island's room, links nothing alone or on site, and with home's standing links it**
+  - L1211 fixtures were found
+  - L1219 premise: the city owns the island square - shore on it, none at home - with room on it for several terminals, and nothing is placed or linked
+  - L1222 by the rule alone the order is NO_COAST: home owns no shore, and the rule never takes an island no port links
+  - L1226 the card offers the landmasses the city owns shore on: the island alone (home owns none); nothing for a building that is no terminal
+  - L1229 with the island chosen the coast test passes - by the choice, not by the rule
+  - L1234 the quote's free ground is the island's room, not the linked pool's
+  - L1235 the order is placed (SUCCESS) with the card's pick, which it spends
+  - L1236 it takes the island's room: the room fell by exactly one terminal's land and the allocated ground rose by it, but the ground the linked buildings stand on, t...
+  - L1241 it is on site, not standing, and a terminal on site links nothing: the island holds none of the city's standing terminals
+  - L1244 the terminal stands after some months
+  - L1245 standing alone on the island it links nothing: one port makes no sea route, and it is counted on the island
+  - L1250 premise: the city now owns shore at home
+  - L1251 by the rule the order is home's now: the coast test passes without a pick
+  - L1252 a terminal for home is placed (SUCCESS) and is on site: the island is not linked while it is
+  - L1261 the island stayed unlinked every month the home terminal was on site
+  - L1262 the month it stood the island was linked: the linked set moved once, nothing is unlinked, each landmass holds its terminal
+  - L1272 premise: the island's ground is all flat or foothill (no steep ground to sit idle) and home owns shore
+  - L1274 a terminal built at once for the island stands and links nothing
+  - L1278 one built at home at once links the island, the moment it stands (the same order)
+  - L1280 the free ground rose by the island's unbuilt ground less the terminal built at home: the island's buildable ground less its own terminal, less the home one
+  - L1287 the island's terminal is ordered and stopped the same month: its site is a shell on the island, nothing on site
+  - L1291 ...a stopped order is a shell of one, nothing is on site, nothing stands
+  - L1292 a terminal at home then stands (built at once)
+  - L1294 a shell never links (the island's stopped terminal is not a standing one): one terminal stands, it is home's, and the island is unlinked; the saved row names...
+  - L1298 the shell restarted is on site for the island again, oldest first, and the island is still unlinked
+  - L1301 ...and when it stands the island is linked
+  - L1311 premise: the city owns a third landmass, with shore on it; none is linked and no terminal stands
+  - L1313 a terminal on the island and one at home link the island
+  - L1315 ...and one terminal on the third landmass links it (a linked landmass has a port standing): the closure is home, the island and the third
+  - L1322 short of cash the order is NEEDS_FUNDING, and the card's pick waits for the money (it survives the funding page)
+  - L1325 ...funded, the same order lands on the island
+  - L1333 an order past the island's room is NO_LAND, and nothing is placed
+  - L1335 premise: the island holds several bulk terminals, the linked pool not even two - so what is placed on the island below was admitted by the island's room, not...
+  - L1344 premise: each order alone fits the island, together they do not
+  - L1347 runAhead() counts both against the island's room: the first order passes (the pool could not hold it), the second is NO_LAND
+  - L1350 ...a run that fits the island passes whole
+  - L1353 premise: the linked pool is full
+  - L1354 a house at home is NO_LAND; a terminal for the island is placed (the island's room is the gate)
+  - L1361 an order of every bulk terminal the island's room holds is placed (SUCCESS) though the linked pool is full: the island's room, and it alone, is asked
+- **L1371 6. demolition: the port that links an island cannot be demolished; an island's port keeps its ground until its demolition is done**
+  - L1372 fixtures were found
+  - L1381 premise: a terminal stands on the island and one at home, and they link it
+  - L1383 neither may be demolished: demolishable() leaves both out (the island's would unlink it, and so would home's)
+  - L1385 demolish() is refused with the words \"it is the port that links Island 2\", and puts nothing on site
+  - L1388 a spare at home and a second on the island are built at once
+  - L1390 the two newest may go, the older pair may not: demolishable() is 2, and asking for 3 is refused
+  - L1395 demolishing one takes the newest unit whose loss unlinks nothing - the island's second - and keeps it among the units leaving, by the demolition's id
+  - L1400 ...it holds its ground on the island while it is demolished: the island's room is as it was, the island still linked
+  - L1405 saved and read back with the demolition on site, the same units are leaving, by the same id, and the island's room is the same
+  - L1410 the demolition finishes: the ground is released and the island's room returns by exactly one terminal's land; nothing is leaving
+  - L1416 premise: a lone terminal stands on the island, which it links nothing
+  - L1418 it may be demolished (it links nothing)
+  - L1419 ...the ground it holds is the island's still while the demolition is on site: the unlinked sums, the linked allocated ground and the room are as they were
+  - L1422 ...when it is done the terminal's ground is released from the island: the unlinked terminals hold none, the built ground the linked view takes off is none, t...
+  - L1431 an island terminal ordered and stopped is a shell on the island, holding its ground
+  - L1434 ...the shell's ground is the island's (the room is less than whole)
+  - L1438 demolishing the shell keeps its units leaving by the demolition's id, holding the island's ground until it is done
+  - L1442 ...and when it is done the room is whole again and nothing is placed
+- **L1463 7. the choice: the card's pick is one order's, the rule never takes an island no port links**
+  - L1464 fixtures were found
+  - L1471 the card offers the landmasses the city owns shore on, home first: home, then the island
+  - L1472 by the rule the terminal is home's - home owns shore - and a card's pick of the island is read by CHOSEN alone
+  - L1475 a pick is read: CHOSEN is the island, RULE is still home
+  - L1476 an order by the rule (the automatic builder's, the advice's) lands on home though the card picked the island, and the pick is spent
+  - L1480 a pick not used is forgotten at the month's settle
+  - L1482 a pick of a landmass the city owns no shore on is passed over: the rule answers
+  - L1484 a pick by an order for the island lands there
+  - L1485 the rule's answer for a landmass named: an id with shore is itself, an id without is none
+  - L1489 with the island's shore owned and none at home, the rule is none, however it is asked, until a port links the island
+  - L1506 the rule's second leg: home owns no shore but the island, linked by the pair, does - the answer is the linked island with shore
+  - L1511 ...and with one terminal at home the island is unlinked, and the answer is none
+  - L1516 the island with no salt in the square owns no shore: a terminal chosen for it is NO_COAST (the pick is passed over, the rule has none)
+  - L1526 a desalination plant needs shore on a LINKED landmass: the island's shore alone (unlinked) is NO_COAST, home's shore or a linked island's passes
+  - L1535 premise: with the island picked, the card's quote stands on the island's room and the rule's on home's free ground, and the two rooms are not one figure
+  - L1538 quoteBuildOn() asks for what the order is for: the island's is the card's quote with the island picked, and the rule's is home's whatever is picked
+  - L1543 an order by the rule with the pick standing is placed and is charged its own quote, the rule's
+  - L1545 ...and it takes home's ground and nothing of the island's (no terminal is placed off home), and the pick is spent
+- **L1554 9. the save: the placements under one key, absent for a city on one landmass; read back, resaved, played on; a save without the key reads...**
+  - L1555 fixtures were found
+  - L1567 fixture: standing [island, home, home, island], a shell of the island's, and the newest island terminal being demolished - the island linked
+  - L1573 the save carries the key \"landmasses\": a row for the terminal's template and the demolition leaving
+  - L1577 a city on one landmass writes no such key (its save is the old bytes)
+  - L1582 read back: the same placements, the same landmasses linked, the same rooms and unlinked ground
+  - L1590 ...and written again it is the same bytes but for its time and name
+  - L1593 a reload equals the city played on: loaded into a second game and both played a month and two, every figure of the save and of the history is the same
+  - L1605 a save without the key loads - it is not refused - and reads every terminal at home: none placed, none on the island, the island unlinked
+  - L1624 a bad row is passed over, not refused: a template that is no terminal is skipped, a list shorter than the buildings' count is made up with home's
+  - L1645 fixture: the island city is saved
+- **L1814 10. the map: a real CityMap of the two-landmass city draws nothing on ground no port links, and measures it again when it is linked**
+  - L1815 fixtures were found
+  - L1819 fixture: a square of home's open coast with shore beside salt water, pure
+  - L1834 premise: the city owns the island unlinked, the game has handed the map a picture of its landmasses, and the island is not in its linked set
+  - L1844 premise: the owned dry ground of the island is the square's, by a loop over its plots and the books' count: ground the map must leave unbuilt
+  - L1860 unlinkedRuns() is the owned dry plots of the unlinked landmasses, each once, in rows, a run ending where the landmass or the city's ground does, by a loop ov...
+  - L1873 unlinkedChips() has one chip for the island: its owned dry plots, and the mean of the middles of the tiles that hold them
+  - L1879 premise: the island has buildable ground a map that did not know landmasses would count as room
+  - L1881 the map's districts hold the free plots of the linked ground and none of the island's (a loop over every owned plot)
+  - L1883 no building box, no street, no plot of the runs and no siding is drawn on an unlinked plot (every plot of the island, the painter's own inputs)
+  - L1890 no piece of ground holds an unlinked plot: CL5's pieces are home's, the island's tiles are in none
+  - L1893 premise: every owned dry plot of the island lies in a district the map holds (a district with owned ground the rule masks stays on the map), so each is a plo...
+  - L1895 the plans' ground and the runs' ground hold none of the island: no plot of it is owned in a district plan's input (planInputHere()) and none is read by the r...
+  - L1899 a terminal ordered for the island by the card's path is placed, and the month goes on
+  - L1913 the terminal's work stands on the island's shore - its shore plot reads 648, its whole box is owned dry ground of 648, its quay is owned salt water - and the...
+  - L1917 the district holding the island's ground stays on the map though it has no room, so that the shore reaches it
+  - L1918 the free plots the districts hold are still the linked ground's alone
+  - L1924 with the terminal's work laid, still nothing else is drawn on the island and no piece holds a plot of it
+  - L1933 a terminal at home, built at once, links the island
+  - L1937 after the link the map's districts are measured again: they hold the island's buildable ground as well, to the plot (every owned plot looked at)
+  - L1953 a piece holds the island's tiles now: each of the square's tiles is in a piece exactly when one of its samples is owned dry ground the terminal's work does n...
+  - L1956 after the link the plans' ground and the runs' ground hold the whole island: every plot is owned in its district plan's input, and the runs read every plot b...
+  - L1959 the site index is built again at the link, and the terminal's work stays where it was laid
+  - L1962 the sidecar's land stamp differs between the two linked sets (the purchases the same), and a map read back under the picture it was written under is the map;...
+  - L1975 the terminal at home has its work on home's coast and the island's stays where it is: one work of the type on each landmass, the shore short of nothing
+  - L1989 a generated city's map holds no picture, its sidecar's land stamp is the land's own and a sidecar read back writes the same bytes
+  - L1995 fixture: a city on the island with a field across the water
+  - L2004 premise: the island city owns a field of
+  - L2012 the map's site index counts exactly the sites the model's works gate leaves (every sited resource): no field centred across the water is a site on the map
+  - L2019 no works is drawn on a site of the field across the water (every site of it, as the map lists them)
+  - L2022 control: the iron mine ordered stands on the island's own field - the first works is drawn on the sites the model allows, though the field across the water w...
+  - L2045 handed a picture that links the mainland, the pieces of ground are read from the start: the mainland square's tiles were in no piece and are land now, tile b...
+  - L2047 ...and the map counts the sites across the water, holds the mainland square's buildable ground, and its site index is built again
+  - L2051 ...and handed the first picture back it is as it was
+  - L2056 fixture: a city on the island whose own landmass holds a field of iron to buy in the month of a link
+  - L2065 premise: a field of the island's own landmass is bought after the map was drawn and not yet given to it, and the picture that links the mainland is ready to ...
+  - L2076 the link and a purchase in the same month: every site is counted once - the map's sites are those of a map drawn canonically from the same land and picture (...
+  - L2078 ...and, every landmass the land lies on being linked in that picture, they are the land's own sites: nothing counted twice and nothing left out
+  - L2088 premise: the island's shore is owned ground a terminal counted on the island finds (the search for landmass 648), the island unlinked and the map holding the...
+  - L2105 the shore's other works (the tank farm and the strategic reserve, asked for no landmass) are laid on none of the island's shore while no port links it
+  - L2125 four terminals counted two at home and two on the island are laid two on each landmass, on its own shore, and the shore is short of nothing
+  - L2133 a unit leaving the island (the picture shows one fewer standing there, the model's count is as it was) keeps its work: no work is taken or laid until the cou...
+  - L2144 the count falling takes the newest work on the landmass the unit left, the island's, and moves nothing else: the older island work and both of home's stand w...
+  - L2159 home filled to what the model allows with the island unlinked:
+- **L2238 12. grown across landmasses: 24 months with the island owned and unlinked, the two terminals by the card's path, then 96 months, the book...**
+  - L2239 fixtures were found
+  - L2282 premise: the 24 months moved the city - ground was allocated and buildings stand that did not
+  - L2297 24 months with the island owned and no terminal: it stays unlinked, owned and counted, and no investor's refusal hides it
+  - L2298 the two terminals by the card's path (the island's, then home's) are placed, and the island is linked once both stand
+  - L2306 the grown city's map, which measured every district again in the month
+  - L2323 home filled by a fixture (
+  - L2329 fixture: a city on the island with a field across the water
+  - L2355 premise: the island city owns the mainland's field across the water - sites no works may use - and its 24 months moved it: ground allocated, buildings standi...
+  - L2366 the map of the island city, kept up the 24 months: its site index is the model's sites (every sited resource), nothing is drawn on the mainland's ground acro...
+  - L2410 the Rotterdam delta's islands read Rotterdam's landmass in the model's own reader: Voorne-Putten, Rozenburg, IJsselmonde, the Hoeksche Waard
+  - L2411 ...and Goeree-Overflakkee does not
+  - L2413 Prince Edward Island is a landmass of its own (101), apart from the mainland across the strait
+  - L2414 Halifax and Dartmouth are one landmass; Medellin is on the Americas (2)
+  - L2459 the run played its months and found nothing: every month passed the playtest's audit,
+  - L2461 the test player never builds a terminal off its home landmass (it never links an island)
 
 ## LongPlaytest.java - 0 labelled assertions
 

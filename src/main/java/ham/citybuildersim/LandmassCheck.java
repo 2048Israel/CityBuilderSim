@@ -65,11 +65,22 @@ import java.util.function.Predicate;
  *      would cover buys no island.
  *   9. THE SAVE. The placements under one key, absent for a city on one landmass; read back, resaved identical, a
  *      reload equal to the city played on; a save without the key reads every terminal at home; a bad row is passed over.
+ *  10. THE MAP (ET5 slice C). A real CityMap of the two-landmass city: no building box, street, plot of the runs or siding on a plot
+ *      of ground no port links, no piece of ground holding one, the districts' free plots the linked ground's to the plot (a loop over
+ *      every owned plot); a terminal ordered for the island has its work on the island's shore (its shore plot reads 648, its quay is
+ *      owned salt, nothing short), one at home links the island and the districts are measured again, a piece holds the island's tiles,
+ *      the site index is built again and the sidecar's land stamp differs between the two linked sets; a generated city's sidecar
+ *      carries the land's own stamp; LandMap.unlinkedRuns() is a loop over the plots; an island city's map counts exactly the sites
+ *      the model's works gate leaves and draws no works on the field across the water; the terminals are laid on the landmass each
+ *      is counted for, a leaving unit keeps its work, and the count falling takes the newest work on its landmass; home filled to what
+ *      the model allows with the island unlinked draws nothing on the island.
  *  12. GROWN ACROSS LANDMASSES. A city that owns the island for 24 months, then the two terminals by the card's path,
  *      then 96 months: every month the books are consistent (the linked free ground fits, the unlinked terminals' ground
  *      is the placements', the placements are the buildings' counts, and no works stands on a field across the water: getSites() is
  *      the pieces on linked ground, counted apart, and the works standing fit them) - the 24 months of a city that grows, and of a
- *      city on the island itself that owns the mainland's field of iron across the water.
+ *      city on the island itself that owns the mainland's field of iron across the water. The map of each is asked every twelve months what it
+ *      draws on ground no port links (nothing), and with home filled by a fixture (orders until the linked free ground is under half the
+ *      island's buildable ground) the map's districts on the island hold buildings.
  *  13. THE FULL FILE. The delta's islands read Rotterdam's landmass in the model's reader, Goeree does not; PEI is apart,
  *      Halifax and Dartmouth one, Medellin on 2; Rotterdam played 1,200 months, the books audited at every look.
  *
@@ -237,6 +248,7 @@ public class LandmassCheck {
         theChoice(f);
         thePickers(f, id);
         theSave(f);
+        theMap(f);
         grown(f);
         fullFile(theEarth());
 
@@ -1640,6 +1652,516 @@ public class LandmassCheck {
     }
 
     /* =====================================================================
+       10. THE MAP
+       ===================================================================== */
+
+    /** Whether plot (x, y) is owned dry ground on a landmass the model has not linked: ground the map must draw nothing on. By the model's own readers, a plot at a time. */
+    static boolean unlinkedPlot(World w, CityLand land, Landmasses lms, long x, long y) {
+        return land.ownsPlot(x, y) && World.dry(w.terrainAt(x, y)) && !lms.linked(w.landmassAt(x, y));
+    }
+
+    /**
+     * What the map draws on unlinked ground, counted by brute force over the n x n tiles from (tx0, ty0) with the painter's own inputs
+     * (CityMap.tileInput()): {plots under building boxes, street plots, plots of the runs, sidings, unlinked plots looked at}. A terminal's
+     * work is apart - it is the one thing that stands on an island no port links. All the first four are 0 when the map keeps the rule.
+     */
+    static int[] drawnOnUnlinked(CityMap map, World w, CityLand land, Landmasses lms, long tx0, long ty0, int n) {
+        int[] counts = new int[5];
+        TilePainter.Input in = new TilePainter.Input();
+        for (long ty = ty0; ty < ty0 + n; ty++) {
+            for (long tx = tx0; tx < tx0 + n; tx++) {
+                map.tileInput(tx, ty, in);
+                long px0 = tx * World.TILE, py0 = ty * World.TILE;
+                for (int i = 0; i < TilePainter.PLOTS; i++) {
+                    if (!unlinkedPlot(w, land, lms, px0 + i % World.TILE, py0 + i / World.TILE)) continue;
+                    counts[4]++;
+                    if (in.street[i] != 0) counts[1]++;
+                    if (in.fixed[i] != 0) counts[2]++;
+                    if (in.siding[i] != 0) counts[3]++;
+                }
+                for (int b = 0; b < in.buildings; b++) {
+                    int box = in.boxes[2 * b];
+                    int bx = box & 31, by = (box >> 5) & 31, bw = ((box >> 10) & 31) + 1, bh = ((box >> 15) & 31) + 1;
+                    for (int j = 0; j < bh; j++) {
+                        for (int a = 0; a < bw; a++) {
+                            long x = px0 + bx + a, y = py0 + by + j;
+                            if (unlinkedPlot(w, land, lms, x, y) && map.shore().at(x, y) == null) counts[0]++;
+                        }
+                    }
+                }
+            }
+        }
+        return counts;
+    }
+
+    /** How many buildings the map draws with their first plot on landmass `id` over the n x n tiles from (tx0, ty0): every box but a terminal's work and a part of a building counted on another tile. */
+    static int boxesOnLandmass(CityMap map, World w, int id, long tx0, long ty0, int n) {
+        int boxes = 0;
+        TilePainter.Input in = new TilePainter.Input();
+        for (long ty = ty0; ty < ty0 + n; ty++) {
+            for (long tx = tx0; tx < tx0 + n; tx++) {
+                map.tileInput(tx, ty, in);
+                for (int b = 0; b < in.buildings; b++) {
+                    int box = in.boxes[2 * b];
+                    if ((box & TilePainter.PART_BIT) != 0) continue;
+                    long x = tx * World.TILE + (box & 31), y = ty * World.TILE + ((box >> 5) & 31);
+                    if (w.landmassAt(x, y) == id && map.shore().at(x, y) == null) boxes++;
+                }
+            }
+        }
+        return boxes;
+    }
+
+    /** The plots the map's districts could build on by brute force over the tiles of the owned box: owned, buildable, and - when `linkedOnly` - on a landmass the model links. */
+    static long freePlots(CityMap map, World w, Landmasses lms, boolean linkedOnly) {
+        LandGrid g = map.land().grid();
+        boolean[] own = new boolean[TilePainter.PLOTS];
+        byte[] ground = new byte[TilePainter.PLOTS], relief = new byte[TilePainter.PLOTS];
+        int[] lm = new int[TilePainter.PLOTS];
+        long n = 0;
+        for (long ty = Math.floorDiv(g.minY(), World.TILE); ty <= Math.floorDiv(g.maxY() - 1, World.TILE); ty++) {
+            for (long tx = Math.floorDiv(g.minX(), World.TILE); tx <= Math.floorDiv(g.maxX() - 1, World.TILE); tx++) {
+                if (g.cover(5, tx, ty) == LandGrid.NONE) continue;
+                map.tileOwnership(tx, ty, own);
+                w.tileTerrain(tx, ty, ground);
+                w.tileRelief(tx, ty, relief);
+                w.tileLandmass(tx, ty, lm);
+                for (int i = 0; i < TilePainter.PLOTS; i++) if (own[i] && World.buildable(ground[i], relief[i]) && (!linkedOnly || lms.linked(lm[i]))) n++;
+            }
+        }
+        return n;
+    }
+
+    /** The free plots the map's districts hold, summed. */
+    static long districtsFree(CityMap map) {
+        long n = 0;
+        for (CityMap.District d : map.districts()) n += d.owned;
+        return n;
+    }
+
+    /** Whether plot (x, y) is owned dry ground of landmass `id`, by the model's own readers. */
+    static boolean ownedDryOn(World w, CityLand land, int id, long x, long y) {
+        return land.ownsPlot(x, y) && World.dry(w.terrainAt(x, y)) && w.landmassAt(x, y) == id;
+    }
+
+    /**
+     * What the district plans and the runs are given of landmass `id`'s owned dry ground, a plot at a time over the square: {plots looked at, those in
+     * a district the map holds, those the plan's input (CityMap.planInputHere(), the ground a district's plan draws on) calls owned, those the runs'
+     * ground (CityMap.runGround().at()) reads, those it does not read because a terminal's work stands there}. The island rule masks the first two
+     * readers apart from each other (buildableOwnership() in planInputHere(), the mask in RunGround.ownedAt()): each count is 0 while the landmass
+     * is unlinked and the whole of the plots once it is linked.
+     */
+    static int[] givenToPlansAndRuns(CityMap map, World w, CityLand land, int id, Square sq) {
+        int[] n = new int[5];
+        java.util.Map<CityMap.District, DistrictPlan.Input> inputs = new java.util.HashMap<>();
+        for (long y = sq.y0(); y < sq.y0() + SQUARE; y++) {
+            for (long x = sq.x0(); x < sq.x0() + SQUARE; x++) {
+                if (!ownedDryOn(w, land, id, x, y)) continue;
+                n[0]++;
+                if (map.runGround().at(x, y, -1) >= 0) n[3]++;
+                else if (map.shore().blocks(x, y)) n[4]++;
+                CityMap.District d = map.district((int) (Math.floorDiv(x, CityMap.DISTRICT) - map.baseDX()), (int) (Math.floorDiv(y, CityMap.DISTRICT) - map.baseDY()));
+                if (d == null) continue;
+                n[1]++;
+                DistrictPlan.Input in = inputs.computeIfAbsent(d, map::planInputHere);
+                if (in.owned[(int) ((y - in.y0) * DistrictPlan.FRAME + (x - in.x0))]) n[2]++;
+            }
+        }
+        return n;
+    }
+
+    /** The land stamp a sidecar's header carries (after the magic, the format, the world, the month, its own stamp and the site). */
+    static long landStampOfSidecar(byte[] deflated) throws java.io.IOException {
+        try (java.io.DataInputStream in = new java.io.DataInputStream(new java.util.zip.InflaterInputStream(new java.io.ByteArrayInputStream(deflated)))) {
+            in.readInt();
+            in.readInt();
+            in.readLong();
+            in.readInt();
+            in.readLong();
+            in.readLong();
+            in.readLong();
+            return in.readLong();
+        }
+    }
+
+    /** The sites of a field as the map lists them (CityMap.siteList()), and how many carry a works: {sites listed, sites with a works}. */
+    static int[] worksOnField(CityMap m, Deposit field, Resource r) {
+        int[] n = new int[2];
+        double sw = Deposit.siteWidth(r);
+        for (int k = 0; k < field.sites(); k++) {
+            double[] at = field.siteAt(k);
+            double cx = field.x() + at[0], cy = field.y() + at[1];
+            long sx0 = Math.round(cx - sw / 2), sy0 = Math.round(cy - sw / 2);
+            int ddx = (int) (Math.floorDiv((long) Math.floor(cx), CityMap.DISTRICT) - m.baseDX()), ddy = (int) (Math.floorDiv((long) Math.floor(cy), CityMap.DISTRICT) - m.baseDY());
+            for (CityMap.DrawnSite d : m.siteList(ddx, ddy)) {
+                if (d.x0() != sx0 || d.y0() != sy0 || d.kind() != r.ordinal()) continue;
+                n[0]++;
+                if (d.mine() >= 0) n[1]++;
+            }
+        }
+        return n;
+    }
+
+    /** The picture with a landmass added to its linked set and its stamp moved: what a link makes of it, handed to a map by hand. */
+    static Landmasses.Picture linkedWith(Landmasses.Picture p, int id) {
+        int[] ids = Arrays.copyOf(p.linked(), p.linked().length + 1);
+        ids[ids.length - 1] = id;
+        Arrays.sort(ids);
+        return new Landmasses.Picture(p.home(), ids, p.portsByTypeAndLandmass(), p.stamp() * 31 + id);
+    }
+
+    static void theMap(Fixtures f) throws Exception {
+        out.println("\n--- 10. the map: a real CityMap of the two-landmass city draws nothing on ground no port links, and measures it again when it is linked ---");
+        if (!f.ok) { check("fixtures were found", false); return; }
+        // The home ground the terminals stand on: a square of the delta's open coast (Hoek van Holland), found by search with the model's reader - the fixture's river square (f.homeSalt) has shore but no water that opens to the sea.
+        long[] seaAt = plotOf(World.of(f.key), 51.93, 4.20);
+        Square homeSea = squareWith(World.of(f.key), 1, seaAt[0], seaAt[1], 12, q -> q.pure() && q.onId() >= 1000 && q.shore() >= 60);
+        report("fixture: a square of home's open coast with shore beside salt water, pure", homeSea != null, homeSea == null ? "none" : String.format("at (%d, %d): %d dry plots of home, %d shore plots, %d salt", homeSea.x0, homeSea.y0, homeSea.onId, homeSea.shore, homeSea.salt));
+        if (homeSea == null) return;
+        City c = portCity(f, "landmass-map", false);
+        c.buy(homeSea);
+        Game g = c.g;
+        Landmasses lms = c.books();
+        World w = c.w;
+        CityLand land = c.lm.getCityLand();
+        BuildingsTemplate gc = tpl(c, "General Cargo Terminal");
+        int tid = gc.getId(), home = lms.home();
+        Square sq = f.withShore;
+        long tx0 = Math.floorDiv(sq.x0(), World.TILE) - 1, ty0 = Math.floorDiv(sq.y0(), World.TILE) - 1;
+        Landmasses.Picture pic = g.getLandmassPicture();
+        CityMap map = g.getCityMap();
+        Landmasses.Row isl = lms.rows().get(1);
+        report("premise: the city owns the island unlinked, the game has handed the map a picture of its landmasses, and the island is not in its linked set",
+                isl.id() == 648 && pic != null && lms.anyUnlinked() && !lms.linked(648) && Arrays.binarySearch(pic.linked(), 648) < 0 && pic.home() == home
+                        && map.landmassPicture() != null && map.landmassPicture().stamp() == pic.stamp(),
+                pic == null ? "no picture" : "home " + pic.home() + ", linked " + Arrays.toString(pic.linked()));
+
+        // The unlinked ground, by brute force over the island's square, and the model's books of it.
+        java.util.Set<String> brute = new java.util.TreeSet<>();
+        for (long y = sq.y0(); y < sq.y0() + SQUARE; y++) {
+            for (long x = sq.x0(); x < sq.x0() + SQUARE; x++) if (unlinkedPlot(w, land, lms, x, y)) brute.add(y + "," + x + "," + w.landmassAt(x, y));
+        }
+        report("premise: the owned dry ground of the island is the square's, by a loop over its plots and the books' count: ground the map must leave unbuilt", brute.size() > 2000 && brute.size() == lms.dryPlots(648),
+                brute.size() + " plots, the books say " + lms.dryPlots(648));
+
+        // LandMap.unlinkedRuns() and unlinkedChips() equal the loop.
+        List<long[]> runs = LandMap.unlinkedRuns(lms, w, land);
+        java.util.Set<String> got = new java.util.TreeSet<>();
+        boolean disjoint = true, maximal = true, sorted = true;
+        long[] prev = null;
+        for (long[] r : runs) {
+            for (long x = r[1]; x < r[2]; x++) disjoint &= got.add(r[0] + "," + x + "," + r[3]);
+            if (prev != null) {
+                maximal &= !(prev[0] == r[0] && prev[3] == r[3] && prev[2] == r[1]);
+                sorted &= prev[0] < r[0] || (prev[0] == r[0] && prev[1] < r[1]);
+            }
+            prev = r;
+        }
+        report("unlinkedRuns() is the owned dry plots of the unlinked landmasses, each once, in rows, a run ending where the landmass or the city's ground does, by a loop over the plots; kept while nothing moves",
+                got.equals(brute) && disjoint && maximal && sorted && LandMap.unlinkedRuns(lms, w, land) == runs, runs.size() + " runs over " + got.size() + " plots");
+        List<LandMap.Chip> chips = LandMap.unlinkedChips(lms, w, land);
+        double mx = 0, my = 0;
+        java.util.Set<Long> held = new java.util.TreeSet<>();
+        for (String s : brute) {
+            String[] p = s.split(",");
+            held.add((Math.floorDiv(Long.parseLong(p[1]), World.TILE) << 32) ^ (Math.floorDiv(Long.parseLong(p[0]), World.TILE) & 0xffffffffL));
+        }
+        for (long t : held) {
+            mx += ((t >> 32) + 0.5) * World.TILE;
+            my += ((int) t + 0.5) * World.TILE;
+        }
+        report("unlinkedChips() has one chip for the island: its owned dry plots, and the mean of the middles of the tiles that hold them",
+                chips.size() == 1 && chips.get(0).id() == 648 && chips.get(0).plots() == brute.size() && Math.abs(chips.get(0).x() - mx / held.size()) < 1e-9 && Math.abs(chips.get(0).y() - my / held.size()) < 1e-9,
+                chips.isEmpty() ? "none" : chips.get(0) + " over " + held.size() + " tiles");
+
+        // The districts' room, the plans' ground and the runs' and the pieces', by brute force.
+        long linkedFree = freePlots(map, w, lms, true), allFree = freePlots(map, w, lms, false);
+        report("premise: the island has buildable ground a map that did not know landmasses would count as room",
+                allFree > linkedFree && allFree - linkedFree == isl.flatPlots() + isl.foothillPlots(), String.format("%,d free plots on linked ground, %,d with the island's", linkedFree, allFree));
+        check("the map's districts hold the free plots of the linked ground and none of the island's (a loop over every owned plot)", districtsFree(map) == linkedFree);
+        int[] drawn = drawnOnUnlinked(map, w, land, lms, tx0, ty0, 4);
+        report("no building box, no street, no plot of the runs and no siding is drawn on an unlinked plot (every plot of the island, the painter's own inputs)",
+                drawn[4] == brute.size() && drawn[0] == 0 && drawn[1] == 0 && drawn[2] == 0 && drawn[3] == 0,
+                String.format("%d plots looked at: %d under boxes, %d streets, %d runs, %d sidings", drawn[4], drawn[0], drawn[1], drawn[2], drawn[3]));
+        int inPiece = 0;
+        for (long y = sq.y0(); y < sq.y0() + SQUARE; y++) {
+            for (long x = sq.x0(); x < sq.x0() + SQUARE; x++) if (unlinkedPlot(w, land, lms, x, y) && map.pieces().pieceOf(x, y) >= 0) inPiece++;
+        }
+        check("no piece of ground holds an unlinked plot: CL5's pieces are home's, the island's tiles are in none", inPiece == 0 && map.pieces().count() >= 1);
+        // The two readers the district plans and the runs draw on, each asked apart from the other (a mask taken from one leaves the districts' room and the pieces as they are, so the counts above cannot see it).
+        int[] given = givenToPlansAndRuns(map, w, land, 648, sq);
+        report("premise: every owned dry plot of the island lies in a district the map holds (a district with owned ground the rule masks stays on the map), so each is a plot a plan could be asked to draw on",
+                given[0] == brute.size() && given[1] == given[0], given[0] + " plots looked at, " + given[1] + " in a district");
+        report("the plans' ground and the runs' ground hold none of the island: no plot of it is owned in a district plan's input (planInputHere()) and none is read by the runs (runGround().at())",
+                given[2] == 0 && given[3] == 0, String.format("%d of %d owned in a plan's input, %d of %d read by the runs", given[2], given[1], given[3], given[0]));
+
+        // The terminal for the island: its work on the island's shore, its quay on owned salt, nothing short.
+        check("a terminal ordered for the island by the card's path is placed, and the month goes on", orderOn(c, gc, 1, true, 648) == Game.BuildResult.SUCCESS && standing(c, gc) == 1);
+        quietly(() -> g.simulateMonths(1));
+        map = g.getCityMap();
+        CityShore.Work work = null;
+        for (CityShore.Work k : map.shore().works()) if (k.type() == tid) work = k;
+        boolean boxOnIsland = work != null, quayOnSalt = work != null;
+        if (work != null) {
+            for (long y = work.y0(); y < work.y0() + work.h(); y++) for (long x = work.x0(); x < work.x0() + work.w(); x++) boxOnIsland &= land.ownsPlot(x, y) && World.dry(w.terrainAt(x, y)) && w.landmassAt(x, y) == 648;
+            for (int q = 1; q <= work.quay(); q++) {
+                long[] at = work.quayPlot(q);
+                quayOnSalt &= land.ownsPlot(at[0], at[1]) && World.salt(w.terrainAt(at[0], at[1]));
+            }
+        }
+        long[] sp = work == null ? new long[] { 0, 0 } : work.shorePlot();
+        report("the terminal's work stands on the island's shore - its shore plot reads 648, its whole box is owned dry ground of 648, its quay is owned salt water - and the shore is short of nothing",
+                work != null && w.landmassAt(sp[0], sp[1]) == 648 && boxOnIsland && quayOnSalt && map.shoreShort() == 0 && map.shore().count(tid) == 1 && !lms.linked(648),
+                work == null ? "no work laid, shoreShort " + map.shoreShort() : String.format("shore plot (%d, %d) on %d; shoreShort %d", sp[0], sp[1], w.landmassAt(sp[0], sp[1]), map.shoreShort()));
+        CityMap.District holdsWork = work == null ? null : map.district((int) (Math.floorDiv(sp[0], CityMap.DISTRICT) - map.baseDX()), (int) (Math.floorDiv(sp[1], CityMap.DISTRICT) - map.baseDY()));
+        check("the district holding the island's ground stays on the map though it has no room, so that the shore reaches it", holdsWork != null);
+        check("the free plots the districts hold are still the linked ground's alone", districtsFree(map) == linkedFree);
+        drawn = drawnOnUnlinked(map, w, land, lms, tx0, ty0, 4);
+        inPiece = 0;
+        for (long y = sq.y0(); y < sq.y0() + SQUARE; y++) {
+            for (long x = sq.x0(); x < sq.x0() + SQUARE; x++) if (unlinkedPlot(w, land, lms, x, y) && map.pieces().pieceOf(x, y) >= 0) inPiece++;
+        }
+        report("with the terminal's work laid, still nothing else is drawn on the island and no piece holds a plot of it", drawn[0] == 0 && drawn[1] == 0 && drawn[2] == 0 && drawn[3] == 0 && inPiece == 0,
+                String.format("%d under boxes, %d streets, %d runs, %d sidings, %d in pieces", drawn[0], drawn[1], drawn[2], drawn[3], inPiece));
+
+        // The link: a terminal at home, standing at once. The districts are measured again, a piece holds the island's tiles, the site index is built again, the sidecar's stamp moves.
+        byte[] sideBefore = map.writeSidecar(g.getMonth());
+        long landStampBefore = landStampOfSidecar(sideBefore), changesBefore = map.changes(), pictureStamp = map.landmassPicture().stamp();
+        CityMap.SiteIndex indexBefore = map.siteIndex();
+        long freeBefore = districtsFree(map);
+        CityShore.Work islandWork = work;
+        check("a terminal at home, built at once, links the island", order(c, gc, 1, true, Landmasses.RULE) == Game.BuildResult.SUCCESS && lms.linked(648) && !lms.anyUnlinked());
+        quietly(() -> g.simulateMonths(1));
+        map = g.getCityMap();
+        long allFreeNow = freePlots(map, w, lms, false);
+        report("after the link the map's districts are measured again: they hold the island's buildable ground as well, to the plot (every owned plot looked at)",
+                districtsFree(map) == allFreeNow && allFreeNow == allFree && districtsFree(map) - freeBefore == isl.flatPlots() + isl.foothillPlots() && map.changes() > changesBefore,
+                String.format("%,d -> %,d free plots", freeBefore, districtsFree(map)));
+        int expectedLand = 0, inPieces = 0, tilesLooked = 0;
+        for (long ty = Math.floorDiv(sq.y0(), World.TILE); ty < Math.floorDiv(sq.y0(), World.TILE) + SQUARE / World.TILE; ty++) {
+            for (long tx = Math.floorDiv(sq.x0(), World.TILE); tx < Math.floorDiv(sq.x0(), World.TILE) + SQUARE / World.TILE; tx++) {
+                boolean landHere = false;
+                for (int s = 0; s < 4; s++) {
+                    long x = tx * World.TILE + CityMap.PIECE_SAMPLE_AT + CityMap.PIECE_SAMPLE_EVERY * (s & 1), y = ty * World.TILE + CityMap.PIECE_SAMPLE_AT + CityMap.PIECE_SAMPLE_EVERY * (s >> 1);
+                    landHere |= land.ownsPlot(x, y) && World.dry(w.terrainAt(x, y)) && !map.shore().blocks(x, y);
+                }
+                tilesLooked++;
+                if (landHere) expectedLand++;
+                if (landHere == (map.pieces().pieceOf(tx * World.TILE + 8, ty * World.TILE + 8) >= 0)) inPieces++;
+            }
+        }
+        report("a piece holds the island's tiles now: each of the square's tiles is in a piece exactly when one of its samples is owned dry ground the terminal's work does not block",
+                expectedLand > 0 && inPieces == tilesLooked, expectedLand + " of " + tilesLooked + " tiles are land");
+        given = givenToPlansAndRuns(map, w, land, 648, sq);
+        report("after the link the plans' ground and the runs' ground hold the whole island: every plot is owned in its district plan's input, and the runs read every plot but those the terminal's work stands on",
+                given[0] == brute.size() && given[2] == given[1] && given[1] == given[0] && given[3] > 0 && given[3] + given[4] == given[0],
+                String.format("%d plots: %d owned in a plan's input, %d read by the runs, %d under the work", given[0], given[2], given[3], given[4]));
+        check("the site index is built again at the link, and the terminal's work stays where it was laid", map.siteIndex() != indexBefore && map.shore().works().contains(islandWork));
+        byte[] sideAfter = map.writeSidecar(g.getMonth());
+        long landStampAfter = landStampOfSidecar(sideAfter);
+        report("the sidecar's land stamp differs between the two linked sets (the purchases the same), and a map read back under the picture it was written under is the map; under another picture it is not read",
+                landStampAfter != landStampBefore && landStampBefore != land.stamp(land.purchases().size()) && map.landmassPicture().stamp() != pictureStamp
+                        && CityMap.readSidecar(sideAfter, land, c.lm::remainingByHolding, map.types(), g.getMonth(), CityMap.stampIn(sideAfter), g.getLandmassPicture()) != null
+                        && CityMap.readSidecar(sideAfter, land, c.lm::remainingByHolding, map.types(), g.getMonth(), CityMap.stampIn(sideAfter), pic) == null
+                        && CityMap.readSidecar(sideAfter, land, c.lm::remainingByHolding, map.types(), g.getMonth(), CityMap.stampIn(sideAfter), null) == null,
+                String.format("%x -> %x", landStampBefore, landStampAfter));
+        int onHome = 0, on648 = 0;
+        for (CityShore.Work k : map.shore().works()) {
+            if (k.type() != tid) continue;
+            long[] ks = k.shorePlot();
+            if (w.landmassAt(ks[0], ks[1]) == home) onHome++;
+            else if (w.landmassAt(ks[0], ks[1]) == 648) on648++;
+        }
+        report("the terminal at home has its work on home's coast and the island's stays where it is: one work of the type on each landmass, the shore short of nothing", onHome == 1 && on648 == 1 && map.shore().count(tid) == 2 && map.shoreShort() == 0,
+                onHome + " on home, " + on648 + " on the island, shoreShort " + map.shoreShort());
+
+        // A generated city's map holds no picture, and its sidecar's land stamp is the land's own.
+        Game gen = new Game(GameFiles.scratch("landmass-gen-map"));
+        quietly(() -> {
+            gen.newGame(Founding.defaults());
+            gen.setCashForTest(Founding.WEALTHY_CASH);
+            gen.buildStack(gen.getBuildingManager().getTemplateByName("House"), 60, true);
+            gen.simulateMonths(6);
+        });
+        CityMap genMap = gen.getCityMap();
+        byte[] genSide = genMap.writeSidecar(gen.getMonth());
+        CityMap genBack = CityMap.readSidecar(genSide, gen.getCityLand(), gen.getLandManager()::remainingByHolding, genMap.types(), gen.getMonth(), CityMap.stampIn(genSide));
+        report("a generated city's map holds no picture, its sidecar's land stamp is the land's own and a sidecar read back writes the same bytes",
+                gen.getLandmassPicture() == null && genMap.landmassPicture() == null && landStampOfSidecar(genSide) == gen.getCityLand().stamp(gen.getCityLand().purchases().size())
+                        && genBack != null && Arrays.equals(genBack.writeSidecar(gen.getMonth()), genSide), genSide.length + " bytes");
+
+        // The map's sites, and the map handed a picture by hand: an island city that owns a field of the mainland's across the water.
+        IslandCity ic = onTheIsland(f.key.data());
+        if (ic == null) { check("fixture: a city on the island with a field across the water", false); return; }
+        City d = new City("landmass-map-island", ic.city.key, 40);
+        Landmasses dl = d.books();
+        LandParcel across = buyAround(d, ic.away.field().x(), ic.away.field().y());
+        // ...and, bought after it, a field of iron on the island's own landmass: the walk takes the holdings in the order they were bought, so a map that counted the field across the water would put the first works there.
+        LandParcel near = ic.home == null ? null : buyAround(d, ic.home.field().x(), ic.home.field().y());
+        CityMap dm = d.g.getCityMap();
+        Resource r = ic.away.resource();
+        long sitesAcross = d.lm.getCityLand().totalSites(r) - d.lm.getSites(r);
+        report("premise: the island city owns a field of " + r + " on a landmass no port links, the map holds the picture, and the field's sites are not the model's",
+                across != null && dl.anyUnlinked() && !dl.linked(ic.away.landmass()) && dm.landmassPicture() != null && sitesAcross >= ic.away.field().sites(),
+                String.format("%d sites across the water on landmass %d", sitesAcross, ic.away.landmass()));
+        boolean agree = true;
+        StringBuilder disagree = new StringBuilder();
+        for (Resource s : CityMap.SITED) {
+            if (dm.ownedSites(s) != d.lm.getSites(s)) { agree = false; disagree.append(s).append(" ").append(dm.ownedSites(s)).append(" vs ").append(d.lm.getSites(s)).append("; "); }
+        }
+        check("the map's site index counts exactly the sites the model's works gate leaves (every sited resource): no field centred across the water is a site on the map", agree && dm.ownedSites(r) < d.lm.getCityLand().totalSites(r));
+        if (!agree) out.println("  " + disagree);
+        BuildingsTemplate mine = tpl(d, "Iron Mine");
+        Game.BuildResult mined = near == null ? null : order(d, mine, 1, true, Landmasses.RULE);
+        if (near != null) quietly(() -> d.g.simulateMonths(1));
+        dm = d.g.getCityMap();
+        int[] away = worksOnField(dm, ic.away.field(), r);
+        report("no works is drawn on a site of the field across the water (every site of it, as the map lists them)", away[0] > 0 && away[1] == 0, away[0] + " sites listed, " + away[1] + " with a works");
+        if (near != null) {
+            int[] mineSites = worksOnField(dm, ic.home.field(), r);
+            report("control: the iron mine ordered stands on the island's own field - the first works is drawn on the sites the model allows, though the field across the water was bought before it", mined == Game.BuildResult.SUCCESS && mineSites[1] > 0,
+                    mined + "; " + mineSites[0] + " sites listed on the island's field, " + mineSites[1] + " with a works");
+        } else out.println("  no field of iron on the island's own landmass within reach of the island city: the control was not run");
+        long ownedBefore = dm.ownedSites(r), districtsBefore = districtsFree(dm);
+        Landmasses.Picture p0 = dm.landmassPicture(), p1 = linkedWith(p0, ic.away.landmass());
+        CityMap.SiteIndex ix0 = dm.siteIndex();
+        // The pieces of ground, read before the picture moves: the mainland square's tiles are in none (a purchase of nothing else, no work on the shore, moves between the two readings: only the linked set does).
+        long atx = Math.floorDiv(ic.away.field().x() - SQUARE / 2, World.TILE) - 1, aty = Math.floorDiv(ic.away.field().y() - SQUARE / 2, World.TILE) - 1;
+        int piecedBefore = 0;
+        for (long ty = aty; ty < aty + 4; ty++) for (long tx = atx; tx < atx + 4; tx++) if (dm.pieces().pieceOf(tx * World.TILE + 8, ty * World.TILE + 8) >= 0) piecedBefore++;
+        dm.landmassPicture(p1);
+        int wantLand = 0, sameLand = 0;
+        for (long ty = aty; ty < aty + 4; ty++) {
+            for (long tx = atx; tx < atx + 4; tx++) {
+                boolean landHere = false;
+                for (int q = 0; q < 4; q++) {
+                    long x = tx * World.TILE + CityMap.PIECE_SAMPLE_AT + CityMap.PIECE_SAMPLE_EVERY * (q & 1), y = ty * World.TILE + CityMap.PIECE_SAMPLE_AT + CityMap.PIECE_SAMPLE_EVERY * (q >> 1);
+                    landHere |= d.lm.getCityLand().ownsPlot(x, y) && World.dry(d.w.terrainAt(x, y));
+                }
+                if (landHere) wantLand++;
+                if (landHere == (dm.pieces().pieceOf(tx * World.TILE + 8, ty * World.TILE + 8) >= 0)) sameLand++;
+            }
+        }
+        report("handed a picture that links the mainland, the pieces of ground are read from the start: the mainland square's tiles were in no piece and are land now, tile by tile",
+                piecedBefore == 0 && wantLand > 0 && sameLand == 16, piecedBefore + " in a piece before; " + wantLand + " of 16 tiles are land, " + sameLand + " agree");
+        report("...and the map counts the sites across the water, holds the mainland square's buildable ground, and its site index is built again",
+                dm.ownedSites(r) == ownedBefore + sitesAcross && dm.siteIndex() != ix0 && districtsFree(dm) > districtsBefore,
+                String.format("%s sites %d -> %d; free plots %,d -> %,d", r, ownedBefore, dm.ownedSites(r), districtsBefore, districtsFree(dm)));
+        dm.landmassPicture(p0);
+        check("...and handed the first picture back it is as it was", dm.ownedSites(r) == ownedBefore && districtsFree(dm) == districtsBefore);
+
+        // The link and a purchase in one month, in the order Game.reconcileMap() hands them over (the picture first, then reconcile() catches the land up): a purchase the map has not seen yet is counted once.
+        IslandCity jc = onTheIsland(f.key.data());
+        if (jc == null || jc.home == null) {
+            check("fixture: a city on the island whose own landmass holds a field of iron to buy in the month of a link", false);
+        } else {
+            City j = new City("landmass-map-pending", jc.city.key, 40);
+            buyAround(j, jc.away.field().x(), jc.away.field().y());
+            CityMap jm = j.g.getCityMap();
+            Landmasses.Picture j0 = jm.landmassPicture(), j1 = j0 == null ? null : linkedWith(j0, jc.away.landmass());
+            LandParcel jNear = buyAround(j, jc.home.field().x(), jc.home.field().y());
+            Resource jr = jc.away.resource();
+            long jSeen = jm.ownedSites(jr);
+            report("premise: a field of the island's own landmass is bought after the map was drawn and not yet given to it, and the picture that links the mainland is ready to be handed over before it",
+                    jNear != null && jNear.getSites(jr) > 0 && j1 != null && j1.stamp() != j0.stamp() && jSeen < j.lm.getSites(jr),
+                    String.format("the map holds %d %s sites, the model %d; the purchase %d", jSeen, jr, j.lm.getSites(jr), jNear == null ? 0 : jNear.getSites(jr)));
+            jm.landmassPicture(j1);
+            boolean kept = jm.reconcile(j.g.getMapCounts(), j.g.getMonth());
+            CityMap jTruth = CityMap.canonical(j.lm.getCityLand(), j.lm::remainingByHolding, j.g.getMapTypes(), j.g.getMapCounts(), j.g.getMonth(), j1);
+            boolean once = true;
+            StringBuilder dis = new StringBuilder();
+            for (Resource s : CityMap.SITED) {
+                if (jm.ownedSites(s) != jTruth.ownedSites(s)) { once = false; dis.append(s).append(' ').append(jm.ownedSites(s)).append(" vs ").append(jTruth.ownedSites(s)).append("; "); }
+            }
+            report("the link and a purchase in the same month: every site is counted once - the map's sites are those of a map drawn canonically from the same land and picture (every sited resource), the purchase's among them",
+                    kept && once && jm.ownedSites(jr) > jSeen, kept ? (once ? jSeen + " -> " + jm.ownedSites(jr) + " " + jr + " sites" : dis.toString()) : "reconcile asked for the map to be drawn again");
+            report("...and, every landmass the land lies on being linked in that picture, they are the land's own sites: nothing counted twice and nothing left out",
+                    jm.ownedSites(jr) == j.lm.getCityLand().totalSites(jr), jm.ownedSites(jr) + " on the map, " + j.lm.getCityLand().totalSites(jr) + " in the land");
+        }
+
+        // A tank farm and a strategic reserve (the shore's types that are not terminals; the map lays no desalination plant) ask the shore search for no landmass: they find the runs' ground alone (RunGround.ownedAt()'s mask), and in a city whose only owned salt shore is the island's they find none there.
+        City sc = portCity(f, "landmass-shore-types", false);
+        CityMap smap = sc.g.getCityMap();
+        List<long[]> noMines = new ArrayList<>();
+        CityShore.Work forIsland = smap.shoreSpot(tid, noMines, 648);
+        long[] islandSpot = forIsland == null ? null : forIsland.shorePlot();
+        report("premise: the island's shore is owned ground a terminal counted on the island finds (the search for landmass 648), the island unlinked and the map holding the picture",
+                islandSpot != null && sc.w.landmassAt(islandSpot[0], islandSpot[1]) == 648 && sc.books().anyUnlinked() && !sc.books().linked(648) && smap.landmassPicture() != null,
+                islandSpot == null ? "no spot" : String.format("shore plot (%d, %d)", islandSpot[0], islandSpot[1]));
+        int tankFarm = tpl(sc, "Tank Farm").getId(), reserve = tpl(sc, "Strategic Reserve").getId();
+        int asked = 0, onIslandShore = 0;
+        boolean bothAsked = false;
+        java.util.Set<Integer> askedTypes = new java.util.TreeSet<>();
+        for (int t : smap.shoreTypes()) {
+            if (smap.types()[t].berth() >= 0) continue;
+            asked++;
+            askedTypes.add(t);
+            CityShore.Work sw = smap.shoreSpot(t, noMines);
+            if (sw == null) continue;
+            long[] sp2 = sw.shorePlot();
+            if (sc.w.landmassAt(sp2[0], sp2[1]) == 648) onIslandShore++;
+        }
+        bothAsked = askedTypes.contains(tankFarm) && askedTypes.contains(reserve);
+        report("the shore's other works (the tank farm and the strategic reserve, asked for no landmass) are laid on none of the island's shore while no port links it",
+                bothAsked && onIslandShore == 0, asked + " types asked (" + askedTypes + "), " + onIslandShore + " found a spot on the island");
+
+        // Two terminals on each landmass: laid on the landmass each is counted for, the oldest never moved; a unit that is leaving keeps its work until the model's count falls, and then the newest work on that landmass goes.
+        City t = portCity(f, "landmass-map-terminals", false);
+        t.buy(homeSea);
+        BuildingsTemplate gt = tpl(t, "General Cargo Terminal");
+        CityMap tm = t.g.getCityMap();
+        boolean fourOrdered = orderOn(t, gt, 1, true, 648) == Game.BuildResult.SUCCESS && order(t, gt, 1, true, Landmasses.RULE) == Game.BuildResult.SUCCESS
+                && order(t, gt, 1, true, Landmasses.RULE) == Game.BuildResult.SUCCESS && orderOn(t, gt, 1, true, 648) == Game.BuildResult.SUCCESS;
+        quietly(() -> t.g.simulateMonths(1));
+        tm = t.g.getCityMap();
+        List<CityShore.Work> laid = new ArrayList<>(tm.shore().works());
+        int[] byLandmass = new int[2];
+        for (CityShore.Work k : laid) {
+            long[] ks = k.shorePlot();
+            int lmk = t.w.landmassAt(ks[0], ks[1]);
+            if (lmk == t.books().home()) byLandmass[0]++;
+            else if (lmk == 648) byLandmass[1]++;
+        }
+        report("four terminals counted two at home and two on the island are laid two on each landmass, on its own shore, and the shore is short of nothing",
+                fourOrdered && laid.size() == 4 && byLandmass[0] == 2 && byLandmass[1] == 2 && tm.shoreShort() == 0 && t.books().linked(648), byLandmass[0] + " on home, " + byLandmass[1] + " on the island; shoreShort " + tm.shoreShort());
+        Landmasses.Picture tp = t.g.getLandmassPicture();
+        long[] fewerOnIsland = tp.portsByTypeAndLandmass().clone();
+        for (int i = 0; i + 2 < fewerOnIsland.length; i += 3) if (fewerOnIsland[i] == gt.getId() && fewerOnIsland[i + 1] == 648) fewerOnIsland[i + 2]--;
+        tm.landmassPicture(new Landmasses.Picture(tp.home(), tp.linked(), fewerOnIsland, tp.stamp()));
+        long[] counts = t.g.getMapCounts();
+        tm.reconcile(counts, t.g.getMonth());
+        check("a unit leaving the island (the picture shows one fewer standing there, the model's count is as it was) keeps its work: no work is taken or laid until the count falls", tm.shore().works().equals(laid) && tm.shoreShort() == 0);
+        long[] fewer = counts.clone();
+        fewer[gt.getId()]--;
+        tm.reconcile(fewer, t.g.getMonth() + 1);
+        List<CityShore.Work> rest = new ArrayList<>(laid);
+        CityShore.Work newestOnIsland = null;
+        for (CityShore.Work k : laid) {
+            long[] ks = k.shorePlot();
+            if (t.w.landmassAt(ks[0], ks[1]) == 648) newestOnIsland = k;
+        }
+        rest.remove(newestOnIsland);
+        check("the count falling takes the newest work on the landmass the unit left, the island's, and moves nothing else: the older island work and both of home's stand where they were laid", newestOnIsland != null && tm.shore().works().equals(rest));
+        // Home filled while the island is unlinked: what the model refuses the map is never asked to place, and nothing it places is on the island.
+        City e = portCity(f, "landmass-map-filled", false);
+        BuildingsTemplate house = tpl(e, "House");
+        int ordered = 0;
+        for (int round = 0; round < 40; round++) {
+            quietly(() -> e.g.setCashForTest(Founding.WEALTHY_CASH * 100));
+            int n = (int) Math.floor(e.lm.getAvailableSqFt() / house.getLandSqFt());
+            if (n < 1) break;
+            if (order(e, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
+            ordered += n;
+        }
+        quietly(() -> e.g.simulateMonths(1));
+        CityMap em = e.g.getCityMap();
+        int[] filled = drawnOnUnlinked(em, e.w, e.lm.getCityLand(), e.books(), tx0, ty0, 4);
+        report("home filled to what the model allows with the island unlinked: " + ordered + " houses more, nothing is drawn on the island - no box, street, run or siding",
+                ordered > 0 && e.books().anyUnlinked() && e.lm.getAvailableSqFt() < house.getLandSqFt() && filled[0] == 0 && filled[1] == 0 && filled[2] == 0 && filled[3] == 0 && e.g.getMapFailures() == 0,
+                String.format("%d houses; %d under boxes, %d streets, %d runs, %d sidings on %d island plots; linked free %,.0f sq ft", ordered, filled[0], filled[1], filled[2], filled[3], filled[4], e.lm.getAvailableSqFt()));
+    }
+
+    /* =====================================================================
        12. GROWN ACROSS LANDMASSES
        ===================================================================== */
 
@@ -1720,6 +2242,22 @@ public class LandmassCheck {
         Landmasses lms = c.books();
         BuildingsTemplate gc = tpl(c, "General Cargo Terminal");
         quietly(() -> g.getAutoBuilder().setOn(true, g.getDecisions()));
+        // The map of the city, drawn now and kept up by the game every month (reconcileMap()); every twelve months it is asked what it draws on the island's ground while no port links it.
+        World w = c.w;
+        CityLand land = c.lm.getCityLand();
+        Square sq = f.withShore;
+        long mtx0 = Math.floorDiv(sq.x0(), World.TILE) - 1, mty0 = Math.floorDiv(sq.y0(), World.TILE) - 1;
+        g.getCityMap();
+        int[] mapLooks = { 0, 0 };
+        String[] mapFirst = { null };
+        Runnable mapLook = () -> {
+            int[] d = drawnOnUnlinked(g.getCityMap(), w, land, lms, mtx0, mty0, 4);
+            mapLooks[0]++;
+            if (d[0] + d[1] + d[2] + d[3] > 0) {
+                mapLooks[1]++;
+                if (mapFirst[0] == null) mapFirst[0] = "month " + g.getMonth() + ": " + Arrays.toString(d);
+            }
+        };
         int[] audits = { 0, 0 };
         String[] first = { null };
         Runnable look = () -> {
@@ -1729,6 +2267,7 @@ public class LandmassCheck {
                 audits[1]++;
                 if (first[0] == null) first[0] = "month " + g.getMonth() + ": " + s;
             }
+            if (audits[0] % 12 == 0) mapLook.run();
         };
         look.run();
         int unlinkedMonths = 0, month648 = -1;
@@ -1760,6 +2299,30 @@ public class LandmassCheck {
                 "linked in month " + month648);
         report(audits[0] + " looks, every month of the 120: the books are consistent - linked free ground fits, the unlinked terminals' ground is the placements', the placements are the buildings' counts, no works stands on an unlinked field",
                 audits[1] == 0 && audits[0] >= 120, first[0] == null ? unlinkedMonths + " months with ground unlinked" : first[0]);
+        report(mapLooks[0] + " looks of the map, every twelve months of the 120: no building box, street, run or siding is drawn on the island while no port links it, and the map kept up every month",
+                mapLooks[1] == 0 && mapLooks[0] >= 10 && g.getMapFailures() == 0, mapFirst[0] == null ? g.getMapFailures() + " months the map could not keep up" : mapFirst[0]);
+        boolean grownSites = true;
+        for (Resource sr : CityMap.SITED) grownSites &= g.getCityMap().ownedSites(sr) == c.lm.getSites(sr);
+        check("the grown city's map, which measured every district again in the month " + month648 + " that linked the island, holds the model's sites (every sited resource)", grownSites);
+        // Home filled by a fixture: houses ordered until the linked free ground is below half the island's buildable ground. The island is linked now, so the map's districts there are room, and the houses home has no room for are drawn on the island.
+        Landmasses.Row isl = lms.rows().get(1);
+        double halfIsland = isl.buildableSqFt() / 2;
+        BuildingsTemplate house = tpl(c, "House");
+        int filledWith = 0;
+        for (int round = 0; round < 40 && c.lm.getAvailableSqFt() >= halfIsland; round++) {
+            quietly(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
+            int n = (int) Math.floor((c.lm.getAvailableSqFt() - halfIsland) / house.getLandSqFt()) + 1;
+            if (order(c, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
+            filledWith += n;
+        }
+        quietly(() -> g.simulateMonths(1));
+        look.run();
+        CityMap filledMap = g.getCityMap();
+        int onIsland = boxesOnLandmass(filledMap, w, 648, mtx0, mty0, 4);
+        int[] afterFilled = drawnOnUnlinked(filledMap, w, land, lms, mtx0, mty0, 4);
+        report("home filled by a fixture (" + filledWith + " houses ordered until the linked free ground is under half the island's buildable ground): the map's districts on the island hold buildings, and none stands on an unlinked plot",
+                filledWith > 0 && c.lm.getAvailableSqFt() < halfIsland && lms.linked(648) && onIsland > 0 && afterFilled[0] == 0 && audit(g) == null && g.getMapFailures() == 0,
+                String.format("%d buildings drawn on the island; linked free %,.0f sq ft of %,.0f", onIsland, c.lm.getAvailableSqFt(), halfIsland));
         // ...and a city founded on the island itself, owning the mainland's field of iron across the water: 24 months with the automatic builder on, audited every
         // month. Here are sites no works may stand on, so the audit's count of the usable ones (getSites() against the pieces on linked ground, and the works against them) is asked of a field that matters.
         IslandCity ic = onTheIsland(f.key.data());
@@ -1767,6 +2330,11 @@ public class LandmassCheck {
         City d = new City("landmass-grown-island", ic.city.key, 40);
         Landmasses dl = d.books();
         LandParcel across = buyAround(d, ic.away.field().x(), ic.away.field().y());
+        CityMap dmap = d.g.getCityMap();
+        World dw = d.w;
+        CityLand dland = d.lm.getCityLand();
+        long dtx0 = Math.floorDiv(ic.away.field().x() - SQUARE / 2, World.TILE) - 1, dty0 = Math.floorDiv(ic.away.field().y() - SQUARE / 2, World.TILE) - 1;
+        int dMapLooks = 0, dMapBad = 0;
         long sitesAcross = 0;
         for (Resource r : Resource.values()) if (r.inFields()) sitesAcross += d.lm.getCityLand().totalSites(r) - d.lm.getSites(r);
         quietly(() -> d.g.getAutoBuilder().setOn(true, d.g.getDecisions()));
@@ -1778,6 +2346,11 @@ public class LandmassCheck {
             String s = audit(d.g);
             dLooks++;
             if (s != null) { dBad++; if (dFirst == null) dFirst = "month " + d.g.getMonth() + ": " + s; }
+            if (dLooks % 12 == 0) {
+                int[] dd = drawnOnUnlinked(d.g.getCityMap(), dw, dland, dl, dtx0, dty0, 4);
+                dMapLooks++;
+                if (dd[0] + dd[1] + dd[2] + dd[3] > 0) dMapBad++;
+            }
         }
         report("premise: the island city owns the mainland's field across the water - sites no works may use - and its 24 months moved it: ground allocated, buildings standing that did not",
                 across != null && across.getSites(ic.away.resource()) >= ic.away.field().sites() && sitesAcross >= ic.away.field().sites() && dl.anyUnlinked() && !dl.linked(ic.away.landmass())
@@ -1786,6 +2359,12 @@ public class LandmassCheck {
                         ic.away.landmass(), sitesAcross, dAllocated0, d.lm.getAllocatedSqFt(), dBuildings0, buildingsOf(d.g)));
         report(dLooks + " looks, every month of the 24: no works stands on a field across the water - getSites() is the pieces on linked ground, and the works standing fit them - and the rest of the books agree",
                 dBad == 0 && dLooks == 24, dFirst == null ? "" : dFirst);
+        boolean sitesAgree = true;
+        for (Resource sr : CityMap.SITED) sitesAgree &= d.g.getCityMap().ownedSites(sr) == d.lm.getSites(sr);
+        int drawnMines = 0;
+        for (CityMap.District dd : d.g.getCityMap().districts()) for (int q = 0; q < CityMap.SLOTS; q++) if (dd.siteRuns[q] != null) drawnMines += dd.siteRuns[q].length / 3;
+        report("the map of the island city, kept up the 24 months: its site index is the model's sites (every sited resource), nothing is drawn on the mainland's ground across the water in " + dMapLooks + " looks, and the map kept up",
+                sitesAgree && dMapLooks == 2 && dMapBad == 0 && d.g.getMapFailures() == 0, drawnMines + " works placed on sites in all");
     }
 
     /* =====================================================================
