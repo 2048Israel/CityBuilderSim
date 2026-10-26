@@ -28,6 +28,7 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | BL1 | Buying land revamped: no offer drawn over the city's own ground, and the player picks the exact ground, designed first with a recommendation; after MS1, in the same session (Jerus, 2026-10-26: "perhaps more freedom on the exact selection?") | [BL1](docs/queue/BL1.md) |
+| MS2 | The near view drawn the same past the reach: past 300 km from the city the close map shows speckled ground and round lakes (the far rule at a near scale); draw it as the plane does, anywhere on the Earth; after BL1, in the same session (Jerus, 2026-10-26, on 0.8.52: "look a the wierd resolution by just panning a few more kms") | [MS2](docs/queue/MS2.md) |
 | HY1 | Hydro Station, a template that needs a river and a drop on the Earth's map; not research, it goes with the electricity run | [research-1900 §4](docs/studies/research-1900.md#4-new-mechanics-a-1900-city-needs) |
 | ET6 | Bridges: short crossings to 1,020 m over fresh or shallow water, long bridges as all-or-nothing orders that link landmasses | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
 | CC1-S | Keep care essential even when it is not financially self-supporting; investigate why seeds 4 and 5 still stall around 3,000 people despite care, school and pensions | `runs/fixCC1-notes.md` ★ |
