@@ -2035,12 +2035,19 @@ final class LandScreen {
      * its colour, the other money and the ground a m2 under it, a dry km2,
      * the cash before and after (or short), whether it needs a loan, Buy's
      * words, the funding page's loans, and why none is offered from the
-     * vault while the window abroad is shut.
+     * vault while the window abroad is shut. Since BL1 the picks may be the
+     * player's own ground, blocks of the city's grid drafted into the office
+     * (LandMarket.draft(), negative ids): the offers are named by their
+     * places as before, the drafts together as one - the title "Your ground -
+     * 12 blocks", on its own chip when there are several picks (groundBlocks,
+     * groundIds, one × for all of them) and, beside offers, a line of its own
+     * with its area and price (ground); `first` is the first offer, else the
+     * first draft.
      */
     record MapCard(List<Integer> ids, LandParcel first, String title, TagWords tag, List<LandParcel> chips, String size,
                    double dry, double fresh, double sea, String room, List<DepositWords> deposits, String price,
                    String priceTone, String other, String perKm2, String cash, String cashTone, boolean funding,
-                   Pieces.Press buy, List<Offer> loans, String shut) { }
+                   Pieces.Press buy, List<Offer> loans, String shut, int groundBlocks, List<Integer> groundIds, String ground) { }
 
     /** The card for these picks, or null with none of them listed. */
     MapCard mapCard(List<Integer> picks) {
@@ -2050,11 +2057,30 @@ final class LandScreen {
         List<LandParcel> parcels = new ArrayList<>();
         for (int id : c.ids()) parcels.add(market.find(id));
         if (parcels.isEmpty()) return null;
-        LandParcel first = parcels.get(0);
-        boolean one = parcels.size() == 1, vault = c.vault();
+        // The offers and the player's ground (BL1): drafts are named together, never by a place of their own.
+        List<LandParcel> offerPicks = new ArrayList<>(), draftPicks = new ArrayList<>();
+        for (LandParcel p : parcels) (p.getId() < 0 ? draftPicks : offerPicks).add(p);
+        LandParcel first = offerPicks.isEmpty() ? parcels.get(0) : offerPicks.get(0);
+        boolean one = parcels.size() == 1 && draftPicks.isEmpty(), vault = c.vault();
         String here = here();
         Row row = one ? row(first, officeBest(), market.richest(Resource.IRON)) : null;
-        String title = one ? first.where() : parcels.size() + " offers";
+        String title = LandMap.pickTitle(parcels, market.getLevel());
+        int blocks = 0;
+        double dKm2 = 0, dDry = 0, dFresh = 0, dSea = 0, dUsd = 0;
+        List<Integer> draftIds = new ArrayList<>();
+        for (LandParcel d : draftPicks) {
+            blocks += LandMap.draftBlocks(d, market.getLevel());
+            dKm2 += d.getKm2();
+            dDry += d.getKm2(CityLand.DRY);
+            dFresh += d.getKm2(CityLand.FRESH);
+            dSea += d.getKm2(CityLand.SEA);
+            dUsd += d.getPriceUsd();
+            draftIds.add(d.getId());
+        }
+        // Several picks, the drafts counting as one: their chips; offers beside the ground carry a line of the ground's own area and price.
+        boolean chipped = offerPicks.size() + (draftPicks.isEmpty() ? 0 : 1) > 1;
+        String ground = chipped && !draftPicks.isEmpty() && !offerPicks.isEmpty()
+                ? LandMap.groundTitle(blocks) + ": " + LandMap.kindWords(dKm2, dDry, dFresh, dSea) + " · " + inToggle(dUsd) : null;
         double km2 = c.km2();
         String price = one ? row.price() : vault ? usd(c.usd()) : marked(here, money(c.local()));
         String other = (vault ? marked(here, money(c.local())) + " at today's rate" : usd(c.usd()) + " listed")
@@ -2071,7 +2097,7 @@ final class LandScreen {
             unlinkedPick |= p.getUnlinkedDryKm2() > 0;
         }
         String picksIsland = one ? "" : LandmassView.picksLine(parcels, g.getLandManager().getLandmasses());
-        return new MapCard(c.ids(), first, title, one ? row.tag() : null, one ? List.<LandParcel>of() : parcels,
+        return new MapCard(c.ids(), first, title, one ? row.tag() : null, chipped ? offerPicks : List.<LandParcel>of(),
                 one ? row.sizeTip() : sizeWords(c) + (picksIsland.isEmpty() ? "" : "\n" + picksIsland),
                 km2 > 0 ? c.dryKm2() / km2 : 0, km2 > 0 ? c.freshKm2() / km2 : 0, km2 > 0 ? c.seaKm2() / km2 : 0,
                 room(unlinkedPick ? roomSqFt : c.drySqFt()),
@@ -2081,7 +2107,8 @@ final class LandScreen {
                 cash, c.funding() ? Palette.BAD : Palette.TEXT_BODY, c.funding(),
                 new Pieces.Press(Pieces.Look.GO, "Buy " + title + " · " + price, "Enter"),
                 c.funding() ? offers(c.ids()) : List.<Offer>of(),
-                c.funding() && vault && !g.foreignWindowOpen() ? g.foreignWindowReason() : null);
+                c.funding() && vault && !g.foreignWindowOpen() ? g.foreignWindowReason() : null,
+                blocks, chipped ? draftIds : List.<Integer>of(), ground);
     }
 
     /** Several offers' size as one: "0.0864 km² · 0.0819 dry, 0.0045 fresh" - sizeWords()' ground, its parts in the whole's unit. */
@@ -2105,7 +2132,7 @@ final class LandScreen {
         VBox box = mapCardFrame(m.title(), map);
         HBox top = (HBox) box.getChildren().get(0);
         if (m.tag() != null) top.getChildren().add(1, tag(m.tag().text(), m.tag().colour()));
-        if (!m.chips().isEmpty()) {
+        if (!m.chips().isEmpty() || !m.groundIds().isEmpty()) {
             javafx.scene.layout.FlowPane chips = new javafx.scene.layout.FlowPane(4, 4);
             chips.setPrefWrapLength(MAP_CARD_W - 2 * MAP_CARD_PAD);
             for (LandParcel p : m.chips()) {
@@ -2119,7 +2146,26 @@ final class LandScreen {
                 chip.setOnMouseClicked(e -> { map.dropPick(id); e.consume(); });
                 chips.getChildren().add(chip);
             }
+            // The player's own ground: one chip for the drafts together, its × dropping every one of them (MapView.dropGround()).
+            if (!m.groundIds().isEmpty()) {
+                String name = LandMap.groundTitle(m.groundBlocks());
+                Label chip = new Label(name, icon(Icons.CLOSE, Palette.TEXT_LABEL, 9));
+                chip.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+                chip.setGraphicTextGap(5);
+                chip.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY) + " -fx-padding: 2 6 2 7; -fx-cursor: hand;"
+                        + Palette.block(Palette.CONTROL));
+                HistoryScreen.tip(chip, "Drop your ground from the card");
+                List<Integer> ids = m.groundIds();
+                chip.setOnMouseClicked(e -> { map.dropGround(ids); e.consume(); });
+                chips.getChildren().add(chip);
+            }
             box.getChildren().add(chips);
+        }
+        if (m.ground() != null) {
+            Label ground = new Label(m.ground());
+            ground.setWrapText(true);
+            ground.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            box.getChildren().add(ground);
         }
         Label size = new Label(m.size());
         size.setWrapText(true);

@@ -1,4 +1,4 @@
-# LandScreen.java - 2,304 lines · 92 methods · 22 constants · interface
+# LandScreen.java - 2,350 lines · 92 methods · 22 constants · interface
 
 `ham/citybuildersim/ui/LandScreen.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
@@ -62,7 +62,7 @@
 > pages, NEEDS YOU's GROUND row, HOW THE CITY IS's GROUND USED and the
 > inbox's landlock notice.
 
-**Uses:** [Palette](Palette.md) (296), [LandParcel](LandParcel.md) (40), [LandManager](LandManager.md) (35), [Pieces](Pieces.md) (29), [Game](Game.md) (27), [LandmassView](LandmassView.md) (22), [CityLand](CityLand.md) (18), [LandMarket](LandMarket.md) (15), [Resource](Resource.md) (15), [Icons](Icons.md) (14), [SectorScreen](SectorScreen.md) (13), [MapView](MapView.md) (12), [LandMap](LandMap.md) (11), [HistoryScreen](HistoryScreen.md) (9), [World](World.md) (7), [TileRaster](TileRaster.md) (6), [UserInterface](UserInterface.md) (5), [OilView](OilView.md) (5), [DebtQuote](DebtQuote.md) (5), [Money](Money.md) (5), [CityNeeds](CityNeeds.md) (4), [Kept](Kept.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [SummaryScreen](SummaryScreen.md) (2), [LandClassView](LandClassView.md) (2), [Sector](Sector.md) (2), [Statement](Statement.md) (2), [Currency](Currency.md) (1), [BuildScreen](BuildScreen.md) (1)... and 7 more
+**Uses:** [Palette](Palette.md) (305), [LandParcel](LandParcel.md) (43), [LandManager](LandManager.md) (35), [Pieces](Pieces.md) (29), [Game](Game.md) (27), [LandmassView](LandmassView.md) (22), [CityLand](CityLand.md) (21), [LandMap](LandMap.md) (16), [LandMarket](LandMarket.md) (15), [Resource](Resource.md) (15), [Icons](Icons.md) (15), [SectorScreen](SectorScreen.md) (13), [MapView](MapView.md) (12), [HistoryScreen](HistoryScreen.md) (10), [World](World.md) (7), [TileRaster](TileRaster.md) (6), [UserInterface](UserInterface.md) (5), [OilView](OilView.md) (5), [DebtQuote](DebtQuote.md) (5), [Money](Money.md) (5), [CityNeeds](CityNeeds.md) (4), [Kept](Kept.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [SummaryScreen](SummaryScreen.md) (2), [LandClassView](LandClassView.md) (2), [Sector](Sector.md) (2), [Statement](Statement.md) (2), [Currency](Currency.md) (1), [BuildScreen](BuildScreen.md) (1)... and 7 more
 
 **Used by (3):** [MapView](MapView.md), [PeopleScreen](PeopleScreen.md), [UserInterface](UserInterface.md)
 
@@ -138,7 +138,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 82 | 2223 | **type** `final class LandScreen` | The land office: whether the city has room to grow, and which ground to buy - since 0.7.61 round the city's map (batch J4; the project's spec-land.md 2.8): a head with how the city pays; the HERO ROW, the map (MapView... |
+| 82 | 2269 | **type** `final class LandScreen` | The land office: whether the city has room to grow, and which ground to buy - since 0.7.61 round the city's map (batch J4; the project's spec-land.md 2.8): a head with how the city pays; the HERO ROW, the map (MapView... |
 | 87 | 1 | `LandScreen(UserInterface ui)` |  |
 
 ### THE LAND OFFICE (0.7.26) (lines 89-132)
@@ -318,17 +318,17 @@
 | 1969 | 3 | `Pieces.Press topUpPress(List<Integer> ids)` | The third way's button (0.7.34): the purchase, and what it takes - the 0.7.13 button's words, under it. |
 | 1981 | 23 | `private void buyOnTheLoan(List<Integer> ids, String paper)` | The money is in: the plots are bought, each as its own button would buy it, and whatever the purchase answers is shown - the build screen's rule that a refusal nobody reads is a silent one (BuildScreen.goAhead()). |
 
-### THE CARD ON THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) (lines 2005-2304)
+### THE CARD ON THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) (lines 2005-2350)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2040 | 4 | **type** `record MapCard(List<Integer> ids, LandParcel first, String title, TagWords tag, List<LandParcel> chips, Str...` | What the map's card says for some picks, worked out without a node: the picks still listed and the first of them, the title (the place, or "3 offers") and one offer's tag, the chips of several, the size, the ground's ... |
-| 2046 | 40 | `MapCard mapCard(List<Integer> picks)` | The card for these picks, or null with none of them listed. |
-| 2088 | 7 | `static String sizeWords(LandMap.Card c)` | Several offers' size as one: "0.0864 km² · 0.0819 dry, 0.0045 fresh" - sizeWords()' ground, its parts in the whole's unit. |
-| 2097 | 5 | `void mapCardPress(MapCard m, MapView map)` | What the card's main button - and Enter - does: buy them, or short issue the bond and buy them, or with no loan on offer open the funding page. |
-| 2104 | 113 | `VBox mapCardNode(MapCard m, MapView map)` | The card as a node, its buttons the map's (MapView): the drawing of mapCard(). |
-| 2219 | 30 | `VBox mapReceiptNode(String title, List<int[]> places, MapView map)` | A purchase made from the map, its receipt by the ground (spec-earth 3.1, board 6): what was bought - its title and its places, side and place - drawn as the office's receipt, the city's size now and each place listing... |
-| 2251 | 21 | `private VBox mapCardFrame(String title, MapView map)` | The card's frame: its width and padding, a title line with a close at its right. |
-| 2274 | 5 | `String mapHeadMoney()` | The money the map's head shows, as the pane covers the window's header (spec-earth 6.1): the cash, and paying from the vault its dollars first. |
-| 2281 | 23 | `javafx.scene.layout.FlowPane mapPayChips(MapView map)` | The pay toggle on the map, its head's and its card's: the office's chips, applied at once - the office drawn again under the map, which stays - and the map told; the caller sets where they wrap. |
+| 2047 | 4 | **type** `record MapCard(List<Integer> ids, LandParcel first, String title, TagWords tag, List<LandParcel> chips, Str...` | What the map's card says for some picks, worked out without a node: the picks still listed and the first of them, the title (the place, or "3 offers") and one offer's tag, the chips of several, the size, the ground's ... |
+| 2053 | 60 | `MapCard mapCard(List<Integer> picks)` | The card for these picks, or null with none of them listed. |
+| 2115 | 7 | `static String sizeWords(LandMap.Card c)` | Several offers' size as one: "0.0864 km² · 0.0819 dry, 0.0045 fresh" - sizeWords()' ground, its parts in the whole's unit. |
+| 2124 | 5 | `void mapCardPress(MapCard m, MapView map)` | What the card's main button - and Enter - does: buy them, or short issue the bond and buy them, or with no loan on offer open the funding page. |
+| 2131 | 132 | `VBox mapCardNode(MapCard m, MapView map)` | The card as a node, its buttons the map's (MapView): the drawing of mapCard(). |
+| 2265 | 30 | `VBox mapReceiptNode(String title, List<int[]> places, MapView map)` | A purchase made from the map, its receipt by the ground (spec-earth 3.1, board 6): what was bought - its title and its places, side and place - drawn as the office's receipt, the city's size now and each place listing... |
+| 2297 | 21 | `private VBox mapCardFrame(String title, MapView map)` | The card's frame: its width and padding, a title line with a close at its right. |
+| 2320 | 5 | `String mapHeadMoney()` | The money the map's head shows, as the pane covers the window's header (spec-earth 6.1): the cash, and paying from the vault its dollars first. |
+| 2327 | 23 | `javafx.scene.layout.FlowPane mapPayChips(MapView map)` | The pay toggle on the map, its head's and its card's: the office's chips, applied at once - the office drawn again under the map, which stays - and the map told; the caller sets where they wrap. |
 

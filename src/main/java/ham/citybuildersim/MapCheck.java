@@ -302,8 +302,20 @@ import java.util.Map;
  *  14d. a plain drag selects (batch MS1): a left press on an offer's free
  *      ground starts a box - the model's own pick of every offer listed - and
  *      one on the city's own ground (its centre, a plot of an offer's
- *      rectangle it owns) or on ground no offer holds a pan; Shift boxes
- *      from all of them (LandMap.pressBoxes()).
+ *      rectangle it owns) or on ground the player may not pick a pan; Shift
+ *      boxes from all of them (LandMap.pressBoxes(), widened by BL1 to the
+ *      ground the player may pick: 14f).
+ *  14e. blocks picked (batch BL1): the player picks whole blocks of the
+ *      city's grid that join it, cut into rectangles, an offer wholly picked
+ *      the offer, their edge and an offer's free ground's edge on the block
+ *      grid, never inside the city's ground.
+ *  14f. the exact ground on the screen (batch BL1, slice D): a press boxes on
+ *      a block that may be picked or is picked, and pans two blocks out and
+ *      on the city's own plot of a half-owned block; the picked blocks' fill
+ *      and edge are their free ground's, none of it the city's; a box's
+ *      preview is what its release takes; the box's plots, the card's
+ *      title, the hover's words; the card's ids put the offers before the
+ *      drafts and every one is bought.
  *  15. the materials drawn as themselves (0.8.0, batch I14;
  *      docs/studies/spec-materials.md 5's I14 row): every building of the
  *      nine industries has a look of its own, never a plain mine's or
@@ -476,6 +488,8 @@ public class MapCheck {
         picksLast(city);
         farOnThePlane(city);
         plainDragSelects(city);
+        blocksPicked(city);
+        groundOnScreen(city);
         materials(sq.seed);
         avenuesDrawn(sq);
         curvesDrawn(sq);
@@ -7375,12 +7389,12 @@ public class MapCheck {
     /**
      * MS1 (Jerus, 2026-10-26: "i should be able to not only click and shift click, but also drag and select"): what a left press on the
      * expanded map starts, a box or a pan, is the model's (LandMap.pressBoxes(), which MapView calls): a press on an offer's free ground
-     * boxes with no modifier; one on the city's own ground or on ground no offer holds pans; Shift boxes from anywhere. Each fixture is
+     * boxes with no modifier; one on the city's own ground or on ground the player may not pick (BL1: 14f) pans; Shift boxes from anywhere. Each fixture is
      * the model's own pick (LandMap.pick()), the one a click reads.
      */
     static void plainDragSelects(Game g) {
-        out.println("\n--- 14d. a plain drag selects (MS1): a press on an offer's free ground boxes, the city's own ground and ground no offer"
-                + " holds pan, Shift boxes from anywhere ---");
+        out.println("\n--- 14d. a plain drag selects (MS1): a press on an offer's free ground boxes, the city's own ground and ground the player may not pick"
+                + " pan, Shift boxes from anywhere ---");
         CityLand land = g.getCityLand();
         LandMarket market = g.getLandManager().getMarket();
         List<LandParcel> listing = new ArrayList<>(market.getListing());
@@ -7420,8 +7434,16 @@ public class MapCheck {
         check("a press on an offer's free ground boxes, no modifier needed, for every offer listed", boxed == offerGround);
         boolean owned = !LandMap.pressBoxes(land, market, cx, cy, false) && !LandMap.pressBoxes(land, market, ex, ey, false);
         check("a press on the city's own ground - its centre, a plot at its edge - pans", owned);
-        check("a press on ground no offer holds pans: a quarter of the world out" + (gap == null ? "" : ", and the plot beside an offer's rectangle"),
-                !LandMap.pressBoxes(land, market, fx, fy, false) && (gap == null || !LandMap.pressBoxes(land, market, gap.x(), gap.y(), false)));
+        check("a press on ground no offer holds pans where it joins nothing: a quarter of the world out",
+                !LandMap.pressBoxes(land, market, fx, fy, false));
+        // BL1 widened the rule: ground the player may pick boxes too, so the plot beside an offer's rectangle boxes exactly when its block may be picked now.
+        boolean gapRule = true;
+        if (gap != null) {
+            long gb = LandMap.blockAt(market.getLevel(), gap.x(), gap.y());
+            boolean may = gb >= 0 && !land.ownsPlot(gap.x(), gap.y()) && LandMap.pickable(land, market.getLevel(), gb, java.util.Set.of(), List.of());
+            gapRule = LandMap.pressBoxes(land, market, gap.x(), gap.y(), false) == may;
+        }
+        check("...and the plot beside an offer's rectangle where none holds it boxes exactly when its block may be picked now (widened by BL1: 14f), else it pans", gapRule);
         boolean shiftAll = shiftBoxed == offerGround && LandMap.pressBoxes(land, market, cx, cy, true) && LandMap.pressBoxes(land, market, ex, ey, true)
                 && LandMap.pressBoxes(land, market, fx, fy, true) && (gap == null || LandMap.pressBoxes(land, market, gap.x(), gap.y(), true));
         check("Shift boxes from all of them: an offer's free ground, the city's centre and edge, nobody's ground", shiftAll);
@@ -7443,6 +7465,875 @@ public class MapCheck {
         }
         out.printf("      %,d plots tried across the offers' rectangles, %,d of them the city's own, %d against the rule%n", tried, ownedHere, wrong);
         check("inside the offers' rectangles a plot the city owns pans and a free plot of an offer's boxes", tried > 0 && wrong == 0);
+    }
+
+    /* ==================================================================
+       14e. BLOCKS PICKED (BL1)
+
+       Jerus, 2026-10-26: "revamp how buy land works, cause currently those
+       blocks are wierd and sometimes overlap with land already bought like
+       uiwise, on map view. perhaps more freedom on the exact selection?"
+       (docs/queue/BL1-notes.md 1.) The model's half of the answer: the
+       player picks whole blocks of the city's grid (LandMap.Picks), a block
+       joins the city through its owned ground or the ground picked, the
+       picked ground is cut into rectangles the office drafts and prices as
+       an offer of them (LandCheck 29 holds the office's side), an offer whose
+       whole free ground is picked is the offer, and the shapes the map draws -
+       the picked ground's edge, an offer's free ground's edge - run on the
+       block grid in the city's edge's own shape and never inside the city's
+       ground.
+       ================================================================== */
+
+    /** The four steps from a block to its neighbours: east, west, south, north. */
+    static final int[][] STEPS = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+
+    /** Whether block (bx, by) of `level` is on the world and not wholly the city's. */
+    static boolean blockFree(LandGrid g, int level, long bx, long by) {
+        long n = World.SIDE >> level;
+        return bx >= 0 && by >= 0 && bx < n && by < n && g.cover(level, bx, by) != LandGrid.ALL;
+    }
+
+    /** The blocks of `level` an offer's free ground meets: every block holding a plot the offer holds, the plots counted one by one. */
+    static java.util.Set<Long> blocksMetBy(CityLand land, LandParcel o, int level) {
+        java.util.Set<Long> met = new LinkedHashSet<>();
+        for (double[] c : LandMap.freeCells(land, o)) {
+            for (long y = (long) c[1]; y < (long) c[3]; y++) {
+                for (long x = (long) c[0]; x < (long) c[2]; x++) met.add(LandMap.blockAt(level, x, y));
+            }
+        }
+        return met;
+    }
+
+    /** Whether some standing offer's whole free ground lies in these blocks: such a set is, to the model, that offer picked. */
+    static boolean completesAnOffer(CityLand land, LandMarket market, int level, java.util.Set<Long> blocks) {
+        for (LandParcel o : market.getListing()) {
+            java.util.Set<Long> met = blocksMetBy(land, o, level);
+            if (!met.isEmpty() && blocks.containsAll(met)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * A free block on the city's frontier and a direction outward from it along which the next two blocks are free and not on the
+     * frontier - three in a row, the middle one joined only through the first - none within a block of `avoid`, and none completing an
+     * offer (completesAnOffer()): {bx, by, dx, dy}, or null where the city has none.
+     */
+    static long[] chainFrom(CityLand land, LandMarket market, int level, java.util.Set<Long> avoid) {
+        LandGrid g = land.grid();
+        long b = 1L << level;
+        long x0 = Math.floorDiv(g.minX(), b) - 3, x1 = Math.floorDiv(g.maxX() - 1, b) + 3, y0 = Math.floorDiv(g.minY(), b) - 3, y1 = Math.floorDiv(g.maxY() - 1, b) + 3;
+        for (long by = y0; by <= y1; by++) {
+            for (long bx = x0; bx <= x1; bx++) {
+                if (!blockFree(g, level, bx, by) || !GridOffers.onFrontier(g, level, bx, by)) continue;
+                for (int[] d : STEPS) {
+                    long[][] at = { { bx, by }, { bx + d[0], by + d[1] }, { bx + 2 * d[0], by + 2 * d[1] } };
+                    boolean ok = true;
+                    java.util.Set<Long> three = new LinkedHashSet<>();
+                    for (int i = 0; i < 3 && ok; i++) {
+                        ok = blockFree(g, level, at[i][0], at[i][1]) && (i == 0 || !GridOffers.onFrontier(g, level, at[i][0], at[i][1]));
+                        three.add(LandMap.blockKey(at[i][0], at[i][1]));
+                        for (long k : avoid) {
+                            ok &= Math.abs(LandMap.blockX(k) - at[i][0]) >= 2 || Math.abs(LandMap.blockY(k) - at[i][1]) >= 2;
+                        }
+                    }
+                    if (ok && !completesAnOffer(land, market, level, three)) return new long[] { bx, by, d[0], d[1] };
+                }
+            }
+        }
+        return null;
+    }
+
+    /** The blocks a Picks holds that join the city, worked out another way: every block of the set, reached from one on the city's frontier or beside a picked offer's free ground by steps through the set. */
+    static boolean allJoined(CityLand land, int level, java.util.Set<Long> blocks, List<LandParcel> offers) {
+        LandGrid g = land.grid();
+        java.util.Set<Long> reached = new java.util.HashSet<>();
+        java.util.ArrayDeque<Long> queue = new java.util.ArrayDeque<>();
+        long b = 1L << level;
+        for (long k : blocks) {
+            boolean seed = GridOffers.onFrontier(g, level, LandMap.blockX(k), LandMap.blockY(k));
+            for (LandParcel o : offers) {
+                for (double[] c : LandMap.freeCells(land, o)) seed |= edgeNeighbour(c, LandMap.blockX(k) * b, LandMap.blockY(k) * b, b);
+            }
+            if (seed && reached.add(k)) queue.add(k);
+        }
+        while (!queue.isEmpty()) {
+            long k = queue.poll();
+            for (int[] d : STEPS) {
+                long n = LandMap.blockKey(LandMap.blockX(k) + d[0], LandMap.blockY(k) + d[1]);
+                if (blocks.contains(n) && reached.add(n)) queue.add(n);
+            }
+        }
+        return reached.size() == blocks.size();
+    }
+
+    /** Whether a free cell {x0, y0, x1, y1} lies across an edge of the block at (x0, y0) of side b, sharing some of its length: beside the block, not on it. */
+    static boolean edgeNeighbour(double[] c, long x0, long y0, long b) {
+        boolean overlapsX = c[0] < x0 + b && x0 < c[2], overlapsY = c[1] < y0 + b && y0 < c[3];
+        return (overlapsY && (c[2] == x0 || c[0] == x0 + b)) || (overlapsX && (c[3] == y0 || c[1] == y0 + b));
+    }
+
+    /** The blocks of a box of plots {x0, y0, x1, y1} that join the city, worked out block by block: free blocks of the box on the frontier or beside a block already picked, and the free blocks of the box reached from them by steps - the flood the model describes. */
+    static java.util.Set<Long> floodExpect(CityLand land, int level, long[] box, java.util.Set<Long> picked) {
+        LandGrid g = land.grid();
+        long b = 1L << level;
+        long bx0 = Math.max(0, Math.floorDiv(box[0], b)), bx1 = Math.min((World.SIDE >> level) - 1, Math.floorDiv(box[2] - 1, b));
+        long by0 = Math.max(0, Math.floorDiv(box[1], b)), by1 = Math.min((World.SIDE >> level) - 1, Math.floorDiv(box[3] - 1, b));
+        java.util.Set<Long> out = new LinkedHashSet<>(), seen = new java.util.HashSet<>();
+        java.util.ArrayDeque<Long> queue = new java.util.ArrayDeque<>();
+        // the box can be the whole world: the seeds lie within a block of the city's own ground or beside the picked blocks, so scan only there
+        long sx0 = Math.max(bx0, Math.floorDiv(g.minX(), b) - 1), sx1 = Math.min(bx1, Math.floorDiv(g.maxX() - 1, b) + 1);
+        long sy0 = Math.max(by0, Math.floorDiv(g.minY(), b) - 1), sy1 = Math.min(by1, Math.floorDiv(g.maxY() - 1, b) + 1);
+        for (long by = sy0; by <= sy1; by++) {
+            for (long bx = sx0; bx <= sx1; bx++) {
+                long k = LandMap.blockKey(bx, by);
+                if (!picked.contains(k) && blockFree(g, level, bx, by) && GridOffers.onFrontier(g, level, bx, by) && seen.add(k)) queue.add(k);
+            }
+        }
+        for (long p : picked) {
+            for (int[] d : STEPS) {
+                long bx = LandMap.blockX(p) + d[0], by = LandMap.blockY(p) + d[1], k = LandMap.blockKey(bx, by);
+                if (bx >= bx0 && bx <= bx1 && by >= by0 && by <= by1 && !picked.contains(k) && blockFree(g, level, bx, by) && seen.add(k)) queue.add(k);
+            }
+        }
+        while (!queue.isEmpty()) {
+            long k = queue.poll();
+            out.add(k);
+            for (int[] d : STEPS) {
+                long bx = LandMap.blockX(k) + d[0], by = LandMap.blockY(k) + d[1], n = LandMap.blockKey(bx, by);
+                if (bx >= bx0 && bx <= bx1 && by >= by0 && by <= by1 && !picked.contains(n) && blockFree(g, level, bx, by) && seen.add(n)) queue.add(n);
+            }
+        }
+        return out;
+    }
+
+    /** The offers behind these picks' ids (the positive ones), as the office lists them. */
+    static List<LandParcel> offersIn(LandMarket market, List<Integer> ids) {
+        List<LandParcel> out = new ArrayList<>();
+        for (int id : ids) if (id > 0 && market.find(id) != null) out.add(market.find(id));
+        return out;
+    }
+
+    /** The blocks a Picks holds, and those of the offers it holds, as one set. */
+    static java.util.Set<Long> everyPicked(CityLand land, LandMarket market, int level, LandMap.Picks picks, List<Integer> ids) {
+        java.util.Set<Long> all = new LinkedHashSet<>(picks.blocks());
+        for (LandParcel o : offersIn(market, ids)) all.addAll(blocksMetBy(land, o, level));
+        return all;
+    }
+
+    /** The blocks the rectangles cover, counting each time: block -> how many rectangles hold it. */
+    static Map<Long, Integer> coverage(List<long[]> rects, int level) {
+        Map<Long, Integer> n = new HashMap<>();
+        long b = 1L << level;
+        for (long[] r : rects) {
+            for (long y = r[1]; y < r[3]; y += b) for (long x = r[0]; x < r[2]; x += b) n.merge(LandMap.blockAt(level, x, y), 1, Integer::sum);
+        }
+        return n;
+    }
+
+    /**
+     * Whether an outline's runs are the edge of the ground `in` says: they close (every run's end is another's start, as often),
+     * the plot on the right of every unit of every run is the ground and the plot on its left is not (ground on the right: east
+     * along a north edge), and they enclose exactly `plots` plots (the shoelace sum, holes counting against it).
+     */
+    static boolean edgeOf(double[][] runs, java.util.function.BiPredicate<Long, Long> in, long plots) {
+        Map<Long, Integer> starts = new HashMap<>(), ends = new HashMap<>();
+        double twice = 0;
+        boolean sides = true;
+        for (int i = 0; i < runs[0].length; i++) {
+            long x0 = (long) runs[0][i], y0 = (long) runs[1][i], x1 = (long) runs[2][i], y1 = (long) runs[3][i];
+            starts.merge((x0 << 32) ^ y0, 1, Integer::sum);
+            ends.merge((x1 << 32) ^ y1, 1, Integer::sum);
+            twice += (double) x0 * y1 - (double) x1 * y0;
+            if (y0 == y1 && x1 > x0) {                 // east: the ground below, the plots above it not
+                for (long x = x0; x < x1; x++) sides &= in.test(x, y0) && !in.test(x, y0 - 1);
+            } else if (y0 == y1) {                     // west: the ground above
+                for (long x = x1; x < x0; x++) sides &= in.test(x, y0 - 1) && !in.test(x, y0);
+            } else if (y1 > y0) {                      // south: the ground to its west
+                for (long y = y0; y < y1; y++) sides &= in.test(x0 - 1, y) && !in.test(x0, y);
+            } else {                                   // north: the ground to its east
+                for (long y = y1; y < y0; y++) sides &= in.test(x0, y) && !in.test(x0 - 1, y);
+            }
+        }
+        return starts.equals(ends) && sides && Math.abs(twice / 2 - plots) < 1e-6;
+    }
+
+    /** Whether plot (x, y) is in a block of the set at `level`. */
+    static boolean inBlocks(java.util.Set<Long> blocks, int level, long x, long y) {
+        return blocks.contains(LandMap.blockAt(level, x, y));
+    }
+
+    /**
+     * The nth standing offer (in the office's order) of the city's own level that holds two or more blocks of free ground, each block's
+     * free ground wholly inside the offer's rectangle - one that picking blocks makes the offer only when all are picked, and that
+     * buying or biting takes whole - or null.
+     */
+    static LandParcel ownBlocks(CityLand land, LandMarket market, int level, int nth) {
+        LandGrid grid = land.grid();
+        int seen = 0;
+        for (LandParcel o : market.getListing()) {
+            java.util.Set<Long> met = blocksMetBy(land, o, level);
+            boolean lossless = o.getLevel() == level && met.size() >= 2;
+            for (long mk : met) {
+                long[] r = LandMap.blockRect(level, mk);
+                long inside = grid.unowned(Math.max(r[0], o.getX0()), Math.max(r[1], o.getY0()), Math.min(r[2], o.getX1()), Math.min(r[3], o.getY1()));
+                lossless &= grid.unowned(r[0], r[1], r[2], r[3]) == inside;
+            }
+            if (lossless && seen++ == nth) return o;
+        }
+        return null;
+    }
+
+    /** Blocks as a set, from {bx, by} pairs. */
+    static java.util.Set<Long> blocksOf(long[]... at) {
+        java.util.Set<Long> s = new LinkedHashSet<>();
+        for (long[] p : at) s.add(LandMap.blockKey(p[0], p[1]));
+        return s;
+    }
+
+    static void blocksPicked(Game g) throws Exception {
+        out.println("\n--- 14e. blocks picked: joined to the city, an offer wholly picked is the offer, cut into rectangles, outlined (BL1) ---");
+
+        // ---- the block grid: a plot's block, and the keys
+        check("blockAt() names the block a plot lies in at a level, and none for a plot outside the world",
+                LandMap.blockAt(3, 0, 0) == LandMap.blockKey(0, 0) && LandMap.blockAt(3, 17, 9) == LandMap.blockKey(2, 1)
+                        && LandMap.blockAt(3, -1, 0) == -1 && LandMap.blockAt(3, 0, World.SIDE) == -1 && LandMap.blockAt(2, World.SIDE - 1, World.SIDE - 1) >= 0);
+        long last = (World.SIDE >> 2) - 1;
+        long k = LandMap.blockKey(last, 5);
+        check("...a block's key holds its column and its row (the world's last block at the finest level too), and blockRect() is its plots",
+                LandMap.blockX(k) == last && LandMap.blockY(k) == 5 && Arrays.equals(LandMap.blockRect(3, LandMap.blockKey(2, 1)), new long[] { 16, 8, 24, 16 }));
+
+        // ---- pickable: a hand-made city, one purchase half a block wide against the centre's east edge
+        LandManager handOffice = new LandManager();
+        CityLand hand = handOffice.getCityLand();
+        LandGrid hg = hand.grid();
+        int hv = hand.level();
+        long hb = 1L << hv;
+        long ey = Math.floorDiv(hand.siteY(), hb) * hb, ex = hand.siteX();
+        while (hg.unowned(ex, hand.siteY(), ex + 1, hand.siteY() + 1) == 0) ex++;     // the first plot east of the site, along its row, that the city does not own
+        long exAligned = Math.floorDiv(ex, hb) * hb;
+        hand.extend(new LandParcel(1, 1, 0, hv, ex, ey, ex + hb / 2, ey + hb, new double[CityLand.AREAS], null, null, 0, 1), 1, 0);
+        java.util.Set<Long> none = new java.util.HashSet<>();
+        long[] whole = null, partly = null, near = null;
+        long x0 = Math.floorDiv(hg.minX(), hb) - 3, x1 = Math.floorDiv(hg.maxX() - 1, hb) + 3, y0 = Math.floorDiv(hg.minY(), hb) - 3, y1 = Math.floorDiv(hg.maxY() - 1, hb) + 3;
+        for (long by = y0; by <= y1; by++) {
+            for (long bx = x0; bx <= x1; bx++) {
+                if (bx < 0 || by < 0) continue;
+                int cov = hg.cover(hv, bx, by);
+                if (cov == LandGrid.ALL && whole == null) whole = new long[] { bx, by };
+                if (cov == LandGrid.SOME && partly == null) partly = new long[] { bx, by };
+                if (cov == LandGrid.NONE && GridOffers.touches(hg, hv, bx, by) && near == null) near = new long[] { bx, by };
+            }
+        }
+        check("fixture: the hand-made city has a block it owns whole, one it owns in part and a free one with an owned plot across an edge",
+                whole != null && partly != null && near != null);
+        if (whole == null || partly == null || near == null) return;
+        check("a block the city owns whole is not pickable", !LandMap.pickable(hand, hv, LandMap.blockKey(whole[0], whole[1]), none, List.of()));
+        check("a block the city owns in part is: it touches its own ground (the frontier's rule, GridOffers.onFrontier())",
+                LandMap.pickable(hand, hv, LandMap.blockKey(partly[0], partly[1]), none, List.of()));
+        check("a free block with an owned plot across one of its edges is: the frontier's other half",
+                LandMap.pickable(hand, hv, LandMap.blockKey(near[0], near[1]), none, List.of()));
+        check("a block outside the world is not", !LandMap.pickable(hand, hv, -1, none, List.of()) && !LandMap.pickable(hand, hv, LandMap.blockKey(0, World.SIDE >> hv), none, List.of()));
+        long[] chain = chainFrom(hand, handOffice.getMarket(), hv, none);
+        check("fixture: three free blocks in a row run out from the hand-made city's frontier, the second and third not touching it", chain != null);
+        if (chain == null) return;
+        long first = LandMap.blockKey(chain[0], chain[1]), second = LandMap.blockKey(chain[0] + chain[2], chain[1] + chain[3]);
+        long third = LandMap.blockKey(chain[0] + 2 * chain[2], chain[1] + 2 * chain[3]);
+        check("a block two away from the city's ground, alone, is not pickable", !LandMap.pickable(hand, hv, third, none, List.of()) && !LandMap.pickable(hand, hv, second, none, List.of()));
+        java.util.Set<Long> one = blocksOf(new long[] { chain[0], chain[1] });
+        check("...joined through a picked block it is: the next one out", LandMap.pickable(hand, hv, second, one, List.of()));
+        check("...but not the one after that, two away from the picked block, until that is picked too", !LandMap.pickable(hand, hv, third, one, List.of())
+                && LandMap.pickable(hand, hv, third, blocksOf(new long[] { chain[0], chain[1] }, new long[] { chain[0] + chain[2], chain[1] + chain[3] }), List.of()));
+        check("a block already picked is not pickable again", !LandMap.pickable(hand, hv, first, one, List.of()));
+        // ...and through a picked offer's free ground: an offer on the shelf of a city founded like this one, the free block beside its ground
+        LandMarket handShelf = handOffice.getMarket();
+        handOffice.updateMarket(0);
+        LandParcel through = null;
+        long beside = -1;
+        for (LandParcel o : handShelf.getListing()) {
+            java.util.Set<Long> met = blocksMetBy(hand, o, hv);
+            for (long mk : met) {
+                for (int[] d : STEPS) {
+                    long nk = LandMap.blockKey(LandMap.blockX(mk) + d[0], LandMap.blockY(mk) + d[1]);
+                    long nbx = LandMap.blockX(nk), nby = LandMap.blockY(nk);
+                    if (through == null && !met.contains(nk) && blockFree(hg, hv, nbx, nby) && !GridOffers.onFrontier(hg, hv, nbx, nby)) {
+                        through = o;
+                        beside = nk;
+                    }
+                }
+            }
+            if (through != null) break;
+        }
+        check("fixture: an offer on the shelf has a free block across an edge of its ground that does not touch the city", through != null);
+        if (through != null) {
+            java.util.Set<Long> inside = blocksMetBy(hand, through, hv);
+            long some = inside.iterator().next();
+            check("a block beside a picked offer's free ground, touching nothing of the city's, is pickable (the offer's ground is picked ground)",
+                    LandMap.pickable(hand, hv, beside, none, List.of(through)) && !LandMap.pickable(hand, hv, beside, none, List.of()));
+            check("...and a block on the offer's own free ground is not: the offer pick has it", !LandMap.pickable(hand, hv, some, none, List.of(through)));
+        }
+
+        // ---- cut into rectangles: every picked block once, none twice
+        java.util.Set<Long> solid = new LinkedHashSet<>(), ell = new LinkedHashSet<>(), ring = new LinkedHashSet<>(), wide = new LinkedHashSet<>(), apart = new LinkedHashSet<>();
+        for (long by = 4; by < 7; by++) for (long bx = 10; bx < 13; bx++) solid.add(LandMap.blockKey(bx, by));
+        for (long by = 4; by < 8; by++) ell.add(LandMap.blockKey(10, by));
+        for (long bx = 11; bx < 14; bx++) ell.add(LandMap.blockKey(bx, 7));
+        for (long by = 4; by < 7; by++) for (long bx = 10; bx < 13; bx++) if (bx != 11 || by != 5) ring.add(LandMap.blockKey(bx, by));
+        for (long by = 4; by < 6; by++) for (long bx = 10; bx < 16; bx++) wide.add(LandMap.blockKey(bx, by));
+        for (long by = 4; by < 6; by++) for (long bx : new long[] { 10, 11, 13, 14 }) apart.add(LandMap.blockKey(bx, by));
+        List<long[]> solidR = LandMap.rectangles(solid, 3), ellR = LandMap.rectangles(ell, 3), ringR = LandMap.rectangles(ring, 3), wideR = LandMap.rectangles(wide, 3), apartR = LandMap.rectangles(apart, 3);
+        check("a solid 3 x 3 of blocks is one rectangle of its plots", solidR.size() == 1 && Arrays.equals(solidR.get(0), new long[] { 80, 32, 104, 56 }));
+        check("a run merges with the run under it when they span the same columns: a 6 x 2 is one rectangle, two runs a block apart over two rows two (one each), an L two, a ring four",
+                ellR.size() == 2 && ringR.size() == 4 && wideR.size() == 1 && apartR.size() == 2);
+        java.util.Random rnd = new java.util.Random(14);
+        java.util.Set<Long> scatter = new LinkedHashSet<>();
+        for (int i = 0; i < 400; i++) scatter.add(LandMap.blockKey(20 + rnd.nextInt(14), 30 + rnd.nextInt(14)));
+        boolean exact = true, none2 = true;
+        for (java.util.Set<Long> set : List.of(solid, ell, ring, wide, apart, scatter)) {
+            Map<Long, Integer> cov = coverage(LandMap.rectangles(set, 3), 3);
+            exact &= cov.keySet().equals(set);
+            for (int n : cov.values()) none2 &= n == 1;
+        }
+        check("the rectangles of each set (those and 400 scattered blocks) cover exactly its blocks", exact);
+        check("...and no block twice, and no set cut into more rectangles than it has blocks (none at all for none)", none2 && LandMap.rectangles(scatter, 3).size() <= scatter.size()
+                && LandMap.rectangles(new LinkedHashSet<>(), 3).isEmpty());
+
+        // ---- outlined: the city's edge's shape, the picked ground's
+        boolean shapes = true;
+        for (java.util.Set<Long> set : List.of(solid, ell, ring, wide, apart, scatter)) {
+            shapes &= edgeOf(LandMap.outline(set, 3), (x, y) -> inBlocks(set, 3, x, y), (long) set.size() * 64);
+        }
+        check("the edge of picked blocks - a 3 x 3, an L, a ring with its hole, two runs a block apart, 400 scattered - closes, keeps the picked ground on its right"
+                + " (east along a north edge) and encloses exactly their plots", shapes);
+        check("...as the city's own edge does (outline(CityLand), the shape MapFrame.runOnScreen() draws): the same test passes it",
+                edgeOf(LandMap.outline(hand), hand::ownsPlot, hg.ownedPlots()));
+        check("...and a block set with none is no runs", LandMap.outline(new LinkedHashSet<>(), 3)[0].length == 0);
+
+        // ---- an offer's free ground's own outline: its rectangle less the city's ground in it
+        CityLand land = g.getCityLand();
+        LandMarket market = g.getLandManager().getMarket();
+        List<LandParcel> shelf = new ArrayList<>(market.getListing());
+        // an offer whose rectangle takes in owned ground, drawn on the hand-made city: wide and deep enough to cover its east edge
+        long bw = hb;
+        LandParcel bite = new LandParcel(0, 1, 0, hv, exAligned - 2 * bw, ey - bw, exAligned + 3 * bw, ey + 2 * bw, new double[CityLand.AREAS], null, null, 0, 1);
+        List<LandParcel> toDraw = new ArrayList<>(shelf);
+        toDraw.add(bite);
+        int checkedOffers = 0, brokenOffers = 0, withOwnedIn = 0;
+        long insideOwned = 0;
+        for (LandParcel o : toDraw) {
+            CityLand on = o == bite ? hand : land;
+            List<double[]> own = LandMap.ownedIn(on, o);
+            if (!own.isEmpty()) withOwnedIn++;
+            long freePlots = on.grid().unowned(o.getX0(), o.getY0(), o.getX1(), o.getY1());
+            double[][] runs = LandMap.freeOutline(on, o);
+            boolean closes = edgeOf(runs, (x, y) -> o.contains(x, y) && !on.ownsPlot(x, y), freePlots);
+            long cellPlots = 0;
+            for (double[] c : LandMap.freeCells(on, o)) {
+                cellPlots += (long) ((c[2] - c[0]) * (c[3] - c[1]));
+                for (long y = (long) c[1]; y < (long) c[3]; y++) for (long x = (long) c[0]; x < (long) c[2]; x++) if (on.ownsPlot(x, y)) insideOwned++;
+            }
+            checkedOffers++;
+            if (!closes || cellPlots != freePlots) brokenOffers++;
+        }
+        out.printf("      %d offers drawn as their free ground (the played city's %d and a hand-made one over owned ground), %d with the city's own ground inside their rectangle;"
+                + " %d owned plots inside any fill, %d offers whose outline or fill is wrong%n", checkedOffers, shelf.size(), withOwnedIn, insideOwned, brokenOffers);
+        check("fixture: the hand-made offer takes in owned ground, so an outline of its free ground has runs a plain rectangle's has not", !LandMap.ownedIn(hand, bite).isEmpty()
+                && LandMap.freeOutline(hand, bite)[0].length > 4);
+        check("an offer drawn beside owned ground has no owned plot inside its fill: its free cells (freeCells()) hold no plot the city owns, plot by plot", insideOwned == 0);
+        check("...and its outline (freeOutline()) is that ground's own edge for every offer - closed, its free ground on its right, none of it the city's, enclosing exactly its free plots"
+                + " (the played city's offers and the one over owned ground)", brokenOffers == 0);
+
+        // ---- the Picks, on the played city
+        LandMap.Picks picks = new LandMap.Picks();
+        picks.clear();
+        int level = market.getLevel();
+        long b = 1L << level;
+        LandGrid grid = land.grid();
+        check("fixture: no draft stands in the played city's office", market.getDrafts().isEmpty());
+        long[] c1 = chainFrom(land, market, level, new LinkedHashSet<>());
+        check("fixture: three free blocks in a row run out from the played city's frontier, the second and third not touching it", c1 != null);
+        if (c1 == null) return;
+        long f1 = LandMap.blockKey(c1[0], c1[1]), f2 = LandMap.blockKey(c1[0] + c1[2], c1[1] + c1[3]), f3 = LandMap.blockKey(c1[0] + 2 * c1[2], c1[1] + 2 * c1[3]);
+        int idsBefore = market.getNextOfferId();
+        boolean picked1 = picks.onlyBlock(g, f1);
+        List<Integer> ids1 = picks.live(g);
+        check("a plain click on a block that may be picked picks it alone, and the picks name one draft for it (a negative id)",
+                picked1 && picks.blocks().equals(blocksOf(new long[] { c1[0], c1[1] })) && ids1.size() == 1 && ids1.get(0) < 0 && picks.draftIds().equals(ids1));
+        LandParcel d1 = market.find(ids1.get(0));
+        long[] r1 = LandMap.blockRect(level, f1);
+        check("...a draft of that block's plots, priced as the office prices an offer of them now, and nothing in the listing but the offers (no draft, no new number)",
+                d1 != null && d1.getX0() == r1[0] && d1.getY0() == r1[1] && d1.getX1() == r1[2] && d1.getY1() == r1[3]
+                        && d1.getPriceUsd() == market.quote(r1[0], r1[1], r1[2], r1[3]).getPriceUsd()
+                        && market.getListing().stream().noneMatch(p -> p.getId() < 0) && market.getNextOfferId() == idsBefore);
+        check("...the card's figure for it is the draft's", Math.abs(LandMap.card(g, ids1).usd() - d1.getPriceUsd()) < 1e-9);
+        List<Integer> every = picks.live(g);
+        for (int i = 0; i < 5; i++) picks.live(g);
+        check("live() runs every frame and drafts only when the blocks or the ground changed: the same list, the very draft", picks.live(g) == every && market.find(ids1.get(0)) == d1);
+        check("a block two away from it is not pickable (picks.pickable()), the one beside it is, and a click on the first leaves the picks as they were",
+                !picks.pickable(g, f3) && picks.pickable(g, f2) && !picks.toggleBlock(g, f3) && picks.blocks().size() == 1 && picks.live(g) == every);
+        check("a shift click on the next block out picks it, and then the third", picks.toggleBlock(g, f2) && picks.toggleBlock(g, f3) && picks.blocks().size() == 3);
+        List<Integer> ids3 = picks.live(g);
+        LandParcel d3 = ids3.size() == 1 ? market.find(ids3.get(0)) : null;
+        long[] ra = LandMap.blockRect(level, f1), rb = LandMap.blockRect(level, f3);
+        check("...cut into the one rectangle the three make: a run of blocks is one draft, its plots the three blocks' box", d3 != null
+                && d3.getX0() == Math.min(ra[0], rb[0]) && d3.getY0() == Math.min(ra[1], rb[1]) && d3.getX1() == Math.max(ra[2], rb[2]) && d3.getY1() == Math.max(ra[3], rb[3]));
+        check("every block picked joins the city, as an independent walk of the set from the frontier finds", allJoined(land, level, picks.blocks(), List.of()));
+        picks.toggleBlock(g, f1);
+        String note = picks.dropNote();
+        check("dropping the first block drops the two that joined through it, and the note says so (" + note + ")", picks.blocks().isEmpty() && picks.live(g).isEmpty()
+                && String.format(LandMap.Picks.BLOCKS_UNJOINED_NOTE, 2).equals(note) && market.getDrafts().isEmpty());
+        picks.onlyBlock(g, f1);
+        picks.toggleBlock(g, f2);
+        picks.toggleBlock(g, f3);
+        picks.toggleBlock(g, f2);
+        check("dropping the middle one drops the one beyond it alone: the note names one block (" + picks.dropNote() + "), the first stays",
+                picks.blocks().equals(blocksOf(new long[] { c1[0], c1[1] })) && LandMap.Picks.BLOCK_UNJOINED_NOTE.equals(picks.dropNote()));
+        picks.clear();
+        check("clear() - Esc, a click off the offers, the map collapsed - drops the blocks and the drafts with the offers", picks.blocks().isEmpty() && picks.live(g).isEmpty()
+                && market.getDrafts().isEmpty() && picks.dropNote() == null);
+
+        // two separate pickings keep each other's draft when only one changes
+        long[] c2 = chainFrom(land, market, level, new LinkedHashSet<>(List.of(f1, f2, f3)));
+        check("fixture: a second chain of three runs out of the frontier away from the first", c2 != null);
+        if (c2 != null) {
+            long g1 = LandMap.blockKey(c2[0], c2[1]), g2 = LandMap.blockKey(c2[0] + c2[2], c2[1] + c2[3]);
+            picks.onlyBlock(g, f1);
+            picks.toggleBlock(g, g1);
+            List<Integer> two = new ArrayList<>(picks.live(g));
+            long[] rg = LandMap.blockRect(level, g1);
+            int idG = -1;
+            for (int id : two) if (market.find(id) != null && market.find(id).getX0() == rg[0] && market.find(id).getY0() == rg[1]) idG = id;
+            picks.toggleBlock(g, f2);
+            List<Integer> after = picks.live(g);
+            check("two separate pickings are two drafts; adding a block to one gives it another rectangle and another id, the other draft keeps its id (a card is keyed by them)",
+                    two.size() == 2 && after.size() == 2 && idG != -1 && after.contains(idG) && !after.contains(two.get(0) == idG ? two.get(1) : two.get(0)));
+            picks.clear();
+        }
+
+        // ---- a box: the blocks it meets that join the city
+        long[] eb = { grid.minX() - b, grid.minY() - b, grid.maxX() + b, grid.maxY() + b };
+        int took = picks.addBox(g, eb[0], eb[1], eb[2], eb[3]);
+        List<Integer> afterBox = picks.live(g);
+        List<LandParcel> offerPicks = new ArrayList<>();
+        java.util.Set<Long> byOffers = new LinkedHashSet<>();
+        for (int id : afterBox) {
+            LandParcel o = id > 0 ? market.find(id) : null;
+            if (o != null) { offerPicks.add(o); byOffers.addAll(blocksMetBy(land, o, level)); }
+        }
+        java.util.Set<Long> expect = floodExpect(land, level, eb, new java.util.HashSet<>());
+        java.util.Set<Long> got = new LinkedHashSet<>(picks.blocks());
+        got.addAll(byOffers);
+        out.printf("      a box a block wider than the city all round took %d blocks (%d the blocks picked, %d of them offers' ground, %d offers wholly picked), %d free blocks join by an independent flood%n",
+                took, picks.blocks().size(), byOffers.size(), offerPicks.size(), expect.size());
+        check("a box over the city and a block's margin takes exactly the free blocks of it that join the city, as a flood worked out apart finds them - the blocks of the offers its blocks wholly covered"
+                + " count, which are those offers, picked", got.equals(expect) && took == expect.size() && took > 0 && took <= LandMap.BOX_BLOCKS_MOST);
+        check("...and every offer wholly picked has its blocks out of the block set (picks and blocks never hold one plot twice)", picks.blocks().stream().noneMatch(byOffers::contains)
+                && allJoined(land, level, picks.blocks(), offerPicks));
+        List<long[]> cut = LandMap.rectangles(picks.blocks(), level);
+        Map<Long, Integer> cutCover = coverage(cut, level);
+        check("...and the rectangles it is cut into, the ones the office drafts, cover its blocks exactly once each", cutCover.keySet().equals(new LinkedHashSet<>(picks.blocks()))
+                && cutCover.values().stream().allMatch(n -> n == 1) && market.getDrafts().size() == cut.size());
+        picks.clear();
+        long far = Math.floorDiv(grid.maxX(), b) + 8;
+        int nothing = picks.addBox(g, far * b, Math.floorDiv(grid.minY(), b) * b, (far + 3) * b, (Math.floorDiv(grid.minY(), b) + 3) * b);
+        check("a box over ground well clear of the city and the picks joins nothing: it takes none", nothing == 0 && picks.blocks().isEmpty() && picks.live(g).isEmpty());
+        long bridgeX = land.siteX();
+        while (land.ownsPlot(bridgeX, land.siteY())) bridgeX++;
+        long[] bridge = { bridgeX, Math.floorDiv(land.siteY(), b) * b, bridgeX + 5 * b, Math.floorDiv(land.siteY(), b) * b + b };
+        java.util.Set<Long> expectBridge = floodExpect(land, level, bridge, new java.util.HashSet<>());
+        int bridged = picks.addBox(g, bridge[0], bridge[1], bridge[2], bridge[3]);
+        java.util.Set<Long> gotBridge = everyPicked(land, market, level, picks, picks.live(g));
+        check("a box from the city's east edge along its site's row, five blocks out and one deep, takes the free blocks joined through its own (" + bridged + " of them), as the flood worked out apart finds",
+                bridged > 0 && gotBridge.equals(expectBridge));
+        picks.clear();
+        picks.onlyBlock(g, f1);
+        long[] box23 = LandMap.blockRect(level, f2), box3 = LandMap.blockRect(level, f3);
+        int beyondOnly = picks.addBox(g, box3[0], box3[1], box3[2], box3[3]);
+        check("a box over the third block alone, two from the picked one, takes none; over the second and third it takes both, joined through the first",
+                beyondOnly == 0 && picks.addBox(g, Math.min(box23[0], box3[0]), Math.min(box23[1], box3[1]), Math.max(box23[2], box3[2]), Math.max(box23[3], box3[3])) == 2
+                        && picks.blocks().size() == 3);
+        picks.clear();
+        int whole3 = picks.addBox(g, 0, 0, World.SIDE, World.SIDE);
+        check("a box over the whole world takes at most " + LandMap.BOX_BLOCKS_MOST + " blocks, nearest the city's ground first, all joined to it (took " + whole3 + ")",
+                whole3 > 0 && whole3 <= LandMap.BOX_BLOCKS_MOST && allJoined(land, level, picks.blocks(), offersIn(market, picks.live(g))));
+        picks.clear();
+
+        // ---- an offer wholly picked is the offer
+        LandParcel target = ownBlocks(land, market, level, 0);
+        java.util.Set<Long> targetBlocks = target == null ? null : blocksMetBy(land, target, level);
+        check("fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own", target != null);
+        if (target != null) {
+            java.util.Set<Long> remaining = new LinkedHashSet<>(targetBlocks);
+            boolean orderOk = true, notYet = true;
+            int stepsTaken = 0;
+            while (!remaining.isEmpty()) {
+                long next = -1;
+                for (long cand : remaining) if (picks.pickable(g, cand)) { next = cand; break; }
+                if (next < 0) { orderOk = false; break; }
+                picks.toggleBlock(g, next);
+                remaining.remove(next);
+                stepsTaken++;
+                if (!remaining.isEmpty()) notYet &= !picks.live(g).contains(target.getId());
+            }
+            List<Integer> picked = picks.live(g);
+            check("picked block by block from the city's edge (" + stepsTaken + " of the offer's blocks), the offer is not picked until its last block is", orderOk && notYet);
+            check("...and then it is: its id is the pick (an offer wholly picked is the offer), its blocks are out of the block set and no draft is left for them",
+                    picked.equals(List.of(target.getId())) && picks.blocks().isEmpty() && picks.draftIds().isEmpty() && market.getDrafts().isEmpty());
+            check("...bought at its listed price: the card's figure is the offer's", Math.abs(LandMap.card(g, picked).usd() - target.getPriceUsd()) < 1e-9);
+            long some = targetBlocks.iterator().next();
+            check("...and its ground is not a block's: a click on one of its blocks picks none, a box over it adds none of them",
+                    !picks.pickable(g, some) && !picks.toggleBlock(g, some)
+                            && picks.addBox(g, target.getX0(), target.getY0(), target.getX1(), target.getY1()) == 0 && picks.live(g).equals(picked));
+            picks.clear();
+        }
+
+        // ---- a block the city bought since drops, and the draft that held it: one block of an offer picked, then the city buys the offer
+        LandParcel buyer = ownBlocks(land, market, level, 0);
+        check("fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to be bought from under a pick", buyer != null);
+        if (buyer != null) {
+            java.util.Set<Long> held = blocksMetBy(land, buyer, level);
+            long h1 = -1;
+            for (long hk : held) if (h1 < 0 && picks.pickable(g, hk)) h1 = hk;
+            check("fixture: one of its blocks may be picked, and picking it, the offer is not wholly picked: a draft stands for that block", h1 >= 0 && picks.onlyBlock(g, h1)
+                    && picks.blocks().size() == 1 && market.getDrafts().size() == 1 && !picks.live(g).contains(buyer.getId()));
+            if (h1 >= 0) {
+                long[] rh = LandMap.blockRect(level, h1);
+                boolean boughtIt = buysQuietly(g, buyer);
+                List<Integer> now = picks.live(g);
+                String said = picks.dropNote();
+                int ownedBlocks = grid.unowned(rh[0], rh[1], rh[2], rh[3]) == 0 ? 1 : 0;
+                out.printf("      the city bought %s, over the block picked: the picks now %s, the note \"%s\"%n", buyer.where(), now, said);
+                check("the city's buying the offer over a picked block drops the block it owns whole, and the draft that held it, named (" + said + ")",
+                        boughtIt && ownedBlocks == 1 && now.isEmpty() && picks.blocks().isEmpty() && market.getDrafts().isEmpty() && LandMap.Picks.BLOCK_BOUGHT_NOTE.equals(said));
+                check("...the note stands while nothing changes (live() runs every frame), and a click clears it", picks.live(g).isEmpty() && said.equals(picks.dropNote())
+                        && picks.toggleBlock(g, h1) == false && picks.dropNote() == null);
+            }
+            picks.clear();
+        }
+
+        // ---- a draft bought through the picks: the blocks are the city's, the offers it bit left the shelf
+        LandParcel bitten1 = ownBlocks(land, market, level, 0);
+        check("fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to bite", bitten1 != null);
+        if (bitten1 != null) {
+            long m1 = -1;
+            for (long mk : blocksMetBy(land, bitten1, level)) if (m1 < 0 && picks.pickable(g, mk)) m1 = mk;
+            check("fixture: one of its blocks may be picked", m1 >= 0 && picks.onlyBlock(g, m1));
+            List<Integer> idsNow = picks.live(g);
+            long[] rm = LandMap.blockRect(level, m1);
+            List<LandParcel> before = new ArrayList<>(market.getListing());
+            java.util.Set<Integer> bitten = LandCheck.bittenBy(land, before, rm);
+            boolean bought = idsNow.size() == 1 && idsNow.get(0) < 0 && buysQuietly(g, market.find(idsNow.get(0)));
+            List<Integer> after = picks.live(g);
+            boolean gone = true, others = true;
+            for (LandParcel p : before) {
+                if (bitten.contains(p.getId())) gone &= market.find(p.getId()) == null;
+                else others &= market.find(p.getId()) != null && market.find(p.getId()).same(p);
+            }
+            out.printf("      a draft of one block bought through the picks: %d offers off the shelf, the picks now %s, the note \"%s\"%n", bitten.size(), after, picks.dropNote());
+            check("a draft bought through Game.buyLandParcel() makes its block the city's and the picks drop it: " + picks.dropNote(), bought && grid.unowned(rm[0], rm[1], rm[2], rm[3]) == 0
+                    && after.isEmpty() && picks.blocks().isEmpty() && LandMap.Picks.BLOCK_BOUGHT_NOTE.equals(picks.dropNote()) && market.getDrafts().isEmpty());
+            check("...and the offer whose ground it bit (" + bitten.size() + ") left the shelf, bought by no one, every other standing as it was, and its place is listed again",
+                    bitten.contains(bitten1.getId()) && gone && others && market.offerIn(bitten1.getSide(), bitten1.getPlace()) != null
+                            && market.offerIn(bitten1.getSide(), bitten1.getPlace()).getId() != bitten1.getId());
+            picks.clear();
+        }
+
+        // ---- the city's blocks changing size drops every block
+        Game small = new Game(GameFiles.scratch("mapcheck-blocks"));
+        PrintStream real = System.out;
+        System.setOut(QUIET);
+        try { small.newGame(); small.toggleNextMonth(); } finally { System.setOut(real); }
+        LandMarket sm = small.getLandManager().getMarket();
+        CityLand sl = small.getCityLand();
+        int smallLevel = sm.getLevel();
+        long[] c5 = chainFrom(sl, sm, smallLevel, new LinkedHashSet<>());
+        if (c5 != null) {
+            LandMap.Picks sp = new LandMap.Picks();
+            sp.onlyBlock(small, LandMap.blockKey(c5[0], c5[1]));
+            check("fixture: a block is picked in a new city, and its draft stands", sp.blocks().size() == 1 && sm.getDrafts().size() == 1);
+            // The city buys ground enough to take its block level up, as a purchase by hand (ET5's door).
+            long span = (1L << (smallLevel + 1)) * LandGrid.FACE_BLOCKS * 2;
+            long gx = sl.grid().maxX() + 4 * (1L << smallLevel);
+            small.getLandManager().buyRectForTest(gx, sl.siteY() - span / 2, gx + span, sl.siteY() + span / 2, 2);
+            int levelNow = sm.getLevel();
+            List<Integer> then = sp.live(small);
+            check("the city's blocks changing size (its level rose from " + smallLevel + " to " + levelNow + ") drops every block and its draft, and says so (" + sp.dropNote() + ")",
+                    levelNow > smallLevel && then.isEmpty() && sp.blocks().isEmpty() && sm.getDrafts().isEmpty()
+                            && LandMap.Picks.BLOCK_RESIZED_NOTE.equals(sp.dropNote()));
+        }
+    }
+
+    /* =====================================================================
+       14f. THE EXACT GROUND ON THE SCREEN (BL1, slice D)
+
+       Jerus, 2026-10-26: "revamp how buy land works, cause currently those
+       blocks are wierd and sometimes overlap with land already bought like
+       uiwise, on map view. perhaps more freedom on the exact selection?"
+       The model's half of what ui/MapView draws and reads: where a press
+       starts a box (LandMap.pressBoxes(), widened from the offers' free
+       ground to the ground the player may pick), the picked blocks' own free
+       ground - its fill's cells and its edge's runs, never the city's ground
+       inside a block it owns part of - the blocks a box being drawn would
+       take (Picks.boxBlocks(), the preview) against what its release takes
+       (Picks.addBox()), the plots a box on the screen covers (plotBox()), the
+       card's title and the hover card's words, and the order the card's ids
+       are bought in: the offers before the drafts, every one bought.
+       ================================================================== */
+
+    /** A plot near the middle of a block of `level`: {x, y}. */
+    static long[] plotIn(int level, long key) {
+        long[] r = LandMap.blockRect(level, key);
+        return new long[] { r[0] + (r[2] - r[0]) / 2, r[1] + (r[3] - r[1]) / 2 };
+    }
+
+    /** The plots of a block the city does not own. */
+    static long unownedIn(LandGrid grid, int level, long key) {
+        long[] r = LandMap.blockRect(level, key);
+        return grid.unowned(r[0], r[1], r[2], r[3]);
+    }
+
+    /** The cells of a fill: how many plots of them the city owns, and how many they hold in all. */
+    static long[] ownedAndAll(CityLand land, List<double[]> cells) {
+        long owned = 0, all = 0;
+        for (double[] c : cells) {
+            all += (long) ((c[2] - c[0]) * (c[3] - c[1]));
+            owned += land.grid().owned((long) c[0], (long) c[1], (long) c[2], (long) c[3]);
+        }
+        return new long[] { owned, all };
+    }
+
+    static void groundOnScreen(Game g) throws Exception {
+        out.println("\n--- 14f. the exact ground on the screen: a press boxes on ground that may be picked, the picked ground is drawn clear of the city's,"
+                + " a box previews what it takes, the card names it, the offers are bought before the drafts (BL1) ---");
+
+        // ---- the press: a hand-made city with no offer on its shelf, so the rule is the blocks' alone
+        LandManager office = new LandManager();
+        CityLand hand = office.getCityLand();
+        LandMarket bare = office.getMarket();
+        LandGrid hg = hand.grid();
+        int hv = hand.level();
+        long hb = 1L << hv;
+        long ey = Math.floorDiv(hand.siteY(), hb) * hb, ex = hand.siteX();
+        while (hg.unowned(ex, hand.siteY(), ex + 1, hand.siteY() + 1) == 0) ex++;
+        long exAligned = Math.floorDiv(ex, hb) * hb;
+        hand.extend(new LandParcel(1, 1, 0, hv, ex, ey, ex + hb / 2, ey + hb, new double[CityLand.AREAS], null, null, 0, 1), 1, 0);
+        java.util.Set<Long> none = new java.util.HashSet<>();
+        long[] partly = null, near = null;
+        long x0 = Math.floorDiv(hg.minX(), hb) - 3, x1 = Math.floorDiv(hg.maxX() - 1, hb) + 3, y0 = Math.floorDiv(hg.minY(), hb) - 3, y1 = Math.floorDiv(hg.maxY() - 1, hb) + 3;
+        for (long by = y0; by <= y1; by++) {
+            for (long bx = x0; bx <= x1; bx++) {
+                if (bx < 0 || by < 0) continue;
+                int cov = hg.cover(hv, bx, by);
+                if (cov == LandGrid.SOME && partly == null) partly = new long[] { bx, by };
+                if (cov == LandGrid.NONE && GridOffers.touches(hg, hv, bx, by) && near == null) near = new long[] { bx, by };
+            }
+        }
+        long[] chain = chainFrom(hand, bare, hv, none);
+        check("fixture: the hand-made city has a block it owns in part, a free one with an owned plot across an edge, three free blocks in a row out of its frontier, and no offer on its shelf",
+                partly != null && near != null && chain != null && bare.getListing().isEmpty() && bare.getLevel() == hv);
+        if (partly == null || near == null || chain == null) return;
+        long pk = LandMap.blockKey(partly[0], partly[1]), nk = LandMap.blockKey(near[0], near[1]);
+        long first = LandMap.blockKey(chain[0], chain[1]), second = LandMap.blockKey(chain[0] + chain[2], chain[1] + chain[3]);
+        long third = LandMap.blockKey(chain[0] + 2 * chain[2], chain[1] + 2 * chain[3]);
+        long[] ownedPlot = null, freePlot = null;
+        long[] pr = LandMap.blockRect(hv, pk);
+        for (long y = pr[1]; y < pr[3]; y++) {
+            for (long x = pr[0]; x < pr[2]; x++) {
+                if (hand.ownsPlot(x, y) && ownedPlot == null) ownedPlot = new long[] { x, y };
+                if (!hand.ownsPlot(x, y) && freePlot == null) freePlot = new long[] { x, y };
+            }
+        }
+        check("fixture: the half-owned block holds a plot the city owns and a free one", ownedPlot != null && freePlot != null);
+        if (ownedPlot == null || freePlot == null) return;
+        long[] pFirst = plotIn(hv, first), pSecond = plotIn(hv, second), pThird = plotIn(hv, third), pNear = plotIn(hv, nk);
+        java.util.Set<Long> pickedFirst = blocksOf(new long[] { chain[0], chain[1] });
+        check("a press on a free plot of a block that may be picked boxes with no key held: one beside the city's ground, and a free plot of a block it owns part of",
+                LandMap.pressBoxes(hand, bare, pNear[0], pNear[1], false) && LandMap.pressBoxes(hand, bare, freePlot[0], freePlot[1], false)
+                        && LandMap.pickable(hand, hv, nk, none, List.of()) && LandMap.pickable(hand, hv, pk, none, List.of()));
+        check("...but the city's own plot in that half-owned block pans: it is not ground the player may pick",
+                !LandMap.pressBoxes(hand, bare, ownedPlot[0], ownedPlot[1], false) && hand.ownsPlot(ownedPlot[0], ownedPlot[1]));
+        check("a press on a block two away from the city's ground, nothing picked, pans - the second and third of a row out of the frontier, which join nothing yet - and on the first it boxes",
+                !LandMap.pressBoxes(hand, bare, pSecond[0], pSecond[1], false) && !LandMap.pressBoxes(hand, bare, pThird[0], pThird[1], false)
+                        && LandMap.pressBoxes(hand, bare, pFirst[0], pFirst[1], false));
+        check("...with the first picked, the second boxes (it joins through the picked block) and the third, still two away, pans",
+                LandMap.pressBoxes(hand, bare, pSecond[0], pSecond[1], false, pickedFirst, List.of())
+                        && !LandMap.pressBoxes(hand, bare, pThird[0], pThird[1], false, pickedFirst, List.of()));
+        check("a press on a picked block boxes, though it may not be picked again; Shift boxes from the third block too",
+                LandMap.pressBoxes(hand, bare, pFirst[0], pFirst[1], false, pickedFirst, List.of()) && !LandMap.pickable(hand, hv, first, pickedFirst, List.of())
+                        && LandMap.pressBoxes(hand, bare, pThird[0], pThird[1], true));
+
+        // ---- the Picks' own answer on the played city: a block picked boxes, ground far from any pick pans
+        CityLand land = g.getCityLand();
+        LandMarket market = g.getLandManager().getMarket();
+        int level = market.getLevel();
+        long b = 1L << level;
+        LandGrid grid = land.grid();
+        LandMap.Picks picks = new LandMap.Picks();
+        picks.clear();
+        long[] c1 = chainFrom(land, market, level, new LinkedHashSet<>());
+        check("fixture: three free blocks in a row run out of the played city's frontier", c1 != null);
+        if (c1 == null) return;
+        long f1 = LandMap.blockKey(c1[0], c1[1]), f2 = LandMap.blockKey(c1[0] + c1[2], c1[1] + c1[3]);
+        picks.onlyBlock(g, f1);
+        // a free plot of the picked block (it may be the city's own in part: that plot pans), and ground a quarter of the world out
+        long[] inF1 = null, rf1 = LandMap.blockRect(level, f1), far = { (long) (land.siteX() + FAR_PLOTS), (long) (land.siteY() + FAR_PLOTS) };
+        for (long y = rf1[1]; y < rf1[3] && inF1 == null; y++) for (long x = rf1[0]; x < rf1[2] && inF1 == null; x++) if (!land.ownsPlot(x, y)) inF1 = new long[] { x, y };
+        boolean onBlock = inF1 != null && picks.pressBoxes(g, inF1[0], inF1[1], false);
+        boolean offBlock = !picks.pressBoxes(g, far[0], far[1], false);
+        boolean shifted = picks.pressBoxes(g, far[0], far[1], true);
+        check("Picks.pressBoxes() reads the blocks and offers picked as they stand: a free plot of the picked block boxes, ground a quarter of the world out pans, Shift boxes anywhere"
+                + (onBlock && offBlock && shifted ? "" : " [block " + onBlock + ", far " + offBlock + ", shift " + shifted + "]"), onBlock && offBlock && shifted);
+        picks.clear();
+
+        // ---- the preview is what the release takes
+        long[] eb = { grid.minX() - b, grid.minY() - b, grid.maxX() + b, grid.maxY() + b };
+        List<Long> preview = picks.boxBlocks(g, eb[0], eb[1], eb[2], eb[3]);
+        check("the blocks a box would take (Picks.boxBlocks()) are worked out and nothing is picked: no block, no draft, no card figure", !preview.isEmpty()
+                && picks.blocks().isEmpty() && picks.live(g).isEmpty() && market.getDrafts().isEmpty());
+        int took = picks.addBox(g, eb[0], eb[1], eb[2], eb[3]);
+        java.util.Set<Long> afterAll = everyPicked(land, market, level, picks, picks.live(g));
+        check("...and the release takes exactly them (" + preview.size() + " blocks): the blocks picked and the ground of the offers they made whole are the preview's, none more, none fewer",
+                took == preview.size() && afterAll.equals(new LinkedHashSet<>(preview)));
+        check("...and over the same box again the preview takes none: what is picked is not taken twice", picks.boxBlocks(g, eb[0], eb[1], eb[2], eb[3]).isEmpty());
+        int drafted = 0;
+        for (LandParcel d : market.getDrafts()) drafted += LandMap.draftBlocks(d, level);
+        check("the blocks the drafts hold, counted by draftBlocks() (" + drafted + "), are the blocks picked", drafted == picks.blocks().size() && drafted > 0);
+
+        // ---- the picked ground is drawn as its free ground: none of it the city's
+        List<double[]> cells = LandMap.freeCells(land, picks.blocks(), level);
+        long[] counted = ownedAndAll(land, cells);
+        long freeInBlocks = 0, partlyOwned = 0;
+        for (long k : picks.blocks()) {
+            long un = unownedIn(grid, level, k);
+            freeInBlocks += un;
+            if (un < b * b) partlyOwned++;
+        }
+        double[][] runs = LandMap.freeOutline(land, picks.blocks(), level);
+        out.printf("      %d picked blocks, %d of them partly the city's: filled as %d cells holding %,d plots, %,d of the city's own; edged as %d runs%n", picks.blocks().size(),
+                partlyOwned, cells.size(), counted[1], counted[0], runs[0].length);
+        check("the picked blocks' fill (LandMap.freeCells()) holds no plot the city owns, and exactly the plots of the blocks it does not own (" + freeInBlocks + ")",
+                counted[0] == 0 && counted[1] == freeInBlocks);
+        java.util.Set<Long> shown = new LinkedHashSet<>(picks.blocks());
+        check("...and its edge (freeOutline()) is that ground's own: closed, the ground on its right, none of it the city's, enclosing exactly its free plots",
+                edgeOf(runs, (x, y) -> inBlocks(shown, level, x, y) && !land.ownsPlot(x, y), freeInBlocks));
+        picks.clear();
+        java.util.Set<Long> two = blocksOf(partly, near);
+        long twoFree = unownedIn(hg, hv, pk) + unownedIn(hg, hv, nk);
+        long[] ownFree = ownedAndAll(hand, LandMap.freeCells(hand, two, hv));
+        check("on the hand-made city's half-owned block and the free one beside it: the fill holds none of the city's plots, the edge is the free ground's, and the blocks' own"
+                        + " outline (outline()) is not it - the city's half is inside that",
+                ownFree[0] == 0 && ownFree[1] == twoFree && edgeOf(LandMap.freeOutline(hand, two, hv), (x, y) -> inBlocks(two, hv, x, y) && !hand.ownsPlot(x, y), twoFree)
+                        && !edgeOf(LandMap.outline(two, hv), (x, y) -> inBlocks(two, hv, x, y) && !hand.ownsPlot(x, y), twoFree));
+        LandParcel bite = new LandParcel(0, 1, 0, hv, exAligned - 2 * hb, ey - hb, exAligned + 3 * hb, ey + 2 * hb, new double[CityLand.AREAS], null, null, 0, 1);
+        check("freeCells() and ownedIn() of a rectangle are the offer's of that rectangle: the same cells, the owned leaves cut out",
+                !LandMap.ownedIn(hand, bite).isEmpty()
+                        && Arrays.deepToString(LandMap.freeCells(hand, bite).toArray()).equals(Arrays.deepToString(LandMap.freeCells(hand, bite.getX0(), bite.getY0(), bite.getX1(), bite.getY1()).toArray()))
+                        && Arrays.deepToString(LandMap.ownedIn(hand, bite).toArray()).equals(Arrays.deepToString(LandMap.ownedIn(hand, bite.getX0(), bite.getY0(), bite.getX1(), bite.getY1()).toArray())));
+        LandParcel west = new LandParcel(0, 1, 0, hv, exAligned + 5 * hb, ey + 6 * hb, exAligned + 7 * hb, ey + 7 * hb, new double[CityLand.AREAS], null, null, 0, 1);
+        LandParcel east = new LandParcel(0, 1, 0, hv, exAligned + 7 * hb, ey + 6 * hb, exAligned + 9 * hb, ey + 7 * hb, new double[CityLand.AREAS], null, null, 0, 1);
+        double[][] both = LandMap.freeOutline(hand, List.of(west, east));
+        double[][] noRuns = LandMap.freeOutline(hand, List.of());
+        check("the edge of two touching parcels' free ground is one shape, the seam between them no run: a rectangle's four; none for none",
+                both[0].length == 4 && edgeOf(both, (x, y) -> west.contains(x, y) || east.contains(x, y), 4 * hb * hb) && noRuns.length == 4 && noRuns[0].length == 0);
+
+        // ---- a box on the screen is plots, the blocks' bounds are where the card stands
+        long[] box = LandMap.plotBox(new double[] { 3.7, 9.0, 3.7, 9.0 }, new double[] { 5.2, 5.2, 8.99, 8.99 });
+        long[] one = LandMap.plotBox(new double[] { 4.5 }, new double[] { 7.0 });
+        long[] negative = LandMap.plotBox(new double[] { -0.5, 2.0 }, new double[] { 1.0, -2.5 });
+        check("a box's plots (plotBox()) run from the least corner's plot to one past the greatest's, whatever order the corners come in: the plot under every corner is in",
+                Arrays.equals(box, new long[] { 3, 5, 10, 9 }) && Arrays.equals(one, new long[] { 4, 7, 5, 8 }) && Arrays.equals(negative, new long[] { -1, -3, 3, 2 }));
+        java.util.Set<Long> bb = blocksOf(new long[] { 10, 4 }, new long[] { 12, 4 }, new long[] { 11, 7 });
+        check("the bounds of picked blocks hold all of them and no more, and none for none", Arrays.equals(LandMap.blocksBounds(bb, 3), new double[] { 80, 32, 104, 64 })
+                && LandMap.blocksBounds(new LinkedHashSet<>(), 3) == null);
+
+        // ---- the words: the card's title, the hover's lines
+        picks.onlyBlock(g, f1);
+        picks.toggleBlock(g, f2);
+        List<LandParcel> drafts = market.getDrafts();
+        int blockCount = 0;
+        for (LandParcel d : drafts) blockCount += LandMap.draftBlocks(d, level);
+        List<LandParcel> shelf = new ArrayList<>(market.getListing());
+        LandParcel o1 = shelf.get(0), o2 = shelf.get(1), o3 = shelf.get(2);
+        List<LandParcel> mixed = new ArrayList<>(List.of(o1));
+        mixed.addAll(drafts);
+        check("the card's title names one offer by its place, several as a count, the drafts together as \"Your ground - N blocks\", and both joined: " + LandMap.pickTitle(mixed, level),
+                LandMap.pickTitle(List.of(o1), level).equals(o1.where()) && LandMap.pickTitle(List.of(o1, o2, o3), level).equals("3 offers")
+                        && blockCount == 2 && LandMap.pickTitle(drafts, level).equals("Your ground - 2 blocks")
+                        && LandMap.pickTitle(mixed, level).equals(o1.where() + " and your ground - 2 blocks") && LandMap.pickTitle(List.of(), level).isEmpty()
+                        && LandMap.groundTitle(1).equals("Your ground - 1 block"));
+        long[] r1 = LandMap.blockRect(level, f1);
+        int draftsBefore = market.getDrafts().size();
+        LandParcel quote = market.quote(r1[0], r1[1], r1[2], r1[3]);
+        String kinds = LandMap.kindWords(quote.getKm2(), quote.getKm2(CityLand.DRY), quote.getKm2(CityLand.FRESH), quote.getKm2(CityLand.SEA));
+        out.printf("      the hover's lines over a block: \"%s\" / \"%s\" / price %s%n", LandMap.ONE_BLOCK, kinds, LandMap.usd(quote.getPriceUsd()));
+        check("the hover card's words over a block that may be picked: its area by kind, led by its area, fresh or sea water only where the block holds some, and its price as the office"
+                        + " would list it now - a quote keeps no id and drafts nothing",
+                kinds.startsWith(LandMap.area(quote.getKm2()) + " · ") && kinds.contains(" dry") && kinds.contains(" fresh") == (quote.getKm2(CityLand.FRESH) > 0)
+                        && kinds.contains(" sea") == (quote.getKm2(CityLand.SEA) > 0) && quote.getId() == 0 && quote.getPriceUsd() > 0 && market.getDrafts().size() == draftsBefore);
+        check("...over a picked block what is picked in all (\"" + LandMap.pickedWords(0, 12) + "\", \"" + LandMap.pickedWords(3, 1) + "\"), and the hover's one-block line and the hint last are the brief's",
+                LandMap.pickedWords(0, 12).equals("Your ground - 12 blocks picked") && LandMap.pickedWords(0, 1).equals("Your ground - 1 block picked")
+                        && LandMap.pickedWords(3, 1).equals("3 offers and 1 block picked") && LandMap.pickedWords(1, 2).equals("1 offer and 2 blocks picked")
+                        && LandMap.ONE_BLOCK.equals("Your ground: one block") && LandMap.CLICK_TO_PICK.equals("Click to pick it, drag to pick more"));
+        // the "Your ground" chip's ×: every draft dropped one after another, as the card's one chip does (MapView.dropGround()), takes every block it was cut from
+        long[] c2 = chainFrom(land, market, level, new LinkedHashSet<>(List.of(f1, f2, LandMap.blockKey(c1[0] + 2 * c1[2], c1[1] + 2 * c1[3]))));
+        if (c2 != null) {
+            picks.toggleBlock(g, LandMap.blockKey(c2[0], c2[1]));
+            List<Integer> chip = new ArrayList<>(picks.draftIds());
+            for (int id : chip) picks.drop(id);
+            check("two separate pickings are two drafts, and dropping each draft's id in turn (the one chip's ×) leaves no block, no draft and no pick", chip.size() == 2
+                    && picks.blocks().isEmpty() && picks.live(g).isEmpty() && market.getDrafts().isEmpty());
+        }
+        picks.clear();
+
+        // ---- the card's ids put the offers before the drafts, and every one is bought: a fresh city, a block picked first and an offer after
+        Game order = new Game(GameFiles.scratch("mapcheck-order"));
+        PrintStream real = System.out;
+        System.setOut(QUIET);
+        try { order.newGame(); order.toggleNextMonth(); } finally { System.setOut(real); }
+        LandMarket om = order.getLandManager().getMarket();
+        CityLand ol = order.getCityLand();
+        int olv = om.getLevel();
+        long ob = 1L << olv;
+        List<LandParcel> listed = new ArrayList<>(om.getListing());
+        Map<Integer, java.util.Set<Long>> metBy = new HashMap<>();
+        for (LandParcel o : listed) metBy.put(o.getId(), blocksMetBy(ol, o, olv));
+        LandParcel target = null;
+        long block = -1;
+        // a free block on the frontier that the target offer's ground does not meet and that completes no offer by itself: its draft bites no picked offer
+        long bxs = Math.floorDiv(ol.grid().minX(), ob) - 2, bxe = Math.floorDiv(ol.grid().maxX() - 1, ob) + 2;
+        long bys = Math.floorDiv(ol.grid().minY(), ob) - 2, bye = Math.floorDiv(ol.grid().maxY() - 1, ob) + 2;
+        for (long by = bys; by <= bye && target == null; by++) {
+            for (long bx = bxs; bx <= bxe && target == null; bx++) {
+                long k = LandMap.blockKey(bx, by);
+                if (bx < 0 || by < 0 || !blockFree(ol.grid(), olv, bx, by) || !GridOffers.onFrontier(ol.grid(), olv, bx, by)) continue;
+                boolean completes = false;
+                for (java.util.Set<Long> met : metBy.values()) completes |= met.size() == 1 && met.contains(k);
+                if (completes) continue;
+                for (LandParcel o : listed) {
+                    if (!metBy.get(o.getId()).contains(k)) {
+                        target = o;
+                        block = k;
+                        break;
+                    }
+                }
+            }
+        }
+        check("fixture: a fresh city has an offer and a block that may be picked sharing no ground with it and completing no offer", target != null);
+        if (target == null) return;
+        LandMap.Picks op = new LandMap.Picks();
+        op.onlyBlock(order, block);
+        op.toggle(order, target.getId());
+        List<Integer> ids = op.live(order);
+        check("a block picked first and an offer after: the card's ids put the offer before the draft - the order they are bought in, so no draft's purchase can take the offer off the shelf first",
+                ids.size() == 2 && ids.get(0) == target.getId() && ids.get(1) < 0 && op.draftIds().equals(List.of(ids.get(1))));
+        order.setCashForTest(Math.max(0, order.getCash()) + 2 * LandMap.card(order, ids).local());
+        long[] br = LandMap.blockRect(olv, block);
+        int bought;
+        System.setOut(QUIET);
+        try { bought = order.buyLandParcels(ids); } finally { System.setOut(real); }
+        List<Integer> left = op.live(order);
+        check("...and the card's Buy buys both through Game.buyLandParcels() (" + bought + " of 2): the offer's ground and the block are the city's, the picks gone with their ground",
+                bought == 2 && ol.grid().unowned(br[0], br[1], br[2], br[3]) == 0 && ol.grid().unowned(target.getX0(), target.getY0(), target.getX1(), target.getY1()) == 0
+                        && left.isEmpty() && om.getDrafts().isEmpty());
     }
 
     /** A pick's owner in words. */

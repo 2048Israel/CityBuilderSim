@@ -1,4 +1,4 @@
-# LandMarket.java - 1,286 lines · 76 methods · 11 constants · model
+# LandMarket.java - 1,423 lines · 83 methods · 11 constants · model
 
 `ham/citybuildersim/LandMarket.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > Jerus: "when you buy land, make it so that it costs USD not domestic
 > ... (17 more lines in the source)
 
-**Uses:** [LandParcel](LandParcel.md) (68), [CityLand](CityLand.md) (35), [Resource](Resource.md) (12), [World](World.md) (12), [GridOffers](GridOffers.md) (8), [LandManager](LandManager.md) (8), [Landmasses](Landmasses.md) (2), [SitePreparation](SitePreparation.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
+**Uses:** [LandParcel](LandParcel.md) (83), [CityLand](CityLand.md) (35), [World](World.md) (16), [Resource](Resource.md) (12), [GridOffers](GridOffers.md) (10), [LandManager](LandManager.md) (8), [Landmasses](Landmasses.md) (2), [SitePreparation](SitePreparation.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
 
 **Used by (32):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CoalMiningCheck](CoalMiningCheck.md), [ConversionCheck](ConversionCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -77,10 +77,11 @@
 | 280 | · what businesses pay |
 | 333 | · the offers |
 | 380 | PRICING |
-| 523 | LISTING AN OFFER (0.7.57; on the block grid since 0.7.67) |
-| 673 | · a price for each class of ground (ET3; spec-earth2-terrain 5.1, 5.2) |
-| 822 | THE LISTING |
-| 1091 | SAVE AND RESTORE |
+| 526 | LISTING AN OFFER (0.7.57; on the block grid since 0.7.67) |
+| 678 | · a price for each class of ground (ET3; spec-earth2-terrain 5.1, 5.2) |
+| 827 | THE LISTING |
+| 1099 | THE PLAYER'S GROUND, DRAFTED INTO THE OFFICE (BL1, 2026-10-26) |
+| 1227 | SAVE AND RESTORE |
 
 ## Constants
 
@@ -115,14 +116,16 @@
 | 374 | `private double crowdingPremium` |  |
 | 375 | `private double usPriceLevel` |  |
 | 378 | `private double salePricePerSqFt` | What businesses are charged. |
-| 601 | `private Landmasses landmasses` | The city's ground by landmass (ET5), which splits each offer's ground by linked and unlinked; null on an office with none, a bare one's harness-made. |
-| 1163 | `private boolean groundFromLocal` | True when the price state came back without a dollar ground price (an older save). |
+| 605 | `private Landmasses landmasses` | The city's ground by landmass (ET5), which splits each offer's ground by linked and unlinked; null on an office with none, a bare one's harness-made. |
+| 1131 | `private final List<LandParcel> drafts` | The drafts standing now, in the order the player's ground was cut; each a LandParcel under a negative id. |
+| 1134 | `private int nextDraftId` | The id the next draft takes: -1, then -2, and so on - a counter of its own, never nextId, so no offer's number moves for a draft. |
+| 1299 | `private boolean groundFromLocal` | True when the price state came back without a dollar ground price (an older save). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 1201 | **type** `public class LandMarket` | The land office's window: twenty-four offers standing, six on each side of the city - in each place a rectangle of whole blocks against the city's edge, or none while that side has no room - and what the ground costs. |
+| 86 | 1338 | **type** `public class LandMarket` | The land office's window: twenty-four offers standing, six on each side of the city - in each place a rectangle of whole blocks against the city's edge, or none while that side has no room - and what the ground costs. |
 
 ### what the city pays (lines 99-144)
 
@@ -136,103 +139,115 @@
 
 ### the offers (lines 333-379)
 
-### PRICING (lines 380-522)
+### PRICING (lines 380-525)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 397 | 3 | `public void update(double ownedSqFt, double allocatedSqFt, long population)` | Re-prices the market and lists the next offer of any place without one. |
 | 406 | 3 | `public void update(double ownedSqFt, double allocatedSqFt, long population, double usPrices)` | ...and at the world's price level (0.7.55): US prices against the founding's, WorldEconomy.getPriceLevel() - the dollar's own inflation, which the world's price follows and the city's does not. |
-| 411 | 23 | `public void update(double ownedSqFt, double allocatedSqFt, long population, double usPrices, int month)` | ...in a month, which each offer listed now records (0.7.57). |
-| 455 | 18 | `public double scarcityMultiplier(double ownedSqFt, double allocatedSqFt)` | How dear inside land is, as a multiple of what the ground cost outside. |
-| 479 | 1 | `public double getMarketPricePerSqFt()` | The inside price's anchor: the ground price per square foot in local money at the founding rate, in thousands. |
-| 482 | 1 | `public double getBasePricePerSqFt()` | The local anchor itself, before the premiums: BASE_PRICE_PER_SQ_FT in today's unit at the expected price level (0.7.42, Game.restrikeMoneyConstants()) - what ExpectationsCheck reads. |
-| 485 | 1 | `public double getGroundUsdPerSqFt()` | Ground price per square foot the world asks today, in thousands of US dollars (0.7.6). |
-| 488 | 1 | `public double getSalePricePerSqFt()` | What a business pays the city per square foot, in thousands. |
-| 496 | 5 | `public static double peoplePerKm2(long population, double ownedSqFt)` | A city's crowding (0.7.55): its people per square kilometre of the land it owns - the measure the premium reads. |
-| 508 | 5 | `public static double crowdingPremium(double peoplePerKm2)` | What crowding multiplies the ground's price by (0.7.55): 1 for an empty city, CROWDING_CEILING at the limit, half way at CROWDING_MIDPOINT. |
-| 515 | 1 | `public double getCrowding()` | The crowding the ground was last priced at: people per square kilometre of the city's land (0.7.55); 0 until a city's first month on 0.7.55. |
-| 518 | 1 | `public double getCrowdingPremium()` | ...the premium it came to: what crowding multiplies the ground's price by (0.7.55). |
-| 521 | 1 | `public double getUsPriceLevel()` | ...and the world's price level the dollar price was struck at: US prices against the founding's (0.7.55). |
+| 411 | 26 | `public void update(double ownedSqFt, double allocatedSqFt, long population, double usPrices, int month)` | ...in a month, which each offer listed now records (0.7.57). |
+| 458 | 18 | `public double scarcityMultiplier(double ownedSqFt, double allocatedSqFt)` | How dear inside land is, as a multiple of what the ground cost outside. |
+| 482 | 1 | `public double getMarketPricePerSqFt()` | The inside price's anchor: the ground price per square foot in local money at the founding rate, in thousands. |
+| 485 | 1 | `public double getBasePricePerSqFt()` | The local anchor itself, before the premiums: BASE_PRICE_PER_SQ_FT in today's unit at the expected price level (0.7.42, Game.restrikeMoneyConstants()) - what ExpectationsCheck reads. |
+| 488 | 1 | `public double getGroundUsdPerSqFt()` | Ground price per square foot the world asks today, in thousands of US dollars (0.7.6). |
+| 491 | 1 | `public double getSalePricePerSqFt()` | What a business pays the city per square foot, in thousands. |
+| 499 | 5 | `public static double peoplePerKm2(long population, double ownedSqFt)` | A city's crowding (0.7.55): its people per square kilometre of the land it owns - the measure the premium reads. |
+| 511 | 5 | `public static double crowdingPremium(double peoplePerKm2)` | What crowding multiplies the ground's price by (0.7.55): 1 for an empty city, CROWDING_CEILING at the limit, half way at CROWDING_MIDPOINT. |
+| 518 | 1 | `public double getCrowding()` | The crowding the ground was last priced at: people per square kilometre of the city's land (0.7.55); 0 until a city's first month on 0.7.55. |
+| 521 | 1 | `public double getCrowdingPremium()` | ...the premium it came to: what crowding multiplies the ground's price by (0.7.55). |
+| 524 | 1 | `public double getUsPriceLevel()` | ...and the world's price level the dollar price was struck at: US prices against the founding's (0.7.55). |
 
-### LISTING AN OFFER (0.7.57; on the block grid since 0.7.67) (lines 523-672)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 538 | 6 | `void attach(CityLand land)` | Puts the office on a city's land with nothing on its shelf: what LandManager does when a city is founded, converted, loaded or restated. |
-| 546 | 1 | `public CityLand getLand()` | The city's land the offers stand round, or null on a bare office. |
-| 549 | 7 | `void listMissing()` | Lists every place without an offer - the one an offer was just taken from first, then North 1 to West 6 - at the prices last struck; a place with no room waits empty. |
-| 558 | 6 | `private void listIn(int i)` | Lists place i (side i / OFFERS_A_SIDE, place i % OFFERS_A_SIDE) and stands it, or leaves it waiting. |
-| 566 | 7 | `private void restand()` | The offers standing, stood again on a grid of the land's: what a restore or a hand-made listing goes through. |
-| 581 | 3 | `LandParcel measure(GridOffers.Rect r)` | An offer of a rectangle: its ground the plots of it the city does not own, counted on the world (CityLand.groundOf()), the fields on that ground (CityLand.fieldsOn()) and its forest's timber, priced at the ground's do... |
-| 586 | 13 | `private LandParcel measure(GridOffers.Rect r, int id, int listedIn)` | ...under a given id, as listed in a given month. |
-| 604 | 3 | `void setLandmasses(Landmasses landmasses)` | Hands the office the city's landmasses (LandManager's constructor): every offer listed or restored from now on is split against them. |
-| 613 | 5 | `void restateOffers()` | Splits every offer standing again against the linked landmasses as they are now (ET5): what a land change or a change to the linked set asks, since an offer's ground is frozen at its listing but which of it is unlinke... |
-| 630 | 15 | `public int[] remeasureStanding()` | THE WORLD'S FIELDS CHANGED UNDER THE OFFERS (0.7.99, batch W1): every offer standing measured again on the world as it is now - the same place, rectangle, id and month listed; its ground counted, its fields the world'... |
-| 647 | 1 | `public int getLevel()` | The city's block level now: LandGrid.levelFor() of every plot it owns - what a new offer's blocks are, or one finer (spec-grid star 2); 0 on a bare office. |
-| 658 | 4 | `public static double price(double[] km2, double[] amounts, double groundUsdPerSqFt, double usPriceLevel)` | An offer's price, in thousands of US dollars (spec-land star 6): the ground's dollar price a square foot on its dry ground, FRESH_PRICE_SHARE of it on its fresh water and SEA_PRICE_SHARE on its sea; and each resource ... |
-| 664 | 8 | `private static double plusResources(double groundUsd, double[] amounts, double usPriceLevel)` | The resources' share of an offer's price added to the ground's, in thousands of US dollars (price()'s second half), rounded to US$5k. |
-
-### a price for each class of ground (ET3; spec-earth2-terrain 5.1, 5.2) (lines 673-821)
+### LISTING AN OFFER (0.7.57; on the block grid since 0.7.67) (lines 526-677)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 684 | 11 | `public static double reliefPrice(int relief, double going, double base, double prep)` | THE RESIDUAL PRICE of a square foot of dry ground of one relief (ET3, spec-earth2-terrain 5.1), in the money the three prices are given in: `going` is flat ground's price (the market times crowding, times scarcity ins... |
-| 697 | 3 | `public static double prepUsdPerSqFt(double usPriceLevel)` | What preparing a square foot of foothill costs at the world's price level, in thousands of US dollars: SitePreparation's dollars a m2, over a thousand, a square foot's worth of m2 (LandManager.SQ_M_PER_SQ_FT), at the ... |
-| 702 | 4 | `private static boolean allFlat(double[] relief)` | Whether a ground's relief row has no foothill, steep or very steep ground in it: a null row, a row of another width, and every generated world's. |
-| 708 | 4 | `static boolean allFlat(LandParcel p)` | ...for an offer: its own relief (LandParcel.getReliefKm2()). |
-| 721 | 10 | `public static double price(double[] km2, double[] relief, double[] amounts, double groundUsdPerSqFt, double usPriceLevel)` | An offer's price with its dry ground by relief (ET3, spec-earth2-terrain 5.2), in thousands of US dollars: flat ground at the dollar price a square foot, foothill at its residual price (reliefPrice(): that price less ... |
-| 733 | 1 | `public double getFlatUsdPerSqFt()` | The ground flat at the going dollar price, in thousands of US dollars a square foot: what the office asks for flat ground now (getGroundUsdPerSqFt()). |
-| 736 | 3 | `public double getFoothillUsdPerSqFt()` | ...for foothill: the going price less its preparation, never under the base price (reliefPrice()). |
-| 741 | 3 | `public double getSteepUsdPerSqFt()` | ...for steep and very steep ground: the base price (reliefPrice()), never over the flat price. |
-| 751 | 4 | `public static double buildableKm2(LandParcel p)` | An offer's ground that a building can stand on, in square kilometres (ET3): its flat and its foothill, which buildings may use (LandManager, BUILDABLE BY SLOPE); the steep and very steep ground is for works. |
-| 757 | 3 | `private static double wholeBuildableKm2(LandParcel p)` | An offer's buildable ground whether or not it is linked (buildableKm2() before ET5), square kilometres. |
-| 762 | 5 | `public static double buildableSqFt(LandParcel p)` | ...in square feet. |
-| 769 | 4 | `public double priceWithPrepUsd(LandParcel p)` | An offer's price with the preparation of its foothill added, in thousands of US dollars (ET3, spec 5.2): what a buyer who builds on all of it pays to have it ready. |
-| 781 | 6 | `public double buildableKm2PerUsd(LandParcel p)` | The buildable square kilometres a thousand US dollars, counting preparation (ET3, spec-earth2-terrain 5.2): what the pickers rank offers by in place of the dry square kilometres a dollar. |
-| 789 | 4 | `public static boolean anyBuildable(Iterable<LandParcel> offers)` | Whether any of these offers has ground a building can stand on (buildableKm2()): when none has, the pickers rank by dry ground as they always did, so a city in the mountains still has a best. |
-| 795 | 3 | `public double rankPerUsd(LandParcel p, boolean byBuildable)` | What the pickers rank an offer by: buildableKm2PerUsd() where `byBuildable`, else its dry square kilometres a dollar (getDryKm2PerUsd()) - anyBuildable() says which. |
-| 805 | 4 | `public static boolean hasLinkedDry(LandParcel p)` | Whether any of an offer's dry ground is on ground that is room (ET5): all but an offer wholly across the water from every landmass the city has linked, which ranks at nothing and is the best of a shelf only when the w... |
-| 811 | 5 | `private static double linkedDryKm2PerUsd(LandParcel p)` | An offer's dry square kilometres a thousand dollars, less what of its dry ground is on a landmass the city has not linked (ET5); LandParcel.getDryKm2PerUsd() where none is. |
-| 818 | 3 | `public static double groundKm2(double[] km2)` | A piece of ground's square kilometres as the office charges them (0.7.106, out of price()): its dry ground, FRESH_PRICE_SHARE of its fresh water and SEA_PRICE_SHARE of its sea - what the ground's price a square foot i... |
+| 541 | 7 | `void attach(CityLand land)` | Puts the office on a city's land with nothing on its shelf: what LandManager does when a city is founded, converted, loaded or restated. |
+| 550 | 1 | `public CityLand getLand()` | The city's land the offers stand round, or null on a bare office. |
+| 553 | 7 | `void listMissing()` | Lists every place without an offer - the one an offer was just taken from first, then North 1 to West 6 - at the prices last struck; a place with no room waits empty. |
+| 562 | 6 | `private void listIn(int i)` | Lists place i (side i / OFFERS_A_SIDE, place i % OFFERS_A_SIDE) and stands it, or leaves it waiting. |
+| 570 | 7 | `private void restand()` | The offers standing, stood again on a grid of the land's: what a restore or a hand-made listing goes through. |
+| 585 | 3 | `LandParcel measure(GridOffers.Rect r)` | An offer of a rectangle: its ground the plots of it the city does not own, counted on the world (CityLand.groundOf()), the fields on that ground (CityLand.fieldsOn()) and its forest's timber, priced at the ground's do... |
+| 590 | 13 | `private LandParcel measure(GridOffers.Rect r, int id, int listedIn)` | ...under a given id, as listed in a given month. |
+| 608 | 3 | `void setLandmasses(Landmasses landmasses)` | Hands the office the city's landmasses (LandManager's constructor): every offer listed or restored from now on is split against them. |
+| 617 | 6 | `void restateOffers()` | Splits every offer standing again against the linked landmasses as they are now (ET5): what a land change or a change to the linked set asks, since an offer's ground is frozen at its listing but which of it is unlinke... |
+| 635 | 15 | `public int[] remeasureStanding()` | THE WORLD'S FIELDS CHANGED UNDER THE OFFERS (0.7.99, batch W1): every offer standing measured again on the world as it is now - the same place, rectangle, id and month listed; its ground counted, its fields the world'... |
+| 652 | 1 | `public int getLevel()` | The city's block level now: LandGrid.levelFor() of every plot it owns - what a new offer's blocks are, or one finer (spec-grid star 2); 0 on a bare office. |
+| 663 | 4 | `public static double price(double[] km2, double[] amounts, double groundUsdPerSqFt, double usPriceLevel)` | An offer's price, in thousands of US dollars (spec-land star 6): the ground's dollar price a square foot on its dry ground, FRESH_PRICE_SHARE of it on its fresh water and SEA_PRICE_SHARE on its sea; and each resource ... |
+| 669 | 8 | `private static double plusResources(double groundUsd, double[] amounts, double usPriceLevel)` | The resources' share of an offer's price added to the ground's, in thousands of US dollars (price()'s second half), rounded to US$5k. |
 
-### THE LISTING (lines 822-1090)
+### a price for each class of ground (ET3; spec-earth2-terrain 5.1, 5.2) (lines 678-826)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 827 | 5 | `public List<LandParcel> getListing()` | The offers standing, side by side and place by place. |
-| 834 | 8 | `public List<LandParcel> offersOn(int side)` | One side's offers, place by place: 0 north, 1 east, 2 south, 3 west; a place waiting empty is left out. |
-| 844 | 3 | `public LandParcel offerIn(int side, int place)` | The offer standing in one place, or null while it waits empty: no room on that side yet. |
-| 855 | 8 | `public int emptyWithRoom()` | How many places wait empty though their side has room for them now: a listing GridOffers would stand against the offers standing (list() stands nothing). |
-| 865 | 5 | `public int emptyOn(int side)` | How many of a side's places wait empty. |
-| 871 | 4 | `public LandParcel find(int id)` |  |
-| 882 | 4 | `public boolean nearer(LandParcel a, LandParcel b)` | Whether a is nearer the city than b (0.7.67): the nearer its nearest plot to the founding site, L-infinity, then the lower id - a tie's breaker for the best-offer rules. |
-| 888 | 7 | `long reach(LandParcel p)` | How far an offer's nearest plot lies from the founding site, L-infinity, in plots: 0 when it holds the site's plot; 0 on a bare office. |
-| 905 | 7 | `public static boolean bareGround(LandParcel p)` | Whether an offer is bare ground (0.7.58): it holds none of a resource the office prices - ore under it is in its price, and a buyer short of ground has not asked for it (Game.bestOffer(), A SHORTFALL IS MET WITH GROUND). |
-| 914 | 9 | `public LandParcel cheapest()` | The cheapest offer standing, for a caller that just wants some land; the nearer on a tie. |
-| 925 | 9 | `public LandParcel cheapestWithSea()` | The cheapest offer with any sea in it, the nearer on a tie - what a desalination plant needs (0.7.59, batch J2); null when none has any. |
-| 941 | 13 | `public LandParcel bestFresh()` | The most fresh water a dollar (0.7.59, batch J2): the offer with the most square kilometres of lake or river a US dollar, the nearer on a tie; null when no offer holds any. |
-| 971 | 4 | `public LandParcel bestValue()` | THE BEST VALUE (spec-land star 14): the most dry square kilometres a dollar, the nearer on a tie, never an offer that is mostly sea. |
-| 976 | 17 | `private LandParcel bestDry(boolean notMostlySea)` |  |
-| 1002 | 16 | `public LandParcel richest(Resource r)` | The richest offer in a resource (spec-land star 14): the most of its sites a dollar, then the most of it, then the nearer; null when no offer holds any. |
-| 1026 | 11 | `public LandParcel cheapestWith(Resource r)` | The cheapest offer holding any of a resource, the nearer on a tie; null when none does (0.7.64, batch L). |
-| 1062 | 8 | `public double goingUsdPerSqFt()` | THE GOING RATE ON THIS LISTING (0.7.26): the median of the offers' dollar prices a square foot of dry ground - what the land office judges each offer against ("44% under the going rate"). |
-| 1078 | 12 | `public LandParcel take(int id)` | Takes an offer off the shelf. |
+| 689 | 11 | `public static double reliefPrice(int relief, double going, double base, double prep)` | THE RESIDUAL PRICE of a square foot of dry ground of one relief (ET3, spec-earth2-terrain 5.1), in the money the three prices are given in: `going` is flat ground's price (the market times crowding, times scarcity ins... |
+| 702 | 3 | `public static double prepUsdPerSqFt(double usPriceLevel)` | What preparing a square foot of foothill costs at the world's price level, in thousands of US dollars: SitePreparation's dollars a m2, over a thousand, a square foot's worth of m2 (LandManager.SQ_M_PER_SQ_FT), at the ... |
+| 707 | 4 | `private static boolean allFlat(double[] relief)` | Whether a ground's relief row has no foothill, steep or very steep ground in it: a null row, a row of another width, and every generated world's. |
+| 713 | 4 | `static boolean allFlat(LandParcel p)` | ...for an offer: its own relief (LandParcel.getReliefKm2()). |
+| 726 | 10 | `public static double price(double[] km2, double[] relief, double[] amounts, double groundUsdPerSqFt, double usPriceLevel)` | An offer's price with its dry ground by relief (ET3, spec-earth2-terrain 5.2), in thousands of US dollars: flat ground at the dollar price a square foot, foothill at its residual price (reliefPrice(): that price less ... |
+| 738 | 1 | `public double getFlatUsdPerSqFt()` | The ground flat at the going dollar price, in thousands of US dollars a square foot: what the office asks for flat ground now (getGroundUsdPerSqFt()). |
+| 741 | 3 | `public double getFoothillUsdPerSqFt()` | ...for foothill: the going price less its preparation, never under the base price (reliefPrice()). |
+| 746 | 3 | `public double getSteepUsdPerSqFt()` | ...for steep and very steep ground: the base price (reliefPrice()), never over the flat price. |
+| 756 | 4 | `public static double buildableKm2(LandParcel p)` | An offer's ground that a building can stand on, in square kilometres (ET3): its flat and its foothill, which buildings may use (LandManager, BUILDABLE BY SLOPE); the steep and very steep ground is for works. |
+| 762 | 3 | `private static double wholeBuildableKm2(LandParcel p)` | An offer's buildable ground whether or not it is linked (buildableKm2() before ET5), square kilometres. |
+| 767 | 5 | `public static double buildableSqFt(LandParcel p)` | ...in square feet. |
+| 774 | 4 | `public double priceWithPrepUsd(LandParcel p)` | An offer's price with the preparation of its foothill added, in thousands of US dollars (ET3, spec 5.2): what a buyer who builds on all of it pays to have it ready. |
+| 786 | 6 | `public double buildableKm2PerUsd(LandParcel p)` | The buildable square kilometres a thousand US dollars, counting preparation (ET3, spec-earth2-terrain 5.2): what the pickers rank offers by in place of the dry square kilometres a dollar. |
+| 794 | 4 | `public static boolean anyBuildable(Iterable<LandParcel> offers)` | Whether any of these offers has ground a building can stand on (buildableKm2()): when none has, the pickers rank by dry ground as they always did, so a city in the mountains still has a best. |
+| 800 | 3 | `public double rankPerUsd(LandParcel p, boolean byBuildable)` | What the pickers rank an offer by: buildableKm2PerUsd() where `byBuildable`, else its dry square kilometres a dollar (getDryKm2PerUsd()) - anyBuildable() says which. |
+| 810 | 4 | `public static boolean hasLinkedDry(LandParcel p)` | Whether any of an offer's dry ground is on ground that is room (ET5): all but an offer wholly across the water from every landmass the city has linked, which ranks at nothing and is the best of a shelf only when the w... |
+| 816 | 5 | `private static double linkedDryKm2PerUsd(LandParcel p)` | An offer's dry square kilometres a thousand dollars, less what of its dry ground is on a landmass the city has not linked (ET5); LandParcel.getDryKm2PerUsd() where none is. |
+| 823 | 3 | `public static double groundKm2(double[] km2)` | A piece of ground's square kilometres as the office charges them (0.7.106, out of price()): its dry ground, FRESH_PRICE_SHARE of its fresh water and SEA_PRICE_SHARE of its sea - what the ground's price a square foot i... |
 
-### SAVE AND RESTORE (lines 1091-1286)
+### THE LISTING (lines 827-1098)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1105 | 6 | `public double[][] getOffersState()` | The offers standing, one record each (LandParcel.offerRow()), side by side and place by place. |
-| 1113 | 6 | `public double[][] getOffersReliefState()` | The offers' ground by relief (ET1), a record each in getOffersState()'s order (LandParcel.reliefRow()): DataSave's landOffersRelief. |
-| 1121 | 1 | `public int getNextOfferId()` | The id the next offer listed will take: DataSave's nextOfferId. |
-| 1128 | 3 | `public void restoreOffers(double[][] rows, int nextOfferId)` | Saved offers back on the shelf, each in its own place, and the next id; a record of the wrong width, or a second one for a place, is dropped, and update() lists that place's next. |
-| 1133 | 9 | `public void restoreOffers(double[][] rows, double[][] relief, int nextOfferId)` | ...with their ground by relief (ET1; getOffersReliefState(), a row for each of `rows` by its place): a key a save has not, or a row of the wrong width, reads the offer all flat. |
-| 1144 | 17 | `public void putOffers(List<LandParcel> list)` | These offers on the shelf in place of whatever stood there, each in its own place (a second for a place is dropped), their rectangles stood on the land's grid; the next id past the largest. |
-| 1176 | 7 | `public int settleLocalPrices(double rate)` | AN OLDER SAVE'S QUOTE WAS LOCAL MONEY, and this reads it as US dollars at the rate of the day the save is loaded (0.7.6), when the price state came back without a dollar ground price - so the local quote the player sa... |
-| 1185 | 1 | `public long getBlockPlots()` | The side of the city's blocks now, in plots: 2^getLevel() (four plots, 120 m, for a new city); 0 on a bare office. |
-| 1215 | 4 | `public double[] getPriceState()` | THE OFFICE'S PRICES ARE STATE, and the listing above did not carry them. |
-| 1220 | 20 | `public void restorePriceState(double[] state)` |  |
-| 1241 | 13 | `public void reset()` |  |
-| 1269 | 5 | `public void redenominate(double scale)` | The office's LOCAL prices in the new unit - the inside price and the anchor it is struck from - and nothing else. |
-| 1282 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
+| 832 | 5 | `public List<LandParcel> getListing()` | The offers standing, side by side and place by place. |
+| 839 | 8 | `public List<LandParcel> offersOn(int side)` | One side's offers, place by place: 0 north, 1 east, 2 south, 3 west; a place waiting empty is left out. |
+| 849 | 3 | `public LandParcel offerIn(int side, int place)` | The offer standing in one place, or null while it waits empty: no room on that side yet. |
+| 860 | 8 | `public int emptyWithRoom()` | How many places wait empty though their side has room for them now: a listing GridOffers would stand against the offers standing (list() stands nothing). |
+| 870 | 5 | `public int emptyOn(int side)` | How many of a side's places wait empty. |
+| 877 | 5 | `public LandParcel find(int id)` | The offer standing under an id, or the draft (BL1: a negative id); null when neither. |
+| 889 | 4 | `public boolean nearer(LandParcel a, LandParcel b)` | Whether a is nearer the city than b (0.7.67): the nearer its nearest plot to the founding site, L-infinity, then the lower id - a tie's breaker for the best-offer rules. |
+| 895 | 7 | `long reach(LandParcel p)` | How far an offer's nearest plot lies from the founding site, L-infinity, in plots: 0 when it holds the site's plot; 0 on a bare office. |
+| 912 | 7 | `public static boolean bareGround(LandParcel p)` | Whether an offer is bare ground (0.7.58): it holds none of a resource the office prices - ore under it is in its price, and a buyer short of ground has not asked for it (Game.bestOffer(), A SHORTFALL IS MET WITH GROUND). |
+| 921 | 9 | `public LandParcel cheapest()` | The cheapest offer standing, for a caller that just wants some land; the nearer on a tie. |
+| 932 | 9 | `public LandParcel cheapestWithSea()` | The cheapest offer with any sea in it, the nearer on a tie - what a desalination plant needs (0.7.59, batch J2); null when none has any. |
+| 948 | 13 | `public LandParcel bestFresh()` | The most fresh water a dollar (0.7.59, batch J2): the offer with the most square kilometres of lake or river a US dollar, the nearer on a tie; null when no offer holds any. |
+| 978 | 4 | `public LandParcel bestValue()` | THE BEST VALUE (spec-land star 14): the most dry square kilometres a dollar, the nearer on a tie, never an offer that is mostly sea. |
+| 983 | 17 | `private LandParcel bestDry(boolean notMostlySea)` |  |
+| 1009 | 16 | `public LandParcel richest(Resource r)` | The richest offer in a resource (spec-land star 14): the most of its sites a dollar, then the most of it, then the nearer; null when no offer holds any. |
+| 1033 | 11 | `public LandParcel cheapestWith(Resource r)` | The cheapest offer holding any of a resource, the nearer on a tie; null when none does (0.7.64, batch L). |
+| 1069 | 8 | `public double goingUsdPerSqFt()` | THE GOING RATE ON THIS LISTING (0.7.26): the median of the offers' dollar prices a square foot of dry ground - what the land office judges each offer against ("44% under the going rate"). |
+| 1085 | 13 | `public LandParcel take(int id)` | Takes an offer off the shelf. |
+
+### THE PLAYER'S GROUND, DRAFTED INTO THE OFFICE (BL1, 2026-10-26) (lines 1099-1226)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1144 | 21 | `public List<LandParcel> draft(List<long[]> rects)` | The player's ground drafted into the office: each {x0, y0, x1, y1} a rectangle of plots on the city's blocks (whole blocks of getLevel(), half-open), measured as an offer of it is (measure(): the ground the city does ... |
+| 1167 | 1 | `public List<LandParcel> getDrafts()` | The drafts standing, in the order drafted (none of them the office lists: getListing() never holds one). |
+| 1173 | 7 | `public LandParcel quote(long x0, long y0, long x1, long y1)` | What a rectangle of plots would be drafted as, nothing kept and no id (0): the hover's figure for the block under the pointer. |
+| 1181 | 3 | `private static boolean sameRect(LandParcel p, long x0, long y0, long x1, long y1)` |  |
+| 1186 | 5 | `private LandParcel measureDraft(long x0, long y0, long x1, long y1, int id)` | A rectangle measured as an offer of it, under `id`: its side and place as GridOffers sees a point at its centre from the site (sidePlace()), so a holding bought from it records a side and place like any. |
+| 1193 | 8 | `private void remeasureDrafts()` | Every draft measured again at the price struck now, its id kept; one whose ground the city now wholly owns is dropped. |
+| 1208 | 18 | `private LandParcel takeDraft(int id)` | A draft bought: it leaves its shelf, and every standing offer whose free ground its rectangle meets leaves the office's, unbought - its place emptied as take() empties one - because an offer keeps its listed price and... |
+
+### SAVE AND RESTORE (lines 1227-1423)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1241 | 6 | `public double[][] getOffersState()` | The offers standing, one record each (LandParcel.offerRow()), side by side and place by place. |
+| 1249 | 6 | `public double[][] getOffersReliefState()` | The offers' ground by relief (ET1), a record each in getOffersState()'s order (LandParcel.reliefRow()): DataSave's landOffersRelief. |
+| 1257 | 1 | `public int getNextOfferId()` | The id the next offer listed will take: DataSave's nextOfferId. |
+| 1264 | 3 | `public void restoreOffers(double[][] rows, int nextOfferId)` | Saved offers back on the shelf, each in its own place, and the next id; a record of the wrong width, or a second one for a place, is dropped, and update() lists that place's next. |
+| 1269 | 9 | `public void restoreOffers(double[][] rows, double[][] relief, int nextOfferId)` | ...with their ground by relief (ET1; getOffersReliefState(), a row for each of `rows` by its place): a key a save has not, or a row of the wrong width, reads the offer all flat. |
+| 1280 | 17 | `public void putOffers(List<LandParcel> list)` | These offers on the shelf in place of whatever stood there, each in its own place (a second for a place is dropped), their rectangles stood on the land's grid; the next id past the largest. |
+| 1312 | 7 | `public int settleLocalPrices(double rate)` | AN OLDER SAVE'S QUOTE WAS LOCAL MONEY, and this reads it as US dollars at the rate of the day the save is loaded (0.7.6), when the price state came back without a dollar ground price - so the local quote the player sa... |
+| 1321 | 1 | `public long getBlockPlots()` | The side of the city's blocks now, in plots: 2^getLevel() (four plots, 120 m, for a new city); 0 on a bare office. |
+| 1351 | 4 | `public double[] getPriceState()` | THE OFFICE'S PRICES ARE STATE, and the listing above did not carry them. |
+| 1356 | 20 | `public void restorePriceState(double[] state)` |  |
+| 1377 | 14 | `public void reset()` |  |
+| 1406 | 5 | `public void redenominate(double scale)` | The office's LOCAL prices in the new unit - the inside price and the anchor it is struck from - and nothing else. |
+| 1419 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
 

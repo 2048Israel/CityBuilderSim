@@ -59,7 +59,11 @@ import ham.citybuildersim.sectors.Mining;
  * steep, and its shallow sea, counted in the same pass as the five areas and
  * adding up to them plot for plot, all flat on a generated world, on Perth's
  * window of the Earth's fixture and, where the file is named, on Medellin and
- * Halifax (28).
+ * Halifax (28); and, since BL1, the player's ground drafted into the office - a draft priced as
+ * an offer of that rectangle is, bought through the offers' own door with the same books, the
+ * offers its ground bit leaving the shelf and the rest standing as they were, never in the
+ * listing, the going rate or a save, re-priced with the month and dropped once the city owns
+ * its ground (29).
  */
 public class LandCheck {
 
@@ -831,6 +835,7 @@ public class LandCheck {
         byType();
         cutAndCleared();
         byRelief();
+        playersGround();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -3018,6 +3023,379 @@ public class LandCheck {
                 land.totalKm2(CityLand.SEA), held[0], held[1]);
         assertTrue(name + ": fixture: the ground holds what the check is for - foothill in a purchase" + (coast ? ", shallow sea in a purchase" : "")
                 + (steep ? ", steep ground in the city" : ""), held[0] > 0 && (!coast || held[1] > 0) && (!steep || held[2] > 0));
+    }
+
+    /* ==================================================================
+       29. THE PLAYER'S GROUND: A DRAFT BOUGHT AS AN OFFER IS (BL1)
+
+       Jerus, 2026-10-26: "revamp how buy land works ... perhaps more
+       freedom on the exact selection?" The office lists twenty-four
+       rectangles; the map's block picks (MapCheck 14e) ask it to DRAFT the
+       ground the player picked, measured as an offer of that rectangle is
+       and bought through the offers' own door (docs/queue/BL1-notes.md 1).
+       What this holds is the model's half: the price is the office's rule
+       (measure()), the purchase leaves the books as an offer's does (a twin
+       city buys the offer of the same ground and the grids, the totals, the
+       holding and the listing after are the same), the offers the draft's
+       ground bit leave the shelf and every other stands as it was, and a
+       draft is nowhere the city's own paths look - the listing, the going
+       rate, the best-offer rules, the save - and is the month's price's and
+       the city's ground's, never an offer's (a month re-prices it under its
+       id; the city owning its ground drops it).
+       ================================================================== */
+
+    /** An offer's rectangle as plots {x0, y0, x1, y1}. */
+    static long[] rectOf(LandParcel p) {
+        return new long[] { p.getX0(), p.getY0(), p.getX1(), p.getY1() };
+    }
+
+    /** An offer's rectangle in plots. */
+    static long plotsOf(LandParcel p) {
+        return (p.getX1() - p.getX0()) * (p.getY1() - p.getY0());
+    }
+
+    /** Whether two parcels hold the same ground to the plot's figures: the five areas, the sites and amounts of every resource. */
+    static boolean sameGround(LandParcel a, LandParcel b) {
+        boolean same = true;
+        for (int k = 0; k < CityLand.AREAS; k++) same &= Math.abs(a.getKm2(k) - b.getKm2(k)) < 1e-9;
+        for (int k = 0; k < CityLand.RELIEF_AREAS; k++) same &= Math.abs(a.getReliefKm2(k) - b.getReliefKm2(k)) < 1e-9;
+        for (Resource r : Resource.values()) same &= a.getSites(r) == b.getSites(r) && Math.abs(a.getAmount(r) - b.getAmount(r)) < 1e-6;
+        return same;
+    }
+
+    /** The standing offers whose free ground the rectangle meets, counted plot by plot: what a draft of it must take off the shelf. */
+    static java.util.Set<Integer> bittenBy(CityLand land, java.util.List<LandParcel> listing, long[] r) {
+        java.util.Set<Integer> out = new java.util.HashSet<>();
+        for (LandParcel o : listing) {
+            long x0 = Math.max(o.getX0(), r[0]), y0 = Math.max(o.getY0(), r[1]), x1 = Math.min(o.getX1(), r[2]), y1 = Math.min(o.getY1(), r[3]);
+            if (x0 >= x1 || y0 >= y1) continue;
+            long free = 0;
+            for (long y = y0; y < y1; y++) for (long x = x0; x < x1; x++) if (!land.ownsPlot(x, y)) free++;
+            if (free > 0) out.add(o.getId());
+        }
+        return out;
+    }
+
+    static void playersGround() throws Exception {
+        System.out.println("\n--- 29. the player's ground: a draft bought as an offer is (BL1) ---");
+
+        // ---- priced as an offer of it is, and not in the office's own figures
+        LandManager lm = new LandManager();
+        lm.updateMarket(0);
+        LandMarket market = lm.getMarket();
+        CityLand land = lm.getCityLand();
+        java.util.List<LandParcel> listing = market.getListing();
+        LandParcel big = listing.get(0);
+        for (LandParcel p : listing) if (plotsOf(p) > plotsOf(big)) big = p;
+        long b = 1L << big.getLevel();
+        int idsBefore = market.getNextOfferId(), listed = listing.size();
+        double going = market.goingUsdPerSqFt();
+        LandParcel bestBefore = market.bestValue(), cheapBefore = market.cheapest();
+        double[][] rowsBefore = market.getOffersState();
+        double[][] reliefBefore = market.getOffersReliefState();
+
+        java.util.List<LandParcel> whole = market.draft(java.util.List.of(rectOf(big)));
+        LandParcel d = whole.isEmpty() ? null : whole.get(0);
+        assertTrue("fixture: the office's largest offer has two blocks or more along one axis to cut in halves",
+                (big.getX1() - big.getX0()) / b >= 2 || (big.getY1() - big.getY0()) / b >= 2);
+        assertTrue("a draft of a rectangle the office listed: one draft, under a negative id (-1, the counter's first), standing in getDrafts()",
+                whole.size() == 1 && d.getId() == -1 && market.getDrafts().size() == 1 && market.getDrafts().get(0) == d);
+        if (d == null) return;
+        check("...priced to the cent at what the office listed that rectangle at (measure(): the price struck last)", d.getPriceUsd(), big.getPriceUsd());
+        assertTrue("...holding the offer's ground, its relief, its fields and its forest, figure for figure", sameGround(d, big));
+        assertTrue("...find() knows it, and the office's own offer of the same ground is still listed under its own id",
+                market.find(d.getId()) == d && market.find(big.getId()) == big);
+        int at = GridOffers.sidePlace((d.getX0() + d.getX1()) / 2.0 - (land.siteX() + 0.5), (d.getY0() + d.getY1()) / 2.0 - (land.siteY() + 0.5));
+        assertTrue("...on a side and place as GridOffers sees its centre from the site, so a holding bought from it records them like any",
+                d.getSide() == at / GridOffers.PLACES && d.getPlace() == at % GridOffers.PLACES && d.getLevel() == land.level());
+        LandParcel q = market.quote(d.getX0(), d.getY0(), d.getX1(), d.getY1());
+        assertTrue("quote() is the same measure with no id and nothing kept: the draft's price, id 0, still one draft standing",
+                q != null && q.getId() == 0 && q.getPriceUsd() == d.getPriceUsd() && sameGround(q, d) && market.getDrafts().size() == 1);
+
+        // Two drafts of its halves: the ground, the sites and the amounts are the whole's exactly, the price is by the US$5k rounding each is struck at.
+        long[] first, second;
+        if ((big.getX1() - big.getX0()) / b >= 2) {
+            long mid = big.getX0() + ((big.getX1() - big.getX0()) / b / 2) * b;
+            first = new long[] { big.getX0(), big.getY0(), mid, big.getY1() };
+            second = new long[] { mid, big.getY0(), big.getX1(), big.getY1() };
+        } else {
+            long mid = big.getY0() + ((big.getY1() - big.getY0()) / b / 2) * b;
+            first = new long[] { big.getX0(), big.getY0(), big.getX1(), mid };
+            second = new long[] { big.getX0(), mid, big.getX1(), big.getY1() };
+        }
+        java.util.List<LandParcel> halves = market.draft(java.util.List.of(first, second));
+        assertTrue("drafts of its two halves replace the draft standing: two, under new ids (-2, -3), the whole's id gone",
+                halves.size() == 2 && halves.get(0).getId() == -2 && halves.get(1).getId() == -3 && market.find(-1) == null
+                        && market.getDrafts().size() == 2);
+        double sum = halves.get(0).getPriceUsd() + halves.get(1).getPriceUsd();
+        assertTrue("...together they cost the whole's price (the rule is linear: the halves differ by at most the one US$5k rounding the pieces add)",
+                Math.abs(sum - big.getPriceUsd()) <= 5 + 1e-9);
+        double km2 = 0, dry = 0, sea = 0;
+        for (LandParcel h : halves) { km2 += h.getKm2(); dry += h.getKm2(CityLand.DRY); sea += h.getKm2(CityLand.SEA); }
+        check("...hold the whole's area to the square metre", km2, big.getKm2());
+        check("...its dry ground", dry, big.getKm2(CityLand.DRY));
+        check("...its sea", sea, big.getKm2(CityLand.SEA));
+        boolean fields = true;
+        for (Resource r : Resource.values()) {
+            fields &= halves.get(0).getSites(r) + halves.get(1).getSites(r) == big.getSites(r)
+                    && Math.abs(halves.get(0).getAmount(r) + halves.get(1).getAmount(r) - big.getAmount(r)) < 1e-6;
+        }
+        assertTrue("...and every field in it, whole, to one half or the other: the sites and amounts of each resource add up", fields);
+        java.util.List<LandParcel> again = market.draft(java.util.List.of(second, first));
+        assertTrue("drafting the same two rectangles again, in the other order, keeps their ids (the card is keyed by them), each with its own",
+                again.size() == 2 && again.get(0).getId() == -3 && again.get(1).getId() == -2
+                        && again.get(0).getX0() == second[0] && again.get(1).getX0() == first[0]);
+        java.util.List<LandParcel> repeated = market.draft(java.util.List.of(first, first));
+        assertTrue("a rectangle given twice is one draft", repeated.size() == 1 && repeated.get(0).getId() == -2);
+
+        // ---- nowhere the city's own paths look
+        java.util.List<LandParcel> redrafted = market.draft(java.util.List.of(first, second));
+        int idFirst = redrafted.get(0).getId(), idSecond = redrafted.get(1).getId();
+        assertTrue("fixture: the halves are drafted again, the first keeping its id (the other, not standing, takes a new one)", idFirst == -2 && idSecond == -4);
+        assertTrue("drafts are not in getListing(): the same offers, none under a negative id, the same count",
+                market.getListing().size() == listed && market.getListing().stream().noneMatch(p -> p.getId() < 0)
+                        && market.getListing().equals(listing));
+        check("...the going rate is the offers' alone", market.goingUsdPerSqFt(), going);
+        assertTrue("...so are the pickers' bests: the best value, the cheapest, and the shelf the build screens rank",
+                market.bestValue() == bestBefore && market.cheapest() == cheapBefore);
+        assertTrue("...the next offer's number did not move for drafting (no draft takes nextId)", market.getNextOfferId() == idsBefore);
+        assertTrue("...nor did the offers' saved rows, or their relief's, change by a figure: DataSave carries the offers and no draft",
+                java.util.Arrays.deepEquals(rowsBefore, market.getOffersState()) && java.util.Arrays.deepEquals(reliefBefore, market.getOffersReliefState()));
+        assertTrue("...and offerIn() and emptyWithRoom() read the twenty-four alone", market.emptyWithRoom() == 0
+                && market.offersOn(0).stream().allMatch(p -> p.getId() > 0));
+
+        // ---- a month's price, and the city's own ground
+        double was = market.find(idFirst).getPriceUsd();
+        market.update(lm.getOwnedSqFt(), lm.getAllocatedSqFt(), 0, 2.0, 5);
+        LandParcel repriced = market.find(idFirst);
+        LandParcel wouldBe = repriced == null ? null : market.quote(repriced.getX0(), repriced.getY0(), repriced.getX1(), repriced.getY1());
+        assertTrue("update() measures the drafts again at the month's price: ids kept, the world's price level doubled, every draft re-priced",
+                repriced != null && market.find(idSecond) != null && market.getDrafts().size() == 2 && repriced.getPriceUsd() != was);
+        if (repriced == null) return;
+        assertTrue("...twice what it was to the US$5k rounding each price is struck at (price(): the ground and the resources both at the price level)",
+                Math.abs(repriced.getPriceUsd() - 2 * was) <= 5 + 1e-9);
+        check("...and to the cent what an offer of that rectangle would be listed at now", repriced.getPriceUsd(), wouldBe.getPriceUsd());
+        // A draft longer than an offer: the offer's rectangle and the block beyond it outward, so the city's buying the offer leaves it ground.
+        LandParcel beyond = null;
+        for (LandParcel p : market.getListing()) if (beyond == null || plotsOf(p) < plotsOf(beyond)) beyond = p;
+        int[] out = GridOffers.OUT[beyond.getSide()];
+        long bb = 1L << beyond.getLevel();
+        long[] longer = { beyond.getX0() + Math.min(0, out[0] * bb), beyond.getY0() + Math.min(0, out[1] * bb),
+                beyond.getX1() + Math.max(0, out[0] * bb), beyond.getY1() + Math.max(0, out[1] * bb) };
+        java.util.List<LandParcel> pair = market.draft(java.util.List.of(longer));
+        long standingFree = land.grid().unowned(longer[0], longer[1], longer[2], longer[3]);
+        assertTrue("fixture: the longer draft holds the offer's ground and a block beyond it", pair.size() == 1
+                && standingFree > land.grid().unowned(beyond.getX0(), beyond.getY0(), beyond.getX1(), beyond.getY1()));
+        int longerId = pair.get(0).getId();
+        double longerBefore = pair.get(0).getKm2();
+        // The city buys the offer under it (from the shelf: the offer, not the draft).
+        assertTrue("fixture: the offer the longer draft overlaps is on the shelf", market.find(beyond.getId()) != null);
+        lm.buyParcel(beyond.getId(), 1e12, 0);
+        LandParcel longerNow = market.find(longerId);
+        assertTrue("a draft whose ground the city then buys in part keeps its id and holds what is left: the block beyond, less than it held",
+                longerNow != null && longerNow.getKm2() < longerBefore && longerNow.getKm2() > 0);
+        // ...and one the city now owns whole is dropped: a draft of the bought offer's own ground, then the city buys the offer.
+        java.util.List<LandParcel> owned = market.getListing();
+        LandParcel gone = owned.get(owned.size() / 2);
+        java.util.List<LandParcel> mine = market.draft(java.util.List.of(rectOf(gone)));
+        int goneId = mine.get(0).getId();
+        lm.buyParcel(gone.getId(), 1e12, 0);
+        assertTrue("a draft whose ground the city came to own whole is dropped at the update that follows the purchase: not found, not listed in getDrafts()",
+                market.find(goneId) == null && market.getDrafts().isEmpty());
+        assertTrue("fixture: the bought-whole draft's ground is the city's, every plot", land.grid().unowned(gone.getX0(), gone.getY0(), gone.getX1(), gone.getY1()) == 0);
+        assertTrue("a rectangle the city wholly owns, drafted, is no draft", market.draft(java.util.List.of(rectOf(gone))).isEmpty() && market.getDrafts().isEmpty());
+        int lastId = market.draft(java.util.List.of(rectOf(market.getListing().get(0)))).get(0).getId();
+        market.attach(land);
+        assertTrue("attach() - a new city, a load, a restatement - drops the drafts", market.getDrafts().isEmpty() && market.find(lastId) == null);
+
+        // ---- bought as an offer is: a twin city buys the offer of the same ground
+        System.out.println("\n--- 29b. a draft bought leaves the books as an offer's purchase does ---");
+        LandManager offer = new LandManager(), drafted = new LandManager();
+        offer.updateMarket(0);
+        drafted.updateMarket(0);
+        LandParcel twin = offer.getListing().get(0);
+        for (LandParcel p : offer.getListing()) if (plotsOf(p) > plotsOf(twin)) twin = p;
+        LandParcel same = drafted.getMarket().find(twin.getId());
+        assertTrue("fixture: two cities founded alike list the same offer", same != null && same.same(twin));
+        long[] wholeRect = rectOf(twin);
+        int draftId = drafted.getMarket().draft(java.util.List.of(wholeRect)).get(0).getId();
+        double paidOffer = offer.buyParcel(twin.getId(), 1e12, 0), paidDraft = drafted.buyParcel(draftId, 1e12, 0);
+        check("the draft is bought through LandManager.buyParcel() as an offer is: the price paid", paidDraft, paidOffer);
+        check("...the owned square feet", drafted.getOwnedSqFt(), offer.getOwnedSqFt());
+        check("...the month's land purchases", drafted.getLandPurchasesThisMonth(), offer.getLandPurchasesThisMonth());
+        assertTrue("...the blocks purchased, and one purchase in the books", drafted.getBlocksPurchased() == offer.getBlocksPurchased()
+                && drafted.getCityLand().purchases().size() == offer.getCityLand().purchases().size());
+        assertTrue("...the grid, node for node: the same plots the city's, under the same holding", drafted.getCityLand().grid().sameAs(offer.getCityLand().grid()));
+        boolean totals = true;
+        for (int k = 0; k < CityLand.AREAS; k++) totals &= Math.abs(drafted.getCityLand().totalKm2(k) - offer.getCityLand().totalKm2(k)) < 1e-9;
+        for (int k = 0; k < CityLand.RELIEF_AREAS; k++) totals &= Math.abs(drafted.getCityLand().totalReliefKm2(k) - offer.getCityLand().totalReliefKm2(k)) < 1e-9;
+        for (Resource r : Resource.values()) {
+            totals &= drafted.getCityLand().totalSites(r) == offer.getCityLand().totalSites(r)
+                    && Math.abs(drafted.getCityLand().totalAmount(r) - offer.getCityLand().totalAmount(r)) < 1e-6;
+        }
+        assertTrue("...the city's ground by area and by relief, and its sites and amounts of every resource, to the tonne", totals);
+        LandParcel held = drafted.getCityLand().purchases().get(0).offer(), heldOffer = offer.getCityLand().purchases().get(0).offer();
+        assertTrue("...the holding records the ground, the fields and the price (its id, side and place are the draft's own)",
+                sameGround(held, heldOffer) && held.getPriceUsd() == heldOffer.getPriceUsd() && held.getId() == draftId
+                        && held.getX0() == heldOffer.getX0() && held.getY1() == heldOffer.getY1());
+        assertTrue("...and the shelf after: the same offers in the same places under the same ids, field for field, the draft's own place listed again as the offer's",
+                listingsAlike(drafted.getListing(), offer.getListing()));
+        assertTrue("...and no draft is left", drafted.getMarket().getDrafts().isEmpty());
+
+        for (boolean vault : new boolean[] { false, true }) {
+            String way = vault ? "from the vault" : "converting";
+            Game g = dollarCity("landcheck-draft-" + (vault ? "vault" : "convert"));
+            if (vault) g.setLandPaidFromVault(true);
+            LandMarket gm = g.getLandManager().getMarket();
+            LandParcel plot = gm.bestValue();
+            LandParcel dp = gm.draft(java.util.List.of(rectOf(plot))).get(0);
+            double usd = dp.getPriceUsd(), rate = g.getForeignAccounts().getRate();
+            double cash = g.getCash(), reserves = g.getForeignAccounts().getReservesUsd(), ownedBefore = g.getLandManager().getOwnedSqFt();
+            assertTrue("fixture (" + way + "): the draft is priced and the vault holds the dollars for it", usd > 0 && (!vault || reserves > usd));
+            double[] pools = MoneyAudit.pools(g);
+            assertTrue("a draft is bought by Game.buyLandParcel(" + way + ")", g.buyLandParcel(dp.getId()));
+            double[] shift = moved(pools, MoneyAudit.pools(g));
+            if (vault) {
+                check(way + ": the treasury's cash does not move", g.getCash(), cash);
+                check("...the vault falls by the draft's dollars", g.getForeignAccounts().getReservesUsd(), reserves - usd);
+            } else {
+                check(way + ": the treasury pays the draft's dollars at the rate", g.getCash(), cash - usd * rate);
+                check("...the vault ends where it began", g.getForeignAccounts().getReservesUsd(), reserves);
+                check("...and the city's pool fell by exactly that, money across the edge", shift[0], -usd * rate);
+            }
+            check("...the city owns the draft's dry ground more", g.getLandManager().getOwnedSqFt(), ownedBefore + dp.getSizeSqFt());
+            assertTrue("...the receipt names its area and how it was paid", g.getLastLandReceipt().contains(LandManager.areaWords(dp.getSizeSqFt()))
+                    && g.getLastLandReceipt().contains(vault ? "out of the vault" : "converting"));
+            quietly(g::toggleNextMonth);
+            assertTrue("the month after, bought " + way + ", closes its audit and the draft is no draft", Math.abs(g.getLastMoneyAudit().relative()) < 1e-9
+                    && Math.abs(g.getPostAuditDrift()) < 1e-6 && gm.getDrafts().isEmpty());
+            check("...the budget carries the land at the draft's dollars x the rate",
+                    g.getEconomyManager().getNationalAccounts().getLandPurchases(), usd * rate);
+            check("...and the month's dollars paid for it", g.getForeignAccounts().getLandUsdThisMonth(), usd);
+        }
+
+        // ---- the offers a draft's ground bit leave the shelf; the rest stand as they were
+        System.out.println("\n--- 29c. the offers a draft bites leave the shelf, unbought; every other stands as it was ---");
+        LandManager bite = new LandManager();
+        bite.updateMarket(0);
+        LandMarket bm = bite.getMarket();
+        CityLand bl = bite.getCityLand();
+        java.util.List<LandParcel> shelf = bm.getListing();
+        // a block of an offer's free ground, in the middle of the shelf; the block across to its neighbour on the same side too
+        LandParcel victim = shelf.get(shelf.size() / 2);
+        long vb = 1L << victim.getLevel();
+        long[] block = null;
+        for (long y = victim.getY0(); y < victim.getY1() && block == null; y += vb) {
+            for (long x = victim.getX0(); x < victim.getX1() && block == null; x += vb) {
+                if (bl.grid().unowned(x, y, x + vb, y + vb) > 0) block = new long[] { x, y, x + vb, y + vb };
+            }
+        }
+        assertTrue("fixture: the victim offer has a free block to draft", block != null);
+        java.util.Set<Integer> expectedBitten = bittenBy(bl, shelf, block);
+        assertTrue("fixture: a block of the victim's free ground bites the victim", expectedBitten.contains(victim.getId()));
+        int nextBefore = bm.getNextOfferId();
+        int dBlock = bm.draft(java.util.List.of(block)).get(0).getId();
+        double paid = bite.buyParcel(dBlock, 1e12, 0);
+        assertTrue("fixture: the block is bought", paid > 0);
+        boolean offShelf = true, standing = true;
+        for (LandParcel p : shelf) {
+            LandParcel now = bm.find(p.getId());
+            if (expectedBitten.contains(p.getId())) offShelf &= now == null;
+            else standing &= now != null && now.same(p);
+        }
+        assertTrue("every offer whose free ground the draft's rectangle met is off the shelf, bought by no one (counted plot by plot: "
+                + expectedBitten.size() + " of " + shelf.size() + ")", offShelf);
+        assertTrue("...and every one it did not touch stands with its id, its rectangle, its ground and its price, field for field", standing);
+        LandParcel relisted = bm.offerIn(victim.getSide(), victim.getPlace());
+        assertTrue("...the victim's place is listed again, against the city as it stands: free ground, touching what the city owns, under a new id past the old counter",
+                relisted != null && relisted.getId() >= nextBefore && touchesOwned(bl.grid(), relisted)
+                        && bl.grid().unowned(relisted.getX0(), relisted.getY0(), relisted.getX1(), relisted.getY1()) > 0);
+        assertTrue("...and the shelf is full wherever there is room (an empty place lists once there is: no place waits with room)", bm.emptyWithRoom() == 0);
+        // A rectangle over two offers' ground takes both.
+        LandManager two = new LandManager();
+        two.updateMarket(0);
+        LandMarket tm = two.getMarket();
+        java.util.List<LandParcel> pairShelf = tm.getListing();
+        LandParcel a0 = pairShelf.get(0), a1 = null;
+        for (LandParcel p : pairShelf) if (p != a0 && p.getSide() == a0.getSide()) { a1 = p; break; }
+        if (a1 != null) {
+            long[] across = { Math.min(a0.getX0(), a1.getX0()), Math.min(a0.getY0(), a1.getY0()), Math.max(a0.getX1(), a1.getX1()), Math.max(a0.getY1(), a1.getY1()) };
+            java.util.Set<Integer> expected = bittenBy(two.getCityLand(), pairShelf, across);
+            int spanId = tm.draft(java.util.List.of(across)).get(0).getId();
+            two.buyParcel(spanId, 1e12, 0);
+            boolean gone2 = true, stood = true;
+            for (LandParcel p : pairShelf) {
+                LandParcel now = tm.find(p.getId());
+                if (expected.contains(p.getId())) gone2 &= now == null;
+                else stood &= now != null && now.same(p);
+            }
+            assertTrue("a draft across two offers' ground (and what lies between them) takes off the shelf every offer it met - " + expected.size()
+                    + " - and no other", expected.size() >= 2 && gone2 && stood);
+        } else {
+            assertTrue("fixture: two offers on one side to draft across", false);
+        }
+        // Ground no offer holds: nothing leaves.
+        LandManager gapCity = new LandManager();
+        gapCity.updateMarket(0);
+        LandMarket gm2 = gapCity.getMarket();
+        CityLand gl = gapCity.getCityLand();
+        java.util.List<LandParcel> gShelf = gm2.getListing();
+        long gb = 1L << gm2.getLevel();
+        long[] gap = null;
+        long cx0 = Math.floorDiv(gl.grid().minX(), gb) - 1, cx1 = Math.floorDiv(gl.grid().maxX() - 1, gb) + 1;
+        long cy0 = Math.floorDiv(gl.grid().minY(), gb) - 1, cy1 = Math.floorDiv(gl.grid().maxY() - 1, gb) + 1;
+        for (long by = cy0; by <= cy1 && gap == null; by++) {
+            for (long bx = cx0; bx <= cx1 && gap == null; bx++) {
+                long[] r = { bx * gb, by * gb, bx * gb + gb, by * gb + gb };
+                if (bx >= 0 && by >= 0 && GridOffers.onFrontier(gl.grid(), gm2.getLevel(), bx, by) && bittenBy(gl, gShelf, r).isEmpty()) gap = r;
+            }
+        }
+        if (gap == null) {
+            // none beside the city (the shelf covers its whole frontier): ground a block past the frontier's furthest block is nobody's offer
+            gap = new long[] { gl.grid().maxX() + 40 * gb, gl.siteY() / gb * gb, gl.grid().maxX() + 41 * gb, gl.siteY() / gb * gb + gb };
+        }
+        int gid = gm2.draft(java.util.List.of(gap)).get(0).getId();
+        gapCity.buyParcel(gid, 1e12, 0);
+        boolean all = true;
+        for (LandParcel p : gShelf) all &= gm2.find(p.getId()) != null && gm2.find(p.getId()).same(p);
+        assertTrue("a draft of ground no offer holds takes no offer off the shelf: all " + gShelf.size() + " stand as they were", all);
+
+        // ---- a save holding drafts
+        System.out.println("\n--- 29d. drafts are never saved or restored ---");
+        GameFiles files = GameFiles.scratch("landcheck-drafts");
+        Game saved = new Game(files);
+        quietly(() -> { saved.newGame(); saved.toggleNextMonth(); });
+        LandMarket sm = saved.getLandManager().getMarket();
+        int nextSaved = sm.getNextOfferId();
+        LandParcel somewhere = sm.getListing().get(1);
+        // The city's own pickers, asked before and after: the build screen's land shortcut (AutoBuilder), the best offer for a need, the shelf.
+        double lack = LandManager.sqFt(1e-3);
+        LandParcel shortcutBefore = AutoBuilder.shortcutOffer(saved, lack, java.util.Set.of());
+        LandParcel roomBefore = saved.bestOffer(Game.LandNeed.room());
+        int shelfBefore = saved.landShelf().size();
+        sm.draft(java.util.List.of(rectOf(somewhere), rectOf(sm.getListing().get(2))));
+        assertTrue("fixture: drafts stand in the city saved, and drafting moved no offer's number", sm.getDrafts().size() == 2 && sm.getNextOfferId() == nextSaved);
+        assertTrue("the AutoBuilder's pick (the build screen's land shortcut), the best offer for a need and the shelf the screens rank are the offers' alone, as they were with no draft",
+                AutoBuilder.shortcutOffer(saved, lack, java.util.Set.of()) == shortcutBefore && shortcutBefore.getId() > 0
+                        && saved.bestOffer(Game.LandNeed.room()) == roomBefore && roomBefore.getId() > 0
+                        && saved.landShelf().size() == shelfBefore && saved.landShelf().stream().allMatch(p -> p.getId() > 0));
+        quietly(() -> saved.saveGame(5, "drafts in the office"));
+        Game back = new Game(files);
+        quietly(() -> back.loadGameSave(5));
+        assertTrue("fixture: the save loads", back.getLoadFailure() == null);
+        assertTrue("a city saved holding drafts loads with none, and no negative id is anywhere in the loaded office",
+                back.getLandManager().getMarket().getDrafts().isEmpty() && back.getLandManager().getMarket().find(-1) == null
+                        && back.getLandManager().getListing().stream().allMatch(p -> p.getId() > 0));
+        assertTrue("...its offers come back as saved, field for field, and the next offer's number is as it was",
+                back.getLandManager().getMarket().getNextOfferId() == nextSaved
+                        && listingsAlike(back.getLandManager().getListing(), sm.getListing()));
+    }
+
+    /** Whether two shelves hold the same offers, field for field, in the same order. */
+    static boolean listingsAlike(java.util.List<LandParcel> a, java.util.List<LandParcel> b) {
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) if (!a.get(i).same(b.get(i))) return false;
+        return true;
     }
 
 }

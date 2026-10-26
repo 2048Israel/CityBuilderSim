@@ -66,7 +66,7 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (105), [Game](Game.md) (69), [BuildingsTemplate](BuildingsTemplate.md) (23), [DecisionLog](DecisionLog.md) (19), [DebtQuote](DebtQuote.md) (16), [LandParcel](LandParcel.md) (16), [CityNeeds](CityNeeds.md) (15), [Auction](Auction.md) (10), [LandManager](LandManager.md) (9), [CapSetting](CapSetting.md) (8), [GameLog](GameLog.md) (4), [LandMarket](LandMarket.md) (4), [NationalAccounts](NationalAccounts.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [ConstructionControl](ConstructionControl.md) (3), [Landmasses](Landmasses.md) (3), [Ports](Ports.md) (2), [BuildingManager](BuildingManager.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [StrategicReserve](StrategicReserve.md) (1), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1), [Sector](Sector.md) (1), [Statement](Statement.md) (1), [BuildingType](BuildingType.md) (1), [TimeSkipReport](TimeSkipReport.md) (1), [SaveCopy](SaveCopy.md) (1)
 
-**Used by (10):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [DataSave](DataSave.md), [Game](Game.md), [LandClassCheck](LandClassCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (11):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [DataSave](DataSave.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Sections
 
