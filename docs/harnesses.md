@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**145 harness files, 15,154 labelled assertions.** AllChecks runs 145 of them.
+**146 harness files, 15,255 labelled assertions.** AllChecks runs 146 of them.
 
 ## Which harnesses read which class
 
@@ -14,7 +14,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, LongPlaytest, ZoningCheck |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DeskCheck, FloatLinkCheck, HoldersCheck, NewGameCheck, RestructureCheck, SaveFileCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
-| [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, LandClassCheck, LandmassCheck, LongPlaytest, SaveSlotCheck |
+| [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, HydroCheck, LandClassCheck, LandmassCheck, LongPlaytest, SaveSlotCheck |
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
 | [Bank](map/Bank.md) | AuctionCheck, BankCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MortgageCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, WoodProductsCheck |
@@ -22,17 +22,17 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PortCheck, ReadPathCheck |
 | [BondMarket](map/BondMarket.md) | BondCheck, CurveCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BookDesk](map/BookDesk.md) | DeskCheck, ReadPathCheck |
-| [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, LandCheck, LongPlaytest, ReadPathCheck, RoadCheck, SectorFlowCheck, WaterCheck |
-| [BuildCard](map/BuildCard.md) | BuildCardCheck, ChildcareCheck, LandmassCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningViewCheck |
+| [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, HydroCheck, LandCheck, LongPlaytest, ReadPathCheck, RoadCheck, SectorFlowCheck, WaterCheck |
+| [BuildCard](map/BuildCard.md) | BuildCardCheck, ChildcareCheck, HydroCheck, LandmassCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, WaterCheck, WellCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildScreen](map/BuildScreen.md) | **none** |
 | [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, SlopeCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
-| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, EarthFoundingCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [BuildingType](map/BuildingType.md) | BooksCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, ForestryCheck, HaulageCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck |
 | [BuildingVisual](map/BuildingVisual.md) | ChildcareCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, InvestCheck, LandmassCheck, LongPlaytest, RefineryCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, TradeCostCheck, TreasuryCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | BankCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RestaurantsCheck, RunWorksCheck, ScaleCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
@@ -51,7 +51,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | AuctionCheck, CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, OilViewCheck, YearBookCheck |
-| [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, IslandNetCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
+| [CityLand](map/CityLand.md) | AutoBuildCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
 | [CityRuns](map/CityRuns.md) | EarthTerrainCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, TruckRouteCheck |
@@ -79,9 +79,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Dials](map/Dials.md) | **none** |
 | [DistrictPicture](map/DistrictPicture.md) | MapCheck |
 | [DistrictPlan](map/DistrictPlan.md) | EarthTerrainCheck, JunctionCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
-| [EarthData](map/EarthData.md) | EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LandmassCheck, LongPlaytest, MapCheck, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
+| [EarthData](map/EarthData.md) | EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, HydroCheck, LandCheck, LandmassCheck, LongPlaytest, MapCheck, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandmassCheck, MapCheck |
-| [EarthSite](map/EarthSite.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, LandCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
+| [EarthSite](map/EarthSite.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, RailDepotCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest |
@@ -99,7 +99,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, HoldersCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandNetCheck, JunctionCheck, LandCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PassThroughCheck, PlanCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [FoundingScreen](map/FoundingScreen.md) | **none** |
 | [Freight](map/Freight.md) | BuildCardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckCheck |
 | [FreightView](map/FreightView.md) | FreightViewCheck, TradeBandCheck |
@@ -107,8 +107,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck |
-| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeskCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeskCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConversionCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, QuarryingCheck, RailCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, VanCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
 | [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -132,6 +132,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyPreviewCheck, ReadPathCheck |
 | [HouseholdBalance](map/HouseholdBalance.md) | AuctionCheck, BankCheck, BondCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FloatLinkCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, MaterialsCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, WoodProductsCheck |
+| [HydroSites](map/HydroSites.md) | HydroCheck |
 | [Icons](map/Icons.md) | **none** |
 | [Inbox](map/Inbox.md) | InboxCheck, LandmassCheck, PlaytestFixCheck |
 | [IndustryPicture](map/IndustryPicture.md) | IndustryViewCheck |
@@ -151,9 +152,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandClassRenders](map/LandClassRenders.md) | **none** |
 | [LandClassView](map/LandClassView.md) | LandClassCheck |
 | [LandConversion](map/LandConversion.md) | ConversionCheck, LandCheck, ScaleCheck, WaterCheck |
-| [LandGrid](map/LandGrid.md) | ConversionCheck, GridCheck, LandCheck, LandmassCheck, MapCheck |
-| [LandManager](map/LandManager.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
-| [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, LandCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck |
+| [LandGrid](map/LandGrid.md) | ConversionCheck, GridCheck, HydroCheck, LandCheck, LandmassCheck, MapCheck |
+| [LandManager](map/LandManager.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HealthCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, HydroCheck, LandCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MiningCheck, MoneyCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
 | [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ConversionCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, OilCheck, PortCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
 | [LandScreen](map/LandScreen.md) | **none** |
@@ -253,7 +254,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
-| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, InboxCheck, InfrastructureCheck, InvestCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
+| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
@@ -275,12 +276,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
 | [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, ZoningViewCheck |
-| [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, LongPlaytest, MaterialsCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
+| [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, ConservationCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, HydroCheck, LongPlaytest, MaterialsCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
 | [WageBand](map/WageBand.md) | BankCheck, BuildAdviceCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck, ScaleCheck, ZoningCheck |
 | [Where](map/Where.md) | **none** |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
-| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, IslandNetCheck, JunctionCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
+| [World](map/World.md) | BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, IslandNetCheck, JunctionCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PlanCheck, PortCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, ReadPathCheck, ScaleCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurveCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
@@ -2170,83 +2171,83 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L57 coverage**
   - L58 same number of buildings (
 - **L60 every field of every building**
-- **L206 care types line up with the category**
-- **L213 care types**
-  - L224 healthcare declares a care type, nothing else does
-  - L238 education declares what it teaches, nothing else does
-  - L255 safety declares police or prison, nothing else does
-  - L257 two police buildings and two prisons
-- **L259 the sea is drawn by water works, and one of them (0.7.59)**
-- **L266 water sources**
-  - L277 only a water works draws the sea
-  - L278 one water plant on fresh water and one on the sea (
-  - L283 id 73 is the Desalination Plant
-- **L286 fuel (0.7.62, batch K; spec-land 2.7)**
-- **L299 fuel**
-  - L305 id 74 is the Oil Well: MINING, the Oil sector's, 415 t of crude a month and nothing else
-  - L309 id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, a crude unit taking 8,300 t of crude and making
-  - L317 ...holding more than the months of its run a maker keeps (STOCK_MONTHS) in its tanks
-- **L320 the refinery's units (0.7.80, batch O4; spec-oil 2.3)**
-- **L329 the refinery's units**
-  - L332 id 76 is the Crude Unit: HEAVY_INDUSTRY, Refining's, a crude unit of 50 Oil Refineries' crude, road load and tanks
-  - L365 ids 77 to 90 are the conversion units, a small and a large of each kind in RefineryFlow.Kind's order:
-  - L367 ...each pair named for its kind, the small taking less feed for less money and more money a litre
-- **L369 the phase-1 buyers and the forecourt (0.7.83, batch O6)**
-- **L380 the phase-1 buyers and the forecourt**
-  - L397 lubricants on every car, van, truck, machinery and fabrication plant at the spec's rate a unit made, and on
-  - L401 id 91 is the Filling Station: COMMERCIAL, Retail's, 350,000 L a month at the pump, buying and making
-  - L407 ...US$0.5M all in at founding prices (cash and 18 a unit of material), three posts, an acre's 4,000 m2
-  - L412 ...the only building with a pump
-  - L416 the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated
-  - L419 ...and 144 buildings in all (PT1-M4: the Builders' Yard, id 143, the founding's own; 143 from FR3, the Bulk Berth, id 142; 142 from FR7, the Rail Depot; 141 ...
-- **L426 the oil storage (0.7.85, batch O8; spec-oil 2.8)**
-- **L432 the oil storage**
-  - L438 id 92 is the Tank Farm, the refiners': 500,000 m3 of tanks, refining nothing, buying nothing
-  - L443 ...D$190M of capital (US$60 a barrel of room, star), material a sixtieth of it and points a half; ten
-  - L450 id 93 is the Strategic Reserve, the city's: the farm's tanks, ground and price, and no posts (star O8-2)
-- **L459 the ports (0.7.86, batch O9; spec-oil 2.9)**
-- **L464 the ports**
-  - L477 ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its
-  - L479 ...and the only buildings with a berth, bar FR3's Bulk Berth (id 142, a fifth)
-- **L481 the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11)**
-- **L490 the oil at sea**
-  - L507 ids 98-100 are the oil at sea, the Oil sector's MINING, on no dry ground and with no power or water;
-  - L509 id 98 is the Offshore Platform: a jacket of 12 slots, D$18M, 12 posts 6/4/2, lifting nothing itself
-  - L515 id 99 is the Platform Well: D$14M, 415 t of crude a month, one diploma's post, on oil, and no land well
-  - L520 id 100 is the Crude Pipeline, a kilometre: D$4.5M at sea and D$3M on land, no posts, on no site
-  - L523 ...and the only buildings at sea
-- **L525 the site each stands on (0.7.110, batch I1)**
-- **L555 the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126; stone's, 0.7.131; copper's, 0.7.133)**
-  - L596 every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone
-  - L599 ...sixteen stand on sites - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three
-  - L602 ...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none
-  - L608 ...iron's on a type, its sites and its dig (0.7.124): the Iron Mine one hematite site and the open pit twenty, ore as
-  - L614 ...coal's on a type, its sites and its dig (0.7.126): the surface mines one and four thermal sites at 1/.95 t of
-  - L621 ...stone's, its sites and its dig (0.7.131): the Quarry one site and the Large Quarry three, on ANY, a tonne a tonne;
-  - L635 ...copper's, its sites and its dig (0.7.133): the Copper Mine & Mill one sulphide site and the Large Copper Mine
-- **L639 a works' own power and its consumables (0.7.112, batch I2)**
-- **L653 a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.120; the gen, 0.7.123)**
-  - L665 four works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop
-  - L669 ...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none
-  - L674 ...and the pulp mill draws nothing from the grid - its boiler meets its own draw - and sells it all 13,500 kW (0.7.140)
-  - L676 ...and every other building buys its whole draw and sells the grid none, to the bit
-  - L687 forty-one buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and
-- **L695 the old steel a yard takes, and the year each row first existed (0.7.123, batch I4)**
-- **L704 the old steel a yard takes, and the year each new row first existed (0.7.123)**
-  - L714 one building takes the city's old steel, the Scrap Yard: 10,500 t a month into 10,000 t of scrap (the study's 2.4):
-  - L718 ...and one its old copper (0.7.133), the Scrap Copper Refinery: 4,400 t a month at nameplate, its whole feed - its
-  - L754 the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the
-- **L767 the raw coal a preparation plant washes (0.7.126, batch I6)**
-- **L774 the raw coal a preparation plant washes (0.7.126)**
-  - L778 one building washes raw coal, the Coal Preparation Plant: 500,000 t a month (the study's 3.3), buying and making no
-- **L784 and every profession has exactly one school**
-  - L801 every gated profession has exactly one school
-- **L803 ids are unique, which the saves depend on**
-  - L814 every id is unique
-- **L816 the manager actually uses the file**
-  - L820 initializeTemplates() produced the same count
-  - L822 lookup by id still works
-  - L825 lookup by name still works
+- **L207 care types line up with the category**
+- **L214 care types**
+  - L225 healthcare declares a care type, nothing else does
+  - L239 education declares what it teaches, nothing else does
+  - L256 safety declares police or prison, nothing else does
+  - L258 two police buildings and two prisons
+- **L260 the sea is drawn by water works, and one of them (0.7.59)**
+- **L267 water sources**
+  - L278 only a water works draws the sea
+  - L279 one water plant on fresh water and one on the sea (
+  - L284 id 73 is the Desalination Plant
+- **L287 fuel (0.7.62, batch K; spec-land 2.7)**
+- **L300 fuel**
+  - L306 id 74 is the Oil Well: MINING, the Oil sector's, 415 t of crude a month and nothing else
+  - L310 id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, a crude unit taking 8,300 t of crude and making
+  - L318 ...holding more than the months of its run a maker keeps (STOCK_MONTHS) in its tanks
+- **L321 the refinery's units (0.7.80, batch O4; spec-oil 2.3)**
+- **L330 the refinery's units**
+  - L333 id 76 is the Crude Unit: HEAVY_INDUSTRY, Refining's, a crude unit of 50 Oil Refineries' crude, road load and tanks
+  - L366 ids 77 to 90 are the conversion units, a small and a large of each kind in RefineryFlow.Kind's order:
+  - L368 ...each pair named for its kind, the small taking less feed for less money and more money a litre
+- **L370 the phase-1 buyers and the forecourt (0.7.83, batch O6)**
+- **L381 the phase-1 buyers and the forecourt**
+  - L398 lubricants on every car, van, truck, machinery and fabrication plant at the spec's rate a unit made, and on
+  - L402 id 91 is the Filling Station: COMMERCIAL, Retail's, 350,000 L a month at the pump, buying and making
+  - L408 ...US$0.5M all in at founding prices (cash and 18 a unit of material), three posts, an acre's 4,000 m2
+  - L413 ...the only building with a pump
+  - L417 the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated
+  - L420 ...and 145 buildings in all (HY1: the Hydro Station, id 144; 144 from PT1-M4: the Builders' Yard, id 143, the founding's own; 143 from FR3, the Bulk Berth, i...
+- **L427 the oil storage (0.7.85, batch O8; spec-oil 2.8)**
+- **L433 the oil storage**
+  - L439 id 92 is the Tank Farm, the refiners': 500,000 m3 of tanks, refining nothing, buying nothing
+  - L444 ...D$190M of capital (US$60 a barrel of room, star), material a sixtieth of it and points a half; ten
+  - L451 id 93 is the Strategic Reserve, the city's: the farm's tanks, ground and price, and no posts (star O8-2)
+- **L460 the ports (0.7.86, batch O9; spec-oil 2.9)**
+- **L465 the ports**
+  - L478 ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its
+  - L480 ...and the only buildings with a berth, bar FR3's Bulk Berth (id 142, a fifth)
+- **L482 the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11)**
+- **L491 the oil at sea**
+  - L508 ids 98-100 are the oil at sea, the Oil sector's MINING, on no dry ground and with no power or water;
+  - L510 id 98 is the Offshore Platform: a jacket of 12 slots, D$18M, 12 posts 6/4/2, lifting nothing itself
+  - L516 id 99 is the Platform Well: D$14M, 415 t of crude a month, one diploma's post, on oil, and no land well
+  - L521 id 100 is the Crude Pipeline, a kilometre: D$4.5M at sea and D$3M on land, no posts, on no site
+  - L524 ...and the only buildings at sea
+- **L526 the site each stands on (0.7.110, batch I1)**
+- **L556 the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126; stone's, 0.7.131; copper's, 0.7.133)**
+  - L597 every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone
+  - L600 ...sixteen stand on sites - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three
+  - L603 ...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none
+  - L609 ...iron's on a type, its sites and its dig (0.7.124): the Iron Mine one hematite site and the open pit twenty, ore as
+  - L615 ...coal's on a type, its sites and its dig (0.7.126): the surface mines one and four thermal sites at 1/.95 t of
+  - L622 ...stone's, its sites and its dig (0.7.131): the Quarry one site and the Large Quarry three, on ANY, a tonne a tonne;
+  - L636 ...copper's, its sites and its dig (0.7.133): the Copper Mine & Mill one sulphide site and the Large Copper Mine
+- **L640 a works' own power and its consumables (0.7.112, batch I2)**
+- **L654 a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.120; the gen, 0.7.123)**
+  - L666 four works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop
+  - L670 ...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none
+  - L675 ...and the pulp mill draws nothing from the grid - its boiler meets its own draw - and sells it all 13,500 kW (0.7.140)
+  - L677 ...and every other building buys its whole draw and sells the grid none, to the bit
+  - L688 forty-one buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and
+- **L696 the old steel a yard takes, and the year each row first existed (0.7.123, batch I4)**
+- **L705 the old steel a yard takes, and the year each new row first existed (0.7.123)**
+  - L715 one building takes the city's old steel, the Scrap Yard: 10,500 t a month into 10,000 t of scrap (the study's 2.4):
+  - L719 ...and one its old copper (0.7.133), the Scrap Copper Refinery: 4,400 t a month at nameplate, its whole feed - its
+  - L756 the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the
+- **L770 the raw coal a preparation plant washes (0.7.126, batch I6)**
+- **L777 the raw coal a preparation plant washes (0.7.126)**
+  - L781 one building washes raw coal, the Coal Preparation Plant: 500,000 t a month (the study's 3.3), buying and making no
+- **L787 and every profession has exactly one school**
+  - L804 every gated profession has exactly one school
+- **L806 ids are unique, which the saves depend on**
+  - L817 every id is unique
+- **L819 the manager actually uses the file**
+  - L823 initializeTemplates() produced the same count
+  - L825 lookup by id still works
+  - L828 lookup by name still works
 
 ## BusinessServicesCheck.java - 40 labelled assertions
 
@@ -10095,6 +10096,129 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L605 ...and those are exactly the ones it could not place
   - L607 nothing is billed as a family let when only studios exist
 
+## HydroCheck.java - 101 labelled assertions
+
+> The Hydro Station and the river it needs (HY1, 2026-10-26; docs/queue/HY1-notes.md): the physics of a drop against
+> its own constants, the sites on synthetic ground, a generated world's city that has none, a city given sites by fiat
+> that orders up to its slots, and the real Earth's rivers when earth-2.bin is named. Not part of the game.
+> 
+> WHY. The game had only coal and wind, and Canada's power was mostly hydro from 1900. The Earth has no heights on land
+> (spec-earth E8), so a river's drop is read from its banks (HydroSites): the lower bank's rise over REACH plots, each
+> plot at its relief class's least grade, with the flow from the river's width. Every rule of that reading is caused
+> here on ground a fixture lays out, from the model's own constants and from both sides of each threshold, and the
+> Earth is asked only whether a river of the real world reads as one: a hydro town does, a flat one does not.
+> 
+> What this has to prove:
+>   1. THE PHYSICS: the flow is (width / HG_COEFF) squared and holds at WIDTH_CAP_M; the power is EFFICIENCY x G x Q x H;
+> ...
+
+- **L96 1. the physics: the flow, the power and a bank's rise**
+  - L98 a 60 m river's mean flow is (width / HG_COEFF) squared
+  - L99 ...a river twice as wide carries four times the flow, under the cap
+  - L101 ...a river under WIDTH_CAP_M is read at its own width
+  - L102 ...a river over WIDTH_CAP_M is read at the cap's flow, not its own
+  - L103 ...so a river just over the cap carries what the cap does and a hair under it carries less
+  - L107 a river's mean power is EFFICIENCY x G x Q x H, in kW
+  - L109 ...twice the head is twice the power
+  - L110 ...no head is none
+  - L111 ...the units a month a power makes are its kW x HOURS_A_MONTH over KWH_PER_UNIT
+  - L121 a
+  - L125 ...each class's least grade is more than the one before's, flat's none
+  - L129 ...and each is the lower edge of the grade the land office says its class has (LandMap.GRADE_WORDS)
+  - L130 a byte that is no class reads flat: no rise
+  - L133 a bank is read REACH plots out and no further (a plot past the reach is not asked)
+  - L135 the head at a point is the lower bank's rise
+  - L136 ...and under HEAD_MIN_M there is none
+  - L137 ...at HEAD_MIN_M there is
+- **L169 2. sites on synthetic ground**
+  - L174 a straight river 60 m wide with foothill on both banks, inside one cell, gives one site
+  - L176 ...its head is REACH plots of PLOT_M x the foothill grade
+  - L177 ...its width is the river's
+  - L178 ...its mean power is the model's for that width and head
+  - L179 ...every sample of it ties, so the site is the lowest y then the lowest x of the river's samples: the river's own row and its first plot
+  - L181 ...and what it makes a month is its kW x HOURS_A_MONTH over KWH_PER_UNIT
+  - L182 ...it holds floor(units over a station's) stations: 2.5 stations' worth holds 2
+  - L185 foothill on the north bank only gives no site: the head is the lower bank's
+  - L187 ...nor on the south bank only
+  - L191 steep on one bank and foothill on the other gives the foothill's head, the lower
+  - L194 steep banks give the steep head, more than the foothill's, and so more power
+  - L197 a bank of which the near plots are water (flat) rises only by the rest: the rise is less and no more than the plots beyond
+  - L204 fixture:
+  - L206 a head just under HEAD_MIN_M gives no site
+  - L209 ...and just over it gives one, at that head
+  - L215 a river across three cells gives three sites, a cell each, the same ground giving the same figures
+  - L218 ...each at the lowest x of its cell the river reaches (the ties go to the lower x)
+  - L222 a cell's site is the same asked alone as with its neighbours (defined on the world, not on what is read with it)
+  - L228 a river that widens along its segment has its site where it is widest, its last sample, the width between its ends there
+  - L238 fixture: the river's best point is its wide end - the west end in one, the east end in the other
+  - L240 a cell whose best sample lies on unowned ground is not the city's, though the owned part of the river has a drop too
+  - L242 ...and one whose best sample is owned is
+  - L245 a tie across the line of ownership goes to the lower x as ever, so the site is on the unowned side and not the city's
+  - L254 two rivers of the same flow and drop in one cell: the site is the one of the lower y
+  - L256 ...the same whichever order the segments are listed in
+  - L259 ...and at the same y, the lower x, in either order
+  - L262 ...a river given as segments in any order and either direction gives the same sites
+  - L267 the best sample wins before any tie is looked at: a wider river at the higher y beats a narrower one at the lower
+  - L269 a zero-length segment reads nothing, and no river at all gives no site
+- **L290 3. a generated world has no river**
+  - L296 fixture: the city's world is a generated one, not the Earth
+  - L297 the Hydro Station is a power station that needs a river, 10 MW at a 45% capacity factor (production1 4,560), and stands on any ground
+  - L299 ...its own station's power is its production1's kW: 4,500 kW a month at 730 hours over 720 kWh a unit, the Wind Farm's arithmetic
+  - L301 a generated world has no site and reads no river at all
+  - L302 ...so it holds no station: no slots, none free
+  - L303 ...and no building but a hydro station is held to a river
+  - L305 AN ORDER FOR A HYDRO STATION IS REFUSED NO_RIVER, before land and money
+  - L306 ...and it takes nothing: none standing, none on site
+  - L307 ...the card's verdict says so before the click
+  - L310 ...and a run stops at it
+  - L311 ...the card carries no river: no sites, no slots
+  - L314 ...the advice values it at nothing: unit() is 0 where there is no river
+  - L324 fixture: the town's automatic builder ran
+  - L325 THE AUTOMATIC BUILDER NEVER ORDERS A HYDRO STATION ON A CITY WITH NO RIVER: none standing, none on site after
+- **L335 4. sites by fiat: the orders go ahead up to the slots, and the next is NO_RIVER**
+  - L349 fixture: three sites, holding 3, 1 and 0 stations:
+  - L351 the city's slots are the sum of each site's floor(units over a station's): 4
+  - L353 ...the card says so: 4 of 4 free on 3 sites, the best the widest river
+  - L356 ...and the best site is the one of the most mean power
+  - L358 with a slot free the advice values it at what it makes: unit() is more than nothing
+  - L362 an order of one more than the slots free is refused NO_RIVER, before land and money, and takes none
+  - L365 ...an order of the slots free is not: its verdict is not NO_RIVER
+  - L372 a run of
+  - L377 ...a run of
+  - L381 ...and a single order of one more than the slots stops the run at once, NO_RIVER
+  - L384 orders up to the slots go ahead: 3 of 4
+  - L385 ...one free now
+  - L386 ...2 more is NO_RIVER, the stations on site counted
+  - L389 ...a run of one passes, the card's verdict is not NO_RIVER
+  - L391 ...the last one goes ahead
+  - L392 ...and the next is NO_RIVER: the slots are spent
+  - L394 ...the card's line says none free of the 4
+  - L395 ...and the advice values it at nothing once no slot is free
+  - L399 a site lost (the ground sold back) leaves the stations standing and on site: committed 4 of 0 slots, none free
+  - L410 fixture: two stations stood at once on a scratch city with a river by fiat
+  - L413 each station standing adds its production1 to the grid's generation: two add twice
+  - L420 a city with only steep ground refuses a coal plant for the ground (it stands on flat and foothill)
+  - L422 ...and takes a Hydro Station: a works that stands on any ground, steep too (Game.standsAnywhere())
+  - L450 fixture: the town wants more power than it makes, by more than
+  - L453 the advice offers a hydro station, the only power it may name, while a slot is free (
+  - L455 ...its count is held to the slots free:
+  - L456 ...and it does not say it keeps the need ahead, which the slots cannot
+  - L461 on a river with
+  - L467 ...with every power plant in the ranking it names one, hydro or not (the measure's premise)
+  - L472 past the slots the advice offers no hydro station: none free, none named
+- **L494 5. the Earth: hydro towns and flat ones**
+  - L498 the file -D
+  - L506 the game's Earth is here, the file named, EARTH_2:
+  - L546 the flat places, Rotterdam and Winnipeg, have no site in the 20 km round them
+  - L547 at least half of the hydro places have a site in the 20 km round them:
+  - L564 a city founded at Shawinigan:
+  - L576 the city's sites are the world's sites over its ground whose dams it owns, exactly (
+  - L578 ...and every one is on a landmass it has linked, the founding one
+  - L599 the ground bought round a world site makes it the city's, with the figures the world gives it
+  - L600 ...on the city's own landmass, so linked: the stations of its slots can be ordered
+  - L605 ...an order for one more station than the slots free is refused NO_RIVER; one for the slots free is not (
+  - L608 ...and one station goes ahead on the Earth's ground
+
 ## InboxCheck.java - 44 labelled assertions
 
 > Verifies the inbox: raising, refreshing, resolving, culling and the round
@@ -16542,139 +16666,139 @@ _(this harness does not label its checks through a helper - it prints its findin
 > ...
 
 - **L225 1. which templates are runs: the map's highway and track, never a site, never a yard**
-  - L241 Game.isRun() agrees with the map's highway and track over all
-  - L243 ...the runs of the catalogue are the Elevated Highway, the Rail Spur and the Freight Line, and no other
-  - L245 no template with a site is a run, and groundUse() is WORKS for a site, RUN for a run, BUILDING for the rest
-  - L248 the Rail Terminal and the Rail Depot are yards that sort tonnes (isStation()), not runs: buildings
-  - L256 the Gravel and Paved Roads and the Light Rail and Metro lines are not runs
-  - L257 a House is a building and an Iron Mine a works (the other two uses)
-- **L267 2. a run's ground over flat, foothill and steep in the city's proportions; buildings and works on what is left**
-  - L275 fixture: 40% flat, 30% foothill, 30% steep and very steep owned, the city hilly, no run standing yet
-  - L285 the city's
-  - L291 the runs' ground on each class is their land times the class's share of the owned ground:
-  - L296 ...the steep ground a run stands on is not idle: the idle steep is the steep less the runs' share, and the runs take nothing from the buildings' pool
-  - L304 buildings stand on the flat the runs leave, first: half of it taken, none on foothill
-  - L310 ...and past it onto the foothill by exactly the excess over the flat the runs left
-  - L318 works stand on the steep the runs leave, first: half of it taken, none on foothill, the idle steep down by the runs' share and the works'
-  - L323 ...and past the steep the runs leave onto the foothill they leave, by exactly the excess; the runs' ground does not move
-  - L327 the split's sums hold: runs, works and buildings add up to the pool, on every class the ground in use is within the ground owned
-- **L339 3. the room for a run: the buildings and the works still fit beside it; the pads it displaces; the invoice**
-  - L346 fixture: the flat and foothill 95% full of buildings, the steep ground idle - the buildings' own room is nearly gone, the run's is bounded by it
-  - L357 the ground free for a run is the smaller of the ground unbuilt and (flat and foothill less the buildings) over their share, less the runs
-  - L361 ...more than a building's room (a run puts a part of itself on the steep) and less than a works's, which any dry ground takes
-  - L370 an order of Elevated Highways one over the room is refused NO_LAND, nothing taken; canAllocate() says the same
-  - L376 ...and one at it is taken; the buildings still fit on the flat and foothill the run leaves, to within less than one more highway
-  - L390 fixture: the buildings fill 99% of the flat, none on the foothill, no pad cut; a run quoted prepares nothing itself
-  - L401 ...so the next House is quoted its own pad only, not the pads the run displaced
-  - L418 a run of orders -
-- **L428 4. the price of a run's plot class by class, given back at the same; the books at the runs' mix**
-  - L437 fixture: the going price four preparations over the base, so flat is dearer than foothill and foothill than steep; 40/30/30 owned
-  - L444 a run's plot is priced class by class at the city's proportions: its land times the shares of each class's price
-  - L446 ...and given back at the same shares (buybackPriceFor())
-  - L448 ...its parts are its own, summing to the plot - flat, foothill and steep in the city's proportions, and not what the buildings it displaces would be
-  - L451 ...cheaper than a building's plot of the same size while the flat is free (a third of it is steep, at the base price)
-  - L457 a business's Rail Spur order (buildFor()) pays the city exactly that for its plot
-  - L466 fixture: a city of
-  - L476 the books put the Freight sector's track at the city's runs' mix - flat, foothill and steep - and not at the buildings'
-  - L489 the city's highways, in the Infrastructure category, are put at the runs' mix too, the rest of the category at the buildings'
-  - L508 summed over every sector and the ground no business holds, the areas by class are the split's own (LandManager.reliefUse())
-  - L517 ...and summed over the city's categories likewise
-  - L519 a category's land is valued at its areas times the class prices: the highways' at the runs' mix
-- **L528 5. a city with neither foothill nor steep ground reads a run as a building, to the bit**
-  - L542 fixture: an all-flat city (neither foothill nor steep ground) with
-  - L548 the ground free for a run is the ground free for a building, to the bit (freeFor(), freeForAnyone())
-  - L553 ...the price of a run's plot and what is given back for it are a building's, to the bit
-  - L557 ...its plot on the classes is all flat and a run prepares nothing: the same as a building's
-  - L568 the ground in use, the utilisation, the used share, the ground free and the preparation are the same doubles whether the runs are known or not
-  - L581 a twin city that took the same ground as buildings reads the same, to the bit: the use, the utilisation and the ground free
-  - L589 the books of a flat city value every square foot at the one price: the Freight sector's land is all flat, as ever
-- **L598 6. the runs' ground is saved: through a save and a load to the bit; a save without it reads the standing runs**
-  - L613 fixture: highways and a Rail Spur standing, the runs' ground a figure the footprint is not
-  - L616 through a save and a load the runs' ground is back, to the bit
-  - L619 ...and so is everything read off it: the ground in use by use and class, the runs on each class, the idle steep
-  - L634 a save without the key reads the standing highways' and railway lines' ground, as the allocation is read from the buildings
-- **L674 7. the works a m2 of a run's land needs on each class: RunWorks' rates against their constants**
-  - L681 ...and the works rise with the class: foothill under steep under very steep, each above nothing
-  - L685 a highway's foothill m2 is a foothill pad's, SitePreparation's dollars a m2
-  - L688 ...its steep m2 is a viaduct's deck over the run's width, its very steep m2 the bores of a tunnel over the same
-  - L693 a railway's rate is a highway's times RAIL_FACTOR on every class above flat, and above it; RAIL_FACTOR is the grades' ratio
-  - L716 the rate at a mix of ground is the weighted sum of the classes' rates, in any unit of area, for a highway and a railway
-  - L718 ...none where the mix holds no ground, none above flat, or only flat; a negative area counts for nothing
-  - L722 ...a mix of one class above flat is that class's own rate; flat ground in the mix dilutes it, steeper ground raises it
-  - L731 the points of a run's works are its square metres at the rate, in thousands, over the founding cash a point
-  - L733 ...twice the land, twice the points; a dearer point, fewer
-  - L736 ...none for no land, no works, or a price a point that is not a positive figure
-- **L747 8. a run over each class of ground: the works at the class's rate, in points, owed on the site and in the sticker**
-  - L775 ...on the run's whole land, at a mix that is this class whole, and the order prepares no pad of its own
-  - L777 ...their money is those points at the builders' price a point of the run's own work today (non-material cost over points)
-  - L779 ...in the sticker, summed as the quote sums it: the builders' work, then the works' money
-  - L786 ...the same order quoted on flat has none, and is the builders' work alone
-  - L788 ...so the total exceeds the flat one by the works' money grossed up by the builders' sales tax, as all the work is
-  - L790 ...and the wait is longer: the works are owed on the site before the first building finishes (quote months)
-  - L795 the works rise with the class of ground, for a highway and for a railway: foothill under steep under very steep
-  - L805 a railway's works a m2 of its land are a highway's times RAIL_FACTOR on every class above flat, the quotes' own dollars a m2
-- **L813 9. the city's mix of ground: the works at the mix of its dry ground; a railway's above a highway's; what is no run pays none**
-  - L820 fixture: 30% flat, 40% foothill, 25% steep and 5% very steep owned, the city hilly
-  - L840 ...at the mix the quote reports, the shares of the city's dry ground by class, adding up to one
-  - L842 ...which is RunWorks' rate at the mix, dollars a m2 of the run's land
-  - L843 ...its money the builders' price of the points, in the sticker, summed as the quote sums it
-  - L847 a railway's works a m2 of land are a highway's times RAIL_FACTOR at the city's mix, and more than a highway's
-  - L850 an order of 3 highways owes three times one's works: the land scales it
-  - L856 ...and they are in every price: the build card's verdict, the invoice of a run of orders and the treasury's cost are the quote's total
-  - L877 what is no run - the Houses and streets, the transit lines and the yards, a works - pays no works on the same city, its sticker the old one
-- **L889 10. builders' work in the books: the city's highways and the Freight sector's Freight Line, the works owed on the site, billed to Constru...**
-  - L912 fixture (
-  - L923 the investor's price (BusinessInvestment.getCostOf()) includes the works, taxed with the builders' work: the flat price and the works' money grossed up
-  - L939 ...and the site owes the works: its progress is below nothing by their points, none of the buildings finished
-  - L942 ...the counters read it: one order, its points and its money
-  - L951 ...and every building is built, the points applied the order's whole - the buildings' and the works'
-  - L954 ...all that was billed is earned: the order book is back to what it was, in points and in money
-  - L961 ...and Construction's earnings are the order's money: the work it recognised over the months is the bill, off by no more than the material the price allowed ...
-  - L965 ...GDP counted the works as construction: the first month's work, when no building had finished, is what GDP counts the month after
-  - L969 over those months the money audit closed, the GDP identity held and GDP's construction was the builders' recognised work, post-audit drift
-- **L984 11. a flat city to the bit: a run's quote, order, books and investor's price are what they were before ET4**
-  - L995 fixture: a city of neither foothill nor steep ground, no works counted yet
-  - L1002 the quotes carry no works: no land priced, no points, no money, no mix - for a highway and a Freight Line
-  - L1004 ...the sticker is the builders' non-material cost times the order, to the bit, and the wait asks the crews for the buildings' points alone
-  - L1014 the investor's price of a Freight Line and of highways is the old price, to the bit (BusinessInvestment.getCostOf())
-  - L1023 the city's highways and the Freight Line go through; Construction's backlog and billed points rise by the buildings' points alone, its unearned revenue by th...
-  - L1029 ...no site owes anything before its first building: the progress is nothing, not below it
-  - L1032 ...and the counters of works and of preparation stand at nothing
-- **L1054 12. the screen's words: BuildScreen.worksWords() reads the quote's fields; nothing on flat ground, for a building, or for no quote**
-  - L1060 on the mixed city a highway order is worded from the quote: the run's land, the points and the money, as the screen writes them
-  - L1066 ...the city's ground in its shares by class above flat, each from the quote's mix - foothill 40%, steep 25%, very steep 5% - and not the flat
-  - L1069 a building's quote on the same city, a quote with no works and no quote at all have no line, so a flat city's card reads as it did
-  - L1074 the same order on a flat city has no line
-  - L1080 a class that is under a half per cent of the ground reads \"under 1%\", never \"0%\"
-  - L1088 the build card draws it with the preparation's line: worksWords(v.quote()) beside prepWords(v.quote())
-  - L1091 could not read Build's source:
-- **L1155 13. on the map: a run across steep ground is a viaduct, across very steep ground a tunnel with a dashed line and a portal at each end**
-  - L1173 fixture: both runs cross steep and very steep ground (more than one plot each) as well as flat
-  - L1175 Painted.bridge is true on exactly the runs' steep plots and Painted.tunnel on exactly their very steep plots
-  - L1177 ...neither on a flat plot of a run nor on any plot that holds no run, and no plot is both
-  - L1185 at 8 px a flat plot of the highway has the highway's surface colour in the middle of its band
-  - L1187 ...a viaduct's plot has it too, its casing in the deck's colour where a flat plot's is the highway's own
-  - L1189 ...a tunnel's plot has not: where the surface lies on a flat plot it is the ground's grey, with the highway's colour only in the dashed line along the middle
-  - L1192 the track's flat plot has its ballast and no deck, its steep plot the deck beside the bed, its very steep plot its grey with the steel in the dashed line
-  - L1205 the highway's tunnel has a portal band across its way at the west edge of its first plot and the east edge of its last, TUNNEL_PORTAL, a little wider than th...
-  - L1206 ...and none inside it, none on the viaduct or the flat plots beside it
-  - L1211 the track's tunnel has its portals at the north edge of its first plot and the south edge of its last, and none inside
-  - L1212 ...and the tile holds no other portal pixel: the two tunnels' four ends alone, from the dials
-  - L1226 a plot with no run is drawn as it is without the runs, at 8 px and at 4: every pixel of every such plot is the same
-  - L1227 ...a plot of steep ground with none is its steep grey, of very steep its darker grey, of flat the grass
-  - L1234 at 4 px a flat plot of the highway is its surface across, a viaduct's plot has the deck's colour on the pixel either side of it
-  - L1237 ...a tunnel's plot is its ground with the dashed line (the highway's colour on the first pixels along the middle row), and the portals are four ends of the d...
-  - L1239 ...the track's tunnel plot is ground and steel there too, its steep plot has the deck beside the bed
-  - L1250 in the blocks' views (2 px a plot) a tunnel of the highway is its bare ground but for every other plot, the highway's colour, and a viaduct is a highway like...
-  - L1257 ...and in the far view (1 px a plot) likewise
-  - L1261 the hover card says \"a viaduct\" on a steep plot of a run and \"a tunnel\" on a very steep one, highway and railway alike, and nothing on the flat
-- **L1269 14. the streets' rule did not move: a street on fresh water is a bridge, a street or a run on foothill is none, a run over water a bridge...**
-  - L1290 a street plot on fresh water is a bridge, as it was, and no tunnel
-  - L1291 ...a street plot on steep ground, or on very steep, is neither (the plans never lay one there; its relief does not make it a bridge)
-  - L1292 ...a street plot on foothill is neither
-  - L1293 a run plot on foothill is neither a bridge nor a tunnel
-  - L1294 a run plot over fresh water is a bridge and never a tunnel, whatever relief the plot carries
-  - L1300 ...and this tile has no run on steep ground, so it has no viaduct and no tunnel: the bridges are over water alone
+  - L242 Game.isRun() agrees with the map's highway and track over all
+  - L244 ...the runs of the catalogue are the Elevated Highway, the Rail Spur and the Freight Line, and no other
+  - L246 no template with a site is a run, and groundUse() is WORKS for a site, RUN for a run, BUILDING for the rest
+  - L249 the Rail Terminal and the Rail Depot are yards that sort tonnes (isStation()), not runs: buildings
+  - L257 the Gravel and Paved Roads and the Light Rail and Metro lines are not runs
+  - L258 a House is a building and an Iron Mine a works (the other two uses)
+- **L268 2. a run's ground over flat, foothill and steep in the city's proportions; buildings and works on what is left**
+  - L276 fixture: 40% flat, 30% foothill, 30% steep and very steep owned, the city hilly, no run standing yet
+  - L286 the city's
+  - L292 the runs' ground on each class is their land times the class's share of the owned ground:
+  - L297 ...the steep ground a run stands on is not idle: the idle steep is the steep less the runs' share, and the runs take nothing from the buildings' pool
+  - L305 buildings stand on the flat the runs leave, first: half of it taken, none on foothill
+  - L311 ...and past it onto the foothill by exactly the excess over the flat the runs left
+  - L319 works stand on the steep the runs leave, first: half of it taken, none on foothill, the idle steep down by the runs' share and the works'
+  - L324 ...and past the steep the runs leave onto the foothill they leave, by exactly the excess; the runs' ground does not move
+  - L328 the split's sums hold: runs, works and buildings add up to the pool, on every class the ground in use is within the ground owned
+- **L340 3. the room for a run: the buildings and the works still fit beside it; the pads it displaces; the invoice**
+  - L347 fixture: the flat and foothill 95% full of buildings, the steep ground idle - the buildings' own room is nearly gone, the run's is bounded by it
+  - L358 the ground free for a run is the smaller of the ground unbuilt and (flat and foothill less the buildings) over their share, less the runs
+  - L362 ...more than a building's room (a run puts a part of itself on the steep) and less than a works's, which any dry ground takes
+  - L371 an order of Elevated Highways one over the room is refused NO_LAND, nothing taken; canAllocate() says the same
+  - L377 ...and one at it is taken; the buildings still fit on the flat and foothill the run leaves, to within less than one more highway
+  - L391 fixture: the buildings fill 99% of the flat, none on the foothill, no pad cut; a run quoted prepares nothing itself
+  - L402 ...so the next House is quoted its own pad only, not the pads the run displaced
+  - L419 a run of orders -
+- **L429 4. the price of a run's plot class by class, given back at the same; the books at the runs' mix**
+  - L438 fixture: the going price four preparations over the base, so flat is dearer than foothill and foothill than steep; 40/30/30 owned
+  - L445 a run's plot is priced class by class at the city's proportions: its land times the shares of each class's price
+  - L447 ...and given back at the same shares (buybackPriceFor())
+  - L449 ...its parts are its own, summing to the plot - flat, foothill and steep in the city's proportions, and not what the buildings it displaces would be
+  - L452 ...cheaper than a building's plot of the same size while the flat is free (a third of it is steep, at the base price)
+  - L458 a business's Rail Spur order (buildFor()) pays the city exactly that for its plot
+  - L467 fixture: a city of
+  - L477 the books put the Freight sector's track at the city's runs' mix - flat, foothill and steep - and not at the buildings'
+  - L490 the city's highways, in the Infrastructure category, are put at the runs' mix too, the rest of the category at the buildings'
+  - L509 summed over every sector and the ground no business holds, the areas by class are the split's own (LandManager.reliefUse())
+  - L518 ...and summed over the city's categories likewise
+  - L520 a category's land is valued at its areas times the class prices: the highways' at the runs' mix
+- **L529 5. a city with neither foothill nor steep ground reads a run as a building, to the bit**
+  - L543 fixture: an all-flat city (neither foothill nor steep ground) with
+  - L549 the ground free for a run is the ground free for a building, to the bit (freeFor(), freeForAnyone())
+  - L554 ...the price of a run's plot and what is given back for it are a building's, to the bit
+  - L558 ...its plot on the classes is all flat and a run prepares nothing: the same as a building's
+  - L569 the ground in use, the utilisation, the used share, the ground free and the preparation are the same doubles whether the runs are known or not
+  - L582 a twin city that took the same ground as buildings reads the same, to the bit: the use, the utilisation and the ground free
+  - L590 the books of a flat city value every square foot at the one price: the Freight sector's land is all flat, as ever
+- **L599 6. the runs' ground is saved: through a save and a load to the bit; a save without it reads the standing runs**
+  - L614 fixture: highways and a Rail Spur standing, the runs' ground a figure the footprint is not
+  - L617 through a save and a load the runs' ground is back, to the bit
+  - L620 ...and so is everything read off it: the ground in use by use and class, the runs on each class, the idle steep
+  - L635 a save without the key reads the standing highways' and railway lines' ground, as the allocation is read from the buildings
+- **L675 7. the works a m2 of a run's land needs on each class: RunWorks' rates against their constants**
+  - L682 ...and the works rise with the class: foothill under steep under very steep, each above nothing
+  - L686 a highway's foothill m2 is a foothill pad's, SitePreparation's dollars a m2
+  - L689 ...its steep m2 is a viaduct's deck over the run's width, its very steep m2 the bores of a tunnel over the same
+  - L694 a railway's rate is a highway's times RAIL_FACTOR on every class above flat, and above it; RAIL_FACTOR is the grades' ratio
+  - L717 the rate at a mix of ground is the weighted sum of the classes' rates, in any unit of area, for a highway and a railway
+  - L719 ...none where the mix holds no ground, none above flat, or only flat; a negative area counts for nothing
+  - L723 ...a mix of one class above flat is that class's own rate; flat ground in the mix dilutes it, steeper ground raises it
+  - L732 the points of a run's works are its square metres at the rate, in thousands, over the founding cash a point
+  - L734 ...twice the land, twice the points; a dearer point, fewer
+  - L737 ...none for no land, no works, or a price a point that is not a positive figure
+- **L748 8. a run over each class of ground: the works at the class's rate, in points, owed on the site and in the sticker**
+  - L776 ...on the run's whole land, at a mix that is this class whole, and the order prepares no pad of its own
+  - L778 ...their money is those points at the builders' price a point of the run's own work today (non-material cost over points)
+  - L780 ...in the sticker, summed as the quote sums it: the builders' work, then the works' money
+  - L787 ...the same order quoted on flat has none, and is the builders' work alone
+  - L789 ...so the total exceeds the flat one by the works' money grossed up by the builders' sales tax, as all the work is
+  - L791 ...and the wait is longer: the works are owed on the site before the first building finishes (quote months)
+  - L796 the works rise with the class of ground, for a highway and for a railway: foothill under steep under very steep
+  - L806 a railway's works a m2 of its land are a highway's times RAIL_FACTOR on every class above flat, the quotes' own dollars a m2
+- **L814 9. the city's mix of ground: the works at the mix of its dry ground; a railway's above a highway's; what is no run pays none**
+  - L821 fixture: 30% flat, 40% foothill, 25% steep and 5% very steep owned, the city hilly
+  - L841 ...at the mix the quote reports, the shares of the city's dry ground by class, adding up to one
+  - L843 ...which is RunWorks' rate at the mix, dollars a m2 of the run's land
+  - L844 ...its money the builders' price of the points, in the sticker, summed as the quote sums it
+  - L848 a railway's works a m2 of land are a highway's times RAIL_FACTOR at the city's mix, and more than a highway's
+  - L851 an order of 3 highways owes three times one's works: the land scales it
+  - L857 ...and they are in every price: the build card's verdict, the invoice of a run of orders and the treasury's cost are the quote's total
+  - L878 what is no run - the Houses and streets, the transit lines and the yards, a works - pays no works on the same city, its sticker the old one
+- **L890 10. builders' work in the books: the city's highways and the Freight sector's Freight Line, the works owed on the site, billed to Constru...**
+  - L913 fixture (
+  - L924 the investor's price (BusinessInvestment.getCostOf()) includes the works, taxed with the builders' work: the flat price and the works' money grossed up
+  - L940 ...and the site owes the works: its progress is below nothing by their points, none of the buildings finished
+  - L943 ...the counters read it: one order, its points and its money
+  - L952 ...and every building is built, the points applied the order's whole - the buildings' and the works'
+  - L955 ...all that was billed is earned: the order book is back to what it was, in points and in money
+  - L962 ...and Construction's earnings are the order's money: the work it recognised over the months is the bill, off by no more than the material the price allowed ...
+  - L966 ...GDP counted the works as construction: the first month's work, when no building had finished, is what GDP counts the month after
+  - L970 over those months the money audit closed, the GDP identity held and GDP's construction was the builders' recognised work, post-audit drift
+- **L985 11. a flat city to the bit: a run's quote, order, books and investor's price are what they were before ET4**
+  - L996 fixture: a city of neither foothill nor steep ground, no works counted yet
+  - L1003 the quotes carry no works: no land priced, no points, no money, no mix - for a highway and a Freight Line
+  - L1005 ...the sticker is the builders' non-material cost times the order, to the bit, and the wait asks the crews for the buildings' points alone
+  - L1015 the investor's price of a Freight Line and of highways is the old price, to the bit (BusinessInvestment.getCostOf())
+  - L1024 the city's highways and the Freight Line go through; Construction's backlog and billed points rise by the buildings' points alone, its unearned revenue by th...
+  - L1030 ...no site owes anything before its first building: the progress is nothing, not below it
+  - L1033 ...and the counters of works and of preparation stand at nothing
+- **L1055 12. the screen's words: BuildScreen.worksWords() reads the quote's fields; nothing on flat ground, for a building, or for no quote**
+  - L1061 on the mixed city a highway order is worded from the quote: the run's land, the points and the money, as the screen writes them
+  - L1067 ...the city's ground in its shares by class above flat, each from the quote's mix - foothill 40%, steep 25%, very steep 5% - and not the flat
+  - L1070 a building's quote on the same city, a quote with no works and no quote at all have no line, so a flat city's card reads as it did
+  - L1075 the same order on a flat city has no line
+  - L1081 a class that is under a half per cent of the ground reads \"under 1%\", never \"0%\"
+  - L1089 the build card draws it with the preparation's line: worksWords(v.quote()) beside prepWords(v.quote())
+  - L1092 could not read Build's source:
+- **L1156 13. on the map: a run across steep ground is a viaduct, across very steep ground a tunnel with a dashed line and a portal at each end**
+  - L1174 fixture: both runs cross steep and very steep ground (more than one plot each) as well as flat
+  - L1176 Painted.bridge is true on exactly the runs' steep plots and Painted.tunnel on exactly their very steep plots
+  - L1178 ...neither on a flat plot of a run nor on any plot that holds no run, and no plot is both
+  - L1186 at 8 px a flat plot of the highway has the highway's surface colour in the middle of its band
+  - L1188 ...a viaduct's plot has it too, its casing in the deck's colour where a flat plot's is the highway's own
+  - L1190 ...a tunnel's plot has not: where the surface lies on a flat plot it is the ground's grey, with the highway's colour only in the dashed line along the middle
+  - L1193 the track's flat plot has its ballast and no deck, its steep plot the deck beside the bed, its very steep plot its grey with the steel in the dashed line
+  - L1206 the highway's tunnel has a portal band across its way at the west edge of its first plot and the east edge of its last, TUNNEL_PORTAL, a little wider than th...
+  - L1207 ...and none inside it, none on the viaduct or the flat plots beside it
+  - L1212 the track's tunnel has its portals at the north edge of its first plot and the south edge of its last, and none inside
+  - L1213 ...and the tile holds no other portal pixel: the two tunnels' four ends alone, from the dials
+  - L1227 a plot with no run is drawn as it is without the runs, at 8 px and at 4: every pixel of every such plot is the same
+  - L1228 ...a plot of steep ground with none is its steep grey, of very steep its darker grey, of flat the grass
+  - L1235 at 4 px a flat plot of the highway is its surface across, a viaduct's plot has the deck's colour on the pixel either side of it
+  - L1238 ...a tunnel's plot is its ground with the dashed line (the highway's colour on the first pixels along the middle row), and the portals are four ends of the d...
+  - L1240 ...the track's tunnel plot is ground and steel there too, its steep plot has the deck beside the bed
+  - L1251 in the blocks' views (2 px a plot) a tunnel of the highway is its bare ground but for every other plot, the highway's colour, and a viaduct is a highway like...
+  - L1258 ...and in the far view (1 px a plot) likewise
+  - L1262 the hover card says \"a viaduct\" on a steep plot of a run and \"a tunnel\" on a very steep one, highway and railway alike, and nothing on the flat
+- **L1270 14. the streets' rule did not move: a street on fresh water is a bridge, a street or a run on foothill is none, a run over water a bridge...**
+  - L1291 a street plot on fresh water is a bridge, as it was, and no tunnel
+  - L1292 ...a street plot on steep ground, or on very steep, is neither (the plans never lay one there; its relief does not make it a bridge)
+  - L1293 ...a street plot on foothill is neither
+  - L1294 a run plot on foothill is neither a bridge nor a tunnel
+  - L1295 a run plot over fresh water is a bridge and never a tunnel, whatever relief the plot carries
+  - L1301 ...and this tile has no run on steep ground, so it has no viaduct and no tunnel: the bridges are over water alone
 
 ## SaveFileCheck.java - 564 labelled assertions
 

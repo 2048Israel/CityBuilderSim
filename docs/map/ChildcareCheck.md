@@ -64,7 +64,7 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (53), [CareType](CareType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (23), [Game](Game.md) (22), [CityNeeds](CityNeeds.md) (15), [AgeBand](AgeBand.md) (12), [GameFiles](GameFiles.md) (7), [JobType](JobType.md) (6), [BuildingManager](BuildingManager.md) (6), [BuildingVisual](BuildingVisual.md) (6), [PopulationCohorts](PopulationCohorts.md) (6), [LongPlaytest](LongPlaytest.md) (5), [BuildingType](BuildingType.md) (4), [Health](Health.md) (4), [Founding](Founding.md) (3), [BuildCard](BuildCard.md) (3), [Healthcare](Healthcare.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [Sector](Sector.md) (1), [TempDirs](TempDirs.md) (1)
 
-**Used by (2):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md)
+**Used by (3):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [HydroCheck](HydroCheck.md)
 
 ## Sections
 

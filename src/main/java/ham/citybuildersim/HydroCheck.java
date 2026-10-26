@@ -460,6 +460,11 @@ public class HydroCheck {
         BuildAdvice.Suggestion plenty = BuildAdvice.suggestFor(g, null, power, Founding.WEALTHY_CASH, 1e12, BuildAdvice.SLACK, skip);
         assertTrue("on a river with " + ample + " slots the count is what the need asks, more than the " + free + " and no more than the slots (" + (plenty == null ? 0 : plenty.count()) + "), and it keeps the need ahead",
                 plenty != null && plenty.template() == hydro && plenty.count() > free && plenty.count() <= g.hydroSlotsFree(hydro) && g.hydroSlotsFree(hydro) == ample && plenty.closes());
+        // The notes' star 4, measured: with every power plant in the ranking and the river's slots ample, what the advice names.
+        BuildAdvice.Suggestion open = BuildAdvice.suggestFor(g, null, power, Founding.WEALTHY_CASH, 1e12, BuildAdvice.SLACK, new java.util.HashSet<>());
+        System.out.println("   with every power plant in the ranking and " + ample + " slots free, the advice names "
+                + (open == null ? "nothing" : open.count() + " x " + open.template().getName()) + " (HY1 notes, star 4)");
+        assertTrue("...with every power plant in the ranking it names one, hydro or not (the measure's premise)", open != null);
         // Past the slots: the same ranking has no hydro station to offer.
         sites.setForTest(List.of(river));
         quietly(() -> g.buildStack(hydro, free, true));

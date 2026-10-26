@@ -182,3 +182,25 @@ One Sonnet 5.5 slice at xhigh, reviewed by Opus; the cap changed at review.
 
 A city founded at Shawinigan owns no site at founding: the falls lie
 outside its first ground. It has to buy the river, as a mine buys its ore.
+
+## 3. What it does in a run, the trace, the checks
+
+- **The advice, measured** (HydroCheck 4): on a town short of power, with
+  a river of 100 slots and every power plant in the ranking, the advice
+  names 24 Wind Farms. ★4 holds: at real costs and with no intermittency,
+  wind wins. A player can still order a Hydro Station by hand on a river
+  the city owns.
+- **On the Earth** (HydroCheck 5, earth-2.bin named; 20 km round each
+  place, the cap at 550 m): Shawinigan 6 sites, 1,009 stations' worth;
+  Niagara Falls 3, 584 (about 2.6 GW on average, near the river's real
+  plants); Revelstoke 2, 164; Grand Coulee 5, 334; Rotterdam and Winnipeg
+  none. A read takes 11-109 ms, a recount from kept tiles 0-4 ms.
+- **The trace:** the default playtest's is byte-identical to main's (5c7c442b,
+  0.8.52) but for its two run-time lines: a generated world has no river with
+  a drop, so nothing it builds changes. **No ensemble** (EN1). An Earth
+  playtest at Rotterdam would be the same: it is flat.
+- **`./batch-check.sh --pick`**, earth-2.bin named: exit 3, 90 of 146
+  harnesses and LongPlaytest, main's recorded MapCheck red the only red;
+  Stale 0 firm findings; the maps regenerated. The review line names
+  threading for `ui/UserInterface.java`: one case label
+  (`showNoRiverMenu` in its tab lookup), no threading code.
