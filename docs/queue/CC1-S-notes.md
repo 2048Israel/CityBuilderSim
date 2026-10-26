@@ -97,7 +97,7 @@ invariants the moved city breaks (`PlanCheck`: "at every 30th month every distri
 files, which this batch stays off while ET6 may work there), and F1 does not end seed 4's plateau, so it is not the
 clear fix of the stall the row asked for. Turning it on is its own batch (CC1-S-B). **Not built: F2.** It barely moves
 the seeds, and it would rewrite J1d's rule (`LandCheck` 22: "a look the cash share cannot cover buys nothing"). The rest
-of the plateau is the call in 6.
+of the plateau is the call in 7.
 
 ## 4. As built
 
@@ -128,7 +128,43 @@ of the plateau is the call in 6.
   2 time(s), months 4000-4000" (Machine Works in district (0,0)); exit 1 on that run, of main's code, before this
   batch touched anything.
 
-## 6. Left for Jerus
+## 6. Jerus's theory: the schools start the growth (tested, 2026-10-26)
+
+Jerus, 2026-10-26 19:10: "its cause the elementary, middle, and high school act as fire starters quite often, without
+it there are nearly no incentives for anyone to come". Tested on main's eight auto-built seeds with a probe (every six
+months: each school level standing, its posts, the pass's step for it, the migration target), and then with basic
+schools made essential (no payback, not held to the cash), all to month 900. **It did not hold.**
+
+- **No seed builds a school before 3,000 people.** The four that grow reach 3,000 at months 180-264 with no school at
+  all; their first elementary comes after (months 258-300). Two of the stalled four (0 and 4) have stood an elementary
+  school since month 36; 1 and 5 get theirs at months 432 and 402. Before 3,000 the pass holds every middle and high
+  school for the payback (`HELD/PAYBACK`, 28 to 62 passes a seed) and a first school, which only the cash may pay for,
+  for the cash (`HELD/CASH`) in the months the cash is gone.
+- **A school draws people only as an employer.** Migration's target is the city's jobs (weight 0.75, each supporting
+  `residentsPerJob()` people) and its homes (0.25), scaled by senior care, affordability and crime; schools are in it
+  through their posts alone. Their other work is skills: what comes free is a diploma, and the bands above it are the
+  city's own children or bought. Seed 4's elementary school at month 240, 48 posts at 2.44 residents a job, is 88 people
+  of a 2,066 target, 4%. The plateau is not short of pull: its target (2,066) is its population (2,058), and the homes
+  are held for want of ground.
+- **Essential and early, schools stop every seed.** All three levels stand by months 42-48 in all eight; in seed 0 they
+  are 196 of a 957-person village's 430 jobs, on the treasury's payroll. The treasury then lives on advances ($630M by
+  month 480) and unpaid bills ($285M), buys no ground, and every seed is a village at month 900:
+
+| seed | main: months under 3,000 / 10,000 at / people at m900 | schools essential: the same |
+|---|---|---|
+| 0 | 317 / m513 / 65,727 | 842 / never / 941 |
+| 1 | 315 / m453 / 120,098 | 842 / never / 1,235 |
+| 2 | 202 / m409 / 65,558 | 842 / never / 1,704 |
+| 3 | 128 / m425 / 106,823 | 842 / never / 939 |
+| 4 | 309 / m477 / 96,464 | 746 / never / 5,190 |
+| 5 | 315 / m621 / 74,967 | 845 / never / 1,959 |
+| 6 | 172 / m422 / 157,533 | 842 / never / 1,135 |
+| 7 | 114 / m370 / 87,249 | 842 / never / 1,278 |
+
+So the schools stay as built: weighed for their payback, which `AutoBuildCheck` 8 holds beside essential care. Nothing
+of the probe or the experiment is in the tree.
+
+## 7. Left for Jerus
 
 **CC1-S-B, the test player's dollar bond (recommended: yes, as its own batch).** Turn `QUOTED_BORROWING` on by default:
 the default playtest and every harness city the test player founds stop taking a 20-year dollar bond at 18.45% for
