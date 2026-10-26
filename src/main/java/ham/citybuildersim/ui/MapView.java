@@ -55,7 +55,8 @@ import static ham.citybuildersim.ui.Pieces.*;
  * into UserInterface's pane over the window (City History's, 0.7.23; since
  * MS1 under the window's own header, which stays in view - the clock, the
  * money block, the five tiles - rather than over it): a drag from anywhere
- * but an offer's free ground pans (and a right or middle drag from
+ * but ground that may be picked pans (an offer's free ground, a block that
+ * may be picked or is, BL1; and a right or middle drag from
  * anywhere), the wheel zooms by MapFrame.ZOOM_STEP a notch at the pointer,
  * + and - zoom, 0 fits, Esc closes, and since 0.7.135 W, A, S and D pan
  * (the arrows stay the clock's speed, as on City History's full screen);
@@ -186,6 +187,20 @@ import static ham.citybuildersim.ui.Pieces.*;
  * month (MS1; LandMap.Picks), the head saying in the warning colour what a
  * month or a purchase took off them (Picks.dropNote()). The small map
  * clicks as before.
+ *
+ * THE EXACT GROUND (BL1, 2026-10-26; docs/queue/BL1-notes.md 1; Jerus: "those
+ * blocks are wierd and sometimes overlap with land already bought like
+ * uiwise, on map view. perhaps more freedom on the exact selection?"). An
+ * offer is drawn as the ground it is - its free ground filled and edged along
+ * its own outline (LandMap.freeOutline()), on the plane and through the
+ * globe's camera alike, nothing of it over the city's ground - and the
+ * player picks blocks of the city's grid: a click on a free block that may be
+ * picked (Picks.pickable()) picks it, a drag from one - or from an offer's
+ * free ground, a picked block, or with Shift from anywhere - boxes the blocks
+ * the box covers that join the city (Picks.addBox(), the preview tinted
+ * under the box as it is drawn), and the picked ground is one shape, tinted
+ * and edged in the offers' pink, on its free ground only. The card names the
+ * picked ground as "Your ground - N blocks" beside the offers.
  */
 final class MapView {
 
@@ -442,17 +457,20 @@ final class MapView {
     /** The note while the map is drawn away from the screen. */
     static final String DRAWING = "Drawing the city's map…";
 
-    /** The Expand button's tooltip (since MS1 it says the drag picks: a drag across offers picks them, one from anywhere else pans). */
-    static final String EXPAND_TIP = "The map under the window's header: drag across offers to pick them, drag from elsewhere or with the right button"
-            + " (or W, A, S and D) to pan, scroll to zoom, Esc to come back.";
+    /** The Expand button's tooltip (since MS1 it says the drag picks; since BL1 the ground it picks is the player's own: a drag along the city's edge picks the exact ground, one from elsewhere pans). */
+    static final String EXPAND_TIP = "The map under the window's header: drag along the city's edge to pick the exact ground, drag from elsewhere or with"
+            + " the right button (or W, A, S and D) to pan, scroll to zoom, Esc to come back.";
 
-    /** The expanded map's hint, at the right of its head: since 0.7.137 how to buy (spec-earth 3.1, "its hint becomes"), since MS1 by a click or a drag across offers, every key in its tooltip (KEYS_TIP). */
-    static final String HINT = "click or drag across offers to pick them · drag elsewhere to pan";
+    /** The expanded map's hint, at the right of its head: since 0.7.137 how to buy (spec-earth 3.1, "its hint becomes"), since MS1 by a click or a drag, since BL1 of the exact ground - blocks of the city's grid, the offers its suggestions - every key in its tooltip (KEYS_TIP). */
+    static final String HINT = "drag along the city's edge to pick the exact ground · drag elsewhere to pan";
 
     /** ...the hint's tooltip: every key and gesture the expanded map takes - the panning and zooming the hint said until 0.7.137, and the buying since. */
-    static final String KEYS_TIP = "Click an offer to open its card beside it; shift-click adds an offer to the card or drops it;"
-            + " drag across offers - from an offer's free ground, no key needed - or Shift and a drag from anywhere picks every offer"
-            + " in a box; Ctrl+A picks them all. Enter buys the card's offers; Esc closes the card, then the map."
+    static final String KEYS_TIP = "Click an offer to open its card beside it, or a free block along the city's edge to pick just that block;"
+            + " shift-click adds an offer or a block to the card or drops it. Drag along the city's edge - from an offer's free ground,"
+            + " a block that may be picked or one picked, no key needed, or Shift and a drag from anywhere - to pick the exact ground:"
+            + " every block the box covers that joins the city, tinted under the box before you let go; an offer whose whole free"
+            + " ground you cover is bought as the offer, at its price. Ctrl+A picks every offer. Enter buys the card;"
+            + " Esc closes the card, then the map."
             + "\nDrag from elsewhere, or with the right or middle button from anywhere, or W, A, S and D to pan"
             + " · scroll, + or - to zoom · 0 fits. The picks stand through a month.";
 
@@ -1347,11 +1365,15 @@ final class MapView {
     /**
      * Over the ground (spec-grid 2.4, since 0.7.69): the city's block lines,
      * faint, where a block is at least MapFrame.BLOCK_LINES_FROM px; the
-     * offers as hatched rectangles - each its free ground only, the city's
-     * own ground in its rectangle left clear (LandMap.ownedIn()), its edge
-     * too - edged in pink, the office's side bright, the others faint, the
-     * one under the pointer or a hovered row lit, the picked one edged
-     * solid; the city's edge in white, crisp and stepped, on the pixels just
+     * offers as hatched shapes - each its free ground only, the city's
+     * own ground in its rectangle left clear (LandMap.ownedIn()) - edged
+     * along that ground's own outline (LandMap.freeOutline(), BL1: the edge
+     * the rectangle's border clipped to it was before, with none against the
+     * city) in pink on whole pixels, dashed, the office's side bright, the
+     * others faint, the one under the pointer or a hovered row lit, the
+     * picked one solid and two px; the picked blocks (BL1) as one shape, tinted
+     * and edged the same, and the blocks a box being drawn would take; the
+     * city's edge in white, crisp and stepped, on the pixels just
      * inside it (MapFrame.runOnScreen()); the centre's box dashed, the
      * deposits at L1 and L2 (spec-land 2.6; at L0 the tiles draw the sites,
      * and past L2 a dot a field would bury the city); each offer numbered by
@@ -1371,8 +1393,10 @@ final class MapView {
         List<LandParcel> listing = market.getListing();
         double ax = Math.floorMod((long) Math.floor(f.screenX(0)), 8), ay = Math.floorMod((long) Math.floor(f.screenY(0)), 8);
         ImagePattern pattern = new ImagePattern(hatch.getImage(), ax, ay, 8, 8, false);
-        gc.setFillRule(FillRule.EVEN_ODD);
         List<Integer> chosen = expanded ? picks.live(g) : List.of();
+        // Where a block is under BLOCK_LINES_FROM px the far views draw an offer's outline and its flat tint and no hatch (BL1),
+        // which would only smear over blocks that small.
+        boolean flatOnly = f.scale() * (1L << market.getLevel()) < MapFrame.BLOCK_LINES_FROM;
         for (int i = 0; i < listing.size(); i++) {
             LandParcel p = listing.get(i);
             double[] box = f.onScreen(p.getX0(), p.getY0(), p.getX1(), p.getY1());
@@ -1382,6 +1406,7 @@ final class MapView {
             // The office's pick, and on the expanded map the card's (0.7.137): edged solid.
             boolean picked = (p.getSide() == side && p.getPlace() == place) || chosen.contains(p.getId());
             // Its free ground: the box, less the city's own ground in it, filled even-odd.
+            gc.setFillRule(FillRule.EVEN_ODD);
             gc.beginPath();
             gc.rect(box[0], box[1], box[2] - box[0], box[3] - box[1]);
             for (double[] o : ownedIn.getOrDefault(p.getId(), List.of())) {
@@ -1390,28 +1415,26 @@ final class MapView {
             }
             gc.setFill(Color.rgb(12, 18, 26, 0.24));
             gc.fill();
-            gc.setFill(pattern);
-            gc.fill();
+            if (!flatOnly) {
+                gc.setFill(pattern);
+                gc.fill();
+            }
             if (lit || picked) {
                 gc.setFill(Color.web(Palette.BUILDING, lit ? 0.34 : 0.22));
                 gc.fill();
             }
-            // Its edge on the box's own outer pixels, a pixel wide (two when picked), where they lie on its free ground.
-            double w = picked ? 2 : 1;
-            boolean cut = ownedIn.containsKey(p.getId());
-            if (cut) {
-                gc.save();
-                gc.clip();
-            }
-            gc.setStroke(Color.web(OFFER_EDGE, mine || lit ? 0.95 : 0.4));
-            gc.setLineWidth(w);
-            if (picked) gc.setLineDashes((double[]) null);
-            else gc.setLineDashes(5, 4);
-            gc.strokeRect(box[0] + w / 2, box[1] + w / 2, box[2] - box[0] - w, box[3] - box[1] - w);
-            if (cut) gc.restore();
+            gc.setFillRule(FillRule.NON_ZERO);
+            // Its edge is its free ground's own: the runs of its outline on whole pixels inside it, as the city's edge is drawn
+            // (BL1) - a pixel wide and dashed, two and solid when picked - so it runs along the city where the city's finer steps
+            // bite into the offer's rectangle and nowhere over the city's ground.
+            double[][] runs = freeEdge.get(p.getId());
+            if (runs != null) edgeRuns(gc, f, runs, picked ? 2 : 1, !picked, Color.web(OFFER_EDGE, mine || lit ? 0.95 : 0.4));
         }
-        gc.setLineDashes((double[]) null);
         gc.setFillRule(FillRule.NON_ZERO);
+        if (expanded) {
+            pickedGround(gc, f);
+            boxPreview(gc, f);
+        }
         // The city's edge: its runs as one shape, so no pixel is drawn twice where they meet (0.7.69; LandMap.outline()). At the
         // far nodes they draw it themselves since 0.7.128, a pixel wide at every scale (MapTiles.nodePixels()), where a run under
         // a pixel long would drop here.
@@ -1423,6 +1446,10 @@ final class MapView {
             }
             gc.setFill(Color.rgb(255, 255, 255, EDGE_ALPHA));
             gc.fill();
+        }
+        // The ground just bought, outlined while its receipt stands (BL1): the picked ground's own edge, now the city's.
+        if (expanded && receiptShown && bought != null && bought.edge() != null) {
+            edgeRuns(gc, f, bought.edge(), 2, false, Color.web(OFFER_EDGE, 0.95));
         }
         double[] c = LandMap.centre(land);
         double[] cb = f.onScreen(c[0], c[1], c[2], c[3]);
@@ -1574,10 +1601,147 @@ final class MapView {
         shapesFor = key;
         edge = LandMap.outline(land);
         ownedIn.clear();
+        freeCells.clear();
+        freeEdge.clear();
         for (LandParcel p : market.getListing()) {
             List<double[]> own = LandMap.ownedIn(land, p);
             if (!own.isEmpty()) ownedIn.put(p.getId(), own);
+            // The offer's free ground as cells and its edge as runs (BL1), with the holes: what the globe fills and edges through
+            // the camera and the plane edges on whole pixels.
+            freeCells.put(p.getId(), LandMap.freeCells(land, p));
+            freeEdge.put(p.getId(), LandMap.freeOutline(land, p));
         }
+    }
+
+    /** Each offer's free ground as rectangles of plots (LandMap.freeCells()) and its edge as runs (LandMap.freeOutline()), by offer id, for the land and listing above: found with the holes, not every frame. */
+    private final Map<Integer, List<double[]>> freeCells = new HashMap<>();
+    private final Map<Integer, double[][]> freeEdge = new HashMap<>();
+
+    /** The picked blocks' free ground as cells and its edge as runs (LandMap.freeCells(), freeOutline() of the blocks): worked out again only when the pick's blocks (the set picks.blocks() hands out is a new one at every change) or the land they lie on change. */
+    private java.util.Set<Long> groundFor = java.util.Set.of();
+    private long groundShapesFor = Long.MIN_VALUE;
+    private List<double[]> groundCells = List.of();
+    private double[][] groundEdge = new double[4][0];
+
+    /** ...and the blocks a box being drawn would take: its cells and edge, for the box of plots, the pick and the land it was found for. */
+    private String previewFor = "";
+    private List<double[]> previewCells = List.of();
+    private double[][] previewEdge = new double[4][0];
+
+    /** The picked blocks' shapes, kept (groundCells, groundEdge) for what is picked and the land it lies on. */
+    private void groundShapes(CityLand land) {
+        java.util.Set<Long> blocks = picks.blocks();
+        if (blocks == groundFor && groundShapesFor == shapesFor) return;
+        groundFor = blocks;
+        groundShapesFor = shapesFor;
+        if (blocks.isEmpty()) {
+            groundCells = List.of();
+            groundEdge = new double[4][0];
+            return;
+        }
+        groundCells = LandMap.freeCells(land, blocks, picks.blocksLevel());
+        groundEdge = LandMap.freeOutline(land, blocks, picks.blocksLevel());
+    }
+
+    /**
+     * The blocks the box being drawn would take, as cells and an edge (previewCells, previewEdge): worked out when the plots
+     * it covers, the pick or the land change, not every frame. False when no box is being drawn, or it covers no plot.
+     */
+    private boolean previewShapes(CityLand land) {
+        if (!boxing || moved < CLICK_SLOP || !canPick()) return false;
+        long[] pb = boxPlots(pressX, pressY, boxX, boxY);
+        if (pb == null) return false;
+        String key = pb[0] + "," + pb[1] + "," + pb[2] + "," + pb[3] + "|" + System.identityHashCode(picks.blocks()) + "|" + shapesFor;
+        if (key.equals(previewFor)) return !previewCells.isEmpty();
+        previewFor = key;
+        List<Long> took = picks.boxBlocks(ui.game, pb[0], pb[1], pb[2], pb[3]);
+        if (took.isEmpty()) {
+            previewCells = List.of();
+            previewEdge = new double[4][0];
+            return false;
+        }
+        java.util.Set<Long> set = new java.util.LinkedHashSet<>(took);
+        int level = ui.game.getLandManager().getMarket().getLevel();
+        previewCells = LandMap.freeCells(land, set, level);
+        previewEdge = LandMap.freeOutline(land, set, level);
+        return true;
+    }
+
+    /** A run's dashes: 5 px on and 4 off, as the offers' edge has been drawn since 0.7.61. */
+    private static final double DASH_ON = 5, DASH_PERIOD = 9;
+
+    /**
+     * Runs of an outline on whole pixels as one shape (BL1), `width` px deep inside the ground they bound - one the city's
+     * edge's, two the picked ground's - solid or dashed (DASH_ON on and the rest off, from each run's own start so the dashes
+     * stand still as the view pans), filled in one colour, so no pixel is drawn twice where runs meet.
+     */
+    private static void edgeRuns(GraphicsContext gc, MapFrame f, double[][] runs, int width, boolean dashed, Color colour) {
+        gc.beginPath();
+        for (int i = 0; i < runs[0].length; i++) runRects(gc, f, runs[0][i], runs[1][i], runs[2][i], runs[3][i], width, dashed);
+        gc.setFill(colour);
+        gc.fill();
+    }
+
+    /** One run of an outline added to the path as its pixels' boxes (MapFrame.runOnScreen()), `width` deep inside the ground it bounds and cut into dashes when asked. */
+    private static void runRects(GraphicsContext gc, MapFrame f, double x0, double y0, double x1, double y1, int width, boolean dashed) {
+        double[] r = f.runOnScreen(x0, y0, x1, y1);
+        if (r == null) return;
+        boolean flat = y0 == y1;
+        double bx = r[0], by = r[1], bw = r[2], bh = r[3];
+        // The ground lies on the run's right as it runs: south of a run east and west of one south (the run's pixel is the first
+        // inside it, the second beyond that), north of one west and east of one north.
+        if (width > 1) {
+            if (flat) {
+                if (x1 < x0) by -= width - 1;
+                bh = width;
+            } else {
+                if (y1 > y0) bx -= width - 1;
+                bw = width;
+            }
+        }
+        if (!dashed) {
+            gc.rect(bx, by, bw, bh);
+            return;
+        }
+        double from = flat ? bx : by, to = from + (flat ? bw : bh);
+        double origin = flat ? f.pixelX(Math.min(x0, x1)) : f.pixelY(Math.min(y0, y1));
+        for (double s = origin + Math.floor((from - origin) / DASH_PERIOD) * DASH_PERIOD; s < to; s += DASH_PERIOD) {
+            double a = Math.max(s, from), b = Math.min(s + DASH_ON, to);
+            if (b <= a) continue;
+            if (flat) gc.rect(a, by, b - a, bh);
+            else gc.rect(bx, a, bw, b - a);
+        }
+    }
+
+    /** The picked blocks (BL1): their free ground tinted as a picked offer's is and its edge solid in the offers' pink, two px deep, as one shape - the city's ground inside a block it owns part of left clear. No hatch at any scale, so the far views draw it as they draw it near. */
+    private void pickedGround(GraphicsContext gc, MapFrame f) {
+        CityLand land = ui.game.getCityLand();
+        groundShapes(land);
+        if (groundCells.isEmpty()) return;
+        gc.beginPath();
+        for (double[] c : groundCells) {
+            double[] b = f.onScreen(c[0], c[1], c[2], c[3]);
+            if (b != null) gc.rect(b[0], b[1], b[2] - b[0], b[3] - b[1]);
+        }
+        gc.setFill(Color.web(Palette.BUILDING, PICKED_ALPHA));
+        gc.fill();
+        edgeRuns(gc, f, groundEdge, 2, false, Color.web(OFFER_EDGE, 0.95));
+    }
+
+    /** The tint of a picked offer's ground and of picked blocks: the building pink at 0.22 (the picked offer's since 0.7.137). */
+    static final double PICKED_ALPHA = 0.22;
+
+    /** The blocks a box being drawn would take, tinted under it and edged a pixel wide (BL1), so the snap to the block grid is seen before the release. */
+    private void boxPreview(GraphicsContext gc, MapFrame f) {
+        if (!previewShapes(ui.game.getCityLand())) return;
+        gc.beginPath();
+        for (double[] c : previewCells) {
+            double[] b = f.onScreen(c[0], c[1], c[2], c[3]);
+            if (b != null) gc.rect(b[0], b[1], b[2] - b[0], b[3] - b[1]);
+        }
+        gc.setFill(Color.web(Palette.BUILDING, PICKED_ALPHA));
+        gc.fill();
+        edgeRuns(gc, f, previewEdge, 1, false, Color.web(OFFER_EDGE, 0.8));
     }
 
     /** The city's block lines in view, one shape: a pixel wide, faint, none where a block is under MapFrame.BLOCK_LINES_FROM px. */
@@ -2101,11 +2265,24 @@ final class MapView {
         return out;
     }
 
-    /** The offers and the centre's box through the camera, where the plane draws (spec-globe 3.7): as the plane draws them at its far level - hatched, edged in pink, the office's side bright, the one lit or picked, numbered where the box holds a number. */
+    /**
+     * The offers and the centre's box through the camera, where the plane draws (spec-globe 3.7): as the plane draws them at its
+     * far level - each offer its free ground (its cells, LandMap.freeCells(), the city's own ground in its rectangle left out
+     * as the plane leaves it out, BL1: the globe used to fill the whole rectangle over the city's edge) hatched, tinted, edged
+     * along that ground's own outline (LandMap.freeOutline()) in pink, the office's side bright, the one lit or picked solid
+     * and two px - numbered on the freest square of it (LandMap.labelBlock()) where that holds a number, then the picked
+     * blocks and the box's preview, and the ground just bought.
+     */
     private void globeOffers(GraphicsContext gc, CityLand land, LandMarket market) {
         ImagePattern pattern = new ImagePattern(hatch.getImage(), 0, 0, 8, 8, false);
         gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+        gc.setFillRule(FillRule.NON_ZERO);
         List<Integer> chosen = picks.live(ui.game);
+        if (globeLabelsFor != shapesFor) {
+            globeLabelsFor = shapesFor;
+            globeLabelAt.clear();
+        }
+        long blockPlots = 1L << market.getLevel();
         for (LandParcel p : market.getListing()) {
             double[][] q = onGlobe(new double[] { p.getX0(), p.getX1(), p.getX1(), p.getX0() }, new double[] { p.getY0(), p.getY0(), p.getY1(), p.getY1() });
             if (q == null) continue;
@@ -2115,23 +2292,36 @@ final class MapView {
             boolean mine = p.getSide() == side;
             boolean lit = (p.getSide() == overSide && p.getPlace() == overPlace) || (p.getSide() == litSide && p.getPlace() == litPlace);
             boolean picked = (p.getSide() == side && p.getPlace() == place) || chosen.contains(p.getId());
-            gc.setFill(Color.rgb(12, 18, 26, 0.24));
-            gc.fillPolygon(q[0], q[1], 4);
-            gc.setFill(pattern);
-            gc.fillPolygon(q[0], q[1], 4);
-            if (lit || picked) {
-                gc.setFill(Color.web(Palette.BUILDING, lit ? 0.34 : 0.22));
-                gc.fillPolygon(q[0], q[1], 4);
+            double plotPx = plotPx(p.getX0(), p.getY0(), blockPlots);
+            // Its free ground, every cell of it through the camera as one shape; where a block is under BLOCK_LINES_FROM px, no hatch.
+            if (cellsPath(gc, freeCells.getOrDefault(p.getId(), List.of()))) {
+                gc.setFill(Color.rgb(12, 18, 26, 0.24));
+                gc.fill();
+                if (plotPx * blockPlots >= MapFrame.BLOCK_LINES_FROM) {
+                    gc.setFill(pattern);
+                    gc.fill();
+                }
+                if (lit || picked) {
+                    gc.setFill(Color.web(Palette.BUILDING, lit ? 0.34 : 0.22));
+                    gc.fill();
+                }
             }
-            gc.setStroke(Color.web(OFFER_EDGE, mine || lit ? 0.95 : 0.4));
-            gc.setLineWidth(picked ? 2 : 1);
-            if (picked) gc.setLineDashes((double[]) null);
-            else gc.setLineDashes(5, 4);
-            gc.strokePolygon(q[0], q[1], 4);
-            gc.setLineDashes((double[]) null);
-            if (bx1 - bx0 >= MapFrame.PLACE_LABEL_FROM && by1 - by0 >= MapFrame.PLACE_LABEL_FROM) {
+            double[][] runs = freeEdge.get(p.getId());
+            if (runs != null) runsOnGlobe(gc, runs, picked ? 2 : 1, !picked, Color.web(OFFER_EDGE, mine || lit ? 0.95 : 0.4));
+            // Its number on the freest square of its free ground, else the middle of its whole box (the plane's rule).
+            double[] box = { bx0, by0, bx1, by1 };
+            double[] sq = labelSquare(land, p, plotPx);
+            if (sq != null) {
+                double[][] s = onGlobe(new double[] { sq[0], sq[2], sq[2], sq[0] }, new double[] { sq[1], sq[1], sq[3], sq[3] });
+                if (s != null) {
+                    double[] sb = { Math.min(Math.min(s[0][0], s[0][1]), Math.min(s[0][2], s[0][3])), Math.min(Math.min(s[1][0], s[1][1]), Math.min(s[1][2], s[1][3])),
+                            Math.max(Math.max(s[0][0], s[0][1]), Math.max(s[0][2], s[0][3])), Math.max(Math.max(s[1][0], s[1][1]), Math.max(s[1][2], s[1][3])) };
+                    if (MapFrame.labelFits(sb)) box = sb;
+                }
+            }
+            if (MapFrame.labelFits(box)) {
                 String words = LandMap.placeLabel(p);
-                double x = Math.rint((bx0 + bx1) / 2), y = Math.rint((by0 + by1) / 2);
+                double x = Math.rint((box[0] + box[2]) / 2), y = Math.rint((box[1] + box[3]) / 2);
                 gc.setTextAlign(TextAlignment.CENTER);
                 gc.setTextBaseline(VPos.CENTER);
                 gc.setLineWidth(3);
@@ -2139,11 +2329,24 @@ final class MapView {
                 gc.strokeText(words, x, y);
                 gc.setFill(Color.rgb(255, 255, 255, p.getSide() == side ? 0.95 : 0.6));
                 gc.fillText(words, x, y);
-                newTag(gc, p, x, y, by1 - by0);
+                newTag(gc, p, x, y, box[3] - box[1]);
                 gc.setTextAlign(TextAlignment.LEFT);
                 gc.setTextBaseline(VPos.BASELINE);
             }
         }
+        // The picked blocks, one shape; the blocks a box being drawn would take under it; the ground just bought, outlined with its receipt.
+        groundShapes(land);
+        if (cellsPath(gc, groundCells)) {
+            gc.setFill(Color.web(Palette.BUILDING, PICKED_ALPHA));
+            gc.fill();
+            runsOnGlobe(gc, groundEdge, 2, false, Color.web(OFFER_EDGE, 0.95));
+        }
+        if (previewShapes(land) && cellsPath(gc, previewCells)) {
+            gc.setFill(Color.web(Palette.BUILDING, PICKED_ALPHA));
+            gc.fill();
+            runsOnGlobe(gc, previewEdge, 1, false, Color.web(OFFER_EDGE, 0.8));
+        }
+        if (receiptShown && bought != null && bought.edge() != null) runsOnGlobe(gc, bought.edge(), 2, false, Color.web(OFFER_EDGE, 0.95));
         double[] c = LandMap.centre(land);
         double[][] q = onGlobe(new double[] { c[0], c[2], c[2], c[0] }, new double[] { c[1], c[1], c[3], c[3] });
         if (q != null) {
@@ -2154,6 +2357,59 @@ final class MapView {
             gc.setLineDashes((double[]) null);
         }
     }
+
+    /** Pixels a plot spans on the globe where the plane's plot (x, y) is: the camera's step over `span` plots east of it over the span, 0 where either end is not seen. */
+    private double plotPx(double x, double y, long span) {
+        double[] a = globe.screenOfPlot(x, y), b = globe.screenOfPlot(x + span, y);
+        return a == null || b == null ? 0 : Math.hypot(b[0] - a[0], b[1] - a[1]) / span;
+    }
+
+    /** Cells of plots (rectangles {x0, y0, x1, y1}) as one path through the camera, each a quadrilateral of its four corners - a cell with a corner not seen left out, as boxPicks() does; false when none is in the path. */
+    private boolean cellsPath(GraphicsContext gc, List<double[]> cells) {
+        boolean any = false;
+        gc.beginPath();
+        for (double[] c : cells) {
+            double[] a = globe.screenOfPlot(c[0], c[1]), b = globe.screenOfPlot(c[2], c[1]), d = globe.screenOfPlot(c[2], c[3]), e = globe.screenOfPlot(c[0], c[3]);
+            if (a == null || b == null || d == null || e == null) continue;
+            gc.moveTo(a[0], a[1]);
+            gc.lineTo(b[0], b[1]);
+            gc.lineTo(d[0], d[1]);
+            gc.lineTo(e[0], e[1]);
+            gc.closePath();
+            any = true;
+        }
+        return any;
+    }
+
+    /** The runs of an outline through the camera, a line each between its ends where both are seen: `width` px, solid or dashed as the plane's offers' edges are. */
+    private void runsOnGlobe(GraphicsContext gc, double[][] runs, int width, boolean dashed, Color colour) {
+        gc.setStroke(colour);
+        gc.setLineWidth(width);
+        if (dashed) gc.setLineDashes(DASH_ON, DASH_PERIOD - DASH_ON);
+        for (int i = 0; i < runs[0].length; i++) {
+            double[] a = globe.screenOfPlot(runs[0][i], runs[1][i]), b = globe.screenOfPlot(runs[2][i], runs[3][i]);
+            if (a != null && b != null) gc.strokeLine(a[0], a[1], b[0], b[1]);
+        }
+        gc.setLineDashes((double[]) null);
+    }
+
+    /** Where an offer's number stands on the globe, the square of plots (LandMap.labelBlock()) found for the camera's scale - a number's PLACE_LABEL_FROM px in plots, to a power of two - and kept until the land moves; null where no scale is seen. */
+    private double[] labelSquare(CityLand land, LandParcel p, double plotPx) {
+        if (!(plotPx > 0)) return null;
+        double least = MapFrame.PLACE_LABEL_FROM / plotPx;
+        int bits = least <= 1 ? 0 : 64 - Long.numberOfLeadingZeros((long) Math.ceil(least) - 1);
+        double[] kept = globeLabelAt.get(p.getId());
+        if (kept == null || kept[4] != bits) {
+            double[] sq = LandMap.labelBlock(land, p, 1L << bits);
+            kept = new double[] { sq[0], sq[1], sq[2], sq[3], bits };
+            globeLabelAt.put(p.getId(), kept);
+        }
+        return kept;
+    }
+
+    /** The squares the globe's numbers stand on, by offer id, for the land they were found for and the scale (their last element). */
+    private final Map<Integer, double[]> globeLabelAt = new HashMap<>();
+    private long globeLabelsFor = Long.MIN_VALUE;
 
     /** The city's edge through the camera in the PICTURE tier (spec-globe 3.7), once the city's ground is EDGE_FROM_PX across on the screen: each run of LandMap.outline() a line, white at the edge's alpha. */
     private void globeEdge(GraphicsContext gc, CityLand land) {
@@ -2194,12 +2450,20 @@ final class MapView {
         CityLand land = g.getCityLand();
         LandMarket market = g.getLandManager().getMarket();
         int os = -1, op = -1;
+        boolean boxes = false;
+        List<String> ground = null;
         double[] xy = new double[2];
         if (globe.planeHolds(sx, sy) && globe.plotAt(sx, sy, xy)) {
-            LandMap.Pick p = LandMap.pick(land, market, (long) Math.floor(xy[0]), (long) Math.floor(xy[1]));
+            long x = (long) Math.floor(xy[0]), y = (long) Math.floor(xy[1]);
+            LandMap.Pick p = LandMap.pick(land, market, x, y);
             if (p.owner() == LandMap.OFFER) {
                 os = p.side();
                 op = p.place();
+            }
+            // Ground the player may pick, or has picked (BL1): where a press would box, and what the card says of it.
+            if (canPick()) {
+                boxes = picks.pressBoxes(g, x, y, false);
+                if (os < 0) ground = groundLines(x, y);
             }
         }
         if (os != overSide || op != overPlace) {
@@ -2207,11 +2471,71 @@ final class MapView {
             overPlace = op;
             dirty = true;
         }
-        cursorFor(os >= 0);
+        cursorFor(boxes);
         List<String> lines = new ArrayList<>(LandMap.globeHoverWords(globe, land, market, sx, sy, drawnAt(sx, sy), CARD_FIELDS));
         // An offer drawn here - the GROUND tier's - is bought with a click (0.7.137).
         if (os >= 0 && canPick()) lines.add(CLICK_TO_BUY);
+        if (ground != null) groundInto(lines, ground);
         showCard(lines, sx, sy, globe.width(), globe.height());
+    }
+
+    /** The hover card's last line over a block that is picked already (BL1), in blue as the offers' is: how to drop it. */
+    static final String CLICK_TO_DROP = "Shift-click to drop it · Enter buys";
+
+    /**
+     * What the hover card says over free ground that is no offer's (BL1), on the expanded map where the offers are drawn to be
+     * picked: over a block that may be picked, "Your ground: one block", its area by kind and its price in the toggle's money
+     * - the price the office would list it at today, LandMarket.quote() - and CLICK_TO_PICK last; over a picked block, the
+     * whole pick's - its offers' and its blocks' - area and price and CLICK_TO_DROP. Null elsewhere: over the city's own ground,
+     * the world's edge, and a block that is joined to nothing (the card says "Not the city's" as it did).
+     */
+    private List<String> groundLines(long x, long y) {
+        Game g = ui.game;
+        CityLand land = g.getCityLand();
+        LandMarket market = g.getLandManager().getMarket();
+        int level = market.getLevel();
+        long key = LandMap.blockAt(level, x, y);
+        if (key < 0 || land.ownsPlot(x, y)) return null;
+        List<String> out = new ArrayList<>();
+        if (picks.blocks().contains(key)) {
+            List<Integer> ids = picks.live(g);
+            LandMap.Card c = LandMap.card(g, ids);
+            int offers = 0;
+            for (int id : ids) if (id > 0) offers++;
+            out.add(LandMap.pickedWords(offers, picks.blocks().size()));
+            out.add(LandMap.kindWords(c.km2(), c.dryKm2(), c.freshKm2(), c.seaKm2()));
+            out.add("Price " + ui.landScreen.inToggle(c.usd()));
+            out.add(CLICK_TO_DROP);
+            return out;
+        }
+        if (!picks.pickable(g, key)) return null;
+        // The office measures the block as it would an offer of it - its ground, fields and price - once for the pointer's stay over it.
+        String quoteKey = key + "|" + level + "|" + shapesFor + "|" + g.getMonth();
+        if (!quoteKey.equals(quotedFor)) {
+            long[] r = LandMap.blockRect(level, key);
+            quoted = market.quote(r[0], r[1], r[2], r[3]);
+            quotedFor = quoteKey;
+        }
+        LandParcel q = quoted;
+        if (q == null) return null;
+        out.add(LandMap.ONE_BLOCK);
+        out.add(LandMap.kindWords(q.getKm2(), q.getKm2(CityLand.DRY), q.getKm2(CityLand.FRESH), q.getKm2(CityLand.SEA)));
+        out.add("Price " + ui.landScreen.inToggle(q.getPriceUsd()));
+        out.add(LandMap.CLICK_TO_PICK);
+        return out;
+    }
+
+    /** The block the hover last quoted (LandMarket.quote()) and what it was for: the block, the city's level, its ground and the month. */
+    private String quotedFor = "";
+    private LandParcel quoted;
+
+    /** The ground lines in the hover card where "Not the city's" stood (after its first line when the card has not that line), their last line, the blue one, at the card's foot. */
+    private static void groundInto(List<String> lines, List<String> ground) {
+        int at = lines.indexOf(LandMap.NOT_THE_CITYS);
+        if (at < 0) at = Math.min(1, lines.size());
+        else lines.remove(at);
+        lines.addAll(at, ground.subList(0, ground.size() - 1));
+        lines.add(ground.get(ground.size() - 1));
     }
 
     /** The ground drawn at a screen point on the globe, past the plane, as a code - its class and relief (GlobePicture.code()): the GROUND tier's piece where one is in, else the planet's picture's texel. */
@@ -2374,26 +2698,50 @@ final class MapView {
      * the plane does not draw, off the planet): what a click and a press read the ground under the pointer by.
      */
     private long[] plotAt(double sx, double sy) {
+        double[] xy = plotXY(sx, sy);
+        return xy == null ? null : new long[] { (long) Math.floor(xy[0]), (long) Math.floor(xy[1]) };
+    }
+
+    /** ...as the plane's own fractions of plots {x, y} (what a box's corners are read by: LandMap.plotBox()), or null where there is none. */
+    private double[] plotXY(double sx, double sy) {
         if (onGlobe()) {
             double[] xy = new double[2];
             if (!globe.planeHolds(sx, sy) || !globe.plotAt(sx, sy, xy)) return null;
-            return new long[] { (long) Math.floor(xy[0]), (long) Math.floor(xy[1]) };
+            return xy;
         }
         MapFrame f = frame();
-        return new long[] { (long) Math.floor(f.plotX(sx)), (long) Math.floor(f.plotY(sy)) };
+        return new double[] { f.plotX(sx), f.plotY(sy) };
     }
 
     /**
-     * Whether a left press at a screen point draws a box rather than pans (MS1): where the offers are drawn to be picked
-     * (canPick()), LandMap.pressBoxes() of the plot under it - an offer's free ground, or Shift - and Shift alone where the
-     * plane is not drawn under the press; never on the small map or where no offers are drawn.
+     * The plots a box between two screen points covers (LandMap.plotBox()), its four corners read through plotXY() - the
+     * plane's frame, or on the globe the camera where the plane is drawn, a corner it does not hold left out - or null where no
+     * corner has a plot: what a release takes (Picks.addBox()) and the preview shows (Picks.boxBlocks()).
+     */
+    private long[] boxPlots(double sx0, double sy0, double sx1, double sy1) {
+        double[] xs = new double[4], ys = new double[4];
+        int n = 0;
+        for (double[] c : new double[][] { { sx0, sy0 }, { sx1, sy0 }, { sx1, sy1 }, { sx0, sy1 } }) {
+            double[] xy = plotXY(c[0], c[1]);
+            if (xy == null) continue;
+            xs[n] = xy[0];
+            ys[n] = xy[1];
+            n++;
+        }
+        return n == 0 ? null : LandMap.plotBox(java.util.Arrays.copyOf(xs, n), java.util.Arrays.copyOf(ys, n));
+    }
+
+    /**
+     * Whether a left press at a screen point draws a box rather than pans (MS1, widened by BL1): where the offers are drawn
+     * to be picked (canPick()), Picks.pressBoxes() of the plot under it - an offer's free ground, a picked block or one that
+     * may be picked, or Shift - and Shift alone where the plane is not drawn under the press; never on the small map or where
+     * no offers are drawn.
      */
     private boolean pressBoxes(double sx, double sy, boolean shift) {
         if (!expanded || !canPick()) return false;
         long[] at = plotAt(sx, sy);
         if (at == null) return shift;
-        Game g = ui.game;
-        return LandMap.pressBoxes(g.getCityLand(), g.getLandManager().getMarket(), at[0], at[1], shift);
+        return picks.pressBoxes(ui.game, at[0], at[1], shift);
     }
 
     /**
@@ -2426,6 +2774,9 @@ final class MapView {
                 picks.only(g, p.offer().getId());
                 cardAt = box(p.offer());
                 showBuyCard();
+            } else if (canPick() && blockClick(at[0], at[1], shift)) {
+                requestDraw();
+                return;
             } else if (shift) {
                 return;
             } else {
@@ -2436,6 +2787,37 @@ final class MapView {
         place = offer ? p.place() : -1;
         picker.picked(side, place);
         requestDraw();
+    }
+
+    /**
+     * A click on ground that is no offer's (BL1), on the expanded map where the offers are drawn to be picked: a free block
+     * that may be picked is picked alone, and with Shift toggled; a block already picked keeps the picks and opens the card
+     * beside it, and with Shift is dropped (with the blocks that joined through it). A block that may not be picked - the
+     * city's own ground, a block two away from anything joined to it, the sea past the world's edge - is not handled: it
+     * closes the card as a click off the offers has, and Shift on it does nothing. True when the click was a block's.
+     */
+    private boolean blockClick(long x, long y, boolean shift) {
+        Game g = ui.game;
+        LandMarket market = g.getLandManager().getMarket();
+        int level = market.getLevel();
+        long key = LandMap.blockAt(level, x, y);
+        if (key < 0 || g.getCityLand().ownsPlot(x, y)) return false;
+        boolean held = picks.blocks().contains(key);
+        if (shift) {
+            if (!held && !picks.pickable(g, key)) return false;
+            bought = null;
+            picks.toggleBlock(g, key);
+            cardAt = bounds(listed(picks.live(g)));
+            showBuyCard();
+            return true;
+        }
+        if (!held && !picks.pickable(g, key)) return false;
+        bought = null;
+        if (!held) picks.onlyBlock(g, key);
+        long[] r = LandMap.blockRect(level, key);
+        cardAt = new double[] { r[0], r[1], r[2], r[3] };
+        showBuyCard();
+        return true;
     }
 
     /** What the pointer is over: the offer it lights, and the words - one line on the small map, a card on the expanded one. */
@@ -2456,7 +2838,8 @@ final class MapView {
             overPlace = op;
             dirty = true;
         }
-        cursorFor(os >= 0);
+        // The crosshair where a press would box (LandMap.pressBoxes(): an offer's free ground, a block picked or one that may be).
+        cursorFor(canPick() && picks.pressBoxes(g, x, y, false));
         String what = null;
         if (tiles != null && f.level() == MapFrame.L0 && tiles.ready(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE))) {
             long tx = Math.floorDiv(x, World.TILE), ty = Math.floorDiv(y, World.TILE);
@@ -2478,27 +2861,37 @@ final class MapView {
         List<String> lines = new ArrayList<>();
         if (what != null) lines.add(what);
         lines.addAll(LandMap.hoverWords(land, market, ui.game.getLandManager().getLandmasses(), x, y, CARD_FIELDS));
-        // ...and over an offer, how to buy it (0.7.137, board 4).
+        // ...and over an offer, how to buy it (0.7.137, board 4); over ground that is no offer's but may be picked, or is, the
+        // ground's own words (BL1).
         if (os >= 0 && canPick()) lines.add(CLICK_TO_BUY);
+        else if (canPick()) {
+            List<String> ground = groundLines(x, y);
+            if (ground != null) groundInto(lines, ground);
+        }
         showCard(lines, sx, sy, f.width(), f.height());
     }
 
     /**
-     * The cursor says what a left press would do (MS1): the crosshair where it would draw a box - over an offer's free
-     * ground (`offerHere`, the pick the hover found, which is LandMap.pressBoxes() without Shift), or anywhere with Shift
-     * held where the offers are drawn to be picked - the open hand where it would pan, the default on the small map. A press
-     * held keeps its own (the closed hand panning, the crosshair boxing).
+     * The cursor says what a left press would do (MS1, BL1): the crosshair where it would draw a box - over an offer's free
+     * ground or ground that is picked or may be (`boxHere`, LandMap.pressBoxes() without Shift), or anywhere with Shift held
+     * where the offers are drawn to be picked - the open hand where it would pan, the default on the small map. A press held
+     * keeps its own (the closed hand panning, the crosshair boxing).
      */
-    private void cursorFor(boolean offerHere) {
+    private void cursorFor(boolean boxHere) {
         if (pressed) return;
         canvas.setCursor(!expanded ? javafx.scene.Cursor.DEFAULT
-                : canPick() && (offerHere || hoverShift) ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
+                : canPick() && (boxHere || hoverShift) ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
     }
 
     /** The hover card's last line over an offer on the expanded map (spec-earth 3.1, board 4), in blue. */
     static final String CLICK_TO_BUY = "Click to buy it here";
 
-    /** The expanded map's hover card: its lines, the first bold, by the pointer and inside the view - CLICK_TO_BUY in the accent's light blue. */
+    /** Whether a hover card's line is the blue last line telling the player what a click does. */
+    private static boolean isHint(String line) {
+        return CLICK_TO_BUY.equals(line) || LandMap.CLICK_TO_PICK.equals(line) || CLICK_TO_DROP.equals(line);
+    }
+
+    /** The expanded map's hover card: its lines, the first bold, by the pointer and inside the view - the hint last (CLICK_TO_BUY, CLICK_TO_PICK, CLICK_TO_DROP) in the accent's light blue. */
     private void showCard(List<String> lines, double sx, double sy, double vw, double vh) {
         if (lines.isEmpty()) {
             card.setVisible(false);
@@ -2508,7 +2901,7 @@ final class MapView {
         for (int i = 0; i < lines.size(); i++) {
             Label l = new Label(lines.get(i));
             l.setStyle(i == 0 ? Palette.strong(Palette.SIZE_BODY, Palette.TEXT)
-                    : CLICK_TO_BUY.equals(lines.get(i)) ? Palette.strong(Palette.SIZE_LABEL, Palette.ACCENT_LIGHT)
+                    : isHint(lines.get(i)) ? Palette.strong(Palette.SIZE_LABEL, Palette.ACCENT_LIGHT)
                     : Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
             card.getChildren().add(l);
         }
@@ -2559,8 +2952,13 @@ final class MapView {
        office stays as it was (B6).
        ===================================================================== */
 
-    /** A purchase from the card: the offers found listed when it was asked for, their places ({side, place} each), the card's title for them and the ground they stand on, in plots. */
-    record Bought(List<Integer> ids, List<int[]> places, String title, double[] at) { }
+    /**
+     * A purchase from the card: the offers and drafts found listed when it was asked for, their places ({side, place, 1 for a
+     * draft or 0} each - a draft's place is where its middle lies, which no "next ground" line is about), the card's title for
+     * them (LandMap.pickTitle()), the ground they stand on, in plots, and that ground's edge as runs (LandMap.freeOutline(),
+     * worked out before the purchase made it the city's): outlined while the receipt stands (BL1).
+     */
+    record Bought(List<Integer> ids, List<int[]> places, String title, double[] at, double[][] edge) { }
 
     /** The card stands off its offer's box by this many pixels: 14, as the hover card stands off the pointer (showCard()). */
     static final double CARD_GAP = 14;
@@ -2614,14 +3012,17 @@ final class MapView {
         return out;
     }
 
-    /** Shift and a drag let go (B7): every offer whose free ground the box meets added to the card's picks, in the office's order - the cheapest dry ground first - the card beside them. */
+    /**
+     * A drag let go (B7, MS1; BL1: a box takes ground, not offers): the blocks the box covers that join the city added to the
+     * picks (Picks.addBox(), the box's corners through plotXY(): the snap to the block grid the preview showed) - an offer
+     * whose whole free ground they cover is the offer, bought at its listed price - the card beside what is picked.
+     */
     private void boxed(double x0, double y0, double x1, double y1) {
         Game g = ui.game;
-        List<Integer> took = LandMap.boxPicks(g.getCityLand(), g.landShelf(), toScreen(), x0, y0, x1, y1);
-        if (!took.isEmpty()) {
+        long[] pb = boxPlots(x0, y0, x1, y1);
+        if (pb != null && picks.addBox(g, pb[0], pb[1], pb[2], pb[3]) > 0) {
             bought = null;
-            picks.add(g, took);
-            cardAt = bounds(listed(took));
+            cardAt = bounds(listed(picks.live(g)));
             showBuyCard();
         }
         requestDraw();
@@ -2789,6 +3190,13 @@ final class MapView {
         requestDraw();
     }
 
+    /** The "Your ground" chip's ×: every draft of the picked blocks dropped, which drops the blocks they were cut from - one chip for all of them, as the card names them as one (blocks that joined through them go too, said in the head). */
+    void dropGround(List<Integer> drafts) {
+        for (int id : drafts) picks.drop(id);
+        showBuyCard();
+        requestDraw();
+    }
+
     /** The toggle moved, on the card or the head: both drawn again in the other money. */
     void paidOtherwise() {
         headFor = null;
@@ -2803,9 +3211,11 @@ final class MapView {
         List<int[]> places = new ArrayList<>();
         for (LandParcel p : ps) {
             found.add(p.getId());
-            places.add(new int[] { p.getSide(), p.getPlace() });
+            places.add(new int[] { p.getSide(), p.getPlace(), p.getId() < 0 ? 1 : 0 });
         }
-        return new Bought(found, places, ps.size() == 1 ? ps.get(0).where() : ps.size() + " offers", bounds(ps));
+        Game g = ui.game;
+        return new Bought(found, places, LandMap.pickTitle(ps, g.getLandManager().getMarket().getLevel()), bounds(ps),
+                ps.isEmpty() ? null : LandMap.freeOutline(g.getCityLand(), ps));
     }
 
     /** The card's Buy, or Enter (B2): the offers bought as the office's Buy buys them (LandScreen.buyOrFund()) - the office drawn again under the map, which stays - and the receipt by the ground; short after all, the funding page, which comes back here. */
@@ -2862,6 +3272,7 @@ final class MapView {
         backFromFunding = false;
         if (!fromFunding) {
             bought = null;
+            picks.clear();
             return;
         }
         expand(true);
@@ -2885,8 +3296,13 @@ final class MapView {
         rings = List.of();
         receiptShown = true;
         cardAt = b.at();
-        String title = places.size() == b.ids().size() ? b.title() : places.size() + " of " + b.title();
-        buyBox.getChildren().setAll(ui.landScreen.mapReceiptNode(title, places, this));
+        // "2 of 3 offers" when it fell short; "2 of 3 picks" where the card's title is not a count of offers (it names a place or the player's ground).
+        String title = places.size() == b.ids().size() ? b.title()
+                : places.size() + " of " + (b.title().endsWith(" offers") ? b.title() : b.ids().size() + " picks");
+        // ...and only the offers' places list their next ground (a draft's is no offer's place).
+        List<int[]> offerPlaces = new ArrayList<>();
+        for (int[] sp : places) if (sp[2] == 0) offerPlaces.add(new int[] { sp[0], sp[1] });
+        buyBox.getChildren().setAll(ui.landScreen.mapReceiptNode(title, offerPlaces, this));
         buyBox.setVisible(true);
         layoutBuyCard();
         requestDraw();
@@ -2952,6 +3368,12 @@ final class MapView {
     /** ...or (0.7.137, B5) back at the view it left - the funding page done - when `keepView` and it has been over the window before. */
     private void expand(boolean keepView) {
         if (expanded) return;
+        // Over the window afresh, no picks stand and no purchase waits: the ones a funding page that was left by another way kept
+        // for its purchase (collapse()) are let go (BL1).
+        if (!keepView) {
+            backFromFunding = false;
+            picks.clear();
+        }
         if (bigPane == null) buildPane();
         expanded = true;
         smallBox.getChildren().remove(canvas);
@@ -2996,7 +3418,10 @@ final class MapView {
         keyW = keyA = keyS = keyD = false;
         keyNanos = 0;
         boxing = false;
-        picks.clear();
+        // The funding page buys these very ids (toFunding(), buyOnLoan() falling short), and the drafts of the picked blocks stand
+        // in the office only while the picks do (BL1, Picks.clear()): through it the picks are kept, and back() or the receipt
+        // lets them go.
+        if (!backFromFunding) picks.clear();
         if (!backFromFunding) bought = null;
         hideBuyCard();
         ui.closeChartFullScreen();
