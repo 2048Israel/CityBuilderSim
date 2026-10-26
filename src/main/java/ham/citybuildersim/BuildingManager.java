@@ -4719,6 +4719,54 @@ public class BuildingManager {
                 .setJobs(JobType.NO_DIPLOMA, 3)
                 .setJobs(JobType.DIPLOMA, 1).setId(58);
         templates.add(bottling);
+
+        /* ------------------------------------------------------------------
+           HYDRO STATION (HY1, id 144). Canada's power was mostly hydro from
+           1900 (133,000 kW by 1900, over 90% of capacity 1920-50: the
+           research's P1.12), and the game had only coal and wind. One
+           station is one generating set and its share of the dam: 10 MW
+           nameplate at a 45% capacity factor (IRENA's world figure for hydro
+           in recent years), so 4.5 MW on average - the Wind Farm's
+           arithmetic, 4,500 kW x 730 h / 720 kWh, is 4,560 units. 10 MW is a
+           1900 station: Shawinigan's first was about 7.5 MW (c. 1901),
+           Niagara's Adams station of 1895 ten sets of about 3.7 MW each.
+
+           WHAT IT COSTS. $3,000 a kW, against IRENA's world average of about
+           $2,135 (2021, rising), since small stations and Canada's run
+           dearer: 21,920 at the Wind Farm's cash per dollar ($30.0M; the
+           Wind Farm's 23,240 is $31.8M). Its construction points are the
+           coal plant's points to cash (120,000 over 1,071,816 of cash),
+           2,450; its materials the two plants' 1.85% of cash, 406. Per unit
+           of average power it costs 4.8 of cash, the Wind Farm 2.9 and the
+           coal plant 3.8, and the game has no intermittency, so the advice
+           chooses wind over it almost everywhere: the real figures, kept.
+           Its day is the 1900 city, when coal's fuel is dear.
+
+           WHERE IT STANDS. It takes nothing from the river (water 0) and
+           draws 20 of its own power. It stands on any ground, steep too, as
+           a mine does (Game.standsAnywhere()): a dam's wings stand on the
+           valley's sides, 10 acres of them, the powerhouse and the yard.
+           And it needs a river with a drop on the ground the city owns, a
+           station a slot of the river's mean power (HydroSites, "hydro"):
+           an order past the slots is refused NO_RIVER. Five posts: two with
+           no diploma, two with a diploma, an engineer.
+           ------------------------------------------------------------------ */
+        BuildingsTemplate hydroStation = new BuildingsTemplate("Hydro Station", BuildingType.ELECTRICITY)
+                .setHydro(true)                     // needs a river with a drop the city owns
+                .setCashCost(21920)                 // $30.0M all-in at $3,000/kW
+                .setConstructionPoints(2450)        // the coal plant's points to cash
+                .setConstructionMaterials(406)      // 1.85% of cash, as both plants'
+                .setProduction1(4560)               // 10 MW at a 45% capacity factor
+                .setElectricityConsumption(20)      // its own load
+                .setWaterConsumption(0)             // it takes nothing from the river
+                .setLandSqFt(435600)                // 10 acres: dam wings, powerhouse, yard
+                .setRoadLoad(5)
+                .setJobs(JobType.NO_DIPLOMA, 2)
+                .setJobs(JobType.DIPLOMA, 2)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 1)
+                .setSince(1900)                     // it stood before: Appleton 1882, Niagara 1895
+                .setId(144);
+        templates.add(hydroStation);
         //add more buildings; next Building ID is 62
     }
 

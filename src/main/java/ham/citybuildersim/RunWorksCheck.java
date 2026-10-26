@@ -235,7 +235,8 @@ public class RunWorksCheck {
             if (run != onTheMap) disagree.add(t.getName());
             if (run) runs.add(t.getName());
             if (run && Game.siteOf(t) != null) withSite.add(t.getName());
-            LandManager.Use want = Game.siteOf(t) != null ? LandManager.Use.WORKS : run ? LandManager.Use.RUN : LandManager.Use.BUILDING;
+            // ...a works is a template with a site, and since HY1 the Hydro Station, which has no site but stands on any ground, a dam's wings on the valley's sides.
+            LandManager.Use want = Game.siteOf(t) != null || t.isHydro() ? LandManager.Use.WORKS : run ? LandManager.Use.RUN : LandManager.Use.BUILDING;
             if (Game.groundUse(t) != want) badUse.add(t.getName());
         }
         report("Game.isRun() agrees with the map's highway and track over all " + all + " templates", disagree.isEmpty() && all > 100,

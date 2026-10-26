@@ -49,11 +49,19 @@ had.
 **What a site yields.** Mean flow from width by hydraulic geometry: GRWL's
 widths are mean-flow widths, and across the world's rivers width goes as
 w = 7.2 Q^0.5 (Moody and Troutman 2002, quoted from memory, not re-read):
-Q = (w / 7.2)^2 m3/s, the width capped at 1,000 m (wider is lake-like, and
-the formula would give the St Lawrence ten times its flow). Mean power
+Q = (w / 7.2)^2 m3/s, the width capped (★2b). Mean power
 P = 0.85 x 9.81 x Q x H kW (water to wire 85%). A 30 m river under foothill
 banks gives 4.3 MW, a 60 m one 17 MW, a 200 m one 190 MW; under steep banks
 three times as much.
+
+★2b **The width is capped at 550 m**, the width the formula gives
+Niagara's mean flow (about 5,800 m3/s). The design said 1,000 m; the slice
+found GRWL keeps reservoirs and lake-like reaches as river: Shawinigan's
+best reach reads 1,088 m wide, 3.4 GW at one site, about 740 stations.
+Recommended: no river in Canada carries much more than Niagara past a dam
+site, and a wider reach is water standing, not flow. It still reads a
+reservoir at Niagara's flow; the slot limit binds only on small rivers, and
+the gate that matters is a site at all.
 
 ### 1.2 The station
 
@@ -138,3 +146,39 @@ the slots go ahead, past them `NO_RIVER`, each station adds its
 `production1` to the grid, and it stands on steep ground; (5) on earth-2
 when the file is named: real hydro towns against flat ones, and how often
 a site turns up.
+
+## 2. What was built
+
+One Sonnet 5.5 slice at xhigh, reviewed by Opus; the cap changed at review.
+
+- **`HydroSites`** (new, 440 lines): the physics (`dischargeM3s`,
+  `meanKw`, `bankRiseM`, `headM`), the core `scan()` over a relief and
+  segments with nothing of the Earth in it, `recount()` from the Earth's
+  rivers (`EarthData.riversIn()` of the 1-degree tiles round each cell the
+  city owns ground in, through `EarthTerrain.projection()`, which was
+  already public: EarthTerrain is untouched), `refresh()` against the
+  linked landmasses, `setForTest()` and `sitesOnWorld()` for the harness.
+- **`LandManager`**: the sites recounted in `landChanged()`, refreshed in
+  `linkChanged()` and where a port moves the linked set, cleared in its
+  reset (the slice added the last two: without them a port linking an
+  island would not link its sites, and a new city would keep the old one's).
+- **The template**: `"hydro": true` (`BuildingsTemplate.isHydro()`,
+  `BuildingCatalog`), id 144 at the end of `buildings.json` and of the
+  built-in list, with §1.2's figures and sources.
+- **`Game`**: `standsAnywhere()` takes the Hydro Station; `hydroSlots()`,
+  `hydroCommitted()`, `hydroSlotsFree()`, `hasRiverFor()`;
+  `BuildResult.NO_RIVER` (last in the enum) in `buildFor`, `buildStack` and
+  the run's refusals, counting the run's hydro orders ahead.
+- **`BuildCard`**: `VerdictKind.NO_RIVER` (last) and a `Hydro` line - slots
+  free of total, sites, the best site's width and head. **`BuildScreen`**:
+  NO_RIVER beside each of NO_COAST's five places, `showNoRiverMenu` (a
+  river comes with land: the Land office), and the card's river line.
+- **`BuildAdvice`**: a hydro candidate's unit is 0 while no slot is free,
+  and its count held to the slots free. `AutoBuilder` is unchanged: it
+  orders only what the advice names, through `buildStack`.
+- **Harnesses**: `HydroCheck` new (§1.4); `BuildingDataCheck` compares the
+  flag, dates id 144 1900 and counts 145 buildings; `RunWorksCheck`'s works
+  rule takes the Hydro Station.
+
+A city founded at Shawinigan owns no site at founding: the falls lie
+outside its first ground. It has to buy the river, as a mine buys its ore.

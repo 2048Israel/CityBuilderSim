@@ -429,6 +429,8 @@ public final class BuildAdvice {
         double[] fill = game.getPopulationManager().getJobFillRate();
         switch (m.kind()) {
             case POWER:
+                // A hydro station adds power only while a slot of the city's river is free (HY1: Game.hydroSlotsFree()).
+                if (t.isHydro() && game.hydroSlotsFree(t) < 1) return 0;
                 return t.getProduction1() * staffing(t, fill);
             case WATER: {
                 /*
@@ -1364,7 +1366,9 @@ public final class BuildAdvice {
      * the least count that reaches the best figure this building can make.
      */
     static int[] count(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t, Ahead p) {
-        return count(game, m, site, plus(new LinkedHashMap<>(), t, 1), p, MOST);
+        // A hydro station's count is held to the slots free (HY1): never more than the city's river holds.
+        int most = m.kind() == Kind.POWER && t.isHydro() ? Math.min(MOST, game.hydroSlotsFree(t)) : MOST;
+        return count(game, m, site, plus(new LinkedHashMap<>(), t, 1), p, most);
     }
 
     /**

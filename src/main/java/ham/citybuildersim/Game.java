@@ -7914,7 +7914,7 @@ public class Game {
 
     
     
-    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST}
+    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER}
 
     /* =======================================================================
        HALF THE PRACTICE, BEFORE THE DOORS OPEN (2026-09-12)
@@ -8095,11 +8095,12 @@ public class Game {
     /**
      * Whether a building is a works that may stand on any ground (ET2, spec-earth2-terrain 3.2 and 4.4): every
      * template with a site (siteOf()) - the mines, the quarries, the wells and the platforms, a pit and its benches
-     * being dug as part of its own cost. Its ground comes from the steep and very steep first, then the foothill,
+     * being dug as part of its own cost - and since HY1 the Hydro Station, whose dam's wings stand on the valley's
+     * sides. Its ground comes from the steep and very steep first, then the foothill,
      * then the flat (LandManager's BUILDABLE BY SLOPE); every other building stands on flat and foothill only.
      */
     public static boolean standsAnywhere(BuildingsTemplate t) {
-        return siteOf(t) != null;
+        return siteOf(t) != null || (t != null && t.isHydro());
     }
 
     /**
@@ -8309,6 +8310,33 @@ public class Game {
         return lms.linkedShore();
     }
 
+    /* ===== THE HYDRO STATION'S RIVER (HY1, 2026-10-26; docs/queue/HY1-notes.md 1.2 and 1.3) =====
+
+       A Hydro Station needs a river with a drop on the ground the city owns, on a landmass it has linked: the city's
+       hydro sites (HydroSites, derived at every land change, never saved) each hold as many stations as the river's
+       mean power allows, and an order is held to the slots free - the stations standing, on site and ahead in the
+       run counted against them - and refused NO_RIVER past them, before land and money, as a desalination plant with
+       no sea is refused NO_COAST. A station standing is never stopped by a site lost (ground sold back, a landmass
+       unlinked): only new orders are held. */
+
+    /** How many stations of this template the city's linked hydro sites hold in all (HydroSites.slots()); 0 for a template that is not a hydro station. */
+    public int hydroSlots(BuildingsTemplate t) {
+        return t == null || !t.isHydro() ? 0 : landManager.getHydroSites().slots(t.getProduction1());
+    }
+
+    /** The hydro stations standing, on site or ordered: what the slots are counted against. */
+    public int hydroCommitted() { return committedWhere(BuildingsTemplate::isHydro); }
+
+    /** The slots left for this template: the slots less the stations committed, never below nothing - a site lost never stops a station standing, it only holds new orders. */
+    public int hydroSlotsFree(BuildingsTemplate t) {
+        return Math.max(0, hydroSlots(t) - hydroCommitted());
+    }
+
+    /** Whether this order has a river: true for every building but a hydro station, whose order of n needs n slots free. */
+    public boolean hasRiverFor(BuildingsTemplate t, int n) {
+        return t == null || !t.isHydro() || hydroSlotsFree(t) >= n;
+    }
+
     /**
      * The landmass a sea terminal's order stands on when it is an island no port links (so that it takes that island's own
      * room, not the linked pool's), else Landmasses.NO_LANDMASS: for every other building, for a city on one landmass, and
@@ -8428,6 +8456,10 @@ public class Game {
 
         if (!hasCoastFor(template, quantity)) {
             return false;   // no sea to draw
+        }
+
+        if (!hasRiverFor(template, quantity)) {
+            return false;   // no river with a drop to dam (HY1)
         }
 
         if (!hasLicencesFor(template, quantity)) {
@@ -8559,6 +8591,13 @@ public class Game {
             return BuildResult.NO_COAST;
         }
 
+        // ...and the river before land and money, for the same reason (HY1): a hydro station with no river with a
+        // drop on the ground the city owns, or none left of its slots, is not a funding problem.
+        if (!hasRiverFor(template, quantity)) {
+            this.hasNewReceipt = false;
+            return BuildResult.NO_RIVER;
+        }
+
         // Licences before land and before money, for the same reason as ore: a
         // firm with nobody to practise is not a funding problem, and offering a
         // bond to fix it would be a lie about what is wrong.
@@ -8682,12 +8721,12 @@ public class Game {
         return Math.max(0, buildRunInvoice(run) - cash);
     }
 
-    /** How many of the run's orders, from the first, would pass the checks money cannot fix - ore, the coast, licences, ground - each placed after the ones before it. */
+    /** How many of the run's orders, from the first, would pass the checks money cannot fix - ore, the coast, the river (HY1), licences, ground - each placed after the ones before it. */
     public int buildRunAhead(java.util.Map<BuildingsTemplate, Integer> run) {
         return runAhead(run, null);
     }
 
-    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
+    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_RIVER, NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
     public BuildResult buildRunStop(java.util.Map<BuildingsTemplate, Integer> run) {
         BuildResult[] stop = { BuildResult.SUCCESS };
         runAhead(run, stop);
@@ -8707,6 +8746,8 @@ public class Game {
         double worksAhead = 0, runsAhead = 0;
         // ...and (ET5) the ground the run's sea terminals take on each island no port links: that island's room, never the linked ground.
         java.util.Map<Integer, Double> aheadOn = new java.util.HashMap<>();
+        // ...and (HY1) the hydro stations the run has ordered so far: each counts against the slots free of the ones after it.
+        int hydroAhead = 0;
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             BuildingsTemplate t = e.getKey();
             int n = e.getValue() == null ? 0 : e.getValue();
@@ -8719,6 +8760,7 @@ public class Game {
                 int island = islandPortLandmass(t, Landmasses.CHOSEN);
                 BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
+                        : !hasRiverFor(t, hydroAhead + n) ? BuildResult.NO_RIVER
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
                         : !(island != Landmasses.NO_LANDMASS
                                 ? landManager.canAllocateOn(island, aheadOn.getOrDefault(island, 0.0) + t.getLandSqFt() * (double) n)
@@ -8730,6 +8772,7 @@ public class Game {
                     if (stop != null) stop[0] = refused;
                     return ahead;
                 }
+                if (t.isHydro()) hydroAhead += n;
                 if (packs(t)) {
                     claimsAhead.computeIfAbsent(t.site().resource(), k -> new java.util.ArrayList<>())
                             .add(new LandManager.Claim(t.site().type(), t.site().sites(), n));

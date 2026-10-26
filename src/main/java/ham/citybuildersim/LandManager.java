@@ -278,6 +278,9 @@ public class LandManager {
     /** The city's ground by landmass and the landmasses it has linked (ET5): derived from the land and the Earth's data, never saved here; a bare one is a single landmass, and every figure below is then the old one. */
     private final Landmasses landmasses = new Landmasses();
 
+    /** The hydro sites on the city's ground and on the landmasses it has linked (HY1): derived from the land and the Earth's data, never saved here; a generated world has none. */
+    private final HydroSites hydro = new HydroSites();
+
     /* ------------------------------ the ground ------------------------------
      *
      * THE CITY'S LAND ON THE WORLD (0.7.57): founded the first time anything
@@ -444,6 +447,9 @@ public class LandManager {
     /** The city's ground by landmass (ET5): its books, which it has linked, and what is unlinked. */
     public Landmasses getLandmasses() { return landmasses; }
 
+    /** The city's hydro sites (HY1): where a river and a drop lie on the ground it owns, and which of them are on linked landmasses. */
+    public HydroSites getHydroSites() { return hydro; }
+
     /**
      * The land changed (ET5): counted by landmass again, the offers standing split against the linked set again, the
      * sites of the fields across the water worked out again. Called wherever the ground does change - a purchase, a
@@ -452,6 +458,7 @@ public class LandManager {
     void landChanged() {
         if (land == null) return;
         landmasses.recount(World.of(land.key()), land);
+        hydro.recount(World.of(land.key()), land);
         linkChanged();
     }
 
@@ -463,6 +470,7 @@ public class LandManager {
     void linkChanged() {
         if (land == null) return;
         landmasses.refresh();
+        hydro.refresh(landmasses);
         refreshUnlinkedSites();
         market.restateOffers();
     }
@@ -478,6 +486,7 @@ public class LandManager {
         int before = landmasses.version();
         landmasses.refresh();
         if (landmasses.version() != before) {
+            hydro.refresh(landmasses);
             refreshUnlinkedSites();
             market.restateOffers();
         }
@@ -3011,6 +3020,7 @@ public class LandManager {
         java.util.Arrays.fill(extractedByType, null);
         zoning.clear();
         landmasses.reset();
+        hydro.reset();
         java.util.Arrays.fill(unlinkedSitesBy, 0);
         java.util.Arrays.fill(unlinkedSitesByType, null);
         clearedSqFt = 0;

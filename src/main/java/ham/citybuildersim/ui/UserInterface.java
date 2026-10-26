@@ -5586,7 +5586,7 @@ public class UserInterface extends Application {
             case "handleAllBuildingMenus": case ConstructionScreen.SCREEN:
             case "showNoDepositMenu": case "showNoLandMenu":
             case "showBuildFunding": case "showBuildFellShort":
-            case "showNoLicenceMenu": case "showNoCoastMenu":
+            case "showNoLicenceMenu": case "showNoCoastMenu": case "showNoRiverMenu":
                 return "build";
             /*
              * ...AND ITS FUNDING PAGE AND THE PAGE AFTER IT (0.7.26): the
