@@ -1,4 +1,4 @@
-# MS1 - the expanded map: its head, a drag that selects, picks that last, and the near view anywhere ({next}, 2026-10-26)
+# MS1 - the expanded map: its head, a drag that selects, picks that last, and the near view anywhere (0.8.52, 2026-10-26)
 
 The brief: [MS1.md](MS1.md), Jerus's words of 2026-10-26. Two slices, each written by a Sonnet 5.5 agent at xhigh and
 reviewed by the Opus batch session: A the model's half (`LandMap.Picks`, `GlobeFrame`, MapCheck 14/14b/14c, GlobeCheck
