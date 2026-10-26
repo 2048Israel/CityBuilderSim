@@ -1238,8 +1238,10 @@ public final class LandMap {
      * decisions B1 to B7). The expanded map's card and the box that picks
      * offers are ui/MapView's and ui/LandScreen's; what they work out is
      * here, so MapCheck 14 holds it: the picks (Picks - the view's, never
-     * saved, dropped on a month and a load, a pick no longer listed falling
-     * out); the offers a box on the screen meets on their free ground
+     * saved, dropped on a load but NOT on a month (MS1, Jerus 2026-10-26,
+     * superseding "dropped on a month"): a pick is keyed to the ground it
+     * covers and a pick whose offer left the shelf is dropped, said so, or
+     * carried onto the ground's new offer, MapCheck 14b); the offers a box on the screen meets on their free ground
      * (boxPicks(), through a ToScreen: the plane's MapFrame, the globe's
      * camera); and the card's figures (card()) - what the land office's rows
      * and "Buy the best N" read from the model, summed, the cash before and
@@ -1253,58 +1255,201 @@ public final class LandMap {
      * The offers picked on the expanded map, in the order picked (B1 a click
      * takes one, B3 shift adds or drops one, B7 a box or Ctrl+A adds what it
      * takes): the view's own, never saved (spec-earth 3.2, "no new model
-     * state"). They belong to one city's month: live() drops them all once
-     * the month has turned or another city has been founded or loaded since
-     * - into another Game, or into this one, which builds its world again
-     * and so its land office (Game.loadGameSave(): a new LandManager) - and
-     * drops a pick no longer listed, bought here or elsewhere.
+     * state"). They belong to one city: live() drops them all only when
+     * another city has been founded or loaded since - into another Game, or
+     * into this one, which builds its world again and so its land office
+     * (Game.loadGameSave(): a new LandManager). A MONTH DROPS NOTHING (MS1,
+     * Jerus 2026-10-26: "on monthly update it doesnt reset cause currently it
+     * does so its a race against time unless paused, and at 50x its
+     * impossible to buy land like that"; spec-earth 3.2's "the picks are
+     * dropped on a month" is superseded).
+     *
+     * WHY a pick is keyed to the ground it covers, not only to its offer's
+     * id: the land office never relists a month - an offer stands until it is
+     * bought (LandMarket.update() lists only empty places) - so the month was
+     * never what the picks lost; live() cleared them on the month's turn, and
+     * at 50x a month is a fraction of a second. What can take an offer off the
+     * shelf is a purchase, the player's or the city's own (AutoBuilder), and
+     * that is the pick's end only where it bought the picked ground: a pick
+     * holds the rectangle its offer had when it was picked, and one whose id
+     * left the shelf is looked for on that ground - fully the city's now,
+     * dropped and said so; for sale still under another id, carried onto it;
+     * for sale under none, dropped and said so (dropNote()).
      */
     public static final class Picks {
-        private final List<Integer> ids = new ArrayList<>();
-        private LandManager office;
-        private int month;
+        /** An offer picked: its id, its rectangle in plots as picked (half-open), and the land office's name for it ("North 3"), which outlives the offer. */
+        private record Pick(int id, long x0, long y0, long x1, long y1, String where) {
+            static Pick of(LandParcel p) { return new Pick(p.getId(), p.getX0(), p.getY0(), p.getX1(), p.getY1(), p.where()); }
+        }
 
-        /** The picks for this city as it stands, in order: none once its month has turned or another city was founded or loaded, and only those still listed. */
+        private final List<Pick> held = new ArrayList<>();
+        private List<Integer> snapshot = List.of();
+        private LandManager office;
+        private String note;
+
+        /**
+         * The picks for this city as it stands, in order: none once another city
+         * was founded or loaded, and each pick whose offer has left the shelf
+         * dropped or carried onto the ground's new offers as the class says -
+         * the month drops none. Runs every frame: while every id is still
+         * listed it looks each one up and scans no plot.
+         */
         public List<Integer> live(Game g) {
             LandManager now = g == null ? null : g.getLandManager();
-            if (now == null || now != office || g.getMonth() != month) {
-                ids.clear();
+            if (now == null || now != office) {
+                held.clear();
+                snapshot = List.of();
                 office = now;
-                month = g == null ? 0 : g.getMonth();
+                note = null;
             }
-            if (g != null) {
-                LandMarket market = g.getLandManager().getMarket();
-                ids.removeIf(id -> market.find(id) == null);
+            if (g == null || held.isEmpty()) return snapshot;
+            LandMarket market = now.getMarket();
+            boolean allListed = true;
+            for (Pick p : held) {
+                if (market.find(p.id()) == null) {
+                    allListed = false;
+                    break;
+                }
             }
+            if (!allListed) restand(g, market);
+            return snapshot;
+        }
+
+        /** Some pick's offer has left the shelf: kept ones stay, the rest dropped or carried onto the ground's offers, the order kept. */
+        private void restand(Game g, LandMarket market) {
+            CityLand land = g.getCityLand();
+            List<LandParcel> listing = market.getListing();
+            java.util.Set<Integer> kept = new java.util.HashSet<>();
+            for (Pick p : held) if (market.find(p.id()) != null) kept.add(p.id());
+            List<Pick> out = new ArrayList<>(held.size());
+            java.util.Set<Integer> placed = new java.util.HashSet<>();
+            java.util.Set<Integer> carriedTo = new java.util.LinkedHashSet<>();
+            List<String> bought = new ArrayList<>(), unoffered = new ArrayList<>(), carriedFrom = new ArrayList<>();
+            for (Pick p : held) {
+                if (kept.contains(p.id())) {
+                    out.add(p);
+                    placed.add(p.id());
+                    continue;
+                }
+                if (land == null || land.grid().unowned(p.x0(), p.y0(), p.x1(), p.y1()) == 0) {
+                    bought.add(p.where());
+                    continue;
+                }
+                boolean carried = false;
+                for (LandParcel o : listing) {
+                    long x0 = Math.max(p.x0(), o.getX0()), y0 = Math.max(p.y0(), o.getY0());
+                    long x1 = Math.min(p.x1(), o.getX1()), y1 = Math.min(p.y1(), o.getY1());
+                    if (x0 >= x1 || y0 >= y1 || land.grid().unowned(x0, y0, x1, y1) == 0) continue;
+                    carried = true;
+                    carriedTo.add(o.getId());
+                    // an offer already picked stays where it stands: one kept (anywhere in the order) or carried onto already
+                    if (kept.contains(o.getId()) || !placed.add(o.getId())) continue;
+                    out.add(Pick.of(o));
+                }
+                if (carried) carriedFrom.add(p.where());
+                else unoffered.add(p.where());
+            }
+            held.clear();
+            held.addAll(out);
+            snapshot = view();
+            List<String> says = new ArrayList<>();
+            if (!bought.isEmpty()) says.add(bought.size() == 1 ? String.format(BOUGHT_NOTE, bought.get(0)) : String.format(BOUGHT_MANY_NOTE, bought.size()));
+            if (!unoffered.isEmpty()) says.add(unoffered.size() == 1 ? String.format(UNOFFERED_NOTE, unoffered.get(0)) : String.format(UNOFFERED_MANY_NOTE, unoffered.size()));
+            if (!carriedFrom.isEmpty()) {
+                String from = carriedFrom.size() == 1 ? carriedFrom.get(0) : carriedFrom.size() + " picks";
+                String to = carriedTo.size() == 1 ? whereOf(listing, carriedTo.iterator().next()) : carriedTo.size() + " offers";
+                says.add(String.format(CARRIED_NOTE, from, to));
+            }
+            if (!says.isEmpty()) note = String.join("; ", says);
+        }
+
+        private static String whereOf(List<LandParcel> listing, int id) {
+            for (LandParcel o : listing) if (o.getId() == id) return o.where();
+            return "an offer";
+        }
+
+        private List<Integer> view() {
+            List<Integer> ids = new ArrayList<>(held.size());
+            for (Pick p : held) ids.add(p.id());
             return List.copyOf(ids);
         }
+
+        /**
+         * The words of the last live() that dropped or carried a pick, one short
+         * line, or null when none has since the picks were last changed by hand
+         * (only, toggle, add, drop and clear clear it): the screen shows it in
+         * place of the drop that used to be silent.
+         */
+        public String dropNote() { return note; }
 
         /** A plain click: this offer alone. */
         public void only(Game g, int id) {
             live(g);
-            ids.clear();
-            ids.add(id);
+            held.clear();
+            note = null;
+            addListed(g, id);
+            snapshot = view();
         }
 
-        /** Shift and a click: the offer added at the end, or dropped when it is picked already; true when added. */
+        /** Shift and a click: the offer added at the end, or dropped when it is picked already; true when added (an offer not listed is not added). */
         public boolean toggle(Game g, int id) {
             live(g);
-            if (ids.remove(Integer.valueOf(id))) return false;
-            ids.add(id);
-            return true;
+            note = null;
+            if (held.removeIf(p -> p.id() == id)) {
+                snapshot = view();
+                return false;
+            }
+            boolean added = addListed(g, id);
+            snapshot = view();
+            return added;
         }
 
         /** A box or Ctrl+A: these added at the end in their order, those picked already kept where they stand. */
         public void add(Game g, List<Integer> more) {
             live(g);
-            for (int id : more) if (!ids.contains(id)) ids.add(id);
+            note = null;
+            for (int id : more) addListed(g, id);
+            snapshot = view();
+        }
+
+        /** The offer, if it is listed and not picked already, taken with the rectangle it has now. */
+        private boolean addListed(Game g, int id) {
+            if (g == null || g.getLandManager() == null) return false;
+            for (Pick p : held) if (p.id() == id) return false;
+            LandParcel o = g.getLandManager().getMarket().find(id);
+            if (o == null) return false;
+            held.add(Pick.of(o));
+            return true;
         }
 
         /** A chip's ×: this one dropped. */
-        public void drop(int id) { ids.remove(Integer.valueOf(id)); }
+        public void drop(int id) {
+            held.removeIf(p -> p.id() == id);
+            snapshot = view();
+            note = null;
+        }
 
         /** Esc, a click off the offers, the map collapsed: none. */
-        public void clear() { ids.clear(); }
+        public void clear() {
+            held.clear();
+            snapshot = List.of();
+            note = null;
+        }
+
+        /** The note when the city bought a pick's ground (the player's buying or the city's own); %s the offer's name, "North 3". */
+        public static final String BOUGHT_NOTE = "%s dropped: the city bought its ground";
+
+        /** ...two or more picks at once; %d how many. */
+        public static final String BOUGHT_MANY_NOTE = "%d picks dropped: the city bought their ground";
+
+        /** The note when a pick's ground is for sale under no offer now; %s the offer's name. */
+        public static final String UNOFFERED_NOTE = "%s dropped: no longer offered";
+
+        /** ...two or more picks at once; %d how many. */
+        public static final String UNOFFERED_MANY_NOTE = "%d picks dropped: no longer offered";
+
+        /** The note when a pick's offer left the shelf and its ground is offered again, under another id: carried onto it; %s the pick's name or "2 picks", %s the offer's name or "2 offers". */
+        public static final String CARRIED_NOTE = "%s carried onto %s, listed again";
     }
 
     /** A point of the city's plane on a screen, {x, y} in pixels, or null where it is not seen: the plane's MapFrame (onScreen()), the globe's camera (GlobeFrame.screenOfPlot()). */
@@ -1413,6 +1558,22 @@ public final class LandMap {
             }
         }
         return out;
+    }
+
+    /**
+     * What a left press on the expanded map starts, a box or a pan (MS1, Jerus
+     * 2026-10-26: "i should be able to not only click and shift click, but
+     * also drag and select"): a box when the press is on an offer's free
+     * ground - the plot (px, py) is the offer's by pick(), the city's own
+     * ground and the ground no offer holds are not - or with Shift held,
+     * which boxes from anywhere (B7); a pan otherwise. A drag that begins on
+     * an offer and moves less than the click slop is still a click, which
+     * picks it (MapView). The plot is the plane's under the press: through
+     * the globe's camera on the globe, where a press the plane does not hold
+     * is none (MapView passes shift alone then).
+     */
+    public static boolean pressBoxes(CityLand land, LandMarket market, long px, long py, boolean shift) {
+        return shift || pick(land, market, px, py).owner() == OFFER;
     }
 
     /**

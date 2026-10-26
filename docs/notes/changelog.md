@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.52 — MS1, the expanded map: its head, a drag that selects, picks that last, the near view anywhere — 2026-10-26, ready, see docs/queue/MS1-notes.md
+The expanded map lies under the window's header, so population, GDP, the cash, the rate, the currency, inflation and
+the clock stay in view and live. A left drag from an offer's free ground boxes offers; from anywhere else it pans, a
+right or middle drag always pans, and the cursor says which (★, the recommendation). The picks no longer drop on a
+month: each is keyed to its ground, carried onto the offer now listed there, and dropped only when the city bought it or
+nothing offers it, the head saying which. On Earth the wheel reaches the closest scale anywhere (past the reach the far
+rule draws it), and the "wall" - the pan stopped 300 km from the city at the near view - is gone. GlobeCheck 2b and
+MapCheck 14b-14d new. The default playtest's trace is byte-identical (no ensemble).
+
 ### 0.8.51 — ET5, landmasses and the island rule — 2026-10-26, ready, see docs/queue/ET5-notes.md
 A city's ground is counted by landmass, from earth-2's layer (a dry plot on a no-land cell takes the nearest land
 cell's, within 3.7 km). Ground on a landmass no port links is owned and priced as ever but is no room: the free ground,
