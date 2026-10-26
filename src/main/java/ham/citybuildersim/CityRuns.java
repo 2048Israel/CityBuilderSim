@@ -42,9 +42,10 @@ import java.util.PriorityQueue;
  *   THE COST  (H2: "heavily favours being straight and few junctions"): a step
  *             costs STRAIGHT_COST, a 45-degree turn TURN_COST plots of
  *             straight, a junction JUNCTION_COST. An arm goes straight while it
- *             can; at the sea, or fresh water wider than it bridges, it turns
- *             45 degrees to the side with more ground and runs along the shore
- *             (the alternative is a dead end); it turns back onto its heading
+ *             can; at the deep sea, or water wider than it bridges (fresh or
+ *             shallow, ET6), it turns 45 degrees to the side with more
+ *             ground and runs along the shore (the alternative is a dead
+ *             end); it turns back onto its heading
  *             where the way home runs TURN_COST plots (each step home lays one
  *             plot where the staircase lays two, so the turn pays); at the
  *             city's edge it waits for the ground ahead, unless the ground
@@ -947,15 +948,19 @@ public final class CityRuns {
        GROWING A NET
        ===================================================================== */
 
-    /** What stops a way: nothing, the city's edge, or the sea (and fresh water wider than the net bridges). */
+    /** What stops a way: nothing, the city's edge, or the sea (and bridgeable water wider than the net bridges, or with deep sea in it). */
     static final int OPEN = 0, EDGE = 1, SEA = 2;
 
     /**
      * The steps along heading d from (x, y) the net may take, up to k (or a
      * bridge's past it), and into why[0] what stops it: ground the city does
-     * not own, the sea, water wider than its bridge, a staircase's corner
-     * off the city's ground. Fresh water no wider than its bridge, with the
-     * city's dry ground past it, is a bridge.
+     * not own, the deep sea, water wider than its bridge, a staircase's corner
+     * off the city's ground. Bridgeable water (World.bridgeable(): fresh water
+     * and, since ET6, the shallow sea, in any mix) no wider than the net's
+     * bridge, with the city's dry ground past it and no deep sea in it, is a
+     * bridge. A 45-degree step onto dry ground keeps its corner from the sea
+     * of either depth, so a highway never shaves a shallow coast; a corner
+     * beside a step on the water may be water of either kind, never deep.
      */
     static int clear(Net n, Ground g, long x, long y, int d, int k, int[] why) {
         int dx = DX[d], dy = DY[d];
@@ -966,15 +971,16 @@ public final class CityRuns {
             long px = x + (long) dx * (s + 1), py = y + (long) dy * (s + 1);
             int gr = g.at(px, py, d);
             if (gr < 0) { why[0] = EDGE; return s; }
-            if (World.salt(gr)) { why[0] = SEA; return s; }
+            if (gr == World.SALT) { why[0] = SEA; return s; }
+            boolean wet = World.bridgeable(gr);
             if (diag) {
                 int c = g.at(px, py - dy, d);
                 if (c < 0) { why[0] = EDGE; return s; }
-                if (World.salt(c)) { why[0] = SEA; return s; }
+                if (c == World.SALT || !wet && World.salt(c)) { why[0] = SEA; return s; }
             }
-            if (gr == World.FRESH) {
+            if (wet) {
                 int w = 1;
-                while (w <= n.bridge && g.at(px + (long) dx * w, py + (long) dy * w, d) == World.FRESH) w++;
+                while (w <= n.bridge && World.bridgeable(g.at(px + (long) dx * w, py + (long) dy * w, d))) w++;
                 if (w > n.bridge) { why[0] = SEA; return s; }
                 long lx = px + (long) dx * w, ly = py + (long) dy * w;
                 int land = g.at(lx, ly, d);
@@ -983,7 +989,8 @@ public final class CityRuns {
                 if (diag) {
                     for (int m = 1; m <= w; m++) {
                         int c = g.at(px + (long) dx * m, py + (long) dy * (m - 1), d);
-                        if (c < 0 || World.salt(c)) { why[0] = c < 0 ? EDGE : SEA; return s; }
+                        if (c < 0) { why[0] = EDGE; return s; }
+                        if (c == World.SALT || m == w && World.salt(c)) { why[0] = SEA; return s; }
                     }
                 }
                 s += w + 1;
