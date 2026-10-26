@@ -118,8 +118,8 @@ of the plateau is the call in 6.
 
 - `./batch-check.sh --pick` with the 21 harnesses that found or play a city through the test player (`LongPlaytest.run`,
   `build`, `villageBuild`, `advise`) named: with F1 on by default, exit 4, five harnesses red (22 lines); with
-  it behind the flag, exit 0 - `AutoBuildCheck`, `ForeignDebtCheck`, `LongPlaytest` and the five, the other sixteen
-  green in the first run. Maps regenerated, Stale 0 firm, the tree clean but the batch's files.
+  it behind the flag, on the final tree (d0b7f302), exit 3: all 24 green but MapCheck's recorded red
+  (`docs/notes/gate.txt`). Maps regenerated, Stale 0 firm, the tree clean.
 - **The trace did not move.** The default playtest on main's classes (79d7c9b4, built apart) and on the branch's,
   side by side: identical but for the run time and the new summary line ("the build's bonds (CC1-S): 1 at home, 1
   abroad, the dearest abroad 18.45%"). **No ensemble** (EN1: only when the trace moves); one started with F1 on by
