@@ -659,6 +659,7 @@ public class BridgeCheck {
                 LandmassCheck.onSite(c, road) == 1 && LandmassCheck.standing(c, road) == 0 && g.getBridges().count(Bridges.ON_SITE) == 1 && g.getBridges().count(Bridges.STANDING) == 0
                         && !lms.linked(island) && lms.anyUnlinked() && lm.getUnlinkedFreeSqFt() == unlinkedFree0 && lms.version() == v0 && g.getCash() < cash0,
                 String.format("on site %d, unlinked free ground %,.0f sq ft", LandmassCheck.onSite(c, road), lm.getUnlinkedFreeSqFt()));
+        check("...and the map is handed nothing while it is on site (Game.getBridgePicture() null): a bridge is laid when it stands", g.getBridgePicture() == null);
         Bridges.Row row = g.getBridges().all().get(0);
         check("...its record: template, kind, both landings and landmasses, the length and depths of the survey, the corner plots, on site",
                 row.template == id && row.kind() == BridgeWorks.Kind.ROAD && row.state == Bridges.ON_SITE && row.nearLandmass == home && row.farLandmass == island
@@ -677,6 +678,12 @@ public class BridgeCheck {
                 lms.linked(island) && !lms.anyUnlinked() && lms.version() == v0 + 1 && lm.getUnlinkedFreeSqFt() == 0 && g.getBridges().count(Bridges.STANDING) == 1
                         && g.getBridges().count(Bridges.ON_SITE) == 0 && lm.getLinkedOwnedSqFt() == lm.getOwnedSqFt() && g.getBridges().joins(island) && g.getBridges().joins(home),
                 "month " + g.getMonth() + ", version " + lms.version());
+        java.util.List<CityMap.BridgeRun> pic = g.getBridgePicture();
+        long[] cs = pic == null || pic.isEmpty() ? null : pic.get(0).corners();
+        check("...and the map is handed it (Game.getBridgePicture()): one road bridge on the survey's corner plots, its landings first and last",
+                pic != null && pic.size() == 1 && pic.get(0).kind() == CityMap.BridgeRun.ROAD && Arrays.equals(cs, ok.corners()) && cs.length >= 4
+                        && (cs[0] == ok.farX() && cs[1] == ok.farY() && cs[cs.length - 2] == ok.nearX() && cs[cs.length - 1] == ok.nearY()
+                            || cs[0] == ok.nearX() && cs[1] == ok.nearY() && cs[cs.length - 2] == ok.farX() && cs[cs.length - 1] == ok.farY()));
 
         // A second order, of two: two parallel spans on the same survey.
         Game.BuildQuote two = g.quoteBuild(road, 2);
@@ -686,7 +693,7 @@ public class BridgeCheck {
                 both == Game.BuildResult.SUCCESS && rows.size() == 3 && g.getBridges().count(Bridges.STANDING) == 1 && g.getBridges().count(Bridges.ON_SITE) == 2
                         && Arrays.equals(rows.get(1).path, rows.get(2).path) && rows.get(1).lengthM == rows.get(2).lengthM && rows.get(1).nearLandmass == rows.get(2).nearLandmass
                         && rows.get(1).state == Bridges.ON_SITE && rows.get(2).state == Bridges.ON_SITE && LandmassCheck.onSite(c, road) == 2);
-        check("...billed twice: the quote it was placed at had twice a bridge's points", same(two.bridgePoints, 2 * q1.bridgePoints) || two.bridgePoints > 0);
+        check("...billed twice: the quote it was placed at had twice a bridge's points", same(two.bridgePoints, 2 * q1.bridgePoints));
         boolean allStand = LandmassCheck.until(c, () -> LandmassCheck.standing(c, road) >= 3, 1200);
         check("...and the builders finish them one after another: three stand, all three records standing, the island still linked",
                 allStand && g.getBridges().count(Bridges.STANDING) == 3 && g.getBridges().count(Bridges.ON_SITE) == 0 && lms.linked(island));

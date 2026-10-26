@@ -1199,6 +1199,7 @@ public class Game {
             cityMap.atSea(mapAtSea());
             cityMap.railPicture(mapRail());
             cityMap.landmassPicture(getLandmassPicture());
+            cityMap.bridgePicture(getBridgePicture());
         }
         return cityMap;
     }
@@ -1329,6 +1330,8 @@ public class Game {
         private final int month;
         /** The landmasses as they stood (ET5): what the map is measured under; null for a city on one landmass. */
         private final Landmasses.Picture landmasses;
+        /** The long bridges standing when it was copied (ET6), null for none. */
+        private final java.util.List<CityMap.BridgeRun> bridges;
         private volatile CityMap map;
 
         private MapDraft(Game game) {
@@ -1340,11 +1343,12 @@ public class Game {
             this.types = game.getMapTypes();
             this.counts = game.getMapCounts();
             this.landmasses = game.getLandmassPicture();
+            this.bridges = game.getBridgePicture();
         }
 
         /** Draws the map on the copy: any thread, once. */
         public void draw() {
-            if (map == null) map = CityMap.canonical(land, r -> remaining.get(r), types, counts, month, landmasses);
+            if (map == null) map = CityMap.canonical(land, r -> remaining.get(r), types, counts, month, landmasses, bridges);
         }
 
         /** Whether it has been drawn. */
@@ -1381,6 +1385,7 @@ public class Game {
         map.rebind(live, landManager::remainingByHolding);
         try {
             map.landmassPicture(getLandmassPicture());   // ET5: the landmasses as they stand now, a link since the draft re-measured
+            map.bridgePicture(getBridgePicture());       // ET6: and the long bridges standing now, laid by the reconcile
             if (!map.reconcile(getMapCounts(), month)) return false;
         } catch (RuntimeException e) {
             mapFailures++;
@@ -1410,7 +1415,7 @@ public class Game {
     /** The map drawn canonically from the city as it stands. */
     private CityMap drawMap() {
         mapAtSeaStale = true;
-        return CityMap.canonical(landManager.getCityLand(), landManager::remainingByHolding, getMapTypes(), getMapCounts(), month, getLandmassPicture());
+        return CityMap.canonical(landManager.getCityLand(), landManager::remainingByHolding, getMapTypes(), getMapCounts(), month, getLandmassPicture(), getBridgePicture());
     }
 
     /**
@@ -1428,6 +1433,8 @@ public class Game {
             cityMap.railPicture(mapRail());
             // The landmasses (ET5): the ground no port links is owned but no room, a link measures every district again (CityMap, THE ISLAND RULE ON THE MAP); null for a city on one landmass.
             cityMap.landmassPicture(getLandmassPicture());
+            // ...and the long bridges that stand (ET6, CityMap's LONG BRIDGES ON THE MAP): laid by the reconcile that follows; null for none.
+            cityMap.bridgePicture(getBridgePicture());
             if (!cityMap.reconcile(getMapCounts(), month)) cityMap = drawMap();
         } catch (RuntimeException e) {
             mapFailures++;
@@ -8574,6 +8581,26 @@ public class Game {
      */
     public boolean isIslandPortOrder(BuildingsTemplate t) {
         return islandPortLandmass(t, Landmasses.CHOSEN) != Landmasses.NO_LANDMASS;
+    }
+
+    /**
+     * The long bridges that stand, as the map is handed them (ET6; CityMap's LONG BRIDGES ON THE MAP): each its kind and its
+     * path's corner plots, the two landings first and last; null while none stands - every generated world, and every city
+     * that has built none - so the map runs exactly as before. A bridge on site is not handed: it is laid when it stands.
+     */
+    public java.util.List<CityMap.BridgeRun> getBridgePicture() {
+        java.util.List<CityMap.BridgeRun> out = null;
+        for (Bridges.Row r : landManager.getBridges().all()) {
+            if (!r.standing() || r.path == null || r.path.length < 4 || r.kind() == null) continue;
+            int kind = switch (r.kind()) {
+                case HIGHWAY -> CityMap.BridgeRun.HIGHWAY;
+                case RAIL -> CityMap.BridgeRun.RAIL;
+                case ROAD -> CityMap.BridgeRun.ROAD;
+            };
+            if (out == null) out = new java.util.ArrayList<>();
+            out.add(new CityMap.BridgeRun(kind, r.path.clone()));
+        }
+        return out;
     }
 
     /** The city's ground by landmass and its linked set as the map is handed them; null while the city owns nothing off its home landmass (Landmasses.picture()). */
@@ -17286,7 +17313,7 @@ public class Game {
             Path file = gameFiles.mapFile(slot);
             if (Files.isRegularFile(file)) {
                 cityMap = CityMap.readSidecar(Files.readAllBytes(file), landManager.getCityLand(),
-                        landManager::remainingByHolding, getMapTypes(), month, stamp, getLandmassPicture());
+                        landManager::remainingByHolding, getMapTypes(), month, stamp, getLandmassPicture(), getBridgePicture());
             }
             if (cityMap == null) {
                 long t0 = System.nanoTime();

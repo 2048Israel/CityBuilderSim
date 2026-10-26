@@ -125,6 +125,12 @@ import java.util.PriorityQueue;
  *             where the ground allows, else the cell's interior, else its
  *             footprint's own length. The highways are grown as before.
  *
+ *   BRIDGES   (ET6) a long bridge the model builds (a Highway, Rail or Road
+ *             Bridge over water no arm spans, linking two landmasses) is laid
+ *             whole the moment the map hands it (setBridges()), as a fixed
+ *             path of its kind apart from the nets: never grown, taken back or
+ *             moved, and no part of any net's plots (LONG BRIDGES below).
+ *
  * A net is kept as its arms' straight STRETCHES, not its plots: a city of ten
  * billion has some fifteen million plots of track on a few hundred arms.
  * Pure: the same ground, counts and history give the same runs on any
@@ -3843,7 +3849,283 @@ public final class CityRuns {
         }
         for (long[] y : yards) h = World.mix(h ^ y[0] * 0x9E3779B97F4A7C15L ^ y[1] ^ (y[2] << 24) ^ (y[3] << 44));
         h = World.mix(h ^ (doubleMain ? 1L : 0L));
+        // The long bridges that stand (ET6): their stamp, only while there are any, so a city with none signs as it did.
+        if (bridgeStamp != 0) h = World.mix(h ^ bridgeStamp);
         return h;
+    }
+
+    /* =====================================================================
+       LONG BRIDGES (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6)
+
+       A long bridge is an order in the model: a Highway, Rail or Road Bridge of
+       up to 36 km over fresh water or shallow sea that links two landmasses.
+       Once it STANDS the model hands the map its path (CityMap.BridgeRun: its
+       kind, and the plots where its heading changes, the two landings first
+       and last) and the map hands it here at the month's laying
+       (setBridges()). The map reads the model; the model never reads the map.
+
+       WHY. An arm crosses water only as far as clear() lets it bridge, and a
+       landmass is by definition ground no run can span, so a bridge the city
+       had paid for stood in the model and nowhere on the map: the far shore
+       had no way to meet the net, and a plan was free to put a building where
+       the bridge came ashore.
+
+       WHAT IT IS HERE. Not an arm of a net: an arm is grown, taken back from
+       its newest end and counted against the model's plots, and a bridge is
+       none of these. It is a FIXED PATH, kept apart from the nets (Net.reset()
+       and trim() never see it): laid whole the moment it is handed, never
+       grown, never taken away by the model's road count, never moved (H4), and
+       not counted in any net's plots, so the growth budget is not spent on
+       it. Its stretches are an Arm's (a diagonal laid as the same staircase),
+       so stretchInto(), onStretch() and range() read it as they read any arm.
+         HIGHWAY  its plots are F_HIGHWAY and RAIL its plots F_RAIL wherever
+                  fill() reads them, whether or not the net reaches a street
+                  (highwaysReach() is about arms), over a plot of the net as
+                  the net's own plots mix (a railway over a highway is
+                  F_RAIL_OVER) and under a yard's box. Both landings are in.
+                  No ramp is marked: the bridge ends on its landing.
+         ROAD     a street-sized deck that belongs to no net. It is no plot of
+                  the runs, so fill() lays nothing of it for a tile; a plan's
+                  ground (yardsOver and reserves) holds it as an interchange's
+                  reserve (F_RESERVE: no lot, no building, no street across),
+                  and CityMap draws it as a paved street (streetAt()).
+       A net's arm that meets a landing is not joined to it, and none is grown
+       toward one: the bridge stands and draws without. The painter does the
+       rest from the ground under the plot (a bridge over fresh water is the
+       deck TileRaster.DECK draws). The plans keep the bridge's plots clear as
+       they keep any run's: a building that stood on one before the bridge came
+       stays (THE RUNS DATED, H4), what is placed after goes round it.
+       ===================================================================== */
+
+    /** A long bridge's kinds (CityMap.BridgeRun's): a street-sized deck that belongs to no net, a highway's and the railway's. */
+    public static final int BRIDGE_ROAD = CityMap.BridgeRun.ROAD, BRIDGE_HIGHWAY = CityMap.BridgeRun.HIGHWAY, BRIDGE_RAIL = CityMap.BridgeRun.RAIL;
+
+    /** The most corners a bridge's path may have and the longest leg of it, in plots: 1,024 legs of 1,048,576 plots, so that its steps fit an int. A 36 km bridge is 1,200 plots. */
+    static final int BRIDGE_LEGS = 1024, BRIDGE_LEG = 1 << 20;
+
+    /** A net for a bridge's stretches to be read as, so that stretchInto() marks no highway's ramp on them: the railway's, which never takes one. */
+    private static final Net BRIDGE_NET = new Net(RAILWAY, RAIL_AT, 0);
+
+    /** One long bridge that stands (ET6): its kind, its corners as the map was handed them, its legs as the stretches of an Arm, a hash of it and the box of plots it lies in. */
+    static final class Bridge {
+        final int kind;
+        final long[] corners;
+        final Arm path;
+        final long hash, x0, y0, x1, y1;
+
+        Bridge(int kind, long[] corners, Arm path) {
+            this.kind = kind;
+            this.corners = corners;
+            this.path = path;
+            this.hash = hashOf(kind, corners);
+            long lx = Long.MAX_VALUE, ly = Long.MAX_VALUE, hx = Long.MIN_VALUE, hy = Long.MIN_VALUE;
+            for (int i = 0; i + 1 < corners.length; i += 2) {
+                lx = Math.min(lx, corners[i]); hx = Math.max(hx, corners[i]);
+                ly = Math.min(ly, corners[i + 1]); hy = Math.max(hy, corners[i + 1]);
+            }
+            x0 = lx; y0 = ly; x1 = hx; y1 = hy;
+        }
+    }
+
+    /** The bridges that stand, in the order handed (ET6); empty in every city with none, and then nothing in this section runs. */
+    private List<Bridge> bridges = List.of();
+
+    /** A stamp of the list they were handed as (stampOf()): 0 for none. Folded into signature(), so the runs' version moves with it. */
+    private long bridgeStamp;
+
+    /** How many of the runs handed were no path (a leg off the eight headings, fewer than two corners, an unknown kind) and so are not laid. */
+    private int bridgesRefused;
+
+    /** Whether a road bridge stands: a tile's street pass asks it of every plot, so the answer is kept. */
+    private boolean roadBridges;
+
+    /** A hash of a bridge: its kind and its corners, each plot in order. */
+    static long hashOf(int kind, long[] corners) {
+        long h = World.mix(0x42524447L ^ kind);
+        if (corners != null) for (long v : corners) h = World.mix(h ^ v * 0x9E3779B97F4A7C15L);
+        return h;
+    }
+
+    /**
+     * A stamp of a list of bridges the map is handed: the sum of their hashes, so that the same bridges in another order are the same
+     * stamp, mixed with how many; 0 for none (null or empty), and never 0 for any.
+     */
+    static long stampOf(List<CityMap.BridgeRun> list) {
+        if (list == null || list.isEmpty()) return 0;
+        long sum = 0;
+        for (CityMap.BridgeRun r : list) sum += r == null ? 0 : hashOf(r.kind(), r.corners());
+        return World.mix(sum ^ list.size()) | 1L;
+    }
+
+    /** The heading (0 to 7) of a step of (sx, sy), each -1, 0 or 1 and not both 0: its index in DX and DY. */
+    static int headingOf(long sx, long sy) {
+        for (int h = 0; h < 8; h++) if (DX[h] == sx && DY[h] == sy) return h;
+        return -1;
+    }
+
+    /**
+     * The bridge a run is, or null when it is no path: a kind that is not one, fewer than two corners, a leg that stands still or is off
+     * the eight headings (a leg runs from one corner to the next along a row, a column or a diagonal), more legs or a longer one than a
+     * bridge has.
+     */
+    static Bridge bridgeOf(CityMap.BridgeRun r) {
+        long[] c = r == null ? null : r.corners();
+        if (c == null || c.length < 4 || (c.length & 1) != 0 || c.length / 2 - 1 > BRIDGE_LEGS) return null;
+        if (r.kind() < BRIDGE_ROAD || r.kind() > BRIDGE_RAIL) return null;
+        int legs = c.length / 2 - 1;
+        int[] head = new int[legs];
+        long[] steps = new long[legs];
+        for (int i = 0; i < legs; i++) {
+            long dx = c[2 * i + 2] - c[2 * i], dy = c[2 * i + 3] - c[2 * i + 1];
+            long m = Math.max(Math.abs(dx), Math.abs(dy));
+            if (m == 0 || m > BRIDGE_LEG || (dx != 0 && dy != 0 && Math.abs(dx) != Math.abs(dy))) return null;
+            head[i] = headingOf(Long.signum(dx), Long.signum(dy));
+            steps[i] = m;
+        }
+        Arm a = new Arm(-1, head[0], c[0], c[1]);
+        long x = c[0], y = c[1];
+        for (int i = 0; i < legs; i++) {
+            a.append(head[i], (int) steps[i], x, y);
+            a.steps += (int) steps[i];
+            x = c[2 * i + 2];
+            y = c[2 * i + 3];
+        }
+        a.x = x;
+        a.y = y;
+        a.head = head[legs - 1];
+        return new Bridge(r.kind(), c.clone(), a);
+    }
+
+    /**
+     * Hands the runs the long bridges that stand (ET6): the bridges laid before are replaced by these, each laid whole. A list with the
+     * stamp of the one held (the same bridges, in any order) changes nothing; one that differs tells the witness, before anything moves,
+     * every district a highway's or a railway's bridge that goes or comes lies in (the kinds a district's plan is dated by), and moves the
+     * runs' version. Null or empty is none. True when the bridges changed. A run that is no path is not laid and is counted
+     * (bridgesRefused()).
+     */
+    public boolean setBridges(List<CityMap.BridgeRun> list) {
+        long stamp = stampOf(list);
+        if (stamp == bridgeStamp) return false;
+        List<Bridge> now = new ArrayList<>();
+        int refused = 0;
+        if (list != null) {
+            for (CityMap.BridgeRun r : list) {
+                Bridge b = bridgeOf(r);
+                if (b == null) refused++;
+                else now.add(b);
+            }
+        }
+        if (witness != null) {
+            for (Bridge b : bridges) sawBridge(b);
+            for (Bridge b : now) sawBridge(b);
+        }
+        bridges = List.copyOf(now);
+        bridgeStamp = stamp;
+        bridgesRefused = refused;
+        roadBridges = bridgeCount(BRIDGE_ROAD) > 0;
+        version = signature();
+        return true;
+    }
+
+    /** Tells the witness that every district a highway's or a railway's bridge lies in is about to change (a road bridge's ground is not dated). */
+    private void sawBridge(Bridge b) {
+        if (witness == null || b.kind == BRIDGE_ROAD) return;
+        witness.before(Math.floorDiv(b.corners[0], CityMap.DISTRICT), Math.floorDiv(b.corners[1], CityMap.DISTRICT));
+        for (int s = 0; s < b.path.segs; s++) sawStretch(highways, b.path, s);
+    }
+
+    /** How many long bridges stand. */
+    public int bridgeCount() { return bridges.size(); }
+
+    /** Whether a road bridge stands. */
+    public boolean roadBridges() { return roadBridges; }
+
+    /** ...of a kind (BRIDGE_ROAD, BRIDGE_HIGHWAY or BRIDGE_RAIL). */
+    public int bridgeCount(int kind) {
+        int n = 0;
+        for (Bridge b : bridges) if (b.kind == kind) n++;
+        return n;
+    }
+
+    /** The stamp of the bridges that stand, 0 for none: what CityMap folds into its sidecar's land stamp. */
+    public long bridgeStamp() { return bridgeStamp; }
+
+    /** How many runs the map handed were no path, and are not laid. */
+    public int bridgesRefused() { return bridgesRefused; }
+
+    /** Whether a bridge of the kind stands on plot (x, y): one of its stretches' plots, a 45-degree step's corner or its first landing. */
+    public boolean onBridge(int kind, long x, long y) {
+        for (Bridge b : bridges) {
+            if (b.kind != kind || x < b.x0 || y < b.y0 || x > b.x1 || y > b.y1) continue;
+            if (x == b.corners[0] && y == b.corners[1]) return true;
+            for (int s = 0; s < b.path.segs; s++) if (onStretch(b.path, s, x, y)) return true;
+        }
+        return false;
+    }
+
+    /** Whether a bridge of the kind lies in the box of plots w x h from (x0, y0) (by its own box: it may still miss the plots). */
+    public boolean bridgeNear(int kind, long x0, long y0, long w, long h) {
+        for (Bridge b : bridges) if (b.kind == kind && !(b.x1 < x0 || b.y1 < y0 || b.x0 >= x0 + w || b.y0 >= y0 + h)) return true;
+        return false;
+    }
+
+    /**
+     * The bridges' plots in the box, into fixed (fill()): a highway's F_HIGHWAY and a railway's F_RAIL, mixed with what the nets laid there as
+     * put() mixes any two; a road bridge's only when `roadGround` and only on a plot nothing else holds, as F_RESERVE. Marks (null to leave
+     * them) take a diagonal's, never a ramp. Returns a hash of what it laid.
+     */
+    private long bridgesInto(long x0, long y0, int w, int h, byte[] fixed, byte[] marks, boolean roadGround) {
+        long hash = 0;
+        byte[] road = null;
+        for (Bridge b : bridges) {
+            if (b.x1 < x0 || b.y1 < y0 || b.x0 >= x0 + w || b.y0 >= y0 + h) continue;
+            boolean isRoad = b.kind == BRIDGE_ROAD;
+            if (isRoad && !roadGround) continue;
+            byte code = b.kind == BRIDGE_HIGHWAY ? F_HIGHWAY : b.kind == BRIDGE_RAIL ? F_RAIL : F_RESERVE;
+            byte[] into = fixed;
+            if (isRoad) {
+                if (road == null) road = new byte[w * h];
+                into = road;
+            }
+            long bh = 0;
+            if (b.corners[0] >= x0 && b.corners[0] < x0 + w && b.corners[1] >= y0 && b.corners[1] < y0 + h) {
+                put(into, w, b.corners[0] - x0, b.corners[1] - y0, code);
+                bh = World.mix(b.corners[0] * 31 ^ b.corners[1] ^ 1);
+            }
+            for (int s = 0; s < b.path.segs; s++) {
+                if (!reaches(b.path, s, x0, y0, w, h)) continue;
+                bh = World.mix(bh ^ stretchInto(BRIDGE_NET, b.path, s, x0, y0, w, h, into, isRoad ? null : marks, code) ^ 2);
+            }
+            if (bh != 0) hash = World.mix(hash ^ b.hash ^ bh ^ code);
+        }
+        if (road != null) for (int i = 0; i < w * h; i++) if (road[i] != 0 && fixed[i] == 0) fixed[i] = F_RESERVE;
+        return hash;
+    }
+
+    /** A hash of the bridges' stretches in the box, of every kind and without laying them: frameHash()'s part; 0 where no bridge has a plot in the box. */
+    private long bridgesHash(long x0, long y0, int w, int h) {
+        long hash = 0;
+        for (Bridge b : bridges) {
+            if (b.x1 < x0 || b.y1 < y0 || b.x0 >= x0 + w || b.y0 >= y0 + h) continue;
+            long bh = 0;
+            if (b.corners[0] >= x0 && b.corners[0] < x0 + w && b.corners[1] >= y0 && b.corners[1] < y0 + h) bh = World.mix(b.corners[0] * 31 ^ b.corners[1] ^ 1);
+            for (int s = 0; s < b.path.segs; s++) {
+                if (!reaches(b.path, s, x0, y0, w, h)) continue;
+                long[] r = range(b.path, s, x0, y0, w, h);
+                bh = World.mix(bh ^ World.mix(b.path.segX[s] * 0x9E3779B97F4A7C15L ^ b.path.segY[s] ^ ((long) b.path.segHead[s] << 50) ^ (r[0] << 20) ^ (r[1] << 40) ^ b.kind));
+            }
+            if (bh != 0) hash = World.mix(hash ^ b.hash ^ bh);
+        }
+        return hash;
+    }
+
+    /** Whether stretch s of a bridge's path may put a plot in the box: range() clips a straight stretch along its heading alone, so the row or column it runs in is tested here. */
+    private static boolean reaches(Arm a, int s, long x0, long y0, int w, int h) {
+        int hd = a.segHead[s];
+        if (DY[hd] == 0 && (a.segY[s] < y0 || a.segY[s] >= y0 + h)) return false;
+        if (DX[hd] == 0 && (a.segX[s] < x0 || a.segX[s] >= x0 + w)) return false;
+        long[] r = range(a, s, x0, y0, w, h);
+        return r[0] <= r[1];
     }
 
     /* =====================================================================
@@ -3915,6 +4197,11 @@ public final class CityRuns {
                 }
             }
         }
+        // The long bridges that stand (ET6, LONG BRIDGES): laid whole, over the nets' plots and under the yards'; none, and this line is not run.
+        if (!bridges.isEmpty()) {
+            long bridged = bridgesInto(x0, y0, w, h, fixed, marks, yardsOver && reserves);
+            if (bridged != 0) hash = World.mix(hash ^ bridged);
+        }
         if (marks != null) {
             for (int[] r : mainLine()) {
                 long mh = mainInto(rail.arms.get(r[0]), r[1], r[2], x0, y0, w, h, marks, doubleMain);
@@ -3985,6 +4272,11 @@ public final class CityRuns {
                 }
             }
             if (n.kind == HIGHWAYS) for (Arm a : n.arms) if (a.steps > 0 && a.x >= x0 && a.y >= y0 && a.x < x0 + w && a.y < y0 + h) hash = World.mix(hash ^ a.x * 31 ^ a.y);
+        }
+        // ...and the long bridges (ET6) over it, of every kind: a road bridge's ground is a plan's too.
+        if (!bridges.isEmpty()) {
+            long bridged = bridgesHash(x0, y0, w, h);
+            if (bridged != 0) hash = World.mix(hash ^ bridged);
         }
         for (long[] y : yards) if (!(y[0] >= x0 + w || y[1] >= y0 + h || y[0] + y[2] <= x0 || y[1] + y[3] <= y0)) hash = World.mix(hash ^ y[0] * 31 ^ y[1] ^ (y[2] << 40));
         // ...and the interchanges' reserves over it (batch FR7): a plan is drawn round them.
@@ -4060,6 +4352,8 @@ public final class CityRuns {
     public byte at(long x, long y) {
         for (long[] yd : yards) if (x >= yd[0] && y >= yd[1] && x < yd[0] + yd[2] && y < yd[1] + yd[3]) return F_YARD;
         boolean hw = highwaysReach() && covered(highways, x, y), rl = covered(rail, x, y);
+        // A long bridge's plot (ET6) is the highway's or the railway's whether or not the net reaches a street.
+        if (!bridges.isEmpty()) { hw |= onBridge(BRIDGE_HIGHWAY, x, y); rl |= onBridge(BRIDGE_RAIL, x, y); }
         return hw && rl ? F_RAIL_OVER : hw ? F_HIGHWAY : rl ? F_RAIL : 0;
     }
 
@@ -4246,7 +4540,7 @@ public final class CityRuns {
     /** Whether two cities' runs are the same: the gateway, each net's hub, plots, corridors and arms stretch for stretch, and the yards. */
     public boolean same(CityRuns o) {
         if (o == null) return false;
-        if (gateway != o.gateway) return false;
+        if (gateway != o.gateway || bridgeStamp != o.bridgeStamp) return false;
         Net[] a = { highways, rail }, b = { o.highways, o.rail };
         for (int k = 0; k < 2; k++) {
             Net p = a[k], q = b[k];

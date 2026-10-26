@@ -240,7 +240,7 @@ public final class BridgeSurvey {
         /** What a plot of the scratch tile is, as the search sees it. */
         byte classify(int i) {
             int c = scratch.cover[i];
-            if (c == World.FRESH || c == World.SHALLOW) return WATER;
+            if (World.bridgeable(c)) return WATER;
             if (c == World.SALT) return DEEP;
             if (!World.dry(c) || !scratch.owned[i]) return WALL;
             int lm = scratch.landmass[i];
