@@ -971,6 +971,21 @@ public class BuildingsTemplate {
 
     public boolean isSiding() { return siding; }
 
+    private boolean hydro;
+
+    /**
+     * Whether this power station needs a river with a drop on the ground the city owns (HY1): the Hydro Station, and no
+     * other. Declared in buildings.json as "hydro": true. Its order is held to the slots the city's hydro sites hold
+     * (Game.hydroSlotsFree(), HydroSites), refused NO_RIVER past them, and it stands on any ground, steep too, as a
+     * mine does (Game.standsAnywhere()).
+     */
+    public BuildingsTemplate setHydro(boolean hydro) {
+        this.hydro = hydro;
+        return this;
+    }
+
+    public boolean isHydro() { return hydro; }
+
     private double truckRoom;
 
     /**

@@ -202,6 +202,8 @@ public class BuildingCatalog {
                 // ...and the tonnes a station sorts, and whether the track is a works' siding (FR7): absent, none and no.
                 .setStationTonnes(number(o, "stationTonnes"))
                 .setSiding(flag(o, "siding"))
+                // ...and whether a power station needs a river with a drop (HY1): absent, no.
+                .setHydro(flag(o, "hydro"))
                 // ...and a Truck Depot's room for trucks (FR2): absent, none.
                 .setTruckRoom(number(o, "truckRoom"))
                 .setProduction1(number(o, "production1"))

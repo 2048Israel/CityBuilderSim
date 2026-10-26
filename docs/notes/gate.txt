@@ -1,10 +1,8 @@
-# gate of Merge batch/BL1: buying land revamped: no offer drawn over the city's own ground, and the player picks the exact ground, designed first with a recommendation; after MS1, in the same session (Jerus, 2026-10-26: "perhaps more freedom on the exact selection?"), 0.8.53
+# gate of Merge batch/HY1: hydro Station, a template that needs a river and a drop on the Earth's map; not research, it goes with the electricity run, 0.8.54
 # date: 2026-10-26
 # earth-2.bin: named
-# suite: 145 harnesses run in 1120s: 144 passed, 1 failed
-# timing: 11 harnesses run in 350s: 10 passed, 1 failed; its red lines are main's too, today
-# timing red on main too, today: MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 58 ms of the wall clock, the median month FAIL
-# timing red on main too, today: MapCheck | 2 FAILED
+# suite: 146 harnesses run in 1365s: 145 passed, 1 failed
+# timing: 11 harnesses run in 327s: 10 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

@@ -1354,6 +1354,22 @@ public final class BuildCard {
     }
 
     /**
+     * Where a Hydro Station stands (HY1): the slots free of the stations the city's linked hydro sites hold in all
+     * (Game.hydroSlotsFree(), hydroSlots()), how many sites that is, and the best linked site's river width and head
+     * (HydroSites.best(), the most mean power) - NaN for both when the city has none.
+     */
+    public record Hydro(int free, int slots, int sites, double widthM, double headM) { }
+
+    /** ...for a hydro station; null for any other building. */
+    public static Hydro hydro(Game game, BuildingsTemplate t) {
+        if (t == null || !t.isHydro()) return null;
+        HydroSites h = game.getLandManager().getHydroSites();
+        HydroSites.Site best = h.best();
+        return new Hydro(game.hydroSlotsFree(t), game.hydroSlots(t), h.linked().size(),
+                best == null ? Double.NaN : best.widthM(), best == null ? Double.NaN : best.headM());
+    }
+
+    /**
      * A materials building weighed by the rule its sector orders by
      * (0.7.142): what one more would earn a month at the city's values, its
      * freight in it (FR2: its vans' wear and diesel and its bulk's city legs
@@ -1784,12 +1800,12 @@ public final class BuildCard {
        THE VERDICT ON AN ORDER
 
        What the quote line says under the stepper, in buildStack()'s order:
-       no deposit, no coast (0.7.59), nobody licensed, short of land, short of cash (the bill
+       no deposit, no coast (0.7.59), no river with a drop (HY1), nobody licensed, short of land, short of cash (the bill
        and credit offers), or the wait at today's queue - so the two hard
        refusals are warned before the click, not discovered after it.
        ===================================================================== */
 
-    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS, NO_COAST }
+    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS, NO_COAST, NO_RIVER }
 
     /** The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait - and, refused for a deposit, whose sites it needs (0.7.62; null otherwise). */
     public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure, Resource site) {
@@ -1800,6 +1816,7 @@ public final class BuildCard {
         Game.BuildQuote q = game.quoteBuild(t, n);
         if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0, Game.siteOf(t));
         if (!game.hasCoastFor(t, n, Landmasses.CHOSEN)) return new Verdict(VerdictKind.NO_COAST, q, 0);
+        if (!game.hasRiverFor(t, n)) return new Verdict(VerdictKind.NO_RIVER, q, 0);
         if (!game.hasLicencesFor(t, n)) return new Verdict(VerdictKind.NO_LICENCE, q, game.licencesNeededFor(t, n));
         if (q.landNeeded > q.landFree) return new Verdict(VerdictKind.NO_LAND, q, q.landNeeded - q.landFree);
         if (q.total > game.getCash()) return new Verdict(VerdictKind.BILL, q, q.total - game.getCash());

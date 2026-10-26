@@ -145,6 +145,7 @@ public class BuildingDataCheck {
             check(who + " railCapacity", actual.getRailCapacity(), expected.getRailCapacity());
             check(who + " stationTonnes (FR7)", actual.getStationTonnes(), expected.getStationTonnes());
             check(who + " siding (FR7)", actual.isSiding() ? 1 : 0, expected.isSiding() ? 1 : 0);
+            check(who + " hydro (HY1)", actual.isHydro() ? 1 : 0, expected.isHydro() ? 1 : 0);
             check(who + " truckRoom", actual.getTruckRoom(), expected.getTruckRoom());
             check(who + " production1", actual.getProduction1(), expected.getProduction1());
             check(who + " production2", actual.getProduction2(), expected.getProduction2());
@@ -416,12 +417,12 @@ public class BuildingDataCheck {
         assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
                         + " Highway 1.25% - and no other building has: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
-        assertTrue("...and 144 buildings in all (PT1-M4: the Builders' Yard, id 143, the founding's own; 143 from FR3, the Bulk Berth, id 142; 142 from FR7, the Rail Depot; 141 from FR2, the Truck Depot and the Heavy Truck Plant; 139 from 0.7.140, Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
+        assertTrue("...and 145 buildings in all (HY1: the Hydro Station, id 144; 144 from PT1-M4: the Builders' Yard, id 143, the founding's own; 143 from FR3, the Bulk Berth, id 142; 142 from FR7, the Rail Depot; 141 from FR2, the Truck Depot and the Heavy Truck Plant; 139 from 0.7.140, Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
                         + " stands; 129 from 0.7.133, Copper"
                         + " Mining's three, Copper Refining's four and Manufacturing's Wire & Cable Works; 121 from 0.7.131, Quarrying's three and Cement & Concrete's three; 115 from 0.7.126, Coal Mining's four;"
                         + " 111 from 0.7.124, Iron Mining's three; 108 from 0.7.123, the integrated route's seven; 101 from 0.7.91, 98 from"
                         + " 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
-                data.size() == 144);
+                data.size() == 145);
 
         /* ---------- the oil storage (0.7.85, batch O8; spec-oil 2.8) ----------
 
@@ -751,6 +752,7 @@ public class BuildingDataCheck {
         }
         years.put(ham.citybuildersim.sectors.WoodProducts.PANEL_MILL, 1980);
         years.put(ham.citybuildersim.sectors.WoodProducts.PELLET_MILL, 1970);
+        years.put(144, 1900);   // HY1's Hydro Station: it stood before the start (Appleton 1882, Niagara 1895)
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1952 (E1, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
                         + " as standing before it - and batch I5's three: the Large Open-Pit Mine 1900, the two magnetite works 1955 (E4,"
@@ -760,7 +762,8 @@ public class BuildingDataCheck {
                         + " Mine, 1906 (Bingham Canyon, research-1900.md 1.2), and the Leach & SX-EW Plant, 1968 (E12, Bluebird); and"
                         + " batch I9's four 1900 but the Harvesting Operation, 1973 (E14, PIKA 75) - the Tree Plantation and the Woodlot"
                         + " available from the start (research-1900.md 12); and batch I10's six 1900 but the Panel Mill, 1980 (OSB about"
-                        + " 1980), and the Wood Pellet Mill, 1970 (the 1970s) - research-1900.md 1.2's words, both unverified; no row"
+                        + " 1980), and the Wood Pellet Mill, 1970 (the 1970s) - research-1900.md 1.2's words, both unverified; and HY1's"
+                        + " Hydro Station, 1900 (standing before it: Appleton 1882, Niagara 1895); no row"
                         + " before them: " + dated,
                 dated.equals(years));
 

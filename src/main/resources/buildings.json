@@ -95,6 +95,8 @@
   "A WATER building draws fresh water unless it says \"source\": \"SEA\". Fresh water is",
   "held to what the lakes and river the city owns yield (121,600 units a month a km2);",
   "a SEA building is not held to it, and needs the city to own some sea.",
+  "An ELECTRICITY building that says \"hydro\": true (the Hydro Station, HY1) needs a river with",
+  "a drop on the ground the city owns, one station a slot of the river's mean power (HydroSites).",
   "A ROAD's \"repairs\" is its own repairs a year, a share of what it cost to put up",
   "(0.7.103; every other building is repaired at 1% a year), from the Canadian",
   "Infrastructure Report Card 2016's target reinvestment rates a year of replacement",
@@ -3605,6 +3607,26 @@
     "tonnes": 2500000,
     "ships": ["HANDYSIZE", "SUPRAMAX"]
    }
+  },
+  {
+   "id": 144,
+   "name": "Hydro Station",
+   "category": "ELECTRICITY",
+   "hydro": true,
+   "cashCost": 21920,
+   "constructionPoints": 2450,
+   "constructionMaterials": 406,
+   "production1": 4560,
+   "electricity": 20,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 2,
+    "DIPLOMA": 2,
+    "COLLEGE_ENGINEERING": 1
+   },
+   "land": 435600,
+   "roadLoad": 5,
+   "since": 1900
   }
  ]
 }

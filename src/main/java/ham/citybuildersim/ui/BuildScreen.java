@@ -799,6 +799,16 @@ final class BuildScreen {
         // ...and a materials building's own lines (0.7.142, batch I13): where it stands, how its sector weighs it, its power,
         // its old metal and who buys what it makes (THE MATERIALS' LINES).
         if (BuildCard.materials(ui.game, template)) face.getChildren().add(materialsBlock(template));
+        // ...and a hydro station's river (HY1): the slots free of the city's, and the best site's width and head.
+        BuildCard.Hydro river = BuildCard.hydro(ui.game, template);
+        if (river != null) {
+            String[] words = hydroWords(river);
+            Label line = new Label(words[0]);
+            line.setWrapText(true);
+            line.setMinHeight(Region.USE_PREF_SIZE);
+            line.setStyle(wordsAt(9.5, words[1]));
+            face.getChildren().add(line);
+        }
         face.getChildren().add(needsLine(f));
 
         StackPane card = new StackPane();
@@ -1662,6 +1672,22 @@ final class BuildScreen {
         return new String[] {w.append(" · fits").toString(), Palette.TEXT_MUTED};
     }
 
+    /** A hydro station's river (HY1): "stands on a river with a drop: 2 of 3 free · the best site 60 m wide, 30 m of head", red when there is none. */
+    static String[] hydroWords(BuildCard.Hydro h) {
+        if (h.sites() == 0) {
+            return new String[] {"needs a river with a drop on the ground the city owns · none owned", Palette.BAD};
+        }
+        if (h.slots() == 0) {
+            return new String[] {"needs a river with a drop on the ground the city owns · " + formatter.format(h.sites())
+                    + (h.sites() == 1 ? " site" : " sites") + " owned, too small for a station", Palette.BAD};
+        }
+        String best = Double.isNaN(h.widthM()) ? "" : " · the best site " + formatter.format(Math.round(h.widthM())) + " m wide, "
+                + formatter.format(Math.round(h.headM())) + " m of head";
+        return new String[] {"needs a river with a drop: " + formatter.format(h.free()) + " of " + formatter.format(h.slots())
+                + " stations free on " + formatter.format(h.sites()) + (h.sites() == 1 ? " site" : " sites") + best,
+                h.free() > 0 ? Palette.TEXT_MUTED : Palette.WARN};
+    }
+
     /** How its sector weighs one: "its whole cost $268.6M, its ground and 2,538 lorries ($173.0M) with it · it would earn $1.2M a month on it, 0.45% a month · the money gate asks $1.5M". */
     static String weighedWords(BuildCard.Weighed w) {
         StringBuilder s = new StringBuilder("its whole cost ").append(money(w.cost()));
@@ -1957,6 +1983,9 @@ final class BuildScreen {
                 return island != null ? new Pieces.Press(Pieces.Look.HELD, island, LandmassView.NO_SHORE_WAY)
                         : new Pieces.Press(Pieces.Look.HELD, "No sea owned", "sea comes with land: the Land office ›");
             }
+            // ...a hydro station's (HY1): no river with a drop owned, or none of its slots left.
+            case NO_RIVER:   return new Pieces.Press(Pieces.Look.HELD, "No river with a drop",
+                    "a river comes with land: the Land office ›");
             case NO_LICENCE: return new Pieces.Press(Pieces.Look.HELD, "Nobody licensed to work in it",
                     "a school licenses them: Education ›");
             case NO_LAND:    return new Pieces.Press(Pieces.Look.HELD, v.quote().landFree <= 0 ? "No land free"
@@ -1983,6 +2012,7 @@ final class BuildScreen {
         switch (v.kind()) {
             case NO_DEPOSIT: return new String[] {"no " + BuildCard.depositWord(v.site()) + " deposit", Palette.BAD};
             case NO_COAST:   return new String[] {noCoastWhy(t, "no sea owned"), Palette.BAD};
+            case NO_RIVER:   return new String[] {"no river with a drop owned", Palette.BAD};
             case NO_LICENCE: return new String[] {"nobody licensed", Palette.BAD};
             case NO_LAND:    return new String[] {"short " + LandManager.areaWords(v.figure()) + " of land", Palette.BAD};
             case BILL:       return new String[] {"short " + money(v.figure()) + " — you will be offered a bill", Palette.WARN};
@@ -2619,6 +2649,7 @@ final class BuildScreen {
                 case NO_DEPOSIT -> Game.siteOf(stopAt) == Resource.OIL ? "no oil left to drill"
                         : "no " + ham.citybuildersim.sectors.ExtractionSector.oreWords(Game.siteOf(stopAt), null) + " left to dig";
                 case NO_COAST   -> noCoastWhy(stopAt, "no sea owned for it");
+                case NO_RIVER   -> "no river with a drop owned for it";
                 case NO_LICENCE -> "nobody licensed to practise";
                 default         -> "short of land - buy it at the land office first";
             };
@@ -5069,6 +5100,41 @@ final class BuildScreen {
     }
 
     /**
+     * The city has the money and the land, and no river with a drop to dam (HY1).
+     *
+     * Its own refusal for the reason the coast has one: a hydro station is not short of cash or ground, it is
+     * short of a river, and the only thing that fixes that is ground with one on it - a drop is read from the
+     * banks of a river the city owns (HydroSites), so no loan would help, and the page says so.
+     */
+    void showNoRiverMenu(BuildingsTemplate selected, int quantity,
+                         String menuTitle, EnumSet<BuildingType> categories) {
+        ui.clearMenu("showNoRiverMenu", () -> showNoRiverMenu(selected, quantity, menuTitle, categories));
+
+        BuildCard.Hydro h = BuildCard.hydro(ui.game, selected);
+        Label title = new Label("NO RIVER WITH A DROP");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox explanation = reportSection("WHY",
+                quantity + " x " + selected.getName() + " needs a river with a drop on the ground the city owns.",
+                h == null || h.slots() == 0
+                        ? "The city owns none: no river it owns falls between banks that rise."
+                        : "The city's rivers hold " + formatter.format(h.slots()) + " of them, " + formatter.format(h.free()) + " free.",
+                "",
+                "A drop is read from a river's banks: a dam backs the water up no higher",
+                "than its lower side, so a river needs rising ground on both. A site holds",
+                "as many stations as the river's flow allows, and the ground has to be linked.",
+                "",
+                "This is not a funding problem. A bond would not fix it.");
+
+        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
+
+        ui.rootMenu.getChildren().addAll(title, explanation, toLand, back);
+    }
+
+    /**
      * Nobody licensed to practise in it.
      *
      * The second refusal of its kind - a mine with no deposit was the first -
@@ -5345,6 +5411,7 @@ final class BuildScreen {
             case NO_LAND    -> showNoLandMenu(t, n, from.title(), from.categories());
             case NO_DEPOSIT -> showNoDepositMenu(t, n, from.title(), from.categories());
             case NO_COAST   -> showNoCoastMenu(t, n, from.title(), from.categories());
+            case NO_RIVER   -> showNoRiverMenu(t, n, from.title(), from.categories());
             case NO_LICENCE -> showNoLicenceMenu(t, n, from.title(), from.categories());
             default -> {
                 if (paper == null) showBuildFunding(p.left(), from);
@@ -5407,6 +5474,7 @@ final class BuildScreen {
             String why = switch (g.buildRunStop(run)) {
                 case NO_DEPOSIT -> "no " + BuildCard.depositWord(Game.siteOf(at.getKey())) + " deposit is free for it";
                 case NO_COAST   -> noCoastWhy(at.getKey(), "the city owns no sea for it");
+                case NO_RIVER   -> "the city owns no river with a drop for it";
                 case NO_LICENCE -> "nobody is licensed to work in it";
                 default         -> "not enough ground is free for it";
             };
