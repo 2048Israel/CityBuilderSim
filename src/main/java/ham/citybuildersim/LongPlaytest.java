@@ -4795,10 +4795,15 @@ public class LongPlaytest {
                  * market would have placed it. The village took the dollar bond
                  * in seeds 0, 4 and 5 and in the default run: about $440k a
                  * month for twenty years, a quarter to nearly half of its
-                 * tax, and no cash left to buy ground with. borrowsAbroad() asks the two quotes for the
-                 * sale itself, which is what a treasury reads.
+                 * tax, and no cash left to buy ground with. borrowsAbroad()
+                 * asks the two quotes for the sale itself, which is what a
+                 * treasury reads - under -Dplaytest.quotedBorrowing=true
+                 * (QUOTED_BORROWING), off by default: on, it moves the played
+                 * city some twenty harnesses build their fixtures from, and
+                 * turning it on is its own batch (CC1-S-B). Off, the rule is
+                 * the rates before the sale, as it always was.
                  */
-                if (borrowsAbroad(g, needed)) {
+                if (QUOTED_BORROWING ? borrowsAbroad(g, needed) : abroadByTheRatesBefore(g)) {
                     double rateAbroad = abroadQuote(g, needed).marketRate();   // asked before the sale is booked: after it the debt is in the curve
                     g.handleForeignLogic("Term", needed / Math.max(.01, fxRate(g)),
                             20, 100, false);
@@ -4852,6 +4857,15 @@ public class LongPlaytest {
 
     /** CC1-S: the share of the city's own quote for a sale that the dollar quote for it must come under for the build to borrow abroad. */
     static final double ABROAD_SHARE = .8;
+
+    /** -Dplaytest.quotedBorrowing=true (CC1-S): the build borrows abroad by the quotes for the sale (borrowsAbroad()); unset, by the rates before it (abroadByTheRatesBefore()), and the run is the run it always was. */
+    static final boolean QUOTED_BORROWING = Boolean.getBoolean("playtest.quotedBorrowing");
+
+    /** The build's rule until CC1-S, and its default still: abroad when the world's rate before the sale is under ABROAD_SHARE of the city's own. */
+    static boolean abroadByTheRatesBefore(Game g) {
+        DebtManager m = g.getDebtManager();
+        return !BORROW_AT_HOME && m.foreignWindowOpen() && m.foreignRate() < m.getRate() * ABROAD_SHARE;
+    }
 
     /** CC1-S: the build's bonds over the run, taken at home and abroad, and the dearest rate (marketRate) it took abroad. */
     static int bondsAtHome, bondsAbroad;

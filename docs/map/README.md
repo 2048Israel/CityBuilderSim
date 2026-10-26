@@ -4,7 +4,7 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 425 files, 459,541 lines, 19,555 methods, 4,308 constants. `GameVersion.VERSION` is "0.8.54", `SAVE_FORMAT` 47.
+**The tree:** 425 files, 459,551 lines, 19,556 methods, 4,309 constants. `GameVersion.VERSION` is "0.8.54", `SAVE_FORMAT` 47.
 
 ## model (197 files)
 
@@ -290,7 +290,7 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AgricultureCheck.java](AgricultureCheck.md) | 413 | 7 | The ground under the loaf. | 0 |
 | [AllChecks.java](AllChecks.md) | 379 | 14 | Runs every harness, one JVM each, and says which failed. | 2 |
 | [AuctionCheck.java](AuctionCheck.md) | 1,654 | 42 | The city's paper sold at auction: one clearing yield, and what it costs. | 0 |
-| [AutoBuildCheck.java](AutoBuildCheck.md) | 1,899 | 43 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
+| [AutoBuildCheck.java](AutoBuildCheck.md) | 1,893 | 43 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
 | [BankCheck.java](BankCheck.md) | 4,325 | 22 | The commercial bank, and the families it discharges. | 1 |
 | [BondCheck.java](BondCheck.md) | 1,581 | 37 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
 | [BooksCheck.java](BooksCheck.md) | 299 | 3 | Verifies a sector's income statement and balance sheet, off the template. | 0 |
@@ -341,7 +341,7 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FloatLinkCheck.java](FloatLinkCheck.md) | 1,785 | 58 | The floating-rate note and the inflation-linked bond (CD5, spec-city-debt.md sections 2.4, 2.5, 5.3 and 5.4; D25): a floater pays the month's polic... | 1 |
 | [FoodProcessingCheck.java](FoodProcessingCheck.md) | 442 | 7 | The third of the shelf that arrives already made. | 0 |
 | [ForeignCheck.java](ForeignCheck.md) | 1,855 | 16 | The balance of payments, and whether the boundary it is drawn on is honest. | 4 |
-| [ForeignDebtCheck.java](ForeignDebtCheck.md) | 1,006 | 12 | Borrowing in somebody else's money. | 3 |
+| [ForeignDebtCheck.java](ForeignDebtCheck.md) | 1,008 | 12 | Borrowing in somebody else's money. | 3 |
 | [ForestryCheck.java](ForestryCheck.md) | 704 | 21 | Forestry, checked (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.11, 4 and 5's I9 row; the study's - materials-chains-research... | 4 |
 | [FoundingYardCheck.java](FoundingYardCheck.md) | 599 | 26 | The founding yard (PT1-M4, 2026-10-12): the works department's free 400 points a month are retired and every city founds with one Builders' Yard st... | 0 |
 | [FreightViewCheck.java](FreightViewCheck.md) | 716 | 26 | FreightView, the model behind the Freight screens, held to the study's board 2 (docs/studies/spec-freight-and-infrastructure.md 6): the city's frei... | 0 |
@@ -374,7 +374,7 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandClassCheck.java](LandClassCheck.md) | 1,349 | 51 | A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going price stays the price of flat ... | 3 |
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 739 | 29 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 0 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,255 | 94 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 2 |
-| [LongPlaytest.java](LongPlaytest.md) | 7,700 | 142 | A city played for four thousand months, the way a person plays. | 49 |
+| [LongPlaytest.java](LongPlaytest.md) | 7,714 | 143 | A city played for four thousand months, the way a person plays. | 49 |
 | [MainLineCheck.java](MainLineCheck.md) | 1,542 | 47 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 1 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 609 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
 | [MapCheck.java](MapCheck.md) | 10,737 | 276 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 8 |

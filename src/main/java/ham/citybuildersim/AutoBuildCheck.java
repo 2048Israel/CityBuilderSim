@@ -1160,12 +1160,6 @@ public class AutoBuildCheck {
         try {
             Game g = youngCity(files);
             AutoBuilder ab = g.getAutoBuilder();
-            // The slack at its most, which CAUSES the shortage (CC1-S). Until then the fixture leaned on the test player's own play to leave the
-            // young city short of something at month 60. Since the test player takes the home bond, not the dollar one at 18.45%, for its
-            // founding bakeries, every service the pass keeps stands at its 15% margin or is held for the payback at month 60 (1,747 people,
-            // the debt 68% of a year's GDP), and nothing is refused for the money. At the most the pass wants more road than the pinned limit
-            // lets it borrow for.
-            ab.setSlack(AutoBuilder.SLACK_MOST, null);
             // The limit pinned where no bond fits, and the city saved so, for the copies.
             double[] pinned = new double[1];
             quietly(() -> pinned[0] = nearTheLimit(g));

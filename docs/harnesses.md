@@ -741,29 +741,29 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1036 switched off, it holds nothing back, and the card carries no line
   - L1048 a building automatic building builds carries no such line
 - **L1153 7. a young city refused for a small sum keeps building (FW4)**
-  - L1188 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
-  - L1380 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
-  - L1403 ...and its log says the first was more than the money would pay for
-  - L1439 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
-  - L1444 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
-  - L1477 fixture: the town short of a service, with no ground free
-  - L1492 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
-  - L1498 ...its log's order carries the ground: its square feet, price and places
-  - L1517 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
-  - L1518 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
-  - L1541 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
-  - L1575 over the limit it buys no ground and places nothing, and borrows nothing
-  - L1615 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
-  - L1617 it buys none of them - no field for its ore - and holds the order for want of ground
-  - L1620 ...and the inbox says so, naming the land office
-  - L1623 ...settled the month it is switched off
-  - L1691 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
-  - L1745 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
-  - L1770 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
-  - L1775 ...and the inbox says the city is over the limit, and names Build from cash anyway
-  - L1806 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
-- **L1823 8. care of every kind is essential, on a deficit (CC1-S)**
-  - L1864 a school is not an essential service: on the same sort of deficit it is held for the payback, not ordered
+  - L1182 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
+  - L1374 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
+  - L1397 ...and its log says the first was more than the money would pay for
+  - L1433 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
+  - L1438 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
+  - L1471 fixture: the town short of a service, with no ground free
+  - L1486 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
+  - L1492 ...its log's order carries the ground: its square feet, price and places
+  - L1511 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
+  - L1512 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
+  - L1535 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
+  - L1569 over the limit it buys no ground and places nothing, and borrows nothing
+  - L1609 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
+  - L1611 it buys none of them - no field for its ore - and holds the order for want of ground
+  - L1614 ...and the inbox says so, naming the land office
+  - L1617 ...settled the month it is switched off
+  - L1685 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
+  - L1739 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
+  - L1764 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
+  - L1769 ...and the inbox says the city is over the limit, and names Build from cash anyway
+  - L1800 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
+- **L1817 8. care of every kind is essential, on a deficit (CC1-S)**
+  - L1858 a school is not an essential service: on the same sort of deficit it is held for the payback, not ordered
 
 ## BankCheck.java - 515 labelled assertions
 
@@ -7444,20 +7444,20 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L892 fixture: the note falls due next month
   - L893 netted, the central bank's own, the issues and the cash are what falls due, in every mode
   - L900 the chart's borrowing flags carry the borrowing decisions and nothing else
-- **L923 10. the test player takes the cheaper money by the quote for the sale (CC1-S)**
-  - L941 fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone
-  - L943 fixture: a city with no foreign debt and the window open
-  - L945 fixture: before any sale the world's rate is under the share of the city's own - the old rule would borrow abroad
-  - L947 fixture: the city has tax to size a sale by
-  - L954 fixture: the big sale's quote abroad is at or above the share of its quote at home
-  - L956 a sale of two years' tax is not borrowed abroad, though the world's rate before it is the lower
-  - L958 quoting both sales booked nothing: cash, debts and both rates are as they were
-  - L974 fixture: the city now owes at home and still owes nothing abroad
-  - L980 fixture: the small sale's quote abroad is under the share of its quote at home
-  - L982 a month's tax, quoted cheaper abroad than the share of home, is borrowed abroad
-  - L984 fixture: the big sale is still quoted at or above the share of home, though home is dear
-  - L986 ...and still goes home: the dollar quote for two years' tax is dearer than the city's own
-  - L988 quoting again booked nothing
+- **L925 10. the test player takes the cheaper money by the quote for the sale (CC1-S)**
+  - L943 fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone
+  - L945 fixture: a city with no foreign debt and the window open
+  - L947 fixture: before any sale the world's rate is under the share of the city's own - the old rule would borrow abroad
+  - L949 fixture: the city has tax to size a sale by
+  - L956 fixture: the big sale's quote abroad is at or above the share of its quote at home
+  - L958 a sale of two years' tax is not borrowed abroad, though the world's rate before it is the lower
+  - L960 quoting both sales booked nothing: cash, debts and both rates are as they were
+  - L976 fixture: the city now owes at home and still owes nothing abroad
+  - L982 fixture: the small sale's quote abroad is under the share of its quote at home
+  - L984 a month's tax, quoted cheaper abroad than the share of home, is borrowed abroad
+  - L986 fixture: the big sale is still quoted at or above the share of home, though home is dear
+  - L988 ...and still goes home: the dollar quote for two years' tax is dearer than the city's own
+  - L990 quoting again booked nothing
 
 ## ForestryCheck.java - 59 labelled assertions
 
@@ -12609,13 +12609,13 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L2997 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3052 AND EVERYTHING THAT IS A PURCHASE.**
 - **L3398 AND THE BEST OF THEM WINS.**
-- **L5741 founding: a few months at a time, by hand**
-- **L5838 then the real rhythm**
-- **L5986 the report**
-- **L6009 ==**
-- **L6095 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7299 what the advisor tried, and what happened**
-- **L7305 findings**
+- **L5755 founding: a few months at a time, by hand**
+- **L5852 then the real rhythm**
+- **L6000 the report**
+- **L6023 ==**
+- **L6109 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7313 what the advisor tried, and what happened**
+- **L7319 findings**
 
 ## MainLineCheck.java - 151 labelled assertions
 

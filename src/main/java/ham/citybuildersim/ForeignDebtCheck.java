@@ -48,9 +48,9 @@ import java.nio.file.Path;
  *      rollover's parts add to what falls due, and the borrowing flags
  *      carry nothing else?
  *
- *   7. Does the long playtest's build take the cheaper money by the quote
- *      for the sale itself (CC1-S, section 10)? Not by the two rates before
- *      it: a sale of two years' tax is quoted dear abroad and goes home
+ *   7. Does the long playtest's build, under -Dplaytest.quotedBorrowing
+ *      (CC1-S, section 10; off by default, CC1-S-B), take the cheaper money
+ *      by the quote for the sale itself? Not by the two rates before it: a sale of two years' tax is quoted dear abroad and goes home
  *      though the world's rate before it is the lower, and a small one goes
  *      abroad once the city's own paper is dearer; quoting books nothing.
  */
@@ -912,7 +912,9 @@ public class ForeignDebtCheck {
      * 3.00%, and the village took the dollar bond (~$440k a month for twenty
      * years, a quarter to nearly half of its tax) in seeds 0, 4 and 5 and in
      * the default run.
-     * LongPlaytest.borrowsAbroad() asks the quote for the sale itself. This
+     * LongPlaytest.borrowsAbroad() asks the quote for the sale itself (the
+     * build's rule under -Dplaytest.quotedBorrowing; off by default until
+     * CC1-S-B turns it on, as it moves the played city). This
      * section proves it on a city where the old rule's premise stands - the
      * world's rate under the share of the city's own, the window open, no
      * foreign debt - and the two sizes of sale go the two ways the quotes
