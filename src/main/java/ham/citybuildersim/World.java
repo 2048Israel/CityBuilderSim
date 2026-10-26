@@ -124,7 +124,7 @@ public final class World {
     /** Desert (0.7.127, batch E7; spec-globe Q1): dry ground every rule treats as grass - only its colour and its name differ. The real Earth's bare ground (EarthTerrain); a generated world has none. */
     public static final byte DESERT = 6;
 
-    /** Shallow sea (ET1, spec-earth2-terrain 6.1; Jerus 2026-10-12, D11): sea no deeper than 30 m - salt water every rule that asks "is this the sea?" treats as SALT (salt()), lighter on the map and the one water a short bridge can cross (a later batch). The real Earth's, drawn where earth-2's shallow share beats the plot's noise (EarthTerrain); a generated world has none (D19). */
+    /** Shallow sea (ET1, spec-earth2-terrain 6.1; Jerus 2026-10-12, D11): sea no deeper than 30 m - salt water every rule that asks "is this the sea?" treats as SALT (salt()), lighter on the map and the one sea a short bridge can cross (ET6: bridgeable(), as fresh water is). The real Earth's, drawn where earth-2's shallow share beats the plot's noise (EarthTerrain); a generated world has none (D19). */
     public static final byte SHALLOW = 7;
 
     /** How many classes the ground has: 8, GRASS to SHALLOW - the length of an array a class indexes (0.7.127; five until then, seven until ET1, and a generated world draws only the first five). */
@@ -142,6 +142,20 @@ public final class World {
      */
     public static boolean salt(int cls) {
         return cls == SALT || cls == SHALLOW;
+    }
+
+    /**
+     * Whether a class is water a road or a railway may bridge - FRESH or SHALLOW
+     * (ET6, spec-earth2-terrain 6.2, D12): fresh water since the first bridge
+     * (0.7.77), the shallow sea since ET6. The deep sea (SALT) is never
+     * bridged: a run stops at it and turns along the shore. salt() stays what
+     * the coast, the ports and the sea routes ask; this is the one question
+     * the crossing rules (CityRuns.clear(), the plan's street and arterial
+     * bridges, the map's decks) put. False for anything that is not a class,
+     * -1 included.
+     */
+    public static boolean bridgeable(int cls) {
+        return cls == FRESH || cls == SHALLOW;
     }
 
     /**

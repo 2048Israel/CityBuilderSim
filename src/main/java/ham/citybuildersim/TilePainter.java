@@ -170,18 +170,27 @@ public final class TilePainter {
     public static final int REACH = JUNCTION_APART / 2;
 
     /**
-     * A street's longest crossing of fresh water, gravel or paved: 6 plots
-     * (180 m), the mockup's paved bridge (its star 1); gravel's too since
-     * 0.7.77 (batch N5; Jerus, 2026-10-08: "gravel road bridge rivers sure").
-     * The plan's street bridge (DistrictPlan.STREET_BRIDGE, spec 2.4).
+     * A street's longest crossing of bridgeable water (fresh, and since ET6 the
+     * shallow sea; World.bridgeable()), gravel or paved: 6 plots (180 m), the
+     * mockup's paved bridge (its star 1); gravel's too since 0.7.77 (batch N5;
+     * Jerus, 2026-10-08: "gravel road bridge rivers sure"). The plan's street
+     * bridge (DistrictPlan.STREET_BRIDGE, spec 2.4); ET6 (D12) leaves it
+     * where it was.
      */
     public static final int STREET_BRIDGE = 6;
 
-    /** The longest crossing of fresh water, in plots, by road kind: gravel and paved STREET_BRIDGE, a highway 14 (the mockup's star 1) - an arterial's since 0.7.87 (DistrictPlan.ARTERIAL_BRIDGE). */
-    static final int[] MAX_BRIDGE = { 0, STREET_BRIDGE, STREET_BRIDGE, 14 };
+    /**
+     * The longest crossing of bridgeable water, in plots, by road kind: gravel
+     * and paved STREET_BRIDGE, a highway 34 plots (1,020 m; est.,
+     * spec-earth2-terrain 6.2 / D12, Jerus 2026-10-12 "all rec" - 14 plots,
+     * 420 m, refused Halifax's Macdonald and MacKay bridges, about 805 to
+     * 820 m of water on earth-2). An arterial's is not this: since ET6 it is
+     * its own, DistrictPlan.ARTERIAL_BRIDGE, 14 plots.
+     */
+    static final int[] MAX_BRIDGE = { 0, STREET_BRIDGE, STREET_BRIDGE, 34 };
 
-    /** The longest crossing of fresh water a railway's track makes: 14, as a highway's (star N3-6). */
-    public static final int RAIL_BRIDGE = 14;
+    /** The longest crossing of bridgeable water a railway's track makes: 34 plots (1,020 m; est., spec-earth2-terrain 6.2 / D12), as a highway's (star N3-6) - 14 until ET6, which Halifax's two bridges outspan. */
+    public static final int RAIL_BRIDGE = 34;
 
     /** A building's box in Input.boxes with this bit set is the part, on the tile, of a building counted on another (FX5 Y2): a yard whose box spans tiles is counted on the tile holding its first plot, and on the others is only its part, drawn there (Painted.bpart). Above CityMap.PACKED_BIT. */
     public static final int PART_BIT = 1 << 21;
@@ -721,7 +730,7 @@ public final class TilePainter {
             if (f == RAIL || f == RAIL_OVER) p.railLaid++;
             if (f != RAIL) p.highwayPlots++;
             if (p.use[i] == BUILDING) continue;
-            boolean wet = in.terrain[i] == World.FRESH;
+            boolean wet = World.bridgeable(in.terrain[i]);
             if (f == RAIL) {
                 p.use[i] = RAIL;
             } else {
@@ -759,7 +768,7 @@ public final class TilePainter {
             p.road[i] = (byte) kind;
             p.width[i] = (byte) w;
             p.role[i] = roleOf(code);
-            p.bridge[i] = (code & S_BRIDGE) != 0 || in.terrain[i] == World.FRESH;
+            p.bridge[i] = (code & S_BRIDGE) != 0 || World.bridgeable(in.terrain[i]);
             p.tunnel[i] = false;
             p.streets[kind]++;
             if (kind != TRACK) p.halves[kind] += w;
