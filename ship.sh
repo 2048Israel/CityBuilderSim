@@ -60,10 +60,10 @@
 #       exit 0 and 3 (red only as main's record has it) pass, 4 (a new red
 #       line) passes only with --red-ok, 1 and 2 stop. On a chatgpt/ or gemini/
 #       branch tools.Names too: said, never a gate. Then the timing harnesses
-#       alone and hard (batch-check.sh --timing), once no other batch's JVM
-#       runs; its exit is 0, 3 or 4 alike, and the record is no shortcut. Its
-#       red lines less the lines the suite step already judged (main's
-#       recorded reds, or reds passed with --red-ok) and less main's recorded
+#       alone and hard (batch-check.sh --timing), after a quiet minute with no
+#       other batch's JVM (TM2); its exit is 0, 3 or 4 alike, and the record
+#       is no shortcut. Its red lines less the lines the suite step already
+#       judged (main's recorded reds, or reds passed with --red-ok) and less main's recorded
 #       lines are the timing's own: none, and it passes with no run of main's
 #       (a red passed with --red-ok in one of the timing harnesses comes back
 #       here and is not judged twice). Otherwise only those lines are compared,

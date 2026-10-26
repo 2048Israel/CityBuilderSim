@@ -1,8 +1,8 @@
-# gate of Merge batch/FW10: a full-screen chart with a wrapped legend is a row too tall: `TimeChart.heightBesidePlot()` assumes a one-row toolbar, so the foot is cut, 0.8.50
+# gate of Merge batch/TM2: the ship gate's timing waits for a quiet minute, not one empty look, so it never starts in the gap between another runner's JVMs (Jerus, 2026-10-20: "Queue a small fix"), and DeepSeek's `agent.py` timing soft beside other runs ("Add it to TM2"), 0.8.50
 # date: 2026-10-25
 # earth-2.bin: named
-# suite: 144 harnesses run in 1067s: 143 passed, 1 failed
-# timing: 11 harnesses run in 331s: 10 passed, 1 failed
+# suite: 144 harnesses run in 1020s: 143 passed, 1 failed
+# timing: 11 harnesses run in 313s: 10 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

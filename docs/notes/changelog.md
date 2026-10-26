@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### TM2 — the ship gate's timing waits for a quiet minute — 2026-10-25, ready, no tag (tooling), see docs/queue/TM2-notes.md
+`--timing` started its hard run at the first look that found no other
+batch's JVM, and a runner that starts JVMs one after another leaves gaps a
+look can fall in. Now `tools/jvms.ps1 -Quiet`, which both scripts call on the
+PC (the same loop in sh elsewhere), waits for four empty looks in a row, 15 s
+apart; a busy look starts the count over; at 30 minutes it runs hard all the
+same and says so. The game is said, not waited for (`CBS_QUIET_GAME=1` waits).
+`Batch check.bat` refuses an unknown `--option`; `agent.py` times a harness
+soft beside other runs. `tools/quiet-selftest.sh` (new) proves it against
+real JVMs with gaps, 17 of 17; a real gate beside a loop of JVMs waited it out.
+
 ### 0.8.50 — FW10, the full-screen chart's foot stays on the screen — 2026-10-25, ready, see docs/queue/FW10-notes.md
 City History's chart in full screen, with many lines picked, ran past the
 window's foot: `TimeChart.heightBesidePlot()` counted the toolbar as one row of

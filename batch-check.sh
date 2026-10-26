@@ -64,17 +64,32 @@
 #  the lock at $CBS_JVM_LOCK (default /home/claude/jvm.lock) when its folder
 #  exists and flock is installed. The PC's twin is Batch check.bat.
 #
-#  Timing (TM1, 2026-10-18; BP1, 2026-10-25): every run but --timing times
-#  soft (-Dcbs.timing=soft): a timing figure over its budget says SOFT on its
-#  line and is not counted. TM1 made a run soft only when another batch's JVM
-#  or Jerus's game was running as the suite started, and a run that began alone
-#  timed hard - so main's own timing misses came out as a batch's new reds,
-#  exit 4, "the batch's to mend". Timing is now judged once, hard, by --timing,
-#  the ship gate's: it waits (up to 30 minutes) for the other batches' JVMs to
-#  finish, and says so when the game is running, whose load a timing red may
-#  then be. A soft run says in a line when another batch's JVM or the game is
-#  running (on the PC tools/jvms.ps1 counts them; elsewhere ps does), and says
-#  nothing when it began alone.
+#  Timing (TM1, 2026-10-18; BP1 and TM2, 2026-10-25): every run but --timing
+#  times soft (-Dcbs.timing=soft): a timing figure over its budget says SOFT on
+#  its line and is not counted. TM1 made a run soft only when another batch's
+#  JVM or Jerus's game was running as the suite started, and a run that began
+#  alone timed hard - so main's own timing misses came out as a batch's new
+#  reds, exit 4, "the batch's to mend". Timing is now judged once, hard, by
+#  --timing, the ship gate's, and only after a quiet minute: four empty looks
+#  in a row, 15 s apart, where a look that finds another batch's JVM starts
+#  the count over; 30 minutes at most, then hard all the same, and the line
+#  says so. The game is not waited for (CBS_QUIET_GAME=1 waits for it too):
+#  a line says it runs, and a timing red beside it ship.sh judges against
+#  main's own run, beside it as well. A soft run says in a line when
+#  another batch's JVM or the game is running (on the PC tools/jvms.ps1 counts
+#  them; elsewhere ps does), and says nothing when it began alone.
+#  WHY (TM2): the gate waited for one empty look, and a runner that starts its
+#  JVMs one after another (AllChecks, the ensemble's runner) leaves a gap of a
+#  second or two between them; a look in the gap started the hard run and the
+#  runner's next JVM ran beside it (TM1's own gate, 2026-10-18, beside FR2's
+#  ensemble). The wait is tools/jvms.ps1 -Quiet on the PC (its header has the
+#  dials and the lines) and the same loop in sh over ps elsewhere
+#  (quiet_minute below). After a change to it: sh tools/quiet-selftest.sh.
+#  For a test: CBS_QUIET_LOOKS, CBS_QUIET_SECS and
+#  CBS_QUIET_CAP_SECS shorten the dials, CBS_JVMS_MARK narrows a look to the
+#  command lines that contain that text, and CBS_TIMING_WAIT_ONLY=1 with
+#  --timing does the wait alone, before the compile, and exits with its status
+#  (0 quiet, 3 the cap): tools/quiet-selftest.sh.
 #  In Git Bash the classpath is joined with ';', as Java on Windows wants.
 # ---------------------------------------------------------------------------
 
@@ -121,6 +136,89 @@ case "$(uname -s)" in
     MINGW*|MSYS*|CYGWIN*) WINDOWS=1; SEP=';' ;;
     *) WINDOWS=0; SEP=':' ;;
 esac
+
+# --- who else runs: one look, and the wait for a quiet minute the gate's --timing makes (TM1, TM2) ---
+others() {   # "<batch JVMs> <game processes>" on the machine, this run not yet among them
+    if [ "$WINDOWS" = 1 ]; then
+        powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/jvms.ps1 2>/dev/null | tr -d '\r'
+    else
+        PROCS=$(ps -eo args 2>/dev/null)
+        [ -z "$CBS_JVMS_MARK" ] || PROCS=$(printf '%s\n' "$PROCS" | grep -F -- "$CBS_JVMS_MARK")   # a test's: only the lines naming its mark
+        GAME=$(printf '%s\n' "$PROCS" | grep -c -E 'ham\.citybuildersim\.CityBuilderSim\b|CityBuilderSim-[^/"]*\.jar')
+        BATCH=$(printf '%s\n' "$PROCS" | grep -E 'ham\.citybuildersim\.' | grep -c -v -E 'ham\.citybuildersim\.CityBuilderSim\b')
+        echo "$BATCH $GAME"
+    fi
+}
+
+# Wait for a quiet minute, saying so as it happens (TM2): status 0 when it came, 3 when the cap did. On the PC
+# tools/jvms.ps1 -Quiet (its header has the lines and the dials); elsewhere the same loop here, over others().
+quiet_minute() {
+    if [ "$WINDOWS" = 1 ]; then
+        QST="${OUT:-target/checks}/.quiet-status.$$"; mkdir -p "$(dirname "$QST")"; rm -f "$QST"
+        QCR=$(printf '\r')
+        # a pipe loses the left side's status, so it is written to a file; read -r, not tr, passes each line as it comes
+        { powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/jvms.ps1 -Quiet; echo $? > "$QST"; } \
+            | while IFS= read -r QLINE; do printf '%s\n' "${QLINE%"$QCR"}"; done
+        QRC=$(cat "$QST" 2>/dev/null); rm -f "$QST"
+        return "${QRC:-0}"
+    fi
+    # The empty looks in a row the hard run waits for, 15 s apart: about a quiet minute, where a runner's gap between two JVMs is a second or two (TM2).
+    QLOOKS=${CBS_QUIET_LOOKS:-4}
+    QSECS=${CBS_QUIET_SECS:-15}
+    QCAP=${CBS_QUIET_CAP_SECS:-1800}   # seconds: 30 minutes
+    # Whether Jerus's game is waited for as another batch's JVM is: off, as in tools/jvms.ps1 (its dial says why); CBS_QUIET_GAME=1 turns it on.
+    QGAME=0; [ "$CBS_QUIET_GAME" != 1 ] || QGAME=1
+    if [ $((QCAP % 60)) = 0 ]; then QCAPW="$((QCAP / 60)) minutes"; [ "$QCAP" != 60 ] || QCAPW="1 minute"; else QCAPW="$QCAP s"; fi
+    QT0=$(date +%s); QN=0; QWAS=0; QFIRST=1; QFIRSTBUSY=0; QLASTWHO="other JVM(s)"
+    while :; do
+        read -r QB QG <<EOF
+$(others)
+EOF
+        QB=${QB:-0}; QG=${QG:-0}
+        QWHO=""
+        [ "$QB" = 0 ] || QWHO="$QB other batch JVM(s)"
+        { [ "$QG" = 0 ] || [ "$QGAME" != 1 ]; } || QWHO="${QWHO:+$QWHO and }the game"
+        if [ -n "$QWHO" ]; then
+            QLASTWHO=$QWHO
+            [ "$QFIRST" = 0 ] || QFIRSTBUSY=1
+            if [ "$QWAS" = 0 ]; then
+                if [ "$QN" = 0 ]; then
+                    echo "timing    waiting for a quiet minute - $QWHO running; 0 of $QLOOKS quiet looks, $QSECS s apart"
+                else
+                    echo "timing    $QWHO running again after $QN of $QLOOKS quiet looks: the count starts over"
+                fi
+            fi
+            QN=0; QWAS=1
+        else
+            QN=$((QN + 1)); QWAS=0
+        fi
+        QFIRST=0
+        QEL=$(( $(date +%s) - QT0 )); QRC=""
+        if [ "$QN" -ge "$QLOOKS" ]; then
+            QTEXT="a quiet minute - $QLOOKS of $QLOOKS quiet looks, $QSECS s apart"
+            [ "$QFIRSTBUSY" = 0 ] || QTEXT="$QTEXT, after $((QEL / 60)) min $((QEL % 60)) s of waiting"
+            echo "timing    $QTEXT"
+            QRC=0
+        elif [ "$QEL" -ge "$QCAP" ]; then
+            echo "timing    still $QLASTWHO after $QCAPW, $QN of $QLOOKS quiet looks: hard all the same, without the quiet minute - a red may be their load"
+            QRC=3
+        fi
+        if [ -n "$QRC" ]; then
+            if [ "$QGAME" != 1 ] && [ "$QG" != 0 ]; then
+                echo "timing    the game is running: a timing red may be its load - close it if you can"
+            fi
+            return "$QRC"
+        fi
+        sleep "$QSECS"
+    done
+}
+
+# the self-test's hook (tools/quiet-selftest.sh): the wait alone, before anything is built, and its status as the exit
+if [ "$TIMING" = 1 ] && [ -n "$CBS_TIMING_WAIT_ONLY" ]; then
+    quiet_minute; QWRC=$?
+    echo "timing    hard - the timing harnesses alone (CBS_TIMING_WAIT_ONLY: not run)"
+    exit "$QWRC"
+fi
 
 if [ "$JUDGE" = 1 ]; then   # the folder of the log, so a suite writing to target/checks is never overwritten
     OUT=$(dirname "$LOGARG"); SUITE="$LOGARG"
@@ -292,35 +390,11 @@ if [ "$PICK" = 1 ]; then
 fi
 
 # --- timing: hard for --timing alone, soft for every other run (TM1; BP1 made it always) --
-others() {   # "<batch JVMs> <game processes>" on the machine, this run not yet among them
-    if [ "$WINDOWS" = 1 ]; then
-        powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/jvms.ps1 2>/dev/null | tr -d '\r'
-    else
-        PROCS=$(ps -eo args 2>/dev/null)
-        GAME=$(printf '%s\n' "$PROCS" | grep -c -E 'ham\.citybuildersim\.CityBuilderSim\b|CityBuilderSim-[^/"]*\.jar')
-        BATCH=$(printf '%s\n' "$PROCS" | grep -E 'ham\.citybuildersim\.' | grep -c -v -E 'ham\.citybuildersim\.CityBuilderSim\b')
-        echo "$BATCH $GAME"
-    fi
-}
 TIMED=""
 if [ "$TIMING" = 1 ]; then
     TIMED="-Dcbs.timing=hard"
     set -- --timing "$@"
-    waited=0
-    while :; do
-        read -r BATCH GAME <<EOF
-$(others)
-EOF
-        [ "${BATCH:-0}" = 0 ] && break
-        if [ "$waited" -ge 120 ]; then
-            echo "timing    still $BATCH other batch JVM(s) after 30 minutes: hard all the same, a red may be their load"
-            break
-        fi
-        [ "$waited" = 0 ] && echo "timing    waiting for $BATCH other batch JVM(s) to finish first..."
-        waited=$((waited + 1))
-        sleep 15
-    done
-    [ "${GAME:-0}" = 0 ] || echo "timing    the game is running: a timing red may be its load - close it if you can"
+    quiet_minute
     echo "timing    hard - the timing harnesses alone"
 elif [ "$FAST" = 0 ]; then
     TIMED="-Dcbs.timing=soft"   # always: only --timing, the gate's, judges timing (BP1, 2026-10-25)
