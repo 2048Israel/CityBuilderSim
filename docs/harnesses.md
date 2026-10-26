@@ -2,7 +2,7 @@
 
 Generated 2026-10-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**146 harness files, 15,412 labelled assertions.** AllChecks runs 146 of them.
+**146 harness files, 15,426 labelled assertions.** AllChecks runs 146 of them.
 
 ## Which harnesses read which class
 
@@ -679,7 +679,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1645 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
   - L1650 ...and its headlines say automatic building came up short at its cap, and how many times it sold
 
-## AutoBuildCheck.java - 60 labelled assertions
+## AutoBuildCheck.java - 61 labelled assertions
 
 > Automatic building (0.7.73, batch N4): AutoBuilder's month held to its
 > rules, in a city it builds for decades and in fixtures that cause each of
@@ -695,73 +695,75 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 > 
 > ...
 
-- **L161 1. the settings**
-  - L165 a new city has it off
-  - L166 ...its spare margin at DEFAULT_SLACK, 15%, its debt limit at DEFAULT_DEBT_LIMIT, 240% of a year's GDP
-  - L177 the margin's slider keeps to its ends, 0 and SLACK_MOST, and to whole per cents
-  - L183 ...the debt limit's to 0 and DEBT_LIMIT_MOST, six years of GDP - past 300%, as Jerus asked - and DEBT_STEP's
-  - L192 switching it, moving a slider and Build from cash anyway are decisions, in the construction kind
-  - L198 off,
-  - L205 a save from before it (no state) loads with it off, at its defaults, with nothing done
-  - L214 one from 0.7.73 to 0.7.80 keeps its switch and margin, and reads the default limit and the toggle off:
-- **L235 2. the advice's card**
-  - L265 fixture: the town is short of something the advice has a card for, at the advice's own margin (SLACK)
-  - L267 fixture: ...a building the payback does not hold (0.7.104: an essential service, or one the treasury does
-  - L278 the pass's first order is the card
-- **L304 3. a city on it for decades**
-  - L404 fixture: it ran a pass every month and placed orders for at least three services
-  - L406 fixture: it borrowed, on the funding page's bond, at least once
-  - L407 after every pass every service it keeps is at the margin's target, has works under way, or the
-  - L409 ...and every reason it gave was true: no ground for one, a bond for one past the limit, one that would not
-  - L415 it builds nothing outside its remit (
-  - L418 fixture: it bought ground for its orders
-  - L423 ...and bare ground only: no field bought for its ore (
-  - L431 ...nor spends the cash under a month's tax, the reserve (
-  - L432 fixture: it ordered a building the payback holds, in the decades or in the copy given room
-- **L680 4. a saved city plays on as the one it was saved from**
-  - L684 fixture: the decades' city, auto-build on, saved
-  - L692 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
-  - L697 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
-  - L699 ...the debt it reads the limit against (0.7.81)
-  - L700 ...and the year of GDP it sets the debt against
-  - L740 fixture: ...and it placed orders in those months (
-  - L755 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
-  - L784 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
-  - L814 fixture: ...and it bought ground in those months (
-- **L821 5. what holds it back, caused**
-  - L838 fixture: the town short of road, its cash at a month's tax
-  - L840 a debt limit of 0%: it holds and borrows nothing
-  - L894 a first police station is a service it keeps where there is none, however far past the need one goes
-  - L933 ...and the inbox says it would not pay back, with its figure: what each resident it would cover pays the city
-  - L966 ...but only from the cash: with the cash at a month's tax and the limit at its most, the first school is held
-- **L989 6. the advice's card carries the payback's verdict, in the inbox's words (PT1-M3)**
-  - L1006 the card carries a line, and it is the appraisal's own words: what it opens with, then paybackWords() of the
-  - L1019 ...the very words the inbox's notice gives for it
-  - L1026 saved and loaded before the next month, the card carries the same line
-  - L1030 switched off, it holds nothing back, and the card carries no line
-  - L1042 a building automatic building builds carries no such line
-- **L1147 7. a young city refused for a small sum keeps building (FW4)**
-  - L1176 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
-  - L1368 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
-  - L1391 ...and its log says the first was more than the money would pay for
-  - L1427 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
-  - L1432 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
-  - L1465 fixture: the town short of a service, with no ground free
-  - L1480 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
-  - L1486 ...its log's order carries the ground: its square feet, price and places
-  - L1505 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
-  - L1506 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
-  - L1529 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
-  - L1563 over the limit it buys no ground and places nothing, and borrows nothing
-  - L1603 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
-  - L1605 it buys none of them - no field for its ore - and holds the order for want of ground
-  - L1608 ...and the inbox says so, naming the land office
-  - L1611 ...settled the month it is switched off
-  - L1679 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
-  - L1733 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
-  - L1758 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
-  - L1763 ...and the inbox says the city is over the limit, and names Build from cash anyway
-  - L1794 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
+- **L167 1. the settings**
+  - L171 a new city has it off
+  - L172 ...its spare margin at DEFAULT_SLACK, 15%, its debt limit at DEFAULT_DEBT_LIMIT, 240% of a year's GDP
+  - L183 the margin's slider keeps to its ends, 0 and SLACK_MOST, and to whole per cents
+  - L189 ...the debt limit's to 0 and DEBT_LIMIT_MOST, six years of GDP - past 300%, as Jerus asked - and DEBT_STEP's
+  - L198 switching it, moving a slider and Build from cash anyway are decisions, in the construction kind
+  - L204 off,
+  - L211 a save from before it (no state) loads with it off, at its defaults, with nothing done
+  - L220 one from 0.7.73 to 0.7.80 keeps its switch and margin, and reads the default limit and the toggle off:
+- **L241 2. the advice's card**
+  - L271 fixture: the town is short of something the advice has a card for, at the advice's own margin (SLACK)
+  - L273 fixture: ...a building the payback does not hold (0.7.104: an essential service, or one the treasury does
+  - L284 the pass's first order is the card
+- **L310 3. a city on it for decades**
+  - L410 fixture: it ran a pass every month and placed orders for at least three services
+  - L412 fixture: it borrowed, on the funding page's bond, at least once
+  - L413 after every pass every service it keeps is at the margin's target, has works under way, or the
+  - L415 ...and every reason it gave was true: no ground for one, a bond for one past the limit, one that would not
+  - L421 it builds nothing outside its remit (
+  - L424 fixture: it bought ground for its orders
+  - L429 ...and bare ground only: no field bought for its ore (
+  - L437 ...nor spends the cash under a month's tax, the reserve (
+  - L438 fixture: it ordered a building the payback holds, in the decades or in the copy given room
+- **L686 4. a saved city plays on as the one it was saved from**
+  - L690 fixture: the decades' city, auto-build on, saved
+  - L698 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
+  - L703 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
+  - L705 ...the debt it reads the limit against (0.7.81)
+  - L706 ...and the year of GDP it sets the debt against
+  - L746 fixture: ...and it placed orders in those months (
+  - L761 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
+  - L790 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
+  - L820 fixture: ...and it bought ground in those months (
+- **L827 5. what holds it back, caused**
+  - L844 fixture: the town short of road, its cash at a month's tax
+  - L846 a debt limit of 0%: it holds and borrows nothing
+  - L900 a first police station is a service it keeps where there is none, however far past the need one goes
+  - L939 ...and the inbox says it would not pay back, with its figure: what each resident it would cover pays the city
+  - L972 ...but only from the cash: with the cash at a month's tax and the limit at its most, the first school is held
+- **L995 6. the advice's card carries the payback's verdict, in the inbox's words (PT1-M3)**
+  - L1012 the card carries a line, and it is the appraisal's own words: what it opens with, then paybackWords() of the
+  - L1025 ...the very words the inbox's notice gives for it
+  - L1032 saved and loaded before the next month, the card carries the same line
+  - L1036 switched off, it holds nothing back, and the card carries no line
+  - L1048 a building automatic building builds carries no such line
+- **L1153 7. a young city refused for a small sum keeps building (FW4)**
+  - L1188 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
+  - L1380 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
+  - L1403 ...and its log says the first was more than the money would pay for
+  - L1439 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
+  - L1444 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
+  - L1477 fixture: the town short of a service, with no ground free
+  - L1492 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
+  - L1498 ...its log's order carries the ground: its square feet, price and places
+  - L1517 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
+  - L1518 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
+  - L1541 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
+  - L1575 over the limit it buys no ground and places nothing, and borrows nothing
+  - L1615 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
+  - L1617 it buys none of them - no field for its ore - and holds the order for want of ground
+  - L1620 ...and the inbox says so, naming the land office
+  - L1623 ...settled the month it is switched off
+  - L1691 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
+  - L1745 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
+  - L1770 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
+  - L1775 ...and the inbox says the city is over the limit, and names Build from cash anyway
+  - L1806 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
+- **L1823 8. care of every kind is essential, on a deficit (CC1-S)**
+  - L1864 a school is not an essential service: on the same sort of deficit it is held for the payback, not ordered
 
 ## BankCheck.java - 515 labelled assertions
 
@@ -7325,7 +7327,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1852 ...after which it needs nothing more
   - L1853 and selling it all leaves no cover
 
-## ForeignDebtCheck.java - 91 labelled assertions
+## ForeignDebtCheck.java - 104 labelled assertions
 
 > Borrowing in somebody else's money.
 > 
@@ -7341,107 +7343,121 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      dollars and does not move; the city's books are in local money and must.
 > ...
 
-- **L138 1. the instrument speaks two currencies**
-  - L145 at parity the two are worth the same
-  - L150 the dollars owed do not move
-  - L151 ...but what they cost at home does
-  - L153 ...and the local bond has not noticed a thing
-  - L170 the coupon revalues too
-  - L179 ...and every payment still to come
-  - L183 a nonsense rate is refused rather than applied
-- **L186 2. and the world is cheaper, to begin with**
-  - L262 a city with no foreign debt owes no risk premium
-  - L264 ...so the world's money starts cheaper than the city's own
-  - L266 ...and the window is open
-- **L268 3. the books balance with dollars on them**
-  - L281 the bond was actually issued
-  - L282 ...and the city now owes dollars
-  - L295 the bank did not buy a cent of it
-  - L319 every month of servicing a dollar bond reconciles
-  - L328 ...and the fixture really did service it
-- **L331 4. original sin**
-  - L339 the fixture has a debt worth revaluing
-  - L347 not one dollar more is owed
-  - L348 ...and half again as much at home
-  - L350 ...which is exactly what the revaluation says it is
-  - L378 the fixture is not already against its cap
-  - L380 a weaker currency makes the NEXT bond dearer too
-  - L392 ...and none of it appeared in the audit as money moving
-- **L395 4b. and where the dollars actually went**
-  - L442 converting puts the whole proceeds in the treasury
-  - L443 ...and leaves the reserve position alone
-  - L445 holding puts the whole proceeds in reserves
-  - L446 ...and the treasury does not see a cent of it
-  - L466 parking borrowed dollars does not read as getting richer
-- **L469 5. the window shuts**
-  - L474 a city that owes nothing can always borrow
-  - L480 ...and one drowning in dollars cannot
-  - L481 ...and is told why in words
-  - L485 earning its way out reopens the window
-  - L490 owing dollars and selling nothing shuts it too
-- **L493 6. and the price of walking away**
-  - L507 everything owed abroad is written off
-  - L508 ...so the city owes nothing abroad
-  - L509 ...and the position improves by the whole of it
-  - L511 ...recorded as what it is: money nobody was paid
-  - L514 the window is shut
-  - L515 ...for five years
-  - L517 ...and the price carries a scar
-  - L529 debt-to-exports now says the city is spotless
-  - L531 ...and it still cannot borrow a dollar
-  - L542 ...and says so when asked
-- **L544 7. across a reload**
-  - L588 the fixture has foreign paper worth carrying
-  - L590 the dollars owed reload exactly
-  - L604 ...valued at the rate the city actually has, immediately
-  - L607 ...and the exchange rate reached the instruments
-  - L610 the scar reloads
-  - L612 ...and it is a scar worth reloading
-  - L617 fixture: the live city's window is shut BY THE DEFAULT CLOCK
-  - L620 ...so the window is still shut on the reloaded city
-  - L622 ...and shut for the same reason, not a different one
-  - L625 the lifetime revaluation reloads
-  - L627 ...and what the city walked away from
-  - L646 a reloaded city does not book its whole history as one month
-- **L659 and the world's paper is priced on the world's curve**
-  - L670 fixture: the world will lend
-  - L681 fixture: a dollar twenty-year on the books
-  - L689 the world's curve is the foreign rate plus the city's own term premium table
-  - L691 ...one shape for both currencies, fifty years over ten as on the city's curve
-  - L701 a dollar twenty-year is valued on the world's curve, each payment at its own month's rate
-  - L703 ...not at the city's own rate, which is a different figure
-  - L707 ...and it was issued at the rate it is valued at: the round trip is neutral by construction
-  - L714 fixture: the dial moved the city's own rate
-  - L715 the dial moving does not move a dollar bond's value
-  - L722 fixture: a city earning a quarter as much abroad is charged more for it
-  - L724 ...and the world charging the city more moves it: down
-  - L727 ...and back when the city's standing is
-- **L745 and the ladder falls due by the calendar year it is paid in**
-  - L764 fixture: a note, a serial and a term loan on the books
-  - L765 fixture: ...and a piece owed in dollars
-  - L783 every piece's last payment falls in the month it matures
-  - L797 fixture: something falls after the ladder's twelve years
-  - L800 twelve calendar years, the first the year next month is in
-  - L802 ...each rung's months inside its own year
-  - L803 ...and \"later\" starts the year after the twelfth
-  - L806 the ladder carries every payment still owed, coupons and principal
-  - L807 ...and its total says so
-  - L808 ...of it in dollars, exactly what the dollar paper asks
-  - L817 a piece's maturity stands in the year it falls due, not the one before
-  - L822 fixture: \"later\" carries more than any single year
-  - L823 the heaviest year is one of the twelve and the largest of them, never \"later\"
-  - L826 the next twelve months are the first twelve payments of every piece
-  - L828 the coupon is every piece's monthly interest
-  - L829 each kind's principal adds to what is owed
-  - L831 ...the notes' among them, getNotePrincipal()'s
-  - L836 a piece is valued at the rate the tab quotes its yield at, dollar paper on the world's curve
-  - L843 fixture: a three-year serial's schedule, a payment a month
-  - L855 a proposed issue adds its whole schedule as its own
-  - L856 ...every payment of it in a year
-  - L857 ...each in the year it is paid, and what is owed stays as it was
-  - L885 fixture: the note falls due next month
-  - L886 netted, the central bank's own, the issues and the cash are what falls due, in every mode
-  - L893 the chart's borrowing flags carry the borrowing decisions and nothing else
+- **L144 1. the instrument speaks two currencies**
+  - L151 at parity the two are worth the same
+  - L156 the dollars owed do not move
+  - L157 ...but what they cost at home does
+  - L159 ...and the local bond has not noticed a thing
+  - L176 the coupon revalues too
+  - L185 ...and every payment still to come
+  - L189 a nonsense rate is refused rather than applied
+- **L192 2. and the world is cheaper, to begin with**
+  - L268 a city with no foreign debt owes no risk premium
+  - L270 ...so the world's money starts cheaper than the city's own
+  - L272 ...and the window is open
+- **L274 3. the books balance with dollars on them**
+  - L287 the bond was actually issued
+  - L288 ...and the city now owes dollars
+  - L301 the bank did not buy a cent of it
+  - L325 every month of servicing a dollar bond reconciles
+  - L334 ...and the fixture really did service it
+- **L337 4. original sin**
+  - L345 the fixture has a debt worth revaluing
+  - L353 not one dollar more is owed
+  - L354 ...and half again as much at home
+  - L356 ...which is exactly what the revaluation says it is
+  - L384 the fixture is not already against its cap
+  - L386 a weaker currency makes the NEXT bond dearer too
+  - L398 ...and none of it appeared in the audit as money moving
+- **L401 4b. and where the dollars actually went**
+  - L448 converting puts the whole proceeds in the treasury
+  - L449 ...and leaves the reserve position alone
+  - L451 holding puts the whole proceeds in reserves
+  - L452 ...and the treasury does not see a cent of it
+  - L472 parking borrowed dollars does not read as getting richer
+- **L475 5. the window shuts**
+  - L480 a city that owes nothing can always borrow
+  - L486 ...and one drowning in dollars cannot
+  - L487 ...and is told why in words
+  - L491 earning its way out reopens the window
+  - L496 owing dollars and selling nothing shuts it too
+- **L499 6. and the price of walking away**
+  - L513 everything owed abroad is written off
+  - L514 ...so the city owes nothing abroad
+  - L515 ...and the position improves by the whole of it
+  - L517 ...recorded as what it is: money nobody was paid
+  - L520 the window is shut
+  - L521 ...for five years
+  - L523 ...and the price carries a scar
+  - L535 debt-to-exports now says the city is spotless
+  - L537 ...and it still cannot borrow a dollar
+  - L548 ...and says so when asked
+- **L550 7. across a reload**
+  - L594 the fixture has foreign paper worth carrying
+  - L596 the dollars owed reload exactly
+  - L610 ...valued at the rate the city actually has, immediately
+  - L613 ...and the exchange rate reached the instruments
+  - L616 the scar reloads
+  - L618 ...and it is a scar worth reloading
+  - L623 fixture: the live city's window is shut BY THE DEFAULT CLOCK
+  - L626 ...so the window is still shut on the reloaded city
+  - L628 ...and shut for the same reason, not a different one
+  - L631 the lifetime revaluation reloads
+  - L633 ...and what the city walked away from
+  - L652 a reloaded city does not book its whole history as one month
+- **L666 and the world's paper is priced on the world's curve**
+  - L677 fixture: the world will lend
+  - L688 fixture: a dollar twenty-year on the books
+  - L696 the world's curve is the foreign rate plus the city's own term premium table
+  - L698 ...one shape for both currencies, fifty years over ten as on the city's curve
+  - L708 a dollar twenty-year is valued on the world's curve, each payment at its own month's rate
+  - L710 ...not at the city's own rate, which is a different figure
+  - L714 ...and it was issued at the rate it is valued at: the round trip is neutral by construction
+  - L721 fixture: the dial moved the city's own rate
+  - L722 the dial moving does not move a dollar bond's value
+  - L729 fixture: a city earning a quarter as much abroad is charged more for it
+  - L731 ...and the world charging the city more moves it: down
+  - L734 ...and back when the city's standing is
+- **L752 and the ladder falls due by the calendar year it is paid in**
+  - L771 fixture: a note, a serial and a term loan on the books
+  - L772 fixture: ...and a piece owed in dollars
+  - L790 every piece's last payment falls in the month it matures
+  - L804 fixture: something falls after the ladder's twelve years
+  - L807 twelve calendar years, the first the year next month is in
+  - L809 ...each rung's months inside its own year
+  - L810 ...and \"later\" starts the year after the twelfth
+  - L813 the ladder carries every payment still owed, coupons and principal
+  - L814 ...and its total says so
+  - L815 ...of it in dollars, exactly what the dollar paper asks
+  - L824 a piece's maturity stands in the year it falls due, not the one before
+  - L829 fixture: \"later\" carries more than any single year
+  - L830 the heaviest year is one of the twelve and the largest of them, never \"later\"
+  - L833 the next twelve months are the first twelve payments of every piece
+  - L835 the coupon is every piece's monthly interest
+  - L836 each kind's principal adds to what is owed
+  - L838 ...the notes' among them, getNotePrincipal()'s
+  - L843 a piece is valued at the rate the tab quotes its yield at, dollar paper on the world's curve
+  - L850 fixture: a three-year serial's schedule, a payment a month
+  - L862 a proposed issue adds its whole schedule as its own
+  - L863 ...every payment of it in a year
+  - L864 ...each in the year it is paid, and what is owed stays as it was
+  - L892 fixture: the note falls due next month
+  - L893 netted, the central bank's own, the issues and the cash are what falls due, in every mode
+  - L900 the chart's borrowing flags carry the borrowing decisions and nothing else
+- **L923 10. the test player takes the cheaper money by the quote for the sale (CC1-S)**
+  - L941 fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone
+  - L943 fixture: a city with no foreign debt and the window open
+  - L945 fixture: before any sale the world's rate is under the share of the city's own - the old rule would borrow abroad
+  - L947 fixture: the city has tax to size a sale by
+  - L954 fixture: the big sale's quote abroad is at or above the share of its quote at home
+  - L956 a sale of two years' tax is not borrowed abroad, though the world's rate before it is the lower
+  - L958 quoting both sales booked nothing: cash, debts and both rates are as they were
+  - L974 fixture: the city now owes at home and still owes nothing abroad
+  - L980 fixture: the small sale's quote abroad is under the share of its quote at home
+  - L982 a month's tax, quoted cheaper abroad than the share of home, is borrowed abroad
+  - L984 fixture: the big sale is still quoted at or above the share of home, though home is dear
+  - L986 ...and still goes home: the dollar quote for two years' tax is dearer than the city's own
+  - L988 quoting again booked nothing
 
 ## ForestryCheck.java - 59 labelled assertions
 
@@ -12593,13 +12609,13 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L2997 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3052 AND EVERYTHING THAT IS A PURCHASE.**
 - **L3398 AND THE BEST OF THEM WINS.**
-- **L5702 founding: a few months at a time, by hand**
-- **L5799 then the real rhythm**
-- **L5947 the report**
-- **L5970 ==**
-- **L6056 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7258 what the advisor tried, and what happened**
-- **L7264 findings**
+- **L5741 founding: a few months at a time, by hand**
+- **L5838 then the real rhythm**
+- **L5986 the report**
+- **L6009 ==**
+- **L6095 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7299 what the advisor tried, and what happened**
+- **L7305 findings**
 
 ## MainLineCheck.java - 151 labelled assertions
 

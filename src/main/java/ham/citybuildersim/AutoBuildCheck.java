@@ -106,6 +106,11 @@ import java.util.Map;
  *      orders the refused building within a look and has more people two
  *      years on. At 0.7.89 such a refusal held the whole measure, month after
  *      month: no jobs, deficits, 2,626 people at the end.
+ *   8. CARE OF EVERY KIND IS ESSENTIAL (CC1-S): a town spending past its
+ *      revenue and short of general care, of senior care or of childcare
+ *      orders that kind with nothing weighed for its payback (section 5 has
+ *      general care alone); the same town short of an elementary school holds
+ *      it for the payback - care is essential, a school must pay back.
  *
  * Every fixture causes its condition.
  */
@@ -150,6 +155,7 @@ public class AutoBuildCheck {
         whatHoldsIt(root);
         theCardsVerdict(root);
         youngRefused(root);
+        careOfEveryKind(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1154,6 +1160,12 @@ public class AutoBuildCheck {
         try {
             Game g = youngCity(files);
             AutoBuilder ab = g.getAutoBuilder();
+            // The slack at its most, which CAUSES the shortage (CC1-S). Until then the fixture leaned on the test player's own play to leave the
+            // young city short of something at month 60. Since the test player takes the home bond, not the dollar one at 18.45%, for its
+            // founding bakeries, every service the pass keeps stands at its 15% margin or is held for the payback at month 60 (1,747 people,
+            // the debt 68% of a year's GDP), and nothing is refused for the money. At the most the pass wants more road than the pinned limit
+            // lets it borrow for.
+            ab.setSlack(AutoBuilder.SLACK_MOST, null);
             // The limit pinned where no bond fits, and the city saved so, for the copies.
             double[] pinned = new double[1];
             quietly(() -> pinned[0] = nearTheLimit(g));
@@ -1796,6 +1808,82 @@ public class AutoBuildCheck {
                 sf != null && sf.outcome() == AutoBuilder.Outcome.HELD && sf.cut() == AutoBuilder.Cut.CASH && af.getBonds() == 0
                         && f.getDebtManager().getDebt().size() == paperF
                         && String.join(" ", af.held()).contains("builds from the cash alone"));
+    }
+
+    /* ---------------------------------------------------------------- 8 */
+
+    /**
+     * Care of every kind is essential (CC1-S), and a school is not: a town spending past its revenue, short of general
+     * care, of senior care or of childcare, orders that kind with nothing weighed for its payback; the same sort of town
+     * short of a basic school holds it for the payback. Jerus (2026-10-18): care stays essential - built and kept even
+     * when it does not pay for itself; section 5 proves it for general care, and the playtest's childcare (CC1) and senior
+     * care ride on the other two.
+     */
+    static void careOfEveryKind(Path root) {
+        out.println("\n--- 8. care of every kind is essential, on a deficit (CC1-S) ---");
+        for (CareType kind : new CareType[] { CareType.GENERAL, CareType.SENIOR, CareType.CHILDCARE }) {
+            BuildAdvice.Measure care = BuildAdvice.Measure.care(kind);
+            Game g = deficitTown(root, "deficit-" + kind.name().toLowerCase(Locale.ROOT), care);
+            AutoBuilder ab = g.getAutoBuilder();
+            // ...read before the month, which orders what it orders.
+            int serving = AutoBuilder.serving(g, care);
+            double[] sd = BuildAdvice.supplyDemand(g, care, new LinkedHashMap<>());
+            double[] balance = { Double.NaN };
+            g.autoBuildProbeForTest = after -> { if (!after) balance[0] = g.getEconomyManager().getNationalAccounts().getBalance(); };
+            quietly(() -> g.simulateMonths(1));
+            g.autoBuildProbeForTest = null;
+            AutoBuilder.Step step = stepFor(ab, care);
+            assertTrue(String.format("fixture: the town spends past its revenue (%s a month) and is short of %s - %d standing or on"
+                            + " site, a supply of %,.0f against a demand of %,.0f - within the limit", DecisionLog.money(balance[0]),
+                            kind.getLabel().toLowerCase(Locale.ROOT), serving, sd[0], sd[1]),
+                    balance[0] < 0 && step != null && step.outcome() != AutoBuilder.Outcome.AHEAD && ab.within(g)
+                            && serving == 0 && sd[1] > sd[0]);
+            BuildingsTemplate ordered = step == null ? null : g.getBuildingManager().getTemplateByName(step.building());
+            assertTrue(String.format("%s is ordered on the deficit: %s %s, nothing weighed for its payback, an essential service the"
+                            + " payback does not hold", kind.getLabel(), step == null ? "no" : step.ordered(),
+                            step == null ? "building" : step.building()),
+                    step != null && step.outcome() == AutoBuilder.Outcome.ORDERED && step.payback() == null && ordered != null
+                            && ordered.getCare() == kind && AutoBuilder.essential(care) && !AutoBuilder.paysBackFirst(care, ordered));
+        }
+
+        // ...and the line Jerus drew: a school must pay back. The same sort of town, short of an elementary school.
+        BuildAdvice.Measure elementary = BuildAdvice.Measure.school(EducationType.ELEMENTARY);
+        Game s = deficitTown(root, "deficit-school", elementary);
+        AutoBuilder as = s.getAutoBuilder();
+        int servingS = AutoBuilder.serving(s, elementary);
+        double[] balanceS = { Double.NaN };
+        s.autoBuildProbeForTest = after -> { if (!after) balanceS[0] = s.getEconomyManager().getNationalAccounts().getBalance(); };
+        quietly(() -> s.simulateMonths(1));
+        s.autoBuildProbeForTest = null;
+        AutoBuilder.Step stepS = stepFor(as, elementary);
+        BuildingsTemplate schoolT = null;
+        for (BuildingsTemplate t : s.getBuildingManager().getTemplates()) if (t.getTeaches() == EducationType.ELEMENTARY) schoolT = t;
+        assertTrue(String.format("fixture: the town spends past its revenue (%s a month) and is short of elementary school - %d"
+                        + " standing or on site - within the limit", DecisionLog.money(balanceS[0]), servingS),
+                balanceS[0] < 0 && stepS != null && stepS.outcome() != AutoBuilder.Outcome.AHEAD && as.within(s) && servingS == 0);
+        assertTrue("a school is not an essential service: on the same sort of deficit it is held for the payback, not ordered",
+                schoolT != null && !AutoBuilder.essential(elementary) && AutoBuilder.paysBackFirst(elementary, schoolT)
+                        && stepS != null && stepS.outcome() == AutoBuilder.Outcome.HELD && stepS.cut() == AutoBuilder.Cut.PAYBACK
+                        && stepS.payback() != null && !stepS.payback().paysBack());
+    }
+
+    /**
+     * ChildcareCheck's town with every building that serves a measure retired, the auto-builder on and the town spending
+     * past its revenue - every service's bill as section 5's deficit town has it, and as much again: short of that service,
+     * within the limit, and not paying its way.
+     */
+    static Game deficitTown(Path root, String name, BuildAdvice.Measure retired) {
+        Game g = ChildcareCheck.town(root, name);
+        quietly(() -> {
+            for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+                int n = retired.serves(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;
+                if (n > 0) g.getBuildingManager().retire(t, n);
+            }
+        });
+        g.getAutoBuilder().setOn(true, null);
+        g.getEconomyManager().setHealthcare(g.getEconomyManager().getNationalAccounts().getTotalRevenue() * 2, 0);
+        g.getEconomyManager().refreshGovernmentAccounts(0, 0, 0, 0);
+        return g;
     }
 
     static AutoBuilder.Step stepFor(AutoBuilder ab, BuildAdvice.Measure m) {

@@ -47,6 +47,12 @@ import java.nio.file.Path;
  *      is valued at, a quote's schedule - agree with the paper, the
  *      rollover's parts add to what falls due, and the borrowing flags
  *      carry nothing else?
+ *
+ *   7. Does the long playtest's build take the cheaper money by the quote
+ *      for the sale itself (CC1-S, section 10)? Not by the two rates before
+ *      it: a sale of two years' tax is quoted dear abroad and goes home
+ *      though the world's rate before it is the lower, and a small one goes
+ *      abroad once the city's own paper is dearer; quoting books nothing.
  */
 public class ForeignDebtCheck {
 
@@ -649,6 +655,7 @@ public class ForeignDebtCheck {
 
         theWorldsCurve(root.resolve("curve"));
         theLadder(root.resolve("ladder"));
+        theCheaperMoney(root.resolve("cheaper"));
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -891,5 +898,109 @@ public class ForeignDebtCheck {
             if (!DecisionLog.BORROWING.equals(e.kind())) onlyBorrowing = false;
         }
         assertTrue("the chart's borrowing flags carry the borrowing decisions and nothing else", onlyBorrowing);
+    }
+
+    /* ============ 10. the test player takes the cheaper money by the quote for the sale (CC1-S) ============ */
+    /**
+     * The long playtest's build borrows abroad only when the quote for the sale is the cheaper.
+     *
+     * WHY THIS IS HERE. The long playtest's build borrowed abroad when the
+     * world's rate stood under 80% of the city's own BEFORE the sale. A sale
+     * moves both: the founding bakeries' $28.8M was quoted at 18.45% abroad
+     * (the sale priced into a small economy's dollar debt) against 3.03%
+     * at home, yet the rates before it read 2.00% and
+     * 3.00%, and the village took the dollar bond (~$440k a month for twenty
+     * years, a quarter to nearly half of its tax) in seeds 0, 4 and 5 and in
+     * the default run.
+     * LongPlaytest.borrowsAbroad() asks the quote for the sale itself. This
+     * section proves it on a city where the old rule's premise stands - the
+     * world's rate under the share of the city's own, the window open, no
+     * foreign debt - and the two sizes of sale go the two ways the quotes
+     * say: the big one home, the small one (once the city's own paper is
+     * dear) abroad. Quoting books nothing.
+     */
+    static void theCheaperMoney(Path dir) throws Exception {
+        out.println("\n--- 10. the test player takes the cheaper money by the quote for the sale (CC1-S) ---");
+
+        /* The big sale is this many months of the city's tax: the founding bakeries' were about two years' of the village's. */
+        final int bigMonths = 24;
+
+        Game city;
+        System.setOut(quiet);
+        try {
+            // Two depots stand beside the plant's (PT1-M4): see tradingCity().
+            city = tradingCity(dir, 2);
+        } finally {
+            System.setOut(out);
+        }
+        DebtManager dm = city.getDebtManager();
+        double tax = city.getEconomyManager().getTaxIncome();
+        double small = tax;
+        double big = tax * bigMonths;
+
+        assertTrue("fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone",
+                !LongPlaytest.BORROW_AT_HOME);
+        assertTrue("fixture: a city with no foreign debt and the window open",
+                dm.getForeignPrincipal() < 1e-9 && dm.foreignWindowOpen());
+        assertTrue("fixture: before any sale the world's rate is under the share of the city's own - the old rule would borrow abroad",
+                dm.foreignRate() < LongPlaytest.ABROAD_SHARE * dm.getRate());
+        assertTrue("fixture: the city has tax to size a sale by", tax > 0);
+
+        // ...the big sale, quoted: dearer abroad than the share of home, though the rates before it said otherwise.
+        double[] before = books(city);
+        double bigAbroad = LongPlaytest.abroadQuote(city, big).marketRate();
+        double bigHome = dm.quoteRate(big);
+        quotes("no debt at home", city, small, big);
+        assertTrue("fixture: the big sale's quote abroad is at or above the share of its quote at home",
+                bigAbroad >= LongPlaytest.ABROAD_SHARE * bigHome);
+        assertTrue("a sale of two years' tax is not borrowed abroad, though the world's rate before it is the lower",
+                !LongPlaytest.borrowsAbroad(city, big));
+        assertTrue("quoting both sales booked nothing: cash, debts and both rates are as they were",
+                java.util.Arrays.equals(before, books(city)));
+
+        // ...and the city's own paper made dear, as section 2 does it: borrowed at home until a small sale is cheaper abroad.
+        System.setOut(quiet);
+        try {
+            for (int k = 0; k < 6; k++) {
+                city.handleTBillLogic(city.getCash() * 2, Game.BUILD_NOTE_MONTHS, 1000.0);
+                city.simulateMonths(1);
+                if (LongPlaytest.abroadQuote(city, small).marketRate()
+                        < LongPlaytest.ABROAD_SHARE * dm.quoteRate(small)) break;
+            }
+        } finally {
+            System.setOut(out);
+        }
+        quotes("debt at home", city, small, big);
+        assertTrue("fixture: the city now owes at home and still owes nothing abroad",
+                dm.getDomesticPrincipal() > 0 && dm.getForeignPrincipal() < 1e-9);
+
+        before = books(city);
+        double smallAbroad = LongPlaytest.abroadQuote(city, small).marketRate();
+        double smallHome = dm.quoteRate(small);
+        assertTrue("fixture: the small sale's quote abroad is under the share of its quote at home",
+                smallAbroad < LongPlaytest.ABROAD_SHARE * smallHome);
+        assertTrue("a month's tax, quoted cheaper abroad than the share of home, is borrowed abroad",
+                LongPlaytest.borrowsAbroad(city, small));
+        assertTrue("fixture: the big sale is still quoted at or above the share of home, though home is dear",
+                LongPlaytest.abroadQuote(city, big).marketRate() >= LongPlaytest.ABROAD_SHARE * dm.quoteRate(big));
+        assertTrue("...and still goes home: the dollar quote for two years' tax is dearer than the city's own",
+                !LongPlaytest.borrowsAbroad(city, big));
+        assertTrue("quoting again booked nothing",
+                java.util.Arrays.equals(before, books(city)));
+    }
+
+    /** What quoting must leave alone: cash, the debts at home and abroad, and the two rates. */
+    private static double[] books(Game g) {
+        DebtManager dm = g.getDebtManager();
+        return new double[] { g.getCash(), dm.getDomesticPrincipal(), dm.getForeignPrincipal(), dm.getRate(), dm.foreignRate() };
+    }
+
+    /** Both sales' quotes, abroad (the 20-year dollar bond, as the build asks it) and at home. */
+    private static void quotes(String state, Game g, double small, double big) {
+        DebtManager dm = g.getDebtManager();
+        out.printf("   %s: small sale %,.0f - abroad %.2f%%, at home %.2f%%; big sale %,.0f - abroad %.2f%%, at home %.2f%% (the world's rate %.2f%%, the city's %.2f%%)%n",
+                state, small, LongPlaytest.abroadQuote(g, small).marketRate() * 100, dm.quoteRate(small) * 100,
+                big, LongPlaytest.abroadQuote(g, big).marketRate() * 100, dm.quoteRate(big) * 100,
+                dm.foreignRate() * 100, dm.getRate() * 100);
     }
 }

@@ -4785,13 +4785,28 @@ public class LongPlaytest {
                  * unexercised. Taking whichever is cheaper is also the naive
                  * strategy a first-time player will follow, which is exactly
                  * the one worth knowing the consequences of.
+                 *
+                 * 2026-10-26, batch CC1-S: it took the cheaper money by the
+                 * rates BEFORE the sale, and a sale moves them. At month 31-33
+                 * the world's rate stood at 2.00% against the city's 3.00%, so
+                 * the founding bakeries' $28.8M went abroad; but the quote for
+                 * that sale was 18.45% abroad (priced with the sale in it, a
+                 * small economy's dollar debt) against 3.03% at home, where the
+                 * market would have placed it. The village took the dollar bond
+                 * in seeds 0, 4 and 5 and in the default run: about $440k a
+                 * month for twenty years, a quarter to nearly half of its
+                 * tax, and no cash left to buy ground with. borrowsAbroad() asks the two quotes for the
+                 * sale itself, which is what a treasury reads.
                  */
-                DebtManager m = g.getDebtManager();
-                if (!BORROW_AT_HOME && m.foreignWindowOpen() && m.foreignRate() < m.getRate() * .8) {
+                if (borrowsAbroad(g, needed)) {
+                    double rateAbroad = abroadQuote(g, needed).marketRate();   // asked before the sale is booked: after it the debt is in the curve
                     g.handleForeignLogic("Term", needed / Math.max(.01, fxRate(g)),
                             20, 100, false);
+                    bondsAbroad++;
+                    dearestAbroad = Math.max(dearestAbroad, rateAbroad);
                 } else {
                     g.handleLongBondForCash(needed, 20, 100);
+                    bondsAtHome++;
                 }
                 notePaper(g, quantity + " x " + name);   // the trace (0.7.10); nothing else reads it
                 result = g.buildStack(t, quantity, false);
@@ -4834,6 +4849,30 @@ public class LongPlaytest {
 
     /** Local per USD, for turning a local-money need into a dollar ask. */
     static double fxRate(Game g) { return g.getForeignAccounts().getRate(); }
+
+    /** CC1-S: the share of the city's own quote for a sale that the dollar quote for it must come under for the build to borrow abroad. */
+    static final double ABROAD_SHARE = .8;
+
+    /** CC1-S: the build's bonds over the run, taken at home and abroad, and the dearest rate (marketRate) it took abroad. */
+    static int bondsAtHome, bondsAbroad;
+    static double dearestAbroad;
+
+    /** The 20-year dollar term bond for a local-money need, as the build would sell it; books nothing. */
+    static DebtQuote abroadQuote(Game g, double needed) {
+        return g.quoteForeign("Term", needed / Math.max(.01, fxRate(g)), 20, 100);
+    }
+
+    /**
+     * Whether the build's borrowing for this sale goes abroad: the window open
+     * and the quote for THIS sale, with the sale in it, under ABROAD_SHARE of
+     * the city's own quote for it. Books nothing.
+     */
+    static boolean borrowsAbroad(Game g, double needed) {
+        if (BORROW_AT_HOME || !g.foreignWindowOpen()) return false;
+        DebtQuote abroad = abroadQuote(g, needed);
+        return !abroad.isEmpty()
+                && abroad.marketRate() < ABROAD_SHARE * g.getDebtManager().quoteRate(needed);
+    }
 
     static boolean canService(Game g, double extra) {
 
@@ -7065,6 +7104,8 @@ public class LongPlaytest {
         out.printf("  ...ground kept ahead (0.7.58): %,d offer(s) bought over the run, %.2f km2 dry, US$%,.0fk; the"
                 + " cash share stopped a look short %,d time(s)%n", groundAheadBought,
                 LandManager.km2(groundAheadSqFt), groundAheadUsd, groundAheadShort);
+        out.printf("  ...the build's bonds (CC1-S): %,d at home, %,d abroad, the dearest abroad %.2f%%%n",
+                bondsAtHome, bondsAbroad, dearestAbroad * 100);
         out.printf("  ...room to grow past the ground-ahead line (0.7.67, M3b): %,d offer(s) bought by the move; %,d Bus"
                 + " Network(s), %,d Light Rail Line(s), %,d Metro Line(s) standing at the end%n", roomMovesBought,
                 qty(g, "Bus Network"), qty(g, "Light Rail Line"), qty(g, "Metro Line"));
