@@ -455,6 +455,8 @@ final class MapView {
         resetGlobe();
         side = place = litSide = litPlace = overSide = overPlace = -1;
         fittedFor = Long.MIN_VALUE;
+        // The island hatch is keyed on the books' version, which restarts at every load (ET5): another city's key can equal this one's.
+        islandFor = Long.MIN_VALUE;
         draftsFailed = 0;
     }
 

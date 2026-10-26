@@ -796,6 +796,17 @@ public class LandMarket {
         return byBuildable ? buildableKm2PerUsd(p) : linkedDryKm2PerUsd(p);
     }
 
+    /**
+     * Whether any of an offer's dry ground is on ground that is room (ET5): all but an offer wholly across the water from every
+     * landmass the city has linked, which ranks at nothing and is the best of a shelf only when the whole shelf is such offers
+     * (bestValue() still answers one: a city on a spit has a best). What the test player's room-buying moves ask before they buy.
+     * True for every offer of a city with nothing unlinked on the shelf.
+     */
+    public static boolean hasLinkedDry(LandParcel p) {
+        // ...to a square foot: the unlinked and the whole dry ground are counted apart and differ in the last bits.
+        return !(p.getUnlinkedDryKm2() > 0) || p.getDryKm2() - p.getUnlinkedDryKm2() > 1 / LandManager.SQ_FT_PER_KM2;
+    }
+
     /** An offer's dry square kilometres a thousand dollars, less what of its dry ground is on a landmass the city has not linked (ET5); LandParcel.getDryKm2PerUsd() where none is. */
     private static double linkedDryKm2PerUsd(LandParcel p) {
         if (!(p.getUnlinkedDryKm2() > 0)) return p.getDryKm2PerUsd();

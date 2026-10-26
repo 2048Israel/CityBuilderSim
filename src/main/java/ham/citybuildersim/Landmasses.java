@@ -273,7 +273,7 @@ public final class Landmasses {
      * the cells' reach of it: the 1-degree tiles under the box, widened, hold no other id. False when it cannot say
      * (a box that reaches the planet's edge or a pole, or spreads over more than GATE_TILES_MOST tiles).
      */
-    private boolean onlyHome(World world, long x0, long y0, long x1, long y1) {
+    boolean onlyHome(World world, long x0, long y0, long x1, long y1) {
         EarthTerrain e = world.earthTerrain();
         EarthProj proj = e.projection();
         EarthData data = e.data();
@@ -1040,11 +1040,16 @@ public final class Landmasses {
         return new Picture(home, ids, flat, stamp);
     }
 
-    /** DataSave's landmasses: where the terminals stand and which demolitions are taking some down; fresh on every call (the autosave's snapshot shares nothing), null when nothing stands off home. */
+    /**
+     * DataSave's landmasses: where the terminals stand and which demolitions are taking some down; fresh on every call (the autosave's snapshot shares nothing), null when nothing stands off home.
+     * A row or a leave that has become all home (a hand demolition of the last unit off home, before the month's settle drops it) is not written: a load drops it
+     * (reconcile()), so a save written now reads back as it was written and a resave is the same bytes.
+     */
     public State toState() {
         if (ports.isEmpty() && leaving.isEmpty()) return null;
         State s = new State();
         for (Map.Entry<Integer, Segments> e : ports.entrySet()) {
+            if (allHome(e.getValue().standing) && allHome(e.getValue().onSite) && allHome(e.getValue().shell)) continue;
             PortRow r = new PortRow();
             r.template = e.getKey();
             r.standing = toArray(e.getValue().standing);
@@ -1053,13 +1058,14 @@ public final class Landmasses {
             s.ports.add(r);
         }
         for (Leave l : leaving.values()) {
+            if (allHome(l.landmasses)) continue;
             Leaving r = new Leaving();
             r.demolition = l.demolition;
             r.template = l.template;
             r.landmasses = toArray(l.landmasses);
             s.leaving.add(r);
         }
-        return s;
+        return s.ports.isEmpty() && s.leaving.isEmpty() ? null : s;
     }
 
     private static int[] toArray(List<Integer> list) {

@@ -5179,8 +5179,17 @@ final class BuildScreen {
             if (at >= 0) ui.rootMenu.getChildren().add(doorPill(LandmassView.PORT_DOOR, Icons.BUILD, Palette.BUILDING, () -> openPortCardFor(at)));
         }
         // The Build shortcut (0.7.61, star 14): the cheapest bare ground that covers the shortfall - back to the
-        // order once it is covered, this page again (its next best) while it is not.
-        LandParcel best = ui.game.bestOffer(Game.LandNeed.shortfall(short_));
+        // order once it is covered, this page again (its next best) while it is not. Not for a terminal on an unlinked island (ET5):
+        // the shelf's offers are measured on the linked ground and the island's room is its own, so a purchase here could not
+        // cover the shortfall and the page would send the player back to the menus with the order refused again; its ground is the Land office's.
+        if (islandPort) {
+            Label own = new Label("This terminal is for the island you chose, and only ground bought on that island is room for it: the Land office has it.");
+            own.setWrapText(true);
+            own.setMaxWidth(560);
+            own.setStyle(Palette.words(Palette.SIZE_BODY, Palette.WARN));
+            ui.rootMenu.getChildren().add(own);
+        }
+        LandParcel best = islandPort ? null : ui.game.bestOffer(Game.LandNeed.shortfall(short_));
         if (best != null) {
             ui.rootMenu.getChildren().add(bestLandButton(best, noLandWords(best), noLandSub(best, short_), () -> {
                 if (ui.game.landNeededFor(selected, quantity) <= ui.game.getLandManager().getAvailableSqFt()) {
@@ -5200,7 +5209,9 @@ final class BuildScreen {
 
     /** ...and what it is: bare ground that covers the shortfall, the ore left to the deposit's own page (batch J1c) - or, with no bare offer big enough, the best value, and buy again. */
     static String noLandSub(LandParcel p, double shortSqFt) {
-        return p.getSizeSqFt() >= shortSqFt && LandMarket.bareGround(p)
+        // An offer with ground across the water covers only by what of it is room (ET5), as the search that chose it counted.
+        double covers = p.getUnlinkedDryKm2() > 0 ? LandMarket.buildableSqFt(p) : p.getSizeSqFt();
+        return covers >= shortSqFt && LandMarket.bareGround(p)
                 ? p.where() + ", bare ground with no ore to pay for, covers the " + LandManager.areaWords(shortSqFt) + " short"
                 : p.where() + ", the best value: no bare offer covers it all, so buy again after";
     }

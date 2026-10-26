@@ -596,17 +596,29 @@ public class EarthTerrainCheck {
             }
             // The premise: the tiles timed hold land, or the figure is the cost of drawing nothing.
             World w = World.of(World.Key.earth(SEED + 2000, s.lat(), s.lon(), id));
-            long land = 0;
+            long land = 0, noLandCell = 0;
+            // ...and, for a coast, dry plots on a cell the layer calls no land: they take the nearest land cell's id (a search of the cells round, the costly part of the reader), and a window of nothing else takes the lookup alone.
+            byte[] cover = new byte[World.TILE * World.TILE];
+            double[] ll = new double[2];
+            EarthData data = w.earthTerrain().data();
             for (int j = 0; j < TIMED_TILES; j++) {
                 for (int i = 0; i < TIMED_TILES; i++) {
-                    w.tileLandmass(tx0 + i, ty0 + j, ids);
-                    for (int v : ids) if (v != 0) land++;
+                    long tx = tx0 + i, ty = ty0 + j;
+                    w.tileLandmass(tx, ty, ids);
+                    w.tileTerrain(tx, ty, cover);
+                    EarthProj.Blend b = w.earthTerrain().projection().blend(tx * World.TILE, ty * World.TILE, World.TILE);
+                    for (int k = 0; k < ids.length; k++) {
+                        if (ids[k] != 0) land++;
+                        if (World.dry(cover[k]) && b.latLon(tx * World.TILE + k % World.TILE + 0.5, ty * World.TILE + k / World.TILE + 0.5, ll) && data.landmassAt(ll[0], ll[1]) == 0) noLandCell++;
+                    }
                 }
             }
             Arrays.sort(ms);
             double median = ms[TILE_ROUNDS / 2];
-            report(s.name() + ": a tile's landmass in no more than LANDMASS_TILE_MS, over tiles that hold land", land > 0 && Timing.within(median, LANDMASS_TILE_MS),
-                    String.format("%.3f ms a tile (rounds %.3f to %.3f), %,d land plots in the %d tiles", median, ms[0], ms[TILE_ROUNDS - 1], land, TIMED_TILES * TIMED_TILES));
+            boolean coast = s.name().equals("Rotterdam") || s.name().equals("Perth");
+            report(s.name() + ": a tile's landmass in no more than LANDMASS_TILE_MS, over tiles that hold land" + (coast ? " and dry plots on a cell with none" : ""),
+                    land > 0 && (!coast || noLandCell > 0) && Timing.within(median, LANDMASS_TILE_MS),
+                    String.format("%.3f ms a tile (rounds %.3f to %.3f), %,d land plots in the %d tiles, %,d of them dry on a cell with no land", median, ms[0], ms[TILE_ROUNDS - 1], land, TIMED_TILES * TIMED_TILES, noLandCell));
         }
     }
 
@@ -1506,12 +1518,15 @@ public class EarthTerrainCheck {
         DataSave earthAtFloor = gson.fromJson(earthSave + GameVersion.OLDEST_LOADABLE_FORMAT + "}", DataSave.class);
         check("...and the slope floor is the Earth's alone: an Earth save at the general floor is refused in the slope words while the floor is below"
                         + " SLOPE_FORMAT, a generated save of that format loads",
-                generated.earthProblem() == null && (GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.SLOPE_FORMAT
-                        ? earthAtFloor.earthProblem() == null : EarthSite.BEFORE_SLOPE_WORDS.equals(earthAtFloor.earthProblem())));
+                generated.earthProblem() == null && (GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.LANDMASS_FORMAT
+                        ? earthAtFloor.earthProblem() == null
+                        : GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.SLOPE_FORMAT
+                        ? EarthSite.BEFORE_LANDMASS_WORDS.equals(earthAtFloor.earthProblem()) : EarthSite.BEFORE_SLOPE_WORDS.equals(earthAtFloor.earthProblem())));
         // ...and the landmass floor (ET5) is the Earth's alone too: a generated save of the format before it loads, and the general floor stays below it.
         DataSave generatedBeforeLandmass = gson.fromJson("{\"saveFormat\":" + (EarthSite.LANDMASS_FORMAT - 1) + "}", DataSave.class);
-        check("...and the landmass floor is the Earth's alone: a generated save of the format before LANDMASS_FORMAT loads (no Earth problem), the general floor stays below it",
-                generatedBeforeLandmass.earthProblem() == null && GameVersion.OLDEST_LOADABLE_FORMAT < EarthSite.LANDMASS_FORMAT && !GameVersion.isNoLongerReadable(EarthSite.LANDMASS_FORMAT - 1));
+        check("...and the landmass floor is the Earth's alone: a generated save of the format before LANDMASS_FORMAT has no Earth problem, and is refused only by the general floor, once that has passed it",
+                generatedBeforeLandmass.earthProblem() == null
+                        && GameVersion.isNoLongerReadable(EarthSite.LANDMASS_FORMAT - 1) == (GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.LANDMASS_FORMAT));
         long fixtureIce = 0, fixtureDesert = 0;
         for (Window w : windows.values()) { fixtureIce += w.classes[World.ICE]; fixtureDesert += w.classes[World.DESERT]; }
         out.printf("      the fixture's three windows: %,d plots of ice and %,d of desert%n", fixtureIce, fixtureDesert);

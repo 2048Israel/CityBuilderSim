@@ -2842,7 +2842,8 @@ public class LongPlaytest {
         int guard = 0;
         while (wanted > g.getLandManager().getAvailableSqFt() && guard++ < 60) {
             LandParcel covers = g.bestOffer(Game.LandNeed.shortfall(wanted - g.getLandManager().getAvailableSqFt()));
-            if (covers == null || !g.buyLandParcel(covers.getId())) break;
+            // ...none wholly across the water (ET5): when no offer covers it the shortfall's best is the room's, which on a shelf of nothing else is ground no port links.
+            if (covers == null || !LandMarket.hasLinkedDry(covers) || !g.buyLandParcel(covers.getId())) break;
             autoBuildGroundBought++;
         }
     }
@@ -3093,7 +3094,8 @@ public class LongPlaytest {
         double roomLost = roomToGrow(g);
         if (roomLost > 0) {
             LandParcel room = land.getMarket().bestValue();
-            if (room != null) {
+            // ...not an offer wholly across the water (ET5): ground no port links is no room, and the same offer would be bought every month.
+            if (room != null && LandMarket.hasLinkedDry(room)) {
                 moves.add(new Move("bought room to grow", roomLost, () -> {
                     boolean bought = g.buyLandParcel(room.getId());
                     if (bought) roomMovesBought++;
@@ -3884,7 +3886,8 @@ public class LongPlaytest {
         while (land.getOwnedSqFt() > 0 && land.getUsedShare() > most
                 && guard++ < 60) {
             LandParcel best = g.bestOffer(Game.LandNeed.room());
-            if (best == null) break;
+            // ...and none wholly across the water (ET5): the used share reads the linked ground, so it would not move and the loop would buy on.
+            if (best == null || !LandMarket.hasLinkedDry(best)) break;
             double local = best.localPrice(g.getForeignAccounts().getRate());
             if (local > budget || !g.canAffordParcel(best)) {
                 groundAheadShort++;
@@ -3896,6 +3899,15 @@ public class LongPlaytest {
             groundAheadSqFt += best.getSizeSqFt();
             groundAheadUsd += best.getPriceUsd();
         }
+    }
+
+    /**
+     * Whether the city has a coast for a desalination plant: it owns sea and the model would stand a plant on it (ET5). On a city of one
+     * landmass Game.hasCoastFor() is the owned-sea test alone, as ever; on a city with ground off home a plant wants shore on a linked
+     * landmass, and sea beside an island no port links is a plant refused NO_COAST every month, with no coast ever bought.
+     */
+    static boolean desalinationHasCoast(Game g) {
+        return g.getLandManager().getSeaKm2() > 0 && g.hasCoastFor(template(g, "Desalination Plant"), 1);
     }
 
     /**
@@ -3934,13 +3946,14 @@ public class LongPlaytest {
             return;
         }
         LandManager land = g.getLandManager();
-        if (land.getSeaKm2() > 0) {
+        if (desalinationHasCoast(g)) {
             addThrottle(moves, g, "Desalination Plant", "desalination", lost);
             return;
         }
         LandParcel lake = land.getMarket().bestFresh();
         LandParcel buy = lake != null ? lake : g.bestOffer(Game.LandNeed.coast());
-        if (buy == null) return;
+        // ...never one wholly across the water (ET5): its sea is no shore on a landmass a port links, and its lake no water a plant at home can draw.
+        if (buy == null || !LandMarket.hasLinkedDry(buy)) return;
         waterLandOffered++;
         moves.add(new Move(lake != null ? "bought fresh water" : "bought a coast",
                 lost * (1 - moves.size() * 1e-6), () -> {
@@ -4746,7 +4759,8 @@ public class LongPlaytest {
                 g.getLandManager().updateMarket(g.getPopulationManager().getPopulation());
                 covers = g.bestOffer(Game.LandNeed.shortfall(shortfall));
             }
-            if (covers == null || !g.buyLandParcel(covers.getId())) break;
+            // ...none wholly across the water (ET5), as groundForAutoBuild(): it would not cover the shortfall and the loop would buy on.
+            if (covers == null || !LandMarket.hasLinkedDry(covers) || !g.buyLandParcel(covers.getId())) break;
         }
 
         Game.BuildResult result = g.buildStack(t, quantity, false);

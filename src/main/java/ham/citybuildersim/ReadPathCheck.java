@@ -1973,12 +1973,7 @@ public class ReadPathCheck {
             for (CityLand.Purchase p : flat.purchases()) allFlat &= p.offer().getReliefKm2(CityLand.RELIEF_FLAT) == p.offer().getDryKm2();
             assertTrue("...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,"
                     + " nothing steep and nothing shallow", allFlat);
-            // ...and, since ET5, a city on one landmass writes no "landmasses" key: stripped or not, it loads as the one landmass it is.
-            assertTrue("a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground",
-                    !json.has("landmasses") && loaded.getLandManager().landmassState() == null && loaded.getLandManager().getLandmasses().single()
-                            && !loaded.getLandManager().getLandmasses().anyUnlinked() && bare.getLandManager().getLandmasses().single()
-                            && loaded.getLandManager().getAvailableSqFt() == g.getLandManager().getAvailableSqFt());
-            // ...and, since ET5, a city on one landmass writes no "landmasses" key: stripped or not, it loads as the one landmass it is.
+            // ...and, since ET5, a city on one landmass writes no "landmasses" key: loaded, and loaded from the stripped save, it is the one landmass it is.
             assertTrue("a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground",
                     !json.has("landmasses") && loaded.getLandManager().landmassState() == null && loaded.getLandManager().getLandmasses().single()
                             && !loaded.getLandManager().getLandmasses().anyUnlinked() && bare.getLandManager().getLandmasses().single()

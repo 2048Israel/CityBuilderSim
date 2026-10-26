@@ -3121,7 +3121,7 @@ public class SaveFileCheck {
                         placed != null && placed.getAsJsonArray("ports").size() == 1 && placed.getAsJsonArray("ports").get(0).getAsJsonObject().get("template").getAsInt() == terminal
                                 && placed.getAsJsonArray("ports").get(0).getAsJsonObject().getAsJsonArray("standing").size() == 1
                                 && placed.getAsJsonArray("ports").get(0).getAsJsonObject().getAsJsonArray("standing").get(0).getAsInt() == 648
-                                && (!placed.has("leaving") || placed.getAsJsonArray("leaving").size() == 0) && isleJson.get("saveFormat").getAsInt() == EarthSite.LANDMASS_FORMAT);
+                                && (!placed.has("leaving") || placed.getAsJsonArray("leaving").size() == 0) && isleJson.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && GameVersion.SAVE_FORMAT >= EarthSite.LANDMASS_FORMAT);
                 Game isleBack = new Game(isleFiles);
                 quietly(() -> isleBack.loadGameSave(10));
                 assertTrue("read back, the terminal stands on the island again and the land is the same", isleBack.getLoadFailure() == null

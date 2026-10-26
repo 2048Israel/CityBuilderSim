@@ -36,14 +36,18 @@ import java.util.function.Predicate;
  *   1. THE READER. tileLandmass() is landmassAt() at every plot; every dry plot on a cell the layer calls no land takes
  *      the nearest land cell's id within LANDMASS_REACH, as a brute-force loop over the data says (such plots exist, one
  *      resolves to the island); idsNear() holds every id a tile's plots resolve to, the reach's included (the gate's premise);
- *      two worlds of one key agree; home is the id the founding card reads at the snapped site.
+ *      two worlds of one key agree; home is the id the founding card reads at the snapped site; the 1-degree gate (onlyHome()) calls
+ *      home's alone only a box with no plot of another landmass in it or in the ring it widens it by, and its margins (the plots' and the
+ *      degrees') hold.
  *   2. THE BOOKS BY LANDMASS. Each landmass's dry plots by relief, forest, shore and first holding equal a brute-force
  *      count over every owned plot, a shore across a tile's edge included; they add up to the land's dry ground to the plot; a recount after a purchase is a
  *      fresh recount; the names are "Home" and "Island 2"; the linked set (closure()) is home, the landmasses a join
  *      reaches and, once a linked one has a port, every landmass with one.
  *   3. FREE GROUND IS LINKED ONLY. A city with the island square and its twin without it have the same free ground,
  *      share used, zone size and overFull within FREE_SLACK; what fits city-wide is refused; the unlinked free ground is
- *      the square's dry plots; the investors' refusal ends with the clause, word for word.
+ *      the square's dry plots; the investors' refusal ends with the clause, word for word. The relief and the forest law are of the
+ *      linked ground too: a city with home's foothill and an island of forest, against its twin without the island, with the law set, has
+ *      the twin's foothill to prepare, protected, working and open forest, cleared forest and free ground.
  *   4. ONLY A PORT ON UNLINKED GROUND. A House past the linked free ground is NO_LAND though the island would hold it;
  *      a works on a field centred on an unlinked plot is NO_DEPOSIT and the field is in no site count, a field centred on
  *      a lake plot of an island included (4b: the gate reads the plot's 15" cell, asked of a made-up field on a fresh water plot of the island, the fixture holding none); the same field at home is a deposit.
@@ -55,14 +59,17 @@ import java.util.function.Predicate;
  *      in an order and in a run; an order short of cash keeps its pick.
  *   6. DEMOLITION. The port that links a landmass cannot be demolished (demolishable() leaves it out, demolish() says
  *      "it is the port that links Island 2"); an island's port keeps its ground on the island, by the demolition's id,
- *      until the demolition is done - across a save too - and then its room returns exactly; a shell likewise.
+ *      until the demolition is done - across a save too - and then its room returns exactly; a shell likewise. A save written between
+ *      a hand demolition and the month's settle carries no row that has become all home, and is written again as it was.
  *   7. THE CHOICE. The card lists the landmasses with shore, home first; its pick is one order's, spent by an order and
  *      forgotten at the settle; the rule (home, else the linked landmass with shore and most ground, else none) never
  *      takes an island no port links; a pick without shore is passed over; the quote is asked for the landmass the order is for,
  *      so a pick standing steers the card's quote and not an order by the rule.
  *   8. THE PICKERS. An all-island offer has no buildable ground and is never the best for room, a shortfall or a
  *      deposit - and would be without its split; ISLAND is tagged by the share; a shortfall only the island's dry ground
- *      would cover buys no island.
+ *      would cover buys no island. On a shelf of nothing but ground across the water (the pickers still answer one) the test player's
+ *      room buying and its water rule buy none of it: home full, keepGroundAhead() and the whole look buy nothing, and a desalination
+ *      plant is ordered only where the model would stand one.
  *   9. THE SAVE. The placements under one key, absent for a city on one landmass; read back, resaved identical, a
  *      reload equal to the city played on; a save without the key reads every terminal at home; a bad row is passed over.
  *  10. THE MAP (ET5 slice C). A real CityMap of the two-landmass city: no building box, street, plot of the runs or siding on a plot
@@ -89,7 +96,8 @@ import java.util.function.Predicate;
  *      the pieces on linked ground, counted apart, and the works standing fit them) - the 24 months of a city that grows, and of a
  *      city on the island itself that owns the mainland's field of iron across the water. The map of each is asked every twelve months what it
  *      draws on ground no port links (nothing), and with home filled by a fixture (orders until the linked free ground is under half the
- *      island's buildable ground) the map's districts on the island hold buildings.
+ *      island's buildable ground) the map's districts on the island hold buildings. The audit sees books gone stale: the books by
+ *      landmass are a fresh recount's, and land bought with the books never told is named.
  *  13. THE FULL FILE. The delta's islands read Rotterdam's landmass in the model's reader, Goeree does not; PEI is apart,
  *      Halifax and Dartmouth one, Medellin on 2; Rotterdam played 1,200 months, the books audited at every look.
  *
@@ -256,18 +264,24 @@ public class LandmassCheck {
         generatedWorld();
         theReader(data, rotterdam);
         Fixtures f = fixtures(rotterdam);
+        theGate(f, data, id);
         theBooks(f);
         freeGroundIsLinked(f);
+        reliefAndForestLaw(f);
         onlyAPort(f, id);
         lakeCentredField(f);
         twoPortsLink(f, data);
         demolition(f);
+        savedWhileDemolishing(f);
         theChoice(f);
         thePickers(f, id);
+        noRoomOnTheShelf(f);
+        theWaterRule(f);
         theSave(f);
         theMap(f);
         theWords(f);
         grown(f);
+        theAudit(f);
         fullFile(theEarth());
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -610,6 +624,83 @@ public class LandmassCheck {
     }
 
     /* =====================================================================
+       1 (continued). THE 1-DEGREE GATE
+       ===================================================================== */
+
+    /** Plots of a box about a latitude and longitude, whether the 1-degree gate says only home's landmass can lie under it. */
+    static boolean gateSays(Landmasses lms, World w, double lat, double lon) {
+        long[] c = plotOf(w, lat, lon);
+        return lms.onlyHome(w, c[0] - SQUARE / 2, c[1] - SQUARE / 2, c[0] + SQUARE / 2, c[1] + SQUARE / 2);
+    }
+
+    /** The plots of a box, exactly, and of the ring the gate widens it by (GATE_MARGIN_PLOTS), every 8 plots, that read a landmass but home's. */
+    static long strays(World w, int home, long x0, long y0, long x1, long y1) {
+        long n = 0;
+        long m = Landmasses.GATE_MARGIN_PLOTS;
+        for (long y = y0 - m; y < y1 + m; y += (y >= y0 && y < y1) ? 1 : 8) {
+            for (long x = x0 - m; x < x1 + m; x += (y >= y0 && y < y1 && x >= x0 && x < x1) ? 1 : 8) {
+                int l = w.landmassAt(x, y);
+                if (l != 0 && l != home) n++;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * The 1-degree gate (Landmasses.onlyHome()), which every Earth city away from other landmasses takes to read no plot at all: every other
+     * section's fixtures lie in the tile that holds Goeree, so the gate says "not sure" for each and its skip was never taken. Here a box it
+     * calls home's alone holds, with the ring it widens it by, no plot of another landmass (a scan of boxes about Rotterdam and the box of a city
+     * at Paris); and its margins hold: a box just north of the tile that holds the island is refused out to the widened box and the margin in
+     * degrees past it (the 160 plots and the 0.05 degrees), and one well beyond is not.
+     */
+    static void theGate(Fixtures f, EarthData data, String dataId) {
+        out.println("\n--- 1 (continued). the 1-degree gate: a box it calls home's alone holds no other landmass, out to the margins ---");
+        if (!f.ok) { check("fixtures were found", false); return; }
+        Landmasses lms = f.b.books();
+        World w = f.b.w;
+        int home = lms.home();
+        long[] c = plotOf(w, RLAT, RLON);
+        long scanned = 0, only = 0, refused = 0, refusedWithIsland = 0, strays = 0;
+        // ...about Rotterdam, in the tile that holds the island, and about 51.5 N 5.3 E, in the tile east of it that holds home's landmass alone.
+        for (long[] centre : new long[][] { c, plotOf(w, 51.5, 5.3) }) {
+            for (long y0 = centre[1] - 1536; y0 < centre[1] + 1536; y0 += 192) {
+                for (long x0 = centre[0] - 1536; x0 < centre[0] + 1536; x0 += 192) {
+                    scanned++;
+                    if (lms.onlyHome(w, x0, y0, x0 + SQUARE, y0 + SQUARE)) {
+                        only++;
+                        strays += strays(w, home, x0, y0, x0 + SQUARE, y0 + SQUARE);
+                    } else {
+                        refused++;
+                        if (strays(w, home, x0, y0, x0 + SQUARE, y0 + SQUARE) > 0) refusedWithIsland++;
+                    }
+                }
+            }
+        }
+        report("a scan of " + scanned + " boxes about Rotterdam and 51.5 N 5.3 E: some the gate calls home's alone and some it refuses (the island's), and the ones it calls home's have no plot of another landmass in them or in their ring",
+                only > 0 && refused > 0 && refusedWithIsland > 0 && strays == 0, String.format("%d home's alone, %d refused (%d of them with another landmass in sight); %d stray plots", only, refused, refusedWithIsland, strays));
+        // Paris: a city whose tile holds nothing but home's landmass takes the skip - the books read no plot.
+        City paris = new City("landmass-paris", World.Key.earth(SEED, 48.85625, 2.3395833333333336, dataId), 0);
+        LandGrid grid = paris.lm.getCityLand().grid();
+        boolean says = paris.books().onlyHome(paris.w, grid.minX(), grid.minY(), grid.maxX(), grid.maxY());
+        report("a city at Paris, whose 1-degree tiles hold home's landmass alone: the gate says so for its ground, the books read no plot, it is one landmass, and no plot of its ring reads another",
+                paris.books().active() && says && paris.books().plotsRead() == 0 && paris.books().single()
+                        && strays(paris.w, paris.books().home(), grid.minX(), grid.minY(), grid.maxX(), grid.maxY()) == 0, paris.books().plotsRead() + " plots read");
+        // The margins: the 1-degree tile (51, 5) east of the meridian holds home's landmass alone, with every tile about it but the one west of it (51, 4), which holds the island.
+        boolean tiles = true, south;
+        for (int la = 50; la <= 52; la++) for (int lo = 5; lo <= 6; lo++) for (int id : data.landmassIds(EarthData.tile(la, lo))) tiles &= id == 0 || id == home;
+        south = Arrays.stream(data.landmassIds(EarthData.tile(51, 4))).anyMatch(id -> id == 648);
+        // A box 6.5 km east of the meridian is between the plots' margin (160 plots of 30 m, 4.8 km) or the degrees' (0.05, 3.5 km at this latitude) alone and the two together (8.3 km): refused;
+        // one 22 km east is past both.
+        double kmPerDeg = 111.195 * Math.cos(Math.toRadians(51.5)), plotKm = World.PLOT_M / 1000.0, halfBox = SQUARE / 2.0 * plotKm;
+        double nearKm = 6.5, farKm = 22;
+        boolean nearSays = gateSays(lms, w, 51.5, 5.0 + (nearKm + halfBox) / kmPerDeg);
+        boolean farSays = gateSays(lms, w, 51.5, 5.0 + (farKm + halfBox) / kmPerDeg);
+        report("premise: the 1-degree tile (51, 5) and the tiles about it but the west one hold home's landmass alone, and the tile (51, 4) west of the 5th meridian holds the island", tiles && south, "(51, 5) and its neighbours home's alone: " + tiles + "; (51, 4) holds 648: " + south);
+        report("a box 6.5 km east of the tile that holds the island is refused (the plots' margin and the degrees' together reach 8.3 km, either alone 4.8 or 3.5) and one 22 km east is home's alone",
+                !nearSays && farSays, String.format("at %.1f km: %s; at %.0f km: %s", nearKm, nearSays ? "home's alone" : "refused", farKm, farSays ? "home's alone" : "refused"));
+    }
+
+    /* =====================================================================
        2. THE BOOKS BY LANDMASS
        ===================================================================== */
 
@@ -908,6 +999,92 @@ public class LandmassCheck {
     }
 
     /* =====================================================================
+       3 (continued). THE RELIEF AND THE FOREST LAW ON LINKED GROUND
+       ===================================================================== */
+
+    /** A square of home's ground in the Ardennes' foothills, 38 tiles south-west of Rotterdam (found by a scan of the fixture; its foothill count is a premise below). */
+    static final long FOOTHILL_X = 376_640, FOOTHILL_Y = 375_616;
+
+    /** The foothill dry plots of a square. */
+    static long foothillIn(World w, long x0, long y0) {
+        long n = 0;
+        for (long y = y0; y < y0 + SQUARE; y++) for (long x = x0; x < x0 + SQUARE; x++) if (World.dry(w.terrainAt(x, y)) && w.reliefAt(x, y) == World.FOOTHILL) n++;
+        return n;
+    }
+
+    /**
+     * The half of the linked view section 3 does not reach (the review of ET5): a city that owns home's foothill and an island with forest
+     * but no foothill, against its twin without the island, with the forest law set. Rotterdam's centre is flat and has no law, so section
+     * 3's twins take neither the relief branches nor the law's - the foothill's share of the built ground, the preparation of it, the
+     * forest the law keeps and the forest an order clears - and an expression read of the whole city instead of the linked ground
+     * would not show there. The fixture CAUSES both: the foothill is home's and the forest (and flat ground) the island's.
+     */
+    static void reliefAndForestLaw(Fixtures f) {
+        out.println("\n--- 3 (continued). the relief and the forest law are of the linked ground: a city with home's foothill and an island of forest, against its twin without the island ---");
+        if (!f.ok) { check("fixtures were found", false); return; }
+        City a = new City("landmass-law-a", f.key, 40), b = new City("landmass-law-b", f.key, 40);
+        long foothill = foothillIn(a.w, FOOTHILL_X, FOOTHILL_Y);
+        Square hillSquare = measure(a.w, FOOTHILL_X, FOOTHILL_Y, a.books().home());
+        report("fixture: a square of home's ground with foothill in it (pure), and the island square with forest on it and no foothill",
+                hillSquare.pure() && foothill >= 150 && f.withShore.onId() > 0, String.format("%d foothill plots of %d dry on home", foothill, hillSquare.dry()));
+        if (!hillSquare.pure() || foothill < 150) return;
+        a.buy(hillSquare);
+        b.buy(hillSquare);
+        a.buy(f.withShore);
+        String retail = a.g.getSectors().retail().key();
+        quietly(() -> {
+            for (City c : List.of(a, b)) {
+                c.g.setZone(retail, Zoning.Size.SHARE, 0.1, 0.8);
+                c.g.setForestLaw(0.2, 0.4);
+            }
+        });
+        LandManager la = a.lm, lb = b.lm;
+        Landmasses.Row isle = null;
+        for (Landmasses.Row r : a.books().rows()) if (!r.home()) isle = r;
+        report("premise: A owns the island and B does not; the island is forest and flat (no foothill, no steep), home has the foothill, so neither city is flat-only",
+                a.books().anyUnlinked() && !b.books().anyUnlinked() && isle != null && isle.forestPlots() > 0 && isle.foothillPlots() == 0 && isle.steepPlots() == 0
+                        && isle.verySteepPlots() == 0 && !la.isFlatOnly() && !lb.isFlatOnly() && la.getLinkedForestSqFt() < la.getForestSqFt(),
+                isle == null ? "no island" : String.format("island: %,d forest plots, %,d flat; linked forest %,.0f of %,.0f sq ft", isle.forestPlots(), isle.flatPlots(), la.getLinkedForestSqFt(), la.getForestSqFt()));
+        if (isle == null) return;
+        LandManager.Use use = LandManager.Use.BUILDING;
+        // An order for all the linked ground puts buildings onto the foothill once the flat is built on; the island's flat ground is not the flat the buildings can use.
+        double ask = lb.getLinkedOwnedSqFt();
+        double prepare = lb.foothillToPrepareSqFt(ask, retail, use);
+        report("the foothill to prepare for a building is the twin's - and is some: the island's flat ground does not dilute the foothill's share of what is built",
+                prepare > 0 && near(la.foothillToPrepareSqFt(ask, retail, use), prepare), String.format("A %,.1f, B %,.1f sq ft for an order of %,.0f", la.foothillToPrepareSqFt(ask, retail, use), prepare, ask));
+        check("...and the slope share, the idle steep ground, the runs on the foothill, the share used and the free and buildable ground are the twin's",
+                la.getSlopeShare() == lb.getSlopeShare() && la.idleSlopeSqFt() == lb.idleSlopeSqFt() && near(la.getRunsOnFoothillSqFt(), lb.getRunsOnFoothillSqFt())
+                        && Math.abs(la.getUsedShare() - lb.getUsedShare()) < 1e-9 && near(la.getFreeSqFt(), lb.getFreeSqFt()) && near(la.getBuildableSqFt(), lb.getBuildableSqFt()));
+        report("the forest the law keeps is of the linked forest: the protected, the working and the open forest are the twin's, with the island's forest owned and out of them",
+                near(la.getLinkedForestSqFt(), lb.getForestSqFt()) && near(la.getProtectedForestSqFt(), lb.getProtectedForestSqFt()) && near(la.getWorkingForestSqFt(), lb.getWorkingForestSqFt())
+                        && near(la.getOpenForestSqFt(), lb.getOpenForestSqFt()) && la.getForestSqFt() > lb.getForestSqFt() && lb.getProtectedForestSqFt() > 0,
+                String.format("protected %,.0f / %,.0f, working %,.0f / %,.0f, open %,.0f / %,.0f sq ft", la.getProtectedForestSqFt(), lb.getProtectedForestSqFt(),
+                        la.getWorkingForestSqFt(), lb.getWorkingForestSqFt(), la.getOpenForestSqFt(), lb.getOpenForestSqFt()));
+        // Both fill home with the same orders: the forest an order clears, and what the free ground is after, are the twin's.
+        BuildingsTemplate house = tpl(a, "House");
+        int ordered = 0;
+        for (int round = 0; round < 40; round++) {
+            quietly(() -> {
+                a.g.setCashForTest(Founding.WEALTHY_CASH * 100);
+                b.g.setCashForTest(Founding.WEALTHY_CASH * 100);
+            });
+            int n = (int) Math.floor(Math.min(la.getAvailableSqFt(), lb.getAvailableSqFt()) / house.getLandSqFt());
+            if (n < 1) break;
+            if (order(a, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS || order(b, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
+            ordered += n;
+        }
+        quietly(() -> {
+            a.g.simulateMonths(1);
+            b.g.simulateMonths(1);
+        });
+        report("home filled by the same " + ordered + " houses: the forest cleared for them and the free ground left are the twin's (and forest was cleared)",
+                ordered > 0 && lb.getForestClearedSqFt() > 0 && near(la.getForestClearedSqFt(), lb.getForestClearedSqFt()) && near(la.getAvailableSqFt(), lb.getAvailableSqFt())
+                        && near(la.getFreeSqFt(), lb.getFreeSqFt()) && Math.abs(la.getUsedShare() - lb.getUsedShare()) < 1e-6 && audit(a.g) == null,
+                String.format("cleared %,.0f / %,.0f sq ft, free %,.0f / %,.0f, used %.6f / %.6f", la.getForestClearedSqFt(), lb.getForestClearedSqFt(), la.getAvailableSqFt(), lb.getAvailableSqFt(),
+                        la.getUsedShare(), lb.getUsedShare()));
+    }
+
+    /* =====================================================================
        4. ONLY A PORT ON UNLINKED GROUND
        ===================================================================== */
 
@@ -1127,6 +1304,83 @@ public class LandmassCheck {
             LandParcel pick = d.g.bestOffer(Game.LandNeed.deposit(Resource.IRON));
             check("...and with a field on the home landmass beside it, the deposit picker takes that one", pick != null && pick.getId() == homeField.getId() && pick.getUnlinkedDryKm2() == 0);
         }
+    }
+
+    /* =====================================================================
+       8 (continued). A SHELF WITH NO ROOM ON IT
+       ===================================================================== */
+
+    /**
+     * The pickers answer an offer when every offer on the shelf is wholly across the water (bestValue() is null only with nothing
+     * listed, so a city on a spit still has a best), and the test player bought it as room, again and again: the share used reads the
+     * linked ground and does not move. A city with home full and a shelf of one island offer, and the two moves that buy room
+     * (the ground kept ahead and the room-to-grow move) must buy none of it.
+     */
+    static void noRoomOnTheShelf(Fixtures f) {
+        out.println("\n--- 8 (continued). a shelf of nothing but ground across the water: the test player buys no room from it ---");
+        if (!f.ok) { check("fixtures were found", false); return; }
+        City c = portCity(f, "landmass-room", false);
+        BuildingsTemplate house = tpl(c, "House");
+        int ordered = 0;
+        for (int round = 0; round < 40; round++) {
+            quietly(() -> c.g.setCashForTest(Founding.WEALTHY_CASH * 100));
+            int n = (int) Math.floor(c.lm.getAvailableSqFt() / house.getLandSqFt());
+            if (n < 1) break;
+            if (order(c, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
+            ordered += n;
+        }
+        LandMarket market = c.lm.getMarket();
+        Square isl = f.withoutShore;
+        LandParcel offer = market.measure(new GridOffers.Rect(0, 0, c.lm.getCityLand().level(), isl.x0, isl.y0, isl.x0 + SQUARE, isl.y0 + SQUARE));
+        LandParcel homeOffer = market.measure(new GridOffers.Rect(0, 1, c.lm.getCityLand().level(), f.homeSalt.x0, f.homeSalt.y0, f.homeSalt.x0 + SQUARE, f.homeSalt.y0 + SQUARE));
+        quietly(() -> {
+            market.putOffers(List.of(offer));
+            c.g.setCashForTest(Founding.WEALTHY_CASH * 100);
+        });
+        LandParcel shelved = market.find(offer.getId());
+        double used = c.lm.getUsedShare(), line = LongPlaytest.groundAheadUtilisation(c.g);
+        report("premise: home is full (" + ordered + " houses more) past the line the test player keeps ground ahead of, and the shelf is one offer wholly on the island, which no port links",
+                ordered > 0 && used > line && shelved != null && shelved.getUnlinkedDryKm2() > 0 && !LandMarket.hasLinkedDry(shelved) && c.books().anyUnlinked(),
+                String.format("used %.4f against %.4f; unlinked %.4f of %.4f km2 dry", used, line, shelved == null ? -1 : shelved.getUnlinkedDryKm2(), shelved == null ? -1 : shelved.getDryKm2()));
+        if (shelved == null) return;
+        LandParcel room = c.g.bestOffer(Game.LandNeed.room()), value = market.bestValue();
+        check("the pickers still answer it (a city on a spit has a best), and hasLinkedDry() says it is no room where an offer of home's ground is",
+                room != null && room.getId() == shelved.getId() && value != null && value.getId() == shelved.getId() && LandMarket.hasLinkedDry(homeOffer));
+        double owned = c.lm.getOwnedSqFt();
+        int boughtBefore = LongPlaytest.groundAheadBought, movesBefore = LongPlaytest.roomMovesBought;
+        report("premise: the room-to-grow move is called for (roomToGrow() prices a loss) at this share used", LongPlaytest.roomToGrow(c.g) > 0, String.format("%.4f", LongPlaytest.roomToGrow(c.g)));
+        quietly(() -> LongPlaytest.keepGroundAhead(c.g));
+        check("keepGroundAhead() buys none of it: the ground kept ahead, the city's owned ground and the shelf are as they were",
+                LongPlaytest.groundAheadBought == boughtBefore && c.lm.getOwnedSqFt() == owned && market.find(offer.getId()) != null);
+        String[] did = new String[1];
+        quietly(() -> did[0] = LongPlaytest.advise(c.g));
+        report("...nor does the playtest's whole look (its room-to-grow move buys the best value): no room bought, the owned ground and the shelf unchanged",
+                LongPlaytest.roomMovesBought == movesBefore && c.lm.getOwnedSqFt() == owned && market.find(offer.getId()) != null && c.books().anyUnlinked(),
+                String.format("the look did \"%s\"; room moves %d, owned %,.0f against %,.0f, shelf %s", did[0], LongPlaytest.roomMovesBought - movesBefore, c.lm.getOwnedSqFt(), owned, market.find(offer.getId()) != null ? "kept" : "gone"));
+    }
+
+    /**
+     * The test player's water rule orders a desalination plant while the city owns sea, and the model now wants shore on a linked landmass
+     * once the city owns ground off home: a plant ordered against the sea of an island no port links is refused NO_COAST every month, and the
+     * rule, thinking the city has a coast, would never buy one. The rule asks the model (Game.hasCoastFor()); the twin that owns home's sea
+     * still orders the plant, as ever.
+     */
+    static void theWaterRule(Fixtures f) {
+        out.println("\n--- 8 (continued). the test player's water rule asks the model whether the city has a coast ---");
+        if (!f.ok) { check("fixtures were found", false); return; }
+        City c = portCity(f, "landmass-water", false);
+        City t = new City("landmass-water-twin", f.key, 40);
+        t.buy(f.homeSalt);
+        BuildingsTemplate desal = null;
+        for (BuildingsTemplate b : c.g.getBuildingManager().getTemplates()) if (b.isSeaWater()) { desal = b; break; }
+        BuildingsTemplate plant = desal;
+        if (plant == null) { check("fixture: a desalination plant in the catalogue", false); return; }
+        BuildingsTemplate twinPlant = tpl(t, plant.getName());
+        report("premise: the island city owns sea (the island's) and its plant is refused for its coast; the twin owns home's sea and its plant is not",
+                c.lm.getSeaKm2() > 0 && !c.books().single() && !c.g.hasCoastFor(plant, 1) && t.lm.getSeaKm2() > 0 && t.books().single() && t.g.hasCoastFor(twinPlant, 1),
+                String.format("sea %.2f / %.2f km2", c.lm.getSeaKm2(), t.lm.getSeaKm2()));
+        report("the twin's rule has a coast for a desalination plant (it owns home's sea), and the island city's has none (a plant refused NO_COAST every month, no coast bought)",
+                LongPlaytest.desalinationHasCoast(t.g) && !LongPlaytest.desalinationHasCoast(c.g), "twin " + LongPlaytest.desalinationHasCoast(t.g) + ", island city " + LongPlaytest.desalinationHasCoast(c.g));
     }
 
     /* =====================================================================
@@ -1537,6 +1791,52 @@ public class LandmassCheck {
                 && h.g.getBuildingManager().getControl().shellOf(id) == null, stateOf(h));
         boolean doneH = until(h, () -> h.g.getBuildingManager().getControl().demolitions().isEmpty(), 120);
         check("...and when it is done the room is whole again and nothing is placed", doneH && near(lh.portRoomSqFt(648), roomH + land) && !lh.hasPlacements());
+    }
+
+    /* =====================================================================
+       6 (continued). SAVED BETWEEN A DEMOLITION AND THE MONTH'S SETTLE
+       ===================================================================== */
+
+    /**
+     * A hand demolition of the last unit off home, or of an island's shell, leaves its row all home until the month's settle drops it; the
+     * save written in that window must not carry the row (a load drops it, so a resave lost it): it reads back, and is written again, as it was.
+     */
+    static void savedWhileDemolishing(Fixtures f) throws Exception {
+        out.println("\n--- 6 (continued). saved between a hand demolition and the month's settle: the row that has become all home is not written, and the resave is the same bytes ---");
+        if (!f.ok) { check("fixtures were found", false); return; }
+        City u = portCity(f, "landmass-demolish-saved", false);
+        BuildingsTemplate gc = tpl(u, "General Cargo Terminal");
+        check("premise: a lone terminal stands on the island, and the hand demolition of it is ordered", orderOn(u, gc, 1, true, 648) == Game.BuildResult.SUCCESS && u.g.demolishable(gc) == 1);
+        // ...two months in first, not one: a game saved in its first month holds no spending figures for the shops that a load re-derives (as the section above).
+        quietly(() -> u.g.simulateMonths(2));
+        quietly(() -> u.g.demolish(gc, 1));
+        Landmasses.State lone = u.lm.landmassState();
+        check("its row is all home now (nothing stands, nothing is on site) and is not written; the demolition's leave, holding the island's unit, is",
+                lone != null && lone.ports.isEmpty() && lone.leaving.size() == 1 && lone.leaving.get(0).landmasses.length == 1 && lone.leaving.get(0).landmasses[0] == 648);
+        resaved(u, "the lone terminal's demolition");
+        City h = portCity(f, "landmass-demolish-shell-saved", false);
+        BuildingsTemplate gcH = tpl(h, "General Cargo Terminal");
+        boolean shell = orderOn(h, gcH, 1, false, 648) == Game.BuildResult.SUCCESS && h.g.cancelSite(ConstructionControl.keyOf(gcH), true);
+        quietly(() -> h.g.simulateMonths(2));
+        boolean down = h.g.demolishShell(gcH.getId());
+        Landmasses.State sh = h.lm.landmassState();
+        check("premise: an island terminal ordered and stopped, its shell demolished; the row is all home, the leave holds the island's unit",
+                shell && down && sh != null && sh.ports.isEmpty() && sh.leaving.size() == 1 && sh.leaving.get(0).landmasses.length == 1 && sh.leaving.get(0).landmasses[0] == 648);
+        resaved(h, "the shell's demolition");
+    }
+
+    /** A city saved, read back and saved again: the two saves are the same but for the time and the name. */
+    static void resaved(City c, String what) throws Exception {
+        assertSaved(c, 1);
+        Game back = new Game(c.files);
+        quietly(() -> back.loadGameSave(1));
+        quietly(() -> back.saveGame(2, "again"));
+        com.google.gson.JsonObject one = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(c.files.saveFile(1))).getAsJsonObject();
+        com.google.gson.JsonObject two = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(c.files.saveFile(2))).getAsJsonObject();
+        java.util.List<String> moved = SaveFileCheck.jsonDiff(one, two, java.util.Set.of("savedAt", "slotName", "mapStamp"));
+        java.util.List<String> paths = new java.util.ArrayList<>();
+        if (!moved.isEmpty()) diffPaths("", one, two, paths, 12);
+        report("...read back and written again (" + what + ") it is the same bytes but for its time and name, and the load failed nothing", back.getLoadFailure() == null && moved.isEmpty(), moved + " " + paths);
     }
 
     /* =====================================================================
@@ -2591,7 +2891,8 @@ public class LandmassCheck {
     /**
      * The model's books of the terminals and the ground, audited at one look: the linked free ground fits the linked owned ground less the linked
      * built ground; the ground the unlinked landmasses' terminals hold is what the saved placements say, times the land a terminal takes; the
-     * saved placements are the buildings' own counts; a landmass is linked only if the rule makes it so. Null when all hold, else what does not.
+     * saved placements are the buildings' own counts; a landmass is linked only if the rule makes it so; and the books by landmass are a fresh recount's
+     * (the free ground above is worked out of those books and would agree with itself were they stale). Null when all hold, else what does not.
      */
     static String audit(Game g) {
         LandManager lm = g.getLandManager();
@@ -2601,6 +2902,14 @@ public class LandmassCheck {
         if (lm.getAvailableSqFt() > Math.max(0, lm.getLinkedOwnedSqFt() - lm.getLinkedAllocatedSqFt()) + FREE_SLACK) {
             bad.append(String.format("free %,.1f > linked owned %,.1f - linked allocated %,.1f; ", lm.getAvailableSqFt(), lm.getLinkedOwnedSqFt(), lm.getLinkedAllocatedSqFt()));
         }
+        // The books are the plots': a fresh recount of the owned ground reads the same rows (whether a port links a landmass is the placements', not the recount's).
+        World world = World.of(lm.getCityLand().key());
+        Landmasses recount = new Landmasses();
+        recount.recount(world, lm.getCityLand());
+        recount.refresh();
+        String stale = booksDiffer(lms.rows(), recount.rows());
+        if (stale != null) bad.append("the books by landmass are not a fresh recount's: ").append(stale).append("; ");
+        if (AutoBuilder.overFull(g) > FREE_SLACK) bad.append(String.format("built %,.1f sq ft past the linked owned ground; ", AutoBuilder.overFull(g)));
         Landmasses.State st = lm.landmassState();
         double unlinkedPorts = 0;
         java.util.Set<Integer> unlinked = new java.util.HashSet<>(lms.unlinkedIds());
@@ -2636,7 +2945,6 @@ public class LandmassCheck {
             if (onSum == 0 || atSum == 0) bad.append("landmass " + r.id() + " is linked without a terminal standing on it and one at home; ");
         }
         // No works stands on a field across the water. The sites usable are counted here piece by piece, from the plot each field is centred on (Landmasses.fieldLandmass(), the read the gate shares), not from the gate's own counters: getSites() must be them, and the works standing, on site or ordered, on each sited resource fit them.
-        World world = World.of(lm.getCityLand().key());
         for (Resource r : Resource.values()) {
             if (!r.inFields()) continue;
             long usable = 0;
@@ -2648,6 +2956,38 @@ public class LandmassCheck {
             if (g.committedOn(r) > usableNow) bad.append(String.format("%s works take %d sites, %d are usable on linked ground (%d owned); ", r, g.committedOn(r), usableNow, lm.getCityLand().totalSites(r)));
         }
         return bad.length() == 0 ? null : bad.toString();
+    }
+
+    /** What differs between the books' rows and a recount's, ignoring the name and whether the landmass is linked; null when they are the same books. */
+    static String booksDiffer(List<Landmasses.Row> books, List<Landmasses.Row> recount) {
+        if (books.size() != recount.size()) return books.size() + " rows, the recount's " + recount.size();
+        for (int i = 0; i < books.size(); i++) {
+            Landmasses.Row x = books.get(i), y = recount.get(i);
+            if (x.id() != y.id() || x.home() != y.home() || x.dryPlots() != y.dryPlots() || x.flatPlots() != y.flatPlots() || x.foothillPlots() != y.foothillPlots()
+                    || x.steepPlots() != y.steepPlots() || x.verySteepPlots() != y.verySteepPlots() || x.forestPlots() != y.forestPlots() || x.shorePlots() != y.shorePlots()
+                    || x.firstHolding() != y.firstHolding()) {
+                return "landmass " + x.id() + " holds " + x.dryPlots() + " dry plots, " + x.forestPlots() + " forest, " + x.shorePlots() + " shore; the recount's " + y.dryPlots() + ", " + y.forestPlots() + ", " + y.shorePlots();
+            }
+        }
+        return null;
+    }
+
+    /** The audit, tried on books gone stale: land bought and the books never told. */
+    static void theAudit(Fixtures f) {
+        out.println("\n--- 12 (continued). the audit sees books gone stale: ground bought and the books never told ---");
+        if (!f.ok) { check("fixtures were found", false); return; }
+        City c = portCity(f, "landmass-stale", false);
+        check("premise: the city that owns the island square passes its own audit (the books by landmass are a fresh recount's)", audit(c.g) == null && c.books().anyUnlinked());
+        Square s = f.withoutShore;
+        LandParcel parcel = c.lm.getMarket().measure(new GridOffers.Rect(0, 0, c.lm.getCityLand().level(), s.x0, s.y0, s.x0 + SQUARE, s.y0 + SQUARE));
+        quietly(() -> {
+            c.lm.getCityLand().extend(parcel, c.g.getMonth(), 0);
+            c.lm.restoreOwnedSqFt(c.lm.getOwnedSqFt() + parcel.getSizeSqFt());
+        });
+        String stale = audit(c.g);
+        check("a second island square added to the land and the books never told: the audit says the books are not a fresh recount's", stale != null && stale.contains("not a fresh recount's"));
+        quietly(() -> c.lm.landChanged());
+        check("...and told, the books are the recount's again and the audit is clean", audit(c.g) == null);
     }
 
     /** The buildings standing, every template's. */
