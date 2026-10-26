@@ -21,7 +21,9 @@ package ham.citybuildersim;
  *   - GROUND, from there down to the handoff, HANDOFF_PLOTS a pixel: the far
  *     rule through the globe's camera (EarthTerrain.globe(), groundPiece());
  *   - PLANE, closer than the handoff: today's map, the city's plane, a
- *     MapFrame at planeX(), planeY() and planeScale().
+ *     MapFrame at planeX(), planeY() and planeScale() - while the view's
+ *     centre is within the reach of the city; past it the GROUND tier
+ *     goes on closer than the handoff (MS1, below).
  * At the handoff the plane and the globe facing the city part by a third of
  * a pixel on the expanded map (Q6), so the swap cannot be seen.
  *
@@ -33,11 +35,20 @@ package ham.citybuildersim;
  * (planeRollAt()). A globe looking farther away never hands off and stays
  * north up.
  *
- * WHERE CLOSE VIEWS GO (spec-globe 3.4, Q3). Closer than the handoff the
- * view's centre stays within the reach of the city - REACH_KM, or the city's
- * own ground and its offers and REACH_MARGIN_KM round them where they reach
- * farther (reachKm()): a pan at that scale stops at it, and away from the
- * city the wheel stops at the handoff.
+ * WHERE CLOSE VIEWS GO (MS1, Jerus 2026-10-26: "you cant zoom in on areas of
+ * the map far away from the city, and if zoomed in there is a wall that you
+ * can cross"; spec-globe 3.4 Q3's "away from the city the wheel stops at the
+ * handoff, and on the plane a pan stops at the reach" is superseded). The
+ * wheel reaches leastKmPx() anywhere and a drag, a pan and a held key go
+ * anywhere at every scale: the reach no longer stops anything. It decides
+ * which picture a view closer than the handoff draws - the city's PLANE
+ * while its centre is within the reach (REACH_KM, or the city's own ground
+ * and its offers and REACH_MARGIN_KM round them where they reach farther:
+ * reachKm()), the GROUND tier beyond it, the far rule through the globe's
+ * camera at any scale (EarthTerrain.globe() takes any), as the founding
+ * screen draws it. tierOf(kmPx) is still the scale's tier and tier() the
+ * view's. The wall was the old stop: clampPan() pulled a centre back to the
+ * reach, 300 km from the city, at the plane's scales.
  *
  * A zoom keeps the point under the pointer under it, and a drag the point
  * grabbed under the pointer, on the globe as on the plane (spec-globe 4's
@@ -72,10 +83,10 @@ public final class GlobeFrame {
     /** ...in km a pixel: HANDOFF_PLOTS x World.PLOT_M, 0.48. */
     public static final double HANDOFF_KM = HANDOFF_PLOTS * World.PLOT_M / 1000;
 
-    /** Closer than the handoff the view's centre stays within this of the city, in km: 300 (spec-globe 3.4, Jerus's Q3) - 1.16 px apart at the swap there with the roll eased (spec-globe 3.3). */
+    /** Closer than the handoff the view draws the city's plane while its centre is within this of the city, in km, and the GROUND tier beyond it - it stops no wheel and no pan since MS1 (spec-globe 3.4's Q3 stop is superseded): 300 (spec-globe 3.4, Jerus's Q3) - 1.16 px apart at the swap there with the roll eased (spec-globe 3.3). */
     public static final double REACH_KM = 300;
 
-    /** ...or within this of the city's own ground and its offers, in km, where they reach farther than REACH_KM: 50 (spec-globe 3.4's est., ★E8 - the ground the land office shows round what it sells). */
+    /** ...or within this of the city's own ground and its offers, in km, where they reach farther than REACH_KM: 50 (spec-globe 3.4's est., ★E8 - the ground the land office shows round what it sells; where the plane is drawn, since MS1, and no longer where the view may go). */
     public static final double REACH_MARGIN_KM = 50;
 
     /** The roll eases from north up to the plane's up over this many notches of the wheel before the handoff: 2 (spec-globe 3.3's est., ★E8) - at most 2.7 degrees within REACH_KM of a city at Halifax's latitude, a degree and a third a notch. */
@@ -96,7 +107,7 @@ public final class GlobeFrame {
     /** The swap crossfades over this many notches of the wheel inside the handoff: 1 (spec-globe 3.2's est., ★E9) - the globe laid over the plane from whole at the handoff to gone a notch in, hiding the third of a pixel they part by and the change of drawing. */
     public static final int CROSSFADE_NOTCHES = 1;
 
-    /** Past the reach the roll eases back to north up over this many km (★E9; E8's ★3): REACH_MARGIN_KM, the margin the reach keeps round the city's ground - so a pan at the handoff across the reach's edge turns the view by degrees over 50 km instead of in one step. */
+    /** Past the reach the roll eases back to north up over this many km (★E9; E8's ★3): REACH_MARGIN_KM, the margin the reach keeps round the city's ground - so a pan across the reach's edge at the plane's scales turns the view by degrees over 50 km instead of in one step. */
     public static final double ROLL_EASE_KM = REACH_MARGIN_KM;
 
     /** The city's edge is drawn through the globe's camera once the city is at least this many pixels across: 4 (spec-globe 3.7's est.) - under it the ring alone marks it. */
@@ -165,15 +176,24 @@ public final class GlobeFrame {
         return kmPx >= PICTURE_FROM_KM ? PICTURE : kmPx >= HANDOFF_KM ? GROUND : PLANE;
     }
 
-    /** The tier this view draws. */
-    public int tier() { return tierOf(kmPx); }
+    /** The tier a view draws at a scale, its centre within the city's reach or not (MS1): tierOf(), except GROUND where that says PLANE and the centre is past the reach - the plane is drawn only round the city. */
+    public static int tierOf(double kmPx, boolean withinReach) {
+        int t = tierOf(kmPx);
+        return t == PLANE && !withinReach ? GROUND : t;
+    }
+
+    /** The tier this view draws: its scale's (tierOf()), the GROUND tier in place of the PLANE where its centre is past the reach (MS1). */
+    public int tier() {
+        int t = tierOf(kmPx);
+        return t == PLANE && !withinReach(lat, lon) ? GROUND : t;
+    }
 
     /** The view's orthographic projection: round its centre, turned by its roll. */
     public EarthProj.Ortho ortho() { return ortho; }
 
     /* ----- the reach (spec-globe 3.4) ----- */
 
-    /** How far from the city close views go, km. */
+    /** How far from the city the view's centre is drawn on the city's plane when it is closer than the handoff, km (it stops nothing since MS1). */
     public double reach() { return reachKm; }
 
     /** The reach set (reachKm()): at least REACH_KM. */
@@ -261,6 +281,9 @@ public final class GlobeFrame {
         return t <= 0 ? 0 : t >= 1 ? 1 : t;
     }
 
+    /** The globe's share of the picture in this view (MS1): crossfade() of its scale on the plane's tier, whole in the others - past the reach the GROUND tier is all there is, with no plane under it. */
+    public double crossfade() { return tier() == PLANE ? crossfade(kmPx) : 1; }
+
     /* ----- moving it ----- */
 
     /** Looks at (lat, lon) at a scale, both clamped; the roll follows. */
@@ -286,7 +309,7 @@ public final class GlobeFrame {
         update();
     }
 
-    /** Zooms about a screen point, the km a pixel times a factor (under one closer): the point on the planet under it stays under it - on the globe, on the plane, and across the handoff to within their parting - unless a clamp stops it; away from the city the wheel stops at the handoff. */
+    /** Zooms about a screen point, the km a pixel times a factor (under one closer): the point on the planet under it stays under it - on the globe, on the plane, and across the handoff to within their parting - unless a clamp stops it. The wheel reaches leastKmPx() anywhere (MS1: it stopped at the handoff away from the city). */
     public void zoomAt(double sx, double sy, double factor) {
         double[] p = latLonAt(sx, sy);
         double to = Math.max(leastKmPx(), Math.min(mostKmPx(), kmPx * factor));
@@ -296,7 +319,6 @@ public final class GlobeFrame {
             return;
         }
         put(p[0], p[1], sx, sy, to);
-        if (to < HANDOFF_KM && !withinReach(lat, lon)) put(p[0], p[1], sx, sy, HANDOFF_KM);
         clampZoom();
     }
 
@@ -305,7 +327,7 @@ public final class GlobeFrame {
         zoomAt(sx, sy, Math.pow(ZOOM_STEP, -notches));
     }
 
-    /** A drag from (sx0, sy0) to (sx1, sy1): the point grabbed stays under the pointer - the globe turns, the plane slides - and at the plane's scales the centre stops at the reach. A grab off the planet turns the globe as a drag of its centre would. */
+    /** A drag from (sx0, sy0) to (sx1, sy1): the point grabbed stays under the pointer - the globe turns, the plane slides - at every scale and anywhere on the planet, the centre stopping at no reach (MS1: at the plane's scales it stopped there, the wall). A grab off the planet turns the globe as a drag of its centre would. */
     public void drag(double sx0, double sy0, double sx1, double sy1) {
         double[] p = latLonAt(sx0, sy0);
         if (p == null) {
@@ -322,7 +344,7 @@ public final class GlobeFrame {
         drag(width / 2, height / 2, width / 2 + dx, height / 2 + dy);
     }
 
-    /** A frame of the keys held (0.7.135, spec-globe 3.11): the globe turned as a drag of MapFrame.keyStep()'s pixels from the centre would turn it - at the plane's scales the centre stopping at the reach. */
+    /** A frame of the keys held (0.7.135, spec-globe 3.11): the globe turned as a drag of MapFrame.keyStep()'s pixels from the centre would turn it, anywhere at every scale (MS1). */
     public void keyPan(double[] velocity, double seconds) {
         double[] d = MapFrame.keyStep(velocity, seconds);
         if (d[0] != 0 || d[1] != 0) pan(d[0], d[1]);
@@ -348,26 +370,30 @@ public final class GlobeFrame {
         this.drawsKm = f.planeDrawsKm();
     }
 
-    /** Whether two views draw the same picture: their size, centre, scale, roll and reach. */
+    /** Whether two views draw the same picture: their size, centre, scale, roll and reach - which between them decide the tier (MS1), so two views of different tiers are never the same. */
     public boolean sameView(GlobeFrame o) {
         return o != null && o.width == width && o.height == height && o.lat == lat && o.lon == lon && o.kmPx == kmPx && o.roll == roll
                 && o.reachKm == reachKm && o.cityLat == cityLat && o.cityLon == cityLon;
     }
 
-    /** The view at scale `to` with (pLat, pLon) at screen point (sx, sy): on the plane by its plots, on the globe by centreFor() with the roll it will take there. */
+    /**
+     * The view at scale `to` with (pLat, pLon) at screen point (sx, sy), in the tier it lands in (MS1): at the plane's scales on the plane by its
+     * plots, where that puts the centre within the reach; otherwise - a wider scale, or a centre the plane would put past the reach - on the globe
+     * by centreFor() with the roll it will take there, so a zoom or a drag keeps its point under the pointer in the tier the view comes to.
+     */
     private void put(double pLat, double pLon, double sx, double sy, double to) {
         kmPx = to;
         if (tierOf(to) == PLANE) {
-            double[] xy = new double[2];
-            if (!plane.plotOf(pLat, pLon, xy)) return;
-            double s = World.PLOT_M / (to * 1000);
-            double[] ll = new double[2];
-            if (plane.latLonOfPlot(xy[0] - (sx - width / 2) / s, xy[1] - (sy - height / 2) / s, ll)) {
-                lat = ll[0];
-                lon = ll[1];
+            double[] xy = new double[2], ll = new double[2];
+            if (plane.plotOf(pLat, pLon, xy)) {
+                double s = World.PLOT_M / (to * 1000);
+                if (plane.latLonOfPlot(xy[0] - (sx - width / 2) / s, xy[1] - (sy - height / 2) / s, ll) && cityKm(ll[0], ll[1]) <= reachKm) {
+                    lat = ll[0];
+                    lon = ll[1];
+                    update();
+                    return;
+                }
             }
-            update();
-            return;
         }
         double m = to * 1000, x = (sx - width / 2) * m, y = (height / 2 - sy) * m;
         double r = rollFor(lat, lon, to);
@@ -415,25 +441,18 @@ public final class GlobeFrame {
         out[1] = EarthProj.normaliseLon(pLon - StrictMath.toDegrees(dl));
     }
 
-    /** The scale within its bounds; closer than the handoff away from the city, the handoff (the wheel's stop); the centre off the poles; the roll. */
+    /** The scale within its bounds (the wheel stops at leastKmPx() and mostKmPx(), and nowhere else since MS1); the centre off the poles; the roll. */
     private void clampZoom() {
         if (!(kmPx > 0)) kmPx = mostKmPx();
         kmPx = Math.max(leastKmPx(), Math.min(mostKmPx(), kmPx));
         lat = Math.max(-POLE_LAT, Math.min(POLE_LAT, lat));
-        if (kmPx < HANDOFF_KM && !withinReach(lat, lon)) kmPx = HANDOFF_KM;
         update();
     }
 
-    /** ...and at the plane's scales the centre pulled back to the reach along its line from the city (a pan's stop). */
+    /** ...for a pan: the scale and the poles' clamps, and no pull back to the reach (MS1: it was the wall - the centre stopped 300 km from the city at the plane's scales). */
     private void clampPan() {
         kmPx = Math.max(leastKmPx(), Math.min(mostKmPx(), kmPx));
         lat = Math.max(-POLE_LAT, Math.min(POLE_LAT, lat));
-        if (kmPx < HANDOFF_KM && !withinReach(lat, lon)) {
-            double b = bearing(cityLat, cityLon, lat, lon);
-            double[] p = destination(cityLat, cityLon, b, reachKm * (1 - 1e-9));
-            lat = p[0];
-            lon = p[1];
-        }
         update();
     }
 
@@ -483,7 +502,7 @@ public final class GlobeFrame {
         return new double[] { width / 2 + xy[0] / m, height / 2 - xy[1] / m };
     }
 
-    /** Whether a screen point lies on the planet as this view draws it: the globe's disc, or on the plane within its reach (EarthProj.onPlanet()). */
+    /** Whether a screen point lies on the planet as this view draws it: the globe's disc, or the plane's own (EarthProj.onPlanet()) where this view draws the plane. */
     public boolean onPlanet(double sx, double sy) {
         if (tier() == PLANE) {
             double s = planeScale();

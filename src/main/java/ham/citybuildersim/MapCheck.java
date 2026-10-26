@@ -253,7 +253,8 @@ import java.util.Map;
  *      way, two at once diagonally at that speed, opposite keys cancelling,
  *      a frame held up moving KEY_STEP_MOST_S's worth, the world's square
  *      stopping it - and turn the globe as much under its middle in every
- *      tier, stopping at the reach on the plane; the hover's words on the
+ *      tier, going on past the reach (MS1: it stopped there), the GROUND
+ *      tier past it; the hover's words on the
  *      globe at the handoff are the plane's for the same point everywhere
  *      the plane draws, the city's own ground among them, and past it "Not
  *      the city's" with the place and the province by latitude and
@@ -285,8 +286,16 @@ import java.util.Map;
  *      takes exactly the offers whose free ground it meets, every plot under
  *      it tried, the city's own ground inside an offer's rectangle taking
  *      nothing, and through the globe's camera every offer a point of its
- *      free ground puts inside the box; and the picks drop on a month and
- *      on a load into the same Game, an offer bought falling out of them.
+ *      free ground puts inside the box; and the picks drop on a load into
+ *      the same Game, an offer bought falling out of them - but not on a
+ *      month (MS1, Jerus 2026-10-26: spec-earth 3.2's "dropped on a month"
+ *      is superseded, section 14b).
+ *  14b. the picks last through the month (batch MS1): picks on three offers
+ *      held over three months in which the office relists places, a pick
+ *      whose ground the city bought dropped and named, a pick whose offer
+ *      left the shelf with its ground for sale still carried onto the new
+ *      offer and named, and the cheap path (every id listed) the same list
+ *      and no note.
  *  15. the materials drawn as themselves (0.8.0, batch I14;
  *      docs/studies/spec-materials.md 5's I14 row): every building of the
  *      nine industries has a look of its own, never a plain mine's or
@@ -456,6 +465,8 @@ public class MapCheck {
         miniMap(city, sq);
         globeOnScreen(sq);
         buyingFromTheMap(city);
+        picksLast(city);
+        farOnThePlane(city);
         materials(sq.seed);
         avenuesDrawn(sq);
         curvesDrawn(sq);
@@ -6470,9 +6481,10 @@ public class MapCheck {
         check("...and turn the globe as much under its middle, in every tier", globeKeys);
         g.set(key.lat(), key.lon(), 0.1);
         for (int i = 0; i < 40 * KEY_FRAMES; i++) g.keyPan(MapFrame.keyVelocity(false, false, false, true), frame);
-        double stopped = g.cityKm(g.centreLat(), g.centreLon());
-        out.printf("      D held forty seconds at 0.1 km a pixel: stopped %.3f km from the city, its reach %.1f km%n", stopped, g.reach());
-        check("...and on the plane D held stops at the reach, the view still the plane's", g.tier() == GlobeFrame.PLANE && stopped <= g.reach() && stopped > g.reach() - 1);
+        double wentOut = g.cityKm(g.centreLat(), g.centreLon()), heldKm = 40 * MapFrame.KEY_PX_A_SECOND * 0.1;
+        out.printf("      D held forty seconds at 0.1 km a pixel: %.3f km from the city (%.0f km of pixels), its reach %.1f km%n", wentOut, heldKm, g.reach());
+        check("...and on the plane D held goes on past the reach as the pixels say, the view the GROUND tier past it (MS1: it stopped at the reach, the wall)",
+                g.tier() == GlobeFrame.GROUND && wentOut > g.reach() && Math.abs(wentOut - heldKm) < 0.02 * heldKm);
 
         // The legend by tier.
         List<LandMap.Entry> pic = LandMap.legend(GlobeFrame.PICTURE), gro = LandMap.legend(GlobeFrame.GROUND), pla = LandMap.legend(GlobeFrame.PLANE);
@@ -6780,7 +6792,7 @@ public class MapCheck {
 
     static void buyingFromTheMap(Game g) throws Exception {
         out.println("\n--- 14. buying from the map: the card's figures are the office row's, its bond the funding page's first offer,"
-                + " a box takes the offers whose free ground it meets, and the picks drop on a month and a load ---");
+                + " a box takes the offers whose free ground it meets, and the picks drop on a load into the same Game ---");
         CityLand land = g.getCityLand();
         LandMarket market = g.getLandManager().getMarket();
         // A field on offer (board 7's case): the city buys toward the nearest iron field it does not own, as MiningCheck.makeRoom()
@@ -7094,12 +7106,14 @@ public class MapCheck {
         check("fixture: the vault is short of every offer", vaultShort.funding() && vaultShort.gap() > 0);
         check("...and the card's loans from the vault are the dollar bond and note for its gap, or none while the window abroad is shut", dollars);
 
-        // A month drops the picks; so does a load into the same Game, though its month and its offers are the same.
+        // A month drops none of the picks (MS1; spec-earth 3.2's "dropped on a month" is superseded); a load into the same Game drops them
+        // all, though its month and its offers are the same.
         // ...from none: the picks above are left standing - the card steps' c3 and d4, less the offers the short card bought - and
         // two more on top of one that survived stood as three (FR7: the played city's offers moved, and one of them did).
         picks.clear();
         picks.add(g, g.nextLandParcels(2));
         List<Integer> beforeMonth = picks.live(g);
+        int monthBefore = g.getMonth();
         System.setOut(QUIET);
         try {
             LongPlaytest.run(g, 1);
@@ -7107,6 +7121,10 @@ public class MapCheck {
             System.setOut(real);
         }
         List<Integer> afterMonth = picks.live(g);
+        // ...each pick whose offer the month left on the shelf is still picked (the month may buy one: that pick went with its ground).
+        List<Integer> stillOn = new java.util.ArrayList<>();
+        for (int id : beforeMonth) if (g.getLandManager().getMarket().find(id) != null) stillOn.add(id);
+        boolean monthKept = afterMonth.containsAll(stillOn);
         picks.add(g, g.nextLandParcels(2));
         List<Integer> beforeLoad = picks.live(g);
         int month = g.getMonth();
@@ -7126,11 +7144,226 @@ public class MapCheck {
         cleared &= picks.live(g).isEmpty();
         out.printf("      picks %s before a month, %s after; %s before a load in month %,d, %s after it (the month %,d, the offers %s)%n",
                 beforeMonth, afterMonth, beforeLoad, month, afterLoad, g.getMonth(), stillListed ? "still listed" : "gone");
-        check("fixture: picks stood before the month and the load, and the load kept the month and the offers",
-                beforeMonth.size() == 2 && beforeLoad.size() == 2 && g.getMonth() == month && stillListed);
-        check("the picks drop on a month, and on a load into the same Game; clear() - Esc, a click off the offers, the map collapsed -"
-                + " empties them", afterMonth.isEmpty() && afterLoad.isEmpty() && cleared);
+        check("fixture: picks stood before the month and the load, the month turned, and the load kept the month and the offers",
+                beforeMonth.size() == 2 && monthBefore < month && beforeLoad.size() == 2 && g.getMonth() == month && stillListed);
+        check("a month drops no pick whose offer is still on the shelf (MS1: it dropped every pick, and at 50x a month is a fraction of a second)",
+                !stillOn.isEmpty() && monthKept);
+        check("the picks drop on a load into the same Game; clear() - Esc, a click off the offers, the map collapsed -"
+                + " empties them", afterLoad.isEmpty() && cleared);
         g.setLandPaidFromVault(wasVault);
+    }
+
+    /** The months section 14b holds the picks over, each with a place relisted: 3. */
+    static final int PICKS_MONTHS = 3;
+
+    /** The offers section 14b picks and holds over the months: 3. */
+    static final int PICKS_HELD = 3;
+
+    /** The city buys land as a player would: cash made up to the price when short, then Game.buyLandParcel (LandManager.buyParcel). */
+    static boolean buysQuietly(Game g, LandParcel p) {
+        PrintStream real = System.out;
+        System.setOut(QUIET);
+        try {
+            if (!g.canAffordParcel(p)) g.setCashForTest(Math.max(0, g.getCash()) + p.localPrice(g.getForeignAccounts().getRate()));
+            return g.buyLandParcel(p.getId());
+        } finally {
+            System.setOut(real);
+        }
+    }
+
+    /**
+     * The listed offers, not those ids, whose rectangle shares ground the city does not own with a rectangle that was listed: the place listed
+     * again over that ground under a new id (its rectangle is sized by the city as it stands, so it is not the old one's exactly).
+     */
+    static List<LandParcel> listedAgain(CityLand land, LandMarket market, LandParcel was, List<Integer> notIds) {
+        List<LandParcel> out = new ArrayList<>();
+        for (LandParcel p : market.getListing()) {
+            if (notIds.contains(p.getId())) continue;
+            long x0 = Math.max(p.getX0(), was.getX0()), y0 = Math.max(p.getY0(), was.getY0());
+            long x1 = Math.min(p.getX1(), was.getX1()), y1 = Math.min(p.getY1(), was.getY1());
+            if (x0 < x1 && y0 < y1 && land.grid().unowned(x0, y0, x1, y1) > 0) out.add(p);
+        }
+        return out;
+    }
+
+    /**
+     * MS1 (Jerus, 2026-10-26: "on monthly update it doesnt reset ... at 50x its impossible to buy land like that"): the picks last
+     * through the month, keyed to the ground they cover - held while their ids stand, carried onto the ground's new offer when an id
+     * leaves the shelf and the ground is offered again, dropped and named when the city bought the ground or none offers it now.
+     */
+    static void picksLast(Game g) throws Exception {
+        out.println("\n--- 14b. the picks last through the month (MS1): held over relists, carried onto the ground's new offer,"
+                + " dropped and named when bought ---");
+        LandManager office = g.getLandManager();
+        LandMarket market = office.getMarket();
+        PrintStream real = System.out;
+        List<LandParcel> dearest = new ArrayList<>(market.getListing());
+        dearest.sort(java.util.Comparator.comparingDouble(LandParcel::getPriceUsd).reversed());
+        check("fixture: the played city lists offers enough to pick " + PICKS_HELD + " and to buy two others", dearest.size() >= PICKS_HELD + 2);
+        if (dearest.size() < PICKS_HELD + 2) return;
+        List<Integer> held = new ArrayList<>();
+        for (LandParcel p : dearest.subList(0, PICKS_HELD)) held.add(p.getId());
+        LandMap.Picks picks = new LandMap.Picks();
+        picks.add(g, held);
+        check("fixture: " + PICKS_HELD + " picks stand, in the order given, and the screen has nothing to say", picks.live(g).equals(held) && picks.dropNote() == null);
+
+        // Held over the months, the office relisting a place each: the city buys the cheapest offer not picked, and the month runs.
+        int relists = 0, monthsBefore = g.getMonth();
+        boolean keptEveryMonth = true, quietEveryMonth = true, onShelfEveryMonth = true;
+        for (int m = 0; m < PICKS_MONTHS; m++) {
+            LandParcel buy = null;
+            for (LandParcel p : market.getListing()) {
+                if (!held.contains(p.getId()) && (buy == null || p.getPriceUsd() < buy.getPriceUsd())) buy = p;
+            }
+            int idsBefore = market.getNextOfferId();
+            if (buy != null) buysQuietly(g, buy);
+            relists += market.getNextOfferId() - idsBefore;
+            System.setOut(QUIET);
+            try {
+                g.simulateMonths(1);
+            } finally {
+                System.setOut(real);
+            }
+            for (int id : held) onShelfEveryMonth &= market.find(id) != null;
+            keptEveryMonth &= picks.live(g).equals(held);
+            quietEveryMonth &= picks.dropNote() == null;
+        }
+        out.printf("      %d picks held over %d months, %d places listed anew meanwhile (the city bought one a month); the picks now %s%n",
+                held.size(), g.getMonth() - monthsBefore, relists, picks.live(g));
+        check("fixture: the months turned, a place was listed anew in each, and the picked offers stood on the shelf throughout",
+                g.getMonth() - monthsBefore >= PICKS_MONTHS && relists >= PICKS_MONTHS && onShelfEveryMonth);
+        check("picks on " + PICKS_HELD + " offers are held over " + PICKS_MONTHS + " months in which the office relisted places, still picked, in order",
+                keptEveryMonth);
+        check("...and nothing was dropped or carried, so the screen has nothing to say (dropNote() null)", quietEveryMonth && picks.dropNote() == null);
+
+        // The cheap path: every id listed, live() hands back the same list again and says nothing.
+        List<Integer> first = picks.live(g);
+        check("with every picked id listed, live() returns the same list, again and again, and no note",
+                picks.live(g) == first && first.equals(held) && picks.dropNote() == null);
+
+        // A pick whose ground the city then buys: dropped at the next live(), and named as bought.
+        LandParcel gone = null;
+        for (LandParcel p : market.getListing()) if (!held.contains(p.getId()) && (gone == null || p.getPriceUsd() < gone.getPriceUsd())) gone = p;
+        String goneWhere = gone.where();
+        picks.add(g, List.of(gone.getId()));
+        check("fixture: the offer to be bought is picked, last", picks.live(g).size() == PICKS_HELD + 1 && picks.live(g).get(PICKS_HELD) == gone.getId());
+        boolean boughtIt = buysQuietly(g, gone);
+        List<Integer> afterBought = picks.live(g);
+        out.printf("      %s bought: the picks now %s, the note \"%s\"%n", goneWhere, afterBought, picks.dropNote());
+        check("fixture: the city bought the picked offer, and its ground is the city's wholly", boughtIt
+                && g.getCityLand().grid().unowned(gone.getX0(), gone.getY0(), gone.getX1(), gone.getY1()) == 0);
+        check("a pick whose ground the city bought is dropped at the next live(), the rest kept in order", afterBought.equals(held));
+        check("...and dropNote() names it as the land office does, and says the city bought it",
+                goneWhere.matches("(North|East|South|West) [0-9]+") && String.format(LandMap.Picks.BOUGHT_NOTE, goneWhere).equals(picks.dropNote()));
+        picks.live(g);
+        check("...the note stands while nothing changes (live() runs every frame), and a click clears it",
+                picks.dropNote() != null && clears(picks, g, held.get(0)));
+
+        // Two at once: the note counts them.
+        List<LandParcel> pair = new ArrayList<>();
+        for (LandParcel p : market.getListing()) if (!held.contains(p.getId()) && pair.size() < 2) pair.add(p);
+        check("fixture: two more offers to buy", pair.size() == 2);
+        if (pair.size() < 2) return;
+        picks.only(g, held.get(0));
+        picks.add(g, List.of(held.get(1), held.get(2), pair.get(0).getId(), pair.get(1).getId()));
+        for (LandParcel p : pair) buysQuietly(g, p);
+        check("two picks whose ground the city bought are dropped together, and the note counts them",
+                picks.live(g).equals(held) && String.format(LandMap.Picks.BOUGHT_MANY_NOTE, 2).equals(picks.dropNote()));
+
+        // An offer off the shelf with its ground offered under none: dropped and said so.
+        picks.clear();
+        picks.add(g, held);
+        int off = held.get(1);
+        LandParcel offered = market.find(off);
+        String offWhere = offered.where();
+        market.take(off);
+        List<Integer> unoffered = picks.live(g);
+        String unofferedNote = picks.dropNote();
+        out.printf("      %s off the shelf and not listed again: the picks now %s, the note \"%s\"%n", offWhere, unoffered, unofferedNote);
+        check("a pick whose offer left the shelf, its ground offered under none, is dropped and named as no longer offered",
+                unoffered.equals(List.of(held.get(0), held.get(2))) && String.format(LandMap.Picks.UNOFFERED_NOTE, offWhere).equals(unofferedNote));
+
+        // ...and offered again, the place listed over the same ground under a new id the picks have never held: carried onto it, where it
+        // stood in the order, and said so.
+        long people = g.getPopulationManager().getPopulation();
+        office.updateMarket(people);
+        List<LandParcel> listedBack = listedAgain(g.getCityLand(), market, offered, held);
+        check("fixture: the office listed the place again over the same free ground, under a new id", listedBack.size() == 1 && listedBack.get(0).getId() != off);
+        if (listedBack.size() != 1) return;
+        LandParcel again = listedBack.get(0);
+        List<Integer> trio = List.of(held.get(0), again.getId(), held.get(2));
+        picks.clear();
+        picks.add(g, trio);
+        String oldWhere = again.where();
+        market.take(again.getId());
+        office.updateMarket(people);
+        List<LandParcel> listedTwice = listedAgain(g.getCityLand(), market, again, trio);
+        check("fixture: the place listed again over the ground picked, under a new id", listedTwice.size() == 1 && listedTwice.get(0).getId() != again.getId());
+        if (listedTwice.size() != 1) return;
+        LandParcel carriedTo = listedTwice.get(0);
+        List<Integer> carried = picks.live(g);
+        out.printf("      %s off the shelf and listed again as id %d: the picks now %s, the note \"%s\"%n", oldWhere, carriedTo.getId(), carried, picks.dropNote());
+        check("a pick whose id left the shelf, its ground for sale still under a new id, is carried onto it where it stood in the order",
+                carried.equals(List.of(held.get(0), carriedTo.getId(), held.get(2))));
+        check("...and dropNote() says carried, naming the offers as the land office does",
+                String.format(LandMap.Picks.CARRIED_NOTE, oldWhere, carriedTo.where()).equals(picks.dropNote()));
+        picks.add(g, List.of());
+        check("...and a change by hand (add here; toggle, only, drop and clear too) clears the note", picks.dropNote() == null);
+    }
+
+    /** How far from the city section 14c sets the plane: a quarter of the world's side, in plots. */
+    static final double FAR_PLOTS = World.SIDE / 4.0;
+
+    /** The drags section 14c carries the plane on, further out, of the pixels each. */
+    static final int FAR_DRAGS = 50;
+
+    /**
+     * MS1 (Jerus, 2026-10-26: "you cant zoom in on areas of the map far away from the city, and if zoomed in there is a wall that you can
+     * cross"): the wall and the stop were the globe's (GlobeCheck 2b); a generated world's plane, MapFrame, zooms and pans anywhere on its
+     * square - held here, with ground drawn where it lands.
+     */
+    static void farOnThePlane(Game g) {
+        out.println("\n--- 14c. a generated world's plane goes anywhere (MS1): set a quarter of the world away at the closest scale it stays there,"
+                + " pans on, and draws ground ---");
+        CityLand land = g.getCityLand();
+        double x = land.siteX() + FAR_PLOTS, y = land.siteY() + FAR_PLOTS;
+        MapFrame f = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
+        f.set(x, y, MapFrame.MOST_PX_A_PLOT);
+        check("fixture: the world is wide enough that a quarter of its side from the city is on it", x < World.SIDE && y < World.SIDE);
+        check("a MapFrame set a quarter of the world's side from the city at MOST_PX_A_PLOT stays there, no clamp pulling it back",
+                f.centreX() == x && f.centreY() == y && f.scale() == MapFrame.MOST_PX_A_PLOT);
+        double dx = -300, dy = -170;
+        for (int i = 0; i < FAR_DRAGS; i++) f.pan(dx, dy);
+        double wantX = x - FAR_DRAGS * dx / MapFrame.MOST_PX_A_PLOT, wantY = y - FAR_DRAGS * dy / MapFrame.MOST_PX_A_PLOT;
+        check("...and drags on outward there, " + FAR_DRAGS + " of them, with no stop at a reach", Math.abs(f.centreX() - wantX) < 1e-6 && Math.abs(f.centreY() - wantY) < 1e-6);
+        f.set(x, y, MapFrame.MOST_PX_A_PLOT);
+        double px = f.plotX(f.width() / 2), py = f.plotY(f.height() / 2);
+        f.zoomAt(f.width() / 3, f.height() / 3, 1 / MapFrame.ZOOM_STEP);
+        f.zoomAt(f.width() / 3, f.height() / 3, MapFrame.ZOOM_STEP);
+        check("...and a wheel notch out and in at a pointer there leaves the plot under it where it was", Math.abs(f.plotX(f.width() / 2) - px) < 1e-6 && Math.abs(f.plotY(f.height() / 2) - py) < 1e-6);
+        // The ground there: the L0 tile under the view's centre, drawn through the view's own path.
+        long tx = Math.floorDiv((long) Math.floor(f.plotX(f.width() / 2)), World.TILE), ty = Math.floorDiv((long) Math.floor(f.plotY(f.height() / 2)), World.TILE);
+        MapTiles tiles = new MapTiles(g.getCityMap());
+        byte[] ground = tiles.terrain(tx, ty);
+        int[] drawn = new int[MapTiles.tileImagePixels(PX)];
+        tiles.pixels(tx, ty, MapFrame.L0, PX, new TilePainter.Input(), drawn);
+        java.util.Set<Integer> colours = new java.util.HashSet<>();
+        int voids = 0;
+        for (int c : drawn) {
+            colours.add(c);
+            if (c == TileRaster.VOID) voids++;
+        }
+        java.util.Set<Byte> classes = new java.util.HashSet<>();
+        for (byte b : ground) classes.add(b);
+        out.printf("      tile (%d, %d), a quarter of the world's side out: ground of %d class(es), drawn in %d colour(s), %d of %,d pixels the map's void%n",
+                tx, ty, classes.size(), colours.size(), voids, drawn.length);
+        check("the L0 tile there has its ground (the world's classes, not nothing) and is drawn in it, none of it the map's void", !classes.isEmpty() && !colours.isEmpty() && voids == 0);
+    }
+
+    /** Whether a plain click on an offer (only) clears a note that stood. */
+    static boolean clears(LandMap.Picks picks, Game g, int id) {
+        picks.only(g, id);
+        return picks.dropNote() == null;
     }
 
     /** The offers a box of plots meets, plot by plot: every plot under (x0, y0)-(x1, y1) in some part, not the city's, inside an offer's rectangle. */

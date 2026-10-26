@@ -37,8 +37,22 @@ import java.util.zip.CRC32;
  *      at the handoff and eased by notches between, and nought beyond the
  *      reach (since 0.7.135 eased back over GlobeFrame.ROLL_EASE_KM past it,
  *      so held at twice REACH_KM); the plane's up in closed form is EarthProj.forward()'s own;
- *      away from the city the wheel stops at the handoff, and at the plane's
- *      scales a pan stops at the reach, which a city's own ground extends.
+ *      the reach stops nothing (MS1, Jerus 2026-10-26, superseding spec-globe
+ *      3.4 Q3's "away from the city the wheel stops at the handoff, and on
+ *      the plane a pan stops at the reach"): the wheel carries the view on
+ *      to the closest scale anywhere and a pan carries its centre past the
+ *      reach, which a city's own ground extends and which decides only the
+ *      picture closer than the handoff - section 2b.
+ *  2b. THE NEAR VIEW ANYWHERE AND NO WALL (MS1): far from the city, another
+ *      continent and across the antimeridian from it, the wheel reaches
+ *      leastKmPx() in the GROUND tier with the point under the pointer
+ *      staying under it; drags outward at a near scale carry the centre past
+ *      the reach - PLANE inside, GROUND past it, the point grabbed staying
+ *      under the pointer across the crossing; the plane's ground and the
+ *      GROUND tier's far rule agree over a patch at the reach's edge to a
+ *      measured share (the thousandth of section 5 at the handoff); a view
+ *      straddling longitude 180 is continuous, over Fiji's coast on the
+ *      fixture and Chukotka's on the full file.
  *   3. THE HANDOFF: the plane and the globe facing the city part by under
  *      half a pixel on the expanded map at HANDOFF_PLOTS, and by more at twice
  *      it (the dial is the widest power of two that passes); at REACH_KM with
@@ -174,6 +188,7 @@ public class GlobeCheck {
         EarthData full = file != null && Files.isRegularFile(file) ? EarthData.open(file) : null;
         planeCamera(spots, id, full);
         cameras(spots, id, data);
+        nearAnywhere(spots, id, full);
         GlobePicture pic = picture(data, full);
         reliefInPicture(data, id, full, pic);
         frame(pic);
@@ -364,20 +379,21 @@ public class GlobeCheck {
         check("the roll is nought ROLL_NOTCHES notches before the handoff, the plane's up at it, eased by notches between, and nought beyond the reach",
                 wideRoll == 0 && Math.abs(atHandoff - up) < 1e-12 && Math.abs(halfRoll - up / 2) < 1e-9 && beyondRoll == 0 && Math.abs(up) > 1);
 
-        // The reach: the wheel stops at the handoff away from the city; a pan at the plane's scales stops at it.
+        // The reach decides the picture and stops nothing (MS1): the wheel goes on closer than the handoff away from the city, in the GROUND
+        // tier; a pan at the plane's scales carries the centre past the reach (section 2b holds both at length).
         double[] away = GlobeFrame.destination(c[0], c[1], 45, 3 * GlobeFrame.REACH_KM);
         f.set(away[0], away[1], hk * GlobeFrame.ZOOM_STEP);
         for (int i = 0; i < 5; i++) f.zoomNotches(w / 2, h / 2, 1);
-        double stoppedAt = f.kmPx();
-        boolean stopped = stoppedAt == hk && f.tier() == GlobeFrame.GROUND;
+        double wentTo = f.kmPx();
+        boolean wentOn = Math.abs(wentTo - hk / Math.pow(GlobeFrame.ZOOM_STEP, 4)) < 1e-9 * hk && f.tier() == GlobeFrame.GROUND;
         f.set(c[0], c[1], hk / GlobeFrame.ZOOM_STEP);
         for (int i = 0; i < 200; i++) f.pan(-300, -170);
         double reached = f.cityKm(f.centreLat(), f.centreLon());
-        boolean planeStill = f.tier() == GlobeFrame.PLANE;
-        out.printf("      %.0f km from the city five notches in stopped at %.3f km a pixel; 200 drags on the plane stopped %.3f km from the city%n",
-                3 * GlobeFrame.REACH_KM, stoppedAt, reached);
-        check("away from the city the wheel stops at the handoff, the GROUND tier", stopped);
-        check("...and on the plane a pan stops at the reach, the view still the plane's", planeStill && reached <= GlobeFrame.REACH_KM && reached > GlobeFrame.REACH_KM - 1);
+        boolean groundPast = f.tier() == GlobeFrame.GROUND;
+        out.printf("      %.0f km from the city five notches in went to %.3f km a pixel, the GROUND tier; 200 drags from the city on the plane's scale took the centre %.0f km out%n",
+                3 * GlobeFrame.REACH_KM, wentTo, reached);
+        check("away from the city the wheel goes on closer than the handoff, five notches in, the GROUND tier (MS1: it stopped at the handoff)", wentOn);
+        check("...and a pan at the plane's scales carries the centre past the reach, the GROUND tier past it (MS1: it stopped at the reach)", groundPast && reached > GlobeFrame.REACH_KM);
         double plots = 600_000 / World.PLOT_M;
         check("a city's ground reaching farther extends the reach by REACH_MARGIN_KM round it; a small city's is REACH_KM",
                 GlobeFrame.reachKm(0) == GlobeFrame.REACH_KM && GlobeFrame.reachKm(100_000 / World.PLOT_M) == GlobeFrame.REACH_KM
@@ -404,6 +420,362 @@ public class GlobeCheck {
         p.forward(lat - d, lon, a);
         p.forward(lat + d, lon, b);
         return Math.toDegrees(Math.atan2(b[0] - a[0], b[1] - a[1]));
+    }
+
+    /* =====================================================================
+       2b. THE NEAR VIEW ANYWHERE AND NO WALL (MS1)
+       ===================================================================== */
+
+    /** A near scale, km a pixel: a quarter of the handoff's, four plots a pixel (MS1's views closer than the handoff, on the plane and past its reach). */
+    static final double NEAR_KM = GlobeFrame.HANDOFF_KM / 4;
+
+    /** The pixels a drag outward takes at a time in section 2b: 150 - at NEAR_KM, 18 km, so the reach is crossed in about seventeen. */
+    static final int STEP_PX = 150;
+
+    /** The most drags outward section 2b takes: 100, far past twice the reach at NEAR_KM. */
+    static final int STEPS_MOST = 100;
+
+    /** The spots section 2b zooms in on far from either city, {lat, lon}: Manila, Perth, and a spot each side of the antimeridian (the date line) at 17 degrees south and Manila's latitude. */
+    static final double[][] FAR_SPOTS = { { 14.60, 120.98 }, { -31.95, 115.86 }, { -17.0, 179.9 }, { -17.0, -179.9 }, { 14.60, -179.9 } };
+
+    /**
+     * The share of a patch's pixels whose class the plane and the GROUND tier's far rule may draw differently at the handoff, over a patch at the reach's
+     * edge: 1 percent (measured 0.15 to 0.65 percent over six patches - the fixture's three windows and the full file's Rotterdam, Halifax and Manila - Rotterdam's the most coast). Section 5 holds the same two to a
+     * thousandth facing the city, where the camera's pixels fall on the plane's far node's, unturned; at the reach's edge the roll has turned the camera
+     * against the plane's grid by up to its eased degrees and the two projections part by up to REACH_PARTING_PX, so a coast's or a river's pixel
+     * samples the next cell of 16 plots. A wrong class table, scale or roll parts them by a quarter of the patch and more.
+     */
+    static final double CROSSING_HANDOFF_SHARE = 0.01;
+
+    /**
+     * ...and at NEAR_KM, where the plane draws a far node of four plots a pixel and the camera the far rule at its least stride, DITHER_STRIDE (16
+     * plots), so a coast or a river parts by up to a pixel and four: 6 percent (measured 0.56 to 3.32 percent over the same six patches, Halifax's islanded coast on the full file the most; twice that).
+     */
+    static final double CROSSING_NEAR_SHARE = 0.06;
+
+    /** The class the city's plane draws at plot (x, y), at `plots` plots a pixel: the far node holding it (MapTiles.nodeTerrain()), its pixel under the plot. */
+    static byte planeClass(World.Key key, long plots, double x, double y, Map<Long, byte[]> nodes) {
+        long span = (long) MapFrame.NODE_PX * plots, px = (long) Math.floor(x), py = (long) Math.floor(y);
+        long nx = Math.floorDiv(px, span), ny = Math.floorDiv(py, span);
+        byte[] node = nodes.computeIfAbsent(MapTiles.key(nx, ny), k -> MapTiles.nodeTerrain(key, nx * span, ny * span, plots));
+        return node[(int) ((py - ny * span) / plots) * MapFrame.NODE_PX + (int) ((px - nx * span) / plots)];
+    }
+
+    /**
+     * The share of a n x n view's pixels whose class the city's plane draws differently from the GROUND tier's far rule through the globe's camera,
+     * the forest folded into the dry ground it stands on (its dither is a hash): the view centred at (lat, lon), at `kmPx`, the city (cityLat, cityLon).
+     */
+    static double crossingShare(World.Key key, double cityLat, double cityLon, double lat, double lon, double kmPx, int n) {
+        GlobeFrame f = new GlobeFrame(n, n, cityLat, cityLon);
+        f.set(lat, lon, kmPx);
+        long plots = MapFrame.nodePlotsAt(f.planeScale());
+        byte[] globe = f.groundPiece(key, 0, 0, n, n);
+        Map<Long, byte[]> nodes = new java.util.HashMap<>();
+        double[] xy = new double[2];
+        int differ = 0, seen = 0;
+        for (int j = 0; j < n; j++) {
+            for (int i = 0; i < n; i++) {
+                if (!f.planeAt(i + 0.5, j + 0.5, xy)) continue;
+                seen++;
+                if (folded(planeClass(key, plots, xy[0], xy[1], nodes)) != folded(globe[j * n + i])) differ++;
+            }
+        }
+        return seen == 0 ? 1 : differ / (double) seen;
+    }
+
+    /** How the share of land and of water among a column's pixels mixes: the lesser of the two, 0 for a column all one or the other. */
+    static double mixed(byte[] piece, int w, int col, int h) {
+        int land = 0;
+        for (int j = 0; j < h; j++) if (World.dry(piece[j * w + col])) land++;
+        return Math.min(land, h - land) / (double) h;
+    }
+
+    static void nearAnywhere(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full) {
+        out.println("\n--- 2b. the near view anywhere and no wall (MS1): the wheel, a drag and a pan go anywhere at every scale; the reach only decides the picture ---");
+        double w = MapTiles.DESIGN_W, h = MapTiles.DESIGN_H, hk = GlobeFrame.HANDOFF_KM, least = GlobeFrame.leastKmPx();
+        Random r = new Random(11);
+
+        // The tiers: the scale's, and the view's - GROUND where the plane's scale meets a centre past the reach.
+        check("tierOf(kmPx, withinReach): the plane's scales are the PLANE within the reach and the GROUND tier past it; the wider scales are the scale's either way",
+                GlobeFrame.tierOf(hk / 2, true) == GlobeFrame.PLANE && GlobeFrame.tierOf(hk / 2, false) == GlobeFrame.GROUND
+                        && GlobeFrame.tierOf(hk, false) == GlobeFrame.GROUND && GlobeFrame.tierOf(hk, true) == GlobeFrame.GROUND
+                        && GlobeFrame.tierOf(GlobeFrame.PICTURE_FROM_KM, false) == GlobeFrame.PICTURE && GlobeFrame.tierOf(GlobeFrame.PICTURE_FROM_KM, true) == GlobeFrame.PICTURE
+                        && GlobeFrame.tierOf(least, true) == GlobeFrame.PLANE && GlobeFrame.tierOf(least, false) == GlobeFrame.GROUND
+                        && GlobeFrame.tierOf(hk / 2) == GlobeFrame.PLANE);
+
+        // The wheel reaches leastKmPx() anywhere: far from each city, in notch by notch, the point under the pointer staying under it.
+        int notches = 0, stuck = 0, spotsTried = 0;
+        double worstIn = 0, worstOut = 0;
+        boolean reached = true, ground = true, farStill = true;
+        for (double[] c : CITIES) {
+            for (double[] spot : FAR_SPOTS) {
+                GlobeFrame f = new GlobeFrame(w, h, c[0], c[1]);
+                f.set(spot[0], spot[1], GlobeFrame.PICTURE_FROM_KM / GlobeFrame.ZOOM_STEP);
+                if (f.withinReach(spot[0], spot[1])) continue;
+                spotsTried++;
+                while (f.kmPx() > least) {
+                    double sx = w / 2 + (r.nextDouble() - 0.5) * w / 2, sy = h / 2 + (r.nextDouble() - 0.5) * h / 2;
+                    double[] ll = f.latLonAt(sx, sy);
+                    double was = f.kmPx();
+                    f.zoomNotches(sx, sy, 1);
+                    worstIn = Math.max(worstIn, offPx(f, ll, sx, sy));
+                    if (!(f.kmPx() < was)) {
+                        stuck++;
+                        break;
+                    }
+                    notches++;
+                    ground &= f.tier() == GlobeFrame.GROUND;
+                }
+                reached &= f.kmPx() == least;
+                farStill &= !f.withinReach(f.centreLat(), f.centreLon());
+                // ...and out again a few notches, from the closest.
+                for (int k = 0; k < 10; k++) {
+                    double sx = w / 2 + (r.nextDouble() - 0.5) * w / 2, sy = h / 2 + (r.nextDouble() - 0.5) * h / 2;
+                    double[] ll = f.latLonAt(sx, sy);
+                    f.zoomNotches(sx, sy, -1);
+                    worstOut = Math.max(worstOut, offPx(f, ll, sx, sy));
+                    ground &= f.tier() == GlobeFrame.GROUND;
+                }
+            }
+        }
+        out.printf("      %d spots far from the cities (Manila and Perth, and each side of the antimeridian), %d notches in to %.5f km a pixel: the point under the pointer moved %.1e px in, %.1e out; %d stuck%n",
+                spotsTried, notches, least, worstIn, worstOut, stuck);
+        check("far from the city (another continent, and across the antimeridian from it) the wheel reaches leastKmPx(), nothing stopping it at the handoff",
+                spotsTried >= 6 && stuck == 0 && reached && notches > spotsTried * 20);
+        check("...the tier there is GROUND, in and out, and the view still far from the city", ground && farStill);
+        check("...and the point under the pointer stays under it within POINTER_PX, in and out", worstIn <= POINTER_PX && worstOut <= POINTER_PX);
+
+        // A drag, a pan and a held key go anywhere at every scale: at the closest, far away, the centre moves as the pixels say.
+        double[] far = FAR_SPOTS[3];
+        GlobeFrame g = new GlobeFrame(w, h, CITIES[0][0], CITIES[0][1]);
+        g.set(far[0], far[1], least);
+        double[] at0 = { g.centreLat(), g.centreLon() };
+        int moved = 0;
+        double dragWorst = 0;
+        for (int k = 0; k < 40; k++) {
+            double[] p = pointer(r, g), ll = g.latLonAt(p[0], p[1]);
+            double dx = (r.nextDouble() - 0.5) * 300, dy = (r.nextDouble() - 0.5) * 300;
+            double[] before = { g.centreLat(), g.centreLon() };
+            g.drag(p[0], p[1], p[0] + dx, p[1] + dy);
+            dragWorst = Math.max(dragWorst, offPx(g, ll, p[0] + dx, p[1] + dy));
+            if (g.centreLat() != before[0] || g.centreLon() != before[1]) moved++;
+        }
+        double[] beforeKeys = { g.centreLat(), g.centreLon() };
+        for (int k = 0; k < 30; k++) g.keyPan(new double[] { MapFrame.KEY_PX_A_SECOND, 0 }, MapFrame.KEY_STEP_MOST_S);
+        double keyedKm = EarthProj.distanceM(beforeKeys[0], beforeKeys[1], g.centreLat(), g.centreLon()) / 1000;
+        double keyedWant = 30 * MapFrame.KEY_PX_A_SECOND * MapFrame.KEY_STEP_MOST_S * least;
+        out.printf("      at %.5f km a pixel %.0f km from the city: 40 drags moved the centre %d times, the grabbed point %.1e px off; 30 held-key frames moved it %.2f km (%.2f asked)%n",
+                least, g.cityKm(g.centreLat(), g.centreLon()), moved, dragWorst, keyedKm, keyedWant);
+        check("at the closest scale far from the city a drag moves the centre every time, keeping the point grabbed under the pointer (POINTER_PX)", moved == 40 && dragWorst <= POINTER_PX && at0[0] != g.centreLat());
+        check("...and a held key's frames turn the globe as the pixels say, the GROUND tier still", Math.abs(keyedKm - keyedWant) < 0.02 * keyedWant && g.tier() == GlobeFrame.GROUND);
+
+        // Drags outward from the city at a near scale carry the centre past the reach with no stop: PLANE inside it, GROUND past it.
+        boolean grows = true, tiers = true, stays = true, crossedAll = true, rollsFollow = true;
+        double offWorst = 0, rollJump = 0, atCross = 0, maxUp = 0;
+        int dragsMade = 0;
+        for (double[] c : CITIES) {
+            for (double[] step : new double[][] { { -STEP_PX, 0 }, { 0, STEP_PX }, { STEP_PX, STEP_PX } }) {
+                GlobeFrame f = new GlobeFrame(w, h, c[0], c[1]);
+                f.set(c[0], c[1], NEAR_KM);
+                double last = 0, lastRoll = f.roll();
+                int inside = 0, past = 0;
+                boolean crossed = false;
+                for (int k = 0; k < STEPS_MOST && f.cityKm(f.centreLat(), f.centreLon()) < 2 * f.reach(); k++) {
+                    double[] ll = f.latLonAt(w / 2, h / 2);
+                    boolean wasWithin = f.withinReach(f.centreLat(), f.centreLon());
+                    f.drag(w / 2, h / 2, w / 2 + step[0], h / 2 + step[1]);
+                    dragsMade++;
+                    double d = f.cityKm(f.centreLat(), f.centreLon());
+                    grows &= d > last;
+                    last = d;
+                    boolean within = d <= f.reach();
+                    tiers &= f.tier() == (within ? GlobeFrame.PLANE : GlobeFrame.GROUND) && f.tier() == GlobeFrame.tierOf(f.kmPx(), within);
+                    stays &= f.kmPx() == NEAR_KM;
+                    double off = offPx(f, ll, w / 2 + step[0], h / 2 + step[1]);
+                    offWorst = Math.max(offWorst, off);
+                    if (wasWithin && !within) {
+                        crossed = true;
+                        atCross = Math.max(atCross, off);
+                    }
+                    rollJump = Math.max(rollJump, Math.abs(f.roll() - lastRoll));
+                    maxUp = Math.max(maxUp, Math.abs(f.planeRollAt(f.centreLat(), f.centreLon())));
+                    lastRoll = f.roll();
+                    rollsFollow &= f.roll() == f.rollFor(f.centreLat(), f.centreLon(), f.kmPx());
+                    if (within) inside++;
+                    else past++;
+                }
+                crossedAll &= crossed && inside > 2 && past > 2;
+            }
+        }
+        // One drag moves the centre by at most stepKm: the roll eases from the plane's up to north over ROLL_EASE_KM past the reach, and the plane's up itself
+        // drifts over REACH_KM by its own degrees - so a drag turns the view by no more than the share of each its step covers.
+        double stepKm = Math.hypot(STEP_PX, STEP_PX) * NEAR_KM, rollBound = maxUp * stepKm / GlobeFrame.ROLL_EASE_KM + maxUp * stepKm / GlobeFrame.REACH_KM;
+        out.printf("      %d drags of %d px outward from two cities (three directions each) at %.3f km a pixel: the distance grew every time, the reach (%.0f km) crossed in each,"
+                + " the grabbed point %.1e px off at worst (%.1e across the crossing), the roll %.2f degrees at most from one drag to the next (the plane's up %.2f at most, so %.2f allowed)%n",
+                dragsMade, STEP_PX, NEAR_KM, GlobeFrame.REACH_KM, offWorst, atCross, rollJump, maxUp, rollBound);
+        check("drags outward at a near scale carry the centre past the reach with no stop: its distance from the city grows every drag, through the reach and beyond it", grows && crossedAll);
+        check("...the tier is PLANE inside the reach and GROUND past it, at the same scale", tiers && stays);
+        check("...and the point grabbed stays under the pointer within POINTER_PX at every step, across the crossing too", offWorst <= POINTER_PX && atCross <= POINTER_PX);
+        check("...the roll the view takes is rollFor()'s, and one drag turns it by no more than the share of ROLL_EASE_KM and of REACH_KM its step covers, of the plane's up (it eases)",
+                rollsFollow && rollJump <= rollBound);
+
+        // The reach holds a view's centre to nothing, and a set view is where it was set.
+        GlobeFrame s = new GlobeFrame(w, h, CITIES[0][0], CITIES[0][1]);
+        double[] out3 = GlobeFrame.destination(CITIES[0][0], CITIES[0][1], 70, 3 * GlobeFrame.REACH_KM);
+        s.set(out3[0], out3[1], least);
+        s.setReach(GlobeFrame.REACH_KM);
+        check("a view set at the closest scale three reaches from the city is where it was set, GROUND, and a reach set again moves nothing",
+                s.kmPx() == least && s.tier() == GlobeFrame.GROUND && Math.abs(s.cityKm(s.centreLat(), s.centreLon()) - 3 * GlobeFrame.REACH_KM) < 1e-6 && s.crossfade() == 1);
+        GlobeFrame inReach = new GlobeFrame(w, h, CITIES[0][0], CITIES[0][1]);
+        inReach.set(CITIES[0][0], CITIES[0][1], hk / 1.1);
+        check("the view's own crossfade: the globe's share by notches inside the handoff while the plane is drawn, whole where there is no plane under it",
+                inReach.tier() == GlobeFrame.PLANE && inReach.crossfade() == GlobeFrame.crossfade(hk / 1.1) && inReach.crossfade() > 0 && inReach.crossfade() < 1);
+
+        // The antimeridian: a view straddling longitude 180 is continuous in its arithmetic (a step across it the same as a step elsewhere)...
+        GlobeFrame d = new GlobeFrame(w, h, CITIES[0][0], CITIES[0][1]);
+        d.set(-17.0, 180.0, NEAR_KM);
+        double[] lon = new double[(int) w];
+        for (int i = 0; i < w; i++) lon[i] = d.latLonAt(i + 0.5, h / 2)[1];
+        double[] step = new double[(int) w - 1];
+        int seams = 0, seamAt0 = -1;
+        for (int i = 0; i + 1 < w; i++) {
+            step[i] = EarthProj.normaliseLon(lon[i + 1] - lon[i]);
+            if (lon[i] > 0 && lon[i + 1] < 0) {
+                seams++;
+                seamAt0 = i;
+            }
+        }
+        // ...a longitude's step across the seam is the neighbouring step's to within what any step differs from the next by (the parallel's curve).
+        double seamJump = seamAt0 > 0 ? Math.abs(step[seamAt0] - step[seamAt0 - 1]) : Double.NaN, stepsWorst = 0;
+        for (int i = 1; i + 1 < step.length; i++) if (i != seamAt0 && i - 1 != seamAt0) stepsWorst = Math.max(stepsWorst, Math.abs(step[i] - step[i - 1]));
+        double[] eastOf = d.at(-17.0, -179.9995), westOf = d.at(-17.0, 179.9995);
+        double apart = eastOf == null || westOf == null ? Double.NaN : Math.hypot(eastOf[0] - westOf[0], eastOf[1] - westOf[1]);
+        double wantApart = 0.001 * (EarthProj.RADIUS_M * Math.PI / 180 * Math.cos(Math.toRadians(-17.0))) / (NEAR_KM * 1000);
+        out.printf("      a view at %.3f km a pixel centred on longitude 180 at 17 S: %d seam, the longitude's step across it differing %.1e degrees from its neighbour's (%.1e at most elsewhere, of a step %.2e);"
+                + " 0.001 degree across it %.3f px apart (%.3f asked)%n", NEAR_KM, seams, seamJump, stepsWorst, step[0], apart, wantApart);
+        check("a view straddling the antimeridian draws it as longitude continuous: one seam, a pixel's longitude step across it as its neighbour's is elsewhere, two points a thousandth of a degree apart across it their pixel apart",
+                seams == 1 && seamJump <= stepsWorst + 1e-12 && Math.abs(apart - wantApart) < 0.01 * wantApart);
+
+        // The crossing drawn: the plane's ground and the GROUND tier's far rule over the same patch at the reach's edge.
+        int n = MapFrame.NODE_PX;
+        long seed = EarthTerrainCheck.SEED;
+        double worstHandoff = 0, worstNear = 0;
+        StringBuilder words = new StringBuilder();
+        for (String name : List.of("Rotterdam", "Paris", "Perth")) {
+            EarthTerrainCheck.Spot spot = spots.get(name);
+            double[] city = GlobeFrame.destination(spot.lat(), spot.lon(), 0, GlobeFrame.REACH_KM * (1 + 1e-6));
+            World.Key key = World.Key.earth(seed, city[0], city[1], id);
+            double atHandoff = crossingShare(key, city[0], city[1], spot.lat(), spot.lon(), hk, n);
+            double atNear = crossingShare(key, city[0], city[1], spot.lat(), spot.lon(), NEAR_KM, n);
+            worstHandoff = Math.max(worstHandoff, atHandoff);
+            worstNear = Math.max(worstNear, atNear);
+            words.append(String.format("%n      %s's window REACH_KM from the city: %.2f%% of the %d x %d pixels differ at the handoff, %.2f%% at %.3f km a pixel (the forest folded into the grass)",
+                    name, 100 * atHandoff, n, n, 100 * atNear, NEAR_KM));
+        }
+        if (full != null) {
+            String fid = EarthTerrain.use(full);
+            for (double[] at : new double[][] { { 51.90625, 4.48125 }, { 44.65, -63.57 }, { 14.60, 120.98 } }) {
+                double[] city = GlobeFrame.destination(at[0], at[1], 0, GlobeFrame.REACH_KM * (1 + 1e-6));
+                World.Key fkey = World.Key.earth(seed, city[0], city[1], fid);
+                double atHandoff = crossingShare(fkey, city[0], city[1], at[0], at[1], hk, n);
+                double atNear = crossingShare(fkey, city[0], city[1], at[0], at[1], NEAR_KM, n);
+                worstHandoff = Math.max(worstHandoff, atHandoff);
+                worstNear = Math.max(worstNear, atNear);
+                words.append(String.format("%n      the full file at %.2f, %.2f, REACH_KM from the city: %.2f%% differ at the handoff, %.2f%% at %.3f km a pixel",
+                        at[0], at[1], 100 * atHandoff, 100 * atNear, NEAR_KM));
+            }
+        } else {
+            words.append(String.format("%n      earth-2.bin not named (-D%s=<path>) nor at %s: the full file's patches were not compared", EarthData.PROPERTY, EarthData.DATA_FILE));
+        }
+        out.println("      the ground the plane draws and the GROUND tier's far rule draws over one patch at the reach's edge:" + words);
+        check("the crossing drawn at the handoff: the plane's ground and the GROUND tier's far rule part by under a thousandth of a patch's pixels, at the reach's edge as at the city (section 5)",
+                worstHandoff <= CROSSING_HANDOFF_SHARE);
+        check("...and at a near scale, where the plane draws a finer far node than the camera's least stride, under CROSSING_NEAR_SHARE of them - the coasts and rivers parting by a pixel or four, nothing more",
+                worstNear <= CROSSING_NEAR_SHARE);
+
+        // ...and the antimeridian over ground with a coast: the date line crosses Fiji's window.
+        EarthTerrainCheck.Spot fiji = spots.get("Fiji");
+        World.Key key = World.Key.earth(seed, CITIES[0][0], CITIES[0][1], id);
+        double bestMix = -1, bestLat = fiji.lat();
+        int vw = 256, vh = 128;
+        for (double dl = -0.2; dl <= 0.2001; dl += 0.02) {
+            GlobeFrame t = new GlobeFrame(vw, vh, CITIES[0][0], CITIES[0][1]);
+            t.set(fiji.lat() + dl, 180.0, NEAR_KM);
+            byte[] piece = t.groundPiece(key, 0, 0, vw, vh);
+            double mix = mixed(piece, vw, vw / 2, vh);
+            if (mix > bestMix) {
+                bestMix = mix;
+                bestLat = fiji.lat() + dl;
+            }
+        }
+        GlobeFrame t = new GlobeFrame(vw, vh, CITIES[0][0], CITIES[0][1]);
+        t.set(bestLat, 180.0, NEAR_KM);
+        byte[] piece = t.groundPiece(key, 0, 0, vw, vh);
+        int seamAt = -1;
+        for (int i = 0; i + 1 < vw; i++) {
+            double a = t.latLonAt(i + 0.5, vh / 2)[1], b = t.latLonAt(i + 1.5, vh / 2)[1];
+            if (a > 0 && b < 0) seamAt = i;
+        }
+        double[] shareAt = new double[vw - 1];
+        double otherWorst = 0, otherSum = 0;
+        int others = 0;
+        for (int i = 0; i + 1 < vw; i++) {
+            int differ = 0;
+            for (int j = 0; j < vh; j++) if (folded(piece[j * vw + i]) != folded(piece[j * vw + i + 1])) differ++;
+            shareAt[i] = differ / (double) vh;
+            if (i != seamAt) {
+                otherWorst = Math.max(otherWorst, shareAt[i]);
+                otherSum += shareAt[i];
+                others++;
+            }
+        }
+        int landLeft = 0, landRight = 0;
+        for (int j = 0; j < vh; j++) {
+            if (World.dry(piece[j * vw + seamAt])) landLeft++;
+            if (World.dry(piece[j * vw + seamAt + 1])) landRight++;
+        }
+        out.printf("      Fiji's window at %.3f km a pixel centred on longitude 180 at %.3f S (the best of its coast): the seam between columns %d and %d, %d and %d of %d pixels land there;"
+                + " the columns' classes differ %.1f%% across it, %.1f%% on average and %.1f%% at worst elsewhere%n",
+                NEAR_KM, -bestLat, seamAt, seamAt + 1, landLeft, landRight, vh, 100 * shareAt[Math.max(0, seamAt)], 100 * otherSum / Math.max(1, others), 100 * otherWorst);
+        check("fixture: the view straddles longitude 180 over ground with a coast - the seam's two columns each hold land and water", seamAt >= 0
+                && landLeft > 0 && landLeft < vh && landRight > 0 && landRight < vh);
+        check("the GROUND tier across the antimeridian, over that coast: the two pixel columns either side of the seam differ no more than adjacent columns elsewhere in the view",
+                seamAt >= 0 && shareAt[seamAt] <= otherWorst);
+        if (full != null) {
+            String fid = EarthTerrain.use(full);
+            World.Key fkey = World.Key.earth(seed, CITIES[0][0], CITIES[0][1], fid);
+            // Chukotka (66 N, 180): the best latitude within a degree of it for a coast on the seam.
+            double bestL = 66, bestM = -1;
+            for (double dl = -1.0; dl <= 1.0001; dl += 0.05) {
+                GlobeFrame u = new GlobeFrame(vw, vh, CITIES[0][0], CITIES[0][1]);
+                u.set(66 + dl, 180.0, NEAR_KM);
+                double mix = mixed(u.groundPiece(fkey, 0, 0, vw, vh), vw, vw / 2, vh);
+                if (mix > bestM) {
+                    bestM = mix;
+                    bestL = 66 + dl;
+                }
+            }
+            GlobeFrame u = new GlobeFrame(vw, vh, CITIES[0][0], CITIES[0][1]);
+            u.set(bestL, 180.0, NEAR_KM);
+            byte[] fp = u.groundPiece(fkey, 0, 0, vw, vh);
+            int at = -1;
+            for (int i = 0; i + 1 < vw; i++) {
+                if (u.latLonAt(i + 0.5, vh / 2)[1] > 0 && u.latLonAt(i + 1.5, vh / 2)[1] < 0) at = i;
+            }
+            double seam = 0, elsewhere = 0;
+            for (int i = 0; i + 1 < vw; i++) {
+                int differ = 0;
+                for (int j = 0; j < vh; j++) if (folded(fp[j * vw + i]) != folded(fp[j * vw + i + 1])) differ++;
+                double share = differ / (double) vh;
+                if (i == at) seam = share;
+                else elsewhere = Math.max(elsewhere, share);
+            }
+            out.printf("      the full file, Chukotka at %.2f N on longitude 180: the columns' classes differ %.1f%% across the seam, %.1f%% at worst elsewhere (the seam's columns' mix %.2f)%n",
+                    bestL, 100 * seam, 100 * elsewhere, bestM);
+            check("the full file: the GROUND tier across the antimeridian over Chukotka's coast, the seam's columns differ no more than adjacent columns elsewhere", at >= 0 && bestM > 0 && seam <= elsewhere);
+        } else {
+            out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Chukotka's coast on the antimeridian was not read");
+        }
     }
 
     /* =====================================================================
