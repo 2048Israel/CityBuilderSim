@@ -1213,6 +1213,237 @@ public final class EarthTerrain {
         }
     }
 
+    /* =====================================================================
+       THE LANDMASS OF A PLOT (ET5, 2026-10-25; the ET5 design, D2 to D4)
+
+       A plot's landmass is the id of the landmass layer's 15" cell it lies in
+       (EarthData.landmassGrid()), the cell read at the plot's centre through
+       the tile's blend, as the cover and the relief are drawn (proj.blend(),
+       32 plots a side): so the tile rules agree with each other and with the
+       founding card, which reads the same call at the snapped site.
+
+       WATER HAS NONE. A sea, shallow or fresh plot reads 0, and so does a plot
+       the layer cannot place. A DRY plot (and ice, which the card has always
+       read a landmass for) on a cell the layer calls no land - a coast the
+       game draws dry where the data says half water, a lake's shore or islet,
+       the dry rest of a river-cut cell, a fixture's tile not held - takes the
+       NEAREST land cell's id (the bake's own naming rule, tools/earth/
+       landmass.py: the least row and column distance squared, so no islet of
+       a few plots becomes a landmass), within LANDMASS_REACH cells either way,
+       a tie going to the lowest id; none in reach reads 0, which the city
+       reads as home. Integer arithmetic only, resolved once a cell (kept).
+
+       Kept a tile at a time beside the relief (keptLandmass()), never inside
+       tileTerrain() or tileRelief(), whose bytes and cost it leaves alone.
+       ===================================================================== */
+
+    /** How many 15" cells either way (east-west and north-south, about 3.7 km north-south) a dry plot on a cell the layer calls no land looks for the nearest land cell: 8. Past it the plot reads 0, which the city reads as home. */
+    public static final int LANDMASS_REACH = 8;
+
+    /** Cells whose nearest land cell is kept (resolvedCell()) before the memory is cleared: 65,536. */
+    static final int RESOLVED_KEPT = 65_536;
+
+    private final Map<Long, Integer> resolved = new HashMap<>();
+
+    private final Map<Long, int[]> landmassTiles = new LinkedHashMap<>(256, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Long, int[]> eldest) {
+            return size() > RELIEF_KEPT;
+        }
+    };
+
+    /** Whether the data has the landmass layer (EarthData.hasRelief()): without it every plot's landmass is 0. */
+    public boolean hasLandmasses() { return relief; }
+
+    /** Whether a plot of this cover class has a landmass: dry ground and ice, never water. */
+    static boolean onLand(byte cover) { return World.dry(cover) || cover == World.ICE; }
+
+    /**
+     * The landmass a plot of the layer's cell (row g, column c) belongs to when it is dry: the cell's own id, or - for a
+     * cell with no land - the nearest land cell's within LANDMASS_REACH (least dr squared + dc squared, the lowest id on a
+     * tie), or 0 for none. Pure on the data; the answer is kept a cell (RESOLVED_KEPT).
+     */
+    int resolvedCell(long g, long c) {
+        int own = data.landmassOfCell(g, c);
+        if (own != 0) return own;
+        int cpd = data.landmassCellsPerDegree();
+        long wrap = 360L * cpd;
+        long key = g * wrap + Math.floorMod(c, wrap);
+        synchronized (resolved) {
+            Integer hit = resolved.get(key);
+            if (hit != null) return hit;
+        }
+        int best = 0;
+        long bestD = Long.MAX_VALUE;
+        int gridTile = -1;
+        EarthData.LandmassGrid grid = null;
+        for (int dr = -LANDMASS_REACH; dr <= LANDMASS_REACH; dr++) {
+            long r = g + dr;
+            if (r < 0 || r >= 180L * cpd) continue;
+            for (int dc = -LANDMASS_REACH; dc <= LANDMASS_REACH; dc++) {
+                long d = (long) dr * dr + (long) dc * dc;
+                if (d > bestD || d == 0) continue;
+                long cc = Math.floorMod(c + dc, wrap);
+                int t = data.landmassTileOf(r, cc);
+                if (t != gridTile) {
+                    grid = data.landmassGrid(t);
+                    gridTile = t;
+                }
+                int id = grid.id((int) (r % cpd), (int) (cc % cpd));
+                if (id == 0) continue;
+                if (d < bestD || id < best) {
+                    bestD = d;
+                    best = id;
+                }
+            }
+        }
+        synchronized (resolved) {
+            if (resolved.size() >= RESOLVED_KEPT) resolved.clear();
+            resolved.put(key, best);
+        }
+        return best;
+    }
+
+    /** A tile's landmass, kept (RELIEF_KEPT): shared, do not write into it. The tile's cover is drawn first, kept as it is (keptTile()). */
+    int[] keptLandmass(long tx, long ty) {
+        long k = (tx << 32) ^ (ty & 0xffffffffL);
+        synchronized (landmassTiles) {
+            int[] t = landmassTiles.get(k);
+            if (t != null) return t;
+        }
+        int[] t = new int[World.TILE * World.TILE];
+        drawLandmass(tx, ty, keptTile(tx, ty), t);
+        synchronized (landmassTiles) { landmassTiles.put(k, t); }
+        return t;
+    }
+
+    /** A tile's landmass given its cover: 0 on water and where the layer places nothing (see the section above), the plot's landmass on the rest. */
+    private void drawLandmass(long tx, long ty, byte[] cover, int[] out) {
+        int n = World.TILE;
+        Arrays.fill(out, 0, n * n, 0);
+        if (!relief || tx < 0 || ty < 0 || tx >= World.SIDE / n || ty >= World.SIDE / n) return;
+        boolean land = false;
+        for (int i = 0; i < n * n && !land; i++) land = onLand(cover[i]);
+        if (!land) return;
+        long x0 = tx * n, y0 = ty * n;
+        EarthProj.Blend b = proj.blend(x0, y0, n);
+        double[] ll = new double[2];
+        int cpd = data.landmassCellsPerDegree();
+        int gridTile = -1;
+        EarthData.LandmassGrid grid = null;
+        for (int py = 0; py < n; py++) {
+            for (int px = 0; px < n; px++) {
+                int i = py * n + px;
+                if (!onLand(cover[i]) || !b.latLon(x0 + px + 0.5, y0 + py + 0.5, ll)) continue;
+                long g = data.landmassRow(ll[0]), c = data.landmassCol(ll[1]);
+                int t = data.landmassTileOf(g, c);
+                if (t != gridTile) {
+                    grid = data.landmassGrid(t);
+                    gridTile = t;
+                }
+                int id = grid.id((int) (g % cpd), (int) (c % cpd));
+                out[i] = id != 0 ? id : resolvedCell(g, c);
+            }
+        }
+    }
+
+    /**
+     * One tile's landmass, an id a plot in rows (out[py x 32 + px], as tileTerrain()'s cover): 0 on water, off the
+     * world's square and for data with no landmass layer. See the section above.
+     */
+    public void tileLandmass(long tx, long ty, int[] out) {
+        int n = World.TILE;
+        if (!relief || tx < 0 || ty < 0 || tx >= World.SIDE / n || ty >= World.SIDE / n) {
+            Arrays.fill(out, 0, n * n, 0);
+            return;
+        }
+        System.arraycopy(keptLandmass(tx, ty), 0, out, 0, n * n);
+    }
+
+    /** One plot's landmass: its tile's (tileLandmass()), from a kept tile; 0 off the world and for data with no landmass layer. World.landmassAt() on Earth. */
+    public int landmassAt(long x, long y) {
+        if (!relief || x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE) return 0;
+        int[] t = keptLandmass(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE));
+        return t[(int) (Math.floorMod(y, World.TILE) * World.TILE + Math.floorMod(x, World.TILE))];
+    }
+
+    /**
+     * A plot's landmass by its 15" cell alone, whether the plot is dry or water: the cell's own id, or the nearest land
+     * cell's within LANDMASS_REACH (resolvedCell(), the rule landmassAt() gives a dry plot), read at the plot's blend point
+     * as the tile is drawn. What a field centred on a lake plot of an island is on (landmassAt() gives a water plot 0, which
+     * the city reads as home). Not kept: asked of a few fields' centres (LandManager's works gate), never of a tile's plots.
+     */
+    public int landmassOfPlot(long x, long y) {
+        if (!relief || x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE) return 0;
+        int n = World.TILE;
+        long x0 = Math.floorDiv(x, n) * n, y0 = Math.floorDiv(y, n) * n;
+        EarthProj.Blend b = proj.blend(x0, y0, n);
+        double[] ll = new double[2];
+        if (!b.latLon(x + 0.5, y + 0.5, ll)) return 0;
+        return resolvedCell(data.landmassRow(ll[0]), data.landmassCol(ll[1]));
+    }
+
+    /**
+     * The landmass ids a tile's plots can take, the non-zero ones ascending: those of the land cells under the tile's blend
+     * box widened by LANDMASS_REACH cells every way. A pure read of a window of cells - no plot of the tile is drawn - and a
+     * superset of what landmassAt() gives any plot of the tile, which is why a tile whose ids are all one landmass can be
+     * counted without reading it (Landmasses.recount()). Empty off the world and for data with no landmass layer.
+     */
+    int[] idsNear(long tx, long ty) {
+        int n = World.TILE;
+        if (!relief || tx < 0 || ty < 0 || tx >= World.SIDE / n || ty >= World.SIDE / n) return new int[0];
+        long x0 = tx * n, y0 = ty * n;
+        EarthProj.Blend b = proj.blend(x0, y0, n);
+        double[] ll = new double[2];
+        double minLat = Double.POSITIVE_INFINITY, maxLat = Double.NEGATIVE_INFINITY, minLon = Double.POSITIVE_INFINITY, maxLon = Double.NEGATIVE_INFINITY;
+        double refLon = Double.NaN;
+        double[] at = { 0.5, n / 2.0, n - 0.5 };
+        for (double fy : at) {
+            for (double fx : at) {
+                if (!b.latLon(x0 + fx, y0 + fy, ll)) continue;
+                double lon = ll[1];
+                if (Double.isNaN(refLon)) refLon = lon;
+                else if (lon - refLon > 180) lon -= 360;
+                else if (lon - refLon < -180) lon += 360;
+                minLat = Math.min(minLat, ll[0]);
+                maxLat = Math.max(maxLat, ll[0]);
+                minLon = Math.min(minLon, lon);
+                maxLon = Math.max(maxLon, lon);
+            }
+        }
+        if (Double.isNaN(refLon)) return new int[0];
+        int cpd = data.landmassCellsPerDegree();
+        long wrap = 360L * cpd;
+        long gTop = data.landmassRow(maxLat) - LANDMASS_REACH, gBottom = data.landmassRow(minLat) + LANDMASS_REACH;
+        long cLeft = data.landmassCol(minLon);
+        long span = Math.floorMod(data.landmassCol(maxLon) - cLeft, wrap);
+        long cRight = cLeft + Math.min(span, wrap) + LANDMASS_REACH;
+        cLeft -= LANDMASS_REACH;
+        int[] ids = new int[8];
+        int count = 0;
+        int gridTile = -1;
+        EarthData.LandmassGrid grid = null;
+        for (long g = Math.max(0, gTop); g <= Math.min(180L * cpd - 1, gBottom); g++) {
+            for (long c = cLeft; c <= cRight; c++) {
+                long cc = Math.floorMod(c, wrap);
+                int t = data.landmassTileOf(g, cc);
+                if (t != gridTile) {
+                    grid = data.landmassGrid(t);
+                    gridTile = t;
+                }
+                int id = grid.id((int) (g % cpd), (int) (cc % cpd));
+                if (id == 0) continue;
+                boolean seen = false;
+                for (int k = 0; k < count && !seen; k++) seen = ids[k] == id;
+                if (seen) continue;
+                if (count == ids.length) ids = Arrays.copyOf(ids, count * 2);
+                ids[count++] = id;
+            }
+        }
+        int[] out = Arrays.copyOf(ids, count);
+        Arrays.sort(out);
+        return out;
+    }
+
     /**
      * A point's relief at a stride, the rule's point copy (the regions' and the far views'): the shares
      * at the point (Reader.shares(), a 15" cell's own land-weighted blend; from FAR_STRIDE the 4' block's

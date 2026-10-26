@@ -1,7 +1,7 @@
-# gate of Merge batch/TM2: the ship gate's timing waits for a quiet minute, not one empty look, so it never starts in the gap between another runner's JVMs (Jerus, 2026-10-20: "Queue a small fix"), and DeepSeek's `agent.py` timing soft beside other runs ("Add it to TM2"), 0.8.50
-# date: 2026-10-25
+# gate of Merge batch/ET5: landmasses and the island rule, 0.8.51
+# date: 2026-10-26
 # earth-2.bin: named
-# suite: 144 harnesses run in 1020s: 143 passed, 1 failed
+# suite: 145 harnesses run in 1011s: 144 passed, 1 failed
 # timing: 11 harnesses run in 313s: 10 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL

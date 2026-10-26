@@ -2091,14 +2091,15 @@ public final class BuildAdvice {
      * the kind's terminals but those in `skip` that pays back at the kind's
      * uncovered tonnes with `added` standing too and the port dues dial
      * (Ports.payingTerminal()), and only where the city owns coast for it
-     * (Game.hasCoastFor()).
+     * (Game.hasCoastFor(), since ET5 by the rule alone - Landmasses.RULE: home's shore, else a linked landmass, never an island no port links;
+     * linking an island is the player's choice on the card).
      */
     public static BuildingsTemplate portTerminal(Game game, Measure m, Map<BuildingsTemplate, Integer> added,
                                                  java.util.Set<BuildingsTemplate> skip) {
         double dial = game.getEconomyManager().getTaxPolicy().getPortDues();
         BuildingsTemplate t = Ports.payingTerminal(m.cargo(), game.getBuildingManager().getTemplates(),
                 portUncovered(game, m, added), dial, skip);
-        return t != null && game.hasCoastFor(t, 1) ? t : null;
+        return t != null && game.hasCoastFor(t, 1, Landmasses.RULE) ? t : null;
     }
 
     /** A port measure's card: one terminal of the kind that pays back, or null for none (portTerminal()); the Suggestion's need is null, the NEEDS YOU having no row for a berth. */
@@ -2107,7 +2108,7 @@ public final class BuildAdvice {
         Map<BuildingsTemplate, Integer> site = onSite(game, m);
         BuildingsTemplate t = portTerminal(game, m, site, skip);
         if (t == null) return null;
-        Game.BuildQuote q = game.quoteBuild(t, 1);
+        Game.BuildQuote q = game.quoteBuildOn(t, 1, Landmasses.RULE);
         Map<BuildingsTemplate, Integer> order = plus(site, t, 1);
         double after = figure(game, m, order);
         double unit = Ports.berthMonth(t), sq = t.getLandSqFt();

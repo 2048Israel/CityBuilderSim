@@ -591,7 +591,29 @@ public class LandMarket {
         land.fieldsOn(r.x0(), r.y0(), r.x1(), r.y1(), sites, amounts);
         amounts[Resource.FOREST.ordinal()] = Math.rint(km2[CityLand.FOREST] * World.FOREST_M3_PER_KM2);
         double usd = price(km2, ground.relief(), amounts, groundUsdPerSqFt, usPriceLevel);
-        return new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, ground.relief(), sites, amounts, usd, listedIn);
+        LandParcel offer = new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, ground.relief(), sites, amounts, usd, listedIn);
+        // ...and what of it is on ground the city has not linked (ET5): derived, never in the offer's record.
+        if (landmasses != null) landmasses.offerSplit(World.of(land.key()), land, offer);
+        return offer;
+    }
+
+    /** The city's ground by landmass (ET5), which splits each offer's ground by linked and unlinked; null on an office with none, a bare one's harness-made. LandManager hands it in. */
+    private Landmasses landmasses;
+
+    /** Hands the office the city's landmasses (LandManager's constructor): every offer listed or restored from now on is split against them. */
+    void setLandmasses(Landmasses landmasses) {
+        this.landmasses = landmasses;
+    }
+
+    /**
+     * Splits every offer standing again against the linked landmasses as they are now (ET5): what a land change or a
+     * change to the linked set asks, since an offer's ground is frozen at its listing but which of it is unlinked is not.
+     * Their ground, price and ids stay as they were listed.
+     */
+    void restateOffers() {
+        if (landmasses == null || land == null) return;
+        World world = World.of(land.key());
+        for (LandParcel p : offers) if (p != null) landmasses.offerSplit(world, land, p);
     }
 
     /**
@@ -683,7 +705,7 @@ public class LandMarket {
     }
 
     /** ...for an offer: its own relief (LandParcel.getReliefKm2()). */
-    private static boolean allFlat(LandParcel p) {
+    static boolean allFlat(LandParcel p) {
         return !(p.getReliefKm2(CityLand.RELIEF_FOOTHILL) > 0 || p.getReliefKm2(CityLand.RELIEF_STEEP) > 0
                 || p.getReliefKm2(CityLand.RELIEF_VERY_STEEP) > 0);
     }
@@ -723,14 +745,22 @@ public class LandMarket {
     /**
      * An offer's ground that a building can stand on, in square kilometres (ET3): its flat and its foothill, which
      * buildings may use (LandManager, BUILDABLE BY SLOPE); the steep and very steep ground is for works. An offer
-     * all flat is its whole dry ground.
+     * all flat is its whole dry ground. Since ET5 less what of it is on a landmass the city has not linked
+     * (LandParcel.getUnlinkedBuildableKm2()): ground across the water is no room for a building until a port stands there.
      */
     public static double buildableKm2(LandParcel p) {
+        if (p.getUnlinkedBuildableKm2() > 0) return Math.max(0, wholeBuildableKm2(p) - p.getUnlinkedBuildableKm2());
+        return allFlat(p) ? p.getDryKm2() : p.getReliefKm2(CityLand.RELIEF_FLAT) + p.getReliefKm2(CityLand.RELIEF_FOOTHILL);
+    }
+
+    /** An offer's buildable ground whether or not it is linked (buildableKm2() before ET5), square kilometres. */
+    private static double wholeBuildableKm2(LandParcel p) {
         return allFlat(p) ? p.getDryKm2() : p.getReliefKm2(CityLand.RELIEF_FLAT) + p.getReliefKm2(CityLand.RELIEF_FOOTHILL);
     }
 
     /** ...in square feet. */
     public static double buildableSqFt(LandParcel p) {
+        if (p.getUnlinkedBuildableKm2() > 0) return buildableKm2(p) * LandManager.SQ_FT_PER_KM2;
         return allFlat(p) ? p.getSizeSqFt()
                 : (p.getReliefKm2(CityLand.RELIEF_FLAT) + p.getReliefKm2(CityLand.RELIEF_FOOTHILL)) * LandManager.SQ_FT_PER_KM2;
     }
@@ -749,7 +779,7 @@ public class LandMarket {
      * itself, to the bit.
      */
     public double buildableKm2PerUsd(LandParcel p) {
-        if (allFlat(p)) return p.getDryKm2PerUsd();
+        if (allFlat(p) && !(p.getUnlinkedBuildableKm2() > 0)) return p.getDryKm2PerUsd();
         double buildable = buildableKm2(p);
         double cost = priceWithPrepUsd(p);
         return cost > 0 ? buildable / cost : (buildable > 0 ? Double.POSITIVE_INFINITY : 0);
@@ -763,7 +793,25 @@ public class LandMarket {
 
     /** What the pickers rank an offer by: buildableKm2PerUsd() where `byBuildable`, else its dry square kilometres a dollar (getDryKm2PerUsd()) - anyBuildable() says which. */
     public double rankPerUsd(LandParcel p, boolean byBuildable) {
-        return byBuildable ? buildableKm2PerUsd(p) : p.getDryKm2PerUsd();
+        return byBuildable ? buildableKm2PerUsd(p) : linkedDryKm2PerUsd(p);
+    }
+
+    /**
+     * Whether any of an offer's dry ground is on ground that is room (ET5): all but an offer wholly across the water from every
+     * landmass the city has linked, which ranks at nothing and is the best of a shelf only when the whole shelf is such offers
+     * (bestValue() still answers one: a city on a spit has a best). What the test player's room-buying moves ask before they buy.
+     * True for every offer of a city with nothing unlinked on the shelf.
+     */
+    public static boolean hasLinkedDry(LandParcel p) {
+        // ...to a square foot: the unlinked and the whole dry ground are counted apart and differ in the last bits.
+        return !(p.getUnlinkedDryKm2() > 0) || p.getDryKm2() - p.getUnlinkedDryKm2() > 1 / LandManager.SQ_FT_PER_KM2;
+    }
+
+    /** An offer's dry square kilometres a thousand dollars, less what of its dry ground is on a landmass the city has not linked (ET5); LandParcel.getDryKm2PerUsd() where none is. */
+    private static double linkedDryKm2PerUsd(LandParcel p) {
+        if (!(p.getUnlinkedDryKm2() > 0)) return p.getDryKm2PerUsd();
+        double dry = Math.max(0, p.getDryKm2() - p.getUnlinkedDryKm2());
+        return p.getPriceUsd() > 0 ? dry / p.getPriceUsd() : (dry > 0 ? Double.POSITIVE_INFINITY : 0);
     }
 
     /** A piece of ground's square kilometres as the office charges them (0.7.106, out of price()): its dry ground, FRESH_PRICE_SHARE of its fresh water and SEA_PRICE_SHARE of its sea - what the ground's price a square foot is paid on; Insane's land bond prices a founding's centre by it (Founding.landBondUsd()). */
@@ -948,12 +996,15 @@ public class LandMarket {
      * sites a dollar, then the most of it, then the nearer; null when no
      * offer holds any. (Until 0.7.57 the office's richest deposit was the
      * parcel with the most iron tonnes.)
+     * Never an offer with dry ground on a landmass the city has not linked (ET5), as cheapestWith(): the test player buys
+     * its oil with this, and no works stands on a field across the water.
      */
     public LandParcel richest(Resource r) {
         LandParcel best = null;
         double bestRate = 0;
         for (LandParcel p : offers) {
             if (p == null || p.getSites(r) <= 0 || !(p.getAmount(r) > 0)) continue;
+            if (p.getUnlinkedDryKm2() > 0) continue;
             double rate = p.getPriceUsd() > 0 ? p.getSites(r) / p.getPriceUsd() : Double.POSITIVE_INFINITY;
             if (best == null || rate > bestRate
                     || (rate == bestRate && (p.getAmount(r) > best.getAmount(r)
@@ -976,6 +1027,8 @@ public class LandMarket {
         LandParcel best = null;
         for (LandParcel p : offers) {
             if (p == null || p.getSites(r) <= 0 || !(p.getAmount(r) > 0)) continue;
+            // ...never one with dry ground on a landmass the city has not linked (ET5): no works stands on a field across the water.
+            if (p.getUnlinkedDryKm2() > 0) continue;
             if (best == null || p.getPriceUsd() < best.getPriceUsd()
                     || (p.getPriceUsd() == best.getPriceUsd() && nearer(p, best))) best = p;
         }
@@ -1100,7 +1153,10 @@ public class LandMarket {
         }
         nextId = top + 1;
         takenFrom = -1;
-        if (land != null) restand();
+        if (land != null) {
+            restand();
+            restateOffers();
+        }
     }
 
     /** True when the price state came back without a dollar ground price (an older save). */

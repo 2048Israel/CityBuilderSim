@@ -1,6 +1,6 @@
 # MapFrame.java - 368 lines · 47 methods · 20 constants · model
 
-`ham/citybuildersim/MapFrame.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MapFrame.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The map view's arithmetic without the toolkit: where the view looks and how close, how a drag, a notch of the wheel and a held key (0.7.135) move it, which level of detail it draws and which tiles or far nodes that takes, the land's overlay on whole pixels, and how long its scale bar is - what ui/MapView draws by and MapCheck holds.
 > 

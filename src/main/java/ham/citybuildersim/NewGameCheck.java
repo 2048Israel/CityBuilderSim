@@ -221,6 +221,13 @@ public class NewGameCheck {
         m.put("land.offers", (double) offers.length);
         for (int i = 0; i < offers.length; i++) m.put("land.offer" + i, java.util.Arrays.hashCode(offers[i]) * 1.0);
         m.put("land.nextOffer", (double) g.getLandManager().getMarket().getNextOfferId());
+        // ...and the ground by landmass (ET5): what the books say of each landmass, the linked set, and where the terminals stand.
+        Landmasses lms = g.getLandManager().getLandmasses();
+        m.put("land.landmasses", (double) lms.rows().size());
+        m.put("land.landmassLinked", (double) lms.version() + 31.0 * lms.unlinkedIds().hashCode());
+        m.put("land.landmassUnlinkedDry", lms.unlinkedDrySqFt());
+        m.put("land.landmassUnlinkedPorts", lms.unlinkedPortsSqFt());
+        m.put("land.landmassPlaced", (double) new com.google.gson.Gson().toJson(g.getLandManager().landmassState()).hashCode());
         double[] taken = g.getLandManager().getDepletionState();
         for (int i = 0; i < taken.length; i++) m.put("land.extracted" + i, taken[i]);
         // How the land office pays, and the dollars it has paid (0.7.6).

@@ -171,6 +171,13 @@ import java.util.Random;
  *      its 256 cells, far nodes at four strides, the globe's camera and the
  *      picture's draw the relief within SCREEN_MS and FRAME_MS.
  *
+ * ...and since ET5 (2026-10-25; the ET5 design, D2 to D4) the landmass of a plot:
+ *  18. A TILE'S LANDMASS in no more than LANDMASS_TILE_MS: each round a world
+ *      of its own (another seed, the same data), the cover's tiles kept as a map
+ *      keeps them, then the landmass of each tile drawn beside it - the data's
+ *      cell at every dry plot's blend point, and for a dry plot on a cell with
+ *      no land the nearest land cell's (LandmassCheck holds the rule itself).
+ *
  * Every fixture causes its condition: the windows hold coasts (Rotterdam,
  * Perth), rivers (the Maas and the Seine), small lakes, lakes of 10 km2 and
  * more (Rotterdam's delta), beaches (Perth) and the date line (Fiji); the
@@ -193,6 +200,9 @@ public class EarthTerrainCheck {
 
     /** A tile's ground in no more than this, ms (spec-earth 8: 0.3; the study measured 0.09 to 0.20). */
     static final double TILE_MS = 0.3;
+
+    /** A tile's landmass (ET5) in no more than this, ms, its cover kept: the data's cell at each of its 1,024 plots' blend points, the nearest land cell's for a dry plot on a cell with none (the median of TILE_ROUNDS rounds over each window's middle TIMED_TILES x TIMED_TILES tiles). */
+    static final double LANDMASS_TILE_MS = 0.3;
 
     /** The cells pass in no more than this, ms of the main thread's CPU since batch EC1 (spec-earth 8: 1 s; the study measured 0.37 to 0.45 s on the wall clock). */
     static final double CELLS_PASS_MS = 1000;
@@ -288,6 +298,7 @@ public class EarthTerrainCheck {
         iceAndDesert(file, windows, id);
         shallowSea(file, windows, data, id);
         reliefPlane(file, spots, data, id);
+        landmassTime(three, id);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -561,6 +572,53 @@ public class EarthTerrainCheck {
             report(s.name() + ": a tile's ground in no more than TILE_MS", Timing.within(median, TILE_MS),
                     String.format("%.3f ms a tile (rounds %.3f to %.3f; the study %s)", median, ms[0], ms[TILE_ROUNDS - 1],
                             s.name().equals("Rotterdam") ? "0.152-0.202" : "0.090-0.125"));
+        }
+    }
+
+    /* =====================================================================
+       18. A TILE'S LANDMASS (ET5)
+       ===================================================================== */
+
+    static void landmassTime(List<Spot> spots, String id) {
+        out.println("\n--- 18. a tile's landmass in no more than " + LANDMASS_TILE_MS + " ms: the median of " + TILE_ROUNDS + " rounds over each window's middle " + TIMED_TILES
+                + " x " + TIMED_TILES + " tiles, its cover kept ---");
+        int[] ids = new int[World.TILE * World.TILE];
+        for (Spot s : spots) {
+            long tx0 = EarthTerrain.spotPlot() / World.TILE - TIMED_TILES / 2, ty0 = tx0;
+            double[] ms = new double[TILE_ROUNDS];
+            for (int round = -1; round < TILE_ROUNDS; round++) {
+                // A world of its own each round (another seed, the same data), so no tile of the landmass is kept; the cover's tiles first, kept as a map keeps them.
+                World w = World.of(World.Key.earth(SEED + 2000 + round, s.lat(), s.lon(), id));
+                for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) w.terrainAt((tx0 + i) * World.TILE, (ty0 + j) * World.TILE);
+                long t0 = System.nanoTime();
+                for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) w.tileLandmass(tx0 + i, ty0 + j, ids);
+                if (round >= 0) ms[round] = (System.nanoTime() - t0) / 1e6 / (TIMED_TILES * TIMED_TILES);
+            }
+            // The premise: the tiles timed hold land, or the figure is the cost of drawing nothing.
+            World w = World.of(World.Key.earth(SEED + 2000, s.lat(), s.lon(), id));
+            long land = 0, noLandCell = 0;
+            // ...and, for a coast, dry plots on a cell the layer calls no land: they take the nearest land cell's id (a search of the cells round, the costly part of the reader), and a window of nothing else takes the lookup alone.
+            byte[] cover = new byte[World.TILE * World.TILE];
+            double[] ll = new double[2];
+            EarthData data = w.earthTerrain().data();
+            for (int j = 0; j < TIMED_TILES; j++) {
+                for (int i = 0; i < TIMED_TILES; i++) {
+                    long tx = tx0 + i, ty = ty0 + j;
+                    w.tileLandmass(tx, ty, ids);
+                    w.tileTerrain(tx, ty, cover);
+                    EarthProj.Blend b = w.earthTerrain().projection().blend(tx * World.TILE, ty * World.TILE, World.TILE);
+                    for (int k = 0; k < ids.length; k++) {
+                        if (ids[k] != 0) land++;
+                        if (World.dry(cover[k]) && b.latLon(tx * World.TILE + k % World.TILE + 0.5, ty * World.TILE + k / World.TILE + 0.5, ll) && data.landmassAt(ll[0], ll[1]) == 0) noLandCell++;
+                    }
+                }
+            }
+            Arrays.sort(ms);
+            double median = ms[TILE_ROUNDS / 2];
+            boolean coast = s.name().equals("Rotterdam") || s.name().equals("Perth");
+            report(s.name() + ": a tile's landmass in no more than LANDMASS_TILE_MS, over tiles that hold land" + (coast ? " and dry plots on a cell with none" : ""),
+                    land > 0 && (!coast || noLandCell > 0) && Timing.within(median, LANDMASS_TILE_MS),
+                    String.format("%.3f ms a tile (rounds %.3f to %.3f), %,d land plots in the %d tiles, %,d of them dry on a cell with no land", median, ms[0], ms[TILE_ROUNDS - 1], land, TIMED_TILES * TIMED_TILES, noLandCell));
         }
     }
 
@@ -1435,18 +1493,21 @@ public class EarthTerrainCheck {
         String earthSave = "{\"worldKind\":\"EARTH\",\"earthLat\":" + r.lat() + ",\"earthLon\":" + r.lon() + ",\"earthData\":\"" + id + "\",\"saveFormat\":";
         DataSave before = gson.fromJson(earthSave + (EarthSite.ICE_FORMAT - 1) + "}", DataSave.class), after = gson.fromJson(earthSave + EarthSite.ICE_FORMAT + "}", DataSave.class);
         DataSave beforeDeposits = gson.fromJson(earthSave + (EarthSite.DEPOSITS_FORMAT - 1) + "}", DataSave.class), atDeposits = gson.fromJson(earthSave + EarthSite.DEPOSITS_FORMAT + "}", DataSave.class);
-        DataSave atSlope = gson.fromJson(earthSave + EarthSite.SLOPE_FORMAT + "}", DataSave.class);
+        DataSave atSlope = gson.fromJson(earthSave + EarthSite.SLOPE_FORMAT + "}", DataSave.class), atLandmass = gson.fromJson(earthSave + EarthSite.LANDMASS_FORMAT + "}", DataSave.class);
         DataSave generated = gson.fromJson("{\"saveFormat\":" + GameVersion.OLDEST_LOADABLE_FORMAT + "}", DataSave.class);
-        // Three floors for an Earth save since ET2: below ICE_FORMAT the ice words; from ICE_FORMAT to below DEPOSITS_FORMAT the deposits words;
-        // from DEPOSITS_FORMAT to below SLOPE_FORMAT (the founding site snapped to buildable ground, ET2) the slope words; at SLOPE_FORMAT none.
+        // Four floors for an Earth save since ET5: below ICE_FORMAT the ice words; from ICE_FORMAT to below DEPOSITS_FORMAT the deposits words;
+        // from DEPOSITS_FORMAT to below SLOPE_FORMAT (the founding site snapped to buildable ground, ET2) the slope words; from SLOPE_FORMAT to below
+        // LANDMASS_FORMAT (the ground counted by landmass, ET5) the landmass words; at LANDMASS_FORMAT none.
         check("the saves: an Earth city saved before ice was a kind of ground (EarthSite.ICE_FORMAT) is refused in words saying so; from there to before"
                         + " its fields were drawn on the geology (DEPOSITS_FORMAT, EG1) in the deposits words; from there to before its founding site was snapped to"
-                        + " buildable ground (SLOPE_FORMAT, ET2) in the slope words; one saved at SLOPE_FORMAT is not refused",
+                        + " buildable ground (SLOPE_FORMAT, ET2) in the slope words; from there to before its ground was counted by landmass (LANDMASS_FORMAT, ET5)"
+                        + " in the landmass words; one saved at LANDMASS_FORMAT is not refused",
                 EarthSite.BEFORE_ICE_WORDS.equals(before.earthProblem())
                         && EarthSite.BEFORE_DEPOSITS_WORDS.equals(after.earthProblem()) && EarthSite.BEFORE_DEPOSITS_WORDS.equals(beforeDeposits.earthProblem())
-                        && EarthSite.BEFORE_SLOPE_WORDS.equals(atDeposits.earthProblem()) && atSlope.earthProblem() == null
+                        && EarthSite.BEFORE_SLOPE_WORDS.equals(atDeposits.earthProblem()) && EarthSite.BEFORE_LANDMASS_WORDS.equals(atSlope.earthProblem()) && atLandmass.earthProblem() == null
                         && !EarthSite.BEFORE_ICE_WORDS.equals(EarthSite.BEFORE_DEPOSITS_WORDS) && !EarthSite.BEFORE_DEPOSITS_WORDS.equals(EarthSite.BEFORE_SLOPE_WORDS)
-                        && GameVersion.SAVE_FORMAT >= EarthSite.SLOPE_FORMAT && EarthSite.SLOPE_FORMAT > EarthSite.DEPOSITS_FORMAT
+                        && !EarthSite.BEFORE_SLOPE_WORDS.equals(EarthSite.BEFORE_LANDMASS_WORDS)
+                        && GameVersion.SAVE_FORMAT >= EarthSite.LANDMASS_FORMAT && EarthSite.LANDMASS_FORMAT > EarthSite.SLOPE_FORMAT && EarthSite.SLOPE_FORMAT > EarthSite.DEPOSITS_FORMAT
                         && EarthSite.DEPOSITS_FORMAT > EarthSite.ICE_FORMAT && EarthSite.ICE_FORMAT > EarthSite.EARTH_FORMAT);
         // Since 0.8.5 (FR2) the floor, 40, is past the ice format: an Earth save from before ice is refused by the floor as well.
         check("...and a generated city's save at the floor, its ground as it was, still loads: no Earth problem; and an Earth save"
@@ -1457,8 +1518,15 @@ public class EarthTerrainCheck {
         DataSave earthAtFloor = gson.fromJson(earthSave + GameVersion.OLDEST_LOADABLE_FORMAT + "}", DataSave.class);
         check("...and the slope floor is the Earth's alone: an Earth save at the general floor is refused in the slope words while the floor is below"
                         + " SLOPE_FORMAT, a generated save of that format loads",
-                generated.earthProblem() == null && (GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.SLOPE_FORMAT
-                        ? earthAtFloor.earthProblem() == null : EarthSite.BEFORE_SLOPE_WORDS.equals(earthAtFloor.earthProblem())));
+                generated.earthProblem() == null && (GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.LANDMASS_FORMAT
+                        ? earthAtFloor.earthProblem() == null
+                        : GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.SLOPE_FORMAT
+                        ? EarthSite.BEFORE_LANDMASS_WORDS.equals(earthAtFloor.earthProblem()) : EarthSite.BEFORE_SLOPE_WORDS.equals(earthAtFloor.earthProblem())));
+        // ...and the landmass floor (ET5) is the Earth's alone too: a generated save of the format before it loads, and the general floor stays below it.
+        DataSave generatedBeforeLandmass = gson.fromJson("{\"saveFormat\":" + (EarthSite.LANDMASS_FORMAT - 1) + "}", DataSave.class);
+        check("...and the landmass floor is the Earth's alone: a generated save of the format before LANDMASS_FORMAT has no Earth problem, and is refused only by the general floor, once that has passed it",
+                generatedBeforeLandmass.earthProblem() == null
+                        && GameVersion.isNoLongerReadable(EarthSite.LANDMASS_FORMAT - 1) == (GameVersion.OLDEST_LOADABLE_FORMAT >= EarthSite.LANDMASS_FORMAT));
         long fixtureIce = 0, fixtureDesert = 0;
         for (Window w : windows.values()) { fixtureIce += w.classes[World.ICE]; fixtureDesert += w.classes[World.DESERT]; }
         out.printf("      the fixture's three windows: %,d plots of ice and %,d of desert%n", fixtureIce, fixtureDesert);

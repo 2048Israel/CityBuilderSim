@@ -1,6 +1,6 @@
 # StaleCheck.java - 331 lines · 6 methods · 6 constants · harnesses
 
-`ham/citybuildersim/StaleCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StaleCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The prose still describes the code: the firm half of `tools.Stale`, asserted,
 > and `tools.Names` proved on a fixture.

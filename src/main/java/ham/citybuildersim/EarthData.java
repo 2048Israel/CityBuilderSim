@@ -896,6 +896,117 @@ public final class EarthData implements AutoCloseable {
         return landmassCell(tile(89 - (int) (g / cpd), (int) (c / cpd) - 180), (int) (g % cpd), (int) (c % cpd));
     }
 
+    /* ----- the landmass layer a tile at a time, lock-free (ET5, 2026-10-25) ----- */
+
+    /**
+     * One landmass tile read out of its blob into arrays of its own (ET5): the ids it holds and an index a cell,
+     * copied, so a read takes no lock and shares nothing with the blob LRU or with paletteOf()'s one-slot memory.
+     * WHY: the books count plots in parallel from PARALLEL_TILES tiles, and landmassCell() goes through two
+     * synchronized methods and a palette cache that keeps the last tile only, which threads on two tiles thrash.
+     */
+    public static final class LandmassGrid {
+        private final int cells;
+        private final int uniform;
+        private final int[] ids;
+        private final byte[] narrow;
+        private final char[] wide;
+
+        private LandmassGrid(int cells, int uniform, int[] ids, byte[] narrow, char[] wide) {
+            this.cells = cells; this.uniform = uniform; this.ids = ids; this.narrow = narrow; this.wide = wide;
+        }
+
+        /** The id of the cell at row r from the north, column c from the west of the tile (0 for no land); no bounds check beyond the arrays'. */
+        public int id(int r, int c) {
+            if (ids == null) return uniform;
+            int at = r * cells + c;
+            return ids[narrow != null ? narrow[at] & 0xFF : wide[at]];
+        }
+
+        /** Whether every cell of the tile holds the one id (a uniform tile: no blob), which then is id(0, 0). */
+        public boolean isUniform() { return ids == null; }
+
+        /** The ids the tile holds, ascending, 0 among them where a cell has no land: a copy. */
+        public int[] ids() { return ids == null ? new int[] { uniform } : ids.clone(); }
+    }
+
+    /** How many landmass tiles landmassGrid() keeps read out: 16, about a megabyte (a 15" tile is 57,600 cells, a byte each). */
+    static final int LANDMASS_GRIDS_KEPT = 16;
+
+    private final Map<Integer, LandmassGrid> landmassGrids = new LinkedHashMap<>(32, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Integer, LandmassGrid> eldest) {
+            return size() > LANDMASS_GRIDS_KEPT;
+        }
+    };
+
+    /**
+     * A 1-degree tile of the landmass layer read out for lock-free reads (ET5): decoded once and kept
+     * (LANDMASS_GRIDS_KEPT). Taking it from the cache is synchronized, reading a cell of it is not. Needs hasRelief().
+     */
+    public LandmassGrid landmassGrid(int tile) {
+        synchronized (landmassGrids) {
+            LandmassGrid hit = landmassGrids.get(tile);
+            if (hit != null) return hit;
+        }
+        Layer l = layer(LANDMASS);
+        int cpd = l.cellsPerDegree;
+        int e = l.entries[tile];
+        LandmassGrid g;
+        if (e <= 0) {
+            g = new LandmassGrid(cpd, -e, null, null, null);
+        } else {
+            byte[] b = raw(LANDMASS, tile);
+            Palette p = palette(b, cpd * cpd);
+            int n = cpd * cpd;
+            if (p.wide) {
+                char[] idx = new char[n];
+                for (int i = 0; i < n; i++) idx[i] = (char) (((b[p.start + 2 * i] & 0xFF) << 8) | (b[p.start + 2 * i + 1] & 0xFF));
+                for (char k : idx) if (k >= p.ids.length) throw new IllegalStateException("earth data: a landmass cell indexes id " + (int) k + " of a palette of " + p.ids.length);
+                g = new LandmassGrid(cpd, 0, p.ids.clone(), null, idx);
+            } else {
+                byte[] idx = Arrays.copyOfRange(b, p.start, p.start + n);
+                for (byte k : idx) if ((k & 0xFF) >= p.ids.length) throw new IllegalStateException("earth data: a landmass cell indexes id " + (k & 0xFF) + " of a palette of " + p.ids.length);
+                g = new LandmassGrid(cpd, 0, p.ids.clone(), idx, null);
+            }
+        }
+        synchronized (landmassGrids) {
+            landmassGrids.put(tile, g);
+        }
+        return g;
+    }
+
+    /** The landmass layer's cells a degree (240, 15"): the grid landmassRow() and landmassCol() number in. Needs hasRelief(). */
+    public int landmassCellsPerDegree() { return layer(LANDMASS).cellsPerDegree; }
+
+    /** The row, counted in 15" cells from the north pole, of the cell holding a latitude: landmassAt()'s arithmetic, clamped to the planet. Needs hasRelief(). */
+    public long landmassRow(double lat) {
+        int cpd = layer(LANDMASS).cellsPerDegree;
+        return Math.min(180L * cpd - 1, Math.max(0, (long) StrictMath.floor((90 - lat) * cpd)));
+    }
+
+    /** The column, counted in 15" cells east from the 180th meridian, of the cell holding a longitude: landmassAt()'s arithmetic. Needs hasRelief(). */
+    public long landmassCol(double lon) {
+        int cpd = layer(LANDMASS).cellsPerDegree;
+        return (long) StrictMath.floor(wrap360(lon + 180) * cpd) % (360L * cpd);
+    }
+
+    /** The 1-degree tile that holds the cell at row g, column c (as landmassRow() and landmassCol() number them; the column wraps round the planet). Needs hasRelief(). */
+    public int landmassTileOf(long g, long c) {
+        int cpd = layer(LANDMASS).cellsPerDegree;
+        long cc = Math.floorMod(c, 360L * cpd);
+        return tile(89 - (int) (g / cpd), (int) (cc / cpd) - 180);
+    }
+
+    /**
+     * The id of the landmass at the cell in row g, column c (landmassRow(), landmassCol()), read through the kept
+     * grids without a lock: 0 for no land, and for a row off the planet's north or south. The column wraps. Needs hasRelief().
+     */
+    public int landmassOfCell(long g, long c) {
+        int cpd = layer(LANDMASS).cellsPerDegree;
+        if (g < 0 || g >= 180L * cpd) return 0;
+        long cc = Math.floorMod(c, 360L * cpd);
+        return landmassGrid(tile(89 - (int) (g / cpd), (int) (cc / cpd) - 180)).id((int) (g % cpd), (int) (cc % cpd));
+    }
+
     /** The ids a landmass tile holds, ascending, 0 (no land) among them where it has a cell without land: a uniform tile holds just its one. */
     public int[] landmassIds(int tile) {
         Layer l = layer(LANDMASS);

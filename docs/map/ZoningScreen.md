@@ -1,6 +1,6 @@
 # ZoningScreen.java - 1,087 lines · 71 methods · 25 constants · interface
 
-`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's
 > ground and its zones on one page, a sector's zone on its own page of dial
@@ -155,7 +155,7 @@
 | 537 | 1 | `static String unitKey(String s)` |  |
 | 538 | 1 | `static String priceKey(String s)` |  |
 | 539 | 1 | `static String offKey(String s)` |  |
-| 556 | 1 | `double dryKm2()` | The dry ground, km². |
+| 556 | 1 | `double dryKm2()` | The dry ground that is room, km² (ET5: the linked ground, which a share zone is a share of; the whole dry ground while nothing is unlinked). |
 | 559 | 6 | `double km2Step()` | A km² dial's step: the dry ground over KM2_STEPS, down to 1, 2 or 5 of a power of ten. |
 | 567 | 4 | `double km2Top()` | ...and its top: the dry ground, up to a whole step. |
 | 573 | 1 | `Zoning.Size kindNow(String s)` | A zone's settings as the city has them - a sector with no zone: a share, nothing, at the going price. |

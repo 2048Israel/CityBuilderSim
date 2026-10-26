@@ -1,6 +1,6 @@
-# BuildAdvice.java - 2,197 lines · 110 methods · 9 constants · model
+# BuildAdvice.java - 2,198 lines · 110 methods · 9 constants · model
 
-`ham/citybuildersim/BuildAdvice.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildAdvice.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > What the city should build next, and why: the Build tab's categories and
 > the measures its five city categories open on, each measure's figure
@@ -46,7 +46,7 @@
 > goes (Jerus's school at 0% that one would take to 20,000%): the overshoot
 > ranks the candidates, it never stops one (0.7.101).
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (145), [Game](Game.md) (73), [CityNeeds](CityNeeds.md) (59), [BuildingType](BuildingType.md) (42), [CareType](CareType.md) (33), [Ports](Ports.md) (18), [JobType](JobType.md) (15), [InfrastructureManager](InfrastructureManager.md) (15), [EducationType](EducationType.md) (13), [ConstructionControl](ConstructionControl.md) (12), [Good](Good.md) (10), [BusinessInvestment](BusinessInvestment.md) (8), [Healthcare](Healthcare.md) (7), [SafetyType](SafetyType.md) (6), [Crime](Crime.md) (6), [Traffic](Traffic.md) (6), [Sectors](Sectors.md) (6), [BuildingManager](BuildingManager.md) (5), [LandParcel](LandParcel.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [Deposit](Deposit.md) (3), [Resource](Resource.md) (3), [AgeBand](AgeBand.md) (2), [Education](Education.md) (2), [ExtractionSector](ExtractionSector.md) (2), [Sector](Sector.md) (2), [GoodsMarket](GoodsMarket.md) (2), [StrategicReserve](StrategicReserve.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Health](Health.md) (1)... and 7 more
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (145), [Game](Game.md) (73), [CityNeeds](CityNeeds.md) (59), [BuildingType](BuildingType.md) (42), [CareType](CareType.md) (33), [Ports](Ports.md) (18), [JobType](JobType.md) (15), [InfrastructureManager](InfrastructureManager.md) (15), [EducationType](EducationType.md) (13), [ConstructionControl](ConstructionControl.md) (12), [Good](Good.md) (10), [BusinessInvestment](BusinessInvestment.md) (8), [Healthcare](Healthcare.md) (7), [SafetyType](SafetyType.md) (6), [Crime](Crime.md) (6), [Traffic](Traffic.md) (6), [Sectors](Sectors.md) (6), [BuildingManager](BuildingManager.md) (5), [LandParcel](LandParcel.md) (4), [UtilitiesHandler](UtilitiesHandler.md) (3), [Deposit](Deposit.md) (3), [Resource](Resource.md) (3), [AgeBand](AgeBand.md) (2), [Education](Education.md) (2), [ExtractionSector](ExtractionSector.md) (2), [Sector](Sector.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Landmasses](Landmasses.md) (2), [StrategicReserve](StrategicReserve.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)... and 8 more
 
 **Used by (25):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [InfrastructureScreen](InfrastructureScreen.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WaterCheck](WaterCheck.md)
 
@@ -65,7 +65,7 @@
 | 1671 | A BUILDING OVER ITS LIFE, FOR WHAT IT WILL SERVE (0.7.101, batch P2) |
 | 1847 | AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) |
 | 2042 | A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the |
-| 2122 | · A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) |
+| 2123 | · A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) |
 
 ## Enum constants
 
@@ -86,12 +86,12 @@
 | 1142 | `BuildAdvice.Lost.DEARER` |  |
 | 1142 | `BuildAdvice.Lost.CANNOT_CLOSE` |  |
 | 1142 | `BuildAdvice.Lost.NO_ROOM` |  |
-| 2134 | `BuildAdvice.BerthState.PAYS` |  |
-| 2134 | `BuildAdvice.BerthState.SHORT` |  |
-| 2134 | `BuildAdvice.BerthState.COVERED` |  |
-| 2134 | `BuildAdvice.BerthState.NO_DUES` |  |
-| 2134 | `BuildAdvice.BerthState.UPKEEP` |  |
-| 2134 | `BuildAdvice.BerthState.NO_CARGO` |  |
+| 2135 | `BuildAdvice.BerthState.PAYS` |  |
+| 2135 | `BuildAdvice.BerthState.SHORT` |  |
+| 2135 | `BuildAdvice.BerthState.COVERED` |  |
+| 2135 | `BuildAdvice.BerthState.NO_DUES` |  |
+| 2135 | `BuildAdvice.BerthState.UPKEEP` |  |
+| 2135 | `BuildAdvice.BerthState.NO_CARGO` |  |
 
 ## Constants
 
@@ -111,7 +111,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 2144 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
+| 54 | 2145 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
 | 56 | 1 | `private BuildAdvice()` |  |
 
 ### THE CATEGORIES (0.7.24) (lines 58-194)
@@ -272,22 +272,22 @@
 | 2026 | 6 | `public static double fieldPayment(Game game, LandParcel field)` | The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b; moved from LongPlaytest in 0.7.101): the level payment at the rate the market quotes for that much money at that term (Debt... |
 | 2034 | 7 | `public static boolean higherWorse(Measure m)` | Which way is worse for a measure's figure. |
 
-### A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the (lines 2042-2121)
+### A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the (lines 2042-2122)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 2073 | 5 | `public static List<Measure> portMeasures()` | The port measures, one a kind of cargo, in Cargo order (FR3). |
 | 2080 | 8 | `static double portUncovered(Game game, Measure m, Map<BuildingsTemplate, Integer> added)` | A port measure's uncovered tonnes a month with these buildings standing as well: the kind's carriable() less its berths standing and the berths in `added` (Ports.uncovered()). |
-| 2096 | 7 | `public static BuildingsTemplate portTerminal(Game game, Measure m, Map<BuildingsTemplate, Integer> added, java.util.Set<Buildin...` | The terminal to order for a port measure, or null (FR3): the largest of the kind's terminals but those in `skip` that pays back at the kind's uncovered tonnes with `added` standing too and the port dues dial (Ports.pa... |
-| 2105 | 16 | `static Suggestion portSuggestion(Game game, Measure m, double cashLeft, double landLeft, java.util.Set<BuildingsTemplate> skip)` | A port measure's card: one terminal of the kind that pays back, or null for none (portTerminal()); the Suggestion's need is null, the NEEDS YOU having no row for a berth. |
+| 2097 | 7 | `public static BuildingsTemplate portTerminal(Game game, Measure m, Map<BuildingsTemplate, Integer> added, java.util.Set<Buildin...` | The terminal to order for a port measure, or null (FR3): the largest of the kind's terminals but those in `skip` that pays back at the kind's uncovered tonnes with `added` standing too and the port dues dial (Ports.pa... |
+| 2106 | 16 | `static Suggestion portSuggestion(Game game, Measure m, double cashLeft, double landLeft, java.util.Set<BuildingsTemplate> skip)` | A port measure's card: one terminal of the kind that pays back, or null for none (portTerminal()); the Suggestion's need is null, the NEEDS YOU having no row for a berth. |
 
-### A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) (lines 2122-2197)
+### A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) (lines 2123-2198)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2134 | 1 | **type** `public enum BerthState` | Where a berth stands on its payback (FR4): PAYS - the dues at the dial cover its cost and more than its upkeep; SHORT - cargo of its kind crosses and no berth takes it, but not enough of it (Ports.berthPaysBack()); CO... |
-| 2148 | 10 | **type** `public record BerthPayback(BuildingsTemplate terminal, BerthState state, double carriable, double uncovered...` | One more of a terminal, weighed as the advice weighs one (FR4): the kind's carriable and uncovered tonnes a month, the tonnes a month the advice needs uncovered before the terminal pays back (needed; NaN with no dues)... |
-| 2153 | 1 | `public boolean pays()` _(in BuildAdvice.BerthPayback)_ | Whether it pays back (state PAYS). |
-| 2156 | 1 | `public double carriedAYear()` _(in BuildAdvice.BerthPayback)_ | The tonnes a year it would carry. |
-| 2171 | 26 | `public static BerthPayback berthPayback(Game game, BuildingsTemplate t)` | A sea terminal's payback, as its card says it (FR4; null for any other building). |
+| 2135 | 1 | **type** `public enum BerthState` | Where a berth stands on its payback (FR4): PAYS - the dues at the dial cover its cost and more than its upkeep; SHORT - cargo of its kind crosses and no berth takes it, but not enough of it (Ports.berthPaysBack()); CO... |
+| 2149 | 10 | **type** `public record BerthPayback(BuildingsTemplate terminal, BerthState state, double carriable, double uncovered...` | One more of a terminal, weighed as the advice weighs one (FR4): the kind's carriable and uncovered tonnes a month, the tonnes a month the advice needs uncovered before the terminal pays back (needed; NaN with no dues)... |
+| 2154 | 1 | `public boolean pays()` _(in BuildAdvice.BerthPayback)_ | Whether it pays back (state PAYS). |
+| 2157 | 1 | `public double carriedAYear()` _(in BuildAdvice.BerthPayback)_ | The tonnes a year it would carry. |
+| 2172 | 26 | `public static BerthPayback berthPayback(Game game, BuildingsTemplate t)` | A sea terminal's payback, as its card says it (FR4; null for any other building). |
 

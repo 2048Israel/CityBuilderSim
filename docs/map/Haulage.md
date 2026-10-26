@@ -1,6 +1,6 @@
 # Haulage.java - 1,014 lines · 62 methods · 12 constants · sectors
 
-`ham/citybuildersim/sectors/Haulage.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Haulage.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > Freight's Haulage division: the trucks that carry the city leg of every bulk
 > tonne (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 2,

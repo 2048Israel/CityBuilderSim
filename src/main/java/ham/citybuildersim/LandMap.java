@@ -169,6 +169,122 @@ public final class LandMap {
         return out;
     }
 
+    /* ----------------------- the ground no port links (ET5) ----------------------- */
+
+    /** A landmass the city owns and has not linked, as the map labels it: its id, the middle of its owned tiles in plots (x, y) and how many owned dry plots it holds. */
+    public record Chip(int id, double x, double y, long plots) { }
+
+    /** What unlinkedRuns() and unlinkedChips() are worked out from: the land (weakly), the linked set's version, the land's stamp and the world; one answer kept. */
+    private static final class UnlinkedKept {
+        final java.lang.ref.WeakReference<CityLand> land;
+        final int version;
+        final long landStamp;
+        final World.Key world;
+        final List<long[]> runs;
+        final List<Chip> chips;
+
+        UnlinkedKept(CityLand land, int version, long landStamp, World.Key world, List<long[]> runs, List<Chip> chips) {
+            this.land = new java.lang.ref.WeakReference<>(land);
+            this.version = version;
+            this.landStamp = landStamp;
+            this.world = world;
+            this.runs = runs;
+            this.chips = chips;
+        }
+    }
+
+    private static UnlinkedKept unlinkedKept;
+
+    /**
+     * The owned dry ground on landmasses the city has not linked (ET5), as row runs: {y, x0, x1, landmass id} with x1 exclusive, in
+     * plots, by row and then by column, a run ending where the landmass or the city's ground does. What the view hatches: the
+     * plots the map draws as owned and the island rule leaves no room on. Empty for a city on one landmass and for a world with no
+     * landmasses; kept against the linked set (Landmasses.version()) and the land's stamp, so the view may ask it every frame.
+     */
+    public static List<long[]> unlinkedRuns(Landmasses lm, World world, CityLand land) {
+        return unlinked(lm, world, land).runs;
+    }
+
+    /** ...and one chip for each such landmass, in the order its id ascends: the mean of the tiles holding its owned dry plots (their middles), and the count of those plots. Where the view writes its name. */
+    public static List<Chip> unlinkedChips(Landmasses lm, World world, CityLand land) {
+        return unlinked(lm, world, land).chips;
+    }
+
+    private static final UnlinkedKept NO_UNLINKED = new UnlinkedKept(null, 0, 0, null, List.of(), List.of());
+
+    private static synchronized UnlinkedKept unlinked(Landmasses lm, World world, CityLand land) {
+        if (lm == null || world == null || land == null || !lm.anyUnlinked() || !world.hasLandmasses()) return NO_UNLINKED;
+        long stamp = land.stamp(land.purchases().size());
+        UnlinkedKept k = unlinkedKept;
+        if (k != null && k.land.get() == land && k.version == lm.version() && k.landStamp == stamp && k.world.equals(world.key())) return k;
+        java.util.Set<Integer> bad = new java.util.TreeSet<>(lm.unlinkedIds());
+        java.util.TreeSet<Long> tiles = new java.util.TreeSet<>();
+        land.grid().leaves((level, x, y, holding) -> {
+            long size = 1L << level;
+            for (long ty = Math.floorDiv(y, World.TILE); ty <= Math.floorDiv(y + size - 1, World.TILE); ty++) {
+                for (long tx = Math.floorDiv(x, World.TILE); tx <= Math.floorDiv(x + size - 1, World.TILE); tx++) tiles.add((tx << 32) ^ (ty & 0xffffffffL));
+            }
+        });
+        int n = World.TILE * World.TILE;
+        byte[] cover = new byte[n];
+        int[] ids = new int[n];
+        boolean[] own = new boolean[n];
+        List<long[]> pieces = new ArrayList<>();
+        java.util.TreeMap<Integer, long[]> plots = new java.util.TreeMap<>();
+        for (long key : tiles) {
+            long tx = key >> 32, ty = (int) key;
+            boolean near = false;
+            for (int id : world.idsNear(tx, ty)) if (bad.contains(id)) { near = true; break; }
+            if (!near) continue;
+            world.tileTerrain(tx, ty, cover);
+            world.tileLandmass(tx, ty, ids);
+            land.grid().tileFlags(tx, ty, own);
+            for (int iy = 0; iy < World.TILE; iy++) {
+                int ix = 0;
+                while (ix < World.TILE) {
+                    int i = iy * World.TILE + ix;
+                    if (!own[i] || !World.dry(cover[i]) || !bad.contains(ids[i])) { ix++; continue; }
+                    int id = ids[i], e = ix + 1;
+                    while (e < World.TILE) {
+                        int j = iy * World.TILE + e;
+                        if (!own[j] || !World.dry(cover[j]) || ids[j] != id) break;
+                        e++;
+                    }
+                    pieces.add(new long[] { ty * World.TILE + iy, tx * World.TILE + ix, tx * World.TILE + e, id });
+                    plots.computeIfAbsent(id, v -> new long[1])[0] += e - ix;
+                    ix = e;
+                }
+            }
+        }
+        pieces.sort((a, b) -> a[0] != b[0] ? Long.compare(a[0], b[0]) : a[1] != b[1] ? Long.compare(a[1], b[1]) : Long.compare(a[3], b[3]));
+        List<long[]> runs = new ArrayList<>();
+        for (long[] p : pieces) {
+            long[] last = runs.isEmpty() ? null : runs.get(runs.size() - 1);
+            if (last != null && last[0] == p[0] && last[2] == p[1] && last[3] == p[3]) last[2] = p[2];
+            else runs.add(p.clone());
+        }
+        // The chip of a landmass: the mean of the middles of the tiles that hold some of its owned dry plots.
+        java.util.Map<Integer, java.util.Set<Long>> held = new java.util.TreeMap<>();
+        for (long[] p : pieces) {
+            for (long tx = Math.floorDiv(p[1], World.TILE); tx <= Math.floorDiv(p[2] - 1, World.TILE); tx++) {
+                held.computeIfAbsent((int) p[3], v -> new java.util.TreeSet<>()).add((tx << 32) ^ (Math.floorDiv(p[0], World.TILE) & 0xffffffffL));
+            }
+        }
+        List<Chip> chips = new ArrayList<>();
+        for (java.util.Map.Entry<Integer, java.util.Set<Long>> e : held.entrySet()) {
+            double x = 0, y = 0;
+            for (long t : e.getValue()) {
+                x += ((t >> 32) + 0.5) * World.TILE;
+                y += ((int) t + 0.5) * World.TILE;
+            }
+            int count = e.getValue().size();
+            chips.add(new Chip(e.getKey(), x / count, y / count, plots.get(e.getKey())[0]));
+        }
+        UnlinkedKept made = new UnlinkedKept(land, lm.version(), stamp, world.key(), java.util.Collections.unmodifiableList(runs), java.util.Collections.unmodifiableList(chips));
+        unlinkedKept = made;
+        return made;
+    }
+
     /** What the map writes on an offer: its place, 1 to 6 from the left as you face out, as its row in the land office reads it. */
     public static String placeLabel(LandParcel o) {
         return String.valueOf(o.getPlace() + 1);
@@ -531,10 +647,21 @@ public final class LandMap {
 
     /** ...with no more than `fieldsMost` fields (the expanded map's card lists CARD_FIELDS; since 0.7.135 its card is this). */
     public static List<String> hoverWords(CityLand land, LandMarket market, long x, long y, int fieldsMost) {
+        return hoverWords(land, market, null, x, y, fieldsMost);
+    }
+
+    /**
+     * ...and, once the city owns ground on a landmass no port links (ET5), a line under whose it is for a plot of owned or
+     * offered ground on such a landmass: "On Island 2, which no port links: only a port can be built here"
+     * (LandmassView.hoverWords()). `lms` null, or the city owning nothing off its home landmass, adds nothing: the card is the old one.
+     */
+    public static List<String> hoverWords(CityLand land, LandMarket market, Landmasses lms, long x, long y, int fieldsMost) {
         Pick p = pick(land, market, x, y);
         List<String> lines = new ArrayList<>();
         lines.add(plotGroundWords(land, p.ground(), x, y));
         lines.add(ownerWords(land, p));
+        String island = islandWords(land, lms, p);
+        if (island != null) lines.add(island);
         lines.addAll(earthWords(land, x, y));
         List<FieldAt> under = fieldsAt(land, x, y);
         for (int i = 0; i < under.size() && i < fieldsMost; i++) lines.add(fieldWords(under.get(i), land, market));
@@ -887,6 +1014,27 @@ public final class LandMap {
             String label = labelOf == null ? null : labelOf.apply(z.sector());
             out.add(new Entry(zoneColour(z.sector()), zoneWords(label != null ? label : z.sector())));
         }
+        return out;
+    }
+
+    /* ----- the ground no port links (ET5, slice D) ----- */
+
+    /** The legend's colour for the hatch over ground no port links: the warning amber (Palette.WARN's #e3b341). */
+    public static final int UNLINKED_COLOUR = 0xffe3b341;
+
+    /** The hover's line for a plot of owned or offered dry ground on a landmass no port links, or null: none for a city that owns nothing off home, for water, for home's own ground and for ground that is nobody's. */
+    public static String islandWords(CityLand land, Landmasses lms, Pick p) {
+        if (lms == null || !lms.anyUnlinked() || (p.owner() != BOUGHT && p.owner() != OFFER) || !World.dry(p.ground())) return null;
+        World world = World.of(land.key());
+        if (!world.hasLandmasses()) return null;
+        int id = world.landmassAt(p.x(), p.y());
+        return id == 0 || lms.linked(id) ? null : LandmassView.hoverWords(lms, id);
+    }
+
+    /** The legend's entry for the hatch, "Not linked: only a port", while the city owns ground on a landmass no port links; none otherwise. */
+    public static List<Entry> unlinkedLegend(Landmasses lms) {
+        List<Entry> out = new ArrayList<>();
+        if (lms != null && lms.anyUnlinked()) out.add(new Entry(UNLINKED_COLOUR, LandmassView.LEGEND_WORDS));
         return out;
     }
 

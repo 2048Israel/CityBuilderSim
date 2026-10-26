@@ -1,6 +1,6 @@
 # Zoning.java - 280 lines · 29 methods · 2 constants · model
 
-`ham/citybuildersim/Zoning.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Zoning.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The city's zoning (0.7.107, batch Z1): ground held for one sector's
 > buildings - a share of the city's dry ground or a size in square
@@ -42,7 +42,7 @@
 
 **Uses:** [LandManager](LandManager.md) (1), [Sectors](Sectors.md) (1)
 
-**Used by (16):** [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (17):** [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 

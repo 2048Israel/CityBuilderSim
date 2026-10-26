@@ -1,6 +1,6 @@
 # SectorScreen.java - 6,314 lines · 247 methods · 72 constants · interface
 
-`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The sector economy: every business in the city as a card, and each one's
 > five pages - what goes in and what comes out, the income statement with
@@ -23,7 +23,7 @@
 
 **Uses:** [Palette](Palette.md) (876), [Sector](Sector.md) (207), [SectorStatements](SectorStatements.md) (141), [FreightView](FreightView.md) (115), [OilView](OilView.md) (101), [Icons](Icons.md) (85), [SectorBooks](SectorBooks.md) (70), [RefineryView](RefineryView.md) (67), [BuildScreen](BuildScreen.md) (62), [BuildCard](BuildCard.md) (59), [StatementView](StatementView.md) (53), [SectorFlow](SectorFlow.md) (41), [IndustryPicture](IndustryPicture.md) (23), [BusinessInvestment](BusinessInvestment.md) (20), [BusinessDebtManager](BusinessDebtManager.md) (19), [Equity](Equity.md) (13), [Retail](Retail.md) (11), [CityCalendar](CityCalendar.md) (11), [Formats](Formats.md) (11), [BuildAdvice](BuildAdvice.md) (10), [Good](Good.md) (10), [OrderBook](OrderBook.md) (7), [Debt](Debt.md) (7), [Restaurants](Restaurants.md) (7), [LuxuryRetail](LuxuryRetail.md) (7), [Game](Game.md) (6), [Bank](Bank.md) (6), [Mortgage](Mortgage.md) (6), [IndustryView](IndustryView.md) (6), [Sectors](Sectors.md) (6)... and 25 more
 
-**Used by (6):** [BankScreen](BankScreen.md), [FundScreen](FundScreen.md), [HistoryScreen](HistoryScreen.md), [StatementView](StatementView.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (7):** [BankScreen](BankScreen.md), [FundScreen](FundScreen.md), [HistoryScreen](HistoryScreen.md), [LandScreen](LandScreen.md), [StatementView](StatementView.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

@@ -6150,6 +6150,8 @@ public class UserInterface extends Application {
     }
 
     private String dealLabel(String key) {
+        // The ground no port links (ET5): one notice for each landmass, "island:" and its id, so no exact key names it.
+        if (LandmassView.noticeId(key) >= 0) return LandmassView.noticeButton(game.getLandManager().getLandmasses(), LandmassView.noticeId(key));
         switch (key) {
             case "shedding":   return "Go to the builders →";
             case "landlock":   return "Go to the land office →";
@@ -6177,6 +6179,14 @@ public class UserInterface extends Application {
      */
     private void deal(Notice notice) {
         inboxOpen = false;
+        // The ground no port links (ET5): the port card, with that landmass chosen for the terminal's next order - or, where the
+        // city owns no shore on it and a terminal cannot stand there yet, the Land office, where the sea in front of it is bought.
+        int island = LandmassView.noticeId(notice.getKey());
+        if (island >= 0) {
+            if (game.getLandManager().getLandmasses().shorePlots(island) > 0) buildScreen.openPortCardFor(island);
+            else landScreen.showLandMenu();
+            return;
+        }
         switch (notice.getKey()) {
             case "shedding":
                 game.acknowledgeConstructionShedding();

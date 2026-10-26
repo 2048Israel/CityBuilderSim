@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
@@ -550,10 +551,21 @@ public final class CityMap {
      */
     public static CityMap canonical(CityLand land, Function<Resource, double[]> remaining,
                                     BuildingVisual.Type[] types, long[] counts, int month) {
+        return canonical(land, remaining, types, counts, month, null);
+    }
+
+    /**
+     * ...on the landmasses the game hands over (ET5): the districts are measured with the island rule's mask from the start, so
+     * nothing is dealt to ground that is no room; null for a city on one landmass, and then the same map as the form above.
+     */
+    public static CityMap canonical(CityLand land, Function<Resource, double[]> remaining,
+                                    BuildingVisual.Type[] types, long[] counts, int month, Landmasses.Picture landmasses) {
         CityMap m = new CityMap(land.key(), land.siteX(), land.siteY(), types);
         m.month = month;
         m.land = land;
         m.remaining = remaining;
+        m.landmasses = landmasses;
+        m.mask.reset(landmasses);
         m.measureAll();
         m.allocate(counts);
         m.layRuns(counts);
@@ -764,7 +776,7 @@ public final class CityMap {
         int total = 0;
         for (int k = 0; k < TILES; k++) {
             long tx = (baseDX + d.dx) * TILES_A_SIDE + k % TILES_A_SIDE, ty = (baseDY + d.dy) * TILES_A_SIDE + k / TILES_A_SIDE;
-            tileOwnership(tx, ty, owns);
+            buildableOwnership(tx, ty, owns);   // ET5: ground the island rule masks is owned but no room (a plain tileOwnership() while the city is on one landmass)
             boolean any = false;
             for (boolean b : owns) if (b) { any = true; break; }
             if (!any) continue;
@@ -834,11 +846,13 @@ public final class CityMap {
         return out;
     }
 
-    /** A district not on the map yet, measured, and kept only when it holds free ground: a district of water joins the map only when a site in it needs one (tallySites()). */
+    /** A district not on the map yet, measured, and kept only when it holds free ground (or, since ET5, owned ground the island rule masks): a district of water joins the map only when a site in it needs one (tallySites()). */
     private District measureNew(int dx, int dy, int own) {
         District d = newDistrict(dx, dy);
         measure(d, own);
         if (d.owned > 0) return d;
+        // ET5: a district holding owned ground the island rule masks stays, with no room, so the shore reaches it (a terminal for the island stands there: CL5's case J, an island holding only its port, whose count is in a linked district).
+        if (landmasses != null && holdsMasked(dx, dy)) return d;
         districts.remove(districts.size() - 1);
         byKey.remove(d.key);
         return null;
@@ -928,6 +942,7 @@ public final class CityMap {
     /** ...in a given month, the game's: what the districts' logs date the month's changes by. */
     public boolean reconcile(long[] model, int month) {
         if (syncLand()) return false;
+        if (siteIndex == null && measured) siteIndex();   // ET5: a stamp change dropped it (landmassPicture()); built once now, over the land as it stands
         this.month = month;
         nPassed = 0;
         int touched = 0;
@@ -1686,6 +1701,8 @@ public final class CityMap {
                 double fx = f.x() - siteX, fy = f.y() - siteY;
                 boolean legacy = f.cell() < 0;
                 if (legacy && from > 0) continue;
+                // ET5 (D9): a field centred on a plot of a landmass the city has not linked gives no site to a works - ground across the water is owned, but no works stands on it. The landmass is the model's one read of a field's (Landmasses.fieldLandmass(), the gate LandManager.freeSites() asks), so no field is drawn as a site that the model refuses, or the other way about.
+                if (landmasses != null && !linkedLandmass(Landmasses.fieldLandmass(World.of(worldKey), f.x(), f.y()))) continue;
                 for (int s = 0; s < f.sites(); s++) {
                     // The site's holding: its field's, whole - the one owning the field's centre plot (0.7.64) - or, for
                     // a field a converted city holds in part, the site's own (CityLand.siteHolding(), 0.7.67).
@@ -2736,6 +2753,8 @@ public final class CityMap {
         long h = World.mix(seed ^ d.key * 0x9E3779B97F4A7C15L);
         long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
         h = World.mix(h ^ land.grid().owned(x0, y0, x0 + DistrictPlan.FRAME, y0 + DistrictPlan.FRAME));
+        // ET5: ...and the linked set, which says which of that ground the plan may draw on (folded only while the city holds a picture of its landmasses).
+        if (landmasses != null) h = World.mix(h ^ landmasses.stamp());
         for (int t = 0; t < types.length; t++) {
             int c = d.counts[t] - (d.sited == null ? 0 : d.sited[t]);
             if (c != 0) h = World.mix(h ^ ((long) t << 32) ^ c);
@@ -4355,6 +4374,12 @@ public final class CityMap {
         private final Map<Long, boolean[]> owned = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
             @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > RUN_TILES_KEPT; }
         };
+        /** ET5: ownership with no mask (atRaw()), kept only while the city holds a picture of its landmasses; the same size and the same version as `owned`. */
+        private final Map<Long, boolean[]> rawOwned = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > RUN_TILES_KEPT; }
+        };
+        private long rawAt = Long.MIN_VALUE, lastRawKey = Long.MIN_VALUE;
+        private boolean[] lastRaw;
         private long ownedAt = Long.MIN_VALUE, lastLineKey = Long.MIN_VALUE, lastOwnKey = Long.MIN_VALUE;
         private byte[] lastLine;
         private boolean[] lastOwn;
@@ -4362,10 +4387,23 @@ public final class CityMap {
         private final boolean[] ALL_OWNED = new boolean[0], NONE_OWNED = new boolean[0];
 
         @Override public int at(long x, long y, int dir) {
+            return read(x, y, dir, true);
+        }
+
+        /**
+         * ...with the ownership unmasked (ET5): a plot the city owns whatever landmass it lies on, as at() reads it where the city
+         * is on one landmass. What a sea terminal's work is laid on: the island's shore is owned ground the runs cannot use, and a
+         * terminal is the one thing that stands there (shoreSpot(t, mines, L)). With no picture of the landmasses it is at().
+         */
+        int atRaw(long x, long y, int dir) {
+            return read(x, y, dir, landmasses == null);
+        }
+
+        private int read(long x, long y, int dir, boolean masked) {
             if (x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE) return -1;
             long tx = x >> 5, ty = y >> 5;
             int ix = (int) (x & (World.TILE - 1)), iy = (int) (y & (World.TILE - 1));
-            if (!ownedAt(tx, ty, ix, iy)) return -1;
+            if (!(masked ? ownedAt(tx, ty, ix, iy) : rawOwnedAt(tx, ty, ix, iy))) return -1;
             // A work on the shore and the plot round it, and a quay, are not the runs' ground (0.7.97): no run crosses a terminal.
             if (!shore.isEmpty() && shore.blocks(x, y)) return -1;
             long tk = (tx << 20) | ty;
@@ -4412,6 +4450,15 @@ public final class CityMap {
                         o = new boolean[TilePainter.PLOTS];
                         land.grid().tileFlags(tx, ty, o);
                     }
+                    // ET5: ground the island rule masks is no ground to the runs (owned, but nothing is laid there): the runs stop at a landmass's edge, a neck the layer splits included (CL5's case I).
+                    if (landmasses != null && o != NONE_OWNED) {
+                        boolean[] m = mask.of(tx, ty);
+                        if (m != null) {
+                            boolean[] kept = new boolean[TilePainter.PLOTS];
+                            for (int i = 0; i < TilePainter.PLOTS; i++) kept[i] = (o == ALL_OWNED || o[i]) && !m[i];
+                            o = kept;
+                        }
+                    }
                     owned.put(tk, o);
                 }
                 lastOwnKey = tk;
@@ -4422,8 +4469,36 @@ public final class CityMap {
             return lastOwn[iy * World.TILE + ix];
         }
 
+        /** Whether the city owns plot (ix, iy) of tile (tx, ty), whatever landmass it is on: ownedAt() without the island rule's mask (ET5; atRaw()). */
+        private boolean rawOwnedAt(long tx, long ty, int ix, int iy) {
+            long v = version();
+            if (v != rawAt) { rawOwned.clear(); rawAt = v; lastRawKey = Long.MIN_VALUE; }
+            long tk = (tx << 20) | ty;
+            if (tk != lastRawKey) {
+                boolean[] o = rawOwned.get(tk);
+                if (o == null) {
+                    int c = cover(land.grid().cover(5, tx, ty));
+                    if (c == ALL) o = ALL_OWNED;
+                    else if (c == NONE) o = NONE_OWNED;
+                    else {
+                        o = new boolean[TilePainter.PLOTS];
+                        land.grid().tileFlags(tx, ty, o);
+                    }
+                    rawOwned.put(tk, o);
+                }
+                lastRawKey = tk;
+                lastRaw = o;
+            }
+            if (lastRaw == ALL_OWNED) return true;
+            if (lastRaw == NONE_OWNED) return false;
+            return lastRaw[iy * World.TILE + ix];
+        }
+
         @Override public long version() {
-            return World.mix(landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp() ^ shore.version() * 0x9E3779B97F4A7C15L);
+            long v = landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp() ^ shore.version() * 0x9E3779B97F4A7C15L;
+            // ET5: the linked set is part of the ground (a landmass linked unmasks its plots); folded only while the city holds a picture.
+            if (landmasses != null) v ^= landmasses.stamp() * 0xBF58476D1CE4E5B9L;
+            return World.mix(v);
         }
 
         @Override public long[] box() {
@@ -4505,6 +4580,8 @@ public final class CityMap {
         private CityShore seenShore;
         private long seenShoreVer, seenCentre;
         private int seenPurchases;
+        /** The picture's stamp the labels were read under (ET5; 0 for none): a purchase adds ground the labels can be extended by only under the same linked set, else they are read from the start. */
+        private long seenLinks;
 
         private int count;
         private int[] pieceOfLabel = new int[0];
@@ -4581,7 +4658,9 @@ public final class CityMap {
             long centre = land.centreStamp();
             // A purchase only adds owned ground; anything else that moves the ground (the land drawn again, another land or shore, a work laid
             // or taken) is read from the start.
-            boolean more = built && seenLand == land && seenShore == shore && seenShoreVer == shore.version() && seenCentre == centre && bought.size() >= seenPurchases;
+            // ET5 (F16): ...nor does a purchase only add ground when the linked set moved - a landmass linked unmasks plots no scan of a new rectangle reaches - so a moved stamp floods from the start (seenLinks).
+            boolean more = built && seenLand == land && seenShore == shore && seenShoreVer == shore.version() && seenCentre == centre && bought.size() >= seenPurchases
+                    && seenLinks == linksStamp();
             if (more) {
                 for (int k = seenPurchases; k < bought.size(); k++) {
                     LandParcel o = bought.get(k).offer();
@@ -4606,6 +4685,7 @@ public final class CityMap {
             seenShoreVer = shore.version();
             seenCentre = centre;
             seenPurchases = bought.size();
+            seenLinks = linksStamp();
             builtVer = ver;
             built = true;
             buildId++;
@@ -4657,11 +4737,15 @@ public final class CityMap {
             int c = c8 == LandGrid.ALL ? LandGrid.ALL : g.cover(5, tx, ty);
             if (c == LandGrid.NONE) return false;
             boolean mayBlock = !blocked.isEmpty() && blocked.contains((ty << 32) | (tx & 0xffffffffL));
+            // ET5 (F4): a sample on ground the island rule masks (a landmass no port links) is not land, however it is owned - tested here and not in terrainChunk()'s kept bits, for the linked set moves and the terrain's verdict does not.
+            // CL5's table (THE ISLAND RULE ON THE MAP): this is where cases D, E and H (water between two landmasses, deep or wide), I (a dry neck the layer splits - each plot has its own cell's id) and J (an island holding only its port) are answered: the unlinked side's samples are not land, so no piece holds it and no net or weight follows; A, B, C and F (one landmass, or two linked) are as CL5 has them.
+            boolean[] masked = landmasses == null ? null : mask.of(tx, ty);
             byte[] t = null;
             int ti = (int) (((ty & PIECE_CHUNK_MASK) << PIECE_CHUNK_SHIFT) | (tx & PIECE_CHUNK_MASK));
             for (int s = 0; s < 4; s++) {
                 long x = (tx << 5) + PIECE_SAMPLE_AT + PIECE_SAMPLE_EVERY * (s & 1), y = (ty << 5) + PIECE_SAMPLE_AT + PIECE_SAMPLE_EVERY * (s >> 1);
                 if (c != LandGrid.ALL && g.owner(x, y) < 0) continue;
+                if (masked != null && masked[(int) ((y & (World.TILE - 1)) * World.TILE + (x & (World.TILE - 1)))]) continue;
                 if (mayBlock && shore.blocks(x, y)) continue;
                 if (t == null) t = terrainChunk(tx, ty);
                 int b = t[ti], bit = 1 << s;
@@ -5354,8 +5438,13 @@ public final class CityMap {
 
     /** The ground's key, without the shore's own works: what a search that came up short waits on. */
     private long groundKey() {
+        // ET5: ...and the linked set, which opens ground to a terminal's search (folded only while the city holds a picture).
+        if (landmasses != null) return World.mix(landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp() ^ landmasses.stamp() * 0xBF58476D1CE4E5B9L);
         return World.mix(landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp());
     }
+
+    /** The searches that came up short for a terminal on a landmass, by template and landmass, with the ground's key they came up short at (ET5): the single `shoreShortAt` serves a city on one landmass. */
+    private final Map<Long, Long> shoreShortBy = new HashMap<>();
 
     /**
      * Lays the shore to the model's counts: one fewer of a type takes its
@@ -5371,6 +5460,20 @@ public final class CityMap {
         boolean moved = false;
         for (int t : st) {
             long want = t < model.length ? Math.max(0, model[t]) : 0;
+            // ET5: while the city is on more than one landmass a terminal is taken from the landmass it is counted on (CityShore.removeNewest() with a predicate): the newest work of the type whose shore plot is on it.
+            if (landmasses != null && types[t].berth() >= 0) {
+                LinkedHashMap<Integer, Long> wants = portWants(t, want);
+                for (int at : shoreLandmasses(t, wants)) {
+                    long wantAt = wants.getOrDefault(at, 0L);
+                    while (shoreOn(t, at) > wantAt) {
+                        if (!takeNewest(t, at)) break;
+                        moved = true;
+                        shoreShortAt = Long.MIN_VALUE;
+                        shoreShortBy.clear();
+                    }
+                }
+                continue;
+            }
             while (shore.count(t) > want) {
                 // (batch FX7) the districts the newest work of the type lies in are read before it goes.
                 if (journalling) {
@@ -5385,12 +5488,38 @@ public final class CityMap {
                 if (!shore.removeNewest(t)) break;
                 moved = true;
                 shoreShortAt = Long.MIN_VALUE;
+                shoreShortBy.clear();
             }
         }
         int missing = 0;
         List<long[]> mines = null;
         for (int t : st) {
             long want = t < model.length ? Math.max(0, model[t]) : 0;
+            // ET5: ...and laid on the landmass it is counted on, each landmass's share a search of its own (shoreSpot(t, mines, L)), the home landmass's first.
+            if (landmasses != null && types[t].berth() >= 0) {
+                for (Map.Entry<Integer, Long> e : portWants(t, want).entrySet()) {
+                    int at = e.getKey();
+                    long wantAt = e.getValue();
+                    int haveAt = shoreOn(t, at);
+                    if (haveAt >= wantAt) continue;
+                    long shortKey = ((long) t << 32) ^ (at & 0xffffffffL);
+                    if (Long.valueOf(groundKey()).equals(shoreShortBy.get(shortKey))) { missing += (int) (wantAt - haveAt); continue; }
+                    if (mines == null) mines = minedSites();
+                    while (haveAt < wantAt) {
+                        CityShore.Work w = shoreSpot(t, mines, at);
+                        if (w == null) {
+                            missing += (int) (wantAt - haveAt);
+                            shoreShortBy.put(shortKey, groundKey());
+                            break;
+                        }
+                        if (journalling) CityRuns.sawBox(witness, w.x0(), w.y0(), w.w(), w.h());
+                        shore.add(w);
+                        haveAt++;
+                        moved = true;
+                    }
+                }
+                continue;
+            }
             int have = shore.count(t);
             if (have >= want) continue;
             if (shoreShortAt == groundKey()) { missing += (int) (want - have); continue; }
@@ -5422,6 +5551,89 @@ public final class CityMap {
     }
 
     /**
+     * How many of a terminal's `total` the city has on each landmass (ET5), the home landmass first and then the others
+     * ascending, only those with any: what the picture says stands off home (Landmasses.picture()'s triples of {template, landmass,
+     * units}), and the home landmass the rest of the model's count. A unit being demolished is still in the model's count and no longer
+     * among the picture's standing ones: the units the model counts beyond the standing ones (the slack) keep the works that stand
+     * beyond a landmass's standing ones, landmass by landmass in ascending order, so that a work does not leave its landmass while
+     * its demolition is on site - and what is not so kept reads as home's, so a work is taken only when the model's count falls.
+     */
+    private LinkedHashMap<Integer, Long> portWants(int t, long total) {
+        int home = landmasses.home();
+        TreeMap<Integer, Long> standing = new TreeMap<>();
+        long[] tri = landmasses.portsByTypeAndLandmass();
+        long all = 0;
+        for (int i = 0; i + 2 < tri.length; i += 3) {
+            if (tri[i] != t || tri[i + 2] <= 0) continue;
+            standing.merge(tri[i + 1] == 0 ? home : (int) tri[i + 1], tri[i + 2], Long::sum);
+            all += tri[i + 2];
+        }
+        long slack = Math.max(0, total - all);
+        World world = World.of(worldKey);
+        java.util.TreeSet<Integer> offHome = new java.util.TreeSet<>(standing.keySet());
+        for (CityShore.Work w : shore.works()) if (w.type() == t) offHome.add(workLandmass(world, w));
+        offHome.remove(home);
+        TreeMap<Integer, Long> off = new TreeMap<>();
+        long kept = 0;
+        for (int at : offHome) {
+            long keep = standing.getOrDefault(at, 0L);
+            long extra = Math.min(slack, Math.max(0, shoreOn(t, at) - keep));
+            slack -= extra;
+            keep += extra;
+            if (keep > 0) off.put(at, keep);
+            kept += keep;
+        }
+        LinkedHashMap<Integer, Long> out = new LinkedHashMap<>();
+        out.put(home, Math.max(0, total - kept));
+        out.putAll(off);
+        return out;
+    }
+
+    /** The landmasses a terminal type is to be taken from or laid on (ET5): those it is wanted on, and those its works stand on now, the home landmass first. */
+    private List<Integer> shoreLandmasses(int t, LinkedHashMap<Integer, Long> wants) {
+        World world = World.of(worldKey);
+        TreeMap<Integer, Boolean> extra = new TreeMap<>();
+        for (CityShore.Work w : shore.works()) {
+            if (w.type() != t) continue;
+            int at = workLandmass(world, w);
+            if (!wants.containsKey(at)) extra.put(at, true);
+        }
+        List<Integer> out = new ArrayList<>(wants.keySet());
+        out.addAll(extra.keySet());
+        return out;
+    }
+
+    /** The landmass a work stands on (ET5): its shore plot's, a derived read - CityShore's sidecar carries none. */
+    private int workLandmass(World world, CityShore.Work w) {
+        long[] s = w.shorePlot();
+        return landmassOfShorePlot(world, s[0], s[1]);
+    }
+
+    /** How many works of type t stand on a landmass. */
+    private int shoreOn(int t, int at) {
+        World world = World.of(worldKey);
+        int n = 0;
+        for (CityShore.Work w : shore.works()) if (w.type() == t && workLandmass(world, w) == at) n++;
+        return n;
+    }
+
+    /** The newest work of type t on a landmass taken away (the districts it lies in read first, as layShore() reads them); false when there is none. */
+    private boolean takeNewest(int t, int at) {
+        World world = World.of(worldKey);
+        java.util.function.Predicate<CityShore.Work> there = w -> workLandmass(world, w) == at;
+        if (journalling) {
+            List<CityShore.Work> laid = shore.works();
+            for (int i = laid.size() - 1; i >= 0; i--) {
+                CityShore.Work w = laid.get(i);
+                if (w.type() != t || !there.test(w)) continue;
+                CityRuns.sawBox(witness, w.x0(), w.y0(), w.w(), w.h());
+                break;
+            }
+        }
+        return shore.removeNewest(t, there);
+    }
+
+    /**
      * Where the next work of type t goes (CityShore's rule), or null: the
      * districts in the map's order, each one's tiles nearest the founding
      * site first; on each tile with owned salt water and owned dry ground,
@@ -5431,6 +5643,23 @@ public final class CityMap {
      * district's first spot, once its tiles are looked at.
      */
     CityShore.Work shoreSpot(int t, List<long[]> mines) {
+        return shoreSpot(t, mines, ANY_LANDMASS);
+    }
+
+    /** ET5: no landmass asked for: the search runs as it always did, over the ground the runs can use. */
+    static final int ANY_LANDMASS = Integer.MIN_VALUE;
+
+    /**
+     * ...for a terminal on a landmass (ET5, 2026-10-25): while the city holds a picture of its landmasses and asks for one, the ground is read
+     * with the ownership unmasked (RunGround.atRaw(): an island no port links is owned ground the runs cannot use, and a
+     * terminal is the one thing that stands on it) and a dry plot that is not on the landmass is no ground to the search - not
+     * the shore plot, not the box, not the verge. A tank farm, a reserve and the rest of the shore's types ask for none, and
+     * find the linked shore alone (the runs' own ground).
+     */
+    CityShore.Work shoreSpot(int t, List<long[]> mines, int landmass) {
+        boolean island = landmasses != null && landmass != ANY_LANDMASS;
+        World world = World.of(worldKey);
+        int[] tileLm = island ? new int[TilePainter.PLOTS] : null, windowLm = island ? new int[TilePainter.PLOTS] : null;
         int[] fp = BuildingVisual.footprint(types[t]);
         int quay = types[t].berth() >= 0 ? CityShore.QUAY_PLOTS[types[t].berth()] : 0;
         int m = World.TILE, ww = World.TILE + 2 * m, tile = World.TILE;
@@ -5455,23 +5684,27 @@ public final class CityMap {
             for (int k : order) {
                 long tx = tx0 + k % TILES_A_SIDE, ty = ty0 + k / TILES_A_SIDE;
                 if (cover(land.grid().cover(5, tx, ty)) == NONE) continue;
+                // ET5: a tile no plot of which can lie on another landmass than home's is passed over for an island's terminal, unlooked at (its window of cells holds none of its id).
+                if (island && landmass != landmasses.home() && Arrays.binarySearch(world.idsNear(tx, ty), landmass) < 0) continue;
                 if (++scanned > CityShore.SEARCH_TILES_MOST) return far;
                 boolean wet = false, dry = false;
+                if (island) world.tileLandmass(tx, ty, tileLm);
                 for (int i = 0; i < World.TILE * World.TILE && !(wet && dry); i++) {
-                    int g = runGround.at(tx * tile + i % tile, ty * tile + i / tile, -1);
+                    int g = island ? runGround.atRaw(tx * tile + i % tile, ty * tile + i / tile, -1) : runGround.at(tx * tile + i % tile, ty * tile + i / tile, -1);
                     if (World.salt(g)) wet = true;
-                    else if (CityRuns.dry(g)) dry = true;
+                    else if (CityRuns.dry(g) && (!island || onLandmass(tileLm[i], landmass))) dry = true;
                 }
                 if (!wet || !dry) continue;
                 long wx0 = tx * tile - m, wy0 = ty * tile - m;
                 runs.fill(wx0, wy0, ww, ww, fixed, null, true);
-                for (int j = 0; j < ww * ww; j++) ground[j] = runGround.at(wx0 + j % ww, wy0 + j / ww, -1);
+                for (int j = 0; j < ww * ww; j++) ground[j] = island ? runGround.atRaw(wx0 + j % ww, wy0 + j / ww, -1) : runGround.at(wx0 + j % ww, wy0 + j / ww, -1);
                 // A terminal or a tank farm is a building (ET2): it stands on flat and foothill only, so steep ground is read as a mine's site is, ground no work takes.
                 for (int ry = 0; ry < 3; ry++) {
                     for (int rx = 0; rx < 3; rx++) {
                         World.of(worldKey).tileRelief(tx - 1 + rx, ty - 1 + ry, shoreRelief);
+                        if (island) world.tileLandmass(tx - 1 + rx, ty - 1 + ry, windowLm);
                         for (int i = 0; i < tile * tile; i++) {
-                            if (shoreRelief[i] <= World.FOOTHILL) continue;
+                            if (shoreRelief[i] <= World.FOOTHILL && !(island && !onLandmass(windowLm[i], landmass))) continue;
                             int j = (ry * tile + i / tile) * ww + rx * tile + i % tile;
                             if (CityRuns.dry(ground[j])) ground[j] = -2;
                         }
@@ -5610,6 +5843,192 @@ public final class CityMap {
 
     private static double clamp(double v, double lo, double hi) {
         return Math.max(lo, Math.min(hi, v));
+    }
+
+    /* =====================================================================
+       THE ISLAND RULE ON THE MAP (ET5, 2026-10-25)
+
+       A city that owns ground on more than its home landmass is handed a
+       picture of them by the game (Game.getLandmassPicture(), from
+       Landmasses.picture()): its home, the landmasses it has linked, its
+       sea terminals standing by template and landmass, and a stamp that moves
+       with the linked set. It is null while the city owns nothing off home -
+       every generated world, and every Earth city on one landmass - and then
+       NOTHING IN THIS SECTION RUNS: each mask is skipped, and every stamp and
+       version is what it was before ET5.
+
+       WHY. The map knew no landmass. Ground the city had bought across a
+       strait was owned dry ground to it, so its districts held room, place()
+       dealt buildings there, the runs laid a net on it and the pieces joined
+       it - though the model (LandManager's linked view) says no building
+       stands on ground no port links, and a works stands on no field there.
+       The map drew what the model had refused.
+
+       THE MASK. A plot is MASKED when the world's landmass of it
+       (World.tileLandmass()) is neither 0 (the sea, and a world with no
+       landmasses), the home landmass, nor one the picture lists as linked: a
+       plot of a landmass the picture does not list at all is masked, so a
+       stale picture never unmasks ground that is new. Masked ground is still
+       OWNED - the painter keeps tileOwnership(), and the view hatches it - but
+       it is no room to anyone: not a district's free plot (measure()), not the
+       plans' ground (planInputHere()), not the runs' (RunGround), not land to
+       a piece (MapPieces.isLand()), and a field centred on it is no site to a
+       works (tallySites(), by the one reader the model's gate shares,
+       Landmasses.fieldLandmass()). The one exception is a sea terminal: its
+       work stands on the shore of the landmass its count was placed for
+       (shoreSpot(t, mines, L), laid per landmass by layShore()).
+
+       WHEN THE PICTURE MOVES. A change of the linked set re-measures every
+       district once (landmassPicture()), builds the site index again, floods
+       the pieces from the start and is folded into the sidecar's land stamp
+       (writeSidecar()), so a sidecar written under another linked set is never
+       read back. The terminals' counts move nothing but layShore().
+
+       CL5's PIECES (docs/queue/CL5-notes.md; the ET5 design, 4): CL5's pieces
+       stay CL5's, and ET5 only hides unlinked ground from them. Where the
+       landmass and the pieces disagree, the case is answered where it is
+       handled, as the design's table has it:
+         A unowned land between two owned grounds, B fresh water up to 420 m,
+           C fresh or shallow water up to 1,020 m, F a channel narrower than a
+           cell: one landmass or two linked ones; unchanged (C a stuck net until
+           ET6, as CL5 has it).
+         D water of 1,020 to 1,440 m (Goeree), E deep water under 510 m, H water
+           of 1,440 m or more: the unlinked side is masked, so it is never in
+           a piece, and a piece never holds ground of a landmass that is not
+           linked; where both sides are linked one piece may stand, and a net
+           cannot cross salt (the arms stop at it: CityRuns.clear()) - ET5-C7.
+         G a frayed islet in a sea cell: the model's rule for it (D2) gives it
+           the nearest land cell's id through World.tileLandmass(); the map has
+           no rule of its own.
+         I a dry neck the layer splits: each plot takes its own cell's id, so
+           the unlinked half is masked from the runs and the pieces and the
+           runs stop at the edge.
+         J an island holding only its port: masked - no piece, no weight, no
+           net; its work stands on the island's shore and its count in a
+           linked district (ET5-C3).
+       ===================================================================== */
+
+    /** The tiles whose masks are kept: 65,536 (a tile's mask is a reference, and a boolean array only for a tile holding masked ground). */
+    static final int MASK_TILES_KEPT = 1 << 16;
+
+    /** The landmasses as the game last handed them, or null while the city owns nothing off its home landmass. */
+    private Landmasses.Picture landmasses;
+
+    /** Which plots of a tile the island rule masks, for the picture held. */
+    private final LinkedMask mask = new LinkedMask();
+
+    /** The picture of the landmasses the game last handed over: null while the city is on one landmass. */
+    public Landmasses.Picture landmassPicture() { return landmasses; }
+
+    /** The picture's stamp, 0 for none: what a cache of anything the mask touches keys on. */
+    private long linksStamp() { return landmasses == null ? 0 : landmasses.stamp(); }
+
+    /**
+     * The landmasses handed over by the game (Game.reconcileMap(), beside railPicture()). A new picture with the stamp the old
+     * had changes nothing but the terminals it counts; one with another stamp - a landmass linked, the first ground bought off
+     * home - measures every district again, drops the site index (the reconcile() that follows, or the next ask for it, builds it
+     * again over the land as it then stands) and restamps the tiles.
+     */
+    public void landmassPicture(Landmasses.Picture p) {
+        long was = linksStamp();
+        landmasses = p;
+        long now = linksStamp();
+        if (was == now) return;
+        mask.reset(p);
+        if (!measured) return;
+        for (District d : districts) {
+            measure(d, ownership(d.dx, d.dy));
+            d.version++;
+        }
+        landVersion++;
+        changes++;
+        // ...the site index dropped and not built here: the game hands the picture over before reconcile(), whose syncLand() has yet to see the month's purchases and would tally them a second time over an index that already counted them; the next siteIndex() (reconcile()'s first thing after the land is caught up) counts every holding once.
+        siteIndex = null;
+        sortDistricts();
+        if (pyramid != null) pyramid = new Pyramid(this);
+    }
+
+    /** Whether a landmass is one the picture lets the city's buildings stand on: 0 (the sea), home and the linked ids. */
+    private boolean linkedLandmass(int id) {
+        return landmasses == null || id == 0 || id == landmasses.home() || Arrays.binarySearch(landmasses.linked(), id) >= 0;
+    }
+
+    /** A plot's landmass as the map reads it, 0 (no landmass) as home: the id a terminal's shore plot is laid for. The map has no rule of its own for a frayed islet (CL5's case G): it is the world's, World.landmassAt(). */
+    private int landmassOfShorePlot(World world, long x, long y) {
+        int id = world.landmassAt(x, y);
+        return id == 0 && landmasses != null ? landmasses.home() : id;
+    }
+
+    /** Whether a dry plot whose landmass is `id` (World.tileLandmass()) is on `landmass`, 0 read as home - the test a terminal's search puts to every plot. */
+    private boolean onLandmass(int id, int landmass) {
+        return (id == 0 && landmasses != null ? landmasses.home() : id) == landmass;
+    }
+
+    /**
+     * Which plots of each tile are masked, kept for the picture held: the plots whose landmass the picture does not link. A
+     * tile whose window of cells (World.idsNear()) holds no unlinked id has no mask and costs one read, once; a tile with
+     * masked plots keeps a boolean a plot (true = masked). Cleared whenever the linked set moves.
+     */
+    private final class LinkedMask {
+        private Landmasses.Picture p;
+        private final Map<Long, boolean[]> tiles = new LinkedHashMap<>(1024, 0.75f, true) {
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > MASK_TILES_KEPT; }
+        };
+        private final boolean[] NONE = new boolean[0];
+        private final int[] ids = new int[TilePainter.PLOTS];
+
+        void reset(Landmasses.Picture picture) {
+            p = picture;
+            tiles.clear();
+        }
+
+        /** The mask of tile (tx, ty), a boolean a plot in rows (true = masked), or null when no plot of it is masked or there is no picture. */
+        boolean[] of(long tx, long ty) {
+            if (p == null) return null;
+            long k = (tx << 20) | ty;
+            boolean[] m = tiles.get(k);
+            if (m == null) {
+                m = NONE;
+                World w = World.of(worldKey);
+                boolean near = false;
+                for (int id : w.idsNear(tx, ty)) if (!linkedLandmass(id)) { near = true; break; }
+                if (near) {
+                    w.tileLandmass(tx, ty, ids);
+                    boolean[] got = null;
+                    for (int i = 0; i < TilePainter.PLOTS; i++) {
+                        if (linkedLandmass(ids[i])) continue;
+                        if (got == null) got = new boolean[TilePainter.PLOTS];
+                        got[i] = true;
+                    }
+                    if (got != null) m = got;
+                }
+                tiles.put(k, m);
+            }
+            return m == NONE ? null : m;
+        }
+    }
+
+    /** Which plots of tile (tx, ty) the city owns and may build on: tileOwnership() less the plots the island rule masks (ET5; all of it while the city is on one landmass). */
+    public void buildableOwnership(long tx, long ty, boolean[] out) {
+        tileOwnership(tx, ty, out);
+        if (landmasses == null) return;
+        boolean[] m = mask.of(tx, ty);
+        if (m == null) return;
+        for (int i = 0; i < TilePainter.PLOTS; i++) if (m[i]) out[i] = false;
+    }
+
+    /** Whether the city owns ground in district (dx, dy) that the island rule masks: such a district stays on the map with no room, so the shore reaches it. */
+    private boolean holdsMasked(int dx, int dy) {
+        boolean[] own = new boolean[TilePainter.PLOTS];
+        for (int k = 0; k < TILES; k++) {
+            long tx = (baseDX + dx) * TILES_A_SIDE + k % TILES_A_SIDE, ty = (baseDY + dy) * TILES_A_SIDE + k / TILES_A_SIDE;
+            if (cover(land.grid().cover(5, tx, ty)) == NONE) continue;
+            boolean[] m = mask.of(tx, ty);
+            if (m == null) continue;
+            tileOwnership(tx, ty, own);
+            for (int i = 0; i < TilePainter.PLOTS; i++) if (m[i] && own[i]) return true;
+        }
+        return false;
     }
 
     /** The freight station's yard, {x0, y0, w, h} in world plots: the yard nearest the rail main arm's end (spec 4.2; CityRuns.freightStation()); null for none. */
@@ -6542,7 +6961,7 @@ public final class CityMap {
         for (int j = 0; j < tiles; j++) {
             for (int i = 0; i < tiles; i++) {
                 long tx = Math.floorDiv(x0, World.TILE) + i, ty = Math.floorDiv(y0, World.TILE) + j;
-                tileOwnership(tx, ty, own);
+                buildableOwnership(tx, ty, own);   // ET5: the plan draws on the ground the island rule leaves (tileOwnership() while the city is on one landmass)
                 for (int y = 0; y < World.TILE && j * World.TILE + y < f; y++) {
                     System.arraycopy(own, y * World.TILE, in.owned, (j * World.TILE + y) * f + i * World.TILE, Math.min(World.TILE, f - i * World.TILE));
                 }
@@ -6886,7 +7305,7 @@ public final class CityMap {
             out.writeLong(0);                       // the stamp, below
             out.writeLong(siteX);
             out.writeLong(siteY);
-            out.writeLong(land.stamp(purchasesSeen));
+            out.writeLong(landStampOf(land, purchasesSeen, landmasses));   // ET5: with the linked set folded in while the city holds a picture of its landmasses
             out.writeInt(purchasesSeen);
             out.writeInt(types.length);
             out.writeInt(districts.size());
@@ -6957,6 +7376,12 @@ public final class CityMap {
     }
 
     private long lastStamp;
+
+    /** The land's stamp over its first `bought` purchases, with the picture's stamp folded in when the city holds one (ET5): the sidecar's land stamp. Exactly CityLand.stamp() for a city on one landmass. */
+    private static long landStampOf(CityLand land, int bought, Landmasses.Picture landmasses) {
+        long s = land.stamp(bought);
+        return landmasses == null ? s : World.mix(s ^ landmasses.stamp());
+    }
 
     /** An unsigned varint (CL3): seven bits a byte, the low first, the high bit set where more follow. */
     static void writeVarint(DataOutputStream out, int v) throws IOException {
@@ -7041,6 +7466,15 @@ public final class CityMap {
      */
     public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining,
                                       BuildingVisual.Type[] types, int month, long stamp) {
+        return readSidecar(deflated, land, remaining, types, month, stamp, null);
+    }
+
+    /**
+     * ...on the landmasses the game hands over (ET5): a sidecar written under another linked set - or under none - is not this city's, and the map is
+     * drawn again; the picture is the map's own from the first district read, so the ground it measures later is masked as it was.
+     */
+    public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining,
+                                      BuildingVisual.Type[] types, int month, long stamp, Landmasses.Picture landmasses) {
         byte[] raw = inflate(deflated);
         if (raw == null || raw.length < STAMP_AT + 8) return null;
         try {
@@ -7055,13 +7489,15 @@ public final class CityMap {
             long sx = in.readLong(), sy = in.readLong();
             long landStamp = in.readLong();
             int bought = in.readInt();
-            if (sx != land.siteX() || sy != land.siteY() || bought != land.purchases().size() || landStamp != land.stamp(bought)) return null;
+            if (sx != land.siteX() || sy != land.siteY() || bought != land.purchases().size() || landStamp != landStampOf(land, bought, landmasses)) return null;
             int nTypes = in.readInt(), n = in.readInt();
             if (nTypes > types.length || n < 0) return null;
             CityMap m = new CityMap(land.key(), sx, sy, types);
             m.month = savedMonth;
             m.land = land;
             m.remaining = remaining;
+            m.landmasses = landmasses;
+            m.mask.reset(landmasses);
             for (int i = 0; i < n; i++) {
                 int dx = in.readShort(), dy = in.readShort();
                 District d = m.newDistrict(dx, dy);

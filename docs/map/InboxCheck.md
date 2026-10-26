@@ -1,6 +1,6 @@
 # InboxCheck.java - 527 lines · 8 methods · 2 constants · harnesses
 
-`ham/citybuildersim/InboxCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InboxCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > Verifies the inbox: raising, refreshing, resolving, culling and the round
 > trip. Not part of the game.

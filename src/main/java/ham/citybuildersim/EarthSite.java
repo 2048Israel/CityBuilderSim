@@ -115,6 +115,14 @@ public final class EarthSite {
      */
     public static final int SLOPE_FORMAT = 46;
 
+    /**
+     * The save format the city's ground is first counted by landmass in: 47 (ET5; Landmasses, GameVersion's LANDMASSES).
+     * An Earth city saved before it that owns ground across the water would load that ground as room for any building,
+     * and every sea terminal it holds as standing at home - wrongly, not merely incompletely - so its save is refused
+     * (loadProblem()); a generated city has one landmass, always home, and its save loads.
+     */
+    public static final int LANDMASS_FORMAT = 47;
+
     /** The stream Random spot draws its order from. */
     private static final long RANDOM_SALT = 0x5B07A11DL;
 
@@ -244,7 +252,7 @@ public final class EarthSite {
         return loadProblem(identity, lat, lon, GameVersion.SAVE_FORMAT);
     }
 
-    /** ...and of a save in a given format: one before ICE_FORMAT is refused first (0.7.127), then one before DEPOSITS_FORMAT (0.8.12), then one before SLOPE_FORMAT (ET2), whatever its data (DataSave.earthProblem() passes the save's). */
+    /** ...and of a save in a given format: one before ICE_FORMAT is refused first (0.7.127), then one before DEPOSITS_FORMAT (0.8.12), then one before SLOPE_FORMAT (ET2), then one before LANDMASS_FORMAT (ET5), whatever its data (DataSave.earthProblem() passes the save's). */
     public static String loadProblem(String identity, Double lat, Double lon, int format) {
         if (identity == null || identity.isBlank() || lat == null || lon == null || !(lat >= -90 && lat <= 90) || !Double.isFinite(lon)) {
             return "This city stands on the real Earth, and its save does not say where.";
@@ -252,6 +260,7 @@ public final class EarthSite {
         if (format < ICE_FORMAT) return BEFORE_ICE_WORDS;
         if (format < DEPOSITS_FORMAT) return BEFORE_DEPOSITS_WORDS;
         if (format < SLOPE_FORMAT) return BEFORE_SLOPE_WORDS;
+        if (format < LANDMASS_FORMAT) return BEFORE_LANDMASS_WORDS;
         if (available(identity)) return null;
         if (identity.equals(EarthData.EARTH_2)) return missingWords(EarthData.locate(), fromRepository());
         return otherDataWords(identity);
@@ -279,6 +288,11 @@ public final class EarthSite {
     /** The load's words for a city on the real Earth saved before its founding site was snapped to ground a building may stand on (SLOPE_FORMAT). */
     public static final String BEFORE_SLOPE_WORDS = "This city was founded on the real Earth before slope decided where a building may stand: its founding site was"
             + " found where steep ground counted as buildable, and this build would find it elsewhere, so it does not load it."
+            + " The build that saved it still opens it.";
+
+    /** The load's words for a city on the real Earth saved before its ground was counted by landmass (LANDMASS_FORMAT). */
+    public static final String BEFORE_LANDMASS_WORDS = "This city was founded on the real Earth before its ground was counted by landmass: ground across the"
+            + " water would load as ground to build on, and its ports as standing at home, so this build does not load it."
             + " The build that saved it still opens it.";
 
     /** The load's words for a city on other data than this build's. */
@@ -441,7 +455,7 @@ public final class EarthSite {
      * @param reliefPlots the disc's dry plots by relief (ET1), World.RELIEFS of them, FLAT to VERY_STEEP: they add up to dry
      * @param shallowKm   how far the nearest shallow sea (World.SHALLOW) lies from the site's centre, km; NaN where none lies within reach
      * @param seaDepthMaxM the deepest the sea is within reach, metres: the depth layer's 1' cell under each sea plot of the disc (EarthData.depthM(), as World.depthAt() reads it: a metre at least), the greatest; NaN where there is no sea within reach
-     * @param landmass    the landmass the site stands on (EarthData.landmassAt()); null where the data has no landmass layer or none lies about the site
+     * @param landmass    the landmass the site stands on (World.landmassAt() at the snapped site, ET5: the home landmass of the city founded there); null where the data has no landmass layer or none lies about the site
      * @param warnings    what to know before founding here; empty for nothing
      */
     public record Card(World.Key key, boolean hasSite, long siteX, long siteY, double siteLat, double siteLon,
@@ -532,32 +546,16 @@ public final class EarthSite {
     }
 
     /**
-     * The landmass a site stands on (ET1): the data's at the site's point, or - when the point's 15" cell is not
-     * land by the landmass layer's rule (a coast the game draws dry where the data says half water) - the one most of
-     * the nearest ring of cells about it holds, within LANDMASS_RINGS rings; null for none, or for data with no
-     * landmass layer (an earth-1 file).
+     * The landmass a site stands on (ET1; ET5): the one World.landmassAt() reads at the snapped site's plot - the data's
+     * cell at the plot's blend point, or for a plot the game draws dry on a cell the layer calls no land the nearest land
+     * cell's within EarthTerrain.LANDMASS_REACH. WHY it is that call and no rule of the card's own (ET1 had the most-seen
+     * id of a ring of cells at the site's exact point): the city's home landmass IS this one, read at the same plot by the
+     * same function (Landmasses), so the card and the books cannot disagree. Null for none, or for data with no landmass
+     * layer (an earth-1 file).
      */
-    static EarthData.Landmass landmassNear(EarthData d, double lat, double lon) {
-        if (!d.hasRelief()) return null;
-        int id = d.landmassAt(lat, lon);
-        double step = 1.0 / 240, lonStep = step / Math.max(0.05, Math.cos(Math.toRadians(lat)));
-        for (int k = 1; id == 0 && k <= LANDMASS_RINGS; k++) {
-            java.util.Map<Integer, Integer> seen = new java.util.TreeMap<>();
-            for (int j = -k; j <= k; j++) {
-                for (int i = -k; i <= k; i++) {
-                    if (Math.max(Math.abs(i), Math.abs(j)) != k) continue;
-                    int near = d.landmassAt(Math.max(-90, Math.min(90, lat + j * step)), lon + i * lonStep);
-                    if (near != 0) seen.merge(near, 1, Integer::sum);
-                }
-            }
-            int most = 0;
-            for (java.util.Map.Entry<Integer, Integer> en : seen.entrySet()) if (en.getValue() > most) { most = en.getValue(); id = en.getKey(); }
-        }
-        return d.landmass(id);
+    static EarthData.Landmass siteLandmass(World w, long sx, long sy) {
+        return w.hasLandmasses() ? w.earthTerrain().data().landmass(w.landmassAt(sx, sy)) : null;
     }
-
-    /** How many rings of 15" cells (about 460 m each) landmassNear() looks through for land when the site's own cell has none: 8, 3.7 km. */
-    static final int LANDMASS_RINGS = 8;
 
     /** The card's words for a spot with no site: in the sea, or on an island too small (a spot among steep slopes has SLOPE_WORDS). */
     public static final String NO_SITE_WORDS = "No dry ground within 5 km to found a city on: the spot is in the sea, or on an island too small.";
@@ -683,7 +681,7 @@ public final class EarthSite {
         }
         return new Card(key, true, sx, sy, ll[0], ll[1], snapped, near, plots, dry, fresh, sea, icePlots, freshKm, seaKm, row,
                 prov == null ? null : prov.name().trim(), geo.kindOf(row), multipliers, ironKm, ironWay, ice, desert,
-                ice ? ICE_WORDS : null, reliefPlots, shallowKm, seaDepthMaxM, landmassNear(d, ll[0], ll[1]), List.copyOf(warnings));
+                ice ? ICE_WORDS : null, reliefPlots, shallowKm, seaDepthMaxM, siteLandmass(w, sx, sy), List.copyOf(warnings));
     }
 
     /**

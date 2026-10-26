@@ -1,6 +1,6 @@
 # SectorStatementCheck.java - 913 lines · 22 methods · 4 constants · harnesses
 
-`ham/citybuildersim/SectorStatementCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorStatementCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The sector statements (0.7.74, batch S1): SectorStatements' formal
 > statements held to the model's own figures, every sector and the bank,

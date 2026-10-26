@@ -1,6 +1,6 @@
 # SaveCopy.java - 54 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/SaveCopy.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveCopy.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The small copies a save's snapshot is made of: a list or map copied, with
 > each element copied too where the elements can change. No state.

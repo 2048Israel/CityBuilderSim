@@ -1,6 +1,6 @@
-# CityShore.java - 244 lines · 21 methods · 4 constants · model
+# CityShore.java - 259 lines · 22 methods · 4 constants · model
 
-`ham/citybuildersim/CityShore.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityShore.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over owned sea, and each tank farm's box at the water, laid city-wide in the order the city builds them - never moved, the newest of a type taken first - what CityMap fixes in its districts' plans, the tile painter draws and the boats come alongside; kept in the map's sidecar.
 > 
@@ -42,13 +42,13 @@
 
 **Uses:** [World](World.md) (4), [BoatSchedule](BoatSchedule.md) (3), [BuildingVisual](BuildingVisual.md) (1), [Ports](Ports.md) (1)
 
-**Used by (6):** [CityMap](CityMap.md), [InfrastructureScreen](InfrastructureScreen.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
+**Used by (7):** [CityMap](CityMap.md), [InfrastructureScreen](InfrastructureScreen.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 206 | · the sidecar |
+| 221 | · the sidecar |
 
 ## Constants
 
@@ -70,7 +70,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 196 | **type** `public final class CityShore` | The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over owned sea, and each tank farm's box at the water, laid city-wide in the... |
+| 49 | 211 | **type** `public final class CityShore` | The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over owned sea, and each tank farm's box at the water, laid city-wide in the... |
 | 74 | 38 | **type** `public record Work(long x0, long y0, int w, int h, int type, int side, int quay)` | One work: its box {x0, y0, w, h} in world plots, its type id, the side the sea is on (0 north to 3 west), and its quay's length in plots (0 for a tank farm, which has none). |
 | 76 | 1 | `public boolean berthed()` _(in CityShore.Work)_ | Whether a boat comes alongside it: a terminal's quay. |
 | 79 | 8 | `public long[] shorePlot()` _(in CityShore.Work)_ | The plot of the box at the middle of its sea side, {x, y}: where its quay starts from. |
@@ -84,18 +84,19 @@
 | 129 | 5 | `public int count(int t)` | How many works of type t are laid. |
 | 136 | 4 | `void add(Work w)` | A work laid (CityMap's THE SHORE finds its place). |
 | 142 | 9 | `boolean removeNewest(int t)` | The newest work of type t taken away; false when there is none. |
-| 153 | 4 | `public Work at(long x, long y)` | The work whose box holds world plot (x, y), or null. |
-| 159 | 7 | `public boolean blocks(long x, long y)` | Whether world plot (x, y) is a work's box or within CLEAR of one, or a quay's: where the runs may not go and no other work may stand. |
-| 173 | 11 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte code)` | The works' boxes over the w x h plots from world plot (x0, y0), row by row: `code` over every plot of a box (a plan's ground: DistrictPlan's FIXED_YARD, no street crosses it, no building stands on it). |
-| 186 | 8 | `public long frameHash(long x0, long y0, int w, int h)` | ...the same hash without drawing them: what a district's plan is kept against. |
-| 196 | 9 | `public List<BoatSchedule.Berth> berths(BuildingVisual.Type[] types)` | The works that are berths: each terminal's quay end as BoatSchedule's berth, in the order laid. |
+| 157 | 9 | `boolean removeNewest(int t, java.util.function.Predicate<Work> which)` | The newest work of type t that `which` accepts taken away; false when there is none (ET5, 2026-10-25: a city that stands on more than one landmass takes a landmass's terminal from that landmass, CityMap's layShore()). |
+| 168 | 4 | `public Work at(long x, long y)` | The work whose box holds world plot (x, y), or null. |
+| 174 | 7 | `public boolean blocks(long x, long y)` | Whether world plot (x, y) is a work's box or within CLEAR of one, or a quay's: where the runs may not go and no other work may stand. |
+| 188 | 11 | `public long fill(long x0, long y0, int w, int h, byte[] fixed, byte code)` | The works' boxes over the w x h plots from world plot (x0, y0), row by row: `code` over every plot of a box (a plan's ground: DistrictPlan's FIXED_YARD, no street crosses it, no building stands on it). |
+| 201 | 8 | `public long frameHash(long x0, long y0, int w, int h)` | ...the same hash without drawing them: what a district's plan is kept against. |
+| 211 | 9 | `public List<BoatSchedule.Berth> berths(BuildingVisual.Type[] types)` | The works that are berths: each terminal's quay end as BoatSchedule's berth, in the order laid. |
 
-### the sidecar (lines 206-244)
+### the sidecar (lines 221-259)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 209 | 12 | `void write(DataOutputStream out) throws IOException` | Writes the works (CityMap FORMAT 6): their count, then each one's box, type, side and quay. |
-| 223 | 12 | `static CityShore read(DataInputStream in) throws IOException` | The works read back, or null when they do not add up. |
-| 237 | 3 | `public boolean same(CityShore o)` | Whether two cities' works are the same, in the same order. |
-| 241 | 3 | `public String toString()` |  |
+| 224 | 12 | `void write(DataOutputStream out) throws IOException` | Writes the works (CityMap FORMAT 6): their count, then each one's box, type, side and quay. |
+| 238 | 12 | `static CityShore read(DataInputStream in) throws IOException` | The works read back, or null when they do not add up. |
+| 252 | 3 | `public boolean same(CityShore o)` | Whether two cities' works are the same, in the same order. |
+| 256 | 3 | `public String toString()` |  |
 

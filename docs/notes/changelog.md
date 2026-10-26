@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.51 — ET5, landmasses and the island rule — 2026-10-26, ready, see docs/queue/ET5-notes.md
+A city's ground is counted by landmass, from earth-2's layer (a dry plot on a no-land cell takes the nearest land
+cell's, within 3.7 km). Ground on a landmass no port links is owned and priced as ever but is no room: the free ground,
+zones, pickers and investors read the linked ground alone, no works stands on a field across the water, and only a sea
+terminal may be built there, on the island's shore by the port card's chooser. Two standing terminals, one on a linked
+landmass, link it; ET6's bridges fill the closure's slot. Where each terminal stands is saved (SAVE_FORMAT 47, an older
+Earth save refused). The map hides unlinked ground from districts, plans, runs and CL5's pieces, and hatches it; the Land
+tab's LANDMASSES table, the ISLAND tag, a notice and the words follow. LandmassCheck new. The default, Rotterdam and
+Medellín traces are byte-identical (no ensemble): both Earth cities own nothing off home at month 4,005.
+
 ### TM2 — the ship gate's timing waits for a quiet minute — 2026-10-25, ready, no tag (tooling), see docs/queue/TM2-notes.md
 `--timing` started its hard run at the first look that found no other
 batch's JVM, and a runner that starts JVMs one after another leaves gaps a

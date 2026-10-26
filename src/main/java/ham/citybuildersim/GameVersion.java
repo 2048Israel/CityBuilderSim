@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.8.50";
+    public static final String VERSION = "0.8.51";
 
     /**
      * The save shape.
@@ -8165,8 +8165,28 @@ public final class GameVersion {
      *     it. A generated world is flat, its founding reads no relief, and
      *     its saves load as they did, so OLDEST_LOADABLE_FORMAT stays at 45.
      *     No conversion is written.
+     *
+     * 47 - LANDMASSES (batch ET5, slices A and B; docs/studies/
+     *     spec-roads-and-ports.md I2, spec-earth2-terrain.md): the city's
+     *     ground is counted by landmass (Landmasses, read from the Earth's
+     *     landmass layer at every plot), and ground on a landmass no port
+     *     links is owned and priced as ever but is no room for anyone except
+     *     a sea terminal. Where the terminals stand is saved, under one new
+     *     key (DataSave.landmasses: per terminal template the landmass ids of
+     *     its standing, on-site and stopped units and of those a demolition is
+     *     taking down), absent on any city with none off its home landmass.
+     *     The books by landmass are recounted at every load and not saved.
+     *
+     *     THE EARTH'S FLOOR RISES TO 47 WITH IT, AND ONLY THE EARTH'S
+     *     (EarthSite.LANDMASS_FORMAT, as SLOPE_FORMAT did): an Earth save of
+     *     format 46 or older would load ground across the water as ground to
+     *     build on, and every terminal it holds as standing at home, so it is
+     *     refused with its own words (EarthSite.BEFORE_LANDMASS_WORDS), naming
+     *     the build that still opens it. A generated world has one landmass,
+     *     home, always linked, and its saves load as they did, so
+     *     OLDEST_LOADABLE_FORMAT stays at 45. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 46;
+    public static final int SAVE_FORMAT = 47;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT

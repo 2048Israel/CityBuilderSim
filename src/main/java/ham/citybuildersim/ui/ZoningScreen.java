@@ -331,7 +331,7 @@ final class ZoningScreen {
         List<ZoningView.Part> parts = ZoningView.ground(g);
 
         page.getChildren().add(sectionHead("THE CITY'S GROUND", GROUND_INFO,
-                PolicyScreen.quiet(LandManager.areaWords(land.getOwnedSqFt()) + " dry")));
+                PolicyScreen.quiet(LandManager.areaWords(land.getLinkedOwnedSqFt()) + " dry")));
         VBox bars = PolicyScreen.card(groundBar(parts, 18));
         if (g.getZoning().hasZones()) {
             bars.getChildren().add(PolicyScreen.muted("Closer: the zones, and the bare ground free for anyone"));
@@ -552,8 +552,8 @@ final class ZoningScreen {
     /** How many steps a km² dial is cut into across the city's dry ground, before its step is rounded to 1, 2 or 5 of a power of ten. */
     static final double KM2_STEPS = 200;
 
-    /** The dry ground, km². */
-    double dryKm2() { return LandManager.km2(ui.game.getLandManager().getOwnedSqFt()); }
+    /** The dry ground that is room, km² (ET5: the linked ground, which a share zone is a share of; the whole dry ground while nothing is unlinked). */
+    double dryKm2() { return LandManager.km2(ui.game.getLandManager().getLinkedOwnedSqFt()); }
 
     /** A km² dial's step: the dry ground over KM2_STEPS, down to 1, 2 or 5 of a power of ten. */
     double km2Step() {
@@ -989,7 +989,7 @@ final class ZoningScreen {
         ZoningView.Forest then = ZoningView.forest(g, staged);
         boolean moved = policy.isStaged(PROTECTED_KEY) || policy.isStaged(KEPT_KEY);
         page.getChildren().add(sectionHead("THE FOREST", null, PolicyScreen.quiet(LandManager.areaWords(now.forestSqFt())
-                + " of the city's " + LandManager.areaWords(g.getLandManager().getOwnedSqFt()) + " dry ground")));
+                + " of the city's " + LandManager.areaWords(g.getLandManager().getLinkedOwnedSqFt()) + " dry ground")));
         VBox bars = PolicyScreen.card(PolicyScreen.words(moved ? "Under the staged law" : "Under the law as it stands",
                 Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL), forestBar(then, 18));
         if (moved) {

@@ -503,6 +503,14 @@ public class SaveSlotCheck {
         List<AutoBuilder.Entry> log = new ArrayList<>(List.of(filler.make(AutoBuilder.Entry.class), filler.make(AutoBuilder.Entry.class)));
         copiesOf("the automatic builder's log, as its toState() copies it", log, SaveCopy.list(log, AutoBuilder.Entry::copy));
 
+        // The landmasses' placements (ET5) are built fresh by toState() on every save, as the zoning's are: a state filled in every field, put into the
+        // table and written out again, shares no object with the one it came from and writes the same JSON.
+        Landmasses.State placed = filler.make(Landmasses.State.class);
+        Landmasses table = new Landmasses();
+        table.restore(placed);
+        copiesOf("the landmasses' placements, built fresh by toState() (DataSave.setLandmasses)", placed, table.toState());
+        assertTrue("...and two states of one table share nothing: each save is its own", Walk.shared(Walk.of(table.toState(), "first"), Walk.of(table.toState(), "second")).isEmpty());
+
         // ...and the check can tell: the same state held without a copy shares every one of its objects.
         Walk whole = Walk.of(control, "source");
         assertTrue("a state held uncopied is caught: all " + whole.mutable.size() + " of its objects are shared",

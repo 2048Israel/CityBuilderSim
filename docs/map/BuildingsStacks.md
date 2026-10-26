@@ -1,13 +1,13 @@
 # BuildingsStacks.java - 478 lines · 43 methods · 0 constants · model
 
-`ham/citybuildersim/BuildingsStacks.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingsStacks.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > One building type in the city: how many stand, how many are on site, and
 > the progress, material and contract its sites carry.
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (3), [JobType](JobType.md) (1)
 
-**Used by (27):** [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [Game](Game.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [Oil](Oil.md), [OilView](OilView.md), [Ports](Ports.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [Refining](Refining.md), [RoadCheck](RoadCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [UserInterface](UserInterface.md), [ZoningView](ZoningView.md)
+**Used by (28):** [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [Game](Game.md), [InvestCheck](InvestCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [Oil](Oil.md), [OilView](OilView.md), [Ports](Ports.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [Refining](Refining.md), [RoadCheck](RoadCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [UserInterface](UserInterface.md), [ZoningView](ZoningView.md)
 
 ## Fields (state)
 

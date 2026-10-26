@@ -1209,6 +1209,38 @@ public final class World {
     }
 
     /**
+     * Whether this world has landmasses to read (ET5): the real Earth drawn from data that has the landmass layer
+     * (earth-2). A generated world has none (D19: it is one landmass, home, always linked), and nor does an earth-1 file.
+     * Everything below reads 0 where this is false, and the city reads 0 as home.
+     */
+    public boolean hasLandmasses() { return earth != null && earth.hasLandmasses(); }
+
+    /**
+     * One plot's landmass (ET5): the id of the landmass layer's cell it lies in, a dry plot on a cell with no land taking
+     * the nearest land cell's within EarthTerrain.LANDMASS_REACH; 0 on water, off the world, on a generated world and
+     * for data with no landmass layer - and 0 reads as home.
+     */
+    public int landmassAt(long x, long y) {
+        return earth != null ? earth.landmassAt(x, y) : 0;
+    }
+
+    /** A plot's landmass by its 15" cell alone, water plots too (EarthTerrain.landmassOfPlot()): what a field centred on a lake plot of an island is on. 0 where hasLandmasses() is false. */
+    public int landmassOfPlot(long x, long y) {
+        return earth != null ? earth.landmassOfPlot(x, y) : 0;
+    }
+
+    /** One tile's landmass, an id a plot in rows (out[py x 32 + px]) as tileRelief() lays its relief: what landmassAt() gives each of its plots. All 0 where hasLandmasses() is false. */
+    public void tileLandmass(long tx, long ty, int[] out) {
+        if (earth != null) earth.tileLandmass(tx, ty, out);
+        else Arrays.fill(out, 0, TILE * TILE, 0);
+    }
+
+    /** The landmass ids a tile's plots can take (ET5): the non-zero ids ascending of the land cells under the tile widened by EarthTerrain.LANDMASS_REACH cells, read as a window of cells without drawing a plot; empty where hasLandmasses() is false. */
+    public int[] idsNear(long tx, long ty) {
+        return earth != null ? earth.idsNear(tx, ty) : new int[0];
+    }
+
+    /**
      * A region's relief at a stride, as regionTerrain() lays its cover: n x n pixels from plot (x0, y0),
      * each `stride` plots wide, out[py x n + px] - FLAT where the pixel's cover is not dry ground. At a
      * stride of one it is reliefAt() for every plot. FLAT everywhere on a generated world.

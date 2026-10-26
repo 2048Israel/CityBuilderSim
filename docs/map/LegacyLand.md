@@ -1,6 +1,6 @@
 # LegacyLand.java - 514 lines · 44 methods · 11 constants · model
 
-`ham/citybuildersim/LegacyLand.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LegacyLand.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The city's land as spec-land drew it, read-only: a square centre round the founding site and forty lanes of wedges pushed out band by band - the geometry CityLand sold along from 0.7.57 to 0.7.66, and the ground a format-31 save holds.
 > 

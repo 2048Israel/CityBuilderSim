@@ -1,6 +1,6 @@
 # TruckShapes.java - 95 lines · 4 methods · 7 constants · model
 
-`ham/citybuildersim/TruckShapes.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TruckShapes.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > How the map draws a truck: its body as points in plots about where it is
 > and the way it heads, and its colour by what it carries - what ui/MapView

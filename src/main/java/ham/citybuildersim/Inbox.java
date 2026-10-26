@@ -193,7 +193,26 @@ public class Inbox {
                 "Automatic building is raising money for an order",
                 autoAsks);
 
+        takeIslands(game, month);
+
         cull(month);
+    }
+
+    /**
+     * The ground the city owns on landmasses no port links (ET5), a standing notice for each, key "island:" and its id: it stays
+     * while the landmass is unlinked and the words in it follow what the city owns there, and it is settled the month a port links
+     * the landmass. Nothing for a city that owns ground on one landmass (every generated world among them): no key is ever made.
+     */
+    private void takeIslands(Game game, int month) {
+        Landmasses lms = game.getLandManager().getLandmasses();
+        List<Integer> unlinked = lms.unlinkedIds();
+        for (int id : unlinked) {
+            take(game, month, LandmassView.noticeKey(id), true, LandmassView.noticeTitle(lms, id), LandmassView.noticeBody(lms, id));
+        }
+        for (Notice notice : new ArrayList<>(notices)) {
+            int id = LandmassView.noticeId(notice.getKey());
+            if (id >= 0 && !notice.isResolved() && !unlinked.contains(id)) take(game, month, notice.getKey(), false, notice.getTitle(), notice.getBody());
+        }
     }
 
     /**
@@ -444,6 +463,12 @@ public class Inbox {
         lines.add("");
         lines.add("Land free:          " + LandManager.areaWords(free));
         lines.add(String.format("Land in use:        %.0f%%", used));
+        // ...and (ET5) the ground the city owns that no port links, which is no room for them: named, with what links it.
+        double unlinked = game.getLandManager().getUnlinkedFreeSqFt();
+        if (unlinked > 0) {
+            lines.addAll(wrapped(LandmassView.unlinkedWords(unlinked, game.getLandManager().getUnlinkedNames())
+                    + "; only a port can be built there.", BODY_COLUMNS));
+        }
         lines.add("");
         lines.add("They will keep asking every month and keep being refused,");
         lines.add("and this notice comes again each year the wait lasts.");

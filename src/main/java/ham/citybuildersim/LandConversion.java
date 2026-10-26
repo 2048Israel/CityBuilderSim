@@ -198,8 +198,8 @@ public final class LandConversion {
      * folded in; the city's iron sites and tonnes and what it has taken out of
      * every resource kept as they were, a legacy field standing for its iron
      * when the world laid none on the ground drawn; the other resources what
-     * the world holds on the new ground; the figure the one asked for; and
-     * twenty-four offers listed round it at the prices the office last struck.
+     * the world holds on the new ground; the figure the one asked for; the ground counted by landmass again
+     * (LandManager.landChanged(), ET5); and twenty-four offers listed round it at the prices the office last struck.
      */
     public static void restate(LandManager lm, double drySqFt) {
         CityLand land = lm.land();
@@ -212,6 +212,8 @@ public final class LandConversion {
         land.redraw(r);
         lm.restoreOwnedSqFt(drySqFt);
         lm.getMarket().attach(land);
+        // ...the redrawn ground counted by landmass again before the shelf is listed (ET5): a restated centre may now reach another landmass, and the books, the unlinked sums and the offers' split must be of this land (a no-op on a generated world and on a city on one landmass).
+        lm.landChanged();
         lm.getMarket().listMissing();
     }
 }

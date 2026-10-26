@@ -3090,6 +3090,82 @@ public class SaveFileCheck {
                             && noRelief.getListing().get(0).getReliefKm2(CityLand.RELIEF_SHALLOW) == 0);
         }
 
+        // WHERE THE TERMINALS STAND (ET5, 2026-10-25; Landmasses): a city with a sea terminal off its home landmass writes one key, "landmasses" -
+        // the landmass ids of its terminals' standing, on-site and stopped units, oldest first - and a city on one landmass writes none. Read back
+        // it puts every terminal where it stood; written again it is the same bytes but its time; a save without the key reads every terminal at home
+        // and is not refused; a row of a template that is no terminal is passed over; and an Earth save of the format before it is refused in words.
+        assertTrue("a city on one landmass writes no \"landmasses\" key (its save is the old bytes)", !earthJson.has("landmasses") && city.getLandManager().landmassState() == null);
+        {
+            World islandWorld = World.of(key);
+            long[] tip = LandmassCheck.plotOf(islandWorld, 51.848, 3.998);
+            LandmassCheck.Square island = LandmassCheck.squareWith(islandWorld, 648, tip[0], tip[1], 40, s -> s.pure() && s.onId() >= 2000 && s.shore() >= 20);
+            assertTrue("fixture: a square of Goeree-Overflakkee with dry ground and shore, found by search with the model's own reader", island != null);
+            if (island != null) {
+                GameFiles isleFiles = new GameFiles(root.resolve("island"), root.resolve("no-legacy"));
+                Game isle = new Game(isleFiles);
+                quietly(() -> {
+                    isle.newGame(Founding.custom("Rotterdam", Founding.WEALTHY_CASH, Founding.WEALTHY_RESERVE_USD, .02).withWorldKey(key));
+                    isle.buildStack(template(isle, "House"), 60, true);
+                    isle.getLandManager().buyRectForTest(island.x0(), island.y0(), island.x0() + LandmassCheck.SQUARE, island.y0() + LandmassCheck.SQUARE, isle.getMonth());
+                    isle.choosePortLandmass(template(isle, "General Cargo Terminal"), 648);
+                    isle.buildStack(template(isle, "General Cargo Terminal"), 1, true);
+                    isle.simulateMonths(2);
+                });
+                int terminal = template(isle, "General Cargo Terminal").getId();
+                assertTrue("fixture: a terminal stands on the island, which owns shore the city bought and no port at home links", isle.getLandManager().getLandmasses().portsOn(648)[Ports.Cargo.GENERAL.ordinal()] == 1
+                        && !isle.getLandManager().getLandmasses().linked(648) && isle.getLandManager().landmassState() != null);
+                assertTrue("saved", quietlyGet(() -> isle.saveGame(10, "island")).ok);
+                com.google.gson.JsonObject isleJson = com.google.gson.JsonParser.parseString(Files.readString(isleFiles.saveFile(10))).getAsJsonObject();
+                com.google.gson.JsonObject placed = isleJson.has("landmasses") ? isleJson.getAsJsonObject("landmasses") : null;
+                assertTrue("the save carries the key \"landmasses\", a row for the terminal's template with the island's id for its one standing unit, and nothing leaving",
+                        placed != null && placed.getAsJsonArray("ports").size() == 1 && placed.getAsJsonArray("ports").get(0).getAsJsonObject().get("template").getAsInt() == terminal
+                                && placed.getAsJsonArray("ports").get(0).getAsJsonObject().getAsJsonArray("standing").size() == 1
+                                && placed.getAsJsonArray("ports").get(0).getAsJsonObject().getAsJsonArray("standing").get(0).getAsInt() == 648
+                                && (!placed.has("leaving") || placed.getAsJsonArray("leaving").size() == 0) && isleJson.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && GameVersion.SAVE_FORMAT >= EarthSite.LANDMASS_FORMAT);
+                Game isleBack = new Game(isleFiles);
+                quietly(() -> isleBack.loadGameSave(10));
+                assertTrue("read back, the terminal stands on the island again and the land is the same", isleBack.getLoadFailure() == null
+                        && isleBack.getLandManager().getLandmasses().portsOn(648)[Ports.Cargo.GENERAL.ordinal()] == 1 && !isleBack.getLandManager().getLandmasses().linked(648)
+                        && isleBack.getCityLand().same(isle.getCityLand()) && new com.google.gson.Gson().toJson(isleBack.getLandManager().landmassState()).equals(new com.google.gson.Gson().toJson(isle.getLandManager().landmassState())));
+                assertTrue("saved again", quietlyGet(() -> isleBack.saveGame(10, "island")).ok);
+                com.google.gson.JsonObject isleAgain = com.google.gson.JsonParser.parseString(Files.readString(isleFiles.saveFile(10))).getAsJsonObject();
+                java.util.List<String> isleMoved = jsonDiff(isleJson, isleAgain, java.util.Set.of("savedAt"));
+                assertTrue("...and writes the same bytes but its time", isleMoved.isEmpty());
+                if (!isleMoved.isEmpty()) System.out.println("     moved: " + isleMoved);
+                // Without the key: all home.
+                com.google.gson.JsonObject stripped = isleJson.deepCopy();
+                stripped.remove("landmasses");
+                Files.writeString(isleFiles.saveFile(10), gson.toJson(stripped));
+                Game keyless = new Game(isleFiles);
+                quietly(() -> keyless.loadGameSave(10));
+                assertTrue("a save without the key loads - it is not refused - and reads every terminal at home: none on the island, none placed",
+                        keyless.getLoadFailure() == null && keyless.getLandManager().landmassState() == null
+                                && keyless.getLandManager().getLandmasses().portsOn(648)[Ports.Cargo.GENERAL.ordinal()] == 0
+                                && keyless.getLandManager().getLandmasses().portsOn(keyless.getLandManager().getLandmasses().home())[Ports.Cargo.GENERAL.ordinal()] == 1);
+                // A bad row: a template that is no terminal.
+                com.google.gson.JsonObject odd = isleJson.deepCopy();
+                com.google.gson.JsonObject nonsense = new com.google.gson.JsonObject();
+                nonsense.addProperty("template", template(isle, "House").getId());
+                com.google.gson.JsonArray ids = new com.google.gson.JsonArray();
+                ids.add(648);
+                nonsense.add("standing", ids);
+                odd.getAsJsonObject("landmasses").getAsJsonArray("ports").add(nonsense);
+                Files.writeString(isleFiles.saveFile(10), gson.toJson(odd));
+                Game oddBack = new Game(isleFiles);
+                quietly(() -> oddBack.loadGameSave(10));
+                assertTrue("a row of a template that is no terminal is passed over (not refused): the terminal's row stands alone", oddBack.getLoadFailure() == null
+                        && oddBack.getLandManager().landmassState() != null && oddBack.getLandManager().landmassState().ports.size() == 1
+                        && oddBack.getLandManager().landmassState().ports.get(0).template == terminal);
+                // An Earth save of the format before it is refused, in the landmass words.
+                com.google.gson.JsonObject beforeLandmasses = isleJson.deepCopy();
+                beforeLandmasses.addProperty("saveFormat", EarthSite.LANDMASS_FORMAT - 1);
+                Files.writeString(isleFiles.saveFile(10), gson.toJson(beforeLandmasses));
+                Game refused = new Game(isleFiles);
+                quietly(() -> refused.loadGameSave(10));
+                assertEquals("an Earth save of the format before the landmasses (" + (EarthSite.LANDMASS_FORMAT - 1) + ") is refused in the words saying so", refused.getLoadFailure(), EarthSite.BEFORE_LANDMASS_WORDS);
+            }
+        }
+
         // Refused: other data, an unknown kind, no spot.
         String nobody = "earth-1:" + "0".repeat(64);
         Object[][] bad = {

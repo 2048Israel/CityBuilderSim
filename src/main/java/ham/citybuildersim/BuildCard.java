@@ -527,7 +527,7 @@ public final class BuildCard {
         double running = runningCost(game, t);
         double land = t.getLandSqFt();
         // ...on the ground its sector may build on (0.7.109, Z2): free for anyone, and its zone's (LandManager.freeFor()) - a works's, any dry ground (ET2).
-        double free = game.getLandManager().freeFor(t.getSector(), Game.groundUse(t));
+        double free = game.freeGroundFor(t);
         BuildingManager bm = game.getBuildingManager();
         int owned = bm.getQuantity(t.getId());
         BuildingsStacks stack = bm.getStack(t);
@@ -1022,8 +1022,11 @@ public final class BuildCard {
      */
     static Gate landGate(LandManager ground, BuildingsTemplate t, double free) {
         double others = ground.heldByZones() - ground.heldBy(t.getSector());
-        return new Gate(GateKind.LAND, t.getLandSqFt(), free, null,
-                others > 0 ? BusinessInvestment.zonedForOthersWords(others) : null);
+        // ...and, since ET5, the ground the city owns across the water that no port links: "12.0 km2 is free on Island 2, which no port links".
+        double unlinked = ground.getUnlinkedFreeSqFt();
+        String island = unlinked > 0 ? LandmassView.unlinkedWords(unlinked, ground.getUnlinkedNames()) : null;
+        String why = others > 0 ? BusinessInvestment.zonedForOthersWords(others) + (island != null ? "; " + island : "") : island;
+        return new Gate(GateKind.LAND, t.getLandSqFt(), free, null, why);
     }
 
     /** The LOSS gate: what it would lose, worded NO_FEED for a conversion unit nothing feeds (0.7.103). */
@@ -1143,7 +1146,7 @@ public final class BuildCard {
         }
         Sector.Staffing staffing = owner.staffing(t);
         if (!staffing.passes()) return new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()));
-        double free = ground.freeFor(t.getSector(), Game.groundUse(t));
+        double free = game.freeGroundFor(t);
         if (t.getLandSqFt() > free) return landGate(ground, t, free);
         if (estimate <= 0) return lossGate(game, t, estimate);
         // ...and consider()'s brake, the interest on its whole cost (0.7.122).
@@ -1238,7 +1241,7 @@ public final class BuildCard {
                 : new GateMark(GateKind.STAFFING, Mark.FAIL,
                         new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()))));
         // The ground.
-        double free = ground.freeFor(t.getSector(), Game.groundUse(t));
+        double free = game.freeGroundFor(t);
         gates.add(!(t.getLandSqFt() > 0) ? new GateMark(GateKind.LAND, Mark.NONE, null)
                 : t.getLandSqFt() <= free ? new GateMark(GateKind.LAND, Mark.PASS, null)
                 : new GateMark(GateKind.LAND, Mark.FAIL, landGate(ground, t, free)));
@@ -1796,7 +1799,7 @@ public final class BuildCard {
     public static Verdict verdict(Game game, BuildingsTemplate t, int n) {
         Game.BuildQuote q = game.quoteBuild(t, n);
         if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0, Game.siteOf(t));
-        if (!game.hasCoastFor(t, n)) return new Verdict(VerdictKind.NO_COAST, q, 0);
+        if (!game.hasCoastFor(t, n, Landmasses.CHOSEN)) return new Verdict(VerdictKind.NO_COAST, q, 0);
         if (!game.hasLicencesFor(t, n)) return new Verdict(VerdictKind.NO_LICENCE, q, game.licencesNeededFor(t, n));
         if (q.landNeeded > q.landFree) return new Verdict(VerdictKind.NO_LAND, q, q.landNeeded - q.landFree);
         if (q.total > game.getCash()) return new Verdict(VerdictKind.BILL, q, q.total - game.getCash());
