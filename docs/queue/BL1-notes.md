@@ -77,3 +77,53 @@ So the default playtest's trace stays byte-identical, and there is no ensemble.
   the globe's camera alike, the city's own ground inside its rectangle left clear on both.
 - The picked ground is one shape: its outline on the block grid, the pick's tint inside, the card beside it.
 - At every zoom: where a block is under a few pixels, the far views draw the outline only.
+
+## 2. As built
+
+Three slices after the design, each written by a Sonnet 5.5 agent at xhigh and reviewed by the Opus batch session. The
+branch was cut from MS1's tip while MS1 was at its gate, and main (0.8.52) was merged in when it shipped.
+
+- **C, the model.** `LandMarket.draft()` measures the picked ground's rectangles as offers of them at the price struck
+  last, under ids -1, -2, ... of their own; `find()`/`take()` know them, the listing and everything that walks it do
+  not; `update()` measures them again and drops one the city wholly owns; `attach()` drops them all; `quote()` prices a
+  block for the hover. Taking a draft puts each standing offer whose free ground it meets off the shelf, unbought, the
+  first such place listed first. `LandMap.Picks` picks whole blocks of the city's level joined to its ground
+  (`GridOffers.onFrontier()`, the office's own frontier rule) or to the picks, floods a box from the city, turns a
+  wholly picked offer into the offer, cuts the free blocks into rectangles (rows merged down) and drafts them only when
+  they or the ground changed; `live()` gives the offers' ids, then the drafts'. A picked block the city buys, one cut
+  off by a drop, or all of them when the city's level rises, drop with a line in the head. A block meeting a picked
+  offer's free ground is not pickable, and picking an offer drops the blocks it meets.
+- **D, the screen.** The globe draws each offer as its free cells and its free ground's edge through the camera; the
+  plane edges an offer along its free ground on the block grid, dashed, solid when picked. The picked ground is one
+  shape - tint and a two-pixel pink edge - drawn as blocks less the city's own ground, so a half-owned frontier block is
+  outlined on its free half only. A click picks a pickable block (Shift toggles), a left drag from an offer's free
+  ground, a picked block or a pickable one boxes, with the blocks it will take tinted under it while it is drawn; the
+  hover quotes a block; the card names the offers and "Your ground - N blocks" (one chip, its x drops them all); offers
+  are bought before drafts on every path. The receipt outlines the ground just bought. The picks and their drafts now
+  stand through the funding page (they were cleared when the map collapsed to it, so a loan bought nothing of the
+  player's ground); back from it, or leaving it, clears them.
+
+## 3. Checks and the trace
+
+- **LandCheck 29-29d**: a draft costs what `measure()` lists the ground at today (halves sum to the whole within the
+  price's US$5k rounding); bought through `Game.buyLandParcel()` it leaves the books as a twin city's purchase of the
+  same ground as an offer (cash or vault, the month's purchases, the owned area, the holding, the receipt); a draft of
+  exactly an offer's rectangle leaves the shelf as buying the offer does, ids included; an offer it bites is off the
+  shelf and its place listed again, one it does not touch stands; drafts are never in the listing, the AutoBuilder's
+  pick, the going price or a save, and drafting moves no offer id; the month re-prices a draft under its id.
+- **MapCheck 14e and 14f**: pickable and not; a box keeps only what joins (against an independent flood); the
+  rectangles cover the picked free blocks once each; an offer wholly picked is the offer; a drop that cuts the chain
+  drops what no longer joins, named; the level rising drops them; **an offer drawn beside owned ground has no owned
+  plot inside its fill or on its edge**, and neither has the picked ground; the press, the box's preview equal to what
+  the release takes, the card's words, the draft chip, offers bought before drafts. Each slice's deliberate breaks of
+  its rules were caught.
+- **The default playtest's trace** is byte-identical to main's but for its run-time lines: nothing in the month drafts,
+  the AutoBuilder reads the listing alone, and no saved field moved. **No ensemble.**
+- **`./batch-check.sh --pick`**, earth-2.bin named: see the ship file.
+
+## 4. Left for Jerus (BL1-C, the eye check on the PC)
+
+On the expanded map: buy an irregular stretch along a coast (drag along it, click a block in or out), and a stretch
+across two sides of the city; at the globe's wider views, the offers sit outside the city's edge, not over it; an
+offer's edge follows its ground; buy through the bond or note from the card (the funding page) and see the picked
+ground bought. Whether a block of the city's level is fine enough is his to say: a finer grain is a later batch.

@@ -1,4 +1,4 @@
-# GridOffers.java - 339 lines · 26 methods · 6 constants · model
+# GridOffers.java - 356 lines · 28 methods · 6 constants · model
 
 `ham/citybuildersim/GridOffers.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
@@ -47,7 +47,7 @@
 > next offer; the other places stand as they were, because standing
 > rectangles never meet (GridCheck 5, after each of 600 purchases).
 
-**Uses:** [LandGrid](LandGrid.md) (6), [World](World.md) (3), [CityLand](CityLand.md) (1)
+**Uses:** [LandGrid](LandGrid.md) (10), [World](World.md) (5), [CityLand](CityLand.md) (1)
 
 **Used by (10):** [BuildCardCheck](BuildCardCheck.md), [ConversionCheck](ConversionCheck.md), [GridCheck](GridCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandParcel](LandParcel.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md)
 
@@ -57,8 +57,8 @@
 |---:|---|
 | 119 | SIDE AND PLACE (spec-grid star 3) |
 | 157 | THE FRONTIER |
-| 222 | LISTING A PLACE (spec-grid star 4) |
-| 311 | STANDING AND BUYING |
+| 239 | LISTING A PLACE (spec-grid star 4) |
+| 328 | STANDING AND BUYING |
 
 ## Constants
 
@@ -84,7 +84,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 288 | **type** `public final class GridOffers` | The city's offers on the block grid: on each of its four sides six places, left to right facing out, and in each place one standing offer - a rectangle of whole blocks against the city's edge - or none while that side... |
+| 52 | 305 | **type** `public final class GridOffers` | The city's offers on the block grid: on each of its four sides six places, left to right facing out, and in each place one standing offer - a rectangle of whole blocks against the city's edge - or none while that side... |
 | 76 | 15 | **type** `public record Rect(int side, int place, int level, long x0, long y0, long x1, long y1)` | One standing offer's ground: its side and place, the level of its blocks, and its rectangle of plots, [x0, x1) x [y0, y1), whole blocks. |
 | 78 | 1 | `public long across()` _(in GridOffers.Rect)_ | Its blocks across its side. |
 | 81 | 1 | `public long deep()` _(in GridOffers.Rect)_ | Its blocks deep, outward. |
@@ -108,29 +108,31 @@
 | 142 | 8 | `public static int sidePlace(double dx, double dy)` | The side and place a point (dx, dy) from the site's plot centre lies in, as side x PLACES + place: its side by sideOf(), its place by its lane coordinate, as the frontier reads a block's (0.7.67, what the map's pick n... |
 | 152 | 4 | `double[] centreOf(int level, long bx, long by)` | {dx, dy} of a block's centre from the site's plot centre, in plots. |
 
-### THE FRONTIER (lines 157-221)
+### THE FRONTIER (lines 157-238)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 162 | 22 | `List<Front> frontier(int s, int level)` | Side s's frontier at `level`: the blocks of its quarter, on the world, that are not wholly owned and touch owned ground; row by row from the north-west. |
-| 186 | 5 | `boolean touches(int level, long bx, long by)` | Whether an unowned block has an owned plot across one of its four edges. |
-| 193 | 4 | `boolean takenRect(long x0, long y0, long x1, long y1)` | Whether a standing offer meets the rectangle of plots [x0, x1) x [y0, y1). |
-| 206 | 15 | `Front seedOf(List<Front> f, int s, int j, int level)` | The seed of place (s, j) among a side's frontier at `level`: the free block in its lane nearest the site, ties to the lane's middle; else the side's free block nearest the lane's middle, ties to the nearer; null when ... |
+| 186 | 3 | `boolean touches(int level, long bx, long by)` | Whether an unowned block has an owned plot across one of its four edges. |
+| 191 | 5 | `static boolean touches(LandGrid grid, int level, long bx, long by)` | ...on any grid (BL1: the map's block picks read the frontier's rule, not a copy of it). |
+| 202 | 6 | `public static boolean onFrontier(LandGrid grid, int level, long bx, long by)` | Whether block (bx, by) of `level` is on the city's frontier, the rule frontier() applies to a side's quarter (BL1: the map's block picks): on the world, not wholly owned, and partly owned or with an owned plot across ... |
+| 210 | 4 | `boolean takenRect(long x0, long y0, long x1, long y1)` | Whether a standing offer meets the rectangle of plots [x0, x1) x [y0, y1). |
+| 223 | 15 | `Front seedOf(List<Front> f, int s, int j, int level)` | The seed of place (s, j) among a side's frontier at `level`: the free block in its lane nearest the site, ties to the lane's middle; else the side's free block nearest the lane's middle, ties to the nearer; null when ... |
 
-### LISTING A PLACE (spec-grid star 4) (lines 222-310)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 227 | 52 | `public Rect list(int s, int j)` | The offer place (s, j) would list now, against the offers standing; null when the side has no room for it. |
-| 281 | 4 | `boolean lineOwned(int s, int level, long la0, long la1, long lo0, long lo1)` | Whether every block of a rectangle in side s's block coordinates is wholly owned. |
-| 287 | 10 | `static long[] toWorld(int s, int level, long la0, long la1, long lo0, long lo1)` | A rectangle in side s's block coordinates (columns la0 to la1, rows lo0 to lo1, inclusive) as plots {x0, y0, x1, y1}, half-open. |
-| 299 | 11 | `static long[] toLocal(int s, int level, long x0, long y0, long x1, long y1)` | A rectangle of plots as the blocks of `level` it touches, in side s's block coordinates: {first column, last column, first row, last row}, inclusive. |
-
-### STANDING AND BUYING (lines 311-339)
+### LISTING A PLACE (spec-grid star 4) (lines 239-327)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 316 | 3 | `public void listMissing()` | Lists every place that waits empty, North's first to West's last. |
-| 321 | 4 | `public void relist(int s, int j)` | Lists place (s, j)'s next offer, then every place still waiting: what follows a purchase in it. |
-| 331 | 8 | `public Rect buy(int s, int j, int h)` | Buys the offer standing in place (s, j) for holding h: its rectangle's unowned plots are claimed on the grid, and the place lists its next. |
+| 244 | 52 | `public Rect list(int s, int j)` | The offer place (s, j) would list now, against the offers standing; null when the side has no room for it. |
+| 298 | 4 | `boolean lineOwned(int s, int level, long la0, long la1, long lo0, long lo1)` | Whether every block of a rectangle in side s's block coordinates is wholly owned. |
+| 304 | 10 | `static long[] toWorld(int s, int level, long la0, long la1, long lo0, long lo1)` | A rectangle in side s's block coordinates (columns la0 to la1, rows lo0 to lo1, inclusive) as plots {x0, y0, x1, y1}, half-open. |
+| 316 | 11 | `static long[] toLocal(int s, int level, long x0, long y0, long x1, long y1)` | A rectangle of plots as the blocks of `level` it touches, in side s's block coordinates: {first column, last column, first row, last row}, inclusive. |
+
+### STANDING AND BUYING (lines 328-356)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 333 | 3 | `public void listMissing()` | Lists every place that waits empty, North's first to West's last. |
+| 338 | 4 | `public void relist(int s, int j)` | Lists place (s, j)'s next offer, then every place still waiting: what follows a purchase in it. |
+| 348 | 8 | `public Rect buy(int s, int j, int h)` | Buys the offer standing in place (s, j) for holding h: its rectangle's unowned plots are claimed on the grid, and the place lists its next. |
 
