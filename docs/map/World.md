@@ -1,6 +1,6 @@
 # World.java - 2,148 lines · 119 methods · 103 constants · model
 
-`ham/citybuildersim/World.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/World.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and river, and the fields of the seven resources - every one of them a pure function of one seed, or since 0.7.115 of a key naming the real Earth round a spot (EarthTerrain).
 > 

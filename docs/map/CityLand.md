@@ -1,6 +1,6 @@
 # CityLand.java - 1,295 lines · 93 methods · 26 constants · model
 
-`ham/citybuildersim/CityLand.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityLand.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry, fresh, sea and forest, counted plot by plot, and the sites and amounts of the seven resources.
 > 

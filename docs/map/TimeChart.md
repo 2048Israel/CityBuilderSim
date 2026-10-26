@@ -1,6 +1,6 @@
 # TimeChart.java - 1,603 lines · 89 methods · 20 constants · interface
 
-`ham/citybuildersim/ui/TimeChart.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/TimeChart.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > A chart of months (0.7.23): lines over a window the player drags, wheels
 > and ranges through, years on its axis, recessions named on their bands,

@@ -1,6 +1,6 @@
 # EarthProj.java - 446 lines · 34 methods · 3 constants · model
 
-`ham/citybuildersim/EarthProj.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthProj.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The real Earth flattened round a city's spot: Lambert's azimuthal
 > equal-area projection on a sphere, forward and inverse, the world's plots

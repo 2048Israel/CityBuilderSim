@@ -1,6 +1,6 @@
 # StatementView.java - 587 lines · 36 methods · 10 constants · interface
 
-`ham/citybuildersim/ui/StatementView.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/StatementView.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > A formal statement on the page (0.7.74): SectorStatements' rows set as an
 > accountant sets them - a title block, the columns (note, this month, last

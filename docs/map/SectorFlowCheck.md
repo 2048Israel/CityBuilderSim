@@ -1,6 +1,6 @@
 # SectorFlowCheck.java - 308 lines · 11 methods · 3 constants · harnesses
 
-`ham/citybuildersim/SectorFlowCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorFlowCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The flow (0.7.30): SectorFlow's figures - what went into each business,
 > what its plant made of it and what held it back, and what came out - held

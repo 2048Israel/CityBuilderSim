@@ -1,6 +1,6 @@
 # Auction.java - 460 lines · 28 methods · 9 constants · model
 
-`ham/citybuildersim/Auction.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Auction.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The city's paper sold at auction: the bidders, each by its own rule in the
 > game, and the one yield that clears them.

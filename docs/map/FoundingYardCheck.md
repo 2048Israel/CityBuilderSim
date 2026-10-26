@@ -1,6 +1,6 @@
 # FoundingYardCheck.java - 599 lines · 26 methods · 5 constants · harnesses
 
-`ham/citybuildersim/FoundingYardCheck.java` - generated 2026-10-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FoundingYardCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
 
 > The founding yard (PT1-M4, 2026-10-12): the works department's free 400
 > points a month are retired and every city founds with one Builders' Yard
