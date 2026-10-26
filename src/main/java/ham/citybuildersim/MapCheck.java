@@ -296,6 +296,14 @@ import java.util.Map;
  *      left the shelf with its ground for sale still carried onto the new
  *      offer and named, and the cheap path (every id listed) the same list
  *      and no note.
+ *  14c. a generated world's plane goes anywhere (batch MS1): set a quarter
+ *      of the world away at the closest scale it stays there, pans on with no
+ *      stop, and draws its ground.
+ *  14d. a plain drag selects (batch MS1): a left press on an offer's free
+ *      ground starts a box - the model's own pick of every offer listed - and
+ *      one on the city's own ground (its centre, a plot of an offer's
+ *      rectangle it owns) or on ground no offer holds a pan; Shift boxes
+ *      from all of them (LandMap.pressBoxes()).
  *  15. the materials drawn as themselves (0.8.0, batch I14;
  *      docs/studies/spec-materials.md 5's I14 row): every building of the
  *      nine industries has a look of its own, never a plain mine's or
@@ -467,6 +475,7 @@ public class MapCheck {
         buyingFromTheMap(city);
         picksLast(city);
         farOnThePlane(city);
+        plainDragSelects(city);
         materials(sq.seed);
         avenuesDrawn(sq);
         curvesDrawn(sq);
@@ -7358,6 +7367,87 @@ public class MapCheck {
         out.printf("      tile (%d, %d), a quarter of the world's side out: ground of %d class(es), drawn in %d colour(s), %d of %,d pixels the map's void%n",
                 tx, ty, classes.size(), colours.size(), voids, drawn.length);
         check("the L0 tile there has its ground (the world's classes, not nothing) and is drawn in it, none of it the map's void", !classes.isEmpty() && !colours.isEmpty() && voids == 0);
+    }
+
+    /** The plots of an offer's rectangle section 14d tries for the owned-or-free rule: at most about this many, a stride over the rectangle. */
+    static final int PRESS_PLOTS = 400;
+
+    /**
+     * MS1 (Jerus, 2026-10-26: "i should be able to not only click and shift click, but also drag and select"): what a left press on the
+     * expanded map starts, a box or a pan, is the model's (LandMap.pressBoxes(), which MapView calls): a press on an offer's free ground
+     * boxes with no modifier; one on the city's own ground or on ground no offer holds pans; Shift boxes from anywhere. Each fixture is
+     * the model's own pick (LandMap.pick()), the one a click reads.
+     */
+    static void plainDragSelects(Game g) {
+        out.println("\n--- 14d. a plain drag selects (MS1): a press on an offer's free ground boxes, the city's own ground and ground no offer"
+                + " holds pan, Shift boxes from anywhere ---");
+        CityLand land = g.getCityLand();
+        LandMarket market = g.getLandManager().getMarket();
+        List<LandParcel> listing = new ArrayList<>(market.getListing());
+        // The ground of an offer's own, found as the box section finds it: its first free cell's first plot, and the model's pick of it.
+        int offerGround = 0, boxed = 0, shiftBoxed = 0;
+        for (LandParcel o : listing) {
+            List<double[]> cells = LandMap.freeCells(land, o);
+            if (cells.isEmpty()) continue;
+            long x = (long) cells.get(0)[0], y = (long) cells.get(0)[1];
+            LandMap.Pick p = LandMap.pick(land, market, x, y);
+            if (p.owner() != LandMap.OFFER || p.offer().getId() != o.getId()) continue;
+            offerGround++;
+            if (LandMap.pressBoxes(land, market, x, y, false)) boxed++;
+            if (LandMap.pressBoxes(land, market, x, y, true)) shiftBoxed++;
+        }
+        // The city's own ground: its centre, and a plot of its own at its east edge.
+        long cx = land.siteX(), cy = land.siteY(), ex = cx, ey = cy;
+        while (land.ownsPlot(ex + 1, ey)) ex++;
+        LandMap.Pick centre = LandMap.pick(land, market, cx, cy), edge = LandMap.pick(land, market, ex, ey);
+        // Ground no offer holds, far from the city, and the plot beside an offer's rectangle where none holds it.
+        long fx = (long) (land.siteX() + FAR_PLOTS), fy = (long) (land.siteY() + FAR_PLOTS);
+        LandMap.Pick far = LandMap.pick(land, market, fx, fy);
+        LandMap.Pick gap = null;
+        for (LandParcel o : listing) {
+            for (long[] at : new long[][] { { o.getX1(), o.getY0() }, { o.getX0() - 1, o.getY0() }, { o.getX0(), o.getY1() }, { o.getX0(), o.getY0() - 1 } }) {
+                LandMap.Pick p = LandMap.pick(land, market, at[0], at[1]);
+                if (gap == null && p.owner() == LandMap.OUTSIDE) gap = p;
+            }
+        }
+        out.printf("      %d offers listed, %d with a free plot the model picks as theirs; the centre (%d, %d) is %s, the edge plot (%d, %d) %s,"
+                + " (%d, %d) a quarter of the world out %s, the gap beside an offer %s%n", listing.size(), offerGround, cx, cy,
+                owner(centre.owner()), ex, ey, owner(edge.owner()), fx, fy, owner(far.owner()), gap == null ? "none found" : owner(gap.owner()));
+        check("fixture: every offer listed has a free plot the model's pick calls its own, the centre is the city's, a plot at its east edge"
+                + " the city's, and the ground a quarter of the world out is nobody's", !listing.isEmpty() && offerGround == listing.size()
+                && centre.owner() == LandMap.CENTRE && land.ownsPlot(ex, ey) && edge.owner() != LandMap.OFFER && edge.owner() != LandMap.OUTSIDE
+                && far.owner() == LandMap.OUTSIDE);
+        check("a press on an offer's free ground boxes, no modifier needed, for every offer listed", boxed == offerGround);
+        boolean owned = !LandMap.pressBoxes(land, market, cx, cy, false) && !LandMap.pressBoxes(land, market, ex, ey, false);
+        check("a press on the city's own ground - its centre, a plot at its edge - pans", owned);
+        check("a press on ground no offer holds pans: a quarter of the world out" + (gap == null ? "" : ", and the plot beside an offer's rectangle"),
+                !LandMap.pressBoxes(land, market, fx, fy, false) && (gap == null || !LandMap.pressBoxes(land, market, gap.x(), gap.y(), false)));
+        boolean shiftAll = shiftBoxed == offerGround && LandMap.pressBoxes(land, market, cx, cy, true) && LandMap.pressBoxes(land, market, ex, ey, true)
+                && LandMap.pressBoxes(land, market, fx, fy, true) && (gap == null || LandMap.pressBoxes(land, market, gap.x(), gap.y(), true));
+        check("Shift boxes from all of them: an offer's free ground, the city's centre and edge, nobody's ground", shiftAll);
+        // The rule inside every offer's rectangle: a plot the city owns pans, a free plot boxes - the city's own ground inside an offer's rectangle is not the offer's.
+        int tried = 0, ownedHere = 0, wrong = 0;
+        for (LandParcel o : listing) {
+            long w = o.getX1() - o.getX0(), h = o.getY1() - o.getY0();
+            long stride = Math.max(1, (long) Math.ceil(Math.sqrt((double) w * h / PRESS_PLOTS)));
+            for (long y = o.getY0(); y < o.getY1(); y += stride) {
+                for (long x = o.getX0(); x < o.getX1(); x += stride) {
+                    boolean mine = land.ownsPlot(x, y);
+                    boolean boxes = LandMap.pressBoxes(land, market, x, y, false);
+                    tried++;
+                    if (mine) ownedHere++;
+                    // A plot of an offer's rectangle boxes exactly when the city does not own it (a free plot is the offer's, or another listed offer's).
+                    if (boxes == mine) wrong++;
+                }
+            }
+        }
+        out.printf("      %,d plots tried across the offers' rectangles, %,d of them the city's own, %d against the rule%n", tried, ownedHere, wrong);
+        check("inside the offers' rectangles a plot the city owns pans and a free plot of an offer's boxes", tried > 0 && wrong == 0);
+    }
+
+    /** A pick's owner in words. */
+    static String owner(int owner) {
+        return owner == LandMap.OFFER ? "an offer's" : owner == LandMap.CENTRE ? "the centre's" : owner == LandMap.BOUGHT ? "a purchase's" : "nobody's";
     }
 
     /** Whether a plain click on an offer (only) clears a note that stood. */

@@ -52,8 +52,11 @@ import static ham.citybuildersim.ui.Pieces.*;
  * there (star: the page scrolls under the wheel, so the small map neither
  * pans nor zooms; a click selects a side or an offer, a hover names what is
  * under the pointer and lights an offer). Expand moves the canvas
- * into UserInterface's pane over the whole window (City History's, 0.7.23):
- * drag pans, the wheel zooms by MapFrame.ZOOM_STEP a notch at the pointer,
+ * into UserInterface's pane over the window (City History's, 0.7.23; since
+ * MS1 under the window's own header, which stays in view - the clock, the
+ * money block, the five tiles - rather than over it): a drag from anywhere
+ * but an offer's free ground pans (and a right or middle drag from
+ * anywhere), the wheel zooms by MapFrame.ZOOM_STEP a notch at the pointer,
  * + and - zoom, 0 fits, Esc closes, and since 0.7.135 W, A, S and D pan
  * (the arrows stay the clock's speed, as on City History's full screen);
  * a legend and a hover
@@ -142,8 +145,13 @@ import static ham.citybuildersim.ui.Pieces.*;
  * nodes reprojected through the camera (GlobeFrame.ground(), ★E9), and
  * past it the far rule through the camera (GlobeFrame.groundPiece()) in
  * pieces on WORKER once the view holds still, the last whole picture
- * carried pixel by pixel and the planet's picture under it meanwhile;
- * PLANE, the map as before, its MapFrame following the globe's view. A
+ * carried pixel by pixel and the planet's picture under it meanwhile - and
+ * since MS1 at every scale where the view's centre is past the city's reach
+ * (GlobeFrame.tier()), closer than the handoff too, where the plane's far
+ * nodes are not asked for finer than they come and the whole view is the
+ * far rule's pieces;
+ * PLANE, the map as before, its MapFrame following the globe's view while
+ * its centre is within the reach. A
  * view on the move is drawn at half its resolution and a still one at its
  * own, in bands on the frames' pool (GlobePicture.bands()); the swap
  * crossfades over a notch inside the handoff (GlobeFrame.crossfade()).
@@ -167,12 +175,17 @@ import static ham.citybuildersim.ui.Pieces.*;
  * BUYING FROM THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3):
  * on the expanded map, wherever the offers are drawn, a click on one opens
  * its card beside it - the land office's (LandScreen.mapCardNode()), its
- * figures LandMap.card()'s - shift adds one or drops it, Shift and a drag
- * draws a box that takes every offer whose free ground it meets, and
+ * figures LandMap.card()'s - shift adds one or drops it, a drag that starts
+ * on an offer's free ground (since MS1, no modifier: LandMap.pressBoxes()),
+ * or Shift and a drag from anywhere, draws a box that takes every offer
+ * whose free ground it meets, and
  * Ctrl+A or the head's "Select every offer" takes them all; Buy or Enter
  * buys them, short the card issues the funding page's bond, the funding
  * page comes back to the map, and the head shows the cash and the pay
- * toggle the pane covers. The small map clicks as before.
+ * toggle the header does not. The picks and the box drawn stand through a
+ * month (MS1; LandMap.Picks), the head saying in the warning colour what a
+ * month or a purchase took off them (Picks.dropNote()). The small map
+ * clicks as before.
  */
 final class MapView {
 
@@ -236,7 +249,6 @@ final class MapView {
     private VBox bigPane;
     private StackPane bigBox;
     private VBox card;
-    private Label clockLine;
 
     /* ----------------------------- what it draws from ----------------------------- */
 
@@ -288,11 +300,15 @@ final class MapView {
     private int overSide = -1, overPlace = -1;   // the offer under the pointer
     private double pressX, pressY, lastX, lastY, moved;
     private boolean pressed;
+    /** The button the press was made with (MS1): only the primary clicks or draws a box; the others pan. */
+    private javafx.scene.input.MouseButton pressButton;
     private double[] hoverAt;
+    /** Whether Shift was held when the pointer last moved over the map: the cursor says a press would box from anywhere (MS1). */
+    private boolean hoverShift;
 
     /* ----------------------------- buying from the map (0.7.137, batch M6) ----------------------------- */
 
-    /** The offers picked on the expanded map, in the order picked (LandMap.Picks): the view's alone, dropped on a month, a load and a collapse. */
+    /** The offers picked on the expanded map, in the order picked (LandMap.Picks): the view's alone, dropped on a load and a collapse - and, since MS1, not on a month: each is keyed to its ground and lost only when the city bought it or nothing offers it, the head saying so (headNote). */
     private final LandMap.Picks picks = new LandMap.Picks();
     /** The card in the pane (the land office's: LandScreen.mapCardNode(), mapReceiptNode()) and what it was drawn for - null for a receipt. */
     private VBox buyBox;
@@ -306,13 +322,15 @@ final class MapView {
     private boolean receiptShown;
     /** The card sent to the funding page (B5): the map comes back over the window at the view it left when the page is done. */
     private boolean backFromFunding;
-    /** Shift and a drag (B7): a box drawn from the press to (boxX, boxY), in the screen's pixels. */
+    /** A drag that boxes (B7; since MS1 a plain drag from an offer's free ground, or Shift and a drag from anywhere - LandMap.pressBoxes()): a box drawn from the press to (boxX, boxY), in the screen's pixels. A month leaves it be. */
     private boolean boxing;
     private double boxX, boxY;
-    /** The head's money and its pay toggle (the pane covers the window's header), and what they were drawn for. */
+    /** The head's money and its pay toggle (land's own, in the money the toggle pays in: the window's header, kept in view over this pane since MS1, says neither), what they were drawn for, and the note of what the picks lost (Picks.dropNote()). */
     private Label headMoney;
     private HBox headPay;
     private String headFor;
+    private Label headNote;
+    private javafx.scene.control.Tooltip headNoteTip;
 
     private boolean running, dirty;
 
@@ -424,16 +442,19 @@ final class MapView {
     /** The note while the map is drawn away from the screen. */
     static final String DRAWING = "Drawing the city's map…";
 
-    /** The Expand button's tooltip. */
-    static final String EXPAND_TIP = "The map over the whole window: drag or W, A, S and D to pan, scroll to zoom, Esc to come back.";
+    /** The Expand button's tooltip (since MS1 it says the drag picks: a drag across offers picks them, one from anywhere else pans). */
+    static final String EXPAND_TIP = "The map under the window's header: drag across offers to pick them, drag from elsewhere or with the right button"
+            + " (or W, A, S and D) to pan, scroll to zoom, Esc to come back.";
 
-    /** The expanded map's hint, at the right of its head: since 0.7.137 how to buy (spec-earth 3.1, "its hint becomes"), every key in its tooltip (KEYS_TIP). */
-    static final String HINT = "click an offer to buy it";
+    /** The expanded map's hint, at the right of its head: since 0.7.137 how to buy (spec-earth 3.1, "its hint becomes"), since MS1 by a click or a drag across offers, every key in its tooltip (KEYS_TIP). */
+    static final String HINT = "click or drag across offers to pick them · drag elsewhere to pan";
 
     /** ...the hint's tooltip: every key and gesture the expanded map takes - the panning and zooming the hint said until 0.7.137, and the buying since. */
     static final String KEYS_TIP = "Click an offer to open its card beside it; shift-click adds an offer to the card or drops it;"
-            + " Shift and a drag picks every offer in a box; Ctrl+A picks them all. Enter buys the card's offers; Esc closes the"
-            + " card, then the map.\nDrag or W, A, S and D to pan · scroll, + or - to zoom · 0 fits.";
+            + " drag across offers - from an offer's free ground, no key needed - or Shift and a drag from anywhere picks every offer"
+            + " in a box; Ctrl+A picks them all. Enter buys the card's offers; Esc closes the card, then the map."
+            + "\nDrag from elsewhere, or with the right or middle button from anywhere, or W, A, S and D to pan"
+            + " · scroll, + or - to zoom · 0 fits. The picks stand through a month.";
 
     /** The head's chip that picks every offer listed (B7). */
     static final String SELECT_EVERY = "Select every offer";
@@ -897,9 +918,9 @@ final class MapView {
             }
         }
         // The swap (0.7.135): a notch inside the handoff the globe's picture of the plane's own nodes is laid over them, whole at
-        // the handoff and gone a notch in (GlobeFrame.crossfade()).
+        // the handoff and gone a notch in (GlobeFrame.crossfade(), the view's: this is the plane's tier, so the scale's).
         if (expanded && globe != null && tiles != null) {
-            double a = GlobeFrame.crossfade(globe.kmPx());
+            double a = globe.crossfade();
             if (a > 0) {
                 composeGlobe(MODE_FADE);
                 gc.setGlobalAlpha(a);
@@ -1721,11 +1742,20 @@ final class MapView {
     /** The globe drawn while it was half its resolution (the view on the move). */
     private boolean globeHalf;
 
-    /** Whether the expanded map draws the globe: on an Earth world, wider than the handoff. */
+    /** Whether the expanded map draws the globe: on an Earth world, wider than the handoff - or, since MS1, closer than it with the view's centre past the city's reach, where the plane is not drawn (GlobeFrame.tier()). */
     private boolean onGlobe() { return expanded && globe != null && globe.tier() != GlobeFrame.PLANE; }
 
-    /** ...or lays its picture over the plane's in the crossfade's notch. */
-    private boolean globeShown() { return onGlobe() || (expanded && globe != null && GlobeFrame.crossfade(globe.kmPx()) > 0); }
+    /** ...or lays its picture over the plane's in the crossfade's notch (GlobeFrame.crossfade(), the view's: whole where there is no plane under it). */
+    private boolean globeShown() { return onGlobe() || (expanded && globe != null && globe.crossfade() > 0); }
+
+    /**
+     * Whether the view is the far rule's pieces alone (MS1): the GROUND tier closer than the handoff, its centre past the
+     * reach. The plane's far nodes are not asked for there - they come no finer than the handoff's, and the plane is not what
+     * is drawn - and no part of the screen counts as drawn from them (askPieces() asks for the pieces of the whole view).
+     */
+    private static boolean farRuleOnly(GlobeFrame v) {
+        return v.tier() == GlobeFrame.GROUND && v.kmPx() < GlobeFrame.HANDOFF_KM;
+    }
 
     /** A new city, or another world: no globe until the map is over the window on Earth again. */
     private void resetGlobe() {
@@ -1777,16 +1807,17 @@ final class MapView {
         }
     }
 
-    /** The view moved on the globe: at the plane's scales the plane's frame follows it; the view drawn again. */
+    /** The view moved on the globe: where it draws the plane (the plane's scales, its centre within the reach) the plane's frame follows it - past the reach, closer than the handoff, there is no plane to follow (MS1); the view drawn again. */
     private void follow() {
         if (globe != null && big != null && globe.tier() == GlobeFrame.PLANE) big.set(globe.planeX(), globe.planeY(), globe.planeScale());
         requestDraw();
     }
 
-    /** The far nodes the globe reprojects for a view - {plots a pixel, nx0, nx1, ny0, ny1} - over the part of it the plane draws; null where it draws none. Kept for the view. */
+    /** The far nodes the globe reprojects for a view - {plots a pixel, nx0, nx1, ny0, ny1} - over the part of it the plane draws; null where it draws none (MS1: none in a view that is the far rule's pieces alone, farRuleOnly()). Kept for the view. */
     private long[] globeNodes(GlobeFrame v) {
         if (globeNodesFor != null && globeNodesFor.sameView(v)) return globeNodesAt;
         globeNodesFor = v.copy(v.width(), v.height(), v.kmPx());
+        if (farRuleOnly(v)) return globeNodesAt = null;
         long plots = MapFrame.nodePlotsAt(v.planeScale());
         double span = MapFrame.NODE_PX * (double) plots, x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE;
         double[] xy = new double[2];
@@ -1968,7 +1999,9 @@ final class MapView {
      * far rule through the camera (GlobeFrame.groundCodes()) a PIECE_PX
      * square at a time on WORKER, from the middle out, each one with some
      * of its pixels on the planet and past where the plane draws - and only
-     * while the view is still that one.
+     * while the view is still that one. In a view closer than the handoff
+     * past the reach (farRuleOnly(), MS1) the plane draws nowhere, so every
+     * piece on the planet is asked.
      */
     private void askPieces(GlobeFrame view) {
         if (pieceView != null && pieceView.sameView(view)) return;
@@ -1980,10 +2013,12 @@ final class MapView {
         final int gen = ++pieceGen;
         final World.Key key = globeKey;
         List<int[]> asked = new ArrayList<>();
+        // No part of a view that is the far rule's pieces alone is drawn from the plane's nodes (MS1): every piece on the planet is asked.
+        boolean farOnly = farRuleOnly(pv);
         for (int y0 = 0; y0 < h; y0 += PIECE_PX) {
             for (int x0 = 0; x0 < w; x0 += PIECE_PX) {
                 int pw = Math.min(PIECE_PX, w - x0), ph = Math.min(PIECE_PX, h - y0);
-                boolean plane = true, planet = false;
+                boolean plane = !farOnly, planet = false;
                 for (int k = 0; k < 9; k++) {
                     double sx = x0 + 0.5 + (k % 3) * (pw - 1) / 2.0, sy = y0 + 0.5 + (k / 3) * (ph - 1) / 2.0;
                     plane &= pv.drawsHold(sx, sy);
@@ -2019,7 +2054,7 @@ final class MapView {
         requestDraw();
     }
 
-    /** The globe on the canvas: its picture, then over it the city - its offers and centre where the plane draws in the GROUND tier, its edge through the camera in the PICTURE tier once it is EDGE_FROM_PX across, its ring - and the scale bar. */
+    /** The globe on the canvas: its picture, then over it the city - its offers and centre where the plane draws in the GROUND tier, its edge through the camera in the PICTURE tier (and in a GROUND view the plane's nodes do not draw, farRuleOnly()) once it is EDGE_FROM_PX across, its ring - and the scale bar. */
     private void drawGlobe() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         double w = globe.width(), h = globe.height();
@@ -2034,8 +2069,11 @@ final class MapView {
         CityLand land = g.getCityLand();
         LandMarket market = g.getLandManager().getMarket();
         shapes(land, market);
-        if (tier == GlobeFrame.GROUND) globeOffers(gc, land, market);
-        else globeEdge(gc, land);
+        if (tier == GlobeFrame.GROUND) {
+            globeOffers(gc, land, market);
+            // Where the plane's nodes are not drawn (MS1: the far rule's pieces alone) they do not draw the city's edge: the camera does.
+            if (farRuleOnly(globe)) globeEdge(gc, land);
+        } else globeEdge(gc, land);
         ring(gc, land);
         if (globeData != null && GlobePicture.best(globeData) == null) {
             gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
@@ -2169,6 +2207,7 @@ final class MapView {
             overPlace = op;
             dirty = true;
         }
+        cursorFor(os >= 0);
         List<String> lines = new ArrayList<>(LandMap.globeHoverWords(globe, land, market, sx, sy, drawnAt(sx, sy), CARD_FIELDS));
         // An offer drawn here - the GROUND tier's - is bought with a click (0.7.137).
         if (os >= 0 && canPick()) lines.add(CLICK_TO_BUY);
@@ -2235,6 +2274,7 @@ final class MapView {
     private void handlers() {
         canvas.setOnMouseMoved(e -> {
             hoverAt = new double[] { e.getX(), e.getY() };
+            hoverShift = e.isShiftDown();
             requestDraw();
         });
         canvas.setOnMouseExited(e -> {
@@ -2247,13 +2287,20 @@ final class MapView {
             }
         });
         canvas.setOnMousePressed(e -> {
+            // A second button pressed over the first starts the press again as its own: only its release ends it.
             pressed = true;
+            pressButton = e.getButton();
             pressX = lastX = boxX = e.getX();
             pressY = lastY = boxY = e.getY();
             moved = 0;
-            // Shift held, a drag draws a box rather than panning (0.7.137, B7), where the offers are drawn to be picked.
-            boxing = expanded && e.isShiftDown() && canPick();
-            if (expanded) canvas.requestFocus();
+            // A left drag that starts on an offer's free ground draws a box (MS1, Jerus: "drag and select"), as does Shift and
+            // a drag from anywhere (0.7.137, B7); a left drag from anywhere else pans, and a right or middle drag always does -
+            // even from an offer - where the offers are drawn to be picked (LandMap.pressBoxes()).
+            boxing = pressButton == javafx.scene.input.MouseButton.PRIMARY && pressBoxes(e.getX(), e.getY(), e.isShiftDown());
+            if (expanded) {
+                canvas.requestFocus();
+                canvas.setCursor(boxing ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
+            }
         });
         canvas.setOnMouseDragged(e -> {
             if (!pressed) return;
@@ -2261,8 +2308,10 @@ final class MapView {
             if (boxing) {
                 boxX = e.getX();
                 boxY = e.getY();
+                if (card != null && moved >= CLICK_SLOP) card.setVisible(false);
                 requestDraw();
             } else if (expanded) {
+                canvas.setCursor(javafx.scene.Cursor.CLOSED_HAND);
                 if (globe != null) {
                     globe.drag(lastX, lastY, e.getX(), e.getY());
                     follow();
@@ -2273,11 +2322,18 @@ final class MapView {
             lastY = e.getY();
         });
         canvas.setOnMouseReleased(e -> {
-            boolean click = pressed && moved < CLICK_SLOP, box = pressed && boxing && !click;
+            // Only the press's own button lets it go; and a right or middle press never clicks (MS1).
+            if (!pressed || e.getButton() != pressButton) return;
+            boolean primary = pressButton == javafx.scene.input.MouseButton.PRIMARY;
+            boolean click = primary && moved < CLICK_SLOP, box = boxing && !click;
             pressed = false;
             boxing = false;
+            // The cursor is read again for where the pointer is now.
+            hoverAt = new double[] { e.getX(), e.getY() };
+            hoverShift = e.isShiftDown();
             if (box) boxed(pressX, pressY, e.getX(), e.getY());
             else if (click) click(e.getX(), e.getY(), e.isShiftDown());
+            else requestDraw();
         });
         canvas.setOnScroll(e -> {
             if (!expanded) return;
@@ -2313,6 +2369,34 @@ final class MapView {
     }
 
     /**
+     * The plot of the city's plane under a screen point as the map draws it - the plane's own frame, or on the globe the
+     * camera's, where the plane is drawn (GlobeFrame.planeHolds()) - or null where there is none (the globe's ground
+     * the plane does not draw, off the planet): what a click and a press read the ground under the pointer by.
+     */
+    private long[] plotAt(double sx, double sy) {
+        if (onGlobe()) {
+            double[] xy = new double[2];
+            if (!globe.planeHolds(sx, sy) || !globe.plotAt(sx, sy, xy)) return null;
+            return new long[] { (long) Math.floor(xy[0]), (long) Math.floor(xy[1]) };
+        }
+        MapFrame f = frame();
+        return new long[] { (long) Math.floor(f.plotX(sx)), (long) Math.floor(f.plotY(sy)) };
+    }
+
+    /**
+     * Whether a left press at a screen point draws a box rather than pans (MS1): where the offers are drawn to be picked
+     * (canPick()), LandMap.pressBoxes() of the plot under it - an offer's free ground, or Shift - and Shift alone where the
+     * plane is not drawn under the press; never on the small map or where no offers are drawn.
+     */
+    private boolean pressBoxes(double sx, double sy, boolean shift) {
+        if (!expanded || !canPick()) return false;
+        long[] at = plotAt(sx, sy);
+        if (at == null) return shift;
+        Game g = ui.game;
+        return LandMap.pressBoxes(g.getCityLand(), g.getLandManager().getMarket(), at[0], at[1], shift);
+    }
+
+    /**
      * A click: an offer's free ground picks it, anywhere else picks the side
      * it lies on - on the globe only where the city's plane is drawn
      * (0.7.135). On the expanded map, where the offers are drawn to be
@@ -2322,19 +2406,13 @@ final class MapView {
      * closes the card, and shift there does nothing.
      */
     private void click(double sx, double sy, boolean shift) {
-        MapFrame f = frame();
         Game g = ui.game;
-        long px = (long) Math.floor(f.plotX(sx)), py = (long) Math.floor(f.plotY(sy));
-        if (onGlobe()) {
-            double[] xy = new double[2];
-            if (!globe.planeHolds(sx, sy) || !globe.plotAt(sx, sy, xy)) {
-                if (expanded && !shift) closeCard();
-                return;
-            }
-            px = (long) Math.floor(xy[0]);
-            py = (long) Math.floor(xy[1]);
+        long[] at = plotAt(sx, sy);
+        if (at == null) {
+            if (expanded && !shift) closeCard();
+            return;
         }
-        LandMap.Pick p = LandMap.pick(g.getCityLand(), g.getLandManager().getMarket(), px, py);
+        LandMap.Pick p = LandMap.pick(g.getCityLand(), g.getLandManager().getMarket(), at[0], at[1]);
         boolean offer = p.owner() == LandMap.OFFER;
         if (expanded) {
             if (offer && canPick()) {
@@ -2378,6 +2456,7 @@ final class MapView {
             overPlace = op;
             dirty = true;
         }
+        cursorFor(os >= 0);
         String what = null;
         if (tiles != null && f.level() == MapFrame.L0 && tiles.ready(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE))) {
             long tx = Math.floorDiv(x, World.TILE), ty = Math.floorDiv(y, World.TILE);
@@ -2402,6 +2481,18 @@ final class MapView {
         // ...and over an offer, how to buy it (0.7.137, board 4).
         if (os >= 0 && canPick()) lines.add(CLICK_TO_BUY);
         showCard(lines, sx, sy, f.width(), f.height());
+    }
+
+    /**
+     * The cursor says what a left press would do (MS1): the crosshair where it would draw a box - over an offer's free
+     * ground (`offerHere`, the pick the hover found, which is LandMap.pressBoxes() without Shift), or anywhere with Shift
+     * held where the offers are drawn to be picked - the open hand where it would pan, the default on the small map. A press
+     * held keeps its own (the closed hand panning, the crosshair boxing).
+     */
+    private void cursorFor(boolean offerHere) {
+        if (pressed) return;
+        canvas.setCursor(!expanded ? javafx.scene.Cursor.DEFAULT
+                : canPick() && (offerHere || hoverShift) ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
     }
 
     /** The hover card's last line over an offer on the expanded map (spec-earth 3.1, board 4), in blue. */
@@ -2829,13 +2920,24 @@ final class MapView {
         return false;
     }
 
-    /** The head's money and pay toggle, drawn again when the toggle, the cash, the vault or the month moved. */
+    /**
+     * The head's money, pay toggle and note, drawn again when the toggle, the cash, the vault, the month or the note moved. The
+     * note is what the picks lost to the last month or purchase (LandMap.Picks.dropNote(), MS1): shown in the warning colour
+     * while there is one, its tooltip the same line, until the player next changes the picks by hand. The picks are looked at
+     * first (live() is cheap while every pick is listed), so a drop is on the head the frame it is found and not the next.
+     */
     private void syncHead() {
         if (headMoney == null) return;
         Game g = ui.game;
-        String key = g.isLandPaidFromVault() + "|" + g.getCash() + "|" + g.getForeignAccounts().getReservesUsd() + "|" + g.getMonth();
+        picks.live(g);
+        String said = picks.dropNote();
+        String key = g.isLandPaidFromVault() + "|" + g.getCash() + "|" + g.getForeignAccounts().getReservesUsd() + "|" + g.getMonth()
+                + "|" + said;
         if (key.equals(headFor)) return;
         headFor = key;
+        headNote.setText(said == null ? "" : said);
+        headNoteTip.setText(said == null ? "" : said);
+        showIf(headNote, said != null);
         headMoney.setText(ui.landScreen.mapHeadMoney());
         // The office's chips on one line, the chip strip's 6 px apart: a FlowPane would ask for its whole wrap length in the head.
         headPay.getChildren().setAll(new ArrayList<>(ui.landScreen.mapPayChips(this).getChildren()));
@@ -2855,11 +2957,12 @@ final class MapView {
         smallBox.getChildren().remove(canvas);
         bigBox.getChildren().add(0, canvas);
         showIf(readout, false);
-        clockLine.setText(ui.clockWords());
         headFor = null;
         syncHead();
-        ui.showChartFullScreen(bigPane, clockLine, this::collapse);
+        // Under the window's header, which stays in view and says the clock (MS1): the head here has no clock line.
+        ui.showChartFullScreen(bigPane, null, this::collapse, true);
         ui.panKeysTo(this);
+        canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
         boolean before = big != null;
         fitPane();
         if (keepView && before) requestDraw();
@@ -2898,6 +3001,7 @@ final class MapView {
         hideBuyCard();
         ui.closeChartFullScreen();
         if (card != null) card.setVisible(false);
+        canvas.setCursor(javafx.scene.Cursor.DEFAULT);
         bigBox.getChildren().remove(canvas);
         smallBox.getChildren().add(0, canvas);
         canvas.setWidth(SMALL_W);
@@ -2909,16 +3013,27 @@ final class MapView {
     private void buildPane() {
         Label title = new Label("Land office › Map", icon(Icons.MAP, Palette.BUILDING, 16));
         title.setGraphicTextGap(8);
+        title.setMinWidth(Region.USE_PREF_SIZE);
         title.setStyle(Palette.Fonts.sansSemiBold() + " -fx-font-size: 15px; -fx-text-fill: " + Palette.TEXT + ";");
-        clockLine = new Label();
-        clockLine.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        // The cash and the pay toggle (0.7.137, spec-earth 6.1): the pane covers the window's header, so the head says them.
+        // The window's header stays in view above this pane (MS1) with the clock and the city's money, so the head keeps only
+        // land's own: the cash in the money the toggle pays in and the pay toggle (0.7.137, spec-earth 6.1), the hint, the
+        // chips - and the note of what a month or a purchase took off the picks, in the warning colour.
         headMoney = new Label();
         headMoney.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_HEAD));
         headMoney.setMinWidth(Region.USE_PREF_SIZE);
         headPay = new HBox(6);
         headPay.setAlignment(Pos.CENTER_LEFT);
         headPay.setMinWidth(Region.USE_PREF_SIZE);
+        // Shrinks before anything else in the head does (it ends in an ellipsis; its tooltip says the whole line).
+        headNote = new Label();
+        headNote.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.WARN));
+        headNote.setMinWidth(0);
+        headNoteTip = new javafx.scene.control.Tooltip();
+        headNoteTip.setShowDelay(javafx.util.Duration.millis(200));
+        headNoteTip.setWrapText(true);
+        headNoteTip.setMaxWidth(480);
+        javafx.scene.control.Tooltip.install(headNote, headNoteTip);
+        showIf(headNote, false);
         Label hint = new Label(HINT);
         hint.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         hint.setMinWidth(Region.USE_PREF_SIZE);
@@ -2931,7 +3046,7 @@ final class MapView {
         Label fit = stepChip("Fit", this::fitBig, true);
         Label close = stepChip("Back to the land office · Esc", () -> collapse(true), true);
         close.setMinWidth(Region.USE_PREF_SIZE);
-        HBox head = new HBox(Palette.GAP_LOOSE, title, clockLine, headMoney, headPay, gap, hint, every, fit, close);
+        HBox head = new HBox(Palette.GAP_LOOSE, title, headMoney, headPay, headNote, gap, hint, every, fit, close);
         head.setAlignment(Pos.CENTER_LEFT);
         head.setMinHeight(PANE_HEAD - Palette.GAP);
         card = new VBox(2);
@@ -2961,12 +3076,12 @@ final class MapView {
     }
 
 
-    /** The canvas sized to the pane: the window's width and height inside its padding and under its head (City History's rule, read off the window). */
+    /** The canvas sized to the pane: the window's width, and its height under the header (MS1: the pane lies below it, ui.chartFullTop()), inside the padding and under the head (City History's rule, read off the window). */
     private void fitPane() {
         if (!expanded) return;
         javafx.scene.Scene window = bigPane.getScene();
         double w = (window != null ? window.getWidth() : bigPane.getWidth()) - 2 * PANE_SIDE;
-        double h = (window != null ? window.getHeight() : bigPane.getHeight()) - PANE_TOP - PANE_BOTTOM - PANE_HEAD;
+        double h = (window != null ? window.getHeight() - ui.chartFullTop() : bigPane.getHeight()) - PANE_TOP - PANE_BOTTOM - PANE_HEAD;
         if (w <= 0 || h <= 0) return;
         w = Math.floor(w);
         h = Math.floor(h);

@@ -4889,6 +4889,7 @@ public class UserInterface extends Application {
         said.append("\nClick for the City overview.");
         Kept.tip(chip, said.toString(), 300);
         chip.setOnMouseClicked(e -> {
+            mapAwayFromHeader();
             drawerOpen = !drawerOpen;
             if (drawerOpen) openOnNeeds();
             placeFrame();
@@ -6061,6 +6062,7 @@ public class UserInterface extends Application {
             }));
         }
         envelope.setOnMouseClicked(e -> {
+            mapAwayFromHeader();
             inboxOpen = !inboxOpen;
             refreshInbox();
         });
@@ -6497,7 +6499,10 @@ public class UserInterface extends Application {
        full screen, which this does not read or change. Since 0.7.61 the land
        office's map expands into the same pane (MapView), and "any other
        screen" is any but the one that laid it, whose redraws on the clock
-       go on under the pane.
+       go on under the pane. Since MS1 (2026-10-26) the map's pane lies
+       under the header, not over it: the header stays in view and drawn on
+       the clock (showChartFullScreen()'s `underHeader`), and the clock line
+       is the header's own.
        ===================================================================== */
 
     /** The chart's pane while it has the window, its clock line, and what closes it; null otherwise. */
@@ -6521,18 +6526,77 @@ public class UserInterface extends Application {
      * drawn next.
      */
     void showChartFullScreen(Region pane, Label clockLine, java.util.function.Consumer<Boolean> leave) {
+        showChartFullScreen(pane, clockLine, leave, false);
+    }
+
+    /**
+     * ...or, with `underHeader` (MS1, the expanded map's: Jerus, 2026-10-26, "i should be able to see the top
+     * part of the screen aka population, gdp, treasury, rate, exchange rate inflation all that i already see"),
+     * laid over the window below its header instead of over all of it: the pane's top margin held at the
+     * header's height by a listener, taken off when the pane leaves, so the clock and speed, the money block,
+     * the five tiles, the rating and the inbox stay in view and drawn on the clock as ever - the header
+     * itself, shared and not copied. City History's full screen keeps covering it.
+     */
+    void showChartFullScreen(Region pane, Label clockLine, java.util.function.Consumer<Boolean> leave, boolean underHeader) {
         if (chartFull != null) windowStack.getChildren().remove(chartFull);
+        letGoOfHeader();
         hideTooltips();
         chartFull = pane;
         chartFullClock = clockLine;
         chartFullLeave = leave;
         chartFullOwner = currentScreen;
         if (clockLine != null) clockLine.setText(clockWords());
+        if (underHeader && header != null) {
+            StackPane.setAlignment(pane, Pos.TOP_LEFT);
+            chartFullTop = headerHeight();
+            StackPane.setMargin(pane, new javafx.geometry.Insets(chartFullTop, 0, 0, 0));
+            chartFullHeaderHeight = (o, was, now) -> {
+                chartFullTop = headerHeight();
+                StackPane.setMargin(pane, new javafx.geometry.Insets(chartFullTop, 0, 0, 0));
+            };
+            header.heightProperty().addListener(chartFullHeaderHeight);
+        }
         windowStack.getChildren().add(pane);
+    }
+
+    /** The overlay's top margin while it lies under the header (MS1): the header's height, 0 when it covers the window. */
+    private double chartFullTop;
+
+    /** ...and the listener holding it there, or null. */
+    private javafx.beans.value.ChangeListener<Number> chartFullHeaderHeight;
+
+    /** The header's height as laid out, never under its own minimum (it has not been laid out before its first pulse). */
+    private double headerHeight() {
+        return Math.max(header.getHeight(), Palette.HEADER);
+    }
+
+    /** How far down the window the overlay starts: the header's height while it lies under it (MapView.fitPane() sizes the canvas to the room under), 0 over the whole window. */
+    double chartFullTop() { return chartFullTop; }
+
+    /** The header's listener removed and the overlay's margin back to none: the pane may be laid again, over all of the window or under it. */
+    private void letGoOfHeader() {
+        if (chartFullHeaderHeight != null && header != null) header.heightProperty().removeListener(chartFullHeaderHeight);
+        chartFullHeaderHeight = null;
+        if (chartFull != null && chartFullTop > 0) {
+            StackPane.setMargin(chartFull, null);
+            StackPane.setAlignment(chartFull, null);
+        }
+        chartFullTop = 0;
+    }
+
+    /**
+     * A header control that opens a panel under the pane (the Needs-you chip's drawer, the inbox's list) takes
+     * the map away first (MS1), as another screen's coming does (clearMenu()): the panel would open hidden
+     * under it. The controls that open a screen - a tile's History, the money block's Finances - come through
+     * clearMenu() and need no call.
+     */
+    private void mapAwayFromHeader() {
+        if (chartFull != null && chartFullTop > 0) leaveChartFullScreen(false);
     }
 
     /** Takes the pane off the window; the screen redraws its page. */
     void closeChartFullScreen() {
+        letGoOfHeader();
         if (chartFull != null) windowStack.getChildren().remove(chartFull);
         chartFull = null;
         chartFullClock = null;

@@ -1561,6 +1561,22 @@ public final class LandMap {
     }
 
     /**
+     * What a left press on the expanded map starts, a box or a pan (MS1, Jerus
+     * 2026-10-26: "i should be able to not only click and shift click, but
+     * also drag and select"): a box when the press is on an offer's free
+     * ground - the plot (px, py) is the offer's by pick(), the city's own
+     * ground and the ground no offer holds are not - or with Shift held,
+     * which boxes from anywhere (B7); a pan otherwise. A drag that begins on
+     * an offer and moves less than the click slop is still a click, which
+     * picks it (MapView). The plot is the plane's under the press: through
+     * the globe's camera on the globe, where a press the plane does not hold
+     * is none (MapView passes shift alone then).
+     */
+    public static boolean pressBoxes(CityLand land, LandMarket market, long px, long py, boolean shift) {
+        return shift || pick(land, market, px, py).owner() == OFFER;
+    }
+
+    /**
      * The fields an offer holds whole (board 7: the card rings their sites
      * wherever they lie): those of every resource in fields centred on its
      * free ground - a field goes whole with the ground holding its centre
