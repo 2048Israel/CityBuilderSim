@@ -75,6 +75,7 @@ stuff".
 | XR5 | The currency regimes' rest: a peg pays the pressure, not the month's balance; the tied path prices the curve under a peg; the overshoot both ways; a warning when a thin vault pegs (Jerus, 2026-10-23, on XR2's ★4, ★5 and the review's two: "Pay the pressure", "Price on the tied path") | [XR5](docs/queue/XR5.md) |
 | AN2 | AN1's leftovers: the D$ the goods are struck at on Trade › The currency, and the Earth playtest (Rotterdam) with the anchor (Jerus, 2026-10-23: "Queue both, small") | [AN2](docs/queue/AN2.md) |
 | FX9 | Ground bought into an open cell gets the cell's own streets, nothing standing moved, so piecemeal land is built on (Jerus, 2026-10-23, on FX6's ★1: "Extend the streets") | [FX9](docs/queue/FX9.md) |
+| TM3 | The gate's timing judged side by side: a timing red on the merge is timed again with main's classes and the merge's in turn, in the same minutes, and counts against the batch only if it is over 15% slower than main; no budget moves (Jerus, 2026-10-26, after HY1's gate stopped on MapCheck's load: "queue the TM3 batch") | [TM3](docs/queue/TM3.md) |
 
 ## Pending
 
