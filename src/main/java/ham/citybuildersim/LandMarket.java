@@ -430,6 +430,9 @@ public class LandMarket {
         // with no room waits). Offers standing keep the ground and the price
         // they were listed at.
         listMissing();
+
+        // The player's drafts (BL1) are measured again at the price struck now - none while no one is picking.
+        remeasureDrafts();
     }
 
     /**
@@ -540,6 +543,7 @@ public class LandMarket {
         this.places = land == null ? null : new GridOffers(land.grid(), land.siteX(), land.siteY());
         this.takenFrom = -1;
         java.util.Arrays.fill(offers, null);
+        drafts.clear();
     }
 
     /** The city's land the offers stand round, or null on a bare office. */
@@ -614,6 +618,7 @@ public class LandMarket {
         if (landmasses == null || land == null) return;
         World world = World.of(land.key());
         for (LandParcel p : offers) if (p != null) landmasses.offerSplit(world, land, p);
+        for (LandParcel d : drafts) landmasses.offerSplit(world, land, d);
     }
 
     /**
@@ -868,8 +873,10 @@ public class LandMarket {
         return n;
     }
 
+    /** The offer standing under an id, or the draft (BL1: a negative id); null when neither. */
     public LandParcel find(int id) {
         for (LandParcel p : offers) if (p != null && p.getId() == id) return p;
+        for (LandParcel d : drafts) if (d.getId() == id) return d;
         return null;
     }
 
@@ -1076,6 +1083,7 @@ public class LandMarket {
      * as it stands after the purchase rather than before it.
      */
     public LandParcel take(int id) {
+        if (id < 0) return takeDraft(id);
         for (int i = 0; i < OFFERS; i++) {
             if (offers[i] != null && offers[i].getId() == id) {
                 LandParcel p = offers[i];
@@ -1086,6 +1094,134 @@ public class LandMarket {
             }
         }
         return null;
+    }
+
+    /* ===================================================================
+       THE PLAYER'S GROUND, DRAFTED INTO THE OFFICE (BL1, 2026-10-26)
+
+       Jerus: "revamp how buy land works ... perhaps more freedom on the
+       exact selection?" The office lists twenty-four rectangles of its own
+       choosing, and a player who wants a coast's run or the ground between
+       two offers had nothing to buy. A DRAFT is the office measuring the
+       ground the player picked - a rectangle of whole blocks of the city's
+       level - as it would an offer of it, at the price struck last (the
+       rule is linear in the ground and its fields, so a rectangle priced
+       whole or by halves costs the same to the price's own rounding, US$5k
+       an offer), under a negative id from a counter of its own, so no
+       listing's number moves. Bought through the same door as an offer
+       (Game.buyLandParcel(): LandManager.buyParcel() finds, takes and
+       extends), it is a holding like any.
+
+       What a draft is NOT: in the listing, the office's rows, the going
+       rate, the reach, the AutoBuilder's pick or any path that walks the
+       twenty-four; saved (DataSave carries the offers and no draft: a load,
+       a new city or a restatement drops them, attach()); or made by the
+       month - only the map's picks make one (LandMap.Picks), so a city
+       nobody is picking in sees none of this.
+
+       An offer keeps the price it was listed at, and its ground never
+       shrinks (offers never meet). A draft bought on part of an offer's
+       free ground would leave that offer selling less at the old price, so
+       take() puts every such offer off the shelf, unbought, and the update
+       after the purchase lists its place again against the city as it
+       stands.
+       =================================================================== */
+
+    /** The drafts standing now, in the order the player's ground was cut; each a LandParcel under a negative id. */
+    private final List<LandParcel> drafts = new ArrayList<>();
+
+    /** The id the next draft takes: -1, then -2, and so on - a counter of its own, never nextId, so no offer's number moves for a draft. */
+    private int nextDraftId = -1;
+
+    /**
+     * The player's ground drafted into the office: each {x0, y0, x1, y1} a rectangle of plots on the city's blocks
+     * (whole blocks of getLevel(), half-open), measured as an offer of it is (measure(): the ground the city does not
+     * own, its relief, its fields, its forest, priced at the price struck last), and the drafts standing now replaced
+     * by these. A draft whose rectangle stands as it did keeps its id (the card is keyed by ids); a new one takes the
+     * next of -1, -2, ... A rectangle the city wholly owns, outside the world or empty is left out, and so is a second
+     * of the same. Returns the drafts, in the order given.
+     */
+    public List<LandParcel> draft(List<long[]> rects) {
+        List<LandParcel> now = new ArrayList<>();
+        if (land != null && rects != null) {
+            for (long[] r : rects) {
+                if (r == null || r.length < 4) continue;
+                long x0 = Math.max(0, Math.min(r[0], r[2])), y0 = Math.max(0, Math.min(r[1], r[3]));
+                long x1 = Math.min(World.SIDE, Math.max(r[0], r[2])), y1 = Math.min(World.SIDE, Math.max(r[1], r[3]));
+                if (x0 >= x1 || y0 >= y1 || land.grid().unowned(x0, y0, x1, y1) == 0) continue;
+                boolean twice = false;
+                for (LandParcel d : now) twice |= sameRect(d, x0, y0, x1, y1);
+                if (twice) continue;
+                int id = 0;
+                for (LandParcel d : drafts) if (sameRect(d, x0, y0, x1, y1)) id = d.getId();
+                if (id == 0) id = nextDraftId--;
+                now.add(measureDraft(x0, y0, x1, y1, id));
+            }
+        }
+        drafts.clear();
+        drafts.addAll(now);
+        return getDrafts();
+    }
+
+    /** The drafts standing, in the order drafted (none of them the office lists: getListing() never holds one). */
+    public List<LandParcel> getDrafts() { return new ArrayList<>(drafts); }
+
+    /**
+     * What a rectangle of plots would be drafted as, nothing kept and no id (0): the hover's figure for the block
+     * under the pointer. Null on a bare office or a rectangle outside the world.
+     */
+    public LandParcel quote(long x0, long y0, long x1, long y1) {
+        if (land == null) return null;
+        long ax0 = Math.max(0, Math.min(x0, x1)), ay0 = Math.max(0, Math.min(y0, y1));
+        long ax1 = Math.min(World.SIDE, Math.max(x0, x1)), ay1 = Math.min(World.SIDE, Math.max(y0, y1));
+        if (ax0 >= ax1 || ay0 >= ay1) return null;
+        return measureDraft(ax0, ay0, ax1, ay1, 0);
+    }
+
+    private static boolean sameRect(LandParcel p, long x0, long y0, long x1, long y1) {
+        return p.getX0() == x0 && p.getY0() == y0 && p.getX1() == x1 && p.getY1() == y1;
+    }
+
+    /** A rectangle measured as an offer of it, under `id`: its side and place as GridOffers sees a point at its centre from the site (sidePlace()), so a holding bought from it records a side and place like any. */
+    private LandParcel measureDraft(long x0, long y0, long x1, long y1, int id) {
+        double dx = (x0 + x1) / 2.0 - (land.siteX() + 0.5), dy = (y0 + y1) / 2.0 - (land.siteY() + 0.5);
+        int at = GridOffers.sidePlace(dx, dy);
+        return measure(new GridOffers.Rect(at / OFFERS_A_SIDE, at % OFFERS_A_SIDE, land.level(), x0, y0, x1, y1), id, month);
+    }
+
+    /** Every draft measured again at the price struck now, its id kept; one whose ground the city now wholly owns is dropped. */
+    private void remeasureDrafts() {
+        if (drafts.isEmpty() || land == null) return;
+        for (int i = drafts.size() - 1; i >= 0; i--) {
+            LandParcel d = drafts.get(i);
+            if (land.grid().unowned(d.getX0(), d.getY0(), d.getX1(), d.getY1()) == 0) drafts.remove(i);
+            else drafts.set(i, measureDraft(d.getX0(), d.getY0(), d.getX1(), d.getY1(), d.getId()));
+        }
+    }
+
+    /**
+     * A draft bought: it leaves its shelf, and every standing offer whose free ground its rectangle meets leaves the
+     * office's, unbought - its place emptied as take() empties one - because an offer keeps its listed price and must
+     * not go on selling less ground at it. Called before the city's ground is extended, so "free" is the ground as the
+     * purchase finds it; the update after it lists the emptied places again.
+     */
+    private LandParcel takeDraft(int id) {
+        LandParcel taken = null;
+        for (int i = 0; i < drafts.size() && taken == null; i++) if (drafts.get(i).getId() == id) taken = drafts.remove(i);
+        if (taken == null || land == null) return taken;
+        for (int i = 0; i < OFFERS; i++) {
+            LandParcel o = offers[i];
+            if (o == null) continue;
+            long x0 = Math.max(o.getX0(), taken.getX0()), y0 = Math.max(o.getY0(), taken.getY0());
+            long x1 = Math.min(o.getX1(), taken.getX1()), y1 = Math.min(o.getY1(), taken.getY1());
+            if (x0 >= x1 || y0 >= y1 || land.grid().unowned(x0, y0, x1, y1) == 0) continue;
+            offers[i] = null;
+            if (places != null) places.stand(i / OFFERS_A_SIDE, i % OFFERS_A_SIDE, null);
+            // ...and the first of them listed first when the shelf is filled again, as the place just bought is (listMissing()):
+            // a draft of exactly an offer's rectangle leaves the shelf as buying that offer does.
+            if (takenFrom < 0 || i < takenFrom) takenFrom = i;
+        }
+        return taken;
     }
 
     /* ===================================================================
@@ -1240,6 +1376,7 @@ public class LandMarket {
 
     public void reset() {
         java.util.Arrays.fill(offers, null);
+        drafts.clear();
         if (places != null) places = new GridOffers(land.grid(), land.siteX(), land.siteY());
         takenFrom = -1;
         groundFromLocal = false;

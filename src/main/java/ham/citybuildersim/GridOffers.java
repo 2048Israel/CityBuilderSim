@@ -184,9 +184,26 @@ public final class GridOffers {
 
     /** Whether an unowned block has an owned plot across one of its four edges. */
     boolean touches(int level, long bx, long by) {
+        return touches(grid, level, bx, by);
+    }
+
+    /** ...on any grid (BL1: the map's block picks read the frontier's rule, not a copy of it). */
+    static boolean touches(LandGrid grid, int level, long bx, long by) {
         long b = 1L << level, x0 = bx * b, y0 = by * b;
         return grid.unowned(x0, y0 - 1, x0 + b, y0) < b || grid.unowned(x0, y0 + b, x0 + b, y0 + b + 1) < b
                 || grid.unowned(x0 - 1, y0, x0, y0 + b) < b || grid.unowned(x0 + b, y0, x0 + b + 1, y0 + b) < b;
+    }
+
+    /**
+     * Whether block (bx, by) of `level` is on the city's frontier, the rule frontier() applies to a side's quarter
+     * (BL1: the map's block picks): on the world, not wholly owned, and partly owned or with an owned plot across one
+     * of its four edges - ground that joins the city.
+     */
+    public static boolean onFrontier(LandGrid grid, int level, long bx, long by) {
+        if (bx < 0 || by < 0 || bx >= World.SIDE >> level || by >= World.SIDE >> level) return false;
+        int cov = grid.cover(level, bx, by);
+        if (cov == LandGrid.ALL) return false;
+        return cov != LandGrid.NONE || touches(grid, level, bx, by);
     }
 
     /** Whether a standing offer meets the rectangle of plots [x0, x1) x [y0, y1). */
