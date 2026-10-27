@@ -66,7 +66,7 @@
 
 **Uses:** [World](World.md) (192), [Landmasses](Landmasses.md) (185), [LandmassView](LandmassView.md) (147), [Game](Game.md) (106), [CityMap](CityMap.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (49), [LandParcel](LandParcel.md) (44), [LandManager](LandManager.md) (43), [Resource](Resource.md) (42), [LongPlaytest](LongPlaytest.md) (42), [LandMap](LandMap.md) (29), [CityLand](CityLand.md) (25), [EarthData](EarthData.md) (17), [Founding](Founding.md) (16), [LandMarket](LandMarket.md) (16), [Ports](Ports.md) (13), [TilePainter](TilePainter.md) (11), [CityShore](CityShore.md) (11), [Deposit](Deposit.md) (10), [GridOffers](GridOffers.md) (10), [BuildCard](BuildCard.md) (10), [EarthTerrain](EarthTerrain.md) (9), [GameFiles](GameFiles.md) (8), [ConstructionControl](ConstructionControl.md) (8), [ZoningView](ZoningView.md) (8), [AutoBuilder](AutoBuilder.md) (7), [EarthSite](EarthSite.md) (6), [EarthCheck](EarthCheck.md) (5), [Notice](Notice.md) (5), [LandGrid](LandGrid.md) (4)... and 12 more
 
-**Used by (2):** [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (3):** [BridgeCheck](BridgeCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

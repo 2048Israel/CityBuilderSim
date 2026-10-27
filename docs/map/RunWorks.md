@@ -26,7 +26,7 @@
 
 **Uses:** [World](World.md) (6), [LandManager](LandManager.md) (2), [SitePreparation](SitePreparation.md) (2)
 
-**Used by (2):** [Game](Game.md), [RunWorksCheck](RunWorksCheck.md)
+**Used by (4):** [BridgeCheck](BridgeCheck.md), [BridgeWorks](BridgeWorks.md), [Game](Game.md), [RunWorksCheck](RunWorksCheck.md)
 
 ## Constants
 

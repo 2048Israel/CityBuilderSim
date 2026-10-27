@@ -66,7 +66,7 @@
 
 **Uses:** [CityMap](CityMap.md) (478), [World](World.md) (460), [LandMap](LandMap.md) (386), [TilePainter](TilePainter.md) (214), [TrainSchedule](TrainSchedule.md) (208), [BuildingVisual](BuildingVisual.md) (171), [DistrictPlan](DistrictPlan.md) (167), [TileRaster](TileRaster.md) (165), [MapFrame](MapFrame.md) (164), [MapTiles](MapTiles.md) (134), [LandParcel](LandParcel.md) (106), [GlobeFrame](GlobeFrame.md) (103), [MiniMapFrame](MiniMapFrame.md) (93), [Game](Game.md) (74), [JunctionCheck](JunctionCheck.md) (62), [CityLand](CityLand.md) (59), [DistrictPicture](DistrictPicture.md) (58), [CityRuns](CityRuns.md) (54), [EarthTerrainCheck](EarthTerrainCheck.md) (46), [LongPlaytest](LongPlaytest.md) (37), [Ports](Ports.md) (33), [EarthTerrain](EarthTerrain.md) (31), [GlobePicture](GlobePicture.md) (27), [BoatSchedule](BoatSchedule.md) (25), [EarthData](EarthData.md) (24), [Resource](Resource.md) (23), [LandGrid](LandGrid.md) (23), [Timing](Timing.md) (22), [CityShore](CityShore.md) (21), [LandMarket](LandMarket.md) (18)... and 27 more
 
-**Used by (8):** [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [GlobeCheck](GlobeCheck.md), [IslandNetCheck](IslandNetCheck.md), [MainLineCheck](MainLineCheck.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
+**Used by (9):** [BridgeMapCheck](BridgeMapCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [GlobeCheck](GlobeCheck.md), [IslandNetCheck](IslandNetCheck.md), [MainLineCheck](MainLineCheck.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
 ## Sections
 

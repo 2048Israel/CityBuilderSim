@@ -54,7 +54,7 @@
 
 **Uses:** [Game](Game.md) (13), [GameFiles](GameFiles.md) (6), [EarthData](EarthData.md) (6), [LongPlaytest](LongPlaytest.md) (4), [SectorBooks](SectorBooks.md) (3), [GoodsMarket](GoodsMarket.md) (2), [Sector](Sector.md) (2), [SectorStatements](SectorStatements.md) (2), [TimeSkipReport](TimeSkipReport.md) (2), [EarthSite](EarthSite.md) (2), [Construction](Construction.md) (1)
 
-**Used by (1):** [LandmassCheck](LandmassCheck.md)
+**Used by (2):** [BridgeCheck](BridgeCheck.md), [LandmassCheck](LandmassCheck.md)
 
 ## Sections
 

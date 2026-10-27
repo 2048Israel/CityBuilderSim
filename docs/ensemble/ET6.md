@@ -1,0 +1,95 @@
+# Ensemble baseline: {next}
+
+The ensemble on the model of **{next}**: classes snapshot of commit abf933d4 (2026-10-26T23:52Z), label et6, 80 of 80 runs.
+Scored against `docs/ensemble/0.8.37.md` for T1, T2 and F1. Commit this file on the batch's branch as `docs/ensemble/<batch id>.md` when its playtest trace moved, with the version above (this heading and the line under it) written as the next-version token in braces, as the batch's ship file writes it: ship.sh gives the file its version at the gate, renames it to `docs/ensemble/<version>.md` and fills the token. A batch whose trace is byte-identical to main's does not rerun the ensemble.
+
+| policy | id | measure | median [min to max] | threshold | verdict |
+|---|---|---|---|---|---|
+| AUTO2 | A1 | inflation m240-end, a year | 2.20% [1.96% to 2.46%] | median 2.00%±1.00%, ≥12/16 in band* | PASS (16/16 in band) |
+| AUTO2 | info | inflation m240-600 (the young city), a year | 3.20% [2.19% to 4.02%] | - | info |
+| AUTO2 | info | the founding, m120-240: longest spell of yoy > 10.00%; of yoy < -10.00%, months | 4 [0 to 12]; 0 [0 to 1] | - | info |
+| AUTO2 | A2 | longest spell of yoy > 10.00% from m240, months | 9 [0 to 24] | < 12 in every seed* | FAIL |
+| AUTO2 | A3 | deflation spell from m240 (months); final/peak population | 2 [0 to 6]; 100.00% [94.39% to 100.00%] | < 12; all finish; ≥ 50.00%* | PASS |
+| AUTO2 | info | policy rate, mean from m240; share of months at 0% | 4.03% [3.37% to 4.41%]; 18.68% [10.28% to 24.40%] | - | info |
+| AUTO2 | info | mean yoy reading from m240 | 2.25% [2.03% to 2.50%] | - | info |
+| ZERO_SLACK | S1 | inflation m1800-2040 at 0% minus the AUTO2 twin's, a year | 1.09% [0.10% to 4.69%] | median ≤ +1.00%, all ≤ +3.00%, no spell of yoy > 10.00% of 12* | FAIL (longest spell 52 months) |
+| ZERO_SLACK | info | the window's own inflation, a year; peak yoy; the twin's peak yoy; yoy over the twin's same month, at most | 3.03% [1.40% to 7.90%]; 13.25% [4.96% to 20.69%]; 8.96% [3.59% to 12.41%]; 12.22% [3.39% to 17.61%] | - | info |
+| ZERO_SLACK | info | unemployment in the window: the run's; the twin's (the spec's section 8: read S1 beside it) | 13.01% [9.20% to 15.58%]; 13.53% [10.16% to 19.29%] | - | info |
+| ZERO_SLACK | info | at m2040 against twin: fx; rent | 30.06% [1.50% to 185.33%]; 19.00% [-7.30% to 125.27%] | - | info |
+| ZERO_HOT | info | inflation m42-162 (1st half); m162-282 (2nd half); index over twin at m162, m282, m402 | 2.61% [-0.08% to 4.33%]; 2.03% [-1.35% to 8.77%]; 9.58% [-4.84% to 32.93%]; 5.49% [-12.05% to 91.38%]; -1.33% [-23.38% to 68.73%] | - | info |
+| ZERO_HOT | H1 | at 0%, minus the AUTO2 twin: m42-162 (1st half); m162-282 (2nd half); 2nd minus 1st | 0.92% [-0.50% to 2.91%]; -0.22% [-2.75% to 5.54%]; -0.37% [-4.44% to 4.53%] | ≥ +1.00%; ≥ +1.00%; < +1.00%* | RETIRED (Jerus, 2026-10-21, on CD1: "Keep D9 as decided: H1's premise is retired"; the numbers alone would fail) |
+| ZERO_HOT | H2 | inflation m342-402 (autopilot back) minus the AUTO2 twin's | -0.97% [-3.05% to 1.13%] | median ≤ +1.00%, below the 2nd half's excess in ≥ 12* | VACUOUS (no burst to stop; the numbers alone would pass) |
+| ZERO_HOT | info | inflation m342-402: the run's; the twin's (H2 until EN1: the run's at most 4.00%) | 3.13% [0.27% to 5.09%]; 4.52% [0.14% to 6.27%] | - | info |
+| ZERO_HOT | info | unemployment at 0% minus twin (points) | -0.10% [-5.08% to 2.37%] | - | info |
+| ZERO_HOT | info | fx at m282 against twin (+ = weaker) | 53.92% [14.84% to 206.86%] | - | info |
+| SHOCK | K1 | index over its twin, highest within 36 months | 16.15% [10.67% to 26.06%] | median ≥ 2.00%* | PASS |
+| SHOCK | K2 | inflation m720-840; minus the twin's, a year | 2.05% [-0.08% to 3.61%]; -0.58% [-2.23% to 1.08%] | ≤ 3.00%; ≤ 1.00%* | PASS |
+| SHOCK | info | at the step's peak against twin: shelf; rent; fx | 24.37% [5.55% to 46.31%]; 3.21% [1.20% to 41.57%]; -23.40% [-34.14% to 2.85%] | - | info |
+| SHOCK | info | world level at the shock against twin | 29.85% [29.85% to 29.85%] | - | info |
+| HIGH | R1 | inflation m600-720 at 15% minus twin | -2.62% [-4.88% to 0.37%] | median ≤ -0.50%* | PASS |
+| HIGH | R2 | unemployment minus twin (points) | 3.12% [0.26% to 9.57%] | median ≥ +0.50%* | PASS |
+| HIGH | R3 | inflation m660-720 minus twin | -2.80% [-6.08% to 5.38%] | median ≤ 0, ≤ 2 seeds > +1 pt* | PASS (1 above +1 pt) |
+| HIGH | info | deposit rate in the window | 0.65% [0.48% to 1.28%] | - | info |
+| HIGH | info | at m720 against twin: shelf; rent; fx | -14.41% [-38.63% to -1.82%]; -15.80% [-40.17% to 40.19%]; -41.55% [-53.74% to -23.70%] | - | info |
+| ALL | T1 | AUTO2 seeds reaching 40,000 people (month reached) | 16/16 (m1,189 [890 to 1,438]) | ≥ baseline 16 - 2* | PASS |
+| AUTO2 | T2 | final population | 258,838 [91,767 to 334,102] | ≥ 75.00% of baseline 258,838* | PASS |
+| AUTO2 | M1 | months the money audit failed (unread) | 0 (0) | 0 | PASS |
+| AUTO2 | F1 | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS |
+| ZERO_SLACK | T2 | final population | 171,863 [80,826 to 224,249] | ≥ 75.00% of baseline 171,863* | PASS |
+| ZERO_SLACK | info | final population over the AUTO2 twin's, same month | 103.95% [99.01% to 192.86%] | - | info |
+| ZERO_SLACK | M1 | months the money audit failed (unread) | 0 (0) | 0 | PASS |
+| ZERO_SLACK | F1 | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS |
+| ZERO_HOT | T2 | final population | 3,744 [2,950 to 4,542] | ≥ 75.00% of baseline 3,743* | PASS |
+| ZERO_HOT | info | final population over the AUTO2 twin's, same month | 108.08% [69.13% to 166.50%] | - | info |
+| ZERO_HOT | M1 | months the money audit failed (unread) | 0 (0) | 0 | PASS |
+| ZERO_HOT | F1 | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS |
+| SHOCK | T2 | final population | 15,149 [11,431 to 24,859] | ≥ 75.00% of baseline 15,149* | PASS |
+| SHOCK | info | final population over the AUTO2 twin's, same month | 102.75% [76.17% to 127.26%] | - | info |
+| SHOCK | M1 | months the money audit failed (unread) | 0 (0) | 0 | PASS |
+| SHOCK | F1 | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS |
+| HIGH | T2 | final population | 7,164 [4,597 to 9,821] | ≥ 75.00% of baseline 7,164* | PASS |
+| HIGH | info | final population over the AUTO2 twin's, same month | 80.27% [55.47% to 99.47%] | - | info |
+| HIGH | M1 | months the money audit failed (unread) | 0 (0) | 0 | PASS |
+| HIGH | F1 | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS |
+| ALL | pairing | runs identical to their AUTO2 twin before the switch | 64/64 | all | PASS |
+
+criteria passed: 23/25 (vacuous, not counted: 1; retired, not counted: 1); missing runs: none; short runs: none
+time per run (median s): AUTO2 56.1, ZERO_SLACK 47.3, ZERO_HOT 9.5, SHOCK 18.1, HIGH 15.8; total 42.5 min
+
+## summary.json
+
+What `--baseline` reads: T1, T2 and F1 compare with it.
+
+```json
+{
+ "seeds": 16,
+ "policies": {
+  "AUTO2": {
+   "final_pop_median": 258837.5,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  },
+  "ZERO_SLACK": {
+   "final_pop_median": 171863.0,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  },
+  "ZERO_HOT": {
+   "final_pop_median": 3744.5,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  },
+  "SHOCK": {
+   "final_pop_median": 15149.0,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  },
+  "HIGH": {
+   "final_pop_median": 7164.5,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  }
+ },
+ "takeoffs": 16
+}
+```
