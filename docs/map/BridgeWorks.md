@@ -1,6 +1,6 @@
 # BridgeWorks.java - 126 lines · 7 methods · 12 constants · model
 
-`ham/citybuildersim/BridgeWorks.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeWorks.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > What a long bridge's span costs, in US dollars a metre by kind and by the depth of the water it crosses, and the
 > construction points those dollars are at the bridge's own founding price a point. Pure arithmetic: Game.quoteBuild()

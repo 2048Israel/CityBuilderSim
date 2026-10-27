@@ -1,6 +1,6 @@
 # AuctionTally.java - 145 lines · 11 methods · 1 constants · model
 
-`ham/citybuildersim/AuctionTally.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AuctionTally.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The city's auctions counted: how many sales the treasury has booked, what
 > they sold and what they asked, how often the stop sat more than a point over

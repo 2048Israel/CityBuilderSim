@@ -1,6 +1,6 @@
 # FuelSplit.java - 229 lines · 8 methods · 3 constants · model
 
-`ham/citybuildersim/FuelSplit.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FuelSplit.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > FUEL, split into the PETROL and DIESEL it became: a save written before
 > 0.7.76 converted once, on its load, before anything is restored (batch O1;

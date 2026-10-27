@@ -1,6 +1,6 @@
 # OilViewCheck.java - 706 lines · 20 methods · 3 constants · harnesses
 
-`ham/citybuildersim/OilViewCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OilViewCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The oil industry screen (0.7.96, batch O12; docs/studies/spec-oil.md 2.13):
 > OilView's figures, words, chart and levers, held to the model's own reads

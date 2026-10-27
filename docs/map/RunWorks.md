@@ -1,6 +1,6 @@
 # RunWorks.java - 131 lines · 4 methods · 12 constants · model
 
-`ham/citybuildersim/RunWorks.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RunWorks.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > What a highway or a railway line needs built on each class of ground beyond what it costs on the flat - cuts and
 > fills on foothill, a viaduct on steep ground, a tunnel on very steep - in US dollars a m2 of the run's land, priced

@@ -77,12 +77,12 @@ public class BridgeCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-112s %s%n", label, ok ? "OK" : "FAIL");
+        out.printf("%-112s %s%n", label, Timing.verdict(ok));
     }
 
     static void report(String label, boolean ok, String detail) {
         if (!ok) fails++;
-        out.printf("%-112s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
+        out.printf("%-112s %s  %s%n", label, Timing.verdict(ok), detail);
     }
 
     /** Two figures are one within a hundredth of a metre or a part in a billion. */
@@ -457,9 +457,10 @@ public class BridgeCheck {
         long t0 = System.nanoTime();
         BridgeSurvey.Result wide = BridgeSurvey.survey(bay, ISLAND);
         long ms = (System.nanoTime() - t0) / 1_000_000;
-        report("the worst case: a bay of open shallow water a full bridge across and as long, its far shore owned along it all - found, and inside BAY_BUDGET_MS",
-                wide.ok() && same(wide.lengthM(), (side + 1) * step) && ms < BAY_BUDGET_MS,
-                String.format("%.0f m; %,d plots expanded over %d tiles read in %,d ms (budget %,d)", wide.lengthM(), wide.plotsExpanded(), wide.tiles(), ms, BAY_BUDGET_MS));
+        report("the worst case: a bay of open shallow water a full bridge across and as long, its far shore owned along it all - found, a full bridge long",
+                wide.ok() && same(wide.lengthM(), (side + 1) * step),
+                String.format("%.0f m; %,d plots expanded over %d tiles", wide.lengthM(), wide.plotsExpanded(), wide.tiles()));
+        report("...and surveyed inside BAY_BUDGET_MS", Timing.below(ms, BAY_BUDGET_MS), String.format("%,d ms (budget %,d)", ms, BAY_BUDGET_MS));
     }
 
     /* =====================================================================
@@ -598,9 +599,10 @@ public class BridgeCheck {
         long t0 = System.nanoTime();
         BridgeSurvey.Result real = g.bridgeSurvey(road);
         long realMs = (System.nanoTime() - t0) / 1_000_000;
-        report("for the record: the survey of the real ground between the island square and Rotterdam's own ground answers, inside the budget",
-                real != null && realMs < SURVEY_BUDGET_MS, (real == null ? "null" : real.why() + (real.found() ? String.format(" %.1f km", real.lengthM() / 1000) : "")
+        report("for the record: the survey of the real ground between the island square and Rotterdam's own ground answers",
+                real != null, (real == null ? "null" : real.why() + (real.found() ? String.format(" %.1f km", real.lengthM() / 1000) : "")
                         + String.format(", %,d plots expanded, %d tiles, %,d ms", real.plotsExpanded(), real.tiles(), realMs)));
+        report("...inside SURVEY_BUDGET_MS", Timing.below(realMs, SURVEY_BUDGET_MS), String.format("%,d ms (budget %,d)", realMs, SURVEY_BUDGET_MS));
 
         // Deep water between, after a shallow fringe at the island: no path.
         GridGround deep = seam(c, f, 12, World.SALT, 45);
@@ -926,12 +928,13 @@ public class BridgeCheck {
         long t0 = System.nanoTime();
         BridgeSurvey.Result r = c.g.bridgeSurvey(road);
         long ms = (System.nanoTime() - t0) / 1_000_000;
-        report(label + ": the city owns ground on " + lms.rows().size() + " landmasses and the survey of a Road Bridge toward " + (r == null ? "?" : lms.name(r.far())) + " answers inside SURVEY_BUDGET_MS",
-                r != null && lms.rows().size() >= 2 && ms < SURVEY_BUDGET_MS,
+        report(label + ": the city owns ground on " + lms.rows().size() + " landmasses and the survey of a Road Bridge toward " + (r == null ? "?" : lms.name(r.far())) + " answers",
+                r != null && lms.rows().size() >= 2,
                 r == null ? "no survey" : String.format("%s%s; %,d plots expanded over %d tiles, %,d ms", r.why(),
                         r.found() ? String.format(" %.2f km (real: %.1f km), deepest %.0f m, mean %.0f m, %d corner plots", r.lengthM() / 1000, realKm, r.deepestM(), r.meanM(), r.corners().length / 2)
                                 : r.why() == BridgeSurvey.Why.DEEP ? String.format(": %.0f m deep, %.2f km out", r.deepM(), r.deepOutM() / 1000) : "",
                         r.plotsExpanded(), r.tiles(), ms));
+        report(label + ": ...inside SURVEY_BUDGET_MS", Timing.below(ms, SURVEY_BUDGET_MS), String.format("%,d ms (budget %,d)", ms, SURVEY_BUDGET_MS));
         if (r != null) out.println("      " + (BridgeView.refusal(r, lms) != null ? BridgeView.refusal(r, lms) : BridgeView.crossingWords(r, lms)));
         if (r != null && r.found()) {
             BridgeWorks.Kind kind = BridgeWorks.Kind.ROAD;

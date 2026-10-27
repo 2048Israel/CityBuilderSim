@@ -1,6 +1,6 @@
 # BridgeSurvey.java - 438 lines · 25 methods · 11 constants · model
 
-`ham/citybuildersim/BridgeSurvey.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeSurvey.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The survey of a long bridge's crossing: the shortest chain of plots from the city's own dry ground on a far landmass
 > to its own buildable ground on a linked one, across water that is FRESH or SHALLOW all the way - found or refused, all

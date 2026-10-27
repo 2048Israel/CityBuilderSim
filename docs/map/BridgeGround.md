@@ -1,6 +1,6 @@
 # BridgeGround.java - 72 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/BridgeGround.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeGround.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The ground a bridge is surveyed over, read from the World and the city's land: the Earth's terrain, relief and landmass a
 > tile at a time, the city's ownership from the land's grid, and the linked set from the books by landmass.

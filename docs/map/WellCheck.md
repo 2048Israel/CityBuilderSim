@@ -1,6 +1,6 @@
 # WellCheck.java - 1,123 lines · 27 methods · 6 constants · harnesses
 
-`ham/citybuildersim/WellCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WellCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The oil wells' lives (0.7.84, batch O7; docs/studies/spec-oil.md 2.6 and 4's
 > WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil

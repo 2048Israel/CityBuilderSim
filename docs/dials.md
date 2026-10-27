@@ -1,10 +1,10 @@
 # The dials
 
-Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-27 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,328 constants in 425 files.**
+**4,382 constants in 433 files.**
 
-## model (2162 constants)
+## model (2197 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -136,6 +136,48 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 148 | `BondMarket.TERM_YEARS` | `CorporateBond.TERM_MONTHS / 12.0` | The term in years, for spreading an issue's costs over its life. |
 | 151 | `BondMarket.CHEAPER_BY` | `1e-11` | The arithmetic a bond's all-in cost may sit over the loan's and still be "no dearer": a billionth of a point a year - the bisection's own resolution, not a margin (plan()). |
 
+### BridgeSurvey.java ([map](map/BridgeSurvey.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 34 | `BridgeSurvey.MAX_LENGTH_M` | `36_000` | The longest bridge that can be ordered, metres: 36,000 (est., D13: the Hangzhou Bay Bridge, 36 km, the longest over water). |
+| 37 | `BridgeSurvey.SEARCH_FACTOR` | `1.25` | How far past the cap the search looks, as a multiple of it: 1.25, so a crossing a little over the cap is told its length, and the window past that is "over 45.0 km". |
+| 40 | `BridgeSurvey.SEARCH_LIMIT_M` | `SEARCH_FACTOR * MAX_LENGTH_M` | The cost the search is limited to, metres: SEARCH_FACTOR times MAX_LENGTH_M (45 km); also the margin, in plots, the far landmass's owned box is widened by on every side. |
+| 43 | `BridgeSurvey.ORTHOGONAL_DM` | `(int) Math.round(World.PLOT_M * 10)` | A step along a row or a column, in decimetres (a plot is 30 m). |
+| 46 | `BridgeSurvey.DIAGONAL_DM` | `(int) Math.round(World.PLOT_M * 10 * Math.sqrt(2))` | A step along a diagonal, in decimetres: 30 x sqrt(2) m, 424.26 rounded. |
+| 49 | `BridgeSurvey.LIMIT_DM` | `(int) Math.round(SEARCH_LIMIT_M * 10)` | The cost limit in decimetres. |
+| 52 | `BridgeSurvey.MARGIN_PLOTS` | `(long) Math.ceil(SEARCH_LIMIT_M / World.PLOT_M)` | The margin the window is widened by, in plots. |
+| 154 | `BridgeSurvey.WALL` | `0, WATER = 1, DEEP = 2, FAR = 3, NEAR = 4` | The plot codes the search reads a classified plot by. |
+| 157 | `BridgeSurvey.DX` | `{ 1, 1, 0, - 1, - 1, - 1, 0, 1 }` | The direction's step in plots and its cost in decimetres: E, SE, S, SW, W, NW, N, NE (index 8 marks a source). |
+| 158 | `BridgeSurvey.DY` | `{ 0, 1, 1, 1, 0, - 1, - 1, - 1 }` |  |
+| 159 | `BridgeSurvey.SOURCE` | `8` |  |
+
+### BridgeWorks.java ([map](map/BridgeWorks.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 34 | `BridgeWorks.BASE_DEPTH_M` | `5` | The depth, metres, at and under which the deck costs the base rate: 5, a viaduct over shallows and over fresh water, whose depth the World does not hold (World.depthAt() is 0 on a lake and a river). |
+| 37 | `BridgeWorks.BASE_USD_PER_M2` | `RunWorks.DECK_USD_PER_M2` | The deck a m2 at BASE_DEPTH_M or less, and on fresh water: RunWorks.DECK_USD_PER_M2 (US DOT's 2025 planning costs, $250 a sq ft, about $2,690 a m2). |
+| 44 | `BridgeWorks.CONFEDERATION_COST_CAD` | `1.3e9` | The Confederation Bridge's cost as built, Canadian dollars: C$1.3 billion (Wikipedia's figure for the cost as built, about 30% over the C$840 million projected; the C$1.0 billion some sources give,... |
+| 47 | `BridgeWorks.CONFEDERATION_LENGTH_M` | `12_900` | The Confederation Bridge's length, metres: 12,900 (Prince Edward Island to New Brunswick, over the Northumberland Strait). |
+| 50 | `BridgeWorks.CONFEDERATION_DECK_M` | `11` | ...and its deck's width, metres: 11 (two lanes and shoulders). |
+| 53 | `BridgeWorks.CONFEDERATION_DEPTH_M` | `35` | ...and the depth its piers stand in at the deepest, metres: 35 (about; the deepest water of the strait's crossing). |
+| 56 | `BridgeWorks.CAD_CPI_1997_TO_2025` | `1.79` | Canada's consumer prices from 1997, the year the bridge opened, to 2025: about 1.79 (Statistics Canada, table 18-10-0005). |
+| 59 | `BridgeWorks.USD_PER_CAD_2025` | `0.72` | US dollars a Canadian dollar in 2025: 0.72. |
+| 62 | `BridgeWorks.CONFEDERATION_USD_PER_M2` | `CONFEDERATION_COST_CAD * CAD_CPI_1997_TO_2025 * USD_PER_CAD_2025 /(CONFEDERATION_LENGTH...` | The Confederation's deck a m2 in 2025 US dollars, its cost over its deck's area: about $11,800. |
+| 66 | `BridgeWorks.HIGHWAY_DECK_WIDTH_M` | `RunWorks.DECK_WIDTH_M` | A highway bridge's deck, metres: RunWorks.DECK_WIDTH_M (23.2, the Interstate standard's four lanes and shoulders). |
+| 69 | `BridgeWorks.ROAD_DECK_WIDTH_M` | `2 * 3.66 + 2 * 2.44` | A road bridge's deck, metres: two lanes of 3.66 m (12 ft) and two shoulders of 2.44 m (8 ft), the usual rural two-lane section, 12.2 m, the Confederation's 11 m beside it. |
+| 76 | `BridgeWorks.RAIL_OVER_HIGHWAY` | `1.42` | How many times a highway's metre a railway's costs, 1.42: the game's own scale in RunWorks's javadoc - the Freight Line's $2,330 a m2 of its land over the Elevated Highway's $1,640. |
+
+### Bridges.java ([map](map/Bridges.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 29 | `Bridges.STANDING` | `0` | A bridge that stands. |
+| 32 | `Bridges.ON_SITE` | `1` | ...one the builders are at work on. |
+| 35 | `Bridges.SHELL` | `2` | ...one a stopped order left standing as a shell. |
+| 249 | `Bridges.NONE_CHOSEN` | `Integer.MIN_VALUE` | What chosen() says when the card has picked nothing: the rule decides. |
+
 ### BuildAdvice.java ([map](map/BuildAdvice.md))
 
 | line | constant | value | says |
@@ -156,18 +198,18 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 148 | `BuildCard.KILOWATTS` | `" kW"` | The words after a power plant's figure (0.7.28): kilowatts, the model's unit and a rate - "units a month" until then, which was neither. |
 | 245 | `BuildCard.GROUP_ORDER` | `{ "Homes", "Groceries", "Filling stations", "The bank's branches", "Food mills", "Food ...` | The market groups, in the order a page lays them out. |
-| 471 | `BuildCard.ROAD_PER` | `"trip over " + BuildAdvice.LIFE_MONTHS / 12 + " years, with its land"` | What a road card's first bar is per (0.7.70): a trip it takes off the road, over its life, its ground in it - BuildAdvice.lifetime() over BuildAdvice.unit(); the bar's (i) says the rest. |
-| 994 | `BuildCard.DRY_OIL` | `"dry oil"` | A DEPOSIT gate's word for a land Oil Well (0.7.103): its count is of dry sites (Game.sitesFor()). |
-| 997 | `BuildCard.NO_FEED` | `"no feed: no crude unit stands to run its stream"` | What a conversion unit's card says in place of a loss with no crude unit standing to feed it (0.7.103). |
-| 1396 | `BuildCard.NOTHING_TO_WASH` | `"no raw coal goes unwashed"` | What a washing plant's feed gate says while its sector's coking mines make no raw coal its plants do not wash (CoalMining.unwashed()). |
-| 1688 | `BuildCard.LAND_WORDS` | `{ "no land", "short of homes" }` | The phrases each kind is read by, in lower case; a word starting "Could not build" is LAND as well, and one starting "Declined" is MONEY unless CREDIT took it. |
-| 1690 | `BuildCard.STAFF_WORDS` | `{ "could staff" }` | ...STAFF's. |
-| 1692 | `BuildCard.LICENCE_WORDS` | `{ "licence", "licences" }` | ...LICENCE's: whole words, so the plural as well. |
-| 1694 | `BuildCard.ORE_WORDS` | `{ "deposit", "ore", "forest", "field", "fields", "worked out" }` | ...ORE's: the ground has none - and since 0.7.138 Forestry's, the forest it may cut (none, or too little for E); since 0.7.142 a field of its type and a resource worked out, named as itself ("no co... |
-| 1696 | `BuildCard.SUPPLY_WORDS` | `{ "fabricates", "will not sell" }` | ...SUPPLY's. |
-| 1698 | `BuildCard.CREDIT_WORDS` | `{ "borrowing ban", "bank", "default point", "down payment", "lender", "mortgage" }` | ...CREDIT's. |
-| 1700 | `BuildCard.MONEY_WORDS` | `{ "below cost", "no margin", "worth sinking", "worth building", "cost more than", "noth...` | ...MONEY's. |
-| 1704 | `BuildCard.ENOUGH_WORDS` | `{ "ahead of", "already", "covers all", "months of work queued", "months of work on site...` | ...ENOUGH's. |
+| 474 | `BuildCard.ROAD_PER` | `"trip over " + BuildAdvice.LIFE_MONTHS / 12 + " years, with its land"` | What a road card's first bar is per (0.7.70): a trip it takes off the road, over its life, its ground in it - BuildAdvice.lifetime() over BuildAdvice.unit(); the bar's (i) says the rest. |
+| 1008 | `BuildCard.DRY_OIL` | `"dry oil"` | A DEPOSIT gate's word for a land Oil Well (0.7.103): its count is of dry sites (Game.sitesFor()). |
+| 1011 | `BuildCard.NO_FEED` | `"no feed: no crude unit stands to run its stream"` | What a conversion unit's card says in place of a loss with no crude unit standing to feed it (0.7.103). |
+| 1428 | `BuildCard.NOTHING_TO_WASH` | `"no raw coal goes unwashed"` | What a washing plant's feed gate says while its sector's coking mines make no raw coal its plants do not wash (CoalMining.unwashed()). |
+| 1720 | `BuildCard.LAND_WORDS` | `{ "no land", "short of homes" }` | The phrases each kind is read by, in lower case; a word starting "Could not build" is LAND as well, and one starting "Declined" is MONEY unless CREDIT took it. |
+| 1722 | `BuildCard.STAFF_WORDS` | `{ "could staff" }` | ...STAFF's. |
+| 1724 | `BuildCard.LICENCE_WORDS` | `{ "licence", "licences" }` | ...LICENCE's: whole words, so the plural as well. |
+| 1726 | `BuildCard.ORE_WORDS` | `{ "deposit", "ore", "forest", "field", "fields", "worked out" }` | ...ORE's: the ground has none - and since 0.7.138 Forestry's, the forest it may cut (none, or too little for E); since 0.7.142 a field of its type and a resource worked out, named as itself ("no co... |
+| 1728 | `BuildCard.SUPPLY_WORDS` | `{ "fabricates", "will not sell" }` | ...SUPPLY's. |
+| 1730 | `BuildCard.CREDIT_WORDS` | `{ "borrowing ban", "bank", "default point", "down payment", "lender", "mortgage" }` | ...CREDIT's. |
+| 1732 | `BuildCard.MONEY_WORDS` | `{ "below cost", "no margin", "worth sinking", "worth building", "cost more than", "noth...` | ...MONEY's. |
+| 1736 | `BuildCard.ENOUGH_WORDS` | `{ "ahead of", "already", "covers all", "months of work queued", "months of work on site...` | ...ENOUGH's. |
 
 ### BuildLog.java ([map](map/BuildLog.md))
 
@@ -187,11 +229,11 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 70 | `BuildingManager.MATERIALS_WORLD_PRICE` | `18` | What a unit of construction material costs, in the city's money. |
-| 4971 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
-| 5616 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
-| 5797 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
-| 6845 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 8032 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 5017 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
+| 5662 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
+| 5843 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
+| 6891 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 8078 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -262,8 +304,8 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1043 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
-| 1046 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
+| 1063 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
+| 1066 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
 
 ### BusinessDebtManager.java ([map](map/BusinessDebtManager.md))
 
@@ -456,41 +498,45 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 217 | `CityMap.FORMAT` | `12` | The sidecar's format: 12 since CL5, each net of the runs' pieces of ground after the home piece's (CityRuns.Net.pieceHubs: a count and each hub) and each corridor's piece and role (a SPINE, a CROSS... |
 | 220 | `CityMap.OLDEST_READ` | `4` | The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. |
 | 223 | `CityMap.STAMP_AT` | `4 + 4 + 8 + 4` | Where the stamp sits in the sidecar's raw bytes: after the magic, the format, the seed and the month. |
-| 729 | `CityMap.NONE` | `0, SOME = 1, ALL = 2` |  |
-| 1321 | `CityMap.CAMPUS_REACH` | `64` | The most districts a works group's units may stand across, in the map's order, and still have a campus a new one goes to first: 64 (0.8.0) - past it, a city whose works of a group stand in every di... |
-| 1778 | `CityMap.DISTRICT_ORDER` | `Comparator.comparingDouble((District d) -> d.order).thenComparingInt(d -> d.dy).thenCom...` | Nearest the founding site first, then north to south, west to east. |
-| 2186 | `CityMap.PLANS_KEPT` | `64` | How many districts' plans are kept, packed for the painter (Drawn): 64, as the deals and road tiles were (spec 2.9) - each tile's street rows once a pattern and four bytes a building (RD1's plan wa... |
-| 2189 | `CityMap.PACKED_BIT` | `1<<20` | A packed box's flag (Drawn.boxes): drawn without a street, R7's packing at the city's edge. |
-| 2192 | `CityMap.SIDING_END_BIT` | `1<<24` | A siding plot of a Drawn (Drawn.siding) whose bit this is: the siding's first, beside the works' box, where its loading shed stands (batch FR7 slice 5). |
-| 2195 | `CityMap.AVENUE_MARK_SHIFT` | `17` | Where a Drawn avenue plot's mark starts (Drawn.avenue): above the frame's plot, which is under 2^17 (a frame has 66,049 of them). |
-| 2198 | `CityMap.CURVE_BAND_BIT` | `1<<20` | A band plot of a DrawnCurve (DrawnCurve.plots) whose bit this is: a plot the curve's band reaches that is not its own. |
-| 2245 | `CityMap.BOX_TYPE_SHIFT` | `21` | Where a Drawn box's type id starts: above the box's 20 bits and PACKED_BIT, eleven bits for ids under 2,048 (buildings.json's ids are under 128). |
-| 2558 | `CityMap.M_WEST` | `0, M_NORTH = 1, M_EAST = 2, M_SOUTH = 3, M_PARTED = 4` | A plan frame's edges' street codes (Link.margins): its west column (x 0) and north row (y 0), its east column (x 256, the next district's first) and south row (y 256), each 257 long; and M_PARTED, ... |
-| 2579 | `CityMap.AROUND` | `{ { 0, - 1 }, { 1, 0 }, { 0, 1 }, { - 1, 0 }, { - 1, - 1 }, { 1, - 1 }, { 1, 1 }, { - 1...` | The eight districts about one, by offset {dx, dy}: north, east, south, west, then north-west, north-east, south-east, south-west - the order of a frame's seam parts (DistrictPlan.Input.surfaces). |
-| 2582 | `CityMap.CORNER_DIRS` | `{ { 3, 0, 4 }, { 1, 0, 5 }, { 1, 2, 6 }, { 3, 2, 7 } }` | Each corner seam part's districts sharing it besides its own, as AROUND's directions: north-west, north-east, south-east, south-west. |
-| 2709 | `CityMap.CHAIN_BAND` | `128` | THE CHAIN'S BANDS (0.7.89, batch RD3). |
-| 2712 | `CityMap.BANDS_KEPT` | `16` | The bands whose links are kept, the last used: 16 (2,048 districts' links, about 4 MB) - a band let go is planned again when a screen asks for it. |
-| 3400 | `CityMap.INTERIOR_MOST` | `World.TILE - 1` | A tile's interior holds a box no larger than this a side: 31 plots, off its arterial lines. |
-| 3456 | `CityMap.PICTURES_KEPT` | `128` | How many districts' pictures are kept, the last used: 128 (star MM1-2) - a far view of up to 128 built districts (Jerus's city has 93) in DistrictPicture.BYTES each, 0.14 MB, within the view's 48 M... |
-| 3633 | `CityMap.WORLD_GAP` | `2 * CityRuns.LOOK` | How far ahead of a track's end the city's edge may lie for its line to the world to start there, in plots: 12, twice CityRuns.LOOK - an arm waits LOOK short of the edge, a 45-degree arm sooner (FX2). |
-| 3636 | `CityMap.WORLD_REACH` | `4 * DISTRICT` | How far the world line is drawn at most, in plots: 1,024 (30.7 km), four districts; it stops sooner at the first plot that is not dry ground (FX2). |
-| 3639 | `CityMap.WORLD_STEP` | `0.25` | How finely a way out is read, in plots: a quarter, as MapCheck reads the trains' routes (FX2). |
-| 4182 | `CityMap.TRUCK_ROUTE_LEAST` | `4` | The least a highway route runs along the highways, in plots, past the world line's own: shorter is the arm the line leaves from, where the trucks have no road to drive. |
-| 4185 | `CityMap.TRUCK_ROUTES_MOST` | `40` | The most highway routes kept, 40: one to each ramp, the arms' order, a city of many arms is cut here (a route is a lane of trucks, and the legend would not read more). |
-| 4188 | `CityMap.TRUCK_ACCESS_FADE` | `3` | How far an access road's trucks fade in off the street grid, in plots: 3. |
-| 4355 | `CityMap.RUN_LINES_KEPT` | `4096` | Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. |
-| 4358 | `CityMap.RUN_TILES_KEPT` | `256` | ...whole tiles, for a 45-degree way: 256. |
-| 4555 | `CityMap.PIECE_CHUNK_SHIFT` | `6` | Tiles a side of a chunk of the pieces' tables (CL5): 2^6 = 64, a table of 4,096 per chunk, and a district (8 tiles) is never split by one. |
-| 4557 | `CityMap.PIECE_CHUNK_MASK` | `(1L<<PIECE_CHUNK_SHIFT) - 1` |  |
-| 4560 | `CityMap.PIECE_SAMPLE_AT` | `8, PIECE_SAMPLE_EVERY = 16` | Where in a tile its four samples lie (CL5; IslandProbe's tile rule): the first 8 plots in and each of the others 16 further, the centres of its four quarters. |
-| 4563 | `CityMap.PIECE_HOME_REACH` | `8` | How many tiles from the founding site's tile the home piece is looked for, ring by ring, when its own tile is not land (CL5). |
-| 5018 | `CityMap.WAYS_WORKS_DISTRICTS` | `1000` | Up to this many districts the map weighs its mined sites each month for the railway's sidings and further yards: 1,000 (Jerus's city has 93). |
-| 5650 | `CityMap.ANY_LANDMASS` | `Integer.MIN_VALUE` | ET5: no landmass asked for: the search runs as it always did, over the ground the runs can use. |
-| 5912 | `CityMap.MASK_TILES_KEPT` | `1<<16` | The tiles whose masks are kept: 65,536 (a tile's mask is a reference, and a boolean array only for a tile holding masked ground). |
-| 6043 | `CityMap.AtSea.NONE` | `new AtSea(List.of(), List.of())` | None. |
-| 7128 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned buildable plots. |
-| 7131 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
-| 7134 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned buildable plots. |
+| 738 | `CityMap.NONE` | `0, SOME = 1, ALL = 2` |  |
+| 1330 | `CityMap.CAMPUS_REACH` | `64` | The most districts a works group's units may stand across, in the map's order, and still have a campus a new one goes to first: 64 (0.8.0) - past it, a city whose works of a group stand in every di... |
+| 1787 | `CityMap.DISTRICT_ORDER` | `Comparator.comparingDouble((District d) -> d.order).thenComparingInt(d -> d.dy).thenCom...` | Nearest the founding site first, then north to south, west to east. |
+| 2195 | `CityMap.PLANS_KEPT` | `64` | How many districts' plans are kept, packed for the painter (Drawn): 64, as the deals and road tiles were (spec 2.9) - each tile's street rows once a pattern and four bytes a building (RD1's plan wa... |
+| 2198 | `CityMap.PACKED_BIT` | `1<<20` | A packed box's flag (Drawn.boxes): drawn without a street, R7's packing at the city's edge. |
+| 2201 | `CityMap.SIDING_END_BIT` | `1<<24` | A siding plot of a Drawn (Drawn.siding) whose bit this is: the siding's first, beside the works' box, where its loading shed stands (batch FR7 slice 5). |
+| 2204 | `CityMap.AVENUE_MARK_SHIFT` | `17` | Where a Drawn avenue plot's mark starts (Drawn.avenue): above the frame's plot, which is under 2^17 (a frame has 66,049 of them). |
+| 2207 | `CityMap.CURVE_BAND_BIT` | `1<<20` | A band plot of a DrawnCurve (DrawnCurve.plots) whose bit this is: a plot the curve's band reaches that is not its own. |
+| 2254 | `CityMap.BOX_TYPE_SHIFT` | `21` | Where a Drawn box's type id starts: above the box's 20 bits and PACKED_BIT, eleven bits for ids under 2,048 (buildings.json's ids are under 128). |
+| 2567 | `CityMap.M_WEST` | `0, M_NORTH = 1, M_EAST = 2, M_SOUTH = 3, M_PARTED = 4` | A plan frame's edges' street codes (Link.margins): its west column (x 0) and north row (y 0), its east column (x 256, the next district's first) and south row (y 256), each 257 long; and M_PARTED, ... |
+| 2588 | `CityMap.AROUND` | `{ { 0, - 1 }, { 1, 0 }, { 0, 1 }, { - 1, 0 }, { - 1, - 1 }, { 1, - 1 }, { 1, 1 }, { - 1...` | The eight districts about one, by offset {dx, dy}: north, east, south, west, then north-west, north-east, south-east, south-west - the order of a frame's seam parts (DistrictPlan.Input.surfaces). |
+| 2591 | `CityMap.CORNER_DIRS` | `{ { 3, 0, 4 }, { 1, 0, 5 }, { 1, 2, 6 }, { 3, 2, 7 } }` | Each corner seam part's districts sharing it besides its own, as AROUND's directions: north-west, north-east, south-east, south-west. |
+| 2718 | `CityMap.CHAIN_BAND` | `128` | THE CHAIN'S BANDS (0.7.89, batch RD3). |
+| 2721 | `CityMap.BANDS_KEPT` | `16` | The bands whose links are kept, the last used: 16 (2,048 districts' links, about 4 MB) - a band let go is planned again when a screen asks for it. |
+| 3409 | `CityMap.INTERIOR_MOST` | `World.TILE - 1` | A tile's interior holds a box no larger than this a side: 31 plots, off its arterial lines. |
+| 3465 | `CityMap.PICTURES_KEPT` | `128` | How many districts' pictures are kept, the last used: 128 (star MM1-2) - a far view of up to 128 built districts (Jerus's city has 93) in DistrictPicture.BYTES each, 0.14 MB, within the view's 48 M... |
+| 3642 | `CityMap.WORLD_GAP` | `2 * CityRuns.LOOK` | How far ahead of a track's end the city's edge may lie for its line to the world to start there, in plots: 12, twice CityRuns.LOOK - an arm waits LOOK short of the edge, a 45-degree arm sooner (FX2). |
+| 3645 | `CityMap.WORLD_REACH` | `4 * DISTRICT` | How far the world line is drawn at most, in plots: 1,024 (30.7 km), four districts; it stops sooner at the first plot that is not dry ground (FX2). |
+| 3648 | `CityMap.WORLD_STEP` | `0.25` | How finely a way out is read, in plots: a quarter, as MapCheck reads the trains' routes (FX2). |
+| 4191 | `CityMap.TRUCK_ROUTE_LEAST` | `4` | The least a highway route runs along the highways, in plots, past the world line's own: shorter is the arm the line leaves from, where the trucks have no road to drive. |
+| 4194 | `CityMap.TRUCK_ROUTES_MOST` | `40` | The most highway routes kept, 40: one to each ramp, the arms' order, a city of many arms is cut here (a route is a lane of trucks, and the legend would not read more). |
+| 4197 | `CityMap.TRUCK_ACCESS_FADE` | `3` | How far an access road's trucks fade in off the street grid, in plots: 3. |
+| 4364 | `CityMap.RUN_LINES_KEPT` | `4096` | Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. |
+| 4367 | `CityMap.RUN_TILES_KEPT` | `256` | ...whole tiles, for a 45-degree way: 256. |
+| 4564 | `CityMap.PIECE_CHUNK_SHIFT` | `6` | Tiles a side of a chunk of the pieces' tables (CL5): 2^6 = 64, a table of 4,096 per chunk, and a district (8 tiles) is never split by one. |
+| 4566 | `CityMap.PIECE_CHUNK_MASK` | `(1L<<PIECE_CHUNK_SHIFT) - 1` |  |
+| 4569 | `CityMap.PIECE_SAMPLE_AT` | `8, PIECE_SAMPLE_EVERY = 16` | Where in a tile its four samples lie (CL5; IslandProbe's tile rule): the first 8 plots in and each of the others 16 further, the centres of its four quarters. |
+| 4572 | `CityMap.PIECE_HOME_REACH` | `8` | How many tiles from the founding site's tile the home piece is looked for, ring by ring, when its own tile is not land (CL5). |
+| 5027 | `CityMap.WAYS_WORKS_DISTRICTS` | `1000` | Up to this many districts the map weighs its mined sites each month for the railway's sidings and further yards: 1,000 (Jerus's city has 93). |
+| 5661 | `CityMap.ANY_LANDMASS` | `Integer.MIN_VALUE` | ET5: no landmass asked for: the search runs as it always did, over the ground the runs can use. |
+| 5923 | `CityMap.MASK_TILES_KEPT` | `1<<16` | The tiles whose masks are kept: 65,536 (a tile's mask is a reference, and a boolean array only for a tile holding masked ground). |
+| 6054 | `CityMap.AtSea.NONE` | `new AtSea(List.of(), List.of())` | None. |
+| 6144 | `CityMap.BridgeRun.ROAD` | `0` | A street-sized deck that belongs to no net... |
+| 6146 | `CityMap.BridgeRun.HIGHWAY` | `1` | ...a highway's, which joins the highways... |
+| 6148 | `CityMap.BridgeRun.RAIL` | `2` | ...and the railway's. |
+| 6170 | `CityMap.ROAD_BRIDGE_STREET` | `(byte)(DistrictPlan.PAVED \|(1<<TilePainter.S_WIDTH_SHIFT))` | A road bridge's plot as a plan's street code: paved, half a plot wide (a street's surface, so that its deck shows beside it), a cell's street, no bridge bit - the painter reads the water under it. |
+| 7253 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned buildable plots. |
+| 7256 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
+| 7259 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned buildable plots. |
 
 ### CityNeeds.java ([map](map/CityNeeds.md))
 
@@ -524,54 +570,57 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 140 | `CityRuns.CELL` | `World.TILE` | A cell's side: a tile, 32 plots (DistrictPlan.CELL). |
-| 143 | `CityRuns.HIGHWAY_AT` | `DistrictPlan.MIDDLE + 1` | Where a highway rides in its cell: 16 plots in, the street line through its middle (spec 2.7; DistrictPlan's MIDDLE line, 15 into the interior), so it never takes an arterial's row. |
-| 146 | `CityRuns.RAIL_AT` | `DistrictPlan.LATTICE` | ...and the railway: 8 plots in, the street line a quarter in (spec 2.8; the lattice's first line, DistrictPlan.LATTICE) - never a highway's row. |
-| 149 | `CityRuns.GATEWAY_UNKNOWN` | `- 2` | A city whose gateway has not been looked for yet (a map's runs read from a sidecar older than FORMAT 8). |
-| 152 | `CityRuns.NO_GATEWAY` | `- 1` | A city looked for and found to have no gateway: an island founding with no land route to the world (spec 4.1). |
-| 155 | `CityRuns.APART` | `CityMap.DISTRICT` | Parallel corridors lie one district apart: 256 plots, 7.68 km (spec 2.7; hw.py's APART). |
-| 158 | `CityRuns.LOOK` | `6` | How far ahead an arm must see its way clear to step: 6 plots (hw.py's _ahead(..., 6)) - so it stops short of the sea and the city's edge. |
-| 161 | `CityRuns.SIDE_LOOK` | `159` | How far an arm at the sea looks along each 45-degree way, to turn toward the one with more ground: 159 plots (hw.py's score, range(1, 160)). |
-| 164 | `CityRuns.STRAIGHT_COST` | `1` | What a step straight on costs, in plots of straight: 1 (spec 2.7, H2). |
-| 167 | `CityRuns.TURN_COST` | `40` | ...a 45-degree turn: about 40 (spec 2.7, H2: "est., dials to tune"). |
-| 170 | `CityRuns.JUNCTION_COST` | `200` | ...a junction: about 200 (spec 2.7, H2). |
-| 173 | `CityRuns.TWIN_NEAR` | `40` | A run off its heading stops short of another arm's plot this near beside it, either side: 40 plots (hw.py's no parallel twin, range(2, 40)). |
-| 176 | `CityRuns.RAMP_EVERY` | `2` | Ramps where a highway crosses every RAMP_EVERY-th arterial: every other one, 1.92 km (spec 2.7); and (FX2) where each arm of the spine first crosses one. |
-| 179 | `CityRuns.HUB_REACH` | `CityMap.TILES_A_SIDE` | A hub is sought among its lines' crossings within this many cells of where its net starts, each way, the nearest first: 8 - a district - where its own crossing is not the city's dry ground. |
-| 182 | `CityRuns.READ_AHEAD` | `CELL` | An arm reads its way ahead this far at a time and steps on what it read: a cell, 32 plots - so a step reads a plot, not LOOK. |
-| 185 | `CityRuns.DX` | `{ 1, 1, 0, - 1, - 1, - 1, 0, 1 }, DY = { 0, 1, 1, 1, 0, - 1, - 1, - 1 }` | The eight headings, hw.py's DIRS: east, south-east, south, south-west, west, north-west, north, north-east. |
-| 188 | `CityRuns.HIGHWAYS` | `0, RAILWAY = 1` | A net's kinds. |
-| 191 | `CityRuns.F_HIGHWAY` | `BuildingVisual.HIGHWAY` | What a plot carries (fill()): a highway's plot (BuildingVisual.HIGHWAY, DistrictPlan.FIXED_HIGHWAY)... |
-| 193 | `CityRuns.F_RAIL` | `TilePainter.RAIL` | ...the railway's track (TilePainter.RAIL, DistrictPlan.FIXED_RAIL)... |
-| 195 | `CityRuns.F_RAIL_OVER` | `6` | ...the railway on a bridge over a highway (spec 2.8)... |
-| 197 | `CityRuns.F_YARD` | `7` | ...a yard's ground, its track among it (DistrictPlan.FIXED_YARD): no street crosses it, no other building stands on it. |
-| 199 | `CityRuns.F_RESERVE` | `8` | ...and (batch FR7, D19) an interchange's reserve, a plan's ground only (fill() with yardsOver; InterchangeGround): street ground the plan keeps clear of lots, buildings and streets (DistrictPlan.FI... |
-| 202 | `CityRuns.M_RAMP` | `1` | A plot's marks (fill()'s second array): a highway's ramp (spec 2.7)... |
-| 204 | `CityRuns.M_DIAG` | `2` | ...a plot of a 45-degree stretch, drawn smooth, its heading's two bits from M_DIAG_SHIFT (diagCode())... |
-| 206 | `CityRuns.M_DIAG_SHIFT` | `2` | ...the bit that heading's two bits start at: bits 2 and 3, between M_DIAG and M_CORNER... |
-| 208 | `CityRuns.M_CORNER` | `16` | ...and of those, a staircase's corner: the plot beside the stretch's line, (x + dx, y) of a step from (x, y). |
-| 247 | `CityRuns.ONE_PIECE` | `new Pieces() { @ Override public int count() { return 1; } @ Override public int pieceO...` | The city as one piece (what a caller with no pieces passes): the founding site's net alone, as before CL5. |
-| 255 | `CityRuns.SPINE` | `0` | A corridor's role (CL5), in its fourth entry: a piece's SPINE, the row and the column through its hub (a home net's corridors 0 and 1)... |
-| 257 | `CityRuns.CROSSING` | `1` | ...a CROSSING, a line one district out that crosses the net already laid (newCorridor(); and the railway's placeholder corridors, which run along no line of their own)... |
-| 259 | `CityRuns.LINK` | `2` | ...or a LINK, a line opened by a link arm from the net's plot nearest it, where no line crosses the net (openLink()). |
-| 273 | `CityRuns.LINK_SEARCH` | `1<<21` | The most plots a link's search visits (CL5, linkWay()): 1 << 21, about 2 million, the net's own plots among them - its visited table holds up to twice that many slots, an index of 4 bytes each, and... |
-| 692 | `CityRuns.RESERVES_KEPT` | `8192` | The most regions' sites kept at once: 8,192 - a screen's tiles and the plans' frames, many times over. |
-| 951 | `CityRuns.OPEN` | `0, EDGE = 1, SEA = 2` | What stops a way: nothing, the city's edge, or the sea (and fresh water wider than the net bridges). |
-| 1083 | `CityRuns.STEPPED` | `0, WAITS = 1, JOINED = 2, HELD = 3, YIELDS = 4` | What a step did: stepped on; waits on the ground (tried again when the ground moves); stopped for good (joined); held for want of a second plot; or waits on the other net (tried again next time). |
-| 1514 | `CityRuns.LinkSearch.SOURCE` | `9` | The move of a plot the search began from; the others hold 1 + the heading that found them. |
-| 1516 | `CityRuns.LinkSearch.ORDER` | `{ 0, 2, 4, 6, 1, 3, 5, 7 }` | The order a plot's neighbours are tried in: straight ways, then the 45-degree ones. |
-| 2087 | `CityRuns.YARD_LONG` | `(int) Math.ceil(2 * TrainSchedule.LOCO_PLOTS + Math.ceil(TrainSchedule.UNIT_TONNES / Tr...` | How long a yard is laid along its line (FX5 Y1; Jerus, 2026-10-20: "a long train will be out of the depot", "the rail depots would have to be redesigned to accomdoate such large trains"): a unit tr... |
-| 2097 | `CityRuns.TIER_LENGTHS` | `tierLengths()` | The lengths, longest first, a yard of footprint {w, h} is laid at along a row (w along) or a column (h along): each kind of train's length rounded up and its two ladders - a unit train's YARD_LONG ... |
-| 2100 | `CityRuns.TIERS` | `TIER_LENGTHS.length + 1` | ...how many: one for each length and one for the footprint's own. |
-| 2398 | `CityRuns.BRANCH` | `2, SIDING = 3` | The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). |
-| 2401 | `CityRuns.SIDING_REACH` | `CityMap.DISTRICT` | A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). |
-| 2404 | `CityRuns.MAIN_LINE_REACH` | `1L<<20` | How far past the plots it has the main line of a city with a station is grown, at most, in plots: 1,048,576 (2^20) - some four thousand districts, past any city's ground, so the line waits at the c... |
-| 2407 | `CityRuns.SERVED_WITHIN` | `1` | A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. |
-| 2410 | `CityRuns.GROUP_LINK` | `CityMap.DISTRICT / 2` | A group of rail-served works is the works whose box middles lie within this of each other, link by link: half a district, 128 plots. |
-| 2413 | `CityRuns.YARD_APART` | `CityMap.DISTRICT` | A further yard goes beside a group of works that lies more than this from every yard laid: a district, 256 plots (FR7: "more than one district from every yard laid"). |
-| 2416 | `CityRuns.BRANCH_FROM` | `CityMap.DISTRICT` | A group of works farther than this from the track is reached by a branch off the main line, else the yard sits on the track nearest it: a district, 256 plots. |
-| 2688 | `CityRuns.BOX_GRID` | `64` | The boxes' grid: 64 plots a side. |
-| 2921 | `CityRuns.SIDING_TRIES` | `200` | The most works laySidings() tries in one run: 200. |
+| 147 | `CityRuns.CELL` | `World.TILE` | A cell's side: a tile, 32 plots (DistrictPlan.CELL). |
+| 150 | `CityRuns.HIGHWAY_AT` | `DistrictPlan.MIDDLE + 1` | Where a highway rides in its cell: 16 plots in, the street line through its middle (spec 2.7; DistrictPlan's MIDDLE line, 15 into the interior), so it never takes an arterial's row. |
+| 153 | `CityRuns.RAIL_AT` | `DistrictPlan.LATTICE` | ...and the railway: 8 plots in, the street line a quarter in (spec 2.8; the lattice's first line, DistrictPlan.LATTICE) - never a highway's row. |
+| 156 | `CityRuns.GATEWAY_UNKNOWN` | `- 2` | A city whose gateway has not been looked for yet (a map's runs read from a sidecar older than FORMAT 8). |
+| 159 | `CityRuns.NO_GATEWAY` | `- 1` | A city looked for and found to have no gateway: an island founding with no land route to the world (spec 4.1). |
+| 162 | `CityRuns.APART` | `CityMap.DISTRICT` | Parallel corridors lie one district apart: 256 plots, 7.68 km (spec 2.7; hw.py's APART). |
+| 165 | `CityRuns.LOOK` | `6` | How far ahead an arm must see its way clear to step: 6 plots (hw.py's _ahead(..., 6)) - so it stops short of the sea and the city's edge. |
+| 168 | `CityRuns.SIDE_LOOK` | `159` | How far an arm at the sea looks along each 45-degree way, to turn toward the one with more ground: 159 plots (hw.py's score, range(1, 160)). |
+| 171 | `CityRuns.STRAIGHT_COST` | `1` | What a step straight on costs, in plots of straight: 1 (spec 2.7, H2). |
+| 174 | `CityRuns.TURN_COST` | `40` | ...a 45-degree turn: about 40 (spec 2.7, H2: "est., dials to tune"). |
+| 177 | `CityRuns.JUNCTION_COST` | `200` | ...a junction: about 200 (spec 2.7, H2). |
+| 180 | `CityRuns.TWIN_NEAR` | `40` | A run off its heading stops short of another arm's plot this near beside it, either side: 40 plots (hw.py's no parallel twin, range(2, 40)). |
+| 183 | `CityRuns.RAMP_EVERY` | `2` | Ramps where a highway crosses every RAMP_EVERY-th arterial: every other one, 1.92 km (spec 2.7); and (FX2) where each arm of the spine first crosses one. |
+| 186 | `CityRuns.HUB_REACH` | `CityMap.TILES_A_SIDE` | A hub is sought among its lines' crossings within this many cells of where its net starts, each way, the nearest first: 8 - a district - where its own crossing is not the city's dry ground. |
+| 189 | `CityRuns.READ_AHEAD` | `CELL` | An arm reads its way ahead this far at a time and steps on what it read: a cell, 32 plots - so a step reads a plot, not LOOK. |
+| 192 | `CityRuns.DX` | `{ 1, 1, 0, - 1, - 1, - 1, 0, 1 }, DY = { 0, 1, 1, 1, 0, - 1, - 1, - 1 }` | The eight headings, hw.py's DIRS: east, south-east, south, south-west, west, north-west, north, north-east. |
+| 195 | `CityRuns.HIGHWAYS` | `0, RAILWAY = 1` | A net's kinds. |
+| 198 | `CityRuns.F_HIGHWAY` | `BuildingVisual.HIGHWAY` | What a plot carries (fill()): a highway's plot (BuildingVisual.HIGHWAY, DistrictPlan.FIXED_HIGHWAY)... |
+| 200 | `CityRuns.F_RAIL` | `TilePainter.RAIL` | ...the railway's track (TilePainter.RAIL, DistrictPlan.FIXED_RAIL)... |
+| 202 | `CityRuns.F_RAIL_OVER` | `6` | ...the railway on a bridge over a highway (spec 2.8)... |
+| 204 | `CityRuns.F_YARD` | `7` | ...a yard's ground, its track among it (DistrictPlan.FIXED_YARD): no street crosses it, no other building stands on it. |
+| 206 | `CityRuns.F_RESERVE` | `8` | ...and (batch FR7, D19) an interchange's reserve, a plan's ground only (fill() with yardsOver; InterchangeGround): street ground the plan keeps clear of lots, buildings and streets (DistrictPlan.FI... |
+| 209 | `CityRuns.M_RAMP` | `1` | A plot's marks (fill()'s second array): a highway's ramp (spec 2.7)... |
+| 211 | `CityRuns.M_DIAG` | `2` | ...a plot of a 45-degree stretch, drawn smooth, its heading's two bits from M_DIAG_SHIFT (diagCode())... |
+| 213 | `CityRuns.M_DIAG_SHIFT` | `2` | ...the bit that heading's two bits start at: bits 2 and 3, between M_DIAG and M_CORNER... |
+| 215 | `CityRuns.M_CORNER` | `16` | ...and of those, a staircase's corner: the plot beside the stretch's line, (x + dx, y) of a step from (x, y). |
+| 254 | `CityRuns.ONE_PIECE` | `new Pieces() { @ Override public int count() { return 1; } @ Override public int pieceO...` | The city as one piece (what a caller with no pieces passes): the founding site's net alone, as before CL5. |
+| 262 | `CityRuns.SPINE` | `0` | A corridor's role (CL5), in its fourth entry: a piece's SPINE, the row and the column through its hub (a home net's corridors 0 and 1)... |
+| 264 | `CityRuns.CROSSING` | `1` | ...a CROSSING, a line one district out that crosses the net already laid (newCorridor(); and the railway's placeholder corridors, which run along no line of their own)... |
+| 266 | `CityRuns.LINK` | `2` | ...or a LINK, a line opened by a link arm from the net's plot nearest it, where no line crosses the net (openLink()). |
+| 280 | `CityRuns.LINK_SEARCH` | `1<<21` | The most plots a link's search visits (CL5, linkWay()): 1 << 21, about 2 million, the net's own plots among them - its visited table holds up to twice that many slots, an index of 4 bytes each, and... |
+| 699 | `CityRuns.RESERVES_KEPT` | `8192` | The most regions' sites kept at once: 8,192 - a screen's tiles and the plans' frames, many times over. |
+| 958 | `CityRuns.OPEN` | `0, EDGE = 1, SEA = 2` | What stops a way: nothing, the city's edge, or the sea (and bridgeable water wider than the net bridges, or with deep sea in it). |
+| 1096 | `CityRuns.STEPPED` | `0, WAITS = 1, JOINED = 2, HELD = 3, YIELDS = 4` | What a step did: stepped on; waits on the ground (tried again when the ground moves); stopped for good (joined); held for want of a second plot; or waits on the other net (tried again next time). |
+| 1527 | `CityRuns.LinkSearch.SOURCE` | `9` | The move of a plot the search began from; the others hold 1 + the heading that found them. |
+| 1529 | `CityRuns.LinkSearch.ORDER` | `{ 0, 2, 4, 6, 1, 3, 5, 7 }` | The order a plot's neighbours are tried in: straight ways, then the 45-degree ones. |
+| 2100 | `CityRuns.YARD_LONG` | `(int) Math.ceil(2 * TrainSchedule.LOCO_PLOTS + Math.ceil(TrainSchedule.UNIT_TONNES / Tr...` | How long a yard is laid along its line (FX5 Y1; Jerus, 2026-10-20: "a long train will be out of the depot", "the rail depots would have to be redesigned to accomdoate such large trains"): a unit tr... |
+| 2110 | `CityRuns.TIER_LENGTHS` | `tierLengths()` | The lengths, longest first, a yard of footprint {w, h} is laid at along a row (w along) or a column (h along): each kind of train's length rounded up and its two ladders - a unit train's YARD_LONG ... |
+| 2113 | `CityRuns.TIERS` | `TIER_LENGTHS.length + 1` | ...how many: one for each length and one for the footprint's own. |
+| 2411 | `CityRuns.BRANCH` | `2, SIDING = 3` | The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). |
+| 2414 | `CityRuns.SIDING_REACH` | `CityMap.DISTRICT` | A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). |
+| 2417 | `CityRuns.MAIN_LINE_REACH` | `1L<<20` | How far past the plots it has the main line of a city with a station is grown, at most, in plots: 1,048,576 (2^20) - some four thousand districts, past any city's ground, so the line waits at the c... |
+| 2420 | `CityRuns.SERVED_WITHIN` | `1` | A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. |
+| 2423 | `CityRuns.GROUP_LINK` | `CityMap.DISTRICT / 2` | A group of rail-served works is the works whose box middles lie within this of each other, link by link: half a district, 128 plots. |
+| 2426 | `CityRuns.YARD_APART` | `CityMap.DISTRICT` | A further yard goes beside a group of works that lies more than this from every yard laid: a district, 256 plots (FR7: "more than one district from every yard laid"). |
+| 2429 | `CityRuns.BRANCH_FROM` | `CityMap.DISTRICT` | A group of works farther than this from the track is reached by a branch off the main line, else the yard sits on the track nearest it: a district, 256 plots. |
+| 2701 | `CityRuns.BOX_GRID` | `64` | The boxes' grid: 64 plots a side. |
+| 2934 | `CityRuns.SIDING_TRIES` | `200` | The most works laySidings() tries in one run: 200. |
+| 3901 | `CityRuns.BRIDGE_ROAD` | `CityMap.BridgeRun.ROAD, BRIDGE_HIGHWAY = CityMap.BridgeRun.HIGHWAY, BRIDGE_RAIL = CityM...` | A long bridge's kinds (CityMap.BridgeRun's): a street-sized deck that belongs to no net, a highway's and the railway's. |
+| 3904 | `CityRuns.BRIDGE_LEGS` | `1024, BRIDGE_LEG = 1<<20` | The most corners a bridge's path may have and the longest leg of it, in plots: 1,024 legs of 1,048,576 plots, so that its steps fit an int. |
+| 3907 | `CityRuns.BRIDGE_NET` | `new Net(RAILWAY, RAIL_AT, 0)` | A net for a bridge's stretches to be read as, so that stretchInto() marks no highway's ramp on them: the railway's, which never takes one. |
 
 ### CityShore.java ([map](map/CityShore.md))
 
@@ -795,108 +844,108 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 301 | `DistrictPlan.SIDE` | `CityMap.DISTRICT` | Plots on a district's side: CityMap.DISTRICT, 256. |
-| 304 | `DistrictPlan.FRAME` | `SIDE + 1` | Plots on the plan's side: the district and the first column (row) of its east (south) neighbour, where its edge cells' last arterial runs - 257. |
-| 307 | `DistrictPlan.AREA` | `FRAME * FRAME` | Plots in the frame. |
-| 310 | `DistrictPlan.CELL` | `World.TILE` | A cell's side, arterial to arterial: a tile, World.TILE, 32 plots (960 m) - its west column and north row its arterials (spec 2.3). |
-| 313 | `DistrictPlan.INTERIOR` | `CELL - 1` | A cell's interior: 31 plots a side, between its arterials. |
-| 316 | `DistrictPlan.CELLS_A_SIDE` | `SIDE / CELL` | Cells on a district's side: 8. |
-| 319 | `DistrictPlan.CELLS` | `CELLS_A_SIDE * CELLS_A_SIDE` | Cells in a district: 64. |
-| 322 | `DistrictPlan.LATTICE` | `TilePainter.JUNCTION_APART` | The street lattice: lines every TilePainter.JUNCTION_APART (8) plots, the + junction floor - a cell's west arterial on one, so the lattice runs on from cell to cell. |
-| 325 | `DistrictPlan.REACH` | `TilePainter.REACH` | A building is within reach of a street when one lies within this many plots of it, across corners: TilePainter.REACH, 4. |
-| 328 | `DistrictPlan.STREETS_AT` | `{ LATTICE - 1, 2 * LATTICE - 1, 3 * LATTICE - 1 }` | Where a cell's streets run, in plots into its interior: 7, 15 and 23 - the lattice's lines inside it (spec 2.3's long blocks of 15 x 7, square blocks of 7 x 7). |
-| 331 | `DistrictPlan.MIDDLE` | `2 * LATTICE - 1` | ...and a homes cell's cross street and an estate cell's spine: the middle line, 15 - long blocks 15 plots long either side of it. |
-| 336 | `DistrictPlan.LAYOUT_TODAY` | `0, LAYOUT_DROPPED = 1, LAYOUT_BRICK = 2, LAYOUT_CRESCENT = 3` | A homes cell's street layout, chosen by layoutOf(): TODAY the comb (a squared cell: the whole square) as ever, DROPPED some of its crossings left out, BRICK its cross street's pieces at alternating... |
-| 339 | `DistrictPlan.TODAY_SHARE` | `1.0 / 3` | The share of homes cells, long-block and squared alike, that keep today's layout: a third (Jerus, 2026-10-20: "A third stays"). |
-| 342 | `DistrictPlan.DROPPED_SHARE` | `1.0 / 3` | ...and the share that drop crossings (the rest are brick), likewise: a third. |
-| 345 | `DistrictPlan.CRESCENT_FROM` | `16` | How far from the founding site a long-block homes cell's middle must lie, in cells (Euclidean, CELL plots a cell), to be laid as a crescent (CL4, crescentOf()): 16 - two districts, 15 km, past wher... |
-| 348 | `DistrictPlan.CRESCENT_SHARE` | `0.5` | The share of the long-block homes cells beyond CRESCENT_FROM, whose layout is not the comb, that are crescents: a half - so beyond it a third of the cells keep the comb (Jerus's "a third stays"), a... |
-| 351 | `DistrictPlan.CRESCENT_SALT` | `120` | The salt of the crescent's hash in layoutHash(): 120, beyond the layouts' own (0, 11 to 16, 21, 22, 31, 40 to 111); the bulge's is the next, CRESCENT_SALT + 1. |
-| 354 | `DistrictPlan.ARC_SHIFT` | `3` | How far the crescent's arc stands from the cell's cross line (the line u = MIDDLE) at its ends, in plots: 3 - its ends stand at MIDDLE - bulge x 3 and it bulges toward the other side, so the arc st... |
-| 357 | `DistrictPlan.ARC_RADIUS` | `(INTERIOR + 1) / Math.sqrt(2)` | The crescent's arc radius, in plots: (INTERIOR + 1) / sqrt 2 - a quarter of a circle whose chord runs from the ring at v = -1 to the ring at v = INTERIOR, so it turns 90 degrees and meets each ring... |
-| 360 | `DistrictPlan.HALF_DROP` | `0.25` | The chance a dropped long-block cell also loses half of a long street (its block beside it 15 deep): 0.25. |
-| 363 | `DistrictPlan.HOLE_MOST` | `49` | The most plots of a long-block cell a lost half of a long street may leave beyond REACH of every street (a green hole in the block): 49, one 7 x 7. |
-| 366 | `DistrictPlan.PIECE_DROP` | `0.22` | The chance a dropped squared cell loses each of its 24 street pieces: 0.22. |
-| 369 | `DistrictPlan.BRICK_LINES` | `{ { 11, 19 }, { 9, 21 }, { 7, 23 }, { 7, 19 }, { 11, 23 } }` | The lines a brick long-block cell's cross street may alternate between, in plots into the interior: a pair for the cell's hash to pick from, 8 or more apart so no two junctions on a long street are... |
-| 372 | `DistrictPlan.BRICK_BAND_LINES` | `{ 11, 19 }` | ...and the two lines a brick squared cell's cross streets take in the bands between those at 7, 15 and 23: 11 and 19. |
-| 375 | `DistrictPlan.DROPPED_TRIES` | `2` | The draws a dropped long-block cell makes to keep its holes within HOLE_MOST: 2, the second without the half of a long street. |
-| 378 | `DistrictPlan.PIECES_TRIES` | `3` | ...and a dropped squared cell makes to leave nothing beyond REACH: 3, then the whole square. |
-| 381 | `DistrictPlan.SEG_FROM` | `{ 0, 8, 16, 24 }, SEG_TO = { 6, 14, 22, 30 }` | The ends of a line's four pieces between its crossings (the ring, the lines at 7, 15, 23, the ring), in plots into the interior: from 0, 8, 16, 24 to 6, 14, 22, 30. |
-| 384 | `DistrictPlan.LINE_FIRST` | `LATTICE - 1` | An estate cell's streets lie on interior lines from this one (0.7.90, ESTATE LINES): 7, LATTICE - 1 - so where one meets a neighbour's street across an arterial, the + it makes is LATTICE or more f... |
-| 387 | `DistrictPlan.LINE_LAST` | `INTERIOR - LATTICE` | ...to this one: 23, INTERIOR - LATTICE, the same from the far corner. |
-| 390 | `DistrictPlan.STRIP_LEAST` | `LINE_FIRST` | A strip's least depth between an estate cell's streets: 7, LINE_FIRST - so its streets are LATTICE or more apart, and so are the + junctions two of them could make on one arterial. |
-| 393 | `DistrictPlan.STREET_BRIDGE` | `TilePainter.STREET_BRIDGE` | A street's longest crossing of fresh water: TilePainter.STREET_BRIDGE, 6 plots (spec 2.4, today's street bridge). |
-| 396 | `DistrictPlan.ARTERIAL_BRIDGE` | `TilePainter.MAX_BRIDGE [ BuildingVisual.HIGHWAY ]` | An arterial's: a highway's, TilePainter.MAX_BRIDGE[HIGHWAY], 14 plots (spec 2.4) - wider water is a landmass's edge (spec 3). |
-| 399 | `DistrictPlan.CELL_ROOM_LEAST` | `120` | A cell is opened only with at least this many plots of dry owned ground off the highways in its interior: 120 of 961, the prototype's. |
-| 402 | `DistrictPlan.NUDGE` | `0.6` | The hashed nudge on a cell's distance from the hub, in cells: up to 0.6, the prototype's - the open cells' edge ragged, not a disc. |
-| 411 | `DistrictPlan.FOOTHILL_RANK` | `1.0` | How much further from the hub, in cells, a cell wholly on foothill ranks than a cell wholly flat (ET2, spec-earth2-terrain 4.2, flat first): a cell's distance gains this times its foothill share of... |
-| 414 | `DistrictPlan.MIXED_SLOT` | `640` | The first band's buildings are dealt round one slot for every this many plots of their footprints: 640, the prototype's - about a homes cell's room after its streets, so the slots are about its cel... |
-| 417 | `DistrictPlan.LONG_BLOCK_STREETS` | `121` | A long-block cell's street plots inside its ring: 121 - a square cell's 177 (3 rows and 3 columns) less SQUARE_PLOTS. |
-| 420 | `DistrictPlan.SQUARE_PLOTS` | `56` | The surface the ladder's square blocks take a homes cell: 56 plots, the prototype's - a square cell's streets (3 rows and 3 columns, 177 plots) less a long-block cell's (121, LONG_BLOCK_STREETS). |
-| 423 | `DistrictPlan.BOULEVARD_PLOTS` | `100` | ...and a boulevard a cell: 100 plots, the prototype's - its arterials' second row, less what neighbouring boulevards share. |
-| 426 | `DistrictPlan.MERGE_GROUPS` | `{ { 15, 15 }, { 15, 23 }, { 15, 31 }, { 31, 15 }, { 31, 31 } }` | The groups of long blocks a homes cell merges for a building wider than a block, {across the blocks, along them} in plots: two blocks, three, four, two across, the whole cell (the prototype's; spec... |
-| 429 | `DistrictPlan.MERGE_DRY` | `0.95` | A group of blocks is merged only when more than this share of it is dry ground or street: 0.95, the prototype's. |
-| 432 | `DistrictPlan.BLOCK_DEPTH` | `LATTICE - 1` | A building wider than this, in a homes cell, may merge blocks: 7, a block's depth. |
-| 435 | `DistrictPlan.JOIN_ROUNDS` | `40` | The most pieces the join joins, one at a time: 40, the prototype's. |
-| 438 | `DistrictPlan.JOIN_DX` | `{ 0, 0, 1, - 1 }, JOIN_DY = { 1, - 1, 0, 0 }` | The join's steps in the prototype's order: south, north, east, west - so of two ways as short it takes the prototype's. |
-| 441 | `DistrictPlan.HALF` | `0.5` | A street's least surface, in plots of its right of way: a half, 15 m (spec 2.5). |
-| 444 | `DistrictPlan.FULL` | `1.0` | ...and its full width, a whole plot, 30 m. |
-| 449 | `DistrictPlan.FIXED_HIGHWAY` | `BuildingVisual.HIGHWAY` | A fixed plot: an Elevated Highway's (BuildingVisual.HIGHWAY). |
-| 452 | `DistrictPlan.FIXED_RAIL` | `TilePainter.RAIL` | ...a railway's track (TilePainter.RAIL). |
-| 455 | `DistrictPlan.FIXED_YARD` | `CityRuns.F_YARD` | ...a railway yard's ground, a Rail Terminal the city's runs drew on its track (0.7.89, CityRuns.F_YARD): no street crosses it, no building stands on it. |
-| 458 | `DistrictPlan.FIXED_RESERVE` | `CityRuns.F_RESERVE` | ...an interchange's reserve (batch FR7, D19, CityRuns.F_RESERVE): a cloverleaf's 19 x 19 plots or a trumpet's 11 x 11, street ground - no lot, no building, no street across it but the highways and ... |
-| 464 | `DistrictPlan.SITE_FIELD` | `1` | A site with nothing on it: a field, built on last. |
-| 467 | `DistrictPlan.SITE_MINED` | `2` | A site a mine or well stands on: its own. |
-| 470 | `DistrictPlan.CLOSED` | `0` | A cell's layout: not opened. |
-| 472 | `DistrictPlan.HOMES` | `1` | ...homes: long blocks (or square, the ladder's), for what follows people. |
-| 474 | `DistrictPlan.ESTATE` | `2` | ...an estate: one spine, two strips, for industry and the outer kinds. |
-| 479 | `DistrictPlan.NONE` | `0` | A plot's street, its low three bits: none. |
-| 481 | `DistrictPlan.TRACK` | `1` | ...a track: a street the city has bought no road for (spec 2.5, R4). |
-| 483 | `DistrictPlan.GRAVEL` | `2` | ...gravel. |
-| 485 | `DistrictPlan.PAVED` | `3` | ...paved. |
-| 487 | `DistrictPlan.HIGHWAY` | `4` | ...an Elevated Highway's plots given to the plan as a street's surface (Input.highway: CityMap's deal did so from 0.7.72, its plans to 0.7.88; since 0.7.89 the runs lay every one and the map gives ... |
-| 489 | `DistrictPlan.SEAM` | `5` | ...a seam: a street on the district's edge whose surface is the neighbour's (SEAMS). |
-| 491 | `DistrictPlan.UNDER` | `6` | ...a street passing beneath a highway (spec 2.7: elevated). |
-| 493 | `DistrictPlan.KIND_MASK` | `7` | The kind's bits. |
-| 495 | `DistrictPlan.WIDTH_SHIFT` | `3` | Its width, bits 3 and 4: 1 half, 2 full; 0 for none (a track, a seam, beneath a highway). |
-| 497 | `DistrictPlan.ROLE_SHIFT` | `5` | Its role, bits 5 to 7. |
-| 499 | `DistrictPlan.ROLE_STREET` | `1` | ...a cell's street. |
-| 501 | `DistrictPlan.ROLE_ARTERIAL` | `2` | ...an arterial: a cell's ring. |
-| 503 | `DistrictPlan.ROLE_BOULEVARD` | `3` | ...an arterial of a boulevard cell, either row (spec 2.5). |
-| 505 | `DistrictPlan.ROLE_SHORE` | `4` | ...a street along a cut, joining a dead end to its neighbour (H2). |
-| 507 | `DistrictPlan.ROLE_JOIN` | `5` | ...a street the join laid along the lattice. |
-| 509 | `DistrictPlan.ROLE_ACCESS` | `6` | ...an access road (batch FR7, D17): the street from a sea terminal's, a yard's or a Truck Depot's gate to the nearest highway ramp or, failing one, the arterial grid - an arterial in all but its na... |
-| 512 | `DistrictPlan.ACCESS_NEW` | `3` | The cost of laying a plot of access road where there is no street, against 1 for a plot that already is one: 3 - so a road follows the streets there are, and crosses open ground only where that is ... |
-| 515 | `DistrictPlan.ACCESS_RAMP_DISTRICTS` | `2` | How far from the work it serves a highway ramp may lie, in districts, for its access road to go there and not to the arterial grid: 2 (spec-freight 4.5: "the nearest highway ramp if one lies within... |
-| 518 | `DistrictPlan.SIDING_PLOT` | `TilePainter.SIDING_PLOT` | A plot of a siding the plan laid (batch FR7 slice 5, D14), by plot in DistrictPlan.siding... |
-| 520 | `DistrictPlan.SIDING_END` | `TilePainter.SIDING_END` | ...and the first plot of a siding, beside the works' box, where its loading shed stands. |
-| 523 | `DistrictPlan.DEFAULT_SIDING_PLOTS` | `72` | The plots a siding may have when its input does not say (Input.sidingPlots): 72, a Rail Spur's track in buildings.json. |
-| 526 | `DistrictPlan.SIDING_CROSSING` | `3` | What a siding pays to cross a street at grade, over the 1 of a plot of open ground: 3 - a level crossing is a cost, so a siding takes the open ground beside a street where that is not much longer. |
-| 529 | `DistrictPlan.SIDING_ALONG` | `8` | ...to run along a street plot after street plot, over a plot's own cost: 8 - a siding never takes a street's place, so it crosses and leaves it (the search also never turns on a street). |
-| 532 | `DistrictPlan.SIDING_TURN` | `2` | ...and what a turn costs it, so a siding is straight or turns few times, not a staircase: 2. |
-| 535 | `DistrictPlan.SIDING_EDGE` | `2` | The room a siding's plots keep from the frame's edge, in plots: 2, so no siding plot lies on the edge row or column the districts share or beside it, and the tile beside a district's never needs th... |
-| 537 | `DistrictPlan.BRIDGE` | `1<<8` | A bridge over fresh water, bit 8. |
-| 539 | `DistrictPlan.CROSSING` | `1<<9` | A level crossing of a railway, bit 9. |
-| 544 | `DistrictPlan.AVENUE_DX` | `{ 1, - 1, - 1, 1 }, AVENUE_DY = { 1, 1, - 1, - 1 }` | The four avenues' headings, (dx, dy) in plots by arm: south-east, south-west, north-west, north-east - CityRuns.diagCode()'s numbering, 0 to 3, the arm in a plot's mark. |
-| 547 | `DistrictPlan.AVENUE_BRIDGE_STEPS` | `(int)(ARTERIAL_BRIDGE / Math.sqrt(2))` | The longest run over fresh water a bridge on an avenue carries, in steps along it: ARTERIAL_BRIDGE / sqrt 2 rounded down, 9 - a step is sqrt 2 plots, so 9 steps are 12.7 plots and 10 are over 14. |
-| 550 | `DistrictPlan.AVENUE_APART` | `LATTICE` | The least steps between two junctions kept on one arm (the + floor along an avenue): LATTICE. |
-| 760 | `DistrictPlan.ARCS` | `{ new ArcShape(- 1), new ArcShape(1) }` | The two crescent shapes, bulge -1 and +1 (arc()). |
-| 839 | `DistrictPlan.ACCESS_RAMP` | `1, ACCESS_ARTERIAL = 2, ACCESS_HAD = 3` |  |
-| 879 | `DistrictPlan.Curve.CRESCENT` | `1, SHORE = 2` | A crescent's arc (geom: its circle {centre x, centre y, radius, the angle from the centre to the arc's start, the signed sweep}, as TrackCurves.Bend has them; radius = the circle's) and a street al... |
-| 927 | `DistrictPlan.NO_CURVES` | `List.of()` | No curves: a plan that lays none (the prototype's, Input.latticeOnly) has this list. |
-| 1039 | `DistrictPlan.BUILDERS` | `new ThreadLocal<>()` | KEPT (0.7.94, batch RD7): each thread's builder, its arrays - about 4 MB - and the ladder's turns - about 0.4 MB each, one a step of the longest chain it has climbed - made once and used plan after... |
-| 1257 | `DistrictPlan.Builder.WORDS` | `(FRAME + 63) / 64` | The streets row by row as bits, WORDS longs a row: what a cell's reach is read from. |
-| 1331 | `DistrictPlan.Builder.WORN` | `1<<30` | The stamps' ceiling: a builder is replaced past it, half the int's range, far beyond what a plan stamps (a dense plan some tens of thousands). |
-| 3083 | `DistrictPlan.Builder.AV_PLOTS` | `0, AV_UNDER = 1, AV_RAIL = 2, AV_BRIDGED = 3, AV_BROKEN = 4, AV_WATER = 5, AV_STOPS = 6...` | The slots of avN, the counts the plan's avenue* fields are made from: plots laid, beneath a highway, across the railway, bridging, not laid at a yard, reserve or mine, at water too wide, cell stree... |
-| 3085 | `DistrictPlan.Builder.AVK_OFF` | `0, AVK_BROKEN = 1, AVK_WATER = 2, AVK_UNDER = 3, AVK_STREET = 4` | What avKind() makes of a staircase plot: not laid (unowned, salt water), not laid at a yard, reserve or mine's site, not laid at water too wide, beneath a highway, a street. |
-| 3889 | `DistrictPlan.Builder.FLIP` | `1<<31` | estateLines()'s flag: the cell's streets run the other way from its own direction (a cell the ground cuts). |
-| 3905 | `DistrictPlan.Builder.FULL_LINES` | `new java.util.concurrent.ConcurrentHashMap<>()` | Each layout a full cell takes for a building's shape, its ring whole: {across, down, boulevard, the cell's direction} to estateLines()'s answer - the same whatever lies about it (no street beyond i... |
-| 4014 | `DistrictPlan.Builder.H_STREET` | `1, H_ARTERIAL = 2, V_STREET = 4, V_ARTERIAL = 8, LAY_REFUSED = 15, LAY_UNDER = 16` | LAY CODES (0.7.94, batch RD7): what layPlot() makes of each plot, read from the input once a plan - the plot refused to a street running east-west (H_STREET), to an arterial so (H_ARTERIAL), and no... |
-| 4488 | `DistrictPlan.Builder.LAST_WORD` | `(1L<<(FRAME - 64 *(WORDS - 1))) - 1` | A row's last word's plots in the frame: bit 0 to FRAME - 1 - 64 x (WORDS - 1). |
-| 4548 | `DistrictPlan.Builder.WINDOW` | `(1L<<(INTERIOR + 2 * REACH)) - 1` | A window's row as bits, one a plot: a cell's interior and the REACH plots either side of it. |
-| 5107 | `DistrictPlan.Builder.SPLIT_NEAR` | `CELL` | splits()'s first walk keeps within this many plots of the box: a cell (NEAR FIRST). |
-| 5384 | `DistrictPlan.Builder.SD_BUCKETS` | `16` |  |
-| 6040 | `DistrictPlan.Builder.PARTED_BUCKETS` | `2 *(CELLS + 1) + 1` | surface()'s buckets a side of the river: the access roads', the arterials' by cell rank and the rest's (FW3). |
+| 303 | `DistrictPlan.SIDE` | `CityMap.DISTRICT` | Plots on a district's side: CityMap.DISTRICT, 256. |
+| 306 | `DistrictPlan.FRAME` | `SIDE + 1` | Plots on the plan's side: the district and the first column (row) of its east (south) neighbour, where its edge cells' last arterial runs - 257. |
+| 309 | `DistrictPlan.AREA` | `FRAME * FRAME` | Plots in the frame. |
+| 312 | `DistrictPlan.CELL` | `World.TILE` | A cell's side, arterial to arterial: a tile, World.TILE, 32 plots (960 m) - its west column and north row its arterials (spec 2.3). |
+| 315 | `DistrictPlan.INTERIOR` | `CELL - 1` | A cell's interior: 31 plots a side, between its arterials. |
+| 318 | `DistrictPlan.CELLS_A_SIDE` | `SIDE / CELL` | Cells on a district's side: 8. |
+| 321 | `DistrictPlan.CELLS` | `CELLS_A_SIDE * CELLS_A_SIDE` | Cells in a district: 64. |
+| 324 | `DistrictPlan.LATTICE` | `TilePainter.JUNCTION_APART` | The street lattice: lines every TilePainter.JUNCTION_APART (8) plots, the + junction floor - a cell's west arterial on one, so the lattice runs on from cell to cell. |
+| 327 | `DistrictPlan.REACH` | `TilePainter.REACH` | A building is within reach of a street when one lies within this many plots of it, across corners: TilePainter.REACH, 4. |
+| 330 | `DistrictPlan.STREETS_AT` | `{ LATTICE - 1, 2 * LATTICE - 1, 3 * LATTICE - 1 }` | Where a cell's streets run, in plots into its interior: 7, 15 and 23 - the lattice's lines inside it (spec 2.3's long blocks of 15 x 7, square blocks of 7 x 7). |
+| 333 | `DistrictPlan.MIDDLE` | `2 * LATTICE - 1` | ...and a homes cell's cross street and an estate cell's spine: the middle line, 15 - long blocks 15 plots long either side of it. |
+| 338 | `DistrictPlan.LAYOUT_TODAY` | `0, LAYOUT_DROPPED = 1, LAYOUT_BRICK = 2, LAYOUT_CRESCENT = 3` | A homes cell's street layout, chosen by layoutOf(): TODAY the comb (a squared cell: the whole square) as ever, DROPPED some of its crossings left out, BRICK its cross street's pieces at alternating... |
+| 341 | `DistrictPlan.TODAY_SHARE` | `1.0 / 3` | The share of homes cells, long-block and squared alike, that keep today's layout: a third (Jerus, 2026-10-20: "A third stays"). |
+| 344 | `DistrictPlan.DROPPED_SHARE` | `1.0 / 3` | ...and the share that drop crossings (the rest are brick), likewise: a third. |
+| 347 | `DistrictPlan.CRESCENT_FROM` | `16` | How far from the founding site a long-block homes cell's middle must lie, in cells (Euclidean, CELL plots a cell), to be laid as a crescent (CL4, crescentOf()): 16 - two districts, 15 km, past wher... |
+| 350 | `DistrictPlan.CRESCENT_SHARE` | `0.5` | The share of the long-block homes cells beyond CRESCENT_FROM, whose layout is not the comb, that are crescents: a half - so beyond it a third of the cells keep the comb (Jerus's "a third stays"), a... |
+| 353 | `DistrictPlan.CRESCENT_SALT` | `120` | The salt of the crescent's hash in layoutHash(): 120, beyond the layouts' own (0, 11 to 16, 21, 22, 31, 40 to 111); the bulge's is the next, CRESCENT_SALT + 1. |
+| 356 | `DistrictPlan.ARC_SHIFT` | `3` | How far the crescent's arc stands from the cell's cross line (the line u = MIDDLE) at its ends, in plots: 3 - its ends stand at MIDDLE - bulge x 3 and it bulges toward the other side, so the arc st... |
+| 359 | `DistrictPlan.ARC_RADIUS` | `(INTERIOR + 1) / Math.sqrt(2)` | The crescent's arc radius, in plots: (INTERIOR + 1) / sqrt 2 - a quarter of a circle whose chord runs from the ring at v = -1 to the ring at v = INTERIOR, so it turns 90 degrees and meets each ring... |
+| 362 | `DistrictPlan.HALF_DROP` | `0.25` | The chance a dropped long-block cell also loses half of a long street (its block beside it 15 deep): 0.25. |
+| 365 | `DistrictPlan.HOLE_MOST` | `49` | The most plots of a long-block cell a lost half of a long street may leave beyond REACH of every street (a green hole in the block): 49, one 7 x 7. |
+| 368 | `DistrictPlan.PIECE_DROP` | `0.22` | The chance a dropped squared cell loses each of its 24 street pieces: 0.22. |
+| 371 | `DistrictPlan.BRICK_LINES` | `{ { 11, 19 }, { 9, 21 }, { 7, 23 }, { 7, 19 }, { 11, 23 } }` | The lines a brick long-block cell's cross street may alternate between, in plots into the interior: a pair for the cell's hash to pick from, 8 or more apart so no two junctions on a long street are... |
+| 374 | `DistrictPlan.BRICK_BAND_LINES` | `{ 11, 19 }` | ...and the two lines a brick squared cell's cross streets take in the bands between those at 7, 15 and 23: 11 and 19. |
+| 377 | `DistrictPlan.DROPPED_TRIES` | `2` | The draws a dropped long-block cell makes to keep its holes within HOLE_MOST: 2, the second without the half of a long street. |
+| 380 | `DistrictPlan.PIECES_TRIES` | `3` | ...and a dropped squared cell makes to leave nothing beyond REACH: 3, then the whole square. |
+| 383 | `DistrictPlan.SEG_FROM` | `{ 0, 8, 16, 24 }, SEG_TO = { 6, 14, 22, 30 }` | The ends of a line's four pieces between its crossings (the ring, the lines at 7, 15, 23, the ring), in plots into the interior: from 0, 8, 16, 24 to 6, 14, 22, 30. |
+| 386 | `DistrictPlan.LINE_FIRST` | `LATTICE - 1` | An estate cell's streets lie on interior lines from this one (0.7.90, ESTATE LINES): 7, LATTICE - 1 - so where one meets a neighbour's street across an arterial, the + it makes is LATTICE or more f... |
+| 389 | `DistrictPlan.LINE_LAST` | `INTERIOR - LATTICE` | ...to this one: 23, INTERIOR - LATTICE, the same from the far corner. |
+| 392 | `DistrictPlan.STRIP_LEAST` | `LINE_FIRST` | A strip's least depth between an estate cell's streets: 7, LINE_FIRST - so its streets are LATTICE or more apart, and so are the + junctions two of them could make on one arterial. |
+| 395 | `DistrictPlan.STREET_BRIDGE` | `TilePainter.STREET_BRIDGE` | A street's longest crossing of bridgeable water (fresh, and since ET6 the shallow sea): TilePainter.STREET_BRIDGE, 6 plots (spec 2.4, today's street bridge). |
+| 403 | `DistrictPlan.ARTERIAL_BRIDGE` | `14` | An arterial's: 14 plots (420 m; spec 2.4), its own since ET6 (spec-earth2-terrain 6.2, D12): it was a highway's, TilePainter.MAX_BRIDGE[HIGHWAY], until the highway's and the railway's widened to 34... |
+| 406 | `DistrictPlan.CELL_ROOM_LEAST` | `120` | A cell is opened only with at least this many plots of dry owned ground off the highways in its interior: 120 of 961, the prototype's. |
+| 409 | `DistrictPlan.NUDGE` | `0.6` | The hashed nudge on a cell's distance from the hub, in cells: up to 0.6, the prototype's - the open cells' edge ragged, not a disc. |
+| 418 | `DistrictPlan.FOOTHILL_RANK` | `1.0` | How much further from the hub, in cells, a cell wholly on foothill ranks than a cell wholly flat (ET2, spec-earth2-terrain 4.2, flat first): a cell's distance gains this times its foothill share of... |
+| 421 | `DistrictPlan.MIXED_SLOT` | `640` | The first band's buildings are dealt round one slot for every this many plots of their footprints: 640, the prototype's - about a homes cell's room after its streets, so the slots are about its cel... |
+| 424 | `DistrictPlan.LONG_BLOCK_STREETS` | `121` | A long-block cell's street plots inside its ring: 121 - a square cell's 177 (3 rows and 3 columns) less SQUARE_PLOTS. |
+| 427 | `DistrictPlan.SQUARE_PLOTS` | `56` | The surface the ladder's square blocks take a homes cell: 56 plots, the prototype's - a square cell's streets (3 rows and 3 columns, 177 plots) less a long-block cell's (121, LONG_BLOCK_STREETS). |
+| 430 | `DistrictPlan.BOULEVARD_PLOTS` | `100` | ...and a boulevard a cell: 100 plots, the prototype's - its arterials' second row, less what neighbouring boulevards share. |
+| 433 | `DistrictPlan.MERGE_GROUPS` | `{ { 15, 15 }, { 15, 23 }, { 15, 31 }, { 31, 15 }, { 31, 31 } }` | The groups of long blocks a homes cell merges for a building wider than a block, {across the blocks, along them} in plots: two blocks, three, four, two across, the whole cell (the prototype's; spec... |
+| 436 | `DistrictPlan.MERGE_DRY` | `0.95` | A group of blocks is merged only when more than this share of it is dry ground or street: 0.95, the prototype's. |
+| 439 | `DistrictPlan.BLOCK_DEPTH` | `LATTICE - 1` | A building wider than this, in a homes cell, may merge blocks: 7, a block's depth. |
+| 442 | `DistrictPlan.JOIN_ROUNDS` | `40` | The most pieces the join joins, one at a time: 40, the prototype's. |
+| 445 | `DistrictPlan.JOIN_DX` | `{ 0, 0, 1, - 1 }, JOIN_DY = { 1, - 1, 0, 0 }` | The join's steps in the prototype's order: south, north, east, west - so of two ways as short it takes the prototype's. |
+| 448 | `DistrictPlan.HALF` | `0.5` | A street's least surface, in plots of its right of way: a half, 15 m (spec 2.5). |
+| 451 | `DistrictPlan.FULL` | `1.0` | ...and its full width, a whole plot, 30 m. |
+| 456 | `DistrictPlan.FIXED_HIGHWAY` | `BuildingVisual.HIGHWAY` | A fixed plot: an Elevated Highway's (BuildingVisual.HIGHWAY). |
+| 459 | `DistrictPlan.FIXED_RAIL` | `TilePainter.RAIL` | ...a railway's track (TilePainter.RAIL). |
+| 462 | `DistrictPlan.FIXED_YARD` | `CityRuns.F_YARD` | ...a railway yard's ground, a Rail Terminal the city's runs drew on its track (0.7.89, CityRuns.F_YARD): no street crosses it, no building stands on it. |
+| 465 | `DistrictPlan.FIXED_RESERVE` | `CityRuns.F_RESERVE` | ...an interchange's reserve (batch FR7, D19, CityRuns.F_RESERVE): a cloverleaf's 19 x 19 plots or a trumpet's 11 x 11, street ground - no lot, no building, no street across it but the highways and ... |
+| 471 | `DistrictPlan.SITE_FIELD` | `1` | A site with nothing on it: a field, built on last. |
+| 474 | `DistrictPlan.SITE_MINED` | `2` | A site a mine or well stands on: its own. |
+| 477 | `DistrictPlan.CLOSED` | `0` | A cell's layout: not opened. |
+| 479 | `DistrictPlan.HOMES` | `1` | ...homes: long blocks (or square, the ladder's), for what follows people. |
+| 481 | `DistrictPlan.ESTATE` | `2` | ...an estate: one spine, two strips, for industry and the outer kinds. |
+| 486 | `DistrictPlan.NONE` | `0` | A plot's street, its low three bits: none. |
+| 488 | `DistrictPlan.TRACK` | `1` | ...a track: a street the city has bought no road for (spec 2.5, R4). |
+| 490 | `DistrictPlan.GRAVEL` | `2` | ...gravel. |
+| 492 | `DistrictPlan.PAVED` | `3` | ...paved. |
+| 494 | `DistrictPlan.HIGHWAY` | `4` | ...an Elevated Highway's plots given to the plan as a street's surface (Input.highway: CityMap's deal did so from 0.7.72, its plans to 0.7.88; since 0.7.89 the runs lay every one and the map gives ... |
+| 496 | `DistrictPlan.SEAM` | `5` | ...a seam: a street on the district's edge whose surface is the neighbour's (SEAMS). |
+| 498 | `DistrictPlan.UNDER` | `6` | ...a street passing beneath a highway (spec 2.7: elevated). |
+| 500 | `DistrictPlan.KIND_MASK` | `7` | The kind's bits. |
+| 502 | `DistrictPlan.WIDTH_SHIFT` | `3` | Its width, bits 3 and 4: 1 half, 2 full; 0 for none (a track, a seam, beneath a highway). |
+| 504 | `DistrictPlan.ROLE_SHIFT` | `5` | Its role, bits 5 to 7. |
+| 506 | `DistrictPlan.ROLE_STREET` | `1` | ...a cell's street. |
+| 508 | `DistrictPlan.ROLE_ARTERIAL` | `2` | ...an arterial: a cell's ring. |
+| 510 | `DistrictPlan.ROLE_BOULEVARD` | `3` | ...an arterial of a boulevard cell, either row (spec 2.5). |
+| 512 | `DistrictPlan.ROLE_SHORE` | `4` | ...a street along a cut, joining a dead end to its neighbour (H2). |
+| 514 | `DistrictPlan.ROLE_JOIN` | `5` | ...a street the join laid along the lattice. |
+| 516 | `DistrictPlan.ROLE_ACCESS` | `6` | ...an access road (batch FR7, D17): the street from a sea terminal's, a yard's or a Truck Depot's gate to the nearest highway ramp or, failing one, the arterial grid - an arterial in all but its na... |
+| 519 | `DistrictPlan.ACCESS_NEW` | `3` | The cost of laying a plot of access road where there is no street, against 1 for a plot that already is one: 3 - so a road follows the streets there are, and crosses open ground only where that is ... |
+| 522 | `DistrictPlan.ACCESS_RAMP_DISTRICTS` | `2` | How far from the work it serves a highway ramp may lie, in districts, for its access road to go there and not to the arterial grid: 2 (spec-freight 4.5: "the nearest highway ramp if one lies within... |
+| 525 | `DistrictPlan.SIDING_PLOT` | `TilePainter.SIDING_PLOT` | A plot of a siding the plan laid (batch FR7 slice 5, D14), by plot in DistrictPlan.siding... |
+| 527 | `DistrictPlan.SIDING_END` | `TilePainter.SIDING_END` | ...and the first plot of a siding, beside the works' box, where its loading shed stands. |
+| 530 | `DistrictPlan.DEFAULT_SIDING_PLOTS` | `72` | The plots a siding may have when its input does not say (Input.sidingPlots): 72, a Rail Spur's track in buildings.json. |
+| 533 | `DistrictPlan.SIDING_CROSSING` | `3` | What a siding pays to cross a street at grade, over the 1 of a plot of open ground: 3 - a level crossing is a cost, so a siding takes the open ground beside a street where that is not much longer. |
+| 536 | `DistrictPlan.SIDING_ALONG` | `8` | ...to run along a street plot after street plot, over a plot's own cost: 8 - a siding never takes a street's place, so it crosses and leaves it (the search also never turns on a street). |
+| 539 | `DistrictPlan.SIDING_TURN` | `2` | ...and what a turn costs it, so a siding is straight or turns few times, not a staircase: 2. |
+| 542 | `DistrictPlan.SIDING_EDGE` | `2` | The room a siding's plots keep from the frame's edge, in plots: 2, so no siding plot lies on the edge row or column the districts share or beside it, and the tile beside a district's never needs th... |
+| 544 | `DistrictPlan.BRIDGE` | `1<<8` | A bridge over bridgeable water (fresh, or since ET6 the shallow sea), bit 8. |
+| 546 | `DistrictPlan.CROSSING` | `1<<9` | A level crossing of a railway, bit 9. |
+| 551 | `DistrictPlan.AVENUE_DX` | `{ 1, - 1, - 1, 1 }, AVENUE_DY = { 1, 1, - 1, - 1 }` | The four avenues' headings, (dx, dy) in plots by arm: south-east, south-west, north-west, north-east - CityRuns.diagCode()'s numbering, 0 to 3, the arm in a plot's mark. |
+| 554 | `DistrictPlan.AVENUE_BRIDGE_STEPS` | `(int)(ARTERIAL_BRIDGE / Math.sqrt(2))` | The longest run over bridgeable water a bridge on an avenue carries, in steps along it: ARTERIAL_BRIDGE / sqrt 2 rounded down, 9 - a step is sqrt 2 plots, so 9 steps are 12.7 plots and 10 are over 14. |
+| 557 | `DistrictPlan.AVENUE_APART` | `LATTICE` | The least steps between two junctions kept on one arm (the + floor along an avenue): LATTICE. |
+| 767 | `DistrictPlan.ARCS` | `{ new ArcShape(- 1), new ArcShape(1) }` | The two crescent shapes, bulge -1 and +1 (arc()). |
+| 846 | `DistrictPlan.ACCESS_RAMP` | `1, ACCESS_ARTERIAL = 2, ACCESS_HAD = 3` |  |
+| 886 | `DistrictPlan.Curve.CRESCENT` | `1, SHORE = 2` | A crescent's arc (geom: its circle {centre x, centre y, radius, the angle from the centre to the arc's start, the signed sweep}, as TrackCurves.Bend has them; radius = the circle's) and a street al... |
+| 934 | `DistrictPlan.NO_CURVES` | `List.of()` | No curves: a plan that lays none (the prototype's, Input.latticeOnly) has this list. |
+| 1046 | `DistrictPlan.BUILDERS` | `new ThreadLocal<>()` | KEPT (0.7.94, batch RD7): each thread's builder, its arrays - about 4 MB - and the ladder's turns - about 0.4 MB each, one a step of the longest chain it has climbed - made once and used plan after... |
+| 1264 | `DistrictPlan.Builder.WORDS` | `(FRAME + 63) / 64` | The streets row by row as bits, WORDS longs a row: what a cell's reach is read from. |
+| 1338 | `DistrictPlan.Builder.WORN` | `1<<30` | The stamps' ceiling: a builder is replaced past it, half the int's range, far beyond what a plan stamps (a dense plan some tens of thousands). |
+| 3090 | `DistrictPlan.Builder.AV_PLOTS` | `0, AV_UNDER = 1, AV_RAIL = 2, AV_BRIDGED = 3, AV_BROKEN = 4, AV_WATER = 5, AV_STOPS = 6...` | The slots of avN, the counts the plan's avenue* fields are made from: plots laid, beneath a highway, across the railway, bridging, not laid at a yard, reserve or mine, at water too wide, cell stree... |
+| 3092 | `DistrictPlan.Builder.AVK_OFF` | `0, AVK_BROKEN = 1, AVK_WATER = 2, AVK_UNDER = 3, AVK_STREET = 4` | What avKind() makes of a staircase plot: not laid (unowned, salt water), not laid at a yard, reserve or mine's site, not laid at water too wide, beneath a highway, a street. |
+| 3896 | `DistrictPlan.Builder.FLIP` | `1<<31` | estateLines()'s flag: the cell's streets run the other way from its own direction (a cell the ground cuts). |
+| 3912 | `DistrictPlan.Builder.FULL_LINES` | `new java.util.concurrent.ConcurrentHashMap<>()` | Each layout a full cell takes for a building's shape, its ring whole: {across, down, boulevard, the cell's direction} to estateLines()'s answer - the same whatever lies about it (no street beyond i... |
+| 4021 | `DistrictPlan.Builder.H_STREET` | `1, H_ARTERIAL = 2, V_STREET = 4, V_ARTERIAL = 8, LAY_REFUSED = 15, LAY_UNDER = 16` | LAY CODES (0.7.94, batch RD7): what layPlot() makes of each plot, read from the input once a plan - the plot refused to a street running east-west (H_STREET), to an arterial so (H_ARTERIAL), and no... |
+| 4495 | `DistrictPlan.Builder.LAST_WORD` | `(1L<<(FRAME - 64 *(WORDS - 1))) - 1` | A row's last word's plots in the frame: bit 0 to FRAME - 1 - 64 x (WORDS - 1). |
+| 4555 | `DistrictPlan.Builder.WINDOW` | `(1L<<(INTERIOR + 2 * REACH)) - 1` | A window's row as bits, one a plot: a cell's interior and the REACH plots either side of it. |
+| 5114 | `DistrictPlan.Builder.SPLIT_NEAR` | `CELL` | splits()'s first walk keeps within this many plots of the box: a cell (NEAR FIRST). |
+| 5391 | `DistrictPlan.Builder.SD_BUCKETS` | `16` |  |
+| 6047 | `DistrictPlan.Builder.PARTED_BUCKETS` | `2 *(CELLS + 1) + 1` | surface()'s buckets a side of the river: the access roads', the arterials' by cell rank and the rest's (FW3). |
 
 ### EarthData.java ([map](map/EarthData.md))
 
@@ -1271,28 +1320,29 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 243 | `Game.MARKET_SEED_SALT` | `0x4D41524B45545852L` | Salt for the D$'s market seed, so the market's path is not the world's own seed spelled again ("MARKETXR"). |
-| 724 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
-| 846 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
-| 1122 | `Game.FOUNDING_CASH` | `100_000` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
-| 1125 | `Game.FOUNDING_RESERVE_USD` | `25_000` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
-| 1128 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
-| 2281 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 5103 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 5106 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 6594 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 6791 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 7931 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 9689 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 9844 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 9880 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 10011 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 11791 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 11803 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 11806 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 11821 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
-| 11832 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 13441 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 13831 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 726 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 848 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
+| 1124 | `Game.FOUNDING_CASH` | `100_000` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
+| 1127 | `Game.FOUNDING_RESERVE_USD` | `25_000` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
+| 1130 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
+| 2290 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 5112 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 5115 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 6628 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 6830 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 7984 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 8513 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 9916 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 10071 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 10107 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 10238 | `Game.BUILD_NOTE_GRANULE` | `1000` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
+| 12018 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 12030 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 12033 | `Game.BUILD_BOND_GRANULE` | `100` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 12048 | `Game.FIXED_ISSUE_COST` | `12` | Bond counsel, rating and printing. |
+| 12059 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 13668 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 14058 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1770,10 +1820,10 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 185 | `LandManager.FOUNDING_FRESH_UNITS` | `60_000` | A new city's fresh water, in units a month: what one Water Treatment Plant treats, its 60,000 units of 10,000 gallons (buildings.json id 10's production1) - Jerus's A24 (0.7.106, 2026-10-10: "found... |
 | 188 | `LandManager.FOUNDING_FRESH_KM2` | `FOUNDING_FRESH_UNITS / UtilitiesHandler.FRESH_UNITS_PER_KM2` | ...as lake and river ground in its centre, in square kilometres: FOUNDING_FRESH_UNITS over what one yields a month (UtilitiesHandler.FRESH_UNITS_PER_KM2), 0.4934 km2 (CityLand.found()). |
 | 240 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
-| 324 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
-| 1027 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
-| 2544 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
-| 3064 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 327 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
+| 1045 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
+| 2562 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
+| 3083 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandMap.java ([map](map/LandMap.md))
 
@@ -1895,9 +1945,9 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 64 | `Landmasses.GATE_TILES_MOST` | `100` | The most 1-degree tiles the gate looks through; a box over more is read by the tiles. |
 | 67 | `Landmasses.GATE_LAT_MOST` | `85` | The latitude past which the gate gives up (a box near a pole is not a box in latitude and longitude). |
 | 70 | `Landmasses.NEAR_KEPT` | `100_000` | The tiles whose window of cells (World.idsNear()) is remembered before the memory is cleared: 100,000 (about 8 MB). |
-| 617 | `Landmasses.CHOSEN` | `- 1` | portLandmass()'s `asked`: the card's choice if there is one and it will do, else the rule. |
-| 620 | `Landmasses.RULE` | `- 2` | ...the rule alone: the automatic builder and the advice never link an island by choosing it (ET5 D10). |
-| 623 | `Landmasses.NO_LANDMASS` | `- 3` | portLandmass()'s answer when no landmass will do: the order is NO_COAST. |
+| 619 | `Landmasses.CHOSEN` | `- 1` | portLandmass()'s `asked`: the card's choice if there is one and it will do, else the rule. |
+| 622 | `Landmasses.RULE` | `- 2` | ...the rule alone: the automatic builder and the advice never link an island by choosing it (ET5 D10). |
+| 625 | `Landmasses.NO_LANDMASS` | `- 3` | portLandmass()'s answer when no landmass will do: the order is NO_COAST. |
 
 ### LegacyLand.java ([map](map/LegacyLand.md))
 
@@ -2520,17 +2570,17 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 153 | `TilePainter.ACCESS` | `4` | ...and (batch FR7, D17) an access road, the street from a port's, a yard's or a depot's gate to the highway's ramp or the arterial grid: an arterial for the junctions it makes. |
 | 167 | `TilePainter.JUNCTION_APART` | `8` | The + junction floor: 8 plots - eight House footprints (a House's 8,000 sq ft is drawn on one whole plot, BuildingVisual.footprint()), Jerus's "about 8 houses' length" from one + junction to the ne... |
 | 170 | `TilePainter.REACH` | `JUNCTION_APART / 2` | A building is near a road when one lies within this many plots of it, across corners: 4, half the junction floor - a block between streets at the floor is 7 plots across, and its middle plot 4 from... |
-| 178 | `TilePainter.STREET_BRIDGE` | `6` | A street's longest crossing of fresh water, gravel or paved: 6 plots (180 m), the mockup's paved bridge (its star 1); gravel's too since 0.7.77 (batch N5; Jerus, 2026-10-08: "gravel road bridge riv... |
-| 181 | `TilePainter.MAX_BRIDGE` | `{ 0, STREET_BRIDGE, STREET_BRIDGE, 14 }` | The longest crossing of fresh water, in plots, by road kind: gravel and paved STREET_BRIDGE, a highway 14 (the mockup's star 1) - an arterial's since 0.7.87 (DistrictPlan.ARTERIAL_BRIDGE). |
-| 184 | `TilePainter.RAIL_BRIDGE` | `14` | The longest crossing of fresh water a railway's track makes: 14, as a highway's (star N3-6). |
-| 187 | `TilePainter.PART_BIT` | `1<<21` | A building's box in Input.boxes with this bit set is the part, on the tile, of a building counted on another (FX5 Y2): a yard whose box spans tiles is counted on the tile holding its first plot, an... |
-| 190 | `TilePainter.RING` | `TILE + 2 * REACH` | Plots: the side of Input.ring, the tile and REACH plots about it on every side (FX5). |
-| 198 | `TilePainter.DX` | `{ 0, 1, 0, - 1 }, DY = { - 1, 0, 1, 0 }` | North, east, south, west. |
-| 201 | `TilePainter.RESERVE_INTS` | `8` | The ints Input.reserve holds a reserve in: kind, stub, junction x and y, box x0, y0, w, h. |
-| 309 | `TilePainter.Input.CV_OWN` | `1, CV_BAND = 2, CV_END = 4` | A plot's curve mark (curve, curveRing; batch CL4, slice D): CV_OWN, a plot a curve is laid on (DistrictPlan.Curve.plots()); CV_BAND, a plot its band reaches that is not its own, kept free of buildi... |
-| 322 | `TilePainter.Input.CURVE_HEAD` | `3` | The numbers before a curve's geometry in curveGeom: its kind, its radius and the count of numbers after. |
-| 387 | `TilePainter.Input.YARD_INTS` | `10` | The ints Input.yard holds a yard in (FX5 Y2): its box (x0, y0, w, h), its type id, its layout (TileRaster.yardLayout()'s east-west, line, span start and end), and 1 when it is the freight station. |
-| 414 | `TilePainter.Input.BEND_DOUBLES` | `10` | The ints Input.bend holds a bend in (FX5): its net, corner x and y, incoming and outgoing headings (4), radius, tangent length, and 1 on double track. |
+| 180 | `TilePainter.STREET_BRIDGE` | `6` | A street's longest crossing of bridgeable water (fresh, and since ET6 the shallow sea; World.bridgeable()), gravel or paved: 6 plots (180 m), the mockup's paved bridge (its star 1); gravel's too si... |
+| 190 | `TilePainter.MAX_BRIDGE` | `{ 0, STREET_BRIDGE, STREET_BRIDGE, 34 }` | The longest crossing of bridgeable water, in plots, by road kind: gravel and paved STREET_BRIDGE, a highway 34 plots (1,020 m; est., spec-earth2-terrain 6.2 / D12, Jerus 2026-10-12 "all rec" - 14 p... |
+| 193 | `TilePainter.RAIL_BRIDGE` | `34` | The longest crossing of bridgeable water a railway's track makes: 34 plots (1,020 m; est., spec-earth2-terrain 6.2 / D12), as a highway's (star N3-6) - 14 until ET6, which Halifax's two bridges out... |
+| 196 | `TilePainter.PART_BIT` | `1<<21` | A building's box in Input.boxes with this bit set is the part, on the tile, of a building counted on another (FX5 Y2): a yard whose box spans tiles is counted on the tile holding its first plot, an... |
+| 199 | `TilePainter.RING` | `TILE + 2 * REACH` | Plots: the side of Input.ring, the tile and REACH plots about it on every side (FX5). |
+| 207 | `TilePainter.DX` | `{ 0, 1, 0, - 1 }, DY = { - 1, 0, 1, 0 }` | North, east, south, west. |
+| 210 | `TilePainter.RESERVE_INTS` | `8` | The ints Input.reserve holds a reserve in: kind, stub, junction x and y, box x0, y0, w, h. |
+| 318 | `TilePainter.Input.CV_OWN` | `1, CV_BAND = 2, CV_END = 4` | A plot's curve mark (curve, curveRing; batch CL4, slice D): CV_OWN, a plot a curve is laid on (DistrictPlan.Curve.plots()); CV_BAND, a plot its band reaches that is not its own, kept free of buildi... |
+| 331 | `TilePainter.Input.CURVE_HEAD` | `3` | The numbers before a curve's geometry in curveGeom: its kind, its radius and the count of numbers after. |
+| 396 | `TilePainter.Input.YARD_INTS` | `10` | The ints Input.yard holds a yard in (FX5 Y2): its box (x0, y0, w, h), its type id, its layout (TileRaster.yardLayout()'s east-west, line, span start and end), and 1 when it is the freight station. |
+| 423 | `TilePainter.Input.BEND_DOUBLES` | `10` | The ints Input.bend holds a bend in (FX5): its net, corner x and y, incoming and outgoing headings (4), radius, tangent length, and 1 on double track. |
 
 ### TileRaster.java ([map](map/TileRaster.md))
 
@@ -2802,91 +2852,91 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 128 | `World.SHALLOW` | `7` | Shallow sea (ET1, spec-earth2-terrain 6.1; Jerus 2026-10-12, D11): sea no deeper than 30 m - salt water every rule that asks "is this the sea?" treats as SALT (salt()), lighter on the map and the o... |
 | 131 | `World.CLASSES` | `8` | How many classes the ground has: 8, GRASS to SHALLOW - the length of an array a class indexes (0.7.127; five until then, seven until ET1, and a generated world draws only the first five). |
 | 134 | `World.DRY_CLASSES` | `1<<GRASS \| 1<<FOREST \| 1<<SAND \| 1<<DESERT` | The dry classes, a bit each: grass, forest, the beach and the desert. |
-| 165 | `World.FLAT` | `0` | Flat ground (ET1, spec-earth2-terrain 3.1): under a 10% grade, the relief of every plot of a generated world (D19) and of the Earth's water, ice and anything else the slope plane says nothing of - ... |
-| 168 | `World.FOOTHILL` | `1` | Foothill (ET1; D4): a grade of 10% to under 30% (5.7 to 16.7 degrees) - buildable, with preparation (a later batch prices it). |
-| 171 | `World.STEEP` | `2` | Steep (ET1; D4): a grade of 30% to under 60% (16.7 to 31 degrees) - no building stands on it (buildable()); works that may stand anywhere do (workable()). |
-| 174 | `World.VERY_STEEP` | `3` | Very steep (ET1; D4): a grade of 60% or more (31 degrees and over) - no building stands on it (buildable()). |
-| 177 | `World.RELIEFS` | `4` | How many relief classes there are: 4, FLAT to VERY_STEEP - the length of an array a relief indexes. |
-| 211 | `World.OCTAVE_FALLOFF` | `0.55` | Each octave's amplitude against the one above it: 0.55, a little rougher than classic fractal noise's half (the mockup's terrain, scaled to plots). |
-| 214 | `World.ELEV_COARSE_HI` | `16` | Elevation's coarse octaves run from 2^16 plots (1,966 km): continents and oceans. |
-| 217 | `World.ELEV_COARSE_LO` | `9` | ...down to 2^9 plots (15 km): coasts and bays. |
-| 220 | `World.ELEV_FINE_HI` | `8` | Elevation's fine octaves run from 2^8 plots (7.7 km)... |
-| 223 | `World.ELEV_FINE_LO` | `4` | ...down to 2^4 plots (480 m): headlands, coves and islets. |
-| 226 | `World.ELEV_COARSE_WEIGHT` | `0.85` | The coarse octaves' share of the elevation: 0.85, so the coast is the continents' and the fine octaves only fray it. |
-| 229 | `World.ELEV_FINE_WEIGHT` | `0.15` | The fine octaves' share: the rest, 0.15. |
-| 232 | `World.LAKE_HI` | `10` | The lake field's octaves run from 2^10 plots (30.7 km)... |
-| 235 | `World.LAKE_LO` | `5` | ...down to 2^5 plots (960 m). |
-| 238 | `World.FOREST_HI` | `8` | The forest field's octaves run from 2^8 plots (7.7 km)... |
-| 241 | `World.FOREST_LO` | `5` | ...down to 2^5 plots (960 m). |
-| 244 | `World.SEA_SHARE` | `0.71` | The share of the world that is sea: 71%, the Earth's. |
-| 256 | `World.SEA_SAMPLES` | `4` | Elevation samples a world cell the sea's level is found from: 4, one at a hashed point in each quarter of the cell (541,696 in all). |
-| 259 | `World.LAKE_SHARE` | `0.037` | Lakes' share of land: 3.7%, of the Earth's non-glaciated land (Verpoorter 2014). |
-| 269 | `World.LAKE_THETA` | `0.7092` | The lake field's level from which ground is a lake: 0.7092, the 96.3rd percentile of the field over land (LAKE_SHARE) - measured 0.7088 to 0.7095 over five seeds, a million points each, off the lat... |
-| 272 | `World.FOREST_SHARE` | `0.31` | Forest's share of land: 31% (FAO 2020). |
-| 275 | `World.FOREST_THETA` | `0.5676` | The forest field's level from which land is forest: 0.5676, the 69th percentile of the field over land (FOREST_SHARE), measured 0.5672 to 0.5679 as LAKE_THETA was (the design's 0.595 makes 24% of l... |
-| 278 | `World.BEACH_BAND` | `0.0015` | How far above the sea's level, in the elevation field, land is beach: 0.0015. |
-| 292 | `World.SHELF_SHARE` | `0.0886` | The continental shelf's share of the sea: 8.86% (est., the shelf's share of the ocean's area, Harris et al. |
-| 295 | `World.SHELF_BREAK_M` | `140` | The depth of the shelf's edge, in metres: 140 (est., the mean shelf break - spec-oil 2.7 and 6, to confirm); depthAt() is this at shelfTheta(). |
-| 313 | `World.SITE_CELL_LAND_MIN` | `1` | The least land, in quarters of a cell's SEA_SAMPLES, a cell needs to be searched for a site: 1, 25%. |
-| 316 | `World.SITE_CELL_LAND_MAX` | `3` | The most: 3, 75% - a coast, not open sea or an interior. |
-| 319 | `World.SITE_STEP` | `17` | The spiral's step: 17 plots (510 m) between rings, and the ring's points about that far apart (six a ring per ring). |
-| 322 | `World.SITE_RINGS` | `70` | Rings in a cell's spiral: 70, out to 1,173 plots (35 km), past the cell's own half-width of 1,024. |
-| 325 | `World.SITE_DRY_PLOTS` | `20` | Test 1: the site and eight points this far round it are dry ground, in plots: 20 (600 m), room for a new city's centre - since 0.7.67 rings of 120 m blocks round the site's own, on the default worl... |
-| 328 | `World.SITE_LAND_SHARE` | `0.6` | Test 2: of SITE_LAND_SAMPLES points within 5 km, at least this share are land: 60%. |
-| 331 | `World.SITE_LAND_SAMPLES` | `48` | ...over 48 points, at 1.5, 3 and 5 km in turn round the compass. |
-| 334 | `World.SITE_LAND_RADII` | `{ 50, 100, 167 }` | ...at these radii, in plots: 50, 100 and 167 (1.5, 3 and 5 km). |
-| 337 | `World.SITE_SEA_NOT_WITHIN` | `45` | Test 3: no sea within this many plots in 16 directions: 45 (1.35 km). |
-| 340 | `World.SITE_SEA_WITHIN` | `70` | ...but sea within this many in at least one: 70 (2.1 km) - a coast with room for a town. |
-| 351 | `World.SITE_IRON_KM` | `2` | Test 4 (spec-land star), the conversion's alone since 0.7.99: an iron field's centre within this many km of the old world's fields (legacyFieldsInCell()) - the mockup put deposits near the site "so... |
-| 362 | `World.RIVER_SEA_DIRECTIONS` | `32` | Directions the sea is looked for in, round the site: 32. |
-| 365 | `World.RIVER_SEA_REACH` | `100` | ...out to this many plots, from SITE_SEA_NOT_WITHIN: 100 (3 km). |
-| 368 | `World.RIVER_SEA_STEP` | `5` | ...in steps of this many plots: 5. |
-| 371 | `World.RIVER_LAKE_TRIES` | `32` | Tries at a lake whose shore is dry: 32. |
-| 374 | `World.RIVER_LAKE_FAN` | `1.7` | The lake's bearing from the site: opposite the sea, give or take half of this many radians: 1.7. |
-| 377 | `World.RIVER_LAKE_NEAR` | `64` | The lake's centre this many plots from the site, at the least: 64 (1.9 km)... |
-| 380 | `World.RIVER_LAKE_SPAN` | `26` | ...plus up to this many: 26, so 64 to 90 plots (1.9 to 2.7 km). |
-| 383 | `World.LAKE_R_MIN` | `11` | The lake's radius in plots, at the least: 11 (330 m)... |
-| 386 | `World.LAKE_R_SPAN` | `6` | ...plus up to this many: 6, so 11 to 17 plots. |
-| 389 | `World.LAKE_SHORE` | `1.6` | The lake's shore is tested this many radii out: 1.6... |
-| 392 | `World.LAKE_SHORE_RISE` | `0.003` | ...for ground this far above the sea's level: 0.003, two beaches. |
-| 395 | `World.RIVER_PASS_MIN` | `8` | The river passes the site at least this many plots to one side: 8 (240 m)... |
-| 398 | `World.RIVER_PASS_SPAN` | `12` | ...plus up to this many: 12, so 8 to 20 plots. |
-| 401 | `World.RIVER_PASS_REACHED` | `10` | Within this many plots of its passing point the river turns for the sea: 10. |
-| 404 | `World.RIVER_STEP` | `3` | Plots the river moves a step: 3 (90 m). |
-| 407 | `World.RIVER_WANDER` | `0.75` | Its heading wanders by up to half this many radians a step: 0.75... |
-| 410 | `World.RIVER_STEER` | `0.25` | ...and turns this share of the way to its target a step: 0.25. |
-| 413 | `World.RIVER_MAX_STEPS` | `500` | The most steps it takes: 500 (45 km). |
-| 416 | `World.RIVER_MOUTH` | `0.002` | It ends where the elevation is this far under the sea's level: 0.002. |
-| 419 | `World.RIVER_HALF_WIDTH` | `1.0` | Its half-width at the lake, in plots: 1 (a 60 m river)... |
-| 422 | `World.RIVER_WIDENS` | `0.95` | ...growing by this many plots to the sea: 0.95, so 1.95 at the mouth (117 m). |
-| 455 | `World.FIELD_TAIL` | `1.5` | How heavy the tail of a field's size is: 1.5, so P(sites >= k) = k^-1.5 - most small, a few huge. |
-| 458 | `World.LEGACY_MAX_SITES` | `512` | The most sites one of the old world's fields holds: 512 (the cap of the tail's draw, sites()). |
-| 461 | `World.MEAN_SITES` | `meanSites()` | The mean sites one of the old world's fields: the sum of k^-1.5 for k = 1 to LEGACY_MAX_SITES, 2.524 - exact for the capped tail, since P(sites >= k) = k^-1.5. |
-| 464 | `World.RICHNESS_MIN` | `0.6` | A cell's richness, its total against its count's mean, at the least: 0.6... |
-| 467 | `World.RICHNESS_SPAN` | `0.8` | ...plus up to this: 0.8, so 0.6 to 1.4, with a mean of one. |
-| 470 | `World.SEA_REDRAWS` | `8` | Times a field centred in the sea is drawn again: 8, since ore lies under land. |
-| 473 | `World.POISSON_NORMAL_ABOVE` | `40` | Above this mean a cell's count is drawn as a rounded normal rather than by inversion: 40. |
-| 476 | `World.FOREST_M3_PER_KM2` | `13_700` | Standing timber a square kilometre of forest, in cubic metres: 13,700 (FAO 2020: 557 billion m3 on 4.06 billion hectares). |
-| 524 | `World.FIELD_SCALE` | `10` | How many of the old world's fields one field stands for: 10 (Jerus, 2026-10-08: "a tenth as many fields, each ten times bigger", the world's totals as they were). |
-| 555 | `World.EARTH_FIELD_SCALE` | `3` | On Earth a field stands for FIELD_SCALE x this of the old world's fields: three, so the Earth's fields are a third as many, each three times wider (EG1; Jerus, 2026-10-08, "huge and rare"; est.). |
-| 558 | `World.MAX_SITES` | `FIELD_SCALE * EARTH_FIELD_SCALE * LEGACY_MAX_SITES` | The most sites one field holds, on Earth: FIELD_SCALE x EARTH_FIELD_SCALE of the old world's largest, 15,360 (a generated world's, 5,120, are its first places). |
-| 561 | `World.CLUSTER_FIELDS` | `10` | The fields a cluster holds on the mean: 10 (★W1-2, est.: Jerus's "very big clusters" - ten fields a cluster, as a field is ten of the old). |
-| 564 | `World.POOL_CLUSTERS` | `10` | The clusters a pool of land holds on the mean, at the least: 10 (★W1-2, est.): enough that a pool's clusters lie where the draws put them, not one a pool on a lattice - a pool a quarter land still ... |
-| 567 | `World.FIELD_INDEX_FROM` | `1<<16` | The first number a field is listed under in its cell: 65,536, past any old world's field's (a cell held at most 868 of them on the default world, iron's). |
-| 570 | `World.POOLS_KEPT` | `256` | Pools kept, by resource and place: 256 (an iron pool is about 300 fields, some 15 KB). |
-| 573 | `World.POOL_SALT` | `0x5EB0C1A5L` | The stream a pool is drawn from. |
-| 580 | `World.WORLDS_KEPT` | `4` | How many worlds World.of() keeps: 4, the city's and a few the founding screen looked at (about 0.3 MB each). |
-| 582 | `World.KEPT` | `new LinkedHashMap<>(8, 0.75f, true) { @ Override protected boolean removeEldestEntry(Ma...` |  |
-| 616 | `World.KEPT_EARTH` | `new LinkedHashMap<>(8, 0.75f, true) { @ Override protected boolean removeEldestEntry(Ma...` | Earth worlds kept as World.of(key) is asked for them: WORLDS_KEPT, apart from the generated, so those are kept as they were. |
-| 744 | `World.F_ELEV` | `0x1111, F_ELEV_FINE = F_ELEV ^ 0x55, F_LAKE = 0x2222, F_FOREST = 0x3333` | The fields' keys: what makes one field's octaves another's. |
-| 747 | `World.AMP` | `new double [ ELEV_COARSE_HI + 1 ]` | OCTAVE_FALLOFF to the power n, by repeated multiplication - the order fbm() has always summed in. |
-| 763 | `World.NORM_COARSE` | `norm(ELEV_COARSE_HI, ELEV_COARSE_LO), NORM_FINE = norm(ELEV_FINE_HI, ELEV_FINE_LO), NOR...` |  |
-| 1254 | `World.SMOOTH` | `new double [ ELEV_COARSE_HI + 1 ][]` | The smoothstep at a plot's centre within an octave's lattice cell, for every wavelength 2^k: SMOOTH[k][f] for f = 0 .. |
-| 1273 | `World.SCRATCH` | `ThreadLocal.withInitial(TileScratch : : new)` |  |
-| 1415 | `World.LineScratch.CORNERS` | `64` | The corners it keeps: 64 slots, picked by the top six bits of the corner's hash. |
-| 1432 | `World.LINE_SCRATCH` | `ThreadLocal.withInitial(LineScratch : : new)` | Each thread's LineScratch, made on its first line. |
-| 1741 | `World.POOL_SIDE` | `new int [ Resource.values().length ]` | Each resource's pool side in cells, in Resource's order (poolCells()). |
-| 1794 | `World.NO_POOL` | `new Pool(new long [ 0 ], new long [ 0 ], new int [ 0 ], new double [ 0 ], 0, 0)` | The pool of a place whose land cells hold no old draw of the resource: no field, no tonnes. |
+| 179 | `World.FLAT` | `0` | Flat ground (ET1, spec-earth2-terrain 3.1): under a 10% grade, the relief of every plot of a generated world (D19) and of the Earth's water, ice and anything else the slope plane says nothing of - ... |
+| 182 | `World.FOOTHILL` | `1` | Foothill (ET1; D4): a grade of 10% to under 30% (5.7 to 16.7 degrees) - buildable, with preparation (a later batch prices it). |
+| 185 | `World.STEEP` | `2` | Steep (ET1; D4): a grade of 30% to under 60% (16.7 to 31 degrees) - no building stands on it (buildable()); works that may stand anywhere do (workable()). |
+| 188 | `World.VERY_STEEP` | `3` | Very steep (ET1; D4): a grade of 60% or more (31 degrees and over) - no building stands on it (buildable()). |
+| 191 | `World.RELIEFS` | `4` | How many relief classes there are: 4, FLAT to VERY_STEEP - the length of an array a relief indexes. |
+| 225 | `World.OCTAVE_FALLOFF` | `0.55` | Each octave's amplitude against the one above it: 0.55, a little rougher than classic fractal noise's half (the mockup's terrain, scaled to plots). |
+| 228 | `World.ELEV_COARSE_HI` | `16` | Elevation's coarse octaves run from 2^16 plots (1,966 km): continents and oceans. |
+| 231 | `World.ELEV_COARSE_LO` | `9` | ...down to 2^9 plots (15 km): coasts and bays. |
+| 234 | `World.ELEV_FINE_HI` | `8` | Elevation's fine octaves run from 2^8 plots (7.7 km)... |
+| 237 | `World.ELEV_FINE_LO` | `4` | ...down to 2^4 plots (480 m): headlands, coves and islets. |
+| 240 | `World.ELEV_COARSE_WEIGHT` | `0.85` | The coarse octaves' share of the elevation: 0.85, so the coast is the continents' and the fine octaves only fray it. |
+| 243 | `World.ELEV_FINE_WEIGHT` | `0.15` | The fine octaves' share: the rest, 0.15. |
+| 246 | `World.LAKE_HI` | `10` | The lake field's octaves run from 2^10 plots (30.7 km)... |
+| 249 | `World.LAKE_LO` | `5` | ...down to 2^5 plots (960 m). |
+| 252 | `World.FOREST_HI` | `8` | The forest field's octaves run from 2^8 plots (7.7 km)... |
+| 255 | `World.FOREST_LO` | `5` | ...down to 2^5 plots (960 m). |
+| 258 | `World.SEA_SHARE` | `0.71` | The share of the world that is sea: 71%, the Earth's. |
+| 270 | `World.SEA_SAMPLES` | `4` | Elevation samples a world cell the sea's level is found from: 4, one at a hashed point in each quarter of the cell (541,696 in all). |
+| 273 | `World.LAKE_SHARE` | `0.037` | Lakes' share of land: 3.7%, of the Earth's non-glaciated land (Verpoorter 2014). |
+| 283 | `World.LAKE_THETA` | `0.7092` | The lake field's level from which ground is a lake: 0.7092, the 96.3rd percentile of the field over land (LAKE_SHARE) - measured 0.7088 to 0.7095 over five seeds, a million points each, off the lat... |
+| 286 | `World.FOREST_SHARE` | `0.31` | Forest's share of land: 31% (FAO 2020). |
+| 289 | `World.FOREST_THETA` | `0.5676` | The forest field's level from which land is forest: 0.5676, the 69th percentile of the field over land (FOREST_SHARE), measured 0.5672 to 0.5679 as LAKE_THETA was (the design's 0.595 makes 24% of l... |
+| 292 | `World.BEACH_BAND` | `0.0015` | How far above the sea's level, in the elevation field, land is beach: 0.0015. |
+| 306 | `World.SHELF_SHARE` | `0.0886` | The continental shelf's share of the sea: 8.86% (est., the shelf's share of the ocean's area, Harris et al. |
+| 309 | `World.SHELF_BREAK_M` | `140` | The depth of the shelf's edge, in metres: 140 (est., the mean shelf break - spec-oil 2.7 and 6, to confirm); depthAt() is this at shelfTheta(). |
+| 327 | `World.SITE_CELL_LAND_MIN` | `1` | The least land, in quarters of a cell's SEA_SAMPLES, a cell needs to be searched for a site: 1, 25%. |
+| 330 | `World.SITE_CELL_LAND_MAX` | `3` | The most: 3, 75% - a coast, not open sea or an interior. |
+| 333 | `World.SITE_STEP` | `17` | The spiral's step: 17 plots (510 m) between rings, and the ring's points about that far apart (six a ring per ring). |
+| 336 | `World.SITE_RINGS` | `70` | Rings in a cell's spiral: 70, out to 1,173 plots (35 km), past the cell's own half-width of 1,024. |
+| 339 | `World.SITE_DRY_PLOTS` | `20` | Test 1: the site and eight points this far round it are dry ground, in plots: 20 (600 m), room for a new city's centre - since 0.7.67 rings of 120 m blocks round the site's own, on the default worl... |
+| 342 | `World.SITE_LAND_SHARE` | `0.6` | Test 2: of SITE_LAND_SAMPLES points within 5 km, at least this share are land: 60%. |
+| 345 | `World.SITE_LAND_SAMPLES` | `48` | ...over 48 points, at 1.5, 3 and 5 km in turn round the compass. |
+| 348 | `World.SITE_LAND_RADII` | `{ 50, 100, 167 }` | ...at these radii, in plots: 50, 100 and 167 (1.5, 3 and 5 km). |
+| 351 | `World.SITE_SEA_NOT_WITHIN` | `45` | Test 3: no sea within this many plots in 16 directions: 45 (1.35 km). |
+| 354 | `World.SITE_SEA_WITHIN` | `70` | ...but sea within this many in at least one: 70 (2.1 km) - a coast with room for a town. |
+| 365 | `World.SITE_IRON_KM` | `2` | Test 4 (spec-land star), the conversion's alone since 0.7.99: an iron field's centre within this many km of the old world's fields (legacyFieldsInCell()) - the mockup put deposits near the site "so... |
+| 376 | `World.RIVER_SEA_DIRECTIONS` | `32` | Directions the sea is looked for in, round the site: 32. |
+| 379 | `World.RIVER_SEA_REACH` | `100` | ...out to this many plots, from SITE_SEA_NOT_WITHIN: 100 (3 km). |
+| 382 | `World.RIVER_SEA_STEP` | `5` | ...in steps of this many plots: 5. |
+| 385 | `World.RIVER_LAKE_TRIES` | `32` | Tries at a lake whose shore is dry: 32. |
+| 388 | `World.RIVER_LAKE_FAN` | `1.7` | The lake's bearing from the site: opposite the sea, give or take half of this many radians: 1.7. |
+| 391 | `World.RIVER_LAKE_NEAR` | `64` | The lake's centre this many plots from the site, at the least: 64 (1.9 km)... |
+| 394 | `World.RIVER_LAKE_SPAN` | `26` | ...plus up to this many: 26, so 64 to 90 plots (1.9 to 2.7 km). |
+| 397 | `World.LAKE_R_MIN` | `11` | The lake's radius in plots, at the least: 11 (330 m)... |
+| 400 | `World.LAKE_R_SPAN` | `6` | ...plus up to this many: 6, so 11 to 17 plots. |
+| 403 | `World.LAKE_SHORE` | `1.6` | The lake's shore is tested this many radii out: 1.6... |
+| 406 | `World.LAKE_SHORE_RISE` | `0.003` | ...for ground this far above the sea's level: 0.003, two beaches. |
+| 409 | `World.RIVER_PASS_MIN` | `8` | The river passes the site at least this many plots to one side: 8 (240 m)... |
+| 412 | `World.RIVER_PASS_SPAN` | `12` | ...plus up to this many: 12, so 8 to 20 plots. |
+| 415 | `World.RIVER_PASS_REACHED` | `10` | Within this many plots of its passing point the river turns for the sea: 10. |
+| 418 | `World.RIVER_STEP` | `3` | Plots the river moves a step: 3 (90 m). |
+| 421 | `World.RIVER_WANDER` | `0.75` | Its heading wanders by up to half this many radians a step: 0.75... |
+| 424 | `World.RIVER_STEER` | `0.25` | ...and turns this share of the way to its target a step: 0.25. |
+| 427 | `World.RIVER_MAX_STEPS` | `500` | The most steps it takes: 500 (45 km). |
+| 430 | `World.RIVER_MOUTH` | `0.002` | It ends where the elevation is this far under the sea's level: 0.002. |
+| 433 | `World.RIVER_HALF_WIDTH` | `1.0` | Its half-width at the lake, in plots: 1 (a 60 m river)... |
+| 436 | `World.RIVER_WIDENS` | `0.95` | ...growing by this many plots to the sea: 0.95, so 1.95 at the mouth (117 m). |
+| 469 | `World.FIELD_TAIL` | `1.5` | How heavy the tail of a field's size is: 1.5, so P(sites >= k) = k^-1.5 - most small, a few huge. |
+| 472 | `World.LEGACY_MAX_SITES` | `512` | The most sites one of the old world's fields holds: 512 (the cap of the tail's draw, sites()). |
+| 475 | `World.MEAN_SITES` | `meanSites()` | The mean sites one of the old world's fields: the sum of k^-1.5 for k = 1 to LEGACY_MAX_SITES, 2.524 - exact for the capped tail, since P(sites >= k) = k^-1.5. |
+| 478 | `World.RICHNESS_MIN` | `0.6` | A cell's richness, its total against its count's mean, at the least: 0.6... |
+| 481 | `World.RICHNESS_SPAN` | `0.8` | ...plus up to this: 0.8, so 0.6 to 1.4, with a mean of one. |
+| 484 | `World.SEA_REDRAWS` | `8` | Times a field centred in the sea is drawn again: 8, since ore lies under land. |
+| 487 | `World.POISSON_NORMAL_ABOVE` | `40` | Above this mean a cell's count is drawn as a rounded normal rather than by inversion: 40. |
+| 490 | `World.FOREST_M3_PER_KM2` | `13_700` | Standing timber a square kilometre of forest, in cubic metres: 13,700 (FAO 2020: 557 billion m3 on 4.06 billion hectares). |
+| 538 | `World.FIELD_SCALE` | `10` | How many of the old world's fields one field stands for: 10 (Jerus, 2026-10-08: "a tenth as many fields, each ten times bigger", the world's totals as they were). |
+| 569 | `World.EARTH_FIELD_SCALE` | `3` | On Earth a field stands for FIELD_SCALE x this of the old world's fields: three, so the Earth's fields are a third as many, each three times wider (EG1; Jerus, 2026-10-08, "huge and rare"; est.). |
+| 572 | `World.MAX_SITES` | `FIELD_SCALE * EARTH_FIELD_SCALE * LEGACY_MAX_SITES` | The most sites one field holds, on Earth: FIELD_SCALE x EARTH_FIELD_SCALE of the old world's largest, 15,360 (a generated world's, 5,120, are its first places). |
+| 575 | `World.CLUSTER_FIELDS` | `10` | The fields a cluster holds on the mean: 10 (★W1-2, est.: Jerus's "very big clusters" - ten fields a cluster, as a field is ten of the old). |
+| 578 | `World.POOL_CLUSTERS` | `10` | The clusters a pool of land holds on the mean, at the least: 10 (★W1-2, est.): enough that a pool's clusters lie where the draws put them, not one a pool on a lattice - a pool a quarter land still ... |
+| 581 | `World.FIELD_INDEX_FROM` | `1<<16` | The first number a field is listed under in its cell: 65,536, past any old world's field's (a cell held at most 868 of them on the default world, iron's). |
+| 584 | `World.POOLS_KEPT` | `256` | Pools kept, by resource and place: 256 (an iron pool is about 300 fields, some 15 KB). |
+| 587 | `World.POOL_SALT` | `0x5EB0C1A5L` | The stream a pool is drawn from. |
+| 594 | `World.WORLDS_KEPT` | `4` | How many worlds World.of() keeps: 4, the city's and a few the founding screen looked at (about 0.3 MB each). |
+| 596 | `World.KEPT` | `new LinkedHashMap<>(8, 0.75f, true) { @ Override protected boolean removeEldestEntry(Ma...` |  |
+| 630 | `World.KEPT_EARTH` | `new LinkedHashMap<>(8, 0.75f, true) { @ Override protected boolean removeEldestEntry(Ma...` | Earth worlds kept as World.of(key) is asked for them: WORLDS_KEPT, apart from the generated, so those are kept as they were. |
+| 758 | `World.F_ELEV` | `0x1111, F_ELEV_FINE = F_ELEV ^ 0x55, F_LAKE = 0x2222, F_FOREST = 0x3333` | The fields' keys: what makes one field's octaves another's. |
+| 761 | `World.AMP` | `new double [ ELEV_COARSE_HI + 1 ]` | OCTAVE_FALLOFF to the power n, by repeated multiplication - the order fbm() has always summed in. |
+| 777 | `World.NORM_COARSE` | `norm(ELEV_COARSE_HI, ELEV_COARSE_LO), NORM_FINE = norm(ELEV_FINE_HI, ELEV_FINE_LO), NOR...` |  |
+| 1268 | `World.SMOOTH` | `new double [ ELEV_COARSE_HI + 1 ][]` | The smoothstep at a plot's centre within an octave's lattice cell, for every wavelength 2^k: SMOOTH[k][f] for f = 0 .. |
+| 1287 | `World.SCRATCH` | `ThreadLocal.withInitial(TileScratch : : new)` |  |
+| 1429 | `World.LineScratch.CORNERS` | `64` | The corners it keeps: 64 slots, picked by the top six bits of the corner's hash. |
+| 1446 | `World.LINE_SCRATCH` | `ThreadLocal.withInitial(LineScratch : : new)` | Each thread's LineScratch, made on its first line. |
+| 1755 | `World.POOL_SIDE` | `new int [ Resource.values().length ]` | Each resource's pool side in cells, in Resource's order (poolCells()). |
+| 1808 | `World.NO_POOL` | `new Pool(new long [ 0 ], new long [ 0 ], new int [ 0 ], new double [ 0 ], 0, 0)` | The pool of a place whose land cells hold no old draw of the resource: no field, no tonnes. |
 
 ### WorldEconomy.java ([map](map/WorldEconomy.md))
 
@@ -3291,23 +3341,23 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 383 | `BuildScreen.CITY_DOT` | `Palette.MONEY` | The colour of "only the city builds these": the money blue - the city's own account. |
 | 386 | `BuildScreen.INVESTOR_DOT` | `Palette.BUSINESS` | The colour of "investors build these too": the business violet. |
 | 612 | `BuildScreen.LAND_FREE_CELL` | `236` | LAND FREE's width with its shortcut under it: the cell's own 190 and room for the shortcut's words on one line. |
-| 921 | `BuildScreen.PAVE_HEAD` | `"PAVE TO A PAVED ROAD"` | The paving's heading on the Gravel Road card. |
-| 924 | `BuildScreen.PAVE_TAG` | `"paving beats a new Paved Road"` | ...its tag, when paving beats a new Paved Road over its life a trip. |
-| 927 | `BuildScreen.PAVE_INFO` | `"Paving lays a Paved Road on a gravel road's ground: a Paved Road's price, less the" + ...` | ...and the (i) on its two figures: what it costs and why it may win. |
-| 1037 | `BuildScreen.ROAD_TAG` | `"cheapest per trip over its life"` | A road card's first tag (0.7.70): the cheapest a trip off the road over its life, its ground in it - BuildCard.ROAD_PER, shortened. |
-| 1040 | `BuildScreen.ROAD_OFF` | `"trip off the road"` | ...and what its land bar is per: a trip it takes off the road (BuildAdvice.unit()). |
-| 2307 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
-| 2974 | `BuildScreen.AUTO_CHIP` | `"Automatic building on ›"` | Build's heading chip on every page but the Overview while it is on: the way back to its cards. |
-| 2977 | `BuildScreen.AUTO_INFO` | `"Turned on, it orders every month what this page advises for the city's works - " + "po...` | The section's (i). |
-| 3003 | `BuildScreen.AUTO_DIAL` | `(1389 - Palette.RAIL - 36 - 20) / 3.0 - 24` | A dial's width in its card at the 1,389 window: a third of the page less the card's padding. |
-| 3144 | `BuildScreen.AUTO_CAP_TITLE` | `"THE HIGHEST YIELD ITS BOND WILL TAKE"` | The cap block's caption and (i) on automatic building's debt card (CD2, D28 and D30). |
-| 3145 | `BuildScreen.AUTO_CAP_INFO` | `"The most automatic building will pay to sell the " + Game.BUILD_BOND_YEARS + "-year bo...` |  |
-| 3155 | `BuildScreen.AUTO_CAP_LINE` | `"A sale that falls short at the cap keeps its ask open, offered again every month; " + ...` | The line under the chips: what a short sale does here (D30). |
-| 3159 | `BuildScreen.ASKS_INFO` | `"An order whose bond sold short at the cap waits here for its money, and the rest " + "...` | THE OPEN ASKS' heading (i). |
-| 3367 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
-| 4707 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
-| 5008 | `BuildScreen.PAYBACK_LINE` | `2 * NEED_CARD` | The pay-back line's width on the no-deposit page (0.7.101): two of Build's need cards, about as wide as the WHY section's hand-wrapped lines above it. |
-| 5542 | `BuildScreen.FUND_CAP_INFO` | `"The previews above are the auction for the cash this run is short of, at the " + "high...` | The cap block's (i) on the funding page (CD2, D30). |
+| 927 | `BuildScreen.PAVE_HEAD` | `"PAVE TO A PAVED ROAD"` | The paving's heading on the Gravel Road card. |
+| 930 | `BuildScreen.PAVE_TAG` | `"paving beats a new Paved Road"` | ...its tag, when paving beats a new Paved Road over its life a trip. |
+| 933 | `BuildScreen.PAVE_INFO` | `"Paving lays a Paved Road on a gravel road's ground: a Paved Road's price, less the" + ...` | ...and the (i) on its two figures: what it costs and why it may win. |
+| 1043 | `BuildScreen.ROAD_TAG` | `"cheapest per trip over its life"` | A road card's first tag (0.7.70): the cheapest a trip off the road over its life, its ground in it - BuildCard.ROAD_PER, shortened. |
+| 1046 | `BuildScreen.ROAD_OFF` | `"trip off the road"` | ...and what its land bar is per: a trip it takes off the road (BuildAdvice.unit()). |
+| 2397 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
+| 3065 | `BuildScreen.AUTO_CHIP` | `"Automatic building on ›"` | Build's heading chip on every page but the Overview while it is on: the way back to its cards. |
+| 3068 | `BuildScreen.AUTO_INFO` | `"Turned on, it orders every month what this page advises for the city's works - " + "po...` | The section's (i). |
+| 3094 | `BuildScreen.AUTO_DIAL` | `(1389 - Palette.RAIL - 36 - 20) / 3.0 - 24` | A dial's width in its card at the 1,389 window: a third of the page less the card's padding. |
+| 3235 | `BuildScreen.AUTO_CAP_TITLE` | `"THE HIGHEST YIELD ITS BOND WILL TAKE"` | The cap block's caption and (i) on automatic building's debt card (CD2, D28 and D30). |
+| 3236 | `BuildScreen.AUTO_CAP_INFO` | `"The most automatic building will pay to sell the " + Game.BUILD_BOND_YEARS + "-year bo...` |  |
+| 3246 | `BuildScreen.AUTO_CAP_LINE` | `"A sale that falls short at the cap keeps its ask open, offered again every month; " + ...` | The line under the chips: what a short sale does here (D30). |
+| 3250 | `BuildScreen.ASKS_INFO` | `"An order whose bond sold short at the cap waits here for its money, and the rest " + "...` | THE OPEN ASKS' heading (i). |
+| 3458 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
+| 4814 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
+| 5115 | `BuildScreen.PAYBACK_LINE` | `2 * NEED_CARD` | The pay-back line's width on the no-deposit page (0.7.101): two of Build's need cards, about as wide as the WHY section's hand-wrapped lines above it. |
+| 5684 | `BuildScreen.FUND_CAP_INFO` | `"The previews above are the auction for the cash this run is short of, at the " + "high...` | The cap block's (i) on the funding page (CD2, D30). |
 
 ### ChartFitBench.java ([map](map/ChartFitBench.md))
 
@@ -4362,7 +4412,7 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 724 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 980 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (997 constants)
+## harnesses (1016 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -4419,11 +4469,38 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 117 | `BondCheck.ISSUER` | `Sectors.CONSTRUCTION` | The sector every played fixture's bond is issued by: sound, owing nothing, with plant to borrow against. |
 
+### BridgeCheck.java ([map](map/BridgeCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 61 | `BridgeCheck.out` | `System.out` |  |
+| 62 | `BridgeCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 65 | `BridgeCheck.SEED` | `Founding.DEFAULT_WORLD_SEED` | The seed every world here is drawn with: the default world's. |
+| 73 | `BridgeCheck.SURVEY_BUDGET_MS` | `10_000` | How long a survey may take on the Earth, milliseconds: 10,000. |
+| 76 | `BridgeCheck.BAY_BUDGET_MS` | `10_000` | The worst case of a synthetic bay a bridge can be as long as, milliseconds: the survey of 1.7 million plots of open shallow water. |
+| 102 | `BridgeCheck.DEEP_M` | `100` | The depth the grid gives a plot nobody set: deep sea. |
+| 200 | `BridgeCheck.ISLAND` | `2, HOME = 1` | The far island's landmass id and home's, in every grid here. |
+| 911 | `BridgeCheck.SHORE_SQUARE` | `128` | Plots a side of the squares the full-file crossings buy at each shore. |
+
+### BridgeMapCheck.java ([map](map/BridgeMapCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 85 | `BridgeMapCheck.SITE` | `IslandNetCheck.SITE` | The founding site of the runs' ground: a highway line crossing, so that the hub is the site itself. |
+| 88 | `BridgeMapCheck.ROAD` | `CityMap.BridgeRun.ROAD, HIGHWAY = CityMap.BridgeRun.HIGHWAY, RAIL = CityMap.BridgeRun.RAIL` | The kinds, short. |
+| 174 | `BridgeMapCheck.W0` | `SITE - 700, W1 = SITE + 150, E0 = SITE + 221, E1 = SITE + 721, Y0 = SITE - 450, Y1 = SI...` | The runs' ground: the west island (to x = SITE + 150), a channel of 70 plots unowned between, the east island from SITE + 221. |
+| 177 | `BridgeMapCheck.HW` | `{ W1, SITE + 40, SITE + 170, SITE + 40, SITE + 182, SITE + 52, E0, SITE + 52 }` | The highway bridge: out of the west island's shore plot, east, a 45-degree stretch, east into the east island's first column. |
+| 179 | `BridgeMapCheck.RL` | `{ W1, SITE + 40, SITE + 160, SITE + 30, E0 + 1, SITE + 30 }` | The rail bridge: out of the same landing, north-east, then east. |
+| 181 | `BridgeMapCheck.RD` | `{ W1, SITE - 60, E0, SITE - 60 }` | The road bridge: straight across, a row above. |
+| 380 | `BridgeMapCheck.MOST_WIDE` | `140` | The most plots wide a channel may be for the fixture: the bridges are paths of a hundred plots, not thousands. |
+| 383 | `BridgeMapCheck.BAND` | `24` | Rows of the band either side of its middle row. |
+| 579 | `BridgeMapCheck.MapFixture.APPROACH` | `14` | How far inland of the shore a bridge's landing may be chosen, in plots: the city builds on a bank's first plots in a few rows only. |
+
 ### BuildCardCheck.java ([map](map/BuildCardCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 936 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING }...` | The examples: a word shaped as the model files it, and the kind it must read as. |
+| 949 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING }...` | The examples: a word shaped as the model files it, and the kind it must read as. |
 
 ### BuildersFirstCheck.java ([map](map/BuildersFirstCheck.md))
 
@@ -4613,6 +4690,13 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 20 | `CreditCheck.IND` | `Sectors.INDUSTRY` |  |
+
+### CrossingCheck.java ([map](map/CrossingCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 161 | `CrossingCheck.TOP` | `160` | The plan's frame row (or column) at which a band of water starts across it (PlanCheck 10 (e)'s: south of the hub, with district to spare either side). |
+| 164 | `CrossingCheck.ARTERIAL_LINES` | `(DistrictPlan.FRAME - 1) / DistrictPlan.CELL + 1` | How many lines of the plan's frame are an arterial's: the multiples of CELL (a district's lines), the frame's first and last among them. |
 
 ### CurrencyCheck.java ([map](map/CurrencyCheck.md))
 
@@ -4904,12 +4988,12 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 118 | `GatewayCheck.COAST_TRACK_TIMES` | `10` | The coast fixture's railway: each track type's count times this, 10 - enough track that the railway's gate arm reaches the coast and waits at the sea (section 16). |
-| 121 | `GatewayCheck.HALIFAX_LAT` | `44.656780322078724, HALIFAX_LON = - 63.613890005401984` | Jerus's founding site, Halifax (section 17), in degrees. |
-| 124 | `GatewayCheck.MOST_HIGHWAYS` | `20` | The most Elevated Highways section 19 tries when it looks for the count that reaches a street. |
-| 127 | `GatewayCheck.EPS` | `1e-9` | The tolerance of a position in plots or pixels, well below anything either measures. |
-| 799 | `GatewayCheck.VIEW_W` | `1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13` | The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. |
-| 861 | `GatewayCheck.LABEL_BOTH_W` | `LABEL_W * LandMap.WORLD_BOTH_WORDS.length() /(double) LandMap.WORLD_WORDS.length()` | The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). |
+| 122 | `GatewayCheck.COAST_TRACK_TIMES` | `10` | The coast fixture's railway: each track type's count times this, 10 - enough track that the railway's gate arm reaches the coast and waits at the sea (section 16). |
+| 125 | `GatewayCheck.HALIFAX_LAT` | `44.656780322078724, HALIFAX_LON = - 63.613890005401984` | Jerus's founding site, Halifax (section 17), in degrees. |
+| 128 | `GatewayCheck.MOST_HIGHWAYS` | `20` | The most Elevated Highways section 19 tries when it looks for the count that reaches a street. |
+| 131 | `GatewayCheck.EPS` | `1e-9` | The tolerance of a position in plots or pixels, well below anything either measures. |
+| 803 | `GatewayCheck.VIEW_W` | `1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13` | The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. |
+| 865 | `GatewayCheck.LABEL_BOTH_W` | `LABEL_W * LandMap.WORLD_BOTH_WORDS.length() /(double) LandMap.WORLD_WORDS.length()` | The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). |
 
 ### GlobeCheck.java ([map](map/GlobeCheck.md))
 
@@ -5690,14 +5774,14 @@ Generated 2026-10-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 3267 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 3332 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ### SaveSlotCheck.java ([map](map/SaveSlotCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 348 | `SaveSlotCheck.GROWN_MONTHS` | `180` | How many months 7c grows its city: long enough that the lists and books a city reaches by itself hold something - the inbox is empty at month 124 of this fixture and has a notice by 183, the bonds'... |
-| 658 | `SaveSlotCheck.SILENT` | `new PrintStream(OutputStream.nullOutputStream())` | The stream the model's per-month printing goes to while 7c steps months: each month prints some forty lines, and nobody reads them here. |
+| 670 | `SaveSlotCheck.SILENT` | `new PrintStream(OutputStream.nullOutputStream())` | The stream the model's per-month printing goes to while 7c steps months: each month prints some forty lines, and nobody reads them here. |
 
 ### ScaleCheck.java ([map](map/ScaleCheck.md))
 

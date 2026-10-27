@@ -1,6 +1,6 @@
 # BuildingVisual.java - 541 lines · 24 methods · 60 constants · model
 
-`ham/citybuildersim/BuildingVisual.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingVisual.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which kind, whether it stands on a resource's sites, and whether the map places it from the outside of the city in.
 > 

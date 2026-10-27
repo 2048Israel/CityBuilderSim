@@ -1,6 +1,6 @@
 # KnownRedsCheck.java - 311 lines · 15 methods · 6 constants · harnesses
 
-`ham/citybuildersim/KnownRedsCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/KnownRedsCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The harness for AllChecks' known reds (batch FW7): a failed harness is said
 > to be a known red or a NEW one against main's record, line by line, and

@@ -113,6 +113,9 @@ reviewed by Opus: A the short crossings, B the long bridge orders (model, save, 
   BuildingsTemplate left to the gate). The first run's only new red was GatewayCheck 17 (above); the run after it,
   exit 3: main's recorded MapCheck red the only red; Stale 0 firm findings; the maps regenerated. The review line
   names saves (`DataSave.bridges`).
+- **Sent back from the gate, 2026-10-27**: TimingCheck held that BridgeCheck compared its three survey times against
+  `BAY_BUDGET_MS` and `SURVEY_BUDGET_MS` outside `Timing`. Each is now two assertions, the answer plain and the time
+  through `Timing.below`; BridgeCheck prints through `Timing.verdict` and is in `Timing.HARNESSES`. No budget moved.
 
 ## 5. Not done (ET6-C)
 

@@ -1,6 +1,6 @@
 # Bridges.java - 315 lines · 30 methods · 4 constants · model
 
-`ham/citybuildersim/Bridges.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Bridges.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the
 > landmass at each end, its length, the depth of the water under it, the chain of plots it runs along as its corner plots,

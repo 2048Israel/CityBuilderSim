@@ -1,6 +1,6 @@
-# BridgeCheck.java - 967 lines · 39 methods · 8 constants · harnesses
+# BridgeCheck.java - 970 lines · 39 methods · 8 constants · harnesses
 
-`ham/citybuildersim/BridgeCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BridgeCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The long bridges checked (ET6, 2026-10-26; docs/queue/ET6-notes.md): the survey of a crossing on grids of its own making and
 > on the Earth, what a span costs, the order in a played city on two landmasses, the bridge that links, the bridge nobody
@@ -46,7 +46,7 @@
 > 
 > Every premise is asserted before what rests on it.
 
-**Uses:** [BridgeWorks](BridgeWorks.md) (105), [World](World.md) (101), [BridgeSurvey](BridgeSurvey.md) (83), [LandmassCheck](LandmassCheck.md) (83), [Game](Game.md) (35), [Bridges](Bridges.md) (27), [BridgeView](BridgeView.md) (23), [Landmasses](Landmasses.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (10), [BuildCard](BuildCard.md) (9), [EarthData](EarthData.md) (8), [Founding](Founding.md) (5), [EarthCheck](EarthCheck.md) (3), [LandManager](LandManager.md) (3), [GameFiles](GameFiles.md) (3), [BuildAdvice](BuildAdvice.md) (3), [EarthTerrain](EarthTerrain.md) (2), [RunWorks](RunWorks.md) (2), [CityMap](CityMap.md) (2), [ConstructionControl](ConstructionControl.md) (2), [ReloadCheck](ReloadCheck.md) (2), [EarthSite](EarthSite.md) (2), [BuildingType](BuildingType.md) (1), [GameVersion](GameVersion.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
+**Uses:** [BridgeWorks](BridgeWorks.md) (105), [World](World.md) (101), [BridgeSurvey](BridgeSurvey.md) (83), [LandmassCheck](LandmassCheck.md) (83), [Game](Game.md) (35), [Bridges](Bridges.md) (27), [BridgeView](BridgeView.md) (23), [Landmasses](Landmasses.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (10), [BuildCard](BuildCard.md) (9), [EarthData](EarthData.md) (8), [Founding](Founding.md) (5), [Timing](Timing.md) (5), [EarthCheck](EarthCheck.md) (3), [LandManager](LandManager.md) (3), [GameFiles](GameFiles.md) (3), [BuildAdvice](BuildAdvice.md) (3), [EarthTerrain](EarthTerrain.md) (2), [RunWorks](RunWorks.md) (2), [CityMap](CityMap.md) (2), [ConstructionControl](ConstructionControl.md) (2), [ReloadCheck](ReloadCheck.md) (2), [EarthSite](EarthSite.md) (2), [BuildingType](BuildingType.md) (1), [GameVersion](GameVersion.md) (1), [SaveFileCheck](SaveFileCheck.md) (1)
 
 **Used by (1):** [SaveFileCheck](SaveFileCheck.md)
 
@@ -57,13 +57,13 @@
 | 97 | THE GROUND - a grid of the harness's own making |
 | 263 | MAIN |
 | 295 | 1. THE SURVEY |
-| 465 | 2. THE PRICE |
-| 533 | THE PLAYED CITY - Rotterdam with Goeree-Overflakkee's square, two landmasses |
-| 574 | 3. THE ORDER |
-| 750 | 4. NO DEMOLITION |
-| 773 | 5. THE SAVE |
-| 843 | 6. A GENERATED WORLD |
-| 904 | 7. THE FULL FILE |
+| 466 | 2. THE PRICE |
+| 534 | THE PLAYED CITY - Rotterdam with Goeree-Overflakkee's square, two landmasses |
+| 575 | 3. THE ORDER |
+| 752 | 4. NO DEMOLITION |
+| 775 | 5. THE SAVE |
+| 845 | 6. A GENERATED WORLD |
+| 906 | 7. THE FULL FILE |
 
 ## Constants
 
@@ -76,7 +76,7 @@
 | 76 | `BridgeCheck.BAY_BUDGET_MS` | `10_000` | The worst case of a synthetic bay a bridge can be as long as, milliseconds: the survey of 1.7 million plots of open shallow water. |
 | 102 | `BridgeCheck.DEEP_M` | `100` | The depth the grid gives a plot nobody set: deep sea. |
 | 200 | `BridgeCheck.ISLAND` | `2, HOME = 1` | The far island's landmass id and home's, in every grid here. |
-| 909 | `BridgeCheck.SHORE_SQUARE` | `128` | Plots a side of the squares the full-file crossings buy at each shore. |
+| 911 | `BridgeCheck.SHORE_SQUARE` | `128` | Plots a side of the squares the full-file crossings buy at each shore. |
 
 ## Fields (state)
 
@@ -89,13 +89,13 @@
 | 112 | `final Map<Long, double[]> depths` |  |
 | 113 | `long tileReads` |  |
 | 222 | `final Landmasses lms` |  |
-| 748 | `static LandmassCheck.City bridgeCityForSection4` | The city section 3 played, for section 4. |
+| 750 | `static LandmassCheck.City bridgeCityForSection4` | The city section 3 played, for section 4. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 910 | **type** `public class BridgeCheck` | The long bridges checked (ET6, 2026-10-26; docs/queue/ET6-notes.md): the survey of a crossing on grids of its own making and on the Earth, what a span costs, the order in a played city on two landmasses, the bridge th... |
+| 58 | 913 | **type** `public class BridgeCheck` | The long bridges checked (ET6, 2026-10-26; docs/queue/ET6-notes.md): the survey of a crossing on grids of its own making and on the Earth, what a span costs, the order in a played city on two landmasses, the bridge th... |
 | 78 | 4 | `static void check(String label, boolean ok)` |  |
 | 83 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 89 | 1 | `static boolean same(double a, double b)` | Two figures are one within a hundredth of a metre or a part in a billion. |
@@ -133,59 +133,59 @@
 |---:|---:|---|---|
 | 267 | 27 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE SURVEY (lines 295-464)
+### 1. THE SURVEY (lines 295-465)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 299 | 165 | `static void theSurvey()` |  |
+| 299 | 166 | `static void theSurvey()` |  |
 
-### 2. THE PRICE (lines 465-532)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 469 | 63 | `static void thePrice()` |  |
-
-### THE PLAYED CITY - Rotterdam with Goeree-Overflakkee's square, two landmasses (lines 533-573)
+### 2. THE PRICE (lines 466-533)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 538 | 3 | **type** `record Island(World.Key key, LandmassCheck.Square square)` | The fixture: the world, and the island square found by search with the model's own reader (LandmassCheck's). |
-| 539 | 1 | `int id()` _(in BridgeCheck.Island)_ |  |
-| 542 | 9 | `static Island islandFor(World.Key key)` |  |
-| 553 | 6 | `static LandmassCheck.City bridgeCity(Island f, String label)` | A city of forty houses and two builders' depots that owns the island square (unlinked, no bridge, nothing placed). |
-| 561 | 6 | `static GridGround seam(LandmassCheck.City c, Island f, int w, byte cover, double depth)` | Hands the city's survey a channel of `w` plots between the island and home (the game's own ids and linked set), `cover` water `depth` metres deep. |
-| 569 | 4 | `static Game.BuildResult orderBridge(LandmassCheck.City c, BuildingsTemplate t, int n, boolean instant, int toward)` | An order of a bridge, quietly, by the card's path: the far landmass picked, then the order. |
+| 470 | 63 | `static void thePrice()` |  |
 
-### 3. THE ORDER (lines 574-749)
+### THE PLAYED CITY - Rotterdam with Goeree-Overflakkee's square, two landmasses (lines 534-574)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 578 | 155 | `static void theOrder(Island f)` |  |
-| 734 | 5 | `static<T> T quiet(java.util.function.Supplier<T> work)` |  |
-| 741 | 5 | `static Game.BuildResult quietBuild(Game g, BuildingsTemplate t, int n)` | An order of the city's, quietly. |
+| 539 | 3 | **type** `record Island(World.Key key, LandmassCheck.Square square)` | The fixture: the world, and the island square found by search with the model's own reader (LandmassCheck's). |
+| 540 | 1 | `int id()` _(in BridgeCheck.Island)_ |  |
+| 543 | 9 | `static Island islandFor(World.Key key)` |  |
+| 554 | 6 | `static LandmassCheck.City bridgeCity(Island f, String label)` | A city of forty houses and two builders' depots that owns the island square (unlinked, no bridge, nothing placed). |
+| 562 | 6 | `static GridGround seam(LandmassCheck.City c, Island f, int w, byte cover, double depth)` | Hands the city's survey a channel of `w` plots between the island and home (the game's own ids and linked set), `cover` water `depth` metres deep. |
+| 570 | 4 | `static Game.BuildResult orderBridge(LandmassCheck.City c, BuildingsTemplate t, int n, boolean instant, int toward)` | An order of a bridge, quietly, by the card's path: the far landmass picked, then the order. |
 
-### 4. NO DEMOLITION (lines 750-772)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 754 | 18 | `static void noDemolition(Island f)` |  |
-
-### 5. THE SAVE (lines 773-842)
+### 3. THE ORDER (lines 575-751)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 777 | 65 | `static void theSave(Island f) throws Exception` |  |
+| 579 | 156 | `static void theOrder(Island f)` |  |
+| 736 | 5 | `static<T> T quiet(java.util.function.Supplier<T> work)` |  |
+| 743 | 5 | `static Game.BuildResult quietBuild(Game g, BuildingsTemplate t, int n)` | An order of the city's, quietly. |
 
-### 6. A GENERATED WORLD (lines 843-903)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 847 | 56 | `static void generatedWorld()` |  |
-
-### 7. THE FULL FILE (lines 904-967)
+### 4. NO DEMOLITION (lines 752-774)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 916 | 27 | `static BridgeSurvey.Result crossing(World.Key key, String label, double[] founding, double[] home, double[] farPoint, double re...` | A city founded at `founding`, owning a square of ground about each of the two points - its own shore (`home`) and the far one - and the survey of a Road Bridge toward the far landmass (the real ground, no seam): print... |
-| 944 | 23 | `static void theEarth()` |  |
+| 756 | 18 | `static void noDemolition(Island f)` |  |
+
+### 5. THE SAVE (lines 775-844)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 779 | 65 | `static void theSave(Island f) throws Exception` |  |
+
+### 6. A GENERATED WORLD (lines 845-905)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 849 | 56 | `static void generatedWorld()` |  |
+
+### 7. THE FULL FILE (lines 906-970)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 918 | 28 | `static BridgeSurvey.Result crossing(World.Key key, String label, double[] founding, double[] home, double[] farPoint, double re...` | A city founded at `founding`, owning a square of ground about each of the two points - its own shore (`home`) and the far one - and the survey of a Road Bridge toward the far landmass (the real ground, no seam): print... |
+| 947 | 23 | `static void theEarth()` |  |
 

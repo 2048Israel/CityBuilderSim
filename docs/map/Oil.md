@@ -1,6 +1,6 @@
 # Oil.java - 1,360 lines · 89 methods · 14 constants · sectors
 
-`ham/citybuildersim/sectors/Oil.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Oil.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > Oil wells. THE SIXTEENTH SECTOR (0.7.62, batch K; the project's
 > spec-land.md 2.7).
