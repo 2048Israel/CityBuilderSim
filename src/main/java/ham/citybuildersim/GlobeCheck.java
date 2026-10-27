@@ -58,8 +58,9 @@ import java.util.zip.CRC32;
  *      kms"): closer than the handoff the plane's far nodes are drawn through
  *      the camera wherever the world's square holds the ground
  *      (GlobeFrame.planeDrawnPastReach(), drawsHold(), planeHolds()) - the
- *      pixels the square holds and no others, at its edge - and the legend is
- *      the plane's; over views straddling the reach on the fixture's three
+ *      pixels the square holds within handoverKm() of the city (MS3: farther,
+ *      and off the square, the charts draw both sides of its edge) - and the
+ *      legend is the plane's; over views straddling the reach on the fixture's three
  *      windows and, named, Cape Breton north of Baddeck, at his scale, 2, 4 and
  *      8 plots a pixel and the closest, the classes the nodes give are the
  *      plane's own plots' (exactly at one plot a pixel, within NEAR_PAST_FOLDED
@@ -83,9 +84,17 @@ import java.util.zip.CRC32;
  *      along the line to the city from a distortion of 1.5, more as it grows,
  *      and never more than the noise (the cells are true in shape on the
  *      sphere), to STREAK_SHOWN at the farthest placement and at 12,000 km on
- *      a window; the camera draws the plane's plots at one plot a pixel (so it
- *      is not the pixel lookup) and the roll is 0 from 2,000 km (so it is not
- *      the turn). The measure comes first and fixes nothing.
+ *      a window; the camera draws the plane's plots at one plot a pixel within
+ *      the hand-over (so it is not the pixel lookup) and the roll is 0 from
+ *      2,000 km (so it is not the turn). The measure came first (slice 1).
+ *      THE FIX (MS3, slice 2): past GlobeFrame.handoverKm() the near view is
+ *      drawn from charts, true in shape - the drawn ground's E / E_ref is within
+ *      STREAK_READ_TOL of 1 at every placement past the hand-over and its band
+ *      and never over SHAPE_HANDOVER x (1 + STREAK_TRACKS); no seam at either end
+ *      of the band (SEAM_TOL, SHARE_TOL); the sphere's noise keeps the plane's
+ *      spread (SPREAD_TOL, RANK_TOL); the world's square's edge is drawn by the
+ *      charts on both sides; a chart node and a frame over held chart nodes
+ *      are within MapCheck.SCREEN_MS and FRAME_MS.
  *   3. THE HANDOFF: the plane and the globe facing the city part by under
  *      half a pixel on the expanded map at HANDOFF_PLOTS, and by more at twice
  *      it (the dial is the widest power of two that passes); at REACH_KM with
@@ -876,10 +885,24 @@ public class GlobeCheck {
     /** What the camera draws of the plane's nodes (GlobeFrame.ground()) over a w x h view, a class a pixel (MapTiles.nodeTerrain()), NO_NODE where it drew none, OFF where it drew the far rule's place (beyond()) - and how many pixels found no node. */
     static final int NO_NODE = -1;
     static int[] cameraClasses(World.Key key, GlobeFrame f, int w, int h, int[] missing) {
+        return cameraClasses(key, f, w, h, missing, false);
+    }
+
+    /** ...and, where `charts`, the view's chart nodes past the hand-over too (MS3: MapTiles.chartTerrain() at the view's chart and plots), so every pixel on the disc is drawn but for the nodes missing. */
+    static int[] cameraClasses(World.Key key, GlobeFrame f, int w, int h, int[] missing, boolean charts) {
+        long plots = MapFrame.nodePlotsAt(f.planeScale());
+        GlobeFrame.Chart chart = f.chart();
+        GlobeFrame.NodePixels made = (nx, ny) -> widen(MapTiles.chartTerrain(key, chart, plots, nx, ny, null));
+        return cameraClassesWith(key, f, w, h, missing, charts ? made : null);
+    }
+
+    /** ...with the chart nodes made by `charts` (a node's classes widened; each made once), or none where it is null. */
+    static int[] cameraClassesWith(World.Key key, GlobeFrame f, int w, int h, int[] missing, GlobeFrame.NodePixels charts) {
         long plots = MapFrame.nodePlotsAt(f.planeScale()), span = (long) MapFrame.NODE_PX * plots;
-        Map<Long, int[]> nodes = new java.util.HashMap<>();
+        Map<Long, int[]> nodes = new java.util.HashMap<>(), chartNodes = new java.util.HashMap<>();
         int[] px = new int[w * h];
-        missing[0] = f.ground(plots, (nx, ny) -> nodes.computeIfAbsent(MapTiles.key(nx, ny), k -> widen(MapTiles.nodeTerrain(key, nx * span, ny * span, plots))),
+        GlobeFrame.NodePixels held = charts == null ? null : (nx, ny) -> chartNodes.computeIfAbsent(MapTiles.key(nx, ny), k -> charts.at(nx, ny));
+        missing[0] = f.ground(plots, (nx, ny) -> nodes.computeIfAbsent(MapTiles.key(nx, ny), k -> widen(MapTiles.nodeTerrain(key, nx * span, ny * span, plots))), held,
                 (i, j, vx, vy, vz) -> NO_NODE, -2, px, w, 0, w, 0, h);
         return px;
     }
@@ -1062,26 +1085,37 @@ public class GlobeCheck {
                 past.tier() == GlobeFrame.GROUND && past.legendTier() == GlobeFrame.PLANE && wide.legendTier() == GlobeFrame.GROUND
                         && new GlobeFrame(w, h, CITIES[0][0], CITIES[0][1]).legendTier() == GlobeFrame.PICTURE);
 
-        // The square's edge: the plane's nodes where the square holds the pixel, the far rule beyond it - the north edge of the world's square, a view straddling it.
+        // The square's edge (MS3): the north edge of the world's square is about 124 degrees from the city, past the hand-over, so the plane draws neither side of it and the charts draw both - the far rule's dither
+        // that MS2 left off the square is gone at the plane's scales. A view straddling it.
         GlobeFrame edge = new GlobeFrame(256, 256, CITIES[0][0], CITIES[0][1]);
         double[] ll = new double[2];
         edge.plane().latLonOfPlot(World.SIDE / 2.0, 3, ll);
         edge.set(ll[0], ll[1], GlobeFrame.HANDOFF_KM / 8);
         int[] px = new int[256 * 256];
-        int held = 0, farOnes = 0, mismatch = 0;
+        int held = 0, farOnes = 0, mismatch = 0, planeAsked = 0, chartAsked = 0, unheld = 0;
         double[] xy = new double[2];
-        int missed = edge.ground(MapFrame.nodePlotsAt(edge.planeScale()), (nx, ny) -> new int[MapFrame.NODE_PX * MapFrame.NODE_PX], (i, j, vx, vy, vz) -> NO_NODE, -2, px, 256, 0, 256, 0, 256);
+        final int chartMark = 77, planeMark = 33;
+        int[] planeNode = new int[MapFrame.NODE_PX * MapFrame.NODE_PX], chartNode = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+        Arrays.fill(planeNode, planeMark);
+        Arrays.fill(chartNode, chartMark);
+        int[] asked = new int[2];
+        int missed = edge.ground(MapFrame.nodePlotsAt(edge.planeScale()), (nx, ny) -> { asked[0]++; return planeNode; }, (nx, ny) -> { asked[1]++; return chartNode; }, (i, j, vx, vy, vz) -> NO_NODE, -2, px, 256, 0, 256, 0, 256);
+        planeAsked = asked[0];
+        chartAsked = asked[1];
+        double cityKm = edge.cityKm(ll[0], ll[1]);
         for (int j = 0; j < 256; j++) {
             for (int i = 0; i < 256; i++) {
-                boolean square = edge.plotAt(i + 0.5, j + 0.5, xy) && xy[0] >= 0 && xy[1] >= 0 && xy[0] < World.SIDE && xy[1] < World.SIDE;
-                if (edge.drawsHold(i + 0.5, j + 0.5) != square || edge.planeHolds(i + 0.5, j + 0.5) != square || (px[j * 256 + i] == NO_NODE) == square) mismatch++;
-                if (square) held++;
-                else if (edge.onPlanet(i + 0.5, j + 0.5)) farOnes++;
+                boolean square = edge.plotAt(i + 0.5, j + 0.5, xy) && xy[0] >= 0 && xy[1] >= 0 && xy[0] < World.SIDE && xy[1] < World.SIDE, planet = edge.onPlanet(i + 0.5, j + 0.5);
+                if (planet && (edge.drawsHold(i + 0.5, j + 0.5) || edge.planeHolds(i + 0.5, j + 0.5) || !edge.chartHolds(i + 0.5, j + 0.5) || px[j * 256 + i] != chartMark)) mismatch++;
+                if (planet && px[j * 256 + i] == NO_NODE) unheld++;
+                if (planet && square) held++;
+                else if (planet) farOnes++;
             }
         }
-        out.printf("      the world's square's north edge at %.3f km a pixel: %,d pixels the square holds, %,d on the planet past it; %d disagreements, %d found no node%n", edge.kmPx(), held, farOnes, mismatch, missed);
-        check("at the square's edge the plane's nodes draw the pixels the square holds - drawsHold(), planeHolds() and ground() agree - and the far rule's place is left the rest",
-                held > 1000 && farOnes > 1000 && mismatch == 0 && missed == 0);
+        out.printf("      the world's square's north edge at %.3f km a pixel, %.0f degrees from the city (the hand-over is %.1f): the charts draw %,d pixels the square holds and %,d past it; %d disagreements, %d far-rule pixels, %d pixels found no node;"
+                + " the plane was asked for %d nodes, the chart for %d%n", edge.kmPx(), Math.toDegrees(cityKm * 1000 / EarthProj.RADIUS_M), Math.toDegrees(StrictMath.acos(GlobeFrame.handoverUp())), held, farOnes, mismatch, unheld, missed, planeAsked, chartAsked);
+        check("at the world's square's edge, past the hand-over, the charts draw both sides of it: chartHolds() and ground() agree, the plane draws neither side (drawsHold(), planeHolds(), no plane node asked for), no pixel is the far rule's"
+                + " and none unheld", held > 1000 && farOnes > 1000 && mismatch == 0 && unheld == 0 && missed == 0 && planeAsked == 0 && chartAsked > 0 && cityKm > GlobeFrame.handoverKm());
 
         // The classes through the camera over a view straddling the reach: each of the fixture's windows, with the city its reach north of it - and on the
         // full file Cape Breton north of Baddeck, Jerus's two screenshots, the city at Halifax.
@@ -1156,7 +1190,7 @@ public class GlobeCheck {
     }
 
     /* =====================================================================
-       2d. THE SLANTED GROUND, MEASURED (MS3)
+       2d. THE SLANTED GROUND, MEASURED, AND FIXED BY THE CHARTS (MS3)
        ===================================================================== */
 
     /** The offset the ground's change rates are read at, in pixels: 4 - short enough that the share of pixel pairs that differ grows with the offset's length across a patch of the 2 km view's 20 to 60 px. */
@@ -1315,50 +1349,75 @@ public class GlobeCheck {
     /** ...a stretch along x: the mean E alone. */
     static double response(double s) { return response(s, 0)[0]; }
 
-    /** One placement of the city against a spot: what the plane's own plots and the camera's drawing show of the ground there, and the plane's noise under the pixels. */
+    /**
+     * One placement of the city against a spot: what the plane's own plots show of the ground there (ePlots, the cause), what ground() draws with the charts
+     * (eDrawn, the fix), and the noise under the pixels - the plane's (eNoise) and the sphere's, which the charts read (eSphere); `same` is the share of the pixels the plane
+     * draws (`plane` of them) that are the plane's own plots, NaN where it draws none.
+     */
     record Slant(String spot, double km, double sigma, double ePlots, double phiPlots, double eDrawn, double bearing, double toCity, double roll, double same, double held, int missing,
-                 double eNoise, double eLakes) { }
+                 double eNoise, double eLakes, double eSphere, double plane) { }
 
-    /** The city at `city`, the view at `at` at JERUS_KM, STREAK_VIEW_PX square: the streak of the plane's own plots under each pixel and of what ground() draws, the pixels the world's square holds only; the lakes' alone (fresh water against the rest); and the mean E of STREAK_SEEDS fields of the rule's noise read at the plot under each of them. */
+    /** The synthetic fields of the sphere's noise a placement's E is averaged over: 4 of the STREAK_SEEDS (its noise costs twice the plane's a pixel). */
+    static final int SPHERE_SEEDS = 4;
+
+    /** The city at `city`, the view at `at` at JERUS_KM, STREAK_VIEW_PX square: the streak of the plane's own plots under each pixel and of what ground() draws with the charts (every pixel on the planet drawn), the lakes' alone (fresh water against the rest); and the mean E of STREAK_SEEDS fields of the rule's noise read at the plot under each pixel, and of SPHERE_SEEDS fields of the sphere's noise at the pixel's point (what the charts read). */
     static Slant slantAt(String spot, String dataId, double[] at, double[] city) {
         int n = STREAK_VIEW_PX;
         World.Key key = World.Key.earth(EarthTerrainCheck.SEED, city[0], city[1], dataId);
         GlobeFrame f = new GlobeFrame(n, n, city[0], city[1]);
         f.set(at[0], at[1], JERUS_KM);
         int[] none = new int[1];
-        int[] cam = cameraClasses(key, f, n, n, none), own = plotClasses(World.of(key), f, n, n);
-        long held = 0;
+        int[] cam = cameraClasses(key, f, n, n, none, true), own = plotClasses(World.of(key), f, n, n);
+        long held = 0, planeDrawn = 0, planeSame = 0;
         boolean[] used = new boolean[own.length];
         double[] px = new double[own.length], py = new double[own.length], xy = new double[2];
+        double[] sx = new double[own.length], sy = new double[own.length], sz = new double[own.length];
+        double rPlots = EarthProj.RADIUS_M / World.PLOT_M;
         int[] lakes = new int[own.length];
         for (int j = 0; j < n; j++) {
             for (int i = 0; i < n; i++) {
                 int k = j * n + i;
                 if (cam[k] < 0) own[k] = -2;
-                else held++;
+                else {
+                    held++;
+                    if (f.drawsHold(i + 0.5, j + 0.5)) {
+                        planeDrawn++;
+                        if (cam[k] == own[k]) planeSame++;
+                    }
+                }
                 if (own[k] >= 0 && f.planeAt(i + 0.5, j + 0.5, xy)) {
                     used[k] = true;
                     px[k] = Math.floor(xy[0]) + 0.5;
                     py[k] = Math.floor(xy[1]) + 0.5;
+                    double[] ll = f.latLonAt(i + 0.5, j + 0.5);
+                    double phi = Math.toRadians(ll[0]), lam = Math.toRadians(ll[1]);
+                    sx[k] = Math.cos(phi) * Math.cos(lam) * rPlots;
+                    sy[k] = Math.cos(phi) * Math.sin(lam) * rPlots;
+                    sz[k] = Math.sin(phi) * rPlots;
                 }
                 lakes[k] = own[k] < 0 ? own[k] : own[k] == World.FRESH ? 1 : 0;
             }
         }
-        double noise = 0;
+        double noise = 0, sphere = 0;
         double[] v = new double[own.length];
         for (int q = 0; q < STREAK_SEEDS; q++) {
             long[] os = fieldSeeds(q);
             for (int k = 0; k < v.length; k++) if (used[k]) v[k] = EarthTerrain.noiseAt(os, px[k], py[k], 1);
             noise += streak(belowMedian(v, used), n, n, STREAK_LAG_PX)[0];
+            if (q < SPHERE_SEEDS) {
+                for (int k = 0; k < v.length; k++) if (used[k]) v[k] = EarthTerrain.sphereNoise(os, sx[k], sy[k], sz[k], 1);
+                sphere += streak(belowMedian(v, used), n, n, STREAK_LAG_PX)[0];
+            }
         }
         double[] p = streak(own, n, n, STREAK_LAG_PX), c = streak(cam, n, n, STREAK_LAG_PX);
         double km = EarthProj.distanceM(city[0], city[1], at[0], at[1]) / 1000;
         return new Slant(spot, km, planeDistortion(km), p[0], p[1], c[0], streakBearing(p[1], f.roll()), fold180(GlobeFrame.bearing(at[0], at[1], city[0], city[1])), f.roll(),
-                agree(cam, own, false, f, n, null), held / (double) own.length, none[0], noise / STREAK_SEEDS, streak(lakes, n, n, STREAK_LAG_PX)[0]);
+                planeDrawn == 0 ? Double.NaN : planeSame / (double) planeDrawn, held / (double) own.length, none[0], noise / STREAK_SEEDS, streak(lakes, n, n, STREAK_LAG_PX)[0], sphere / SPHERE_SEEDS,
+                planeDrawn / (double) own.length);
     }
 
     static void slanted(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full) {
-        out.println("\n--- 2d. the slanted ground (MS3): the streak Jerus's screenshot shows, as a number, on today's drawing - which of the turn, the plane's shape distortion and a node's pixel lookup makes it ---");
+        out.println("\n--- 2d. the slanted ground (MS3): the streak Jerus's screenshot shows, as a number: the plane's shape distortion makes it (not the turn, not the node lookup), and the charts past the hand-over draw it true in shape ---");
         int side = STREAK_VIEW_PX;
 
         // The measure calibrated on fields of known stretch: the rule's own noise at this scale, STREAK_SEEDS fields a stretch.
@@ -1421,54 +1480,356 @@ public class GlobeCheck {
         } else {
             out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Goose Bay from Singapore was not drawn; the windows' 12,000 km is the farthest");
         }
-        out.printf("      %-9s %8s %6s %8s %7s %8s  %-6s %-6s %6s  %-8s %-6s  %7s %7s  (E of the plane's plots under each pixel, E / E_ref, E of what ground() draws, the streak's bearing, the bearing to the city,"
-                + " the roll, the share drawn = the plots, the share the square holds, the plane's noise's E over its E at the reach, response(sigma) / response(1))%n",
-                "spot", "city km", "sigma", "E plots", "E/Eref", "E drawn", "streak", "city", "roll", "same", "held", "noise", "resp");
+        // The view's corner is this far from its centre, km: a placement is "past" a ring only by more than it.
+        double viewReachKm = STREAK_VIEW_PX * JERUS_KM * Math.sqrt(2) / 2, handKm = GlobeFrame.handoverKm(), bandKm = GlobeFrame.SHAPE_BAND_KM;
+        out.printf("      %-9s %8s %6s %8s %7s %8s %7s  %-6s %-6s %6s  %-8s %-6s %-6s  %7s %7s %7s  (E of the plane's plots under each pixel, E / E_ref, E of what ground() draws, charts included, E / E_ref, the plots' streak's bearing,"
+                + " the bearing to the city, the roll, the share of the pixels the plane draws that are its own plots, the share of the pixels drawn, the share the plane draws, the plane's noise's E over its E at the reach,"
+                + " response(sigma) / response(1), the sphere's noise's E over its E at the reach)%n",
+                "spot", "city km", "sigma", "E plots", "E/Eref", "E drawn", "d/dref", "streak", "city", "roll", "same", "held", "plane", "noise", "resp", "sphere");
         double worstNoise = 0, worstAbove = -1, worstBearing = 0, worstSame = 1, worstRoll = 0, fixtureShown = 0, gooseShown = Double.POSITIVE_INFINITY;
-        int missing = 0, bearingsRead = 0, falls = 0;
+        double worstTrue = 0, mostDrawn = 0, gooseTrue = Double.NaN;
+        int missing = 0, bearingsRead = 0, falls = 0, pastBand = 0, withinHand = 0;
         for (List<Slant> row : placed) {
-            double eRef = row.get(0).ePlots(), dRef = row.get(0).eDrawn(), nRef = row.get(0).eNoise(), rRef = response(1), last = 0;
+            double eRef = row.get(0).ePlots(), dRef = row.get(0).eDrawn(), nRef = row.get(0).eNoise(), sRef = row.get(0).eSphere(), rRef = response(1), last = 0;
             for (Slant s : row) {
                 double ratio = s.ePlots() / eRef, drawn = s.eDrawn() / dRef, noise = s.eNoise() / nRef, resp = response(s.sigma()) / rRef;
-                out.printf("      %-9s %8.0f %6.3f %8.3f %7.3f %8.3f  %6.1f %6.1f %6.2f  %.6f %.4f  %7.3f %7.3f%n", s.spot(), s.km(), s.sigma(), s.ePlots(), ratio, s.eDrawn(), s.bearing(), s.toCity(), s.roll(),
-                        s.same(), s.held(), noise, resp);
+                out.printf("      %-9s %8.0f %6.3f %8.3f %7.3f %8.3f %7.3f  %6.1f %6.1f %6.2f  %-8s %.4f %.4f  %7.3f %7.3f %7.3f%n", s.spot(), s.km(), s.sigma(), s.ePlots(), ratio, s.eDrawn(), drawn, s.bearing(), s.toCity(), s.roll(),
+                        Double.isNaN(s.same()) ? "-" : String.format("%.6f", s.same()), s.held(), s.plane(), noise, resp, s.eSphere() / sRef);
                 worstNoise = Math.max(worstNoise, Math.abs(noise / resp - 1));
-                worstAbove = Math.max(worstAbove, drawn / resp - 1);
+                worstAbove = Math.max(worstAbove, ratio / resp - 1);
                 if (s.sigma() >= STREAK_FROM_SIGMA) {
                     worstBearing = Math.max(worstBearing, apart180(s.bearing(), s.toCity()));
                     bearingsRead++;
-                    if (!(drawn > last)) falls++;
-                    last = drawn;
+                    if (!(ratio > last)) falls++;
+                    last = ratio;
                 }
-                worstSame = Math.min(worstSame, s.same());
+                if (s.km() + viewReachKm <= handKm) {
+                    withinHand++;
+                    worstSame = Math.min(worstSame, s.same());
+                }
+                if (s.km() - viewReachKm > handKm + bandKm) {
+                    pastBand++;
+                    worstTrue = Math.max(worstTrue, Math.abs(drawn - 1));
+                    if (row == goose) gooseTrue = Math.max(Double.isNaN(gooseTrue) ? 0 : gooseTrue, Math.abs(drawn - 1));
+                }
+                mostDrawn = Math.max(mostDrawn, drawn);
                 missing += s.missing();
                 if (s.km() >= 2000) worstRoll = Math.max(worstRoll, Math.abs(s.roll()));
             }
             Slant far = row.get(row.size() - 1);
-            if (row == goose) gooseShown = far.eDrawn() / dRef;
-            else if (far.km() > STREAK_KM[STREAK_KM.length - 1] - 1) fixtureShown = Math.max(fixtureShown, far.eDrawn() / dRef);
+            if (row == goose) gooseShown = far.ePlots() / eRef;
+            else if (far.km() > STREAK_KM[STREAK_KM.length - 1] - 1) fixtureShown = Math.max(fixtureShown, far.ePlots() / eRef);
         }
-        out.printf("      the plane's noise off response(sigma) / response(1) by %.3f of it at worst; the drawn ground %.3f above it at most; its streak %.1f degrees off the line to the city at the %d placements of sigma %.1f and more,"
+        out.printf("      the plane's noise off response(sigma) / response(1) by %.3f of it at worst; the plane's own plots %.3f above it at most; their streak %.1f degrees off the line to the city at the %d placements of sigma %.1f and more,"
                 + " %d of them not above the last; farthest placement E / E_ref %.3f on the fixture's best window, %s;"
-                + " drawn = plots %.7f at worst, %d pixels without a node; roll %.3g at 2,000 km and farther%n", worstNoise, worstAbove, worstBearing, bearingsRead, STREAK_FROM_SIGMA, falls, fixtureShown,
-                goose != null ? String.format("%.3f at Goose Bay from Singapore", gooseShown) : "Goose Bay from Singapore not drawn", worstSame, missing, worstRoll);
+                + " roll %.3g at 2,000 km and farther%n", worstNoise, worstAbove, worstBearing, bearingsRead, STREAK_FROM_SIGMA, falls, fixtureShown,
+                goose != null ? String.format("%.3f at Goose Bay from Singapore", gooseShown) : "Goose Bay from Singapore not drawn", worstRoll);
+        out.printf("      the fix: %d placements within the hand-over (%.0f km) draw the plane's own plots, %.7f of the pixels the plane draws at worst; %d past it and its %.0f km band: the drawn ground's E / E_ref off 1 by %.3f at worst%s,"
+                + " %.3f at most over all placements; %d pixels without a node%n", withinHand, handKm, worstSame, pastBand, bandKm, worstTrue, goose != null ? String.format(" (%.3f at Goose Bay)", gooseTrue) : "", mostDrawn, missing);
         if (goose != null) {
             Slant reach = goose.get(0), farthest = goose.get(goose.size() - 1);
-            out.printf("      Goose Bay from Singapore, lakes only (fresh water against the rest): E %.3f at the reach, %.3f at Singapore, %.3f over it; all the classes %.3f at the reach, %.3f at Singapore, %.3f over it%n",
-                    reach.eLakes(), farthest.eLakes(), farthest.eLakes() / reach.eLakes(), reach.ePlots(), farthest.ePlots(), farthest.ePlots() / reach.ePlots());
+            out.printf("      Goose Bay from Singapore, lakes only (fresh water against the rest): E %.3f at the reach, %.3f at Singapore, %.3f over it; all the classes' plots %.3f at the reach, %.3f at Singapore, %.3f over it;"
+                    + " all the classes drawn %.3f at the reach, %.3f at Singapore, %.3f over it%n",
+                    reach.eLakes(), farthest.eLakes(), farthest.eLakes() / reach.eLakes(), reach.ePlots(), farthest.ePlots(), farthest.ePlots() / reach.ePlots(), reach.eDrawn(), farthest.eDrawn(), farthest.eDrawn() / reach.eDrawn());
         }
 
         check("the cause - the plane's own noise: the noise under each pixel is stretched exactly as Lambert's projection stretches it - at every placement its E over its E at the reach is within STREAK_TRACKS of"
                 + " response(sigma) / response(1)", worstNoise <= STREAK_TRACKS);
-        check("...the drawn ground streaks along the line to the city, and more as sigma grows: from sigma 1.5 its streak is within STREAK_BEARING_DEG of the line, its E / E_ref rises at each such placement over the last,"
+        check("...the plane's own plots streak along the line to the city, and more as sigma grows: from sigma 1.5 their streak is within STREAK_BEARING_DEG of the line, their E / E_ref rises at each such placement over the last,"
                 + " and it is never more than STREAK_TRACKS above response(sigma) / response(1) (the cells are true in shape on the sphere, only the noise stretches)",
                 bearingsRead > 0 && worstBearing <= STREAK_BEARING_DEG && falls == 0 && worstAbove <= STREAK_TRACKS);
-        check("...the fixture causes it: the drawn ground's E / E_ref is at least STREAK_SHOWN at 12,000 km on at least one fixture window" + (goose != null ? " and at Goose Bay from Singapore" : ""),
+        check("...the fixture causes it: the plane's plots' E / E_ref is at least STREAK_SHOWN at 12,000 km on at least one fixture window" + (goose != null ? " and at Goose Bay from Singapore" : ""),
                 fixtureShown >= STREAK_SHOWN && (goose == null || gooseShown >= STREAK_SHOWN));
-        check("not the pixel lookup: the plane's nodes through the camera draw the plane's own plots at one plot a pixel at every placement - no axis mixed, no level misread - and no pixel without a node",
-                worstSame >= NEAR_PAST_SAME && missing == 0);
+        check("not the pixel lookup (MS3: restricted to the plane's own ground, within the hand-over): at every placement within GlobeFrame.handoverKm() of the city the plane's nodes through the camera draw the plane's own plots"
+                + " at one plot a pixel, untouched by the charts - no axis mixed, no level misread - and no pixel at any placement without a node",
+                withinHand >= 3 && worstSame >= NEAR_PAST_SAME && missing == 0);
         check("not the turn: the turn is done - the roll is 0 (north up) at every placement 2,000 km and farther; and a turn cannot stretch anyway (E is the same under a rotation, the turned field above)",
                 worstRoll == 0);
+        check("the fix - past the hand-over the drawn ground is true in shape: its E / E_ref is within STREAK_READ_TOL of 1 at every placement past GlobeFrame.SHAPE_HANDOVER and the band (SHAPE_BAND_KM)"
+                + (goose != null ? ", Goose Bay from Singapore among them" : "") + "; and no placement's drawn E / E_ref is over SHAPE_HANDOVER x (1 + STREAK_TRACKS)",
+                pastBand >= 3 && worstTrue <= STREAK_READ_TOL && (goose == null || (!Double.isNaN(gooseTrue) && gooseTrue <= STREAK_READ_TOL)) && mostDrawn <= GlobeFrame.SHAPE_HANDOVER * (1 + STREAK_TRACKS));
+
+        seams(spots, id, full);
+        spread();
+        chartTiming(spots, id, full);
+    }
+
+    /** The change rate of pixel pairs across the hand-over's line (or the band's far edge), over the rate on one side, may exceed the same figure of the same pixels drawn by the chart alone by this share: 0.15 - the most the brief allowed; the measure reads 1.04 to 1.11 on the fixture windows and near Goose Bay, and 2.5 to 3.5 for a seam made on purpose (SEAM_SHOWN). */
+    static final double SEAM_TOL = 0.15;
+
+    /** The class shares of the ground either side of the hand-over's line (water, forest, grass, the rest), pooled over the views, differ by at most this: 0.05. */
+    static final double SHARE_TOL = 0.05;
+
+    /** The bearings the city is put at from the view's centre, degrees, to pool a seam over: the four screen directions - a pixel is on the plane's side in half of them and the chart's in the other, so the ground each side holds is the same ground. */
+    static final double[] SEAM_BEARINGS = { 0, 90, 180, 270 };
+
+    /** The group a class counts in for the shares: water (salt, shallow, fresh), forest, grass, the rest. */
+    static int shareGroup(int cls) {
+        return cls == World.SALT || cls == World.SHALLOW || cls == World.FRESH ? 0 : cls == World.FOREST ? 1 : cls == World.GRASS ? 2 : 3;
+    }
+
+    /** What a seam view reads: the class changes across the line and away from it, in the drawn ground and in its twin - the same pixels drawn by the chart alone with one noise across the line, so continuous across it - and the shares each side of the drawn ground. */
+    static final class Seam {
+        /** Pairs at the offset that cross the line [0] and that lie on one side [1], and how many of them change class: [0] the drawn ground, [1] the twin. */
+        final long[][] pairs = new long[2][2], differ = new long[2][2];
+        /** Pixels each side by group, [side][group]: side 0 nearer the city. */
+        final long[][] shares = new long[2][4];
+
+        /** One view at `at` shifted `shiftKm` along the line, the city `d` km from it on `bearing`: the line is the circle d km from the city. The charts are blended in as GlobeFrame blends them, or (`abrupt`) not at all. Adds to the counts. */
+        void add(String dataId, double[] at, double d, double bearing, double shiftKm, boolean abrupt) {
+            int n = STREAK_VIEW_PX;
+            double[] centre = shiftKm == 0 ? at : GlobeFrame.destination(at[0], at[1], bearing + 90, shiftKm);
+            double[] city = GlobeFrame.destination(centre[0], centre[1], bearing, d);
+            World.Key key = World.Key.earth(EarthTerrainCheck.SEED, city[0], city[1], dataId);
+            GlobeFrame f = new GlobeFrame(n, n, city[0], city[1]);
+            f.set(centre[0], centre[1], JERUS_KM);
+            long plots = MapFrame.nodePlotsAt(f.planeScale());
+            GlobeFrame.Chart chart = f.chart();
+            int[] none = new int[1];
+            GlobeFrame.NodePixels real = (nx, ny) -> widen(MapTiles.chartTerrain(key, chart, plots, nx, ny, null)), blunt = (nx, ny) -> widen(chartNode(key, chart, plots, nx, ny, GlobeFrame.handoverUp(), 0));
+            int[] cam = cameraClassesWith(key, f, n, n, none, abrupt ? blunt : real);
+            // The twin: the chart alone over every pixel, its noise the plane's everywhere at the hand-over (t = 0), the sphere's everywhere at the band's far edge (t = 1).
+            boolean near = d <= GlobeFrame.handoverKm() + 1e-6;
+            double twinUp = near ? -1 : 2;
+            int[] ref = chartOnly(f, n, n, (nx, ny) -> widen(chartNode(key, chart, plots, nx, ny, twinUp, 0)));
+            // The screen direction to the city, as an integer offset STREAK_LAG_PX long.
+            double beta = Math.toRadians(GlobeFrame.bearing(centre[0], centre[1], city[0], city[1]) + f.roll());
+            int dx = (int) Math.round(STREAK_LAG_PX * Math.sin(beta)), dy = (int) Math.round(-STREAK_LAG_PX * Math.cos(beta));
+            int[] side = new int[cam.length];
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < n; i++) {
+                    double[] ll = f.latLonAt(i + 0.5, j + 0.5);
+                    side[j * n + i] = ll == null || cam[j * n + i] < 0 || ref[j * n + i] < 0 ? -1 : f.cityKm(ll[0], ll[1]) < d ? 0 : 1;
+                    if (side[j * n + i] >= 0) shares[side[j * n + i]][shareGroup(cam[j * n + i])]++;
+                }
+            }
+            for (int j = Math.max(0, -dy); j < Math.min(n, n - dy); j++) {
+                for (int i = Math.max(0, -dx); i < Math.min(n, n - dx); i++) {
+                    int p = j * n + i, q = (j + dy) * n + i + dx;
+                    if (side[p] < 0 || side[q] < 0) continue;
+                    int kind = side[p] != side[q] ? 0 : 1;
+                    pairs[0][kind]++;
+                    pairs[1][kind]++;
+                    if (cam[p] != cam[q]) differ[0][kind]++;
+                    if (ref[p] != ref[q]) differ[1][kind]++;
+                }
+            }
+        }
+
+        /** The change rate across the line over the rate on one side, of the drawn ground (which 0) or the twin (1). */
+        double rate(int which) { return (differ[which][0] / (double) pairs[which][0]) / (differ[which][1] / (double) pairs[which][1]); }
+
+        /** The drawn ground's ratio over the twin's: the same pixels, so the ground's own lines (a coast or river along the line) cancel. */
+        double ratio() { return rate(0) / rate(1); }
+
+        /** The most any group's share differs between the sides. */
+        double shareGap() {
+            double gap = 0, a = 0, b = 0;
+            for (int g = 0; g < 4; g++) {
+                a += shares[0][g];
+                b += shares[1][g];
+            }
+            for (int g = 0; g < 4; g++) gap = Math.max(gap, Math.abs(shares[0][g] / a - shares[1][g] / b));
+            return gap;
+        }
+
+        String sharesWords() {
+            double a = 0, b = 0;
+            for (int g = 0; g < 4; g++) {
+                a += shares[0][g];
+                b += shares[1][g];
+            }
+            StringBuilder s = new StringBuilder();
+            for (int g = 0; g < 4; g++) s.append(String.format("%s %.3f/%.3f", new String[] { "water", "forest", "grass", "rest" }[g], shares[0][g] / a, shares[1][g] / b)).append(g < 3 ? ", " : "");
+            return s.toString();
+        }
+    }
+
+    /** A chart node with its blend set by hand (MapTiles.chartTerrain() sets it by GlobeFrame's dials): the sphere's noise from the angle whose cosine is `fromUp`, over a band of `bandRad` - nought for none, a seam made on purpose; fromUp -1 for the plane's noise everywhere, 2 for the sphere's. */
+    static byte[] chartNode(World.Key key, GlobeFrame.Chart chart, long plots, long nx, long ny, double fromUp, double bandRad) {
+        byte[] out = new byte[MapFrame.NODE_PX * MapFrame.NODE_PX];
+        EarthTerrain e = World.of(key).earthTerrain();
+        e.farTerrain(e.chart(chart.ortho(), (int) plots, nx, ny, fromUp, bandRad), out, null);
+        return out;
+    }
+
+    /** A view's pixels all read from its chart's nodes (GlobeFrame.chartAt()), as ground() reads them where the chart draws: the plane's nodes not used. -2 off the planet. */
+    static int[] chartOnly(GlobeFrame f, int w, int h, GlobeFrame.NodePixels nodes) {
+        Map<Long, int[]> held = new java.util.HashMap<>();
+        double[] xy = new double[2];
+        int n = MapFrame.NODE_PX;
+        int[] out = new int[w * h];
+        for (int j = 0; j < h; j++) {
+            for (int i = 0; i < w; i++) {
+                if (!f.chartAt(i + 0.5, j + 0.5, xy)) {
+                    out[j * w + i] = -2;
+                    continue;
+                }
+                long nx = (long) Math.floor(xy[0] / n), ny = (long) Math.floor(xy[1] / n);
+                int[] node = held.computeIfAbsent(MapTiles.key(nx, ny), k -> nodes.at(nx, ny));
+                int u = (int) (xy[0] - nx * n), v = (int) (xy[1] - ny * n);
+                out[j * w + i] = node[(v < n ? v : n - 1) * n + (u < n ? u : n - 1)];
+            }
+        }
+        return out;
+    }
+
+    /** How far north of Jerus's hover (GOOSE_BAY_NORTH_KM from Happy Valley) the seam views near Goose Bay are centred, km: 60 - his own spot lies in Hamilton Inlet's 40 km wide "river" of the data (the far rule paints it, the tile rule at one plot a pixel does not: a hand-over circle through it shows a lake appear, a rule-copy disagreement MS3 leaves), and 60 km north the ground is the Labrador forest and lakes the screenshot shows. */
+    static final double SEAM_NORTH_KM = 60;
+
+    /** The shifts along the line the views are taken at, as shares of the view's width: either side of the centre, so the ground the views hold is more than the one window's centre. */
+    static final double[] SEAM_SHIFTS = { -0.5, 0.5 };
+
+    /** A seam made on purpose (the sphere's noise switched on at the hand-over with no band) reads at least this: 1.5 - so the measure can see one. Set from the measure. */
+    static final double SEAM_SHOWN = 1.5;
+
+    /** The seams (MS3): no line where the plane's ground hands over to the chart's, nor where the sphere's noise has been blended in whole - at the hand-over's circle and the band's far edge, on each fixture window and near Goose Bay - read against the same pixels drawn by the plane's own plots, and against a seam made on purpose. */
+    static void seams(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full) {
+        out.println("      no seam, at both ends of the band (" + STREAK_VIEW_PX + " px views centred on the circle, the city at " + SEAM_BEARINGS.length + " bearings and " + SEAM_SHIFTS.length + " places along the line, pooled): the change rate of pixel pairs STREAK_LAG_PX apart"
+                + " across the line over the rate on one side, the drawn ground's over its twin's - the same pixels drawn by the chart alone with one noise across the line (so a coast along it cancels), and the class shares each side (nearer the city / farther):");
+        double worstRatio = 0, worstGap = 0, leastControl = Double.POSITIVE_INFINITY;
+        int views = 0;
+        List<String[]> spotsAt = new java.util.ArrayList<>();
+        for (String name : List.of("Rotterdam", "Paris", "Perth")) spotsAt.add(new String[] { name, id, String.valueOf(spots.get(name).lat()), String.valueOf(spots.get(name).lon()) });
+        if (full != null) {
+            double[] at = GlobeFrame.destination(HAPPY_VALLEY[0], HAPPY_VALLEY[1], 0, GOOSE_BAY_NORTH_KM + SEAM_NORTH_KM);
+            spotsAt.add(new String[] { "Goose Bay", EarthTerrain.use(full), String.valueOf(at[0]), String.valueOf(at[1]) });
+        }
+        double width = STREAK_VIEW_PX * JERUS_KM;
+        for (String[] sp : spotsAt) {
+            double[] at = { Double.parseDouble(sp[2]), Double.parseDouble(sp[3]) };
+            for (double d : new double[] { GlobeFrame.handoverKm(), GlobeFrame.handoverKm() + GlobeFrame.SHAPE_BAND_KM }) {
+                Seam s = new Seam();
+                for (double b : SEAM_BEARINGS) for (double sh : SEAM_SHIFTS) s.add(sp[1], at, d, b, sh * width, false);
+                views++;
+                worstRatio = Math.max(worstRatio, s.ratio());
+                worstGap = Math.max(worstGap, s.shareGap());
+                out.printf("      %-9s %s of the band (%.0f km): across/one side %.3f drawn, %.3f twin, = %.3f (%,d pairs across); shares %s%n", sp[0], d == GlobeFrame.handoverKm() ? "near edge" : "far edge", d,
+                        s.rate(0), s.rate(1), s.ratio(), s.pairs[0][0], s.sharesWords());
+            }
+            Seam control = new Seam();
+            for (double b : SEAM_BEARINGS) for (double sh : SEAM_SHIFTS) control.add(sp[1], at, GlobeFrame.handoverKm(), b, sh * width, true);
+            leastControl = Math.min(leastControl, control.ratio());
+            out.printf("      %-9s a seam made on purpose at the hand-over (no band): %.3f drawn, %.3f twin, = %.3f%n", sp[0], control.rate(0), control.rate(1), control.ratio());
+        }
+        check("no seam where the plane hands over to the charts, nor where the sphere's noise is blended in whole: on a fixture window and near Goose Bay, at both ends of the band, the class changes across the line are at most"
+                + " 1 + SEAM_TOL of the rate on one side, read against the same pixels drawn by the chart alone", views >= 6 && worstRatio <= 1 + SEAM_TOL);
+        check("...the measure sees one: the sphere's noise switched on at the hand-over with no band reads at least SEAM_SHOWN on every window", leastControl >= SEAM_SHOWN);
+        check("...and the class shares (water, forest, grass, the rest) either side of the line are within SHARE_TOL of each other", views >= 6 && worstGap <= SHARE_TOL);
+    }
+
+    /** The points the sphere's noise spread is read over: 2^16. */
+    static final int SPREAD_POINTS = 1 << 16;
+
+    /** The sphere's noise's standard deviation is within this share of the plane's: 0.02. */
+    static final double SPREAD_TOL = 0.02;
+
+    /** ...and the share of its points under the ranking table's value for p (EarthTerrain.below()) is within this of p, and of the plane's: 0.01. */
+    static final double RANK_TOL = 0.01;
+
+    /** The ranks the shares are read at. */
+    static final double[] RANK_P = { 0.05, 0.25, 0.5, 0.75, 0.95 };
+
+    /** The sphere's noise keeps the plane's spread (MS3): the ranking table and the frays' rules, written for noiseAt(), hold for it. */
+    static void spread() {
+        double rPlots = EarthProj.RADIUS_M / World.PLOT_M;
+        int n = SPREAD_POINTS;
+        double worstSd = 0, worstRank = 0, worstApart = 0;
+        for (int q = 0; q < STREAK_SEEDS; q++) {
+            long[] os = fieldSeeds(q);
+            double[] plane = new double[n], sphere = new double[n];
+            for (int k = 0; k < n; k++) {
+                long h = World.mix(STREAK_SEED ^ (q * 0x2545F4914F6CDD1DL) ^ (k * 0x9E3779B97F4A7C15L));
+                long hx = World.mix(h ^ 1), hy = World.mix(h ^ 2);
+                plane[k] = EarthTerrain.noiseAt(os, (hx >>> 41) + 0.5, (hy >>> 41) + 0.5, 1);
+                double z = 2 * World.unit(World.mix(h ^ 3)) - 1, lam = 2 * Math.PI * World.unit(World.mix(h ^ 4)), r = Math.sqrt(1 - z * z);
+                sphere[k] = EarthTerrain.sphereNoise(os, r * Math.cos(lam) * rPlots, r * Math.sin(lam) * rPlots, z * rPlots, 1);
+            }
+            double sdPlane = sd(plane), sdSphere = sd(sphere);
+            worstSd = Math.max(worstSd, Math.abs(sdSphere / sdPlane - 1));
+            for (double p : RANK_P) {
+                double t = EarthTerrain.below(p), a = share(plane, t), b = share(sphere, t);
+                worstRank = Math.max(worstRank, Math.max(Math.abs(a - p), Math.abs(b - p)));
+                worstApart = Math.max(worstApart, Math.abs(a - b));
+            }
+        }
+        out.printf("      the sphere's noise over %,d points a field (%d fields) against the plane's over %,d plot centres: standard deviation off the plane's by %.4f of it at worst (SPHERE_GAIN %.4f); the share under the ranking table's value for each of %s:"
+                + " %.4f off p at worst, the two fields %.4f apart%n", n, STREAK_SEEDS, n, worstSd, EarthTerrain.SPHERE_GAIN, Arrays.toString(RANK_P), worstRank, worstApart);
+        check("the sphere's noise keeps the plane's spread: over 2^16 sampled points its standard deviation is within SPREAD_TOL of the plane's noiseAt() over 2^16 plot centres, and each field's ranks give the same shares (the ranking table's"
+                + " quantiles) within RANK_TOL", worstSd <= SPREAD_TOL && worstApart <= RANK_TOL && worstRank <= RANK_TOL);
+    }
+
+    static double sd(double[] v) {
+        double m = 0, s = 0;
+        for (double x : v) m += x;
+        m /= v.length;
+        for (double x : v) s += (x - m) * (x - m);
+        return Math.sqrt(s / v.length);
+    }
+
+    /** The share of `v` under t. */
+    static double share(double[] v, double t) {
+        int k = 0;
+        for (double x : v) if (x < t) k++;
+        return k / (double) v.length;
+    }
+
+    /** The cost of the charts (MS3): a chart node (classes, relief, colours) at Goose Bay at one plot a pixel within MapCheck.SCREEN_MS, and a frame of 2d's view over held chart nodes within FRAME_MS - the main thread's CPU, as section 7 reads it. */
+    static void chartTiming(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full) {
+        String where = full != null ? "Goose Bay" : "Rotterdam";
+        double[] at, city;
+        String dataId;
+        if (full != null) {
+            at = GlobeFrame.destination(HAPPY_VALLEY[0], HAPPY_VALLEY[1], 0, GOOSE_BAY_NORTH_KM);
+            city = SINGAPORE;
+            dataId = EarthTerrain.use(full);
+        } else {
+            at = new double[] { spots.get("Rotterdam").lat(), spots.get("Rotterdam").lon() };
+            city = GlobeFrame.destination(at[0], at[1], 180, 12000);
+            dataId = id;
+        }
+        World.Key key = World.Key.earth(EarthTerrainCheck.SEED, city[0], city[1], dataId);
+        int n = STREAK_VIEW_PX;
+        GlobeFrame f = new GlobeFrame(n, n, city[0], city[1]);
+        f.set(at[0], at[1], JERUS_KM);
+        long plots = MapFrame.nodePlotsAt(f.planeScale());
+        GlobeFrame.Chart chart = f.chart();
+        double[] cxy = new double[2];
+        f.chartAt(n / 2.0, n / 2.0, cxy);
+        long nx = (long) Math.floor(cxy[0] / MapFrame.NODE_PX), ny = (long) Math.floor(cxy[1] / MapFrame.NODE_PX);
+        byte[] relief = new byte[MapFrame.NODE_PX * MapFrame.NODE_PX];
+        int[] colours = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+        double nodeCpu = Double.MAX_VALUE;
+        for (int k = 0; k < 2 * FRAME_ROUNDS; k++) {
+            long c0 = MapCheck.monthClock();
+            byte[] g = MapTiles.chartTerrain(key, chart, plots, nx + k % 2, ny, relief);
+            MapTiles.chartPixels(g, relief, colours);
+            long c1 = MapCheck.monthClock();
+            if (k >= FRAME_ROUNDS) nodeCpu = Math.min(nodeCpu, (c1 - c0) / 1e6);
+        }
+        out.printf("      a chart node at %s at %d plot a pixel, %s the city (chart %d at %.0f, %.0f): classes, relief and colours in %.1f ms of %s%n", where, plots, full != null ? "Singapore" : "12,000 km from", chart.id(), chart.lat(), chart.lon(),
+                nodeCpu, MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock");
+        check("a chart node (classes, relief, colours) at " + where + " at one plot a pixel is made in no more than MapCheck.SCREEN_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock"),
+                Timing.within(nodeCpu, MapCheck.SCREEN_MS) && plots == 1);
+        // A frame of ground() over the chart nodes held: every node the view needs made once, then the frame drawn over them.
+        Map<Long, int[]> held = new java.util.HashMap<>();
+        int[] frame = new int[n * n];
+        double cpu = Double.MAX_VALUE, wall = Double.MAX_VALUE;
+        for (int k = 0; k < 2 * FRAME_ROUNDS; k++) {
+            long c0 = MapCheck.monthClock(), w0 = System.nanoTime();
+            f.ground(plots, (cx, cy) -> null, (cx, cy) -> held.computeIfAbsent(MapTiles.key(cx, cy), q -> {
+                int[] px = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+                MapTiles.chartPixels(MapTiles.chartTerrain(key, chart, plots, cx, cy, null), null, px);
+                return px;
+            }), (i, j, vx, vy, vz) -> NO_NODE, -2, frame, n, 0, n, 0, n);
+            long c1 = MapCheck.monthClock(), w1 = System.nanoTime();
+            if (k >= FRAME_ROUNDS) {
+                cpu = Math.min(cpu, (c1 - c0) / 1e6);
+                wall = Math.min(wall, (w1 - w0) / 1e6);
+            }
+        }
+        out.printf("      a frame %d x %d of ground() over %d chart nodes held: %.1f ms of %s (%.1f ms wall) on one thread%n", n, n, held.size(), cpu, MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock", wall);
+        check("a ground() frame of 2d's view over held chart nodes is drawn in no more than FRAME_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock"), Timing.within(cpu, FRAME_MS) && held.size() > 1);
     }
 
     /* =====================================================================
