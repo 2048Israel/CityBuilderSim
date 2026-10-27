@@ -1,4 +1,4 @@
-# AllChecks.java - 379 lines · 14 methods · 12 constants · harnesses
+# AllChecks.java - 380 lines · 14 methods · 12 constants · harnesses
 
 `ham/citybuildersim/AllChecks.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
@@ -49,7 +49,7 @@
 > nothing is tagged and -f prints as it did before. KnownRedsCheck causes both
 > cases with a fixture of its own.
 
-**Uses:** [Timing](Timing.md) (5)
+**Uses:** [Timing](Timing.md) (7)
 
 **Used by (2):** [KnownRedsCheck](KnownRedsCheck.md), [TimingCheck](TimingCheck.md)
 
@@ -74,7 +74,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 317 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
+| 63 | 318 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
 | 114 | 80 | `public static void main(String[] args) throws Exception` |  |
 | 196 | 3 | `static String header(String name, int code, double seconds)` | The first line of a harness's entry: its name, its verdict as a number or OK, and how long it took. |
 | 201 | 4 | `static String summaryLine(int ran, int failed, double seconds)` | The line under the last harness: how many ran and how they ended. |
@@ -86,7 +86,7 @@
 | 276 | 5 | `static int newCount(List<String> red, Set<String> known)` | How many of the red lines are not in the record. |
 | 289 | 18 | `static List<String> report(String name, int code, double seconds, List<String> printed, boolean lines, Set<String> known)` | What -q and -f print of one failed harness. |
 | 314 | 8 | `static String againstLine(Path record, Set<String> known, List<String> knownOnly, List<String> newRed)` | The one line under the summary that says which harnesses were known reds only and which had a NEW red; with no record, that none was read. |
-| 331 | 7 | `static List<String> command(String java, String classpath, String name, boolean logged)` | How a harness is started: the JVM and classpath this one was, the timing property if it is set here (a child JVM inherits no system property, only JDK_JAVA_OPTIONS), and when its output is kept (-q and -f) in UTF-8 wh... |
-| 340 | 10 | `static int softLines(Path log)` | How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. |
-| 358 | 21 | `static List<String> failingLines(Path log) throws IOException` | What -f prints of a failed harness's log: each failing line, after the title of the section it is in (once per section), at most FAIL_LINES in all; a log with no failing line in it - a harness that died some other way... |
+| 331 | 8 | `static List<String> command(String java, String classpath, String name, boolean logged)` | How a harness is started: the JVM and classpath this one was, the timing properties (the mode, and the file the figures go to, TM3) if they are set here (a child JVM inherits no system property, only JDK_JAVA_OPTIONS)... |
+| 341 | 10 | `static int softLines(Path log)` | How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. |
+| 359 | 21 | `static List<String> failingLines(Path log) throws IOException` | What -f prints of a failed harness's log: each failing line, after the title of the section it is in (once per section), at most FAIL_LINES in all; a log with no failing line in it - a harness that died some other way... |
 

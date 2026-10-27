@@ -1,4 +1,4 @@
-# KeptCheck.java - 887 lines · 15 methods · 9 constants · harnesses
+# KeptCheck.java - 890 lines · 15 methods · 9 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
@@ -80,7 +80,7 @@
 | 179 | `KeptCheck.SHADED_SHARE` | `0.001` | ...and at most this share of the page's pixels may differ at all (114 and 110 of 2.8 million measured). |
 | 222 | `KeptCheck.KEPT_CHROME_MS` | `4` | The budget for the kept chrome's month - the header's and the rail's draw, then the pulse's CSS and layout over both - at CITY_MONTHS, on the PC. |
 | 225 | `KeptCheck.CHROME_SCREENS` | `{ "showPopulationInfoMenu", "showLandMenu", "showSectorMenu", "showBankMenu",...` | The screens the chrome is shown on, one a month: the tab lit on the rail follows, and the last is a game menu (no clock, no rail). |
-| 446 | `KeptCheck.KEPT_ALL_CHROME_MS` | `8` | The budget for the whole chrome kept, in one month: the header, the rail and the three panels, drawn and laid out. |
+| 447 | `KeptCheck.KEPT_ALL_CHROME_MS` | `8` | The budget for the whole chrome kept, in one month: the header, the rail and the three panels, drawn and laid out. |
 
 ## Fields (state)
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 88 | 800 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 88 | 803 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 92 | 4 | `static void check(String label, boolean ok)` |  |
 | 109 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
 | 116 | 13 | `static String startJavaFx()` | The toolkit started, or why not (then this harness has nothing to run on). |
@@ -103,9 +103,9 @@
 | 194 | 16 | `static String pixelDifference(int[] a, int[] b)` | Where two snapshots part: their sizes, or how many pixels differ and the box round them. |
 | 211 | 3 | `static String clip(String s)` |  |
 | 215 | 5 | `static double median(List<Double> v)` |  |
-| 233 | 211 | `static void chrome(Game g, KeptBench bench) throws Exception` | Sections 6 to 10: the header and the tab rail kept (UP2). |
-| 449 | 11 | `static void panelStates(KeptBench bench, int at)` | The panels' states, month by month: the city panel's mode, and which of its sections are open. |
-| 465 | 244 | `static void panels(Game g, KeptBench bench) throws Exception` | Sections 11 to 13: the city panel, the construction panel and the inbox's list kept (UP2, slice 2b), each on a scene of its own, beside the header and the rail of 6 to 10. |
-| 711 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
-| 717 | 170 | `public static void main(String[] args) throws Exception` |  |
+| 233 | 212 | `static void chrome(Game g, KeptBench bench) throws Exception` | Sections 6 to 10: the header and the tab rail kept (UP2). |
+| 450 | 11 | `static void panelStates(KeptBench bench, int at)` | The panels' states, month by month: the city panel's mode, and which of its sections are open. |
+| 466 | 245 | `static void panels(Game g, KeptBench bench) throws Exception` | Sections 11 to 13: the city panel, the construction panel and the inbox's list kept (UP2, slice 2b), each on a scene of its own, beside the header and the rail of 6 to 10. |
+| 713 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
+| 719 | 171 | `public static void main(String[] args) throws Exception` |  |
 

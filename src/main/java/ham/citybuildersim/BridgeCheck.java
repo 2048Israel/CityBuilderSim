@@ -77,12 +77,12 @@ public class BridgeCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-112s %s%n", label, Timing.verdict(ok));
+        out.printf("%-112s %s%n", label, Timing.verdict(ok, label));
     }
 
     static void report(String label, boolean ok, String detail) {
         if (!ok) fails++;
-        out.printf("%-112s %s  %s%n", label, Timing.verdict(ok), detail);
+        out.printf("%-112s %s  %s%n", label, Timing.verdict(ok, label), detail);
     }
 
     /** Two figures are one within a hundredth of a metre or a part in a billion. */
