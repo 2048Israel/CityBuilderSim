@@ -227,22 +227,47 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
 5. **Reds** (the calls below, 4). Main's recorded reds pass, word for word,
    and the body says `Gate: known red only: <harnesses>`. A NEW red
    line ships only with `--red-ok "his words"`, his words in the body, even
-   in a timing harness: the timing step does not judge it again. Any other
+   in a timing harness: the timing step does not judge it again. His words
+   reach the timing step as well (TM3, below): a timing red that is over
+   the margin passes on them, and the lines it passed are named in the body.
+   Any other
    red goes back to the batch as its failing lines (`target/checks/reds.txt`
    in the gate's clone), and its ship file comes off first (A batch
    session, 5).
-6. **Timing** (lesson d; the calls below, 5). A timing red at the gate is
-   compared with main's own `--timing` run, the same day on the same
-   machine, which `ship.sh` runs by itself in a worktree of `main`. Red on
-   main too: it passes, named in the body, and in `gate.txt` only as a `#`
-   line, so it never becomes a recorded red and the next gate compares it
-   with main again. Green on main: it is the batch's.
+6. **Timing** (lesson d; the calls below, 5; TM3, 2026-10-27). A timing red
+   at the gate is judged side by side with main, not by one run of the
+   merge's: a wall-clock budget measured once on a PC that also runs Jerus's
+   game measures the load as much as the code (HY1's gate stopped on three
+   map lines main itself misses). `ship.sh` takes the red line's figure from
+   `target/checks/timing.tsv`, which every timing assertion writes through
+   `Timing.verdict(ok, label)` (harness, label, measured, budget, unit,
+   status, part), never from the label's prose, and times the red harnesses
+   again with main's classes (a worktree of `main`) and the merge's **in
+   turn, back to back, three rounds** (`CBS_TIMING_ROUNDS`, at least two; no
+   quiet minute between them, the rounds are to share one load). The red
+   counts against the batch only if its median figure is **more than 15%**
+   over main's (`tools/timing-pair.awk` holds the arithmetic and the dial;
+   `CBS_TIMING_MARGIN` moves it for a test). Otherwise it passes, named in
+   the merge's `Gate-timing:` line with both medians, and in `gate.txt` only
+   as a `#` line, so it never becomes a recorded red. A red that is over the
+   margin, one with nothing to compare (main has no such assertion, a round
+   did not run) and one that is no clock's (a failure behind no missed
+   figure) is the batch's and stops - unless `--red-ok "his words"`, which
+   passes those lines too, said in `Gate-timing:` with his words and the
+   lines, and in `gate.txt` as `#` lines. `--red-ok` passes only the red
+   lines in front of it; it names them and records none. Wall-clock
+   comparisons that are not a budget (MapCheck's "the view adds nothing a
+   tile" compared two measured times) are `Timing` assertions too
+   (TimingCheck 6 holds it): soft in the suite, judged here.
 7. `--version X.Y.Z` only on Jerus's word. `--dry-run` runs everything, the
    gate included, prints what it would commit, tag and push, and keeps
    nothing. Harness names after `--` only with `--dry-run`: a partial suite
    never ships. A docs-only merge (every path ends in `.md`, none under
    `docs/ensemble/`) gates on `--fast`: no suite, no timing, `gate.txt`
-   untouched. After any change to `ship.sh`, `sh tools/ship-selftest.sh`
+   untouched. `ship.sh` runs from a copy of itself (TM3): the merge of a
+   batch that changes `ship.sh` rewrites the file, and a shell reads its
+   script as it goes. The new one runs from the next ship. After any change
+   to `ship.sh` or `tools/timing-pair.awk`, `sh tools/ship-selftest.sh`
    runs it against a throwaway local origin with a stub `batch-check.sh`:
    no JVM, about two minutes. After any change to the timing wait
    (`tools/jvms.ps1`, the `--timing` of the two check scripts),
@@ -404,8 +429,11 @@ rule on Pending.
 4. Main's recorded reds pass the gate by default, word for word, and a new
    red only with `--red-ok` and his words. Recommended: his own by-hand
    rule, made mechanical.
-5. A timing red that main shows too, the same day on the same machine,
-   passes and is named in the merge's body (lesson d). Recommended.
+5. A timing red that main shows too passes and is named in the merge's body
+   (lesson d). Since TM3 "shows too" is read side by side: the red harness
+   is timed again with main's classes and the merge's in turn, and the red
+   passes unless the merge's median is over main's by more than 15% (step 6
+   of the gate). Recommended.
 
 ## The lessons of 2026-10-23/24
 

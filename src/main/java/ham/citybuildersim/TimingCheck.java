@@ -51,7 +51,23 @@ import java.util.stream.Stream;
  *      the property is read in one place, and AllChecks runs every one of them
  *      and this;
  *   7. the rest of the suite is untouched: with no miss held, verdict(true) is
- *      exactly OK and verdict(false) exactly FAIL in every mode.
+ *      exactly OK and verdict(false) exactly FAIL in every mode;
+ *   8. the figures' record (TM3): with -Dcbs.timing.tsv naming a file, each
+ *      assertion's line writes a row for every figure it judged - harness,
+ *      label, measured, budget, unit, status (OK, SOFT or FAIL), the figure's
+ *      place in the assertion - and with none named nothing is written; a
+ *      child JVM started as AllChecks starts one writes to the same file;
+ *   9. the margin's arithmetic (tools/timing-pair.awk, which the ship gate runs
+ *      on main's figures and the merge's): the batch passes at the margin and
+ *      stops a hair over it, the median decides and not one slow round, a side
+ *      with fewer than two figures stops, a line that is no clock's stops, and
+ *      a failed harness's own count passes only with a timing red that passes.
+ *
+ * A harness that times prints its lines through the labelled verdict
+ * (Timing.verdict(ok, label)), and no assertion compares two measured times
+ * but through Timing (section 6): MapCheck's "the view adds nothing a tile",
+ * which compared the view's time with section 5's and so stayed hard in the
+ * soft suite, went red on a merge that could not reach it (CC1-S, 2026-10-26).
  *
  * It sets the property itself in every section and restores it at the end, so
  * it passes whatever the run was given.
@@ -94,6 +110,8 @@ public class TimingCheck {
 
     public static void main(String[] args) throws Exception {
         String saved = System.getProperty(Timing.PROPERTY);
+        String savedTsv = System.getProperty(Timing.TSV_PROPERTY);
+        System.clearProperty(Timing.TSV_PROPERTY);   // the fixtures of sections 1 to 7 miss on purpose: their rows are not the suite's
         try {
             hard();
             soft();
@@ -102,7 +120,11 @@ public class TimingCheck {
             acrossTheJvm();
             suiteGoesThroughIt();
             restUntouched();
+            theFiguresRecord();
+            theMarginsArithmetic();
         } finally {
+            if (savedTsv == null) System.clearProperty(Timing.TSV_PROPERTY);
+            else System.setProperty(Timing.TSV_PROPERTY, savedTsv);
             setMode(saved);
             Timing.verdict(true);
         }
@@ -134,7 +156,7 @@ public class TimingCheck {
 
         void check(String label, boolean ok) {
             if (!ok) fails++;
-            out.println(String.format("%-40s %s", label, Timing.verdict(ok)));
+            out.println(String.format("%-40s %s", label, Timing.verdict(ok, label)));
         }
 
         /** Everything printed so far (empty when it prints to a stream). */
@@ -426,13 +448,18 @@ public class TimingCheck {
         for (String n : listed) if (!timed.contains(n)) mismatched.add(n + " is in Timing.HARNESSES, and calls neither");
         none("the harnesses that call Timing.within or below are exactly Timing.HARNESSES", mismatched);
 
-        // c. each prints through Timing.verdict
+        // c. each prints through Timing.verdict, with the label its line prints (TM3: the figures' rows carry it)
         List<String> unprinted = new ArrayList<>();
+        Pattern labelled = Pattern.compile("Timing\\.verdict\\(\\s*\\w+\\s*,\\s*\\w+\\s*\\)");
         for (String n : timed) {
             Path p = SOURCES.resolve(n + ".java");
-            if (!readSource(p).contains("Timing.verdict(")) unprinted.add(n + " does not print through Timing.verdict");
+            String src = readSource(p);
+            int calls = count(src, "Timing.verdict("), withLabel = 0;
+            for (java.util.regex.Matcher m = labelled.matcher(src); m.find(); ) withLabel++;
+            if (calls == 0) unprinted.add(n + " does not print through Timing.verdict");
+            else if (withLabel != calls) unprinted.add(n + " has " + (calls - withLabel) + " Timing.verdict call(s) without the label (Timing.verdict(ok, label))");
         }
-        none("each of them prints its assertion lines through Timing.verdict", unprinted);
+        none("each of them prints its assertion lines through Timing.verdict(ok, label)", unprinted);
 
         // d. the property is read in one place
         String quoted = "\"" + Timing.PROPERTY + "\"";
@@ -443,8 +470,31 @@ public class TimingCheck {
                 if (readSource(p).contains(quoted)) readers.add(ALL_SOURCES.relativize(p) + " names the property's string");
             }
         }
-        none("no source but Timing.java holds the property's string literal", readers);
-        check("and Timing.java holds it, so that rule is not vacuous", readSource(SOURCES.resolve("Timing.java")).contains(quoted));
+        String quotedTsv = "\"" + Timing.TSV_PROPERTY + "\"";
+        try (Stream<Path> s = Files.walk(ALL_SOURCES)) {
+            for (Path p : s.filter(q -> q.toString().endsWith(".java")).sorted().toList()) {
+                if (p.getFileName().toString().equals("Timing.java")) continue;
+                if (readSource(p).contains(quotedTsv)) readers.add(ALL_SOURCES.relativize(p) + " names the figures file property's string");
+            }
+        }
+        none("no source but Timing.java holds the properties' string literals", readers);
+        check("and Timing.java holds them, so that rule is not vacuous", readSource(SOURCES.resolve("Timing.java")).contains(quoted)
+                && readSource(SOURCES.resolve("Timing.java")).contains(quotedTsv));
+
+        // f. no assertion line compares a measured time (a variable named ...Ms, ...Ns, ...Nanos) with < <= > >= but through Timing
+        //    (TM3: MapCheck compared the view's time with section 5's, a clock's comparison that stayed hard in the soft suite)
+        Pattern measured = Pattern.compile("[A-Za-z_]*(Ms|Ns|Nanos)(\\[[^\\]]*\\])?\\s*(<=?|>=?)(?!=)|(<=?|>=?)\\s*[A-Za-z_]*(Ms|Ns|Nanos)(\\[[^\\]]*\\])?\\b");
+        Pattern assertion = Pattern.compile("^\\s*(check|report|assertTrue|assertTimed)\\(");
+        List<String> compared = new ArrayList<>();
+        for (Path p : checks) {
+            String file = p.getFileName().toString();
+            String[] lines = readSource(p).split("\\R");
+            for (int i = 0; i < lines.length; i++) {
+                if (assertion.matcher(lines[i]).find() && measured.matcher(lines[i]).find() && !lines[i].contains("Timing."))
+                    compared.add(file + ":" + (i + 1) + "  " + lines[i].strip());
+            }
+        }
+        none("no assertion compares a measured time but through Timing", compared);
 
         // e. AllChecks runs them all, and this
         List<String> registry = Arrays.asList(AllChecks.HARNESSES);
@@ -466,5 +516,211 @@ public class TimingCheck {
             check("verdict(true) is exactly OK, " + modeName(mode), "OK".equals(Timing.verdict(true)));
             check("verdict(false) is exactly the old failing word, " + modeName(mode), "FAIL".equals(Timing.verdict(false)));
         }
+    }
+
+    /* =====================================================================
+     * 8. THE FIGURES' RECORD (TM3)
+     * ===================================================================== */
+
+    /** A figures file's rows, each split on tabs (a trailing empty column kept); none when the file is not there. */
+    static List<String[]> rows(Path file) throws IOException {
+        List<String[]> rows = new ArrayList<>();
+        if (!Files.exists(file)) return rows;
+        for (String line : readSource(file).split("\\R")) if (!line.isEmpty()) rows.add(line.split("\t", -1));
+        return rows;
+    }
+
+    static void theFiguresRecord() throws Exception {
+        System.out.println("--- 8. the figures' record: each timing assertion writes its figure and budget for the gate ---");
+        Path dir = TempDirs.create("timing-tsv");
+        Path file = dir.resolve("timing.tsv");
+
+        System.clearProperty(Timing.TSV_PROPERTY);
+        setMode(Timing.HARD);
+        Fixture fx = new Fixture();
+        fx.check("a measured figure against a zero budget", Timing.within(measured(), FIXTURE_BUDGET_MS));
+        check("no file named: none is written, and nothing is forwarded to a child", !Files.exists(file) && Timing.forwardedTsv() == null);
+
+        System.setProperty(Timing.TSV_PROPERTY, file.toString());
+        check("named: forwardedTsv() is -D" + Timing.TSV_PROPERTY + "=<the file>", ("-D" + Timing.TSV_PROPERTY + "=" + file).equals(Timing.forwardedTsv()));
+
+        // a. a hard miss: FAIL, with its figure, its budget and its unit
+        fx = new Fixture();
+        fx.check("a measured figure against a zero budget", Timing.within(measured(), FIXTURE_BUDGET_MS));
+        List<String[]> r = rows(file);
+        check("hard miss: one row of seven columns", r.size() == 1 && r.get(0).length == 7);
+        String[] row = r.isEmpty() ? new String[7] : r.get(0);
+        check("...the harness is the class that printed the line (this one), the label as printed",
+                "TimingCheck".equals(row[0]) && "a measured figure against a zero budget".equals(row[1]));
+        check("...the figure is a measured one above the budget, the budget is the fixture's, in ms",
+                row[2] != null && Double.parseDouble(row[2]) > FIXTURE_BUDGET_MS && Double.parseDouble(row[3]) == FIXTURE_BUDGET_MS && "ms".equals(row[4]));
+        check("...it is FAIL, the first figure of its assertion", "FAIL".equals(row[5]) && "1".equals(row[6]));
+
+        // b. soft: the same miss is SOFT; a held figure is OK with its figure and budget; the unit is the one named
+        Files.delete(file);
+        setMode(Timing.SOFT);
+        fx = new Fixture();
+        fx.check("a measured figure against a zero budget", Timing.within(measured(), FIXTURE_BUDGET_MS));
+        fx.check("a figure that held", Timing.within(12.5, 40));
+        fx.check("a figure in microseconds", Timing.within(7, 90, "us"));
+        r = rows(file);
+        check("soft: three rows, one for each assertion", r.size() == 3);
+        check("...the missed one is SOFT", r.size() == 3 && "SOFT".equals(r.get(0)[5]));
+        check("...the held one is OK with its figure and its budget", r.size() == 3 && "OK".equals(r.get(1)[5]) && "12.5".equals(r.get(1)[2]) && "40".equals(r.get(1)[3]));
+        check("...and the one in microseconds says so", r.size() == 3 && "us".equals(r.get(2)[4]) && "90".equals(r.get(2)[3]));
+
+        // c. two figures in one condition: a row for each, numbered; a label with a tab and a line end is one clean row
+        Files.delete(file);
+        setMode(Timing.HARD);
+        fx = new Fixture();
+        fx.check("two figures,\twith a tab\nand a line end", Timing.within(measured(), FIXTURE_BUDGET_MS) & Timing.within(measured(), FIXTURE_BUDGET_MS));
+        r = rows(file);
+        check("two figures in one condition: two rows, numbered 1 and 2, the one label",
+                r.size() == 2 && "1".equals(r.get(0)[6]) && "2".equals(r.get(1)[6]) && r.get(0)[1].equals(r.get(1)[1]));
+        check("...a tab or a line end in a label is a space, and a row stays one line of seven columns",
+                r.size() == 2 && "two figures, with a tab and a line end".equals(r.get(0)[1]) && r.get(0).length == 7);
+
+        // d. a figure that is not a number is FAIL even soft; an unlabelled verdict writes nothing and clears what was judged
+        Files.delete(file);
+        setMode(Timing.SOFT);
+        fx = new Fixture();
+        fx.check("a figure that was never measured", Timing.within(Double.NaN, 40));
+        r = rows(file);
+        check("NaN, soft: the row says FAIL, as the verdict does", r.size() == 1 && "FAIL".equals(r.get(0)[5]) && "NaN".equals(r.get(0)[2]));
+        Files.delete(file);
+        Timing.within(3, 40);
+        Timing.verdict(true);
+        fx = new Fixture();
+        fx.check("a figure after an unlabelled verdict", Timing.within(5, 40));
+        r = rows(file);
+        check("an unlabelled verdict writes no row, and what it judged is not told on the next line", r.size() == 1 && "5".equals(r.get(0)[2]));
+
+        // e. a child JVM started as AllChecks starts one writes to the same file
+        String javaExe = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        String classpath = System.getProperty("java.class.path");
+        Files.delete(file);
+        setMode(Timing.HARD);
+        check("the child's command carries the file", AllChecks.command(javaExe, classpath, FIXTURE_HARNESS, true).contains(Timing.forwardedTsv()));
+        runFixture(javaExe, classpath);
+        r = rows(file);
+        check("a child JVM writes its row to the file: TimingCheck's, FAIL",
+                r.size() == 1 && "TimingCheck".equals(r.get(0)[0]) && "FAIL".equals(r.get(0)[5]));
+        System.clearProperty(Timing.TSV_PROPERTY);
+    }
+
+    /* =====================================================================
+     * 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk
+     * ===================================================================== */
+
+    static final Path PAIR_AWK = Paths.get("tools", "timing-pair.awk");
+
+    /** awk with these arguments, the repository root as its folder; its output lines, or null when awk cannot be started here. */
+    static List<String> awk(List<String> args) throws Exception {
+        List<String> cmd = new ArrayList<>(List.of("awk"));
+        cmd.addAll(args);
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.redirectErrorStream(true);
+        Process p;
+        try {
+            p = pb.start();
+        } catch (IOException e) {
+            return null;
+        }
+        String out = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        if (!p.waitFor(60, TimeUnit.SECONDS)) p.destroyForcibly();
+        List<String> lines = new ArrayList<>();
+        for (String l : out.split("\\R")) if (!l.isEmpty()) lines.add(l);
+        return lines;
+    }
+
+    /** The pairs file's rows for one label: the figures of each side in turn, one per round. */
+    static String pairRows(String harness, String label, double[] main, double[] batch) {
+        StringBuilder b = new StringBuilder();
+        for (int r = 0; r < Math.max(main.length, batch.length); r++) {
+            if (r < main.length) b.append("main\t").append(r + 1).append('\t').append(harness).append('\t').append(label).append('\t').append(main[r]).append("\t58\tms\tOK\t1\n");
+            if (r < batch.length) b.append("batch\t").append(r + 1).append('\t').append(harness).append('\t').append(label).append('\t').append(batch[r]).append("\t58\tms\tOK\t1\n");
+        }
+        return b.toString();
+    }
+
+    /** The judge's answer for these files: one "VERDICT\tline\twhy" per residual line. */
+    static List<String> judge(Path dir, String pairs, String hard, String residual, String margin) throws Exception {
+        Files.writeString(dir.resolve("pairs.tsv"), pairs, StandardCharsets.UTF_8);
+        Files.writeString(dir.resolve("hard.tsv"), hard, StandardCharsets.UTF_8);
+        Files.writeString(dir.resolve("residual.txt"), residual, StandardCharsets.UTF_8);
+        List<String> args = new ArrayList<>(List.of("-v", "mode=judge"));
+        if (margin != null) args.addAll(List.of("-v", "margin=" + margin));
+        args.addAll(List.of("-f", PAIR_AWK.toString(), dir.resolve("pairs.tsv").toString(), dir.resolve("hard.tsv").toString(), dir.resolve("residual.txt").toString()));
+        return awk(args);
+    }
+
+    static void theMarginsArithmetic() throws Exception {
+        System.out.println("--- 9. the margin's arithmetic: the batch against main, at the median of the paired rounds ---");
+        if (!Files.isRegularFile(PAIR_AWK)) {
+            check(PAIR_AWK + " is there (the suite runs from the repository root)", false);
+            return;
+        }
+        Path dir = TempDirs.create("timing-pair");
+        Files.writeString(dir.resolve("empty"), "", StandardCharsets.UTF_8);
+        List<String> dial = awk(List.of("-v", "mode=dial", "-f", PAIR_AWK.toString(), dir.resolve("empty").toString()));
+        if (dial == null) {
+            System.out.println("awk is not on the PATH here, so section 9 did not run (the ship gate runs it)");
+            return;
+        }
+        double margin = dial.isEmpty() ? Double.NaN : Double.parseDouble(dial.get(0));
+        check("the dial is a margin of 15 percent (the brief's), told by the script", margin == 15);
+
+        String label = "a month's FX-side map work at 5B takes no more than 58 ms";
+        String hard = "MapCheck\t" + label + "\t59.9\t58\tms\tFAIL\t1\nMapCheck\ta figure that held\t3\t80\tms\tOK\t1\n";
+        String residual = "MapCheck | exit 1\nMapCheck | " + label + "     FAIL\nMapCheck | 1 FAILED\n";
+        double[] steady = { 100, 100, 100 };
+        double atMargin = 100 * (1 + margin / 100);
+
+        List<String> v = judge(dir, pairRows("MapCheck", label, steady, new double[] { atMargin, atMargin, atMargin }), hard, residual, null);
+        check("a batch exactly at the margin over main passes (the margin is a 'more than')", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t"));
+        check("...the line's notes carry both medians and the budget", v != null && v.size() == 3 && v.get(1).contains("main 100 ms") && v.get(1).contains("batch 115 ms") && v.get(1).contains("budget 58 ms"));
+        check("...and the harness's own count and exit pass with it", v != null && v.size() == 3 && v.get(0).startsWith("PASS\t") && v.get(2).startsWith("PASS\t"));
+
+        double over = atMargin + 0.1;
+        v = judge(dir, pairRows("MapCheck", label, steady, new double[] { over, over, over }), hard, residual, null);
+        check("a hair over the margin stops: FAIL, over main's by more than the margin, the figures named",
+                v != null && v.size() == 3 && v.get(1).startsWith("FAIL\t") && v.get(1).contains("over main's by more than 15%") && v.get(1).contains("batch 115 ms"));
+        check("...and the harness's own count and exit stop with it", v != null && v.size() == 3 && v.get(0).startsWith("FAIL\t") && v.get(2).startsWith("FAIL\t"));
+
+        v = judge(dir, pairRows("MapCheck", label, steady, new double[] { 100, 100, 900 }), hard, residual, null);
+        check("the median decides, not one slow round of the batch's: [100 100 900] against main's 100 passes", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t"));
+        v = judge(dir, pairRows("MapCheck", label, new double[] { 100, 900, 900 }, new double[] { 100, 100, 130 }), hard, residual, null);
+        check("...nor one fast round of main's: main's median 900 against the batch's 100 passes", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t"));
+        v = judge(dir, pairRows("MapCheck", label, new double[] { 60, 70 }, new double[] { 100, 110 }), hard, residual, null);
+        check("two rounds are a median of two (the mean): main 65, batch 105 stops", v != null && v.size() == 3 && v.get(1).startsWith("FAIL\t") && v.get(1).contains("main 65 ms, batch 105 ms"));
+
+        v = judge(dir, pairRows("MapCheck", label, steady, new double[] { 130, 130, 130 }), hard, residual, "40");
+        check("the margin is a dial: 30% slower passes at 40", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t"));
+
+        v = judge(dir, pairRows("MapCheck", label, steady, new double[] { 100 }), hard, residual, null);
+        check("a side with one figure has no median: FAIL, no pair to compare", v != null && v.size() == 3 && v.get(1).startsWith("FAIL\t") && v.get(1).contains("no pair to compare"));
+        v = judge(dir, "", hard, residual, null);
+        check("no figures at all (the paired runs did not run): FAIL, no pair to compare", v != null && v.size() == 3 && v.get(1).startsWith("FAIL\t") && v.get(1).contains("no pair to compare"));
+        v = judge(dir, pairRows("MapCheck", "another assertion entirely", steady, steady), hard, residual, null);
+        check("an assertion the pairs do not have (a batch's own new one, a label changed): FAIL, no pair", v != null && v.size() == 3 && v.get(1).startsWith("FAIL\t") && v.get(1).contains("no pair to compare"));
+
+        String shifted = "a month's FX-side map work at 6B takes no more than 59 ms";
+        v = judge(dir, pairRows("MapCheck", shifted, steady, steady), hard, residual, null);
+        check("a label that prints a figure pairs with itself across the sides' digits (6B for 5B, 59 for 58)", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t"));
+
+        v = judge(dir, pairRows("MapCheck", label, steady, steady), hard, "MapCheck | exit 1\nMapCheck | a failure that is not a clock's     FAIL\nMapCheck | 2 FAILED\n", null);
+        check("a red with no missed figure behind it is no timing red: FAIL, and the harness's own count with it",
+                v != null && v.size() == 3 && v.get(0).startsWith("FAIL\t") && v.get(1).startsWith("FAIL\t") && v.get(1).contains("not a timing red") && v.get(2).startsWith("FAIL\t"));
+        v = judge(dir, pairRows("MapCheck", label, steady, steady), hard,
+                "MapCheck | exit 1\nMapCheck | " + label + "     FAIL\nMapCheck | a failure that is not a clock's     FAIL\nMapCheck | 2 FAILED\n", null);
+        check("a passing timing red beside a red that is no clock's: the second stops, and the harness's count with it",
+                v != null && v.size() == 4 && v.get(1).startsWith("PASS\t") && v.get(2).startsWith("FAIL\t") && v.get(0).startsWith("FAIL\t") && v.get(3).startsWith("FAIL\t"));
+        v = judge(dir, pairRows("MapCheck", label, steady, steady), hard, "MapCheck | exit 1\n", null);
+        check("a harness that failed with no timing red of its own: FAIL", v != null && v.size() == 1 && v.get(0).startsWith("FAIL\t"));
+
+        List<String> names = awk(List.of("-v", "mode=harnesses", "-f", PAIR_AWK.toString(), dir.resolve("hard.tsv").toString(), dir.resolve("residual.txt").toString()));
+        Files.writeString(dir.resolve("residual.txt"), residual + "GridCheck | exit 1\nGridCheck | a failure that is not a clock's     FAIL\n", StandardCharsets.UTF_8);
+        names = awk(List.of("-v", "mode=harnesses", "-f", PAIR_AWK.toString(), dir.resolve("hard.tsv").toString(), dir.resolve("residual.txt").toString()));
+        check("the harnesses to time again are those with a timing red among the lines: MapCheck, not GridCheck", names != null && names.equals(List.of("MapCheck")));
     }
 }

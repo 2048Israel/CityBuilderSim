@@ -374,7 +374,7 @@ public class MapCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-78s %s%n", label, Timing.verdict(ok));
+        out.printf("%-78s %s%n", label, Timing.verdict(ok, label));
     }
 
     /** Months the city of section 1 is played: 120 (the design's). */
@@ -4149,7 +4149,7 @@ public class MapCheck {
                         + " section 5's path in turn %.1f and %.1f ms (%.2f x)%n", PX, view[0], TIMES[DENSE], view[1], view[1] / view[0],
                 modelMs[0], modelMs[1], modelMs[1] / modelMs[0]);
         check("the view's own path for a 1,389 x 868 L0 screen takes no more than 80 ms, x 1 and x 10,000", Timing.within(view[0], SCREEN_MS) && Timing.within(view[1], SCREEN_MS));
-        check("...and no more than section 5's at either size: the view adds nothing a tile", view[0] <= modelMs[0] && view[1] <= modelMs[1]);
+        check("...and no more than section 5's at either size: the view adds nothing a tile", Timing.within(view[0], modelMs[0]) && Timing.within(view[1], modelMs[1]));   // TM3: two measured times, so a clock's: soft in the suite, judged side by side at the gate
         long kept = 0, plan = 0;
         for (int j = 0; j < SCREEN_DOWN; j++) for (int i = 0; i < SCREEN_ACROSS; i++) {
             // Each tile painted and kept (PAINTED_KEPT is the hover's one), and weighed as kept.
