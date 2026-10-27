@@ -655,11 +655,9 @@ adds its line here, not in `CLAUDE.md`.
                                          whose trace moved, are docs/ensemble/<version>.md; EnsembleCheck keeps
                                          the driver compiling against the tree and the newest score readable
     tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
-                                         Batch check.bat, which times soft while either runs, and batch-check.sh and
-                                         ship.sh, which wait for the batches before the gate's hard timing (TM1;
-                                         batch-check.sh times every other run soft since BP1); -Quiet is that wait:
-                                         four empty looks in a row, 15 s apart, 30 minutes at most, the game not
-                                         waited for unless CBS_QUIET_GAME=1 (TM2)
+                                         Batch check.bat, which times soft while either runs, and batch-check.sh,
+                                         which says so on a soft run (TM1; GP1 took out TM2's -Quiet wait for a
+                                         quiet minute before the gate's hard timing)
     tools/pick.sh                        the harnesses that read what a branch changed, picked from its diff against
                                          main through docs/harnesses.md's reverse index, with no JVM: one line, the
                                          names, ALL or NONE, for batch-check.sh --pick, and on stderr whether the
@@ -669,12 +667,13 @@ adds its line here, not in `CLAUDE.md`.
                                          batch branch as ready, working, stuck or off-queue; --due only the ready
                                          and the stuck, for the hourly check-in (BP1, 2026-10-24)
     tools/wait.sh                        waits inside one command, so a session need not end its turn: until a
-                                         batch's row has left origin/main's queue (--row), or a line of a file
-                                         matches (--line); --for MIN gives up after so long (BP1, 2026-10-24)
+                                         batch's row has left origin/main's queue (--row), a batch branch on
+                                         origin has its ship file (--ship, the orchestrator's: GP1, 2026-10-27),
+                                         or a line of a file matches (--line); --for MIN gives up after so long
+                                         (BP1, 2026-10-24)
     tools/ship-selftest.sh               ship.sh run against a throwaway local origin with a stub batch-check.sh, so
                                          no JVM: its stops and its records in about two minutes; run it after any
                                          change to ship.sh (BP1's review, 2026-10-25)
-    tools/quiet-selftest.sh              the timing wait (jvms.ps1 -Quiet, batch-check.sh --timing, Batch check.bat
-                                         --timing) run against real JVMs that come and go: a runner with gaps, a fake
-                                         game, the cap, the .bat's refusal, in about three minutes; run it after any
-                                         change to the wait (TM2, 2026-10-25)
+    tools/wait-selftest.sh               wait.sh --ship against a throwaway local origin, no JVM: a ship file pushed
+                                         ends it, other pushes, a merged or deleted branch and --skip do not, in
+                                         about 20 seconds; run it after any change to wait.sh (GP1, 2026-10-27)

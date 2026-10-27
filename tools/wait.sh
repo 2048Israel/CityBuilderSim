@@ -1,13 +1,18 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
 #  Waiting without ending a turn: until a batch's row leaves the queue on
-#  origin/main, or until a line turns up in a file. Prints exactly one line on
-#  every ending, so the session that waits is woken once and reads one line.
-#  Read-only apart from fetching origin's main. POSIX sh.
+#  origin/main, until a batch branch on origin has its ship file, or until a
+#  line turns up in a file. Prints exactly one line on every ending, so the
+#  session that waits is woken once and reads one line.
+#  Read-only apart from fetching origin's main and batch branches. POSIX sh.
 #
 #      sh tools/wait.sh --row ID... [--for MIN]       until none of the ids has a
 #                                  row in the Queued table of origin/main's
 #                                  QUEUE.md (origin's main fetched every 2 minutes)
+#      sh tools/wait.sh --ship [--skip ID...] [--for MIN]   until an unmerged batch/ branch on
+#                                  origin has its docs/queue/<id>-ship.md ("ready to ship"),
+#                                  less the ids skipped; one that has it already ends it at
+#                                  once (fetched every 2 minutes, as --row)
 #      sh tools/wait.sh --line FILE ERE [--for MIN]   until a line of FILE matches the
 #                                  extended regex ERE (looked for every 10 seconds;
 #                                  a carriage return at a line's end is ignored)
@@ -27,7 +32,9 @@
 #
 #  The ending, the one line and the exit status:
 #      wait      done - ID is out of the Queued table of origin/main (3a9f01c2, 14:02)   0
+#      wait      done - ready to ship: ID ID (./ship.sh batch/<id>; origin/main 3a9f01c2, 14:02)   0
 #      wait      gave up after 7 min - still queued: ID (origin/main 3a9f01c2)            3
+#      wait      gave up after 7 min - no batch branch ready to ship (origin/main 3a9f01c2)   3
 #      wait      origin unreachable 6 fetches running: <the line git said>                4
 #                (or "wait      origin/main has no QUEUE.md", also 4)
 #      usage: sh tools/wait.sh ...                                                       2
@@ -37,6 +44,12 @@
 #  session started, hours before, and work built on that base conflicts at the
 #  ship in the very files the lane shares. A done line that finds HEAD without
 #  origin/main says so after its time: "; HEAD lacks origin/main: take it first".
+#  --ship is the orchestrator's (GP1): one background wait that ends when a branch is ready,
+#  so a gate starts within minutes of the ship file and not at the next hourly check-in
+#  (docs/batch.md, The day). A branch counts while its tip is not in origin/main's history
+#  and carries docs/queue/<its id>-ship.md; a merged one, a deleted one and a push that
+#  is not a ship file do not. A branch the orchestrator holds with its ship file on (a gate
+#  stopped for Jerus's word) is named in --skip, or the wait ends at once every time.
 #  A session chains its wait, the new base and its work in one background command:
 #      sh tools/wait.sh --row FW5 && git merge -q --ff-only origin/main && ./batch-check.sh --pick > target/checks/run.txt 2>&1; tail -12 target/checks/run.txt
 #
@@ -51,11 +64,14 @@
 #  now no fetch starts in the last 75 s and each is cut off at 45. Nothing said
 #  to take origin/main after the wait either, so a successor built on its
 #  predecessor's old base: the header says it now, and the done line checks.
+#  GP1 (2026-10-27): a branch that was ready waited for the orchestrator's next
+#  hourly check-in, a median of about 60 minutes from the ship file to the merge;
+#  --ship makes the ship file itself the thing waited for. tools/wait-selftest.sh.
 # ---------------------------------------------------------------------------
 
-usage() { echo "usage: sh tools/wait.sh --row ID... [--for MIN] | --line FILE ERE [--for MIN]" >&2; exit 2; }
+usage() { echo "usage: sh tools/wait.sh --row ID... [--for MIN] | --ship [--skip ID...] [--for MIN] | --line FILE ERE [--for MIN]" >&2; exit 2; }
 
-MODE=; IDS=; FILE=; ERE=; MIN=
+MODE=; IDS=; SKIP=; FILE=; ERE=; MIN=
 while [ $# -gt 0 ]; do
     case "$1" in
         --row)
@@ -65,6 +81,16 @@ while [ $# -gt 0 ]; do
                 case "$1" in -*) break ;; *) IDS="$IDS $1"; shift ;; esac
             done
             [ -n "$IDS" ] || usage ;;
+        --ship)
+            [ -z "$MODE" ] || usage
+            MODE=ship; shift ;;
+        --skip)
+            [ "$MODE" = ship ] || usage
+            shift
+            while [ $# -gt 0 ]; do
+                case "$1" in -*) break ;; *) SKIP="$SKIP $1"; shift ;; esac
+            done
+            [ -n "$SKIP" ] || usage ;;
         --line)
             [ -z "$MODE" ] || usage
             [ $# -ge 3 ] && [ -n "$2" ] && [ -n "$3" ] || usage
@@ -100,13 +126,23 @@ nap() {   # sleep $1 seconds, never past the deadline
     [ "$n" -le 0 ] || sleep "$n"
 }
 late() { [ -n "$DEADLINE" ] && [ "$(date +%s)" -ge "$DEADLINE" ]; }
-fetch_main() {   # origin's main; ends in FETCH_SECS, which no git setting does for a stalled TLS handshake
-    if [ "$HAVE_TIMEOUT" = 1 ]; then timeout "$FETCH_SECS" git fetch -q origin main
-    else git fetch -q origin main; fi
+fetch_main() {   # origin's main (--ship: and its batch branches, the deleted ones pruned); ends in FETCH_SECS, which no git setting does for a stalled TLS handshake
+    if [ "$MODE" = ship ]; then set -- --prune origin +refs/heads/main:refs/remotes/origin/main '+refs/heads/batch/*:refs/remotes/origin/batch/*'
+    else set -- origin main; fi
+    if [ "$HAVE_TIMEOUT" = 1 ]; then timeout "$FETCH_SECS" git fetch -q "$@"
+    else git fetch -q "$@"; fi
+}
+ready_ships() {   # the ids of origin's unmerged batch/ branches with their ship file, less --skip, each after a space
+    for b in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/batch/*'); do
+        id=${b#refs/remotes/origin/batch/}
+        case " $SKIP " in *" $id "*) continue ;; esac
+        git merge-base --is-ancestor "$b" origin/main && continue
+        git cat-file -e "$b:docs/queue/$id-ship.md" 2>/dev/null && printf ' %s' "$id"
+    done
 }
 
-# --- --row: the ids leave the Queued table of origin/main ---------------------
-if [ "$MODE" = row ]; then
+# --- --row: the ids leave the Queued table of origin/main; --ship: a batch branch is ready ---
+if [ "$MODE" = row ] || [ "$MODE" = ship ]; then
     git rev-parse --git-dir >/dev/null 2>&1 || { echo "wait: not in a git checkout" >&2; exit 2; }
     FAILS=0
     FETCH_BY=; [ -z "$DEADLINE" ] || FETCH_BY=$((DEADLINE - MARGIN))   # the latest a fetch may start
@@ -114,15 +150,20 @@ if [ "$MODE" = row ]; then
         ERR=$(fetch_main 2>&1); rc=$?
         if [ "$rc" -eq 0 ]; then
             FAILS=0
-            Q=$(git show origin/main:QUEUE.md 2>/dev/null) || { echo "wait      origin/main has no QUEUE.md"; exit 4; }
-            QUEUED=$(printf '%s\n' "$Q" | awk -F'|' '/^## / { ins = (index($0, "## Queued") == 1); next }
-                ins && /^\| [A-Za-z0-9]/ { gsub(/^ +| +$/, "", $2); print $2 }')
-            LEFT=
-            for id in $IDS; do
-                printf '%s\n' "$QUEUED" | grep -qxF -- "$id" && LEFT="$LEFT $id"
-            done
             HEAD="origin/main $(git rev-parse --short origin/main)"
-            if [ -z "$LEFT" ]; then
+            if [ "$MODE" = ship ]; then
+                READY=$(ready_ships)
+                if [ -n "$READY" ]; then echo "wait      done - ready to ship:$READY (./ship.sh batch/<id>; $(git rev-parse --short origin/main), $(date +%H:%M))"; exit 0; fi
+            else
+                Q=$(git show origin/main:QUEUE.md 2>/dev/null) || { echo "wait      origin/main has no QUEUE.md"; exit 4; }
+                QUEUED=$(printf '%s\n' "$Q" | awk -F'|' '/^## / { ins = (index($0, "## Queued") == 1); next }
+                    ins && /^\| [A-Za-z0-9]/ { gsub(/^ +| +$/, "", $2); print $2 }')
+                LEFT=
+                for id in $IDS; do
+                    printf '%s\n' "$QUEUED" | grep -qxF -- "$id" && LEFT="$LEFT $id"
+                done
+            fi
+            if [ "$MODE" = row ] && [ -z "$LEFT" ]; then
                 BEHIND=; git merge-base --is-ancestor origin/main HEAD 2>/dev/null || BEHIND="; HEAD lacks origin/main: take it first"
                 echo "wait      done -$IDS out of the Queued table of origin/main ($(git rev-parse --short origin/main), $(date +%H:%M))$BEHIND"
                 exit 0
@@ -141,6 +182,7 @@ if [ "$MODE" = row ]; then
             if [ "$r" -le 0 ]; then
                 if [ "$FAILS" -gt 0 ]; then
                     gave_up "origin not reached: $(printf '%s\n' "$ERR" | head -n 1 | cut -c1-100)"
+                elif [ "$MODE" = ship ]; then gave_up "no batch branch ready to ship ($HEAD)"
                 else gave_up "still queued:$LEFT ($HEAD)"; fi
             fi
             [ "$r" -ge "$n" ] || n=$r
