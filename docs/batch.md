@@ -171,11 +171,11 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
    branch sent back from the gate first takes it off (`git rm
    docs/queue/<id>-ship.md`, pushed) and pushes it again last when mended;
    left on, `day.sh --due` calls the branch ready every hour. A branch with
-   no ship file still ships the old way during the change-over, its records
-   as it wrote them (BP1 itself ships so, `--no-tag`); `ship.sh` stops one
-   whose `VERSION` main has tagged already (merge main and bump it, or
-   write a ship file), `--no-tag` with a `VERSION` change, any branch
-   carrying another id's ship file, and one built on a batch main lacks (7).
+   no ship file ships `--no-tag`, its records as it wrote them, as an
+   assistant's does (RL1: the old way, with its own version and row, is gone);
+   `ship.sh` stops one without `--no-tag`, `--no-tag` with a `VERSION` change,
+   any branch carrying another id's ship file, and one built on a batch main
+   lacks (7).
 6. **The ensemble only when the trace moves** (EN1, Jerus 2026-10-20): a
    batch whose default playtest's trace is byte-identical to main's but for
    its run-time line skips the 80-run ensemble and its notes say so; one
