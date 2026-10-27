@@ -1925,8 +1925,13 @@ public final class EarthTerrain {
         }
     }
 
-    /** Each 1-degree tile's FarRivers, once a far node has read it: null until then, and made again (not kept) for a node whose narrowest is under the kept one's `least`. Entries are immutable and racing threads may each build a tile's, so a lost write only costs a parse, as with widestRun. */
-    private volatile FarRivers[] farRivers;
+    /**
+     * Each 1-degree tile's FarRivers, once a far node has read it: null until then, and made again (not kept) for a node whose narrowest is
+     * under the kept one's `least`. Made with the terrain (a reference a tile, about half a megabyte), so no thread ever sees a second array.
+     * The far nodes are drawn on the map's workers as well as the screen's thread: an entry is immutable (final fields, its list built before
+     * it), so a thread sees a whole entry or none, and two threads building the same tile's only cost a parse.
+     */
+    private final FarRivers[] farRivers = new FarRivers[EarthData.TILES];
 
     /**
      * A far node's ground (spec-earth 3, "Far views"; MapTiles.nodeTerrain()):
@@ -2046,10 +2051,6 @@ public final class EarthTerrain {
             widestRun = widest;
         }
         FarRivers[] kept = farRivers;
-        if (kept == null) {
-            kept = new FarRivers[EarthData.TILES];
-            farRivers = kept;
-        }
         long segs = 0, lakes = 0;
         int[] tiles = c.tiles();
         for (int t : tiles) {
