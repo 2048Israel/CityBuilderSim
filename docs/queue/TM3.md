@@ -48,6 +48,12 @@ the batch's run and main's.
    measured, budget. The paired step reads those, never the label's prose.
 4. **No budget moves.** A harness's budget and premise stay as they are
    (README, *The checks*). TM3 changes only how the gate judges a red.
+5. **`--red-ok` reaches the timing step.** Today it covers only the suite
+   step's new reds. A timing red that main does not share stops the ship
+   whatever Jerus said, so MS2 (0.8.55, 2026-10-26) shipped on his "Ship it"
+   through a local copy of `ship.sh` changed at that one stop. With
+   `--red-ok "his words"`, the timing step's own reds pass too, and the gate's
+   record and the merge's `Gate-timing:` line carry his words and the lines.
 
 ## Scope and checks
 
