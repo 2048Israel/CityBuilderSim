@@ -605,7 +605,8 @@ adds its line here, not in `CLAUDE.md`.
                                    screen's own fitToWindow(), for ChartFitCheck). The model never imports it.
         *Check.java                142 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
-                                   since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
+                                   since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones;
+                                   since SP1 three at a time (PARALLEL), each JVM under -Xmx HEAP_MB
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under
                                    -Dcbs.timing=soft a figure over its budget says SOFT and is not counted, so
                                    two batches' suites check side by side; TimingCheck holds it
@@ -655,9 +656,8 @@ adds its line here, not in `CLAUDE.md`.
                                          whose trace moved, are docs/ensemble/<version>.md; EnsembleCheck keeps
                                          the driver compiling against the tree and the newest score readable
     tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
-                                         Batch check.bat, which times soft while either runs, and batch-check.sh,
-                                         which says so on a soft run (TM1; GP1 took out TM2's -Quiet wait for a
-                                         quiet minute before the gate's hard timing)
+                                         Batch check.bat, which times soft while either runs, and deepseek/agent.py
+                                         (TM1; GP1 took out TM2's -Quiet wait, SP1 batch-check.sh's soft-run line)
     tools/pick.sh                        the harnesses that read what a branch changed, picked from its diff against
                                          main through docs/harnesses.md's reverse index, with no JVM: one line, the
                                          names, ALL or NONE, for batch-check.sh --pick, and on stderr whether the
