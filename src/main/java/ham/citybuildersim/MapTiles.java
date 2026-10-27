@@ -400,6 +400,35 @@ public final class MapTiles {
         return out;
     }
 
+    /**
+     * A chart's node (MS3): MapFrame.NODE_PX squared pixels of the chart about an anchor (GlobeFrame.chart()), node
+     * (nx, ny) at `plots` plots a pixel, a World class each - the far rule through EarthTerrain.chart(), the planet's
+     * orthographic camera true in shape, its noise the sphere's, blended in from the plane's over GlobeFrame.SHAPE_BAND_KM
+     * past GlobeFrame.handoverUp() (the city's plane's shape distortion, SHAPE_HANDOVER). And, where `relief` is not null
+     * (NODE_PX squared bytes), the relief beside it, as nodeTerrain() lays it. Thread-safe: the worker's. Earth worlds only.
+     */
+    public static byte[] chartTerrain(World.Key world, GlobeFrame.Chart chart, long plots, long nx, long ny, byte[] relief) {
+        World w = World.of(world);
+        if (!w.isEarth()) throw new IllegalArgumentException("the charts draw an Earth world's ground: " + world);
+        byte[] out = new byte[MapFrame.NODE_PX * MapFrame.NODE_PX];
+        EarthTerrain e = w.earthTerrain();
+        int stride = (int) Math.min(Integer.MAX_VALUE, plots);
+        e.farTerrain(e.chart(chart.ortho(), stride, nx, ny, GlobeFrame.handoverUp(), GlobeFrame.SHAPE_BAND_KM / EarthProj.RADIUS_M * 1000), out, relief);
+        return out;
+    }
+
+    /**
+     * A chart node's colours (MS3): each pixel as nodePixels() colours ground the city does not own, with no site, district,
+     * run or edge - TileRaster.colour() of its class and relief (the class's colour where `relief` is null), dimmed toward
+     * TileRaster.VOID by TileRaster.UNOWNED_DIM. NODE_PX squared ints into `out`.
+     */
+    public static void chartPixels(byte[] ground, byte[] relief, int[] out) {
+        for (int k = 0; k < MapFrame.NODE_PX * MapFrame.NODE_PX; k++) {
+            int c = relief == null ? TileRaster.GROUND[ground[k]] : TileRaster.colour(ground[k], relief[k]);
+            out[k] = TileRaster.blend(c, TileRaster.VOID, TileRaster.UNOWNED_DIM);
+        }
+    }
+
     /* ----- the far nodes from the district pictures (0.7.128, batch MM1; docs/studies/spec-globe.md 8.2) ----- */
 
     /** A district is drawn from its picture (DistrictPicture) on a far node where it is at least this many of the node's pixels across: 4 (the study's 8.2) - a node's pixel is shown 1 to 2 screen pixels wide (MapFrame.nodePlots()), so 4 to 8 on screen (star MM1-4); under it its pixels are dithered by its shares (DistrictPicture.shares()). */

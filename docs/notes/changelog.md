@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.58 — MS3, The slanted ground — 2026-10-27, ready, see docs/queue/MS3-notes.md
+Far from the city, the expanded map at the near scales drew every patch of cover as a thin diagonal streak and sawed
+the shores (Goose Bay from a Singapore city). Measured first: the city's plane is an equal-area projection whose shape
+distortion, 2 / (1 + cos c) at an angle c out, stretches its noise-drawn patches along the line to the city, 4.5 to 1
+at Goose Bay; the node lookup and the turn to north were cleared. Past a distortion of 1.25 (5,908 km out) the near
+view is now drawn from charts: north-up pieces of the globe about anchors every 10 degrees, cached as the plane's
+nodes are, the Earth's cells read at each pixel's own point and the cover ranked through a noise on the sphere,
+blended in from the plane's over 100 km so no line shows. They also draw the ground off the world's square, where the
+far rule's speckle was. Far patches read 1.0 to 1 again (the plane's 2.4 at Goose Bay); the model and the trace are
+unchanged. GlobeCheck 2d measures the streak, the fix and the seam.
+
 ### GP1 — the gate starts at once: no quiet minute, a ready branch picked up when its ship file lands — 2026-10-27, ready, no tag (tooling), see docs/queue/GP1-notes.md
 From ship file to merge a gate took a median of about 60 minutes, of which `ship.sh` is 22-25: the rest was the hourly check-in, and TM2's quiet minute (up to 30 minutes for no other batch's JVM) when the other lane was running.
 The quiet minute is out, with all that served only it (`quiet_minute` and its hook, `jvms.ps1 -Quiet`, the `CBS_QUIET_*` dials, `Batch check.bat`'s wait, `quiet-selftest.sh`, `CBS_TIMING_PAIRED`): `--timing` runs at once, and a red under load is judged against main's own run in the same minutes (TM3).

@@ -1,4 +1,4 @@
-# MapCheck.java - 10,846 lines · 276 methods · 103 constants · harnesses
+# MapCheck.java - 10,873 lines · 276 methods · 103 constants · harnesses
 
 `ham/citybuildersim/MapCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      next month plays to the same map, a stale or missing sidecar draws the
 > ... (291 more lines in the source)
 
-**Uses:** [CityMap](CityMap.md) (478), [World](World.md) (478), [LandMap](LandMap.md) (395), [TilePainter](TilePainter.md) (220), [TrainSchedule](TrainSchedule.md) (208), [MapFrame](MapFrame.md) (189), [BuildingVisual](BuildingVisual.md) (171), [DistrictPlan](DistrictPlan.md) (167), [TileRaster](TileRaster.md) (165), [MapTiles](MapTiles.md) (138), [GlobeFrame](GlobeFrame.md) (111), [LandParcel](LandParcel.md) (106), [MiniMapFrame](MiniMapFrame.md) (93), [Game](Game.md) (74), [JunctionCheck](JunctionCheck.md) (62), [CityLand](CityLand.md) (59), [DistrictPicture](DistrictPicture.md) (58), [CityRuns](CityRuns.md) (54), [EarthTerrainCheck](EarthTerrainCheck.md) (46), [LongPlaytest](LongPlaytest.md) (37), [Ports](Ports.md) (33), [EarthTerrain](EarthTerrain.md) (31), [GlobePicture](GlobePicture.md) (27), [Timing](Timing.md) (25), [BoatSchedule](BoatSchedule.md) (25), [LandGrid](LandGrid.md) (24), [EarthData](EarthData.md) (24), [Resource](Resource.md) (23), [CityShore](CityShore.md) (21), [LandMarket](LandMarket.md) (18)... and 27 more
+**Uses:** [World](World.md) (479), [CityMap](CityMap.md) (478), [LandMap](LandMap.md) (398), [TilePainter](TilePainter.md) (220), [TrainSchedule](TrainSchedule.md) (208), [MapFrame](MapFrame.md) (189), [BuildingVisual](BuildingVisual.md) (171), [DistrictPlan](DistrictPlan.md) (167), [TileRaster](TileRaster.md) (165), [MapTiles](MapTiles.md) (138), [GlobeFrame](GlobeFrame.md) (117), [LandParcel](LandParcel.md) (106), [MiniMapFrame](MiniMapFrame.md) (93), [Game](Game.md) (74), [JunctionCheck](JunctionCheck.md) (62), [CityLand](CityLand.md) (59), [DistrictPicture](DistrictPicture.md) (58), [CityRuns](CityRuns.md) (54), [EarthTerrainCheck](EarthTerrainCheck.md) (46), [LongPlaytest](LongPlaytest.md) (37), [Ports](Ports.md) (33), [EarthTerrain](EarthTerrain.md) (31), [GlobePicture](GlobePicture.md) (27), [Timing](Timing.md) (25), [BoatSchedule](BoatSchedule.md) (25), [LandGrid](LandGrid.md) (24), [EarthData](EarthData.md) (24), [Resource](Resource.md) (23), [CityShore](CityShore.md) (21), [LandMarket](LandMarket.md) (18)... and 27 more
 
 **Used by (9):** [BridgeMapCheck](BridgeMapCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [GlobeCheck](GlobeCheck.md), [IslandNetCheck](IslandNetCheck.md), [MainLineCheck](MainLineCheck.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
@@ -93,14 +93,14 @@
 | 5717 | 11. THE DISTRICT PICTURES (0.7.128, batch MM1; docs/studies/spec-globe.md 8.2) |
 | 6173 | 12. THE MINIMAP (0.7.134, batch MM2; docs/studies/spec-globe.md 8.3) |
 | 6418 | 13. THE GLOBE ON SCREEN (0.7.135, batch E9) |
-| 6906 | 14. BUYING FROM THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) |
-| 7579 | 14e. BLOCKS PICKED (BL1) |
-| 8174 | 14f. THE EXACT GROUND ON THE SCREEN (BL1, slice D) |
-| 8488 | 15. THE MATERIALS DRAWN AS THEMSELVES (0.8.0, batch I14; |
-| 8855 | 16. THE AVENUES DRAWN (batch CL4; the study spec-city-layout 5.2) |
-| 9212 | 17. THE CURVES DRAWN (batch CL4, slice D; the study spec-city-layout 5.2) |
-| 9815 | 18. A MONTH REDRAWS ONLY WHAT MOVED (batch UP3, docs/queue/UP3.md) |
-| 10548 | THE RELIEF ON THE MAP (ET1 slice D; docs/studies/spec-earth2-terrain.md |
+| 6933 | 14. BUYING FROM THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) |
+| 7606 | 14e. BLOCKS PICKED (BL1) |
+| 8201 | 14f. THE EXACT GROUND ON THE SCREEN (BL1, slice D) |
+| 8515 | 15. THE MATERIALS DRAWN AS THEMSELVES (0.8.0, batch I14; |
+| 8882 | 16. THE AVENUES DRAWN (batch CL4; the study spec-city-layout 5.2) |
+| 9239 | 17. THE CURVES DRAWN (batch CL4, slice D; the study spec-city-layout 5.2) |
+| 9842 | 18. A MONTH REDRAWS ONLY WHAT MOVED (batch UP3, docs/queue/UP3.md) |
+| 10575 | THE RELIEF ON THE MAP (ET1 slice D; docs/studies/spec-earth2-terrain.md |
 
 ## Constants
 
@@ -174,41 +174,41 @@
 | 6423 | `MapCheck.KEY_FRAMES` | `60` | Frames of the keys' second: 60, the pump's (a sixtieth each). |
 | 6426 | `MapCheck.KEY_SLOP_PX` | `1e-3` | How far a second of the keys may miss KEY_PX_A_SECOND, in pixels: a thousandth (★E9) - on the plane it is exact; on the globe each frame's drag keeps the point grabbed under the pointer to GlobeCheck's POINTER_PX. |
 | 6429 | `MapCheck.MATRIX_PLOTS` | `1e-6` | The composed matrix's worst against the camera's and the plane's own projections, in plots: a millionth (★E9; measured 4e-10). |
-| 6911 | `MapCheck.BOXES` | `200` | Boxes drawn at random on the played city's opening view, each tried against every plot under it: 200. |
-| 6914 | `MapCheck.GLOBE_BOXES` | `60` | ...and through the globe's camera, each against a point at every free plot's middle: 60. |
-| 6917 | `MapCheck.FIELD_BUYS_MOST` | `200` | The most offers the city buys toward an iron field for one to be on offer: 200, MiningCheck.makeRoom()'s own bound. |
-| 6920 | `MapCheck.BOX_PLOTS_MOST` | `200_000` | The most plots a box is tried on, one by one: 200,000 - a box larger is drawn again smaller. |
-| 6923 | `MapCheck.GLOBE_LAT` | `51.90625, GLOBE_LON = 4.48125` | Where the globe's check looks from: EarthCheck's Rotterdam window's centre, the played city's site put there. |
-| 7289 | `MapCheck.PICKS_MONTHS` | `3` | The months section 14b holds the picks over, each with a place relisted: 3. |
-| 7292 | `MapCheck.PICKS_HELD` | `3` | The offers section 14b picks and holds over the months: 3. |
-| 7447 | `MapCheck.FAR_PLOTS` | `World.SIDE / 4.0` | How far from the city section 14c sets the plane: a quarter of the world's side, in plots. |
-| 7450 | `MapCheck.FAR_DRAGS` | `50` | The drags section 14c carries the plane on, further out, of the pixels each. |
-| 7496 | `MapCheck.PRESS_PLOTS` | `400` | The plots of an offer's rectangle section 14d tries for the owned-or-free rule: at most about this many, a stride over the rectangle. |
-| 7597 | `MapCheck.STEPS` | `{ { 1, 0 }, { - 1, 0 }, { 0, 1 }, { 0, - 1 } }` | The four steps from a block to its neighbours: east, west, south, north. |
-| 8494 | `MapCheck.MATERIALS_SIDE` | `10` | The materials fixture's square, in districts a side: 10 (77 km), wide enough to hold fields of every typed slot on the default world. |
-| 8497 | `MapCheck.MATERIALS_SECTORS` | `{ Sectors.MINING, Sectors.HEAVY_INDUSTRY, Sectors.COAL_MINING, Sectors.QUARRY...` | The nine materials industries, Iron Mining to Wood Products (spec-materials 2.1): every building of theirs drawn with a look of its own. |
-| 8834 | `MapCheck.MATERIALS_RINGS` | `24` | How far out materialsPlace() looks, in cells: 24. |
-| 8875 | `MapCheck.AV_SAMPLES` | `4` | How many samples a step of an avenue's line is sampled at: four, a quarter step apart. |
-| 8878 | `MapCheck.AV_STEPS` | `400` | The farthest an arm is followed from the origin, in steps: 400, past a district and a half. |
-| 8886 | `MapCheck.AV_TIMES` | `9, AV_SIDE = 6, AV_SHIFT_X = 104, AV_SHIFT_Y = 56` | The city the avenues are drawn on: Jerus's city x 9 on a square of 6 districts a side (his density, as the copies', every district full) whose founding site is the dry place's moved AV_SHIFT_X plots east and AV_SHIFT_... |
-| 8906 | `MapCheck.AvTiles.OWNED` | `1, BENEATH = 2, BRIDGE = 4` | Flag bits of a plot: it is owned, a street passes beneath a highway on it, it is a bridge's. |
-| 9231 | `MapCheck.CV_FROM` | `3, CV_TO = 8` | The districts the curves are looked for in, in districts east and south of the founding site's: 3 to 8 - past CRESCENT_FROM (16 cells, two districts) wherever the cell lies. |
-| 9234 | `MapCheck.CV_CRESCENTS` | `8, CV_SHORES = 16` | The most crescents and shore curves the audit follows: 8 and 16 (the shore curves that cross a tile's edge, and those that bend, first). |
-| 9237 | `MapCheck.CV_TURN_SPAN` | `4` | How far apart, in plots, the turn audit's samples are: 4 - at a crescent's radius (22.6 plots) a turn of 0.18 radian between neighbours. |
-| 9240 | `MapCheck.CV_CENTRE_PX` | `1.0` | How far the band's middle, measured across it from the pixels, may lie from the line: a pixel - the least a raster can place a band, and less than the 2.8 pixels at 4 px a plot a staircase's bars lie from the arc thro... |
-| 9243 | `MapCheck.CV_NARROW_PX` | `1.5` | How much narrower than its street the band, measured across it, may measure: 1.5 pixels (a pixel's rounding at either end and a half). |
-| 9246 | `MapCheck.CV_GENTLE` | `0.2` | How much the line may turn within a plot and a quarter either side of a sample for the band to be measured across it there: 0.2 radian - a crescent turns 0.06 over that; a shore street's corner (rounded to as little a... |
-| 9249 | `MapCheck.CV_MEASURED` | `{ 0.5, 0.35 }` | The share of a kind's samples the band must have been measured across (crescents, shore curves): a half, and 35% - a shore's line turns a corner every few plots, and the band is not measured within a plot and a quarte... |
-| 9849 | `MapCheck.HIS_TIMES` | `80` | The copy at Jerus's own district count: x 80, 125 districts, 11 a side (CL3's notes cite 115 for his cities), between x 1's 4 districts and 5B's 14,661. |
-| 9852 | `MapCheck.REDRAW_MONTHS` | `24, REDRAW_MONTHS_5B = 12` | The months grown at x 1 and at x 80, and at 5B (its months are slower): 24 and 12. |
-| 9855 | `MapCheck.REDRAW_WARM` | `3` | The first months of each fixture are drawn, compared and not counted in its figures: 3, the JIT's compiling done before a month is read. |
-| 9858 | `MapCheck.GROW_PER_MILLE` | `1000, GROW_PER_TEN_THOUSAND = 10_000` | A month's growth as a share of each type's count: 1/1,000 (+0.1%) at x 1 and x 80, 1/10,000 (+0.01%) at 5B, as section 5's, at least one building each. |
-| 9861 | `MapCheck.RUNS_EVERY` | `4` | The runs' types (a highway's, a track's) are grown only in every 4th month, so most months lay no run, as in play. |
-| 9864 | `MapCheck.CHAIN_ROUNDS` | `4` | The times a month's screens are drawn: the month's, then again after each round of the chain's jobs (handed out, run, adopted) until none is left, at most 4. |
-| 9867 | `MapCheck.PLAYED_BEFORE` | `3, PLAYED_AFTER = 3` | The months the played city is grown before its land purchase and after it: 3 and 3. |
-| 9870 | `MapCheck.PURCHASE_SIDE` | `32` | The side of the block the played city buys, in plots: 32, a hole in its built-up ground's box (the played city's ground is irregular). |
-| 9873 | `MapCheck.MAP_MONTH_MS` | `58` | The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting: 58, nine tenths of the 65 this section ... |
-| 9876 | `MapCheck.GROW` | `0, ONE = 1, SETTLE = 2` | The kinds of month: the grown one, one built type raised by one, and the first, which only draws. |
+| 6938 | `MapCheck.BOXES` | `200` | Boxes drawn at random on the played city's opening view, each tried against every plot under it: 200. |
+| 6941 | `MapCheck.GLOBE_BOXES` | `60` | ...and through the globe's camera, each against a point at every free plot's middle: 60. |
+| 6944 | `MapCheck.FIELD_BUYS_MOST` | `200` | The most offers the city buys toward an iron field for one to be on offer: 200, MiningCheck.makeRoom()'s own bound. |
+| 6947 | `MapCheck.BOX_PLOTS_MOST` | `200_000` | The most plots a box is tried on, one by one: 200,000 - a box larger is drawn again smaller. |
+| 6950 | `MapCheck.GLOBE_LAT` | `51.90625, GLOBE_LON = 4.48125` | Where the globe's check looks from: EarthCheck's Rotterdam window's centre, the played city's site put there. |
+| 7316 | `MapCheck.PICKS_MONTHS` | `3` | The months section 14b holds the picks over, each with a place relisted: 3. |
+| 7319 | `MapCheck.PICKS_HELD` | `3` | The offers section 14b picks and holds over the months: 3. |
+| 7474 | `MapCheck.FAR_PLOTS` | `World.SIDE / 4.0` | How far from the city section 14c sets the plane: a quarter of the world's side, in plots. |
+| 7477 | `MapCheck.FAR_DRAGS` | `50` | The drags section 14c carries the plane on, further out, of the pixels each. |
+| 7523 | `MapCheck.PRESS_PLOTS` | `400` | The plots of an offer's rectangle section 14d tries for the owned-or-free rule: at most about this many, a stride over the rectangle. |
+| 7624 | `MapCheck.STEPS` | `{ { 1, 0 }, { - 1, 0 }, { 0, 1 }, { 0, - 1 } }` | The four steps from a block to its neighbours: east, west, south, north. |
+| 8521 | `MapCheck.MATERIALS_SIDE` | `10` | The materials fixture's square, in districts a side: 10 (77 km), wide enough to hold fields of every typed slot on the default world. |
+| 8524 | `MapCheck.MATERIALS_SECTORS` | `{ Sectors.MINING, Sectors.HEAVY_INDUSTRY, Sectors.COAL_MINING, Sectors.QUARRY...` | The nine materials industries, Iron Mining to Wood Products (spec-materials 2.1): every building of theirs drawn with a look of its own. |
+| 8861 | `MapCheck.MATERIALS_RINGS` | `24` | How far out materialsPlace() looks, in cells: 24. |
+| 8902 | `MapCheck.AV_SAMPLES` | `4` | How many samples a step of an avenue's line is sampled at: four, a quarter step apart. |
+| 8905 | `MapCheck.AV_STEPS` | `400` | The farthest an arm is followed from the origin, in steps: 400, past a district and a half. |
+| 8913 | `MapCheck.AV_TIMES` | `9, AV_SIDE = 6, AV_SHIFT_X = 104, AV_SHIFT_Y = 56` | The city the avenues are drawn on: Jerus's city x 9 on a square of 6 districts a side (his density, as the copies', every district full) whose founding site is the dry place's moved AV_SHIFT_X plots east and AV_SHIFT_... |
+| 8933 | `MapCheck.AvTiles.OWNED` | `1, BENEATH = 2, BRIDGE = 4` | Flag bits of a plot: it is owned, a street passes beneath a highway on it, it is a bridge's. |
+| 9258 | `MapCheck.CV_FROM` | `3, CV_TO = 8` | The districts the curves are looked for in, in districts east and south of the founding site's: 3 to 8 - past CRESCENT_FROM (16 cells, two districts) wherever the cell lies. |
+| 9261 | `MapCheck.CV_CRESCENTS` | `8, CV_SHORES = 16` | The most crescents and shore curves the audit follows: 8 and 16 (the shore curves that cross a tile's edge, and those that bend, first). |
+| 9264 | `MapCheck.CV_TURN_SPAN` | `4` | How far apart, in plots, the turn audit's samples are: 4 - at a crescent's radius (22.6 plots) a turn of 0.18 radian between neighbours. |
+| 9267 | `MapCheck.CV_CENTRE_PX` | `1.0` | How far the band's middle, measured across it from the pixels, may lie from the line: a pixel - the least a raster can place a band, and less than the 2.8 pixels at 4 px a plot a staircase's bars lie from the arc thro... |
+| 9270 | `MapCheck.CV_NARROW_PX` | `1.5` | How much narrower than its street the band, measured across it, may measure: 1.5 pixels (a pixel's rounding at either end and a half). |
+| 9273 | `MapCheck.CV_GENTLE` | `0.2` | How much the line may turn within a plot and a quarter either side of a sample for the band to be measured across it there: 0.2 radian - a crescent turns 0.06 over that; a shore street's corner (rounded to as little a... |
+| 9276 | `MapCheck.CV_MEASURED` | `{ 0.5, 0.35 }` | The share of a kind's samples the band must have been measured across (crescents, shore curves): a half, and 35% - a shore's line turns a corner every few plots, and the band is not measured within a plot and a quarte... |
+| 9876 | `MapCheck.HIS_TIMES` | `80` | The copy at Jerus's own district count: x 80, 125 districts, 11 a side (CL3's notes cite 115 for his cities), between x 1's 4 districts and 5B's 14,661. |
+| 9879 | `MapCheck.REDRAW_MONTHS` | `24, REDRAW_MONTHS_5B = 12` | The months grown at x 1 and at x 80, and at 5B (its months are slower): 24 and 12. |
+| 9882 | `MapCheck.REDRAW_WARM` | `3` | The first months of each fixture are drawn, compared and not counted in its figures: 3, the JIT's compiling done before a month is read. |
+| 9885 | `MapCheck.GROW_PER_MILLE` | `1000, GROW_PER_TEN_THOUSAND = 10_000` | A month's growth as a share of each type's count: 1/1,000 (+0.1%) at x 1 and x 80, 1/10,000 (+0.01%) at 5B, as section 5's, at least one building each. |
+| 9888 | `MapCheck.RUNS_EVERY` | `4` | The runs' types (a highway's, a track's) are grown only in every 4th month, so most months lay no run, as in play. |
+| 9891 | `MapCheck.CHAIN_ROUNDS` | `4` | The times a month's screens are drawn: the month's, then again after each round of the chain's jobs (handed out, run, adopted) until none is left, at most 4. |
+| 9894 | `MapCheck.PLAYED_BEFORE` | `3, PLAYED_AFTER = 3` | The months the played city is grown before its land purchase and after it: 3 and 3. |
+| 9897 | `MapCheck.PURCHASE_SIDE` | `32` | The side of the block the played city buys, in plots: 32, a hole in its built-up ground's box (the played city's ground is irregular). |
+| 9900 | `MapCheck.MAP_MONTH_MS` | `58` | The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting: 58, nine tenths of the 65 this section ... |
+| 9903 | `MapCheck.GROW` | `0, ONE = 1, SETTLE = 2` | The kinds of month: the grown one, one built type raised by one, and the first, which only draws. |
 
 ## Fields (state)
 
@@ -262,72 +262,72 @@
 | 5524 | `final List<double[]> lakes` |  |
 | 5525 | `final long x0, y0` |  |
 | 5526 | `final int stride` |  |
-| 8899 | `final CityMap m` |  |
-| 8900 | `final TilePainter.Input in` |  |
-| 8901 | `final TilePainter.Painted p` |  |
-| 8902 | `final java.util.Map<Long, int[]> img` |  |
-| 8903 | `final java.util.Map<Long, byte[]> street` |  |
-| 9269 | `final CityMap m` |  |
-| 9270 | `final int px` |  |
-| 9271 | `final TilePainter.Input in` |  |
-| 9272 | `final TilePainter.Painted p` |  |
-| 9273 | `final java.util.Map<Long, int[]> img` |  |
-| 9274 | `final java.util.Map<Long, byte[]> street` |  |
-| 9275 | `final java.util.Map<Long, short[]> types` |  |
-| 9278 | `final boolean bare` | Whether the tiles are drawn without the curves (the control: as they were before CL4). |
-| 9344 | `int samples, badColour, onBuilding, edges, audited, narrow, off, turns, turnsBad, tracks` |  |
-| 9345 | `double worstCentre, worstExcess, worstIdeal` |  |
-| 9347 | `String firstBad` | The first sample that was not the street's colour or lay off the line, for the line a failure prints: where, what. |
-| 9880 | `final String name` |  |
-| 9881 | `final MapFrame f` |  |
-| 9882 | `final long plots, span` |  |
-| 9883 | `final boolean pictures` |  |
-| 9884 | `final int count` |  |
-| 9885 | `final long[] nx, ny` |  |
-| 9886 | `final byte[][] ground` |  |
-| 9888 | `final long[] key` | Now's: the key each node was drawn from, its pixels, whether it was drawn, and short of a picture. |
-| 9889 | `final int[][] pix` |  |
-| 9890 | `final boolean[] drawn, partial` |  |
-| 9892 | `final boolean[] todayPartial` | Today's: whether it would be drawn again after a picture came. |
-| 9894 | `final boolean[] held` | The nodes held (not drawn again) in the month under way. |
-| 9895 | `final int[] buf` |  |
-| 9935 | `int kind, number, moved, rounds, astray, kept, built` |  |
-| 9937 | `final java.util.List<CityMap.District> staleList` | The built districts whose pictures were no longer current right after a one-type month (`stale` of them). |
-| 9938 | `boolean timed, reconciled, viewChanged, runsMoved, settled` |  |
-| 9939 | `CityMap.District onlyMoved` |  |
-| 9941 | `long lands, runsDrawn, repainted, onStamp` | The stamp's kept nodes in the month: land layers drawn, runs layers drawn, districts repainted (all 0 when the view changed and they were made anew), and the districts they list. |
-| 9942 | `double stampNow, stampToday, farNow, farToday, l0, chain, keys, lazy` |  |
-| 9944 | `int[] recoloured, partialBefore` | Per far screen: its nodes drawn this month (the month's round and the rounds after), and the partial ones before it. |
-| 9946 | `final java.util.List<java.util.List<Integer>> keyMoved` | Per far screen: the nodes drawn in the month's own round because the key they were drawn from had moved. |
-| 9954 | `final String name` |  |
-| 9955 | `final CityMap m` |  |
-| 9956 | `final long[] c` |  |
-| 9957 | `final int divisor, mine` |  |
-| 9958 | `final long sites` |  |
-| 9959 | `final BuildingVisual.Type[] tys` |  |
-| 9960 | `final MapTiles tk, tr` |  |
-| 9961 | `final MapFrame l0` |  |
-| 9962 | `final boolean withL0, checkLinks` |  |
-| 9963 | `final java.util.List<FarScreen> fars` |  |
-| 9964 | `final java.util.List<RedrawMonth> all` |  |
-| 9965 | `final TilePainter.Input in` |  |
-| 9966 | `MiniMapFrame.Box frame` |  |
-| 9967 | `MiniMapFrame.View stampV, previewV` |  |
-| 9968 | `byte[][] stampG, previewG` |  |
-| 9969 | `MapTiles.KeptNode[] stampK, previewK` |  |
-| 9970 | `int[] stampNow, stampToday, previewNow, previewToday` |  |
-| 9971 | `int viewChanges` |  |
-| 9973 | `int stampsDrawn, previewsDrawn, keyUnmoved, heldCompared` | What was compared: stamps and previews drawn two ways (their pixels counted), and far nodes whose key was unmoved against a fresh one (those held in the month among them); whether every one was equal. |
-| 9974 | `long pixelsCompared` |  |
-| 9975 | `boolean stampEqual` |  |
-| 9976 | `double tookS` |  |
-| 9978 | `Runnable beforeReconcile` | Run before the next month's reconcile (a land purchase). |
+| 8926 | `final CityMap m` |  |
+| 8927 | `final TilePainter.Input in` |  |
+| 8928 | `final TilePainter.Painted p` |  |
+| 8929 | `final java.util.Map<Long, int[]> img` |  |
+| 8930 | `final java.util.Map<Long, byte[]> street` |  |
+| 9296 | `final CityMap m` |  |
+| 9297 | `final int px` |  |
+| 9298 | `final TilePainter.Input in` |  |
+| 9299 | `final TilePainter.Painted p` |  |
+| 9300 | `final java.util.Map<Long, int[]> img` |  |
+| 9301 | `final java.util.Map<Long, byte[]> street` |  |
+| 9302 | `final java.util.Map<Long, short[]> types` |  |
+| 9305 | `final boolean bare` | Whether the tiles are drawn without the curves (the control: as they were before CL4). |
+| 9371 | `int samples, badColour, onBuilding, edges, audited, narrow, off, turns, turnsBad, tracks` |  |
+| 9372 | `double worstCentre, worstExcess, worstIdeal` |  |
+| 9374 | `String firstBad` | The first sample that was not the street's colour or lay off the line, for the line a failure prints: where, what. |
+| 9907 | `final String name` |  |
+| 9908 | `final MapFrame f` |  |
+| 9909 | `final long plots, span` |  |
+| 9910 | `final boolean pictures` |  |
+| 9911 | `final int count` |  |
+| 9912 | `final long[] nx, ny` |  |
+| 9913 | `final byte[][] ground` |  |
+| 9915 | `final long[] key` | Now's: the key each node was drawn from, its pixels, whether it was drawn, and short of a picture. |
+| 9916 | `final int[][] pix` |  |
+| 9917 | `final boolean[] drawn, partial` |  |
+| 9919 | `final boolean[] todayPartial` | Today's: whether it would be drawn again after a picture came. |
+| 9921 | `final boolean[] held` | The nodes held (not drawn again) in the month under way. |
+| 9922 | `final int[] buf` |  |
+| 9962 | `int kind, number, moved, rounds, astray, kept, built` |  |
+| 9964 | `final java.util.List<CityMap.District> staleList` | The built districts whose pictures were no longer current right after a one-type month (`stale` of them). |
+| 9965 | `boolean timed, reconciled, viewChanged, runsMoved, settled` |  |
+| 9966 | `CityMap.District onlyMoved` |  |
+| 9968 | `long lands, runsDrawn, repainted, onStamp` | The stamp's kept nodes in the month: land layers drawn, runs layers drawn, districts repainted (all 0 when the view changed and they were made anew), and the districts they list. |
+| 9969 | `double stampNow, stampToday, farNow, farToday, l0, chain, keys, lazy` |  |
+| 9971 | `int[] recoloured, partialBefore` | Per far screen: its nodes drawn this month (the month's round and the rounds after), and the partial ones before it. |
+| 9973 | `final java.util.List<java.util.List<Integer>> keyMoved` | Per far screen: the nodes drawn in the month's own round because the key they were drawn from had moved. |
+| 9981 | `final String name` |  |
+| 9982 | `final CityMap m` |  |
+| 9983 | `final long[] c` |  |
+| 9984 | `final int divisor, mine` |  |
+| 9985 | `final long sites` |  |
+| 9986 | `final BuildingVisual.Type[] tys` |  |
+| 9987 | `final MapTiles tk, tr` |  |
+| 9988 | `final MapFrame l0` |  |
+| 9989 | `final boolean withL0, checkLinks` |  |
+| 9990 | `final java.util.List<FarScreen> fars` |  |
+| 9991 | `final java.util.List<RedrawMonth> all` |  |
+| 9992 | `final TilePainter.Input in` |  |
+| 9993 | `MiniMapFrame.Box frame` |  |
+| 9994 | `MiniMapFrame.View stampV, previewV` |  |
+| 9995 | `byte[][] stampG, previewG` |  |
+| 9996 | `MapTiles.KeptNode[] stampK, previewK` |  |
+| 9997 | `int[] stampNow, stampToday, previewNow, previewToday` |  |
+| 9998 | `int viewChanges` |  |
+| 10000 | `int stampsDrawn, previewsDrawn, keyUnmoved, heldCompared` | What was compared: stamps and previews drawn two ways (their pixels counted), and far nodes whose key was unmoved against a fresh one (those held in the month among them); whether every one was equal. |
+| 10001 | `long pixelsCompared` |  |
+| 10002 | `boolean stampEqual` |  |
+| 10003 | `double tookS` |  |
+| 10005 | `Runnable beforeReconcile` | Run before the next month's reconcile (a land purchase). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 370 | 10477 | **type** `public class MapCheck` | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the draw... |
+| 370 | 10504 | **type** `public class MapCheck` | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the draw... |
 | 375 | 4 | `static void check(String label, boolean ok)` |  |
 | 419 | 7 | `static double groundKm2(BuildingVisual.Type[] types)` | The dry ground the copies' x 1 stands on (0.7.71): his, scaled by his buildings' land on this catalogue over theirs then, so the copies keep his density (JERUS_FILL) whatever the catalogue: with his childcare restated... |
 | 457 | 43 | `public static void main(String[] args) throws Exception` |  |
@@ -607,163 +607,163 @@
 | 6183 | 196 | `static void miniMap(Game city, Squares sq) throws Exception` |  |
 | 6385 | 32 | `static MiniMapFrame.Box builtUpByLeaves(CityMap m)` | The built-up ground found another way, for the check: every leaf of the grid cut to each district with buildings it lies in, their bounds; a built district with none owned its whole square. |
 
-### 13. THE GLOBE ON SCREEN (0.7.135, batch E9) (lines 6418-6905)
+### 13. THE GLOBE ON SCREEN (0.7.135, batch E9) (lines 6418-6932)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6431 | 434 | `static void globeOnScreen(Squares sq) throws Exception` |  |
-| 6867 | 4 | `static byte groundClass(String words)` | The class a legend's ground words name. |
-| 6873 | 15 | `static double foundingParting(double lat, double lon, double km)` | How far the founding globe's two drawings part at a scale, in pixels at worst over its canvas's corners and edges: the globe through GlobeFrame against the ground drawn round the view's centre (Lambert's plane there, ... |
-| 6890 | 15 | `static CityMap earthX1(Squares sq) throws Exception` | Jerus's city x 1 on the real Earth at Rotterdam, EarthCheck's fixture (section 10's window): null when the fixture is not beside the classes. |
+| 6431 | 461 | `static void globeOnScreen(Squares sq) throws Exception` |  |
+| 6894 | 4 | `static byte groundClass(String words)` | The class a legend's ground words name. |
+| 6900 | 15 | `static double foundingParting(double lat, double lon, double km)` | How far the founding globe's two drawings part at a scale, in pixels at worst over its canvas's corners and edges: the globe through GlobeFrame against the ground drawn round the view's centre (Lambert's plane there, ... |
+| 6917 | 15 | `static CityMap earthX1(Squares sq) throws Exception` | Jerus's city x 1 on the real Earth at Rotterdam, EarthCheck's fixture (section 10's window): null when the fixture is not beside the classes. |
 
-### 14. BUYING FROM THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) (lines 6906-7578)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6925 | 362 | `static void buyingFromTheMap(Game g) throws Exception` |  |
-| 7295 | 10 | `static boolean buysQuietly(Game g, LandParcel p)` | The city buys land as a player would: cash made up to the price when short, then Game.buyLandParcel (LandManager.buyParcel). |
-| 7310 | 10 | `static List<LandParcel> listedAgain(CityLand land, LandMarket market, LandParcel was, List<Integer> notIds)` | The listed offers, not those ids, whose rectangle shares ground the city does not own with a rectangle that was listed: the place listed again over that ground under a new id (its rectangle is sized by the city as it ... |
-| 7326 | 119 | `static void picksLast(Game g) throws Exception` | MS1 (Jerus, 2026-10-26: "on monthly update it doesnt reset ... |
-| 7457 | 37 | `static void farOnThePlane(Game g)` | MS1 (Jerus, 2026-10-26: "you cant zoom in on areas of the map far away from the city, and if zoomed in there is a wall that you can cross"): the wall and the stop were the globe's (GlobeCheck 2b); a generated world's ... |
-| 7504 | 74 | `static void plainDragSelects(Game g)` | MS1 (Jerus, 2026-10-26: "i should be able to not only click and shift click, but also drag and select"): what a left press on the expanded map starts, a box or a pan, is the model's (LandMap.pressBoxes(), which MapVie... |
-
-### 14e. BLOCKS PICKED (BL1) (lines 7579-8173)
+### 14. BUYING FROM THE MAP (0.7.137, batch M6; docs/studies/spec-earth.md 3) (lines 6933-7605)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 7600 | 4 | `static boolean blockFree(LandGrid g, int level, long bx, long by)` | Whether block (bx, by) of `level` is on the world and not wholly the city's. |
-| 7606 | 9 | `static java.util.Set<Long> blocksMetBy(CityLand land, LandParcel o, int level)` | The blocks of `level` an offer's free ground meets: every block holding a plot the offer holds, the plots counted one by one. |
-| 7617 | 7 | `static boolean completesAnOffer(CityLand land, LandMarket market, int level, java.util.Set<Long> blocks)` | Whether some standing offer's whole free ground lies in these blocks: such a set is, to the model, that offer picked. |
-| 7630 | 24 | `static long[] chainFrom(CityLand land, LandMarket market, int level, java.util.Set<Long> avoid)` | A free block on the city's frontier and a direction outward from it along which the next two blocks are free and not on the frontier - three in a row, the middle one joined only through the first - none within a block... |
-| 7656 | 21 | `static boolean allJoined(CityLand land, int level, java.util.Set<Long> blocks, List<LandParcel> offers)` | The blocks a Picks holds that join the city, worked out another way: every block of the set, reached from one on the city's frontier or beside a picked offer's free ground by steps through the set. |
-| 7679 | 4 | `static boolean edgeNeighbour(double[] c, long x0, long y0, long b)` | Whether a free cell {x0, y0, x1, y1} lies across an edge of the block at (x0, y0) of side b, sharing some of its length: beside the block, not on it. |
-| 7685 | 32 | `static java.util.Set<Long> floodExpect(CityLand land, int level, long[] box, java.util.Set<Long> picked)` | The blocks of a box of plots {x0, y0, x1, y1} that join the city, worked out block by block: free blocks of the box on the frontier or beside a block already picked, and the free blocks of the box reached from them by... |
-| 7719 | 5 | `static List<LandParcel> offersIn(LandMarket market, List<Integer> ids)` | The offers behind these picks' ids (the positive ones), as the office lists them. |
-| 7726 | 5 | `static java.util.Set<Long> everyPicked(CityLand land, LandMarket market, int level, LandMap.Picks picks, List<Integer> ids)` | The blocks a Picks holds, and those of the offers it holds, as one set. |
-| 7733 | 8 | `static Map<Long, Integer> coverage(List<long[]> rects, int level)` | The blocks the rectangles cover, counting each time: block -> how many rectangles hold it. |
-| 7747 | 21 | `static boolean edgeOf(double[][] runs, java.util.function.BiPredicate<Long, Long> in, long plots)` | Whether an outline's runs are the edge of the ground `in` says: they close (every run's end is another's start, as often), the plot on the right of every unit of every run is the ground and the plot on its left is not... |
-| 7770 | 3 | `static boolean inBlocks(java.util.Set<Long> blocks, int level, long x, long y)` | Whether plot (x, y) is in a block of the set at `level`. |
-| 7779 | 15 | `static LandParcel ownBlocks(CityLand land, LandMarket market, int level, int nth)` | The nth standing offer (in the office's order) of the city's own level that holds two or more blocks of free ground, each block's free ground wholly inside the offer's rectangle - one that picking blocks makes the off... |
-| 7796 | 5 | `static java.util.Set<Long> blocksOf(long[]...at)` | Blocks as a set, from {bx, by} pairs. |
-| 7802 | 371 | `static void blocksPicked(Game g) throws Exception` |  |
+| 6952 | 362 | `static void buyingFromTheMap(Game g) throws Exception` |  |
+| 7322 | 10 | `static boolean buysQuietly(Game g, LandParcel p)` | The city buys land as a player would: cash made up to the price when short, then Game.buyLandParcel (LandManager.buyParcel). |
+| 7337 | 10 | `static List<LandParcel> listedAgain(CityLand land, LandMarket market, LandParcel was, List<Integer> notIds)` | The listed offers, not those ids, whose rectangle shares ground the city does not own with a rectangle that was listed: the place listed again over that ground under a new id (its rectangle is sized by the city as it ... |
+| 7353 | 119 | `static void picksLast(Game g) throws Exception` | MS1 (Jerus, 2026-10-26: "on monthly update it doesnt reset ... |
+| 7484 | 37 | `static void farOnThePlane(Game g)` | MS1 (Jerus, 2026-10-26: "you cant zoom in on areas of the map far away from the city, and if zoomed in there is a wall that you can cross"): the wall and the stop were the globe's (GlobeCheck 2b); a generated world's ... |
+| 7531 | 74 | `static void plainDragSelects(Game g)` | MS1 (Jerus, 2026-10-26: "i should be able to not only click and shift click, but also drag and select"): what a left press on the expanded map starts, a box or a pan, is the model's (LandMap.pressBoxes(), which MapVie... |
 
-### 14f. THE EXACT GROUND ON THE SCREEN (BL1, slice D) (lines 8174-8487)
+### 14e. BLOCKS PICKED (BL1) (lines 7606-8200)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8192 | 4 | `static long[] plotIn(int level, long key)` | A plot near the middle of a block of `level`: {x, y}. |
-| 8198 | 4 | `static long unownedIn(LandGrid grid, int level, long key)` | The plots of a block the city does not own. |
-| 8204 | 8 | `static long[] ownedAndAll(CityLand land, List<double[]> cells)` | The cells of a fill: how many plots of them the city owns, and how many they hold in all. |
-| 8213 | 234 | `static void groundOnScreen(Game g) throws Exception` |  |
-| 8449 | 3 | `static String owner(int owner)` | A pick's owner in words. |
-| 8454 | 4 | `static boolean clears(LandMap.Picks picks, Game g, int id)` | Whether a plain click on an offer (only) clears a note that stood. |
-| 8460 | 10 | `static java.util.Set<Integer> boxByPlots(CityLand land, List<LandParcel> offers, double x0, double y0, double x1, double y1)` | The offers a box of plots meets, plot by plot: every plot under (x0, y0)-(x1, y1) in some part, not the city's, inside an offer's rectangle. |
-| 8472 | 10 | `static boolean inOrder(List<Integer> ids, List<LandParcel> listing)` | Whether these ids stand in the listing's order. |
-| 8484 | 3 | `static boolean sameFigure(double a, double b)` | Two money or area figures the same to a billionth of the larger. |
+| 7627 | 4 | `static boolean blockFree(LandGrid g, int level, long bx, long by)` | Whether block (bx, by) of `level` is on the world and not wholly the city's. |
+| 7633 | 9 | `static java.util.Set<Long> blocksMetBy(CityLand land, LandParcel o, int level)` | The blocks of `level` an offer's free ground meets: every block holding a plot the offer holds, the plots counted one by one. |
+| 7644 | 7 | `static boolean completesAnOffer(CityLand land, LandMarket market, int level, java.util.Set<Long> blocks)` | Whether some standing offer's whole free ground lies in these blocks: such a set is, to the model, that offer picked. |
+| 7657 | 24 | `static long[] chainFrom(CityLand land, LandMarket market, int level, java.util.Set<Long> avoid)` | A free block on the city's frontier and a direction outward from it along which the next two blocks are free and not on the frontier - three in a row, the middle one joined only through the first - none within a block... |
+| 7683 | 21 | `static boolean allJoined(CityLand land, int level, java.util.Set<Long> blocks, List<LandParcel> offers)` | The blocks a Picks holds that join the city, worked out another way: every block of the set, reached from one on the city's frontier or beside a picked offer's free ground by steps through the set. |
+| 7706 | 4 | `static boolean edgeNeighbour(double[] c, long x0, long y0, long b)` | Whether a free cell {x0, y0, x1, y1} lies across an edge of the block at (x0, y0) of side b, sharing some of its length: beside the block, not on it. |
+| 7712 | 32 | `static java.util.Set<Long> floodExpect(CityLand land, int level, long[] box, java.util.Set<Long> picked)` | The blocks of a box of plots {x0, y0, x1, y1} that join the city, worked out block by block: free blocks of the box on the frontier or beside a block already picked, and the free blocks of the box reached from them by... |
+| 7746 | 5 | `static List<LandParcel> offersIn(LandMarket market, List<Integer> ids)` | The offers behind these picks' ids (the positive ones), as the office lists them. |
+| 7753 | 5 | `static java.util.Set<Long> everyPicked(CityLand land, LandMarket market, int level, LandMap.Picks picks, List<Integer> ids)` | The blocks a Picks holds, and those of the offers it holds, as one set. |
+| 7760 | 8 | `static Map<Long, Integer> coverage(List<long[]> rects, int level)` | The blocks the rectangles cover, counting each time: block -> how many rectangles hold it. |
+| 7774 | 21 | `static boolean edgeOf(double[][] runs, java.util.function.BiPredicate<Long, Long> in, long plots)` | Whether an outline's runs are the edge of the ground `in` says: they close (every run's end is another's start, as often), the plot on the right of every unit of every run is the ground and the plot on its left is not... |
+| 7797 | 3 | `static boolean inBlocks(java.util.Set<Long> blocks, int level, long x, long y)` | Whether plot (x, y) is in a block of the set at `level`. |
+| 7806 | 15 | `static LandParcel ownBlocks(CityLand land, LandMarket market, int level, int nth)` | The nth standing offer (in the office's order) of the city's own level that holds two or more blocks of free ground, each block's free ground wholly inside the offer's rectangle - one that picking blocks makes the off... |
+| 7823 | 5 | `static java.util.Set<Long> blocksOf(long[]...at)` | Blocks as a set, from {bx, by} pairs. |
+| 7829 | 371 | `static void blocksPicked(Game g) throws Exception` |  |
 
-### 15. THE MATERIALS DRAWN AS THEMSELVES (0.8.0, batch I14; (lines 8488-8854)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 8501 | 3 | `static boolean materialsOf(BuildingsTemplate t)` | Whether a template is one of the nine industries'. |
-| 8506 | 3 | `static long materialsCount(BuildingVisual.Type t)` | The fixture's count of a materials type: one of a works on more than one site, two of anything else - so each slot holds two kinds and the larger is laid first. |
-| 8510 | 264 | `static void materials(long seed)` |  |
-| 8776 | 3 | `static long countZone(List<CityMap.Tinted> tint, int z)` | How many districts a zone's tint takes. |
-| 8781 | 7 | `static java.util.Map<Long, Integer> sitesUnder(CityMap m)` | Each site under a works on a map, by its key, and the works' type. |
-| 8790 | 12 | `static int lookSign(BuildingVisual.Type t)` | The colour a look shows on a box of it rastered (TileRaster's THE MATERIALS AS THEMSELVES): a pit's benches, a shaft's headframe, a quarry's stone, the leach plant's pond, the wash plant's conveyor, a camp's logs, pla... |
-| 8810 | 22 | `static long[] materialsPlace(World w, int side, int[] need)` | The world cell nearest the founding site's whose square of `side` districts (as CityMap.square() lays it round the cell's middle) is DRY_PLACE dry in its middle 3 x 3 districts and holds fields centred in it with at l... |
-| 8837 | 17 | `static int[] slotSites(World w, long x, long y, int side)` | The sites of each slot of the fields centred in the square of `side` districts CityMap.square() lays round plot (x, y). |
-
-### 16. THE AVENUES DRAWN (batch CL4; the study spec-city-layout 5.2) (lines 8855-9211)
+### 14f. THE EXACT GROUND ON THE SCREEN (BL1, slice D) (lines 8201-8514)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8889 | 7 | `static CityMap avenueCity(Squares sq)` | The avenues' city, built from the copies' constants (Squares): twice alike gives a twin. |
-| 8898 | 52 | **type** `static final class AvTiles` | One map's tiles, kept as the section samples them: the rastered image at PX and what the painter was given and made of each plot. |
-| 8908 | 1 | `AvTiles(CityMap m)` _(in MapCheck.AvTiles)_ |  |
-| 8910 | 1 | `private static long key(long tx, long ty)` _(in MapCheck.AvTiles)_ |  |
-| 8913 | 16 | `private void load(long tx, long ty)` _(in MapCheck.AvTiles)_ | The tile (tx, ty) as the painter makes it, loaded on first use. |
-| 8930 | 5 | `private int at(java.util.Map<Long, byte[]> what, long x, long y)` _(in MapCheck.AvTiles)_ |  |
-| 8937 | 1 | `int code(long x, long y)` _(in MapCheck.AvTiles)_ | The plan's street code, the avenue's mark, the painter's use, the ground and the flags of world plot (x, y). |
-| 8938 | 1 | `int mark(long x, long y)` _(in MapCheck.AvTiles)_ |  |
-| 8939 | 1 | `int use(long x, long y)` _(in MapCheck.AvTiles)_ |  |
-| 8940 | 1 | `int ground(long x, long y)` _(in MapCheck.AvTiles)_ |  |
-| 8941 | 1 | `int flag(long x, long y)` _(in MapCheck.AvTiles)_ |  |
-| 8944 | 5 | `int pixel(long X, long Y)` _(in MapCheck.AvTiles)_ | The pixel of the near view's raster at world pixel (X, Y). |
-| 8952 | 4 | `static long[] avenueOrigin(CityMap m)` | The lattice node the avenues run out from, nearest the founding site (DistrictPlan's avSetup), in world plots: {x, y}. |
-| 8958 | 14 | `static boolean avenueOpen(AvTiles t, long ox, long oy, int a, int k)` | Whether the avenue is open at step k of arm a, as the near view draws it: the staircase's plots S_k, C_(k+1) and S_(k+1) laid as a surfaced street on the ground, and the outer plot O_(k+1) between them owned dry groun... |
-| 8974 | 3 | `static boolean streetColour(int c)` | Whether a pixel is a surfaced street's: the paved colour, the gravel's, or its grain. |
-| 8979 | 12 | `static int handMark(int ox, int oy, int arms, int len, int x, int y)` | Where a hand-built tile's avenues stand: the avenue plots of the arms `arms` (bit a) from origin (ox, oy) for `len` steps - a plot two arms share the first arm's mark, as DistrictPlan lays it - and 0 for none. |
-| 8993 | 8 | `static int[] handAvenue(int ox, int oy, int arms, int len, JunctionCheck.Streets extra, boolean withOrigin)` | A hand-built tile of owned bare ground at 8 px a plot, JunctionCheck's: the avenue plots of the arms `arms` from the origin laid as arterial streets with their marks, and the streets `extra` besides; the origin given ... |
-| 9002 | 209 | `static void avenuesDrawn(Squares sq)` |  |
+| 8219 | 4 | `static long[] plotIn(int level, long key)` | A plot near the middle of a block of `level`: {x, y}. |
+| 8225 | 4 | `static long unownedIn(LandGrid grid, int level, long key)` | The plots of a block the city does not own. |
+| 8231 | 8 | `static long[] ownedAndAll(CityLand land, List<double[]> cells)` | The cells of a fill: how many plots of them the city owns, and how many they hold in all. |
+| 8240 | 234 | `static void groundOnScreen(Game g) throws Exception` |  |
+| 8476 | 3 | `static String owner(int owner)` | A pick's owner in words. |
+| 8481 | 4 | `static boolean clears(LandMap.Picks picks, Game g, int id)` | Whether a plain click on an offer (only) clears a note that stood. |
+| 8487 | 10 | `static java.util.Set<Integer> boxByPlots(CityLand land, List<LandParcel> offers, double x0, double y0, double x1, double y1)` | The offers a box of plots meets, plot by plot: every plot under (x0, y0)-(x1, y1) in some part, not the city's, inside an offer's rectangle. |
+| 8499 | 10 | `static boolean inOrder(List<Integer> ids, List<LandParcel> listing)` | Whether these ids stand in the listing's order. |
+| 8511 | 3 | `static boolean sameFigure(double a, double b)` | Two money or area figures the same to a billionth of the larger. |
 
-### 17. THE CURVES DRAWN (batch CL4, slice D; the study spec-city-layout 5.2) (lines 9212-9814)
+### 15. THE MATERIALS DRAWN AS THEMSELVES (0.8.0, batch I14; (lines 8515-8881)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9252 | 14 | **type** `record CvFound(CityMap.District d, CityMap.DrawnCurve c, long ox, long oy)` | A curve found in a Drawn, with where its district's frame lies in the world. |
-| 9254 | 5 | `double[][] line()` _(in MapCheck.CvFound)_ | Its line in the world's plots: {xs, ys}. |
-| 9261 | 4 | `long[] plot(int k)` _(in MapCheck.CvFound)_ | Plot k of its list in the world's plots: {x, y}. |
-| 9268 | 65 | **type** `static final class CvTiles` | One map's tiles as the curves section samples them at `px` a plot: the rastered image, and what the painter was given and made of each plot. |
-| 9280 | 1 | `CvTiles(CityMap m, int px)` _(in MapCheck.CvTiles)_ |  |
-| 9282 | 1 | `CvTiles(CityMap m, int px, boolean bare)` _(in MapCheck.CvTiles)_ |  |
-| 9284 | 1 | `private static long key(long tx, long ty)` _(in MapCheck.CvTiles)_ |  |
-| 9286 | 20 | `private void load(long tx, long ty)` _(in MapCheck.CvTiles)_ |  |
-| 9307 | 5 | `private int at(java.util.Map<Long, byte[]> what, long x, long y)` _(in MapCheck.CvTiles)_ |  |
-| 9314 | 1 | `int code(long x, long y)` _(in MapCheck.CvTiles)_ | The plan's street code, the painter's use, the curve mark and the flags (1 owned, 2 bridge, 4 beneath) of world plot (x, y). |
-| 9315 | 1 | `int use(long x, long y)` _(in MapCheck.CvTiles)_ |  |
-| 9316 | 1 | `int mark(long x, long y)` _(in MapCheck.CvTiles)_ |  |
-| 9317 | 1 | `int flag(long x, long y)` _(in MapCheck.CvTiles)_ |  |
-| 9320 | 5 | `int type(long x, long y)` _(in MapCheck.CvTiles)_ | The type id of the building on world plot (x, y), or -1 for none. |
-| 9327 | 5 | `int pixel(long X, long Y)` _(in MapCheck.CvTiles)_ | The pixel of the raster at world pixel (X, Y). |
-| 9335 | 6 | `static boolean cvStreetColour(int c)` | Whether a pixel is a surfaced street's, owned or dimmed as ground the city has not bought is: the paved colour, the gravel's or its grain. |
-| 9343 | 6 | **type** `static final class CvAudit` | What an audit of one curve's drawn line found. |
-| 9351 | 5 | `static java.util.Set<Long> cvPlotSet(CvFound f)` | The own plots of a curve (the first `own` of its list) as a set of world plot keys. |
-| 9366 | 89 | `static CvAudit cvAudit(CvTiles t, CvFound f, java.util.Set<Integer> fills)` | One curve's line audited on the raster t (THE CURVES DRAWN): samples every pixel along it, from its first point to its last. |
-| 9457 | 4 | `static double cvTurn(double x0, double y0, double x1, double y1, double x2, double y2)` | The signed turn, in radians, from the chord (x0, y0)-(x1, y1) to (x1, y1)-(x2, y2). |
-| 9463 | 7 | `static boolean cvCrossesTile(double[][] line)` | Whether the line passes from one tile to another. |
-| 9472 | 8 | `static java.util.List<long[]> cvTiles(CvFound f)` | The tiles about a curve's plots: its bounding box in tiles, a tile more on each side, as {tx, ty} pairs. |
-| 9482 | 19 | `static int[] handCrescent(JunctionCheck.Streets extra)` | A hand-built tile of owned bare ground at 8 px a plot, JunctionCheck's: a crescent in the cell whose interior's north-west plot is (0, 1), bulging toward +x, its staircase laid as street plots with its curve, and the ... |
-| 9503 | 19 | `static int[] handShore(boolean bridge)` | A hand-built tile of owned bare ground at 8 px a plot, JunctionCheck's: a street along a cut, a path of street plots along row 10 from column 2 to 20 with its curve (StreetCurves' line, its band beside it) - with `bri... |
-| 9523 | 291 | `static void curvesDrawn(Squares sq)` |  |
+| 8528 | 3 | `static boolean materialsOf(BuildingsTemplate t)` | Whether a template is one of the nine industries'. |
+| 8533 | 3 | `static long materialsCount(BuildingVisual.Type t)` | The fixture's count of a materials type: one of a works on more than one site, two of anything else - so each slot holds two kinds and the larger is laid first. |
+| 8537 | 264 | `static void materials(long seed)` |  |
+| 8803 | 3 | `static long countZone(List<CityMap.Tinted> tint, int z)` | How many districts a zone's tint takes. |
+| 8808 | 7 | `static java.util.Map<Long, Integer> sitesUnder(CityMap m)` | Each site under a works on a map, by its key, and the works' type. |
+| 8817 | 12 | `static int lookSign(BuildingVisual.Type t)` | The colour a look shows on a box of it rastered (TileRaster's THE MATERIALS AS THEMSELVES): a pit's benches, a shaft's headframe, a quarry's stone, the leach plant's pond, the wash plant's conveyor, a camp's logs, pla... |
+| 8837 | 22 | `static long[] materialsPlace(World w, int side, int[] need)` | The world cell nearest the founding site's whose square of `side` districts (as CityMap.square() lays it round the cell's middle) is DRY_PLACE dry in its middle 3 x 3 districts and holds fields centred in it with at l... |
+| 8864 | 17 | `static int[] slotSites(World w, long x, long y, int side)` | The sites of each slot of the fields centred in the square of `side` districts CityMap.square() lays round plot (x, y). |
 
-### 18. A MONTH REDRAWS ONLY WHAT MOVED (batch UP3, docs/queue/UP3.md) (lines 9815-10547)
+### 16. THE AVENUES DRAWN (batch CL4; the study spec-city-layout 5.2) (lines 8882-9238)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9879 | 53 | **type** `static final class FarScreen` | One far screen of section 18: a MapFrame fitted on the city's frame and zoomed out to FAR (or on to a level that draws no pictures), its nodes, their ground, and what each was last drawn from and as - the way ui/MapVi... |
-| 9897 | 29 | `FarScreen(String name, CityMap m, MiniMapFrame.Box frame, boolean wide)` _(in MapCheck.FarScreen)_ |  |
-| 9928 | 3 | `boolean overlaps(int i, long x0, long y0, long x1, long y1)` _(in MapCheck.FarScreen)_ | Whether node i lies over any of the box x0 to x1 and y0 to y1 (in plots). |
-| 9934 | 17 | **type** `static final class RedrawMonth` | What one month did to one fixture's screens, as Redraw.month() found it; times in ms. |
-| 9948 | 1 | `double nowSum()` _(in MapCheck.RedrawMonth)_ |  |
-| 9949 | 1 | `double todaySum()` _(in MapCheck.RedrawMonth)_ |  |
-| 9953 | 321 | **type** `static final class Redraw` | A fixture of section 18: a map grown a month at a time, its screens drawn two ways (today's whole on `tr`, now's kept on `tk`) and held equal. |
-| 9980 | 21 | `Redraw(String name, CityMap m, long[] counts, int divisor, boolean withFar, boolean wide, boolean withL0, boolean checkLinks)` _(in MapCheck.Redraw)_ |  |
-| 10002 | 3 | `boolean runType(int t)` _(in MapCheck.Redraw)_ |  |
-| 10007 | 5 | `int biggest()` _(in MapCheck.Redraw)_ | The built type with the most buildings that is no run's and no mine: the one a single-district month raises. |
-| 10013 | 5 | `static long sum(MapTiles.KeptNode[] keeps, int what)` _(in MapCheck.Redraw)_ |  |
-| 10020 | 115 | `RedrawMonth month(int kind, int number, boolean timed)` _(in MapCheck.Redraw)_ | Plays one month and draws it; `timed` months are the ones whose figures are read. |
-| 10142 | 61 | `long[] drawStamp(RedrawMonth r, int round, java.util.Set<CityMap.District> wanted)` _(in MapCheck.Redraw)_ | The stamp and the preview drawn two ways, equal or not noted: returns the ns now's took and today's. |
-| 10205 | 11 | `long todayPass(FarScreen fs, int round, boolean warm)` _(in MapCheck.Redraw)_ | Today's draw of a far screen: every node in the month's round, the partial ones after; ns. |
-| 10224 | 33 | `long[] drawFar(FarScreen fs, int s, RedrawMonth r, int round, java.util.Set<CityMap.District> wanted)` _(in MapCheck.Redraw)_ | A far screen drawn two ways, the ns of each: now's as ui/MapView.paintNodes() draws it (nodeKey() for every node in the month's round and for the partial ones after; drawn when the key moved, or it was drawn partial a... |
-| 10259 | 14 | `void verify(FarScreen fs)` _(in MapCheck.Redraw)_ | Every node of the screen drawn from the key it has now holds the pixels a fresh nodePixels() gives it: those held through the month are the ones that count. |
-| 10275 | 5 | `static int differ(int[] a, int[] b)` |  |
-| 10281 | 6 | `static double median18(java.util.List<Double> l)` |  |
-| 10288 | 5 | `static double worst18(java.util.List<Double> l)` |  |
-| 10294 | 6 | `static int medianInt(java.util.List<Integer> l)` |  |
-| 10302 | 16 | `static CityMap hisCopy(Squares sq, double times)` | Jerus's city at `times` on the design's square city at the dry place, as Squares builds its copies. |
-| 10324 | 16 | `static long[] purchaseBlock(CityMap m, CityLand land)` | The block of PURCHASE_SIDE plots to buy: wholly inside the box of the city's built-up ground (so the stamp's frame is the one it was, however the district's owned ground grows), none of it owned, and the most ground o... |
-| 10341 | 130 | `static void redrawsOnlyWhatMoved(Game city, Squares sq)` |  |
-| 10473 | 37 | `static void oneDistrict(Redraw w, RedrawMonth one, int s, boolean picturesOn)` | Check 3 on one month that raised one built type by one: the far nodes whose key moved against the 3 x 3 districts round the one district that moved, and against every node in view. |
-| 10512 | 35 | `static void report18(Redraw w)` | The figures section 18 prints for a fixture. |
+| 8916 | 7 | `static CityMap avenueCity(Squares sq)` | The avenues' city, built from the copies' constants (Squares): twice alike gives a twin. |
+| 8925 | 52 | **type** `static final class AvTiles` | One map's tiles, kept as the section samples them: the rastered image at PX and what the painter was given and made of each plot. |
+| 8935 | 1 | `AvTiles(CityMap m)` _(in MapCheck.AvTiles)_ |  |
+| 8937 | 1 | `private static long key(long tx, long ty)` _(in MapCheck.AvTiles)_ |  |
+| 8940 | 16 | `private void load(long tx, long ty)` _(in MapCheck.AvTiles)_ | The tile (tx, ty) as the painter makes it, loaded on first use. |
+| 8957 | 5 | `private int at(java.util.Map<Long, byte[]> what, long x, long y)` _(in MapCheck.AvTiles)_ |  |
+| 8964 | 1 | `int code(long x, long y)` _(in MapCheck.AvTiles)_ | The plan's street code, the avenue's mark, the painter's use, the ground and the flags of world plot (x, y). |
+| 8965 | 1 | `int mark(long x, long y)` _(in MapCheck.AvTiles)_ |  |
+| 8966 | 1 | `int use(long x, long y)` _(in MapCheck.AvTiles)_ |  |
+| 8967 | 1 | `int ground(long x, long y)` _(in MapCheck.AvTiles)_ |  |
+| 8968 | 1 | `int flag(long x, long y)` _(in MapCheck.AvTiles)_ |  |
+| 8971 | 5 | `int pixel(long X, long Y)` _(in MapCheck.AvTiles)_ | The pixel of the near view's raster at world pixel (X, Y). |
+| 8979 | 4 | `static long[] avenueOrigin(CityMap m)` | The lattice node the avenues run out from, nearest the founding site (DistrictPlan's avSetup), in world plots: {x, y}. |
+| 8985 | 14 | `static boolean avenueOpen(AvTiles t, long ox, long oy, int a, int k)` | Whether the avenue is open at step k of arm a, as the near view draws it: the staircase's plots S_k, C_(k+1) and S_(k+1) laid as a surfaced street on the ground, and the outer plot O_(k+1) between them owned dry groun... |
+| 9001 | 3 | `static boolean streetColour(int c)` | Whether a pixel is a surfaced street's: the paved colour, the gravel's, or its grain. |
+| 9006 | 12 | `static int handMark(int ox, int oy, int arms, int len, int x, int y)` | Where a hand-built tile's avenues stand: the avenue plots of the arms `arms` (bit a) from origin (ox, oy) for `len` steps - a plot two arms share the first arm's mark, as DistrictPlan lays it - and 0 for none. |
+| 9020 | 8 | `static int[] handAvenue(int ox, int oy, int arms, int len, JunctionCheck.Streets extra, boolean withOrigin)` | A hand-built tile of owned bare ground at 8 px a plot, JunctionCheck's: the avenue plots of the arms `arms` from the origin laid as arterial streets with their marks, and the streets `extra` besides; the origin given ... |
+| 9029 | 209 | `static void avenuesDrawn(Squares sq)` |  |
 
-### THE RELIEF ON THE MAP (ET1 slice D; docs/studies/spec-earth2-terrain.md (lines 10548-10846)
+### 17. THE CURVES DRAWN (batch CL4, slice D; the study spec-city-layout 5.2) (lines 9239-9841)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 10560 | 4 | `static int reliefColour(int c, int r)` | The colour a plot of cover `c` and relief `r` is painted, said again from TileRaster's constants (D4, D5, D19): flat ground, water and ice (which have no relief, and white wins over a slope) in their cover's colour; o... |
-| 10566 | 4 | `static World.Key fixtureKey(double[] at) throws Exception` | A map's relief on EarthCheck's fixture's key at (lat, lon): the data in use (EarthTerrain.use()) and the key of the Earth world there. |
-| 10572 | 144 | `static void reliefOnMap(BuildingVisual.Type[] types) throws Exception` | Section 10: the plane's plots and the far node over Medellin painted by their relief; a generated world painted as it was. |
-| 10718 | 34 | `static void pictureRelief(BuildingVisual.Type[] types) throws Exception` | Section 11: a built district's far node over Medellin's hills: the greys on the city's own ground, undimmed, and nowhere else but the plan's own colours. |
-| 10754 | 92 | `static void reliefWordsAndLegend(BuildingVisual.Type[] types) throws Exception` | Section 13: the words and the legend by relief; the globe's hover and its picture's codes. |
+| 9279 | 14 | **type** `record CvFound(CityMap.District d, CityMap.DrawnCurve c, long ox, long oy)` | A curve found in a Drawn, with where its district's frame lies in the world. |
+| 9281 | 5 | `double[][] line()` _(in MapCheck.CvFound)_ | Its line in the world's plots: {xs, ys}. |
+| 9288 | 4 | `long[] plot(int k)` _(in MapCheck.CvFound)_ | Plot k of its list in the world's plots: {x, y}. |
+| 9295 | 65 | **type** `static final class CvTiles` | One map's tiles as the curves section samples them at `px` a plot: the rastered image, and what the painter was given and made of each plot. |
+| 9307 | 1 | `CvTiles(CityMap m, int px)` _(in MapCheck.CvTiles)_ |  |
+| 9309 | 1 | `CvTiles(CityMap m, int px, boolean bare)` _(in MapCheck.CvTiles)_ |  |
+| 9311 | 1 | `private static long key(long tx, long ty)` _(in MapCheck.CvTiles)_ |  |
+| 9313 | 20 | `private void load(long tx, long ty)` _(in MapCheck.CvTiles)_ |  |
+| 9334 | 5 | `private int at(java.util.Map<Long, byte[]> what, long x, long y)` _(in MapCheck.CvTiles)_ |  |
+| 9341 | 1 | `int code(long x, long y)` _(in MapCheck.CvTiles)_ | The plan's street code, the painter's use, the curve mark and the flags (1 owned, 2 bridge, 4 beneath) of world plot (x, y). |
+| 9342 | 1 | `int use(long x, long y)` _(in MapCheck.CvTiles)_ |  |
+| 9343 | 1 | `int mark(long x, long y)` _(in MapCheck.CvTiles)_ |  |
+| 9344 | 1 | `int flag(long x, long y)` _(in MapCheck.CvTiles)_ |  |
+| 9347 | 5 | `int type(long x, long y)` _(in MapCheck.CvTiles)_ | The type id of the building on world plot (x, y), or -1 for none. |
+| 9354 | 5 | `int pixel(long X, long Y)` _(in MapCheck.CvTiles)_ | The pixel of the raster at world pixel (X, Y). |
+| 9362 | 6 | `static boolean cvStreetColour(int c)` | Whether a pixel is a surfaced street's, owned or dimmed as ground the city has not bought is: the paved colour, the gravel's or its grain. |
+| 9370 | 6 | **type** `static final class CvAudit` | What an audit of one curve's drawn line found. |
+| 9378 | 5 | `static java.util.Set<Long> cvPlotSet(CvFound f)` | The own plots of a curve (the first `own` of its list) as a set of world plot keys. |
+| 9393 | 89 | `static CvAudit cvAudit(CvTiles t, CvFound f, java.util.Set<Integer> fills)` | One curve's line audited on the raster t (THE CURVES DRAWN): samples every pixel along it, from its first point to its last. |
+| 9484 | 4 | `static double cvTurn(double x0, double y0, double x1, double y1, double x2, double y2)` | The signed turn, in radians, from the chord (x0, y0)-(x1, y1) to (x1, y1)-(x2, y2). |
+| 9490 | 7 | `static boolean cvCrossesTile(double[][] line)` | Whether the line passes from one tile to another. |
+| 9499 | 8 | `static java.util.List<long[]> cvTiles(CvFound f)` | The tiles about a curve's plots: its bounding box in tiles, a tile more on each side, as {tx, ty} pairs. |
+| 9509 | 19 | `static int[] handCrescent(JunctionCheck.Streets extra)` | A hand-built tile of owned bare ground at 8 px a plot, JunctionCheck's: a crescent in the cell whose interior's north-west plot is (0, 1), bulging toward +x, its staircase laid as street plots with its curve, and the ... |
+| 9530 | 19 | `static int[] handShore(boolean bridge)` | A hand-built tile of owned bare ground at 8 px a plot, JunctionCheck's: a street along a cut, a path of street plots along row 10 from column 2 to 20 with its curve (StreetCurves' line, its band beside it) - with `bri... |
+| 9550 | 291 | `static void curvesDrawn(Squares sq)` |  |
+
+### 18. A MONTH REDRAWS ONLY WHAT MOVED (batch UP3, docs/queue/UP3.md) (lines 9842-10574)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 9906 | 53 | **type** `static final class FarScreen` | One far screen of section 18: a MapFrame fitted on the city's frame and zoomed out to FAR (or on to a level that draws no pictures), its nodes, their ground, and what each was last drawn from and as - the way ui/MapVi... |
+| 9924 | 29 | `FarScreen(String name, CityMap m, MiniMapFrame.Box frame, boolean wide)` _(in MapCheck.FarScreen)_ |  |
+| 9955 | 3 | `boolean overlaps(int i, long x0, long y0, long x1, long y1)` _(in MapCheck.FarScreen)_ | Whether node i lies over any of the box x0 to x1 and y0 to y1 (in plots). |
+| 9961 | 17 | **type** `static final class RedrawMonth` | What one month did to one fixture's screens, as Redraw.month() found it; times in ms. |
+| 9975 | 1 | `double nowSum()` _(in MapCheck.RedrawMonth)_ |  |
+| 9976 | 1 | `double todaySum()` _(in MapCheck.RedrawMonth)_ |  |
+| 9980 | 321 | **type** `static final class Redraw` | A fixture of section 18: a map grown a month at a time, its screens drawn two ways (today's whole on `tr`, now's kept on `tk`) and held equal. |
+| 10007 | 21 | `Redraw(String name, CityMap m, long[] counts, int divisor, boolean withFar, boolean wide, boolean withL0, boolean checkLinks)` _(in MapCheck.Redraw)_ |  |
+| 10029 | 3 | `boolean runType(int t)` _(in MapCheck.Redraw)_ |  |
+| 10034 | 5 | `int biggest()` _(in MapCheck.Redraw)_ | The built type with the most buildings that is no run's and no mine: the one a single-district month raises. |
+| 10040 | 5 | `static long sum(MapTiles.KeptNode[] keeps, int what)` _(in MapCheck.Redraw)_ |  |
+| 10047 | 115 | `RedrawMonth month(int kind, int number, boolean timed)` _(in MapCheck.Redraw)_ | Plays one month and draws it; `timed` months are the ones whose figures are read. |
+| 10169 | 61 | `long[] drawStamp(RedrawMonth r, int round, java.util.Set<CityMap.District> wanted)` _(in MapCheck.Redraw)_ | The stamp and the preview drawn two ways, equal or not noted: returns the ns now's took and today's. |
+| 10232 | 11 | `long todayPass(FarScreen fs, int round, boolean warm)` _(in MapCheck.Redraw)_ | Today's draw of a far screen: every node in the month's round, the partial ones after; ns. |
+| 10251 | 33 | `long[] drawFar(FarScreen fs, int s, RedrawMonth r, int round, java.util.Set<CityMap.District> wanted)` _(in MapCheck.Redraw)_ | A far screen drawn two ways, the ns of each: now's as ui/MapView.paintNodes() draws it (nodeKey() for every node in the month's round and for the partial ones after; drawn when the key moved, or it was drawn partial a... |
+| 10286 | 14 | `void verify(FarScreen fs)` _(in MapCheck.Redraw)_ | Every node of the screen drawn from the key it has now holds the pixels a fresh nodePixels() gives it: those held through the month are the ones that count. |
+| 10302 | 5 | `static int differ(int[] a, int[] b)` |  |
+| 10308 | 6 | `static double median18(java.util.List<Double> l)` |  |
+| 10315 | 5 | `static double worst18(java.util.List<Double> l)` |  |
+| 10321 | 6 | `static int medianInt(java.util.List<Integer> l)` |  |
+| 10329 | 16 | `static CityMap hisCopy(Squares sq, double times)` | Jerus's city at `times` on the design's square city at the dry place, as Squares builds its copies. |
+| 10351 | 16 | `static long[] purchaseBlock(CityMap m, CityLand land)` | The block of PURCHASE_SIDE plots to buy: wholly inside the box of the city's built-up ground (so the stamp's frame is the one it was, however the district's owned ground grows), none of it owned, and the most ground o... |
+| 10368 | 130 | `static void redrawsOnlyWhatMoved(Game city, Squares sq)` |  |
+| 10500 | 37 | `static void oneDistrict(Redraw w, RedrawMonth one, int s, boolean picturesOn)` | Check 3 on one month that raised one built type by one: the far nodes whose key moved against the 3 x 3 districts round the one district that moved, and against every node in view. |
+| 10539 | 35 | `static void report18(Redraw w)` | The figures section 18 prints for a fixture. |
+
+### THE RELIEF ON THE MAP (ET1 slice D; docs/studies/spec-earth2-terrain.md (lines 10575-10873)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 10587 | 4 | `static int reliefColour(int c, int r)` | The colour a plot of cover `c` and relief `r` is painted, said again from TileRaster's constants (D4, D5, D19): flat ground, water and ice (which have no relief, and white wins over a slope) in their cover's colour; o... |
+| 10593 | 4 | `static World.Key fixtureKey(double[] at) throws Exception` | A map's relief on EarthCheck's fixture's key at (lat, lon): the data in use (EarthTerrain.use()) and the key of the Earth world there. |
+| 10599 | 144 | `static void reliefOnMap(BuildingVisual.Type[] types) throws Exception` | Section 10: the plane's plots and the far node over Medellin painted by their relief; a generated world painted as it was. |
+| 10745 | 34 | `static void pictureRelief(BuildingVisual.Type[] types) throws Exception` | Section 11: a built district's far node over Medellin's hills: the greys on the city's own ground, undimmed, and nowhere else but the plan's own colours. |
+| 10781 | 92 | `static void reliefWordsAndLegend(BuildingVisual.Type[] types) throws Exception` | Section 13: the words and the legend by relief; the globe's hover and its picture's codes. |
 

@@ -152,9 +152,18 @@ import static ham.citybuildersim.ui.Pieces.*;
  * 2026-10-26, "look at the wierd resolution by just panning a few more
  * kms") the plane's own far nodes are drawn through the camera at the
  * scale's own stride - 8, 4, 2 or 1 plots a pixel - wherever the world's
- * square holds the ground (GlobeFrame.planeDrawnPastReach()), the ground
- * as the plane draws it inside the reach, its block lines and its legend
- * with it, and the far rule's pieces only off the square;
+ * square holds the ground within GlobeFrame.handoverKm() of the city
+ * (GlobeFrame.planeDrawnPastReach()), the ground as the plane draws it
+ * inside the reach, its block lines and its legend with it; and since MS3
+ * (Jerus 2026-10-27, Goose Bay from a Singapore city drawn in streaks:
+ * the plane's shape distortion) past the hand-over, off the square too,
+ * the view's chart (GlobeFrame.chart()) - a north-up orthographic piece of
+ * the planet about the anchor nearest the view's centre, true in shape,
+ * cut into nodes at the same stride and kept as the plane's far nodes are
+ * (chartNodes(): asked of WORKER from the middle out, a node asked for a
+ * view that has moved on dropped unread, MapTiles.chartTerrain()) - so
+ * no far-rule pieces are asked at those scales, and the hover there
+ * reads the chart node under the pointer (drawnAt());
  * PLANE, the map as before, its MapFrame following the globe's view while
  * its centre is within the reach. A
  * view on the move is drawn at half its resolution and a still one at its
@@ -305,6 +314,13 @@ final class MapView {
     private final Pictures l0small = new Pictures(), l0big = new Pictures(), l1 = new Pictures(), l2 = new Pictures(),
             nodes = new Pictures();
     private final Set<Long> nodesAsked = new HashSet<>();
+    /**
+     * The globe's chart nodes (MS3; GlobeFrame.chart()) kept as the plane's far nodes are - their colours (Img.pixels), classes and relief
+     * (for the hover) - and those asked of WORKER and not back. Keyed by chartKey(), kept across views, and cleared with the globe
+     * (resetGlobe()): a chart node reads nothing of the city, so a new map of the same world keeps them.
+     */
+    private final Pictures charts = new Pictures();
+    private final Set<Long> chartsAsked = new HashSet<>();
     /** The districts whose pictures' jobs are on WORKER (0.7.128), and those the far nodes drawn this frame lacked. */
     private final Set<CityMap.District> picturesAsked = new HashSet<>(), picturesWanted = new java.util.LinkedHashSet<>();
 
@@ -689,6 +705,7 @@ final class MapView {
         l1.most = MapTiles.tilesKept(f, MapFrame.L1, MapFrame.MIDDLE_TILE_PX);
         l2.most = MapTiles.tilesKept(f, MapFrame.L2, MapFrame.FAR_TILE_PX);
         nodes.most = f.nodesAtMost();
+        charts.most = f.nodesAtMost();
     }
 
     private Pictures picturesFor(int level, int px) {
@@ -1951,13 +1968,17 @@ final class MapView {
     /** ...or lays its picture over the plane's in the crossfade's notch (GlobeFrame.crossfade(), the view's: whole where there is no plane under it). */
     private boolean globeShown() { return onGlobe() || (expanded && globe != null && globe.crossfade() > 0); }
 
-    /** A new city, or another world: no globe until the map is over the window on Earth again. */
+    /** A new city, or another world: no globe until the map is over the window on Earth again - and no chart nodes (MS3): those in flight come back to another generation and are dropped. */
     private void resetGlobe() {
         resetGlobePicture();
         globe = null;
         globeKey = null;
         globeData = null;
         reachFor = Long.MIN_VALUE;
+        charts.clear();
+        chartsAsked.clear();
+        chartsWanted = null;
+        chartGen++;
     }
 
     /** What the globe drew from and drew: another map, or another view of the world. */
@@ -1973,6 +1994,7 @@ final class MapView {
         carryPx = null;
         carryView = null;
         globeNodesFor = null;
+        chartNodesFor = null;
     }
 
     /** The globe made for the city's world while the map is over the window on Earth (none on a generated world), its reach found again when the land or the offers move, and the planet's picture asked for. */
@@ -2007,7 +2029,7 @@ final class MapView {
         requestDraw();
     }
 
-    /** The far nodes the globe reprojects for a view - {plots a pixel, nx0, nx1, ny0, ny1} - over the part of it the plane draws (GlobeFrame.drawsHold(): since MS2 at the plane's scales the whole of it the world's square holds); null where it draws none. Kept for the view. */
+    /** The far nodes the globe reprojects for a view - {plots a pixel, nx0, nx1, ny0, ny1} - over the part of it the plane draws (GlobeFrame.drawsHold(): since MS2 at the plane's scales the part of it the world's square holds within GlobeFrame.handoverKm() of the city, MS3: the charts draw the rest, chartNodes()); null where it draws none. Kept for the view. */
     private long[] globeNodes(GlobeFrame v) {
         if (globeNodesFor != null && globeNodesFor.sameView(v)) return globeNodesAt;
         globeNodesFor = v.copy(v.width(), v.height(), v.kmPx());
@@ -2037,20 +2059,157 @@ final class MapView {
     private GlobeFrame globeNodesFor;
     private long[] globeNodesAt;
 
-    /** A frame's work on the globe: in the GROUND tier the plane's far nodes near the city, their ground asked of WORKER and coloured here until the deadline, and the district pictures they lack. True while there is more. */
+    /**
+     * The chart nodes the globe draws for a view (MS3) - {plots a pixel, the chart's id, nx0, nx1, ny0, ny1} - over the part of it the
+     * view's chart draws (GlobeFrame.chartHolds(): at the plane's scales the ground past GlobeFrame.handoverKm() of the city and off
+     * the world's square), sampled every NODE_SAMPLE_PX as globeNodes() is, each sample's place on the chart (GlobeFrame.chartAt(), in
+     * chart pixels at the view's stride) cut into nodes of MapFrame.NODE_PX and padded by a sample's step; null where the chart draws
+     * none. Kept for the view, as globeNodes()'s is.
+     */
+    private long[] chartNodes(GlobeFrame v) {
+        if (chartNodesFor != null && chartNodesFor.sameView(v)) return chartNodesAt;
+        chartNodesFor = v.copy(v.width(), v.height(), v.kmPx());
+        long plots = MapFrame.nodePlotsAt(v.planeScale());
+        double x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE;
+        double[] xy = new double[2];
+        double w = v.width(), h = v.height();
+        for (double sy = 0.5; sy < h + NODE_SAMPLE_PX; sy += NODE_SAMPLE_PX) {
+            for (double sx = 0.5; sx < w + NODE_SAMPLE_PX; sx += NODE_SAMPLE_PX) {
+                double px = Math.min(sx, w - 0.5), py = Math.min(sy, h - 0.5);
+                if (!v.chartHolds(px, py) || !v.chartAt(px, py, xy)) continue;
+                x0 = Math.min(x0, xy[0]);
+                y0 = Math.min(y0, xy[1]);
+                x1 = Math.max(x1, xy[0]);
+                y1 = Math.max(y1, xy[1]);
+            }
+        }
+        if (x0 > x1) return chartNodesAt = null;
+        // A sample's step in chart pixels (a screen pixel is 1 / (planeScale x plots) of one), and one more for the orthographic chart's squeeze.
+        double pad = NODE_SAMPLE_PX / (v.planeScale() * plots) + 1, n = MapFrame.NODE_PX;
+        chartNodesAt = new long[] { plots, v.chart().id(),
+                (long) Math.floor((x0 - pad) / n), (long) Math.floor((x1 + pad) / n), (long) Math.floor((y0 - pad) / n), (long) Math.floor((y1 + pad) / n) };
+        return chartNodesAt;
+    }
+
+    private GlobeFrame chartNodesFor;
+    private long[] chartNodesAt;
+
+    /** A chart node's indexes run negative west and north of the chart's anchor: this many are added to each to key it. */
+    private static final long CHART_NODE_OFFSET = 1L << 19;
+
+    /** A chart node's key (MS3): the chart's id (GlobeFrame.chartFor()'s row and column, 13 bits) in the top 20 bits, the stride's power of two in 4, and the node's two indexes in 20 bits each (a chart reaches some 400 nodes from its anchor at a plot a pixel). */
+    private static long chartKey(long id, long plots, long nx, long ny) {
+        return (id << 44) ^ ((long) Long.numberOfTrailingZeros(plots) << 40) ^ (((nx + CHART_NODE_OFFSET) & 0xfffff) << 20) ^ ((ny + CHART_NODE_OFFSET) & 0xfffff);
+    }
+
+    /** The chart nodes WORKER's queue reads from its own thread (chartNodes()'s range for the view being painted): a node asked for a view that has moved on is dropped unread. */
+    private volatile long[] chartsWanted;
+
+    /** The globe's generation as far as chart nodes go: moved by resetGlobe(), so a node that comes back from WORKER after it is dropped. */
+    private int chartGen;
+
+    /**
+     * A frame's work on the globe: in the GROUND tier the plane's far nodes near the city, their ground asked of WORKER and coloured here
+     * until the deadline, and the district pictures they lack; and the chart nodes past the hand-over (MS3), asked beside them. True while
+     * there is more.
+     */
     private boolean paintGlobe(long deadline) {
         if (globe.tier() != GlobeFrame.GROUND || shownMap == null) return false;
+        boolean more = false;
         long[] r = globeNodes(globe);
-        if (r == null) return false;
-        nodes.most = Math.max(nodes.most, (r[2] - r[1] + 1) * (r[4] - r[3] + 1));
-        MapFrame pf = new MapFrame(globe.width(), globe.height());
-        pf.set(globe.planeX(), globe.planeY(), globe.planeScale());
-        picturesWanted.clear();
-        try {
-            return paintNodes(r[0], r[1], r[2], r[3], r[4], deadline, shownMap.picturesKept(), pf);
-        } finally {
-            askPictures(pf);
+        if (r != null) {
+            nodes.most = Math.max(nodes.most, (r[2] - r[1] + 1) * (r[4] - r[3] + 1));
+            MapFrame pf = new MapFrame(globe.width(), globe.height());
+            pf.set(globe.planeX(), globe.planeY(), globe.planeScale());
+            picturesWanted.clear();
+            try {
+                more = paintNodes(r[0], r[1], r[2], r[3], r[4], deadline, shownMap.picturesKept(), pf);
+            } finally {
+                askPictures(pf);
+            }
         }
+        askCharts(chartNodes(globe));
+        return more;
+    }
+
+    /**
+     * The chart nodes `r` (chartNodes()) the cache lacks asked of WORKER, each once, from the middle of the range out (MS3; askNodes()'s
+     * rule for the plane's far nodes): WORKER makes the node's classes and relief (MapTiles.chartTerrain()) and its colours
+     * (MapTiles.chartPixels()) - nothing in a chart node reads the city - and the FX thread keeps it and asks a frame. A node still
+     * queued when the view has moved on is dropped unread (chartsAsked forgets it, so a view that comes back asks for it again); one that
+     * fails logs a line and is not asked again, as a piece is not.
+     */
+    private void askCharts(long[] r) {
+        chartsWanted = r;
+        if (r == null) return;
+        charts.most = Math.max(charts.most, (r[3] - r[2] + 1) * (r[5] - r[4] + 1));
+        final long plots = r[0], id = r[1];
+        List<long[]> asking = new ArrayList<>();
+        for (long ny = r[4]; ny <= r[5]; ny++) {
+            for (long nx = r[2]; nx <= r[3]; nx++) {
+                long key = chartKey(id, plots, nx, ny);
+                if (charts.get(key) == null && chartsAsked.add(key)) asking.add(new long[] { nx, ny, key });
+            }
+        }
+        if (asking.isEmpty()) return;
+        final double cx = (r[2] + r[3]) / 2.0, cy = (r[4] + r[5]) / 2.0;
+        asking.sort((a, b) -> Double.compare(Math.hypot(a[0] - cx, a[1] - cy), Math.hypot(b[0] - cx, b[1] - cy)));
+        final World.Key world = globeKey;
+        final GlobeFrame.Chart chart = globe.chart();
+        final int gen = chartGen, n = MapFrame.NODE_PX;
+        for (long[] a : asking) {
+            final long nx = a[0], ny = a[1], key = a[2];
+            WORKER.submit(() -> {
+                long[] w = chartsWanted;
+                if (w == null || w[0] != plots || w[1] != id || nx < w[2] || nx > w[3] || ny < w[4] || ny > w[5]) {
+                    Platform.runLater(() -> {
+                        chartsAsked.remove(key);
+                        requestDraw();
+                    });
+                    return;
+                }
+                byte[] relief = new byte[n * n], ground;
+                int[] pixels = new int[n * n];
+                try {
+                    ground = MapTiles.chartTerrain(world, chart, plots, nx, ny, relief);
+                    MapTiles.chartPixels(ground, relief, pixels);
+                } catch (RuntimeException e) {
+                    System.out.println("A chart's ground could not be drawn: " + e);
+                    return;
+                }
+                Platform.runLater(() -> {
+                    chartsAsked.remove(key);
+                    if (gen != chartGen) return;
+                    Img got = new Img();
+                    got.ground = ground;
+                    got.relief = relief;
+                    got.pixels = pixels;
+                    charts.put(key, got);
+                    chartColoured(chart.id(), plots, nx, ny);
+                    requestDraw();
+                });
+            });
+        }
+    }
+
+    /** A chart node come in: where the globe's still picture shows it, laid over again next frame - nodeColoured()'s rule for the plane's, the node's corners and mid-points from its chart (east and south of the anchor on its orthographic plane) to the screen. */
+    private void chartColoured(int id, long plots, long nx, long ny) {
+        if (globe == null || !expanded || globeDrawn == null || globeHalf) return;
+        GlobeFrame.Chart chart = globe.chart();
+        if (chart.id() != id || MapFrame.nodePlotsAt(globe.planeScale()) != plots) return;
+        EarthProj.Ortho o = chart.ortho();
+        double n = MapFrame.NODE_PX, m = plots * World.PLOT_M;
+        double[] ll = new double[2], box = null;
+        for (int k = 0; k < 9; k++) {
+            double[] p = o.inverse((nx * n + (k % 3) * n / 2) * m, -(ny * n + (k / 3) * n / 2) * m, ll) ? globe.at(ll[0], ll[1]) : null;
+            if (p == null) {
+                box = new double[] { 0, 0, globe.width(), globe.height() };
+                break;
+            }
+            box = box == null ? new double[] { p[0], p[1], p[0], p[1] }
+                    : new double[] { Math.min(box[0], p[0]), Math.min(box[1], p[1]), Math.max(box[2], p[0]), Math.max(box[3], p[1]) };
+        }
+        addPatch(box[0] - 2, box[1] - 2, box[2] + 2, box[3] + 2);
     }
 
     /** A far node coloured (the plane's or the globe's): where the globe's still picture shows it, laid over again next frame. */
@@ -2121,7 +2280,7 @@ final class MapView {
         }
     }
 
-    /** The picture of frame t (the view, or its half) over its pixels [i0, i1) x [j0, j1), in bands on the frames' pool, into the image. */
+    /** The picture of frame t (the view, or its half) over its pixels [i0, i1) x [j0, j1), in bands on the frames' pool, into the image: the plane's nodes and, past the hand-over at the plane's scales, the view's chart nodes (MS3) laid by GlobeFrame.ground(). */
     private void drawGlobePart(GlobeFrame t, int mode, int i0, int i1, int j0, int j1) {
         int w = (int) t.width(), h = (int) t.height();
         boolean whole = i0 == 0 && j0 == 0 && i1 == w && j1 == h;
@@ -2151,14 +2310,27 @@ final class MapView {
                 }
             }
             GlobeFrame.NodePixels np = (nx, ny) -> snap.get(nodeKey(plots, nx, ny));
+            // The view's chart nodes (MS3), snapped the same way: past the hand-over the chart draws what the plane's nodes do not.
+            long[] cr = mode == MODE_FADE ? null : chartNodes(globe);
+            Map<Long, int[]> chartSnap = new HashMap<>();
+            if (cr != null) {
+                for (long ny = cr[4]; ny <= cr[5]; ny++) {
+                    for (long nx = cr[2]; nx <= cr[3]; nx++) {
+                        Img img = charts.get(chartKey(cr[1], plots, nx, ny));
+                        if (img != null && img.pixels != null) chartSnap.put(chartKey(cr[1], plots, nx, ny), img.pixels);
+                    }
+                }
+            }
+            final long chartId = cr == null ? 0 : cr[1];
+            GlobeFrame.NodePixels cp = cr == null ? null : (nx, ny) -> chartSnap.get(chartKey(chartId, plots, nx, ny));
             GlobeFrame.Beyond beyond = mode == MODE_FADE ? (i, j, vx, vy, vz) -> 0 : beyond(t, pic);
             final int a0 = i0, a1 = i1, b0 = j0;
-            GlobePicture.bands(j1 - j0, GlobePicture.cores(), (k0, k1) -> t.ground(plots, np, beyond, GlobePicture.SPACE, px, w, a0, a1, b0 + k0, b0 + k1));
+            GlobePicture.bands(j1 - j0, GlobePicture.cores(), (k0, k1) -> t.ground(plots, np, cp, beyond, GlobePicture.SPACE, px, w, a0, a1, b0 + k0, b0 + k1));
         }
         globeImg.getPixelWriter().setPixels(i0, j0, i1 - i0, j1 - j0, PixelFormat.getIntArgbInstance(), px, j0 * w + i0, w);
     }
 
-    /** Past the plane, in the GROUND tier: the piece drawn for this view where it is in, else the last whole picture carried, else the planet's picture; space where there is none yet. */
+    /** Past the plane and the charts, in the GROUND tier: the piece drawn for this view where it is in, else the last whole picture carried, else the planet's picture; space where there is none yet. At the plane's scales (MS3) no piece is asked where the plane or a chart draws, so the carried picture and the planet's are what show where a chart node is not in yet. */
     private GlobeFrame.Beyond beyond(GlobeFrame t, GlobePicture pic) {
         final int w = (int) t.width();
         final byte[] pcs = pieceView != null && pieceView.sameView(t) ? pieceCls : null;
@@ -2193,8 +2365,11 @@ final class MapView {
      * square at a time on WORKER, from the middle out, each one with some
      * of its pixels on the planet and past where the plane draws - and only
      * while the view is still that one. Since MS2 the plane draws wherever
-     * the world's square holds the ground at the plane's scales, so a piece
-     * there is asked only for the pixels the square does not hold.
+     * the world's square holds the ground at the plane's scales, and since
+     * MS3 the view's chart draws the rest past the hand-over (off the
+     * square too, GlobeFrame.chartHolds()), so a pixel the chart draws is
+     * treated as one the plane draws and there is no piece at the plane's
+     * scales; at the handoff and wider the pieces are asked as before.
      */
     private void askPieces(GlobeFrame view) {
         if (pieceView != null && pieceView.sameView(view)) return;
@@ -2212,7 +2387,7 @@ final class MapView {
                 boolean plane = true, planet = false;
                 for (int k = 0; k < 9; k++) {
                     double sx = x0 + 0.5 + (k % 3) * (pw - 1) / 2.0, sy = y0 + 0.5 + (k / 3) * (ph - 1) / 2.0;
-                    plane &= pv.drawsHold(sx, sy);
+                    plane &= pv.drawsHold(sx, sy) || pv.chartHolds(sx, sy);
                     planet |= pv.onPlanet(sx, sy);
                 }
                 if (planet && !plane) asked.add(new int[] { x0, y0, pw, ph });
@@ -2528,7 +2703,7 @@ final class MapView {
         scaleBar(gc, globe.height(), bar[1], GlobeFrame.scaleWords(bar[0]));
     }
 
-    /** The hover on the globe (spec-globe 3.7): the offer the plane lights there, and the card - LandMap.globeHoverWords(), the ground drawn there where the plane does not draw it. */
+    /** The hover on the globe (spec-globe 3.7): the offer the plane lights there, and the card - LandMap.globeHoverWords(), the ground drawn there where the plane does not draw it (drawnAt(): past the hand-over, MS3, the chart node's under the pointer; the plane holds no plot there, so the card says the globe's words, "Not the city's", and no offer is lit). */
     private void globeHover(double sx, double sy) {
         Game g = ui.game;
         CityLand land = g.getCityLand();
@@ -2622,8 +2797,16 @@ final class MapView {
         lines.add(ground.get(ground.size() - 1));
     }
 
-    /** The ground drawn at a screen point on the globe, past the plane, as a code - its class and relief (GlobePicture.code()): the GROUND tier's piece where one is in, else the planet's picture's texel. */
+    /**
+     * The ground drawn at a screen point on the globe, past the plane, as a code - its class and relief (GlobePicture.code()): where the
+     * view's chart draws it (GlobeFrame.chartHolds(), MS3: at the plane's scales the ground past the hand-over) the chart node's class and
+     * relief under the pixel, once the node is in; else the GROUND tier's piece where one is in, else the planet's picture's texel.
+     */
     private byte drawnAt(double sx, double sy) {
+        if (globe.chartHolds(sx, sy)) {
+            byte code = chartCode(sx, sy);
+            if (code >= 0) return code;
+        }
         int i = (int) sx, j = (int) sy, w = (int) globe.width(), h = (int) globe.height();
         if (pieceCls != null && pieceView != null && pieceView.sameView(globe) && i >= 0 && j >= 0 && i < w && j < h) {
             byte c = pieceCls[j * w + i];
@@ -2632,6 +2815,18 @@ final class MapView {
         GlobePicture pic = globeData == null ? null : GlobePicture.best(globeData);
         double[] ll = globe.latLonAt(sx, sy);
         return pic != null && ll != null ? pic.codeAt(ll[0], ll[1]) : World.SALT;
+    }
+
+    /** The code (GlobePicture.code()) of the pixel of the view's chart node under a screen point - the node ground() lays there (GlobeFrame.chartAt()) - or -1 where the node is not in yet. */
+    private byte chartCode(double sx, double sy) {
+        double[] xy = new double[2];
+        if (!globe.chartAt(sx, sy, xy)) return -1;
+        int n = MapFrame.NODE_PX;
+        long nx = (long) Math.floor(xy[0] / n), ny = (long) Math.floor(xy[1] / n);
+        Img img = charts.get(chartKey(globe.chart().id(), MapFrame.nodePlotsAt(globe.planeScale()), nx, ny));
+        if (img == null || img.ground == null || img.relief == null) return -1;
+        int u = Math.min(n - 1, (int) (xy[0] - nx * n)), v = Math.min(n - 1, (int) (xy[1] - ny * n));
+        return GlobePicture.code(img.ground[v * n + u], img.relief[v * n + u]);
     }
 
     /* ----- the keys (0.7.135; spec-globe 3.11) ----- */

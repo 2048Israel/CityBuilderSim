@@ -438,6 +438,68 @@ public final class EarthTerrain {
         return v;
     }
 
+    /* ----- the sphere's noise (MS3): the same fields on the planet, not on the city's plane ----- */
+
+    /**
+     * The gain on each octave's deviation from its mean in the sphere's noise: sqrt(35 / 26), 1.160 (MS3). 3D value
+     * noise's spread is the 2D's times sqrt(26 / 35): a lattice value's weight in the smoothstep blend has the mean
+     * square E[1 - 2w + 2w^2] = 26 / 35 along an axis, and the 2D blend takes it twice (a square of it) where the 3D
+     * takes it three times (a cube), so the sphere's noise scaled by this has the plane's spread and the ranking table
+     * (quantile()) and the frays' rules (COAST_FRAY and the rest) hold for it unchanged. GlobeCheck 2d measures it.
+     */
+    static final double SPHERE_GAIN = Math.sqrt(35.0 / 26);
+
+    /** The third lattice coordinate's hash constant, beside World.lattice()'s two: an odd number the other two are not. */
+    private static final long LATTICE_Z = 0x165667B19E3779F9L;
+
+    /** The value at one lattice point of one octave of the sphere's noise: World.lattice()'s hash with a third coordinate. */
+    private static double lattice3(long s, long ix, long iy, long iz) {
+        return World.unit(World.mix(s ^ (ix * 0x9E3779B97F4A7C15L) ^ (iy * 0xC2B2AE3D27D4EB4FL) ^ (iz * LATTICE_Z)));
+    }
+
+    /** 3D value noise at (x, y, z) in lattice units, smoothstep-interpolated along each axis (World.vnoise()'s, a dimension more). */
+    private static double vnoise3(long s, double x, double y, double z) {
+        long ix = (long) Math.floor(x), iy = (long) Math.floor(y), iz = (long) Math.floor(z);
+        double xf = x - ix, yf = y - iy, zf = z - iz;
+        double u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), w = zf * zf * (3 - 2 * zf);
+        double x00 = lattice3(s, ix, iy, iz), x10 = lattice3(s, ix + 1, iy, iz), x01 = lattice3(s, ix, iy + 1, iz), x11 = lattice3(s, ix + 1, iy + 1, iz);
+        double y00 = lattice3(s, ix, iy, iz + 1), y10 = lattice3(s, ix + 1, iy, iz + 1), y01 = lattice3(s, ix, iy + 1, iz + 1), y11 = lattice3(s, ix + 1, iy + 1, iz + 1);
+        double a0 = x00 + (x10 - x00) * u, a1 = x01 + (x11 - x01) * u, b0 = y00 + (y10 - y00) * u, b1 = y01 + (y11 - y01) * u;
+        double c0 = a0 + (a1 - a0) * v, c1 = b0 + (b1 - b0) * v;
+        return c0 + (c1 - c0) * w;
+    }
+
+    /**
+     * One field's noise at a point of the planet (MS3), noiseAt()'s octaves on the sphere: the point (x, y, z) in plots
+     * (the point's unit vector times RADIUS_M / PLOT_M), each octave k 3D value noise at the point over 2^k at AMP_N[k],
+     * each octave's deviation from 0.5 scaled by SPHERE_GAIN, and, as noiseAt() has it, an octave no wider than `stride`
+     * at its mean, 0.5. The planet's noise, not a view's: it depends on the point, the field's streams and the stride,
+     * not on the projection the point was found by, so a pixel read from two charts reads the same value.
+     */
+    static double sphereNoise(long[] os, double x, double y, double z, double stride) {
+        double v = 0;
+        for (int k = NOISE_HI; k >= NOISE_LO; k--) {
+            double w = 1L << k;
+            v += AMP_N[k] * (w > stride ? 0.5 + SPHERE_GAIN * (vnoise3(os[k], x / w, y / w, z / w) - 0.5) : 0.5);
+        }
+        return v;
+    }
+
+    /** Two independent noises mixed at share t of the second (0 to 1) with the spread held at the plane's: 0.5 + ((1 - t) (plane - 0.5) + t (sphere - 0.5)) / sqrt((1 - t)^2 + t^2) - the plane's alone at 0, the sphere's alone at 1. */
+    static double blendNoise(double plane, double sphere, double t) {
+        return 0.5 + ((1 - t) * (plane - 0.5) + t * (sphere - 0.5)) / Math.sqrt((1 - t) * (1 - t) + t * t);
+    }
+
+    /** A cover's noise at a point: the plane's noiseAt() at (x, y), unless a chart is drawing on this thread (the scratch's), when the sphere's at the pixel it is aimed at, blended in from the plane's near the hand-over. */
+    private static double noise(Scratch s, long[] os, double x, double y, double stride) {
+        return s.chart == null ? noiseAt(os, x, y, stride) : s.chart.noise(os, 1, stride);
+    }
+
+    /** ...the relief's, at the point over RELIEF_SCALE and the stride over it: noiseAt()'s arithmetic as the relief has always read it, unless a chart is drawing. */
+    private static double reliefNoise(Scratch s, long[] os, double x, double y, double stride) {
+        return s.chart == null ? noiseAt(os, x / RELIEF_SCALE, y / RELIEF_SCALE, stride / RELIEF_SCALE) : s.chart.noise(os, RELIEF_SCALE, stride);
+    }
+
     /* =====================================================================
        READING THE DATA: a layer's cells, a few tiles kept in hand
        ===================================================================== */
@@ -613,6 +675,8 @@ public final class EarthTerrain {
         final double[] sh = new double[3];
         final boolean[] sea = new boolean[RING_AREA];
         final double[] ll = new double[2], cv = new double[3];
+        /** The chart camera this thread is drawing (farTerrain(Camera)), or null: every noise read goes through the sphere at its aimed pixel while it is set (noise()). */
+        Chart chart;
         int[] segs = new int[64], lakes = new int[16];
         final Reader seaR = new Reader(), lakeR = new Reader(), coverR = new Reader(), farLandR = new Reader(), farLakeR = new Reader(), shalR = new Reader(), slopeR = new Reader();
         EarthData bound;
@@ -1002,7 +1066,7 @@ public final class EarthTerrain {
             ice = cv[1];
             desert = cv[2];
         }
-        if (sea > 0 && sea(sea, noiseAt(os[COAST], x, y, stride))) return s.shallow && shallowAt(s, q, x, y, lat, lon, sea, stride) ? World.SHALLOW : World.SALT;
+        if (sea > 0 && sea(sea, noise(s, os[COAST], x, y, stride))) return s.shallow && shallowAt(s, q, x, y, lat, lon, sea, stride) ? World.SHALLOW : World.SALT;
         if (water && stride < WATER_STRIDE) {
             Water w = water(Math.floorDiv((long) Math.floor(x), World.DISTRICT), Math.floorDiv((long) Math.floor(y), World.DISTRICT));
             for (int k = 0; k < w.segs; k++) {
@@ -1013,14 +1077,14 @@ public final class EarthTerrain {
             for (int k = 0; k < w.lakes; k++) {
                 double dx = x - w.lx[k], dy = y - w.ly[k], r = w.lr[k];
                 if (dx * dx + dy * dy >= r * r * (1 + BLOB_FRAY / 2)) continue;
-                if (Double.isNaN(nb)) nb = noiseAt(os[BLOB], x, y, stride);
+                if (Double.isNaN(nb)) nb = noise(s, os[BLOB], x, y, stride);
                 if (inLake(w, k, x, y, nb, q)) return World.FRESH;
             }
         }
-        if (lake > 0 && noiseAt(os[FRESH], x, y, stride) < below(q, lake / (1 - sea))) return World.FRESH;
-        if (ice >= 1 || (ice > 0 && covered(ice, noiseAt(os[ICE], x, y, stride)))) return World.ICE;
-        if (forest >= 1 || (forest > 0 && (Double.isNaN(dither) ? noiseAt(os[FOREST], x, y, stride) < below(q, forest) : dither < forest))) return World.FOREST;
-        if (desert >= 1 || (desert > 0 && covered(desert, noiseAt(os[DESERT], x, y, stride)))) return World.DESERT;
+        if (lake > 0 && noise(s, os[FRESH], x, y, stride) < below(q, lake / (1 - sea))) return World.FRESH;
+        if (ice >= 1 || (ice > 0 && covered(ice, noise(s, os[ICE], x, y, stride)))) return World.ICE;
+        if (forest >= 1 || (forest > 0 && (Double.isNaN(dither) ? noise(s, os[FOREST], x, y, stride) < below(q, forest) : dither < forest))) return World.FOREST;
+        if (desert >= 1 || (desert > 0 && covered(desert, noise(s, os[DESERT], x, y, stride)))) return World.DESERT;
         return World.GRASS;
     }
 
@@ -1050,7 +1114,7 @@ public final class EarthTerrain {
         double share = stride >= FAR_STRIDE
                 ? s.shalR.at(lat, lon) / (double) EarthData.SHARE_LEVELS
                 : s.shalR.bilinearProduct(s.seaR, lat, lon) / SHARE_AREA / sea;
-        return share > 0 && noiseAt(os[SHALLOW], x, y, stride) < below(q, share);
+        return share > 0 && noise(s, os[SHALLOW], x, y, stride) < below(q, share);
     }
 
     /**
@@ -1466,7 +1530,7 @@ public final class EarthTerrain {
             ls = sh[1];
             lv = sh[2];
         } else {
-            r = noiseAt(os[RELIEF], x / RELIEF_SCALE, y / RELIEF_SCALE, stride / RELIEF_SCALE);
+            r = reliefNoise(s, os[RELIEF], x, y, stride);
             lf = below(q, f);
             ls = below(q, sh[1]);
             lv = below(q, sh[2]);
@@ -1902,6 +1966,16 @@ public final class EarthTerrain {
      */
     public void farTerrain(Camera c, byte[] out, byte[] relief) {
         Scratch s = scratch();
+        s.chart = c instanceof Chart ? (Chart) c : null;
+        try {
+            farTerrain(c, out, relief, s);
+        } finally {
+            s.chart = null;
+        }
+    }
+
+    /** ...on this thread's scratch, whose chart (if the camera is one) is set. */
+    private void farTerrain(Camera c, byte[] out, byte[] relief, Scratch s) {
         double[] q = quantile(), ll = s.ll;
         boolean rel = relief != null && this.relief;
         int b = FAR_BLEND_PX, w = c.w, h = c.h;
@@ -2067,6 +2141,7 @@ public final class EarthTerrain {
 
     /** One small lake drawn onto a camera's pixels: every pixel not sea whose centre its blob holds - inLake()'s rule, its noise at the camera's stride (at DITHER_STRIDE and up, at its mean: the lake's disc) - x scaled as stroke()'s. */
     private void blob(double lx, double ly, double r, Camera c, double xs, byte[] out, double[] q) {
+        Scratch s = scratch();
         double reach = r * Math.sqrt(1 + BLOB_FRAY / 2), rx = reach / xs;
         int i0 = first(lx - rx, c.ox, c.step, c.w), i1 = last(lx + rx, c.ox, c.step, c.w);
         int j0 = first(ly - reach, c.oy, c.step, c.h), j1 = last(ly + reach, c.oy, c.step, c.h);
@@ -2078,7 +2153,7 @@ public final class EarthTerrain {
                 double x = c.ox + (i + 0.5) * c.step, dx = (x - lx) * xs, dy = y - ly;
                 double t = (dx * dx + dy * dy) / (r * r);
                 if (t >= 1 + BLOB_FRAY / 2) continue;
-                if (t <= 1 - BLOB_FRAY / 2 || noiseAt(os[BLOB], x, y, c.stride) < below(q, 0.5 + (1 - t) / BLOB_FRAY)) out[at] = World.FRESH;
+                if (t <= 1 - BLOB_FRAY / 2 || (c.aim(i, j) && noise(s, os[BLOB], x, y, c.stride) < below(q, 0.5 + (1 - t) / BLOB_FRAY))) out[at] = World.FRESH;
             }
         }
     }
@@ -2103,12 +2178,14 @@ public final class EarthTerrain {
      * 3.5). Two things tied farTerrain() to the city's plane: where a pixel
      * is (the projection, or its FAR_BLEND_PX blend) and where a vertex lands
      * with which 1-degree tiles a node reads (place(), nodeTiles()). Both are
-     * a camera's, and there are three:
+     * a camera's, and there are four:
      *   - the city's plane (plane()): a far node, byte for byte as before;
      *   - a latitude-longitude grid (grid()): the planet's picture, a texel
      *     a pixel (GlobePicture);
      *   - the globe round a view centre with a roll (globe()): GlobeFrame's
-     *     GROUND tier, a piece of the screen.
+     *     GROUND tier, a piece of the screen;
+     *   - a chart about a fixed anchor (chart(), MS3): a node of the near
+     *     view far from the city, true in shape, its noise the planet's.
      * A camera's pixels are w x h, pixel (i, j) centred at
      * (ox + (i + 0.5) step, oy + (j + 0.5) step) in its own units - plots on
      * the plane, texels on the grid, the screen's pixels on the globe - a
@@ -2160,6 +2237,9 @@ public final class EarthTerrain {
 
         /** Ready to place tile t's vertices and small lakes. */
         void tile(int t) { }
+
+        /** Ready for the noise at pixel (px, py) when a rule reads it away from latLon() (a small lake's fray); false where the pixel is not on the planet. Nothing to do but on a chart. */
+        boolean aim(int px, int py) { return true; }
 
         /** A point of tile t's - a river's vertex (`river`) or a small lake's - in the camera's units into xy; false where it is not drawn. */
         abstract boolean place(double lat, double lon, double[] xy, boolean river);
@@ -2353,17 +2433,22 @@ public final class EarthTerrain {
     }
 
     /** The globe round a view centre with a roll: a pixel's centre through the orthographic inverse, a vertex through the forward (hidden on the far side), the forest dithered by globeDither() at the pixel's scale. */
-    private final class Globe extends Camera {
-        private final EarthProj.Ortho view;
-        private final double viewW, viewH, m;
+    private class Globe extends Camera {
+        final EarthProj.Ortho view;
+        final double viewW, viewH, m;
         private final int level;
 
         Globe(EarthProj.Ortho view, double kmPx, double viewW, double viewH, int sx0, int sy0, int w, int h) {
-            super(w, h, Math.max(DITHER_STRIDE, (int) Math.round(kmPx * 1000 / World.PLOT_M)), sx0, sy0, 1, kmPx * 1000, 0);
+            this(view, kmPx * 1000, Math.max(DITHER_STRIDE, (int) Math.round(kmPx * 1000 / World.PLOT_M)), viewW, viewH, sx0, sy0, w, h);
+        }
+
+        /** ...a pixel `m` metres, its rule's stride given (a chart's is not raised to DITHER_STRIDE), the first pixel at (ox, oy). */
+        Globe(EarthProj.Ortho view, double m, int stride, double viewW, double viewH, double ox, double oy, int w, int h) {
+            super(w, h, stride, ox, oy, 1, m, 0);
             this.view = view;
             this.viewW = viewW;
             this.viewH = viewH;
-            this.m = kmPx * 1000;
+            this.m = m;
             this.level = ditherLevel(m / M_A_DEGREE);
         }
 
@@ -2385,6 +2470,115 @@ public final class EarthTerrain {
             xy[1] = viewH / 2 - xy[1] / m;
             return true;
         }
+    }
+
+    /**
+     * A chart's camera (MS3; GlobeFrame.chart()): node (nx, ny) of an anchor's
+     * chart - MapFrame.NODE_PX square pixels of `plots` x World.PLOT_M metres
+     * each, pixel (i, j)'s centre at (nx NODE_PX + i + 0.5) such pixels east
+     * and (ny NODE_PX + j + 0.5) south of the anchor on its orthographic
+     * plane, north up. True in shape where the city's plane is not: the plane
+     * is Lambert's equal-area projection, whose shape distortion
+     * 2 / (1 + cos c) at an angle c from the city stretches the plane's noise
+     * into streaks along the line to the city (GlobeCheck 2d), and a chart is
+     * the globe's own camera about a point near the pixels, whose shape is
+     * true to a few hundredths over the ground a view covers.
+     *
+     * It is the Globe camera of a view of size 0 x 0 whose first pixel is the
+     * node's, but for three things: its stride is `plots` (not raised to
+     * DITHER_STRIDE), so the cover is ranked through its noise and the
+     * relief too (dither() is NaN); every noise read is the sphere's
+     * (sphereNoise()) at the pixel's unit vector, planet-fixed, so a pixel
+     * read from two charts reads the same noise; and, within `bandRad` past
+     * the angle `fromUp` names from the city, the sphere's noise is blended
+     * in (blendNoise()) from the plane's at the pixel's own plot, so the
+     * patches carry across the hand-over and change over the band with no
+     * line anywhere. Past the band the plane's plot is never worked out.
+     */
+    private final class Chart extends Globe {
+        private final double cosLat0, sinLat0, cosLon0, sinLon0;
+        private final double cityX, cityY, cityZ, eastX, eastY, northX, northY, northZ;
+        private final double fromUp, c0, bandRad, cosEnd;
+        private double t, sx, sy, sz, planeX, planeY;
+
+        Chart(EarthProj.Ortho anchor, int plots, long nx, long ny, double fromUp, double bandRad) {
+            super(anchor, plots * World.PLOT_M, plots, 0, 0, (double) nx * MapFrame.NODE_PX, (double) ny * MapFrame.NODE_PX, MapFrame.NODE_PX, MapFrame.NODE_PX);
+            double p = StrictMath.toRadians(anchor.centreLat()), l = StrictMath.toRadians(anchor.centreLon());
+            cosLat0 = StrictMath.cos(p);
+            sinLat0 = StrictMath.sin(p);
+            cosLon0 = StrictMath.cos(l);
+            sinLon0 = StrictMath.sin(l);
+            // The city's frame, planet-fixed: its unit vector, and its east and north (EarthProj.forward()'s).
+            double cp = StrictMath.toRadians(proj.centreLat()), cl = StrictMath.toRadians(proj.centreLon());
+            double cosP = StrictMath.cos(cp), sinP = StrictMath.sin(cp), cosL = StrictMath.cos(cl), sinL = StrictMath.sin(cl);
+            cityX = cosP * cosL;
+            cityY = cosP * sinL;
+            cityZ = sinP;
+            eastX = -sinL;
+            eastY = cosL;
+            northX = -sinP * cosL;
+            northY = -sinP * sinL;
+            northZ = cosP;
+            this.fromUp = fromUp;
+            this.c0 = StrictMath.acos(Math.max(-1, Math.min(1, fromUp)));
+            this.bandRad = bandRad;
+            this.cosEnd = c0 + bandRad < Math.PI ? StrictMath.cos(c0 + bandRad) : -2;
+        }
+
+        /** Aims the noise at the pixel: its point on the planet, planet-fixed, in plots; t, the share of the sphere's noise it reads (0 to 1, by its angle from the city); and, where t is under 1, its plot on the city's plane. False off the disc. */
+        @Override boolean aim(int px, int py) {
+            double e = (ox + px + 0.5) * m / EarthProj.RADIUS_M, n = -(oy + py + 0.5) * m / EarthProj.RADIUS_M, s2 = e * e + n * n;
+            if (s2 > 1) return false;
+            double a = Math.sqrt(1 - s2);
+            // The anchor's frame (Ortho.inverse()'s: px = a cos lat0 - n sin lat0, py = e, pz = a sin lat0 + n cos lat0) turned about the axis to the planet's.
+            double fx = a * cosLat0 - n * sinLat0, fy = e, ux = fx * cosLon0 - fy * sinLon0, uy = fx * sinLon0 + fy * cosLon0, uz = a * sinLat0 + n * cosLat0;
+            double rPlots = EarthProj.RADIUS_M / World.PLOT_M;
+            sx = ux * rPlots;
+            sy = uy * rPlots;
+            sz = uz * rPlots;
+            double up = ux * cityX + uy * cityY + uz * cityZ;
+            if (up >= fromUp) t = 0;
+            else if (up <= cosEnd || !(1 + up > 0)) t = 1;
+            else t = (StrictMath.acos(up) - c0) / bandRad;
+            if (t < 1) {
+                double k = EarthProj.RADIUS_M * Math.sqrt(2 / (1 + up));
+                planeX = EarthProj.plotX(k * (ux * eastX + uy * eastY));
+                planeY = EarthProj.plotY(k * (ux * northX + uy * northY + uz * northZ));
+            }
+            return true;
+        }
+
+        /** The aimed pixel's noise in the field `os` at `scale` (1, or the relief's RELIEF_SCALE) and a stride: the sphere's, blended in from the plane's at its plot within the band. */
+        double noise(long[] os, double scale, double stride) {
+            double st = stride / scale;
+            if (t >= 1) return sphereNoise(os, sx / scale, sy / scale, sz / scale, st);
+            double plane = noiseAt(os, planeX / scale, planeY / scale, st);
+            return t <= 0 ? plane : blendNoise(plane, sphereNoise(os, sx / scale, sy / scale, sz / scale, st), t);
+        }
+
+        @Override boolean latLon(int px, int py, double[] ll) {
+            if (!super.latLon(px, py, ll)) return false;
+            return aim(px, py);
+        }
+
+        @Override double x(int px) { return planeX; }
+        @Override double y(int py) { return planeY; }
+
+        @Override double dither(int px, int py, double lat, double lon) { return Double.NaN; }
+    }
+
+    /**
+     * The camera of node (nx, ny) of the chart about an anchor (MS3): the
+     * far rule through the planet's own orthographic camera, true in shape,
+     * `plots` plots a pixel, MapFrame.NODE_PX pixels a side. From `fromUp`
+     * (the cosine of the angle from the city, GlobeFrame.handoverUp()) the
+     * sphere's noise is blended in over `bandRad` radians from the plane's;
+     * past the band the pixel is the sphere's alone. farTerrain(Camera, out,
+     * relief) draws it; everything the rule reads of the planet is the
+     * Globe camera's but the noise.
+     */
+    public Camera chart(EarthProj.Ortho anchor, int plots, long nx, long ny, double fromUp, double bandRad) {
+        return new Chart(anchor, plots, nx, ny, fromUp, bandRad);
     }
 
     /**
