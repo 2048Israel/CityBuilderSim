@@ -3219,7 +3219,7 @@ final class SectorScreen {
             + "staff, land, whether it pays, and whether it earns "
             + String.format("%.2f×", BusinessInvestment.PROFIT_OVER_INTEREST) + " the interest on its whole cost, "
             + "whoever pays - ticked, crossed, or a dash where it is not one this building has (a landlord's home is "
-            + "asked the mortgage lender's test instead); "
+            + "asked the mortgage lender's test instead, in a column of its own: whether the lender would write its mortgage); "
             + "what one would make its owner a month on the investors' estimate, what it would cost to build with its "
             + "ground, the months that would take to pay back, and how it would pay: what its register would ask its "
             + "owners for, what its till and its money abroad would put in, and what it would borrow. Under each, what "
@@ -3228,32 +3228,42 @@ final class SectorScreen {
     /** The grid's columns: the building, a gate's mark, a figure, the payback, how it would pay. */
     static final double GATE_NAME = 200, GATE_MARK = 44, GATE_FIGURE = 96, GATE_PAYBACK = 84, GATE_PAYS = 210;
 
-    /** The gates' heads, in BuildCard.GateKind's order: the last, since 0.7.122, the interest on its whole cost. */
-    static final String[] GATE_HEADS = { "ore", "licence", "staff", "land", "pays", "interest" };
+    /** The gates' heads, in BuildCard.GateKind's order: the sixth, since 0.7.122, the interest on its whole cost, and the seventh (I13-L) the mortgage lender's test - a column only where a building of the sector is a landlord's home. */
+    static final String[] GATE_HEADS = { "ore", "licence", "staff", "land", "pays", "interest", "lender" };
 
     /** Every building it owns at every gate (R4): one row each, and what it means under it. */
     VBox everyGate(Sector sector) {
         List<BuildCard.Appraisal> all = BuildCard.appraiseAll(ui.game, sector);
         if (all.isEmpty()) return new VBox(caption("No building of its own on the Build menu.", Palette.TEXT_MUTED));
+        // ...the lender's column only for a sector that has a landlord's home (Real Estate): no other page gains a column (I13-L).
+        boolean lender = false;
+        for (BuildCard.Appraisal a : all) lender |= a.at(BuildCard.GateKind.LENDER) != BuildCard.Mark.NONE;
+        int marks = lender ? GATE_HEADS.length : GATE_HEADS.length - 1;
         GridPane grid = new GridPane();
         grid.setHgap(12);
         grid.setVgap(0);
-        double[] widths = { GATE_NAME, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_FIGURE,
-                GATE_FIGURE, GATE_PAYBACK, GATE_PAYS };
+        List<Double> wide = new ArrayList<>();
+        wide.add(GATE_NAME);
+        for (int i = 0; i < marks; i++) wide.add(GATE_MARK);
+        wide.addAll(List.of(GATE_FIGURE, GATE_FIGURE, GATE_PAYBACK, GATE_PAYS));
+        double[] widths = wide.stream().mapToDouble(Double::doubleValue).toArray();
         for (double w : widths) {
             javafx.scene.layout.ColumnConstraints cc = new javafx.scene.layout.ColumnConstraints();
             cc.setPrefWidth(w);
             cc.setMinWidth(w);
             grid.getColumnConstraints().add(cc);
         }
-        String[] heads = { "building", GATE_HEADS[0], GATE_HEADS[1], GATE_HEADS[2], GATE_HEADS[3], GATE_HEADS[4],
-                GATE_HEADS[5], "a month", "to build", "pays back", "how it would pay" };
+        List<String> heading = new ArrayList<>();
+        heading.add("building");
+        for (int i = 0; i < marks; i++) heading.add(GATE_HEADS[i]);
+        heading.addAll(List.of("a month", "to build", "pays back", "how it would pay"));
+        String[] heads = heading.toArray(new String[0]);
         for (int i = 0; i < heads.length; i++) {
             Label h = new Label(heads[i]);
             h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
             grid.add(h, i, 0);
             GridPane.setHalignment(h, i == 0 || i == heads.length - 1 ? javafx.geometry.HPos.LEFT
-                    : i <= GATE_HEADS.length ? javafx.geometry.HPos.CENTER : javafx.geometry.HPos.RIGHT);
+                    : i <= marks ? javafx.geometry.HPos.CENTER : javafx.geometry.HPos.RIGHT);
         }
         int row = 1;
         for (BuildCard.Appraisal a : all) {
@@ -3266,7 +3276,7 @@ final class SectorScreen {
             who.setAlignment(Pos.CENTER_LEFT);
             List<Node> cells = new ArrayList<>();
             cells.add(who);
-            for (BuildCard.GateMark g : a.gates()) cells.add(gateMark(g));
+            for (BuildCard.GateMark g : a.gates()) if (lender || g.kind() != BuildCard.GateKind.LENDER) cells.add(gateMark(g));
             cells.add(figure(m(a.estimate()), Palette.SIZE_BODY, a.estimate() <= 0 ? Palette.BAD : Palette.TEXT_HEAD));
             cells.add(figure(m(a.cost()), Palette.SIZE_BODY, Palette.TEXT_HEAD));
             cells.add(figure(paybackWords(a.payback()), Palette.SIZE_BODY, Double.isFinite(a.payback()) ? Palette.TEXT_HEAD
@@ -3275,7 +3285,7 @@ final class SectorScreen {
             for (int i = 0; i < cells.size(); i++) {
                 javafx.scene.layout.StackPane cell = new javafx.scene.layout.StackPane(cells.get(i));
                 javafx.scene.layout.StackPane.setAlignment(cells.get(i), i == 0 || i == cells.size() - 1 ? Pos.CENTER_LEFT
-                        : i <= GATE_HEADS.length ? Pos.CENTER : Pos.CENTER_RIGHT);
+                        : i <= marks ? Pos.CENTER : Pos.CENTER_RIGHT);
                 cell.setMinHeight(34);
                 cell.setStyle("-fx-padding: 4 0 0 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;"
                         + " -fx-cursor: hand;");
@@ -3336,6 +3346,8 @@ final class SectorScreen {
             case LAND -> "no ground";
             case INTEREST -> g.failure() != null && g.failure().why() != null ? "a borrowing ban"
                     : "it would not carry its interest";
+            case LENDER -> g.failure() != null && g.failure().lender() != null && g.failure().lender().shortOfDown()
+                    ? "short of the lender's down payment" : "the lender would not write it";
             default -> "it would not pay";
         };
     }
@@ -3352,7 +3364,9 @@ final class SectorScreen {
     String soWords(BuildCard.Appraisal a) {
         boolean loses = a.at(BuildCard.GateKind.LOSS) == BuildCard.Mark.FAIL;
         List<BuildCard.GateMark> fails = new ArrayList<>();
-        for (BuildCard.GateMark g : a.failures()) if (!(loses && g.kind() == BuildCard.GateKind.INTEREST)) fails.add(g);
+        for (BuildCard.GateMark g : a.failures()) {
+            if (!(loses && (g.kind() == BuildCard.GateKind.INTEREST || g.kind() == BuildCard.GateKind.LENDER))) fails.add(g);
+        }
         if (fails.isEmpty()) return "So: it passes every gate. It builds this when its demand asks for more.";
         BuildCard.GateMark first = fails.get(0);
         String words = ui.buildScreen.gateWords(first.failure());
@@ -3365,13 +3379,14 @@ final class SectorScreen {
                 case INTEREST -> first.failure().why() != null
                         ? "So: " + words + "."
                         : "So: it " + words + " - at today's rates it would not build however the other gates stood.";
+                case LENDER -> "So: " + words + " - the lender's word, however the other gates stood.";
                 default -> "So: " + words + ".";
             };
         }
         List<String> rest = new ArrayList<>();
         for (int i = 1; i < fails.size(); i++) rest.add(gateShort(fails.get(i)));
         boolean landToo = a.at(BuildCard.GateKind.LAND) == BuildCard.Mark.FAIL;
-        boolean short_ = a.at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.FAIL;
+        boolean short_ = a.at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.FAIL || a.at(BuildCard.GateKind.LENDER) == BuildCard.Mark.FAIL;
         return "So: " + words + "; past that, " + String.join(", ", rest)
                 + (landToo && (loses || short_) ? " - ground alone would not build it" : "") + ".";
     }
@@ -3836,6 +3851,7 @@ final class SectorScreen {
             case STAFFING: return Icons.STAFF;
             case LAND:     return Icons.LAND;
             case INTEREST: return Icons.BANK;
+            case LENDER:   return Icons.BANK;
             default:       return Icons.COIN;
         }
     }
