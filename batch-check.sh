@@ -66,8 +66,8 @@
 #
 #  Timing (TM1, 2026-10-18; BP1, 2026-10-25; GP1, 2026-10-27): every run but --timing
 #  times soft (-Dcbs.timing=soft): a timing figure over its budget says SOFT on
-#  its line and is not counted, and a line says when another batch's JVM or the
-#  game is running (on the PC tools/jvms.ps1 counts them; elsewhere ps does).
+#  its line and is not counted. The suite runs AllChecks.PARALLEL harnesses at
+#  once, each JVM under AllChecks.HEAP_MB of heap (SP1); --timing, one at a time.
 #  Timing is judged once, hard, by --timing, the ship gate's, and it starts at
 #  once. WHY (GP1): TM2 made it wait for a quiet minute (four empty looks in a
 #  row, 30 minutes at most), so that a hard run did not share the machine with
@@ -124,21 +124,9 @@ fi
 
 set -f; set -- $NAMES; set +f   # from here "$@" is the harness names alone
 case "$(uname -s)" in
-    MINGW*|MSYS*|CYGWIN*) WINDOWS=1; SEP=';' ;;
-    *) WINDOWS=0; SEP=':' ;;
+    MINGW*|MSYS*|CYGWIN*) SEP=';' ;;
+    *) SEP=':' ;;
 esac
-
-# --- who else runs: one look, for the soft run's line (TM1) ---
-others() {   # "<batch JVMs> <game processes>" on the machine, this run not yet among them
-    if [ "$WINDOWS" = 1 ]; then
-        powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/jvms.ps1 2>/dev/null | tr -d '\r'
-    else
-        PROCS=$(ps -eo args 2>/dev/null)
-        GAME=$(printf '%s\n' "$PROCS" | grep -c -E 'ham\.citybuildersim\.CityBuilderSim\b|CityBuilderSim-[^/"]*\.jar')
-        BATCH=$(printf '%s\n' "$PROCS" | grep -E 'ham\.citybuildersim\.' | grep -c -v -E 'ham\.citybuildersim\.CityBuilderSim\b')
-        echo "$BATCH $GAME"
-    fi
-}
 
 if [ "$JUDGE" = 1 ]; then   # the folder of the log, so a suite writing to target/checks is never overwritten
     OUT=$(dirname "$LOGARG"); SUITE="$LOGARG"
@@ -321,16 +309,6 @@ if [ "$TIMING" = 1 ]; then
     echo "timing    hard - the timing harnesses alone"
 elif [ "$FAST" = 0 ]; then
     TIMED="-Dcbs.timing=soft"   # always: only --timing, the gate's, judges timing (BP1, 2026-10-25)
-    read -r BATCH GAME <<EOF
-$(others)
-EOF
-    BATCH=${BATCH:-0}; GAME=${GAME:-0}
-    if [ "$BATCH" != 0 ] || [ "$GAME" != 0 ]; then
-        WHO=""
-        [ "$BATCH" = 0 ] || WHO="$BATCH other batch JVM(s)"
-        [ "$GAME" = 0 ] || WHO="${WHO:+$WHO and }the game"
-        echo "timing    soft - $WHO running: a timing miss says SOFT and is not counted"
-    fi
 fi
 
 # --- the suite -------------------------------------------------------------

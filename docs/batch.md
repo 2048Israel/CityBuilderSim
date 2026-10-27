@@ -102,8 +102,13 @@ budget says SOFT and is not counted (`Timing`, `-Dcbs.timing=soft`, which
 the script sets by itself) - and timing is judged hard only by `--timing`
 at the ship gate, which runs the timing harnesses alone (BP1's review: a
 run that began alone timed hard, and main's own misses on a slow day came
-out as the batch's reds). The cloud workbench, with two cores, still runs
-one JVM at a time under the shared lock (`batch-check.sh` takes it).
+out as the batch's reds). **The suite runs three harnesses at once** (SP1,
+`AllChecks.PARALLEL`), each JVM under `-Xmx` `AllChecks.HEAP_MB`, the longest
+first, its output printed in `HARNESSES` order; a hard run (`--timing`, and the
+gate's paired rounds) goes one at a time, and so does a run with
+`-Dcbs.parallel=1` in `JDK_JAVA_OPTIONS`, for when memory is short. The cloud
+workbench, with two cores, still runs one JVM at a time under the shared lock
+(`batch-check.sh` takes it).
 
 1. Read `docs/map/README.md`, then the map of each file the change
    touches; `docs/harnesses.md` (grep it) says what already checks the

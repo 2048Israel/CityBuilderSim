@@ -483,8 +483,7 @@ if [ "$DOCSONLY" = 1 ]; then
     [ "$CHECKED" = 0 ] || die "the checks failed on the merge (above); main is where it was"
     GATE="docs only, --fast"
 else
-    SOFT="${JDK_JAVA_OPTIONS:+$JDK_JAVA_OPTIONS }-Dcbs.timing=soft"   # the suite times soft: timing is judged once, hard, below
-    run_check env JDK_JAVA_OPTIONS="$SOFT" ./batch-check.sh "$@"
+    run_check ./batch-check.sh "$@"   # the suite times soft (batch-check.sh does it, BP1): timing is judged once, hard, below
     cp target/checks/reds.txt "$T/suite-reds.txt" 2>/dev/null || : > "$T/suite-reds.txt"
     cp target/checks/suite.txt "$T/suite.txt" 2>/dev/null || : > "$T/suite.txt"
     cp "$T/check.out" "$T/suite.out"
