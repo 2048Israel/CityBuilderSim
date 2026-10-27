@@ -108,7 +108,7 @@ first, its output printed in `HARNESSES` order; a hard run (`--timing`, and the
 gate's paired rounds) goes one at a time, and so does a run with
 `-Dcbs.parallel=1` in `JDK_JAVA_OPTIONS`, for when memory is short. Each JVM
 starts at `-Xms` `AllChecks.HEAP_START_MB`, and none starts while the commit
-charge is over `AllChecks.COMMIT_PCT` (80%), so a busy PC runs fewer at once;
+charge is over `AllChecks.COMMIT_PCT` (75%), so a busy PC runs fewer at once;
 the last line says how many were held. The cloud workbench, with two cores,
 still runs one JVM at a time under the shared lock (`batch-check.sh` takes it).
 

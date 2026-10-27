@@ -60,7 +60,7 @@
 > -Dcbs.parallel=N sets one run's number; never more than half the cores. Each
 > starts at HEAP_START_MB (the default 508 MB was committed at once: 616 MB for
 > BooksCheck, 167 with 64), and none starts beside another while the commit
-> charge is over COMMIT_PCT (75% to 85.6% for three at once, 2026-10-27).
+> charge is over COMMIT_PCT (three at once took it from 79.8% to 85.9%).
 
 **Uses:** [Timing](Timing.md) (8)
 
@@ -76,7 +76,7 @@
 | 110 | `AllChecks.PARALLEL_PROPERTY` | `"cbs.parallel"` | The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). |
 | 113 | `AllChecks.HEAP_MB` | `2048` | The most heap a harness JVM may take, its -Xmx (SP1): measured 2026-10-27 under a 4 GB ceiling, no harness committed more than 1.5 GB (SaveSlotCheck) or kept more than 0.6 GB after a collection (MapCheck), so 2 GB cha... |
 | 116 | `AllChecks.HEAP_START_MB` | `64` | The heap a harness JVM starts with, its -Xms (SP1): the JVM's default is a 64th of the RAM, 508 MB committed at once whether used or not (measured 2026-10-27: BooksCheck 616 MB of commit by default, 167 MB with 64). |
-| 119 | `AllChecks.COMMIT_PCT` | `80` | No harness is started beside another of this run while the machine's commit charge is over this percent (SP1): three at once took the PC from 75% to 85.6% beside one other lane on 2026-10-27, and a suite died at the c... |
+| 119 | `AllChecks.COMMIT_PCT` | `75` | No harness is started beside another of this run while the machine's commit charge is over this percent (SP1): the first three, started at 79.8%, took the PC to 85.9% within a minute as they grew (2026-10-27), and the... |
 | 122 | `AllChecks.LONGEST_FIRST` | `List.of("MapCheck", "GlobeCheck", "LongPlaytest", "EarthTerrainCheck", "Bridg...` | The harnesses started first when more than one runs at once, the longest first (measured 2026-10-27, earth-2.bin named: MapCheck 192 s, GlobeCheck 72, LongPlaytest 55, EarthTerrainCheck 52, the rest 41 to 30), so the ... |
 | 125 | `AllChecks.LOGS` | `Paths.get("target", "checks")` | Where -q and -f keep each harness's whole output. |
 | 128 | `AllChecks.SECTION` | `Pattern.compile("^\\s*---\\s.*\\s---\\s*$")` | A harness's section title, "--- what it proves ---". |

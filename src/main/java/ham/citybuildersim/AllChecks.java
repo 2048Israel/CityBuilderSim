@@ -80,7 +80,7 @@ import java.util.regex.Pattern;
  * -Dcbs.parallel=N sets one run's number; never more than half the cores. Each
  * starts at HEAP_START_MB (the default 508 MB was committed at once: 616 MB for
  * BooksCheck, 167 with 64), and none starts beside another while the commit
- * charge is over COMMIT_PCT (75% to 85.6% for three at once, 2026-10-27).
+ * charge is over COMMIT_PCT (three at once took it from 79.8% to 85.9%).
  */
 public class AllChecks {
 
@@ -115,8 +115,8 @@ public class AllChecks {
     /** The heap a harness JVM starts with, its -Xms (SP1): the JVM's default is a 64th of the RAM, 508 MB committed at once whether used or not (measured 2026-10-27: BooksCheck 616 MB of commit by default, 167 MB with 64). */
     static final int HEAP_START_MB = 64;
 
-    /** No harness is started beside another of this run while the machine's commit charge is over this percent (SP1): three at once took the PC from 75% to 85.6% beside one other lane on 2026-10-27, and a suite died at the commit limit on 2026-10-21 (CreateProcess error 1450). */
-    static final int COMMIT_PCT = 80;
+    /** No harness is started beside another of this run while the machine's commit charge is over this percent (SP1): the first three, started at 79.8%, took the PC to 85.9% within a minute as they grew (2026-10-27), and the batches stop a run at 85; a suite died with CreateProcess error 1450 at 43 of 54 GB on 2026-10-21. */
+    static final int COMMIT_PCT = 75;
 
     /** The harnesses started first when more than one runs at once, the longest first (measured 2026-10-27, earth-2.bin named: MapCheck 192 s, GlobeCheck 72, LongPlaytest 55, EarthTerrainCheck 52, the rest 41 to 30), so the slowest is not the last to start. */
     static final List<String> LONGEST_FIRST = List.of("MapCheck", "GlobeCheck", "LongPlaytest", "EarthTerrainCheck", "BridgeMapCheck", "GatewayCheck", "MainLineCheck", "EducationCheck");
