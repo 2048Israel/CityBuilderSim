@@ -240,7 +240,7 @@ judge_reds() {
         head -30 "$OUT/new-reds.txt" | sed 's/^/    /'
         [ "$NEW" -le 30 ] || echo "    ... $((NEW - 30)) more: $OUT/new-reds.txt"
         CARR=$(sh tools/carries.sh | tr '\n' ' ')   # RL1: a red its predecessor brought and Jerus approves at that gate is main's record only once it lands
-        [ -z "$CARR" ] || echo "    built on ${CARR% }, not on main yet: a red from it is not NEW to this batch - wait (sh tools/wait.sh --row ${CARR% }), merge main, run again before mending"
+        [ -z "$CARR" ] || echo "    built on ${CARR% }, not on main yet: a red it brought, approved at its gate, is not in main's record until it lands - wait (sh tools/wait.sh --row ${CARR% }), merge main, run again before mending"
     fi
 }
 

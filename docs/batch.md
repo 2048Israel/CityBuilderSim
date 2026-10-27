@@ -76,8 +76,9 @@ gates PRED. The successor builds on PRED's tip (A batch session, 7), and
 **A blocked batch goes under Pending at once** (lesson a): its Queued row
 out and a Pending row in, saying why, in a queue commit pushed to `main`
 the same turn, so the next row in its lane can start. Who returns it to
-Queued when its block clears by itself is a call left to Jerus (the calls
-below, 2); until he says, only his review moves a Pending row, save one the
+Queued when its block clears by itself is a call left to Jerus (BP1's call
+2; recommended: the orchestrator, saying so in the queue commit; not
+built); until he says, only his review moves a Pending row, save one the
 orchestrator settles as the next paragraph says.
 
 **The orchestrator answers what it safely can** (BP1 item 9, Jerus
@@ -134,8 +135,9 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
    Exit 1 is anything else (the compile, the maps, Stale, line endings, a
    harness `AllChecks` does not register), and 2 a mistake in the options.
    A class most harnesses read (`Game.java` and the like) is left to the
-   gate's suite, with `LongPlaytest` picked in its place (the calls below,
-   1). A `*Check.java` in the diff, changed or added, also picks `TimingCheck`
+   gate's suite, with `LongPlaytest` picked in its place (more than
+   `CBS_PICK_FANOUT` readers; `=999` flips it, which reopens if more than one
+   of the first four batches bounces at the gate on a harness so left). A `*Check.java` in the diff, changed or added, also picks `TimingCheck`
    (TM3 item 8: ET6's new harness compared times against its budgets directly,
    and only the gate's full suite ran the rule that catches it); after a
    change to `tools/pick.sh`, `sh tools/pick-selftest.sh` (no JVM, seconds). Commit the sources, `buildings.json` and `docs/` together.
@@ -143,7 +145,7 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
    branch never edits `GameVersion.VERSION`, `QUEUE.md`,
    `docs/notes/changelog.md` or `docs/notes/gate.txt`, and writes no
    paragraph above `VERSION` in `GameVersion`'s javadoc: the changelog is
-   the one record (the calls below, 3). Where its version would go it
+   the one record. Where its version would go it
    writes `{next}`, and its notes' title says `({next}, date)`. Its records
    are one file, `docs/queue/<id>-ship.md`:
 
@@ -269,7 +271,7 @@ ready again.
      refused because `main` moved takes the merge and the tag back: run
      `ship.sh` again, and it takes the next number from the tags it
      fetches.
-5. **Reds** (the calls below, 4). Main's recorded reds pass, word for word,
+5. **Reds**. Main's recorded reds pass, word for word,
    and the body says `Gate: known red only: <harnesses>`. A NEW red
    line ships only with `--red-ok "his words"` and a `--red-line` for each
    line he approved, his words and the lines in the body. **His words pass
@@ -292,7 +294,7 @@ ready again.
    red goes back to the batch as its failing lines (`target/checks/reds.txt`
    in the gate's clone), and its ship file comes off first (A batch
    session, 5).
-6. **Timing** (lesson d; the calls below, 5; TM3, 2026-10-27). A timing red
+6. **Timing** (lesson d; TM3, 2026-10-27). A timing red
    at the gate is judged side by side with main, not by one run of the
    merge's: a wall-clock budget measured once on a PC that also runs Jerus's
    game measures the load as much as the code (HY1's gate stopped on three
@@ -461,34 +463,8 @@ in `docs/notes/gate.txt` and the merge's body), the maps are regenerated,
 the ensemble scored if the trace moved, the write-up exists, the docs pass
 has run, and the batch's row is out of `QUEUE.md` (`ship.sh` takes it out
 in the merge). A batch session calls itself ready when `--pick` exits 0 or
-3 and its ship file is pushed, last.
-
-## The calls BP1 left
-
-Each ★ but 2 with its recommendation already built; until Jerus says
-otherwise, the built way holds. Call 2 is his, since it moves the standing
-rule on Pending.
-
-1. A class most harnesses read (`Game.java` and the like, more than
-   `CBS_PICK_FANOUT` readers) is left to the gate's full suite, with
-   `LongPlaytest` run in its place, rather than the whole suite run in the
-   batch. Recommended: item 3's "one full suite per batch, at the gate".
-   `CBS_PICK_FANOUT=999` flips it; it reopens if more than one of the first
-   four batches bounces at the gate on a harness so left.
-2. Who returns a blocked batch to Queued when its block clears by itself.
-   Recommended: the orchestrator, saying so in the queue commit. Not built:
-   until he says, only his review moves a Pending row.
-3. No more paragraphs in `GameVersion`'s javadoc: the changelog is the one
-   record. Recommended.
-4. Main's recorded reds pass the gate by default, word for word, and a new
-   red only with `--red-ok`, his words and a `--red-line` naming it (TM3's
-   review: his words pass the lines he approved, no others). Recommended: his
-   own by-hand rule, made mechanical.
-5. A timing red that main shows too passes and is named in the merge's body
-   (lesson d). Since TM3 "shows too" is read side by side: the red harness
-   is timed again with main's classes and the merge's in turn, and the red
-   passes unless the merge's median is over main's by more than 15% (step 6
-   of the gate). Recommended.
+3 and its ship file is pushed, last (a successor: once its predecessor is on
+main and merged in).
 
 ## The lessons of 2026-10-23/24
 
