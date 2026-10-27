@@ -67,6 +67,25 @@ import java.util.zip.CRC32;
  *      dithered than the plane's own (the far rule's speckle printed beside
  *      them), and a small lake is the plane's frayed lake, not the far rule's
  *      disc; a frame of the camera over the nodes held within FRAME_MS.
+ *  2d. THE SLANTED GROUND, MEASURED (MS3, Jerus 2026-10-26: over Goose Bay from
+ *      a Singapore city, at the 2 km scale, every patch of cover is a thin
+ *      diagonal streak): streak() reads a ground's elongation and direction
+ *      from its change rates along four offsets, and response() what it reads
+ *      of a field of known stretch (and turn) made of the rule's own noise at the same area,
+ *      STREAK_SEEDS fields averaged - none reads 1, a stretch is read between
+ *      STREAK_READ_FLOOR and 1 + STREAK_READ_TOL of itself (low as it grows) in
+ *      its direction within STREAK_PHI_DEG; with the city placed 300 to 12,000
+ *      km from a view at the 2 km scale (on the full file Goose Bay from 42 km
+ *      north of Happy Valley, the city on the way to Singapore and at it), the
+ *      plane's noise under each pixel is stretched as Lambert's projection
+ *      stretches it - its E over its E at the reach within STREAK_TRACKS of
+ *      response(2 / (1 + cos c)) / response(1) - and the drawn ground streaks
+ *      along the line to the city from a distortion of 1.5, more as it grows,
+ *      and never more than the noise (the cells are true in shape on the
+ *      sphere), to STREAK_SHOWN at the farthest placement and at 12,000 km on
+ *      a window; the camera draws the plane's plots at one plot a pixel (so it
+ *      is not the pixel lookup) and the roll is 0 from 2,000 km (so it is not
+ *      the turn). The measure comes first and fixes nothing.
  *   3. THE HANDOFF: the plane and the globe facing the city part by under
  *      half a pixel on the expanded map at HANDOFF_PLOTS, and by more at twice
  *      it (the dial is the widest power of two that passes); at REACH_KM with
@@ -204,6 +223,7 @@ public class GlobeCheck {
         cameras(spots, id, data);
         nearAnywhere(spots, id, full);
         nearPastReach(spots, id, data, full);
+        slanted(spots, id, full);
         GlobePicture pic = picture(data, full);
         reliefInPicture(data, id, full, pic);
         frame(pic);
@@ -1133,6 +1153,322 @@ public class GlobeCheck {
                 MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock", wall);
         check("a frame of the plane's nodes through the camera at his scale is drawn in no more than FRAME_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock"),
                 Timing.within(cpu, FRAME_MS) && nodes.size() > 4);
+    }
+
+    /* =====================================================================
+       2d. THE SLANTED GROUND, MEASURED (MS3)
+       ===================================================================== */
+
+    /** The offset the ground's change rates are read at, in pixels: 4 - short enough that the share of pixel pairs that differ grows with the offset's length across a patch of the 2 km view's 20 to 60 px. */
+    static final int STREAK_LAG_PX = 4;
+
+    /** The side of the views the ground's streak is read over, in pixels: 512 (the fixture's windows hold the 2c view of 1,345 x 806 at his scale, and this is a fraction of it). */
+    static final int STREAK_VIEW_PX = 512;
+
+    /** The distances the city is placed from the spot, in km: just past the reach (the spot's reference, where Lambert's plane is true to a thousandth) and 2,000 to 12,000 km, where it squashes the ground by 1.03 to 2.9 to 1. */
+    static final double[] STREAK_KM = { GlobeFrame.REACH_KM * (1 + 1e-6), 2000, 4000, 6000, 8000, 10000, 12000 };
+
+    /** The measure reads a field of no stretch as 1 within this, and a stretched one at most this above its stretch: 0.10 - set before the first run. */
+    static final double STREAK_READ_TOL = 0.10;
+
+    /** ...and a stretched field at least this share of its stretch: 0.65 - the measure's own reading, set from the calibration and not to pass a case: it reads 4 to 1 at 0.683 of it on the equal-area fields (lag saturation at STREAK_LAG_PX against patches 3.6 to 29 px), rounded down to the next 0.05, and it reads a stretch lower as it grows, which is why the cause is read against response(), not sigma; a floor there only guards against a blind measure. */
+    static final double STREAK_READ_FLOOR = 0.65;
+
+    /** ...and the field's direction within this many degrees of the stretch's, for a stretch of at least 2: 5. */
+    static final double STREAK_PHI_DEG = 5;
+
+    /** The synthetic fields a stretch's response is averaged over, and the fields of the plane's noise a placement's: 8 (one field's E varies by a tenth). */
+    static final int STREAK_SEEDS = 8;
+
+    /** The plane's noise under the pixels is stretched as the measure reads Lambert's projection stretch it: its E over its E at the reach is within this share of response(sigma) / response(1), at every placement; and the drawn ground's E / E_ref is at most this share above it - 0.15, set before the first run. */
+    static final double STREAK_TRACKS = 0.15;
+
+    /** Where the distortion is at least STREAK_FROM_SIGMA the drawn ground's streak runs along the line from the spot to the city to within this many degrees: 10. */
+    static final double STREAK_BEARING_DEG = 10;
+
+    /** ...the shape distortion from which the streak's direction and its rise are asserted: 1.5 (the patches half again as long one way as the other). */
+    static final double STREAK_FROM_SIGMA = 1.5;
+
+    /** A ground read at this E / E_ref or more is visibly streaked: 1.5 - the measure reads Jerus's screenshot, Goose Bay from Singapore, at 2.4, and a window at 12,000 km at 1.6 to 2.0. */
+    static final double STREAK_SHOWN = 1.5;
+
+    /** The stretches the measure is calibrated on: 1, 2 and 4 to 1. */
+    static final double[] STREAK_STRETCHES = { 1, 2, 4 };
+
+    /** ...and once a stretch of STREAK_TURNED_S to 1 turned STREAK_TURN_DEG degrees on the screen: 3 to 1, 30 degrees. */
+    static final double STREAK_TURNED_S = 3, STREAK_TURN_DEG = 30;
+
+    /** The synthetic fields' noise seed. */
+    static final long STREAK_SEED = 0x5EED_2DL;
+
+    /** Singapore (Jerus's city, the brief's) and Happy Valley-Goose Bay, Labrador, whose place Goose Bay (GOOSE_BAY_NORTH_KM due north of it) is. */
+    static final double[] SINGAPORE = { 1.2903, 103.8519 }, HAPPY_VALLEY = { 53.3017, -60.3261 };
+
+    /** ...the distance due north of Happy Valley-Goose Bay Jerus's hover named, in km: 42. */
+    static final double GOOSE_BAY_NORTH_KM = 42;
+
+    /** A city where the plane's up is some degrees from north a little way out, for the roll's sign: Tromso (the view is put the reach's edge due east of it). */
+    static final double[] TROMSO = { 69.65, 18.96 };
+
+    /** An angle folded into [0, 180). */
+    static double fold180(double deg) { return ((deg % 180) + 180) % 180; }
+
+    /** The angle between two directions given as angles folded into [0, 180), 0 to 90. */
+    static double apart180(double a, double b) {
+        double d = Math.abs(fold180(a) - fold180(b));
+        return Math.min(d, 180 - d);
+    }
+
+    /**
+     * The ground's elongation from its change rates: for four offsets A = (lag, 0), B = (0, lag), C = (k, k), D = (k, -k), k = round(lag / sqrt 2) (screen x
+     * right, y down) the share p of pixel pairs - both drawn, class >= 0 - whose classes differ, and r = p over the offset's length. A field stretched s to 1
+     * changes at r(phi) = r0 sqrt(cos^2(phi) / s^2 + sin^2(phi)) about the stretch's axis, so r(phi)^2 = a + b cos 2phi + c sin 2phi, with
+     * a = the mean of the four r^2, b = (rA^2 - rB^2) / 2, c = (rC^2 - rD^2) / 2 and g = sqrt(b^2 + c^2); then E = sqrt((a + g) / (a - g)) (infinite where a <= g)
+     * and the streak runs where the change is least, phi = 0.5 atan2(-c, -b) in degrees from +x toward +y, folded into [0, 180).
+     * Returns { E, phi, pairs counted in A }.
+     */
+    static double[] streak(int[] cls, int w, int h, int lag) {
+        int k = (int) Math.round(lag / Math.sqrt(2));
+        int[][] offsets = { { lag, 0 }, { 0, lag }, { k, k }, { k, -k } };
+        double[] r = new double[4];
+        long pairsInA = 0;
+        for (int q = 0; q < 4; q++) {
+            int dx = offsets[q][0], dy = offsets[q][1];
+            long pairs = 0, differ = 0;
+            for (int j = Math.max(0, -dy); j < Math.min(h, h - dy); j++) {
+                for (int i = Math.max(0, -dx); i < Math.min(w, w - dx); i++) {
+                    int x = cls[j * w + i], y = cls[(j + dy) * w + i + dx];
+                    if (x < 0 || y < 0) continue;
+                    pairs++;
+                    if (x != y) differ++;
+                }
+            }
+            if (q == 0) pairsInA = pairs;
+            r[q] = pairs == 0 ? Double.NaN : differ / (double) pairs / Math.hypot(dx, dy);
+        }
+        double mean = (r[0] * r[0] + r[1] * r[1] + r[2] * r[2] + r[3] * r[3]) / 4, b = (r[0] * r[0] - r[1] * r[1]) / 2, c = (r[2] * r[2] - r[3] * r[3]) / 2, g = Math.hypot(b, c);
+        double e = mean > 0 ? (mean <= g ? Double.POSITIVE_INFINITY : Math.sqrt((mean + g) / (mean - g))) : Double.NaN;
+        return new double[] { e, fold180(Math.toDegrees(0.5 * Math.atan2(-c, -b))), pairsInA };
+    }
+
+    /** The streak's direction on the planet, degrees clockwise from north folded into [0, 180): a screen direction beta clockwise from up has the bearing beta - roll (GlobeFrame.roll() is the angle clockwise from the view's up to north), and phi from +x toward +y is 90 + phi clockwise from up. */
+    static double streakBearing(double phi, double roll) { return fold180(90 + phi - roll); }
+
+    /** Snyder's shape distortion of Lambert's azimuthal equal-area projection at `km` along the great circle from its centre, k / h = (1 / cos(c / 2)) / cos(c / 2) = 2 / (1 + cos c) - an independent textbook formula, as 1's "Snyder's textbook projection" is. */
+    static double planeDistortion(double km) { return 2 / (1 + Math.cos(km * 1000 / EarthProj.RADIUS_M)); }
+
+    /** The octave streams of one synthetic field's noise, EarthTerrain.noiseAt()'s `os`: the harness's own seed, the field's number and the octave (NOISE_LO to NOISE_HI, as the rule's). */
+    static long[] fieldSeeds(int field) {
+        long[] os = new long[EarthTerrain.NOISE_HI + 1];
+        for (int k = EarthTerrain.NOISE_LO; k <= EarthTerrain.NOISE_HI; k++) os[k] = World.mix(STREAK_SEED ^ (field * 0x9E3779B97F4A7C15L) ^ (k * 0x632BE59BD9B4E019L));
+        return os;
+    }
+
+    /** The class of a value: 1 where it is below the median of `values` (the pixels in `used`), 0 above, -2 where unused - the rule's patches ("noise below its threshold"), half the pixels each. */
+    static int[] belowMedian(double[] values, boolean[] used) {
+        int n = 0;
+        for (boolean u : used) if (u) n++;
+        double[] sorted = new double[n];
+        for (int k = 0, q = 0; k < values.length; k++) if (used[k]) sorted[q++] = values[k];
+        Arrays.sort(sorted);
+        double median = n == 0 ? 0 : sorted[n / 2];
+        int[] cls = new int[values.length];
+        for (int k = 0; k < cls.length; k++) cls[k] = !used[k] ? -2 : values[k] < median ? 1 : 0;
+        return cls;
+    }
+
+    /** A class field of side x side pixels at JERUS_KM from the rule's own noise (EarthTerrain.noiseAt() at a stride of one, its octaves a plot to 16 plots): its patches s to 1 at the same area, as an equal-area projection makes round patches (Lambert's does: along its stretch the noise is read at 1 / sqrt(s) of its pixel scale, across at sqrt(s) of it - x / sqrt(s), y x sqrt(s) before the noise is read), turned `turnDeg` degrees clockwise on the screen, thresholded at its median. */
+    static int[] stretchedField(long[] os, int side, double s, double turnDeg) {
+        double plotsPx = 1000 * JERUS_KM / World.PLOT_M, t = Math.toRadians(turnDeg), ct = Math.cos(t), st = Math.sin(t);
+        double[] v = new double[side * side];
+        boolean[] used = new boolean[v.length];
+        Arrays.fill(used, true);
+        for (int j = 0; j < side; j++) {
+            for (int i = 0; i < side; i++) {
+                double x = i + 0.5, y = j + 0.5, u = x * ct + y * st, w = -x * st + y * ct;
+                v[j * side + i] = EarthTerrain.noiseAt(os, u * plotsPx / Math.sqrt(s), w * plotsPx * Math.sqrt(s), 1);
+            }
+        }
+        return belowMedian(v, used);
+    }
+
+    /** What response() has read, by stretch and turn. */
+    private static final Map<String, double[]> RESPONSES = new java.util.HashMap<>();
+
+    /** The measure's reading of a stretch of s to 1 at the same area (stretchedField(): the equal-area form Lambert's projection gives round patches) turned `turnDeg` degrees: { the mean E of STREAK_SEEDS synthetic fields of the rule's noise, their mean direction (folded into [0, 180)) } - a stretch is read low as it grows, so the cause is read against this, not against sigma. */
+    static double[] response(double s, double turnDeg) {
+        String key = Math.round(s * 1000) + "/" + turnDeg;
+        double[] got = RESPONSES.get(key);
+        if (got != null) return got;
+        double sum = 0, cs = 0, sn = 0;
+        for (int k = 0; k < STREAK_SEEDS; k++) {
+            double[] m = streak(stretchedField(fieldSeeds(k), STREAK_VIEW_PX, s, turnDeg), STREAK_VIEW_PX, STREAK_VIEW_PX, STREAK_LAG_PX);
+            sum += m[0];
+            cs += Math.cos(Math.toRadians(2 * m[1]));
+            sn += Math.sin(Math.toRadians(2 * m[1]));
+        }
+        got = new double[] { sum / STREAK_SEEDS, fold180(Math.toDegrees(0.5 * Math.atan2(sn, cs))) };
+        RESPONSES.put(key, got);
+        return got;
+    }
+
+    /** ...a stretch along x: the mean E alone. */
+    static double response(double s) { return response(s, 0)[0]; }
+
+    /** One placement of the city against a spot: what the plane's own plots and the camera's drawing show of the ground there, and the plane's noise under the pixels. */
+    record Slant(String spot, double km, double sigma, double ePlots, double phiPlots, double eDrawn, double bearing, double toCity, double roll, double same, double held, int missing,
+                 double eNoise, double eLakes) { }
+
+    /** The city at `city`, the view at `at` at JERUS_KM, STREAK_VIEW_PX square: the streak of the plane's own plots under each pixel and of what ground() draws, the pixels the world's square holds only; the lakes' alone (fresh water against the rest); and the mean E of STREAK_SEEDS fields of the rule's noise read at the plot under each of them. */
+    static Slant slantAt(String spot, String dataId, double[] at, double[] city) {
+        int n = STREAK_VIEW_PX;
+        World.Key key = World.Key.earth(EarthTerrainCheck.SEED, city[0], city[1], dataId);
+        GlobeFrame f = new GlobeFrame(n, n, city[0], city[1]);
+        f.set(at[0], at[1], JERUS_KM);
+        int[] none = new int[1];
+        int[] cam = cameraClasses(key, f, n, n, none), own = plotClasses(World.of(key), f, n, n);
+        long held = 0;
+        boolean[] used = new boolean[own.length];
+        double[] px = new double[own.length], py = new double[own.length], xy = new double[2];
+        int[] lakes = new int[own.length];
+        for (int j = 0; j < n; j++) {
+            for (int i = 0; i < n; i++) {
+                int k = j * n + i;
+                if (cam[k] < 0) own[k] = -2;
+                else held++;
+                if (own[k] >= 0 && f.planeAt(i + 0.5, j + 0.5, xy)) {
+                    used[k] = true;
+                    px[k] = Math.floor(xy[0]) + 0.5;
+                    py[k] = Math.floor(xy[1]) + 0.5;
+                }
+                lakes[k] = own[k] < 0 ? own[k] : own[k] == World.FRESH ? 1 : 0;
+            }
+        }
+        double noise = 0;
+        double[] v = new double[own.length];
+        for (int q = 0; q < STREAK_SEEDS; q++) {
+            long[] os = fieldSeeds(q);
+            for (int k = 0; k < v.length; k++) if (used[k]) v[k] = EarthTerrain.noiseAt(os, px[k], py[k], 1);
+            noise += streak(belowMedian(v, used), n, n, STREAK_LAG_PX)[0];
+        }
+        double[] p = streak(own, n, n, STREAK_LAG_PX), c = streak(cam, n, n, STREAK_LAG_PX);
+        double km = EarthProj.distanceM(city[0], city[1], at[0], at[1]) / 1000;
+        return new Slant(spot, km, planeDistortion(km), p[0], p[1], c[0], streakBearing(p[1], f.roll()), fold180(GlobeFrame.bearing(at[0], at[1], city[0], city[1])), f.roll(),
+                agree(cam, own, false, f, n, null), held / (double) own.length, none[0], noise / STREAK_SEEDS, streak(lakes, n, n, STREAK_LAG_PX)[0]);
+    }
+
+    static void slanted(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full) {
+        out.println("\n--- 2d. the slanted ground (MS3): the streak Jerus's screenshot shows, as a number, on today's drawing - which of the turn, the plane's shape distortion and a node's pixel lookup makes it ---");
+        int side = STREAK_VIEW_PX;
+
+        // The measure calibrated on fields of known stretch: the rule's own noise at this scale, STREAK_SEEDS fields a stretch.
+        StringBuilder read = new StringBuilder();
+        double none = response(1);
+        boolean reads = Math.abs(none - 1) <= STREAK_READ_TOL;
+        read.append(String.format("%n      no stretch: E %.3f (within %.2f of 1: %s)", none, STREAK_READ_TOL, reads ? "read" : "MISSED"));
+        for (double s : STREAK_STRETCHES) {
+            if (s == 1) continue;
+            double[] m = response(s, 0);
+            boolean ok = m[0] >= STREAK_READ_FLOOR * s && m[0] <= (1 + STREAK_READ_TOL) * s && apart180(m[1], 0) <= STREAK_PHI_DEG;
+            reads &= ok;
+            read.append(String.format("%n      stretched %.0f to 1 along x: E %.3f (%.2f to %.2f of it), direction %.1f degrees from +x (%s)", s, m[0], STREAK_READ_FLOOR * s, (1 + STREAK_READ_TOL) * s, m[1], ok ? "read" : "MISSED"));
+        }
+        double[] mt = response(STREAK_TURNED_S, STREAK_TURN_DEG);
+        boolean turnedOk = mt[0] >= STREAK_READ_FLOOR * STREAK_TURNED_S && mt[0] <= (1 + STREAK_READ_TOL) * STREAK_TURNED_S && apart180(mt[1], STREAK_TURN_DEG) <= STREAK_PHI_DEG;
+        reads &= turnedOk;
+        read.append(String.format("%n      stretched %.0f to 1, turned %.0f degrees: E %.3f (%.2f to %.2f of it), direction %.1f degrees from +x (%s)", STREAK_TURNED_S, STREAK_TURN_DEG, mt[0],
+                STREAK_READ_FLOOR * STREAK_TURNED_S, (1 + STREAK_READ_TOL) * STREAK_TURNED_S, mt[1], turnedOk ? "read" : "MISSED"));
+        // A field stretched along y (screen up-down) on a north-up view runs north-south; a rolled view turns the bearing by the roll.
+        double[] my = response(STREAK_TURNED_S, 90);
+        GlobeFrame northUp = new GlobeFrame(side, side, CITIES[0][0], CITIES[0][1]);
+        northUp.set(CITIES[0][0], CITIES[0][1], GlobeFrame.HANDOFF_KM * 8);
+        double northSouth = apart180(streakBearing(my[1], northUp.roll()), 0);
+        GlobeFrame rolled = new GlobeFrame(side, side, TROMSO[0], TROMSO[1]);
+        double[] edge = GlobeFrame.destination(TROMSO[0], TROMSO[1], 90, GlobeFrame.REACH_KM + 1);
+        rolled.set(edge[0], edge[1], JERUS_KM);
+        double rollWorst = 0;
+        for (double beta : new double[] { 0, 40, 90, 135 }) {
+            double[] centre = rolled.latLonAt(side / 2.0, side / 2.0), along = rolled.latLonAt(side / 2.0 + 20 * Math.cos(Math.toRadians(beta)), side / 2.0 + 20 * Math.sin(Math.toRadians(beta)));
+            rollWorst = Math.max(rollWorst, apart180(GlobeFrame.bearing(centre[0], centre[1], along[0], along[1]), streakBearing(beta, rolled.roll())));
+        }
+        out.printf("      the measure on the rule's own noise (EarthTerrain.noiseAt() at %.4f km a pixel, the mean of %d fields a stretch), lag %d px, %d x %d:%s%n", JERUS_KM, STREAK_SEEDS, STREAK_LAG_PX, side, side, read);
+        out.printf("      a field stretched along y on a north-up view (roll %.1f): bearing %.2f degrees from north-south; a view of roll %.2f degrees (Tromso, the reach east): the bearing of a screen direction"
+                + " beta is beta - roll within %.4f degrees%n", northUp.roll(), northSouth, rolled.roll(), rollWorst);
+        check("the measure, calibrated on the rule's own noise: no stretch reads 1 within STREAK_READ_TOL, a stretch of 2 or 4 (and 3 turned 30 degrees) between STREAK_READ_FLOOR and 1 + STREAK_READ_TOL of it,"
+                + " in its direction within STREAK_PHI_DEG - it reads a stretch low as it grows (lag saturation), so the cause below is read against response(), not sigma",
+                reads);
+        check("...and a north-up view's bearing of a field stretched along y is north-south, and a rolled view's bearing is the screen direction less the roll (streakBearing()'s sign)",
+                northUp.roll() == 0 && northSouth <= STREAK_PHI_DEG && Math.abs(rolled.roll()) > 1 && rollWorst < 0.05);
+
+        // The plane's ground along a line from the city out: the windows, the city due south of the spot, and on the full file Goose Bay, the city on the way to Singapore.
+        List<List<Slant>> placed = new java.util.ArrayList<>();
+        for (String name : List.of("Rotterdam", "Paris", "Perth")) {
+            EarthTerrainCheck.Spot spot = spots.get(name);
+            double[] at = { spot.lat(), spot.lon() };
+            List<Slant> row = new java.util.ArrayList<>();
+            for (double km : STREAK_KM) row.add(slantAt(name, id, at, GlobeFrame.destination(at[0], at[1], 180, km)));
+            placed.add(row);
+        }
+        List<Slant> goose = null;
+        if (full != null) {
+            String fid = EarthTerrain.use(full);
+            double[] at = GlobeFrame.destination(HAPPY_VALLEY[0], HAPPY_VALLEY[1], 0, GOOSE_BAY_NORTH_KM);
+            double toward = GlobeFrame.bearing(at[0], at[1], SINGAPORE[0], SINGAPORE[1]);
+            goose = new java.util.ArrayList<>();
+            for (double km : STREAK_KM) goose.add(slantAt("Goose Bay", fid, at, GlobeFrame.destination(at[0], at[1], toward, km)));
+            goose.add(slantAt("Goose Bay", fid, at, SINGAPORE));
+            placed.add(goose);
+        } else {
+            out.println("      earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Goose Bay from Singapore was not drawn; the windows' 12,000 km is the farthest");
+        }
+        out.printf("      %-9s %8s %6s %8s %7s %8s  %-6s %-6s %6s  %-8s %-6s  %7s %7s  (E of the plane's plots under each pixel, E / E_ref, E of what ground() draws, the streak's bearing, the bearing to the city,"
+                + " the roll, the share drawn = the plots, the share the square holds, the plane's noise's E over its E at the reach, response(sigma) / response(1))%n",
+                "spot", "city km", "sigma", "E plots", "E/Eref", "E drawn", "streak", "city", "roll", "same", "held", "noise", "resp");
+        double worstNoise = 0, worstAbove = -1, worstBearing = 0, worstSame = 1, worstRoll = 0, fixtureShown = 0, gooseShown = Double.POSITIVE_INFINITY;
+        int missing = 0, bearingsRead = 0, falls = 0;
+        for (List<Slant> row : placed) {
+            double eRef = row.get(0).ePlots(), dRef = row.get(0).eDrawn(), nRef = row.get(0).eNoise(), rRef = response(1), last = 0;
+            for (Slant s : row) {
+                double ratio = s.ePlots() / eRef, drawn = s.eDrawn() / dRef, noise = s.eNoise() / nRef, resp = response(s.sigma()) / rRef;
+                out.printf("      %-9s %8.0f %6.3f %8.3f %7.3f %8.3f  %6.1f %6.1f %6.2f  %.6f %.4f  %7.3f %7.3f%n", s.spot(), s.km(), s.sigma(), s.ePlots(), ratio, s.eDrawn(), s.bearing(), s.toCity(), s.roll(),
+                        s.same(), s.held(), noise, resp);
+                worstNoise = Math.max(worstNoise, Math.abs(noise / resp - 1));
+                worstAbove = Math.max(worstAbove, drawn / resp - 1);
+                if (s.sigma() >= STREAK_FROM_SIGMA) {
+                    worstBearing = Math.max(worstBearing, apart180(s.bearing(), s.toCity()));
+                    bearingsRead++;
+                    if (!(drawn > last)) falls++;
+                    last = drawn;
+                }
+                worstSame = Math.min(worstSame, s.same());
+                missing += s.missing();
+                if (s.km() >= 2000) worstRoll = Math.max(worstRoll, Math.abs(s.roll()));
+            }
+            Slant far = row.get(row.size() - 1);
+            if (row == goose) gooseShown = far.eDrawn() / dRef;
+            else if (far.km() > STREAK_KM[STREAK_KM.length - 1] - 1) fixtureShown = Math.max(fixtureShown, far.eDrawn() / dRef);
+        }
+        out.printf("      the plane's noise off response(sigma) / response(1) by %.3f of it at worst; the drawn ground %.3f above it at most; its streak %.1f degrees off the line to the city at the %d placements of sigma %.1f and more,"
+                + " %d of them not above the last; farthest placement E / E_ref %.3f on the fixture's best window, %s;"
+                + " drawn = plots %.7f at worst, %d pixels without a node; roll %.3g at 2,000 km and farther%n", worstNoise, worstAbove, worstBearing, bearingsRead, STREAK_FROM_SIGMA, falls, fixtureShown,
+                goose != null ? String.format("%.3f at Goose Bay from Singapore", gooseShown) : "Goose Bay from Singapore not drawn", worstSame, missing, worstRoll);
+        if (goose != null) {
+            Slant reach = goose.get(0), farthest = goose.get(goose.size() - 1);
+            out.printf("      Goose Bay from Singapore, lakes only (fresh water against the rest): E %.3f at the reach, %.3f at Singapore, %.3f over it; all the classes %.3f at the reach, %.3f at Singapore, %.3f over it%n",
+                    reach.eLakes(), farthest.eLakes(), farthest.eLakes() / reach.eLakes(), reach.ePlots(), farthest.ePlots(), farthest.ePlots() / reach.ePlots());
+        }
+
+        check("the cause - the plane's own noise: the noise under each pixel is stretched exactly as Lambert's projection stretches it - at every placement its E over its E at the reach is within STREAK_TRACKS of"
+                + " response(sigma) / response(1)", worstNoise <= STREAK_TRACKS);
+        check("...the drawn ground streaks along the line to the city, and more as sigma grows: from sigma 1.5 its streak is within STREAK_BEARING_DEG of the line, its E / E_ref rises at each such placement over the last,"
+                + " and it is never more than STREAK_TRACKS above response(sigma) / response(1) (the cells are true in shape on the sphere, only the noise stretches)",
+                bearingsRead > 0 && worstBearing <= STREAK_BEARING_DEG && falls == 0 && worstAbove <= STREAK_TRACKS);
+        check("...the fixture causes it: the drawn ground's E / E_ref is at least STREAK_SHOWN at 12,000 km on at least one fixture window" + (goose != null ? " and at Goose Bay from Singapore" : ""),
+                fixtureShown >= STREAK_SHOWN && (goose == null || gooseShown >= STREAK_SHOWN));
+        check("not the pixel lookup: the plane's nodes through the camera draw the plane's own plots at one plot a pixel at every placement - no axis mixed, no level misread - and no pixel without a node",
+                worstSame >= NEAR_PAST_SAME && missing == 0);
+        check("not the turn: the turn is done - the roll is 0 (north up) at every placement 2,000 km and farther; and a turn cannot stretch anyway (E is the same under a rotation, the turned field above)",
+                worstRoll == 0);
     }
 
     /* =====================================================================
