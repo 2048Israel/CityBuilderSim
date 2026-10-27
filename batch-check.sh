@@ -320,6 +320,7 @@ if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ]; then
     java -Xms64m $TIMED -Dcbs.timing.tsv="$OUT/timing.tsv" -Dcbs.knownReds="$OUT/known-reds.txt" -Dstdout.encoding=UTF-8 -cp "$CP" ham.citybuildersim.AllChecks -f "$@" 2>&1 | quiet | tr -d '\r' > "$SUITE"
     suite_verdict
     grep ' SOFT, not counted ' "$SUITE" | sed 's/^/timing    /'
+    grep '^memory: ' "$SUITE" | sed 's/^memory: /memory    /'   # the starts the commit charge held (SP1)
     # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX
     find "$OUT" -name 'Earth*Check.log' -newer "$OUT/.started" -exec grep -l '^earth-2.bin not named' {} + 2>/dev/null | grep -q . \
         && echo "    note: no earth-2.bin here, so the Earth harnesses' full-file sections did not run"
