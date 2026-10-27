@@ -29,6 +29,8 @@ stuff".
 |---|---|---|
 | ET6 | Bridges: short crossings to 1,020 m over fresh or shallow water, long bridges as all-or-nothing orders that link landmasses | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
 | CC1-S | Keep care essential even when it is not financially self-supporting; investigate why seeds 4 and 5 still stall around 3,000 people despite care, school and pensions | `runs/fixCC1-notes.md` ★ |
+| TM3 | The gate's timing judged side by side: a timing red on the merge is timed again with main's classes and the merge's in turn, in the same minutes, and counts against the batch only if it is over 15% slower than main; no budget moves (Jerus, 2026-10-26, after HY1's gate stopped on MapCheck's load: "queue the TM3 batch"; moved to next, 2026-10-26: "Both, TM3 then MP1") | [TM3](docs/queue/TM3.md) |
+| MP1 | The map fast again: every map timing line main misses on a quiet PC (the far nodes, the FX-side map work, the kept chrome's month, the L0 screens) traced to the batch that slowed it and made fast at its cause, no budget moved; after TM3 (Jerus, 2026-10-26: "map is slowing the game down lol"; "Both, TM3 then MP1") | [MP1](docs/queue/MP1.md) |
 | CC1-M | The city map did not survive a save once: LongPlaytest -Dplaytest.childcare at m1,184 (slot 3), a run the map sidecar has not met before; not childcare's - nothing in the model reads the map; MapCheck's area (Jerus, 2026-10-18: its own batch) | `runs/fixCC1-notes.md` 7 |
 | I2b | The whole-cost test (A) on every other sector's orders, through `Game.Slices`, as SpreadPlanner's users got it at I2 (Jerus said "every order"; Jerus, 2026-10-18: yes) | [spec-materials §1](docs/studies/spec-materials.md#1-summary-for-jerus) |
 | ZT1 | One palette for zones: Policy > Zoning colours a zone by its sector, as the map's tint does, so a zone is one colour on both (Jerus, 2026-10-18) | [ZT1](docs/queue/ZT1.md) |
@@ -73,7 +75,6 @@ stuff".
 | XR5 | The currency regimes' rest: a peg pays the pressure, not the month's balance; the tied path prices the curve under a peg; the overshoot both ways; a warning when a thin vault pegs (Jerus, 2026-10-23, on XR2's ★4, ★5 and the review's two: "Pay the pressure", "Price on the tied path") | [XR5](docs/queue/XR5.md) |
 | AN2 | AN1's leftovers: the D$ the goods are struck at on Trade › The currency, and the Earth playtest (Rotterdam) with the anchor (Jerus, 2026-10-23: "Queue both, small") | [AN2](docs/queue/AN2.md) |
 | FX9 | Ground bought into an open cell gets the cell's own streets, nothing standing moved, so piecemeal land is built on (Jerus, 2026-10-23, on FX6's ★1: "Extend the streets") | [FX9](docs/queue/FX9.md) |
-| TM3 | The gate's timing judged side by side: a timing red on the merge is timed again with main's classes and the merge's in turn, in the same minutes, and counts against the batch only if it is over 15% slower than main; no budget moves (Jerus, 2026-10-26, after HY1's gate stopped on MapCheck's load: "queue the TM3 batch") | [TM3](docs/queue/TM3.md) |
 
 ## Pending
 
