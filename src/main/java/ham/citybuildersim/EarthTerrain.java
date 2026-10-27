@@ -1905,6 +1905,30 @@ public final class EarthTerrain {
     private volatile int[] widestRun;
 
     /**
+     * A tile's rivers as a far node draws them: the runs of two vertices or more
+     * whose median width is `least` or more, in the order EarthData.rivers() gives
+     * them, each with its median, and `most`, the largest median over all the
+     * tile's runs of two vertices or more, drawn or not. A set made at `least`
+     * holds every run of median `least` or more, so for any narrowest of `least`
+     * or more it holds every run a node would draw, in the same order, and the
+     * runs it skips are those the node skips; `most` does not depend on the
+     * narrowest. Only the runs that pass are kept, never a tile's narrow ones.
+     */
+    private static final class FarRivers {
+        final double least;
+        final List<EarthData.Run> runs;
+        final int[] medians;
+        final int most;
+
+        FarRivers(double least, List<EarthData.Run> runs, int[] medians, int most) {
+            this.least = least; this.runs = runs; this.medians = medians; this.most = most;
+        }
+    }
+
+    /** Each 1-degree tile's FarRivers, once a far node has read it: null until then, and made again (not kept) for a node whose narrowest is under the kept one's `least`. Entries are immutable and racing threads may each build a tile's, so a lost write only costs a parse, as with widestRun. */
+    private volatile FarRivers[] farRivers;
+
+    /**
      * A far node's ground (spec-earth 3, "Far views"; MapTiles.nodeTerrain()):
      * n x n pixels from plot (x0, y0), `stride` plots each. At a stride of
      * one, the tiles' plots (regionTerrain()). Wider, each pixel classed at
@@ -2021,20 +2045,40 @@ public final class EarthTerrain {
             Arrays.fill(widest, -1);
             widestRun = widest;
         }
+        FarRivers[] kept = farRivers;
+        if (kept == null) {
+            kept = new FarRivers[EarthData.TILES];
+            farRivers = kept;
+        }
         long segs = 0, lakes = 0;
         int[] tiles = c.tiles();
         for (int t : tiles) {
             c.tile(t);
             if (widest[t] < 0 || widest[t] >= narrowest) {
-                int most = 0;
-                for (EarthData.Run run : data.rivers(t)) {
+                FarRivers fr = kept[t];
+                if (fr == null || fr.least > narrowest) {
+                    List<EarthData.Run> all = data.rivers(t), keep = new ArrayList<>();
+                    int[] med = new int[all.size()];
+                    int most = 0, n = 0;
+                    for (EarthData.Run run : all) {
+                        int m = run.size();
+                        if (m < 2) continue;
+                        if (widths.length < m) widths = new int[Math.max(m, 2 * widths.length)];
+                        for (int k = 0; k < m; k++) widths[k] = run.width(k);
+                        Arrays.sort(widths, 0, m);
+                        int median = widths[m / 2];
+                        most = Math.max(most, median);
+                        if (median < narrowest) continue;
+                        keep.add(run);
+                        med[n++] = median;
+                    }
+                    fr = new FarRivers(narrowest, keep, Arrays.copyOf(med, n), most);
+                    kept[t] = fr;
+                }
+                for (int i = 0; i < fr.runs.size(); i++) {
+                    if (fr.medians[i] < narrowest) continue;
+                    EarthData.Run run = fr.runs.get(i);
                     int m = run.size();
-                    if (m < 2) continue;
-                    if (widths.length < m) widths = new int[Math.max(m, 2 * widths.length)];
-                    for (int k = 0; k < m; k++) widths[k] = run.width(k);
-                    Arrays.sort(widths, 0, m);
-                    most = Math.max(most, widths[m / 2]);
-                    if (widths[m / 2] < narrowest) continue;
                     boolean have = c.place(run.lat(0), run.lon(0), a, true);
                     for (int k = 0; k + 1 < m; k++) {
                         boolean next = c.place(run.lat(k + 1), run.lon(k + 1), b, true);
@@ -2055,7 +2099,7 @@ public final class EarthTerrain {
                         have = next;
                     }
                 }
-                widest[t] = most;
+                widest[t] = fr.most;
             }
             EarthData.SmallLakes sl = data.smallLakes(t);
             for (int k = 0; k < sl.size(); k++) {
