@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**4,424 constants in 436 files.**
+**4,427 constants in 436 files.**
 
 ## model (2205 constants)
 
@@ -3310,16 +3310,7 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (947 constants)
-
-### AppIcon.java ([map](map/AppIcon.md))
-
-| line | constant | value | says |
-|---:|---|---|---|
-| 17 | `AppIcon.FOLDER` | `"/icons/"` | The folder on the classpath the icon files are in. |
-| 20 | `AppIcon.SIZES` | `{ 16, 20, 24, 32, 40, 48, 64, 128, 256 }` | Every size the PNGs come in; the stage is given them all and the platform picks. |
-| 23 | `AppIcon.ICO_SIZES` | `{ 16, 20, 24, 32, 40, 48, 64, 256 }` | The sizes icon.ico carries for the exe: Explorer's and the taskbar's at each display scale, and 256 for large icons. |
-| 26 | `AppIcon.ICO` | `FOLDER + "icon.ico"` | The exe's icon on the classpath; Build EXE.bat passes the same file from the source tree. |
+## interface (950 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -3349,6 +3340,18 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 3829 | `BankScreen.MOVED_INFO` | `"Equity moves by what it earned, what it was given and what it paid out, and by " + "no...` | The equity's note (Capital 1990): Jerus's rule on a plug. |
 | 3883 | `BankScreen.RESCUES_INFO` | `"When a bank loses more than it owns, the city resolves it: the old owners lose " + "ev...` | The rescues' note (Capital 2027). |
 | 4104 | `BankScreen.RESCUE_INFO` | `"Its owners lose everything: the households' shares and the world's pass to the city " ...` | The rescue's note (Rescue 2119). |
+
+### Branding.java ([map](map/Branding.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 21 | `Branding.FOLDER` | `"/icons/"` | The folder on the classpath the icon files are in. |
+| 24 | `Branding.SIZES` | `{ 16, 20, 24, 32, 40, 48, 64, 128, 256 }` | Every size the PNGs come in; the stage is given them all and the platform picks. |
+| 27 | `Branding.ICO_SIZES` | `{ 16, 20, 24, 32, 40, 48, 64, 256 }` | The sizes icon.ico carries for the exe: Explorer's and the taskbar's at each display scale, and 256 for large icons. |
+| 30 | `Branding.ICO` | `FOLDER + "icon.ico"` | The exe's icon on the classpath; Build EXE.bat passes the same file from the source tree. |
+| 39 | `Branding.RULE` | `.0467, TOP_DROP =.413, LOW_DROP =.56, BEND_BACK =.2` | The title art's proportions, in ems of the name's font size, from the baseline and from the name's two ends (tools/branding/make_title.py draws the store art from the same numbers): the rules' thic... |
+| 40 | `Branding.CURVE` | `{.0667, 0,.133, -.08,.227, -.24 }` |  |
+| 41 | `Branding.CLIMB_X` | `.467, CLIMB_Y = -.747, DOT =.06, RING =.0333` |  |
 
 ### BuildScreen.java ([map](map/BuildScreen.md))
 
@@ -4443,7 +4446,7 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 66 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "IconCheck", "NewGameCheck", "WorldCheck", "GridCheck", "Convers...` | In the order they are cheapest to fail. |
+| 66 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "BrandingCheck", "NewGameCheck", "WorldCheck", "GridCheck", "Con...` | In the order they are cheapest to fail. |
 | 82 | `AllChecks.FAIL_LINES` | `40` | The most lines -f prints for one failed harness; the rest stays in its log. |
 | 85 | `AllChecks.LOGS` | `Paths.get("target", "checks")` | Where -q and -f keep each harness's whole output. |
 | 88 | `AllChecks.SECTION` | `Pattern.compile("^\\s*---\\s.*\\s---\\s*$")` | A harness's section title, "--- what it proves ---". |

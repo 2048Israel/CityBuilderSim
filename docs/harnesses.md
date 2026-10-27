@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**150 harness files, 15,788 labelled assertions.** AllChecks runs 150 of them.
+**150 harness files, 15,791 labelled assertions.** AllChecks runs 150 of them.
 
 ## Which harnesses read which class
 
@@ -12,7 +12,6 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 |---|---|
 | [AgeBand](map/AgeBand.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, LongPlaytest, ZoningCheck |
-| [AppIcon](map/AppIcon.md) | IconCheck |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DeskCheck, FloatLinkCheck, HoldersCheck, NewGameCheck, RestructureCheck, SaveFileCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
 | [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, HydroCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, SaveSlotCheck |
@@ -23,6 +22,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PortCheck, ReadPathCheck |
 | [BondMarket](map/BondMarket.md) | BondCheck, CurveCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BookDesk](map/BookDesk.md) | DeskCheck, ReadPathCheck |
+| [Branding](map/Branding.md) | BrandingCheck |
 | [BridgeGround](map/BridgeGround.md) | **none** |
 | [BridgeSurvey](map/BridgeSurvey.md) | BridgeCheck, ReadPathCheck |
 | [BridgeView](map/BridgeView.md) | BridgeCheck, ReadPathCheck |
@@ -1684,6 +1684,37 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L288 ...and nothing is left to expense
   - L291 ...nor expensed again the month after
   - L294 ...and the reloaded one expenses the same next month
+
+## BrandingCheck.java - 10 labelled assertions
+
+> The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it
+> should, and the store's title art is drawn to the start screen's proportions (BR1).
+> 
+> WHY THIS EXISTS. The window's icon (ui/Branding.dress) is loaded from the classpath and a size
+> that is missing is only a log line, never an error, so a regeneration by
+> tools/branding/make_icons.py that dropped a size, or a file left out of the jar, would go unseen
+> until someone looked at a taskbar. The .ico is read by jpackage alone (Build EXE.bat), which no
+> harness runs. And the title art is drawn twice, by the start screen in JavaFX (Branding.title)
+> and for the store pages by tools/branding/make_title.py, from proportions each keeps: a change
+> to one would leave the store's logo unlike the game's. No JavaFX is needed: files are read as
+> bytes and text.
+> 
+> ...
+
+- **L77 BrandingCheck: the icon at every size, the exe's .ico, and the store's title art drawn as the start screen's (BR1)**
+- **L88 the .ico carries its sizes**
+  - L94 it is an icon file (reserved 0, type 1)
+  - L103 entry
+  - L105 entry
+  - L110 it lists exactly Branding.ICO_SIZES
+- **L113 the exe is built with it, and the drawing is kept**
+  - L122 Build EXE.bat passes --icon
+  - L125 the file it passes exists
+  - L126 and is the classpath's icon.ico
+- **L134 the title art is the start screen's**
+  - L147 make_title.py's
+  - L151 make_title.py names the widths it writes
+  - L153 branding/title.svg is there, the font inside it
 
 ## BridgeCheck.java - 107 labelled assertions
 
@@ -10584,33 +10615,6 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L600 ...on the city's own landmass, so linked: the stations of its slots can be ordered
   - L605 ...an order for one more station than the slots free is refused NO_RIVER; one for the slots free is not (
   - L608 ...and one station goes ahead on the Earth's ground
-
-## IconCheck.java - 7 labelled assertions
-
-> The game's icon is in the jar at every size it is given, and the exe's .ico carries the sizes it
-> should (BR1).
-> 
-> WHY THIS EXISTS. The window's icon (ui/AppIcon) is loaded from the classpath and a size that is
-> missing is only a log line, never an error, so a regeneration by tools/icon/make_icons.py that
-> dropped a size, or a file left out of the jar, would go unseen until someone looked at a taskbar.
-> The .ico is read by jpackage alone (Build EXE.bat), which no harness runs. No JavaFX is needed:
-> the files are read as bytes.
-> 
-> What it has to prove:
-> 
->   1. EVERY PNG IS THERE, AT ITS SIZE. Each of AppIcon.SIZES is on the classpath as a PNG whose
-> ...
-
-- **L62 IconCheck: the game's icon is in the jar at every size, and the exe's .ico carries its sizes (BR1)**
-- **L73 the .ico carries its sizes**
-  - L79 it is an icon file (reserved 0, type 1)
-  - L88 entry
-  - L90 entry
-  - L95 it lists exactly AppIcon.ICO_SIZES
-- **L98 the exe is built with it, and the drawing is kept**
-  - L106 Build EXE.bat passes --icon
-  - L109 the file it passes exists
-  - L110 and is the classpath's icon.ico
 
 ## InboxCheck.java - 44 labelled assertions
 

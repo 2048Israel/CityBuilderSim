@@ -12,20 +12,23 @@ The colours are the title screen's (ui/Palette.java: STAGE, PEOPLE, MONEY,
 BUSINESS, BUILDING; ui/UserInterface.java's BACKDROP_WINDOW), the towers a
 step lighter than the backdrop's so they show at small sizes.
 
-No image library is needed: the SVG is rendered by Edge (or Chrome) in
-headless mode onto a transparent page, and the PNGs are cut out of that
-screenshot and the .ico packed with the standard library alone.
+No image library is needed (pngio.py): the SVG is rendered by Edge (or
+Chrome) in headless mode onto a transparent page, and the PNGs are cut out
+of that screenshot and the .ico packed with the standard library alone.
 
-    python tools/icon/make_icons.py            # writes src/main/resources/icons/
-    python tools/icon/make_icons.py --browser "C:/path/to/chrome.exe"
+    python tools/branding/make_icons.py            # writes src/main/resources/icons/
+    python tools/branding/make_icons.py --browser "C:/path/to/chrome.exe"
 """
-import argparse, os, random, struct, subprocess, sys, tempfile, zlib
+import argparse, os, random, struct, sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pngio import browser, screenshot, png_bytes, crop  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 OUT = os.path.join(ROOT, "src", "main", "resources", "icons")
 
-# Every size written as a PNG; the .ico carries ICO_SIZES of them. Both are ui/AppIcon.java's
-# SIZES and ICO_SIZES, which IconCheck holds the files to: change them there too.
+# Every size written as a PNG; the .ico carries ICO_SIZES of them. Both are ui/Branding.java's
+# SIZES and ICO_SIZES, which BrandingCheck holds the files to: change them there too.
 SIZES = [16, 20, 24, 32, 40, 48, 64, 128, 256]
 ICO_SIZES = [16, 20, 24, 32, 40, 48, 64, 256]
 # At or under this size the bold drawing is used.
@@ -39,13 +42,6 @@ MONEY = "#5aa9ff"
 PEOPLE = "#2ec4b6"
 BUSINESS = "#a78bfa"
 BUILDING = "#f17cb0"
-
-BROWSERS = [
-    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-]
-
 
 # ----- the drawing -----
 
@@ -117,60 +113,7 @@ def icon_svg(small):
 '''
 
 
-# ----- PNG in and out, standard library only -----
-
-def png_read(path):
-    """Returns (width, height, RGBA bytes) of an 8-bit RGB or RGBA PNG."""
-    data = open(path, "rb").read()
-    if data[:8] != b"\x89PNG\r\n\x1a\n":
-        sys.exit(f"{path} is not a PNG")
-    pos, idat, w = 8, b"", None
-    while pos < len(data):
-        n, kind = struct.unpack(">I4s", data[pos:pos + 8])
-        chunk = data[pos + 8:pos + 8 + n]
-        if kind == b"IHDR":
-            w, h, depth, ctype, _, _, interlace = struct.unpack(">IIBBBBB", chunk)
-            if depth != 8 or ctype not in (2, 6) or interlace:
-                sys.exit(f"{path}: depth {depth}, colour type {ctype}, interlace {interlace} - not handled")
-        elif kind == b"IDAT":
-            idat += chunk
-        pos += 12 + n
-    bpp = 4 if ctype == 6 else 3
-    raw = zlib.decompress(idat)
-    stride = w * bpp
-    out = bytearray(h * stride)
-    prev = bytearray(stride)
-    for y in range(h):
-        f = raw[y * (stride + 1)]
-        row = bytearray(raw[y * (stride + 1) + 1:(y + 1) * (stride + 1)])
-        for i in range(stride):
-            a = row[i - bpp] if i >= bpp else 0
-            b = prev[i]
-            c = prev[i - bpp] if i >= bpp else 0
-            if f == 1: row[i] = (row[i] + a) & 255
-            elif f == 2: row[i] = (row[i] + b) & 255
-            elif f == 3: row[i] = (row[i] + (a + b) // 2) & 255
-            elif f == 4:
-                p = a + b - c; pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
-                row[i] = (row[i] + (a if pa <= pb and pa <= pc else b if pb <= pc else c)) & 255
-        out[y * stride:(y + 1) * stride] = row
-        prev = row
-    if bpp == 3:
-        sys.exit(f"{path} came back without transparency (RGB): the browser ignored the transparent background")
-    return w, h, bytes(out)
-
-
-def png_bytes(w, h, rgba):
-    def chunk(kind, body):
-        return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body) & 0xffffffff)
-    raw = b"".join(b"\x00" + rgba[y * w * 4:(y + 1) * w * 4] for y in range(h))
-    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0))
-            + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
-
-
-def crop(w, rgba, x, y, cw, ch):
-    return b"".join(rgba[((y + r) * w + x) * 4:((y + r) * w + x + cw) * 4] for r in range(ch))
-
+# ----- the .ico -----
 
 def ico_bytes(pngs):
     """An .ico of PNG-compressed images (Windows Vista and later), smallest first."""
@@ -190,9 +133,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--browser", help="Edge or Chrome to render with")
     args = ap.parse_args()
-    browser = args.browser or next((b for b in BROWSERS if os.path.exists(b)), None)
-    if not browser:
-        sys.exit("No Edge or Chrome found; pass --browser")
+    exe = browser(args.browser)
     os.makedirs(OUT, exist_ok=True)
     for (name, small) in (("icon.svg", False), ("icon-small.svg", True)):
         with open(os.path.join(OUT, name), "w", encoding="utf-8", newline="\n") as f:
@@ -206,22 +147,13 @@ def main():
     imgs = "".join(
         f'<img src="{"icon-small.svg" if n <= SMALL_UP_TO else "icon.svg"}" width="{n}" height="{n}" '
         f'style="position:absolute;left:{px}px;top:0">' for (n, px) in places)
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
-        page = os.path.join(OUT, "_render.html")
-        shot = os.path.join(tmp, "render.png")
-        with open(page, "w", encoding="utf-8") as f:
-            f.write(f'<!doctype html><html style="background:transparent"><body style="margin:0;background:transparent">{imgs}</body></html>')
-        try:
-            subprocess.run([browser, "--headless=new", "--disable-gpu", "--hide-scrollbars",
-                            "--force-device-scale-factor=1", "--default-background-color=00000000",
-                            f"--user-data-dir={os.path.join(tmp, 'profile')}", f"--window-size={width},{height}",
-                            f"--screenshot={shot}", "file:///" + page.replace(os.sep, "/")],
-                           check=True, capture_output=True, timeout=120)
-        finally:
-            os.remove(page)
-        w, h, rgba = png_read(shot)
-    if w < width or h < height:
-        sys.exit(f"the render came back {w}x{h}, smaller than the {width}x{height} asked for")
+    page = os.path.join(OUT, "_render.html")
+    with open(page, "w", encoding="utf-8") as f:
+        f.write(f'<!doctype html><html style="background:transparent"><body style="margin:0;background:transparent">{imgs}</body></html>')
+    try:
+        w, h, rgba = screenshot(exe, page, width, height)
+    finally:
+        os.remove(page)
 
     pngs = {}
     for (n, px) in places:

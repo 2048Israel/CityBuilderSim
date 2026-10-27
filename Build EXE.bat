@@ -129,7 +129,7 @@ echo  Running jpackage. This takes a minute - it is assembling a Java
 echo  runtime, not just copying files.
 echo.
 
-rem  --icon is the game's icon (BR1, 2026-10-27), which tools\icon\make_icons.py
+rem  --icon is the game's icon (BR1, 2026-10-27), which tools\branding\make_icons.py
 rem  draws. --description is what Windows calls the exe in Task Manager and on
 rem  a pinned taskbar button, so it is the game's name, Civic Ledger. The exe
 rem  itself keeps APPNAME, CityBuilderSim.exe: a player's shortcut, the itch.io

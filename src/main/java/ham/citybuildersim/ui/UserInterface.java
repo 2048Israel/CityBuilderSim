@@ -855,7 +855,7 @@ public class UserInterface extends Application {
         // full screen, which is the other reason the version is in the log too.
         stage.setTitle(GameVersion.title());
         // The icon on the title bar, the taskbar and Alt+Tab (BR1); the exe's own is Build EXE.bat's.
-        AppIcon.dress(stage);
+        Branding.dress(stage);
         stage.setMaximized(true);
 
         /* =================================================================
@@ -3378,8 +3378,8 @@ public class UserInterface extends Application {
         clearMenu("showMainMenu", () -> showMainMenu());
         StackPane layer = titleContent();
 
-        Label name = new Label(GameVersion.NAME);
-        name.setStyle("-fx-font-size: 54px; -fx-font-weight: bold; -fx-text-fill: " + Palette.TEXT_HEAD + ";");
+        // The title art (BR1): the name over a ledger's closing double rule, its top line climbing.
+        javafx.scene.layout.Pane name = Branding.title(GameVersion.NAME, 54);
         Label line = new Label("A city, its money, and everyone in it.");
         line.setStyle("-fx-font-size: 17px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
         VBox.setMargin(line, new javafx.geometry.Insets(0, 0, 30, 0));
