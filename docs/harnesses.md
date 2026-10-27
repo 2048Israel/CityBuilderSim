@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**149 harness files, 15,781 labelled assertions.** AllChecks runs 149 of them.
+**149 harness files, 15,782 labelled assertions.** AllChecks runs 149 of them.
 
 ## Which harnesses read which class
 
@@ -6153,7 +6153,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L645 the city buys the ground to it: its sites the sea's, the field on the sea's list at World's depth
   - L670 a platform and its wells stand on it, the city plays two months more, the investors planning at sea, and the oil's page
 
-## EarthTerrainCheck.java - 91 labelled assertions
+## EarthTerrainCheck.java - 92 labelled assertions
 
 > The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key holding the generated world as it was, and the game's founding, land and screen standing on an Earth world - and since 0.7.117 (batch E3) its deposits on the Earth's geology (Geology), and since 0.7.127 (batch E7) its ice and desert.
 > 
@@ -6269,10 +6269,11 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2177 the tile rule and the point rule give a dry plot the same relief on all but RELIEF_COPIES_POINTS of the plots
   - L2198 a hilly tile's ground and its relief together in no more than TILE_MS (the median of
   - L2237 the far summary: a 4' block's shares are the land-weighted mean of its 256 cells' (within a level of a byte, 1/255), at
-  - L2281 a far node over Medellin at
-  - L2310 the globe's camera at the handoff draws the plane's relief shares: its dry pixels within RELIEF_POINTS x 2 of the plane's node over the same ground, none on ...
-  - L2340 the picture's camera (a band of 10 degrees at 4'): the cover is the same byte for byte, the relief is none on water, and the band's relief costs a first sigh...
-  - L2480 ...its edge frayed both ways about the bit's half-contour, and never past the cells that agree
+  - L2283 a far node over Medellin at
+  - L2288 ...and at
+  - L2313 the globe's camera at the handoff draws the plane's relief shares: its dry pixels within RELIEF_POINTS x 2 of the plane's node over the same ground, none on ...
+  - L2343 the picture's camera (a band of 10 degrees at 4'): the cover is the same byte for byte, the relief is none on water, and the band's relief costs a first sigh...
+  - L2483 ...its edge frayed both ways about the bit's half-contour, and never past the cells that agree
 
 ## EducationCheck.java - 164 labelled assertions
 

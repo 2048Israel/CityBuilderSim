@@ -122,3 +122,19 @@ MP1 exit 3 three rounds in a row. The playtest's own time, main and MP1 in turn 
   `EarthData.CACHE_BYTES` trades memory for speed: Jerus's call, not needed for any line now.
 - **The 10B month's change** (3.7 of 5 quiet, 6-10 loaded): its worst month lays a highway. Only if it keeps
   failing at the gates after TM3.
+
+## 8. Sent back from the gate (2026-10-27, 20:25), and what was done
+
+- **KeptCheck's "the kept month is within KEPT_MONTH_MS"** read main 5.31 ms against MP1 10.7 (+101.8%) in the
+  gate's paired rounds, with Jerus's game open from about 19:35. The line times the People page's draw, CSS and
+  layout, not the game's month, and nothing MP1 changes runs there (the far rivers' array is made once a terrain,
+  four Earth worlds kept at most; `GlobePicture` makes its terrain once). Timed again in turn, main then MP1, beside
+  SC1's and RL1's gates (3-5 other JVMs): main 11.4 / 6.1 / 6.8 / 6.7, MP1 5.8 / 5.0 / 5.8 / 6.1 ms; in the quiet
+  window main 5.4 / 5.3 / 5.9, MP1 6.0 / 5.5 / 5.5. The gate's doubling was the load. Its neighbour, the whole
+  kept chrome (8 ms), went over in one of four rounds on each side (main 10.6, MP1 8.7): main's flake under load.
+- **EarthTerrainCheck's far node over Medellin** ANDed its relief shares with its time, so a red had no figure the
+  paired step could judge. Split as ET6 split BridgeCheck's: the shares on their own line, and "...and at N plots a
+  pixel it is drawn in no more than SCREEN_MS" through `Timing.within` alone. No budget moved. Two other lines of the
+  harness AND a time the same way (a landmass tile, line 620; the globe's frame at the handoff, line 2311); left as
+  they are, named here for whoever meets them red.
+- main (ZT1, I13-L) merged into the branch; the maps regenerated.
