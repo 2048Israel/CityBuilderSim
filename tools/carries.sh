@@ -1,23 +1,19 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
-#  Which unmerged batch a branch is built on: the ids of origin's batch/
+#  The unmerged batches a branch is built on: the ids of origin's batch/
 #  branches whose tip is in REF's history (default HEAD) and not in
-#  origin/main's, one per line, the nearest last. A lane's next batch is cut
-#  from its predecessor's tip while that one is at the gate (RL1), so this is
-#  the one test of "my predecessor is not on main yet", for day.sh, wait.sh,
-#  ship.sh, pick.sh and batch-check.sh. REF's own branch does not count (a
-#  tip equal to REF's, or the branch named by REF, by HEAD's branch, or by the
-#  optional second argument: its origin ref may lag the commits not yet pushed).
-#  Reads the refs as last fetched; prints nothing, exit 0, when there is none;
-#  exit 2 for a REF git does not know. POSIX sh and git.
+#  origin/main's, one per line, the nearest last. REF's own branch does not
+#  count (its tip, or the branch named by REF, by HEAD's branch or by the
+#  second argument: its origin ref may lag the commits not yet pushed). Reads
+#  the refs as last fetched; prints nothing when there is none; exit 2 for a
+#  REF git does not know. POSIX sh and git.
 #
 #      sh tools/carries.sh [REF [OWN-BRANCH]]
 #
-#  WHY (RL1, 2026-10-27): every minute from a predecessor's ship file to its
-#  merge was paid again by the batch behind it, which waited for the row to
-#  leave the queue. Starting at the ship file puts the successor on a base
-#  main does not have yet, and four scripts had read "a branch" as "cut from
-#  main".
+#  WHY (RL1, 2026-10-27): a lane's next batch is cut from its predecessor's
+#  tip while that one is at the gate, so "my predecessor is not on main yet"
+#  needs one test: day.sh, wait.sh, ship.sh, pick.sh and batch-check.sh all
+#  had read "a branch" as "cut from main".
 # ---------------------------------------------------------------------------
 A=${1:-HEAD}
 R=$(git rev-parse -q --verify "$A^{commit}") || exit 2

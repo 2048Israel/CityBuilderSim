@@ -62,28 +62,22 @@
 #    9. the checks: batch-check.sh on the merge (compile, suite, maps, Stale,
 #       line endings), the suite timed soft so that timing is judged once;
 #       exit 0 and 3 (red only as main's record has it) pass, 4 (a new red
-#       line) passes only with --red-ok and a --red-line that names each of the
-#       new lines (a harness's own "exit N" and "N FAILED" lines pass with a line of
-#       its that does, when no other line of it is left unnamed), 1 and 2 stop. On a chatgpt/ or gemini/
-#       branch tools.Names too: said, never a gate. Then the timing harnesses
-#       alone and hard (batch-check.sh --timing), at once (GP1: no quiet minute, a
-#       red is judged against main's own run below); its exit is 0, 3 or 4 alike, and the record
-#       is no shortcut. Its red lines less the lines the suite step already
-#       judged (main's recorded reds, or reds passed with --red-ok) and less main's recorded
-#       lines are the timing's own: none, and it passes with no further run
-#       (a red passed with --red-ok in one of the timing harnesses comes back
-#       here and is not judged twice). Otherwise (TM3) each timing red - a line
-#       whose figure missed its budget, read from the run's target/checks/timing.tsv,
-#       never from the label - is judged side by side with main: the red harnesses
-#       are run again CBS_TIMING_ROUNDS times (3) with main's classes (target/main-timing,
-#       a worktree of main) and the merge's in turn, back to back, and the red
-#       passes, named with the paired medians, unless the batch's median is more
-#       than the margin (15%, tools/timing-pair.awk) over main's. A red that is
-#       no timing red, one over the margin and one with no pair to compare is the
-#       batch's and stops - unless --red-ok and a --red-line name it (the same rule as
-#       the suite's), said in the body; no timing red passed so is ever a recorded one;
-#       A merge that changes only .md files outside docs/ensemble/ runs
-#       batch-check.sh --fast alone;
+#       line) passes only with --red-ok and a --red-line naming each new line
+#       (a harness's own "exit N" and "N FAILED" lines pass with a line of it
+#       that does, when no other line of it is left unnamed), 1 and 2 stop. On a
+#       chatgpt/ or gemini/ branch tools.Names too: said, never a gate. Then the
+#       timing harnesses alone and hard (batch-check.sh --timing), at once (GP1);
+#       its red lines less those the suite step judged and main's recorded ones
+#       are the timing's own, and each timing red - a line whose figure missed its
+#       budget, read from target/checks/timing.tsv - is judged side by side with
+#       main (TM3; docs/batch.md, The gate 6; tools/timing-pair.awk): the red
+#       harnesses run again CBS_TIMING_ROUNDS times (3) with main's classes
+#       (target/main-timing) and the merge's in turn, and it passes, named with the
+#       medians, unless the batch's is over main's by more than 15%. A red that is
+#       no timing red, one over the margin and one with no pair to compare stops -
+#       unless --red-ok and a --red-line name it, said in the body; no timing red
+#       passed so is ever a recorded one. A merge that changes only .md files
+#       outside docs/ensemble/ runs batch-check.sh --fast alone;
 #   10. docs/notes/gate.txt written (every gate that ran the suite) and added:
 #       "#" lines (the merge's title, the date, whether earth-2.bin was named,
 #       the suite's and the timing's summary lines, each timing red that passed
