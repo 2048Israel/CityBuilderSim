@@ -48,6 +48,22 @@ the batch's run and main's.
    measured, budget. The paired step reads those, never the label's prose.
 4. **No budget moves.** A harness's budget and premise stay as they are
    (README, *The checks*). TM3 changes only how the gate judges a red.
+5. **`--red-ok` reaches the timing step.** Today it covers only the suite
+   step's new reds. A timing red that main does not share stops the ship
+   whatever Jerus said, so MS2 (0.8.55, 2026-10-26) shipped on his "Ship it"
+   through a local copy of `ship.sh` changed at that one stop. With
+   `--red-ok "his words"`, the timing step's own reds pass too, and the gate's
+   record and the merge's `Gate-timing:` line carry his words and the lines.
+6. **Wall-clock comparisons are timing too.** MapCheck's "...and no more than
+   section 5's at either size: the view adds nothing a tile" compares two
+   measured times, but it is not a `Timing` assertion, so it stays hard in
+   the suite step. Under Jerus's running game it went red on CC1-S's merge
+   (0.8.56), which cannot reach it. It passed under a `--red-ok` given for
+   another line, and ship.sh wrote it into `docs/notes/gate.txt` as a
+   recorded red. The orchestrator took it out again so that it masks no later
+   regression. Find every such comparison and make it timing (soft in the
+   suite, judged side by side at the gate). A `--red-ok` names the lines it
+   passes, never more.
 
 ## Scope and checks
 

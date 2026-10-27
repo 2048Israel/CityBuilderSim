@@ -81,7 +81,7 @@ with it. The look-up tools:
     java -cp target/classes ham.citybuildersim.tools.Where nextMonth              # every member called that, file and line
     java -cp target/classes ham.citybuildersim.tools.Where Game.nextMonth -print  # just that method, numbered
     java -cp target/classes ham.citybuildersim.tools.Where "THE BANK"             # a banner section by its title
-    java -cp "target/classes;<gson.jar>" ham.citybuildersim.tools.SaveDump 3 sectors   # inside a save without loading it
+    java -cp "target/classes;$(cat target/classpath.txt)" ham.citybuildersim.tools.SaveDump 3 sectors   # inside a save without loading it; batch-check.sh writes the jars' list
     java -cp target/classes ham.citybuildersim.tools.Stale                        # prose no longer true; StaleCheck asserts its firm half
     java -cp target/classes ham.citybuildersim.tools.Names chatgpt/<topic>        # names a branch's new text uses that the tree does not declare
     java -cp target/classes ham.citybuildersim.tools.ManualToMarkdown --wrap page.html docs/manual.html   # the pulled manual, then...

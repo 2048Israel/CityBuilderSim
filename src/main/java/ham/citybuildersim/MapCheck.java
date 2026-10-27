@@ -6557,7 +6557,7 @@ public class MapCheck {
                 && asked == planet && same == asked && own > 0);
         double[] far = GlobeFrame.destination(key.lat(), key.lon(), 135, 2000);
         GlobeFrame away = new GlobeFrame(w, h, key.lat(), key.lon());
-        away.set(far[0], far[1], 0.1);
+        away.set(far[0], far[1], GlobeFrame.HANDOFF_KM);
         int beyond = 0, beyondRight = 0;
         for (double sy = 0.5; sy < h; sy += 101) {
             for (double sx = 0.5; sx < w; sx += 131) {
@@ -6578,11 +6578,50 @@ public class MapCheck {
             byPlot &= LandMap.earthWords(land, x, y).equals(LandMap.earthWords(e, ll[0], ll[1]));
         }
         GlobeFrame whole = new GlobeFrame(w, h, key.lat(), key.lon());
-        out.printf("      2,000 km south-east, the wheel's stop: %d points, %d said as past the plane%n", beyond, beyondRight);
+        out.printf("      2,000 km south-east at the handoff (MS2: closer than it the plane's ground is drawn there too): %d points, %d said as past the plane%n", beyond, beyondRight);
         check("...past it the ground drawn there, \"Not the city's\", and the place and the province by latitude and longitude", away.tier() == GlobeFrame.GROUND
                 && beyond > 0 && beyondRight == beyond);
         check("...which are the plot's own at its centre; and off the planet it says nothing", byPlot
                 && LandMap.globeHoverWords(whole, land, null, 1, 1, World.SALT, LandMap.CARD_FIELDS).isEmpty() && whole.latLonAt(1, 1) == null);
+        // MS2 (Jerus 2026-10-26, "look at the wierd resolution by just panning a few more kms"): closer than the handoff the plane's ground is drawn past the reach too, so
+        // the hover there is the plane's - the same words for the same plot, at 2,000 km as at the handoff over the city - and the legend the plane's; off the world's square
+        // (a view at its north edge) the plane's words stop where its ground does and the globe's begin.
+        GlobeFrame nearAway = new GlobeFrame(w, h, key.lat(), key.lon());
+        nearAway.set(far[0], far[1], 0.1);
+        int nearAsked = 0, nearAlike = 0;
+        for (double sy = 0.5; sy < h; sy += 101) {
+            for (double sx = 0.5; sx < w; sx += 131) {
+                double[] ll = nearAway.latLonAt(sx, sy);
+                if (ll == null || !nearAway.plane().plotOf(ll[0], ll[1], xy)) continue;
+                nearAsked++;
+                long x = (long) Math.floor(xy[0]), y = (long) Math.floor(xy[1]);
+                if (nearAway.planeHolds(sx, sy) && LandMap.globeHoverWords(nearAway, land, null, sx, sy, World.DESERT, LandMap.CARD_FIELDS)
+                        .equals(LandMap.hoverWords(land, null, x, y, LandMap.CARD_FIELDS))) nearAlike++;
+            }
+        }
+        GlobeFrame rim = new GlobeFrame(w, h, key.lat(), key.lon());
+        double[] edgeAt = new double[2];
+        rim.plane().latLonOfPlot(World.SIDE / 2.0, 0.5, edgeAt);
+        rim.set(edgeAt[0], edgeAt[1], 0.1);
+        int onSquare = 0, offSquare = 0, rimRight = 0;
+        for (double sy = 0.5; sy < h; sy += 53) {
+            for (double sx = 0.5; sx < w; sx += 67) {
+                double[] ll = rim.latLonAt(sx, sy);
+                if (ll == null || !rim.plane().plotOf(ll[0], ll[1], xy)) continue;
+                boolean square = xy[0] >= 0 && xy[1] >= 0 && xy[0] < World.SIDE && xy[1] < World.SIDE;
+                if (square) onSquare++;
+                else offSquare++;
+                List<String> words = LandMap.globeHoverWords(rim, land, null, sx, sy, World.DESERT, LandMap.CARD_FIELDS);
+                boolean planes = words.equals(LandMap.hoverWords(land, null, (long) Math.floor(xy[0]), (long) Math.floor(xy[1]), LandMap.CARD_FIELDS)) && rim.planeHolds(sx, sy);
+                boolean globes = words.size() > 1 && words.get(1).equals(LandMap.NOT_THE_CITYS) && !rim.planeHolds(sx, sy);
+                if (square ? planes : globes) rimRight++;
+            }
+        }
+        out.printf("      2,000 km out at 0.1 km a pixel: %d points, %d said as the plane's plot; the world's square's north edge: %d on it, %d off it, %d said as they should be%n",
+                nearAsked, nearAlike, onSquare, offSquare, rimRight);
+        check("closer than the handoff, 2,000 km out, the hover is the plane's words for the plot under the pointer, and the legend the plane's - the GROUND tier it is drawn in is only the camera",
+                nearAway.tier() == GlobeFrame.GROUND && nearAway.legendTier() == GlobeFrame.PLANE && nearAsked > 0 && nearAlike == nearAsked);
+        check("...to the world's square's edge: the plane's words on the square, the globe's past it", onSquare > 20 && offSquare > 20 && rimRight == onSquare + offSquare);
 
         // The composed matrix, and the GROUND tier near the city from the plane's own nodes.
         java.util.Random r = new java.util.Random(13);
@@ -6642,6 +6681,76 @@ public class MapCheck {
                     + " %d on a node pixel's edge; %d without a node%n", view[0], view[1], view[2], plots, nodes.size(), drawn, alike, edgeOnly, missed);
             check("the GROUND tier at " + view[2] + " km a pixel is the plane's own far nodes, pixel for pixel through the camera",
                     drawn > 0 && drawn == onPlane && alike + edgeOnly == drawn && missed == 0);
+        }
+
+        // The colour of the near view past the reach (MS2): inside the reach the plane paints its tiles - L0's plots, L1's blocks of four - and past it the camera lays the plane's far nodes at
+        // one plot a pixel (their stride from 1.4 px a plot in): their ground colours must be one rule, or the ground would change at the reach. Over nodes of the fixture's window well clear
+        // of the city's ground, where there is nothing but the ground and the world's deposits: every plot's colour in a painted tile is the node pixel's for that plot - the ground's class and
+        // relief by one table (TileRaster.colour()), dimmed as unowned, and a deposit's field tinted by the one function (TileRaster.siteTint(), MapTiles.SITES_AT_MOST, nodePixels()'s `sites`).
+        long nspan = MapFrame.NODE_PX, siteX = world.foundingX(), siteY = world.foundingY();
+        int plotsCompared = 0, plotsDiffer = 0, nodesTried = 0, fieldPlots = 0, fieldDiffer = 0;
+        java.util.Set<Integer> nodeColours = new java.util.HashSet<>();
+        java.util.Set<Byte> classesSeen = new java.util.HashSet<>();
+        LandGrid owned = land.grid();
+        for (long[] off : new long[][] { { 640, 300 }, { -820, -240 }, { 120, -760 }, { -300, 620 } }) {
+            long nx0 = Math.floorDiv(siteX + off[0], nspan) * nspan, ny0 = Math.floorDiv(siteY + off[1], nspan) * nspan;
+            if (owned.owned(nx0 - 32, ny0 - 32, nx0 + nspan + 32, ny0 + nspan + 32) != 0) continue;
+            nodesTried++;
+            byte[] relief = new byte[MapFrame.NODE_PX * MapFrame.NODE_PX];
+            byte[] nodeGround = MapTiles.nodeTerrain(key, nx0, ny0, 1, relief);
+            int[] node = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+            tiles.nodePixels(nx0, ny0, 1, nodeGround, relief, true, node);
+            int[] l1 = new int[MapTiles.tileImagePixels(MapFrame.MIDDLE_TILE_PX)], l0 = new int[MapTiles.tileImagePixels(MapFrame.SMALL_TILE_PX)];
+            for (long tj = 0; tj < nspan / World.TILE; tj++) {
+                for (long ti = 0; ti < nspan / World.TILE; ti++) {
+                    long tx = nx0 / World.TILE + ti, ty = ny0 / World.TILE + tj;
+                    tiles.pixels(tx, ty, MapFrame.L1, MapFrame.MIDDLE_TILE_PX, new TilePainter.Input(), l1);
+                    tiles.pixels(tx, ty, MapFrame.L0, MapFrame.SMALL_TILE_PX, new TilePainter.Input(), l0);
+                    TilePainter.Input tin = new TilePainter.Input();
+                    TilePainter.Painted tp = tiles.painted(tx, ty, tin, tiles.input(tx, ty, tin));
+                    for (int py = 0; py < World.TILE; py++) {
+                        for (int px = 0; px < World.TILE; px++) {
+                            int want = node[(int) (tj * World.TILE + py) * MapFrame.NODE_PX + (int) (ti * World.TILE + px)];
+                            int atL1 = l1[(py * MapFrame.MIDDLE_TILE_PX) * World.TILE * MapFrame.MIDDLE_TILE_PX + px * MapFrame.MIDDLE_TILE_PX];
+                            int atL0 = l0[(py * MapFrame.SMALL_TILE_PX + MapFrame.SMALL_TILE_PX / 2) * World.TILE * MapFrame.SMALL_TILE_PX + px * MapFrame.SMALL_TILE_PX + MapFrame.SMALL_TILE_PX / 2];
+                            plotsCompared++;
+                            boolean field = tp.use[py * World.TILE + px] == TilePainter.FIELD;
+                            if (field) fieldPlots++;
+                            if (atL1 != want || atL0 != want) {
+                                plotsDiffer++;
+                                if (field) fieldDiffer++;
+                            }
+                            nodeColours.add(want);
+                            classesSeen.add(nodeGround[(int) (tj * World.TILE + py) * MapFrame.NODE_PX + (int) (ti * World.TILE + px)]);
+                        }
+                    }
+                }
+            }
+        }
+        out.printf("      the plane's tiles (L0, L1) and a node at one plot a pixel, %d nodes of the window clear of the city's ground: %,d plots compared (%,d of them a deposit's field), %,d differ (%,d of the field's);"
+                        + " %d colours over %d classes%n", nodesTried, plotsCompared, fieldPlots, plotsDiffer, fieldDiffer, nodeColours.size(), classesSeen.size());
+        check("the ground a painted tile (L0, and L1's blocks) and the far node at one plot a pixel give a plot are one colour, away from the city: the near view past the reach looks as the plane's inside it",
+                nodesTried >= 2 && plotsCompared > 0 && plotsDiffer == 0 && fieldPlots > 0 && nodeColours.size() >= 3 && classesSeen.size() >= 3);
+        // ...and what a far node costs at the strides the near scales ask for - 1, 2, 4 and 8 plots a pixel - its ground with its relief, then its colours, within SCREEN_MS on the worker.
+        {
+            double worstNear = 0;
+            StringBuilder nearMs = new StringBuilder();
+            for (long stride : new long[] { 1, 2, 4, 8 }) {
+                long sp = nspan * stride, ox = Math.floorDiv(siteX + 400, sp) * sp, oy = Math.floorDiv(siteY + 200, sp) * sp;
+                byte[] relief = new byte[MapFrame.NODE_PX * MapFrame.NODE_PX];
+                int[] px = new int[MapFrame.NODE_PX * MapFrame.NODE_PX];
+                double best = Double.MAX_VALUE;
+                for (int round = 0; round < WARM_ROUNDS + NODE_ROUNDS; round++) {
+                    long t0 = System.nanoTime();
+                    byte[] nodeGround = MapTiles.nodeTerrain(key, ox, oy, stride, relief);
+                    tiles.nodePixels(ox, oy, stride, nodeGround, relief, true, px);
+                    if (round >= WARM_ROUNDS) best = Math.min(best, (System.nanoTime() - t0) / 1e6);
+                }
+                worstNear = Math.max(worstNear, best);
+                nearMs.append(String.format("%s%d: %.1f", nearMs.length() == 0 ? "" : ", ", stride, best));
+            }
+            out.printf("      a far node's ground with its relief and its colours, ms at 1, 2, 4 and 8 plots a pixel (the strides of the near scales): %s%n", nearMs);
+            check("a far node at the strides of the near scales - ground, relief and colours - is drawn in no more than SCREEN_MS (" + (int) SCREEN_MS + " ms) on the worker", worstNear > 0 && Timing.within(worstNear, SCREEN_MS));
         }
 
         // The last picture carried: a point's pixel in an older view is where that view puts it.
@@ -10694,7 +10803,7 @@ public class MapCheck {
         check("a generated world's hover first line is its ground's words, as before, and only the fixture's Earth worlds are drawn with relief (LandMap.reliefDrawn())", generated);
         GlobeFrame away = new GlobeFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H, EarthTerrainCheck.VALLEY[0], EarthTerrainCheck.VALLEY[1]);
         double[] far = GlobeFrame.destination(EarthTerrainCheck.VALLEY[0], EarthTerrainCheck.VALLEY[1], 135, 2000);
-        away.set(far[0], far[1], 0.1);
+        away.set(far[0], far[1], GlobeFrame.HANDOFF_KM);
         byte[] drawn = { GlobePicture.code(World.FOREST, World.STEEP), GlobePicture.code(World.GRASS, World.VERY_STEEP), GlobePicture.code(World.ICE, World.FLAT), World.SALT };
         boolean globe = true;
         double sx = MapTiles.DESIGN_W / 2.0, sy = MapTiles.DESIGN_H / 2.0;

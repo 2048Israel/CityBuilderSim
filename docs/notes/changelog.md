@@ -18,6 +18,28 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.56 — CC1-S, care held essential, and why the auto-built villages stand still — 2026-10-26, ready, see docs/queue/CC1-S-notes.md
+Jerus's call (2026-10-18): care stays essential, built and kept when it does not pay for itself. It already was
+(AutoBuilder.essential(), since 0.7.104); AutoBuildCheck 8 now holds it for all three kinds of care on a deficit, and a
+school to its payback. Four of eight auto-built seeds (0, 1, 4, 5) sit at about 2,000 people for some 310 months, not
+for care (a fifth of the revenue): at month 32 the test player borrowed $28.8M abroad for two Bakeries at 18.45%,
+comparing the rates before the sale (2.00% against 3.00%), not its quotes (18.45% against 3.03%). The coupon took two
+fifths of the tax, the cash ran out and no ground was bought: "no land" from month 140 to 357. LongPlaytest's
+borrowsAbroad() reads the quotes (ForeignDebtCheck 10), behind -Dplaytest.quotedBorrowing, off: on, five harnesses on
+the played city go red and seed 4 still waits, on jobs. Jerus's theory that schools start the growth did not hold: no
+seed builds one before 3,000 people, a school pulls only as an employer, and built early as essential the schools keep
+all eight seeds villages for 900 months. Schools stay weighed for their payback. The default playtest is unchanged
+but for one summary line: no ensemble.
+
+### 0.8.55 — MS2, the near view drawn the same past the reach — 2026-10-26, ready, see docs/queue/MS2-notes.md
+Zoomed in past 300 km from the city the map drew the far rule through the globe's camera: speckled ground, every small
+lake a perfect circle, the globe's short legend. It now draws the plane's own ground there - its far nodes at the
+scale's stride, down to a plot a pixel, through the camera - wherever the world's square holds the ground (all but less
+than the fifth of the planet farthest from the city, where the far rule stays), with the plane's legend, hover and
+block lines, and the deposits' tint the plane's tiles have. At Jerus's 2 km scale the ground drawn equals the plane's
+plot for plot on both sides of the reach: no seam. GlobeCheck 2c new. The default playtest's trace is byte-identical
+(no ensemble).
+
 ### 0.8.54 — HY1, the Hydro Station — 2026-10-26, ready, see docs/queue/HY1-notes.md
 A Hydro Station (id 144): 10 MW at 45%, $30M at $3,000 a kW, five posts, on any ground, steep too. It needs a river
 with a drop on the city's own ground, on a linked landmass. Earth-2 has no heights on land, so the drop is read from

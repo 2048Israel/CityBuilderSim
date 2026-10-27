@@ -148,9 +148,13 @@ import static ham.citybuildersim.ui.Pieces.*;
  * pieces on WORKER once the view holds still, the last whole picture
  * carried pixel by pixel and the planet's picture under it meanwhile - and
  * since MS1 at every scale where the view's centre is past the city's reach
- * (GlobeFrame.tier()), closer than the handoff too, where the plane's far
- * nodes are not asked for finer than they come and the whole view is the
- * far rule's pieces;
+ * (GlobeFrame.tier()), closer than the handoff too, where since MS2 (Jerus
+ * 2026-10-26, "look at the wierd resolution by just panning a few more
+ * kms") the plane's own far nodes are drawn through the camera at the
+ * scale's own stride - 8, 4, 2 or 1 plots a pixel - wherever the world's
+ * square holds the ground (GlobeFrame.planeDrawnPastReach()), the ground
+ * as the plane draws it inside the reach, its block lines and its legend
+ * with it, and the far rule's pieces only off the square;
  * PLANE, the map as before, its MapFrame following the globe's view while
  * its centre is within the reach. A
  * view on the move is drawn at half its resolution and a still one at its
@@ -846,6 +850,11 @@ final class MapView {
         World.Key world = shownMap.worldKey();
         int n = MapFrame.NODE_PX;
         if (buffer.length < n * n) buffer = new int[n * n];
+        // The nodes this view wants (MS2): WORKER's queue skips a node asked for in a view that has moved on, and the nodes this call
+        // asks for go in from the middle of the view out - a pan at the near strides, 128 to 2,048 px a node, asks a few at a time.
+        final long[] wanted = { plots, nx0, nx1, ny0, ny1 };
+        nodesWanted = wanted;
+        List<long[]> asking = new ArrayList<>();
         // Whether the view asks for the pictures its nodes lack (MapTiles.picturesFit()): found once a call, when a partial node's key held.
         Boolean fits = null;
         for (long ny = ny0; ny <= ny1; ny++) {
@@ -854,30 +863,17 @@ final class MapView {
                 Img img = nodes.get(key);
                 if (img == null) {
                     // Its ground asked of WORKER once; the answer asks for a frame.
-                    if (nodesAsked.add(key)) {
-                        final long x0 = nx * span, y0 = ny * span;
-                        final MapTiles askedFor = tiles;
-                        WORKER.submit(() -> {
-                            byte[] relief = world.earth() ? new byte[n * n] : null;
-                            byte[] ground = MapTiles.nodeTerrain(world, x0, y0, plots, relief);
-                            Platform.runLater(() -> {
-                                nodesAsked.remove(key);
-                                if (tiles != askedFor) return;
-                                Img got = new Img();
-                                got.ground = ground;
-                                got.relief = relief;
-                                nodes.put(key, got);
-                                requestDraw();
-                            });
-                        });
-                    }
+                    if (nodesAsked.add(key)) asking.add(new long[] { nx, ny, key });
                     continue;
                 }
                 if (img.version == version && !(img.partial && img.pictures != picturesKept)) continue;
-                if (System.nanoTime() > deadline) return true;
+                if (System.nanoTime() > deadline) {
+                    askNodes(asking, plots, span, world, wanted);
+                    return true;
+                }
                 // The version moved: coloured again only if what the node is drawn from did (MapTiles.nodeKey()). A node drawn short of
                 // a picture always is - colouring is what asks again for the pictures it lacks.
-                long drawnFrom = tiles.nodeKey(nx * span, ny * span, plots);
+                long drawnFrom = tiles.nodeKey(nx * span, ny * span, plots, true);
                 if (img.image != null && img.stamp == drawnFrom) {
                     boolean hold = !img.partial;
                     if (!hold) {
@@ -891,7 +887,7 @@ final class MapView {
                 }
                 img.stamp = drawnFrom;
                 farRecoloured++;
-                img.partial = tiles.nodePixels(nx * span, ny * span, plots, img.ground, img.relief, buffer) > 0;
+                img.partial = tiles.nodePixels(nx * span, ny * span, plots, img.ground, img.relief, true, buffer) > 0;
                 img.pictures = picturesKept;
                 picturesWanted.addAll(tiles.wanted());
                 if (img.image == null) img.image = new WritableImage(n, n);
@@ -903,7 +899,50 @@ final class MapView {
                 nodeColoured(nx * span, ny * span, span);
             }
         }
+        askNodes(asking, plots, span, world, wanted);
         return false;
+    }
+
+    /** The far nodes the view being painted wants - {plots a pixel, nx0, nx1, ny0, ny1} - which WORKER's queue reads from its own thread (MS2). */
+    private volatile long[] nodesWanted;
+
+    /**
+     * The far nodes a call of paintNodes() found it lacked, each {nx, ny, key}, their ground asked of WORKER from the middle of `wanted`
+     * out (MS2). A node still queued when the view has moved on - a pan or a wheel notch since it was asked - is dropped unread rather than
+     * read in its turn (nodesAsked forgets it and a frame is asked, so a view that comes back asks for it again): at the near strides a
+     * node is 128 to 2,048 px across, a drag of a screen asks for a dozen and a fast one for a hundred, and each is 5 to 10 ms of
+     * the one worker, so the queue would hold the view's own nodes behind a screen of them it left.
+     */
+    private void askNodes(List<long[]> asking, long plots, long span, World.Key world, long[] wanted) {
+        if (asking.isEmpty()) return;
+        final double cx = (wanted[1] + wanted[2]) / 2.0, cy = (wanted[3] + wanted[4]) / 2.0;
+        asking.sort((a, b) -> Double.compare(Math.hypot(a[0] - cx, a[1] - cy), Math.hypot(b[0] - cx, b[1] - cy)));
+        final int n = MapFrame.NODE_PX;
+        for (long[] a : asking) {
+            final long nx = a[0], ny = a[1], key = a[2], x0 = nx * span, y0 = ny * span;
+            final MapTiles askedFor = tiles;
+            WORKER.submit(() -> {
+                long[] w = nodesWanted;
+                if (w == null || w[0] != plots || nx < w[1] || nx > w[2] || ny < w[3] || ny > w[4]) {
+                    Platform.runLater(() -> {
+                        nodesAsked.remove(key);
+                        requestDraw();
+                    });
+                    return;
+                }
+                byte[] relief = world.earth() ? new byte[n * n] : null;
+                byte[] ground = MapTiles.nodeTerrain(world, x0, y0, plots, relief);
+                Platform.runLater(() -> {
+                    nodesAsked.remove(key);
+                    if (tiles != askedFor) return;
+                    Img got = new Img();
+                    got.ground = ground;
+                    got.relief = relief;
+                    nodes.put(key, got);
+                    requestDraw();
+                });
+            });
+        }
     }
 
     /** How many far nodes this view has coloured (batch UP3): the figure a probe reads against the nodes in view. */
@@ -1912,15 +1951,6 @@ final class MapView {
     /** ...or lays its picture over the plane's in the crossfade's notch (GlobeFrame.crossfade(), the view's: whole where there is no plane under it). */
     private boolean globeShown() { return onGlobe() || (expanded && globe != null && globe.crossfade() > 0); }
 
-    /**
-     * Whether the view is the far rule's pieces alone (MS1): the GROUND tier closer than the handoff, its centre past the
-     * reach. The plane's far nodes are not asked for there - they come no finer than the handoff's, and the plane is not what
-     * is drawn - and no part of the screen counts as drawn from them (askPieces() asks for the pieces of the whole view).
-     */
-    private static boolean farRuleOnly(GlobeFrame v) {
-        return v.tier() == GlobeFrame.GROUND && v.kmPx() < GlobeFrame.HANDOFF_KM;
-    }
-
     /** A new city, or another world: no globe until the map is over the window on Earth again. */
     private void resetGlobe() {
         resetGlobePicture();
@@ -1977,11 +2007,10 @@ final class MapView {
         requestDraw();
     }
 
-    /** The far nodes the globe reprojects for a view - {plots a pixel, nx0, nx1, ny0, ny1} - over the part of it the plane draws; null where it draws none (MS1: none in a view that is the far rule's pieces alone, farRuleOnly()). Kept for the view. */
+    /** The far nodes the globe reprojects for a view - {plots a pixel, nx0, nx1, ny0, ny1} - over the part of it the plane draws (GlobeFrame.drawsHold(): since MS2 at the plane's scales the whole of it the world's square holds); null where it draws none. Kept for the view. */
     private long[] globeNodes(GlobeFrame v) {
         if (globeNodesFor != null && globeNodesFor.sameView(v)) return globeNodesAt;
         globeNodesFor = v.copy(v.width(), v.height(), v.kmPx());
-        if (farRuleOnly(v)) return globeNodesAt = null;
         long plots = MapFrame.nodePlotsAt(v.planeScale());
         double span = MapFrame.NODE_PX * (double) plots, x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE;
         double[] xy = new double[2];
@@ -2163,9 +2192,9 @@ final class MapView {
      * far rule through the camera (GlobeFrame.groundCodes()) a PIECE_PX
      * square at a time on WORKER, from the middle out, each one with some
      * of its pixels on the planet and past where the plane draws - and only
-     * while the view is still that one. In a view closer than the handoff
-     * past the reach (farRuleOnly(), MS1) the plane draws nowhere, so every
-     * piece on the planet is asked.
+     * while the view is still that one. Since MS2 the plane draws wherever
+     * the world's square holds the ground at the plane's scales, so a piece
+     * there is asked only for the pixels the square does not hold.
      */
     private void askPieces(GlobeFrame view) {
         if (pieceView != null && pieceView.sameView(view)) return;
@@ -2177,12 +2206,10 @@ final class MapView {
         final int gen = ++pieceGen;
         final World.Key key = globeKey;
         List<int[]> asked = new ArrayList<>();
-        // No part of a view that is the far rule's pieces alone is drawn from the plane's nodes (MS1): every piece on the planet is asked.
-        boolean farOnly = farRuleOnly(pv);
         for (int y0 = 0; y0 < h; y0 += PIECE_PX) {
             for (int x0 = 0; x0 < w; x0 += PIECE_PX) {
                 int pw = Math.min(PIECE_PX, w - x0), ph = Math.min(PIECE_PX, h - y0);
-                boolean plane = !farOnly, planet = false;
+                boolean plane = true, planet = false;
                 for (int k = 0; k < 9; k++) {
                     double sx = x0 + 0.5 + (k % 3) * (pw - 1) / 2.0, sy = y0 + 0.5 + (k / 3) * (ph - 1) / 2.0;
                     plane &= pv.drawsHold(sx, sy);
@@ -2218,7 +2245,7 @@ final class MapView {
         requestDraw();
     }
 
-    /** The globe on the canvas: its picture, then over it the city - its offers and centre where the plane draws in the GROUND tier, its edge through the camera in the PICTURE tier (and in a GROUND view the plane's nodes do not draw, farRuleOnly()) once it is EDGE_FROM_PX across, its ring - and the scale bar. */
+    /** The globe on the canvas: its picture, then over it the city - its offers and centre where the plane draws in the GROUND tier, its block lines past the reach at the plane's scales, its edge through the camera in the PICTURE tier (the GROUND tier's nodes draw it) once it is EDGE_FROM_PX across, its ring - and the scale bar. */
     private void drawGlobe() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         double w = globe.width(), h = globe.height();
@@ -2234,9 +2261,8 @@ final class MapView {
         LandMarket market = g.getLandManager().getMarket();
         shapes(land, market);
         if (tier == GlobeFrame.GROUND) {
+            globeBlockLines(gc, market.getLevel());
             globeOffers(gc, land, market);
-            // Where the plane's nodes are not drawn (MS1: the far rule's pieces alone) they do not draw the city's edge: the camera does.
-            if (farRuleOnly(globe)) globeEdge(gc, land);
         } else globeEdge(gc, land);
         ring(gc, land);
         if (globeData != null && GlobePicture.best(globeData) == null) {
@@ -2410,6 +2436,64 @@ final class MapView {
     /** The squares the globe's numbers stand on, by offer id, for the land they were found for and the scale (their last element). */
     private final Map<Integer, double[]> globeLabelAt = new HashMap<>();
     private long globeLabelsFor = Long.MIN_VALUE;
+
+    /**
+     * The city's block lines through the camera past the reach at the plane's scales (MS2): the plane draws them faint over its whole
+     * ground where a block is at least MapFrame.BLOCK_LINES_FROM px across (blockLines()), and they must not vanish as the camera
+     * crosses the reach. Each multiple of a block's plots across the part of the world's square the view shows is a line of the plane's
+     * plots with its ends through GlobeFrame.screenOfPlot(), split where the camera bends it by more than BLOCK_LINE_SAG_PX (at Jerus's
+     * scale a line the length of the view stays within 0.2 px of its chord to 1,000 km from the city, 0.4 at 2,500 and 0.8 at 4,500; at
+     * 4 and 8 plots a pixel, where a view is longer, the bend is 1 to 2.5 px at 2,500 km), all one shape in the plane's white at
+     * BLOCK_LINE_ALPHA, a pixel wide.
+     */
+    private void globeBlockLines(GraphicsContext gc, int level) {
+        if (!globe.planeDrawnPastReach() || level < LandGrid.MIN_LEVEL) return;
+        long b = 1L << level;
+        if (b * globe.planeScale() < MapFrame.BLOCK_LINES_FROM) return;
+        long[] r = globeNodes(globe);
+        if (r == null) return;
+        double span = MapFrame.NODE_PX * (double) r[0];
+        double x0 = r[1] * span, x1 = (r[2] + 1) * span, y0 = r[3] * span, y1 = (r[4] + 1) * span;
+        gc.beginPath();
+        boolean any = false;
+        for (long k = (long) Math.ceil(x0 / b); k * b <= x1; k++) any |= blockLine(gc, k * b, y0, k * b, y1, 0);
+        for (long k = (long) Math.ceil(y0 / b); k * b <= y1; k++) any |= blockLine(gc, x0, k * b, x1, k * b, 0);
+        if (!any) return;
+        gc.setStroke(Color.rgb(255, 255, 255, BLOCK_LINE_ALPHA));
+        gc.setLineWidth(1);
+        gc.stroke();
+    }
+
+    /** The most the camera may bend a block line from its chord before the line is split in two, in pixels: a quarter (the line is drawn a pixel wide, so a quarter is not seen). */
+    static final double BLOCK_LINE_SAG_PX = 0.25;
+
+    /** ...and how many times a line is split at most: 6 (64 pieces - far more than the 64 px a line bends by at the widest near scale 12,000 km from the city needs). */
+    static final int BLOCK_LINE_SPLITS = 6;
+
+    /** One block line from plot (ax, ay) to (bx, by) through the camera onto the path: its ends, and its middle's plot against the chord, in two where it strays more than BLOCK_LINE_SAG_PX. False where an end is not seen. */
+    private boolean blockLine(GraphicsContext gc, double ax, double ay, double bx, double by, int depth) {
+        double[] a = globe.screenOfPlot(ax, ay), b = globe.screenOfPlot(bx, by);
+        if (a == null || b == null) return false;
+        if (depth < BLOCK_LINE_SPLITS) {
+            double mx = (ax + bx) / 2, my = (ay + by) / 2;
+            double[] m = globe.screenOfPlot(mx, my);
+            if (m != null && distanceFromChord(m, a, b) > BLOCK_LINE_SAG_PX) {
+                boolean left = blockLine(gc, ax, ay, mx, my, depth + 1), right = blockLine(gc, mx, my, bx, by, depth + 1);
+                return left || right;
+            }
+        }
+        // A line wholly off the screen is no line.
+        if ((a[0] < 0 && b[0] < 0) || (a[1] < 0 && b[1] < 0) || (a[0] > globe.width() && b[0] > globe.width()) || (a[1] > globe.height() && b[1] > globe.height())) return false;
+        gc.moveTo(a[0], a[1]);
+        gc.lineTo(b[0], b[1]);
+        return true;
+    }
+
+    /** How far a point is from the chord a to b, in pixels. */
+    static double distanceFromChord(double[] m, double[] a, double[] b) {
+        double dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
+        return len == 0 ? Math.hypot(m[0] - a[0], m[1] - a[1]) : Math.abs(dx * (m[1] - a[1]) - dy * (m[0] - a[0])) / len;
+    }
 
     /** The city's edge through the camera in the PICTURE tier (spec-globe 3.7), once the city's ground is EDGE_FROM_PX across on the screen: each run of LandMap.outline() a line, white at the edge's alpha. */
     private void globeEdge(GraphicsContext gc, CityLand land) {
@@ -3651,8 +3735,8 @@ final class MapView {
         showIf(shipsLine, tier == GlobeFrame.PLANE);
     }
 
-    /** The tier the expanded map shows: the globe's on Earth, the plane at every scale on a generated world. */
-    private int shownTier() { return globe != null ? globe.tier() : GlobeFrame.PLANE; }
+    /** The tier the legend and the hover are for (MS2): the globe's on Earth - the plane at every scale closer than the handoff, past the reach too, where the plane's own ground is what is drawn - and the plane at every scale on a generated world. */
+    private int shownTier() { return globe != null ? globe.legendTier() : GlobeFrame.PLANE; }
 
     /** The trucks' line: how many loads a truck stands for while any is drawn this frame, on the plane; hidden otherwise. */
     private void legendTrucks() {
