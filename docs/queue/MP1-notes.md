@@ -8,8 +8,10 @@ review; a third slice was written and taken out (section 5 below). No budget, di
 ## 1. What main misses on a quiet PC
 
 Measured 18:55-19:18 with no other CityBuilderSim JVM running before or after any run (counted at each run's start
-and end) and the game closed: `./batch-check.sh --timing MapCheck EarthTerrainCheck KeptCheck`, hard, three rounds,
-main (0.8.58) and MP1 in turn. In ms, round by round:
+and end) and the game closed, in the window the orchestrator held for it (no gate, SP1's suites held; SC1's gate
+ended 18:54). Jerus's load in it, as the orchestrator gave it: the game not running, two things open in Microsoft
+Edge, and another agent of his doing finance work, nothing of CityBuilderSim's. `./batch-check.sh --timing MapCheck
+EarthTerrainCheck KeptCheck`, hard, three rounds, main (0.8.58) and MP1 in turn. In ms, round by round:
 
 | line | budget | main | MP1 |
 |---|---|---|---|
