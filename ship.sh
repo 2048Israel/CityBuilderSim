@@ -29,8 +29,10 @@
 #       the old way (the branch wrote its own: its version, its changelog
 #       block, its Queued row out), said in a line;
 #    5. stops before any merge: "-- names" without --dry-run (a partial suite
-#       never ships); a branch that changes docs/notes/gate.txt, or adds a
-#       docs/queue/*-ship.md that is not its own; with --no-tag, one that
+#       never ships); a branch that changes docs/notes/gate.txt, adds a
+#       docs/queue/*-ship.md that is not its own, or is built on another batch
+#       that main lacks (tools/carries.sh, RL1: merging it would ship that one
+#       ungated, with no records); with --no-tag, one that
 #       changes GameVersion's VERSION line (main's VERSION would stay untagged
 #       and step 3 would stop every later ship); in the new way, one that
 #       changes GameVersion's VERSION line, adds a docs/ensemble/<x.y.z>.md,
@@ -285,6 +287,8 @@ fi
 # 5. stops, before any merge
 [ "$#" -eq 0 ] || [ "$DRY" = 1 ] || die "a partial suite never ships: '-- harness names' only with --dry-run"
 printf '%s\n' "$CHANGED" | grep -q -x 'docs/notes/gate.txt' && die "$BRANCH changes docs/notes/gate.txt: only ship.sh writes the gate's record"
+CARRIED=$(sh tools/carries.sh "$REF" "$BRANCH" | tr '\n' ' ')   # RL1: a successor cut from its predecessor's tip, which main lacks; its ship file is the predecessor's too
+[ -z "$CARRIED" ] || die "$BRANCH is built on ${CARRIED% }, which is not on main yet: gate that first, then $BRANCH merges main (docs/batch.md, A batch session)"
 OTHERSHIP=$(git diff --name-only --diff-filter=A --no-renames "main...$REF" | grep -E '^docs/queue/.+-ship\.md$' | grep -v -x -F "$SHIPF" | head -3 | tr '\n' ' ')
 [ -z "$OTHERSHIP" ] || die "$BRANCH adds a ship file for another id: ${OTHERSHIP% }; this branch's is $SHIPF (the branch's name, each / a -: docs/batch.md)"
 VCHG=0

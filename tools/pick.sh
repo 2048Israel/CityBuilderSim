@@ -2,7 +2,9 @@
 # ---------------------------------------------------------------------------
 #  The harnesses a change needs (BP1, 2026-10-25): no JVM, about a second.
 #
-#      sh tools/pick.sh            the working tree (staged, unstaged, untracked) against origin/main
+#      sh tools/pick.sh            the working tree (staged, unstaged, untracked) against origin/main,
+#                                  or against the tip of the unmerged batch this branch is built on
+#                                  (tools/carries.sh, RL1: that one's diff is not this batch's)
 #      sh tools/pick.sh A          the working tree against A
 #      sh tools/pick.sh A B        what B has that A has not (a merge: sh tools/pick.sh M^1 M);
 #                                  B's files are read, not the working tree's
@@ -65,7 +67,7 @@ LC_ALL=C; export LC_ALL
 
 say() { printf '%-9s %s\n' "$1" "$2" >&2; }
 files() { if [ "$1" = 1 ]; then echo "1 file"; else echo "$1 files"; fi; }
-usage() { say usage "sh tools/pick.sh [A [B]]  - no args: the working tree against origin/main; A: against A; A B: what B has that A has not"; exit 2; }
+usage() { say usage "sh tools/pick.sh [A [B]]  - no args: the working tree against origin/main (or the unmerged batch it is built on); A: against A; A B: what B has that A has not"; exit 2; }
 
 case $# in 0|1|2) ;; *) usage ;; esac
 case "$1" in -*) usage ;; esac
@@ -83,7 +85,7 @@ trap 'exit 2' HUP INT TERM
 rev() { git rev-parse -q --verify "$1^{commit}" 2>/dev/null; }
 
 # --- what is compared with what -----------------------------------------------
-REF=""      # the commit whose files are read; empty: the working tree
+REF=""; P=""   # REF: the commit whose files are read, empty: the working tree; P: the unmerged batch the tree is built on (RL1)
 if [ $# = 2 ]; then
     A=$1; B=$2
     rev "$A" >/dev/null && rev "$B" >/dev/null || { say pick "no such commit: $A or $B"; exit 2; }
@@ -96,6 +98,7 @@ else
     else
         BASE=origin/main
         rev "$BASE" >/dev/null || BASE=main
+        P=$(sh tools/carries.sh | tail -n 1); [ -z "$P" ] || BASE=origin/batch/$P
     fi
     MB=$(git merge-base HEAD "$BASE" 2>/dev/null)
     RANGE=$MB
@@ -105,7 +108,7 @@ if [ -z "$MB" ]; then
     say pick "ALL - no common ancestor with $BASE here (a shallow clone, or no such branch): the whole suite"
     exit 0
 fi
-SHORT=$(git rev-parse --short=8 "$MB")
+SHORT=$(git rev-parse --short=8 "$MB"); [ -z "$P" ] || SHORT="$SHORT, $P's tip (not on main yet)"
 
 show()  { if [ -n "$REF" ]; then git show "$REF:$1"; else cat -- "$1"; fi; }
 # files_with FLAG NAMEFILE PATHSPEC... : the paths whose text holds a name of NAMEFILE (FLAG -w for a whole word, else -F)
