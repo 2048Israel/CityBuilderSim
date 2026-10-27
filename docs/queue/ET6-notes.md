@@ -109,8 +109,10 @@ reviewed by Opus: A the short crossings, B the long bridge orders (model, save, 
   shallow water, which is the point of D12, so the arm runs on to the city's edge. ★8 The fixture now holds that (FR0's
   walk crosses none of the city's own water), and section 16's generated coast keeps the arm that waits at the sea,
   which still passes. Recommend yes: the world line's checks at his site still run and pass.
-- **`./batch-check.sh --pick`**, earth-2.bin named: 95 of 149 harnesses and LongPlaytest. The first run's only new red
-  was GatewayCheck 17 (above); after it, see the final run's line in the ship file's report.
+- **`./batch-check.sh --pick`**, earth-2.bin named: 95 of 149 harnesses and LongPlaytest (Game, BuildingManager and
+  BuildingsTemplate left to the gate). The first run's only new red was GatewayCheck 17 (above); the run after it,
+  exit 3: main's recorded MapCheck red the only red; Stale 0 firm findings; the maps regenerated. The review line
+  names saves (`DataSave.bridges`).
 
 ## 5. Not done (ET6-C)
 
