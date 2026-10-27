@@ -133,6 +133,17 @@ import java.util.Set;
  *       trucks, the room, the trucks past it, and whether Freight would
  *       order one now.
  *
+ *   14. THE LANDLORDS' CARD, THE LENDER'S TEST (I13-L): a landlord's home
+ *       is not asked the INTEREST gate, the mortgage lender's test decides
+ *       it, and the card asks that as its last gate (LENDER) through
+ *       Game.lenderTest(), the call the order makes: only a landlord's home
+ *       has the gate; a home the lender refuses on its rent, at a raised
+ *       insured rate, fails the card in the lender's words with the test's
+ *       own figures and the order, run with the card's funds, is declined
+ *       in the same coverage; a home short of the down payment fails it for
+ *       that and the order holds; and the same home at today's rate passes
+ *       the card and the order builds it on a mortgage.
+ *
  * Every fixture causes its condition.
  */
 public class BuildCardCheck {
@@ -232,6 +243,7 @@ public class BuildCardCheck {
         theInterest(g);
         theMaterials(g, root);
         theBerthAndTheDepot(root, g);
+        theLender(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -872,7 +884,7 @@ public class BuildCardCheck {
                 BuildCard.NO_FEED.equals(BuildCard.appraise(g, lube).first().why()));
 
         // ...and a building that passes them all has none - since 0.7.122 the last of them consider()'s, the interest on
-        // its whole cost, which a landlord's home is not asked (the mortgage lender decides it).
+        // its whole cost, which a landlord's home is not asked (the mortgage lender decides it: since I13-L its last gate).
         int clear = 0;
         boolean none = true;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
@@ -881,13 +893,13 @@ public class BuildCardCheck {
             String owner = inv.owner().key();
             boolean passes = g.hasDepositFor(t, 1) && g.hasLicencesFor(t, 1) && inv.owner().staffing(t).passes()
                     && t.getLandSqFt() <= land.getAvailableSqFt() && inv.estimate() > 0
-                    && (g.buysOnMortgage(owner, t)
-                        || g.carriesItsWholeCost(owner, inv.estimate(), g.getBusinessInvestment().getCostOf(t, 1)));
+                    && (g.buysOnMortgage(owner, t) ? g.lenderTest(owner, t).passes()
+                        : g.carriesItsWholeCost(owner, inv.estimate(), g.getBusinessInvestment().getCostOf(t, 1)));
             if (passes) clear++;
             none &= passes == (inv.own() == null);
         }
-        assertTrue("a market building that passes every gate - the interest on its whole cost the last - has no \"this"
-                + " one:\", and one that fails one has it (" + clear + " pass)", none && clear > 0);
+        assertTrue("a market building that passes every gate - the interest on its whole cost, or a landlord's home's lender, the last -"
+                + " has no \"this one:\", and one that fails one has it (" + clear + " pass)", none && clear > 0);
     }
 
     /* ============================ 7. THE VERDICT ============================ */
@@ -2084,5 +2096,175 @@ public class BuildCardCheck {
         assertTrue("with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet",
                 d.onStreet() == 4 && !d.wouldBuild() && h.depotToOrder() == null && d.trucks() < d.waitsFor());
         fr.setPantry(Good.TRUCKS, was);
+    }
+
+    /* ============================ 14. THE LANDLORDS' CARD: THE LENDER'S TEST ============================ */
+
+    /** Game.considerOnMortgage(), the landlords' order, run for one home with the funds and the rent given: the order the card is held to. */
+    static void landlordsOrder(Game g, BuildingsTemplate home, double cash, double rent) {
+        try {
+            java.lang.reflect.Method order = Game.class.getDeclaredMethod("considerOnMortgage", BusinessInvestment.Decision.class,
+                    String.class, double.class, double.class);
+            order.setAccessible(true);
+            BusinessInvestment.Decision one = new BusinessInvestment.Decision(Sectors.REAL_ESTATE, home, 1, "the check's", true);
+            quietly(() -> {
+                try {
+                    order.invoke(g, one, BuildCard.slot(home), cash, rent);
+                } catch (ReflectiveOperationException e) {
+                    throw new IllegalStateException("the landlords' order could not be run: " + e, e);
+                }
+            });
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException("the landlords' order could not be found: " + e, e);
+        }
+    }
+
+    /** BuildScreen.lenderWords(), a package-private static of the build screen, read through reflection: it needs no toolkit (RunWorksCheck's way). */
+    static String lenderWords(BuildCard.Gate gate) {
+        try {
+            Class<?> screen = Class.forName("ham.citybuildersim.ui.BuildScreen");
+            java.lang.reflect.Method words = screen.getDeclaredMethod("lenderWords", BuildCard.Gate.class);
+            words.setAccessible(true);
+            return (String) words.invoke(null, gate);
+        } catch (ReflectiveOperationException | LinkageError e) {
+            return "(BuildScreen.lenderWords() could not be called: " + e + ")";
+        }
+    }
+
+    static void theLender(Game g) {
+        out.println("\n--- 14. the landlords' card: the mortgage lender's test, the last gate of a landlord's home (I13-L) ---");
+        String re = Sectors.REAL_ESTATE;
+        BuildingsTemplate house = template(g, "House");
+        BusinessInvestment plans = g.getBusinessInvestment();
+        EconomyManager economy = g.getEconomyManager();
+        BusinessDebtManager credit = economy.getBusinessDebtManager();
+
+        // The town as it stands: the gate is a landlord's home's alone, and in INTEREST's place.
+        int homes = 0, gated = 0, others = 0, ungated = 0;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (BuildCard.citys(t)) continue;
+            BuildCard.Appraisal a = BuildCard.appraise(g, t);
+            if (g.buysOnMortgage(a.owner().key(), t)) {
+                homes++;
+                if (a.at(BuildCard.GateKind.LENDER) != BuildCard.Mark.NONE && a.at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.NONE
+                        && g.lenderTest(a.owner().key(), t) != null) gated++;
+            } else {
+                others++;
+                if (a.at(BuildCard.GateKind.LENDER) == BuildCard.Mark.NONE && g.lenderTest(a.owner().key(), t) == null) ungated++;
+            }
+        }
+        assertTrue(String.format("every landlord's home has the lender's gate and no interest gate (%d of %d)", gated, homes),
+                homes > 0 && gated == homes);
+        assertTrue(String.format("...and no other building has it, or a lender's test (%d of %d)", ungated, others),
+                others > 0 && ungated == others);
+        assertTrue("...so a Bakery's door to the lender's test is closed", g.lenderTest(Sectors.INDUSTRY, template(g, "Industrial Bakery")) == null);
+
+        // The landlords' shares cheap on the book, so their owners are not asked for the down payment (MortgageCheck 3's way): the funds
+        // are the till's and its money abroad, and the card's cash is the order's.
+        int company = Equity.indexOf(re);
+        g.getExchange().bookOf(company).seedLastPrice(.5 * g.getExchange().fair(company));
+        double insured = credit.getInsuredMortgageRate(), till = economy.getSectorCash(re);
+        double cost = plans.getCostOf(house, 1), down = Mortgage.ownFundsFor(cost);
+        String slot = BuildCard.slot(house);
+        BuildCard.Gate gate;
+        try {
+            assertTrue("fixture: the landlords' owners are not asked for the down payment, and a House costs more than its down payment",
+                    g.financingOf(re, house)[1] == 0 && down > 0 && down < cost);
+
+            // 1. The lender refuses it on its rent: a till of twice the down payment, the loan most of the cost.
+            economy.setSectorCash(re, 2 * down);
+            Game.LenderTest refused = g.lenderTest(re, house);
+            out.printf("      a House: %s; down payment %s; the landlord would put in %s; rent %s, net %s a month; insured %.4f%%,"
+                    + " tested %.4f%%; loan %s, payment %s, cover %.3f against %.2f%n", Formats.INSTANCE.amount(cost),
+                    Formats.INSTANCE.amount(down), Formats.INSTANCE.amount(refused.cash()), Formats.INSTANCE.amount(refused.rent()),
+                    Formats.INSTANCE.amount(refused.noi()), refused.insured() * 100, refused.tested() * 100,
+                    Formats.INSTANCE.amount(refused.loan()), Formats.INSTANCE.amount(refused.payment()), refused.coverage(), refused.asks());
+            assertTrue("fixture: from a till of twice its down payment a House needs a lender, which reads a rent too small for the payment",
+                    !refused.outright() && !refused.shortOfDown() && refused.cash() >= down && refused.cash() < cost
+                    && refused.noi() > 0 && refused.coverage() < refused.asks() && !refused.passes());
+            BuildCard.Appraisal a = BuildCard.appraise(g, house);
+            gate = BuildCard.investors(g, house).own();
+            assertTrue("THE LENDER REFUSES IT ON ITS RENT: the card's first gate is the lender's, the last, and the INTEREST gate is none",
+                    gate != null && gate.kind() == BuildCard.GateKind.LENDER && a.at(BuildCard.GateKind.LENDER) == BuildCard.Mark.FAIL
+                    && a.at(BuildCard.GateKind.INTEREST) == BuildCard.Mark.NONE && a.first() != null && a.first().equals(gate));
+            assertTrue("...with the cover the rent gives the payment and the cover the lender asks, the test itself beside them",
+                    gate != null && gate.a() == refused.coverage() && gate.b() == Mortgage.MORTGAGE_DEBT_COVERAGE && gate.lender() != null
+                    && gate.lender().cash() == refused.cash() && gate.lender().decision().equals(refused.decision()));
+            String words = gate == null ? "" : lenderWords(gate);
+            out.println("      the card says: " + words);
+            assertTrue("...in the lender's words, with what it lends, the payment and the cover against what it asks",
+                    words.startsWith("the lender would lend $") && words.contains(", a payment of $") && words.contains(" a month at the insured "
+                            + String.format("%.2f%%", refused.insured() * 100))
+                    && words.contains(String.format("covers it %.2f× - the lender asks %.2f×", refused.coverage(), refused.asks())));
+            int before = g.getBuildingManager().getQuantity(house.getId()) + g.getBuildingManager().underConstructionByName("House");
+            landlordsOrder(g, house, refused.cash(), refused.rent());
+            String said = g.getLastInvestment(slot);
+            assertTrue("THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \""
+                    + said + "\"", said != null && said.equals(refused.decision().refusal("House", refused.tested(), refused.insured()))
+                    && said.contains(String.format("%.2f×", refused.coverage())));
+            assertTrue("...and no House is ordered",
+                    g.getBuildingManager().getQuantity(house.getId()) + g.getBuildingManager().underConstructionByName("House") == before);
+
+            // 2. Short of the down payment: half of it in the till.
+            economy.setSectorCash(re, down / 2);
+            Game.LenderTest shortOf = g.lenderTest(re, house);
+            assertTrue("fixture: a till of half the down payment leaves the landlord short of the down payment, and the lender reads no cover",
+                    shortOf.shortOfDown() && !shortOf.passes() && shortOf.cash() < down && Double.isNaN(shortOf.coverage()));
+            gate = BuildCard.investors(g, house).own();
+            assertTrue("SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment",
+                    gate != null && gate.kind() == BuildCard.GateKind.LENDER && gate.a() == shortOf.cash() && gate.b() == shortOf.down()
+                    && gate.b() == down && BuildCard.appraise(g, house).at(BuildCard.GateKind.LENDER) == BuildCard.Mark.FAIL);
+            words = gate == null ? "" : lenderWords(gate);
+            out.println("      the card says: " + words);
+            assertTrue("...in the lender's words: what it wants of its own and what it would put in",
+                    words.startsWith("the lender wants $") && words.contains(String.format(" of its own for the %.0f%% down payment, and it would put in $",
+                            (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100)));
+            landlordsOrder(g, house, shortOf.cash(), shortOf.rent());
+            said = g.getLastInvestment(slot);
+            assertTrue("...and the order holds for it, in the same line: \"" + said + "\"",
+                    said != null && said.equals(shortOf.decision().refusal("House", shortOf.tested(), shortOf.insured()))
+                    && said.startsWith("Holding: needs "));
+
+            // 3. A till of nine tenths of the cost: the loan is small, the rent covers it - and a raised insured rate takes that away.
+            economy.setSectorCash(re, .9 * cost);
+            Game.LenderTest passes = g.lenderTest(re, house);
+            assertTrue("fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment",
+                    !passes.outright() && !passes.shortOfDown() && passes.passes() && passes.coverage() >= passes.asks());
+            assertTrue("A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick",
+                    BuildCard.investors(g, house).own() == null
+                    && BuildCard.appraise(g, house).at(BuildCard.GateKind.LENDER) == BuildCard.Mark.PASS);
+            double rate = insured;
+            while (g.lenderTest(re, house).passes() && rate < 1) {
+                rate *= 1.25;
+                credit.setInsuredMortgageRate(rate);
+            }
+            Game.LenderTest dear = g.lenderTest(re, house);
+            assertTrue(String.format("fixture: the insured rate raised from %.2f%% to %.2f%%, the same funds and rent no longer cover the payment",
+                    insured * 100, rate * 100), !dear.passes() && dear.noi() == passes.noi() && dear.cash() == passes.cash()
+                    && dear.coverage() < dear.asks());
+            gate = BuildCard.investors(g, house).own();
+            assertTrue("...so the card fails it at the lender's gate, the cover now the rate's", gate != null
+                    && gate.kind() == BuildCard.GateKind.LENDER && gate.a() == dear.coverage());
+            landlordsOrder(g, house, dear.cash(), dear.rent());
+            said = g.getLastInvestment(slot);
+            assertTrue("...and the order is declined in the cover the card read, at the dearer rate: \"" + said + "\"",
+                    said != null && said.equals(dear.decision().refusal("House", dear.tested(), dear.insured()))
+                    && said.contains(String.format("%.2f×", dear.coverage())));
+
+            // ...and at today's rate again the card passes it and the same order builds it on an insured mortgage.
+            credit.setInsuredMortgageRate(insured);
+            int standing = g.getBuildingManager().getQuantity(house.getId()) + g.getBuildingManager().underConstructionByName("House");
+            Game.LenderTest again = g.lenderTest(re, house);
+            boolean cardPasses = BuildCard.investors(g, house).own() == null && BuildCard.appraise(g, house).at(BuildCard.GateKind.LENDER) == BuildCard.Mark.PASS;
+            landlordsOrder(g, house, again.cash(), again.rent());
+            said = g.getLastInvestment(slot);
+            assertTrue("at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"" + said + "\"",
+                    again.passes() && cardPasses && said != null
+                    && said.startsWith("Built 1 House on an insured mortgage")
+                    && g.getBuildingManager().getQuantity(house.getId()) + g.getBuildingManager().underConstructionByName("House") == standing + 1);
+        } finally {
+            credit.setInsuredMortgageRate(insured);
+            economy.setSectorCash(re, till);
+        }
     }
 }

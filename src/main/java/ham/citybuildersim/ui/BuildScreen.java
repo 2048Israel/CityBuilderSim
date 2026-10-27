@@ -1600,7 +1600,7 @@ final class BuildScreen {
         return new String[] {rest, !planned && inv.showOwn() ? " · this one: " + gateWords(inv.own()) : null};
     }
 
-    /** A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss, and consider()'s interest on its whole cost (0.7.122). */
+    /** A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss, consider()'s interest on its whole cost (0.7.122), and a landlord's home's mortgage lender (I13-L). */
     String gateWords(BuildCard.Gate gate) {
         switch (gate.kind()) {
             case DEPOSIT:
@@ -1622,6 +1622,8 @@ final class BuildScreen {
                         + LandManager.areaWords(gate.b()) + " free" + (gate.why() == null ? "" : "; " + gate.why());
             case INTEREST:
                 return interestWords(gate);
+            case LENDER:
+                return lenderWords(gate);
             default:
                 // ...a conversion unit nothing feeds (0.7.103, Jerus's B): no feed, not a loss.
                 if (gate.why() != null) return gate.why();
@@ -1644,6 +1646,29 @@ final class BuildScreen {
                 BusinessInvestment.PROFIT_OVER_INTEREST, money(test.interest()), test.real() * 100);
         return gate.a() > 0 ? "earns " + money(gate.a()) + " a month, under " + bar
                 : "would lose " + money(-gate.a()) + " a month, so not " + bar;
+    }
+
+    /**
+     * A LENDER gate in words (I13-L): the mortgage lender's test of a landlord's home, in the lender's words and the figures of
+     * Game.lenderTest() - the call the landlords' order makes (Mortgage.Decision.refusal()'s sentence, with the loan and the payment
+     * it reads). Short of the down payment: what the lender wants of its own funds and what it would put in. Otherwise: what it would
+     * lend, the payment a month at the rate the lender tests it at (the real rate, under the insured one when inflation is
+     * expected), the rent left after carrying the building, and the cover that gives against the cover the lender asks.
+     */
+    static String lenderWords(BuildCard.Gate gate) {
+        Game.LenderTest t = gate.lender();
+        if (t.shortOfDown()) {
+            return String.format("the lender wants %s of its own for the %.0f%% down payment, and it would put in %s",
+                    money(t.down()), (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100, money(t.cash()));
+        }
+        String rate = t.tested() < t.insured()
+                ? String.format("%.2f%% real (the insured %.2f%% less the inflation expected)", t.tested() * 100, t.insured() * 100)
+                : String.format("the insured %.2f%%", t.insured() * 100);
+        String lends = "the lender would lend " + money(t.loan()) + ", a payment of " + money(t.payment()) + " a month at " + rate + ", and ";
+        return t.noi() > 0
+                ? lends + String.format("the rent left after carrying it, %s a month, covers it %.2f× - the lender asks %.2f×",
+                        money(t.noi()), t.coverage(), t.asks())
+                : lends + String.format("the rent does not cover the cost of carrying it - the lender asks %.2f×", t.asks());
     }
 
     /* =====================================================================

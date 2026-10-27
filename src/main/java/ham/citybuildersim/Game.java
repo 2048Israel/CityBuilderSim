@@ -5427,6 +5427,70 @@ public class Game {
         return new double[] { cost, owners, own, Math.max(0, cost - owners - own) };
     }
 
+    /* ----- the lender's test for one home, for the build card (I13-L) ----- */
+
+    /** What the lender reads for an order: what n cost, the insured rate and the real rate it is tested at, one's rent net of carrying it, and Mortgage.decide()'s answer. */
+    private record LenderReading(java.util.function.IntToDoubleFunction costOf, double insured, double tested, double noi,
+                                 Mortgage.Decision decision) { }
+
+    /** The lender's reading of an order of `quantity` with `cash` in hand - the one call the landlords' order (considerOnMortgage()) and the build card (lenderTest()) both make, so they cannot disagree. */
+    private LenderReading lenderReads(BuildingsTemplate t, int quantity, double cash, double perUnitRent) {
+        double insured = economyManager.getBusinessDebtManager().getInsuredMortgageRate();
+        double tested = businessInvestment.realTestRate(insured);
+        java.util.function.IntToDoubleFunction costOf = n -> businessInvestment.getCostOf(t, n);
+        double noi = perUnitRent - economyManager.housingCarry(t);
+        return new LenderReading(costOf, insured, tested, noi, Mortgage.decide(quantity, costOf, cash, noi, tested));
+    }
+
+    /**
+     * THE LENDER'S TEST FOR ONE LANDLORD'S HOME (I13-L; the card's door, as
+     * interestTest() is the INTEREST gate's): its cost, the funds the landlord
+     * would put in (financingOf(): its till, its money abroad and what its
+     * owners are asked for), the rent one would let for and the net operating
+     * income left after carrying it, the insured rate a mortgage is written
+     * at and the real rate the lender tests it at, and the lender's answer -
+     * Mortgage.decide() for an order of one, which is what the order makes.
+     */
+    public record LenderTest(double cost, double cash, double rent, double noi, double insured, double tested,
+                             Mortgage.Decision decision) {
+
+        /** Whether the lender writes it (or the landlord's funds buy it outright). */
+        public boolean passes() { return decision.quantity() >= 1; }
+
+        /** The landlord's own funds cover the whole cost: no lender to ask. */
+        public boolean outright() { return cash >= cost; }
+
+        /** Not even one: the funds do not put the down payment on it. */
+        public boolean shortOfDown() { return decision.shortOfDown(); }
+
+        /** The down payment the lender asks of the landlord's own funds on this cost (Mortgage.ownFundsFor()). */
+        public double down() { return Mortgage.ownFundsFor(cost); }
+
+        /** What the lender lends against it: the shortfall the funds leave, once the fee is paid (Mortgage.loanFor()); nothing outright. */
+        public double loan() { return outright() ? 0 : Mortgage.loanFor(cost - cash); }
+
+        /** The monthly payment the test reads, on that loan with the premium added; nothing outright. */
+        public double payment() { return outright() ? 0 : Mortgage.paymentFor(cost - cash, tested); }
+
+        /** The rent's cover of that payment (net operating income over it), the figure the lender asks asks() of; NaN where it is not read - outright, or short of the down payment. */
+        public double coverage() {
+            return outright() || shortOfDown() ? Double.NaN : Mortgage.coverage(noi, cost - cash, tested);
+        }
+
+        /** What the lender asks of that cover: Mortgage.MORTGAGE_DEBT_COVERAGE. */
+        public double asks() { return Mortgage.MORTGAGE_DEBT_COVERAGE; }
+    }
+
+    /** The lender's test for one of this landlord sector's homes, as the order would meet it now; null for a building the sector does not buy on a mortgage (buysOnMortgage()). */
+    public LenderTest lenderTest(String sector, BuildingsTemplate t) {
+        if (!buysOnMortgage(sector, t)) return null;
+        double[] f = financingOf(sector, t);
+        double cash = f[1] + f[2];
+        double rent = businessInvestment.estimatedMonthlyProfit(sector, t);
+        LenderReading read = lenderReads(t, 1, cash, rent);
+        return new LenderTest(f[0], cash, rent, read.noi(), read.insured(), read.tested(), read.decision());
+    }
+
     /**
      * The landlords' order, on a mortgage: the largest slice of it the
      * landlord's own funds can put down on and the lender's test passes, of
@@ -5439,13 +5503,11 @@ public class Game {
                                     double cash, double perUnitRent) {
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
         BuildingsTemplate t = decision.template;
-        // ...tested at the real rate, written at the insured one: see THE LENDER'S TEST IS REAL.
-        double insured = credit.getInsuredMortgageRate();
-        double tested = businessInvestment.realTestRate(insured);
-        java.util.function.IntToDoubleFunction costOf = n -> businessInvestment.getCostOf(t, n);
-        double noi = perUnitRent - economyManager.housingCarry(t);
-        Mortgage.Decision d = Mortgage.decide(decision.quantity, costOf, cash, noi, tested);
-        if (orderWatch != null) orderWatch.mortgaged(decision.quantity, costOf, cash, noi, tested, d);
+        // ...tested at the real rate, written at the insured one: see THE LENDER'S TEST IS REAL. The build card asks the same (lenderTest()).
+        LenderReading read = lenderReads(t, decision.quantity, cash, perUnitRent);
+        double insured = read.insured(), tested = read.tested(), noi = read.noi();
+        Mortgage.Decision d = read.decision();
+        if (orderWatch != null) orderWatch.mortgaged(decision.quantity, read.costOf(), cash, noi, tested, d);
 
         if (d.quantity() <= 0) {
             (d.shortOfDown() ? heldForDownPayment : refusedByLender).add(decision.sector);

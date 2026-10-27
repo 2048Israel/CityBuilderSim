@@ -63,7 +63,11 @@ import ham.citybuildersim.sectors.Mining;
  * an offer of that rectangle is, bought through the offers' own door with the same books, the
  * offers its ground bit leaving the shelf and the rest standing as they were, never in the
  * listing, the going rate or a save, re-priced with the month and dropped once the city owns
- * its ground (29).
+ * its ground (29); and, since I13-L, the land office's Ore card for every ore -
+ * the model's rows (OreView) iron's, coal's, copper's, stone's and uranium's
+ * as the getters the sector pages read give them, "nothing is digging" for an
+ * ore with a deposit and no mine, and not for one a mine stands on, iron's as
+ * it was (30).
  */
 public class LandCheck {
 
@@ -836,6 +840,7 @@ public class LandCheck {
         cutAndCleared();
         byRelief();
         playersGround();
+        theOreCard();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -3389,6 +3394,108 @@ public class LandCheck {
         assertTrue("...its offers come back as saved, field for field, and the next offer's number is as it was",
                 back.getLandManager().getMarket().getNextOfferId() == nextSaved
                         && listingsAlike(back.getLandManager().getListing(), sm.getListing()));
+    }
+
+    /* ============================ 30. THE ORE CARD, EVERY ORE (I13-L) ============================ */
+
+    /** The land office's screen on the interface bound to the city (no window), by reflection, as ZoningViewCheck reaches Policy's: its `ore()` and `otherOres()` words. */
+    static Object landScreen(Game g) throws ReflectiveOperationException {
+        ham.citybuildersim.ui.UserInterface ui = new ham.citybuildersim.ui.UserInterface(g);
+        java.lang.reflect.Field f = ham.citybuildersim.ui.UserInterface.class.getDeclaredField("landScreen");
+        f.setAccessible(true);
+        return f.get(ui);
+    }
+
+    /** A package-private record's component, by name: the card's words are the ui package's own. */
+    static Object component(Object record, String name) throws ReflectiveOperationException {
+        java.lang.reflect.Method m = record.getClass().getDeclaredMethod(name);
+        m.setAccessible(true);
+        return m.invoke(record);
+    }
+
+    /** The screen's other-ore lines, by name: {name -> record}. */
+    static java.util.Map<String, Object> otherOres(Object screen) throws ReflectiveOperationException {
+        java.lang.reflect.Method m = screen.getClass().getDeclaredMethod("otherOres");
+        m.setAccessible(true);
+        java.util.Map<String, Object> out = new java.util.LinkedHashMap<>();
+        for (Object line : (java.util.List<?>) m.invoke(screen)) out.put((String) component(line, "name"), line);
+        return out;
+    }
+
+    static Object ironLine(Object screen) throws ReflectiveOperationException {
+        java.lang.reflect.Method m = screen.getClass().getDeclaredMethod("ore");
+        m.setAccessible(true);
+        return m.invoke(screen);
+    }
+
+    static void theOreCard() throws Exception {
+        System.out.println("\n--- 30. the Ore card covers every ore: each its deposits, tonnes and mines, and \"nothing is digging\" where a deposit has no mine (I13-L) ---");
+        // A city with coal (three thermal sites by fiat on a whole coking field) and iron (three sites by fiat), no mine of either.
+        Game g = CoalMiningCheck.coalTown("landcheck-orecard", 3);
+        LandManager land = g.getLandManager();
+        BuildingManager b = g.getBuildingManager();
+        quietly(() -> land.restoreSites(Resource.IRON, 3, 3 * Resource.IRON.amountPerSite()));
+        Object screen = landScreen(g);
+
+        java.util.List<OreView.Ore> rows = OreView.ores(g);
+        OreView.Ore iron = rows.get(0), coal = rows.stream().filter(o -> o.resource() == Resource.COAL).findFirst().orElse(null);
+        assertTrue("fixture: three iron sites and a coal field with no mine of either, and iron the first row",
+                iron.resource() == Resource.IRON && iron.deposits() == 3 && coal != null && coal.deposits() >= 3
+                && g.committedOn(Resource.IRON) == 0 && g.committedOn(Resource.COAL) == 0);
+        boolean figures = true;
+        for (OreView.Ore o : rows) {
+            figures &= o.deposits() == land.getSites(o.resource()) && o.tonnes() == land.getRemaining(o.resource())
+                    && o.mines() == g.committedOn(o.resource()) && o.undug() == (o.mines() < o.deposits());
+        }
+        assertTrue("every row's figures are the getters the sector pages read: sites, tonnes in the ground, sites the mines take", figures);
+        boolean listed = true;
+        for (OreView.Ore o : rows) listed &= o.resource() != Resource.OIL && o.resource() != Resource.FOREST && (o == iron || o.deposits() > 0);
+        assertTrue("...the oil (a line of its own) and the forest (not in fields) are not rows, and an ore past iron is a row only where a site is owned", listed);
+        assertTrue("...and each is dug by the industry that has it: iron by Mining, coal by Coal Mining, copper by Copper Mining, stone by Quarrying, uranium by none",
+                Sectors.MINING.equals(OreView.diggerOf(g, Resource.IRON)) && Sectors.COAL_MINING.equals(OreView.diggerOf(g, Resource.COAL))
+                && Sectors.COPPER_MINING.equals(OreView.diggerOf(g, Resource.COPPER)) && Sectors.QUARRYING.equals(OreView.diggerOf(g, Resource.STONE))
+                && OreView.diggerOf(g, Resource.URANIUM) == null);
+
+        // Neither dug: the card says so of each - iron's words as they were, coal's in its own.
+        Object ironCard = ironLine(screen);
+        Object coalCard = otherOres(screen).get("Coal");
+        assertTrue("nothing digging: iron's card says \"3 deposits\" and flags ore that nothing is digging, as it always did",
+                "3 deposits".equals(component(ironCard, "deposits")) && Boolean.TRUE.equals(component(ironCard, "undug")));
+        assertTrue("...and the card has a line for coal, flagged \"coal that nothing is digging\", Coal Mining the industry it goes to",
+                coalCard != null && Boolean.TRUE.equals(component(coalCard, "undug"))
+                && "coal that nothing is digging".equals(component(coalCard, "undugWords"))
+                && component(coalCard, "industry") == g.getSectors().byKey(Sectors.COAL_MINING));
+
+        // A coal mine on every coal site: coal is dug, and iron, with no mine, is still flagged.
+        quietly(() -> b.addStack(b.getTemplate(ham.citybuildersim.sectors.CoalMining.SURFACE_MINE), 1, true));
+        int taken = g.committedOn(Resource.COAL);
+        assertTrue("fixture: a surface coal mine stands on " + taken + " of the coal sites", taken >= 1 && taken < coal.deposits());
+        quietly(() -> land.restoreSites(Resource.COAL, taken, taken * Resource.COAL.amountPerSite()));
+        coal = OreView.ores(g).stream().filter(o -> o.resource() == Resource.COAL).findFirst().orElse(null);
+        coalCard = otherOres(screen).get("Coal");
+        assertTrue("with a mine on every coal deposit coal is not flagged, and the line still shows its mines",
+                coal != null && coal.deposits() == taken && coal.mines() == taken && !coal.undug()
+                && coalCard != null && Boolean.FALSE.equals(component(coalCard, "undug")));
+        assertTrue("...while iron, with still no mine, is flagged as before", OreView.ores(g).get(0).undug()
+                && Boolean.TRUE.equals(component(ironLine(screen), "undug")));
+
+        // An iron mine on every iron site: iron is dug too, and its words are the same ones.
+        quietly(() -> b.addStack(b.getTemplate(Mining.IRON_MINE), 1, true));
+        int ironTaken = g.committedOn(Resource.IRON);
+        assertTrue("fixture: an iron mine stands on " + ironTaken + " of the three iron sites", ironTaken >= 1 && ironTaken < 3);
+        quietly(() -> land.restoreSites(Resource.IRON, ironTaken, ironTaken * Resource.IRON.amountPerSite()));
+        ironCard = ironLine(screen);
+        assertTrue("with a mine on every iron deposit iron is not flagged, and its card reads as it always did",
+                !OreView.ores(g).get(0).undug() && Boolean.FALSE.equals(component(ironCard, "undug"))
+                && component(ironCard, "mines").equals(ironTaken + " under mines, standing or on site")
+                && component(ironCard, "deposits").equals(ironTaken + (ironTaken == 1 ? " deposit" : " deposits")));
+
+        // Uranium, which no industry digs: a line, with no industry to go to.
+        quietly(() -> land.restoreSites(Resource.URANIUM, 2, 2 * Resource.URANIUM.amountPerSite()));
+        Object uranium = otherOres(screen).get("Uranium");
+        assertTrue("an ore no industry digs has a line too, its words that none does and no industry to go to",
+                uranium != null && "no industry digs uranium yet".equals(component(uranium, "undugWords"))
+                && component(uranium, "industry") == null);
     }
 
     /** Whether two shelves hold the same offers, field for field, in the same order. */

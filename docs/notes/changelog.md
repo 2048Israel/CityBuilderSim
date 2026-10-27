@@ -18,6 +18,13 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.60 — I13-L, the landlords' card asks the mortgage lender, and the Ore card covers every ore — 2026-10-27, ready, see docs/queue/I13-L-notes.md
+Two notes I13 carried (Jerus, 2026-10-18). A landlord's home was not asked the INTEREST gate - the mortgage lender's test decides it - so its build card showed no last gate though the model has one.
+`Game.lenderTest()` is now the card's door to that test, the call the order makes (`lenderReads()`, shared with `considerOnMortgage()`); `BuildCard` has a LENDER gate for a landlord's home, in the lender's words (what it lends, the payment against the rent, the cover against what it asks, or the down payment it lacks), and the Real Estate page's grid a "lender" column.
+In a city with little landlord cash a House card now says why the lender would refuse it. The land office's Ore card was iron's alone: `OreView` gives a row for every ore the city owns a site of (iron always), and the card a block for coal, stone, copper and uranium with its deposits, tonnes, the sites its mines take,
+"nothing is digging" where a deposit has no mine, and a click to the industry that digs it; iron's words are as they were.
+`BuildCardCheck` 14 and `LandCheck` 30 new; the default playtest's trace is byte-identical (no ensemble).
+
 ### 0.8.59 — ZT1, one palette for zones — 2026-10-27, ready, see docs/queue/ZT1-notes.md
 Jerus's call (2026-10-18, "rec all"): a zone is one colour on the map and on Policy > Zoning. Zoning coloured a zone by its place in the list, eight colours cycled, so a sector's colour changed when an earlier zone came off and was never the map's.
 Now Zoning paints a zone in its sector's colour, the map's own (`LandMap.zoneColourHex`), and the old table is gone. Checked on Zoning's own ground (built grey, the land office's pink, the forest's three greens), two sector colours were lost against it:
