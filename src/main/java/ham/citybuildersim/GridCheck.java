@@ -51,7 +51,7 @@ public class GridCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        System.out.printf("%-66s %s%n", label, Timing.verdict(ok));
+        System.out.printf("%-66s %s%n", label, Timing.verdict(ok, label));
     }
 
     /** Fixtures of fills checked against a raster: 200 (spec-grid 3, M1). */

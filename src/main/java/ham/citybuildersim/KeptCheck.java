@@ -438,7 +438,8 @@ public class KeptCheck {
         });
         System.out.printf("  the chrome's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
         boolean ok = Timing.within(cost[0], KEPT_CHROME_MS);
-        System.out.printf("%-72s %s%n", "the kept chrome's month is within KEPT_CHROME_MS (" + KEPT_CHROME_MS + " ms)", Timing.verdict(ok));
+        String timed = "the kept chrome's month is within KEPT_CHROME_MS (" + KEPT_CHROME_MS + " ms)";
+        System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
         if (!ok) fails++;
     }
 
@@ -703,7 +704,8 @@ public class KeptCheck {
         });
         System.out.printf("  the whole chrome's month (its draws, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
         boolean ok = Timing.within(cost[0], KEPT_ALL_CHROME_MS);
-        System.out.printf("%-72s %s%n", "the whole kept chrome's month is within KEPT_ALL_CHROME_MS (" + KEPT_ALL_CHROME_MS + " ms)", Timing.verdict(ok));
+        String timed = "the whole kept chrome's month is within KEPT_ALL_CHROME_MS (" + KEPT_ALL_CHROME_MS + " ms)";
+        System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
         if (!ok) fails++;
     }
 
@@ -874,7 +876,8 @@ public class KeptCheck {
         });
         System.out.printf("  the page's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
         boolean ok = Timing.within(cost[0], KEPT_MONTH_MS);
-        System.out.printf("%-72s %s%n", "the kept month is within KEPT_MONTH_MS (" + KEPT_MONTH_MS + " ms)", Timing.verdict(ok));
+        String timed = "the kept month is within KEPT_MONTH_MS (" + KEPT_MONTH_MS + " ms)";
+        System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
         if (!ok) fails++;
 
         chrome(g, bench);

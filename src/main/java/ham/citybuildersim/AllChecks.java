@@ -322,7 +322,7 @@ public class AllChecks {
 
     /**
      * How a harness is started: the JVM and classpath this one was, the timing
-     * property if it is set here (a child JVM inherits no system property, only
+     * properties (the mode, and the file the figures go to, TM3) if they are set here (a child JVM inherits no system property, only
      * JDK_JAVA_OPTIONS), and when its output is kept (-q and -f) in UTF-8
      * whatever the machine's own charset is - on Windows a redirected
      * System.out is Cp1252, and the first non-ASCII label stopped the run
@@ -331,6 +331,7 @@ public class AllChecks {
     static List<String> command(String java, String classpath, String name, boolean logged) {
         List<String> c = new ArrayList<>(List.of(java));
         if (Timing.forwarded() != null) c.add(Timing.forwarded());
+        if (Timing.forwardedTsv() != null) c.add(Timing.forwardedTsv());   // TM3: the file the figures go to
         if (logged) c.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"));
         c.addAll(List.of("-cp", classpath, "ham.citybuildersim." + name));
         return c;

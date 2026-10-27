@@ -149,7 +149,7 @@ public class EarthCheck {
 
     static void report(String label, boolean ok, String detail) {
         if (!ok) fails++;
-        out.printf("%-96s %s  %s%n", label, Timing.verdict(ok), detail);
+        out.printf("%-96s %s  %s%n", label, Timing.verdict(ok, label), detail);
     }
 
     /** Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. */

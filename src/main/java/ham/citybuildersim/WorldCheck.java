@@ -83,7 +83,7 @@ public class WorldCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        System.out.printf("%-62s %s%n", label, Timing.verdict(ok));
+        System.out.printf("%-62s %s%n", label, Timing.verdict(ok, label));
     }
 
     /** The default world, and two more: 77, and 2026, whose search hands on to a second cell. */

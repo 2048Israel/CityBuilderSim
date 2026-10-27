@@ -239,7 +239,7 @@ public class EarthTerrainCheck {
 
     static void report(String label, boolean ok, String detail) {
         if (!ok) fails++;
-        out.printf("%-100s %s  %s%n", label, Timing.verdict(ok), detail);
+        out.printf("%-100s %s  %s%n", label, Timing.verdict(ok, label), detail);
     }
 
     /** The fixture's windows: name, latitude, longitude. */

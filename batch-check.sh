@@ -91,6 +91,14 @@
 #  --timing does the wait alone, before the compile, and exits with its status
 #  (0 quiet, 3 the cap): tools/quiet-selftest.sh.
 #  In Git Bash the classpath is joined with ';', as Java on Windows wants.
+#
+#  The figures (TM3, 2026-10-27): every suite run writes each timing assertion's
+#  measured figure and budget to target/checks/timing.tsv (Timing.TSV_PROPERTY; the
+#  columns are in Timing), the old file removed first. ship.sh reads it, never a
+#  label's prose, to judge a timing red side by side with main (tools/timing-pair.awk):
+#  it runs `./batch-check.sh --timing HARNESS...` in main's worktree and in the
+#  merge's tree in turn with CBS_TIMING_PAIRED=1, which skips the quiet minute (the
+#  rounds are meant to share one load, back to back) and changes nothing else.
 # ---------------------------------------------------------------------------
 
 ASKED_FROM=$(pwd)   # where the caller stood: a relative LOG of --judge is theirs, not the repository's
@@ -394,7 +402,11 @@ TIMED=""
 if [ "$TIMING" = 1 ]; then
     TIMED="-Dcbs.timing=hard"
     set -- --timing "$@"
-    quiet_minute
+    if [ -n "$CBS_TIMING_PAIRED" ]; then   # TM3: a round of ship.sh's paired timing, main's classes and the merge's in turn
+        echo "timing    a paired round: no quiet minute, main's and the merge's runs share the load"
+    else
+        quiet_minute
+    fi
     echo "timing    hard - the timing harnesses alone"
 elif [ "$FAST" = 0 ]; then
     TIMED="-Dcbs.timing=soft"   # always: only --timing, the gate's, judges timing (BP1, 2026-10-25)
@@ -414,7 +426,8 @@ fi
 if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ]; then
     touch "$OUT/.started"   # the logs this run writes are newer; an earlier run's are not read
     record_reds > "$OUT/known-reds.txt"   # AllChecks tags its red lines against it (FW7); UTF-8 so a non-ASCII label reads the same to Java and to awk
-    java $TIMED -Dcbs.knownReds="$OUT/known-reds.txt" -Dstdout.encoding=UTF-8 -cp "$CP" ham.citybuildersim.AllChecks -f "$@" 2>&1 | quiet | tr -d '\r' > "$SUITE"
+    rm -f "$OUT/timing.tsv"   # the figures of this run alone (TM3)
+    java $TIMED -Dcbs.timing.tsv="$OUT/timing.tsv" -Dcbs.knownReds="$OUT/known-reds.txt" -Dstdout.encoding=UTF-8 -cp "$CP" ham.citybuildersim.AllChecks -f "$@" 2>&1 | quiet | tr -d '\r' > "$SUITE"
     suite_verdict
     grep ' SOFT, not counted ' "$SUITE" | sed 's/^/timing    /'
     # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX

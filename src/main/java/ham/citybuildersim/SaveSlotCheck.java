@@ -635,7 +635,7 @@ public class SaveSlotCheck {
     /** A timing assertion's line: Timing.verdict says OK, FAIL, or SOFT with the figure and its budget. */
     static void assertTimed(String label, boolean ok) {
         if (!ok) fails++;
-        System.out.printf("%-58s %s%n", label, Timing.verdict(ok));
+        System.out.printf("%-58s %s%n", label, Timing.verdict(ok, label));
     }
 
     /** The slot name the autosave file carries, or null when there is no readable autosave. */

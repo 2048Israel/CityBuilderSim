@@ -323,7 +323,7 @@ public class ScaleCheck {
 
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-84s %s%n", label, Timing.verdict(ok));
+        out.printf("%-84s %s%n", label, Timing.verdict(ok, label));
     }
 
     static void same(String label, long actual, long expected) {
