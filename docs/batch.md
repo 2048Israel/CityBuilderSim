@@ -106,9 +106,11 @@ out as the batch's reds). **The suite runs three harnesses at once** (SP1,
 `AllChecks.PARALLEL`), each JVM under `-Xmx` `AllChecks.HEAP_MB`, the longest
 first, its output printed in `HARNESSES` order; a hard run (`--timing`, and the
 gate's paired rounds) goes one at a time, and so does a run with
-`-Dcbs.parallel=1` in `JDK_JAVA_OPTIONS`, for when memory is short. The cloud
-workbench, with two cores, still runs one JVM at a time under the shared lock
-(`batch-check.sh` takes it).
+`-Dcbs.parallel=1` in `JDK_JAVA_OPTIONS`, for when memory is short. Each JVM
+starts at `-Xms` `AllChecks.HEAP_START_MB`, and none starts while the commit
+charge is over `AllChecks.COMMIT_PCT` (80%), so a busy PC runs fewer at once;
+the last line says how many were held. The cloud workbench, with two cores,
+still runs one JVM at a time under the shared lock (`batch-check.sh` takes it).
 
 1. Read `docs/map/README.md`, then the map of each file the change
    touches; `docs/harnesses.md` (grep it) says what already checks the

@@ -316,7 +316,8 @@ if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ]; then
     touch "$OUT/.started"   # the logs this run writes are newer; an earlier run's are not read
     record_reds > "$OUT/known-reds.txt"   # AllChecks tags its red lines against it (FW7); UTF-8 so a non-ASCII label reads the same to Java and to awk
     rm -f "$OUT/timing.tsv"   # the figures of this run alone (TM3)
-    java $TIMED -Dcbs.timing.tsv="$OUT/timing.tsv" -Dcbs.knownReds="$OUT/known-reds.txt" -Dstdout.encoding=UTF-8 -cp "$CP" ham.citybuildersim.AllChecks -f "$@" 2>&1 | quiet | tr -d '\r' > "$SUITE"
+    # -Xms64m: the runner holds little; its default initial heap was 616 MB of commit (SP1)
+    java -Xms64m $TIMED -Dcbs.timing.tsv="$OUT/timing.tsv" -Dcbs.knownReds="$OUT/known-reds.txt" -Dstdout.encoding=UTF-8 -cp "$CP" ham.citybuildersim.AllChecks -f "$@" 2>&1 | quiet | tr -d '\r' > "$SUITE"
     suite_verdict
     grep ' SOFT, not counted ' "$SUITE" | sed 's/^/timing    /'
     # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX

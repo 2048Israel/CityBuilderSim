@@ -2,6 +2,7 @@ package ham.citybuildersim;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
@@ -75,7 +77,10 @@ import java.util.regex.Pattern;
  * JVM runs under HEAP_MB, and a soft, logged run starts PARALLEL at once, the
  * LONGEST_FIRST ones first; the output is still printed in HARNESSES order. A
  * hard run, --timing and plain mode (inherited output) go one at a time;
- * -Dcbs.parallel=N sets one run's number; never more than half the cores.
+ * -Dcbs.parallel=N sets one run's number; never more than half the cores. Each
+ * starts at HEAP_START_MB (the default 508 MB was committed at once: 616 MB for
+ * BooksCheck, 167 with 64), and none starts beside another while the commit
+ * charge is over COMMIT_PCT (75% to 85.6% for three at once, 2026-10-27).
  */
 public class AllChecks {
 
@@ -106,6 +111,12 @@ public class AllChecks {
 
     /** The most heap a harness JVM may take, its -Xmx (SP1): measured 2026-10-27 under a 4 GB ceiling, no harness committed more than 1.5 GB (SaveSlotCheck) or kept more than 0.6 GB after a collection (MapCheck), so 2 GB changes no harness's run and stops one taking the 8 GB a JVM was allowed. */
     static final int HEAP_MB = 2048;
+
+    /** The heap a harness JVM starts with, its -Xms (SP1): the JVM's default is a 64th of the RAM, 508 MB committed at once whether used or not (measured 2026-10-27: BooksCheck 616 MB of commit by default, 167 MB with 64). */
+    static final int HEAP_START_MB = 64;
+
+    /** No harness is started beside another of this run while the machine's commit charge is over this percent (SP1): three at once took the PC from 75% to 85.6% beside one other lane on 2026-10-27, and a suite died at the commit limit on 2026-10-21 (CreateProcess error 1450). */
+    static final int COMMIT_PCT = 80;
 
     /** The harnesses started first when more than one runs at once, the longest first (measured 2026-10-27, earth-2.bin named: MapCheck 192 s, GlobeCheck 72, LongPlaytest 55, EarthTerrainCheck 52, the rest 41 to 30), so the slowest is not the last to start. */
     static final List<String> LONGEST_FIRST = List.of("MapCheck", "GlobeCheck", "LongPlaytest", "EarthTerrainCheck", "BridgeMapCheck", "GatewayCheck", "MainLineCheck", "EducationCheck");
@@ -175,23 +186,31 @@ public class AllChecks {
         }
         int atOnce = parallel(logged, timingOnly);
         if (atOnce > 1) order.sort(Comparator.comparingInt(x -> LONGEST_FIRST.contains(x) ? LONGEST_FIRST.indexOf(x) : LONGEST_FIRST.size()));   // stable: the rest keep their order
-        Set<Process> live = ConcurrentHashMap.newKeySet();
+        Set<Process> live = ConcurrentHashMap.newKeySet();   // what runs, and the lock a start waits on for the commit charge to fall
+        AtomicInteger held = new AtomicInteger();   // starts that waited at least once
         Runtime.getRuntime().addShutdownHook(new Thread(() -> live.forEach(Process::destroyForcibly)));   // Ctrl+C takes the harnesses with it
         ExecutorService pool = Executors.newFixedThreadPool(atOnce, r -> { Thread th = new Thread(r); th.setDaemon(true); return th; });
         Map<String, Future<double[]>> runs = new HashMap<>();   // each: its exit code and its own seconds, from its start
         for (String name : order) {
             runs.put(name, pool.submit(() -> {
-                long t = System.currentTimeMillis();
                 ProcessBuilder pb = new ProcessBuilder(command(java, classpath, name, logged));
                 pb.redirectErrorStream(true);
                 if (logged) pb.redirectOutput(LOGS.resolve(name + ".log").toFile());
                 else pb.inheritIO();
-                Process p = pb.start();
-                live.add(p);
+                Process p;
+                long t;
+                synchronized (live) {   // look and start under one lock, so two starts never pass on one reading; a run with nothing running always starts
+                    boolean waited = false;
+                    while (!live.isEmpty() && commitPct() > COMMIT_PCT) { waited = true; live.wait(2000); }
+                    if (waited) held.incrementAndGet();
+                    p = pb.start();
+                    t = System.currentTimeMillis();
+                    live.add(p);
+                }
                 try {
                     return new double[] {p.waitFor(), (System.currentTimeMillis() - t) / 1000.0};
                 } finally {
-                    live.remove(p);
+                    synchronized (live) { live.remove(p); live.notifyAll(); }
                 }
             }));
         }
@@ -233,6 +252,7 @@ public class AllChecks {
         pool.shutdown();
         System.out.println();
         System.out.println(summaryLine(ran, failed, (System.currentTimeMillis() - started) / 1000.0));
+        if (held.get() > 0) System.out.printf("memory: %d start(s) held until the commit charge fell under %d%% (AllChecks.COMMIT_PCT)%n", held.get(), COMMIT_PCT);
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
                 soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
         if (logged && failed > 0) {
@@ -257,6 +277,17 @@ public class AllChecks {
         } catch (NumberFormatException e) {   // not a number: PARALLEL
         }
         return Math.max(1, Math.min(n, Runtime.getRuntime().availableProcessors() / 2));
+    }
+
+    /**
+     * The machine's commit charge in percent (SP1): on Windows the commit limit
+     * and what is left of it, as Task Manager shows it; elsewhere swap, which
+     * only a starved machine fills. 0 when there is no figure.
+     */
+    static double commitPct() {
+        if (!(ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os)) return 0;
+        long total = os.getTotalSwapSpaceSize();
+        return total <= 0 ? 0 : 100.0 * (total - os.getFreeSwapSpaceSize()) / total;
     }
 
     /** The first line of a harness's entry: its name, its verdict as a number or OK, and how long it took. */
@@ -389,7 +420,7 @@ public class AllChecks {
 
     /**
      * How a harness is started: the JVM and classpath this one was, under -Xmx
-     * HEAP_MB (SP1), the timing
+     * HEAP_MB and -Xms HEAP_START_MB (SP1), the timing
      * properties (the mode, and the file the figures go to, TM3) if they are set here (a child JVM inherits no system property, only
      * JDK_JAVA_OPTIONS), and when its output is kept (-q and -f) in UTF-8
      * whatever the machine's own charset is - on Windows a redirected
@@ -397,7 +428,7 @@ public class AllChecks {
      * (2026-10-13, MapCheck on the PC).
      */
     static List<String> command(String java, String classpath, String name, boolean logged) {
-        List<String> c = new ArrayList<>(List.of(java, "-Xmx" + HEAP_MB + "m"));
+        List<String> c = new ArrayList<>(List.of(java, "-Xmx" + HEAP_MB + "m", "-Xms" + HEAP_START_MB + "m"));
         if (Timing.forwarded() != null) c.add(Timing.forwarded());
         if (Timing.forwardedTsv() != null) c.add(Timing.forwardedTsv());   // TM3: the file the figures go to
         if (logged) c.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"));
