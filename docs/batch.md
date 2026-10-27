@@ -205,7 +205,7 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
 4. Then `./ship.sh batch/<id>` does the rest:
 
    ```
-   ./ship.sh [--dry-run] [--no-tag] [--version X.Y.Z] [--red-ok "his words"] <branch> [-m title] [-F body] [-- harness names]
+   ./ship.sh [--dry-run] [--no-tag] [--version X.Y.Z] [--red-ok "his words" --red-line "<part of a line>" ...] <branch> [-m title] [-F body] [-- harness names]
    ```
 
    - `main` checked out, clean and current with origin, and its
@@ -229,10 +229,23 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
      fetches.
 5. **Reds** (the calls below, 4). Main's recorded reds pass, word for word,
    and the body says `Gate: known red only: <harnesses>`. A NEW red
-   line ships only with `--red-ok "his words"`, his words in the body, even
-   in a timing harness: the timing step does not judge it again. His words
-   reach the timing step as well (TM3, below): a timing red that is over
-   the margin passes on them, and the lines it passed are named in the body.
+   line ships only with `--red-ok "his words"` and a `--red-line` for each
+   line he approved, his words and the lines in the body. **His words pass
+   the lines they name and no others** (TM3, the review, 2026-10-27): the
+   lines are known before his word, because he is asked after a stop with
+   that stop's lines in hand, and a broad `--red-ok` once let a different
+   flaky line go red in the rerun and pass under words given for another
+   (CC1-S's gate). So `--red-ok` without a `--red-line` is refused at the
+   start (exit 2, the usage); a red line passes only if it contains one of
+   the `--red-line` parts, as written (a fixed string, the option repeated
+   for more lines); a harness's own `exit N` and `N FAILED` lines pass with
+   a named line of it, when no other line of that harness is left unnamed;
+   any other red stops the ship as before, with its lines marked `NOT
+   NAMED`. Both steps read it, the suite's and the timing step's (below).
+   **Use:** after a stop, show Jerus the stop's red lines; for each he
+   approves, copy a distinctive part of the line into `--red-line`, e.g.
+   `./ship.sh --red-ok "ship it" --red-line "a month's FX-side map work at
+   5B" --red-line "EarthTerrainCheck | exit 1" batch/X`, and run again.
    Any other
    red goes back to the batch as its failing lines (`target/checks/reds.txt`
    in the gate's clone), and its ship file comes off first (A batch
@@ -255,10 +268,11 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
    as a `#` line, so it never becomes a recorded red. A red that is over the
    margin, one with nothing to compare (main has no such assertion, a round
    did not run) and one that is no clock's (a failure behind no missed
-   figure) is the batch's and stops - unless `--red-ok "his words"`, which
-   passes those lines too, said in `Gate-timing:` with his words and the
-   lines, and in `gate.txt` as `#` lines. `--red-ok` passes only the red
-   lines in front of it; it names them and records none. Wall-clock
+   figure) is the batch's and stops - unless `--red-ok "his words"` and a
+   `--red-line` name it (step 5: the lines he approved, no others), said in
+   `Gate-timing:` with his words and the lines, and in `gate.txt` as `#`
+   lines. A timing red that is not named stops even with `--red-ok`, and a
+   named line records nothing. Wall-clock
    comparisons that are not a budget (MapCheck's "the view adds nothing a
    tile" compared two measured times) are `Timing` assertions too
    (TimingCheck 6 holds it): soft in the suite, judged here.
@@ -430,8 +444,9 @@ rule on Pending.
 3. No more paragraphs in `GameVersion`'s javadoc: the changelog is the one
    record. Recommended.
 4. Main's recorded reds pass the gate by default, word for word, and a new
-   red only with `--red-ok` and his words. Recommended: his own by-hand
-   rule, made mechanical.
+   red only with `--red-ok`, his words and a `--red-line` naming it (TM3's
+   review: his words pass the lines he approved, no others). Recommended: his
+   own by-hand rule, made mechanical.
 5. A timing red that main shows too passes and is named in the merge's body
    (lesson d). Since TM3 "shows too" is read side by side: the red harness
    is timed again with main's classes and the merge's in turn, and the red

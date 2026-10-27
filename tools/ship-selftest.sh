@@ -260,8 +260,24 @@ ok sh -c "[ $RC = 0 ] && grep -q -F 'generated docs in conflict' $TA/out.txt && 
 LABEL="TS2: both blocks, newest on top"; ok sh -c "grep -n '^### $V2 \\|^### $V1 ' $TA/main/docs/notes/changelog.md | head -2 | tr -d '\\n' | grep -q '### $V2.*### $V1'"
 LABEL="TS2: Pending rows newest first"; ok sh -c "grep -n '^| TS2-C \\|^| TST-C ' $TA/main/QUEUE.md | head -2 | tr -d '\\n' | grep -q 'TS2-C.*TST-C'"
 LABEL="a real (non-generated) conflict stops and names the file"; run --dry-run batch/CQ; ok sh -c "[ $RC = 1 ] && grep -q -F \"conflicts with main in: src/main/java/ham/citybuildersim/SimulationEngine.java\" $TA/out.txt"; LABEL="...and the tree is clean"; ok clean
-LABEL="red: exit 4 stops without --red-ok";     STUB_EXIT=4 STUB_REDS='MapCheck | exit 1' run --dry-run batch/RED;  ok sh -c "[ $RC = 1 ] && grep -q -F 'red-ok' $TA/out.txt"
-LABEL="red: exit 4 passes with --red-ok";       STUB_EXIT=4 STUB_REDS='MapCheck | exit 1' run --dry-run --red-ok "his words" batch/RED;  ok sh -c "[ $RC = 0 ] && grep -q -F \"gate: NEW red on Jerus's word: his words\" $TA/out.txt"
+NR='ZzCheck | exit 1;ZzCheck | a new thing     FAIL;ZzCheck | 1 FAILED'   # a harness with one red line main's record does not have
+LABEL="red: exit 4 stops without --red-ok";     STUB_EXIT=4 STUB_REDS="$NR" run --dry-run batch/RED;  ok sh -c "[ $RC = 1 ] && grep -q -F 'red-ok' $TA/out.txt && grep -q -F 'red-line' $TA/out.txt"
+LABEL="red: --red-ok without a --red-line is refused at the start (exit 2, the usage)"; run --dry-run --red-ok "his words" batch/RED
+ok sh -c "[ $RC = 2 ] && grep -q -F -- '--red-ok needs at least one --red-line' $TA/out.txt && grep -q -F 'usage: ship.sh' $TA/out.txt"
+LABEL="red: --red-line without --red-ok is refused (exit 2)"; run --dry-run --red-line "a new thing" batch/RED;  ok sh -c "[ $RC = 2 ] && grep -q -F -- '--red-line is for --red-ok' $TA/out.txt"
+LABEL="red: an empty --red-line is refused (exit 2)"; run --dry-run --red-ok "his words" --red-line "" batch/RED;  ok rc_is 2
+LABEL="red: exit 4 passes with --red-ok naming the line, the harness's own count with it, the line in the gate"; STUB_EXIT=4 STUB_REDS="$NR" run --dry-run --red-ok "his words" --red-line "a new thing" batch/RED
+ok sh -c "[ $RC = 0 ] && grep -q -F \"gate: NEW red on Jerus's word: his words (lines: ZzCheck | exit 1; ZzCheck | a new thing     FAIL; ZzCheck | 1 FAILED)\" $TA/out.txt"
+LABEL="red: ...a second red line he did not name still stops, and is named"
+STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | a new thing     FAIL;ZzCheck | another flaky one     FAIL;ZzCheck | 2 FAILED' run --dry-run --red-ok "his words" --red-line "a new thing" batch/RED
+ok sh -c "[ $RC = 1 ] && grep -q -F 'NOT NAMED: ZzCheck | another flaky one' $TA/out.txt && grep -q -F 'no --red-line names' $TA/out.txt"
+LABEL="red: ...and the tree is clean";          ok clean
+LABEL="red: a crash in another harness is not passed by words naming a line of this one"
+STUB_EXIT=4 STUB_REDS='ZzCheck | a new thing     FAIL;YyCheck | exit -1073741819' run --dry-run --red-ok "his words" --red-line "a new thing" batch/RED
+ok sh -c "[ $RC = 1 ] && grep -q -F 'NOT NAMED: YyCheck | exit -1073741819' $TA/out.txt"
+LABEL="red: ...unless a --red-line names it (repeatable, whole or in part)"
+STUB_EXIT=4 STUB_REDS='ZzCheck | a new thing     FAIL;YyCheck | exit -1073741819' run --dry-run --red-ok "his words" --red-line "a new thing" --red-line "YyCheck | exit -10" batch/RED
+ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: NEW red on Jerus' $TA/out.txt"
 LABEL="red: exit 3 passes";                     STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' run --dry-run batch/RED;  ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt"
 LABEL="red: exit 1 stops";                      STUB_EXIT=1 run --dry-run batch/RED; ok rc_is 1
 
@@ -294,23 +310,30 @@ LABEL="timing: CBS_TIMING_MARGIN moves the margin, the same 30% passes at 40%"
 CBS_TIMING_MARGIN=40 STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'margin 40%' $TA/out.txt"
 LABEL="timing: --red-ok reaches the timing step: the 30% red ships on his word, the lines and medians named"
-STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" batch/RED
+STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" --red-line "the plan is within PLAN_MS" batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F \"passed on Jerus's word: his words: PlanCheck [over main's by more than 15%: main 41 ms, batch 53 ms (+29.3%)\" $TA/out.txt"
+LABEL="timing: his words naming another line leave the 30% timing red stopped, named"
+STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" --red-line "something else entirely" batch/RED
+ok sh -c "[ $RC = 1 ] && grep -q -F 'NOT NAMED: PlanCheck | the plan is within PLAN_MS' $TA/out.txt && grep -q -F 'no --red-line names' $TA/out.txt"
+LABEL="timing: ...and the tree is clean";       ok clean
+LABEL="timing: his words naming a suite line do not pass a timing red of another harness"
+STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | a new thing     FAIL;ZzCheck | 1 FAILED' STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" --red-line "a new thing" batch/RED
+ok sh -c "[ $RC = 1 ] && grep -q -F 'NOT NAMED: PlanCheck | the plan is within PLAN_MS' $TA/out.txt"
 LABEL="timing: a paired round that did not run leaves nothing to compare, and the red stops"
 STUB_PEXIT=1 STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="40 41 42" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 1 ] && grep -q -F 'no pair to compare' $TA/out.txt"
 LABEL="timing: a red that is no clock's (no figure behind it) stops at once, with no paired round"; : > "$STUB_LOG"
 STUB_TEXIT=4 STUB_TREDS='TimingCheck | exit 1;TimingCheck | took 123 ms' run --dry-run batch/RED
 ok sh -c "[ $RC = 1 ] && grep -q -F 'not a timing red' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
-LABEL="timing: --red-ok passes that too, named";  STUB_TEXIT=4 STUB_TREDS='TimingCheck | exit 1;TimingCheck | took 123 ms' run --dry-run --red-ok "his words" batch/RED
+LABEL="timing: --red-ok passes that too when a --red-line names it";  STUB_TEXIT=4 STUB_TREDS='TimingCheck | exit 1;TimingCheck | took 123 ms' run --dry-run --red-ok "his words" --red-line "took 123 ms" batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F \"passed on Jerus's word: his words: TimingCheck [not a timing red\" $TA/out.txt"
 LABEL="timing: main's worktree removed on every path"; ok sh -c "[ ! -d $TA/main/target/main-timing ] && [ \$(git -C $TA/main worktree list | wc -l) = 1 ]"
 R2='PlanCheck | exit 1;PlanCheck | FAIL: a new thing'
 LABEL="timing: --red-ok for a red in a timing harness ships, no paired round (the suite step judged it)"; : > "$STUB_LOG"
-STUB_EXIT=4 STUB_REDS="$R2" STUB_TEXIT=4 STUB_TREDS="$R2" run --dry-run --red-ok "his words" batch/RED
+STUB_EXIT=4 STUB_REDS="$R2" STUB_TEXIT=4 STUB_TREDS="$R2" run --dry-run --red-ok "his words" --red-line "a new thing" batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F \"gate: NEW red on Jerus's word: his words\" $TA/out.txt && ! grep -q 'side by side' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
 LABEL="timing: that red and a timing miss of its own: the miss is judged on its own, and his words reach it"
-STUB_EXIT=4 STUB_REDS="$R2" STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" batch/RED
+STUB_EXIT=4 STUB_REDS="$R2" STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" --red-line "a new thing" --red-line "the plan is within PLAN_MS" batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'timing    red on the merge, judged side by side' $TA/out.txt"
 LABEL="timing: exit 3 is no shortcut, an unjudged line is judged (no clock behind it: stops)"
 STUB_TEXIT=3 STUB_TREDS='TimingCheck | took 123 ms' run --dry-run batch/RED

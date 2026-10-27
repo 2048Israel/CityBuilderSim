@@ -10,9 +10,12 @@
 #      ./ship.sh --dry-run batch/I12            the gate alone: nothing committed or pushed
 #      ./ship.sh --no-tag some/branch           a merge that is not a version's (tools, records): no tag
 #      ./ship.sh --version 0.9.0 batch/I12      the version {next} takes, instead of the last tag's patch + 1
-#      ./ship.sh --red-ok "his words" batch/I12 ships past a red line main's record does not name, and past a timing
-#                                               red that is over main's by more than the margin (his word only; the
-#                                               merge's body names the lines it passed)
+#      ./ship.sh --red-ok "his words" --red-line "<part of a red line>" ... batch/I12
+#                                               ships past the red lines he approved and no others: a line main's
+#                                               record does not name, or a timing red over main's by more than the
+#                                               margin, passes only if it contains one of the --red-line parts
+#                                               (as written; repeat the option; --red-ok without one is refused).
+#                                               The merge's body carries his words and the lines passed
 #      ./ship.sh --dry-run batch/I12 -- money bank   the suite only the harnesses named (to try the script)
 #
 #  Run it in the clone where main is checked out, with nothing uncommitted.
@@ -60,7 +63,9 @@
 #    9. the checks: batch-check.sh on the merge (compile, suite, maps, Stale,
 #       line endings), the suite timed soft so that timing is judged once;
 #       exit 0 and 3 (red only as main's record has it) pass, 4 (a new red
-#       line) passes only with --red-ok, 1 and 2 stop. On a chatgpt/ or gemini/
+#       line) passes only with --red-ok and a --red-line that names each of the
+#       new lines (a harness's own "exit N" and "N FAILED" lines pass with a line of
+#       its that does, when no other line of it is left unnamed), 1 and 2 stop. On a chatgpt/ or gemini/
 #       branch tools.Names too: said, never a gate. Then the timing harnesses
 #       alone and hard (batch-check.sh --timing), after a quiet minute with no
 #       other batch's JVM (TM2); its exit is 0, 3 or 4 alike, and the record
@@ -76,8 +81,8 @@
 #       passes, named with the paired medians, unless the batch's median is more
 #       than the margin (15%, tools/timing-pair.awk) over main's. A red that is
 #       no timing red, one over the margin and one with no pair to compare is the
-#       batch's and stops - unless --red-ok, whose words then pass those lines too,
-#       named in the body; no red passed so is ever a recorded one;
+#       batch's and stops - unless --red-ok and a --red-line name it (the same rule as
+#       the suite's), said in the body; no timing red passed so is ever a recorded one;
 #       A merge that changes only .md files outside docs/ensemble/ runs
 #       batch-check.sh --fast alone;
 #   10. docs/notes/gate.txt written (every gate that ran the suite) and added:
@@ -135,8 +140,11 @@
 #  main's own run of it read 75.5 earlier that day), and two shipped only through a
 #  copy of this script changed by hand at that one stop. Now a timing red is timed
 #  again with main and the merge in turn, in the same minutes, and counts only if the
-#  merge is the slower by more than a margin; and --red-ok reaches that stop, naming
-#  the lines. And the script runs from a copy of itself: a batch that changes ship.sh
+#  merge is the slower by more than a margin; and --red-ok reaches that stop. And
+#  (the review of TM3, the orchestrator) his words pass only the lines he named, in the
+#  suite step and the timing step alike: he is asked after a stop, with that stop's
+#  lines in hand, and a broad --red-ok let a different flaky line go red in the rerun
+#  and pass under words given for another (CC1-S's gate). The script runs from a copy of itself: a batch that changes ship.sh
 #  (TM3 did) rewrote it under the shell that was reading it at the merge.
 # ---------------------------------------------------------------------------
 
@@ -152,14 +160,17 @@ if [ -z "$CBS_SHIP_COPY" ]; then
 fi
 cd "${CBS_SHIP_HOME:-$(dirname "$0")}" || exit 1
 
-USAGE='usage: ship.sh [--dry-run] [--no-tag] [--version X.Y.Z] [--red-ok "his words"] <branch> [-m title] [-F body] [-- harness names]'
-DRY=0; NOTAG=0; BRANCH=""; TITLE=""; BODY=""; OVERRIDE=""; REDOK=""
+USAGE='usage: ship.sh [--dry-run] [--no-tag] [--version X.Y.Z] [--red-ok "his words" --red-line "<part of a red line>" ...] <branch> [-m title] [-F body] [-- harness names]'
+DRY=0; NOTAG=0; BRANCH=""; TITLE=""; BODY=""; OVERRIDE=""; REDOK=""; REDLINES=""
+NL='
+'
 while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run) DRY=1 ;;
         --no-tag) NOTAG=1 ;;
         --version) [ $# -ge 2 ] || { echo "$USAGE"; exit 2; }; shift; OVERRIDE="$1" ;;
         --red-ok) [ $# -ge 2 ] && [ -n "$2" ] || { echo "$USAGE"; exit 2; }; shift; REDOK="$1" ;;
+        --red-line) [ $# -ge 2 ] && [ -n "$2" ] || { echo "$USAGE"; exit 2; }; shift; REDLINES="${REDLINES:+$REDLINES$NL}$1" ;;
         -m) [ $# -ge 2 ] || { echo "$USAGE"; exit 2; }; shift; TITLE="$1" ;;
         -F) [ $# -ge 2 ] || { echo "$USAGE"; exit 2; }; shift; BODY="$1"; [ -f "$BODY" ] || { echo "ship      no file $BODY"; exit 2; } ;;
         --) shift; break ;;
@@ -169,6 +180,9 @@ while [ $# -gt 0 ]; do
     shift
 done
 [ -n "$BRANCH" ] || { echo "$USAGE"; exit 2; }
+# TM3 review: his words pass only the lines they name (the lines are known before his word: he is asked after a stop, with that stop's lines in hand)
+[ -z "$REDOK" ] || [ -n "$REDLINES" ] || { echo "ship      --red-ok needs at least one --red-line \"<part of a red line>\": his words pass only the lines named"; echo "$USAGE"; exit 2; }
+[ -z "$REDLINES" ] || [ -n "$REDOK" ] || { echo "ship      --red-line is for --red-ok: his words, then the lines they pass"; echo "$USAGE"; exit 2; }
 
 GV=src/main/java/ham/citybuildersim/GameVersion.java
 GENERATED="docs/map docs/dials.md docs/month-order.md docs/harnesses.md"
@@ -214,6 +228,7 @@ trap 'exit 130' INT TERM HUP
 [ "$(git rev-parse --abbrev-ref HEAD)" = main ] || die "main is not checked out here"
 [ -z "$(git status --porcelain)" ] || die "the tree has uncommitted changes"
 rm -rf "$T"; mkdir -p "$T"
+printf '%s\n' "$REDLINES" | grep . > "$T/redlines" || : > "$T/redlines"   # the parts of red lines his words pass, one a line
 
 # 1. main up to date, the tags fetched
 retry git fetch -q origin main || die "cannot fetch origin main"
@@ -442,6 +457,26 @@ run_check() {   # the command given, its output on the screen and in $T/check.ou
     CHECKED=$(cat "$T/code")
 }
 heads() { sed 's/ |.*//' "$1" | sort -u | tr '\n' ' ' | sed 's/ *$//'; }   # the harness of each red line of a file
+# unnamed LINES CONTEXT: the red lines ("Harness | text") of file LINES that no --red-line passes, in order (TM3 review). A line
+# passes when it contains one of the --red-line parts, as written. A harness's own count ("H | exit N", "H | N FAILED") passes
+# too when H has a line that passes - in LINES, or among the lines of file CONTEXT, which are passed already - and no other
+# line of H that does not: his words pass the lines he named and what only follows from them, never another red.
+unnamed() {
+    awk -v pf="$T/redlines" '
+    BEGIN { while ((getline l < pf) > 0) if (l != "") p[++np] = l }
+    function agg(s) { return s ~ /^[^ ]+ \| (exit -?[0-9]+|[0-9]+ FAILED)$/ }
+    function head(s) { return substr(s, 1, index(s, " | ") - 1) }
+    function named(s,   i) { for (i = 1; i <= np; i++) if (index(s, p[i])) return 1; return 0 }
+    FILENAME == ARGV[1] { if (!agg($0)) okc[head($0)]++; next }
+    { n++; line[n] = $0
+      if (named($0)) { pass[n] = 1; if (!agg($0)) okc[head($0)]++ }
+      else if (!agg($0)) bad[head($0)] = 1 }
+    END { for (i = 1; i <= n; i++) {
+              if (pass[i]) continue
+              if (agg(line[i]) && okc[head(line[i])] > 0 && !(head(line[i]) in bad)) continue
+              print line[i] } }' "$2" "$1"
+}
+shortlines() { awk '{ printf "%s%s", sep, substr($0, 1, 150); sep = "; " }' "$1"; }   # the lines of a file in one, each cut at 150
 without() {   # the lines of file $1 that are in none of the files after it, whole lines as written; an empty file takes nothing out
     cp "$1" "$T/without.cur"; shift
     for f in "$@"; do
@@ -479,8 +514,16 @@ else
     case "$CHECKED" in
         0) GATE="green" ;;
         3) GATE="known red only: $(heads "$T/suite-reds.txt")" ;;
-        4) if [ -n "$REDOK" ]; then GATE="NEW red on Jerus's word: $REDOK"
-           else die "NEW red line(s) on the merge, the known reds aside (above); main is where it was. On his word only: --red-ok \"his words\""; fi ;;
+        4) if [ -n "$REDOK" ]; then
+               without "$T/suite-reds.txt" "$T/recorded" > "$T/suite-new"   # the lines batch-check.sh judged NEW, as ship.sh reads the record
+               [ -s "$T/suite-new" ] || die "the suite exited 4 (a NEW red line), but main's record has every red line it printed: the two records disagree; main is where it was"
+               unnamed "$T/suite-new" /dev/null > "$T/suite-unnamed"
+               if [ -s "$T/suite-unnamed" ]; then
+                   sed 's/^/    NOT NAMED: /' "$T/suite-unnamed" | cut -c1-260 | head -12
+                   die "NEW red line(s) that no --red-line names (above); main is where it was. His words pass the lines named, never more: --red-line \"<part of the line>\""
+               fi
+               GATE="NEW red on Jerus's word: $REDOK (lines: $(shortlines "$T/suite-new"))"
+           else die "NEW red line(s) on the merge, the known reds aside (above); main is where it was. On his word only: --red-ok \"his words\" --red-line \"<part of each line he passes>\""; fi ;;
         *) die "the checks failed on the merge (above, exit $CHECKED); main is where it was" ;;
     esac
     say "gate: $GATE"
@@ -548,7 +591,14 @@ else
         TIMINGLINE="timing    red on the merge, judged side by side with main (${ROUNDS:-3} rounds in turn, medians, margin $MARGIN%)"
         if [ -s "$T/offenders" ]; then
             if [ -z "$REDOK" ]; then
-                die "the timing red(s) above are the batch's (over main's by more than $MARGIN%, or no timing red, or nothing to compare); main is where it was. On his word only: --red-ok \"his words\""
+                die "the timing red(s) above are the batch's (over main's by more than $MARGIN%, or no timing red, or nothing to compare); main is where it was. On his word only: --red-ok \"his words\" --red-line \"<part of each line he passes>\""
+            fi
+            awk -F'\t' '$1 == "FAIL" { print $2 }' target/checks/pair-judged.txt > "$T/off-raw"
+            awk -F'\t' '$1 == "PASS" { print $2 }' target/checks/pair-judged.txt > "$T/acc-raw"
+            unnamed "$T/off-raw" "$T/acc-raw" > "$T/off-left"   # (TM3 review) his words pass the lines they name, never another
+            if [ -s "$T/off-left" ]; then
+                sed 's/^/    NOT NAMED: /' "$T/off-left" | cut -c1-260 | head -12
+                die "timing red(s) that no --red-line names (above); main is where it was. His words pass the lines named, never more: --red-line \"<part of the line>\""
             fi
             TIMINGLINE="$TIMINGLINE, passed on Jerus's word: $REDOK: $(cat "$T/fail-notes")"
             [ ! -s "$T/pass-notes" ] || TIMINGLINE="$TIMINGLINE; within the margin: $(cat "$T/pass-notes")"
@@ -571,6 +621,7 @@ else
         echo "# timing: ${TSUMMARY:-none}${TIMINGLINE:+; its red lines were judged side by side with main's, below}"
         sed "s/^/# timing red within $MARGIN% of main's (paired): /" "$T/accepted"
         if [ -s "$T/offenders" ]; then sed "s/^/# timing red passed on Jerus's word, over main's by more than $MARGIN% or not a timing red ($REDOK): /" "$T/offenders"; fi
+        if [ -s "$T/suite-new" ]; then sed "s/^/# suite red passed on Jerus's word ($REDOK): /" "$T/suite-new"; fi
         cat "$T/suite-reds.txt"
         [ "$EARTH" = named ] || grep -E '^(Earth|Globe)[A-Za-z0-9]* \|' "$T/recorded"   # lines this gate could not see are kept
     } | awk '/^#/ || (NF && !seen[$0]++)' > docs/notes/gate.txt

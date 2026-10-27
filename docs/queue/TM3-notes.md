@@ -49,11 +49,21 @@ and was written to `gate.txt` as a recorded red.
   figure behind it (not a clock's). A harness's own `exit N` / `N FAILED` lines
   pass only with a timing red of that harness that passes and nothing else red
   in it.
-- **`--red-ok` reaches the timing step** (brief 5). With `--red-ok "his
-  words"` the lines the judge stops on pass: `Gate-timing:` says `passed on
-  Jerus's word: <words>: <harness [figures or why]>` for each and `gate.txt`
-  carries them as `#` lines. Nothing passes without it, and it passes the lines
-  in front of it, naming them, never a recorded one.
+- **`--red-ok` reaches the timing step, and passes only the lines it names**
+  (brief 5 and 6; the review of 2026-10-27). `--red-ok "his words"` needs at
+  least one `--red-line "<part of a line>"` (repeatable; refused at the start,
+  exit 2, with the usage, as is a `--red-line` without `--red-ok`). In the suite
+  step and in the timing step alike a red line passes only if it contains one of
+  the parts, as written; a harness's own `exit N` and `N FAILED` lines pass with a
+  named line of it when no other line of that harness is left unnamed. Any other
+  red stops the ship as before, its lines marked `NOT NAMED`. `Gate:`,
+  `Gate-timing:` and `gate.txt`'s `#` lines carry his words and the lines passed
+  (`# suite red passed on Jerus's word (...)`, `# timing red passed on Jerus's
+  word ...`); nothing passes without `--red-ok`, and a timing red passed is never
+  a recorded one. Why: the orchestrator asks Jerus after a stop, with that stop's
+  lines in hand, so the lines are known before his word, and a broad `--red-ok`
+  let a different flaky line go red in the rerun and pass under words given for
+  another (CC1-S's gate). `docs/batch.md` step 5 shows the use.
 - **Wall-clock comparisons are timing** (brief 6). The search (every assertion
   line of every harness that reads a clock, and the assertion labels that say
   faster, slower or cheaper) found one: MapCheck's "...and no more than section
@@ -85,19 +95,25 @@ and was written to `gate.txt` as a recorded red.
 
 ## 3. The checks
 
-`sh tools/ship-selftest.sh`: **94 of 94**, no JVM. Its timing cases are rewritten
+`sh tools/ship-selftest.sh`: **104 of 104**, no JVM. Its timing cases are rewritten
 with stub figures: a red where the batch is as fast as main passes, named with
 the medians, in three turns (`main-timing main main-timing main ...`, six
 paired runs, no quiet minute); a batch 10% slower passes; 30% slower stops with
 the medians (41 against 53, +29.3%); one slow round in three is not the
-median; the margin moves with `CBS_TIMING_MARGIN`; `--red-ok` passes the 30%
-red and a red that is no clock's, each named; a paired round that did not run
+median; the margin moves with `CBS_TIMING_MARGIN`; `--red-ok` with a `--red-line`
+that names it passes the 30% red and a red that is no clock's; `--red-ok` without
+a `--red-line` is refused (exit 2), as is `--red-line` alone and an empty one; a
+named suite red passes with its harness's `exit N` / `N FAILED`, a second red line
+not named still stops and is marked `NOT NAMED`, a crash in another harness is not
+passed by words naming this harness's line (unless a part of it is named), words
+naming one timing line leave another timing red stopped, and words naming a suite
+line do not pass a timing red of another harness; a paired round that did not run
 leaves nothing to compare and stops; a red with no figure behind it stops with
 no paired round; the suite's red is recorded and the timing reds are `#` lines
 only, in a real ship; the worktree of main is gone on every path. The new
 `ship.sh` case rewrites `ship.sh` in place under the running gate and asserts
 the checks ran from the copy; with the copy switched off
-(`CBS_SHIP_COPY=nocopy`) that one case fails and the other 93 pass, so it
+(`CBS_SHIP_COPY=nocopy`) that one case fails and the others pass, so it
 proves the guard. (Git unlinks a file and writes a new one, so a merge alone
 does not corrupt a shell here; the in-place rewrite is what the case causes.)
 
@@ -141,11 +157,10 @@ is as it was), and a real ship.
   harness that only the hard run shows, and not the soft suite step, is rare
   and costs a rerun; the new step does not run main's whole timing for it.
   Recommended, built.
-- ★3 **`--red-ok` names no lines in advance.** Jerus's words ("Ship it") name
-  none, so the gate cannot match them to lines; it passes what stops it at that
-  step and writes the lines and figures into `Gate-timing:` and `gate.txt`'s `#`
-  lines. A stricter rule (words that must name the harness) can come when he
-  asks. Recommended, built.
+- ★3 **Overturned by the review, built his way:** `--red-ok` passes only the lines
+  named by `--red-line` (the first draft passed whatever stopped at the step,
+  since his words name no lines; the lines are known before his word, so they can
+  be named). See the `--red-ok` bullet in section 2.
 - ★4 **A figure compared with a measured budget** (`Timing.within(view,
   modelMs)`) is paired on the view's figure alone, the model's time being main's
   and the batch's own alike. Recommended, built.
