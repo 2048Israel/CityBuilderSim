@@ -258,6 +258,12 @@ public class ScaleCheck {
      * 854 to 860 the free copies ordered nothing "sized from more than a
      * million needed, and judged on its interest". 807 is the middle of 792
      * to 822, a window of 31 months: 5,319 people at 812.
+     *
+     * ...AND SC1 (2026-10-27) READ IT AGAIN ON 0.8.57 and moved nothing: the red the batch was queued for, the ten-billion copy's
+     * "...and it builds" (FR7's finding, at 600: a city with a thousand spare places builds no home in six months), was mended by
+     * the two rescans above, and every assertion holds at 807, "it builds" of both copies among them. What the batch added is the
+     * landlords' orders in the log (Lender): how many the lender passed, held for the down payment and declined, the city's and
+     * the copy's, printed and not asserted.
      */
     static final int FREE_FIXTURE_MONTHS = 807;
 
@@ -539,7 +545,7 @@ public class ScaleCheck {
         lookAt(city);
         quietly(() -> city.saveGame(10, "scalecheck grown"));
         long popGrown = city.getPopulationManager().getPopulation();
-        out.printf("      month %d, %,d people%n", city.getMonth(), popGrown);
+        out.printf("      month %d, %,d people in %,d household places%n", city.getMonth(), popGrown, city.getHouseholdCapacity());
         assertTrue("fixture: the city is growing - more people than a year before",
                 popGrown > city.getHistorySave().getPopulation().get(city.getHistorySave().months() - 13));
         BuildingsTemplate home = city.getBuildingManager().getTemplateByName("House");
@@ -932,6 +938,9 @@ public class ScaleCheck {
             long homes = city.getBuildingManager().getTotalHomes();
             peopleBefore = city.getPopulationManager().getPopulation();
             double c = 0, p = 0, gr = 0, s = 0;
+            // ...its landlords' orders counted as the lender meets them (SC1), so a model change that moves it shows in the log.
+            Lender lender = new Lender();
+            city.watchOrders(lender);
             for (int i = 0; i < FREE_MONTHS; i++) {
                 quietly(() -> city.simulateMonths(1));
                 if (i == 0) {
@@ -943,6 +952,8 @@ public class ScaleCheck {
                 }
                 affordability[i] = city.getMigration().getLastAffordabilityPull();
             }
+            city.watchOrders(null);
+            lender.verdicts("the city's");
             crowding = c; premium = p; ground = gr; sale = s;
             homesBuilt = city.getBuildingManager().getTotalHomes() - homes;
             peopleAfter = city.getPopulationManager().getPopulation();
@@ -1110,10 +1121,34 @@ public class ScaleCheck {
         }
     }
 
+    /**
+     * The landlords' orders as the mortgage lender meets them (SC1): how many were decided, how many the lender passed, how many it
+     * held for the down payment and how many it declined on the rent. Printed, not asserted: the line is for the next model change
+     * that moves the city's landlords (a city whose landlords the lender declines every month builds no home - FR7's finding).
+     */
+    static final class Lender implements BusinessInvestment.OrderWatch {
+        int orders, passed, heldForDownPayment, declinedOnRent;
+
+        @Override
+        public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash,
+                              double noiPerUnit, double annualRate, Mortgage.Decision found) {
+            orders++;
+            if (found.quantity() > 0) passed++;
+            else if (found.shortOfDown()) heldForDownPayment++;
+            else declinedOnRent++;
+        }
+
+        void verdicts(String whose) {
+            out.printf("      %s landlords, in the %d months read: %,d mortgage orders, the lender passed %,d, held %,d for the down payment,"
+                    + " declined %,d on their rent%n", whose, FREE_MONTHS, orders, passed, heldForDownPayment, declinedOnRent);
+        }
+    }
+
     /** Every order the free copy decides: how big, and how many times it asked the bond desk or read a wait. */
     static final class Orders implements BusinessInvestment.OrderWatch {
         int sized, invested, mortgaged, largestNeeded, largestInvested, largestMortgage, mostWaits, mostDesk;
         int overDesk, overWaits;
+        final Lender lender = new Lender();
 
         @Override
         public void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead) {
@@ -1136,12 +1171,14 @@ public class ScaleCheck {
                               double noiPerUnit, double annualRate, Mortgage.Decision found) {
             mortgaged++;
             largestMortgage = Math.max(largestMortgage, asked);
+            lender.mortgaged(asked, costOf, cash, noiPerUnit, annualRate, found);
         }
 
         void verdicts() {
             out.printf("      orders: %,d sized (the largest needed %,d, at most %d waits read), %,d judged on their"
                     + " interest (the largest %,d, at most %d asks of the bond desk), %,d on a mortgage (the largest %,d)%n",
                     sized, largestNeeded, mostWaits, invested, largestInvested, mostDesk, mortgaged, largestMortgage);
+            lender.verdicts("the copy's");
             same("no order sized read more waits than one a bit of what it needed, and one more", overWaits, 0);
             same("no order judged on its interest asked the bond desk more than Game.deskCallsMost() times", overDesk, 0);
         }
