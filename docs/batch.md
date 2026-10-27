@@ -108,7 +108,10 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
    harness `AllChecks` does not register), and 2 a mistake in the options.
    A class most harnesses read (`Game.java` and the like) is left to the
    gate's suite, with `LongPlaytest` picked in its place (the calls below,
-   1). Commit the sources, `buildings.json` and `docs/` together.
+   1). A `*Check.java` in the diff, changed or added, also picks `TimingCheck`
+   (TM3 item 8: ET6's new harness compared times against its budgets directly,
+   and only the gate's full suite ran the rule that catches it); after a
+   change to `tools/pick.sh`, `sh tools/pick-selftest.sh` (no JVM, seconds). Commit the sources, `buildings.json` and `docs/` together.
 5. **The records go in the ship file** (BP1 item 4, lesson f). A batch
    branch never edits `GameVersion.VERSION`, `QUEUE.md`,
    `docs/notes/changelog.md` or `docs/notes/gate.txt`, and writes no

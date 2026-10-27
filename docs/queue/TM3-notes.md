@@ -70,6 +70,16 @@ and was written to `gate.txt` as a recorded red.
   `cd` to the clone; a branch that changes `ship.sh` is said in a line. The new
   one runs from the next ship. `CBS_SHIP_SHELL` is the shell the copy runs
   under (the self-test runs it under dash).
+- **`--pick` always picks TimingCheck for a harness in the diff** (item 8, from
+  ET6's gate: its new `BridgeCheck` compared times against its budgets directly
+  in 3 places, TimingCheck's rule caught it only in the gate's full suite, since
+  ET6's `--pick` ran BridgeCheck and nothing else). `tools/pick.sh`: a
+  `*Check.java` changed or added picks `TimingCheck` too (a deleted one picks
+  nothing). New `tools/pick-selftest.sh`, 10 of 10, no JVM, a throwaway repository:
+  a changed, an added and two changed harnesses, TimingCheck alone, a deleted
+  harness, a class a harness reads, one no harness reads, a document, AllChecks
+  alone, and a committed range; run against `origin/main`'s `pick.sh` the four
+  cases that need TimingCheck fail (6 of 10).
 - `docs/batch.md` (the gate's step 6, step 5's `--red-ok`, the calls BP1 left 5,
   lesson d, the note on the copy) and the README's checks say the same.
 
