@@ -6584,8 +6584,9 @@ public class MapCheck {
         check("...which are the plot's own at its centre; and off the planet it says nothing", byPlot
                 && LandMap.globeHoverWords(whole, land, null, 1, 1, World.SALT, LandMap.CARD_FIELDS).isEmpty() && whole.latLonAt(1, 1) == null);
         // MS2 (Jerus 2026-10-26, "look at the wierd resolution by just panning a few more kms"): closer than the handoff the plane's ground is drawn past the reach too, so
-        // the hover there is the plane's - the same words for the same plot, at 2,000 km as at the handoff over the city - and the legend the plane's; off the world's square
-        // (a view at its north edge) the plane's words stop where its ground does and the globe's begin.
+        // the hover there is the plane's - the same words for the same plot, at 2,000 km as at the handoff over the city - and the legend the plane's. MS3 (Jerus 2026-10-27, the slanted
+        // ground): the plane's ground is drawn only within GlobeFrame.handoverKm() of the city, the charts' past it - the world's square's north edge is about 124 degrees out, past it, so
+        // the charts draw both sides of the edge and the hover says the globe's words on both; the plane's words stop where the plane's ground does, at the hand-over's circle.
         GlobeFrame nearAway = new GlobeFrame(w, h, key.lat(), key.lon());
         nearAway.set(far[0], far[1], 0.1);
         int nearAsked = 0, nearAlike = 0;
@@ -6612,16 +6613,42 @@ public class MapCheck {
                 if (square) onSquare++;
                 else offSquare++;
                 List<String> words = LandMap.globeHoverWords(rim, land, null, sx, sy, World.DESERT, LandMap.CARD_FIELDS);
-                boolean planes = words.equals(LandMap.hoverWords(land, null, (long) Math.floor(xy[0]), (long) Math.floor(xy[1]), LandMap.CARD_FIELDS)) && rim.planeHolds(sx, sy);
-                boolean globes = words.size() > 1 && words.get(1).equals(LandMap.NOT_THE_CITYS) && !rim.planeHolds(sx, sy);
-                if (square ? planes : globes) rimRight++;
+                boolean globes = words.size() > 1 && words.get(1).equals(LandMap.NOT_THE_CITYS) && !rim.planeHolds(sx, sy) && rim.chartHolds(sx, sy);
+                if (globes) rimRight++;
             }
         }
+        // The hand-over's circle (MS3): a view at 0.1 km a pixel centred on it, 5,908 km from the city on the south-east bearing, the circle running across it. Each point's side is the
+        // great-circle distance from the city (the points within a kilometre of the circle left out): inside it the plane's words for the plot under the pointer and planeHolds(),
+        // past it the globe's - "Not the city's", no plane under the pointer, and the chart drawing it.
+        GlobeFrame hand = new GlobeFrame(w, h, key.lat(), key.lon());
+        double[] circle = GlobeFrame.destination(key.lat(), key.lon(), 135, GlobeFrame.handoverKm());
+        hand.set(circle[0], circle[1], 0.1);
+        int handNear = 0, handFar = 0, handRight = 0;
+        for (double sy = 0.5; sy < h; sy += 53) {
+            for (double sx = 0.5; sx < w; sx += 67) {
+                double[] ll = hand.latLonAt(sx, sy);
+                if (ll == null || !hand.plane().plotOf(ll[0], ll[1], xy)) continue;
+                double gap = hand.cityKm(ll[0], ll[1]) - GlobeFrame.handoverKm();
+                if (Math.abs(gap) < 1) continue;
+                List<String> words = LandMap.globeHoverWords(hand, land, null, sx, sy, World.DESERT, LandMap.CARD_FIELDS);
+                if (gap < 0) {
+                    handNear++;
+                    if (words.equals(LandMap.hoverWords(land, null, (long) Math.floor(xy[0]), (long) Math.floor(xy[1]), LandMap.CARD_FIELDS)) && hand.planeHolds(sx, sy)
+                            && !hand.chartHolds(sx, sy)) handRight++;
+                } else {
+                    handFar++;
+                    if (words.size() > 1 && words.get(1).equals(LandMap.NOT_THE_CITYS) && !hand.planeHolds(sx, sy) && hand.chartHolds(sx, sy)) handRight++;
+                }
+            }
+        }
+        out.printf("      the hand-over's circle, %.0f km out, at 0.1 km a pixel: %d points inside it, %d past it, %d said as they should be%n",
+                GlobeFrame.handoverKm(), handNear, handFar, handRight);
         out.printf("      2,000 km out at 0.1 km a pixel: %d points, %d said as the plane's plot; the world's square's north edge: %d on it, %d off it, %d said as they should be%n",
                 nearAsked, nearAlike, onSquare, offSquare, rimRight);
         check("closer than the handoff, 2,000 km out, the hover is the plane's words for the plot under the pointer, and the legend the plane's - the GROUND tier it is drawn in is only the camera",
                 nearAway.tier() == GlobeFrame.GROUND && nearAway.legendTier() == GlobeFrame.PLANE && nearAsked > 0 && nearAlike == nearAsked);
-        check("...to the world's square's edge: the plane's words on the square, the globe's past it", onSquare > 20 && offSquare > 20 && rimRight == onSquare + offSquare);
+        check("...to the world's square's edge, past the hand-over (MS3): the globe's words on both sides of it, the charts drawing the ground the square holds as the ground it does not", onSquare > 20 && offSquare > 20 && rimRight == onSquare + offSquare);
+        check("...and at the hand-over's circle: the plane's words for the plot inside it, the globe's past it, no point wrong", handNear > 20 && handFar > 20 && handRight == handNear + handFar);
 
         // The composed matrix, and the GROUND tier near the city from the plane's own nodes.
         java.util.Random r = new java.util.Random(13);

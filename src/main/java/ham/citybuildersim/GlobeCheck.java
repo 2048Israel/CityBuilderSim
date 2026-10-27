@@ -1674,7 +1674,7 @@ public class GlobeCheck {
         return out;
     }
 
-    /** How far north of Jerus's hover (GOOSE_BAY_NORTH_KM from Happy Valley) the seam views near Goose Bay are centred, km: 60 - his own spot lies in Hamilton Inlet's 40 km wide "river" of the data (the far rule paints it, the tile rule at one plot a pixel does not: a hand-over circle through it shows a lake appear, a rule-copy disagreement MS3 leaves), and 60 km north the ground is the Labrador forest and lakes the screenshot shows. */
+    /** How far north of Jerus's hover (GOOSE_BAY_NORTH_KM from Happy Valley) the seam views near Goose Bay are centred, km: 60 - his own spot lies at the edge of Hamilton Inlet's 40 km wide "river" run of the data, which both rules paint, the plane in its own plots and the chart in the planet's metric: at the hand-over (k / h = 1.25) the plane's edge of a run that wide lies up to a quarter of its 20 km half-width off the true one, so a circle through it shows the edge jump, a limit MS3 names (its notes, 2) and does not measure as a seam; 60 km north the ground is the Labrador forest and lakes the screenshot shows. */
     static final double SEAM_NORTH_KM = 60;
 
     /** The shifts along the line the views are taken at, as shares of the view's width: either side of the centre, so the ground the views hold is more than the one window's centre. */

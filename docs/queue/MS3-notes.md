@@ -110,11 +110,51 @@ past the hand-over moves.
 - At the handoff and wider nothing moves: the plane's nodes out to `planeDrawsKm()` and the far rule's dither beyond,
   which has no streak (its noise is at its mean at those strides).
 - Within the hand-over the plane's own patches keep up to a quarter of stretch, as the projection gives them.
-- A small lake or a river the hand-over's circle crosses is drawn on the plane's side as the plane holds it (up to a
-  quarter off true) and on the chart's as the data does, a kink no wider than a plot.
+- A river or a small lake the hand-over's circle crosses is drawn on the plane's side in the plane's plots and on the
+  chart's in the planet's metric, so its edge steps where the circle crosses it, by up to a quarter of its half-width
+  (k/h - 1 at the hand-over): 60 m on a river 500 m wide, nothing the eye finds at the 2 km scale; but about 2 to 5 km
+  on an estuary-wide run of the data, as Hamilton Inlet's (40 km wide, north of Goose Bay). A probe on slice 2 found it
+  where a seam view of GlobeCheck crossed that run: both rules paint the run, and agree to 0.994 where the plane is true;
+  the step is the plane's distortion of its edge, not a disagreement of the rules.
+- ★ **The step at an estuary-wide run is left** (the recommendation). The circle is 37,000 km round and runs that wide
+  are a handful on the planet, so few cities' circles cross one; morphing the water's edges over the band as the noise
+  is morphed would mean stroking every river in two metrics. A later batch can do it if Jerus sees one.
 
 ## 3. As built
 
+Three slices, each written by a Sonnet 5.5 agent at xhigh and reviewed by the Opus batch session.
+
+- **Slice 1, the measure (GlobeCheck 2d)**: `streak()`, `response()`, the placements along a line from the city out;
+  section 1's table. Its first run had three asserts set before anything was measured; two were wrong on the
+  arithmetic (the calibration stretched one axis where an equal-area projection stretches one and squashes the other,
+  and the drawn ground was held to sigma though only its noise stretches), and were restated on what the measure
+  reads, the dials set from the calibration and said so.
+- **Slice 2, the model half.** `EarthTerrain`: the sphere's noise (`sphereNoise()`, 3D value noise at the plane
+  noise's octaves, each octave's spread raised by `SPHERE_GAIN` = sqrt(35/26) to the 2D's, so the ranking table and the
+  frays hold), `blendNoise()`, and the chart camera (`chart()`): the globe's orthographic camera about an anchor at the
+  scale's stride, the forest ranked, every noise read the sphere's at the pixel's planet-fixed point, blended in from
+  the plane's at the pixel's own plot within the band. Every other camera and every model path reads `noiseAt()` as
+  before, byte for byte (the relief's stride is now divided as a double, which no octave of a power of two can tell
+  apart). `GlobeFrame`: the dials, `distortion()`, `handoverUp()`, `handoverKm()`, `Chart` and `chartFor()` (the
+  nearest anchor of the lattice), `chartHolds()`, `chartAt()`, `drawsHold()` and `planeHolds()` taking the
+  hand-over, and `ground()` laying the chart's nodes past it through a second set of rows in its composed matrix.
+  `MapTiles`: `chartTerrain()` and `chartPixels()` (a chart node's colours, as unowned ground with nothing on it).
+- **Slice 3, the screen.** SLICE3
+
 ## 4. Checks and the trace
 
+CHECKS
+
 ## 5. Left for Jerus (MS3-C, the eye check)
+
+In a Singapore city (his own, or a new one), the expanded map at the 2 km scale:
+
+- **Goose Bay**, 42 km north of Happy Valley-Goose Bay, where his screenshot was: round patches and lakes in their
+  shapes, as `MS3-normal.webp` shows ground near a city, not streaks.
+- **Lake Baikal**, which the hand-over's circle (5,908 km from Singapore) crosses at about 54 degrees north, a little
+  north of Olkhon island: pan along the lake from Irkutsk (5,670 km) to Severobaykalsk (6,060 km). The plane draws its south end and the charts its north; there should be no
+  line where one hands over to the other, only the same kind of ground.
+- **Tokyo** (5,300 km, the plane's own ground, a little stretched as it always was) and **Quito** (near the
+  antipode, off the world's square, where the far rule's speckle was drawn until now): ground like the rest.
+- **A pan** at the 2 km scale past the hand-over: as smooth as near the city, the ground filling in node by node as it
+  does on the plane, the hover saying "Not the city's" with the class under the pointer.
