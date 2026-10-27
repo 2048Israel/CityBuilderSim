@@ -11,5 +11,4 @@
 # timing red on main too, today: KeptCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
-MapCheck | ...and no more than section 5's at either size: the view adds nothing a tile   FAIL
-MapCheck | 2 FAILED
+MapCheck | 1 FAILED
