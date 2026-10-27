@@ -139,11 +139,39 @@ Three slices, each written by a Sonnet 5.5 agent at xhigh and reviewed by the Op
   nearest anchor of the lattice), `chartHolds()`, `chartAt()`, `drawsHold()` and `planeHolds()` taking the
   hand-over, and `ground()` laying the chart's nodes past it through a second set of rows in its composed matrix.
   `MapTiles`: `chartTerrain()` and `chartPixels()` (a chart node's colours, as unowned ground with nothing on it).
-- **Slice 3, the screen.** SLICE3
+- **Slice 3, the screen.** `MapView` keeps chart nodes as it keeps the plane's far nodes: the range a view wants
+  sampled over the pixels the chart draws (`chartNodes()`), each node asked of the one worker once, from the middle
+  out, dropped unread when the view has moved on (`chartsWanted`, as `nodesWanted`), made and coloured on the worker
+  (nothing in a chart node reads the city), kept in a cache bounded as the far nodes are and cleared with the globe;
+  `drawGlobePart()` hands them to `ground()`; `askPieces()` asks no far-rule piece where a chart draws; the hover's
+  `drawnAt()` reads the chart node's class and relief, and `LandMap.globeHoverWords()` says the globe's words for it
+  unchanged. `MapCheck` 13: the square's edge check restated (past the hand-over the globe's words on both sides) and
+  one added at the hand-over's circle (the plane's words within it, the globe's past it). The review changed two
+  things: the chart's key held its id in 12 bits, so the charts of rows 70 to 90 degrees south and north shared keys
+  (now 20 bits); and a node's arrival found its box on the screen by sampling the whole view, about 7,500 points on
+  the FX thread a node (now its corners, as the plane's nodes do).
 
 ## 4. Checks and the trace
 
-CHECKS
+- **GlobeCheck 2d, the fix**, on earth-2.bin and the fixture's windows: past the hand-over and its band the drawn
+  ground's E / E_ref is within 0.056 of 1 at all 13 placements (Goose Bay from Singapore 0.98, where the plane's own
+  plots read 2.39); within it the camera still draws the plane's own plots, 1.0000000. No seam: across the hand-over's
+  circle the class changes over those of a twin drawn by one camera read 1.04 to 1.11 (SEAM_TOL 0.15), across the
+  band's far edge 1.000 to 1.002, and a seam made on purpose (the sphere's noise switched on with no band) 2.5 to 3.5;
+  the class shares either side within 0.009. The sphere's noise keeps the plane's spread (its standard deviation
+  within 0.006 of it, its ranks' shares within 0.008). At the square's edge, past the hand-over, the charts draw both
+  sides, no far-rule pixel. A chart node takes 10 ms (SCREEN_MS 80), a frame over held chart nodes 2.3 ms (FRAME_MS
+  100), soft beside the other runs. The cause's asserts (section 1) read the plane's own plots and noise, as before.
+- **MapCheck 13**: at the hand-over's circle, 166 points inside it said as the plane's plot and 162 past it as the
+  globe's, none wrong; at the square's edge 336 of 336 the globe's words.
+- **The default playtest's trace** is byte-identical to main's (52dd1fde, 0.8.57) in all eight CSVs and in its report
+  but for its two run-time figures (50 s and 52 s). **No ensemble.**
+- **`./batch-check.sh --pick`**, earth-2.bin named: exit 3 - 16 harnesses, main's recorded MapCheck red the only red;
+  GlobeCheck and EarthTerrainCheck clean. One timing line SOFT, not counted: MapCheck's "a month's FX-side map work at
+  5B", 58.8 ms against 58, wall clock beside the other runs, in the month's map work near the city, which MS3 does
+  not touch; the gate times it alone. `--pick` asked for a threading review of MapView (a volatile, Platform.runLater):
+  they are `chartsWanted` and the FX thread's store, `nodesWanted`'s pattern line for line. MapView is read by no
+  harness: the eye check (5) is its check.
 
 ## 5. Left for Jerus (MS3-C, the eye check)
 
