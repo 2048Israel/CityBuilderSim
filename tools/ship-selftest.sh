@@ -31,7 +31,11 @@
 #  writes to target/checks/timing.tsv (rows ";"-separated, columns "|"-separated:
 #  harness|label|measured|budget|unit|status|part), STUB_FAST_EXIT --fast,
 #  STUB_TOUCHMAPS makes the generated docs change, STUB_NOEARTH says the Earth
-#  file is missing, STUB_RACE=<clone> lets someone push to origin meanwhile.
+#  file is missing, STUB_RACE=<clone> lets someone push to origin meanwhile,
+#  STUB_REWRITE_SHIP rewrites ship.sh in place (inserting a line at its third)
+#  while the checks run: what a merge of a batch that changes it can do to a
+#  shell that reads its script as it goes. Git unlinks and writes a new file,
+#  so the shell keeps the old one, and only an in-place write shows it.
 #  The paired rounds of a timing red (TM3) are the --timing runs that name a
 #  harness: STUB_PAIR="harness|label|budget|unit|part" is the figure's row,
 #  STUB_FIGS_MAIN and STUB_FIGS_BATCH the figures of the rounds in turn, in
@@ -87,7 +91,8 @@ cat > "$TA/main/batch-check.sh" <<'EOF'
 cd "$(dirname "$0")" || exit 1
 OUT=target/checks; mkdir -p "$OUT"; MODE=suite; NAMED=""
 for a in "$@"; do case "$a" in --fast) MODE=fast ;; --timing) MODE=timing ;; -*) ;; *) NAMED="$NAMED $a" ;; esac; done
-[ -z "$STUB_LOG" ] || echo "run: mode=$MODE args='$*' cwd=$(basename "$(pwd)") JDK='$JDK_JAVA_OPTIONS' paired='$CBS_TIMING_PAIRED'" >> "$STUB_LOG"
+[ -z "$STUB_LOG" ] || echo "run: mode=$MODE args='$*' cwd=$(basename "$(pwd)") JDK='$JDK_JAVA_OPTIONS' paired='$CBS_TIMING_PAIRED' shipcopy='$CBS_SHIP_COPY'" >> "$STUB_LOG"
+[ -z "$STUB_REWRITE_SHIP" ] || { awk 'NR == 3 { print "echo \"ZZ-the-branchs-ship.sh-ran\"" } { print }' ship.sh > "$OUT/ship.new" && cat "$OUT/ship.new" > ship.sh; }   # ship.sh rewritten in place under the shell reading it
 [ -z "$STUB_RACE" ] || { git -C "$STUB_RACE" pull -q --ff-only origin main && git -C "$STUB_RACE" commit -q --allow-empty -m "shipped meanwhile" && git -C "$STUB_RACE" push -q origin HEAD:main; STUB_RACE=; }
 case "$MODE" in
   fast) EXIT=${STUB_FAST_EXIT:-0}; REDS="" ;;
@@ -338,8 +343,8 @@ LABEL="timing: main's recorded red, repeated by the timing run, is not judged ag
 STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' STUB_TEXIT=3 STUB_TREDS='MapCheck | exit 1' run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
 # TM3 item 7: a batch that changes ship.sh itself - the merge rewrites the file the shell is reading; the run goes on from its copy
-LABEL="ship.sh: a branch that changes it merges and gates from the copy, the new one's lines never run"; run --dry-run batch/SH
-ok sh -c "[ $RC = 0 ] && grep -q -F 'batch/SH changes ship.sh: this run goes on from its copy' $TA/out.txt && grep -q -F 'dry run, nothing kept' $TA/out.txt && ! grep -q -F 'ZZ-the-branchs-ship.sh-ran' $TA/out.txt"
+LABEL="ship.sh: a branch that changes it merges and gates from the copy, though ship.sh is rewritten in place meanwhile"; : > "$STUB_LOG"; STUB_REWRITE_SHIP=1 run --dry-run batch/SH
+ok sh -c "[ $RC = 0 ] && grep -q -F 'batch/SH changes ship.sh: this run goes on from its copy' $TA/out.txt && grep -q -F 'dry run, nothing kept' $TA/out.txt && ! grep -q -F 'ZZ-the-branchs-ship.sh-ran' $TA/out.txt && ! grep -q -i 'syntax error\|not found' $TA/out.txt && grep -q \"shipcopy='[^']*ship-run\.[^']*'\" $STUB_LOG"
 LABEL="ship.sh: ...and the tree is as it was"; ok clean
 LABEL="ship.sh: the copy keeps the arguments and the clone it was started in (a branch after options)"; run --dry-run --no-tag chatgpt/ok
 ok sh -c "[ $RC = 0 ] && grep -q -F 'not tag it' $TA/out.txt"

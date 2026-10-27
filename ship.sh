@@ -82,11 +82,12 @@
 #       batch-check.sh --fast alone;
 #   10. docs/notes/gate.txt written (every gate that ran the suite) and added:
 #       "#" lines (the merge's title, the date, whether earth-2.bin was named,
-#       the suite's and the timing's summary lines, each timing red accepted as
-#       main's "# timing red on main too, today: ..."), then the suite's red
-#       lines, which are the next ship's "main's recorded reds". A timing red
-#       is a "#" line only, never a recorded one: the next ship compares it
-#       with main's run again. Only this script writes it;
+#       the suite's and the timing's summary lines, each timing red that passed
+#       "# timing red within N% of main's (paired): ..." with the paired medians,
+#       each passed on his word "# timing red passed on Jerus's word ..."), then
+#       the suite's red lines, which are the next ship's "main's recorded reds". A
+#       timing red is a "#" line only, never a recorded one: the next ship judges
+#       it side by side with main again. Only this script writes it;
 #   11. --dry-run says what it would commit, tag and push, and the records it
 #       would write, then takes the merge back: the tree and HEAD as they were;
 #   12. the merge committed as "Merge <branch>: <title>, <version>", the title
@@ -173,7 +174,7 @@ GV=src/main/java/ham/citybuildersim/GameVersion.java
 GENERATED="docs/map docs/dials.md docs/month-order.md docs/harnesses.md"
 GENRE='^docs/(map/|dials\.md$|month-order\.md$|harnesses\.md$)'
 T=target/ship-tmp          # this script's scratch folder, gone when it ends
-MT=target/main-timing      # the worktree of main for the same-day timing comparison
+MT=target/main-timing      # the worktree of main whose classes the paired timing rounds run (TM3)
 MERGING=0
 
 say() { echo "ship      $*"; }

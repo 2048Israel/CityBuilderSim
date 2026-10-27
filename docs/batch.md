@@ -303,8 +303,8 @@ off the PC); a look that finds another batch's JVM starts the count again,
 because a runner that starts its JVMs one after another leaves a gap of a
 second or two that one look can fall in (TM2). It waits 30 minutes at most,
 then runs hard without the quiet minute and says so. The game is not waited
-for: a line says it runs, and `ship.sh` judges a timing red beside it against
-main's own timing run, beside it as well; `CBS_QUIET_GAME=1` on the gate's
+for: a line says it runs, and `ship.sh` judges a timing red beside it side
+by side with main's classes, in the same minutes (TM3); `CBS_QUIET_GAME=1` on the gate's
 command waits for it too. `Batch check.bat` still times soft only while another batch's
 JVM or the game runs, and decides **once, at its start**, so a run of it that
 began alone stays hard when another starts beside it (lesson d); its
@@ -448,7 +448,8 @@ rule on Pending.
 - (d) 2026-10-24: `batch-check.sh` decides soft or hard once, at its start,
   and the PC's speed can change after a restart. So a timing red at the
   gate is compared with main's own run the same day before it counts as
-  the batch's.
+  the batch's (TM3, 2026-10-27: not minutes later, one run to one: the two are
+  timed in turn, in the same minutes, and the median decides).
 - (e) 2026-10-24, Jerus: "anything on high effort or lower is banned". A
   medium-effort orchestrator had stalled a lane, clashed versions and named
   the wrong Earth file.
