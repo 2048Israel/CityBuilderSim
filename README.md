@@ -105,6 +105,12 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   how many went soft. The check scripts set it by themselves while another
   batch's JVM or the game is running, so two batches' suites run side by side
   (TM1, 2026-10-18); `TimingCheck` holds the mechanism.
+- `-Dcbs.timing.tsv=FILE` makes every timing assertion append its figure,
+  budget and unit to FILE (`batch-check.sh` names `target/checks/timing.tsv`),
+  and the ship gate times a timing red again with main's classes and the
+  merge's in turn and judges those figures, not the label's prose
+  (`tools/timing-pair.awk`; TM3, 2026-10-27). A comparison of two measured
+  times is a `Timing` assertion like any budget.
 - Any other argument filters by substring: `AllChecks money bank` runs
   `MoneyCheck` and `BankCheck` and nothing else.
 - The exit status is the number of harnesses that failed, so a build script can
