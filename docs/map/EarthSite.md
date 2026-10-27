@@ -1,6 +1,6 @@
 # EarthSite.java - 723 lines · 44 methods · 21 constants · model
 
-`ham/citybuildersim/EarthSite.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthSite.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > A spot on the real Earth as the founding screen weighs it: whether the game has the Earth's data, the place names a player searches, the spot the seed picks, and the founding card - the site the snap finds, the ground within 5 km measured on the world's own plots, the province's deposit multipliers, the nearest iron, and why a spot is refused or warned of.
 > 
@@ -60,7 +60,7 @@
 
 **Uses:** [World](World.md) (47), [EarthData](EarthData.md) (32), [EarthTerrain](EarthTerrain.md) (17), [Resource](Resource.md) (5), [LandMap](LandMap.md) (4), [Geology](Geology.md) (2), [GameVersion](GameVersion.md) (1), [Deposit](Deposit.md) (1), [EarthProj](EarthProj.md) (1)
 
-**Used by (17):** [DataSave](DataSave.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [HydroCheck](HydroCheck.md), [LandCheck](LandCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReloadCheck](ReloadCheck.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md)
+**Used by (18):** [BridgeCheck](BridgeCheck.md), [DataSave](DataSave.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [HydroCheck](HydroCheck.md), [LandCheck](LandCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReloadCheck](ReloadCheck.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md)
 
 ## Sections
 

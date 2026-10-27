@@ -1,6 +1,6 @@
 # TileRaster.java - 4,074 lines · 151 methods · 103 constants · model
 
-`ham/citybuildersim/TileRaster.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TileRaster.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixels() for a tile's image.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [TilePainter](TilePainter.md) (561), [BuildingVisual](BuildingVisual.md) (121), [World](World.md) (36), [CityRuns](CityRuns.md) (28), [TrackCurves](TrackCurves.md) (23), [DistrictPlan](DistrictPlan.md) (8), [Resource](Resource.md) (3), [InterchangeGround](InterchangeGround.md) (3), [StreetCurves](StreetCurves.md) (1)
 
-**Used by (25):** [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SlopeRenders](SlopeRenders.md), [TrainSchedule](TrainSchedule.md), [TrainShapes](TrainShapes.md)
+**Used by (27):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapFrame](MapFrame.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [RunRenders](RunRenders.md), [RunWorksCheck](RunWorksCheck.md), [SlopeRenders](SlopeRenders.md), [TrainSchedule](TrainSchedule.md), [TrainShapes](TrainShapes.md)
 
 ## Sections
 

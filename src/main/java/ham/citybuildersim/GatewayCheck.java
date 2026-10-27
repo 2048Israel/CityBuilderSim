@@ -80,6 +80,10 @@ import java.util.TreeSet;
  *
  *  17. HALIFAX ON THE EARTH, when earth-2.bin is named: the same, on
  *      Jerus's founding site, where FR0's line lay across the harbour.
+ *      Since ET6 the railway bridges the harbour's shallow water itself (a
+ *      short crossing, TilePainter.RAIL_BRIDGE), so here its gate arm no
+ *      longer waits at the sea but runs on to the city's edge: the fixture
+ *      holds that, and section 16's generated coast keeps the arm that waits.
  *
  *  18. THE LABEL STAYS IN VIEW (LandMap.worldLabelAt): a line leaving
  *      through the right, top, bottom or top right corner of the view has its
@@ -782,7 +786,7 @@ public class GatewayCheck {
                 int[] walk = fr0Walk(m, runs.rail(), gate);
                 System.out.printf("  FR0's walk from the gate arm's end: %d plot(s) of the city's own water crossed, %s an unowned plot%n",
                         walk[0], walk[1] == 1 ? "then" : "no");
-                check("fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water", walk[0] >= 1);
+                check("fixture (ET6): Halifax's railway gate arm no longer waits at the harbour - it bridges the shallow water to the city's edge, so FR0's walk crosses none of the city's own water (section 16's coast keeps the arm that waits)", walk[0] == 0 && walk[1] == 1);
             }
             worldLinesOnLand("Halifax", m);
             CityMap.WorldLine rail = null;

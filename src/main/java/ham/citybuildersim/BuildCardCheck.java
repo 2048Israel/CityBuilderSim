@@ -387,12 +387,12 @@ public class BuildCardCheck {
                 + " Infrastructure's, in its own group: " + stored, tanks && stored.equals(List.of("Tank Farm")));
         // ...the ports the sea terminals, the city's alone, measured in their berths' tonnes a year (0.7.86) - Infrastructure's
         // group since FR4 (2026-10-19), after the ring's, whichever ring is picked - and the Bulk Berth (FR3, 0.8.7) a fifth.
-        List<String> berthed = new ArrayList<>(), reserved = new ArrayList<>(), titles = new ArrayList<>();
-        boolean ports = false, reserve = false, inEveryRing = true;
+        List<String> berthed = new ArrayList<>(), reserved = new ArrayList<>(), spanned = new ArrayList<>(), titles = new ArrayList<>();
+        boolean ports = false, reserve = false, bridges = false, inEveryRing = true;
         for (BuildAdvice.Measure ring : BuildAdvice.measuresOf(BuildAdvice.ROADS)) {
             List<String> ringTitles = new ArrayList<>();
             for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.ROADS, ring)) ringTitles.add(gr.title());
-            inEveryRing &= ringTitles.equals(List.of(ring.label(), "Ports", "Reserve"));
+            inEveryRing &= ringTitles.equals(List.of(ring.label(), "Ports", "Reserve", "Bridges"));
         }
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.ROADS, null)) {
             titles.add(gr.title());
@@ -404,6 +404,15 @@ public class BuildCardCheck {
                             && f.figure() == f.template().berthTonnesAYear();
                 }
             }
+            // ...and (ET6) the long bridges, the city's alone, measured in the metres of deck they carry.
+            if (gr.title().equals("Bridges")) {
+                bridges = true;
+                for (BuildCard.Figures f : gr.cards()) {
+                    spanned.add(f.template().getName());
+                    bridges &= f.kind() == BuildCard.Kind.BRIDGE && !f.market() && BuildCard.citys(f.template())
+                            && f.figure() == BridgeWorks.deckWidthM(f.template().bridgeKind());
+                }
+            }
             if (gr.title().equals("Reserve")) {
                 reserve = true;
                 for (BuildCard.Figures f : gr.cards()) {
@@ -413,8 +422,10 @@ public class BuildCardCheck {
                 }
             }
         }
-        assertTrue("Infrastructure's page is its ring's cards, then Ports, then Reserve - whichever of the three rings is picked: " + titles,
-                inEveryRing && titles.size() == 3 && titles.get(1).equals("Ports") && titles.get(2).equals("Reserve"));
+        assertTrue("Infrastructure's page is its ring's cards, then Ports, then Reserve, then (ET6) Bridges - whichever of the three rings is picked: " + titles,
+                inEveryRing && titles.size() == 4 && titles.get(1).equals("Ports") && titles.get(2).equals("Reserve") && titles.get(3).equals("Bridges"));
+        assertTrue("...the bridges are the Highway, Rail and Road Bridge (catalogue order), measured in the metres of deck they carry, built by the city alone: " + spanned,
+                bridges && spanned.equals(List.of("Highway Bridge", "Rail Bridge", "Road Bridge")));
         assertTrue("...the ports are the Tanker Terminal, the Bulk Berth, the Bulk Terminal, the Container and General Cargo Terminals"
                 + " (by kind of cargo, then size), measured in their berths' tonnes a year, built by the city alone: " + berthed,
                 ports && berthed.equals(List.of("Tanker Terminal", "Bulk Berth", "Bulk Terminal", "Container Terminal",
@@ -483,6 +494,8 @@ public class BuildCardCheck {
                     case BERTHS:    expectFigure = t.berthTonnesAYear(); break;
                     // ...an offshore platform's wells' slots, and a pipeline's kilometre (0.7.91).
                     case SLOTS:     expectFigure = t.platformSlots(); break;
+                    // ...a long bridge's deck, metres wide (ET6).
+                    case BRIDGE:    expectFigure = BridgeWorks.deckWidthM(t.bridgeKind()); break;
                     case PIPE:      expectFigure = 1; break;
                     case POINTS:    expectFigure = t.makes(Good.BUILDING_WORK); break;
                     // ...a crude unit's the crude it refines (0.7.76): its products are the slate of it; a conversion

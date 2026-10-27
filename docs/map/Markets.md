@@ -1,6 +1,6 @@
 # Markets.java - 564 lines · 28 methods · 0 constants · model
 
-`ham/citybuildersim/Markets.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Markets.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > Every goods market in the city, and the month they clear in.
 > 

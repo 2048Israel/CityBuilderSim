@@ -1,6 +1,6 @@
 # EarthData.java - 1,073 lines · 97 methods · 36 constants · model
 
-`ham/citybuildersim/EarthData.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthData.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The reader of earth-2.bin (and of earth-1.bin, whose layers it holds), the
 > real Earth's ground as data: its layers' 1-degree tiles inflated into an
@@ -66,7 +66,7 @@
 
 **Uses:** [Palette](Palette.md) (9)
 
-**Used by (32):** [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [HydroCheck](HydroCheck.md), [HydroSites](HydroSites.md), [LandCheck](LandCheck.md), [LandClassRenders](LandClassRenders.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [ReloadCheck](ReloadCheck.md), [RunRenders](RunRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md)
+**Used by (34):** [BridgeCheck](BridgeCheck.md), [BridgeView](BridgeView.md), [EarthCheck](EarthCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [Geology](Geology.md), [GlobeCheck](GlobeCheck.md), [GlobePicture](GlobePicture.md), [HydroCheck](HydroCheck.md), [HydroSites](HydroSites.md), [LandCheck](LandCheck.md), [LandClassRenders](LandClassRenders.md), [LandMap](LandMap.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [ReloadCheck](ReloadCheck.md), [RunRenders](RunRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md)
 
 ## Sections
 

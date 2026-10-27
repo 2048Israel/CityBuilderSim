@@ -63,9 +63,9 @@ public final class BuildCard {
      * and the city's Strategic Reserve. BERTHS (0.7.86): a sea terminal's
      * tonnes a year of its kind of cargo - the city's. SLOTS (0.7.91): an
      * offshore platform's wells' slots. PIPE (0.7.91): a kilometre of crude
-     * pipeline. DEPOT (FR2): the trucks a Truck Depot keeps.
+     * pipeline. DEPOT (FR2): the trucks a Truck Depot keeps. BRIDGE (ET6): a long bridge, measured in the metres of deck it carries.
      */
-    public enum Kind { CITY, HOMES, CUSTOMERS, MEALS, BRANCH, RAIL, POINTS, MAKER, OFFICE, PUMP, TANKS, BERTHS, SLOTS, PIPE, DEPOT }
+    public enum Kind { CITY, HOMES, CUSTOMERS, MEALS, BRANCH, RAIL, POINTS, MAKER, OFFICE, PUMP, TANKS, BERTHS, SLOTS, PIPE, DEPOT, BRIDGE }
 
     /**
      * What bar 2 measures: LAND per unit (the market's scarce resource),
@@ -123,7 +123,7 @@ public final class BuildCard {
         public boolean inMonths() { return kind == Kind.MAKER || kind == Kind.OFFICE; }
 
         /** Built by investors as well as by the city - not the city's own Strategic Reserve (0.7.85) or sea terminals (0.7.86), which only the city builds. */
-        public boolean market() { return kind != Kind.CITY && kind != Kind.BERTHS && !StrategicReserve.isReserve(template); }
+        public boolean market() { return kind != Kind.CITY && kind != Kind.BERTHS && kind != Kind.BRIDGE && !StrategicReserve.isReserve(template); }
     }
 
     /* =====================================================================
@@ -267,6 +267,8 @@ public final class BuildCard {
         if (kindOf(t) == Kind.TANKS) return "Oil storage";
         // ...and the city's sea terminals, measured in their berths' tonnes (0.7.86).
         if (kindOf(t) == Kind.BERTHS) return "Ports";
+        // ...and its long bridges, in the metres of deck they carry (ET6).
+        if (t.isBridge()) return "Bridges";
         // ...and the oil at sea's platforms, in their wells' slots, and pipelines, in kilometres (0.7.91): the wells stay with the land's.
         if (kindOf(t) == Kind.SLOTS) return "Oil platforms";
         if (kindOf(t) == Kind.PIPE) return "Oil pipelines";
@@ -324,7 +326,7 @@ public final class BuildCard {
 
     /** A building only the city builds and nobody's investors weigh: a city category's, and the city's Strategic Reserve (0.7.85) and sea terminals (0.7.86) on a market page. */
     public static boolean citys(BuildingsTemplate t) {
-        return kindOf(t) == Kind.CITY || StrategicReserve.isReserve(t) || Ports.isPort(t);
+        return kindOf(t) == Kind.CITY || StrategicReserve.isReserve(t) || Ports.isPort(t) || t.isBridge();
     }
 
     /** ...and the Build category that group is on: "Industry"; null with none. */
@@ -349,6 +351,7 @@ public final class BuildCard {
      * They were in market categories before, where none of the market kinds above them could take them, so the order moved nothing.
      */
     public static Kind kindOf(BuildingsTemplate t) {
+        if (t.isBridge()) return Kind.BRIDGE;
         if (Ports.isPort(t)) return Kind.BERTHS;
         if (StrategicReserve.isReserve(t)) return Kind.TANKS;
         BuildAdvice.Category c = BuildAdvice.categoryOf(t.getCategory());
@@ -568,6 +571,13 @@ public final class BuildCard {
                     Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
         }
 
+        if (kind == Kind.BRIDGE) {
+            // A long bridge (ET6): the deck it carries, in metres of width - a rail bridge's the highway's - and its price, the two
+            // landings', per metre of it; the span is billed per order (Game.bridgeSpan()), not on the card's price.
+            double deck = BridgeWorks.deckWidthM(t.bridgeKind());
+            return new Figures(t, kind, group(t), "carries a deck ", deck, " m wide", deck, Double.NaN, Double.NaN, null, price, sticker,
+                    price / deck, land / deck, Bar2.LAND, "m of deck", "m of deck", Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
+        }
         double staffable = ownerOf(game, t).staffing(t).share;
         String group = group(t);
         String verb, words, per = null, perTag = null;
@@ -862,6 +872,10 @@ public final class BuildCard {
             for (BuildingsTemplate t : berths) ports.add(of(game, t, null));
             if (!ports.isEmpty()) out.add(new Group("Ports", ports, new Note(NoteKind.NONE, 0, 0, null)));
             if (!reserve.isEmpty()) out.add(new Group("Reserve", reserve, new Note(NoteKind.NONE, 0, 0, null)));
+            // ...and its long bridges (ET6), after them: in no ring either, a Highway, a Rail and a Road Bridge.
+            List<Figures> bridges = new ArrayList<>();
+            for (BuildingsTemplate t : all) if (t.isBridge()) bridges.add(of(game, t, null));
+            if (!bridges.isEmpty()) out.add(new Group("Bridges", bridges, new Note(NoteKind.NONE, 0, 0, null)));
             return out;
         }
         Map<String, List<Figures>> by = new LinkedHashMap<>();
@@ -1360,6 +1374,24 @@ public final class BuildCard {
      */
     public record Hydro(int free, int slots, int sites, double widthM, double headM) { }
 
+    /**
+     * Where a long bridge would go (ET6): the crossing the model surveyed toward the landmass the card picked
+     * (Game.bridgeSurvey()), the far landmass's name as the card says it, one bridge's span (Game.bridgeSpan(): its
+     * dollars at the founding, construction points and money before the builders' tax; null where there is no crossing) and
+     * its two landings' price before the builders' tax, in the thousands the game keeps - the quote's sticker less the span.
+     */
+    public record Bridge(BridgeSurvey.Result survey, String farName, Game.BridgeSpan span, double landings) { }
+
+    /** ...for a bridge; null for any other building and for a game with no city. */
+    public static Bridge bridge(Game game, BuildingsTemplate t) {
+        if (t == null || !t.isBridge()) return null;
+        BridgeSurvey.Result survey = game.bridgeSurvey(t);
+        if (survey == null) return null;
+        Game.BuildQuote one = game.quoteBuild(t, 1);
+        return new Bridge(survey, BridgeView.landmassWords(game.getLandManager().getLandmasses(), survey.far()),
+                game.bridgeSpan(t, 1), Math.max(0, one.sticker - one.bridgeCost - one.prepCost - one.worksCost));
+    }
+
     /** ...for a hydro station; null for any other building. */
     public static Hydro hydro(Game game, BuildingsTemplate t) {
         if (t == null || !t.isHydro()) return null;
@@ -1800,12 +1832,12 @@ public final class BuildCard {
        THE VERDICT ON AN ORDER
 
        What the quote line says under the stepper, in buildStack()'s order:
-       no deposit, no coast (0.7.59), no river with a drop (HY1), nobody licensed, short of land, short of cash (the bill
+       no deposit, no coast (0.7.59), no river with a drop (HY1), no crossing (ET6), nobody licensed, short of land, short of cash (the bill
        and credit offers), or the wait at today's queue - so the two hard
        refusals are warned before the click, not discovered after it.
        ===================================================================== */
 
-    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS, NO_COAST, NO_RIVER }
+    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS, NO_COAST, NO_RIVER, NO_BRIDGE }
 
     /** The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait - and, refused for a deposit, whose sites it needs (0.7.62; null otherwise). */
     public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure, Resource site) {
@@ -1817,6 +1849,7 @@ public final class BuildCard {
         if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0, Game.siteOf(t));
         if (!game.hasCoastFor(t, n, Landmasses.CHOSEN)) return new Verdict(VerdictKind.NO_COAST, q, 0);
         if (!game.hasRiverFor(t, n)) return new Verdict(VerdictKind.NO_RIVER, q, 0);
+        if (!game.hasBridgeFor(t, n)) return new Verdict(VerdictKind.NO_BRIDGE, q, 0);
         if (!game.hasLicencesFor(t, n)) return new Verdict(VerdictKind.NO_LICENCE, q, game.licencesNeededFor(t, n));
         if (q.landNeeded > q.landFree) return new Verdict(VerdictKind.NO_LAND, q, q.landNeeded - q.landFree);
         if (q.total > game.getCash()) return new Verdict(VerdictKind.BILL, q, q.total - game.getCash());

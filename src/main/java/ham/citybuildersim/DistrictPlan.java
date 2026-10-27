@@ -65,8 +65,9 @@ import java.util.List;
  * The spec's rules the prototype did not draw are added where its sections
  * say (the game's rules; Input.asPrototype leaves them out, and with the
  * prototype's hashes the plan is then the prototype's, box for box):
- *   WATER   a street bridges fresh water up to STREET_BRIDGE plots, an
- *           arterial up to ARTERIAL_BRIDGE (2.4);
+ *   WATER   a street bridges fresh water or the shallow sea (World.bridgeable(),
+ *           ET6) up to STREET_BRIDGE plots, an arterial up to ARTERIAL_BRIDGE
+ *           (2.4); the deep sea it never crosses;
  *   CUTS    where water or the city's edge cuts a cell (H2), a street the cut
  *           leaves as a dead end is joined to its neighbour along the cut
  *           (drawn as a smooth curve since batch CL4, see CURVES); a
@@ -166,8 +167,9 @@ import java.util.List;
  * a box (THE ORDER OF ARRIVAL, THE GROUND BOUGHT); a plot the city buys after its cell opened is laid in the month it is
  * bought (avOnGrown()), as nothing stands on ground just bought. Owned dry ground is a street; a highway's plot is passed beneath (UNDER,
  * never the plot itself); the railway is crossed (CROSSING); a yard's, an interchange's reserve's, a mine's plot is not laid
- * and the avenue goes on beyond; fresh water is a bridge where the run over it, in steps x sqrt 2, is at most ARTERIAL_BRIDGE
- * plots (AVENUE_BRIDGE_STEPS = 9 steps), else not laid at all; salt water and unowned ground are not laid. THE + FLOOR
+ * and the avenue goes on beyond; bridgeable water (fresh, or since ET6 the shallow sea) is a bridge where the run over it, in
+ * steps x sqrt 2, is at most ARTERIAL_BRIDGE plots (AVENUE_BRIDGE_STEPS = 9 steps), else not laid at all; the deep sea and
+ * unowned ground are not laid. THE + FLOOR
  * ALONG AN AVENUE: the JUNCTION of an arm at step j is a street plot that is not the avenue's and touches it at one of four
  * FEET - the plot beyond the corner C_j in its column, the plot beyond S_j in its column (O_(j+1)), the outer plot O_j, and
  * the plot beyond the corner C_(j+1) in its row - so a street whose line runs through S_j (its column ox + dx j or its row
@@ -389,11 +391,16 @@ public final class DistrictPlan {
     /** A strip's least depth between an estate cell's streets: 7, LINE_FIRST - so its streets are LATTICE or more apart, and so are the + junctions two of them could make on one arterial. */
     static final int STRIP_LEAST = LINE_FIRST;
 
-    /** A street's longest crossing of fresh water: TilePainter.STREET_BRIDGE, 6 plots (spec 2.4, today's street bridge). */
+    /** A street's longest crossing of bridgeable water (fresh, and since ET6 the shallow sea): TilePainter.STREET_BRIDGE, 6 plots (spec 2.4, today's street bridge). */
     public static final int STREET_BRIDGE = TilePainter.STREET_BRIDGE;
 
-    /** An arterial's: a highway's, TilePainter.MAX_BRIDGE[HIGHWAY], 14 plots (spec 2.4) - wider water is a landmass's edge (spec 3). */
-    public static final int ARTERIAL_BRIDGE = TilePainter.MAX_BRIDGE[BuildingVisual.HIGHWAY];
+    /**
+     * An arterial's: 14 plots (420 m; spec 2.4), its own since ET6 (spec-earth2-terrain 6.2, D12): it was a highway's,
+     * TilePainter.MAX_BRIDGE[HIGHWAY], until the highway's and the railway's widened to 34 plots, and only they did. Wider water
+     * than an arterial bridges is not a landmass's edge (the edge is 1,020 m, ET5/D16) but water the arterial does not cross:
+     * the plan lays a street no further than that and the runs' highway may span the rest.
+     */
+    public static final int ARTERIAL_BRIDGE = 14;
 
     /** A cell is opened only with at least this many plots of dry owned ground off the highways in its interior: 120 of 961, the prototype's. */
     public static final int CELL_ROOM_LEAST = 120;
@@ -533,7 +540,7 @@ public final class DistrictPlan {
 
     /** The room a siding's plots keep from the frame's edge, in plots: 2, so no siding plot lies on the edge row or column the districts share or beside it, and the tile beside a district's never needs the siding of the district over the edge (CityMap.fillInput()). */
     static final int SIDING_EDGE = 2;
-    /** A bridge over fresh water, bit 8. */
+    /** A bridge over bridgeable water (fresh, or since ET6 the shallow sea), bit 8. */
     public static final int BRIDGE = 1 << 8;
     /** A level crossing of a railway, bit 9. */
     public static final int CROSSING = 1 << 9;
@@ -543,7 +550,7 @@ public final class DistrictPlan {
     /** The four avenues' headings, (dx, dy) in plots by arm: south-east, south-west, north-west, north-east - CityRuns.diagCode()'s numbering, 0 to 3, the arm in a plot's mark. */
     static final int[] AVENUE_DX = { 1, -1, -1, 1 }, AVENUE_DY = { 1, 1, -1, -1 };
 
-    /** The longest run over fresh water a bridge on an avenue carries, in steps along it: ARTERIAL_BRIDGE / sqrt 2 rounded down, 9 - a step is sqrt 2 plots, so 9 steps are 12.7 plots and 10 are over 14. */
+    /** The longest run over bridgeable water a bridge on an avenue carries, in steps along it: ARTERIAL_BRIDGE / sqrt 2 rounded down, 9 - a step is sqrt 2 plots, so 9 steps are 12.7 plots and 10 are over 14. */
     public static final int AVENUE_BRIDGE_STEPS = (int) (ARTERIAL_BRIDGE / Math.sqrt(2));
 
     /** The least steps between two junctions kept on one arm (the + floor along an avenue): LATTICE. */
@@ -1212,7 +1219,7 @@ public final class DistrictPlan {
         final boolean[] fieldOk = new boolean[AREA];
         /** ...and the cells with any in their interior. */
         final boolean[] cellField = new boolean[CELLS];
-        /** Fresh water's run along its row and its column, at each fresh plot. */
+        /** Bridgeable water's run (fresh or shallow, ET6) along its row and its column, at each plot of it. */
         final short[] hRun = new short[AREA], vRun = new short[AREA];
         /** Each cell's interior plots no building is barred from (not `blocked`), a bit a plot by row as free[] holds them: a cell's free ground until it opens (0.7.90, ESTATE LINES). */
         final int[][] openRows = new int[CELLS][INTERIOR];
@@ -3110,7 +3117,7 @@ public final class DistrictPlan {
                             if (nAvList == avList.length) avList = Arrays.copyOf(avList, nAvList * 2);
                             avList[nAvList++] = p;
                         }
-                        if (in.terrain[p] == World.FRESH) avRun[run++] = p; else run = wetRun(run);
+                        if (World.bridgeable(in.terrain[p])) avRun[run++] = p; else run = wetRun(run);
                     }
                     int ox = avOx + dx * (k - 1), oy = avOy + dy * k;
                     if (k >= 1 && ox >= 0 && oy >= 0 && ox < FRAME && oy < FRAME) {
@@ -3131,7 +3138,7 @@ public final class DistrictPlan {
             nOuter = m;
         }
 
-        /** A run of `run` fresh staircase plots (avRun) ended: all of them barred to the avenue when it is longer than the bridge (AVENUE_BRIDGE_STEPS, two plots a step). 0, the run now. */
+        /** A run of `run` bridgeable (fresh or shallow) staircase plots (avRun) ended: all of them barred to the avenue when it is longer than the bridge (AVENUE_BRIDGE_STEPS, two plots a step). 0, the run now. */
         int wetRun(int run) {
             if (run > 2 * AVENUE_BRIDGE_STEPS) for (int i = 0; i < run; i++) avWet[avRun[i]] = true;
             return 0;
@@ -3169,11 +3176,11 @@ public final class DistrictPlan {
 
         /** What an avenue makes of staircase plot p, by the ground the plan has now (owns): AVK_OFF to AVK_STREET. */
         int avKind(int p) {
-            if (!owns[p] || World.salt(in.terrain[p]) || unfit[p]) return AVK_OFF;
+            if (!owns[p] || in.terrain[p] == World.SALT || unfit[p]) return AVK_OFF;
             byte f = fx[p];
             if (works(f) || in.site[p] == SITE_MINED) return AVK_BROKEN;
             if (f == FIXED_HIGHWAY) return AVK_UNDER;
-            if (in.terrain[p] == World.FRESH && avWet[p]) return AVK_WATER;
+            if (World.bridgeable(in.terrain[p]) && avWet[p]) return AVK_WATER;
             return AVK_STREET;
         }
 
@@ -3225,7 +3232,7 @@ public final class DistrictPlan {
                         art[p] = true;
                     }
                     if (role[p] < ROLE_ARTERIAL) role[p] = (byte) ROLE_ARTERIAL;
-                    if (in.terrain[p] == World.FRESH) avN[AV_BRIDGED]++;
+                    if (World.bridgeable(in.terrain[p])) avN[AV_BRIDGED]++;
                     if (fx[p] == FIXED_RAIL) avN[AV_RAIL]++;
                 }
             }
@@ -3237,7 +3244,7 @@ public final class DistrictPlan {
             avDone[p] = 2;
             avN[AV_PLOTS]--;
             if (avFx[p] == FIXED_HIGHWAY) avN[AV_UNDER]--;
-            if (in.terrain[p] == World.FRESH) avN[AV_BRIDGED]--;
+            if (World.bridgeable(in.terrain[p])) avN[AV_BRIDGED]--;
             if (avFx[p] == FIXED_RAIL) avN[AV_RAIL]--;
         }
 
@@ -3391,7 +3398,7 @@ public final class DistrictPlan {
                     avDone[a] = 0;
                     avN[AV_PLOTS]--;
                     if (avFx[a] == FIXED_HIGHWAY) avN[AV_UNDER]--;
-                    if (in.terrain[a] == World.FRESH) avN[AV_BRIDGED]--;
+                    if (World.bridgeable(in.terrain[a])) avN[AV_BRIDGED]--;
                     if (avFx[a] == FIXED_RAIL) avN[AV_RAIL]--;
                     any = true;
                 }
@@ -4193,13 +4200,13 @@ public final class DistrictPlan {
             return n;
         }
 
-        /** Whether a plot is ground the cut runs along: not the city's, the sea, fresh water no street crosses, or past the frame. */
+        /** Whether a plot is ground the cut runs along: not the city's, the deep sea, bridgeable water (fresh or shallow) no street crosses, or past the frame. */
         boolean cutAt(int x, int y) {
             if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) return true;
             int p = y * FRAME + x;
             if (!owns[p]) return true;
             byte t = in.terrain[p];
-            return World.salt(t) || unfit[p] || (t == World.FRESH && !str[p]);
+            return t == World.SALT || unfit[p] || (World.bridgeable(t) && !str[p]);
         }
 
         /**
@@ -4358,8 +4365,8 @@ public final class DistrictPlan {
                 unfit[p] = !fit & !World.salt(t) & t != World.FRESH;
                 byte f = fixed[p];
                 blocked[p] = !d | f != 0 | site[p] != 0;
-                // Its lay code from the ground (LAY CODES; fresh water's runs and the runs' plots added after).
-                layCode[p] = (byte) (!owned[p] | World.salt(t) | unfit[p] ? LAY_REFUSED : proto ? (f == FIXED_HIGHWAY ? LAY_REFUSED : 0)
+                // Its lay code from the ground (LAY CODES; bridgeable water's runs and the runs' plots added after).
+                layCode[p] = (byte) (!owned[p] | t == World.SALT | unfit[p] ? LAY_REFUSED : proto ? (f == FIXED_HIGHWAY ? LAY_REFUSED : 0)
                         : site[p] == SITE_MINED ? LAY_REFUSED : 0);
                 if (f != 0) fixedPlot(p, x, base, f);
                 if (partedAnchor[p]) paRows[base + (x >>> 6)] |= 1L << (x & 63);
@@ -4378,26 +4385,26 @@ public final class DistrictPlan {
             hwList[nHighway++] = p;
         }
 
-        /** Row y's fresh water runs (THE GROUND, A ROW AT A TIME): each plot of a run its length along the row, a street refused along one wider than its bridge. */
+        /** Row y's runs of bridgeable water, fresh and shallow in any mix (THE GROUND, A ROW AT A TIME; ET6): each plot of a run its length along the row, a street refused along one wider than its bridge. */
         void freshRow(int y) {
             byte[] terrain = in.terrain;
             for (int x = 0; x < FRAME; ) {
                 int p = y * FRAME + x;
-                if (terrain[p] != World.FRESH) { hRun[p] = 0; x++; continue; }
+                if (!World.bridgeable(terrain[p])) { hRun[p] = 0; x++; continue; }
                 int e = x;
-                while (e + 1 < FRAME && terrain[p + e + 1 - x] == World.FRESH) e++;
+                while (e + 1 < FRAME && World.bridgeable(terrain[p + e + 1 - x])) e++;
                 int len = e - x + 1, bits = proto ? 0 : (len > STREET_BRIDGE ? H_STREET : 0) | (len > ARTERIAL_BRIDGE ? H_ARTERIAL : 0);
                 for (int m = p, last = y * FRAME + e; m <= last; m++) { hRun[m] = (short) len; layCode[m] |= bits; }
                 x = e + 1;
             }
         }
 
-        /** ...and down each column, read at row y: a column's run goes on where its plot is fresh water, and ends where it is not (runFrom, its first row). */
+        /** ...and down each column, read at row y: a column's run goes on where its plot is bridgeable water, and ends where it is not (runFrom, its first row). */
         void freshColumns(int y) {
             byte[] terrain = in.terrain;
             int[] from = runFrom;
             for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
-                if (terrain[p] == World.FRESH) {
+                if (World.bridgeable(terrain[p])) {
                     if (from[x] < 0) from[x] = y;
                     continue;
                 }
@@ -5179,21 +5186,21 @@ public final class DistrictPlan {
         boolean joinable(int a, boolean horizontal) {
             int x = a % FRAME, y = a / FRAME;
             if (x % LATTICE != 0 && y % LATTICE != 0) return false;
-            if (!owns[a] || World.salt(in.terrain[a]) || unfit[a] || occ[a] > 0) return false;
+            if (!owns[a] || in.terrain[a] == World.SALT || unfit[a] || occ[a] > 0) return false;
             byte f = fx[a];
             if (proto) return f != FIXED_HIGHWAY;
             if (in.site[a] == SITE_MINED) return false;
             boolean arterial = horizontal ? y % CELL == 0 : x % CELL == 0;
-            if (in.terrain[a] == World.FRESH && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
+            if (World.bridgeable(in.terrain[a]) && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
             return f == 0 || (!works(f) && !along(fx, a, horizontal));
         }
 
         /** Whether a step onto plot a going horizontally (or not) may be laid off the lattice, where the join's lattice finds no way: as joinable(), on any plot (H2: a street follows the ground where it must). */
         boolean groundJoinable(int a, boolean horizontal) {
             int x = a % FRAME, y = a / FRAME;
-            if (!owns[a] || World.salt(in.terrain[a]) || unfit[a] || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
+            if (!owns[a] || in.terrain[a] == World.SALT || unfit[a] || occ[a] > 0 || in.site[a] == SITE_MINED) return false;
             boolean arterial = horizontal ? y % CELL == 0 : x % CELL == 0;
-            if (in.terrain[a] == World.FRESH && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
+            if (World.bridgeable(in.terrain[a]) && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
             return fx[a] == 0 || (!works(fx[a]) && !along(fx, a, horizontal));
         }
 
@@ -6088,7 +6095,7 @@ public final class DistrictPlan {
             if (art[p] && r == ROLE_STREET) r = ROLE_ARTERIAL;
             if (blvd[p]) r = ROLE_BOULEVARD;
             code |= r << ROLE_SHIFT;
-            if (in.terrain[p] == World.FRESH) code |= BRIDGE;
+            if (World.bridgeable(in.terrain[p])) code |= BRIDGE;
             if (fx[p] == FIXED_RAIL || out.siding != null && out.siding[p] != 0) code |= CROSSING;
             out.street[p] = (short) code;
         }

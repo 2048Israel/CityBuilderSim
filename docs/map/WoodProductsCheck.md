@@ -1,6 +1,6 @@
 # WoodProductsCheck.java - 640 lines · 16 methods · 30 constants · harnesses
 
-`ham/citybuildersim/WoodProductsCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WoodProductsCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > Wood Products, checked (0.7.140, batch I10; docs/studies/spec-materials.md
 > 2.1, 2.2, 2.3, 2.7, 2.8, 2.12, 4 and 5's I10 row; the study's -

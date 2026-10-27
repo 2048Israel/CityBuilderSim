@@ -1,6 +1,6 @@
 # WorldEconomy.java - 422 lines · 18 methods · 12 constants · model
 
-`ham/citybuildersim/WorldEconomy.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldEconomy.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The rest of the world, which has its own inflation and did not use to.
 > 

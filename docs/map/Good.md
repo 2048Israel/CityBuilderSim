@@ -1,6 +1,6 @@
 # Good.java - 1,416 lines · 23 methods · 0 constants · model
 
-`ham/citybuildersim/Good.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Good.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > A thing that can be made, bought, held, imported and exported.
 > 
