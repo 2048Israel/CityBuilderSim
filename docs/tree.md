@@ -667,8 +667,9 @@ adds its line here, not in `CLAUDE.md`.
                                          src/main/resources/icons/, make_title.py the store's title art into
                                          branding/, pngio.py renders with Edge or Chrome headless and reads and
                                          writes PNGs (Python, standard library only)
-    branding/                            the title art for the store pages (BR1): title.svg with its font inside,
-                                         PNGs 600, 1200 and 2400 wide, from tools/branding/make_title.py
+    branding/                            the game's store art (BR1): title.svg with its font inside and its PNGs
+                                         600, 1200 and 2400 wide (tools/branding/make_title.py), the itch.io cover,
+                                         and README.md - the name, what is where, how to remake it, the releases
     tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
                                          Batch check.bat, which times soft while either runs, and batch-check.sh,
                                          which says so on a soft run (TM1; GP1 took out TM2's -Quiet wait for a
