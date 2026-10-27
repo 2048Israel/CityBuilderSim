@@ -1,4 +1,4 @@
-# AllChecks.java - 380 lines · 14 methods · 12 constants · harnesses
+# AllChecks.java - 448 lines · 15 methods · 16 constants · harnesses
 
 `ham/citybuildersim/AllChecks.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
@@ -15,6 +15,7 @@
 >     java -cp <classes> ham.citybuildersim.AllChecks -f         failures only
 >     java -cp <classes> ham.citybuildersim.AllChecks Labour Money   a subset, by name
 >     java -cp <classes> ham.citybuildersim.AllChecks --timing   the timing harnesses alone (Timing.HARNESSES)
+>     java -Dcbs.parallel=1 -cp <classes> ham.citybuildersim.AllChecks -f   one at a time
 > 
 > Exit status is the number of harnesses that failed, so a build script can
 > stop on it. BuildMenuCheck, KeptCheck and ChartFitCheck need JavaFX on the classpath and are skipped,
@@ -48,8 +49,17 @@
 > word for word (redLines), so the two judges count the same. With no record
 > nothing is tagged and -f prints as it did before. KnownRedsCheck causes both
 > cases with a fixture of its own.
+> 
+> N at a time (SP1, 2026-10-27): a suite took 18 minutes on a quiet PC and 31-32
+> when shared, one JVM at a time with 14 cores idle; and the harness JVMs had no
+> -Xmx, so each could take a quarter of the 32 GB (on 2026-10-21 the commit charge
+> reached 43 of 54 GB and a suite died with CreateProcess error 1450). Now each
+> JVM runs under HEAP_MB, and a soft, logged run starts PARALLEL at once, the
+> LONGEST_FIRST ones first; the output is still printed in HARNESSES order. A
+> hard run, --timing and plain mode (inherited output) go one at a time;
+> -Dcbs.parallel=N sets one run's number; never more than half the cores.
 
-**Uses:** [Timing](Timing.md) (7)
+**Uses:** [Timing](Timing.md) (8)
 
 **Used by (2):** [KnownRedsCheck](KnownRedsCheck.md), [TimingCheck](TimingCheck.md)
 
@@ -57,36 +67,41 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 66 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "Conversion...` | In the order they are cheapest to fail. |
-| 82 | `AllChecks.FAIL_LINES` | `40` | The most lines -f prints for one failed harness; the rest stays in its log. |
-| 85 | `AllChecks.LOGS` | `Paths.get("target", "checks")` | Where -q and -f keep each harness's whole output. |
-| 88 | `AllChecks.SECTION` | `Pattern.compile("^\\s*---\\s.*\\s---\\s*$")` | A harness's section title, "--- what it proves ---". |
-| 91 | `AllChecks.SUMMARY` | `Pattern.compile("^\\s*\\d+ FAILED\\s*$")` | A harness's closing count, "N FAILED": printed, but not under the last section's title. |
-| 94 | `AllChecks.FAILING` | `Pattern.compile("\\bFAIL(ED)?\\b\|Exception\|^\\S*Error\\b\|^Caused by")` | A line that says something failed: an assertion's FAIL, the "N FAILED" summary, an exception. |
-| 97 | `AllChecks.IN_ALL` | `Pattern.compile("^\\.\\.\\.[0-9]+ failing lines in all: ")` | The line failingLines prints when it left failing lines out: "... |
-| 100 | `AllChecks.GATE` | `Paths.get("docs", "notes", "gate.txt")` | Main's recorded reds, one line each after the "#" lines: what ship.sh writes at every gate. |
-| 103 | `AllChecks.KNOWN_PROPERTY` | `"cbs.knownReds"` | The system property that names the record when it is not GATE; batch-check.sh gives it the record it judges against. |
-| 106 | `AllChecks.NO_FAIL_LINE` | `"(no FAIL line; its last lines:)"` | The line a log says before the last lines of a harness that died with no failing line of its own. |
-| 109 | `AllChecks.KNOWN_TAG` | `"[known] "` | The tag -f puts before a failing line that is in the record; the same width as NEW_TAG. |
-| 112 | `AllChecks.NEW_TAG` | `"[NEW] "` | The tag -f puts before a failing line that is not in the record. |
+| 83 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "Conversion...` | In the order they are cheapest to fail. |
+| 99 | `AllChecks.FAIL_LINES` | `40` | The most lines -f prints for one failed harness; the rest stays in its log. |
+| 102 | `AllChecks.PARALLEL` | `3` | How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. |
+| 105 | `AllChecks.PARALLEL_PROPERTY` | `"cbs.parallel"` | The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). |
+| 108 | `AllChecks.HEAP_MB` | `2048` | The most heap a harness JVM may take, its -Xmx (SP1): measured 2026-10-27 under a 4 GB ceiling, no harness committed more than 1.5 GB (SaveSlotCheck) or kept more than 0.6 GB after a collection (MapCheck), so 2 GB cha... |
+| 111 | `AllChecks.LONGEST_FIRST` | `List.of("MapCheck", "GlobeCheck", "LongPlaytest", "EarthTerrainCheck", "Bridg...` | The harnesses started first when more than one runs at once, the longest first (measured 2026-10-27, earth-2.bin named: MapCheck 192 s, GlobeCheck 72, LongPlaytest 55, EarthTerrainCheck 52, the rest 41 to 30), so the ... |
+| 114 | `AllChecks.LOGS` | `Paths.get("target", "checks")` | Where -q and -f keep each harness's whole output. |
+| 117 | `AllChecks.SECTION` | `Pattern.compile("^\\s*---\\s.*\\s---\\s*$")` | A harness's section title, "--- what it proves ---". |
+| 120 | `AllChecks.SUMMARY` | `Pattern.compile("^\\s*\\d+ FAILED\\s*$")` | A harness's closing count, "N FAILED": printed, but not under the last section's title. |
+| 123 | `AllChecks.FAILING` | `Pattern.compile("\\bFAIL(ED)?\\b\|Exception\|^\\S*Error\\b\|^Caused by")` | A line that says something failed: an assertion's FAIL, the "N FAILED" summary, an exception. |
+| 126 | `AllChecks.IN_ALL` | `Pattern.compile("^\\.\\.\\.[0-9]+ failing lines in all: ")` | The line failingLines prints when it left failing lines out: "... |
+| 129 | `AllChecks.GATE` | `Paths.get("docs", "notes", "gate.txt")` | Main's recorded reds, one line each after the "#" lines: what ship.sh writes at every gate. |
+| 132 | `AllChecks.KNOWN_PROPERTY` | `"cbs.knownReds"` | The system property that names the record when it is not GATE; batch-check.sh gives it the record it judges against. |
+| 135 | `AllChecks.NO_FAIL_LINE` | `"(no FAIL line; its last lines:)"` | The line a log says before the last lines of a harness that died with no failing line of its own. |
+| 138 | `AllChecks.KNOWN_TAG` | `"[known] "` | The tag -f puts before a failing line that is in the record; the same width as NEW_TAG. |
+| 141 | `AllChecks.NEW_TAG` | `"[NEW] "` | The tag -f puts before a failing line that is not in the record. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 318 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
-| 114 | 80 | `public static void main(String[] args) throws Exception` |  |
-| 196 | 3 | `static String header(String name, int code, double seconds)` | The first line of a harness's entry: its name, its verdict as a number or OK, and how long it took. |
-| 201 | 4 | `static String summaryLine(int ran, int failed, double seconds)` | The line under the last harness: how many ran and how they ended. |
-| 210 | 4 | `static Path recordFile()` | The record this run reads: the file named by -Dcbs.knownReds when that is set, else GATE. |
-| 222 | 9 | `static Set<String> knownReds(Path file) throws IOException` | Main's recorded reds, as batch-check.sh reads them: the lines of the file, each exactly as written, but for the lines that start with # and the blank ones. |
-| 233 | 6 | `private static String trimBlanks(String s)` | How a red line is cut of its blanks: batch-check.sh's reds_of strips spaces and tabs from the front and spaces, tabs and returns from the back. |
-| 247 | 14 | `private static String[] redOf(String name, List<String> printed)` | For each printed line of a failed harness (failingLines, untagged), the red line it makes, or null when it makes none: a section title, a blank, and every line after the "(no FAIL line...)" one, which are the harness'... |
-| 268 | 6 | `static List<String> redLines(String name, int code, List<String> printed)` | The red lines of one failed harness, the same lines batch-check.sh's reds_of makes of the log: "Name \| exit N", then "Name \| <line>" for each failing line printed, a section title and the last lines of a harness with ... |
-| 276 | 5 | `static int newCount(List<String> red, Set<String> known)` | How many of the red lines are not in the record. |
-| 289 | 18 | `static List<String> report(String name, int code, double seconds, List<String> printed, boolean lines, Set<String> known)` | What -q and -f print of one failed harness. |
-| 314 | 8 | `static String againstLine(Path record, Set<String> known, List<String> knownOnly, List<String> newRed)` | The one line under the summary that says which harnesses were known reds only and which had a NEW red; with no record, that none was read. |
-| 331 | 8 | `static List<String> command(String java, String classpath, String name, boolean logged)` | How a harness is started: the JVM and classpath this one was, the timing properties (the mode, and the file the figures go to, TM3) if they are set here (a child JVM inherits no system property, only JDK_JAVA_OPTIONS)... |
-| 341 | 10 | `static int softLines(Path log)` | How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. |
-| 359 | 21 | `static List<String> failingLines(Path log) throws IOException` | What -f prints of a failed harness's log: each failing line, after the title of the section it is in (once per section), at most FAIL_LINES in all; a log with no failing line in it - a harness that died some other way... |
+| 80 | 369 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
+| 143 | 101 | `public static void main(String[] args) throws Exception` |  |
+| 251 | 10 | `static int parallel(boolean logged, boolean timingOnly)` | How many harnesses this run runs at once (SP1): one when its output is not logged (plain mode inherits it, and would interleave), for --timing, and when timing is hard; else the property or PARALLEL, at most half the ... |
+| 263 | 3 | `static String header(String name, int code, double seconds)` | The first line of a harness's entry: its name, its verdict as a number or OK, and how long it took. |
+| 268 | 4 | `static String summaryLine(int ran, int failed, double seconds)` | The line under the last harness: how many ran and how they ended. |
+| 277 | 4 | `static Path recordFile()` | The record this run reads: the file named by -Dcbs.knownReds when that is set, else GATE. |
+| 289 | 9 | `static Set<String> knownReds(Path file) throws IOException` | Main's recorded reds, as batch-check.sh reads them: the lines of the file, each exactly as written, but for the lines that start with # and the blank ones. |
+| 300 | 6 | `private static String trimBlanks(String s)` | How a red line is cut of its blanks: batch-check.sh's reds_of strips spaces and tabs from the front and spaces, tabs and returns from the back. |
+| 314 | 14 | `private static String[] redOf(String name, List<String> printed)` | For each printed line of a failed harness (failingLines, untagged), the red line it makes, or null when it makes none: a section title, a blank, and every line after the "(no FAIL line...)" one, which are the harness'... |
+| 335 | 6 | `static List<String> redLines(String name, int code, List<String> printed)` | The red lines of one failed harness, the same lines batch-check.sh's reds_of makes of the log: "Name \| exit N", then "Name \| <line>" for each failing line printed, a section title and the last lines of a harness with ... |
+| 343 | 5 | `static int newCount(List<String> red, Set<String> known)` | How many of the red lines are not in the record. |
+| 356 | 18 | `static List<String> report(String name, int code, double seconds, List<String> printed, boolean lines, Set<String> known)` | What -q and -f print of one failed harness. |
+| 381 | 8 | `static String againstLine(Path record, Set<String> known, List<String> knownOnly, List<String> newRed)` | The one line under the summary that says which harnesses were known reds only and which had a NEW red; with no record, that none was read. |
+| 399 | 8 | `static List<String> command(String java, String classpath, String name, boolean logged)` | How a harness is started: the JVM and classpath this one was, under -Xmx HEAP_MB (SP1), the timing properties (the mode, and the file the figures go to, TM3) if they are set here (a child JVM inherits no system proper... |
+| 409 | 10 | `static int softLines(Path log)` | How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. |
+| 427 | 21 | `static List<String> failingLines(Path log) throws IOException` | What -f prints of a failed harness's log: each failing line, after the title of the section it is in (once per section), at most FAIL_LINES in all; a log with no failing line in it - a harness that died some other way... |
 

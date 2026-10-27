@@ -7,9 +7,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 /**
@@ -26,6 +33,7 @@ import java.util.regex.Pattern;
  *     java -cp <classes> ham.citybuildersim.AllChecks -f         failures only
  *     java -cp <classes> ham.citybuildersim.AllChecks Labour Money   a subset, by name
  *     java -cp <classes> ham.citybuildersim.AllChecks --timing   the timing harnesses alone (Timing.HARNESSES)
+ *     java -Dcbs.parallel=1 -cp <classes> ham.citybuildersim.AllChecks -f   one at a time
  *
  * Exit status is the number of harnesses that failed, so a build script can
  * stop on it. BuildMenuCheck, KeptCheck and ChartFitCheck need JavaFX on the classpath and are skipped,
@@ -59,6 +67,15 @@ import java.util.regex.Pattern;
  * word for word (redLines), so the two judges count the same. With no record
  * nothing is tagged and -f prints as it did before. KnownRedsCheck causes both
  * cases with a fixture of its own.
+ *
+ * N at a time (SP1, 2026-10-27): a suite took 18 minutes on a quiet PC and 31-32
+ * when shared, one JVM at a time with 14 cores idle; and the harness JVMs had no
+ * -Xmx, so each could take a quarter of the 32 GB (on 2026-10-21 the commit charge
+ * reached 43 of 54 GB and a suite died with CreateProcess error 1450). Now each
+ * JVM runs under HEAP_MB, and a soft, logged run starts PARALLEL at once, the
+ * LONGEST_FIRST ones first; the output is still printed in HARNESSES order. A
+ * hard run, --timing and plain mode (inherited output) go one at a time;
+ * -Dcbs.parallel=N sets one run's number; never more than half the cores.
  */
 public class AllChecks {
 
@@ -80,6 +97,18 @@ public class AllChecks {
 
     /** The most lines -f prints for one failed harness; the rest stays in its log. */
     static final int FAIL_LINES = 40;
+
+    /** How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. */
+    static final int PARALLEL = 3;
+
+    /** The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). */
+    static final String PARALLEL_PROPERTY = "cbs.parallel";
+
+    /** The most heap a harness JVM may take, its -Xmx (SP1): measured 2026-10-27 under a 4 GB ceiling, no harness committed more than 1.5 GB (SaveSlotCheck) or kept more than 0.6 GB after a collection (MapCheck), so 2 GB changes no harness's run and stops one taking the 8 GB a JVM was allowed. */
+    static final int HEAP_MB = 2048;
+
+    /** The harnesses started first when more than one runs at once, the longest first (measured 2026-10-27, earth-2.bin named: MapCheck 192 s, GlobeCheck 72, LongPlaytest 55, EarthTerrainCheck 52, the rest 41 to 30), so the slowest is not the last to start. */
+    static final List<String> LONGEST_FIRST = List.of("MapCheck", "GlobeCheck", "LongPlaytest", "EarthTerrainCheck", "BridgeMapCheck", "GatewayCheck", "MainLineCheck", "EducationCheck");
 
     /** Where -q and -f keep each harness's whole output. */
     static final Path LOGS = Paths.get("target", "checks");
@@ -133,6 +162,7 @@ public class AllChecks {
         List<String> softIn = new ArrayList<>();
         List<String> knownOnly = new ArrayList<>(), newRed = new ArrayList<>();
         long started = System.currentTimeMillis();
+        List<String> picked = new ArrayList<>(), order = new ArrayList<>();   // asked for, in HARNESSES order; and what starts, in the order it starts
         for (String name : HARNESSES) {
             if (timingOnly && !Timing.HARNESSES.contains(name)) continue;
             if (!only.isEmpty()) {
@@ -140,27 +170,46 @@ public class AllChecks {
                 for (String o : only) if (name.toLowerCase().contains(o)) wanted = true;
                 if (!wanted) continue;
             }
-            if ((name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("ChartFitCheck")) && !haveFx) {
+            picked.add(name);
+            if (haveFx || !(name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("ChartFitCheck"))) order.add(name);
+        }
+        int atOnce = parallel(logged, timingOnly);
+        if (atOnce > 1) order.sort(Comparator.comparingInt(x -> LONGEST_FIRST.contains(x) ? LONGEST_FIRST.indexOf(x) : LONGEST_FIRST.size()));   // stable: the rest keep their order
+        Set<Process> live = ConcurrentHashMap.newKeySet();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> live.forEach(Process::destroyForcibly)));   // Ctrl+C takes the harnesses with it
+        ExecutorService pool = Executors.newFixedThreadPool(atOnce, r -> { Thread th = new Thread(r); th.setDaemon(true); return th; });
+        Map<String, Future<double[]>> runs = new HashMap<>();   // each: its exit code and its own seconds, from its start
+        for (String name : order) {
+            runs.put(name, pool.submit(() -> {
+                long t = System.currentTimeMillis();
+                ProcessBuilder pb = new ProcessBuilder(command(java, classpath, name, logged));
+                pb.redirectErrorStream(true);
+                if (logged) pb.redirectOutput(LOGS.resolve(name + ".log").toFile());
+                else pb.inheritIO();
+                Process p = pb.start();
+                live.add(p);
+                try {
+                    return new double[] {p.waitFor(), (System.currentTimeMillis() - t) / 1000.0};
+                } finally {
+                    live.remove(p);
+                }
+            }));
+        }
+        for (String name : picked) {
+            Future<double[]> run = runs.get(name);
+            if (run == null) {
                 System.out.printf("%-24s skipped (needs JavaFX on the classpath)%n", name);
                 continue;
             }
-            long t = System.currentTimeMillis();
-            ProcessBuilder pb = new ProcessBuilder(command(java, classpath, name, logged));
-            pb.redirectErrorStream(true);
             Path log = LOGS.resolve(name + ".log");
-            if (logged) {
-                pb.redirectOutput(log.toFile());
-            } else {
-                pb.inheritIO();
-            }
-            int code = pb.start().waitFor();
+            int code = (int) run.get()[0];
+            double seconds = run.get()[1];
             ran++;
             if (code != 0) failed++;
             if (logged) {
                 int n = softLines(log);
                 if (n > 0) { soft += n; softIn.add(name + " " + n); }
             }
-            double seconds = (System.currentTimeMillis() - t) / 1000.0;
             if (code == 0) {
                 if (!failuresOnly) System.out.println(header(name, code, seconds));
                 continue;
@@ -181,6 +230,7 @@ public class AllChecks {
                 else newRed.add(name);
             }
         }
+        pool.shutdown();
         System.out.println();
         System.out.println(summaryLine(ran, failed, (System.currentTimeMillis() - started) / 1000.0));
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
@@ -190,6 +240,23 @@ public class AllChecks {
             System.out.println("Whole output of each: " + LOGS + File.separator + "NAME.log");
         }
         System.exit(failed);
+    }
+
+    /**
+     * How many harnesses this run runs at once (SP1): one when its output is
+     * not logged (plain mode inherits it, and would interleave), for --timing,
+     * and when timing is hard; else the property or PARALLEL, at most half the
+     * cores and at least one.
+     */
+    static int parallel(boolean logged, boolean timingOnly) {
+        if (!logged || timingOnly || !Timing.soft()) return 1;
+        int n = PARALLEL;
+        try {
+            int named = Integer.parseInt(System.getProperty(PARALLEL_PROPERTY, "").strip());
+            if (named > 0) n = named;
+        } catch (NumberFormatException e) {   // not a number: PARALLEL
+        }
+        return Math.max(1, Math.min(n, Runtime.getRuntime().availableProcessors() / 2));
     }
 
     /** The first line of a harness's entry: its name, its verdict as a number or OK, and how long it took. */
@@ -321,7 +388,8 @@ public class AllChecks {
     }
 
     /**
-     * How a harness is started: the JVM and classpath this one was, the timing
+     * How a harness is started: the JVM and classpath this one was, under -Xmx
+     * HEAP_MB (SP1), the timing
      * properties (the mode, and the file the figures go to, TM3) if they are set here (a child JVM inherits no system property, only
      * JDK_JAVA_OPTIONS), and when its output is kept (-q and -f) in UTF-8
      * whatever the machine's own charset is - on Windows a redirected
@@ -329,7 +397,7 @@ public class AllChecks {
      * (2026-10-13, MapCheck on the PC).
      */
     static List<String> command(String java, String classpath, String name, boolean logged) {
-        List<String> c = new ArrayList<>(List.of(java));
+        List<String> c = new ArrayList<>(List.of(java, "-Xmx" + HEAP_MB + "m"));
         if (Timing.forwarded() != null) c.add(Timing.forwarded());
         if (Timing.forwardedTsv() != null) c.add(Timing.forwardedTsv());   // TM3: the file the figures go to
         if (logged) c.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"));
