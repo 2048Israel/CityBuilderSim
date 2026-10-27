@@ -1,0 +1,5 @@
+## changelog
+### SC1 — ScaleCheck's "...and it builds" already green; its landlords in the log — 2026-10-27, ready, no tag (a check), see docs/queue/SC1-notes.md
+The red the batch was queued for (Jerus, 2026-10-20, "Queue a check fix"), the ten-billion copy's "...and it builds: more homes at the end than at the start", was FR7's finding at the fixture month 600; XR1 (622) and PT1-M4 (807, every assertion holding from 792 to 822) rescanned the month since, and on main it is green for both copies, so no scan and no fixture change was needed.
+What the batch added is the brief's third item: `ScaleCheck.Lender` counts the landlords' mortgage orders in the months read, the city's and each copy's - how many the lender passed, held for the down payment and declined on the rent - and prints them (6 of 6 passed at 807; the 10-billion copy ordered none), so a later model change that moves the lender's verdict shows in the log. Printed, not asserted; the fixture's household places are printed too.
+No game change, no version bump, no trace.
