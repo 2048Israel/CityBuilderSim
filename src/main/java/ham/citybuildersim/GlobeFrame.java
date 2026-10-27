@@ -23,7 +23,8 @@ package ham.citybuildersim;
  *   - PLANE, closer than the handoff: today's map, the city's plane, a
  *     MapFrame at planeX(), planeY() and planeScale() - while the view's
  *     centre is within the reach of the city; past it the GROUND tier
- *     goes on closer than the handoff (MS1, below).
+ *     goes on closer than the handoff (MS1, below), drawing the plane's own
+ *     ground through the camera (MS2, below).
  * At the handoff the plane and the globe facing the city part by a third of
  * a pixel on the expanded map (Q6), so the swap cannot be seen.
  *
@@ -49,6 +50,19 @@ package ham.citybuildersim;
  * screen draws it. tierOf(kmPx) is still the scale's tier and tier() the
  * view's. The wall was the old stop: clampPan() pulled a centre back to the
  * reach, 300 km from the city, at the plane's scales.
+ *
+ * THE SAME GROUND PAST THE REACH (MS2, Jerus 2026-10-26: "look at the wierd
+ * resolution by just panning a few more kms": the far rule through the
+ * globe's camera has no plot under a pixel, so its forest is a dither and a
+ * small lake a disc, where the plane's are smooth patches and frayed lakes).
+ * Closer than the handoff the GROUND tier past the reach draws the plane's
+ * own far nodes through the camera at the scale's stride - 8, 4, 2 or 1
+ * plots a pixel, the nodes the plane draws inside the reach - wherever the
+ * world's square holds the ground (planeDrawnPastReach(), drawsHold(),
+ * planeHolds()); the far rule (groundPiece()) is left to what the square does
+ * not hold, the fifth of the planet farthest from the city. The legend and
+ * the hover are the plane's at those scales (legendTier(), planeHolds()).
+ * planeDrawsKm() is as it was from the handoff wider.
  *
  * A zoom keeps the point under the pointer under it, and a drag the point
  * grabbed under the pointer, on the globe as on the plane (spec-globe 4's
@@ -187,6 +201,13 @@ public final class GlobeFrame {
         int t = tierOf(kmPx);
         return t == PLANE && !withinReach(lat, lon) ? GROUND : t;
     }
+
+    /**
+     * The tier the legend is drawn for (MS2): the scale's own, tierOf() - the plane's at every scale closer than the handoff, past the
+     * reach too, where the ground drawn is the plane's own (planeDrawnPastReach()) and so is what the legend says of it - not tier(),
+     * which is the GROUND tier there for the camera it is drawn through.
+     */
+    public int legendTier() { return tierOf(kmPx); }
 
     /** The view's orthographic projection: round its centre, turned by its roll. */
     public EarthProj.Ortho ortho() { return ortho; }
@@ -368,6 +389,7 @@ public final class GlobeFrame {
         this.reachKm = f.reachKm;
         this.ortho = f.ortho;
         this.drawsKm = f.planeDrawsKm();
+        this.pastReach = f.planeDrawnPastReach();
     }
 
     /** Whether two views draw the same picture: their size, centre, scale, roll and reach - which between them decide the tier (MS1), so two views of different tiers are never the same. */
@@ -604,17 +626,19 @@ public final class GlobeFrame {
         return at(ll[0], ll[1]);
     }
 
-    /** Whether a screen point is drawn from the city's plane - within planeDrawsKm() of the city and the world's square, or anywhere on the plane's own tier: the plane's answer is the one there (the hover's, a click's). */
+    /** Whether a screen point is drawn from the city's plane - within planeDrawsKm() of the city and the world's square, anywhere on the world's square at the plane's scales (MS2: planeDrawnPastReach()), or anywhere on the plane's own tier: the plane's answer is the one there (the hover's, a click's). */
     public boolean planeHolds(double sx, double sy) {
         double[] ll = latLonAt(sx, sy);
-        if (ll == null || (tier() != PLANE && cityKm(ll[0], ll[1]) > planeDrawsKm())) return false;
+        if (ll == null || (tier() != PLANE && !planeDrawnPastReach() && cityKm(ll[0], ll[1]) > planeDrawsKm())) return false;
         double[] xy = new double[2];
         return plotAt(sx, sy, xy) && xy[0] >= 0 && xy[1] >= 0 && xy[0] < World.SIDE && xy[1] < World.SIDE;
     }
 
     /**
      * How far from the city the globe draws the city's plane's own far nodes,
-     * km (★E9): the reach and the view's half-diagonal at the handoff, so a
+     * km, at the handoff and wider (★E9; at the plane's scales wherever the
+     * square holds the ground, planeDrawnPastReach(), MS2): the reach and the
+     * view's half-diagonal at the handoff, so a
      * view at the handoff with its centre within the reach - every view the
      * wheel can take across it - is the plane's own ground to its corners,
      * and the swap shows only the projections' parting (within 1,000 km of
@@ -627,6 +651,22 @@ public final class GlobeFrame {
 
     /** A copy's planeDrawsKm(), its view's; NaN in a view of its own. */
     private double drawsKm = Double.NaN;
+
+    /**
+     * Whether the city's plane's own far nodes are drawn wherever the world's square holds the ground at a scale, the reach and
+     * planeDrawsKm() or not (MS2, Jerus 2026-10-26: "look at the wierd resolution by just panning a few more kms"): every scale closer
+     * than the handoff, the plane's own - tierOf() says PLANE. There the GROUND tier past the reach draws the plane's ground at the
+     * scale's own stride (MapFrame.nodePlotsAt(): 8, 4, 2 or 1 plots a pixel) through the camera, as the plane draws it inside the
+     * reach, and the far rule (groundPiece()) only where the square does not hold the ground - the fifth of the planet farthest from
+     * the city. At the handoff and wider the plane's nodes are drawn out to planeDrawsKm() alone, as they were.
+     */
+    public static boolean planeDrawnPastReach(double kmPx) { return tierOf(kmPx) == PLANE; }
+
+    /** ...for this view: its scale's, or a copy's view's (the half-resolution frame a moving view is drawn at keeps the rule of the view it is a copy of). */
+    public boolean planeDrawnPastReach() { return pastReach == null ? planeDrawnPastReach(kmPx) : pastReach; }
+
+    /** A copy's planeDrawnPastReach(), its view's; null in a view of its own. */
+    private Boolean pastReach;
 
     /** The pixels of a far node of the city's plane, its colours (MapTiles.nodePixels()) - null where it is not drawn yet. */
     public interface NodePixels { int[] at(long nx, long ny); }
@@ -648,11 +688,13 @@ public final class GlobeFrame {
      * The GROUND tier near the city (★E9; spec-globe 3.5's "cheaper GROUND
      * tier"): the screen's pixels sx in [i0, i1), sy in [j0, j1) into out
      * (outW a row), each pixel's centre through the globe to the city's
-     * plane and, within planeDrawsKm() of the city, the colour of the
-     * plane's far node pixel under it at `plots` plots a pixel
-     * (MapFrame.nodePlots()'s level) - exactly the plane's ground, its city
-     * and edge with it, so the swap shows only the projections' parting;
-     * beyond it, and where a node is not drawn yet, `beyond`'s colour; off the disc
+     * plane and, within planeDrawsKm() of the city - or, at the plane's
+     * scales (planeDrawnPastReach(), MS2), wherever the world's square holds
+     * the pixel - the colour of the plane's far node pixel under it at
+     * `plots` plots a pixel (MapFrame.nodePlots()'s level) - exactly the
+     * plane's ground, its city and edge with it, so the swap shows only the
+     * projections' parting; beyond it, off the square, and where a node is
+     * not drawn yet, `beyond`'s colour; off the disc
      * `space`. The two projections composed as one matrix on the point's
      * unit vector, not through its latitude and longitude (planeAt(), which
      * a harness holds to the camera's and the plane's own). Returns how many
@@ -681,22 +723,25 @@ public final class GlobeFrame {
                 }
                 double a = Math.sqrt(1 - s2);
                 double up = c.ue * e + c.un * nn + c.ua * a;
-                if (up >= c.cosDraws) {
+                if (up >= c.cosDraws && 1 + up > 0) {
                     double k = rPlots * Math.sqrt(2 / (1 + up));
                     double px = half + k * (c.ee * e + c.en * nn + c.ea * a), py = half - k * (c.ne * e + c.nn * nn + c.na * a);
-                    double fx = px * perSpan, fy = py * perSpan;
-                    long nx = (long) Math.floor(fx), ny = (long) Math.floor(fy);
-                    if (nx != lastNx || ny != lastNy) {
-                        lastNx = nx;
-                        lastNy = ny;
-                        node = nodes.at(nx, ny);
+                    // The world's square holds the pixel (MS2: where the plane is drawn past planeDrawsKm() the square is all there is to hold it).
+                    if (px >= 0 && py >= 0 && px < World.SIDE && py < World.SIDE) {
+                        double fx = px * perSpan, fy = py * perSpan;
+                        long nx = (long) Math.floor(fx), ny = (long) Math.floor(fy);
+                        if (nx != lastNx || ny != lastNy) {
+                            lastNx = nx;
+                            lastNy = ny;
+                            node = nodes.at(nx, ny);
+                        }
+                        if (node != null) {
+                            int u = (int) ((fx - nx) * n), v = (int) ((fy - ny) * n);
+                            out[row + i] = node[(v < n ? v : n - 1) * n + (u < n ? u : n - 1)];
+                            continue;
+                        }
+                        missing++;
                     }
-                    if (node != null) {
-                        int u = (int) ((fx - nx) * n), v = (int) ((fy - ny) * n);
-                        out[row + i] = node[(v < n ? v : n - 1) * n + (u < n ? u : n - 1)];
-                        continue;
-                    }
-                    missing++;
                 }
                 out[row + i] = beyond.colour(i, j, a * c.cosL0 - nn * c.sinL0, e, a * c.sinL0 + nn * c.cosL0);
             }
@@ -729,13 +774,23 @@ public final class GlobeFrame {
         return s2 <= 1 && c.ue * e + c.un * nn + c.ua * Math.sqrt(1 - s2) >= c.cosReach;
     }
 
-    /** ...and within planeDrawsKm(): where ground() draws the city's plane. */
+    /**
+     * ...and within planeDrawsKm() - or, at the plane's scales (planeDrawnPastReach(), MS2), anywhere the world's square holds it: where
+     * ground() draws the city's plane.
+     */
     public boolean drawsHold(double sx, double sy) {
         Composed c = composed();
         double x = (sx - width / 2) * c.m, y = (height / 2 - sy) * c.m;
         double e = (x * c.cosR - y * c.sinR) / EarthProj.RADIUS_M, nn = (x * c.sinR + y * c.cosR) / EarthProj.RADIUS_M;
         double s2 = e * e + nn * nn;
-        return s2 <= 1 && c.ue * e + c.un * nn + c.ua * Math.sqrt(1 - s2) >= c.cosDraws;
+        if (s2 > 1) return false;
+        double a = Math.sqrt(1 - s2), up = c.ue * e + c.un * nn + c.ua * a;
+        if (up < c.cosDraws) return false;
+        if (!c.wholeSquare) return true;
+        if (!(1 + up > 0)) return false;
+        double k = EarthProj.RADIUS_M * Math.sqrt(2 / (1 + up)) / World.PLOT_M, half = World.SIDE / 2.0;
+        double px = half + k * (c.ee * e + c.en * nn + c.ea * a), py = half - k * (c.ne * e + c.nn * nn + c.na * a);
+        return px >= 0 && py >= 0 && px < World.SIDE && py < World.SIDE;
     }
 
     /**
@@ -748,6 +803,8 @@ public final class GlobeFrame {
      */
     private static final class Composed {
         final double lat, lon, kmPx, roll, reach, draws;
+        /** The plane's nodes are drawn wherever the world's square holds the pixel (planeDrawnPastReach()), so cosDraws is -1, every pixel within it. */
+        final boolean wholeSquare;
         final double m, cosR, sinR, cosL0, sinL0, cosReach, cosDraws;
         final double ee, en, ea, ne, nn, na, ue, un, ua;
 
@@ -758,6 +815,7 @@ public final class GlobeFrame {
             roll = f.roll;
             reach = f.reachKm;
             draws = f.planeDrawsKm();
+            wholeSquare = f.planeDrawnPastReach();
             double r = StrictMath.toRadians(roll), l0 = StrictMath.toRadians(lat), lc = StrictMath.toRadians(f.cityLat);
             double d = StrictMath.toRadians(lon - f.cityLon);
             m = kmPx * 1000;
@@ -778,11 +836,11 @@ public final class GlobeFrame {
             un = sinLc * cosL0 - cosLc * cosD * sinL0;
             ua = sinLc * sinL0 + cosLc * cosD * cosL0;
             cosReach = StrictMath.cos(Math.min(Math.PI, reach * 1000 / EarthProj.RADIUS_M));
-            cosDraws = StrictMath.cos(Math.min(Math.PI, draws * 1000 / EarthProj.RADIUS_M));
+            cosDraws = wholeSquare ? -1 : StrictMath.cos(Math.min(Math.PI, draws * 1000 / EarthProj.RADIUS_M));
         }
 
         boolean of(GlobeFrame f) {
-            return lat == f.lat && lon == f.lon && kmPx == f.kmPx && roll == f.roll && reach == f.reachKm && draws == f.planeDrawsKm();
+            return lat == f.lat && lon == f.lon && kmPx == f.kmPx && roll == f.roll && reach == f.reachKm && draws == f.planeDrawsKm() && wholeSquare == f.planeDrawnPastReach();
         }
     }
 

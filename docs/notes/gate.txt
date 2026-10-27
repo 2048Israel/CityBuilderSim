@@ -1,8 +1,12 @@
-# gate of Merge batch/HY1: hydro Station, a template that needs a river and a drop on the Earth's map; not research, it goes with the electricity run, 0.8.54
+# gate of Merge batch/MS2: the near view drawn the same past the reach: past 300 km from the city the close map shows speckled ground and round lakes (the far rule at a near scale); draw it as the plane does, anywhere on the Earth; after BL1, in the same session (Jerus, 2026-10-26, on 0.8.52: "look a the wierd resolution by just panning a few more kms"), 0.8.55
 # date: 2026-10-26
 # earth-2.bin: named
-# suite: 146 harnesses run in 1365s: 145 passed, 1 failed
-# timing: 11 harnesses run in 327s: 10 passed, 1 failed
+# suite: 146 harnesses run in 1879s: 145 passed, 1 failed
+# timing: 11 harnesses run in 444s: 9 passed, 2 failed; red on the merge, main passing today, passed on Jerus's word: "Ship it" (Jerus, 2026-10-26: MS2 past tonight's speed lines this once; the PC loaded by two batches, code MS2 did not touch slowed alike): MapCheck
+# timing red on main too, today: MapCheck | 3 FAILED
+# timing red on main too, today: KeptCheck | exit 1
+# timing red on main too, today: KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL
+# timing red on main too, today: KeptCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

@@ -27,7 +27,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| MS2 | The near view drawn the same past the reach: past 300 km from the city the close map shows speckled ground and round lakes (the far rule at a near scale); draw it as the plane does, anywhere on the Earth; after BL1, in the same session (Jerus, 2026-10-26, on 0.8.52: "look a the wierd resolution by just panning a few more kms") | [MS2](docs/queue/MS2.md) |
 | ET6 | Bridges: short crossings to 1,020 m over fresh or shallow water, long bridges as all-or-nothing orders that link landmasses | [spec-earth2-terrain §10](docs/studies/spec-earth2-terrain.md#10-batches) |
 | CC1-S | Keep care essential even when it is not financially self-supporting; investigate why seeds 4 and 5 still stall around 3,000 people despite care, school and pensions | `runs/fixCC1-notes.md` ★ |
 | CC1-M | The city map did not survive a save once: LongPlaytest -Dplaytest.childcare at m1,184 (slot 3), a run the map sidecar has not met before; not childcare's - nothing in the model reads the map; MapCheck's area (Jerus, 2026-10-18: its own batch) | `runs/fixCC1-notes.md` 7 |
@@ -82,6 +81,7 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
+| MS2-C | MS2 (0.8.55): the eye check on the PC - pan from the city out past 300 km at the 2 km scale and on a few thousand km: the same ground all the way, lakes in their shapes, the full legend | his eyes | [MS2 notes](docs/queue/MS2-notes.md) |
 | HY1-C | HY1 (0.8.54): the Hydro Station's map side. Not done: a dam drawn across the river where a station stands; the land office's offers naming the river sites they hold; the eye check of the card's river line and the NO RIVER WITH A DROP page | the map's files, after MS2 (BL1 and MS2 change the land office and the ground's drawing) | [HY1 notes](docs/queue/HY1-notes.md) |
 | BL1-C | BL1 (0.8.53): the eye check on the PC - buy an irregular stretch along a coast and one across two sides of the city; at the globe's wider views the offers outside the city's edge; an offer's edge on its ground; buy picked ground through the card's bond or note. The grain is settled: a block of the city's level stays (Jerus, 2026-10-26: "yes city grid size i think is fine") | his eyes | [BL1 notes](docs/queue/BL1-notes.md) |
 | MS1-C | MS1 (0.8.52): the eye check on the PC - at 50x, the header over the map; drag across offers, two months, buy; pan by a drag off the offers and the right button; the closest scale on the far side of the Earth; at the closest scale pan out past 300 km | his eyes | [MS1 notes](docs/queue/MS1-notes.md) |
