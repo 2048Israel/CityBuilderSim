@@ -91,6 +91,11 @@ list is cited by letter from other files and stays).
   written** (`wait.sh --row` ends on the mended predecessor; `batch.md` 7 says
   merge, carry on, ask only on a removal).
 
+Not built: a predecessor blocked to Pending after its successor started (a
+blocked batch goes under Pending at once) leaves the successor built on commits
+main will not take. `day.sh` shows it waiting, `ship.sh` stops it; the
+orchestrator re-cuts it from main, carrying over its own commits.
+
 Taken without a call, for the reader to overturn: the old way of `ship.sh` and
 `day.sh` out (a branch with no ship file and no `--no-tag` now stops, said:
 write the ship file, or ship it `--no-tag`); BP1's calls section folded into the
