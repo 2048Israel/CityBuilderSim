@@ -976,7 +976,10 @@ public final class BuildCard {
        (Game.interestTest(), carriesItsWholeCost()'s answer with its
        figures), and its words say what one would earn, its interest and the
        rate. A landlord's home is not asked it: the mortgage lender's test
-       decides it (Game.buysOnMortgage(), THE LANDLORDS' MORTGAGES).
+       decides it (Game.buysOnMortgage(), THE LANDLORDS' MORTGAGES), and
+       since I13-L the card asks that, as its last gate in INTEREST's place
+       (LENDER, lenderGate(), through Game.lenderTest(): the call the
+       order makes, with the funds the landlord would put in).
        ===================================================================== */
 
     /** Where Game files a building's word: the branch under "Bank" (Game.consider()'s label), every other under its sector. */
@@ -986,8 +989,11 @@ public final class BuildCard {
         return !t.isOwnedBySector() && t.getCategory() == BuildingType.COMMERCIAL ? "Bank" : t.getSector();
     }
 
-    /** The first gate a building fails for investors now: the last, INTEREST, is consider()'s brake on its whole cost (0.7.122). */
-    public enum GateKind { DEPOSIT, LICENCE, STAFFING, LAND, LOSS, INTEREST }
+    /**
+     * The first gate a building fails for investors now: INTEREST is consider()'s brake on its whole cost (0.7.122), and
+     * the last, LENDER, a landlord's home's in its place - the mortgage lender's test (I13-L).
+     */
+    public enum GateKind { DEPOSIT, LICENCE, STAFFING, LAND, LOSS, INTEREST, LENDER }
 
     /** The resource a deposit refusal names (0.7.62): "iron" for an Iron Mine (and for none), "oil" for an Oil Well. */
     public static String depositWord(Resource r) {
@@ -1048,7 +1054,7 @@ public final class BuildCard {
         return new Gate(GateKind.LOSS, -estimate, 0, null, unfed(game, t) ? NO_FEED : null);
     }
 
-    /** Whether investors ask a building the INTEREST gate (0.7.122): every order but a landlord's home, which the mortgage lender's test decides. */
+    /** Whether investors ask a building the INTEREST gate (0.7.122): every order but a landlord's home, which the mortgage lender's test decides (lenderGate()). */
     static boolean asksInterest(Game game, BuildingsTemplate t, Sector owner) {
         return !game.buysOnMortgage(owner.key(), t);
     }
@@ -1071,6 +1077,20 @@ public final class BuildCard {
         return new Gate(GateKind.INTEREST, estimate, test.needs(), null, test.banned() ? banWords(game, owner) : null, test);
     }
 
+    /**
+     * The LENDER gate (I13-L): a landlord's home is not asked the INTEREST gate, the mortgage lender's test decides it
+     * (Game.considerOnMortgage(), THE LANDLORDS' MORTGAGES), and the card asks that, through the model's own door -
+     * Game.lenderTest(), the call the order makes for one. With its figures {the cover the rent gives the payment, what
+     * the lender asks of it} - or, short of the down payment, {the funds it would put down, the down payment}; null
+     * where the lender writes it or the building is not a landlord's home.
+     */
+    static Gate lenderGate(Game game, BuildingsTemplate t, Sector owner) {
+        Game.LenderTest test = game.lenderTest(owner.key(), t);
+        if (test == null || test.passes()) return null;
+        return test.shortOfDown() ? new Gate(GateKind.LENDER, test.cash(), test.down(), null, null, null, test)
+                : new Gate(GateKind.LENDER, test.coverage(), test.asks(), null, null, null, test);
+    }
+
     /** What an INTEREST gate says under a borrowing ban, in consider()'s words: "borrowing ban, 7 more months - it would need credit". */
     static String banWords(Game game, Sector owner) {
         return String.format("borrowing ban, %d more months - it would need credit",
@@ -1088,12 +1108,21 @@ public final class BuildCard {
      * for a conversion unit nothing feeds (0.7.103); INTEREST {what one would
      * earn a month, what it must} with the model's test in `test` - its
      * interest, the cost it is struck on, the rate - and the ban's words in
-     * `why` under a borrowing ban (0.7.122; interestGate()).
+     * `why` under a borrowing ban (0.7.122; interestGate()); LENDER {the cover the
+     * rent gives the mortgage's payment, what the lender asks of it} - or, short of
+     * the down payment, {the funds it would put down, the down payment} - with the
+     * lender's test in `lender` (I13-L; lenderGate()).
      */
-    public record Gate(GateKind kind, double a, double b, JobType licence, String why, Game.InterestTest test) {
+    public record Gate(GateKind kind, double a, double b, JobType licence, String why, Game.InterestTest test,
+                       Game.LenderTest lender) {
 
-        /** Every gate but INTEREST: no test of its own. */
-        public Gate(GateKind kind, double a, double b, JobType licence, String why) { this(kind, a, b, licence, why, null); }
+        /** INTEREST: the model's test. */
+        public Gate(GateKind kind, double a, double b, JobType licence, String why, Game.InterestTest test) {
+            this(kind, a, b, licence, why, test, null);
+        }
+
+        /** Every gate but INTEREST and LENDER: no test of its own. */
+        public Gate(GateKind kind, double a, double b, JobType licence, String why) { this(kind, a, b, licence, why, null, null); }
     }
 
     /**
@@ -1163,8 +1192,9 @@ public final class BuildCard {
         double free = game.freeGroundFor(t);
         if (t.getLandSqFt() > free) return landGate(ground, t, free);
         if (estimate <= 0) return lossGate(game, t, estimate);
-        // ...and consider()'s brake, the interest on its whole cost (0.7.122).
-        return interestGate(game, t, owner, estimate);
+        // ...and consider()'s brake, the interest on its whole cost (0.7.122) - a landlord's home's the lender's test (I13-L).
+        Gate interest = interestGate(game, t, owner, estimate);
+        return interest != null ? interest : lenderGate(game, t, owner);
     }
 
     /* =====================================================================
@@ -1195,7 +1225,7 @@ public final class BuildCard {
     /**
      * One building at every gate (R4).
      *
-     * @param gates    ore, licence, staff, land, pays and interest, in gate()'s order
+     * @param gates    ore, licence, staff, land, pays, interest and (a landlord's home's) the lender's test, in gate()'s order
      * @param estimate the investors' estimate of what one would make its owner a month
      * @param cost     what one would cost to build, its ground with it (BusinessInvestment.getCostOf())
      * @param payback  the months its estimate would take to earn its cost; NaN when it would not pay
@@ -1268,6 +1298,11 @@ public final class BuildCard {
         gates.add(!asked ? new GateMark(GateKind.INTEREST, Mark.NONE, null)
                 : interest == null ? new GateMark(GateKind.INTEREST, Mark.PASS, null)
                 : new GateMark(GateKind.INTEREST, Mark.FAIL, interest));
+        // ...and, in its place for a landlord's home, the mortgage lender's test (I13-L).
+        Gate lender = asked ? null : lenderGate(game, t, owner);
+        gates.add(asked ? new GateMark(GateKind.LENDER, Mark.NONE, null)
+                : lender == null ? new GateMark(GateKind.LENDER, Mark.PASS, null)
+                : new GateMark(GateKind.LENDER, Mark.FAIL, lender));
         double[] f = game.financingOf(owner.key(), t);
         return new Appraisal(t, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3],
                 weighed(game, t));

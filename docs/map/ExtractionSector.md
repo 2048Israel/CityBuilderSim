@@ -66,7 +66,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (25), [LandManager](LandManager.md) (15), [BusinessInvestment](BusinessInvestment.md) (15), [Deposit](Deposit.md) (10), [SpreadPlanner](SpreadPlanner.md) (8), [Resource](Resource.md) (5), [ProcessingSector](ProcessingSector.md) (5), [Good](Good.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (16):** [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMining](CopperMining.md), [CopperMiningCheck](CopperMiningCheck.md), [Forestry](Forestry.md), [ForestryCheck](ForestryCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [MaterialsCheck](MaterialsCheck.md), [Mining](Mining.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md)
+**Used by (17):** [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMining](CopperMining.md), [CopperMiningCheck](CopperMiningCheck.md), [Forestry](Forestry.md), [ForestryCheck](ForestryCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [MaterialsCheck](MaterialsCheck.md), [Mining](Mining.md), [OreView](OreView.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md)
 
 ## Sections
 

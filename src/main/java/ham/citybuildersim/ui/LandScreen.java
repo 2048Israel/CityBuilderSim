@@ -903,22 +903,44 @@ final class LandScreen {
             + " a square metre today, then the building's own cash cost; the figure at its right is the ground's"
             + " share of the two.";
 
-    /** The Ore card: the deposits, the tonnes, those under mines (since 0.7.124 the sites the mines take, a large mine's twenty: Game.minesCommitted()), whether ore lies undug, and the oil (0.7.61). */
+    /** The Ore card: iron's deposits, tonnes, those under mines (since 0.7.124 the sites the mines take, a large mine's twenty: Game.minesCommitted()), whether ore lies undug, and the oil (0.7.61); the other ores are otherOres(). */
     record Ore(String deposits, String tonnes, String mines, boolean undug, String popped, String oil) { }
 
     Ore ore() {
         LandManager land = ui.game.getLandManager();
-        int deposits = land.getIronDeposits();
-        int mines = ui.game.minesCommitted();
+        OreView.Ore iron = OreView.ores(ui.game).get(0);
+        int deposits = iron.deposits();
         int gained = depositsBeforeBuying >= 0 ? deposits - depositsBeforeBuying : 0;
         long oilSites = ui.game.getCityLand().totalSites(Resource.OIL);
         return new Ore(formatter.format(deposits) + (deposits == 1 ? " deposit" : " deposits"),
-                shortNumber(land.getIronReserveTonnes()) + " t in the ground",
-                formatter.format(mines) + " under mines, standing or on site",
-                mines < deposits,
+                shortNumber(iron.tonnes()) + " t in the ground",
+                formatter.format(iron.mines()) + " under mines, standing or on site",
+                iron.undug(),
                 gained > 0 ? "+" + gained + (gained == 1 ? " deposit" : " deposits") : null,
                 oilSites > 0 ? "oil: " + formatter.format(oilSites) + (oilSites == 1 ? " site, " : " sites, ")
                         + LandMap.tonnes(land.getRemaining(Resource.OIL)) + " in the ground" : "oil: none owned");
+    }
+
+    /**
+     * One of the Ore card's other ores (I13-L): coal, stone, copper or uranium, where the city owns a site of it - its name, its
+     * deposits and tonnes, the sites its mines take, whether it lies undug and the words for that, and the industry that digs it
+     * (null for none): every figure OreView's.
+     */
+    record OreLine(String name, String deposits, String tonnes, String mines, boolean undug, String undugWords, Sector industry) { }
+
+    /** The other ores the city's ground holds, each as the card words it; none while the city owns only iron (OreView.ores() past its first row). */
+    List<OreLine> otherOres() {
+        List<OreLine> out = new ArrayList<>();
+        List<OreView.Ore> all = OreView.ores(ui.game);
+        for (OreView.Ore o : all.subList(1, all.size())) {
+            Sector digger = o.hasDigger() ? ui.game.getSectors().byKey(o.sector()) : null;
+            out.add(new OreLine(Character.toUpperCase(o.words().charAt(0)) + o.words().substring(1),
+                    formatter.format(o.deposits()) + (o.deposits() == 1 ? " deposit" : " deposits"),
+                    shortNumber(o.tonnes()) + " t in the ground",
+                    formatter.format(o.mines()) + " under mines, standing or on site",
+                    o.undug(), digger != null ? o.words() + " that nothing is digging" : "no industry digs " + o.words() + " yet", digger));
+        }
+        return out;
     }
 
     /** The Ore card's (i). */
@@ -926,8 +948,10 @@ final class LandScreen {
             + " tonnes of its field's type, hematite or magnetite. Deposits come only with land, a whole field at a"
             + " time: an offer holds every field whose"
             + " centre lies in it - all its sites and all its tonnes, its row says how many - and the ore is paid"
-            + " for inside its price. Oil lies in the world's fields as ore does, sold the same way, and an Oil Well"
-            + " stands on an oil site. Click the card for Build › Industry, where the iron mines are.";
+            + " for inside its price. Coal, copper and stone lie in fields the same way: each has its own lines here once"
+            + " the city owns a site of it, with the sites its mines take and a warning where nothing is digging it - click"
+            + " a line for the industry that digs it. Oil lies in the world's fields as ore does, sold the same way, and an Oil Well"
+            + " stands on an oil site. Click the card for Build › Industry, where the mines are.";
 
     /** The sectors waiting on ground, by name: Game.getLandBlockedSectors(), as the sector pages and the inbox read it. */
     List<String> waitingNames() {
@@ -1639,23 +1663,56 @@ final class LandScreen {
         Label oil = new Label(o.oil());
         oil.setWrapText(true);
         oil.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-        VBox card = worthCard(Icons.ORE, Palette.ORE, "Ore and oil", ORE_INFO, top, tonnes, mines, oil);
+        VBox card = worthCard(Icons.ORE, Palette.ORE, "Ore and oil", ORE_INFO, top, tonnes, mines);
         if (o.undug()) {
             Label undug = new Label("ore that nothing is digging");
             undug.setWrapText(true);
             undug.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.WARN));
             card.getChildren().add(undug);
         }
+        // ...then the other ores the city's ground holds (I13-L), and the oil last.
+        for (OreLine line : otherOres()) card.getChildren().add(oreBlock(line));
+        card.getChildren().add(oil);
         String rest = WORTH_CARD;
         card.setStyle(rest + Palette.EDGE + "; -fx-cursor: hand;");
         card.setOnMouseEntered(e -> card.setStyle(rest + Palette.ACCENT + "; -fx-cursor: hand;"));
         card.setOnMouseExited(e -> card.setStyle(rest + Palette.EDGE + "; -fx-cursor: hand;"));
-        Tooltip tip = new Tooltip("Iron mines are built under Build › Industry. Click to go there.");
+        Tooltip tip = new Tooltip("Mines are built under Build › Industry. Click to go there.");
         tip.setShowDelay(Duration.millis(300));
         Tooltip.install(card, tip);
         card.setOnMouseClicked(e -> ui.buildScreen.openCategory(BuildAdvice.INDUSTRY));
         if (popped != null) UserInterface.popPip(popped);
         return card;
+    }
+
+    /** One of the other ores on the Ore card (I13-L): its figures in two lines, a warning where nothing is digging it, and a click to the industry that digs it. */
+    VBox oreBlock(OreLine l) {
+        Label head = new Label(l.name() + ": " + l.deposits() + ", " + l.tonnes());
+        head.setWrapText(true);
+        head.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));
+        Label mines = new Label(l.mines());
+        mines.setWrapText(true);
+        mines.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));
+        VBox box = new VBox(2, head, mines);
+        if (l.undug()) {
+            Label undug = new Label(l.undugWords());
+            undug.setWrapText(true);
+            undug.setStyle(Palette.words(Palette.SIZE_LABEL, l.industry() != null ? Palette.WARN : Palette.TEXT_MUTED));
+            box.getChildren().add(undug);
+        }
+        box.setStyle("-fx-padding: 4 0 0 0;" + (l.industry() != null ? " -fx-cursor: hand;" : ""));
+        Tooltip tip = new Tooltip(l.industry() != null ? l.industry().label() + " digs it. Click for its page."
+                : "No industry digs " + l.name().toLowerCase(java.util.Locale.ROOT) + " yet.");
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(box, tip);
+        if (l.industry() != null) {
+            Sector industry = l.industry();
+            box.setOnMouseClicked(e -> {
+                e.consume();
+                ui.sectorScreen.openSectorBooks(industry, SectorScreen.SECTOR_PAGES[0]);
+            });
+        }
+        return box;
     }
 
     VBox waitingCard() {

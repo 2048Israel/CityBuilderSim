@@ -1,11 +1,10 @@
-# gate of Merge batch/MS3: the slanted ground: the near map, away from the city, smeared into diagonal streaks - patches as slivers, shores sawtoothed (Goose Bay seen from a Singapore city, 13,800 km out, near the square's edge where the equal-area plane distorts 4.5:1); find the cause, fix it, a check that measures it; after TM3, before MP1 (Jerus, 2026-10-26: "far side of the map has another issue well mid far, basiclaly it ends up wierdly slanted"; "yes the rec option"; "in that run location was signapore"), 0.8.58
+# gate of Merge batch/I13-L: the landlords' card asks the mortgage lender's test, and the land office's Ore card covers every ore, not iron's alone (Jerus, 2026-10-18), 0.8.60
 # date: 2026-10-27
 # earth-2.bin: named
-# suite: 149 harnesses run in 1266s: 148 passed, 1 failed
-# timing: 12 harnesses run in 474s: 11 passed, 1 failed; its red lines were judged side by side with main's, below
-# timing red within 15% of main's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 3.8 ms, batch 4.3 ms (+13.2%), budget 5 ms]
-# timing red within 15% of main's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 58 ms of the wall clock, the median month FAIL   [main 58.3 ms, batch 59.0 ms (+1.3%), budget 58 ms]
-# timing red within 15% of main's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
+# suite: 149 harnesses run in 1428s: 148 passed, 1 failed
+# timing: 12 harnesses run in 405s: 11 passed, 1 failed; its red lines were judged side by side with main's, below
+# timing red within 15% of main's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 3.83 ms, batch 4.25 ms (+10.8%), budget 5 ms]
+# timing red within 15% of main's (paired): MapCheck | 2 FAILED   [the harness's own count of the timing reds above]
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED
