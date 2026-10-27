@@ -16,24 +16,17 @@ rem
 rem  Not here: the 80-run ensemble, tools/ensemble/ensemble.sh in Git Bash, run
 rem  only for a batch whose playtest trace moves (EN1, 2026-10-20).
 rem
-rem  Timing (TM1, 2026-10-18; TM2, 2026-10-25): batches check side by side.
+rem  Timing (TM1, 2026-10-18; GP1, 2026-10-27): batches check side by side.
 rem  When another batch's JVM or Jerus's game is running as the suite starts
 rem  (tools\jvms.ps1), the suite times soft (-Dcbs.timing=soft): a timing
 rem  figure over its budget says SOFT on its line and is not counted, and a
-rem  line says so. --timing is always hard, and it first waits for a quiet
-rem  minute (tools\jvms.ps1 -Quiet): four empty looks in a row, 15 s apart,
-rem  where a look that finds another batch's JVM starts the count over - a
-rem  runner that starts its JVMs one after another leaves a gap that one
-rem  look can fall in. At most 30 minutes; then it runs hard all the same and
-rem  says so. The game is not waited for (CBS_QUIET_GAME=1 waits for it too):
-rem  a line says it runs. The wait's lines show as they come.
+rem  line says so. --timing is always hard, and it starts at once: the quiet
+rem  minute it waited for (TM2) is gone, since ship.sh judges a timing red
+rem  against main's own run in the same minutes (TM3).
 rem
 rem  An option it does not know is refused with exit 2 (--pick is
 rem  batch-check.sh's): taken for a harness name it ran none and said All clear
 rem  (BP1, 2026-10-25).
-rem  A self-test hook (tools/quiet-selftest.sh): with CBS_TIMING_WAIT_ONLY set,
-rem  --timing does the wait right after the options are read - no compile, no
-rem  harness - and exits with the wait's exit code (0 quiet, 3 the cap).
 rem
 rem  It writes nothing git tracks unless --maps is given: this folder pulls
 rem  main every ten minutes, and a regenerated docs\ here would stop the pull
@@ -71,15 +64,6 @@ if "!ARG:~0,2!"=="--" (
 set "NAMES=!NAMES! %~1" & shift & goto args
 :argsdone
 
-rem --- the self-test hook (TM2): --timing with CBS_TIMING_WAIT_ONLY waits and stops, before the compile ---
-if not "%TIMING%"=="1" goto nohook
-if not defined CBS_TIMING_WAIT_ONLY goto nohook
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\jvms.ps1 -Quiet
-set "WAITRC=%errorlevel%"
-echo timing    hard - the timing harnesses alone (CBS_TIMING_WAIT_ONLY: not run)
-exit /b %WAITRC%
-:nohook
-
 set "JAVA=java"
 where java >nul 2>nul || set "JAVA=C:\Program Files\Java\jdk-21\bin\java.exe"
 
@@ -110,10 +94,10 @@ for %%M in (base graphics controls fxml) do (
     for %%J in ("%M2%\org\openjfx\javafx-%%M\21\*.jar") do set "CP=!CP!;%%~fJ"
 )
 
-rem --- timing: hard after a quiet minute, or soft while another batch's JVM or the game runs (TM1, TM2) ---
+rem --- timing: hard for --timing, or soft while another batch's JVM or the game runs (TM1) ---
 set "TIMED="
 if "%FAST%"=="1" goto timed
-if "%TIMING%"=="1" goto wait
+if "%TIMING%"=="1" goto hard
 set "OTHERS=0"
 set "GAME=0"
 for /f "tokens=1,2" %%A in ('powershell -NoProfile -ExecutionPolicy Bypass -File tools\jvms.ps1 2^>nul') do (
@@ -121,10 +105,6 @@ for /f "tokens=1,2" %%A in ('powershell -NoProfile -ExecutionPolicy Bypass -File
     set "GAME=%%B"
 )
 goto soft
-:wait
-rem --timing: the wait prints its own lines as they come, so it is not read through for /f.
-rem It ends 0 (a quiet minute) or 3 (the 30-minute cap, said): hard either way, and the game line is its.
-powershell -NoProfile -ExecutionPolicy Bypass -File tools\jvms.ps1 -Quiet
 :hard
 set "TIMED=-Dcbs.timing=hard"
 set "NAMES=!NAMES! --timing"

@@ -91,7 +91,7 @@ cat > "$TA/main/batch-check.sh" <<'EOF'
 cd "$(dirname "$0")" || exit 1
 OUT=target/checks; mkdir -p "$OUT"; MODE=suite; NAMED=""
 for a in "$@"; do case "$a" in --fast) MODE=fast ;; --timing) MODE=timing ;; -*) ;; *) NAMED="$NAMED $a" ;; esac; done
-[ -z "$STUB_LOG" ] || echo "run: mode=$MODE args='$*' cwd=$(basename "$(pwd)") JDK='$JDK_JAVA_OPTIONS' paired='$CBS_TIMING_PAIRED' shipcopy='$CBS_SHIP_COPY'" >> "$STUB_LOG"
+[ -z "$STUB_LOG" ] || echo "run: mode=$MODE args='$*' cwd=$(basename "$(pwd)") JDK='$JDK_JAVA_OPTIONS' shipcopy='$CBS_SHIP_COPY'" >> "$STUB_LOG"
 [ -z "$STUB_REWRITE_SHIP" ] || { awk 'NR == 3 { print "echo \"ZZ-the-branchs-ship.sh-ran\"" } { print }' ship.sh > "$OUT/ship.new" && cat "$OUT/ship.new" > ship.sh; }   # ship.sh rewritten in place under the shell reading it
 [ -z "$STUB_RACE" ] || { git -C "$STUB_RACE" pull -q --ff-only origin main && git -C "$STUB_RACE" commit -q --allow-empty -m "shipped meanwhile" && git -C "$STUB_RACE" push -q origin HEAD:main; STUB_RACE=; }
 case "$MODE" in
@@ -293,9 +293,8 @@ tm() { STUB_TEXIT=4 STUB_TREDS="$PR" STUB_TTSV="$PT" STUB_PAIR="$PP" "$@"; }   #
 LABEL="timing: a red where the batch is as fast as main passes, named with the paired medians"; : > "$STUB_LOG"
 STUB_FIGS_MAIN="44 45 46" STUB_FIGS_BATCH="46 45 44" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'judged side by side with main' $TA/out.txt && grep -q -F 'PlanCheck [main 45 ms, batch 45 ms' $TA/out.txt"
-LABEL="timing: ...main's classes and the merge's in turn, three rounds, in the same minutes (no quiet minute)"
+LABEL="timing: ...main's classes and the merge's in turn, three rounds, in the same minutes"
 ok turns_are "main-timing main main-timing main main-timing main"
-LABEL="timing: ...the paired rounds ask for no quiet minute"; ok sh -c "[ \$(grep -c \"paired='1'\" $STUB_LOG) = 6 ]"
 LABEL="timing: a batch 10% slower than main is inside the margin and passes"
 STUB_FIGS_MAIN="40 40 40" STUB_FIGS_BATCH="44 44 44" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'PlanCheck [main 40 ms, batch 44 ms (+10.0%)' $TA/out.txt"

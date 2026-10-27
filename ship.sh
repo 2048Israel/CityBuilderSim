@@ -67,8 +67,8 @@
 #       new lines (a harness's own "exit N" and "N FAILED" lines pass with a line of
 #       its that does, when no other line of it is left unnamed), 1 and 2 stop. On a chatgpt/ or gemini/
 #       branch tools.Names too: said, never a gate. Then the timing harnesses
-#       alone and hard (batch-check.sh --timing), after a quiet minute with no
-#       other batch's JVM (TM2); its exit is 0, 3 or 4 alike, and the record
+#       alone and hard (batch-check.sh --timing), at once (GP1: no quiet minute, a
+#       red is judged against main's own run below); its exit is 0, 3 or 4 alike, and the record
 #       is no shortcut. Its red lines less the lines the suite step already
 #       judged (main's recorded reds, or reds passed with --red-ok) and less main's recorded
 #       lines are the timing's own: none, and it passes with no further run
@@ -566,7 +566,7 @@ else
                 for side in main batch; do
                     if [ "$side" = main ]; then DIR=$MT; else DIR=.; fi
                     rm -f "$DIR/target/checks/timing.tsv"
-                    ( cd "$DIR" && CBS_TIMING_PAIRED=1 ./batch-check.sh --timing $PH ) > "target/checks/pair-$side-$r.out" 2>&1
+                    ( cd "$DIR" && ./batch-check.sh --timing $PH ) > "target/checks/pair-$side-$r.out" 2>&1
                     PC=$?
                     case "$PC" in 0|3|4) ;; *) LINE="$LINE $side: did not run (exit $PC, target/checks/pair-$side-$r.out);" ;; esac
                     if [ -s "$DIR/target/checks/timing.tsv" ]; then

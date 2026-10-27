@@ -41,6 +41,28 @@ made it, so each day's orchestrator arms its own, and yesterday's is
 deleted, not left to lapse after seven days: left, it wakes yesterday's
 whole context every hour, and two orchestrators may gate one branch.
 
+**The ready-branch wait** (GP1, Jerus 2026-10-27: "do it as soon as humanly
+possible"). From ship file to merge a gate took a median of about 60 minutes,
+because the hourly check-in was what found a ready branch. So each day the
+orchestrator also arms, once, as a background Bash command (`run_in_background`;
+no tokens while it waits):
+
+```
+sh tools/wait.sh --ship [--skip HELD...]
+```
+
+It ends, in one line, when an unmerged `batch/` branch on origin has its
+`docs/queue/<id>-ship.md`: `wait      done - ready to ship: A B (...)`. A branch
+that already has it ends it at once. The orchestrator then gates each id named,
+one at a time (the gate, below), and **arms the wait again after each gate**,
+so a branch that landed during the gate is picked up the moment it ends.
+`--skip` names the ids it holds with the ship file on (a gate stopped for
+Jerus's words, a branch waiting on his review), or the wait would end at once
+every time. Exit 4 (origin unreachable) is armed again after a look at why;
+the wait's notification is the only sign it has ended. **The hourly check-in
+stays**, as the fallback: a wait lost with its session, a lane stuck.
+`sh tools/wait-selftest.sh` tries it against a throwaway origin.
+
 **Two lanes, on files of their own**: the next two queued batches side by
 side, as sessions, and never more than two at once. A lane's next batch
 waits in the background for its predecessor's row to leave `QUEUE.md`
@@ -259,8 +281,8 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
    `Timing.verdict(ok, label)` (harness, label, measured, budget, unit,
    status, part), never from the label's prose, and times the red harnesses
    again with main's classes (a worktree of `main`) and the merge's **in
-   turn, back to back, three rounds** (`CBS_TIMING_ROUNDS`, at least two; no
-   quiet minute between them, the rounds are to share one load). The red
+   turn, back to back, three rounds** (`CBS_TIMING_ROUNDS`, at least two; the
+   rounds are to share one load). The red
    counts against the batch only if its median figure is **more than 15%**
    over main's (`tools/timing-pair.awk` holds the arithmetic and the dial;
    `CBS_TIMING_MARGIN` moves it for a test). Otherwise it passes, named in
@@ -275,7 +297,10 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
    named line records nothing. Wall-clock
    comparisons that are not a budget (MapCheck's "the view adds nothing a
    tile" compared two measured times) are `Timing` assertions too
-   (TimingCheck 6 holds it): soft in the suite, judged here.
+   (TimingCheck 6 holds it): soft in the suite, judged here. **The hard run
+   starts at once** (GP1, 2026-10-27): TM2's quiet minute, a wait of up to 30
+   minutes for no other batch's JVM, is gone, because this comparison, which
+   shares one load by design, is what judges a red under load.
 7. `--version X.Y.Z` only on Jerus's word. `--dry-run` runs everything, the
    gate included, prints what it would commit, tag and push, and keeps
    nothing. Harness names after `--` only with `--dry-run`: a partial suite
@@ -286,9 +311,8 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
    script as it goes. The new one runs from the next ship. After any change
    to `ship.sh` or `tools/timing-pair.awk`, `sh tools/ship-selftest.sh`
    runs it against a throwaway local origin with a stub `batch-check.sh`:
-   no JVM, about two minutes. After any change to the timing wait
-   (`tools/jvms.ps1`, the `--timing` of the two check scripts),
-   `sh tools/quiet-selftest.sh` tries it against real JVMs that come and go.
+   no JVM, about two minutes. After any change to `tools/wait.sh`,
+   `sh tools/wait-selftest.sh` (a throwaway origin too, about 20 seconds).
 
 ## The screen-check session
 
@@ -313,19 +337,12 @@ and Build* or `mvn -q compile`. Sessions check with Git Bash's
 too; without it it writes nothing git tracks, because the PC's copy pulls
 `main` and must stay clean). Batches check side by side here, and alongside
 Jerus's game, which nobody waits on him to close: `batch-check.sh` times
-every run soft but `--timing`, which waits for a quiet minute and then runs
-the timing harnesses alone and hard. A quiet minute is four empty looks in a
-row, 15 s apart (`tools/jvms.ps1 -Quiet`, and the same loop in sh over `ps`
-off the PC); a look that finds another batch's JVM starts the count again,
-because a runner that starts its JVMs one after another leaves a gap of a
-second or two that one look can fall in (TM2). It waits 30 minutes at most,
-then runs hard without the quiet minute and says so. The game is not waited
-for: a line says it runs, and `ship.sh` judges a timing red beside it side
-by side with main's classes, in the same minutes (TM3); `CBS_QUIET_GAME=1` on the gate's
-command waits for it too. `Batch check.bat` still times soft only while another batch's
-JVM or the game runs, and decides **once, at its start**, so a run of it that
-began alone stays hard when another starts beside it (lesson d); its
-`--timing` waits as above.
+every run soft but `--timing`, the gate's, which runs the timing harnesses
+alone and hard at once (GP1; TM2's quiet minute is gone), and `ship.sh` judges
+a timing red beside another batch's JVM or the game side by side with main's
+classes, in the same minutes (TM3). `Batch check.bat` times soft only while
+another batch's JVM or the game runs, and decides **once, at its start**, so a
+run of it that began alone stays hard when another starts beside it (lesson d).
 
 A batch shipped from the PC ships from a temp clone of `origin`, never this
 folder: `%TEMP%\cbs-<id>` (the scratchpad's path is past Windows' 260
