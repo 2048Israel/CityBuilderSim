@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### TM3 — the gate's timing judged side by side, main against the batch — 2026-10-27, ready, no tag (tooling), see docs/queue/TM3-notes.md
+A timing red at the gate was judged by one run of the merge's and one of main's minutes later, so a PC busy with Jerus's game stopped HY1, MS2 and CC1-S on map lines main itself misses.
+Now every timing assertion writes its figure and budget to `target/checks/timing.tsv` (`Timing.verdict(ok, label)`), and when the hard run has a red, `ship.sh` runs the red harnesses
+again with main's classes and the merge's in turn, three rounds, no quiet minute between them, and passes the red unless the batch's median is more than 15% over main's
+(`tools/timing-pair.awk` holds the arithmetic and the dial); the Gate-timing line and `gate.txt`'s `#` lines carry both medians. `--red-ok` reaches that step, and (the review) passes only the lines `--red-line` names, in the suite step too: without a `--red-line` it is refused.
+MapCheck's "the view adds nothing a tile", a comparison of two measured times that stayed hard in the soft suite, is a `Timing` assertion, and TimingCheck fails any other.
+`ship.sh` runs from a copy of itself, so a batch that changes it cannot rewrite it under the shell, and `--pick` picks TimingCheck whenever a `*Check.java` is in the diff (`pick-selftest.sh`).
+`ship-selftest.sh` 104 of 104 with stub figures; one end-to-end rehearsal on real JVMs.
+
 ### 0.8.57 — ET6, Bridges — 2026-10-26, ready, see docs/queue/ET6-notes.md
 Short crossings: a highway or railway now bridges up to 1,020 m (34 plots; 14 before) of fresh water or shallow sea, so a
 Halifax city crosses the Narrows where its two bridges stand; a street keeps 180 m, an arterial 420 m, and deep sea still

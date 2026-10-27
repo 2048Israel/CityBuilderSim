@@ -174,7 +174,7 @@ public class GlobeCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-110s %s%n", label, Timing.verdict(ok));
+        out.printf("%-110s %s%n", label, Timing.verdict(ok, label));
     }
 
     /** The planet's radius in metres (EarthProj.RADIUS_M), which the sections measure arcs and the disc by. */

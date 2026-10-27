@@ -1,8 +1,8 @@
-# gate of Merge batch/ET6: bridges: short crossings to 1,020 m over fresh or shallow water, long bridges as all-or-nothing orders that link landmasses, 0.8.57
+# gate of Merge batch/TM3: the gate's timing judged side by side: a timing red on the merge is timed again with main's classes and the merge's in turn, in the same minutes, and counts against the batch only if it is over 15% slower than main; no budget moves (Jerus, 2026-10-26, after HY1's gate stopped on MapCheck's load: "queue the TM3 batch"; moved to next, 2026-10-26: "Both, TM3 then MP1"), 0.8.57
 # date: 2026-10-27
 # earth-2.bin: named
-# suite: 149 harnesses run in 1116s: 148 passed, 1 failed
-# timing: 12 harnesses run in 356s: 11 passed, 1 failed
+# suite: 149 harnesses run in 1148s: 148 passed, 1 failed
+# timing: 12 harnesses run in 365s: 11 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

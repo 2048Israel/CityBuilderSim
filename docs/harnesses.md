@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**149 harness files, 15,682 labelled assertions.** AllChecks runs 149 of them.
+**149 harness files, 15,725 labelled assertions.** AllChecks runs 149 of them.
 
 ## Which harnesses read which class
 
@@ -259,7 +259,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, DenominationCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, ZoningCheck, ZoningViewCheck |
-| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, ZoningCheck, ZoningViewCheck |
+| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, StaleCheck, SupplierCreditCheck, TimingCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
@@ -11429,33 +11429,33 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L415 before the forgetting a draw makes few nodes, after it every node is new (
   - L419 a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)
 - **L421 10: what the kept chrome costs**
-- **L475 11: the panels are kept**
-  - L525 each month's redraw keeps the nodes the three panels drew (the same top nodes,
-  - L527 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L531 the nodes made in a month are few (
-- **L534 12: the kept panels against panels built new, in every state**
-  - L592 the kept panels' signatures equal the new panels' at every month, through every state (
-  - L594 the kept panels are the same pictures as the new ones at
-  - L616 one figure made wrong in the kept city panel (\"
-  - L618 ...and its picture
-  - L619 ...and the next kept draw sets it right again
-  - L636 the city panel's scroller is kept and stays where it was put (
-  - L656 a summary row drawn again under the pointer keeps its hover look, and loses it when the pointer goes
-  - L672 an inbox button that had the focus loses it at the next kept draw, as the rebuild took it
-- **L674 13: what the whole chrome costs, kept**
-- **L718 KeptCheck: the People page and the chrome kept between redraws (study UP4, UP2)**
-- **L733 1 and 2: the kept page, month after month, against a page built new**
-  - L788 each month's redraw keeps the page it drew (the same top node,
-  - L789 each month hands back nine in ten of the nodes the first draw made, or more (
-  - L791 most months make no node at all (
-  - L793 the kept page's signature equals the new page's at every month (
-- **L795 3: and its pixels**
-  - L797 the kept page and the new page are the same picture at
-  - L817 one figure made wrong on the kept page (\"
-  - L819 ...and its picture
-  - L820 ...and the next kept draw sets it right again
-- **L822 4: what reshapes the page**
-- **L857 5: what the kept month costs**
+- **L476 11: the panels are kept**
+  - L526 each month's redraw keeps the nodes the three panels drew (the same top nodes,
+  - L528 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L532 the nodes made in a month are few (
+- **L535 12: the kept panels against panels built new, in every state**
+  - L593 the kept panels' signatures equal the new panels' at every month, through every state (
+  - L595 the kept panels are the same pictures as the new ones at
+  - L617 one figure made wrong in the kept city panel (\"
+  - L619 ...and its picture
+  - L620 ...and the next kept draw sets it right again
+  - L637 the city panel's scroller is kept and stays where it was put (
+  - L657 a summary row drawn again under the pointer keeps its hover look, and loses it when the pointer goes
+  - L673 an inbox button that had the focus loses it at the next kept draw, as the rebuild took it
+- **L675 13: what the whole chrome costs, kept**
+- **L720 KeptCheck: the People page and the chrome kept between redraws (study UP4, UP2)**
+- **L735 1 and 2: the kept page, month after month, against a page built new**
+  - L790 each month's redraw keeps the page it drew (the same top node,
+  - L791 each month hands back nine in ten of the nodes the first draw made, or more (
+  - L793 most months make no node at all (
+  - L795 the kept page's signature equals the new page's at every month (
+- **L797 3: and its pixels**
+  - L799 the kept page and the new page are the same picture at
+  - L819 one figure made wrong on the kept page (\"
+  - L821 ...and its picture
+  - L822 ...and the next kept draw sets it right again
+- **L824 4: what reshapes the page**
+- **L859 5: what the kept month costs**
 
 ## KnownRedsCheck.java - 43 labelled assertions
 
@@ -18711,7 +18711,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L337 the month closes
   - L338 every month this harness played closed the audit (
 
-## TimingCheck.java - 74 labelled assertions
+## TimingCheck.java - 117 labelled assertions
 
 > The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the suite moves.
 > 
@@ -18727,87 +18727,132 @@ _(this harness does not label its checks through a helper - it prints its findin
 > What it has to prove:
 > ...
 
-  - L155 a measured figure against a zero budget
-- **L213 1. hard: a timing miss fails**
-  - L217 a measured figure against a zero budget
-  - L223 a figure within a budget it can meet
-  - L224 a figure within a budget it can meet prints OK
-  - L225 and the fixture counts nothing
-- **L233 2. soft: a timing miss is told, not counted**
-  - L236 a measured figure against a zero budget
-  - L238 the missed assertion's line says SOFT
-  - L239 it matches Timing.SOFT_LINE
-  - L240 it carries the figure, in ms
-  - L241 it carries the budget
-  - L242 and the fixture counts nothing
-  - L244 a known figure against a zero budget
-  - L245 a figure of 1.5 is told as 1.5 ms, budget 0 ms
-  - L247 a figure in nanoseconds against zero
-  - L248 the unit it names is the line's: 1.5 ns, budget 0 ns
-  - L249 and no milliseconds are told
-  - L252 below, with a figure equal to its budget
-  - L253 below(f, f), a strict miss, goes SOFT
-  - L254 and the fixture still counts nothing
-  - L258 below, with a figure equal to its budget
-  - L259 below(f, f) hard fails
-  - L260 and the fixture counts it
-  - L261 within, with a figure equal to its budget
-  - L262 within(f, f) hard holds: at most is not below
-- **L270 3. only a clock is soft**
-  - L276 a plain false assertion
-  - L277 soft: a false non-timing assertion still fails
-  - L278 and counted
-  - L280 false and a missed timing figure
-  - L281 soft: false && a miss fails
-  - L282 and counted
-  - L284 a missed timing figure and false
-  - L285 soft: a miss && false fails
-  - L286 and counted
-  - L288 an assertion after a FAIL that held a miss
-  - L289 it prints OK: the miss a failure swallowed is cleared
-  - L291 a missed timing figure alone
-  - L292 a miss alone is SOFT
-  - L293 and not counted
-  - L294 an assertion after a told SOFT line
-  - L295 it prints OK: the misses are cleared
-  - L297 a figure that is not a number
-  - L298 soft: a NaN figure fails, never measured
-  - L299 and counted
-  - L301 two missed figures in one condition
-  - L303 one SOFT line
-  - L304 it carries both figures and budgets
-  - L306 and the fixture counts nothing more
-- **L314 4. the property's values: soft is exactly \"soft\"**
-  - L316 soft() is true for soft
-  - L319 soft() is false for
-- **L344 5. across the JVM boundary: AllChecks forwards the property**
-  - L350 soft here: forwarded() is -D
-  - L352 soft here: the child's command carries it
-  - L354 soft here: the child JVM exits 0
-  - L355 soft here: and prints a SOFT line
-  - L359 unset here: forwarded() is null
-  - L360 unset here: the child's command carries no -D
-  - L363 unset here: the child JVM exits 1
-  - L364 unset here: and its line fails
-  - L368 a line that held
-  - L369 a line that went soft
-  - L370 a line that failed
-  - L374 AllChecks.softLines counts one in a log of a held, a soft and a failed line
-  - L378 and the temp log is removed
-- **L386 6. the suite goes through Timing**
-  - L388 the sources are at
-  - L397 the *Check sources are found
-  - L411 no *Check compares a figure against a *_MS or *_NS dial but through Timing
-  - L412 the one allowance still matches exactly one line (a stale one is a finding)
-  - L427 the harnesses that call Timing.within or below are exactly Timing.HARNESSES
-  - L435 each of them prints its assertion lines through Timing.verdict
-  - L446 no source but Timing.java holds the property's string literal
-  - L447 and Timing.java holds it, so that rule is not vacuous
-  - L453 AllChecks.HARNESSES holds every name in Timing.HARNESSES
-  - L454 and holds TimingCheck
-- **L462 7. with no miss held, the verdict is the old one**
-  - L466 verdict(true) is exactly OK,
-  - L467 verdict(false) is exactly the old failing word,
+  - L177 a measured figure against a zero budget
+- **L235 1. hard: a timing miss fails**
+  - L239 a measured figure against a zero budget
+  - L245 a figure within a budget it can meet
+  - L246 a figure within a budget it can meet prints OK
+  - L247 and the fixture counts nothing
+- **L255 2. soft: a timing miss is told, not counted**
+  - L258 a measured figure against a zero budget
+  - L260 the missed assertion's line says SOFT
+  - L261 it matches Timing.SOFT_LINE
+  - L262 it carries the figure, in ms
+  - L263 it carries the budget
+  - L264 and the fixture counts nothing
+  - L266 a known figure against a zero budget
+  - L267 a figure of 1.5 is told as 1.5 ms, budget 0 ms
+  - L269 a figure in nanoseconds against zero
+  - L270 the unit it names is the line's: 1.5 ns, budget 0 ns
+  - L271 and no milliseconds are told
+  - L274 below, with a figure equal to its budget
+  - L275 below(f, f), a strict miss, goes SOFT
+  - L276 and the fixture still counts nothing
+  - L280 below, with a figure equal to its budget
+  - L281 below(f, f) hard fails
+  - L282 and the fixture counts it
+  - L283 within, with a figure equal to its budget
+  - L284 within(f, f) hard holds: at most is not below
+- **L292 3. only a clock is soft**
+  - L298 a plain false assertion
+  - L299 soft: a false non-timing assertion still fails
+  - L300 and counted
+  - L302 false and a missed timing figure
+  - L303 soft: false && a miss fails
+  - L304 and counted
+  - L306 a missed timing figure and false
+  - L307 soft: a miss && false fails
+  - L308 and counted
+  - L310 an assertion after a FAIL that held a miss
+  - L311 it prints OK: the miss a failure swallowed is cleared
+  - L313 a missed timing figure alone
+  - L314 a miss alone is SOFT
+  - L315 and not counted
+  - L316 an assertion after a told SOFT line
+  - L317 it prints OK: the misses are cleared
+  - L319 a figure that is not a number
+  - L320 soft: a NaN figure fails, never measured
+  - L321 and counted
+  - L323 two missed figures in one condition
+  - L325 one SOFT line
+  - L326 it carries both figures and budgets
+  - L328 and the fixture counts nothing more
+- **L336 4. the property's values: soft is exactly \"soft\"**
+  - L338 soft() is true for soft
+  - L341 soft() is false for
+- **L366 5. across the JVM boundary: AllChecks forwards the property**
+  - L372 soft here: forwarded() is -D
+  - L374 soft here: the child's command carries it
+  - L376 soft here: the child JVM exits 0
+  - L377 soft here: and prints a SOFT line
+  - L381 unset here: forwarded() is null
+  - L382 unset here: the child's command carries no -D
+  - L385 unset here: the child JVM exits 1
+  - L386 unset here: and its line fails
+  - L390 a line that held
+  - L391 a line that went soft
+  - L392 a line that failed
+  - L396 AllChecks.softLines counts one in a log of a held, a soft and a failed line
+  - L400 and the temp log is removed
+- **L408 6. the suite goes through Timing**
+  - L410 the sources are at
+  - L419 the *Check sources are found
+  - L433 no *Check compares a figure against a *_MS or *_NS dial but through Timing
+  - L434 the one allowance still matches exactly one line (a stale one is a finding)
+  - L449 the harnesses that call Timing.within or below are exactly Timing.HARNESSES
+  - L462 each of them prints its assertion lines through Timing.verdict(ok, label)
+  - L480 no source but Timing.java holds the properties' string literals
+  - L481 and Timing.java holds them, so that rule is not vacuous
+  - L497 no assertion compares a measured time but through Timing
+  - L503 AllChecks.HARNESSES holds every name in Timing.HARNESSES
+  - L504 and holds TimingCheck
+- **L512 7. with no miss held, the verdict is the old one**
+  - L516 verdict(true) is exactly OK,
+  - L517 verdict(false) is exactly the old failing word,
+- **L534 8. the figures' record: each timing assertion writes its figure and budget for the gate**
+  - L541 a measured figure against a zero budget
+  - L542 no file named: none is written, and nothing is forwarded to a child
+  - L545 named: forwardedTsv() is -D
+  - L549 a measured figure against a zero budget
+  - L551 hard miss: one row of seven columns
+  - L553 ...the harness is the class that printed the line (this one), the label as printed
+  - L555 ...the figure is a measured one above the budget, the budget is the fixture's, in ms
+  - L557 ...it is FAIL, the first figure of its assertion
+  - L563 a measured figure against a zero budget
+  - L564 a figure that held
+  - L565 a figure in microseconds
+  - L567 soft: three rows, one for each assertion
+  - L568 ...the missed one is SOFT
+  - L569 ...the held one is OK with its figure and its budget
+  - L570 ...and the one in microseconds says so
+  - L576 two figures,\twith a tab\nand a line end
+  - L578 two figures in one condition: two rows, numbered 1 and 2, the one label
+  - L580 ...a tab or a line end in a label is a space, and a row stays one line of seven columns
+  - L587 a figure that was never measured
+  - L589 NaN, soft: the row says FAIL, as the verdict does
+  - L594 a figure after an unlabelled verdict
+  - L596 an unlabelled verdict writes no row, and what it judged is not told on the next line
+  - L603 the child's command carries the file
+  - L606 a child JVM writes its row to the file: TimingCheck's, FAIL
+- **L658 9. the margin's arithmetic: the batch against main, at the median of the paired rounds**
+  - L671 the dial is a margin of 15 percent (the brief's), told by the script
+  - L680 a batch exactly at the margin over main passes (the margin is a 'more than')
+  - L681 ...the line's notes carry both medians and the budget
+  - L682 ...and the harness's own count and exit pass with it
+  - L686 a hair over the margin stops: FAIL, over main's by more than the margin, the figures named
+  - L688 ...and the harness's own count and exit stop with it
+  - L691 the median decides, not one slow round of the batch's: [100 100 900] against main's 100 passes
+  - L693 ...nor one fast round of main's: main's median 900 against the batch's 100 passes
+  - L695 two rounds are a median of two (the mean): main 65, batch 105 stops
+  - L698 the margin is a dial: 30% slower passes at 40
+  - L701 a side with one figure has no median: FAIL, no pair to compare
+  - L703 no figures at all (the paired runs did not run): FAIL, no pair to compare
+  - L705 an assertion the pairs do not have (a batch's own new one, a label changed): FAIL, no pair
+  - L709 a label that prints a figure pairs with itself across the sides' digits (6B for 5B, 59 for 58)
+  - L712 a red with no missed figure behind it is no timing red: FAIL, and the harness's own count with it
+  - L716 a passing timing red beside a red that is no clock's: the second stops, and the harness's count with it
+  - L719 a harness that failed with no timing red of its own: FAIL
+  - L724 the harnesses to time again are those with a timing red among the lines: MapCheck, not GridCheck
 
 ## TradeBandCheck.java - 41 labelled assertions
 

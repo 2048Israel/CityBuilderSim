@@ -22,7 +22,12 @@
 #  The rules, the first that matches a changed file wins:
 #    pom.xml                          -> ALL
 #    AllChecks.java                   -> nothing (the guard reads it)
-#    a *Check.java or LongPlaytest    -> itself (a deleted one: nothing)
+#    a *Check.java or LongPlaytest    -> itself (a deleted one: nothing); and a
+#      *Check.java changed or added -> TimingCheck as well, which holds that no
+#      harness compares a figure against a *_MS or *_NS dial, or compares two
+#      measured times, but through Timing (ET6's BridgeCheck did, in 3 places;
+#      its own --pick never ran TimingCheck and only the gate's full suite
+#      caught it - TM3, 2026-10-27)
 #    a .java class in docs/harnesses.md's "Which harnesses read which class"
 #      table, as the fork point had it -> its readers; but a class more than
 #      CBS_PICK_FANOUT (default 50) harnesses read - Game, GameFiles,
@@ -164,7 +169,11 @@ FILENAME == ARGV[1] { idx[$1] = $2; nidx++; next }
     if (f == src "/AllChecks.java") next
     if (index(f, src "/") == 1 && f ~ /\.java$/) {
         rel = substr(f, length(src) + 2)
-        if (rel !~ /\// && (cls ~ /Check$/ || cls == "LongPlaytest")) { if (s != "D") print "H\t" cls; next }
+        if (rel !~ /\// && (cls ~ /Check$/ || cls == "LongPlaytest")) {
+            if (s != "D") print "H\t" cls
+            if (s != "D" && cls ~ /Check$/) print "H\tTimingCheck"   # TM3 item 8: a harness written or changed is read by the source rules of TimingCheck
+            next
+        }
         if (cls in idx) {
             if (idx[cls] == "") { print "Z\t" cls ".java"; next }
             n = split(idx[cls], a, ",")

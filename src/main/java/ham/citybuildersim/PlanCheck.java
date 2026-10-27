@@ -161,7 +161,7 @@ public class PlanCheck {
 
     static void check(String label, boolean ok) {
         if (!ok) fails++;
-        out.printf("%-78s %s%n", label, Timing.verdict(ok));
+        out.printf("%-78s %s%n", label, Timing.verdict(ok, label));
     }
 
     /** Repeats a district's plan is timed over, after one untimed: its median is its time. */

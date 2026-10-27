@@ -1,0 +1,175 @@
+# TM3 - the gate's timing judged side by side, main against the batch (no tag, 2026-10-27)
+
+The batch's record beside its brief, `TM3.md`. It is tooling: no game change,
+no version, no trace moved, no ensemble (the default playtest's trace is
+byte-identical; nothing in the model, a save or a screen was touched). Run
+whole on Sonnet 5.5 at xhigh, Opus at the gate only (BP1 item 7).
+
+## 1. What was there
+
+The gate judged a timing red once: the merge's `--timing` run, hard, then one
+run of main's, minutes later, and a red counted as the batch's unless main's
+run showed the same line (digits masked). On 2026-10-26 HY1, MS2 and CC1-S
+each stopped on map lines main itself misses under Jerus's running game (the
+FX-side map work at 5B read 59.9 ms against 58; main's own run of it had read
+75.5 earlier that day), and two shipped only through a hand-patched copy of
+`ship.sh`. `--red-ok` covered the suite step's reds and nothing at the timing
+step. MapCheck's "the view adds nothing a tile" compared two measured times
+without `Timing`, so it stayed hard in the soft suite, went red on CC1-S's merge
+and was written to `gate.txt` as a recorded red.
+
+## 2. What changed
+
+- **Figures read, not guessed** (brief 3). `Timing.verdict(ok, label)` is the
+  verdict every timing harness prints through now (a one-line change in
+  each of the eleven, `KeptCheck`'s three with a local label); with
+  `-Dcbs.timing.tsv=FILE` it appends a row for every figure the assertion
+  judged: harness (the calling class), label, measured, budget, unit, status
+  (OK, SOFT, FAIL) and the figure's place in its assertion (1..n for a
+  condition that holds several). `AllChecks` forwards the property to the
+  harness JVMs, `batch-check.sh` names `target/checks/timing.tsv` for every
+  suite run (the old file removed first) and `TimingCheck` 6 holds that
+  no harness prints an unlabelled verdict. `Batch check.bat` does not judge
+  timing and is untouched.
+- **Main and the batch timed in turn** (brief 1). When the hard run has a
+  residual red (neither main's recorded nor the suite step's), `ship.sh`
+  reads the missed figures from `timing.tsv`, finds the harnesses behind them
+  and runs `./batch-check.sh --timing HARNESS...` with `CBS_TIMING_PAIRED=1`
+  (no quiet minute: the rounds are to share one load) in main's worktree and
+  in the merge's tree, main first, **three rounds** (`CBS_TIMING_ROUNDS`, at
+  least two). TM1's soft wait and TM2's quiet minute before the hard run stand.
+- **The margin** (brief 2). `tools/timing-pair.awk`, which holds the
+  arithmetic and the dial (15%), takes each timing red's rows and passes it
+  unless the batch's median figure is more than 15% over main's. The dial is
+  moved for a test by `CBS_TIMING_MARGIN`, nowhere else. A red passes named in
+  the merge's `Gate-timing:` line with both medians, and in `gate.txt` only as
+  `# timing red within 15% of main's (paired): ...`, never a recorded red.
+  What stops: a median over the margin, a side with fewer than two figures
+  (main has no such assertion, a round did not run), a red with no missed
+  figure behind it (not a clock's). A harness's own `exit N` / `N FAILED` lines
+  pass only with a timing red of that harness that passes and nothing else red
+  in it.
+- **`--red-ok` reaches the timing step, and passes only the lines it names**
+  (brief 5 and 6; the review of 2026-10-27). `--red-ok "his words"` needs at
+  least one `--red-line "<part of a line>"` (repeatable; refused at the start,
+  exit 2, with the usage, as is a `--red-line` without `--red-ok`). In the suite
+  step and in the timing step alike a red line passes only if it contains one of
+  the parts, as written; a harness's own `exit N` and `N FAILED` lines pass with a
+  named line of it when no other line of that harness is left unnamed. Any other
+  red stops the ship as before, its lines marked `NOT NAMED`. `Gate:`,
+  `Gate-timing:` and `gate.txt`'s `#` lines carry his words and the lines passed
+  (`# suite red passed on Jerus's word (...)`, `# timing red passed on Jerus's
+  word ...`); nothing passes without `--red-ok`, and a timing red passed is never
+  a recorded one. Why: the orchestrator asks Jerus after a stop, with that stop's
+  lines in hand, so the lines are known before his word, and a broad `--red-ok`
+  let a different flaky line go red in the rerun and pass under words given for
+  another (CC1-S's gate). `docs/batch.md` step 5 shows the use.
+- **Wall-clock comparisons are timing** (brief 6). The search (every assertion
+  line of every harness that reads a clock, and the assertion labels that say
+  faster, slower or cheaper) found one: MapCheck's "...and no more than section
+  5's at either size: the view adds nothing a tile", now
+  `Timing.within(view[0], modelMs[0]) && Timing.within(view[1], modelMs[1])`.
+  The other clock reads in the suite are printed, not asserted (`LandCheck`'s
+  fast and slow, `PortCheck`'s "shown, not held", `HydroCheck`, `ConversionCheck`,
+  `SaveSlotCheck`'s old way), compared with a `*_MS` dial through `Timing`, or
+  `MapCheck`'s one allowed resolution test. `TimingCheck` 6f now fails any
+  assertion line that compares a variable named `...Ms`, `...Ns` or `...Nanos`
+  with `<`, `<=`, `>` or `>=` without `Timing.` on it.
+- **`ship.sh` survives its own merge** (item 7). It copies itself to a temp
+  file and re-execs before anything is merged, keeping its arguments and its
+  `cd` to the clone; a branch that changes `ship.sh` is said in a line. The new
+  one runs from the next ship. `CBS_SHIP_SHELL` is the shell the copy runs
+  under (the self-test runs it under dash).
+- **`--pick` always picks TimingCheck for a harness in the diff** (item 8, from
+  ET6's gate: its new `BridgeCheck` compared times against its budgets directly
+  in 3 places, TimingCheck's rule caught it only in the gate's full suite, since
+  ET6's `--pick` ran BridgeCheck and nothing else). `tools/pick.sh`: a
+  `*Check.java` changed or added picks `TimingCheck` too (a deleted one picks
+  nothing). New `tools/pick-selftest.sh`, 10 of 10, no JVM, a throwaway repository:
+  a changed, an added and two changed harnesses, TimingCheck alone, a deleted
+  harness, a class a harness reads, one no harness reads, a document, AllChecks
+  alone, and a committed range; run against `origin/main`'s `pick.sh` the four
+  cases that need TimingCheck fail (6 of 10).
+- `docs/batch.md` (the gate's step 6, step 5's `--red-ok`, the calls BP1 left 5,
+  lesson d, the note on the copy) and the README's checks say the same.
+
+## 3. The checks
+
+`sh tools/ship-selftest.sh`: **104 of 104**, no JVM. Its timing cases are rewritten
+with stub figures: a red where the batch is as fast as main passes, named with
+the medians, in three turns (`main-timing main main-timing main ...`, six
+paired runs, no quiet minute); a batch 10% slower passes; 30% slower stops with
+the medians (41 against 53, +29.3%); one slow round in three is not the
+median; the margin moves with `CBS_TIMING_MARGIN`; `--red-ok` with a `--red-line`
+that names it passes the 30% red and a red that is no clock's; `--red-ok` without
+a `--red-line` is refused (exit 2), as is `--red-line` alone and an empty one; a
+named suite red passes with its harness's `exit N` / `N FAILED`, a second red line
+not named still stops and is marked `NOT NAMED`, a crash in another harness is not
+passed by words naming this harness's line (unless a part of it is named), words
+naming one timing line leave another timing red stopped, and words naming a suite
+line do not pass a timing red of another harness; a paired round that did not run
+leaves nothing to compare and stops; a red with no figure behind it stops with
+no paired round; the suite's red is recorded and the timing reds are `#` lines
+only, in a real ship; the worktree of main is gone on every path. The new
+`ship.sh` case rewrites `ship.sh` in place under the running gate and asserts
+the checks ran from the copy; with the copy switched off
+(`CBS_SHIP_COPY=nocopy`) that one case fails and the others pass, so it
+proves the guard. (Git unlinks a file and writes a new one, so a merge alone
+does not corrupt a shell here; the in-place rewrite is what the case causes.)
+
+`./batch-check.sh --pick` on the branch with ET6 merged in: **exit 3**, the
+only red MapCheck's recorded "its streets one network" line (main's, in
+`gate.txt`). 14 harnesses in 399 s, 13 passed: TimingCheck passes with its new
+sections 6 (the labelled verdict in every timing harness, no assertion that
+compares a measured time but through `Timing`), 8 (the figures' record,
+in-process and through a child JVM started as AllChecks starts one) and 9 (the
+margin's arithmetic, run through `awk`: at the margin passes, a hair over
+stops, the median and not a mean of one slow round, a side with one figure has
+no median, a red that is no clock's stops, a harness's own count follows its
+timing reds). The maps regenerated and are committed; Stale 0 firm.
+
+On real JVMs: all 77 rows of a soft run's `timing.tsv`, from twelve harnesses,
+have their label in the harness's own log line (digits masked), so the judge's
+match of a red line to its row holds for every harness's print format.
+`CBS_TIMING_PAIRED=1 ./batch-check.sh --timing GridCheck WorldCheck` ran with
+no quiet minute and wrote its rows.
+
+An end-to-end rehearsal of the new `ship.sh` (a throwaway local origin, never
+GitHub; TM3 as main, a branch of it with WorldCheck's `TOTALS_MS` at 1 ms,
+`ship.sh --dry-run --no-tag batch/TM3E -- timingcheck`, the real
+`batch-check.sh`): the hard run went red on WorldCheck's three 200 ms lines,
+`ship.sh` ran three rounds of main's classes and the merge's in turn (46, 30,
+30 s), and passed the red with the medians (main 19.0 ms, batch 19.0 ms,
+budget 1 ms) named in the `timing` line. The note repeated for each of
+WorldCheck's three lines with the same label; it is told once now. Not run: a
+hard `--timing` of the whole set with a quiet minute on this branch (that step
+is as it was), and a real ship.
+
+## 4. Calls (★), each built as recommended
+
+- ★1 **Three rounds, not two.** The brief says at least two; two make the
+  median a mean, which one spike on either side moves by half. Three is a real
+  median for about a minute and a half more of the harness. Recommended, built;
+  `CBS_TIMING_ROUNDS` moves it.
+- ★2 **A red that is no clock's stops, and is no longer compared with main's
+  run.** The old step compared every residual line (digits masked) with main's
+  whole timing run, so a flake that main also showed passed. A flake in a timing
+  harness that only the hard run shows, and not the soft suite step, is rare
+  and costs a rerun; the new step does not run main's whole timing for it.
+  Recommended, built.
+- ★3 **Overturned by the review, built his way:** `--red-ok` passes only the lines
+  named by `--red-line` (the first draft passed whatever stopped at the step,
+  since his words name no lines; the lines are known before his word, so they can
+  be named). See the `--red-ok` bullet in section 2.
+- ★4 **A figure compared with a measured budget** (`Timing.within(view,
+  modelMs)`) is paired on the view's figure alone, the model's time being main's
+  and the batch's own alike. Recommended, built.
+
+## 5. What the first real gate should say
+
+`ship.sh` prints `timing red on the merge (<harnesses>): 3 rounds ... in turn`,
+a line a round, then `timing    red on the merge, judged side by side with main
+(3 rounds ..., margin 15%), within it: <harness [main X ms, batch Y ms (+Z%),
+budget B ms]>`. `target/checks/pairs.tsv` has the rounds' figures,
+`pair-judged.txt` the verdicts and `pair-main-N.out` / `pair-batch-N.out` each
+run. Its notes should say what the paired step read.

@@ -1,7 +1,12 @@
 package ham.citybuildersim;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -32,6 +37,18 @@ import java.util.regex.Pattern;
  * other part fails is FAIL as ever: only a clock is ever soft. TimingCheck
  * holds the mechanism, and holds that no harness compares a figure against a
  * {@code *_MS} or {@code *_NS} dial except through here.
+ *
+ * <p>WHY (batch TM3, 2026-10-27): a budget measured once on a PC that also runs
+ * Jerus's game and other sessions measures the load as much as the code. HY1,
+ * which touched nothing MapCheck times, stopped at the gate on three of its
+ * lines; main's own run of one of them had read 75.5 ms against 58 earlier the
+ * same day. So the gate no longer judges a timing red by one run: it times the
+ * red harness again with main's classes and the merge's in turn, in the same
+ * minutes, and the red counts against the batch only if the batch's median
+ * figure is more than a margin over main's (ship.sh and tools/timing-pair.awk,
+ * which hold the dial). To read the figures, never a label's prose, every
+ * assertion's line goes through {@link #verdict(boolean, String)}, which
+ * appends its figures to the file {@link #TSV_PROPERTY} names.
  */
 public final class Timing {
 
@@ -54,8 +71,26 @@ public final class Timing {
     /** A harness's assertion line that went soft, as {@link #verdict} words it: what AllChecks counts in a run's logs. */
     static final Pattern SOFT_LINE = Pattern.compile("\\sSOFT - ");
 
+    /**
+     * The system property that names the file every timing assertion appends
+     * its figure to, {@code -Dcbs.timing.tsv=target/checks/timing.tsv} (TM3);
+     * none, and nothing is written. One row per figure, tab-separated: the
+     * harness, the assertion's label, the measured figure, its budget, the
+     * unit, the status (OK within it, SOFT over it and not counted, FAIL over
+     * it and counted) and the figure's place in the assertion (1, or 1 to n
+     * when one condition holds n figures). The gate reads the file, never a
+     * label's prose, to time main's classes and the merge's in turn.
+     */
+    static final String TSV_PROPERTY = "cbs.timing.tsv";
+
     /** The misses since the last verdict, each "figure unit, budget budget unit": what the next verdict prints. */
     private static final List<String> misses = new ArrayList<>();
+
+    /** One figure judged since the last verdict, kept for the file's row (only while the file is named). */
+    private record Reading(double figure, double budget, String unit, boolean held) { }
+
+    /** The figures judged since the last verdict. */
+    private static final List<Reading> readings = new ArrayList<>();
 
     /** Whether timing is soft this run: the property read, every time, here and nowhere else. */
     static boolean soft() {
@@ -84,6 +119,7 @@ public final class Timing {
      * it fails, soft or hard.
      */
     private static boolean judge(boolean held, double figure, double budget, String unit) {
+        if (tsv() != null) readings.add(new Reading(figure, budget, unit, held));
         if (held) return true;
         if (Double.isNaN(figure) || !soft()) return false;
         misses.add(String.format(Locale.ROOT, "%s %s, budget %s %s", figures(figure), unit, figures(budget), unit));
@@ -108,12 +144,67 @@ public final class Timing {
     public static String verdict(boolean ok) {
         String words = !ok ? "FAIL" : misses.isEmpty() ? "OK" : "SOFT - " + String.join("; ", misses);
         misses.clear();
+        readings.clear();
         return words;
+    }
+
+    /**
+     * {@link #verdict(boolean)}, and when {@link #TSV_PROPERTY} names a file
+     * the figures judged since the last verdict written there under this
+     * label, the harness's own (the class that called it). Every harness that
+     * times prints its lines through this one (TimingCheck holds it), with the
+     * label it prints.
+     */
+    public static String verdict(boolean ok, String label) {
+        record(label);
+        return verdict(ok);
+    }
+
+    /** The file the figures go to, or null when none is named. */
+    private static String tsv() {
+        String v = System.getProperty(TSV_PROPERTY);
+        return v == null || v.isBlank() ? null : v;
+    }
+
+    /** Appends the pending figures as rows (TSV_PROPERTY says the columns). A file that cannot be written loses its rows: no assertion fails for it, and the gate, finding none, judges the red as the batch's. */
+    private static void record(String label) {
+        String path = tsv();
+        if (path == null || readings.isEmpty()) return;
+        String harness = StackWalker.getInstance().walk(frames -> frames.map(StackWalker.StackFrame::getClassName)
+                .filter(c -> !c.equals(Timing.class.getName())).findFirst().orElse("?"));
+        harness = harness.substring(harness.lastIndexOf('.') + 1);
+        if (harness.indexOf('$') > 0) harness = harness.substring(0, harness.indexOf('$'));
+        String clean = label == null ? "" : label.replaceAll("[\\t\\r\\n]+", " ").strip();
+        StringBuilder rows = new StringBuilder();
+        int part = 0;
+        for (Reading r : readings) {
+            part++;
+            String status = r.held() ? "OK" : !Double.isNaN(r.figure()) && soft() ? "SOFT" : "FAIL";
+            rows.append(harness).append('\t').append(clean).append('\t').append(plain(r.figure())).append('\t')
+                    .append(plain(r.budget())).append('\t').append(r.unit()).append('\t').append(status).append('\t').append(part).append('\n');
+        }
+        try {
+            Files.writeString(Path.of(path), rows, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (IOException | RuntimeException e) {
+            // see above
+        }
+    }
+
+    /** A figure for the file: six significant places, never an exponent; NaN and the infinities as Java words them. */
+    private static String plain(double v) {
+        if (Double.isNaN(v) || Double.isInfinite(v)) return Double.toString(v);
+        return new BigDecimal(v).round(new MathContext(6)).stripTrailingZeros().toPlainString();
     }
 
     /** The argument a child JVM is given so it times as this one does: {@code -Dcbs.timing=...}, or null when the property is not set here. */
     static String forwarded() {
         String v = System.getProperty(PROPERTY);
         return v == null ? null : "-D" + PROPERTY + "=" + v;
+    }
+
+    /** The argument a child JVM is given so it writes its figures to the same file: {@code -Dcbs.timing.tsv=...}, or null when none is named here. */
+    static String forwardedTsv() {
+        String v = tsv();
+        return v == null ? null : "-D" + TSV_PROPERTY + "=" + v;
     }
 }
