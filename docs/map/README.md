@@ -4,7 +4,7 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 433 files, 466,560 lines, 19,909 methods, 4,420 constants. `GameVersion.VERSION` is "0.8.58", `SAVE_FORMAT` 47.
+**The tree:** 433 files, 466,649 lines, 19,914 methods, 4,420 constants. `GameVersion.VERSION` is "0.8.58", `SAVE_FORMAT` 47.
 
 ## model (202 files)
 
@@ -48,7 +48,7 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CityBasket.java](CityBasket.md) | 120 | 2 | What the city eats: the basket per head, struck from the households' own statements, and the file's reference basket for a city that has none yet. | 1 |
 | [CityCalendar.java](CityCalendar.md) | 146 | 13 | Turns the month counter into a date a person can hold in their head. | 27 |
 | [CityLand.java](CityLand.md) | 1,295 | 93 | The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase sinc... | 55 |
-| [CityMap.java](CityMap.md) | 7,775 | 401 | The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves,... | 28 |
+| [CityMap.java](CityMap.md) | 7,819 | 405 | The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves,... | 28 |
 | [CityNeeds.java](CityNeeds.md) | 1,099 | 48 | NEEDS YOU, measured: everything with a lever, each against its own line, in the order a city is built - the list the left panel's Summary prints, t... | 28 |
 | [CityRuns.java](CityRuns.md) | 4,566 | 231 | The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with ... | 19 |
 | [CityShore.java](CityShore.md) | 259 | 22 | The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over o... | 7 |
@@ -71,7 +71,7 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EarthData.java](EarthData.md) | 1,073 | 97 | The reader of earth-2.bin (and of earth-1.bin, whose layers it holds), the real Earth's ground as data: its layers' 1-degree tiles inflated into an... | 34 |
 | [EarthProj.java](EarthProj.md) | 446 | 34 | The real Earth flattened round a city's spot: Lambert's azimuthal equal-area projection on a sphere, forward and inverse, the world's plots in metr... | 17 |
 | [EarthSite.java](EarthSite.md) | 723 | 44 | A spot on the real Earth as the founding screen weighs it: whether the game has the Earth's data, the place names a player searches, the spot the s... | 18 |
-| [EarthTerrain.java](EarthTerrain.md) | 3,242 | 170 | The real Earth's ground on the world's plots: a tile, a plot, a line or a region at a time, each world cell's land and forest (the cells pass), the... | 23 |
+| [EarthTerrain.java](EarthTerrain.md) | 3,287 | 171 | The real Earth's ground on the world's plots: a tile, a plot, a line or a region at a time, each world cell's land and forest (the cells pass), the... | 23 |
 | [EconomyManager.java](EconomyManager.md) | 2,654 | 263 | The private economy: every sector, every market, the credit desk, the tax policy and the national accounts, and the month they run in. | 57 |
 | [Education.java](Education.md) | 1,093 | 59 | Who the city teaches, what it costs, and why anybody bothers. | 12 |
 | [EducationType.java](EducationType.md) | 191 | 11 | What a school actually teaches. | 29 |
