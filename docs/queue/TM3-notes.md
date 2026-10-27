@@ -91,7 +91,33 @@ the checks ran from the copy; with the copy switched off
 proves the guard. (Git unlinks a file and writes a new one, so a merge alone
 does not corrupt a shell here; the in-place rewrite is what the case causes.)
 
-CHECKS_PLACEHOLDER
+`./batch-check.sh --pick` on the branch with ET6 merged in: **exit 3**, the
+only red MapCheck's recorded "its streets one network" line (main's, in
+`gate.txt`). 14 harnesses in 399 s, 13 passed: TimingCheck passes with its new
+sections 6 (the labelled verdict in every timing harness, no assertion that
+compares a measured time but through `Timing`), 8 (the figures' record,
+in-process and through a child JVM started as AllChecks starts one) and 9 (the
+margin's arithmetic, run through `awk`: at the margin passes, a hair over
+stops, the median and not a mean of one slow round, a side with one figure has
+no median, a red that is no clock's stops, a harness's own count follows its
+timing reds). The maps regenerated and are committed; Stale 0 firm.
+
+On real JVMs: all 77 rows of a soft run's `timing.tsv`, from twelve harnesses,
+have their label in the harness's own log line (digits masked), so the judge's
+match of a red line to its row holds for every harness's print format.
+`CBS_TIMING_PAIRED=1 ./batch-check.sh --timing GridCheck WorldCheck` ran with
+no quiet minute and wrote its rows.
+
+An end-to-end rehearsal of the new `ship.sh` (a throwaway local origin, never
+GitHub; TM3 as main, a branch of it with WorldCheck's `TOTALS_MS` at 1 ms,
+`ship.sh --dry-run --no-tag batch/TM3E -- timingcheck`, the real
+`batch-check.sh`): the hard run went red on WorldCheck's three 200 ms lines,
+`ship.sh` ran three rounds of main's classes and the merge's in turn (46, 30,
+30 s), and passed the red with the medians (main 19.0 ms, batch 19.0 ms,
+budget 1 ms) named in the `timing` line. The note repeated for each of
+WorldCheck's three lines with the same label; it is told once now. Not run: a
+hard `--timing` of the whole set with a quiet minute on this branch (that step
+is as it was), and a real ship.
 
 ## 4. Calls (★), each built as recommended
 

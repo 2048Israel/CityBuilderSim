@@ -541,8 +541,9 @@ else
         awk -F'\t' '$1 == "PASS" { print $2 "   [" $3 "]" }' target/checks/pair-judged.txt > "$T/accepted"
         awk -F'\t' '$1 == "FAIL" { print $2 "   [" $3 "]" }' target/checks/pair-judged.txt > "$T/offenders"
         # the notes of the Gate-timing line: each timing red's figures, not the harness's own count
-        awk -F'\t' '$1 == "PASS" && $3 !~ /^the harness.s own count/ { h = $2; sub(/ \|.*/, "", h); printf "%s%s [%s]", sep, h, $3; sep = "; " }' target/checks/pair-judged.txt > "$T/pass-notes"
-        awk -F'\t' '$1 == "FAIL" && $3 !~ /^the harness.s own count/ { h = $2; sub(/ \|.*/, "", h); printf "%s%s [%s]", sep, h, $3; sep = "; " }' target/checks/pair-judged.txt > "$T/fail-notes"
+        # (a label that repeats in a harness, WorldCheck's, makes the same note for each of its lines: told once)
+        awk -F'\t' '$1 == "PASS" && $3 !~ /^the harness.s own count/ { h = $2; sub(/ \|.*/, "", h); n = h " [" $3 "]"; if (!seen[n]++) { printf "%s%s", sep, n; sep = "; " } }' target/checks/pair-judged.txt > "$T/pass-notes"
+        awk -F'\t' '$1 == "FAIL" && $3 !~ /^the harness.s own count/ { h = $2; sub(/ \|.*/, "", h); n = h " [" $3 "]"; if (!seen[n]++) { printf "%s%s", sep, n; sep = "; " } }' target/checks/pair-judged.txt > "$T/fail-notes"
         [ -s "$T/offenders" ] && sed 's/^/    /' "$T/offenders" | cut -c1-260 | head -12
         TIMINGLINE="timing    red on the merge, judged side by side with main (${ROUNDS:-3} rounds in turn, medians, margin $MARGIN%)"
         if [ -s "$T/offenders" ]; then
