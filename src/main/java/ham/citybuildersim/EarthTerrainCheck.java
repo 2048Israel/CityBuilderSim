@@ -2278,12 +2278,15 @@ public class EarthTerrainCheck {
             }
             double points = 0;
             for (int k = 0; k < World.RELIEFS; k++) points = Math.max(points, 100 * Math.abs(drawn[k] - want[k]) / Math.max(1, dry));
-            report("a far node over Medellin at " + stride + " plots a pixel: its relief shares are the cells' within FAR_POINTS (a sample of its pixels), and it is drawn in no more than SCREEN_MS",
-                    dry >= FAR_DRY_LEAST && points <= FAR_POINTS && Timing.within(withMs, MapCheck.SCREEN_MS),
-                    String.format("%.1f/%.1f/%.1f/%.1f%% against %.1f/%.1f/%.1f/%.1f%% of %,d dry pixels, %.1f points; %.1f ms with the relief, %.1f without, %.0f ms the first time over fresh data",
+            // The shares and the time on lines of their own (MP1, sent back from the gate): the time is judged through Timing alone, so the gate's
+            // paired rounds can read it; ANDed with the shares, a red line had no figure of its own to compare.
+            report("a far node over Medellin at " + stride + " plots a pixel: its relief shares are the cells' within FAR_POINTS (a sample of its pixels)",
+                    dry >= FAR_DRY_LEAST && points <= FAR_POINTS,
+                    String.format("%.1f/%.1f/%.1f/%.1f%% against %.1f/%.1f/%.1f/%.1f%% of %,d dry pixels, %.1f points",
                             100.0 * drawn[0] / Math.max(1, dry), 100.0 * drawn[1] / Math.max(1, dry), 100.0 * drawn[2] / Math.max(1, dry), 100.0 * drawn[3] / Math.max(1, dry),
-                            100 * want[0] / Math.max(1, dry), 100 * want[1] / Math.max(1, dry), 100 * want[2] / Math.max(1, dry), 100 * want[3] / Math.max(1, dry), dry, points,
-                            withMs, plainMs, cold));
+                            100 * want[0] / Math.max(1, dry), 100 * want[1] / Math.max(1, dry), 100 * want[2] / Math.max(1, dry), 100 * want[3] / Math.max(1, dry), dry, points));
+            report("...and at " + stride + " plots a pixel it is drawn in no more than SCREEN_MS", Timing.within(withMs, MapCheck.SCREEN_MS),
+                    String.format("%.1f ms with the relief, %.1f without, %.0f ms the first time over fresh data", withMs, plainMs, cold));
         }
         // The globe's camera at the handoff, against the plane's node: the same shares; its piece in no more than FRAME_MS.
         GlobeFrame f = new GlobeFrame(n, n, HILLS[0][0], HILLS[0][1]);
