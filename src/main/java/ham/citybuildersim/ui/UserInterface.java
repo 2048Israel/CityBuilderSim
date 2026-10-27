@@ -854,6 +854,8 @@ public class UserInterface extends Application {
         // player screenshots now says which build produced it. It is invisible
         // full screen, which is the other reason the version is in the log too.
         stage.setTitle(GameVersion.title());
+        // The icon on the title bar, the taskbar and Alt+Tab (BR1); the exe's own is Build EXE.bat's.
+        AppIcon.dress(stage);
         stage.setMaximized(true);
 
         /* =================================================================
@@ -3376,7 +3378,7 @@ public class UserInterface extends Application {
         clearMenu("showMainMenu", () -> showMainMenu());
         StackPane layer = titleContent();
 
-        Label name = new Label("CityBuilderSim");
+        Label name = new Label(GameVersion.NAME);
         name.setStyle("-fx-font-size: 54px; -fx-font-weight: bold; -fx-text-fill: " + Palette.TEXT_HEAD + ";");
         Label line = new Label("A city, its money, and everyone in it.");
         line.setStyle("-fx-font-size: 17px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");

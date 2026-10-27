@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121e2d"/><stop offset="1" stop-color="#0b1118"/></linearGradient>
+<clipPath id="tile"><rect width="256" height="256" rx="56"/></clipPath>
+</defs>
+<g clip-path="url(#tile)">
+<rect width="256" height="256" fill="url(#bg)"/>
+<rect x="16" y="184" width="50" height="80" rx="3" fill="#18263a" stroke="#2a3e57" stroke-width="5"/>
+<rect x="24.0" y="196" width="14" height="18" rx="2" fill="#2ec4b6"/>
+<rect x="44.0" y="196" width="14" height="18" rx="2" fill="#2ec4b6"/>
+<rect x="24.0" y="220" width="14" height="18" rx="2" fill="#22344a"/>
+<rect x="44.0" y="220" width="14" height="18" rx="2" fill="#2ec4b6"/>
+<rect x="76" y="144" width="50" height="120" rx="3" fill="#18263a" stroke="#2a3e57" stroke-width="5"/>
+<rect x="84.0" y="156" width="14" height="18" rx="2" fill="#a78bfa"/>
+<rect x="104.0" y="156" width="14" height="18" rx="2" fill="#a78bfa"/>
+<rect x="84.0" y="180" width="14" height="18" rx="2" fill="#a78bfa"/>
+<rect x="104.0" y="180" width="14" height="18" rx="2" fill="#a78bfa"/>
+<rect x="84.0" y="204" width="14" height="18" rx="2" fill="#a78bfa"/>
+<rect x="104.0" y="204" width="14" height="18" rx="2" fill="#a78bfa"/>
+<rect x="84.0" y="228" width="14" height="18" rx="2" fill="#a78bfa"/>
+<rect x="104.0" y="228" width="14" height="18" rx="2" fill="#a78bfa"/>
+<rect x="136" y="104" width="50" height="160" rx="3" fill="#18263a" stroke="#2a3e57" stroke-width="5"/>
+<rect x="144.0" y="116" width="14" height="18" rx="2" fill="#f17cb0"/>
+<rect x="164.0" y="116" width="14" height="18" rx="2" fill="#f17cb0"/>
+<rect x="144.0" y="140" width="14" height="18" rx="2" fill="#f17cb0"/>
+<rect x="164.0" y="140" width="14" height="18" rx="2" fill="#f17cb0"/>
+<rect x="144.0" y="164" width="14" height="18" rx="2" fill="#22344a"/>
+<rect x="164.0" y="164" width="14" height="18" rx="2" fill="#22344a"/>
+<rect x="144.0" y="188" width="14" height="18" rx="2" fill="#f17cb0"/>
+<rect x="164.0" y="188" width="14" height="18" rx="2" fill="#f17cb0"/>
+<rect x="144.0" y="212" width="14" height="18" rx="2" fill="#f17cb0"/>
+<rect x="164.0" y="212" width="14" height="18" rx="2" fill="#f17cb0"/>
+<rect x="196" y="64" width="50" height="200" rx="3" fill="#18263a" stroke="#2a3e57" stroke-width="5"/>
+<rect x="204.0" y="76" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="224.0" y="76" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="204.0" y="100" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="224.0" y="100" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="204.0" y="124" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="224.0" y="124" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="204.0" y="148" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="224.0" y="148" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="204.0" y="172" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="224.0" y="172" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="204.0" y="196" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="224.0" y="196" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="204.0" y="220" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<rect x="224.0" y="220" width="14" height="18" rx="2" fill="#5aa9ff"/>
+<path d="M-10,188 C-1.5,183.0 22.5,169.7 41.0,158 C59.5,146.3 81.0,131.3 101.0,118 C121.0,104.7 141.0,91.3 161.0,78 C181.0,64.7 211.0,44.7 221.0,38" fill="none" stroke="#0b1118" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M-10,188 C-1.5,183.0 22.5,169.7 41.0,158 C59.5,146.3 81.0,131.3 101.0,118 C121.0,104.7 141.0,91.3 161.0,78 C181.0,64.7 211.0,44.7 221.0,38" fill="none" stroke="#5aa9ff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="221.0" cy="38" r="19.0" fill="#0b1118" stroke="#5aa9ff" stroke-width="12.0"/>
+<rect x="4" y="4" width="248" height="248" rx="52" fill="none" stroke="#2a3e57" stroke-width="8"/>
+</g>
+</svg>

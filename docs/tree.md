@@ -602,7 +602,10 @@ adds its line here, not in `CLAUDE.md`.
                                    KeptBench.java (the People page on a scene of its own, drawn kept and
                                    built new, for KeptCheck), and ChartFitBench.java (FW10: City History's
                                    full-screen chart on a scene of its own at a window's size, through the
-                                   screen's own fitToWindow(), for ChartFitCheck). The model never imports it.
+                                   screen's own fitToWindow(), for ChartFitCheck), and AppIcon.java (BR1,
+                                   2026-10-27: the game's icon on the window, every size of resources/icons/
+                                   handed to the stage; IconCheck holds the files to its lists). The model
+                                   never imports it.
         *Check.java                142 harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run;
                                    since TM1 it hands -Dcbs.timing to each harness and --timing runs the timing ones
@@ -635,7 +638,10 @@ adds its line here, not in `CLAUDE.md`.
         tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
-                                         conversion-saves.json the five saves' land ConversionCheck converts (0.7.66)
+                                         conversion-saves.json the five saves' land ConversionCheck converts (0.7.66);
+                                         icons/ the game's icon (BR1, 2026-10-27): icon.svg and icon-small.svg,
+                                         the PNGs at 16 to 256 and icon.ico for the exe, all written by
+                                         tools/icon/make_icons.py
                                          earth/ EarthCheck's fixture, cut from earth-1.bin (0.7.111), which
                                          EarthTerrainCheck draws the Earth's ground on (0.7.115)
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
@@ -654,6 +660,10 @@ adds its line here, not in `CLAUDE.md`.
                                          score.py the scorer (pandas); README.md. Its scores, one a version
                                          whose trace moved, are docs/ensemble/<version>.md; EnsembleCheck keeps
                                          the driver compiling against the tree and the newest score readable
+    tools/icon/                          make_icons.py, the game's icon (BR1, 2026-10-27; Jerus's pick of four
+                                         concepts, "towers as a chart"): draws the two SVGs, renders them at every
+                                         size with Edge or Chrome headless, and writes the PNGs and icon.ico into
+                                         src/main/resources/icons/ (Python, standard library only)
     tools/jvms.ps1                       counts the other batches' JVMs and the game's processes on the PC, for
                                          Batch check.bat, which times soft while either runs, and batch-check.sh,
                                          which says so on a soft run (TM1; GP1 took out TM2's -Quiet wait for a

@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**149 harness files, 15,781 labelled assertions.** AllChecks runs 149 of them.
+**150 harness files, 15,788 labelled assertions.** AllChecks runs 150 of them.
 
 ## Which harnesses read which class
 
@@ -12,6 +12,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 |---|---|
 | [AgeBand](map/AgeBand.md) | ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, LongPlaytest, ZoningCheck |
+| [AppIcon](map/AppIcon.md) | IconCheck |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DeskCheck, FloatLinkCheck, HoldersCheck, NewGameCheck, RestructureCheck, SaveFileCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
 | [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, HydroCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, SaveSlotCheck |
@@ -10583,6 +10584,33 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L600 ...on the city's own landmass, so linked: the stations of its slots can be ordered
   - L605 ...an order for one more station than the slots free is refused NO_RIVER; one for the slots free is not (
   - L608 ...and one station goes ahead on the Earth's ground
+
+## IconCheck.java - 7 labelled assertions
+
+> The game's icon is in the jar at every size it is given, and the exe's .ico carries the sizes it
+> should (BR1).
+> 
+> WHY THIS EXISTS. The window's icon (ui/AppIcon) is loaded from the classpath and a size that is
+> missing is only a log line, never an error, so a regeneration by tools/icon/make_icons.py that
+> dropped a size, or a file left out of the jar, would go unseen until someone looked at a taskbar.
+> The .ico is read by jpackage alone (Build EXE.bat), which no harness runs. No JavaFX is needed:
+> the files are read as bytes.
+> 
+> What it has to prove:
+> 
+>   1. EVERY PNG IS THERE, AT ITS SIZE. Each of AppIcon.SIZES is on the classpath as a PNG whose
+> ...
+
+- **L62 IconCheck: the game's icon is in the jar at every size, and the exe's .ico carries its sizes (BR1)**
+- **L73 the .ico carries its sizes**
+  - L79 it is an icon file (reserved 0, type 1)
+  - L88 entry
+  - L90 entry
+  - L95 it lists exactly AppIcon.ICO_SIZES
+- **L98 the exe is built with it, and the drawing is kept**
+  - L106 Build EXE.bat passes --icon
+  - L109 the file it passes exists
+  - L110 and is the classpath's icon.ico
 
 ## InboxCheck.java - 44 labelled assertions
 
