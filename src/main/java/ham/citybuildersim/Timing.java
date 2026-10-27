@@ -3,8 +3,10 @@ package ham.citybuildersim;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -166,7 +168,7 @@ public final class Timing {
         return v == null || v.isBlank() ? null : v;
     }
 
-    /** Appends the pending figures as rows (TSV_PROPERTY says the columns). A file that cannot be written loses its rows: no assertion fails for it, and the gate, finding none, judges the red as the batch's. */
+    /** Appends the pending figures as rows (TSV_PROPERTY says the columns), under an exclusive lock, so harnesses running at once (AllChecks.PARALLEL, SP1) never interleave their rows. A file that cannot be written loses its rows: no assertion fails for it, and the gate, finding none, judges the red as the batch's. */
     private static void record(String label) {
         String path = tsv();
         if (path == null || readings.isEmpty()) return;
@@ -183,8 +185,10 @@ public final class Timing {
             rows.append(harness).append('\t').append(clean).append('\t').append(plain(r.figure())).append('\t')
                     .append(plain(r.budget())).append('\t').append(r.unit()).append('\t').append(status).append('\t').append(part).append('\n');
         }
-        try {
-            Files.writeString(Path.of(path), rows, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        try (FileChannel ch = FileChannel.open(Path.of(path), StandardOpenOption.CREATE, StandardOpenOption.WRITE); FileLock lock = ch.lock()) {
+            ch.position(ch.size());
+            ByteBuffer bytes = ByteBuffer.wrap(rows.toString().getBytes(StandardCharsets.UTF_8));
+            while (bytes.hasRemaining()) ch.write(bytes);
         } catch (IOException | RuntimeException e) {
             // see above
         }
