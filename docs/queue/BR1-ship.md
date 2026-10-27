@@ -1,0 +1,9 @@
+## changelog
+### {next} — BR1, the name and the look: Civic Ledger, its icon and its title art — 2026-10-27, ready, see docs/queue/BR1-notes.md
+The game is Civic Ledger, Jerus's pick of a shortlist checked against Steam, itch.io and the US trademark register (Ledger City turned out a live mark for game software). The start screen and the window's title say so; the repository, the exe and the save folder keep CityBuilderSim, so no player's cities are left behind.
+It has an icon at last, "towers as a chart" (four towers rising like a bar chart, each lit in one of the palette's colours, the money line along their roofs), on the window, the taskbar and, through Build EXE.bat's new --icon, the exe; and title art, "the ledger's total" (the name over an account's closing double rule, its top line climbing like a chart), which the start screen draws itself and branding/ holds for the stores.
+tools/branding/ makes all of it from the title screen's palette and font with Edge headless and the standard library; BrandingCheck holds the files to ui/Branding's lists and the store's title art to the start screen's proportions.
+The itch.io page has a new cover, eight new screenshots from a San Francisco run, and Graphics ticked in its AI disclosure.
+## pending
+| BR1-C | BR1 ({next}): look at it on the PC: the start screen's title art, the icon on the taskbar and in Alt+Tab, and after the next Build EXE the exe's icon in Explorer; then push that build to itch.io, whose download is still 0.8.60 without the icon | his check | [BR1 notes](docs/queue/BR1-notes.md) |
+| BR2 | Steam store art: the capsules at Steam's sizes and a transparent logo, from branding/'s title art and icon, or by a human artist | his call (AI-drawn or an artist), and his Steamworks verification | [BR1 notes](docs/queue/BR1-notes.md) |
