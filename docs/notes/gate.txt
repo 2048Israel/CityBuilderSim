@@ -1,12 +1,15 @@
-# gate of Merge batch/MS2: the near view drawn the same past the reach: past 300 km from the city the close map shows speckled ground and round lakes (the far rule at a near scale); draw it as the plane does, anywhere on the Earth; after BL1, in the same session (Jerus, 2026-10-26, on 0.8.52: "look a the wierd resolution by just panning a few more kms"), 0.8.55
+# gate of Merge batch/CC1-S: keep care essential even when it is not financially self-supporting; investigate why seeds 4 and 5 still stall around 3,000 people despite care, school and pensions, 0.8.56
 # date: 2026-10-26
 # earth-2.bin: named
-# suite: 146 harnesses run in 1879s: 145 passed, 1 failed
-# timing: 11 harnesses run in 444s: 9 passed, 2 failed; red on the merge, main passing today, passed on Jerus's word: "Ship it" (Jerus, 2026-10-26: MS2 past tonight's speed lines this once; the PC loaded by two batches, code MS2 did not touch slowed alike): MapCheck
-# timing red on main too, today: MapCheck | 3 FAILED
+# suite: 146 harnesses run in 1934s: 145 passed, 1 failed
+# timing: 11 harnesses run in 440s: 8 passed, 3 failed; red on the merge, main passing today, passed on Jerus's word: "ship, but its clear, map is slowing the game down lol" (Jerus, 2026-10-26: CC1-S past the far node over Medellin, a speed line its code does not reach; MP1 queued for the map's speed): EarthTerrainCheck
+# timing red on main too, today: EarthTerrainCheck | exit 1
+# timing red on main too, today: EarthTerrainCheck | 1 FAILED
+# timing red on main too, today: MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 58 ms of the wall clock, the median month FAIL
 # timing red on main too, today: KeptCheck | exit 1
 # timing red on main too, today: KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL
 # timing red on main too, today: KeptCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
-MapCheck | 1 FAILED
+MapCheck | ...and no more than section 5's at either size: the view adds nothing a tile   FAIL
+MapCheck | 2 FAILED
