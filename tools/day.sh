@@ -55,6 +55,7 @@ case "$1" in
 esac
 [ $# -le 1 ] || usage
 git rev-parse --git-dir >/dev/null 2>&1 || { echo "day       not in a git checkout" >&2; exit 2; }
+CARRIES="$(cd "$(dirname "$0")" && pwd)/carries.sh"
 cd "$(git rev-parse --show-toplevel)" || exit 2
 
 # --- origin ----------------------------------------------------------------
@@ -103,7 +104,7 @@ for b in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/batch/*')
     t=$(git log -1 --format=%ct "$b")
     age=$(ago "$t")
     if git cat-file -e "$b:docs/queue/$id-ship.md" 2>/dev/null; then
-        pred=$(sh tools/carries.sh "$b" | tr '\n' ' ')
+        pred=$(sh "$CARRIES" "$b" | tr '\n' ' ')
         if [ -z "$pred" ]; then READY="${READY}ready     $id - ./ship.sh batch/$id (last commit $age ago)$(mtnote "$b")$NL"
         else WAIT="${WAIT}waiting   $id - ship file pushed, built on ${pred% }, not on main yet: gate that first$NL"; fi
     elif ! printf '%s\n' "$QUEUED" | grep -qxF "$id"; then

@@ -1,8 +1,9 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
 #  tools/wait.sh --ship tried against a throwaway local origin, with no JVM:
-#  a ship file pushed to a batch/ branch ends the wait, and nothing else does.
-#  For whoever changes tools/wait.sh next. POSIX sh and git, about 20 seconds.
+#  a ship file pushed to a batch/ branch ends the wait, and nothing else does;
+#  --row and day.sh around a successor cut from its predecessor's tip (RL1).
+#  For whoever changes tools/wait.sh or carries.sh next. POSIX sh and git, about 30 seconds.
 #
 #      sh tools/wait-selftest.sh               test the tools/wait.sh of the current checkout
 #
@@ -91,6 +92,8 @@ O fetch -q origin; O checkout -q -B batch/S1 origin/batch/P1; mkdir -p "$TA/orch
 LABEL="--row P1 from S1, built on P1's ready tip: P1 ready is not P1 landed, still waiting"; row_wait P1; ok still P1
 echo ship > "$TA/orch/docs/queue/S1-ship.md"; O add docs/queue/S1-ship.md; O commit -q -m "S1: the ship file"; O push -q origin batch/S1
 LABEL="S1's ship file, pushed while P1 is not on main, makes S1 waiting: only P1 is ready"; ship_wait --ship --for 0; ok ready_is P1
+( cd "$TA/orch" && sh "$SRC/tools/day.sh" ) > "$TA/day.txt" 2>&1
+LABEL="day.sh says the same: P1 ready, S1 waiting for it"; ok sh -c "grep -q '^ready     P1 ' $TA/day.txt && grep -q '^waiting   S1 - .*built on P1' $TA/day.txt && ! grep -q '^ready     S1' $TA/day.txt"
 W checkout -q batch/P1; W rm -q docs/queue/P1-ship.md; W commit -q -m "P1: sent back, ship file off"; W push -q origin batch/P1
 LABEL="P1 sent back (ship file off): --row P1 does not end"; row_wait P1; ok still P1
 echo fix > "$TA/work/fix.txt"; echo ship > "$TA/work/docs/queue/P1-ship.md"; W add -A; W commit -q -m "P1: mended, ship file last"; W push -q origin batch/P1
@@ -100,6 +103,8 @@ O merge -q --no-edit origin/batch/P1
 LABEL="...and once S1 has merged the fix it waits again"; row_wait P1; ok still P1
 W checkout -q -B main origin/main; W merge -q --no-ff --no-commit origin/batch/P1 >/dev/null; sed -i '/^| P1 |/d' "$TA/work/QUEUE.md"; W rm -q -f docs/queue/P1-ship.md; W add -A; W commit -q -m "Merge batch/P1"; W push -q origin main
 LABEL="P1 landed: S1 is ready"; ship_wait --ship --for 0; ok ready_is S1
+( cd "$TA/orch" && sh "$SRC/tools/day.sh" ) > "$TA/day.txt" 2>&1
+LABEL="P1 landed: day.sh calls S1 ready"; ok sh -c "grep -q '^ready     S1 ' $TA/day.txt && ! grep -q '^waiting' $TA/day.txt"
 LABEL="P1 landed: --row P1 ends, and says S1's HEAD lacks origin/main"; row_wait P1
 ok sh -c "[ $RC = 0 ] && grep -q -F 'done - P1 out of the Queued table' $TA/out.txt && grep -q -F 'HEAD lacks origin/main: merge it first' $TA/out.txt"
 branch batch/P2 docs/queue/P2-ship.md; O fetch -q origin; O checkout -q -B batch/N origin/main
