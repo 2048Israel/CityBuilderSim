@@ -4,7 +4,7 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 433 files, 465,268 lines, 19,847 methods, 4,385 constants. `GameVersion.VERSION` is "0.8.57", `SAVE_FORMAT` 47.
+**The tree:** 433 files, 465,422 lines, 19,857 methods, 4,385 constants. `GameVersion.VERSION` is "0.8.57", `SAVE_FORMAT` 47.
 
 ## model (202 files)
 
@@ -123,7 +123,7 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandConversion.java](LandConversion.md) | 219 | 7 | A saved city's land put on the block grid, and a city's land drawn again to hold a new figure: a format-31 save's lanes snapped to whole blocks, an... | 7 |
 | [LandGrid.java](LandGrid.md) | 392 | 30 | The ground a city owns, as a region quadtree over the world's plots: which holding owns each plot, and how much of any block or rectangle of plots ... | 19 |
 | [LandManager.java](LandManager.md) | 3,113 | 276 | The city's land: what it owns, what is built on, and what it sells. | 85 |
-| [LandMap.java](LandMap.md) | 2,433 | 141 | The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectang... | 17 |
+| [LandMap.java](LandMap.md) | 2,469 | 146 | The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectang... | 19 |
 | [LandMarket.java](LandMarket.md) | 1,423 | 83 | The land office's window: twenty-four offers standing, six on each side of the city - in each place a rectangle of whole blocks against the city's ... | 32 |
 | [LandParcel.java](LandParcel.md) | 422 | 56 | One offer on the market, as the land office lists it: a rectangle of whole blocks against one side of the city, in one of that side's six places, w... | 39 |
 | [LandmassView.java](LandmassView.md) | 515 | 37 | What the screens and the investors' words say of the city's landmasses: pure functions of the model's figures, so that the words are written in one... | 12 |
@@ -286,7 +286,7 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TradeScreen.java](TradeScreen.md) | 3,332 | 144 | The Trade & the world tab: how the city stands against the world this month - what it sells and buys abroad, the month's balance of payments, what ... | 4 |
 | [UiProbe.java](UiProbe.md) | 726 | 23 | What the window costs the JavaFX thread as a city ages, measured: it grows the playtest's city to the months it is given, opens the real window on ... | 0 |
 | [UserInterface.java](UserInterface.md) | 6,719 | 182 | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating a... | 28 |
-| [ZoningScreen.java](ZoningScreen.md) | 1,087 | 71 | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial c... | 2 |
+| [ZoningScreen.java](ZoningScreen.md) | 1,081 | 71 | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial c... | 2 |
 
 ## harnesses (150 files)
 
@@ -441,7 +441,7 @@ Generated 2026-10-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [WorldCheck.java](WorldCheck.md) | 782 | 8 | The world a city is founded on: the same seed makes the same world, and the world is the one the design describes - its sea, lakes and forest, its ... | 1 |
 | [YearBookCheck.java](YearBookCheck.md) | 1,114 | 44 | Proves the year book folds each series the way that series has to be folded, and that the file says so. | 0 |
 | [ZoningCheck.java](ZoningCheck.md) | 595 | 17 | Zoning and the forest law, the model (0.7.107, batch Z1): Zoning, and LandManager's ZONES AND THE FOREST LAW, held to the ledger, the treasury, the... | 0 |
-| [ZoningViewCheck.java](ZoningViewCheck.md) | 606 | 21 | Policy › Zoning's figures (0.7.109, batch Z2): ZoningView, and the words zoning puts on the screens it does not own - NEEDS YOU's GROUND row, the b... | 0 |
+| [ZoningViewCheck.java](ZoningViewCheck.md) | 730 | 26 | Policy › Zoning's figures (0.7.109, batch Z2): ZoningView, and the words zoning puts on the screens it does not own - NEEDS YOU's GROUND row, the b... | 0 |
 
 ## tools (16 files)
 

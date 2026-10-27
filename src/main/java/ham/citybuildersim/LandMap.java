@@ -1257,16 +1257,52 @@ public final class LandMap {
     /** A zone's districts are tinted in its sector's colour this much over the map: 22%, a low alpha (spec-zoning 4: "the map tints a zone's districts"). */
     public static final double ZONE_ALPHA = 0.22;
 
-    /** Each sector's zone colour, in Sectors.KEYS' order: bright, so a low alpha shows over the ground - its industry's own where the map has one (Forestry's green, Quarrying's stone, Copper's teal). */
+    /**
+     * Each sector's zone colour, in Sectors.KEYS' order: bright, so a low alpha shows over the ground - its industry's own where the map has one
+     * (Forestry's green, Quarrying's stone, Copper's teal). ZT1 moved two so that Policy > Zoning, which paints a zone by this table too,
+     * can tell them from its own ground: Luxury Retail's pink was the land office's pink (ZONE_GROUND_APART) and Forestry's green the open forest's.
+     */
     static final int[] ZONE_COLOURS = { 0xfff2c94c, 0xffeaa572, 0xffb39ddb, 0xffffb74d, 0xffe57373, 0xffd4825a, 0xffbdbdbd,
-            0xff64b5f6, 0xff9575cd, 0xffdce775, 0xffffd54f, 0xffb0bec5, 0xff4fc3f7, 0xfff48fb1, 0xffff8a65, 0xffc9b68f, 0xffa48fd0,
-            0xff90a4ae, 0xffe0d8c0, 0xffcfd8dc, 0xff4db6ac, 0xffd08a5a, 0xff81c784, 0xffbcaaa4 };
+            0xff64b5f6, 0xff9575cd, 0xffdce775, 0xffffd54f, 0xffb0bec5, 0xff4fc3f7, 0xffe91e63, 0xffff8a65, 0xffc9b68f, 0xffa48fd0,
+            0xff90a4ae, 0xffe0d8c0, 0xffcfd8dc, 0xff4db6ac, 0xffd08a5a, 0xff4caf50, 0xffbcaaa4 };
 
     /** A sector's zone colour (ZONE_COLOURS), white for one past them. */
     public static int zoneColour(String sector) {
         for (int i = 0; i < Sectors.KEYS.length; i++) if (Sectors.KEYS[i].equals(sector)) return i < ZONE_COLOURS.length ? ZONE_COLOURS[i] : 0xffffffff;
         return 0xffffffff;
     }
+
+    /** ...as the "#rrggbb" a screen paints with: Policy > Zoning reads this, so a zone is one colour there and on the map (ZT1). */
+    public static String zoneColourHex(String sector) {
+        return String.format("#%06x", zoneColour(sector) & 0xffffff);
+    }
+
+    /**
+     * The least a zone's colour may differ from each colour of Policy > Zoning's own ground (built ground's grey, the land office's pink, the
+     * forest's three greens), in CIE76 units (colourGap): a zone's part of the ground bar has to read against its neighbours' (ZT1).
+     */
+    public static final double ZONE_GROUND_APART = 20;
+
+    /** How far apart two colours look: the CIE76 distance of their L*a*b* (D65), about 2.3 a just-noticeable step; alpha is ignored. */
+    public static double colourGap(int a, int b) {
+        double[] x = lab(a), y = lab(b);
+        return Math.sqrt((x[0] - y[0]) * (x[0] - y[0]) + (x[1] - y[1]) * (x[1] - y[1]) + (x[2] - y[2]) * (x[2] - y[2]));
+    }
+
+    /** An sRGB colour as L*a*b*. */
+    private static double[] lab(int argb) {
+        double r = linear((argb >> 16) & 255), g = linear((argb >> 8) & 255), b = linear(argb & 255);
+        double x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047, y = 0.2126 * r + 0.7152 * g + 0.0722 * b, z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+        double fx = labF(x), fy = labF(y), fz = labF(z);
+        return new double[] { 116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz) };
+    }
+
+    private static double linear(int channel) {
+        double c = channel / 255.0;
+        return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    }
+
+    private static double labF(double t) { return t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16.0 / 116; }
 
     /** The city's zones as the map tints them (CityMap's ZONES BY DISTRICT), in Zoning's order: each its sector's and the ground it covers - what it holds free and what its sector has built in it; none with no zone set. */
     public static List<CityMap.ZoneArea> zoneAreas(LandManager lm) {

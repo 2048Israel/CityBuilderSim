@@ -59,6 +59,12 @@ import java.util.Locale;
  *      carries it, its door on Zoning; a zone the free ground covers, small
  *      or large, and no zone at all raise none; with no free ground the
  *      zone holds none of its want.
+ *  10. ONE PALETTE FOR ZONES (ZT1): Policy > Zoning paints a zone in its
+ *      sector's colour, the map's own (LandMap.zoneColour), for every sector
+ *      of the registry; a zone's colour does not change when an earlier zone
+ *      comes off; the map's legend and the screen give a zone the same
+ *      colour; and no sector's colour is within ZONE_GROUND_APART of the
+ *      ground the screen draws its zones against.
  *
  * Every fixture causes its condition.
  */
@@ -137,6 +143,7 @@ public class ZoningViewCheck {
         theDecisionKind(g);
         theWordsElsewhere(g);
         whatIsBiting(g);
+        onePalette(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -602,5 +609,122 @@ public class ZoningViewCheck {
             quietly(() -> g.removeZone(Sectors.MINING));
         }
         assertTrue("every zone off, nothing is flagged again", ZoningView.shortfall(g) == null && zoningFlags(g).isEmpty());
+    }
+
+    /* ============================ 10. ONE PALETTE FOR ZONES ============================ */
+
+    /** Policy > Zoning's screen on the interface bound to the city (no window), by reflection, as hubFlags reads the hub's. */
+    static Object zoningScreen(Game g) {
+        try {
+            ham.citybuildersim.ui.UserInterface ui = new ham.citybuildersim.ui.UserInterface(g);
+            java.lang.reflect.Field policy = ham.citybuildersim.ui.UserInterface.class.getDeclaredField("policyScreen");
+            policy.setAccessible(true);
+            Object screen = policy.get(ui);
+            java.lang.reflect.Field zoning = screen.getClass().getDeclaredField("zoning");
+            zoning.setAccessible(true);
+            return zoning.get(screen);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Zoning's screen could not be reached: " + e, e);
+        }
+    }
+
+    /** The colour the screen paints a sector's zone in ("#rrggbb"): the screen's own zoneColour. */
+    static String screenColour(Object zoningScreen, String sector) {
+        try {
+            java.lang.reflect.Method m = zoningScreen.getClass().getDeclaredMethod("zoneColour", String.class);
+            m.setAccessible(true);
+            return (String) m.invoke(zoningScreen, sector);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Zoning's zoneColour could not be read: " + e, e);
+        }
+    }
+
+    /** One of the screen's static colour constants ("#rrggbb"): the ground it draws its zones against. */
+    static String screenConstant(Object zoningScreen, String name) {
+        try {
+            java.lang.reflect.Field f = zoningScreen.getClass().getDeclaredField(name);
+            f.setAccessible(true);
+            return (String) f.get(null);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Zoning's " + name + " could not be read: " + e, e);
+        }
+    }
+
+    /** "#rrggbb" as the opaque ARGB int the map keeps its colours in. */
+    static int argb(String hex) { return 0xff000000 | Integer.parseInt(hex.substring(1), 16); }
+
+    static void onePalette(Game g) {
+        out.println("\n--- 10. one palette for zones: Zoning paints a zone in its sector's colour, the map's own (ZT1) ---");
+        Object screen = zoningScreen(g);
+        assertTrue("fixture: no zone stands, so no colour can be a zone's place in a list", !g.getZoning().hasZones());
+
+        // Every sector's colour on the screen is the map's.
+        boolean every = true;
+        String firstOff = null;
+        for (String sector : Sectors.KEYS) {
+            if (argb(screenColour(screen, sector)) != LandMap.zoneColour(sector)) {
+                every = false;
+                if (firstOff == null) firstOff = sector;
+            }
+        }
+        assertTrue("for every one of the " + Sectors.KEYS.length + " sectors, Zoning's colour for its zone is the map's tint colour, ARGB for ARGB"
+                + (firstOff == null ? "" : " (first off: " + firstOff + ")"), every && Sectors.KEYS.length > 0);
+
+        // Two zones; the later one's colour does not move when the earlier comes off.
+        quietly(() -> {
+            g.setZone(Sectors.MINING, Zoning.Size.SHARE, .02, .4);
+            g.setZone(Sectors.FORESTRY, Zoning.Size.SHARE, .02, .4);
+        });
+        List<Zoning.Zone> two = g.getZoning().zones();
+        assertTrue("fixture: Mining's zone first and Forestry's after it, as the list holds them",
+                two.size() == 2 && two.get(0).sector().equals(Sectors.MINING) && two.get(1).sector().equals(Sectors.FORESTRY));
+        String laterBefore = screenColour(screen, Sectors.FORESTRY), earlierBefore = screenColour(screen, Sectors.MINING);
+        quietly(() -> g.removeZone(Sectors.MINING));
+        assertTrue("fixture: with Mining's zone off, Forestry's is the first in the list now",
+                g.getZoning().zones().size() == 1 && g.getZoning().zones().get(0).sector().equals(Sectors.FORESTRY));
+        String laterAfter = screenColour(screen, Sectors.FORESTRY);
+        assertTrue("a zone's colour does not change when an earlier zone is removed: Forestry's " + laterBefore + " is " + laterAfter,
+                laterBefore.equals(laterAfter));
+        assertTrue("...and it is the map's tint colour for Forestry before and after", argb(laterAfter) == LandMap.zoneColour(Sectors.FORESTRY));
+        assertTrue("...Mining's, off, is still the map's for Mining and not Forestry's",
+                argb(earlierBefore) == LandMap.zoneColour(Sectors.MINING) && !earlierBefore.equals(laterAfter));
+
+        // The map's legend gives a zone the same colour as the screen.
+        quietly(() -> g.setZone(Sectors.MINING, Zoning.Size.SHARE, .02, .4));
+        List<LandMap.Entry> legend = LandMap.zoneLegend(LandMap.zoneAreas(g.getLandManager()), null);
+        boolean same = legend.size() == 2;
+        for (int i = 0; same && i < legend.size(); i++) {
+            String sector = g.getZoning().zones().get(i).sector();
+            same = legend.get(i).colour() == argb(screenColour(screen, sector));
+        }
+        assertTrue("the map's legend has an entry a zone, its colour the one Zoning paints that zone in", same);
+        quietly(() -> {
+            g.removeZone(Sectors.MINING);
+            g.removeZone(Sectors.FORESTRY);
+        });
+        assertTrue("every zone off again", !g.getZoning().hasZones());
+
+        // No two zones alike, and none lost against the ground the screen draws them on.
+        boolean distinct = true;
+        for (int i = 0; i < Sectors.KEYS.length; i++)
+            for (int j = i + 1; j < Sectors.KEYS.length; j++) distinct &= LandMap.zoneColour(Sectors.KEYS[i]) != LandMap.zoneColour(Sectors.KEYS[j]);
+        assertTrue("no two sectors share a zone colour, so two zones are never one colour on the ground bar", distinct);
+        assertTrue("fixture: the gap is a distance: a colour is 0 from itself, black to white is 100",
+                LandMap.colourGap(0xff5c6b75, 0xff5c6b75) == 0 && Math.abs(LandMap.colourGap(0xff000000, 0xffffffff) - 100) < 0.01);
+        String[] ground = { "BUILT_COLOUR", "FREE_COLOUR", "FOREST_OPEN", "FOREST_WORKING", "FOREST_PROTECTED" };
+        double least = Double.MAX_VALUE;
+        String leastWords = "";
+        for (String name : ground) {
+            int groundColour = argb(screenConstant(screen, name));
+            for (String sector : Sectors.KEYS) {
+                double gap = LandMap.colourGap(LandMap.zoneColour(sector), groundColour);
+                if (gap < least) {
+                    least = gap;
+                    leastWords = sector + " against " + name;
+                }
+            }
+        }
+        assertTrue("every sector's colour is at least " + LandMap.ZONE_GROUND_APART + " apart from each of Zoning's five ground colours (the least: "
+                + String.format("%.1f", least) + ", " + leastWords + ")", least >= LandMap.ZONE_GROUND_APART);
     }
 }
