@@ -1,6 +1,6 @@
 # BookDesk.java - 159 lines · 17 methods · 0 constants · model
 
-`ham/citybuildersim/BookDesk.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BookDesk.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The debt book as a desk: every figure the book page and a line's page draw (CD6,
 > spec-city-debt.md section 7, boards 1 and 2), a pure model of what the screen shows,

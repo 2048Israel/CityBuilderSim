@@ -511,6 +511,18 @@ public class SaveSlotCheck {
         copiesOf("the landmasses' placements, built fresh by toState() (DataSave.setLandmasses)", placed, table.toState());
         assertTrue("...and two states of one table share nothing: each save is its own", Walk.shared(Walk.of(table.toState(), "first"), Walk.of(table.toState(), "second")).isEmpty());
 
+        // The long bridges (ET6) are built fresh by toState() on every save too: a state filled in every field (its kind and state made into a bridge's
+        // own, which restore() passes over else), put into the list and written out again, shares no object with the one it came from and writes the same JSON.
+        Bridges.State built = filler.make(Bridges.State.class);
+        for (Bridges.Row row : built.bridges) {
+            row.kind = BridgeWorks.Kind.RAIL.name();
+            row.state = Bridges.ON_SITE;
+        }
+        Bridges list = new Bridges();
+        list.restore(built);
+        copiesOf("the long bridges, built fresh by toState() (DataSave.setBridges)", built, list.toState());
+        assertTrue("...and two states of one list share nothing: each save is its own", Walk.shared(Walk.of(list.toState(), "first"), Walk.of(list.toState(), "second")).isEmpty());
+
         // ...and the check can tell: the same state held without a copy shares every one of its objects.
         Walk whole = Walk.of(control, "source");
         assertTrue("a state held uncopied is caught: all " + whole.mutable.size() + " of its objects are shared",

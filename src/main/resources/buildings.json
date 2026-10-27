@@ -97,6 +97,9 @@
   "a SEA building is not held to it, and needs the city to own some sea.",
   "An ELECTRICITY building that says \"hydro\": true (the Hydro Station, HY1) needs a river with",
   "a drop on the ground the city owns, one station a slot of the river's mean power (HydroSites).",
+  "An INFRASTRUCTURE building that says \"bridge\": \"HIGHWAY\" | \"RAIL\" | \"ROAD\" (the Highway, Rail and Road",
+  "Bridge, ET6) is a long bridge between two landmasses: its row prices the two landings only (one plot",
+  "of deck at each end), and the span is billed per order by the length and depth the model surveys.",
   "A ROAD's \"repairs\" is its own repairs a year, a share of what it cost to put up",
   "(0.7.103; every other building is repaired at 1% a year), from the Canadian",
   "Infrastructure Report Card 2016's target reinvestment rates a year of replacement",
@@ -3626,6 +3629,41 @@
    },
    "land": 435600,
    "roadLoad": 5,
+   "since": 1900
+  },
+  {
+   "id": 145,
+   "name": "Highway Bridge",
+   "category": "INFRASTRUCTURE",
+   "bridge": "HIGHWAY",
+   "cashCost": 3743,
+   "constructionPoints": 3899,
+   "constructionMaterials": 312,
+   "land": 19375,
+   "repairs": 0.0125
+  },
+  {
+   "id": 146,
+   "name": "Rail Bridge",
+   "category": "INFRASTRUCTURE",
+   "bridge": "RAIL",
+   "cashCost": 5315,
+   "constructionPoints": 5536,
+   "constructionMaterials": 443,
+   "land": 19375,
+   "repairs": 0.0125,
+   "since": 1900
+  },
+  {
+   "id": 147,
+   "name": "Road Bridge",
+   "category": "INFRASTRUCTURE",
+   "bridge": "ROAD",
+   "cashCost": 1970,
+   "constructionPoints": 2052,
+   "constructionMaterials": 164,
+   "land": 19375,
+   "repairs": 0.0125,
    "since": 1900
   }
  ]

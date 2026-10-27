@@ -809,6 +809,12 @@ final class BuildScreen {
             line.setStyle(wordsAt(9.5, words[1]));
             face.getChildren().add(line);
         }
+        // ...and a long bridge's crossing (ET6): where it goes (a chip for each landmass), and what the survey finds - the length and
+        // the depth, what the span and the landings cost, or why there is no way across.
+        if (template.isBridge()) {
+            VBox crossing = bridgeBlock(template, () -> { if (repriced[0] != null) repriced[0].run(); });
+            if (crossing != null) face.getChildren().add(crossing);
+        }
         face.getChildren().add(needsLine(f));
 
         StackPane card = new StackPane();
@@ -1112,6 +1118,9 @@ final class BuildScreen {
                 if (d.length < 3) return "";
                 return "the city's · last month " + shortNumber(d[0]) + " t of it could go by sea; the berths take "
                         + shortNumber(d[1]) + " t, " + Math.round(d[2] * 100) + "% of it";
+            case BRIDGE:
+                // A long bridge (ET6): what it links once it stands; its crossing is on the card's own line.
+                return "links the landmass it reaches to the city's linked ground · its price is its two landings, the span is billed per order";
             case SLOTS:
                 // An offshore platform (0.7.91): the city's shallow sea sites, the slots standing, the wells in them.
                 if (d.length < 3) return "";
@@ -1489,6 +1498,54 @@ final class BuildScreen {
     }
 
     /**
+     * WHERE A LONG BRIDGE GOES (ET6, 2026-10-26): a chip for each landmass the city owns but home (Game.bridgeChoices(); home
+     * alone where it owns no other, and then no chips), the one the order is for lit (Game.bridgeLandmass(): the card's pick, else
+     * the rule), and under them the crossing the model surveyed to it - its length and depth, the span and the landings, or the
+     * survey's refusal in its own words (bridgeWords()). A pick is the model's (Game.chooseBridgeLandmass(): one order's, forgotten at
+     * the month's settle), so it survives the funding page and a redraw; `after` reprices the card's quote line for it.
+     */
+    VBox bridgeBlock(BuildingsTemplate template, Runnable after) {
+        if (BuildCard.bridge(ui.game, template) == null) return null;
+        VBox box = new VBox(3);
+        Runnable[] draw = new Runnable[1];
+        draw[0] = () -> {
+            box.getChildren().clear();
+            List<Landmasses.Row> choices = ui.game.bridgeChoices(template);
+            if (LandmassView.chooserShown(choices)) {
+                Label to = new Label("Toward");
+                to.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+                String[] names = LandmassView.choiceNames(choices);
+                javafx.scene.layout.FlowPane chips = Pieces.chipStrip(names, LandmassView.currentChoice(choices, ui.game.bridgeLandmass(template)), Palette.SIZE_CAPTION, name -> {
+                    for (int i = 0; i < names.length; i++) {
+                        if (names[i].equals(name)) ui.game.chooseBridgeLandmass(template, choices.get(i).id());
+                    }
+                    draw[0].run();
+                    after.run();
+                });
+                chips.setAlignment(Pos.CENTER_LEFT);
+                box.getChildren().addAll(to, chips);
+            }
+            BuildCard.Bridge b = BuildCard.bridge(ui.game, template);
+            if (b != null) {
+                String[] words = bridgeWords(b);
+                Label line = new Label(words[0]);
+                line.setWrapText(true);
+                line.setMinHeight(Region.USE_PREF_SIZE);
+                line.setStyle(wordsAt(9.5, words[1]));
+                box.getChildren().add(line);
+            }
+        };
+        draw[0].run();
+        return box;
+    }
+
+    /** NO_BRIDGE's reason for an order, in the survey's words (BridgeView.refusal()); `old` where the survey says none. */
+    String noBridgeWhy(BuildingsTemplate t, String old) {
+        String why = t == null ? null : BridgeView.refusal(ui.game.bridgeSurvey(t), ui.game.getLandManager().getLandmasses());
+        return why != null ? why : old;
+    }
+
+    /**
      * "Build a port there" (ET5): the sea terminal's card on the Infrastructure page, with the landmass chosen for its next order
      * (Game.choosePortLandmass(): one order's), so that a notice's button and the no-land page's door land on the card ready to
      * order a terminal on the ground no port links. The category alone where the catalogue has no terminal.
@@ -1672,6 +1729,33 @@ final class BuildScreen {
         return new String[] {w.append(" · fits").toString(), Palette.TEXT_MUTED};
     }
 
+    /**
+     * A long bridge's crossing as its card says it (ET6; BuildCard.bridge(), BridgeView): with a crossing found, "To Island 2:
+     * 12.4 km over water up to 24 m deep (mean 11 m); the span $1.92B and 1.4M points, the landings $3.7M" (the span and the
+     * landings before the builders' tax, for one bridge); without one, the survey's refusal in its own words, in red.
+     */
+    String[] bridgeWords(BuildCard.Bridge b) {
+        Landmasses lms = ui.game.getLandManager().getLandmasses();
+        String refusal = BridgeView.refusal(b.survey(), lms);
+        if (refusal != null) return new String[] {refusal, Palette.BAD};
+        String span = b.span() == null ? "" : "; the span " + money(b.span().cost()) + " and " + pointsWords(b.span().points())
+                + " points, the landings " + money(b.landings());
+        return new String[] {BridgeView.crossingWords(b.survey(), lms) + span, Palette.TEXT_MUTED};
+    }
+
+    /** A count of construction points as a card says it: "3,899", "1.4M" from a million. */
+    static String pointsWords(double points) {
+        if (points >= 1e6) return String.format("%.1fM", points / 1e6);
+        if (points >= 1e3) return formatter.format(Math.round(points));
+        return String.format("%.1f", points);
+    }
+
+    /** The quote's line for a long bridge's span (ET6; Game.BuildQuote's bridgeLengthM, bridgePoints and bridgeCost): "Span of 12.4 km: 1.4M points of builders' work, $1.92B". null for every order but a bridge's with a crossing. */
+    static String bridgeSpanWords(Game.BuildQuote q) {
+        if (q == null || !(q.bridgePoints > 0)) return null;
+        return "Span of " + BridgeView.lengthWords(q.bridgeLengthM) + ": " + pointsWords(q.bridgePoints) + " points of builders' work, " + money(q.bridgeCost);
+    }
+
     /** A hydro station's river (HY1): "stands on a river with a drop: 2 of 3 free · the best site 60 m wide, 30 m of head", red when there is none. */
     static String[] hydroWords(BuildCard.Hydro h) {
         if (h.sites() == 0) {
@@ -1852,10 +1936,12 @@ final class BuildScreen {
                 // treasury as they bill the work.
                 String prep = prepWords(v.quote());
                 String works = worksWords(v.quote());
+                String span = bridgeSpanWords(v.quote());
                 quoted.setText(money(v.quote().total) + " with " + money(v.quote().salesTax)
                         + " sales tax, back to the treasury as it is built  ·  " + said[0]
                         + (prep == null ? "" : "\n" + prep)
-                        + (works == null ? "" : "\n" + works));
+                        + (works == null ? "" : "\n" + works)
+                        + (span == null ? "" : "\n" + span));
                 quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, said[1]));
             }
             refreshOrderBar();
@@ -1986,6 +2072,9 @@ final class BuildScreen {
             // ...a hydro station's (HY1): no river with a drop owned, or none of its slots left.
             case NO_RIVER:   return new Pieces.Press(Pieces.Look.HELD, "No river with a drop",
                     "a river comes with land: the Land office ›");
+            // ...a long bridge's (ET6): no way across the water to the landmass chosen, in the words of the survey.
+            case NO_BRIDGE:  return new Pieces.Press(Pieces.Look.HELD, "No way across the water",
+                    "the reason is under the count: the Land office ›");
             case NO_LICENCE: return new Pieces.Press(Pieces.Look.HELD, "Nobody licensed to work in it",
                     "a school licenses them: Education ›");
             case NO_LAND:    return new Pieces.Press(Pieces.Look.HELD, v.quote().landFree <= 0 ? "No land free"
@@ -2013,6 +2102,7 @@ final class BuildScreen {
             case NO_DEPOSIT: return new String[] {"no " + BuildCard.depositWord(v.site()) + " deposit", Palette.BAD};
             case NO_COAST:   return new String[] {noCoastWhy(t, "no sea owned"), Palette.BAD};
             case NO_RIVER:   return new String[] {"no river with a drop owned", Palette.BAD};
+            case NO_BRIDGE:  return new String[] {noBridgeWhy(t, "no way across the water"), Palette.BAD};
             case NO_LICENCE: return new String[] {"nobody licensed", Palette.BAD};
             case NO_LAND:    return new String[] {"short " + LandManager.areaWords(v.figure()) + " of land", Palette.BAD};
             case BILL:       return new String[] {"short " + money(v.figure()) + " — you will be offered a bill", Palette.WARN};
@@ -2650,6 +2740,7 @@ final class BuildScreen {
                         : "no " + ham.citybuildersim.sectors.ExtractionSector.oreWords(Game.siteOf(stopAt), null) + " left to dig";
                 case NO_COAST   -> noCoastWhy(stopAt, "no sea owned for it");
                 case NO_RIVER   -> "no river with a drop owned for it";
+                case NO_BRIDGE  -> noBridgeWhy(stopAt, "no way across the water for it");
                 case NO_LICENCE -> "nobody licensed to practise";
                 default         -> "short of land - buy it at the land office first";
             };
@@ -4047,6 +4138,7 @@ final class BuildScreen {
             case PUMP:      return "the drivers' petrol, at the pump";
             case TANKS:     return StrategicReserve.isReserve(first.template()) ? "the city's crude, in store" : "crude and products in store";
             case BERTHS:    return "the city's trade by sea";
+            case BRIDGE:    return "a way across the water to another landmass";
             case SLOTS:     return "the slots a platform's wells stand in";
             case PIPE:      return "the sea's crude, ashore by pipe";
             case OFFICE:    return "work the world buys";
@@ -4309,6 +4401,21 @@ final class BuildScreen {
                     ham.citybuildersim.sectors.CoalMining.COKING_YIELD * 100, ham.citybuildersim.sectors.CoalMining.THERMAL_YIELD * 100));
             out.add("It buys and sells no coal of its own: raw coal no plant washes sells as thermal, and the sector builds"
                     + " one beside its coking mines.");
+            return out;
+        }
+
+        // ...a long bridge (ET6): what it links, where it may go, and what its price is.
+        if (t.isBridge()) {
+            out.add("Links the landmass it reaches to the ones the city has linked once it stands: the ground there is room to"
+                    + " build on, with no port. It carries nothing the roads count, and one that stands is for good.");
+            out.add(String.format("Ordered toward a landmass the city owns ground on, over fresh water or shallow sea (%s or less) all"
+                    + " the way and no longer than %s; the model finds the shortest crossing from the city's ground across the water"
+                    + " to flat or foothill ground it owns on a linked landmass, or says why there is none.",
+                    BridgeView.shallowWords(), BridgeView.capWords()));
+            out.add(String.format("The price on the card is its two landings, a plot of deck at each end. The span is billed per order"
+                    + " by its length and the depth of the water under it - a deck costs about $%,.0f a m² in the shallows and $%,.0f at the"
+                    + " Confederation Bridge's %.0f m, a railway's 1.42 times a highway's a metre - and takes the builders' capacity for as long as it takes.",
+                    BridgeWorks.deckUsdPerM2(0), BridgeWorks.CONFEDERATION_USD_PER_M2, BridgeWorks.CONFEDERATION_DEPTH_M));
             return out;
         }
 
@@ -5135,6 +5242,39 @@ final class BuildScreen {
     }
 
     /**
+     * The city has the money and the land, and the model finds no way across the water (ET6).
+     *
+     * Its own refusal for the reason the river has one: a long bridge is not short of cash or ground, it is short of a
+     * crossing - fresh or shallow water all the way from the city's own ground on the far landmass to its own buildable ground
+     * on a linked one, no longer than a bridge can be - and the only thing that fixes that is other ground or another landmass,
+     * so no loan would help, and the page says so in the survey's own words.
+     */
+    void showNoBridgeMenu(BuildingsTemplate selected, int quantity,
+                          String menuTitle, EnumSet<BuildingType> categories) {
+        ui.clearMenu("showNoBridgeMenu", () -> showNoBridgeMenu(selected, quantity, menuTitle, categories));
+
+        Label title = new Label("NO WAY ACROSS THE WATER");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox explanation = reportSection("WHY",
+                quantity + " x " + selected.getName() + " needs a crossing the model can find.",
+                noBridgeWhy(selected, "No crossing was found."),
+                "",
+                "A bridge runs from ground the city owns across the far landmass's water to flat or",
+                "foothill ground it owns on a landmass it has linked, over fresh water or shallow sea",
+                "(" + BridgeView.shallowWords() + " or less) all the way, and no longer than " + BridgeView.capWords() + ".",
+                "",
+                "This is not a funding problem. A bond would not fix it.");
+
+        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
+
+        ui.rootMenu.getChildren().addAll(title, explanation, toLand, back);
+    }
+
+    /**
      * Nobody licensed to practise in it.
      *
      * The second refusal of its kind - a mine with no deposit was the first -
@@ -5412,6 +5552,7 @@ final class BuildScreen {
             case NO_DEPOSIT -> showNoDepositMenu(t, n, from.title(), from.categories());
             case NO_COAST   -> showNoCoastMenu(t, n, from.title(), from.categories());
             case NO_RIVER   -> showNoRiverMenu(t, n, from.title(), from.categories());
+            case NO_BRIDGE  -> showNoBridgeMenu(t, n, from.title(), from.categories());
             case NO_LICENCE -> showNoLicenceMenu(t, n, from.title(), from.categories());
             default -> {
                 if (paper == null) showBuildFunding(p.left(), from);
@@ -5475,6 +5616,7 @@ final class BuildScreen {
                 case NO_DEPOSIT -> "no " + BuildCard.depositWord(Game.siteOf(at.getKey())) + " deposit is free for it";
                 case NO_COAST   -> noCoastWhy(at.getKey(), "the city owns no sea for it");
                 case NO_RIVER   -> "the city owns no river with a drop for it";
+                case NO_BRIDGE  -> noBridgeWhy(at.getKey(), "the city has no way across the water for it");
                 case NO_LICENCE -> "nobody is licensed to work in it";
                 default         -> "not enough ground is free for it";
             };

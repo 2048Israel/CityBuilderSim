@@ -1,6 +1,6 @@
 # IslandNetCheck.java - 834 lines · 32 methods · 1 constants · harnesses
 
-`ham/citybuildersim/IslandNetCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/IslandNetCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5).
 > 
@@ -65,6 +65,8 @@
 > ... (15 more lines in the source)
 
 **Uses:** [CityRuns](CityRuns.md) (187), [CityMap](CityMap.md) (31), [World](World.md) (22), [MapCheck](MapCheck.md) (11), [BuildingVisual](BuildingVisual.md) (7), [CityLand](CityLand.md) (7), [Pieces](Pieces.md) (3), [Timing](Timing.md) (2), [LandParcel](LandParcel.md) (2), [BuildingCatalog](BuildingCatalog.md) (1), [Founding](Founding.md) (1), [GatewayCheck](GatewayCheck.md) (1)
+
+**Used by (2):** [BridgeMapCheck](BridgeMapCheck.md), [CrossingCheck](CrossingCheck.md)
 
 ## Sections
 

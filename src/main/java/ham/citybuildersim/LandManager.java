@@ -278,6 +278,9 @@ public class LandManager {
     /** The city's ground by landmass and the landmasses it has linked (ET5): derived from the land and the Earth's data, never saved here; a bare one is a single landmass, and every figure below is then the old one. */
     private final Landmasses landmasses = new Landmasses();
 
+    /** The city's long bridges, built and building (ET6): saved whole, and the joins the linked set is closed under besides the ports (Landmasses.Joins). */
+    private final Bridges bridges = new Bridges();
+
     /** The hydro sites on the city's ground and on the landmasses it has linked (HY1): derived from the land and the Earth's data, never saved here; a generated world has none. */
     private final HydroSites hydro = new HydroSites();
 
@@ -365,6 +368,7 @@ public class LandManager {
         this.worldKey = worldKey == null ? () -> World.Key.generated(Founding.DEFAULT_WORLD_SEED) : worldKey;
         this.month = month == null ? () -> 0 : month;
         market.setLandmasses(landmasses);
+        landmasses.setJoins(bridges);
     }
 
     private int month() { return month.getAsInt(); }
@@ -450,6 +454,9 @@ public class LandManager {
     /** The city's hydro sites (HY1): where a river and a drop lie on the ground it owns, and which of them are on linked landmasses. */
     public HydroSites getHydroSites() { return hydro; }
 
+    /** The city's long bridges (ET6): where each runs, between which landmasses, and whether it stands. */
+    public Bridges getBridges() { return bridges; }
+
     /**
      * The land changed (ET5): counted by landmass again, the offers standing split against the linked set again, the
      * sites of the fields across the water worked out again. Called wherever the ground does change - a purchase, a
@@ -514,6 +521,17 @@ public class LandManager {
     /** DataSave's landmasses (ET5): where the terminals stand; null when none stands off home, as an older save reads. */
     public Landmasses.State landmassState() {
         return landmasses.toState();
+    }
+
+    /** DataSave's bridges (ET6): every bridge built or building; null when the city has none, as an older save reads. */
+    public Bridges.State bridgeState() {
+        return bridges.toState();
+    }
+
+    /** Puts the bridges back (Game's load path, before the placements, which close the linked set over them): fitted to the buildings' counts. */
+    public void restoreBridges(Bridges.State s) {
+        bridges.restore(s);
+        bridges.reconcile();
     }
 
     /** Puts the placements back (Game's load path, after the buildings and the land): fitted to the buildings' counts, and the linked set and the unlinked sums worked out again. */
@@ -3020,6 +3038,7 @@ public class LandManager {
         java.util.Arrays.fill(extractedByType, null);
         zoning.clear();
         landmasses.reset();
+        bridges.reset();
         hydro.reset();
         java.util.Arrays.fill(unlinkedSitesBy, 0);
         java.util.Arrays.fill(unlinkedSitesByType, null);

@@ -1,6 +1,6 @@
 # LandGrid.java - 392 lines · 30 methods · 12 constants · model
 
-`ham/citybuildersim/LandGrid.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandGrid.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The ground a city owns, as a region quadtree over the world's plots: which holding owns each plot, and how much of any block or rectangle of plots is owned.
 > 
@@ -38,7 +38,7 @@
 
 **Uses:** [World](World.md) (12)
 
-**Used by (18):** [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [GlobeFrame](GlobeFrame.md), [GridCheck](GridCheck.md), [GridConversion](GridConversion.md), [GridOffers](GridOffers.md), [HydroCheck](HydroCheck.md), [HydroSites](HydroSites.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMapFrame](MiniMapFrame.md)
+**Used by (19):** [BridgeGround](BridgeGround.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [GlobeFrame](GlobeFrame.md), [GridCheck](GridCheck.md), [GridConversion](GridConversion.md), [GridOffers](GridOffers.md), [HydroCheck](HydroCheck.md), [HydroSites](HydroSites.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMapFrame](MiniMapFrame.md)
 
 ## Sections
 

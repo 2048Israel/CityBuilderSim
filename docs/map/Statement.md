@@ -1,6 +1,6 @@
 # Statement.java - 482 lines · 23 methods · 5 constants · interface
 
-`ham/citybuildersim/ui/Statement.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Statement.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The rows a statement is built from: a head, a line, a note, a total, a
 > disclosure that opens, and the two-column book the sector pages and the

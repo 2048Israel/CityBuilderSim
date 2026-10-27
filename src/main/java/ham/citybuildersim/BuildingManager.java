@@ -4767,6 +4767,52 @@ public class BuildingManager {
                 .setSince(1900)                     // it stood before: Appleton 1882, Niagara 1895
                 .setId(144);
         templates.add(hydroStation);
+
+        /* ------------------------------------------------------------------
+           THE LONG BRIDGES (ET6, ids 145 to 147). A Highway Bridge, a Rail
+           Bridge and a Road Bridge, each ordered toward a far landmass the
+           model surveys a crossing to (BridgeSurvey): water that is fresh or
+           shallow all the way, no longer than 36 km, from the city's own dry
+           ground across the water to its own buildable ground on a landmass it
+           has linked. A standing bridge links the two landmasses (Bridges,
+           Landmasses.Joins). Each prices its TWO LANDINGS only, one plot
+           (30 m) of deck at each end at the base rate of BridgeWorks - the
+           Highway's 23.18 m deck, the Rail's the same at 1.42 times a metre,
+           the Road's 12.2 m - on the 19,375 sq ft the two plots take (900 m2
+           each); the span, which has a length and a depth only the survey
+           knows, is billed per order (Game.bridgeWorksFor()). The points and
+           the materials are the Elevated Highway's to its cash (10,000 and 800
+           to 9,600). A bridge has no capacity, uses no power or water, and is
+           not a highway (isHighway() is false), so it is no run. The Highway
+           Bridge is dated as the Elevated Highway is (undated); the Rail and
+           the Road Bridge 1900, when the Forth Bridge (1890) stood.
+           ------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Highway Bridge", BuildingType.INFRASTRUCTURE)
+                .setBridge(BridgeWorks.Kind.HIGHWAY)
+                .setCashCost(3743)                  // $3.74M: two plots of deck, 60 m x 23.18 m, at $2,691 a m2
+                .setConstructionPoints(3899)        // the Elevated Highway's points to cash
+                .setConstructionMaterials(312)      // ...and its materials to cash
+                .setLandSqFt(19375)                 // two plots of 900 m2
+                .setRepairsPerYear(.0125)           // the Elevated Highway's own
+                .setId(145));
+        templates.add(new BuildingsTemplate("Rail Bridge", BuildingType.INFRASTRUCTURE)
+                .setBridge(BridgeWorks.Kind.RAIL)
+                .setCashCost(5315)                  // $5.31M: the highway's deck at 1.42 times a metre
+                .setConstructionPoints(5536)
+                .setConstructionMaterials(443)
+                .setLandSqFt(19375)
+                .setRepairsPerYear(.0125)
+                .setSince(1900)                     // the Forth Bridge stood in 1890
+                .setId(146));
+        templates.add(new BuildingsTemplate("Road Bridge", BuildingType.INFRASTRUCTURE)
+                .setBridge(BridgeWorks.Kind.ROAD)
+                .setCashCost(1970)                  // $1.97M: two plots of a 12.2 m deck
+                .setConstructionPoints(2052)
+                .setConstructionMaterials(164)
+                .setLandSqFt(19375)
+                .setRepairsPerYear(.0125)
+                .setSince(1900)
+                .setId(147));
         //add more buildings; next Building ID is 62
     }
 

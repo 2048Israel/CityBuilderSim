@@ -1,6 +1,6 @@
 # UiProbe.java - 726 lines · 23 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/UiProbe.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/UiProbe.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > What the window costs the JavaFX thread as a city ages, measured: it grows
 > the playtest's city to the months it is given, opens the real window on it,

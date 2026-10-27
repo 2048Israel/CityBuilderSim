@@ -1,6 +1,6 @@
 # SlopeCheck.java - 912 lines · 32 methods · 15 constants · harnesses
 
-`ham/citybuildersim/SlopeCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SlopeCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building
 > stands on flat and foothill ground and on no steeper, a mine on any, a foothill pad is prepared and paid for as

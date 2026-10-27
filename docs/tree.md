@@ -478,7 +478,12 @@ adds its line here, not in `CLAUDE.md`.
                                    the runs; since 0.8.30 (batch CL5) a stuck highway net opens its next
                                    corridor by a link that searches its way over the dry ground, and every
                                    piece of ground the water parts that holds buildings grows its own net
-                                   (CityMap's pieces), the sidecar FORMAT 12 - IslandNetCheck holds it
+                                   (CityMap's pieces), the sidecar FORMAT 12 - IslandNetCheck holds it;
+                                   (batch ET6) a long bridge the model builds is handed to the map
+                                   (CityMap.bridgePicture()) and laid whole as a fixed path of its kind -
+                                   the highways', the railway's, or a road bridge's ground kept clear as a
+                                   reserve - never grown, taken back or moved, and no part of a net's
+                                   plots - BridgeMapCheck holds it
         Gateways.java              the land's offing (0.8.1, batch FR0; spec-freight 4.1): the bearing
                                    with the longest run of land from the founding site, ties by its
                                    hash; on the Earth toward the nearest larger place along land; none

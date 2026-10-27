@@ -986,6 +986,26 @@ public class BuildingsTemplate {
 
     public boolean isHydro() { return hydro; }
 
+    private BridgeWorks.Kind bridge;
+
+    /**
+     * Which long bridge this is (ET6): the Highway Bridge, the Rail Bridge and the Road Bridge, and no other building. Declared
+     * in buildings.json as "bridge": "HIGHWAY" | "RAIL" | "ROAD". A bridge's template prices its two landings only, one plot of
+     * deck at each end; the span is billed per order, by the length and the depth of the crossing the model surveys
+     * (BridgeSurvey, BridgeWorks), and an order is refused NO_BRIDGE where the survey finds none (Game.hasBridgeFor()).
+     * It has no capacity: it joins two landmasses (Bridges), it carries nothing the roads' arithmetic counts.
+     */
+    public BuildingsTemplate setBridge(BridgeWorks.Kind kind) {
+        this.bridge = kind;
+        return this;
+    }
+
+    /** The kind of long bridge this is, or null for every other building. */
+    public BridgeWorks.Kind bridgeKind() { return bridge; }
+
+    /** Whether this is a long bridge (ET6). */
+    public boolean isBridge() { return bridge != null; }
+
     private double truckRoom;
 
     /**

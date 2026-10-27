@@ -3163,6 +3163,71 @@ public class SaveFileCheck {
                 Game refused = new Game(isleFiles);
                 quietly(() -> refused.loadGameSave(10));
                 assertEquals("an Earth save of the format before the landmasses (" + (EarthSite.LANDMASS_FORMAT - 1) + ") is refused in the words saying so", refused.getLoadFailure(), EarthSite.BEFORE_LANDMASS_WORDS);
+
+                // THE LONG BRIDGES (ET6, 2026-10-26; Bridges): a city with a bridge built or building writes one key, "bridges" - a row for each, its
+                // template, kind, state, landings, landmasses, length, depths and corner plots - and a city with none writes none. Read back it puts every
+                // bridge where it ran and the island linked; written again it is the same bytes but its time; a save without the key reads none and is
+                // not refused; a row of a template that is no bridge, or of a kind the game does not know, is passed over. No format bump (no old save reads wrongly).
+                assertTrue("a city with no bridge writes no \"bridges\" key (its save is the old bytes), and the island city of the landmasses' block writes none either",
+                        !earthJson.has("bridges") && city.getLandManager().bridgeState() == null && !isleJson.has("bridges") && isle.getLandManager().bridgeState() == null);
+                GameFiles bridgeFiles = new GameFiles(root.resolve("bridge"), root.resolve("no-legacy"));
+                Game bridged = new Game(bridgeFiles);
+                quietly(() -> {
+                    bridged.newGame(Founding.custom("Rotterdam", Founding.WEALTHY_CASH, Founding.WEALTHY_RESERVE_USD, .02).withWorldKey(key));
+                    bridged.buildStack(template(bridged, "House"), 60, true);
+                    bridged.buildStack(template(bridged, "Construction Depot"), 2, true);
+                    bridged.getLandManager().buyRectForTest(island.x0(), island.y0(), island.x0() + LandmassCheck.SQUARE, island.y0() + LandmassCheck.SQUARE, bridged.getMonth());
+                    BridgeCheck.LiveGround crossing = new BridgeCheck.LiveGround(bridged.getLandManager().getLandmasses());
+                    BridgeCheck.channelInto(crossing, bridged.getLandManager().getLandmasses().home(), 648, 14, 3, World.SHALLOW, 10);
+                    bridged.setBridgeGroundForTest(crossing);
+                    bridged.chooseBridgeLandmass(template(bridged, "Road Bridge"), 648);
+                    bridged.buildStack(template(bridged, "Road Bridge"), 1, true);
+                    bridged.chooseBridgeLandmass(template(bridged, "Rail Bridge"), 648);
+                    bridged.buildStack(template(bridged, "Rail Bridge"), 1, false);
+                    bridged.simulateMonths(2);
+                });
+                Landmasses bl = bridged.getLandManager().getLandmasses();
+                Bridges.State bridgeState = bridged.getLandManager().bridgeState();
+                assertTrue("fixture: a Road Bridge stands (built at once) and a Rail Bridge is on site, over a crossing the survey found; the island is linked by the one that stands",
+                        bridgeState != null && bridgeState.bridges.size() == 2 && bridgeState.bridges.get(0).state == Bridges.STANDING && bridgeState.bridges.get(1).state == Bridges.ON_SITE
+                                && bl.linked(648) && !bl.anyUnlinked());
+                assertTrue("saved", quietlyGet(() -> bridged.saveGame(10, "bridged")).ok);
+                com.google.gson.JsonObject bridgedJson = com.google.gson.JsonParser.parseString(Files.readString(bridgeFiles.saveFile(10))).getAsJsonObject();
+                assertTrue("the save carries the key \"bridges\", a row for each bridge, and the format of every Earth save of this build (no bump)",
+                        bridgedJson.has("bridges") && bridgedJson.getAsJsonObject("bridges").getAsJsonArray("bridges").size() == 2 && bridgedJson.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT);
+                Game bridgedBack = new Game(bridgeFiles);
+                quietly(() -> bridgedBack.loadGameSave(10));
+                assertTrue("read back, the bridges run where they ran, the one that stands links the island, and the land is the same", bridgedBack.getLoadFailure() == null
+                        && new com.google.gson.Gson().toJson(bridgedBack.getLandManager().bridgeState()).equals(new com.google.gson.Gson().toJson(bridgeState))
+                        && bridgedBack.getLandManager().getLandmasses().linked(648) && bridgedBack.getBridges().count(Bridges.STANDING) == 1 && bridgedBack.getBridges().count(Bridges.ON_SITE) == 1
+                        && bridgedBack.getCityLand().same(bridged.getCityLand()));
+                assertTrue("saved again", quietlyGet(() -> bridgedBack.saveGame(10, "bridged")).ok);
+                com.google.gson.JsonObject bridgedAgain = com.google.gson.JsonParser.parseString(Files.readString(bridgeFiles.saveFile(10))).getAsJsonObject();
+                java.util.List<String> bridgedMoved = jsonDiff(bridgedJson, bridgedAgain, java.util.Set.of("savedAt"));
+                assertTrue("...and writes the same bytes but its time", bridgedMoved.isEmpty());
+                if (!bridgedMoved.isEmpty()) System.out.println("     moved: " + bridgedMoved);
+                com.google.gson.JsonObject unbridged = bridgedJson.deepCopy();
+                unbridged.remove("bridges");
+                Files.writeString(bridgeFiles.saveFile(10), gson.toJson(unbridged));
+                Game bridgeless = new Game(bridgeFiles);
+                quietly(() -> bridgeless.loadGameSave(10));
+                assertTrue("a save without the key loads - it is not refused - and reads no bridge: none recorded, the island unlinked",
+                        bridgeless.getLoadFailure() == null && bridgeless.getLandManager().bridgeState() == null && bridgeless.getBridges().size() == 0
+                                && !bridgeless.getLandManager().getLandmasses().linked(648));
+                com.google.gson.JsonObject oddBridges = bridgedJson.deepCopy();
+                com.google.gson.JsonObject notABridge = new com.google.gson.JsonObject();
+                notABridge.addProperty("template", template(bridged, "House").getId());
+                notABridge.addProperty("kind", "ROAD");
+                oddBridges.getAsJsonObject("bridges").getAsJsonArray("bridges").add(notABridge);
+                com.google.gson.JsonObject unknownKind = new com.google.gson.JsonObject();
+                unknownKind.addProperty("template", template(bridged, "Road Bridge").getId());
+                unknownKind.addProperty("kind", "FERRY");
+                oddBridges.getAsJsonObject("bridges").getAsJsonArray("bridges").add(unknownKind);
+                Files.writeString(bridgeFiles.saveFile(10), gson.toJson(oddBridges));
+                Game oddBridged = new Game(bridgeFiles);
+                quietly(() -> oddBridged.loadGameSave(10));
+                assertTrue("a row of a template that is no bridge, and one of a kind the game does not know, are passed over (not refused): the two real bridges stand alone",
+                        oddBridged.getLoadFailure() == null && oddBridged.getBridges().size() == 2 && oddBridged.getLandManager().getLandmasses().linked(648));
             }
         }
 

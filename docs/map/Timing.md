@@ -1,6 +1,6 @@
 # Timing.java - 119 lines · 9 methods · 6 constants · model
 
-`ham/citybuildersim/Timing.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Timing.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > The one helper every timing assertion in the suite goes through: a figure
 > on a clock against its budget, hard as the harness wrote it, or soft while
@@ -27,7 +27,7 @@
 > holds the mechanism, and holds that no harness compares a figure against a
 > {@code *_MS} or {@code *_NS} dial except through here.
 
-**Used by (14):** [AllChecks](AllChecks.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [IslandNetCheck](IslandNetCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md), [WorldCheck](WorldCheck.md)
+**Used by (16):** [AllChecks](AllChecks.md), [BridgeCheck](BridgeCheck.md), [BridgeMapCheck](BridgeMapCheck.md), [EarthCheck](EarthCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [GridCheck](GridCheck.md), [IslandNetCheck](IslandNetCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md), [WorldCheck](WorldCheck.md)
 
 ## Constants
 

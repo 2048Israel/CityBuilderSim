@@ -1,6 +1,6 @@
 # DistrictPicture.java - 309 lines · 17 methods · 15 constants · model
 
-`ham/citybuildersim/DistrictPicture.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DistrictPicture.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > A district's picture for the far views: 32 x 32 pixels, a pixel for 8 x 8 plots (240 m), each the colour of one of its 64 plots - the plot a fixed hash picks from them ranked by class - drawn from the district's own plan as the painter reads it, so a far view shows where things stand, each kind in proportion to the ground it stands on, the same from month to month.
 > 

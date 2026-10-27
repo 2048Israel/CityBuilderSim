@@ -1619,7 +1619,7 @@ public final class TileRaster {
         for (int y = 0; y < tile; y++) {
             for (int x = 0; x < tile; x++) {
                 int i = y * tile + x;
-                if (in.avenue[i] != 0 || p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL || World.salt(in.terrain[i])) continue;
+                if (in.avenue[i] != 0 || p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL || in.terrain[i] == World.SALT) continue;
                 if (p.use[i] == TilePainter.ROAD && !isStreet(p, i)) continue; // a highway's own plot
                 // A step beside it on each axis, or none of its four combinations holds.
                 if (in.avenueAt(x - 1, y) == 0 && in.avenueAt(x + 1, y) == 0 || in.avenueAt(x, y - 1) == 0 && in.avenueAt(x, y + 1) == 0) continue;
@@ -1780,7 +1780,7 @@ public final class TileRaster {
         int kind = notchKind(codeA, codeB);
         int tile = TilePainter.TILE, w = tile * px, x = i % tile, y = i / tile;
         if (kind == 0 || (box && kind == TilePainter.TRACK)) return;
-        boolean wet = in.terrain[i] == World.FRESH;
+        boolean wet = World.bridgeable(in.terrain[i]);
         int dx = armDx(code), dy = armDy(code);
         boolean bridged = bridgeAt(in, p, x + dx, y) && bridgeAt(in, p, x, y - dy);
         if (wet && !bridged) return;
@@ -1875,7 +1875,7 @@ public final class TileRaster {
                 int i = y * tile + x;
                 if (p.beneath[i] || p.use[i] == TilePainter.BUILDING || p.use[i] == TilePainter.RAIL) continue;
                 if (p.use[i] == TilePainter.ROAD && !isStreet(p, i)) continue;
-                if (World.salt(in.terrain[i]) || (in.terrain[i] == World.FRESH && p.use[i] != TilePainter.ROAD)) continue;
+                if (in.terrain[i] == World.SALT || (World.bridgeable(in.terrain[i]) && p.use[i] != TilePainter.ROAD)) continue;
                 if (box && !cr.signalAt(x, y)) continue;
                 boolean owned = in.owned[i];
                 int c = box ? JUNCTION_BOX : kind == TilePainter.TRACK ? TRACK_DASH : ROAD[kind];
@@ -2380,7 +2380,7 @@ public final class TileRaster {
                 int x0 = (i % tile) * px, y0 = (i / tile) * px;
                 // A viaduct (ET4: a highway's plot on steep ground, a bridge over dry land) is cased in the deck's colour, a pixel at
                 // least even where the highway has none: it fills its plot's width, so its deck could not otherwise be seen.
-                boolean viaduct = p.bridge[i] && in.terrain[i] != World.FRESH && isHighway(p, i);
+                boolean viaduct = p.bridge[i] && !World.bridgeable(in.terrain[i]) && isHighway(p, i);
                 int ci = viaduct ? Math.max(1, cas) : cas, inI = pass == 0 ? 0 : ci;
                 if (pass == 0 && ci == 0) continue;
                 int c = pass == 0 ? (viaduct ? DECK : HIGHWAY_CASE) : ROAD[BuildingVisual.HIGHWAY];

@@ -560,12 +560,21 @@ public final class CityMap {
      */
     public static CityMap canonical(CityLand land, Function<Resource, double[]> remaining,
                                     BuildingVisual.Type[] types, long[] counts, int month, Landmasses.Picture landmasses) {
+        return canonical(land, remaining, types, counts, month, landmasses, null);
+    }
+
+    /**
+     * ...and the long bridges that stand (ET6, bridgePicture()), laid with the runs; null or empty for none, and then the same map as the form above.
+     */
+    public static CityMap canonical(CityLand land, Function<Resource, double[]> remaining,
+                                    BuildingVisual.Type[] types, long[] counts, int month, Landmasses.Picture landmasses, List<BridgeRun> bridges) {
         CityMap m = new CityMap(land.key(), land.siteX(), land.siteY(), types);
         m.month = month;
         m.land = land;
         m.remaining = remaining;
         m.landmasses = landmasses;
         m.mask.reset(landmasses);
+        m.bridgePicture(bridges);
         m.measureAll();
         m.allocate(counts);
         m.layRuns(counts);
@@ -5030,6 +5039,8 @@ public final class CityMap {
      * with none). True, and the map's changes bumped, when they moved.
      */
     boolean layRuns(long[] model) {
+        // ET6: the long bridges handed (bridgePicture()), laid whole before the nets grow, inside the month's journal; none, and this is a comparison of two zeros.
+        boolean bridged = applyBridges();
         long highway = 0, track = 0, spurTrackNow = 0;
         int spurs = 0;
         for (int t = 0; t < types.length && t < model.length; t++) {
@@ -5078,7 +5089,7 @@ public final class CityMap {
         runs.setDoubleMain(hasFreightLine(model));
         // CL5: the city's ground in pieces, worked out again only when the ground has moved (MapPieces), and asked only when the highways have plots to lay.
         pieces.begin();
-        boolean moved = runs.layTo(highway, track, yardSizes, spurs, runGround, siteX, siteY, rx, ry, mines, works, pieces);
+        boolean moved = runs.layTo(highway, track, yardSizes, spurs, runGround, siteX, siteY, rx, ry, mines, works, pieces) | bridged;
         if (moved) {
             changes++;
             yardShare = null;
@@ -6084,6 +6095,116 @@ public final class CityMap {
     }
 
     /* =====================================================================
+       LONG BRIDGES ON THE MAP (ET6, 2026-10-26; docs/studies/spec-earth2-terrain.md 6.5 and 6.6)
+
+       A long bridge is an order in the model (a Highway, Rail or Road Bridge of
+       up to 36 km over fresh water or shallow sea, linking two landmasses). Once
+       it STANDS the game hands the map the standing ones, as it hands the
+       landmasses (Game.reconcileMap() beside landmassPicture()): each a
+       BridgeRun, its kind and the plots of its path where the heading changes,
+       the two landings (dry ground) first and last. The map reads the model;
+       the model never reads the map. With NO bridge handed (null or empty: every
+       generated world, and every Earth city that has bought none) NOTHING IN
+       THIS SECTION RUNS - no runs line, no stamp, no sidecar byte is other than
+       it was before ET6 (decision D19: the default playtest's trace holds).
+
+       WHAT THE MAP DOES WITH ONE (CityRuns' LONG BRIDGES has the rest):
+         - the runs lay it whole: a highway bridge's plots are the highways' and a
+           rail bridge's the railway's, from landing to landing, never grown,
+           taken back or moved, and not counted in the nets' plots;
+         - the plans keep it clear: its plots are in the runs a plan is drawn
+           from (CityRuns.fill(): a road bridge's as a reserve), so no building,
+           field or yard is placed on its landings or its deck, and a plan whose
+           frame it crosses is drawn again (frameHash()). What stood on a plot
+           before the bridge came stays, as under a highway laid later (THE RUNS
+           DATED, H4); what comes after goes round it;
+         - the painter draws it as it draws any run over water: TilePainter's
+           bridge flag from the water under the plot, TileRaster's deck; a road
+           bridge as a paved street (streetAt(), fillInput()).
+
+       WHEN. bridgePicture() only notes the list; the laying is the month's, in
+       layRuns() (reconcile(), inside the journal of the runs: the districts a
+       bridge touches are dated like any plot the runs lay), at canonical() and
+       at readSidecar(). The list's stamp is folded into the sidecar's land
+       stamp, so a sidecar written under another list - or none - is not read
+       back; into the runs' version, so the plans and views kept against it
+       are drawn again; and into the frame hash of every district a bridge
+       lies in.
+       ===================================================================== */
+
+    /**
+     * One long bridge that stands, as the model hands it to the map (ET6): its kind (ROAD, HIGHWAY or RAIL) and the plots of its path
+     * where its heading changes, x0, y0, x1, y1, ... in world plot coordinates. The first and the last are the two landings (dry
+     * ground); every step between them is one of the eight headings, a straight leg a run of equal steps from one corner to the
+     * next; the plots between the landings are water (fresh, or shallow sea), mostly not the city's. Equal when the kind and the
+     * corners are.
+     */
+    public record BridgeRun(int kind, long[] corners) {
+        /** A street-sized deck that belongs to no net... */
+        public static final int ROAD = 0;
+        /** ...a highway's, which joins the highways... */
+        public static final int HIGHWAY = 1;
+        /** ...and the railway's. */
+        public static final int RAIL = 2;
+
+        @Override public boolean equals(Object o) {
+            return o instanceof BridgeRun b && b.kind == kind && Arrays.equals(b.corners, corners);
+        }
+
+        @Override public int hashCode() {
+            return 31 * kind + Arrays.hashCode(corners);
+        }
+
+        @Override public String toString() {
+            return "BridgeRun[kind=" + kind + ", corners=" + Arrays.toString(corners) + "]";
+        }
+    }
+
+    /** The bridges as the game last handed them, in any order; empty while the city has none. */
+    private List<BridgeRun> bridgeRuns = List.of();
+
+    /** Their stamp (CityRuns.stampOf()), 0 for none: what a cache of anything the bridges touch keys on. */
+    private long bridgeStamp;
+
+    /** A road bridge's plot as a plan's street code: paved, half a plot wide (a street's surface, so that its deck shows beside it), a cell's street, no bridge bit - the painter reads the water under it. */
+    static final byte ROAD_BRIDGE_STREET = (byte) (DistrictPlan.PAVED | (1 << TilePainter.S_WIDTH_SHIFT));
+
+    /** The long bridges as the game last handed them: empty while the city has none. */
+    public List<BridgeRun> bridgePicture() { return bridgeRuns; }
+
+    /** The bridges' stamp, 0 for none; the same bridges in another order are the same stamp. */
+    public long bridgeStamp() { return bridgeStamp; }
+
+    /**
+     * The long bridges that stand, handed over by the game (Game.reconcileMap(), beside landmassPicture()); null or empty for none. A
+     * list with the stamp of the one held (the same bridges, in any order) changes nothing. One that differs is noted here and laid at
+     * the month's layRuns() - inside reconcile()'s journal, so the plans' history dates it like any plot the runs lay.
+     */
+    public void bridgePicture(List<BridgeRun> runs) {
+        long now = CityRuns.stampOf(runs);
+        if (now == bridgeStamp) return;
+        bridgeRuns = runs == null ? List.of() : java.util.Collections.unmodifiableList(new ArrayList<>(runs));
+        bridgeStamp = now;
+    }
+
+    /** The bridges noted laid on the runs, if they are not: true when they moved. */
+    private boolean applyBridges() {
+        return runs.bridgeStamp() != bridgeStamp && runs.setBridges(bridgeRuns);
+    }
+
+    /** A road bridge's plots on the tile whose first plot is (px0, py0), as the street the plan draws none on: paved and whole, the deck under it the painter's. */
+    private void roadBridgesInto(long px0, long py0, TilePainter.Input in) {
+        int tile = World.TILE;
+        if (!runs.bridgeNear(CityRuns.BRIDGE_ROAD, px0, py0, tile, tile)) return;
+        for (int y = 0; y < tile; y++) {
+            for (int x = 0; x < tile; x++) {
+                int i = y * tile + x;
+                if ((in.street[i] & TilePainter.S_KIND) == DistrictPlan.NONE && runs.onBridge(CityRuns.BRIDGE_ROAD, px0 + x, py0 + y)) in.street[i] = ROAD_BRIDGE_STREET;
+            }
+        }
+    }
+
+    /* =====================================================================
        THE SEA ROUTES (0.7.97, batch O13; spec-roads-and-ports.md 4.1)
 
        Each terminal's route out to the world, found on the sea's grid and
@@ -6296,6 +6417,8 @@ public final class CityMap {
             return b;
         }
         if (seam && (best & TilePainter.S_KIND) == DistrictPlan.SEAM) return (byte) ((best & ~TilePainter.S_KIND & ~(3 << TilePainter.S_WIDTH_SHIFT)) | DistrictPlan.TRACK);
+        // ET6: a road bridge's plot is a paved street where the plan draws none.
+        if (best == 0 && runs.roadBridges() && runs.onBridge(CityRuns.BRIDGE_ROAD, x, y)) return ROAD_BRIDGE_STREET;
         return best;
     }
 
@@ -6428,6 +6551,8 @@ public final class CityMap {
                 }
             }
         }
+        // ET6: a road bridge's plots, a paved street where the plan draws none; the ring about the tile takes them from here and from streetAt().
+        if (runs.roadBridges()) roadBridgesInto(px0, py0, in);
         // ...and just beyond its edges, north, east, south and west.
         for (int m = 0; m < World.TILE; m++) {
             in.beyond[m] = streetAt(px0 + m, py0 - 1, seen);
@@ -7305,7 +7430,7 @@ public final class CityMap {
             out.writeLong(0);                       // the stamp, below
             out.writeLong(siteX);
             out.writeLong(siteY);
-            out.writeLong(landStampOf(land, purchasesSeen, landmasses));   // ET5: with the linked set folded in while the city holds a picture of its landmasses
+            out.writeLong(landStampOf(land, purchasesSeen, landmasses, bridgeStamp));   // ET5: with the linked set folded in while the city holds a picture of its landmasses; ET6: and the long bridges' stamp while it holds any
             out.writeInt(purchasesSeen);
             out.writeInt(types.length);
             out.writeInt(districts.size());
@@ -7378,9 +7503,11 @@ public final class CityMap {
     private long lastStamp;
 
     /** The land's stamp over its first `bought` purchases, with the picture's stamp folded in when the city holds one (ET5): the sidecar's land stamp. Exactly CityLand.stamp() for a city on one landmass. */
-    private static long landStampOf(CityLand land, int bought, Landmasses.Picture landmasses) {
+    private static long landStampOf(CityLand land, int bought, Landmasses.Picture landmasses, long bridges) {
         long s = land.stamp(bought);
-        return landmasses == null ? s : World.mix(s ^ landmasses.stamp());
+        s = landmasses == null ? s : World.mix(s ^ landmasses.stamp());
+        // ET6: ...and the long bridges' stamp (CityRuns.stampOf()) while the city holds any: a sidecar written under another list of them - or none - is not this city's.
+        return bridges == 0 ? s : World.mix(s ^ bridges * 0x94D049BB133111EBL);
     }
 
     /** An unsigned varint (CL3): seven bits a byte, the low first, the high bit set where more follow. */
@@ -7475,6 +7602,15 @@ public final class CityMap {
      */
     public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining,
                                       BuildingVisual.Type[] types, int month, long stamp, Landmasses.Picture landmasses) {
+        return readSidecar(deflated, land, remaining, types, month, stamp, landmasses, null);
+    }
+
+    /**
+     * ...and the long bridges the game hands over (ET6): a sidecar written under another list of them - or none - is not this city's and the
+     * map is drawn again; the bridges are laid on the runs read back, none in the file.
+     */
+    public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining,
+                                      BuildingVisual.Type[] types, int month, long stamp, Landmasses.Picture landmasses, List<BridgeRun> bridges) {
         byte[] raw = inflate(deflated);
         if (raw == null || raw.length < STAMP_AT + 8) return null;
         try {
@@ -7489,7 +7625,7 @@ public final class CityMap {
             long sx = in.readLong(), sy = in.readLong();
             long landStamp = in.readLong();
             int bought = in.readInt();
-            if (sx != land.siteX() || sy != land.siteY() || bought != land.purchases().size() || landStamp != landStampOf(land, bought, landmasses)) return null;
+            if (sx != land.siteX() || sy != land.siteY() || bought != land.purchases().size() || landStamp != landStampOf(land, bought, landmasses, CityRuns.stampOf(bridges))) return null;
             int nTypes = in.readInt(), n = in.readInt();
             if (nTypes > types.length || n < 0) return null;
             CityMap m = new CityMap(land.key(), sx, sy, types);
@@ -7498,6 +7634,7 @@ public final class CityMap {
             m.remaining = remaining;
             m.landmasses = landmasses;
             m.mask.reset(landmasses);
+            m.bridgePicture(bridges);
             for (int i = 0; i < n; i++) {
                 int dx = in.readShort(), dy = in.readShort();
                 District d = m.newDistrict(dx, dy);
@@ -7593,6 +7730,8 @@ public final class CityMap {
             m.centreSeen = land.centreStamp();
             m.sortDistricts();
             m.pyramid = new Pyramid(m);
+            // ET6: the long bridges are not in the file (the list is the game's): laid on the runs read back, before the reserves that are found over them.
+            m.applyBridges();
             // The interchanges' reserves are the runs and the ground's, found when asked and not saved (batch FR7).
             m.runs.layReserves(m.runGround);
             if (nRuns == 0) m.layRuns(m.have);

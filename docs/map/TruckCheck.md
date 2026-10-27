@@ -1,6 +1,6 @@
 # TruckCheck.java - 441 lines · 10 methods · 0 constants · harnesses
 
-`ham/citybuildersim/TruckCheck.java` - generated 2026-10-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TruckCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
 > Proves that Haulage's loads are drawn as trucks on the map's roads, as a
 > pure function of time, and that drawing them changes nothing in the game
