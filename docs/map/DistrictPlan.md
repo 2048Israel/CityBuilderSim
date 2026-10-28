@@ -66,7 +66,7 @@
 
 **Uses:** [World](World.md) (34), [BuildingVisual](BuildingVisual.md) (29), [TilePainter](TilePainter.md) (28), [StreetCurves](StreetCurves.md) (6), [CityRuns](CityRuns.md) (5), [CityMap](CityMap.md) (2), [BuildingType](BuildingType.md) (1)
 
-**Used by (19):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md), [TruckRouteCheck](TruckRouteCheck.md)
+**Used by (20):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 

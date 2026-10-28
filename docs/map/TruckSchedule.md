@@ -1,4 +1,4 @@
-# TruckSchedule.java - 539 lines · 37 methods · 11 constants · model
+# TruckSchedule.java - 590 lines · 38 methods · 12 constants · model
 
 `ham/citybuildersim/TruckSchedule.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
@@ -32,9 +32,12 @@
 > truckedOut() and truckedHome(): what Haulage's trucks were asked, which
 > come to Haulage.getTonnes()), at the share Haulage carried of them
 > (getCarried() over getTonnes(), a fleet too small leaves tonnes on the
-> ground) and a share of each load (`shares`, by Load's order: a district's
-> works' truck tonnes of it over the city's - sharesOf(), perBuilding() and
-> truckedBy(), the model's own Move.truck() read), over a truck's load,
+> ground) and a share of each load (`shares`, by Load's order: the works'
+> truck tonnes of it over the city's - sharesOf(), perBuilding() and
+> truckedBy(), the model's own Move.truck() read - of a district's
+> CATCHMENT, sharesByTrips(): a works district rides the trips of the nearest
+> district that has any, so a depot district draws its neighbours' trucks and
+> a works district with no access road is not left without), over a truck's load,
 > Haulage.TONNES_A_LOAD. A fraction of a load is a whole truck in the share
 > of months its fraction says (BoatSchedule.callsFor()). Past MOST_A_MONTH
 > loads a month (the city's, every load before `shares`, so every district's
@@ -59,12 +62,9 @@
 > route a truck drives whole, from where its load enters to the gate of the
 > work it goes to: a WORLD trip (Route.through(true, ...)) from WORLD_PLOTS
 > out along the highway's world line, in along the highways to a ramp, along
-> the streets to an access road's end and down it to its work's gate, which
-> takes imports and exports alone (what crosses the city's edge comes in by
-> it and leaves by it); and a HOME trip (Route.home()) from the gate of
-> ... (6 more lines in the source)
+> ... (9 more lines in the source)
 
-**Uses:** [World](World.md) (5), [Haulage](Haulage.md) (4), [BoatSchedule](BoatSchedule.md) (3), [TrainSchedule](TrainSchedule.md) (3), [Freight](Freight.md) (3), [MapFrame](MapFrame.md) (1), [BuildingVisual](BuildingVisual.md) (1), [CityMap](CityMap.md) (1)
+**Uses:** [CityMap](CityMap.md) (7), [World](World.md) (5), [Haulage](Haulage.md) (4), [BoatSchedule](BoatSchedule.md) (3), [TrainSchedule](TrainSchedule.md) (3), [Freight](Freight.md) (3), [MapFrame](MapFrame.md) (1), [BuildingVisual](BuildingVisual.md) (1), [DistrictPlan](DistrictPlan.md) (1)
 
 **Used by (6):** [CityMap](CityMap.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [TruckCheck](TruckCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckShapes](TruckShapes.md)
 
@@ -72,113 +72,115 @@
 
 | line | section |
 |---:|---|
-| 187 | THE MONTH'S TRUCKS |
-| 341 | WHERE A TRUCK IS |
-| 425 | A DISTRICT'S PART OF THE CITY'S LOADS (batch FR9) |
-| 506 | · reads |
+| 190 | THE MONTH'S TRUCKS |
+| 344 | WHERE A TRUCK IS |
+| 428 | A DISTRICT'S PART OF THE CITY'S LOADS (batch FR9) |
+| 557 | · reads |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 116 | `TruckSchedule.Load.IMPORT` |  |
-| 116 | `TruckSchedule.Load.EXPORT` |  |
-| 116 | `TruckSchedule.Load.HOME` |  |
+| 119 | `TruckSchedule.Load.IMPORT` |  |
+| 119 | `TruckSchedule.Load.EXPORT` |  |
+| 119 | `TruckSchedule.Load.HOME` |  |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 79 | `TruckSchedule.MONTH_SECONDS` | `BoatSchedule.MONTH_SECONDS` | Seconds of trucks a game month: the boats' (spec-freight 4.7, as the trains). |
-| 82 | `TruckSchedule.LEG_SECONDS` | `6` | The shortest leg a truck takes to run its route, in or out, in seconds: 6 (spec-freight 4.7, a visual pace, the trains'), for a route of 300 plots or less. |
-| 85 | `TruckSchedule.LEG_MOST` | `TrainSchedule.LEG_MOST` | The longest leg, in seconds: 10, the trains' (TrainSchedule.LEG_MOST), for a route of 500 plots or more, so a trip of the whole city's length stays inside the month (a visit is two legs and a stand). |
-| 88 | `TruckSchedule.DWELL_SECONDS` | `2` | Seconds a truck stands at its gate, loading or unloading: 2 (spec-freight 4.7). |
-| 91 | `TruckSchedule.WORLD_PLOTS` | `TrainSchedule.WORLD_PLOTS` | A route's part along the world line, past the city's ground, in plots: 64, as the trains' (TrainSchedule.WORLD_PLOTS), over which a truck fades in. |
-| 94 | `TruckSchedule.TRUCK_PLOTS` | `0.55` | An articulated truck's length in plots: 0.55, 16.5 m of a plot's 30 m (TrainSchedule.CAR_PLOTS, a wagon, is TileRaster.WAGON_LENGTH for scale). |
-| 97 | `TruckSchedule.MOST_A_MONTH` | `1000` | The most trucks a month drawn one for one: 1,000, a truck about every 0.06 s of a 60 s month (spec-freight 4.7; the roads take many more marks than the rails). |
-| 100 | `TruckSchedule.SALT` | `0x7C4B_E5E7L` | The salt the trucks' hashes start from. |
-| 103 | `TruckSchedule.GROUP_BITS` | `7, ROUTE_BITS = 20, ARRIVAL_BITS = 36, ARRIVAL_SHIFT = GROUP_BITS + ROUTE_BITS` | A truck's key: its arrival in ARRIVAL_BITS ticks of a month from bit ARRIVAL_SHIFT up, its route + 1 (0 for none) in ROUTE_BITS, its group in the low GROUP_BITS. |
-| 105 | `TruckSchedule.GROUP_MASK` | `(1L<<GROUP_BITS) - 1, ROUTE_MASK =(1L<<ROUTE_BITS) - 1, ARRIVAL_MASK =(1L<<AR...` | The masks that take a key's group, route and arrival back out, once shifted down. |
-| 107 | `TruckSchedule.TICKS` | `(double)(1L<<ARRIVAL_BITS)` | A month's arrival ticks, 2^36: an arrival in ticks over this is its share of the month. |
+| 82 | `TruckSchedule.MONTH_SECONDS` | `BoatSchedule.MONTH_SECONDS` | Seconds of trucks a game month: the boats' (spec-freight 4.7, as the trains). |
+| 85 | `TruckSchedule.LEG_SECONDS` | `6` | The shortest leg a truck takes to run its route, in or out, in seconds: 6 (spec-freight 4.7, a visual pace, the trains'), for a route of 300 plots or less. |
+| 88 | `TruckSchedule.LEG_MOST` | `TrainSchedule.LEG_MOST` | The longest leg, in seconds: 10, the trains' (TrainSchedule.LEG_MOST), for a route of 500 plots or more, so a trip of the whole city's length stays inside the month (a visit is two legs and a stand). |
+| 91 | `TruckSchedule.DWELL_SECONDS` | `2` | Seconds a truck stands at its gate, loading or unloading: 2 (spec-freight 4.7). |
+| 94 | `TruckSchedule.WORLD_PLOTS` | `TrainSchedule.WORLD_PLOTS` | A route's part along the world line, past the city's ground, in plots: 64, as the trains' (TrainSchedule.WORLD_PLOTS), over which a truck fades in. |
+| 97 | `TruckSchedule.TRUCK_PLOTS` | `0.55` | An articulated truck's length in plots: 0.55, 16.5 m of a plot's 30 m (TrainSchedule.CAR_PLOTS, a wagon, is TileRaster.WAGON_LENGTH for scale). |
+| 100 | `TruckSchedule.MOST_A_MONTH` | `1000` | The most trucks a month drawn one for one: 1,000, a truck about every 0.06 s of a 60 s month (spec-freight 4.7; the roads take many more marks than the rails). |
+| 103 | `TruckSchedule.SALT` | `0x7C4B_E5E7L` | The salt the trucks' hashes start from. |
+| 106 | `TruckSchedule.GROUP_BITS` | `7, ROUTE_BITS = 20, ARRIVAL_BITS = 36, ARRIVAL_SHIFT = GROUP_BITS + ROUTE_BITS` | A truck's key: its arrival in ARRIVAL_BITS ticks of a month from bit ARRIVAL_SHIFT up, its route + 1 (0 for none) in ROUTE_BITS, its group in the low GROUP_BITS. |
+| 108 | `TruckSchedule.GROUP_MASK` | `(1L<<GROUP_BITS) - 1, ROUTE_MASK =(1L<<ROUTE_BITS) - 1, ARRIVAL_MASK =(1L<<AR...` | The masks that take a key's group, route and arrival back out, once shifted down. |
+| 110 | `TruckSchedule.TICKS` | `(double)(1L<<ARRIVAL_BITS)` | A month's arrival ticks, 2^36: an arrival in ticks over this is its share of the month. |
+| 510 | `TruckSchedule.CATCHMENT_DISTRICTS` | `DistrictPlan.ACCESS_RAMP_DISTRICTS` | How far, in districts (Chebyshev, by dx and dy), a district's works' tonnes look for a district with trips to ride: 2, how far a work looks for a ramp (DistrictPlan.ACCESS_RAMP_DISTRICTS). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 160 | `private final int month` |  |
-| 161 | `private final List<Route> routes` |  |
-| 162 | `private final List<Group> groups` |  |
-| 163 | `private final double[] loads` |  |
-| 164 | `private final int count, stands` |  |
-| 167 | `private long[] keys` | Built on the first ask: the trucks' keys, sorted by arrival; and each route's box, {x0, y0, x1, y1} in plots. |
-| 168 | `private double[][] boxesOf` |  |
-| 169 | `private int touched` |  |
+| 163 | `private final int month` |  |
+| 164 | `private final List<Route> routes` |  |
+| 165 | `private final List<Group> groups` |  |
+| 166 | `private final double[] loads` |  |
+| 167 | `private final int count, stands` |  |
+| 170 | `private long[] keys` | Built on the first ask: the trucks' keys, sorted by arrival; and each route's box, {x0, y0, x1, y1} in plots. |
+| 171 | `private double[][] boxesOf` |  |
+| 172 | `private int touched` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 464 | **type** `public final class TruckSchedule` | The month's trucks, as a pure function of time: which loads Haulage's trucks carry, when each reaches its gate, and where each one is at any moment - TrainSchedule's shape (0.8.8, batch FR5; docs/studies/spec-freight-... |
-| 116 | 1 | **type** `public enum Load` | A load's way through the city: what it carries each way and its colour's sense (spec-freight 4.7: imports blue, exports orange, empty grey). |
-| 127 | 23 | **type** `public record Route(boolean world, boolean home, double[] xs, double[] ys, double[] along, double fadeTo)` | A truck's way: points in plots, from where it comes in (the highway's world line's far end, another work's gate, or an access road's end on the street grid) to its gate, with each point's distance along it; the first ... |
-| 129 | 3 | `public static Route through(boolean world, double[] xs, double[] ys, double fadeTo)` _(in TruckSchedule.Route)_ | A route through points: their distances along it worked out. |
-| 134 | 3 | `public static Route home(double[] xs, double[] ys, double fadeTo)` _(in TruckSchedule.Route)_ | ...a home trip through points (FR9): from a work's gate to another's, taking the tonnes bought at home alone. |
-| 138 | 5 | `private static Route make(boolean world, boolean home, double[] xs, double[] ys, double fadeTo)` _(in TruckSchedule.Route)_ |  |
-| 145 | 1 | `public double length()` _(in TruckSchedule.Route)_ | Its length, in plots. |
-| 148 | 1 | `public double legSeconds()` _(in TruckSchedule.Route)_ | Seconds a truck takes to run it, in or out: its length over TrainSchedule.TRAIN_PLOTS_A_SECOND, no less than LEG_SECONDS and no more than LEG_MOST (the trains' pace). |
-| 152 | 1 | **type** `public record Call(Load load, int route, double arrives)` | One truck: its load, its route among the schedule's, and when it reaches its gate, in month fractions. |
-| 155 | 1 | **type** `public record Truck(Call call, double x, double y, double heading, boolean loaded, double alpha)` | A truck at a moment: its call, its middle in plots, its heading (radians, east 0, south a quarter turn), whether it is loaded, and how much of it shows (0 to 1). |
-| 158 | 1 | **type** `private record Group(Load load, long seed, int calls)` | One load of the month: its seed and its trucks. |
-| 171 | 10 | `private TruckSchedule(int month, List<Route> routes, List<Group> groups, double[] loads, int stands)` |  |
-| 183 | 3 | `public static boolean drawnAt(int level, boolean settingOn)` | Whether trucks are drawn at a map level with the player's setting: at the near view (MapFrame.L0) alone, and only with the setting on. |
+| 79 | 512 | **type** `public final class TruckSchedule` | The month's trucks, as a pure function of time: which loads Haulage's trucks carry, when each reaches its gate, and where each one is at any moment - TrainSchedule's shape (0.8.8, batch FR5; docs/studies/spec-freight-... |
+| 119 | 1 | **type** `public enum Load` | A load's way through the city: what it carries each way and its colour's sense (spec-freight 4.7: imports blue, exports orange, empty grey). |
+| 130 | 23 | **type** `public record Route(boolean world, boolean home, double[] xs, double[] ys, double[] along, double fadeTo)` | A truck's way: points in plots, from where it comes in (the highway's world line's far end, another work's gate, or an access road's end on the street grid) to its gate, with each point's distance along it; the first ... |
+| 132 | 3 | `public static Route through(boolean world, double[] xs, double[] ys, double fadeTo)` _(in TruckSchedule.Route)_ | A route through points: their distances along it worked out. |
+| 137 | 3 | `public static Route home(double[] xs, double[] ys, double fadeTo)` _(in TruckSchedule.Route)_ | ...a home trip through points (FR9): from a work's gate to another's, taking the tonnes bought at home alone. |
+| 141 | 5 | `private static Route make(boolean world, boolean home, double[] xs, double[] ys, double fadeTo)` _(in TruckSchedule.Route)_ |  |
+| 148 | 1 | `public double length()` _(in TruckSchedule.Route)_ | Its length, in plots. |
+| 151 | 1 | `public double legSeconds()` _(in TruckSchedule.Route)_ | Seconds a truck takes to run it, in or out: its length over TrainSchedule.TRAIN_PLOTS_A_SECOND, no less than LEG_SECONDS and no more than LEG_MOST (the trains' pace). |
+| 155 | 1 | **type** `public record Call(Load load, int route, double arrives)` | One truck: its load, its route among the schedule's, and when it reaches its gate, in month fractions. |
+| 158 | 1 | **type** `public record Truck(Call call, double x, double y, double heading, boolean loaded, double alpha)` | A truck at a moment: its call, its middle in plots, its heading (radians, east 0, south a quarter turn), whether it is loaded, and how much of it shows (0 to 1). |
+| 161 | 1 | **type** `private record Group(Load load, long seed, int calls)` | One load of the month: its seed and its trucks. |
+| 174 | 10 | `private TruckSchedule(int month, List<Route> routes, List<Group> groups, double[] loads, int stands)` |  |
+| 186 | 3 | `public static boolean drawnAt(int level, boolean settingOn)` | Whether trucks are drawn at a map level with the player's setting: at the near view (MapFrame.L0) alone, and only with the setting on. |
 
-### THE MONTH'S TRUCKS (lines 187-340)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 201 | 3 | `public static TruckSchedule of(int month, Freight freight, List<Route> routes, double share, long salt)` | The month's schedule from Haulage's month billed: Freight's city-leg truck tonnes by load (Freight.truckedIn(), truckedOut(), truckedHome()), at the share Haulage carried (Haulage.getCarried() over getTonnes()), times... |
-| 212 | 12 | `public static TruckSchedule of(int month, Freight freight, List<Route> routes, double[] shares, long salt)` | ...with a share for each load (by Load's order: a district's works' truck tonnes of it over the city's, sharesOf()), since a district that holds a sector's buildings holds its imports and its exports in other measure ... |
-| 231 | 3 | `public static TruckSchedule of(int month, double[] loadsIn, List<Route> routes, double share, long salt)` | ...from the month's loads counted already, by Load's order, at the share Haulage carried and before `share` (a fraction of a load is a whole truck in the share of months it says): the headless renders' and the harness... |
-| 236 | 22 | `public static TruckSchedule of(int month, double[] loadsIn, List<Route> routes, double[] shares, long salt)` | ...with a share for each load, by Load's order: the way in the others come to. |
-| 259 | 1 | `private static double tonnesOf(double t)` |  |
-| 262 | 5 | `private static double[] sameShare(double share)` | One share for every load. |
-| 269 | 10 | `public static int standsFor(double loads)` | Loads each truck drawn stands for when a month has `loads`: 1 up to MOST_A_MONTH, then the smallest of 1, 2, 5, 10, 20, 50, 100... |
-| 281 | 1 | `private static boolean takes(Route r, Load l)` | Whether a load goes on a route: an import or an export on any but a home trip, a tonne bought at home on an access road or a home trip alone. |
-| 284 | 5 | `private static boolean takenBy(List<Route> routes, Load l)` | Whether any of the routes a schedule keeps takes a load. |
-| 291 | 3 | `static long seed(int month, Load l, long salt)` | The seed of one load in one month; `salt` is mixed into it, so it is mixed into every hash drawn from it. |
-| 296 | 5 | `static long arrivalTicks(long seed, int k)` | When a group's k-th truck reaches its gate, in ticks of a month: hashed through the month between the longest leg (LEG_MOST) and the month's end less that and a stand, so any truck's whole visit is inside it whatever ... |
-| 303 | 6 | `private int[] routesFor(Load l)` | The routes a load goes on (their indices): every one that takes it. |
-| 311 | 21 | `private void build()` | The trucks' keys, sorted by arrival, and the routes' boxes; built on the first ask. |
-| 334 | 6 | `private Call call(long key)` | A call out of its key. |
-
-### WHERE A TRUCK IS (lines 341-424)
+### THE MONTH'S TRUCKS (lines 190-343)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 351 | 30 | `public static Truck position(Call call, Route route, double t)` | Where a call's truck is at t (month fractions), or null when it is not on the road: running in over its leg, standing at its gate (loaded as it came for the first half of its stand, as it will leave for the second), o... |
-| 388 | 19 | `public List<Truck> frame(long x0, long y0, long x1, long y1, double t)` | The trucks on the roads at t whose middle is in the rectangle [x0, x1) x [y0, y1) in plots, widened by a truck's length, in the order of their arrival: the month's arrivals searched for those whose visit spans t, and ... |
-| 409 | 5 | `public boolean crosses(long x0, long y0, long x1, long y1)` | Whether any route meets the rectangle [x0, x1) x [y0, y1) in plots: the view keeps its frame going while one does. |
-| 416 | 8 | `static double[] box(Route r)` | A route's box, {x0, y0, x1, y1} in plots, inclusive of its points. |
+| 204 | 3 | `public static TruckSchedule of(int month, Freight freight, List<Route> routes, double share, long salt)` | The month's schedule from Haulage's month billed: Freight's city-leg truck tonnes by load (Freight.truckedIn(), truckedOut(), truckedHome()), at the share Haulage carried (Haulage.getCarried() over getTonnes()), times... |
+| 215 | 12 | `public static TruckSchedule of(int month, Freight freight, List<Route> routes, double[] shares, long salt)` | ...with a share for each load (by Load's order: a district's works' truck tonnes of it over the city's, sharesOf()), since a district that holds a sector's buildings holds its imports and its exports in other measure ... |
+| 234 | 3 | `public static TruckSchedule of(int month, double[] loadsIn, List<Route> routes, double share, long salt)` | ...from the month's loads counted already, by Load's order, at the share Haulage carried and before `share` (a fraction of a load is a whole truck in the share of months it says): the headless renders' and the harness... |
+| 239 | 22 | `public static TruckSchedule of(int month, double[] loadsIn, List<Route> routes, double[] shares, long salt)` | ...with a share for each load, by Load's order: the way in the others come to. |
+| 262 | 1 | `private static double tonnesOf(double t)` |  |
+| 265 | 5 | `private static double[] sameShare(double share)` | One share for every load. |
+| 272 | 10 | `public static int standsFor(double loads)` | Loads each truck drawn stands for when a month has `loads`: 1 up to MOST_A_MONTH, then the smallest of 1, 2, 5, 10, 20, 50, 100... |
+| 284 | 1 | `private static boolean takes(Route r, Load l)` | Whether a load goes on a route: an import or an export on any but a home trip, a tonne bought at home on an access road or a home trip alone. |
+| 287 | 5 | `private static boolean takenBy(List<Route> routes, Load l)` | Whether any of the routes a schedule keeps takes a load. |
+| 294 | 3 | `static long seed(int month, Load l, long salt)` | The seed of one load in one month; `salt` is mixed into it, so it is mixed into every hash drawn from it. |
+| 299 | 5 | `static long arrivalTicks(long seed, int k)` | When a group's k-th truck reaches its gate, in ticks of a month: hashed through the month between the longest leg (LEG_MOST) and the month's end less that and a stand, so any truck's whole visit is inside it whatever ... |
+| 306 | 6 | `private int[] routesFor(Load l)` | The routes a load goes on (their indices): every one that takes it. |
+| 314 | 21 | `private void build()` | The trucks' keys, sorted by arrival, and the routes' boxes; built on the first ask. |
+| 337 | 6 | `private Call call(long key)` | A call out of its key. |
 
-### A DISTRICT'S PART OF THE CITY'S LOADS (batch FR9) (lines 425-505)
+### WHERE A TRUCK IS (lines 344-427)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 440 | 20 | `public static double[][] perBuilding(java.util.function.Function<String, double[]> truckedBy, BuildingVisual.Type[] types, long...` | What ONE standing building of each type carries in the month, in truck tonnes by load (Load's order: imports, exports, tonnes bought at home), by the type's index in `types`: its sector's truck tonnes by load (`trucke... |
-| 467 | 14 | `public static double[] truckedBy(Freight freight, String sector)` | The model's own figure for a sector, read: the truck tonnes (Move.truck()) of its moves in the month billed (Haulage.movesOf()), by load - landed imports, shipped exports, bought at home. |
-| 490 | 15 | `public static double[] sharesOf(double[][] perBuilding, CityMap.District d, double[] cityTonnes)` | A district's part of the city's truck tonnes, by load: the sum over the types of its count times perBuilding() (what one building of the type carries) over `cityTonnes`, the city's by load (Freight.truckedIn(), trucke... |
+| 354 | 30 | `public static Truck position(Call call, Route route, double t)` | Where a call's truck is at t (month fractions), or null when it is not on the road: running in over its leg, standing at its gate (loaded as it came for the first half of its stand, as it will leave for the second), o... |
+| 391 | 19 | `public List<Truck> frame(long x0, long y0, long x1, long y1, double t)` | The trucks on the roads at t whose middle is in the rectangle [x0, x1) x [y0, y1) in plots, widened by a truck's length, in the order of their arrival: the month's arrivals searched for those whose visit spans t, and ... |
+| 412 | 5 | `public boolean crosses(long x0, long y0, long x1, long y1)` | Whether any route meets the rectangle [x0, x1) x [y0, y1) in plots: the view keeps its frame going while one does. |
+| 419 | 8 | `static double[] box(Route r)` | A route's box, {x0, y0, x1, y1} in plots, inclusive of its points. |
 
-### reads (lines 506-539)
+### A DISTRICT'S PART OF THE CITY'S LOADS (batch FR9) (lines 428-556)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 508 | 1 | `public int month()` |  |
-| 509 | 1 | `public List<Route> routes()` |  |
-| 512 | 6 | `public List<Call> calls()` | Every truck of the month, by arrival. |
-| 520 | 1 | `public int callCount()` | The trucks drawn this month: counted when the schedule is made, nothing built. |
-| 523 | 1 | `public int stands()` | Loads each drawn truck stands for: N in the legend's "one per N loads", 1 for a quiet month. |
-| 526 | 5 | `public int callsOf(Load l)` | The trucks drawn of one load. |
-| 533 | 1 | `public double loads(Load l)` | The month's loads of one kind at the share given, before stands() and whether a route takes them (a fraction is a load not yet whole). |
-| 536 | 1 | `public int touched()` | The trucks the last frame() looked at. |
-| 538 | 1 | `public String toString()` |  |
+| 443 | 20 | `public static double[][] perBuilding(java.util.function.Function<String, double[]> truckedBy, BuildingVisual.Type[] types, long...` | What ONE standing building of each type carries in the month, in truck tonnes by load (Load's order: imports, exports, tonnes bought at home), by the type's index in `types`: its sector's truck tonnes by load (`trucke... |
+| 470 | 14 | `public static double[] truckedBy(Freight freight, String sector)` | The model's own figure for a sector, read: the truck tonnes (Move.truck()) of its moves in the month billed (Haulage.movesOf()), by load - landed imports, shipped exports, bought at home. |
+| 493 | 15 | `public static double[] sharesOf(double[][] perBuilding, CityMap.District d, double[] cityTonnes)` | A district's part of the city's truck tonnes, by load: the sum over the types of its count times perBuilding() (what one building of the type carries) over `cityTonnes`, the city's by load (Freight.truckedIn(), trucke... |
+| 523 | 33 | `public static java.util.Map<Long, double[]> sharesByTrips(List<CityMap.DistrictTrips> trips, java.util.function.BiFunction<Inte...` | Each district with trips and the shares of the city's tonnes, by load, its trips carry - its CATCHMENT (FR9, slice 2): the works' tonnes (sharesOf()) of every district that rides its trips, itself among them. |
+
+### reads (lines 557-590)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 559 | 1 | `public int month()` |  |
+| 560 | 1 | `public List<Route> routes()` |  |
+| 563 | 6 | `public List<Call> calls()` | Every truck of the month, by arrival. |
+| 571 | 1 | `public int callCount()` | The trucks drawn this month: counted when the schedule is made, nothing built. |
+| 574 | 1 | `public int stands()` | Loads each drawn truck stands for: N in the legend's "one per N loads", 1 for a quiet month. |
+| 577 | 5 | `public int callsOf(Load l)` | The trucks drawn of one load. |
+| 584 | 1 | `public double loads(Load l)` | The month's loads of one kind at the share given, before stands() and whether a route takes them (a fraction is a load not yet whole). |
+| 587 | 1 | `public int touched()` | The trucks the last frame() looked at. |
+| 589 | 1 | `public String toString()` |  |
 

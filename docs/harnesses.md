@@ -2,7 +2,7 @@
 
 Generated 2026-10-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**150 harness files, 15,876 labelled assertions.** AllChecks runs 150 of them.
+**150 harness files, 15,888 labelled assertions.** AllChecks runs 150 of them.
 
 ## Which harnesses read which class
 
@@ -19447,7 +19447,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L413 a save from before them restores with none
   - L427 no save class (the *Save files, SectorState) mentions a TruckSchedule
 
-## TruckRouteCheck.java - 118 labelled assertions
+## TruckRouteCheck.java - 130 labelled assertions
 
 > Proves the trucks' routes (0.8.8, batch FR5, slice B;
 > docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the
@@ -19463,135 +19463,147 @@ _(this harness does not label its checks through a helper - it prints its findin
 > reads them - and are found as the trains' are (FR1): the highways' by the
 > ...
 
-- **L218 no highway world line, no world route**
-  - L221 fixture: one Elevated Highway is laid and reaches no street
-  - L222 ...it has no highway world line
-  - L223 ...so no ramps to run to, no highway way, no truck route
-  - L227 fixture: five Elevated Highways reach a street (they are drawn) and their arms find no way out to the world
-  - L229 ...they have ramps, and still no truck route: a truck comes in from the world line or not at all
-  - L235 fixture: a railway alone has its world line
-  - L236 ...and no truck route: the railway is not a road
-- **L242 the highways' routes: from the world line, along the highways, to each ramp**
-  - L247 fixture: the highways reach a street and have a world line
-  - L253 ...a ramp at each arm's end:
-  - L254 one route a ramp but the arm the line leaves from (the trucks have no road to drive there)
-  - L256 ...no more than TRUCK_ROUTES_MOST
-  - L280 every world route is a world route
-  - L281 ...starts TruckSchedule.WORLD_PLOTS out along the line's way from the line's point
-  - L282 ...passes the line's point, its world part the first leg
-  - L283 ...is faded in over the world part: fadeTo is its length
-  - L284 ...from the arm's end runs on highway plots only: its points and every quarter plot of its legs
-  - L285 ...ends at a ramp, at a plot's middle
-  - L286 ...no two end at one ramp
-  - L287 ...each runs at least TRUCK_ROUTE_LEAST along the highways
-  - L288 ...and has no leg of no length
-  - L292 a smaller city's routes (100 highways) are routes on its highways too
-  - L296 ...every quarter plot on a highway plot
-- **L320 the railway's way is wayOn() of the rail net from its main arm**
-  - L324 fixture: the railway has a main arm, yards and trains' routes
-  - L336 every yard's anchor: wayToPlot(), wayTo() and wayOn(rail, mainArm()) give the one way
-  - L341 ...and every siding's end
-  - L342 ...and a way starts at the main arm's end, a plot's middle
-  - L344 wayOn() of no arm, or of an arm the net has not, is no way
-  - L348 asking for the trucks' routes leaves the trains' as they were: the same list
-- **L394 the access roads: a route a road, from its end to its gate**
-  - L404 fixture: no plan is drawn yet, and asking over the whole city gives no route and draws none
-  - L408 ...truckRoutes() draws no plan either
-  - L456 fixture: the plans laid access roads, in more than one district's frame
-  - L457 a drawn district's routes are as many as the roads its Drawn traced (none without)
-  - L458 ...each a route of the street grid, not the world's
-  - L459 ...its first point is the road's end: an access street the plan draws, a plot's middle
-  - L460 ...its last point is the road's gate, beside a work's box, a plot's middle
-  - L461 ...every quarter plot along it is a street the plan draws as an access road (or a boulevard's)
-  - L462 ...along rows and columns, a straight run kept to its two ends
-  - L463 ...faded in over TRUCK_ACCESS_FADE
-  - L464 ...every work given to the plans has a road to its gate, every road a work
-  - L465 ...under the district's own key
-  - L472 a box of the one plot a road ends on meets that district's frame alone: its routes, under its key
-  - L474 a box off the city's ground meets none
-  - L476 ...and a box turned about (its far corner before its near) meets none
-  - L480 asked again, with nothing changed: the same lists under the same keys
-- **L486 the routes are kept against the map's changes**
-  - L491 fixture: one highway reaches no street: no routes
-  - L492 asked again with nothing changed: the same list
-  - L498 a month's runs move changes()
-  - L500 ...and the routes are made again: a new list, now with routes
-  - L501 asked again: the same list
-  - L503 ...equal, point for point, to a fresh map's of the same counts
-- **L509 the works that need an access road**
-  - L519 fixture: the city has yards and Truck Depots
-  - L520 accessRoadCount() is the yards the runs draw, the shore's sea terminals and the Truck Depots
-  - L527 ...of which the plans laid a road each: the roads drawn are the count
-  - L529 a city with none of them still counts 1: a share is never over zero
-  - L677 ...and the highways have a world line
-  - L688 fixture: the city has trips, world ones and home ones
-  - L689 ...a road whose end is a ramp (its street leg empty)
-  - L690 ...one world trip a road a ramp reached, no more home trips than such roads
-  - L761 every world trip is a world trip (imports and exports), not a home trip
-  - L762 ...starts TruckSchedule.WORLD_PLOTS out along the line's way and passes the line's point, faded in over that world part
-  - L763 ...from the arm's end on every quarter plot lies on a highway plot or a street the plans draw: none where no road is drawn
-  - L764 ...the highway part ends at a ramp the runs mark, and from there on it keeps to streets the plans draw
-  - L765 ...its last point is a gate, beside the box of a work, a plot's middle
-  - L766 ...its last leg runs down the access road: every quarter plot an access street of the district's plan
-  - L767 ...it passes the end of the access road whose gate it reaches, a point of the trip
-  - L768 ...from the ramp on it runs along rows and columns: a street leg is plots side by side
-  - L769 ...a street leg costs what a plain search of the same streets finds cheapest, from any ramp in the district's box (
-  - L801 every home trip is a home trip: it takes the tonnes bought at home alone, and is faded in over TRUCK_ACCESS_FADE
-  - L802 ...runs from one gate to another's, beside the boxes of two works
-  - L803 ...every quarter plot of it is a street the plans draw, none a highway plot that carries none
-  - L804 ...the part the two roads' legs share is cut off: it never turns back on itself
-  - L805 ...leaves the gate of the nearest other road that comes to the same ramp
-- **L818 8. only what is drawn: the trips plan nothing, and a district drawn later has its trips then**
-  - L826 fixture: no plan is drawn yet, and asking for the trips gives none and draws none (the plans kept, the links and changes() as they were)
-  - L843 asking after each of
-  - L844 ...every district with trips has its plan drawn and current
-  - L845 ...a district not drawn has no trips before it is, and one that had none has them once it is (
-- **L850 8 (the rest). the trips are kept against the changes and the plans kept; no world line, no trip**
-  - L852 asked again with nothing changed: the same list
-  - L853 ...and each district's trips are the same list under the same key
-  - L859 the plans let go and drawn again, then asked: a new list, equal to the first, and no street search made again (the legs kept against the plans' stamps)
-  - L863 the plans forgotten: the trips are made again, a new list, and a district whose plan is not drawn takes none
-  - L866 ...drawn again they are made again once more, a new list, equal point for point to the first, the street legs searched again (let go with their plans)
-  - L874 a month's runs move changes() and the trips are made again: a new list
-  - L877 ...the plans drawn again, the trips are made again and the city has them
-  - L887 fixture: five highways reach a street and find no way out (no world line), and six Truck Depots have
-  - L889 ...so there is no world trip, and no trip at all: a truck comes in from the world line or not at all
-- **L899 9. a district's trips in its tonnes' share**
-  - L910 fixture: two sectors with a building type each, and a type of no sector
-  - L919 one standing building of a sector's type carries the sector's truck tonnes over its buildings standing: 100, 40 and 8 over 4
-  - L921 ...a type of no sector carries nothing
-  - L929 two districts holding one sector's buildings 3 : 1 take its tonnes 3 : 1, a share of the city's by load
-  - L931 ...a district of no works takes nothing
-  - L934 ...and every district's share together is 1 of each load, where every sector's buildings stand
-  - L939 a sector with no building standing carries nothing, and the rest come to the share of the city's tonnes whose sectors stand
-  - L942 a share is at most 1 where the city's tonnes are fewer, and 0 where they are 0
-  - L950 fixture: the city has played until Haulage has a fleet and a bill, so it carries tonnes
-  - L970 truckedBy() over every sector comes to Freight.truckedIn(), truckedOut() and truckedHome() to a billionth, six hauls running
-  - L971 ...and so it does in the months the game played through itself
-  - L972 a sector that moved nothing, no freight and no sector carry nothing
-  - L988 the districts of a map, over a played city's tonnes, each take a share in [0, 1] and together the share of the city's tonnes whose sectors stand on the map
-  - L997 fixture: the played city imported, exported and bought at home, so no share is vacuous
-  - L1001 a district's schedule draws its shares' loads: the city's of each load times its share
-  - L1002 ...and keeps the city's N, the legend's: stands() is what the whole city's is
-  - L1004 ...its trucks, each for N loads, come to its loads within one a load group
-  - L1006 a district of no works (every share 0) draws no truck and keeps the city's N
-  - L1008 a share of 0 for the tonnes bought at home draws none of those, the imports and exports as they were
-  - L1010 a scalar share is the same share for every load
-  - L1018 a home trip is a home trip and a world trip is not: Route.home() and Route.through(true, ...)
-  - L1019 a home trip takes the tonnes bought at home alone: a schedule of one draws no import and no export
-  - L1021 ...and a world trip takes no home load, so every home load of a mix is on the home trip
-- **L1027 10. the pace: the trains' legs, and any visit inside the month**
-  - L1038 a route of 100 plots takes LEG_SECONDS, one of 400 its length over TRAIN_PLOTS_A_SECOND, one of 5,000 LEG_MOST
-  - L1041 ...which is the trains' rule at each length: TrainSchedule.Route.legSeconds()
-  - L1042 LEG_MOST is the trains'
-  - L1063 fixture: trucks run both a route of 10 plots and one of 5,000
-  - L1064 every truck's whole visit lies inside the month, on a route of 10 plots and on one of 5,000
-  - L1065 ...a truck is at its gate at its arrival and at its route's start a leg (its route's own) before
-  - L1066 ...and is on the road at no moment outside its visit, a leg before its arrival to a stand and a leg after
-  - L1085 frame() is exactly the trucks position() puts in the box, in four boxes at nine moments, a 5,000-plot route among the routes
-- **L1100 7. a trip is whole: from the world to a gate, on a road all the way**
-  - L1101 the access city
-  - L1102 the trips city
+- **L227 no highway world line, no world route**
+  - L230 fixture: one Elevated Highway is laid and reaches no street
+  - L231 ...it has no highway world line
+  - L232 ...so no ramps to run to, no highway way, no truck route
+  - L236 fixture: five Elevated Highways reach a street (they are drawn) and their arms find no way out to the world
+  - L238 ...they have ramps, and still no truck route: a truck comes in from the world line or not at all
+  - L244 fixture: a railway alone has its world line
+  - L245 ...and no truck route: the railway is not a road
+- **L251 the highways' routes: from the world line, along the highways, to each ramp**
+  - L256 fixture: the highways reach a street and have a world line
+  - L262 ...a ramp at each arm's end:
+  - L263 one route a ramp but the arm the line leaves from (the trucks have no road to drive there)
+  - L265 ...no more than TRUCK_ROUTES_MOST
+  - L289 every world route is a world route
+  - L290 ...starts TruckSchedule.WORLD_PLOTS out along the line's way from the line's point
+  - L291 ...passes the line's point, its world part the first leg
+  - L292 ...is faded in over the world part: fadeTo is its length
+  - L293 ...from the arm's end runs on highway plots only: its points and every quarter plot of its legs
+  - L294 ...ends at a ramp, at a plot's middle
+  - L295 ...no two end at one ramp
+  - L296 ...each runs at least TRUCK_ROUTE_LEAST along the highways
+  - L297 ...and has no leg of no length
+  - L301 a smaller city's routes (100 highways) are routes on its highways too
+  - L305 ...every quarter plot on a highway plot
+- **L329 the railway's way is wayOn() of the rail net from its main arm**
+  - L333 fixture: the railway has a main arm, yards and trains' routes
+  - L345 every yard's anchor: wayToPlot(), wayTo() and wayOn(rail, mainArm()) give the one way
+  - L350 ...and every siding's end
+  - L351 ...and a way starts at the main arm's end, a plot's middle
+  - L353 wayOn() of no arm, or of an arm the net has not, is no way
+  - L357 asking for the trucks' routes leaves the trains' as they were: the same list
+- **L403 the access roads: a route a road, from its end to its gate**
+  - L413 fixture: no plan is drawn yet, and asking over the whole city gives no route and draws none
+  - L417 ...truckRoutes() draws no plan either
+  - L465 fixture: the plans laid access roads, in more than one district's frame
+  - L466 a drawn district's routes are as many as the roads its Drawn traced (none without)
+  - L467 ...each a route of the street grid, not the world's
+  - L468 ...its first point is the road's end: an access street the plan draws, a plot's middle
+  - L469 ...its last point is the road's gate, beside a work's box, a plot's middle
+  - L470 ...every quarter plot along it is a street the plan draws as an access road (or a boulevard's)
+  - L471 ...along rows and columns, a straight run kept to its two ends
+  - L472 ...faded in over TRUCK_ACCESS_FADE
+  - L473 ...every work given to the plans has a road to its gate, every road a work
+  - L474 ...under the district's own key
+  - L481 a box of the one plot a road ends on meets that district's frame alone: its routes, under its key
+  - L483 a box off the city's ground meets none
+  - L485 ...and a box turned about (its far corner before its near) meets none
+  - L489 asked again, with nothing changed: the same lists under the same keys
+- **L495 the routes are kept against the map's changes**
+  - L500 fixture: one highway reaches no street: no routes
+  - L501 asked again with nothing changed: the same list
+  - L507 a month's runs move changes()
+  - L509 ...and the routes are made again: a new list, now with routes
+  - L510 asked again: the same list
+  - L512 ...equal, point for point, to a fresh map's of the same counts
+- **L518 the works that need an access road**
+  - L528 fixture: the city has yards and Truck Depots
+  - L529 accessRoadCount() is the yards the runs draw, the shore's sea terminals and the Truck Depots
+  - L536 ...of which the plans laid a road each: the roads drawn are the count
+  - L538 a city with none of them still counts 1: a share is never over zero
+  - L686 ...and the highways have a world line
+  - L698 fixture: the city has trips, world ones and home ones
+  - L699 ...a road whose end is a ramp (its street leg empty)
+  - L700 ...one world trip a road a ramp reached, no more home trips than such roads
+  - L771 every world trip is a world trip (imports and exports), not a home trip
+  - L772 ...starts TruckSchedule.WORLD_PLOTS out along the line's way and passes the line's point, faded in over that world part
+  - L773 ...from the arm's end on every quarter plot lies on a highway plot or a street the plans draw: none where no road is drawn
+  - L774 ...the highway part ends at a ramp the runs mark, and from there on it keeps to streets the plans draw
+  - L775 ...its last point is a gate, beside the box of a work, a plot's middle
+  - L776 ...its last leg runs down the access road: every quarter plot an access street of the district's plan
+  - L777 ...it passes the end of the access road whose gate it reaches, a point of the trip
+  - L778 ...from the ramp on it runs along rows and columns: a street leg is plots side by side
+  - L779 ...a street leg costs what a plain search of the same streets finds cheapest, from any ramp in the district's box (
+  - L811 every home trip is a home trip: it takes the tonnes bought at home alone, and is faded in over TRUCK_ACCESS_FADE
+  - L812 ...runs from one gate to another's, beside the boxes of two works
+  - L813 ...every quarter plot of it is a street the plans draw, none a highway plot that carries none
+  - L814 ...the part the two roads' legs share is cut off: it never turns back on itself
+  - L815 ...leaves the gate of the nearest other road that comes to the same ramp
+- **L848 8. only what is drawn: the trips plan nothing, and a district drawn later has its trips then**
+  - L856 fixture: no plan is drawn yet, and asking for the trips gives none and draws none (the plans kept, the links and changes() as they were)
+  - L876 asking after each of
+  - L877 ...every district with trips has its plan drawn and current
+  - L878 ...a district not drawn has no trips before it is, and one that had none has them once it is (
+- **L884 8 (the rest). the trips are kept against the changes and the plans kept; no world line, no trip**
+  - L886 asked again with nothing changed: the same list
+  - L887 ...and each district's trips are the same list under the same key
+  - L893 the plans let go and drawn again, then asked: a new list, equal to the first, and no street search made again (the legs kept against the plans' stamps)
+  - L897 the plans forgotten: the trips are made again, a new list, and a district whose plan is not drawn takes none
+  - L900 ...drawn again they are made again once more, a new list, equal point for point to the first, the street legs searched again (let go with their plans)
+  - L908 a month's runs move changes() and the trips are made again: a new list
+  - L911 ...the plans drawn again, the trips are made again and the city has them
+  - L921 fixture: five highways reach a street and find no way out (no world line), and six Truck Depots have
+  - L923 ...so there is no world trip, and no trip at all: a truck comes in from the world line or not at all
+- **L933 9. a district's trips in its tonnes' share**
+  - L944 fixture: two sectors with a building type each, and a type of no sector
+  - L953 one standing building of a sector's type carries the sector's truck tonnes over its buildings standing: 100, 40 and 8 over 4
+  - L955 ...a type of no sector carries nothing
+  - L963 two districts holding one sector's buildings 3 : 1 take its tonnes 3 : 1, a share of the city's by load
+  - L965 ...a district of no works takes nothing
+  - L968 ...and every district's share together is 1 of each load, where every sector's buildings stand
+  - L973 a sector with no building standing carries nothing, and the rest come to the share of the city's tonnes whose sectors stand
+  - L976 a share is at most 1 where the city's tonnes are fewer, and 0 where they are 0
+  - L984 fixture: the city has played until Haulage has a fleet and a bill, so it carries tonnes
+  - L1004 truckedBy() over every sector comes to Freight.truckedIn(), truckedOut() and truckedHome() to a billionth, six hauls running
+  - L1005 ...and so it does in the months the game played through itself
+  - L1006 a sector that moved nothing, no freight and no sector carry nothing
+  - L1022 the districts of a map, over a played city's tonnes, each take a share in [0, 1] and together the share of the city's tonnes whose sectors stand on the map
+  - L1031 fixture: the played city imported, exported and bought at home, so no share is vacuous
+  - L1035 a district's schedule draws its shares' loads: the city's of each load times its share
+  - L1036 ...and keeps the city's N, the legend's: stands() is what the whole city's is
+  - L1038 ...its trucks, each for N loads, come to its loads within one a load group
+  - L1040 a district of no works (every share 0) draws no truck and keeps the city's N
+  - L1042 a share of 0 for the tonnes bought at home draws none of those, the imports and exports as they were
+  - L1044 a scalar share is the same share for every load
+  - L1052 a home trip is a home trip and a world trip is not: Route.home() and Route.through(true, ...)
+  - L1053 a home trip takes the tonnes bought at home alone: a schedule of one draws no import and no export
+  - L1055 ...and a world trip takes no home load, so every home load of a mix is on the home trip
+  - L1116 fixture: the catchment is how far a work looks for a ramp, 2 districts
+  - L1121 a district with trips and no works takes the share of the works district beside it that has no trips
+  - L1129 a works district 2 districts from a district with trips gives it its share, and one 3 districts from every district with trips gives nothing to any
+  - L1134 a district between two districts with trips goes to the nearer: 1 district from one and 2 from the other, and the other way about
+  - L1138 ...2 districts from both (Chebyshev), it goes to the nearer by Euclid, though that district's key is the larger
+  - L1143 ...and equally near by both, to the smaller key
+  - L1173 the shares of the districts with trips come to the shares of the districts within reach of one, at most 1 of a load
+  - L1199 the trips city, tonnes by hand (100 t a load for each of
+  - L1201 ...the whole city is within reach of a district with trips, so together they take 1 of each load
+  - L1219 fixture: a district with works and no trips rides a district with trips (the catchment does something here)
+  - L1244 a district whose trips' works are Truck Depots alone (its own works carry nothing) draws a share from the works about it: 1 such district, its share > 0 of e...
+  - L1248 ...and the tonnes moved by hand are drawn once: together the districts with trips still take 1 of each load
+- **L1254 10. the pace: the trains' legs, and any visit inside the month**
+  - L1265 a route of 100 plots takes LEG_SECONDS, one of 400 its length over TRAIN_PLOTS_A_SECOND, one of 5,000 LEG_MOST
+  - L1268 ...which is the trains' rule at each length: TrainSchedule.Route.legSeconds()
+  - L1269 LEG_MOST is the trains'
+  - L1290 fixture: trucks run both a route of 10 plots and one of 5,000
+  - L1291 every truck's whole visit lies inside the month, on a route of 10 plots and on one of 5,000
+  - L1292 ...a truck is at its gate at its arrival and at its route's start a leg (its route's own) before
+  - L1293 ...and is on the road at no moment outside its visit, a leg before its arrival to a stand and a leg after
+  - L1312 frame() is exactly the trucks position() puts in the box, in four boxes at nine moments, a 5,000-plot route among the routes
+- **L1327 7. a trip is whole: from the world to a gate, on a road all the way**
+  - L1328 the access city
+  - L1329 the trips city
 
 ## VanCheck.java - 32 labelled assertions
 

@@ -134,7 +134,7 @@ import static ham.citybuildersim.ui.Pieces.*;
  * (TruckSchedule, from Haulage's loads) on the TRIPS of the districts drawn
  * (CityMap.tripsDrawn(), FR9): a truck's whole way from the world line along
  * the highways and the streets to a works' gate and back, each district's
- * schedule taking its works' part of the city's loads, each truck standing
+ * schedule taking its catchment's part of the city's loads, each truck standing
  * for the schedule's N loads, which the legend gives (TRUCK_WORDS); the body
  * and colour are TruckShapes'.
  *
@@ -1254,6 +1254,8 @@ final class MapView {
     /** What one building of each type carries in the month billed and the city's truck tonnes by load (TruckSchedule.perBuilding(), Freight.truckedIn() and the others): what a district's share is made of, kept with the schedules. */
     private double[][] truckPerBuilding;
     private double[] truckCityTonnes;
+    /** ...and each district with trips' catchment's shares of them by CityMap.DistrictTrips.key() (TruckSchedule.sharesByTrips()): its own works' tonnes and those of the districts about it that have no trips. */
+    private Map<Long, double[]> truckShares = new HashMap<>();
 
     /** Loads each truck drawn this frame stands for (the legend's N), or 0 when none is drawn: the largest of the districts' drawn, which is the city's N. */
     private int trucksStand;
@@ -1262,8 +1264,8 @@ final class MapView {
      * The trucks over the tiles, at the near view alone and while the setting
      * is on (TruckSchedule.drawnAt()): each district's trips (CityMap.tripsDrawn(),
      * a truck's whole way from the world line to a works' gate and back, FR9)
-     * with the month's schedule on them, taking the district's part of the
-     * city's loads by its works' tonnes (TruckSchedule.sharesOf()). Each truck
+     * with the month's schedule on them, taking its catchment's part of the
+     * city's loads by the works' tonnes (TruckSchedule.sharesByTrips()). Each truck
      * is one body of TruckShapes in its colour; while any trip crosses the
      * view the frame goes on, as the trains'. Each schedule is made once a
      * month and kept.
@@ -1280,6 +1282,7 @@ final class MapView {
             var freight = g.getSectors().freight();
             truckPerBuilding = TruckSchedule.perBuilding(s -> TruckSchedule.truckedBy(freight, s), shownMap.types(), shownMap.totals());
             truckCityTonnes = new double[] { freight.truckedIn(), freight.truckedOut(), freight.truckedHome() };
+            truckShares = TruckSchedule.sharesByTrips(trips, shownMap::district, truckPerBuilding, truckCityTonnes);
             truckMonth = m;
             truckGameMonth = g.getMonth();
             truckTrips = trips;
@@ -1292,7 +1295,7 @@ final class MapView {
         for (CityMap.DistrictTrips dt : trips) {
             DistrictTrucks kept = districtTrucks.get(dt.key());
             if (kept == null || kept.trips() != dt.trips()) {
-                double[] shares = TruckSchedule.sharesOf(truckPerBuilding, dt.district(), truckCityTonnes);
+                double[] shares = truckShares.getOrDefault(dt.key(), new double[TruckSchedule.Load.values().length]);
                 kept = new DistrictTrucks(dt.trips(), TruckSchedule.of(m, g.getSectors().freight(), dt.trips(), shares, dt.key()));
                 districtTrucks.put(dt.key(), kept);
             }

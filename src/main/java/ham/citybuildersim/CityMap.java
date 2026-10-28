@@ -4255,7 +4255,10 @@ public final class CityMap {
        world to a works' gate, so none stands and turns back at a ramp
        inside the city or comes out of the street grid from nowhere.
        truckRoutes() and accessRoutesIn() stay, as the pieces a trip is
-       made of and what TruckRouteCheck 1 to 6 prove.
+       made of and what TruckRouteCheck 1 to 6 prove. Which tonnes a
+       district's trips carry is the screen's to say, not this map's: its
+       own works' and those of the districts about it that have no trips
+       (TruckSchedule.sharesByTrips(), by CityMap.district()).
        ===================================================================== */
 
 
@@ -4458,7 +4461,7 @@ public final class CityMap {
     private static long plotY(long p) { return (int) p; }
     private static final long NO_PLOT = Long.MIN_VALUE;
 
-    /** One district's trips (TruckSchedule.Route: each road's world trip, then its home trip, road by road) with the stable key it is told apart by, the district's own, and the district: its counts are what its share of the city's tonnes is made from (TruckSchedule.sharesOf()). */
+    /** One district's trips (TruckSchedule.Route: each road's world trip, then its home trip, road by road) with the stable key it is told apart by, the district's own, and the district: the tonnes its trips carry are its catchment's, its own works' and those of the districts about it that have no trips (TruckSchedule.sharesByTrips()). */
     public record DistrictTrips(long key, District district, List<TruckSchedule.Route> trips) { }
 
     /** One access road as the trips see it: its way (Drawn.access, in its frame's plots, the end first and the gate last), where that frame starts, and, once the search settled it, the ramp its street leg comes from and the leg's plots (ramp first, the road's end last; packed). */
@@ -4605,6 +4608,12 @@ public final class CityMap {
         for (int i = 0; i < tripPlanN; i++) if (tripPlanKeys[i] == dk) return tripPlanDrawn[i];
         return null;
     };
+
+    /** Forgets the street legs kept and the trips asked last, so the next tripsDrawn() makes them all again: a harness's, to time a warm remake. */
+    void forgetTrips() {
+        tripLegs.clear();
+        tripsCache = null;
+    }
 
     /** How many street searches were made: a harness's, to tell legs kept from legs made again. */
     private int tripSearches;

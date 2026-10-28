@@ -76,7 +76,16 @@ import java.util.Map;
  *      map, 1 when all do); on a played city truckedBy() over every sector
  *      comes to Freight.truckedIn(), truckedOut() and truckedHome() to a
  *      billionth; a district's schedule draws its shares' loads and keeps the
- *      city's N; a home trip takes home loads alone;
+ *      city's N; a home trip takes home loads alone; and the CATCHMENT
+ *      (TruckSchedule.sharesByTrips()): a district's trips carry the tonnes
+ *      of the districts about it too - the nearest district with trips is
+ *      ridden within 2 districts, by hand a district with trips and no works
+ *      takes its roadless neighbour's, one 3 districts from every district
+ *      with trips gives nothing, a district between two goes to the nearer
+ *      (then the smaller Euclid, then the smaller key), the shares of the
+ *      districts with trips are those of the districts within reach, and on
+ *      the trips city's layout a district whose trips' works are Truck Depots
+ *      alone draws a share;
  *  10. the pace: Route.legSeconds() is the trains' rule at three lengths, any
  *      truck's whole visit is inside the month on a route of 10 plots and on
  *      one of 5,000, a truck is at its gate at its arrival and at its route's
@@ -668,7 +677,7 @@ public class TruckRouteCheck {
      * streets and down its access road to a gate; a home trip from one gate to another by the streets. `mixed` is the city built to
      * cause a road with a street leg and a road that ends at a ramp both.
      */
-    static void tripsWhole(String name, CityMap m, boolean mixed) {
+    static void tripsWhole(String name, CityMap m, boolean mixed, String coldNote) {
         for (CityMap.District d : m.districts()) m.drawn(d);
         boolean current = m.districts().size() <= CityMap.PLANS_KEPT;
         for (CityMap.District d : m.districts()) current &= m.planned(d);
@@ -676,15 +685,16 @@ public class TruckRouteCheck {
         CityMap.WorldLine line = highwayLine(m);
         check("...and the highways have a world line", line != null);
         if (line == null) return;
+        int searched = m.tripSearches();
         long t0 = System.nanoTime();
         List<CityMap.DistrictTrips> all = m.tripsDrawn();
         double ms = (System.nanoTime() - t0) / 1e6;
+        String cold = coldNote != null ? coldNote : String.format("cold: made in %.0f ms with %d street searches", ms, m.tripSearches() - searched);
         int[] rc = m.tripRoadCounts();
         int world = 0, home = 0;
         for (CityMap.DistrictTrips dt : all) for (TruckSchedule.Route rt : dt.trips()) { if (rt.home()) home++; else world++; }
         System.out.printf("      %s: %d roads (%d end at a ramp, %d have a street leg, %d no ramp reached), %d world trips and %d home trips in %d districts;"
-                + " %s, the search's scratch %,d bytes%n", name, rc[0], rc[1], rc[2], rc[3], world, home, all.size(),
-                ms >= 1 ? String.format("made in %.0f ms", ms) : "made as section 8 drew it", m.tripScratchBytes());
+                + " %s, the search's scratch %,d bytes%n", name, rc[0], rc[1], rc[2], rc[3], world, home, all.size(), cold, m.tripScratchBytes());
         check("fixture: the city has trips, world ones and home ones", world > 0 && home > 0);
         check("...a road whose end is a ramp (its street leg empty)" + (mixed ? " and a road with a street leg" : ""), rc[1] > 0 && (!mixed || rc[2] > 0));
         check("...one world trip a road a ramp reached, no more home trips than such roads", world == rc[1] + rc[2] && home <= world);
@@ -803,6 +813,26 @@ public class TruckRouteCheck {
         check("...every quarter plot of it is a street the plans draw, none a highway plot that carries none", streets && noHighwayOnly && homeSamples > 0);
         check("...the part the two roads' legs share is cut off: it never turns back on itself", noTurnBack);
         check("...leaves the gate of the nearest other road that comes to the same ramp", partnered);
+        warmCost(name, m);
+    }
+
+    /** Prints what making a city's trips again costs, warm: five remakes of everything (the legs and the list forgotten), the best and the median of a whole tripsDrawn() and of one district's search. No assertion. */
+    static void warmCost(String name, CityMap m) {
+        int runs = 5, searches = 0;
+        double[] whole = new double[runs], each = new double[runs];
+        for (int r = 0; r < runs; r++) {
+            m.forgetTrips();
+            int before = m.tripSearches();
+            long t0 = System.nanoTime();
+            m.tripsDrawn();
+            whole[r] = (System.nanoTime() - t0) / 1e6;
+            searches = m.tripSearches() - before;
+            each[r] = searches > 0 ? whole[r] / searches : 0;
+        }
+        Arrays.sort(whole);
+        Arrays.sort(each);
+        System.out.printf("      %s, warm: %d remakes of %d searches each: a whole tripsDrawn() best %.1f ms, median %.1f ms; one district's search best %.1f ms, median %.1f ms%n",
+                name, runs, searches, whole[0], whole[runs / 2], each[0], each[runs / 2]);
     }
 
     // ------------------------------------------------------------------ 8
@@ -813,8 +843,8 @@ public class TruckRouteCheck {
         return false;
     }
 
-    /** Section 8's first half, on a city nothing of which is drawn: trips plan nothing, and a district drawn later gets its trips then. */
-    static void tripsOnlyDrawn(CityMap m) {
+    /** Section 8's first half, on a city nothing of which is drawn: trips plan nothing, and a district drawn later gets its trips then. Returns what making them cost as the districts were drawn. */
+    static String tripsOnlyDrawn(CityMap m) {
         System.out.println("\n--- 8. only what is drawn: the trips plan nothing, and a district drawn later has its trips then ---");
         boolean unplanned = true;
         for (CityMap.District d : m.districts()) unplanned &= !m.planned(d);
@@ -826,13 +856,16 @@ public class TruckRouteCheck {
         check("fixture: no plan is drawn yet, and asking for the trips gives none and draws none (the plans kept, the links and changes() as they were)",
                 unplanned && none.isEmpty() && still && m.plansBytes() == bytes && m.linksKept() == links && m.changes() == changes);
         boolean subset = true, plansNothing = true, notBefore = true;
-        int became = 0, steps = 0;
+        int became = 0, steps = 0, searches0 = m.tripSearches();
+        double askedMs = 0;
         for (CityMap.District d : m.districts()) {
             boolean was = hasTrips(m.tripsDrawn(), d), drawnBefore = m.planned(d);
             m.drawn(d);
             long bytesNow = m.plansBytes();
             int linksNow = m.linksKept();
+            long q0 = System.nanoTime();
             List<CityMap.DistrictTrips> got = m.tripsDrawn();
+            askedMs += (System.nanoTime() - q0) / 1e6;
             plansNothing &= m.plansBytes() == bytesNow && m.linksKept() == linksNow;
             // A district's trips come from a plan that is drawn: every district with trips has its plan drawn and current.
             for (CityMap.DistrictTrips dt : got) subset &= m.planned(dt.district());
@@ -843,6 +876,7 @@ public class TruckRouteCheck {
         check("asking after each of " + steps + " districts is drawn plans nothing: the plans kept and the links are as they were", plansNothing);
         check("...every district with trips has its plan drawn and current", subset);
         check("...a district not drawn has no trips before it is, and one that had none has them once it is (" + became + " did)", notBefore && became > 0);
+        return String.format("cold: %d asks, one as each district was drawn, took %.0f ms in all and made %d street searches", steps, askedMs, m.tripSearches() - searches0);
     }
 
     /** Section 8's second half, on a city drawn whole: the list is kept while nothing changes and made again once a plan or the runs change; no world line, no world trip. */
@@ -1019,6 +1053,199 @@ public class TruckRouteCheck {
         check("a home trip takes the tonnes bought at home alone: a schedule of one draws no import and no export", homeOnly.callsOf(TruckSchedule.Load.HOME) > 0
                 && homeOnly.callsOf(TruckSchedule.Load.IMPORT) == 0 && homeOnly.callsOf(TruckSchedule.Load.EXPORT) == 0);
         check("...and a world trip takes no home load, so every home load of a mix is on the home trip", worldOnly.callsOf(TruckSchedule.Load.HOME) == 0 && homeOnHome && both.callsOf(TruckSchedule.Load.HOME) > 0);
+
+        // The catchment: whose tonnes a district's trips carry.
+        catchment(types, trips, per, city, a, b);
+    }
+
+    // ------------------------------------------------------------------ 9, the catchment (FR9 slice 2)
+
+    /** A district by hand at (dx, dy) holding `count` buildings of each type given as type, count pairs. */
+    static CityMap.District hand(BuildingVisual.Type[] types, int dx, int dy, int... typeAndCount) {
+        CityMap.District d = new CityMap.District(dx, dy, types.length, 0);
+        for (int i = 0; i + 1 < typeAndCount.length; i += 2) d.counts[typeAndCount[i]] = typeAndCount[i + 1];
+        return d;
+    }
+
+    /** A district's trips, by hand: the trips themselves are nothing to the catchment. */
+    static CityMap.DistrictTrips tripsOf(CityMap.District d) {
+        return new CityMap.DistrictTrips(d.key, d, List.of());
+    }
+
+    /** A lookup of districts by (dx, dy), as CityMap.district() gives. */
+    static java.util.function.BiFunction<Integer, Integer, CityMap.District> gridOf(java.util.Collection<CityMap.District> ds) {
+        Map<Long, CityMap.District> by = new HashMap<>();
+        for (CityMap.District d : ds) by.put(d.key, d);
+        return (x, y) -> by.get(CityMap.key(x, y));
+    }
+
+    static boolean same3(double[] x, double[] y) {
+        return near(x[0], y[0]) && near(x[1], y[1]) && near(x[2], y[2]);
+    }
+
+    /** The district with trips that district t rides, by the rule written out again: the nearest within CATCHMENT_DISTRICTS, Chebyshev, then squared Euclidean, then key; null for none. */
+    static CityMap.DistrictTrips winnerOf(List<CityMap.DistrictTrips> trips, CityMap.District t) {
+        CityMap.DistrictTrips best = null;
+        long[] bestAt = null;
+        for (CityMap.DistrictTrips e : trips) {
+            long dx = e.district().dx - t.dx, dy = e.district().dy - t.dy, cheb = Math.max(Math.abs(dx), Math.abs(dy));
+            if (cheb > TruckSchedule.CATCHMENT_DISTRICTS) continue;
+            long[] at = { cheb, dx * dx + dy * dy, e.key() };
+            boolean nearer = best == null;
+            for (int k = 0; !nearer && k < 3; k++) if (at[k] != bestAt[k]) { nearer = at[k] < bestAt[k]; break; }
+            if (nearer) { best = e; bestAt = at; }
+        }
+        return best;
+    }
+
+    /** The shares of the districts that ride `e`'s trips, summed. */
+    static double[] ridersOf(List<CityMap.DistrictTrips> trips, java.util.Collection<CityMap.District> all, CityMap.DistrictTrips e, double[][] per, double[] city) {
+        double[] sum = new double[3];
+        for (CityMap.District t : all) {
+            CityMap.DistrictTrips w = winnerOf(trips, t);
+            if (w == null || w.key() != e.key()) continue;
+            double[] s = TruckSchedule.sharesOf(per, t, city);
+            for (int l = 0; l < 3; l++) sum[l] += s[l];
+        }
+        return sum;
+    }
+
+    /** Section 9's catchment: a district's trips carry the tonnes of the works about it, not its own alone. */
+    static void catchment(BuildingVisual.Type[] types, CityMap trips, double[][] per, double[] city, int a, int b) {
+        System.out.println("      the catchment (FR9, slice 2): a works district rides the trips of the nearest district that has any");
+        check("fixture: the catchment is how far a work looks for a ramp, 2 districts", TruckSchedule.CATCHMENT_DISTRICTS == DistrictPlan.ACCESS_RAMP_DISTRICTS && TruckSchedule.CATCHMENT_DISTRICTS == 2);
+        // (a) A district with trips and no works beside a works district with no trips.
+        CityMap.District e = hand(types, 0, 0), w = hand(types, 1, 0, a, 3);
+        Map<Long, double[]> got = TruckSchedule.sharesByTrips(List.of(tripsOf(e)), gridOf(List.of(e, w)), per, city);
+        double[] wShare = TruckSchedule.sharesOf(per, w, city);
+        check("a district with trips and no works takes the share of the works district beside it that has no trips",
+                got.size() == 1 && same3(got.get(e.key), wShare) && wShare[0] > 0 && wShare[1] > 0 && wShare[2] > 0 && TruckSchedule.sharesOf(per, e, city)[0] == 0);
+        // (b) The reach: 2 districts gives, 3 does not.
+        CityMap.District own = hand(types, 0, 0, b, 2), far = hand(types, 6, 0), two = hand(types, 2, 0, a, 1), three = hand(types, 3, 0, a, 4);
+        got = TruckSchedule.sharesByTrips(List.of(tripsOf(own), tripsOf(far)), gridOf(List.of(own, far, two, three)), per, city);
+        double[] ownPlusTwo = new double[3], ownS = TruckSchedule.sharesOf(per, own, city), twoS = TruckSchedule.sharesOf(per, two, city);
+        for (int l = 0; l < 3; l++) ownPlusTwo[l] = ownS[l] + twoS[l];
+        double[] threeS = TruckSchedule.sharesOf(per, three, city);
+        check("a works district 2 districts from a district with trips gives it its share, and one 3 districts from every district with trips gives nothing to any",
+                same3(got.get(own.key), ownPlusTwo) && got.get(far.key)[0] == 0 && got.get(far.key)[1] == 0 && got.get(far.key)[2] == 0 && threeS[0] > 0 && twoS[0] > 0);
+        // (c) Between two districts with trips: the nearer; equally near by Chebyshev, the smaller Euclidean; then the smaller key.
+        CityMap.District e1 = hand(types, 0, 0), e2 = hand(types, 3, 0), near1 = hand(types, 1, 0, a, 3), near2 = hand(types, 2, 0, b, 2);
+        got = TruckSchedule.sharesByTrips(List.of(tripsOf(e1), tripsOf(e2)), gridOf(List.of(e1, e2, near1, near2)), per, city);
+        check("a district between two districts with trips goes to the nearer: 1 district from one and 2 from the other, and the other way about",
+                same3(got.get(e1.key), TruckSchedule.sharesOf(per, near1, city)) && same3(got.get(e2.key), TruckSchedule.sharesOf(per, near2, city)));
+        CityMap.District between = hand(types, 2, -1, a, 2), pa = hand(types, 0, 0), pb = hand(types, 2, 1);
+        got = TruckSchedule.sharesByTrips(List.of(tripsOf(pa), tripsOf(pb)), gridOf(List.of(pa, pb, between)), per, city);
+        check("...2 districts from both (Chebyshev), it goes to the nearer by Euclid, though that district's key is the larger",
+                pb.key > pa.key && same3(got.get(pb.key), TruckSchedule.sharesOf(per, between, city)) && got.get(pa.key)[0] == 0);
+        CityMap.District mid = hand(types, 0, 0, a, 2), ka = hand(types, 1, 0), kb = hand(types, -1, 0);
+        got = TruckSchedule.sharesByTrips(List.of(tripsOf(ka), tripsOf(kb)), gridOf(List.of(ka, kb, mid)), per, city);
+        CityMap.District smaller = ka.key < kb.key ? ka : kb, larger = smaller == ka ? kb : ka;
+        check("...and equally near by both, to the smaller key",
+                ka.key != kb.key && same3(got.get(smaller.key), TruckSchedule.sharesOf(per, mid, city)) && got.get(larger.key)[0] == 0);
+        // (d) A map of 7 x 7 districts, three of them with trips: the shares of the districts with trips are the districts within reach's.
+        List<CityMap.District> all = new ArrayList<>();
+        long[] totals = new long[types.length];
+        for (int dx = -3; dx <= 3; dx++) {
+            for (int dy = -3; dy <= 3; dy++) {
+                int na = Math.floorMod(dx * 7 + dy, 5) + 1, nb = Math.floorMod(dx + 2 * dy, 3);
+                all.add(hand(types, dx, dy, a, na, b, nb));
+                totals[a] += na;
+                totals[b] += nb;
+            }
+        }
+        final String keyA = types[a].sector(), keyB = types[b].sector();
+        java.util.function.Function<String, double[]> tonnes = s -> s.equals(keyA) ? new double[] { 100, 40, 8 } : s.equals(keyB) ? new double[] { 50, 10, 6 } : new double[3];
+        double[][] perAll = TruckSchedule.perBuilding(tonnes, types, totals);
+        double[] cityAll = { 150, 50, 14 };
+        List<CityMap.DistrictTrips> withTrips = new ArrayList<>();
+        for (CityMap.District d : all) if (d.dx == -2 && d.dy == -2 || d.dx == 1 && d.dy == 0 || d.dx == 3 && d.dy == 3) withTrips.add(tripsOf(d));
+        got = TruckSchedule.sharesByTrips(withTrips, gridOf(all), perAll, cityAll);
+        double[] sum = new double[3], within = new double[3], every = new double[3];
+        int inReach = 0;
+        for (CityMap.DistrictTrips t : withTrips) for (int l = 0; l < 3; l++) sum[l] += got.get(t.key())[l];
+        for (CityMap.District d : all) {
+            double[] s = TruckSchedule.sharesOf(perAll, d, cityAll);
+            boolean reaches = winnerOf(withTrips, d) != null;
+            if (reaches) inReach++;
+            for (int l = 0; l < 3; l++) { every[l] += s[l]; if (reaches) within[l] += s[l]; }
+        }
+        System.out.printf("      %d of the 49 districts are within reach of the 3 with trips, and carry %.3f of the imports%n", inReach, within[0]);
+        check("the shares of the districts with trips come to the shares of the districts within reach of one, at most 1 of a load",
+                same3(sum, within) && sum[0] <= 1 + 1e-9 && sum[1] <= 1 + 1e-9 && sum[2] <= 1 + 1e-9 && same3(every, new double[] { 1, 1, 1 }) && inReach < 49 && sum[0] < 1 - 1e-6);
+
+        // The trips city's own layout and trips, with tonnes by hand: every sector but Freight (the depots', yards' and terminals') 100 t a load.
+        java.util.function.Function<String, double[]> by100 = s -> s.equals("Freight") ? new double[3] : new double[] { 100, 100, 100 };
+        long[] mapTotals = trips.totals();
+        java.util.Set<String> standing = new java.util.HashSet<>();
+        for (int t = 0; t < trips.types().length; t++) {
+            if (mapTotals[t] > 0 && trips.types()[t] != null && !trips.types()[t].sector().isEmpty() && !trips.types()[t].sector().equals("Freight")) standing.add(trips.types()[t].sector());
+        }
+        double[] c100 = { 100.0 * standing.size(), 100.0 * standing.size(), 100.0 * standing.size() };
+        double[][] per100 = TruckSchedule.perBuilding(by100, trips.types(), mapTotals);
+        List<CityMap.DistrictTrips> real = trips.tripsDrawn();
+        got = TruckSchedule.sharesByTrips(real, trips::district, per100, c100);
+        boolean positive = true, ridersAre = true;
+        double[] realSum = new double[3];
+        int ownNothing = 0;
+        for (CityMap.DistrictTrips t : real) {
+            double[] mine = got.get(t.key()), own100 = TruckSchedule.sharesOf(per100, t.district(), c100);
+            positive &= mine[0] > 0 && mine[1] > 0 && mine[2] > 0;
+            ridersAre &= same3(mine, ridersOf(real, trips.districts(), t, per100, c100));
+            if (own100[0] == 0 && own100[1] == 0 && own100[2] == 0) ownNothing++;
+            for (int l = 0; l < 3; l++) realSum[l] += mine[l];
+        }
+        System.out.printf("      the trips city: %d districts with trips, %d of them whose own works carry nothing; the shares come to %.3f / %.3f / %.3f%n",
+                real.size(), ownNothing, realSum[0], realSum[1], realSum[2]);
+        check("the trips city, tonnes by hand (100 t a load for each of " + standing.size() + " sectors but Freight): each district with trips draws a share, "
+                + "and it is the shares of the districts that ride its trips", positive && ridersAre && real.size() >= 2);
+        check("...the whole city is within reach of a district with trips, so together they take 1 of each load", near(realSum[0], 1) && near(realSum[1], 1) && near(realSum[2], 1));
+
+        // A district whose trips' works are Truck Depots alone: the trips city has none (each holds a mix of everything), so by hand one is made on its
+        // layout - the district with trips that a roadless district rides keeps its depots and gives the rest of its works to that roadless district.
+        Map<Long, CityMap.District> fab = new HashMap<>();
+        CityMap.District roadless = null;
+        for (CityMap.District d : trips.districts()) {
+            CityMap.District c = new CityMap.District(d.dx, d.dy, d.counts.length, d.order);
+            System.arraycopy(d.counts, 0, c.counts, 0, d.counts.length);
+            fab.put(d.key, c);
+        }
+        int most = -1;
+        for (CityMap.District d : trips.districts()) {
+            int n = 0;
+            for (int t = 0; t < d.counts.length; t++) n += d.counts[t];
+            if (winnerOf(real, d) != null && winnerOf(real, d).key() != d.key && n > most) { most = n; roadless = d; }
+        }
+        CityMap.DistrictTrips rider = roadless == null ? null : winnerOf(real, roadless);
+        check("fixture: a district with works and no trips rides a district with trips (the catchment does something here)", roadless != null && most > 0 && rider != null);
+        if (rider == null) return;
+        CityMap.District depots = fab.get(rider.key()), landing = fab.get(roadless.key);
+        for (int t = 0; t < depots.counts.length; t++) {
+            if (trips.types()[t] != null && trips.types()[t].category() == BuildingType.HAULAGE) continue;
+            landing.counts[t] += depots.counts[t];
+            depots.counts[t] = 0;
+        }
+        List<CityMap.DistrictTrips> made = new ArrayList<>();
+        for (CityMap.DistrictTrips t : real) made.add(new CityMap.DistrictTrips(t.key(), fab.get(t.key()), t.trips()));
+        got = TruckSchedule.sharesByTrips(made, gridOf(fab.values()), per100, c100);
+        int drawing = 0;
+        boolean ownZero = true, riders = true;
+        for (CityMap.DistrictTrips t : made) {
+            double[] own100 = TruckSchedule.sharesOf(per100, t.district(), c100), mine = got.get(t.key());
+            boolean alone = own100[0] == 0 && own100[1] == 0 && own100[2] == 0;
+            if (alone && mine[0] > 0 && mine[1] > 0 && mine[2] > 0) drawing++;
+            if (t.key() == rider.key()) {
+                ownZero &= alone;
+                riders &= same3(mine, ridersOf(made, fab.values(), t, per100, c100));
+            }
+        }
+        double[] drawn = got.get(rider.key());
+        System.out.printf("      by hand, the district (%d,%d) keeps its %d depots and gives its other works to (%d,%d): %d district with trips whose works are depots alone draws a share"
+                + " (%.3f of the imports)%n", rider.district().dx, rider.district().dy, depots.count(MapCheck.depotType(trips.types())), roadless.dx, roadless.dy, drawing, drawn[0]);
+        check("a district whose trips' works are Truck Depots alone (its own works carry nothing) draws a share from the works about it: 1 such district, its share > 0 of each load",
+                ownZero && drawing == 1 && riders && drawn[0] > 0 && drawn[1] > 0 && drawn[2] > 0);
+        double[] total = new double[3];
+        for (CityMap.DistrictTrips t : made) for (int l = 0; l < 3; l++) total[l] += got.get(t.key())[l];
+        check("...and the tonnes moved by hand are drawn once: together the districts with trips still take 1 of each load", near(total[0], 1) && near(total[1], 1) && near(total[2], 1));
     }
 
     // ------------------------------------------------------------------ 10
@@ -1096,10 +1323,10 @@ public class TruckRouteCheck {
         // FR9: the trips city is built to cause a road with a street leg as well as roads that end at a ramp; 8 draws it a district at a
         // time, so it runs before 7, which reads it whole (and the access city 4 drew), and 8's second half changes it last.
         CityMap trips = accessCity(types(), TRIPS_MORE_DEPOTS, TRIPS_HIGHWAYS);
-        tripsOnlyDrawn(trips);
+        String tripsCold = tripsOnlyDrawn(trips);
         System.out.println("\n--- 7. a trip is whole: from the world to a gate, on a road all the way ---");
-        tripsWhole("the access city", access, false);
-        tripsWhole("the trips city", trips, true);
+        tripsWhole("the access city", access, false, null);
+        tripsWhole("the trips city", trips, true, tripsCold);
         tripsKept(trips, types());
         shares(types(), trips);
         pace();

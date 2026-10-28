@@ -36,9 +36,12 @@ import java.util.List;
  * truckedOut() and truckedHome(): what Haulage's trucks were asked, which
  * come to Haulage.getTonnes()), at the share Haulage carried of them
  * (getCarried() over getTonnes(), a fleet too small leaves tonnes on the
- * ground) and a share of each load (`shares`, by Load's order: a district's
- * works' truck tonnes of it over the city's - sharesOf(), perBuilding() and
- * truckedBy(), the model's own Move.truck() read), over a truck's load,
+ * ground) and a share of each load (`shares`, by Load's order: the works'
+ * truck tonnes of it over the city's - sharesOf(), perBuilding() and
+ * truckedBy(), the model's own Move.truck() read - of a district's
+ * CATCHMENT, sharesByTrips(): a works district rides the trips of the nearest
+ * district that has any, so a depot district draws its neighbours' trucks and
+ * a works district with no access road is not left without), over a truck's load,
  * Haulage.TONNES_A_LOAD. A fraction of a load is a whole truck in the share
  * of months its fraction says (BoatSchedule.callsFor()). Past MOST_A_MONTH
  * loads a month (the city's, every load before `shares`, so every district's
@@ -499,6 +502,54 @@ public final class TruckSchedule {
         for (int l = 0; l < loads; l++) {
             double city = cityTonnes == null || l >= cityTonnes.length ? 0 : tonnesOf(cityTonnes[l]);
             out[l] = city > 0 ? Math.max(0, Math.min(1, mine[l] / city)) : 0;
+        }
+        return out;
+    }
+
+    /** How far, in districts (Chebyshev, by dx and dy), a district's works' tonnes look for a district with trips to ride: 2, how far a work looks for a ramp (DistrictPlan.ACCESS_RAMP_DISTRICTS). */
+    public static final int CATCHMENT_DISTRICTS = DistrictPlan.ACCESS_RAMP_DISTRICTS;
+
+    /**
+     * Each district with trips and the shares of the city's tonnes, by load, its trips carry - its CATCHMENT (FR9, slice 2): the works'
+     * tonnes (sharesOf()) of every district that rides its trips, itself among them. A district rides the trips of the nearest district
+     * WITH trips within CATCHMENT_DISTRICTS of it, Chebyshev by dx and dy (its own at distance 0 when it has trips); equally near, the
+     * smaller squared Euclidean distance, then the smaller key. So a district of Truck Depots alone, whose own works carry nothing, draws
+     * its neighbours' trucks, and a works district with no access road is not left without; a district farther than that from every
+     * district with trips rides none and its tonnes are not drawn. The tonnes' district need not be drawn (its counts are known without a
+     * plan); only the trips' district must. The shares over the districts come to the shares of the districts within reach, each at most
+     * 1 of a load. Pure in its arguments; costs the (2 x CATCHMENT_DISTRICTS + 1) squared districts about each district with trips
+     * (`districtAt`, CityMap.district(dx, dy), null for none).
+     */
+    public static java.util.Map<Long, double[]> sharesByTrips(List<CityMap.DistrictTrips> trips,
+            java.util.function.BiFunction<Integer, Integer, CityMap.District> districtAt, double[][] perBuilding, double[] cityTonnes) {
+        int loads = Load.values().length, reach = CATCHMENT_DISTRICTS;
+        java.util.Map<Long, double[]> out = new java.util.HashMap<>();
+        // Each district that may give tonnes (by key) and the district with trips it rides: {Chebyshev, squared Euclidean, the trips' key}.
+        java.util.Map<Long, CityMap.District> givers = new java.util.HashMap<>();
+        java.util.Map<Long, long[]> rides = new java.util.HashMap<>();
+        for (CityMap.DistrictTrips e : trips) {
+            out.put(e.key(), new double[loads]);
+            CityMap.District home = e.district();
+            for (int i = -reach; i <= reach; i++) {
+                for (int j = -reach; j <= reach; j++) {
+                    CityMap.District t = i == 0 && j == 0 ? home : districtAt.apply(home.dx + i, home.dy + j);
+                    if (t == null) continue;
+                    long[] now = { Math.max(Math.abs(i), Math.abs(j)), (long) i * i + (long) j * j, e.key() };
+                    long[] was = rides.get(t.key);
+                    boolean nearer = was == null;
+                    for (int k = 0; !nearer && k < 3; k++) {
+                        if (now[k] != was[k]) { nearer = now[k] < was[k]; break; }
+                    }
+                    if (nearer) {
+                        rides.put(t.key, now);
+                        givers.put(t.key, t);
+                    }
+                }
+            }
+        }
+        for (java.util.Map.Entry<Long, long[]> r : rides.entrySet()) {
+            double[] give = sharesOf(perBuilding, givers.get(r.getKey()), cityTonnes), mine = out.get(r.getValue()[2]);
+            for (int l = 0; l < loads; l++) mine[l] += give[l];
         }
         return out;
     }
