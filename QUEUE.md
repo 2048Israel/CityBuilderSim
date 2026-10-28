@@ -29,7 +29,6 @@ stuff".
 |---|---|---|
 | BM1 | `docs/batch.md` split by reader (a batch session's checklist, the orchestrator's manual), a one-line WHY per rule, and "one in, one out" for process batches as a standing rule (Jerus, 2026-10-27) | [BM1](docs/queue/BM1.md) |
 | CC1-M | The city map did not survive a save once: LongPlaytest -Dplaytest.childcare at m1,184 (slot 3), a run the map sidecar has not met before; not childcare's - nothing in the model reads the map; MapCheck's area (Jerus, 2026-10-18: its own batch) | `runs/fixCC1-notes.md` 7 |
-| SC1 | ScaleCheck's "...and it builds" read on a city that needs homes: its fixture city has 6,768 places for 5,734 people, so neither it nor its copy builds (Jerus, 2026-10-20: "Queue a check fix") | [SC1](docs/queue/SC1.md) |
 | FR8 | The trucks' share dealt per industry, the newest demand last, so a giant works' arrival shortens its own sector, not the town's (Jerus, 2026-10-20, on FR2's ★5: "pool per industry") | [FR8](docs/queue/FR8.md) |
 | FR9 | One truck, one whole trip: in on the highway, off at a ramp, along the streets and down the access road to its works' gate, a district's trips by its tonnes (Jerus, 2026-10-20: "Queue it") | [FR9](docs/queue/FR9.md) |
 | FW11 | No street piece walled in by buildings: over a dense iron cluster `DistrictPlan.join()` never walks over a building, so an enclosed piece stays cut off (was W1-P; Jerus, 2026-10-20: "Queue the fix") | [FW11](docs/queue/FW11.md) |

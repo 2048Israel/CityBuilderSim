@@ -1,8 +1,8 @@
-# gate of Merge batch/SP1: the suite three at a time, each harness JVM under a memory cap; the timing harnesses once per gate, not twice (Jerus, 2026-10-27), 0.8.62
+# gate of Merge batch/SC1: scaleCheck's "...and it builds" read on a city that needs homes: its fixture city has 6,768 places for 5,734 people, so neither it nor its copy builds (Jerus, 2026-10-20: "Queue a check fix"), 0.8.62
 # date: 2026-10-28
 # earth-2.bin: named
-# suite: 150 harnesses run in 1145s: 149 passed, 1 failed
-# timing: 12 harnesses run in 385s: 11 passed, 1 failed
+# suite: 150 harnesses run in 1170s: 149 passed, 1 failed
+# timing: 12 harnesses run in 393s: 11 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

@@ -18,6 +18,11 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### SC1 — ScaleCheck's "...and it builds" already green; its landlords in the log — 2026-10-27, ready, no tag (a check), see docs/queue/SC1-notes.md
+The red the batch was queued for (Jerus, 2026-10-20, "Queue a check fix"), the ten-billion copy's "...and it builds: more homes at the end than at the start", was FR7's finding at the fixture month 600; XR1 (622) and PT1-M4 (807, every assertion holding from 792 to 822) rescanned the month since, and on main it is green for both copies, so no scan and no fixture change was needed.
+What the batch added is the brief's third item: `ScaleCheck.Lender` counts the landlords' mortgage orders in the months read, the city's and each copy's - how many the lender passed, held for the down payment and declined on the rent - and prints them (6 of 6 passed at 807; the 10-billion copy ordered none), so a later model change that moves the lender's verdict shows in the log. Printed, not asserted; the fixture's household places are printed too.
+No game change, no version bump, no trace.
+
 ### SP1 — the suite three at a time, each harness JVM under a memory cap; a paired timing red judged by its budget too — 2026-10-27, ready, no tag (tooling), see docs/queue/SP1-notes.md
 `AllChecks` runs up to three harnesses at once (`PARALLEL`, `-Dcbs.parallel=N` for one run, at most half the cores), the longest first, its output in `HARNESSES` order as before; `--timing`, a hard run and the gate's paired rounds stay one at a time. Each harness JVM runs under `-Xmx2048m` (`HEAP_MB`, measured: none committed more than 1.5 GB) and starts at `-Xms64m` (`HEAP_START_MB`: the default 508 MB was committed at once, BooksCheck 616 MB of commit against 167 now), and so does the runner.
 Memory, not cores, is the PC's limit (41-46 GB, 80-96% busy this evening), so no harness starts beside another while the commit charge is over 75% (`COMMIT_PCT`), and the suite says how many starts it held. `timing.tsv` is appended under a file lock.
