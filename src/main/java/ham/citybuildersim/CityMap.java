@@ -4520,8 +4520,11 @@ public final class CityMap {
      * roads cost 1, any other street TRIP_STREET_COST) in the district's frame
      * grown by TRIP_REACH, until every road end of the district is settled; a
      * road's leg is the tree's way from its ramp to its end, a road that ends
-     * at a ramp having a leg of that plot alone. No highways' world line, or
-     * a road no ramp reached: no world trip for it.
+     * at a ramp having a leg of that plot alone. A road no ramp reached: no
+     * world trip for it. NO WAY IN YET: while the highways have no world
+     * line (a city before its highways leave it) there is no trip to follow
+     * whole, and each drawn road keeps FR5's access route instead (from its
+     * end on the streets to its gate, every load: accessRouteInto()).
      *
      * A plan is NEVER drawn here (the screen's thread): the plans kept are
      * walked, not asked. Kept against changes() and the plans kept; when
@@ -4570,6 +4573,15 @@ public final class CityMap {
             }
             tripReach.clear();
             tripTrips(plans, kept, line, out);
+        } else {
+            // No way in from the world yet (a city before its highways leave it): each drawn road keeps FR5's access route, from its
+            // end on the streets to its gate, every load - what Jerus checked on such a city (FR5-C) - until a whole trip can be drawn.
+            for (TripPlan p : plans) {
+                if (p.dr().access == null) continue;
+                List<TruckSchedule.Route> routes = new ArrayList<>();
+                for (int[] way : p.dr().access) accessRouteInto(routes, way, p.ox(), p.oy());
+                if (!routes.isEmpty()) out.add(new DistrictTrips(p.d().key, p.d(), java.util.Collections.unmodifiableList(routes)));
+            }
         }
         tripLegs.clear();
         tripLegs.putAll(kept);

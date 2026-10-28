@@ -74,7 +74,9 @@ import java.util.List;
  * at home alone (they cross no edge). A load goes to one of the routes that
  * take it, by a hash. A load no route takes has no truck, and a city with no
  * routes has none at all. Route.through(false, ...), the access road's own
- * route of FR5 that takes every load, is kept for the harnesses.
+ * route of FR5 that takes every load, is what a city whose highways have no
+ * world line yet still draws (there is no trip to follow whole), each drawn
+ * road's from its end on the streets to its gate.
  */
 public final class TruckSchedule {
 

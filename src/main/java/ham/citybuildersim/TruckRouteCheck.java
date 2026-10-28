@@ -67,7 +67,8 @@ import java.util.Map;
  *   8. only what is drawn: asking for trips plans nothing (the plans kept,
  *      the links and changes() as they were); before a district is drawn it
  *      has no trips and after it is drawn it has; a city whose highways have
- *      no world line has no trip; the list is kept while nothing changes (the
+ *      no world line has no whole trip, each drawn road FR5's access route
+ *      alone; the list is kept while nothing changes (the
  *      same object) and made again once a plan or the runs change;
  *   9. a district's trips in its tonnes' share: perBuilding() and sharesOf()
  *      on numbers by hand (two districts holding a sector's buildings 3 : 1
@@ -879,9 +880,9 @@ public class TruckRouteCheck {
         return String.format("cold: %d asks, one as each district was drawn, took %.0f ms in all and made %d street searches", steps, askedMs, m.tripSearches() - searches0);
     }
 
-    /** Section 8's second half, on a city drawn whole: the list is kept while nothing changes and made again once a plan or the runs change; no world line, no world trip. */
+    /** Section 8's second half, on a city drawn whole: the list is kept while nothing changes and made again once a plan or the runs change; no world line, FR5's access routes alone. */
     static void tripsKept(CityMap m, BuildingVisual.Type[] types) {
-        System.out.println("\n--- 8 (the rest). the trips are kept against the changes and the plans kept; no world line, no trip ---");
+        System.out.println("\n--- 8 (the rest). the trips are kept against the changes and the plans kept; no world line, the access routes alone ---");
         List<CityMap.DistrictTrips> first = m.tripsDrawn();
         check("asked again with nothing changed: the same list", !first.isEmpty() && m.tripsDrawn() == first);
         check("...and each district's trips are the same list under the same key", m.tripsDrawn().get(0).trips() == first.get(0).trips() && m.tripsDrawn().get(0).key() == first.get(0).key());
@@ -920,7 +921,20 @@ public class TruckRouteCheck {
         for (CityMap.District d : five.districts()) { CityMap.Drawn dr = five.drawn(d); if (dr.access != null) roads += dr.access.length; }
         check("fixture: five highways reach a street and find no way out (no world line), and six Truck Depots have " + roads + " access roads drawn",
                 five.runs().highwaysReach() && !hasHighwayLine(five) && roads > 0);
-        check("...so there is no world trip, and no trip at all: a truck comes in from the world line or not at all", five.tripsDrawn().isEmpty() && five.truckRoutes().isEmpty());
+        int access = 0, fr5 = 0;
+        boolean asFr5 = true;
+        for (CityMap.District d : five.districts()) {
+            CityMap.Drawn dr = five.drawn(d);
+            if (dr.access != null) for (int[] way : dr.access) if (way.length >= 2) access++;
+        }
+        for (CityMap.DistrictTrips dt : five.tripsDrawn()) {
+            for (TruckSchedule.Route r : dt.trips()) {
+                fr5++;
+                asFr5 &= !r.world() && !r.home() && r.fadeTo() == CityMap.TRUCK_ACCESS_FADE;
+            }
+        }
+        check("...so there is no world trip and no home trip: each drawn road keeps FR5's access route alone, every load (" + fr5 + " of " + access + ")",
+                five.truckRoutes().isEmpty() && asFr5 && fr5 == access && fr5 > 0);
     }
 
     // ------------------------------------------------------------------ 9
