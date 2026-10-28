@@ -1,6 +1,6 @@
 # RailDrawCheck.java - 1,637 lines · 73 methods · 2 constants · harnesses
 
-`ham/citybuildersim/RailDrawCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RailDrawCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > Proves that the railway is drawn as rail, not as a cased road band (0.8.1,
 > batch FR0; docs/studies/spec-freight-and-infrastructure.md 4.3, D15, D18).

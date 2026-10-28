@@ -1,6 +1,6 @@
 # RefineryViewCheck.java - 632 lines · 23 methods · 6 constants · harnesses
 
-`ham/citybuildersim/RefineryViewCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RefineryViewCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12):
 > RefineryView's figures and its picture, held to the model's own reads in

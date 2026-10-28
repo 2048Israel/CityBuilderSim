@@ -73,15 +73,18 @@
 #       main (TM3; docs/batch.md, The gate 6; tools/timing-pair.awk): the red
 #       harnesses run again CBS_TIMING_ROUNDS times (3) with main's classes
 #       (target/main-timing) and the merge's in turn, and it passes, named with the
-#       medians, unless the batch's is over main's by more than 15%. A red that is
-#       no timing red, one over the margin and one with no pair to compare stops -
-#       unless --red-ok and a --red-line name it, said in the body; no timing red
-#       passed so is ever a recorded one. A merge that changes only .md files
-#       outside docs/ensemble/ runs batch-check.sh --fast alone;
+#       medians and why, unless the batch's is over main's by more than 15%; and
+#       since SP1 item 7 (2026-10-27) also when main's median misses the budget too
+#       or the batch's is within it (SC1 stopped twice on a shifting load, both sides
+#       within the budget, then both over). A red that is no timing red, one over
+#       main's with main within the budget and the batch over it, and one with no
+#       pair to compare stops - unless --red-ok and a --red-line name it, said in the
+#       body; no timing red passed so is ever a recorded one. A merge that changes
+#       only .md files outside docs/ensemble/ runs batch-check.sh --fast alone;
 #   10. docs/notes/gate.txt written (every gate that ran the suite) and added:
 #       "#" lines (the merge's title, the date, whether earth-2.bin was named,
 #       the suite's and the timing's summary lines, each timing red that passed
-#       "# timing red within N% of main's (paired): ..." with the paired medians,
+#       "# timing red not the batch's (paired): ..." with the paired medians,
 #       each passed on his word "# timing red passed on Jerus's word ..."), then
 #       the suite's red lines, which are the next ship's "main's recorded reds". A
 #       timing red is a "#" line only, never a recorded one: the next ship judges
@@ -483,8 +486,7 @@ if [ "$DOCSONLY" = 1 ]; then
     [ "$CHECKED" = 0 ] || die "the checks failed on the merge (above); main is where it was"
     GATE="docs only, --fast"
 else
-    SOFT="${JDK_JAVA_OPTIONS:+$JDK_JAVA_OPTIONS }-Dcbs.timing=soft"   # the suite times soft: timing is judged once, hard, below
-    run_check env JDK_JAVA_OPTIONS="$SOFT" ./batch-check.sh "$@"
+    run_check ./batch-check.sh "$@"   # the suite times soft (batch-check.sh does it, BP1): timing is judged once, hard, below
     cp target/checks/reds.txt "$T/suite-reds.txt" 2>/dev/null || : > "$T/suite-reds.txt"
     cp target/checks/suite.txt "$T/suite.txt" 2>/dev/null || : > "$T/suite.txt"
     cp "$T/check.out" "$T/suite.out"
@@ -549,11 +551,12 @@ else
             PH=$(tr '\n' ' ' < "$T/pair-harnesses"); PH=${PH% }
             rm -rf "$MT"; git worktree prune
             git worktree add -q --detach "$MT" HEAD >/dev/null 2>&1 || die "cannot make the worktree $MT of main for its paired timing runs"
-            say "timing red on the merge ($PH): $ROUNDS rounds with main's classes and the merge's in turn, back to back, in $MT and here..."
+            say "timing red on the merge ($PH): $ROUNDS rounds with main's classes and the merge's in turn, back to back, each round's first side the last one's second, in $MT and here..."
             r=1
             while [ "$r" -le "$ROUNDS" ]; do
                 RT=$(date +%s); LINE=""
-                for side in main batch; do
+                ORDER="main batch"; [ $((r % 2)) = 1 ] || ORDER="batch main"   # SP1 item 7: a run straight after a switch of build was the slower (KeptCheck 6.2-6.9 ms against 5.2-5.5), so neither side always goes first
+                for side in $ORDER; do
                     if [ "$side" = main ]; then DIR=$MT; else DIR=.; fi
                     rm -f "$DIR/target/checks/timing.tsv"
                     ( cd "$DIR" && ./batch-check.sh --timing $PH ) > "target/checks/pair-$side-$r.out" 2>&1
@@ -581,7 +584,7 @@ else
         TIMINGLINE="timing    red on the merge, judged side by side with main (${ROUNDS:-3} rounds in turn, medians, margin $MARGIN%)"
         if [ -s "$T/offenders" ]; then
             if [ -z "$REDOK" ]; then
-                die "the timing red(s) above are the batch's (over main's by more than $MARGIN%, or no timing red, or nothing to compare); main is where it was. On his word only: --red-ok \"his words\" --red-line \"<part of each line he passes>\""
+                die "the timing red(s) above are the batch's (over the budget with main within it, and over main's by more than $MARGIN%; or no timing red; or nothing to compare); main is where it was. On his word only: --red-ok \"his words\" --red-line \"<part of each line he passes>\""
             fi
             awk -F'\t' '$1 == "FAIL" { print $2 }' target/checks/pair-judged.txt > "$T/off-raw"
             awk -F'\t' '$1 == "PASS" { print $2 }' target/checks/pair-judged.txt > "$T/acc-raw"
@@ -591,9 +594,9 @@ else
                 die "timing red(s) that no --red-line names (above); main is where it was. His words pass the lines named, never more: --red-line \"<part of the line>\""
             fi
             TIMINGLINE="$TIMINGLINE, passed on Jerus's word: $REDOK: $(cat "$T/fail-notes")"
-            [ ! -s "$T/pass-notes" ] || TIMINGLINE="$TIMINGLINE; within the margin: $(cat "$T/pass-notes")"
+            [ ! -s "$T/pass-notes" ] || TIMINGLINE="$TIMINGLINE; not the batch's: $(cat "$T/pass-notes")"
         else
-            TIMINGLINE="$TIMINGLINE, within it: $(cat "$T/pass-notes")"
+            TIMINGLINE="$TIMINGLINE, not the batch's: $(cat "$T/pass-notes")"
         fi
         echo "$TIMINGLINE" | cut -c1-400
     elif [ -s "$T/timing-reds.txt" ]; then
@@ -609,7 +612,7 @@ else
         echo "# earth-2.bin: $EARTH"
         echo "# suite: ${SUMMARY:-none}$PART"
         echo "# timing: ${TSUMMARY:-none}${TIMINGLINE:+; its red lines were judged side by side with main's, below}"
-        sed "s/^/# timing red within $MARGIN% of main's (paired): /" "$T/accepted"
+        sed "s/^/# timing red not the batch's (paired): /" "$T/accepted"
         if [ -s "$T/offenders" ]; then sed "s/^/# timing red passed on Jerus's word, over main's by more than $MARGIN% or not a timing red ($REDOK): /" "$T/offenders"; fi
         if [ -s "$T/suite-new" ]; then sed "s/^/# suite red passed on Jerus's word ($REDOK): /" "$T/suite-new"; fi
         cat "$T/suite-reds.txt"

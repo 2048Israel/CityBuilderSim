@@ -1,6 +1,6 @@
 # DeathCareFirstCheck.java - 508 lines · 17 methods · 4 constants · harnesses
 
-`ham/citybuildersim/DeathCareFirstCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DeathCareFirstCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > Death care first while the dead wait (0.7.129, batch T1-B): the rule that
 > serves the city's own cemeteries and crematoria first out of its share of

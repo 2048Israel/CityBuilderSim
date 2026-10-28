@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------
 #  Who else is using the PC's Java: the other batches' checks and Jerus's
-#  game, counted for Batch check.bat, batch-check.sh and tools/deepseek/agent.py (TM1).
+#  game, counted for Batch check.bat and tools/deepseek/agent.py (TM1; SP1 took batch-check.sh off).
 #
 #      powershell -NoProfile -ExecutionPolicy Bypass -File tools\jvms.ps1
 #

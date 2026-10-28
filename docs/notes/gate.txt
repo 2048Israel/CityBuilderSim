@@ -1,8 +1,8 @@
-# gate of Merge batch/BR1: BR1: the ship file (ready to ship), 0.8.62
-# date: 2026-10-27
+# gate of Merge batch/SP1: the suite three at a time, each harness JVM under a memory cap; the timing harnesses once per gate, not twice (Jerus, 2026-10-27), 0.8.62
+# date: 2026-10-28
 # earth-2.bin: named
-# suite: 150 harnesses run in 1129s: 149 passed, 1 failed
-# timing: 12 harnesses run in 380s: 11 passed, 1 failed
+# suite: 150 harnesses run in 1145s: 149 passed, 1 failed
+# timing: 12 harnesses run in 385s: 11 passed, 1 failed
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

@@ -1,6 +1,6 @@
 # Refining.java - 1,918 lines · 108 methods · 19 constants · sectors
 
-`ham/citybuildersim/sectors/Refining.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Refining.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > The refinery. THE SEVENTEENTH SECTOR (0.7.62, batch K; the project's
 > spec-land.md 2.7), and since 0.7.76 a crude unit that cuts a barrel into

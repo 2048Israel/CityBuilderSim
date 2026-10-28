@@ -18,6 +18,12 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### SP1 — the suite three at a time, each harness JVM under a memory cap; a paired timing red judged by its budget too — 2026-10-27, ready, no tag (tooling), see docs/queue/SP1-notes.md
+`AllChecks` runs up to three harnesses at once (`PARALLEL`, `-Dcbs.parallel=N` for one run, at most half the cores), the longest first, its output in `HARNESSES` order as before; `--timing`, a hard run and the gate's paired rounds stay one at a time. Each harness JVM runs under `-Xmx2048m` (`HEAP_MB`, measured: none committed more than 1.5 GB) and starts at `-Xms64m` (`HEAP_START_MB`: the default 508 MB was committed at once, BooksCheck 616 MB of commit against 167 now), and so does the runner.
+Memory, not cores, is the PC's limit (41-46 GB, 80-96% busy this evening), so no harness starts beside another while the commit charge is over 75% (`COMMIT_PCT`), and the suite says how many starts it held. `timing.tsv` is appended under a file lock.
+Item 7, on Jerus's word: a paired timing red is not the batch's when main's median misses the budget too or the batch's is within it, each pass says why, and the paired rounds alternate which side goes first. Not taken: the timing harnesses once per gate (`gate.txt` is the suite's soft lines, a hard run's differ; SP1-D).
+Out: `batch-check.sh`'s who-else-runs look, `ship.sh`'s redundant soft `JDK_JAVA_OPTIONS`. Scripts and rules 77 lines added, 63 removed; `ship-selftest.sh` 109 of 109. The N=3 against N=1 suite and `--pick` are not run (SP1-C): the PC never fell under the 85% rule long enough tonight, so the gate's suite is their first run.
+
 ### 0.8.62 — BR1, the name and the look: Civic Ledger, its icon and its title art — 2026-10-27, ready, see docs/queue/BR1-notes.md
 The game is Civic Ledger, Jerus's pick of a shortlist checked against Steam, itch.io and the US trademark register (Ledger City turned out a live mark for game software). The start screen and the window's title say so; the repository, the exe and the save folder keep CityBuilderSim, so no player's cities are left behind.
 It has an icon at last, "towers as a chart" (four towers rising like a bar chart, each lit in one of the palette's colours, the money line along their roofs), on the window, the taskbar and, through Build EXE.bat's new --icon, the exe; and title art, "the ledger's total" (the name over an account's closing double rule, its top line climbing like a chart), which the start screen draws itself and branding/ holds for the stores.

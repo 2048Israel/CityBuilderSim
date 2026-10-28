@@ -1,6 +1,6 @@
 # PlaytestFixCheck.java - 224 lines · 9 methods · 2 constants · harnesses
 
-`ham/citybuildersim/PlaytestFixCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PlaytestFixCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > Verifies the small fixes of a played city (PT1): words and the log, nothing
 > the month does. Not part of the game.

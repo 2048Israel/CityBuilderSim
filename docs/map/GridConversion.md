@@ -1,6 +1,6 @@
 # GridConversion.java - 545 lines · 43 methods · 4 constants · model
 
-`ham/citybuildersim/GridConversion.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GridConversion.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > A saved city's land put on the block grid: a format-31 save's lanes snapped to whole blocks with its fields deciding, or an older save's one figure drawn as a centre of blocks round its site to the plot - one converted holding, whose books are the plots drawn.
 > 

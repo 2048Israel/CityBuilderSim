@@ -59,9 +59,11 @@ import java.util.stream.Stream;
  *      child JVM started as AllChecks starts one writes to the same file;
  *   9. the margin's arithmetic (tools/timing-pair.awk, which the ship gate runs
  *      on main's figures and the merge's): the batch passes at the margin and
- *      stops a hair over it, the median decides and not one slow round, a side
- *      with fewer than two figures stops, a line that is no clock's stops, and
- *      a failed harness's own count passes only with a timing red that passes.
+ *      stops a hair over it, the median decides and not one slow round, main's
+ *      median over the budget too or the batch's within it passes (SP1 item 7),
+ *      a side with fewer than two figures stops, a line that is no clock's
+ *      stops, and a failed harness's own count passes only with a timing red
+ *      that passes.
  *
  * A harness that times prints its lines through the labelled verdict
  * (Timing.verdict(ok, label)), and no assertion compares two measured times
@@ -637,8 +639,8 @@ public class TimingCheck {
     static String pairRows(String harness, String label, double[] main, double[] batch) {
         StringBuilder b = new StringBuilder();
         for (int r = 0; r < Math.max(main.length, batch.length); r++) {
-            if (r < main.length) b.append("main\t").append(r + 1).append('\t').append(harness).append('\t').append(label).append('\t').append(main[r]).append("\t58\tms\tOK\t1\n");
-            if (r < batch.length) b.append("batch\t").append(r + 1).append('\t').append(harness).append('\t').append(label).append('\t').append(batch[r]).append("\t58\tms\tOK\t1\n");
+            if (r < main.length) b.append("main\t").append(r + 1).append('\t').append(harness).append('\t').append(label).append('\t').append(main[r]).append("\t100\tms\tOK\t1\n");
+            if (r < batch.length) b.append("batch\t").append(r + 1).append('\t').append(harness).append('\t').append(label).append('\t').append(batch[r]).append("\t100\tms\tOK\t1\n");
         }
         return b.toString();
     }
@@ -670,20 +672,21 @@ public class TimingCheck {
         double margin = dial.isEmpty() ? Double.NaN : Double.parseDouble(dial.get(0));
         check("the dial is a margin of 15 percent (the brief's), told by the script", margin == 15);
 
-        String label = "a month's FX-side map work at 5B takes no more than 58 ms";
-        String hard = "MapCheck\t" + label + "\t59.9\t58\tms\tFAIL\t1\nMapCheck\ta figure that held\t3\t80\tms\tOK\t1\n";
+        String label = "a month's FX-side map work at 5B takes no more than 100 ms";
+        String hard = "MapCheck\t" + label + "\t119.9\t100\tms\tFAIL\t1\nMapCheck\ta figure that held\t3\t80\tms\tOK\t1\n";
         String residual = "MapCheck | exit 1\nMapCheck | " + label + "     FAIL\nMapCheck | 1 FAILED\n";
         double[] steady = { 100, 100, 100 };
         double atMargin = 100 * (1 + margin / 100);
 
         List<String> v = judge(dir, pairRows("MapCheck", label, steady, new double[] { atMargin, atMargin, atMargin }), hard, residual, null);
         check("a batch exactly at the margin over main passes (the margin is a 'more than')", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t"));
-        check("...the line's notes carry both medians and the budget", v != null && v.size() == 3 && v.get(1).contains("main 100 ms") && v.get(1).contains("batch 115 ms") && v.get(1).contains("budget 58 ms"));
+        check("...the line's notes carry both medians, the budget and why (main at the budget is within it)", v != null && v.size() == 3 && v.get(1).contains("main 100 ms") && v.get(1).contains("batch 115 ms")
+                && v.get(1).contains("budget 100 ms") && v.get(1).endsWith(": within 15% of main's"));
         check("...and the harness's own count and exit pass with it", v != null && v.size() == 3 && v.get(0).startsWith("PASS\t") && v.get(2).startsWith("PASS\t"));
 
         double over = atMargin + 0.1;
         v = judge(dir, pairRows("MapCheck", label, steady, new double[] { over, over, over }), hard, residual, null);
-        check("a hair over the margin stops: FAIL, over main's by more than the margin, the figures named",
+        check("a hair over the margin stops, main at the budget and the batch over it: FAIL, over main's by more than the margin, the figures named",
                 v != null && v.size() == 3 && v.get(1).startsWith("FAIL\t") && v.get(1).contains("over main's by more than 15%") && v.get(1).contains("batch 115 ms"));
         check("...and the harness's own count and exit stop with it", v != null && v.size() == 3 && v.get(0).startsWith("FAIL\t") && v.get(2).startsWith("FAIL\t"));
 
@@ -696,6 +699,10 @@ public class TimingCheck {
 
         v = judge(dir, pairRows("MapCheck", label, steady, new double[] { 130, 130, 130 }), hard, residual, "40");
         check("the margin is a dial: 30% slower passes at 40", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t"));
+        v = judge(dir, pairRows("MapCheck", label, new double[] { 200, 200, 200 }, new double[] { 260, 260, 260 }), hard, residual, null);
+        check("main's median over the budget too passes though the batch is 30% over main's: main over the budget too", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t") && v.get(1).endsWith(": main over the budget too"));
+        v = judge(dir, pairRows("MapCheck", label, new double[] { 50, 50, 50 }, new double[] { 100, 100, 100 }), hard, residual, null);
+        check("the batch's median within the budget (at it) passes though it is double main's: the batch within the budget", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t") && v.get(1).endsWith(": the batch within the budget"));
 
         v = judge(dir, pairRows("MapCheck", label, steady, new double[] { 100 }), hard, residual, null);
         check("a side with one figure has no median: FAIL, no pair to compare", v != null && v.size() == 3 && v.get(1).startsWith("FAIL\t") && v.get(1).contains("no pair to compare"));
@@ -704,9 +711,9 @@ public class TimingCheck {
         v = judge(dir, pairRows("MapCheck", "another assertion entirely", steady, steady), hard, residual, null);
         check("an assertion the pairs do not have (a batch's own new one, a label changed): FAIL, no pair", v != null && v.size() == 3 && v.get(1).startsWith("FAIL\t") && v.get(1).contains("no pair to compare"));
 
-        String shifted = "a month's FX-side map work at 6B takes no more than 59 ms";
+        String shifted = "a month's FX-side map work at 6B takes no more than 101 ms";
         v = judge(dir, pairRows("MapCheck", shifted, steady, steady), hard, residual, null);
-        check("a label that prints a figure pairs with itself across the sides' digits (6B for 5B, 59 for 58)", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t"));
+        check("a label that prints a figure pairs with itself across the sides' digits (6B for 5B, 101 for 100)", v != null && v.size() == 3 && v.get(1).startsWith("PASS\t"));
 
         v = judge(dir, pairRows("MapCheck", label, steady, steady), hard, "MapCheck | exit 1\nMapCheck | a failure that is not a clock's     FAIL\nMapCheck | 2 FAILED\n", null);
         check("a red with no missed figure behind it is no timing red: FAIL, and the harness's own count with it",

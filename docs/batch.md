@@ -102,8 +102,15 @@ budget says SOFT and is not counted (`Timing`, `-Dcbs.timing=soft`, which
 the script sets by itself) - and timing is judged hard only by `--timing`
 at the ship gate, which runs the timing harnesses alone (BP1's review: a
 run that began alone timed hard, and main's own misses on a slow day came
-out as the batch's reds). The cloud workbench, with two cores, still runs
-one JVM at a time under the shared lock (`batch-check.sh` takes it).
+out as the batch's reds). **The suite runs three harnesses at once** (SP1,
+`AllChecks.PARALLEL`), each JVM under `-Xmx` `AllChecks.HEAP_MB`, the longest
+first, its output printed in `HARNESSES` order; a hard run (`--timing`, and the
+gate's paired rounds) goes one at a time, and so does a run with
+`-Dcbs.parallel=1` in `JDK_JAVA_OPTIONS`, for when memory is short. Each JVM
+starts at `-Xms` `AllChecks.HEAP_START_MB`, and none starts while the commit
+charge is over `AllChecks.COMMIT_PCT` (75%), so a busy PC runs fewer at once;
+the last line says how many were held. The cloud workbench, with two cores,
+still runs one JVM at a time under the shared lock (`batch-check.sh` takes it).
 
 1. Read `docs/map/README.md`, then the map of each file the change
    touches; `docs/harnesses.md` (grep it) says what already checks the
@@ -301,14 +308,20 @@ ready again.
    status, part), never from the label's prose, and times the red harnesses
    again with main's classes (a worktree of `main`) and the merge's **in
    turn, back to back, three rounds** (`CBS_TIMING_ROUNDS`, at least two; the
-   rounds are to share one load). The red
+   rounds are to share one load), main first in odd rounds and the batch in
+   even ones (SP1: a run straight after a switch of build was the slower). The red
    counts against the batch only if its median figure is **more than 15%**
    over main's (`tools/timing-pair.awk` holds the arithmetic and the dial;
-   `CBS_TIMING_MARGIN` moves it for a test). Otherwise it passes, named in
-   the merge's `Gate-timing:` line with both medians, and in `gate.txt` only
-   as a `#` line, so it never becomes a recorded red. A red that is over the
-   margin, one with nothing to compare (main has no such assertion, a round
-   did not run) and one that is no clock's (a failure behind no missed
+   `CBS_TIMING_MARGIN` moves it for a test), main's median within the budget
+   and the batch's over it: a red is not the batch's when main's median misses
+   the same budget too, or the batch's is within it (SP1 item 7, 2026-10-27:
+   SC1 stopped twice on a shifting load, both sides within the budget, then
+   both over).
+   Otherwise it passes, named in the merge's `Gate-timing:` line with both
+   medians and why, and in `gate.txt` only as a `#` line, so it never
+   becomes a recorded red. A red that is over the margin with main within the
+   budget and the batch over it, one with nothing to compare (main has no such
+   assertion, a round did not run) and one that is no clock's (a failure behind no missed
    figure) is the batch's and stops - unless `--red-ok "his words"` and a
    `--red-line` name it (step 5: the lines he approved, no others), said in
    `Gate-timing:` with his words and the lines, and in `gate.txt` as `#`

@@ -1,6 +1,6 @@
 # PortDivision.java - 363 lines · 27 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/PortDivision.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/PortDivision.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > Freight's Ports division: the crews that work the city's berths, paid by the
 > shippers who use them and paying the city for the quay (FR3, 2026-10-19;

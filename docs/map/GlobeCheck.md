@@ -1,6 +1,6 @@
 # GlobeCheck.java - 2,390 lines · 74 methods · 68 constants · harnesses
 
-`ham/citybuildersim/GlobeCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GlobeCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's three cameras, and the planet's picture with a frame drawn from it - on screen since 0.7.135 (batch E9), which MapCheck 13 holds.
 > 

@@ -1,6 +1,6 @@
 # TempDirs.java - 141 lines · 7 methods · 1 constants · model
 
-`ham/citybuildersim/TempDirs.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TempDirs.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > The one place a harness, or a scratch city, gets a temporary folder from:
 > one folder per JVM under the system temp folder, deleted when that JVM exits.

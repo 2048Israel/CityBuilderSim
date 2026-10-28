@@ -1,6 +1,6 @@
 # FoodProcessingCheck.java - 442 lines · 7 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > The third of the shelf that arrives already made.
 > 

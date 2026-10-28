@@ -1,6 +1,6 @@
 # HeavyIndustry.java - 278 lines · 13 methods · 9 constants · sectors
 
-`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > The mills - Iron & Steel since 0.7.120, under the key it was saved by,
 > "Heavy Industry": the arc furnaces, which melt scrap into steel, and since

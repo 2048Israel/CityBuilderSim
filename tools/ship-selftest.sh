@@ -284,18 +284,18 @@ LABEL="red: exit 1 stops";                      STUB_EXIT=1 run --dry-run batch/
 
 # timing (TM3): judged once, hard, and only what the suite step did not judge; a timing red is then timed again with main's classes and the
 # merge's in turn, and counts against the batch only if the merge is slower by more than the margin (15%)
-PL='the plan is within PLAN_MS (40 ms)'
+PL='the plan is within PLAN_MS (42 ms)'
 PR="PlanCheck | exit 1;PlanCheck | $PL    FAIL;PlanCheck | 1 FAILED"   # the hard run's red lines: one timing miss and the harness's own two
-PT="PlanCheck|$PL|45|40|ms|FAIL|1"                                      # the figure that missed, in the hard run's timing.tsv
-PP="PlanCheck|$PL|40|ms|1"                                              # the row each paired round writes
+PT="PlanCheck|$PL|45|42|ms|FAIL|1"                                      # the figure that missed, in the hard run's timing.tsv
+PP="PlanCheck|$PL|42|ms|1"                                              # the row each paired round writes
 turns() { grep "args='--timing PlanCheck'" "$STUB_LOG" | sed 's/.*cwd=\([^ ]*\) .*/\1/' | tr '\n' ' '; }   # whose tree each paired round ran in
 turns_are() { [ "$(turns)" = "$1 " ]; }
 tm() { STUB_TEXIT=4 STUB_TREDS="$PR" STUB_TTSV="$PT" STUB_PAIR="$PP" "$@"; }   # a timing red where a paired round's figures are the case's
 LABEL="timing: a red where the batch is as fast as main passes, named with the paired medians"; : > "$STUB_LOG"
 STUB_FIGS_MAIN="44 45 46" STUB_FIGS_BATCH="46 45 44" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'judged side by side with main' $TA/out.txt && grep -q -F 'PlanCheck [main 45 ms, batch 45 ms' $TA/out.txt"
-LABEL="timing: ...main's classes and the merge's in turn, three rounds, in the same minutes"
-ok turns_are "main-timing main main-timing main main-timing main"
+LABEL="timing: ...main's classes and the merge's in turn, three rounds, in the same minutes, the first side alternating (SP1 item 7)"
+ok turns_are "main-timing main main main-timing main-timing main"
 LABEL="timing: a batch 10% slower than main is inside the margin and passes"
 STUB_FIGS_MAIN="40 40 40" STUB_FIGS_BATCH="44 44 44" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'PlanCheck [main 40 ms, batch 44 ms (+10.0%)' $TA/out.txt"
@@ -303,6 +303,15 @@ LABEL="timing: a red where the batch is 30% slower than main stops, with the med
 STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 1 ] && grep -q -F 'over main' $TA/out.txt && grep -q -F 'main 41 ms, batch 53 ms (+29.3%)' $TA/out.txt && grep -q -F 'red-ok' $TA/out.txt"
 LABEL="timing: ...and the tree is clean";       ok clean
+LABEL="timing: a red where main misses the budget too passes, named (SP1 item 7)"
+STUB_FIGS_MAIN="60 61 62" STUB_FIGS_BATCH="80 81 82" tm run --dry-run batch/RED
+ok sh -c "[ $RC = 0 ] && grep -q -F 'main 61 ms, batch 81 ms (+32.8%), budget 42 ms: main over the budget too' $TA/out.txt"
+LABEL="timing: a red where the batch is within the budget passes, named, at the budget itself too"
+STUB_FIGS_MAIN="20 21 22" STUB_FIGS_BATCH="42 42 42" tm run --dry-run batch/RED
+ok sh -c "[ $RC = 0 ] && grep -q -F 'the batch within the budget' $TA/out.txt"
+LABEL="timing: main within the budget and the batch a hair over it, 43 against 42, over the margin stops"
+STUB_FIGS_MAIN="30 31 32" STUB_FIGS_BATCH="43 43 43" tm run --dry-run batch/RED
+ok sh -c "[ $RC = 1 ] && grep -q -F \"over main's by more than 15%: main 31 ms, batch 43 ms\" $TA/out.txt"
 LABEL="timing: one slow round in three is not the median"
 STUB_FIGS_MAIN="40 41 90" STUB_FIGS_BATCH="40 41 90" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'PlanCheck [main 41 ms, batch 41 ms' $TA/out.txt"
@@ -353,7 +362,7 @@ STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' STUB_FIGS_MAIN="44 45 46" STUB_FIGS_BA
 ok sh -c "[ $RC = 0 ] && grep -q -F \"pushed main and $V5\" $TA/out.txt && grep -q -F 'timing    red on the merge, judged side by side' $TA/out.txt"
 G="$TA/main/docs/notes/gate.txt"
 LABEL="TM: gate.txt holds the suite's red as a line and each timing red only as a # line"
-ok sh -c "grep -q -x -F 'MapCheck | exit 1' $G && grep -q '^# timing red within 15% of main.s (paired): PlanCheck | the plan is within PLAN_MS' $G && grep -q '^# timing red within 15% of main.s (paired): PlanCheck | exit 1' $G && ! grep -q '^PlanCheck' $G && grep -q '^# date: [0-9-]*\$' $G"
+ok sh -c "grep -q -x -F 'MapCheck | exit 1' $G && grep -q '^# timing red not the batch.s (paired): PlanCheck | the plan is within PLAN_MS' $G && grep -q '^# timing red not the batch.s (paired): PlanCheck | exit 1' $G && ! grep -q '^PlanCheck' $G && grep -q '^# date: [0-9-]*\$' $G"
 LABEL="TM: the merge body names the timing line, with the medians"; ok sh -c "git -C $TA/main log -1 --format=%B | grep -q -F 'Gate-timing: red on the merge, judged side by side with main' && git -C $TA/main log -1 --format=%B | grep -q -F 'PlanCheck [main 45 ms, batch 45 ms'"
 LABEL="TM: its header and separator rows did not reach QUEUE.md, its two rows did"
 Q="$TA/main/QUEUE.md"

@@ -1,6 +1,6 @@
 # GameLog.java - 348 lines · 20 methods · 6 constants · model
 
-`ham/citybuildersim/GameLog.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GameLog.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > Everything the game prints, written somewhere a player can find it.
 > 

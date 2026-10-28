@@ -27,7 +27,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| SP1 | The suite three at a time, each harness JVM under a memory cap; the timing harnesses once per gate, not twice (Jerus, 2026-10-27) | [SP1](docs/queue/SP1.md) |
 | BM1 | `docs/batch.md` split by reader (a batch session's checklist, the orchestrator's manual), a one-line WHY per rule, and "one in, one out" for process batches as a standing rule (Jerus, 2026-10-27) | [BM1](docs/queue/BM1.md) |
 | CC1-M | The city map did not survive a save once: LongPlaytest -Dplaytest.childcare at m1,184 (slot 3), a run the map sidecar has not met before; not childcare's - nothing in the model reads the map; MapCheck's area (Jerus, 2026-10-18: its own batch) | `runs/fixCC1-notes.md` 7 |
 | SC1 | ScaleCheck's "...and it builds" read on a city that needs homes: its fixture city has 6,768 places for 5,734 people, so neither it nor its copy builds (Jerus, 2026-10-20: "Queue a check fix") | [SC1](docs/queue/SC1.md) |
@@ -77,6 +76,9 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
+| SP1-C | SP1 (no tag): the full suite at three at once against one at a time on one tree - the same pass and fail lines, both times, the peak commit charge with the other load named - and `./batch-check.sh --pick` on the merged tree. Not run: three attempts stopped at 85%, and from 17:30 to 23:25 the PC sat at 80-96% with no JVM of SP1's | a quiet PC, under about 78% for 45 minutes | [SP1 notes](docs/queue/SP1-notes.md) |
+| SP1-D | SP1 (no tag): the timing harnesses once per gate (item 4). It holds only if the gate's timing step runs them soft and judges the clock from timing.tsv, a redesign of TM3's step, for about two minutes a gate. Recommended: not now | recommended: not now | [SP1 notes](docs/queue/SP1-notes.md) |
+| SP1-E | SP1 (no tag): the PC's commit limit is 41.6 GB and sits at 80-96% with his sessions and the lanes, so the guard keeps a suite near one at a time. A larger fixed pagefile (say 32 GB) gives three at once their room | his PC's settings | [SP1 notes](docs/queue/SP1-notes.md) |
 | BR1-C | BR1 (0.8.62): look at it on the PC: the start screen's title art, the icon on the taskbar and in Alt+Tab, and after the next Build EXE the exe's icon in Explorer; then push that build to itch.io, whose download is still 0.8.60 without the icon | his check | [BR1 notes](docs/queue/BR1-notes.md) |
 | BR2 | Steam store art: the capsules at Steam's sizes and a transparent logo, from branding/'s title art and icon, or by a human artist | his call (AI-drawn or an artist), and his Steamworks verification | [BR1 notes](docs/queue/BR1-notes.md) |
 | MP1-C | MP1 (0.8.61): x 80's chain, 25 ms a month on the screen's thread - each moved district's plan input (its frame's runs and reserves) gathered as its job is handed out; the reserves could stay kept across months if the guard's version moved only with the mines and shore works it reads; recommended as a small batch with a harness counting how often the reserves are found again. Also `EarthData.CACHE_BYTES` (10 MB): raising it would speed Rotterdam's far node (54 of 80 ms) for memory, not needed for any line | his call on both: no budgeted line waits on them | [MP1 notes](docs/queue/MP1-notes.md) |

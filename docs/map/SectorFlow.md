@@ -1,6 +1,6 @@
 # SectorFlow.java - 261 lines · 17 methods · 1 constants · model
 
-`ham/citybuildersim/SectorFlow.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorFlow.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > One business's month as a flow (0.7.30): what went in, what its plant made
 > of it and what held the plant back, and what came out - each good's units

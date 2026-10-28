@@ -1,6 +1,6 @@
 # SitePreparation.java - 70 lines · 3 methods · 7 constants · model
 
-`ham/citybuildersim/SitePreparation.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SitePreparation.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > What it takes to prepare a foothill site for a building, as builders' work: the earth a pad is cut and filled in
 > and the wall where it meets the slope above, priced from published unit rates and turned into construction

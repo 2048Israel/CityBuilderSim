@@ -1,6 +1,6 @@
 # ForestryCheck.java - 704 lines · 21 methods · 22 constants · harnesses
 
-`ham/citybuildersim/ForestryCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForestryCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > Forestry, checked (0.7.138, batch I9; docs/studies/spec-materials.md 2.1,
 > 2.3, 2.4, 2.11, 4 and 5's I9 row; the study's - materials-chains-research.md

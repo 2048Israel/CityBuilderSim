@@ -1,6 +1,6 @@
 # ZoningView.java - 421 lines · 24 methods · 1 constants · model
 
-`ham/citybuildersim/ZoningView.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ZoningView.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning as figures (0.7.109, batch Z2; the project's
 > spec-zoning.md 4, the zoning study's three boards): the hub's four
