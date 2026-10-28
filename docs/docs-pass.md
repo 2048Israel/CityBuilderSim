@@ -90,12 +90,13 @@ from the code.
    them over and empties the file.
 
 5. **The two front doors.** `README.md` and `CLAUDE.md` state counts and
-   shapes — files, harnesses, sectors, the tree — and so does `docs/batch.md`
-   beside them, the batch procedure out of `CLAUDE.md` since 2026-10-24; each
+   shapes — files, harnesses, sectors, the tree — and so do `docs/batch.md`
+   and `docs/orchestrator.md` beside them, the batch procedure out of
+   `CLAUDE.md` since 2026-10-24 and split by reader since 2026-10-28; each
    batch that changes one leaves another wrong. `grep -c` the real number;
    fix the sentence (`Stale` checks the counts of the first two only).
-   `AGENTS.md` only points at `CLAUDE.md` and `docs/batch.md` and should stay
-   that way. Each
+   `AGENTS.md` only points at `CLAUDE.md`, `docs/batch.md` and
+   `docs/orchestrator.md` and should stay that way. Each
    file's entry and history is `docs/tree.md`'s since 2026-10-13, not
    `CLAUDE.md`'s: a new or reshaped file gets its line there, and `CLAUDE.md`
    stays short, because every session pays for it on every turn.
@@ -133,8 +134,8 @@ needed changing, say that — it is a result.
 - **From a cloud session (the git era, since 2026-10-10):** a batch of its
   own, on its own branch and worktree, by an agent with a fresh context,
   given this file, the range and the batches' notes; the orchestrator gates
-  it and merges it like any batch. It is a step in `docs/batch.md`, "The
-  docs pass".
+  it and merges it like any batch. It is a step in `docs/orchestrator.md`,
+  "The docs pass".
 - **From Claude Code on the PC:** `Docs pass.bat` runs it headless against
   the last commit, which is the fully automatic version — it cannot ask
   questions, so it flags rather than guesses. `docs/docs-pass-agent.md` is

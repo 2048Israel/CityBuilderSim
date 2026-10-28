@@ -22,7 +22,7 @@ read: an Opus batch session cost 400k-770k tokens with Sonnet already doing
 the edits, much of it that re-reading and its own context re-sent on every
 slice. A small fix batch - no money, saves or threading, a few hundred
 lines - runs on Sonnet as the whole batch session, Opus seeing it only at
-the gate (which amends "Which model", `docs/batch.md`). The trial ran from FR1 to FX4 (2026-10-18/19), about forty slices
+the gate (which amends "Which model", `docs/orchestrator.md`). The trial ran from FR1 to FX4 (2026-10-18/19), about forty slices
 in eight batches, each batch's notes keeping a table of what the review
 changed: about half needed nothing; the map, drawing and harness slices
 were nearly always right, and the slices sometimes corrected the brief; the
@@ -162,5 +162,5 @@ What the gate sent back in the test, and what DeepSeek cannot do itself:
   miss says SOFT and is not counted"); alone, it times hard. `batch-check.sh`
   times every run soft but the gate's `--timing`; `Batch check.bat` decides
   soft or hard once, as the suite starts, never per harness (lesson d,
-  `docs/batch.md`); a timing red at the gate `ship.sh` compares with main's
+  `docs/notes/batch-history.md`); a timing red at the gate `ship.sh` compares with main's
   own timing run, the same day on the same machine.
