@@ -311,11 +311,16 @@ ready again.
    rounds are to share one load). The red
    counts against the batch only if its median figure is **more than 15%**
    over main's (`tools/timing-pair.awk` holds the arithmetic and the dial;
-   `CBS_TIMING_MARGIN` moves it for a test). Otherwise it passes, named in
-   the merge's `Gate-timing:` line with both medians, and in `gate.txt` only
-   as a `#` line, so it never becomes a recorded red. A red that is over the
-   margin, one with nothing to compare (main has no such assertion, a round
-   did not run) and one that is no clock's (a failure behind no missed
+   `CBS_TIMING_MARGIN` moves it for a test), main's median within the budget
+   and the batch's over it: a red is not the batch's when main's median misses
+   the same budget too, or the batch's is within it (SP1 item 7, 2026-10-27:
+   SC1 stopped twice on a shifting load, both sides within the budget, then
+   both over).
+   Otherwise it passes, named in the merge's `Gate-timing:` line with both
+   medians and why, and in `gate.txt` only as a `#` line, so it never
+   becomes a recorded red. A red that is over the margin with main within the
+   budget and the batch over it, one with nothing to compare (main has no such
+   assertion, a round did not run) and one that is no clock's (a failure behind no missed
    figure) is the batch's and stops - unless `--red-ok "his words"` and a
    `--red-line` name it (step 5: the lines he approved, no others), said in
    `Gate-timing:` with his words and the lines, and in `gate.txt` as `#`

@@ -24,7 +24,8 @@
 #  A red line is a timing red when a row of the hard run that missed its budget (status
 #  FAIL) belongs to its harness and its label is in the line (digits masked, since a label
 #  can print a figure). It passes when, for every such row, the batch's median figure over
-#  the rounds is no more than MARGIN percent above main's. It FAILs when over that, when a
+#  the rounds is no more than MARGIN percent above main's, or main's own median misses the
+#  budget too, or the batch's is within it (SP1 item 7, below). It FAILs when over that, when a
 #  side has fewer than MIN_FIGURES figures to take a median of (main has no such
 #  assertion; a run did not run), and when it is no timing red at all - a failure that
 #  is not a clock's. "Harness | exit N" and "Harness | N FAILED" say a harness failed:
@@ -40,6 +41,12 @@
 #  own timing run, minutes later, had the same line. On 2026-10-26 three gates (HY1,
 #  MS2, CC1-S) stopped on map lines main itself misses under Jerus's running game, and
 #  two shipped only through a hand-patched copy of ship.sh.
+#
+#  SP1 item 7 (2026-10-27): a figure over the margin is still not the batch's when main's
+#  median misses its budget too, or the batch's is within it (at most it; a budget that is
+#  no number is not used). WHY: SC1, which only added a printout, stopped twice under a
+#  shifting load: MapCheck's month at 5B (main 1.81 ms, batch 2.35, both within 5 ms) and
+#  KeptCheck's chrome (main 10.4, batch 12.3, both over 8 ms). The reason follows the figures.
 # ---------------------------------------------------------------------------
 
 BEGIN {
@@ -146,8 +153,10 @@ END {
             over = bm * 100 > mm * (100 + margin)   # whole numbers where it can be: 115 against 100 at 15 is not over
             pct = mm > 0 ? (bm - mm) * 100 / mm : 0
             u = unit[key] == "" ? "ms" : unit[key]
-            msg = msg (msg == "" ? "" : "; ") "main " num(mm) " " u ", batch " num(bm) " " u (mm > 0 ? sprintf(" (%+.1f%%)", pct) : "") ", budget " budget[key] " " u
-            if (over) { ok = 0; anyover = 1 }
+            bud = isnum(budget[key])   # SP1 item 7: a budget that is no number leaves the margin alone to judge
+            why1 = !over ? "within " margin "% of main's" : (bud && bm <= budget[key] + 0) ? "the batch within the budget" : (bud && mm > budget[key] + 0) ? "main over the budget too" : ""
+            msg = msg (msg == "" ? "" : "; ") "main " num(mm) " " u ", batch " num(bm) " " u (mm > 0 ? sprintf(" (%+.1f%%)", pct) : "") ", budget " budget[key] " " u (why1 == "" ? "" : ": " why1)
+            if (why1 == "") { ok = 0; anyover = 1 }
         }
         verdict[n] = ok ? "PASS" : "FAIL"
         why[n] = (anyover ? "over main's by more than " margin "%: " : "") msg
