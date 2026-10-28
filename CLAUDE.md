@@ -8,7 +8,9 @@ flat package `ham.citybuildersim` plus `sectors/`, `ui/` and `tools/`. The
 version is `GameVersion.VERSION`, the save format `GameVersion.SAVE_FORMAT`,
 and nothing else in the tree states either. The author is Jerus (Samuel); a
 comment that starts `Jerus:` is his brief in his own words, and it is the
-requirement.
+requirement. Players know the game as Civic Ledger (`GameVersion.NAME`, BR1),
+on itch.io since 2026-10-27; the repository, the package, the exe and the save
+folder keep CityBuilderSim, so no player's cities are left behind.
 
 ## Every line you read is paid for
 
@@ -174,7 +176,8 @@ These are Jerus's, and they do not move.
   and say so in its notes: the loader then refuses the save
   (`isNoLongerReadable()`), as it refuses one from a newer build, loading
   nothing and naming the build that still opens it. When the game is
-  published this rule ends.
+  published this rule ends. Being on itch.io is not that yet (Jerus,
+  2026-10-27: "Not yet"); he says when.
 - **Every `println` is the log.** There is no separate logging call.
 - **Line endings: the repository stores LF** (`.gitattributes`), the `.bat`
   files CRLF. Never convert a file wholesale; `git ls-files --eol` shows no
