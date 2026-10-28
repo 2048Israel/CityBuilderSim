@@ -182,8 +182,23 @@ fixture caused the condition its section tests); the assertions are untouched:
   the countdown too: built to 24 and to 49 of 98, and the twin's verdict lines
   (the search is the countdown's) hold over them.
 
-The full suite after these three mends (`./batch-check.sh`, 2026-10-28): 150
-harnesses, exit 0; MapCheck's one timing assertion is soft there and not counted.
+- **PlanCheck 17 (FW11, merged in after the gate's first run), "fixture: a
+  district of the played city stood with a street piece the buildings enclose"**:
+  on FR8's path the played city (MapCheck 1's, month 121: 789 buildings, 603 with
+  no place) has no district that meets the case (0 of 2; main's had 1 of 2). The
+  case is the plan's, not the path's, so the section now plans a second city
+  with it: MapCheck's river fixture (`MapCheck.riverCity()`, now also callable
+  from the types, the seed and the counts; his x 1 at the default world's founding
+  river, his streets all gravel), whose district (-1, -1) is planned again with the
+  way kept clear (16 plots), its street piece parted by the river and enclosed by
+  buildings. It depends on the default world and his counts only, not on any game.
+  The districts of both cities go through one loop (`planDrawn()`), into the one
+  tally, so every other line of the section (checks kept, none left, at most 3
+  plans, a pure function, the same districts with no log) reads them too; the
+  fixture line is untouched (1 of 6). A prose line says what each city gave.
+
+The full suite after these mends and the merge of 0.8.64 (`./batch-check.sh`, 2026-10-28): 150 harnesses, exit 0;
+MapCheck and KeptCheck timing assertions are soft there and not counted.
 
 ## 7. Not built, and what is left
 

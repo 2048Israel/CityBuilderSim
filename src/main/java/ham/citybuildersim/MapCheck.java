@@ -2769,7 +2769,12 @@ public class MapCheck {
      * their sites, as the copies' are.
      */
     static CityMap riverCity(Squares sq, int kind) {
-        World w = World.of(sq.seed);
+        return riverCity(sq.types, sq.seed, sq.counts[0], kind);
+    }
+
+    /** The river fixture from the types, the world's seed and his city x 1's counts: PlanCheck 17 plans its districts (FR8). */
+    static CityMap riverCity(BuildingVisual.Type[] types, long seed, long[] counts, int kind) {
+        World w = World.of(seed);
         World.River river = w.river();
         int at = 0;
         double best = Double.MAX_VALUE;
@@ -2777,9 +2782,9 @@ public class MapCheck {
             double dx = river.xs()[k] - w.foundingX(), dy = river.ys()[k] - w.foundingY();
             if (dx * dx + dy * dy < best) { best = dx * dx + dy * dy; at = k; }
         }
-        long[] c = sq.counts[0].clone();
+        long[] c = counts.clone();
         int gravel = -1, paved = -1, highway = -1, mine = -1;
-        for (BuildingVisual.Type t : sq.types) {
+        for (BuildingVisual.Type t : types) {
             if (t == null) continue;
             if (t.road() == BuildingVisual.GRAVEL) gravel = t.id();
             else if (t.road() == BuildingVisual.PAVED) paved = t.id();
@@ -2791,8 +2796,8 @@ public class MapCheck {
         long wantMines = JERUS_COUNTS[mine];
         c[mine] = 0;
         int capacity = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
-        int side = (int) Math.ceil(Math.sqrt(groundKm2(sq.types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
-        CityMap m = CityMap.square(sq.seed, (long) Math.floor(river.xs()[at]), (long) Math.floor(river.ys()[at]), sq.types, side,
+        int side = (int) Math.ceil(Math.sqrt(groundKm2(types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
+        CityMap m = CityMap.square(seed, (long) Math.floor(river.xs()[at]), (long) Math.floor(river.ys()[at]), types, side,
                 capacity, c);
         c[mine] = Math.min(wantMines, mineSites(m, mine));
         m.reconcile(c);

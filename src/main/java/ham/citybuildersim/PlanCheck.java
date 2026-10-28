@@ -137,7 +137,10 @@ import java.util.List;
  *      buildings and ground the city does not own enclosed, which the join,
  *      walking free ground alone, left apart; now the way over the buildings
  *      that close it is kept clear and the district planned again, so its
- *      buildings find other lots and the join lays the street; the case
+ *      buildings find other lots and the join lays the street (FR8: and
+ *      MapCheck's river fixture, whose district (-1, -1) has the case
+ *      whatever path the played city takes, planned the same way and tallied
+ *      with it); the case
  *      counted across this harness's cities and MapCheck's; a pure function;
  *      and the same districts with no log (the plan with no events) keep every
  *      check and every building, placed or left out.
@@ -341,7 +344,7 @@ public class PlanCheck {
         curves(types);
         runsDated(types);
         farBank(types);
-        walledIn();
+        walledIn(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -3940,7 +3943,30 @@ public class PlanCheck {
         citiesLeft += t.districts - t.network - t.apart;
     }
 
-    static void walledIn() throws Exception {
+    /**
+     * Every district of a map planned as the map draws it, each from its job's input, and tallied: those planned again kept in
+     * walledIns, ok[0] cleared where a plan is not the same plan made twice (boxes, streets, ways kept clear), ok[1] where one is
+     * planned more than WALL_TRIES times or has plots kept clear without being planned again (FR8: the played city's loop, for the
+     * river fixture's districts too).
+     */
+    static void planDrawn(CityMap map, Tally t, List<DistrictPlan.Input> walledIns, boolean[] ok) {
+        map.forgetPainted();
+        for (CityMap.District d : map.districts()) {
+            for (CityMap.Job j : map.planJobs(d)) {
+                j.run();
+                map.adopt(j);
+                if (!(j instanceof CityMap.PlanJob pj)) continue;
+                DistrictPlan p = DistrictPlan.make(pj.in);
+                t.add(p, pj.in, "district (" + pj.d.dx + ", " + pj.d.dy + ")");
+                if (p.wallTries > 0) walledIns.add(pj.in);
+                DistrictPlan again = DistrictPlan.make(pj.in);
+                ok[0] &= placedDigest(p) == placedDigest(again) && streetDigest(p) == streetDigest(again) && p.wallTries == again.wallTries && p.wallClear == again.wallClear;
+                ok[1] &= p.wallTries <= DistrictPlan.WALL_TRIES && (p.wallTries == 0) == (p.wallClear == 0);
+            }
+        }
+    }
+
+    static void walledIn(BuildingVisual.Type[] catalog) throws Exception {
         out.println("\n--- 17. no street piece walled in by buildings: MapCheck 1's city, every district as the map draws it, the carry from the districts before it (FW11) ---");
         Path root = TempDirs.create("plancheck-walled");
         PrintStream was = MapCheck.out;
@@ -3955,23 +3981,10 @@ public class PlanCheck {
         // The plans the map draws, each from its job's input - the ground, what the districts before it carried to it and what it reads of
         // them - and not from planInput(d), which has no carry: the case stood in the drawn plan of the first district, where the
         // second's carry was not yet.
-        map.forgetPainted();
         Tally t = new Tally();
-        boolean pure = true, bounded = true;
+        boolean[] ok = { true, true };
         List<DistrictPlan.Input> walledIns = new ArrayList<>();
-        for (CityMap.District d : map.districts()) {
-            for (CityMap.Job j : map.planJobs(d)) {
-                j.run();
-                map.adopt(j);
-                if (!(j instanceof CityMap.PlanJob pj)) continue;
-                DistrictPlan p = DistrictPlan.make(pj.in);
-                t.add(p, pj.in, "district (" + pj.d.dx + ", " + pj.d.dy + ")");
-                if (p.wallTries > 0) walledIns.add(pj.in);
-                DistrictPlan again = DistrictPlan.make(pj.in);
-                pure &= placedDigest(p) == placedDigest(again) && streetDigest(p) == streetDigest(again) && p.wallTries == again.wallTries && p.wallClear == again.wallClear;
-                bounded &= p.wallTries <= DistrictPlan.WALL_TRIES && (p.wallTries == 0) == (p.wallClear == 0);
-            }
-        }
+        planDrawn(map, t, walledIns, ok);
         t.report("MapCheck 1's city, month " + g.getMonth());
         int left = t.districts - t.network - t.apart;
         out.printf("      the case (a street piece only buildings, or buildings and ground the city does not own, enclose): in MapCheck's city %d of %d district(s) -"
@@ -3979,6 +3992,19 @@ public class PlanCheck {
                 t.walled + left, t.districts);
         out.printf("      ...in this harness's cities (sections 5 and 6): %d of %d district(s) - planned again in %d (%d plots), %d left%n",
                 citiesWalled + citiesLeft, citiesDistricts, citiesWalled, citiesKept, citiesLeft);
+        // The played city has the case only if its path leaves it (FR8's grows another city, and its districts have none): the river
+        // fixture is a city of the default world's own river and his x 1 counts, whatever the played city's path, and one of its
+        // districts stands with a street piece the river parts and the buildings enclose. Its districts are planned the same way and
+        // join the played city's in every count and check below.
+        long[] x1 = new long[catalog.length];
+        for (int k = 0; k < MapCheck.JERUS_COUNTS.length && k < x1.length; k++) x1[k] = Math.round(MapCheck.JERUS_COUNTS[k] * MapCheck.TIMES[0]);
+        int playedWalled = t.walled, playedDistricts = t.districts;
+        planDrawn(MapCheck.riverCity(catalog, Founding.DEFAULT_WORLD_SEED, x1, BuildingVisual.GRAVEL), t, walledIns, ok);
+        left = t.districts - t.network - t.apart;
+        out.printf("      ...and MapCheck's river fixture (his x 1 at the founding river, his streets all gravel), %d district(s): planned again with the way kept clear"
+                + " in %d, where the played city's %d of %d were; %d left in all%n", t.districts - playedDistricts, t.walled - playedWalled,
+                playedWalled, playedDistricts, left);
+        boolean pure = ok[0], bounded = ok[1];
         check("fixture: a district of the played city stood with a street piece the buildings enclose (planned again with the way kept clear in " + t.walled + " of " + t.districts + ")", t.walled > 0);
         check("every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface", t.allHold());
         check("...none left with a piece the ground does not part, in MapCheck's city or this harness's", left == 0 && citiesLeft == 0);
