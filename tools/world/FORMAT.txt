@@ -1,0 +1,108 @@
+world-1.bin: the nations' world (spec-nations 3.3, batch WN0), read by WorldData. Written 2026-10-28.
+
+The container is earth-1.bin's (tools/earth/FORMAT.txt): big-endian throughout, as java.io.DataInputStream reads
+it; blobs are zlib streams as java.util.zip.Inflater reads by default; the same header, index and blob rules. Only
+the magic differs. tools/world/worldread.py is the reference reader.
+
+HEADER
+  8 bytes   "WORLD-1\n"
+  int       format version (1)
+  int       number of layers
+  per layer: short + UTF-8 name (readUTF), byte kind (0 = 64,800 1-degree tiles; 2 = one blob), int cells a degree
+            (240 for owner, 0 otherwise), long index offset, int index length, long data offset, long data length
+INDEX (kind 0): a zlib stream of int[64,800]; entry e > 0 is the length of tile i's blob, the blobs back to back in
+  tile order; e <= 0: no blob, the tile uniform at -e. Tile i = (lat0 + 90) * 360 + (lon0 + 180); cells rows from the
+  north, columns from the west, cell (r, c) centred at lat0 + 1 - (r + 0.5)/240, lon0 + (c + 0.5)/240.
+TEXT layers are UTF-8, a line a row, fields split by TAB, the first line the column names; a missing value is "-".
+
+NUMBERS. Nations are numbered 1..N in the order of their ISO 3166 alpha-3 codes (A to Z); the full file's N is 196:
+the 193 UN members, Taiwan (TWN), Hong Kong (HKG) and Macau (MAC). Areas, land no nation of the N holds (disputed,
+indeterminate or not one of the N: Natural Earth's own features), follow as N+1..N+A in the order of their codes.
+Owner 0 is no one (open sea, or no feature). N + A <= 255. Moneys and goods are numbered 1..M and 1..G in their
+layers' row order. Months are numbered from 2000-01 (month 0) to 2025-12 (month 311). A mark says where a figure came
+from: 3 = published (the leaderboard's filled dot), 2 = a published projection (half dot), 1 = the game's estimate
+(empty dot), 0 = no figure (the value is NaN).
+
+LAYERS
+  meta      kind 2, text: key<TAB>fields. Rows: name (world-1; a fixture: world-1-fixture), made (yyyy-mm-dd),
+            of (a fixture only: world-1:<the full file's SHA-256>), base_year (the trade's year), nations, areas,
+            moneys, goods; dial<TAB>NAME<TAB>value<TAB>one sentence (every constant the pipeline used);
+            source<TAB>id<TAB>name and version<TAB>url<TAB>licence<TAB>downloaded (yyyy-mm-dd).
+  nations   kind 2, text, a row a nation then a row an area, in number order. Columns:
+              number, iso3, name, kind (nation | area), seller (an area's land seller: an iso3 of the N, or - for
+              none; a nation's is its own iso3), money (ISO 4217 in 2025-12; - for an area),
+              money_history (CODE:yyyy-mm entries, comma-separated, ascending, the first at 2000-01: the money in use
+              from that month), regime (float | peg:CODE | uses:CODE), node_name, node_lat, node_lon (its largest
+              port city, its largest city where it has no coast), label_lat, label_lon (Natural Earth's LABEL_Y,
+              LABEL_X), landlocked (0 | 1)
+            Territories are not rows: their land is their sovereign's (Greenland's cells are Denmark's number).
+  moneys    kind 2, binary: int M, int first month (0), int months (312); per money: UTF code, UTF name; then per
+            money, 312 doubles: its average rate in the month, the money's units a US dollar (NaN in a month no
+            nation used it); then per money 312 bytes, the marks.
+  paths     kind 2, binary: int N, int first year (2000), int years (101), int S; per series UTF name, UTF unit;
+            then for each series, nation (number order) and year a double (NaN when none); then for each series,
+            nation and year a byte, the mark. The series, in this order:
+              people        persons                       WPP 2024: 3 to 2023, 2 (medium variant) 2024-2100
+              gdp_2015usd   US$ of 2015                   WDI NY.GDP.MKTP.KD, 2000-2025 (WN1's rule after)
+              gdp_usd       current US$                   WDI NY.GDP.MKTP.CD, 2000-2025
+              gdp_ppp       international $ of 2021       WDI NY.GDP.MKTP.PP.KD, 2000-2025
+              cpi           2015 = 100                    WDI FP.CPI.TOTL rebased, 2000-2025
+              rate          its money a US$, year average the mean of the nation's money's 12 months, 2000-2025
+  goods     kind 2, text, a row a traded good. Columns: number, key (the Good constant's name), name, unit (the
+            game's), class (bulk | processed | made), elasticity (the trade elasticity, D18), unit_value (base
+            year, US$ a tonne: BACI's value over its tonnes on the kept pairs), units_per_tonne (the game's units
+            in a tonne, mark 1), traded_share (the world's use crossing a border, a dial by class), hs6 (how many
+            HS 2022 subheadings map to it), kept_share (the share of BACI's value on pairs the partner rule keeps)
+  trade     kind 2, binary: int N, int G, int base year; per good (number order): int K, then K pairs, sorted by
+            seller then buyer, each: short seller, short buyer, double flow (thousand US$ of the base year),
+            double tonnes (NaN when unknown), double cost, double pref, byte mark; then N x (double make,
+            double use), thousand US$, nation order. A nation's own pair (seller = buyer) is its domestic trade,
+            always kept, mark 1; the others are BACI's, mark 3. For every nation and good:
+              make = the sum of its row's flows (its own pair included); use = the sum of its column's.
+            THE KERNEL (the smooth spatial equilibrium, spec 4.3, D18): the base year's flows solve
+              x_ij = a_i * b_j * exp(pref_ij - cost_ij), sum_j x_ij = make_i, sum_i x_ij = use_j,
+            over the kept pairs, with cost_ij = elasticity * ln(1 + f_ij / unit_value), f_ij the reference freight
+            a tonne (meta's dials: SEA_USD_TKM x sea km + LAND_USD_TKM x land km + HANDLING_USD_T; 0 on the own
+            pair), and pref_ij = ln x_ij + cost_ij - r_i - s_j, the row and column means taken out (one sweep each
+            way), so a solve from a = b = 1 must work to reach them.
+  freight   kind 2, binary: int N; three double[N x N], row-major (seller * N + buyer): sea km, land km and the
+            reference cost on the cheapest route, cost = sea km + LAND_PER_SEA x land km (meta's dial), 0 on the
+            diagonal; then int E edges: short a, short b (a < b), double sea km, double land km, byte kind
+            (0 CERDI's sea route, its landlocked ends' capital-to-port roads as land km; 1 CERDI's road between
+            neighbours; 2 neighbours CERDI lacks, great circle between nodes x LAND_DETOUR; 3 an island CERDI
+            lacks to its nearest coast, great circle x SEA_DETOUR; 4 a fixture's edge, the full file's route).
+            The table is the edges' closure (Floyd-Warshall, k then i then j ascending, a route replaced only when
+            strictly cheaper), so it keeps the triangle rule.
+  owner     kind 0, 240 a degree, a byte a cell: its owner's number. A tile one owner's alone (or no one's) is
+            uniform, -owner in the index; a tile with two owners or more is a blob of 57,600 bytes. In such a
+            tile every cell has an owner: a cell no Natural Earth polygon covers takes its nearest owned cell's
+            (in the tile, four-neighbour steps, ties to the lower number), so the coast's cells are owned
+            whatever the earth file's coastline.
+  lines     kind 2, binary: int L; per line: short left, short right (owner numbers, 0 when not known), int n,
+            then n x (int lat x 100,000, int lon x 100,000): Natural Earth's admin-0 land boundary lines.
+
+THE FIXTURE (src/main/resources/world/world-1-fixture.bin, WorldDataCheck's) is the full file cut by
+tools/world/fixture.py: twelve nations renumbered 1..12 in iso3 order (AUS BEL CAN CHE CHN COL DEU FRA GBR JPN NLD
+USA), no areas; the owner tiles 51-53 N, 3-6 E (the earth fixture's Rotterdam window) as blobs and every other tile
+uniform, an owner outside the twelve made 0; the lines whose box meets those tiles; the twelve's paths and the
+moneys their histories name; every good; the pairs among the twelve with make and use summed again from them (a cut
+of a solved table is solved: the same prefs reproduce it); the freight table's twelve rows and columns, its edges
+the cut table itself (kind 4). Beside it world-1-fixture.expect, what worldread.py read from both files, and BACI's
+own sums for some pairs, read straight from its CSV.
+
+THE EXPECT FILE: UTF-8, TAB-separated `scope kind fields...` lines, scope fixture or full (full lines are checked
+only where the full file is found), # lines comments; owner numbers are the scope's own; every double is Python's
+repr(), so Double.parseDouble gives the same double (nan for NaN).
+  file <sha256> <bytes>                                      the scope's file
+  of <name:sha256>                                           fixture only: the full file it was cut from
+  nation <number> <iso3> <kind> <money> <node_lat> <node_lon> <landlocked>       every nation and area of the scope
+  path <series> <iso3> <year> <value> <mark>                 every series, 4 nations x 2000, 2015, 2025, 2100
+  rate <code> <month> <value> <mark>                         each fixture money at months 0, 100 and 311
+  tile <tile> <entry>                                        the six fixture tiles' index entries and 10 uniform ones
+  cell <tile> <r> <c> <owner>                                40 cells of the six tiles, some on each owner
+  freight <iso3> <iso3> <sea> <land> <cost>                  20 pairs
+  flow <good key> <seller> <buyer> <flow> <tonnes> <cost> <pref>   every good, 3 pairs, an own pair among them
+  make <good key> <iso3> <make> <use>                        every good, 3 nations
+  lines <count>, then line <i> <left> <right> <n> <first lat> <first lon>     the first 5 lines (i from 0)
+  baci <good key> <seller> <buyer> <value>                   fixture only: BACI's own sum (thousand US$) for a pair
+                                                             of the twelve, from a second pass over its CSV
