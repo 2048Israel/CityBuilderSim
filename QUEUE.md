@@ -27,7 +27,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| FR8 | The trucks' share dealt per industry, the newest demand last, so a giant works' arrival shortens its own sector, not the town's (Jerus, 2026-10-20, on FR2's ★5: "pool per industry") | [FR8](docs/queue/FR8.md) |
 | FR9 | One truck, one whole trip: in on the highway, off at a ramp, along the streets and down the access road to its works' gate, a district's trips by its tonnes (Jerus, 2026-10-20: "Queue it") | [FR9](docs/queue/FR9.md) |
 | WN0 | Nations: the world file - 196 nations, their borders, trade by pair and good, paths 2000-2100, sea distances; `tools/world/`, `WorldData`, its check (Jerus, 2026-10-20: "do rec"); Historical's real monthly exchange rates 2000-2025 for every money (XR3's table, Jerus 2026-10-21, ★11) | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN1 | Nations: each nation's year from the path (Historical or Random) and the seed, the founding screen's World step, saved; nothing reads them yet | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
@@ -72,6 +71,7 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
+| FR8-C | FR8 (0.8.65) dealt the trucks per industry. Left: a station Freight's distress rule scraps after the haul keeps the month's home, quay and boundary rail shares in force until the next haul (FR8-notes ★4; HomeRailCheck now reads the room the haul saw). | a model call: whether a scrapped station ends the month's rail shares at once | docs/queue/FR8-notes.md |
 | BM1-C | BM1 (no tag) split `docs/batch.md` into `docs/batch.md` and `docs/orchestrator.md`. Left: the comments at `ship.sh:73` ("docs/batch.md, The gate 6") and `tools/wait.sh:55` ("docs/batch.md, The day") cite sections that are now `docs/orchestrator.md`'s | editing a script makes the merge not docs-only (a full suite and the timing harnesses for two comment lines); recommended: repoint them in the next batch that touches either script, which the orchestrator may settle | [BM1-notes](docs/queue/BM1-notes.md) |
 | SP1-C | SP1 (no tag): the full suite at three at once against one at a time on one tree - the same pass and fail lines, both times, the peak commit charge with the other load named - and `./batch-check.sh --pick` on the merged tree. Not run: three attempts stopped at 85%, and from 17:30 to 23:25 the PC sat at 80-96% with no JVM of SP1's | a quiet PC, under about 78% for 45 minutes | [SP1 notes](docs/queue/SP1-notes.md) |
 | SP1-D | SP1 (no tag): the timing harnesses once per gate (item 4). It holds only if the gate's timing step runs them soft and judges the clock from timing.tsv, a redesign of TM3's step, for about two minutes a gate. Recommended: not now | recommended: not now | [SP1 notes](docs/queue/SP1-notes.md) |

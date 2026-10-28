@@ -1863,8 +1863,9 @@ public final class Freight extends Sector {
         lines.add(Line.of("Haulage billed", f.amount(h.getBill())));
         lines.add(Line.of("Diesel", f.amount(h.getDiesel()), Line.Tone.MUTED));
         if (h.getShare() < 1) {
-            lines.add(Line.note(String.format("The trucks carry %.0f%% of the city's bulk; every works that moves bulk "
-                    + "runs slower for the rest, collecting its own, until more trucks arrive.", h.getShare() * 100)));
+            lines.add(Line.note(String.format("The trucks carry %.0f%% of the city's bulk; each industry keeps what its "
+                    + "trucks carried last month, and the newest demand, a works just opened, runs slower for the rest, "
+                    + "collecting its own, until more trucks arrive.", h.getShare() * 100)));
         }
 
         /*

@@ -1,4 +1,4 @@
-# HomeRailCheck.java - 886 lines · 27 methods · 5 constants · harnesses
+# HomeRailCheck.java - 894 lines · 27 methods · 5 constants · harnesses
 
 `ham/citybuildersim/HomeRailCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
@@ -102,7 +102,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 824 | **type** `public class HomeRailCheck` | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's rate on the room the boundary's tonnes leave, a tonne that crossed a ... |
+| 63 | 832 | **type** `public class HomeRailCheck` | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's rate on the room the boundary's tonnes leave, a tonne that crossed a ... |
 | 67 | 1 | `static void quietly(Runnable r)` |  |
 | 69 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 74 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -188,9 +188,9 @@
 |---:|---:|---|---|
 | 743 | 40 | `static void save(Game yard, GameFiles files)` |  |
 
-### 9. A REAL RUN (lines 784-886)
+### 9. A REAL RUN (lines 784-894)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 788 | 98 | `static void realRun(Game rail)` |  |
+| 788 | 106 | `static void realRun(Game rail)` |  |
 

@@ -207,9 +207,18 @@ public class LongPlaytest {
      * less than the city's legs and how short at worst, the fleet and the
      * depots' room at their most, and what the run billed for how many tonnes.
      * The end state is one month of a mechanic that bites while a city grows.
+     *
+     * ...AND HOW THE TRUCKS WERE DEALT (FR8): the figures above are the CITY's
+     * share, the fleet over the whole need, which is short whenever any works
+     * has opened ahead of its trucks. Since FR8 what a sector runs at is its
+     * own share, the newest demand last (Haulage.deal()), so the run counts the
+     * months a sector other than the newest demand ran short of what it was
+     * carried the month before (the standing share below 1), and the worst any
+     * one sector's own share was, with its key and month.
      */
-    static int haulShortMonths = 0, haulFirstShort = 0, haulWorstMonth = 0, haulUnder90Months = 0;
-    static double haulWorstShare = 1, haulTrucksPeak = 0, haulRoomPeak = 0, haulBilledRun = 0, haulCarriedRun = 0;
+    static int haulShortMonths = 0, haulFirstShort = 0, haulWorstMonth = 0, haulUnder90Months = 0, haulStandingShortMonths = 0, haulWorstSectorMonth = 0;
+    static double haulWorstShare = 1, haulTrucksPeak = 0, haulRoomPeak = 0, haulBilledRun = 0, haulCarriedRun = 0, haulWorstSectorShare = 1;
+    static String haulWorstSector = "none";
 
     /**
      * THE PORTS DIVISION OVER THE RUN (FR3, docs/queue/FR3.md 6 item 10): by
@@ -1576,6 +1585,15 @@ public class LongPlaytest {
         if (haulShare < 1 && haulShortMonths++ == 0) haulFirstShort = g.getMonth();
         if (haulShare < .9) haulUnder90Months++;
         if (haulShare < haulWorstShare) { haulWorstShare = haulShare; haulWorstMonth = g.getMonth(); }
+        // The deal (FR8): a sector short of what it was carried the month before, and the worst any sector's own share.
+        if (haul.getStandingShare() < 1) haulStandingShortMonths++;
+        for (Map.Entry<String, Double> dealt : haul.sectorShares().entrySet()) {
+            if (dealt.getValue() < haulWorstSectorShare) {
+                haulWorstSectorShare = dealt.getValue();
+                haulWorstSector = dealt.getKey();
+                haulWorstSectorMonth = g.getMonth();
+            }
+        }
         haulTrucksPeak = Math.max(haulTrucksPeak, haul.trucks());
         haulRoomPeak = Math.max(haulRoomPeak, haul.depotRoom());
         haulBilledRun += haul.getBill();
@@ -6349,9 +6367,11 @@ public class LongPlaytest {
         // Freight's trucks over the run (FR2): see FREIGHT'S TRUCKS OVER THE RUN.
         ham.citybuildersim.sectors.Haulage haulEnd = g.getSectors().freight().haulage();
         out.printf("  freight's trucks over the run: short of the city's legs %d month(s), %d under 90%% (first m%d; at worst %.0f%% carried, m%d);"
+                + " a sector short of what it was carried the month before %d month(s), at worst a sector carried %.0f%% (%s, m%d);"
                 + " %,.0f trucks and %,.0f depot places at the most; $%,.0fk billed for %,.0f t of city legs; now %,.0f trucks,"
                 + " a tonne's leg $%.2f against $%.2f estimated%n",
-                haulShortMonths, haulUnder90Months, haulFirstShort, haulWorstShare * 100, haulWorstMonth, haulTrucksPeak, haulRoomPeak,
+                haulShortMonths, haulUnder90Months, haulFirstShort, haulWorstShare * 100, haulWorstMonth,
+                haulStandingShortMonths, haulWorstSectorShare * 100, haulWorstSector, haulWorstSectorMonth, haulTrucksPeak, haulRoomPeak,
                 haulBilledRun, haulCarriedRun, haulEnd.trucks(), haulEnd.getQuote() * 1000, haulEnd.estimate() * 1000);
         // The roads and the rails by year (FR7): see THE ROADS AND THE RAILS BY YEAR.
         StringBuilder byYear = new StringBuilder();

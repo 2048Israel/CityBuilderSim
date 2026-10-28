@@ -1,6 +1,5 @@
-# gate of Merge batch/FW11: no street piece walled in by buildings: over a dense iron cluster `DistrictPlan.join()` never walks over a building, so an enclosed piece stays cut off (was W1-P; Jerus, 2026-10-20: "Queue the fix"), 0.8.64
+# gate of Merge batch/FR8: the trucks' share dealt per industry, the newest demand last, so a giant works' arrival shortens its own sector, not the town's (Jerus, 2026-10-20, on FR2's ★5: "pool per industry"), 0.8.65
 # date: 2026-10-28
 # earth-2.bin: named
-# suite: 150 harnesses run in 485s: 150 passed, 0 failed
-# timing: 12 harnesses run in 395s: 11 passed, 1 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 3.94 ms, batch 4.9 ms (+24.4%), budget 5 ms: the batch within the budget]
+# suite: 150 harnesses run in 507s: 150 passed, 0 failed
+# timing: 12 harnesses run in 394s: 12 passed, 0 failed

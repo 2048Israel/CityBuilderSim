@@ -1494,10 +1494,65 @@ public class MapCheck {
     }
 
     /**
+     * Where the model starts the highways once the city owns the ground there (CityRuns.start(): the crossing of the lattice, a line every CityRuns.CELL plots from
+     * CityRuns.HIGHWAY_AT, nearest the founding site that is dry): the dry crossing nearest the site in the world's own ground, in the frame's x and y, {x, y} in the
+     * world, with the square of CityRuns.CELL plots round it (and a block over) inside the district; null where there is none within CityRuns.HUB_REACH cells.
+     */
+    static long[] highwayCrossing(CityLand land, DistrictPlan.Input frame) {
+        long cell = CityRuns.CELL, margin = cell + (1L << land.level()), sx = land.siteX(), sy = land.siteY();
+        long x0 = sx - Math.floorMod(sx - CityRuns.HIGHWAY_AT, cell), y0 = sy - Math.floorMod(sy - CityRuns.HIGHWAY_AT, cell);
+        long[] best = null;
+        double nearest = Double.MAX_VALUE;
+        for (int j = -CityRuns.HUB_REACH; j <= CityRuns.HUB_REACH; j++) {
+            for (int i = -CityRuns.HUB_REACH; i <= CityRuns.HUB_REACH; i++) {
+                long x = x0 + (long) i * cell, y = y0 + (long) j * cell, fx = x - frame.x0, fy = y - frame.y0;
+                if (fx < margin || fy < margin || fx >= DistrictPlan.SIDE - margin || fy >= DistrictPlan.SIDE - margin) continue;
+                if (!World.dry(frame.terrain[(int) (fy * DistrictPlan.FRAME + fx)])) continue;
+                double d = (double) (x - sx) * (x - sx) + (double) (y - sy) * (y - sy);
+                if (d < nearest) {
+                    nearest = d;
+                    best = new long[] { x, y };
+                }
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Hands the city, between months, every whole block of its level that lies in the square of CityRuns.CELL plots each way round `at` and that it does not own
+     * (a row of them side by side one parcel, bought as 2c's blocks are, dated `month`): the ground the highways' hub and their first arms stand on. The plots handed.
+     */
+    static long handGroundRound(CityLand land, DistrictPlan.Input frame, long[] at, int month) {
+        long b = 1L << land.level(), r = CityRuns.CELL;
+        long x0 = Math.floorDiv(at[0] - r, b) * b, y0 = Math.floorDiv(at[1] - r, b) * b, x1 = Math.floorDiv(at[0] + r, b) * b + b, y1 = Math.floorDiv(at[1] + r, b) * b + b;
+        long handed = 0;
+        for (long y = y0; y < y1; y += b) {
+            long start = -1;
+            for (long x = x0; x <= x1; x += b) {
+                boolean free = x < x1 && land.grid().owned(x, y, x + b, y + b) == 0;
+                if (free && start < 0) start = x;
+                if (!free && start >= 0) {
+                    land.extend(new LandParcel(-5, 1, 0, land.level(), start, y, x, y + b, null, null, null, 0, 0), month, 0);
+                    handed += (x - start) * b;
+                    start = -1;
+                }
+            }
+        }
+        return handed;
+    }
+
+    /**
      * Whether a run laid across a district's buildings moves none of them (batch FX7): on the played city's ground the district holding the founding
      * site is given houses and BUILDINGS_A_MONTH buildings of the mix a month until half its room is used; a Rail Depot is added and a month run (the runs' yard and main
      * line), four months of arrivals, the depot taken away, four months, the depot again, four months, then Elevated Highways a month until they lie in the
      * district. The district's plan is not kept: it is drawn from the map at each moment.
+     *
+     * FR8, 2026-10-28 (the path moved): the highways start at the dry crossing of their lattice nearest the founding site that the city OWNS, and on the
+     * played city's ground after FR8's months the founding patch holds none (the nearest dry crossing it owns lay in the district beside, no highway
+     * reached the founding district in sixty months, and the two lines of 2d that read the highways there had nothing to read). The fixture now causes
+     * the condition itself: between months it hands the city the whole blocks it does not own in the square round the dry crossing nearest the site
+     * (highwayCrossing(), handGroundRound(): as 2c hands its blocks), runs a month on the new ground (a snapshot of its own, so the month the highways come
+     * is the highways' alone), and then lays the highways as before.
      */
     static void runsLaidAcross(Game g) {
         out.println("\n--- 2d. a run laid across a district's buildings moves none of them (FX7) ---");
@@ -1520,7 +1575,7 @@ public class MapCheck {
             }
         }
         int each = BuildingVisual.cells(types[house]), step = Math.max(2, (int) (d.room() / each / 24));
-        long roomAtFirst = d.room();
+        long roomAtFirst = d.room(), ownedAtFirst = d.owned();
         boolean noRunsYet = m.runs().yards().isEmpty() && !m.runs().rail().started && !m.runs().highways().started && m.minedSites().isEmpty();
         Arrivals in = new Arrivals(h, mix, step);
 
@@ -1571,9 +1626,16 @@ public class MapCheck {
         in.months(MONTHS_BETWEEN);
         Snap s4b = new Snap(m, d);
 
+        // ----- the ground the highways start on, handed (FR8, 2026-10-28: the path moved), and the month that follows it -----
+        long[] crossing = highwayCrossing(land, frame);
+        long handed = crossing == null ? 0 : handGroundRound(land, frame, crossing, h.last());
+        boolean groundOwn = crossing != null && land.grid().unowned(crossing[0] - CityRuns.CELL, crossing[1] - CityRuns.CELL, crossing[0] + CityRuns.CELL + 1, crossing[1] + CityRuns.CELL + 1) == 0;
+        Snap sGround = quietMonth(h, d);
+        int groundMonth = h.last(), movedGround = movedOf(s4b.boxes, sGround.boxes);
+
         // ----- the highways: Elevated Highways a month until some lie in the district, the plan of that month against the month before -----
-        Snap before = s4b, hwBefore = null, s5 = null;
-        int hwMonth = -1, hwNew = 0, hwNear = 0, hwMoved = 0, hwControl = 0, hwUnder = 0, hwOnRuns = 0, hwMonths = 0;
+        Snap before = sGround, hwBefore = null, s5 = null;
+        int hwMonth = -1, hwNew = 0, hwNear = 0, hwMoved = 0, hwControl = 0, hwUnder = 0, hwOnRuns = s4b.arrivalsOnRuns(sGround), hwMonths = 0;
         boolean reached = false;
         for (int i = 0; i < HIGHWAY_MONTHS && s5 == null; i++) {
             model[highway] += HIGHWAY_STEP;
@@ -1614,7 +1676,7 @@ public class MapCheck {
 
         // ----- the journal of the runs (THE RUNS DATED): the frame's fixed ground worked back from today's to each stage's month; the sidecar's copy -----
         DistrictPlan.Input lastIn = m.planInput(d);
-        List<Snap> stages = new ArrayList<>(List.of(s1, s2, s2b, s3, s3b, s4, s4b));
+        List<Snap> stages = new ArrayList<>(List.of(s1, s2, s2b, s3, s3b, s4, s4b, sGround));
         if (s5 != null) stages.add(s5);
         stages.add(s6);
         int plotsDiffer = 0, stagesDiffer = 0;
@@ -1631,7 +1693,7 @@ public class MapCheck {
         int frameRecords = lastIn.fixedLog == null ? 0 : lastIn.fixedLog.length;
 
         out.printf("      the founding site's district (%d,%d): %,d owned plots, a room of %,d cells, %d houses a month (a house takes %d) and one of %d kinds of building (%d to %d cells) from month %d;"
-                + " the founding site at (%d,%d) in its frame, no mine on the map%n", d.dx, d.dy, d.owned(), roomAtFirst, step, each, mix.length, cellsMin(types, mix), cellsMax(types, mix), firstMonth,
+                + " the founding site at (%d,%d) in its frame, no mine on the map%n", d.dx, d.dy, ownedAtFirst, roomAtFirst, step, each, mix.length, cellsMin(types, mix), cellsMax(types, mix), firstMonth,
                 land.siteX() - frame.x0, land.siteY() - frame.y0);
         out.printf("      S1 (month %d): %,d buildings placed, %,d of %,d cells used, the plan places %,d%n", month1, placed1, used1, room1, s1.plan.buildings);
         out.printf("      the yard (month %d): %s laid in the frame, %,d of S1's %,d boxes lie under them, %,d moved (%,d when the plan is made with S1's fixed ground); the railway's hub (%s) and the yards: %s%n",
@@ -1640,6 +1702,8 @@ public class MapCheck {
         out.printf("      the yard gone (month %d): %,d yard plots left in the frame, %,d freed, %,d of %,d boxes moved%n", goneMonth, yardLeft, freed, moved3, s2b.boxes.size());
         out.printf("      the yard again (month %d): %s laid, %,d of %,d boxes lie under them, %,d moved (%,d with the fixed ground before); %,d of its %,d yard plots on the first yard's ground%n", backMonth,
                 laidOf(s3b, s4), under34, s3b.boxes.size(), moved4, control34, sameSpot, yardBack);
+        out.printf("      the ground round the highways' crossing (%s, the dry one nearest the site; %d plots a side) handed to the city in month %d: %,d plots in whole blocks, %,d of the %,d boxes moved in that month%n",
+                crossing == null ? "none" : (crossing[0] - frame.x0) + "," + (crossing[1] - frame.y0), 2 * CityRuns.CELL + 1, groundMonth, handed, movedGround, s4b.boxes.size());
         out.printf("      the highways (hub (%s), %d more Elevated Highways a month, laid in the district in the month %d of them, month %d): %,d plots, reaching a street: %b; %,d of the %,d boxes lie under them,"
                 + " %,d within %d plot, %,d moved (%,d with the fixed ground before)%n", hubText(highwayHub, frame), HIGHWAY_STEP, hwMonths, hwMonth, hwNew, reached, hwUnder, hwBoxes, hwNear,
                 HIGHWAY_CLEAR, hwMoved, hwControl);
@@ -1661,6 +1725,8 @@ public class MapCheck {
                 yardBack > 0 && under34 > 0);
         check("a yard laid again across the buildings that stand moves none of them: every box of the plan before stands in the plan after (" + s3b.boxes.size() + " of them, " + moved4 + " moved)",
                 moved4 == 0 && s3b.boxes.size() > 0);
+        check("fixture: the ground round the dry crossing of the highways' lattice nearest the founding site is the city's (" + handed + " plots handed it between months, a square of " + (2 * CityRuns.CELL + 1)
+                + " plots a side), so the highways start in the district", groundOwn && crossing != null);
         check("fixture: Elevated Highways are laid in the district and reach a street (" + hwNew + " plots, month " + hwMonth + "), among buildings that stand: " + hwNear + " of the " + hwBoxes
                 + " boxes within " + HIGHWAY_CLEAR + " plot of them", hwNew > 0 && reached && hwNear > 0);
         check("highways laid in a district's buildings move none of them: every box of the plan before the month stands in the plan after (" + hwBoxes + " of them, " + hwMoved + " moved)",
@@ -2703,7 +2769,12 @@ public class MapCheck {
      * their sites, as the copies' are.
      */
     static CityMap riverCity(Squares sq, int kind) {
-        World w = World.of(sq.seed);
+        return riverCity(sq.types, sq.seed, sq.counts[0], kind);
+    }
+
+    /** The river fixture from the types, the world's seed and his city x 1's counts: PlanCheck 17 plans its districts (FR8). */
+    static CityMap riverCity(BuildingVisual.Type[] types, long seed, long[] counts, int kind) {
+        World w = World.of(seed);
         World.River river = w.river();
         int at = 0;
         double best = Double.MAX_VALUE;
@@ -2711,9 +2782,9 @@ public class MapCheck {
             double dx = river.xs()[k] - w.foundingX(), dy = river.ys()[k] - w.foundingY();
             if (dx * dx + dy * dy < best) { best = dx * dx + dy * dy; at = k; }
         }
-        long[] c = sq.counts[0].clone();
+        long[] c = counts.clone();
         int gravel = -1, paved = -1, highway = -1, mine = -1;
-        for (BuildingVisual.Type t : sq.types) {
+        for (BuildingVisual.Type t : types) {
             if (t == null) continue;
             if (t.road() == BuildingVisual.GRAVEL) gravel = t.id();
             else if (t.road() == BuildingVisual.PAVED) paved = t.id();
@@ -2725,8 +2796,8 @@ public class MapCheck {
         long wantMines = JERUS_COUNTS[mine];
         c[mine] = 0;
         int capacity = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
-        int side = (int) Math.ceil(Math.sqrt(groundKm2(sq.types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
-        CityMap m = CityMap.square(sq.seed, (long) Math.floor(river.xs()[at]), (long) Math.floor(river.ys()[at]), sq.types, side,
+        int side = (int) Math.ceil(Math.sqrt(groundKm2(types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
+        CityMap m = CityMap.square(seed, (long) Math.floor(river.xs()[at]), (long) Math.floor(river.ys()[at]), types, side,
                 capacity, c);
         c[mine] = Math.min(wantMines, mineSites(m, mine));
         m.reconcile(c);
@@ -5721,6 +5792,20 @@ public class MapCheck {
     /** Months section 11 plays the played city on, every district's picture asked after each as a far view asks for it: MONTHS more. */
     static final int PICTURE_MONTHS = MONTHS;
 
+    /**
+     * FR8, 2026-10-28 (the path moved): the months of its GDP the played city is handed in cash at each look of the advisor in 11's run when it holds less. On
+     * FR8's path the city reached month 121 broke (cash under zero, its districts over their room, 2,031 people) and the advisor bought and built nothing for the
+     * 120 months that followed: no district's counts moved, so the run caused none of what it counts (redraws of the districts whose plots moved). A city that
+     * holds more than this is left as it is, so on a path where it is solvent the run is the playtest's own.
+     */
+    static final int PICTURE_CASH_MONTHS = 3;
+
+    /** Tops the played city's cash up to PICTURE_CASH_MONTHS months of its GDP when it holds less: the money a young city the playtest left broke needs for the advisor's purchases to happen. */
+    static void handCash(Game city) {
+        double wanted = PICTURE_CASH_MONTHS * city.getEconomyManager().getMonthGdp();
+        if (city.getCash() < wanted) city.setCashForTest(wanted);
+    }
+
     /** How far a picture's share of a kind may stand from its plots' share: this many of its binomial spreads (DistrictPicture.spread()), and a pixel - four, about one district in 16,000 past it by chance. */
     static final double PICTURE_SIGMAS = 4;
 
@@ -5825,6 +5910,8 @@ public class MapCheck {
                 planAfter != planBefore && sameObject && dense.picturesKept() == keptBefore);
 
         // ----- A real run: each month redraws the districts whose plots moved, and only those (README, the checks' third rule) -----
+        // FR8, 2026-10-28 (the path moved): at each look of the advisor a city holding less than PICTURE_CASH_MONTHS months of its GDP is handed that much (handCash()), so the
+        // run causes what it counts - districts whose plots move - whether or not the playtest left the city able to pay; a solvent city is left alone.
         CityMap map = city.getCityMap();
         Map<CityMap.District, DistrictPicture> before = picturesOf(map);
         int months = 0, afresh = 0, exactMonths = 0, missing = 0, districtMonths = 0, moved = 0, unchanged = 0, keptSame = 0, countsMoved = 0;
@@ -5836,6 +5923,7 @@ public class MapCheck {
                 LongPlaytest.out = QUIET;
                 System.setOut(QUIET);
                 if (mm % 6 == 5) {
+                    handCash(city);
                     LongPlaytest.advise(city);
                     LongPlaytest.ensureSchools(city);
                 }
@@ -7826,6 +7914,37 @@ public class MapCheck {
         return s;
     }
 
+    /**
+     * The first offer ownBlocks() finds (in the office's order) whose purchase, and `more` plots bought after it, leave the city's block level `level` where it
+     * is - LandGrid.levelFor() of the plots the city would own then is still `level` - or null where no such offer stands. 14e's offers are bought from under a
+     * pick, and a purchase that crossed into the next level would drop the picks for the other reason (the city's blocks changed size), not the one asserted.
+     */
+    static LandParcel ownBlocksKeepingLevel(CityLand land, LandMarket market, int level, long more) {
+        LandGrid grid = land.grid();
+        for (int nth = 0; ; nth++) {
+            LandParcel o = ownBlocks(land, market, level, nth);
+            if (o == null) return null;
+            long free = grid.unowned(o.getX0(), o.getY0(), o.getX1(), o.getY1());
+            if (LandGrid.levelFor(grid.ownedPlots() + free + more) == level) return o;
+        }
+    }
+
+    /**
+     * The city buys, as it buys any ground (Game.buyLandParcel(), handed the price), the standing offer with the most free ground that it can buy: the ground that
+     * takes a city standing just under the plots of its next block level over that level, to the room beneath the one after (each level takes four times the plots
+     * of the last). The free plots bought, 0 where none could be.
+     */
+    static long buyTheLargestOffer(Game g) {
+        CityLand land = g.getCityLand();
+        List<LandParcel> shelf = new ArrayList<>(g.getLandManager().getMarket().getListing());
+        shelf.sort(java.util.Comparator.comparingLong((LandParcel o) -> -land.grid().unowned(o.getX0(), o.getY0(), o.getX1(), o.getY1())));
+        for (LandParcel o : shelf) {
+            long free = land.grid().unowned(o.getX0(), o.getY0(), o.getX1(), o.getY1());
+            if (free > 0 && buysQuietly(g, o)) return free;
+        }
+        return 0;
+    }
+
     static void blocksPicked(Game g) throws Exception {
         out.println("\n--- 14e. blocks picked: joined to the city, an offer wholly picked is the offer, cut into rectangles, outlined (BL1) ---");
 
@@ -8123,7 +8242,27 @@ public class MapCheck {
         }
 
         // ---- a block the city bought since drops, and the draft that held it: one block of an offer picked, then the city buys the offer
-        LandParcel buyer = ownBlocks(land, market, level, 0);
+        // FR8, 2026-10-28 (the path moved): the purchase must leave the city's blocks the size they are, or the picks drop for the other reason and the note says so (the
+        // city's blocks changed size). On FR8's path the played city stood 16 plots under the plots of its next level and every offer's purchase crossed it. The offer is
+        // now one whose purchase, and a block bought after it (the next section's draft), keep the level; where none does the city buys the largest standing offer first,
+        // through the office as it buys any, which takes it over its next level to the room under the one after.
+        long ownedBeforeBuyer = grid.ownedPlots();
+        int levelBeforeBuyer = level;
+        long boughtFirst = 0;
+        LandParcel buyer = ownBlocksKeepingLevel(land, market, level, 2 * b * b);
+        for (int tries = 0; buyer == null && tries < 4; tries++) {
+            long largest = buyTheLargestOffer(g);
+            if (largest == 0) break;
+            boughtFirst += largest;
+            level = market.getLevel();
+            b = 1L << level;
+            buyer = ownBlocksKeepingLevel(land, market, level, 2 * b * b);
+        }
+        out.printf("      the offer to be bought from under a pick: the city owned %,d plots at level %d%s; level %d, %,d plots owned, %s%n", ownedBeforeBuyer, levelBeforeBuyer,
+                boughtFirst > 0 ? ", bought the largest offer first (" + boughtFirst + " plots)" : "", level, grid.ownedPlots(), buyer == null ? "no offer keeps the level" : buyer.where());
+        check("fixture: the offer to be bought, and a block bought after it, leave the city's blocks the size they are (level " + level + ", " + grid.ownedPlots() + " plots owned, the next level at "
+                        + (long) Math.pow(LandGrid.FACE_BLOCKS * (1L << (level + 1)), 2) + ")",
+                buyer != null && LandGrid.levelFor(grid.ownedPlots() + grid.unowned(buyer.getX0(), buyer.getY0(), buyer.getX1(), buyer.getY1()) + 2 * b * b) == level && market.getLevel() == level);
         check("fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to be bought from under a pick", buyer != null);
         if (buyer != null) {
             java.util.Set<Long> held = blocksMetBy(land, buyer, level);

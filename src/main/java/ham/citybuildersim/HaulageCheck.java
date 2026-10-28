@@ -7,8 +7,10 @@ import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.ProcessingSector;
 import ham.citybuildersim.sectors.SpreadPlanner;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +25,8 @@ import java.util.Map;
  * one agent from the brief and is held here by another, from the brief's rules
  * and the model's own getters and constants: no figure below is typed in that a
  * getter or a constant could give. Ten claims, numbered as FR2.md section 6
- * numbers them (its 11, a real run, is LongPlaytest's):
+ * numbers them (its 11, a real run, is LongPlaytest's), and an eleventh that
+ * is FR8's (docs/queue/FR8.md), not FR2's:
  *
  *   1. THE SLOT. The twelfth key, Sectors.KEYS[11] (the brief's "position 12"),
  *      is "Freight", the registry has as many sectors as keys, and the twelfth
@@ -32,8 +35,8 @@ import java.util.Map;
  *      gross less a load, and the Heavy Truck Plant alone makes them.
  *   3. EACH LEG ONCE. In a played city with a mine selling ore at home to a
  *      pelletising plant that lands its coal and ships its pellets, every
- *      sector's "Haulage" line is its legs' tonnes at the share in force and the
- *      quote, a tonne sold at home is its buyer's and nobody else's, a goods
+ *      sector's "Haulage" line is its legs' tonnes at its own share in force and
+ *      the quote, a tonne sold at home is its buyer's and nobody else's, a goods
  *      tonne has no truck leg, and Freight's revenue is the shippers' lines to
  *      the cent. And a reload bills the next month to the bit, with the same
  *      shares behind its need and the same fleet after it.
@@ -58,11 +61,24 @@ import java.util.Map;
  *      and pays the same number.
  *  10. THE WEIGHING. A works is weighed with its legs at the quote, the vans
  *      only for its goods, the railed part of an import relieved by the siding.
+ *  11. THE DEAL (FR8). When the trucks cannot carry the whole need the fleet's
+ *      room is dealt per sector, the newest demand last: a giant works landing
+ *      in a town whose fleet is full shortens its own sector and no other's
+ *      (the city's share is still the fleet over the need, which is where the
+ *      one-share rule would have put every bulk sector); a fleet with room
+ *      leaves every sector whole; the growth is served pro rata from the room
+ *      left; a sector that asked nothing at the haul is dealt a whole 1, and
+ *      its first works, standing after the haul, waits for the next deal; a
+ *      fleet that cannot cover what the sectors were carried the month before
+ *      cuts the largest standing demand and leaves the smaller whole; and each
+ *      sector's share and standing demand are saved, to the bit.
  *
  * It tests the model through its public getters and constants and changes
  * nothing in it; where the code and the brief disagree it says FAIL and the
- * line says where. The sections run in the order 1, 2, 3 (with the reload), 5, 6, 7, 8, 4, 9, 10, because 5 and 6 read section 3's city
+ * line says where. The sections run in the order 1, 2, 3 (with the reload), 5, 6, 7, 8, 4, 9, 10, 11, because 5 and 6 read section 3's city
  * (6 changes it with hauls run by hand) and every later section plays a city of its own.
+ * Since FR8 each sector is billed at its OWN share (Haulage.getShare(Sector)), the sum scaled to what the trucks could carry, so the
+ * prediction below (Pred) works each sector's share out and the comparison holds every sector to its own.
  */
 public class HaulageCheck {
 
@@ -176,19 +192,27 @@ public class HaulageCheck {
         game.getLandManager().allocate(t.getLandSqFt() * count);
     }
 
-    /** The month about to be billed, worked out from the model's own getters before the haul runs. */
+    /**
+     * The month about to be billed, worked out from the model's own getters before the haul runs. `own` is each sector's share in
+     * force (Haulage.getShare(Sector)), `share` the city's, `fit` the one figure the sectors' carried are scaled by when together they
+     * pass what the trucks could carry (1 when they do not), and `lowest` the least any sector with legs is billed at (0 with no legs).
+     */
     static final class Pred {
-        final Map<Sector, Double> legs = new LinkedHashMap<>();
-        double tonnes, capacity, quote, share, f;
+        final Map<Sector, Double> legs = new LinkedHashMap<>(), own = new LinkedHashMap<>();
+        double tonnes, capacity, quote, share, fit = 1, lowest;
 
-        double bill(Sector s) { return legs.getOrDefault(s, 0.0) * f * quote; }
+        /** The share of its legs the sector is billed at: its own share in force, scaled to the trucks' capacity. */
+        double f(Sector s) { return own.getOrDefault(s, 0.0) * fit; }
+
+        double bill(Sector s) { return legs.getOrDefault(s, 0.0) * f(s) * quote; }
     }
 
     /**
      * What the next haul bills, from the rows the month just run left: each
      * sector's legs (Haulage.legTonnes at the railway's share of each good in
-     * force), at the share Haulage says it carries and never more than the
-     * trucks can, at the quote in force. The brief's rule, not the code's loop.
+     * force), at the share its own industry was dealt (FR8) and, the sectors'
+     * carried together never more than the trucks can carry, scaled down to
+     * that, at the quote in force. The brief's rule, not the code's loop.
      */
     static Pred predict(Game game) {
         Freight fr = game.getSectors().freight();
@@ -206,9 +230,15 @@ public class HaulageCheck {
         p.capacity = h.trucks() * T;
         p.quote = h.getQuote();
         p.share = h.getShare();
-        double f = p.share;
-        if (p.tonnes * f > p.capacity) f = p.capacity / p.tonnes;
-        p.f = p.tonnes > 0 && f > 0 ? f : 0;
+        double carried = 0;
+        for (Map.Entry<Sector, Double> e : p.legs.entrySet()) {
+            double own = h.getShare(e.getKey());
+            p.own.put(e.getKey(), own);
+            carried += e.getValue() * own;
+        }
+        if (carried > p.capacity) p.fit = Math.max(0, p.capacity / carried);
+        p.lowest = p.legs.isEmpty() ? 0 : 1;
+        for (Sector s : p.legs.keySet()) p.lowest = Math.min(p.lowest, p.f(s));
         return p;
     }
 
@@ -221,50 +251,69 @@ public class HaulageCheck {
     static double topOfMonth = 0;
 
     /**
-     * Every sector's "Haulage" line against the prediction. The brief's rule is that each sector pays its legs x ONE share x the quote,
-     * the share in force and never more than the trucks could carry. So the share every sector with legs was billed at must be the same
-     * (the worst relative spread is the miss returned), and it must be the share in force (nothing capped) or less than it with the
-     * trucks' whole capacity billed (the cap). The prediction's rows are all the harness can see between two months, and the builders'
-     * repair imports at the top of the month are not among them (see below), so the share it predicts is the most it can have been.
-     * Returns {worst miss, sectors billed, the share billed at}.
+     * Every sector's "Haulage" line against the prediction. The brief's rule (FR8) is that each sector pays its legs x ITS OWN share x
+     * the quote, the shares in force and the sectors' carried together never more than the trucks could carry, when every one is
+     * scaled by the same figure. So the part of its own share every sector with legs was billed at must be the same figure (the worst
+     * relative spread is the miss returned), and it must be a whole 1 (nothing capped) or less than it with the trucks' whole capacity
+     * billed (the cap). The prediction's rows are all the harness can see between two months, and the builders' repair imports at the
+     * top of the month are not among them (see below), so the figure it predicts is the most it can have been.
+     * Returns {worst miss, sectors billed, the part of its own share each was billed at}.
      */
     static double[] compare(Game game, Pred p) {
         Freight fr = game.getSectors().freight();
-        double worst = 0, billed = 0, fStar = Double.NaN, lines = 0;
+        double worst = 0, billed = 0, fit = Double.NaN, lines = 0;
         for (Sector s : game.getSectors().all()) {
             if (s == fr) continue;
-            double got = line(s), legs = p.legs.getOrDefault(s, 0.0);
+            double got = line(s), legs = p.legs.getOrDefault(s, 0.0), own = p.own.getOrDefault(s, 0.0);
             lines += got;
             if (got > 0) billed++;
             // THE BUILDERS BUY THEIR REPAIR MATERIALS AT THE TOP OF THE MONTH (Game.chargeBuildingMaintenance(), just before chargeFreight()):
             // those imports are in no row between two months, so a prediction cannot see them, and the haul bills them in the month they
             // were bought. Construction's line is therefore not predicted: it counts in the total the cap is held to.
             if (Sectors.CONSTRUCTION.equals(s.key())) {
-                topOfMonth += Math.max(0, got - legs * p.f * p.quote);
+                topOfMonth += Math.max(0, got - p.bill(s));
                 continue;
             }
-            if (legs > 0 && p.quote > 0) {
-                double f = got / (legs * p.quote);
-                if (Double.isNaN(fStar)) fStar = f;
-                double miss = Math.abs(f - fStar) / Math.max(1, Math.abs(fStar));
-                if (miss > worst) worstWhere = String.format("%s billed at share %.9f against %.9f (%.6f for %,.0f t of legs at %.8f)", s.key(), f, fStar, got, legs, p.quote);
+            if (legs > 0 && p.quote > 0 && own > 0) {
+                double f = got / (legs * p.quote * own);
+                if (Double.isNaN(fit)) fit = f;
+                double miss = Math.abs(f - fit) / Math.max(1, Math.abs(fit));
+                if (miss > worst) worstWhere = String.format("%s billed at %.9f of its share %.9f against %.9f (%.6f for %,.0f t of legs at %.8f)", s.key(), f, own, fit, got, legs, p.quote);
                 worst = Math.max(worst, miss);
             } else if (got > 1e-12) {
-                worstWhere = String.format("%s billed %.6f with no legs in its rows", s.key(), got);
+                worstWhere = String.format("%s billed %.6f with no legs, or no share, in its rows", s.key(), got);
                 worst = Math.max(worst, got);
             }
         }
-        if (!Double.isNaN(fStar)) {
-            boolean uncapped = near(fStar, p.share, 1e-9);
-            boolean capped = fStar < p.share && near(lines, p.capacity * p.quote, 1e-9);
-            boolean within = fStar <= p.f * (1 + 1e-9) + 1e-12;
+        if (!Double.isNaN(fit)) {
+            boolean uncapped = near(fit, 1, 1e-9);
+            boolean capped = fit < 1 && near(lines, p.capacity * p.quote, 1e-9);
+            boolean within = fit <= p.fit * (1 + 1e-9) + 1e-12;
             if (!(uncapped || capped) || !within) {
-                worstWhere = String.format("billed at share %.9f; the share in force %.9f, the cap %.9f; %,.4fk billed against capacity x quote %,.4fk",
-                        fStar, p.share, p.f, lines, p.capacity * p.quote);
+                worstWhere = String.format("billed at %.9f of each sector's share; the cap %.9f; %,.4fk billed against capacity x quote %,.4fk",
+                        fit, p.fit, lines, p.capacity * p.quote);
                 worst = Math.max(worst, 1);
             }
         }
-        return new double[] { worst, billed, fStar };
+        return new double[] { worst, billed, fit };
+    }
+
+    /**
+     * What differs between two cities' deals (FR8), to the bit: each sector's share and standing demand, the newest share, the
+     * standing share. Empty when nothing does. `back` is the other city's sectors by key.
+     */
+    static String dealtUnlike(Game live, Game back) {
+        Haulage hl = live.getSectors().freight().haulage(), hb = back.getSectors().freight().haulage();
+        StringBuilder d = new StringBuilder();
+        for (Sector s : live.getSectors().all()) {
+            Sector t = back.getSectors().byKey(s.key());
+            if (!same(hl.getShare(s), hb.getShare(t))) d.append(String.format("%s share %.9f v %.9f; ", s.key(), hl.getShare(s), hb.getShare(t)));
+            if (!same(hl.getStanding(s.key()), hb.getStanding(s.key()))) d.append(String.format("%s standing %,.3f v %,.3f; ", s.key(), hl.getStanding(s.key()), hb.getStanding(s.key())));
+        }
+        if (!same(hl.getNewestShare(), hb.getNewestShare())) d.append(String.format("newest %.9f v %.9f; ", hl.getNewestShare(), hb.getNewestShare()));
+        if (!same(hl.getStandingShare(), hb.getStandingShare())) d.append(String.format("standing share %.9f v %.9f; ", hl.getStandingShare(), hb.getStandingShare()));
+        if (!hl.sectorShares().equals(hb.sectorShares())) d.append("the shares dealt are not the same map; ");
+        return d.toString();
     }
 
     static double sum(Game game) {
@@ -298,12 +347,18 @@ public class HaulageCheck {
     /** One haul, run by hand: the month's rows billed at the state in force, as Game.chargeFreight() runs it. */
     static void haul(Game game) { game.getSectors().freight().haul(game.getSectors(), game.getPorts()); }
 
-    /** Haulage's need and share put where a fixture wants them, through its own save and restore (the share is struck at a haul, so a fixture cannot reach it by moving the pantry). */
+    /**
+     * Haulage's need and share put where a fixture wants them, through its own save and restore (the share is struck at a haul, so a
+     * fixture cannot reach it by moving the pantry). Since FR8 EVERY sector is dealt the share it is given - the city's, the newest
+     * demand's and each sector's own - so a fixture that sets one share still sets it for every sector.
+     */
     static void setState(Haulage h, double need, double share) {
         Map<String, Double> ex = new HashMap<>();
         h.save(ex);
         ex.put("haul.need", need);
         ex.put("haul.share", share);
+        ex.put("haul.newestShare", share);
+        for (String key : new ArrayList<>(ex.keySet())) if (key.startsWith("haul.share.")) ex.put(key, share);
         h.restore(ex);
     }
 
@@ -370,7 +425,7 @@ public class HaulageCheck {
            3. EACH LEG ONCE - and A RELOAD, on the same city
            ================================================================ */
 
-        System.out.println("\n--- 3. each leg once: the city leg is billed to the buyer and the exporter, at the share in force and the quote ---");
+        System.out.println("\n--- 3. each leg once: the city leg is billed to the buyer and the exporter, at its own share in force and the quote ---");
 
         GameFiles filesA = GameFiles.scratch("haulagecheck-a");
         Game a = base(filesA);
@@ -414,9 +469,9 @@ public class HaulageCheck {
                         + (plant.unitsImported(Good.THERMAL_COAL) + plant.unitsExported(Good.THERMAL_COAL)) * (1 - RELIEF * fr.railShareInForce(Good.THERMAL_COAL)));
                 pelletTonnes = Good.PELLETS.tonnesPerUnit() * (plant.unitsBoughtLocal(Good.PELLETS)
                         + (plant.unitsImported(Good.PELLETS) + plant.unitsExported(Good.PELLETS)) * (1 - RELIEF * fr.railShareInForce(Good.PELLETS)));
-                fBefore = p.f;
+                fBefore = p.f(plant);
                 quoteBefore = p.quote;
-                plantWant = (homeTonnes + oreImpTonnes + coalTonnes + pelletTonnes) * p.f * p.quote;
+                plantWant = (homeTonnes + oreImpTonnes + coalTonnes + pelletTonnes) * p.f(plant) * p.quote;
                 Sector.Output ore = mine.outputRow(Good.IRON);
                 soldLocalTonnes = ore == null ? 0 : Good.IRON.tonnesPerUnit() * ore.soldLocal;
                 mineExports = mine.unitsExported(Good.IRON);
@@ -428,8 +483,8 @@ public class HaulageCheck {
             worst = Math.max(worst, c[0]);
             sectorsBilled += (int) c[1];
             everyMonth &= c[0] <= 1e-9;
-            if (p.f < 1) short_++; else enough++;
-            if (p.tonnes * p.share > p.capacity) capped++;
+            if (p.lowest < 1) short_++; else enough++;
+            if (p.fit < 1) capped++;
             sumsToTheCent &= near(sum(a), h.getBill(), 1e-9)
                     && near(h.getBill(), fr.otherRevenueParts().getOrDefault("Haulage billed", 0.0), 1e-9);
             if (m == 15) {
@@ -437,7 +492,7 @@ public class HaulageCheck {
                 mineBill = line(mine);
             }
         }
-        report("every sector's \"Haulage\" line is its legs x the share in force x the quote, every month",
+        report("every sector's \"Haulage\" line is its legs x its own share in force x the quote, every month",
                 everyMonth && sectorsBilled > 0,
                 String.format("%d months, %d sector-bills compared, worst miss %.2e; the builders' repair imports added %,.4fk at the top of the months %s",
                         months, sectorsBilled, worst, topOfMonth, misses));
@@ -496,6 +551,11 @@ public class HaulageCheck {
         report("...so the plant standing asks the same city leg of both before the first haul after the load",
                 needBefore > 0 && same(needBefore, needBack) && same(nameplate(a, true), nameplate(back, true)),
                 String.format("%,.0f t live against %,.0f t loaded", needBefore, needBack));
+        // THE DEAL (FR8) is saved with the rest: each sector's share and standing demand, the newest and the standing share.
+        String dealtLoaded = dealtUnlike(a, back);
+        report("...and it has dealt its sectors what the live city has, to the bit: each one's share and standing demand, the newest and the standing share",
+                dealtLoaded.isEmpty() && !h.sectorShares().isEmpty() && h.sectorShares().size() == hBack.sectorShares().size(),
+                dealtLoaded.isEmpty() ? String.format("%d sectors dealt, newest %.6f, standing %.6f", h.sectorShares().size(), h.getNewestShare(), h.getStandingShare()) : dealtLoaded);
         quietly(() -> { a.toggleNextMonth(); back.toggleNextMonth(); });
         boolean linesSame = true;
         StringBuilder diff = new StringBuilder();
@@ -518,12 +578,13 @@ public class HaulageCheck {
         if (!same(h.getNeed(), hBack.getNeed())) unlike.append(String.format("need %,.1f v %,.1f; ", h.getNeed(), hBack.getNeed()));
         if (!same(h.getShare(), hBack.getShare())) unlike.append(String.format("share %.8f v %.8f; ", h.getShare(), hBack.getShare()));
         if (!same(h.trucks(), hBack.trucks())) unlike.append(String.format("trucks %.6f v %.6f; ", h.trucks(), hBack.trucks()));
+        unlike.append(dealtUnlike(a, back));
         if (unlike.length() > 0) {
             unlike.append(String.format("[diesel %.8f v %.8f, worn %.8f v %.8f, truck price %.6f v %.6f, diesel price %.8f v %.8f]", h.getDiesel(), hBack.getDiesel(),
                     h.getWorn(), hBack.getWorn(), a.getMarkets().get(Good.TRUCKS).landedPrice(), back.getMarkets().get(Good.TRUCKS).landedPrice(),
                     a.getMarkets().get(Good.DIESEL).landedPrice(), back.getMarkets().get(Good.DIESEL).landedPrice()));
         }
-        report("...and prices, carries and fleets alike: quote, tonnes, carried, capacity, allowed, need, share, trucks",
+        report("...and prices, carries and fleets alike: quote, tonnes, carried, capacity, allowed, need, share, trucks, and each sector's deal",
                 unlike.length() == 0, unlike.length() == 0 ? String.format("quote %.8f, %.6f trucks, need %,.0f t", h.getQuote(), h.trucks(), h.getNeed()) : unlike.toString());
 
         vans(a);
@@ -532,11 +593,13 @@ public class HaulageCheck {
         siding();
         depot();
         weighing();
+        deal();
 
         System.out.println();
         if (fails == 0) {
-            System.out.println("Haulage works: each leg is billed once, at the share in force and the quote; the siding"
-                    + " relieves and the sea does not; the vans carry goods; the fleet, the price and the depot follow the brief.");
+            System.out.println("Haulage works: each leg is billed once, at its own share in force and the quote; the siding"
+                    + " relieves and the sea does not; the vans carry goods; the fleet, the price and the depot follow the brief;"
+                    + " and the fleet's room is dealt per sector, the newest demand last.");
         } else {
             System.out.println(fails + " FAILED");
         }
@@ -678,10 +741,11 @@ public class HaulageCheck {
                 near(shareHalf, .5, 1e-9) && near(shareHalf, h.getCapacityInForce() / h.getNeed(), 1e-12) && near(h.getNeed(), need, 1e-12),
                 String.format("%.4f trucks held of %.4f needed -> share %.6f (capacity %,.0f t of %,.0f t)", need / T * .5, h.trucksNeeded(), shareHalf,
                         h.getCapacityInForce(), h.getNeed()));
-        double ratio = Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * shareHalf;
-        report("a bulk sector's haulage ratio is MIN_VAN_RATE + (1 - MIN_VAN_RATE) x that share",
+        // Since FR8 a sector reads the share its own industry was dealt (the plant, the largest standing demand, takes the cut), not the city's.
+        double ownHalf = h.getShare(plant), ratio = Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * ownHalf;
+        report("a bulk sector's haulage ratio is MIN_VAN_RATE + (1 - MIN_VAN_RATE) x its own share, the one its industry was dealt",
                 near(plant.getHaulageRatio(), ratio, 1e-12) && plant.getHaulageRatio() < 1 && plant.getHaulageRatio() > Sector.MIN_VAN_RATE,
-                String.format("%.6f (floor %.1f, share %.3f)", plant.getHaulageRatio(), Sector.MIN_VAN_RATE, shareHalf));
+                String.format("%.6f (floor %.1f, its share %.3f of the city's %.3f)", plant.getHaulageRatio(), Sector.MIN_VAN_RATE, ownHalf, shareHalf));
         report("...and its freight ratio is the lesser of its vans' ratio and that: the plant keeps no vans, so it is the trucks'",
                 same(plant.getVanRatio(), 1) && same(plant.getFreightRatio(), Math.min(plant.getVanRatio(), plant.getHaulageRatio()))
                         && same(plant.getFreightRatio(), plant.getHaulageRatio()),
@@ -695,7 +759,8 @@ public class HaulageCheck {
         // bought ran at one rate and the ones after at another, when it was read live).
         fr.setPantry(Good.TRUCKS, 0);
         report("...and holds for the month: the trucks moving between two hauls do not move the share or the sectors' ratio",
-                same(h.getShare(), shareHalf) && near(plant.getHaulageRatio(), ratio, 1e-12), String.format("share %.6f with %.0f trucks held", h.getShare(), h.trucks()));
+                same(h.getShare(), shareHalf) && same(h.getShare(plant), ownHalf) && near(plant.getHaulageRatio(), ratio, 1e-12),
+                String.format("share %.6f (the plant's %.6f) with %.0f trucks held", h.getShare(), h.getShare(plant), h.trucks()));
 
         // BOTH SIDES OF THE THRESHOLD: no trucks at all, a tenth short, exactly enough, plenty.
         strike(a, 0);
@@ -705,8 +770,8 @@ public class HaulageCheck {
         strike(a, enoughTrucks * .9);
         report("...a tenth short of the need it runs just below one",
                 near(h.getShare(), .9, 1e-6) && plant.getHaulageRatio() < 1
-                        && near(plant.getHaulageRatio(), Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * h.getShare(), 1e-12),
-                String.format("share %.6f -> %.6f", h.getShare(), plant.getHaulageRatio()));
+                        && near(plant.getHaulageRatio(), Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * h.getShare(plant), 1e-12),
+                String.format("share %.6f, the plant's %.6f -> %.6f", h.getShare(), h.getShare(plant), plant.getHaulageRatio()));
         strike(a, enoughTrucks);
         report("...trucks exactly at the need: the share is a literal 1 and so is the ratio, and the freight ratio",
                 same(h.getShare(), 1) && same(plant.getHaulageRatio(), 1) && same(plant.getFreightRatio(), 1) && same(retail.getHaulageRatio(), 1),
@@ -731,18 +796,24 @@ public class HaulageCheck {
         assertTrue("fixture: the shop keeps vans for its goods and its grain goes by truck", vansNeeded > 0 && retail.isFleetKnown());
         retail.setPantry(Good.VANS, vansNeeded * .25);
         strike(a, enoughTrucks * .9);
-        double vanRatio = Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * .25, haulRatio = Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * h.getShare();
+        double vanRatio = Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * .25, haulRatio = Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * h.getShare(retail);
         report("a shop short of vans and a little short of trucks runs at its vans' ratio, the lesser",
                 near(retail.getVanRatio(), vanRatio, 1e-9) && near(retail.getHaulageRatio(), haulRatio, 1e-12)
                         && same(retail.getFreightRatio(), retail.getVanRatio()) && retail.getVanRatio() < retail.getHaulageRatio(),
                 String.format("vans %.4f, trucks %.4f -> %.4f", retail.getVanRatio(), retail.getHaulageRatio(), retail.getFreightRatio()));
         retail.setPantry(Good.VANS, vansNeeded * 2);
+        // THE SHOP IS CAUSED SHORT: the trucks gone (a fleet of none carries nothing, so no sector has a standing demand), the half
+        // fleet that follows is every sector's growth alike and is shared pro rata. Struck over the .9 fleet above, the half fleet
+        // would have served the smaller standing demands whole and cut only the largest (11), and the shop might not be cut at all.
+        strike(a, 0);
         strike(a, enoughTrucks * .5);
-        haulRatio = Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * h.getShare();
+        haulRatio = Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * h.getShare(retail);
         report("...with vans to spare and the trucks half short it runs at the trucks' ratio, the lesser",
-                same(retail.getVanRatio(), 1) && near(h.getShare(), .5, 1e-6) && near(retail.getHaulageRatio(), haulRatio, 1e-12)
+                same(retail.getVanRatio(), 1) && near(h.getShare(), .5, 1e-6) && near(h.getShare(retail), .5, 1e-6)
+                        && retail.getHaulageRatio() < 1 && near(retail.getHaulageRatio(), haulRatio, 1e-12)
                         && same(retail.getFreightRatio(), retail.getHaulageRatio()),
-                String.format("vans %.4f, trucks %.4f -> %.4f", retail.getVanRatio(), retail.getHaulageRatio(), retail.getFreightRatio()));
+                String.format("vans %.4f, trucks %.4f (its share %.4f of the city's %.4f) -> %.4f", retail.getVanRatio(), retail.getHaulageRatio(),
+                        h.getShare(retail), h.getShare(), retail.getFreightRatio()));
     }
 
     /* ================================================================
@@ -1003,11 +1074,11 @@ public class HaulageCheck {
         for (Good g : new Good[] { Good.THERMAL_COAL, Good.PELLETS }) {
             others += g.tonnesPerUnit() * (plantSea.unitsBoughtLocal(g) + (plantSea.unitsImported(g) + plantSea.unitsExported(g)) * (1 - RELIEF * fs.railShareInForce(g)));
         }
-        double wantSea = (fullTruck + others) * ps.f * ps.quote;
+        double wantSea = (fullTruck + others) * ps.f(plantSea) * ps.quote;
         quietly(c2::toggleNextMonth);
         report("...and the bill agrees: the plant pays its whole tonnage at the quote, the sea having shortened nothing inside the city",
                 near(line(plantSea), wantSea, 1e-9) && near(line(plantSea), ps.bill(plantSea), 1e-9) && line(plantSea) > 0,
-                String.format("%,.0f t of legs, x%.4f x D$%.5fk = %,.4fk against %,.4fk billed", fullTruck + others, ps.f, ps.quote, wantSea, line(plantSea)));
+                String.format("%,.0f t of legs, x%.4f x D$%.5fk = %,.4fk against %,.4fk billed", fullTruck + others, ps.f(plantSea), ps.quote, wantSea, line(plantSea)));
     }
 
     /* ================================================================
@@ -1216,9 +1287,9 @@ public class HaulageCheck {
         quietly(mg::toggleNextMonth);
         report("a mine that ships its ore abroad is billed for the tonnes it shipped, at the share in force and the quote: the exporter pays",
                 shippedTonnes > 0 && near(shipped.legs.getOrDefault(miners, 0.0), shippedTonnes, 1e-12) && line(miners) > 0
-                        && near(line(miners), shippedTonnes * shipped.f * shipped.quote, 1e-9),
-                String.format("%,.0f t shipped x %.4f x D$%.5fk = %,.4fk against %,.4fk billed", shippedTonnes, shipped.f, shipped.quote,
-                        shippedTonnes * shipped.f * shipped.quote, line(miners)));
+                        && near(line(miners), shippedTonnes * shipped.f(miners) * shipped.quote, 1e-9),
+                String.format("%,.0f t shipped x %.4f x D$%.5fk = %,.4fk against %,.4fk billed", shippedTonnes, shipped.f(miners), shipped.quote,
+                        shippedTonnes * shipped.f(miners) * shipped.quote, line(miners)));
         haul(mg);   // strikes the shares from the rows the toggled month left
         Haulage.LegPrice pm = mh.legPrice();
         double qm = mh.getSteadyQuote();   // the steady quote a planner weighs at (Haulage.getSteadyQuote())
@@ -1239,5 +1310,301 @@ public class HaulageCheck {
                         && near(mm.fleetCapital(im), ProcessingSector.fleetCapital(im, vm), 1e-12),
                 String.format("D$%,.2fk a month (vans' running D$%,.2fk), D$%,.2fk of vans", mm.freightRunning(im, rate),
                         ProcessingSector.fleetRunning(im, vm, rate), mm.fleetCapital(im)));
+    }
+
+    /* ================================================================
+       11. THE DEAL (FR8)
+       ================================================================ */
+
+    /**
+     * A played city whose trucks suffice, every sector with legs dealt a literal 1 and its standing demand noted: the town whose fleet
+     * is full, before anything lands. A fleet of three times the need strikes it (the rows do not move between hauls by hand, so the
+     * need is the same at every haul), and `standing` is what each sector was dealt at that haul, `standingTotal` their sum.
+     */
+    static final class Town {
+        final GameFiles files;
+        final Game game;
+        final Freight fr;
+        final Haulage h;
+        final Map<String, Double> standing = new LinkedHashMap<>();
+        double standingTotal;
+
+        Town(String label) {
+            files = GameFiles.scratch(label);
+            game = played(files, 16);
+            fr = game.getSectors().freight();
+            h = fr.haulage();
+            quietly(() -> game.setCashForTest(Founding.WEALTHY_CASH));
+            strike(game, h.getNeed() / T * 3);
+            for (Sector s : game.getSectors().all()) {
+                double st = h.getStanding(s.key());
+                if (st > 0) {
+                    standing.put(s.key(), st);
+                    standingTotal += st;
+                }
+            }
+        }
+    }
+
+    /** `count` more of a building, handed to the city finished and paid for from a fixture's cash (as base() builds its plant); whether it stood. */
+    static boolean land(Game g, String building, int count) {
+        Game.BuildResult[] result = new Game.BuildResult[1];
+        quietly(() -> {
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            result[0] = g.buildStack(g.getBuildingManager().getTemplateByName(building), count, true);
+        });
+        return result[0] == Game.BuildResult.SUCCESS;
+    }
+
+    /** The trucks that carry `tonnes` a month, and not an ulp short of it. */
+    static double trucksFor(double tonnes) {
+        double trucks = tonnes / T;
+        while (trucks * T < tonnes) trucks = Math.nextUp(trucks);
+        return trucks;
+    }
+
+    static void deal() {
+        System.out.println("\n--- 11. the deal: the fleet's room dealt per sector, the newest demand last ---");
+
+        /* ---- a. a giant works lands in a town whose fleet is full ---- */
+
+        Town t = new Town("haulagecheck-deal");
+        Game g = t.game;
+        Freight fr = t.fr;
+        Haulage h = t.h;
+        Sector giant = g.getSectors().heavyIndustry();
+        List<Sector> others = new ArrayList<>();
+        Map<Sector, Double> needBefore = new LinkedHashMap<>();
+        boolean everyoneWhole = true;
+        for (Sector s : g.getSectors().all()) {
+            if (s == fr || !(h.nameplateNeed(s) > 0)) continue;
+            everyoneWhole &= same(h.getShare(s), 1) && near(h.getStanding(s.key()), h.nameplateNeed(s), 1e-9) && same(s.getHaulageRatio(), 1);
+            needBefore.put(s, h.nameplateNeed(s));
+            if (s != giant) others.add(s);
+        }
+        double giantStanding = t.standing.getOrDefault(giant.key(), 0.0);
+        assertTrue("fixture: with the fleet full every sector with legs is dealt a literal 1 and its whole need is its standing demand, and there are others than the giant's",
+                everyoneWhole && giantStanding > 0 && others.size() >= 2 && same(h.getShare(), 1) && same(h.getNewestShare(), 1) && same(h.getStandingShare(), 1));
+
+        boolean landed = land(g, "Pelletising Plant", 3);
+        boolean othersSame = true;
+        for (Sector s : others) othersSame &= near(h.nameplateNeed(s), needBefore.get(s), 1e-12);
+        double giantNeed = h.nameplateNeed(giant);
+        assertTrue("fixture: the landing at least doubles the giant's own need and leaves every other sector's as it was",
+                landed && giantNeed >= 2 * needBefore.get(giant) && othersSame);
+
+        // THE FLEET AT EXACTLY THE STANDING TOTAL (and a part in a billion over it, so that the sum's last bit cannot cut a sector): the room for growth is nothing.
+        strike(g, trucksFor(t.standingTotal * (1 + 1e-9)));
+        double capacity = h.getCapacityInForce(), needNow = h.getNeed();
+        report("a giant works lands in a town whose fleet is full: the city's share is the fleet over the whole need, the one share the old rule gave every sector",
+                h.getShare() < 1 && capacity < needNow && near(h.getShare(), capacity / needNow, 1e-12) && near(capacity, t.standingTotal, 1e-6),
+                String.format("%,.0f t of trucks over a need of %,.0f t (%,.0f t standing) -> %.6f", capacity, needNow, t.standingTotal, h.getShare()));
+        double giantShare = h.getShare(giant);
+        report("...but the giant's own sector alone is short: its share is what it was carried over what it now asks",
+                giantShare < 1 && near(giantShare, giantStanding / giantNeed, 1e-6) && near(h.getStanding(giant.key()), giantStanding, 1e-6),
+                String.format("%,.0f t carried before, %,.0f t asked now -> %.6f (the city's %.6f)", giantStanding, giantNeed, giantShare, h.getShare()));
+        double oneShareRatio = Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * h.getShare();
+        boolean othersRun = true;
+        StringBuilder spared = new StringBuilder();
+        for (Sector s : others) {
+            othersRun &= same(h.getShare(s), 1) && same(s.getHaulageRatio(), 1) && same(s.getFreightRatio(), s.getVanRatio());
+            spared.append(String.format("%s %s; ", s.key(), s.getHaulageRatio()));
+        }
+        report("...every other sector's share is exactly what it was, a literal 1, and so is its haulage ratio: the one share would have slowed it",
+                othersRun && oneShareRatio < 1 && oneShareRatio > Sector.MIN_VAN_RATE,
+                String.format("%sthe one share would have run each at %.6f", spared, oneShareRatio));
+        report("...and the giant's sector runs at MIN_VAN_RATE + (1 - MIN_VAN_RATE) x its own share",
+                near(giant.getHaulageRatio(), Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * giantShare, 1e-12)
+                        && giant.getHaulageRatio() < 1 && giant.getHaulageRatio() > Sector.MIN_VAN_RATE,
+                String.format("%.6f at a share of %.6f", giant.getHaulageRatio(), giantShare));
+        report("...the fleet covered what every sector was carried, so the whole shortfall is the newest demand's: the standing share is a literal 1",
+                same(h.getStandingShare(), 1) && h.getNewestShare() >= 0 && h.getNewestShare() < 1e-6,
+                String.format("standing share %s, the newest share %.3e", h.getStandingShare(), h.getNewestShare()));
+
+        /* ---- e. it is saved (on the same town) ---- */
+
+        System.out.println("\n--- ...and the deal is saved, and a reload deals the next haul as the live city does, to the bit ---");
+
+        Map<String, Double> ex = new HashMap<>();
+        h.save(ex);
+        int shareKeys = 0, standingKeys = 0;
+        boolean keysHold = ex.containsKey("haul.newestShare") && ex.containsKey("haul.standingShare")
+                && same(ex.get("haul.newestShare"), h.getNewestShare()) && same(ex.get("haul.standingShare"), h.getStandingShare());
+        for (String key : ex.keySet()) {
+            if (key.startsWith("haul.share.")) shareKeys++;
+            if (key.startsWith("haul.standing.")) standingKeys++;
+        }
+        boolean someShort = false;
+        int withRoom = 0;
+        for (Map.Entry<String, Double> e : h.sectorShares().entrySet()) {
+            keysHold &= ex.containsKey("haul.share." + e.getKey()) && same(ex.get("haul.share." + e.getKey()), e.getValue());
+            if (h.getStanding(e.getKey()) > 0) {
+                withRoom++;
+                keysHold &= ex.containsKey("haul.standing." + e.getKey()) && same(ex.get("haul.standing." + e.getKey()), h.getStanding(e.getKey()));
+            }
+            someShort |= e.getValue() < 1;
+        }
+        report("the deal is saved: a share for every sector but Freight, a dealt tonnage for every one dealt any, the newest share and the standing share",
+                keysHold && someShort && withRoom >= 4 && h.sectorShares().size() == g.getSectors().all().size() - 1
+                        && shareKeys == h.sectorShares().size() && standingKeys == withRoom,
+                String.format("%d sectors dealt, %d share keys and %d standing keys, one of them short", h.sectorShares().size(), shareKeys, standingKeys));
+        Game fresh = base(GameFiles.scratch("haulagecheck-deal-fresh"));
+        fresh.getSectors().freight().haulage().restore(ex);
+        String restored = dealtUnlike(g, fresh);
+        report("...and a fresh city restored from those keys has every sector's share and dealt tonnage, the newest and the standing share to the bit",
+                restored.isEmpty() && fresh.getSectors().freight().haulage().getShare(giant) < 1,
+                restored.isEmpty() ? String.format("the giant's sector at %.6f in both", giantShare) : restored);
+        // An older save has none of these keys: the first month is dealt as the one share it ran at (no standing demand: all growth, alike).
+        Map<String, Double> old = new HashMap<>(ex);
+        old.keySet().removeIf(k -> k.startsWith("haul.share.") || k.startsWith("haul.standing.") || k.equals("haul.newestShare") || k.equals("haul.standingShare"));
+        Haulage hOld = fresh.getSectors().freight().haulage();
+        hOld.restore(old);
+        report("...a save from before the deal has none of them: no sector dealt, and every sector reads the city's share it ran at",
+                hOld.sectorShares().isEmpty() && same(hOld.getNewestShare(), hOld.getShare()) && same(hOld.getStandingShare(), 1)
+                        && same(hOld.getShare(giant), hOld.getShare()) && same(hOld.getStanding(giant.key()), 0),
+                String.format("city share %.6f, the giant's sector reads %.6f", hOld.getShare(), hOld.getShare(giant)));
+
+        quietly(() -> g.saveGame(10));
+        Game back = new Game(t.files);
+        quietly(() -> back.loadGameSave(10));
+        back.getForeignAccounts().pinRate(1.0);
+        back.getWorldEconomy().pin();
+        String loaded = dealtUnlike(g, back);
+        report("a reloaded city has dealt every sector what the live city did: each one's share and standing demand, the newest and the standing share",
+                loaded.isEmpty() && back.getSectors().freight().haulage().getShare(back.getSectors().heavyIndustry()) < 1
+                        && same(back.getSectors().freight().haulage().getShare(), h.getShare()),
+                loaded.isEmpty() ? String.format("%d sectors dealt, the giant's at %.6f", h.sectorShares().size(), giantShare) : loaded);
+        quietly(() -> { g.toggleNextMonth(); back.toggleNextMonth(); });
+        String next = dealtUnlike(g, back);
+        report("...and the next haul on the reloaded city strikes the same shares and standing demands as on the live one, to the bit",
+                next.isEmpty() && !h.sectorShares().isEmpty() && same(h.getBill(), back.getSectors().freight().haulage().getBill()),
+                next.isEmpty() ? String.format("%d sectors dealt, city share %.6f, newest %.6f", h.sectorShares().size(), h.getShare(), h.getNewestShare()) : next);
+
+        /* ---- b. the converse: the fleet has room ---- */
+
+        System.out.println("\n--- ...and a town whose fleet has room for the landing leaves every sector whole ---");
+
+        Town t2 = new Town("haulagecheck-deal-room");
+        Game g2 = t2.game;
+        Haulage h2 = t2.h;
+        Sector giant2 = g2.getSectors().heavyIndustry();
+        double giantBefore2 = h2.nameplateNeed(giant2);
+        boolean landed2 = land(g2, "Pelletising Plant", 3);
+        double wholeNeed = h2.nameplateNeed(g2.getSectors());
+        assertTrue("fixture: the same landing at least doubles the giant's need, in a town that has a fleet for the whole of the new need",
+                landed2 && h2.nameplateNeed(giant2) >= 2 * giantBefore2 && wholeNeed > t2.standingTotal);
+        strike(g2, trucksFor(wholeNeed) * 1.05);
+        boolean allOne = true, allRun = true;
+        int dealt = 0;
+        for (Sector s : g2.getSectors().all()) {
+            if (s == t2.fr || !(h2.nameplateNeed(s) > 0)) continue;
+            dealt++;
+            allOne &= same(h2.getShare(s), 1) && near(h2.getStanding(s.key()), h2.nameplateNeed(s), 1e-9);
+            allRun &= same(s.getHaulageRatio(), 1);
+        }
+        report("with the fleet at the whole of the new need or more, every sector is dealt a literal 1 and its whole need is carried",
+                dealt >= 3 && allOne && same(h2.getShare(), 1) && same(h2.getNewestShare(), 1) && same(h2.getStandingShare(), 1)
+                        && h2.sectorShares().size() == g2.getSectors().all().size() - 1
+                        && h2.sectorShares().values().stream().allMatch(v -> same(v, 1)),
+                String.format("%d sectors dealt, %,.0f t of trucks over a need of %,.0f t", dealt, h2.getCapacityInForce(), h2.getNeed()));
+        report("...and none is slowed: every sector's haulage ratio is a literal 1, the giant's too",
+                allRun && same(giant2.getHaulageRatio(), 1) && same(giant2.getFreightRatio(), giant2.getVanRatio()),
+                String.format("the giant's sector at %s", giant2.getHaulageRatio()));
+
+        /* ---- c. the growth, pro rata, and the newest share ---- */
+
+        System.out.println("\n--- ...the growth is served pro rata from what room is left, and a sector's first works is growth at the haul after it stands ---");
+
+        Town t3 = new Town("haulagecheck-deal-growth");
+        Game g3 = t3.game;
+        Haulage h3 = t3.h;
+        Sector heavy3 = g3.getSectors().heavyIndustry(), retail3 = g3.getSectors().retail(), works3 = g3.getSectors().manufacturing();
+        boolean freshWorks = same(h3.getShare(works3), 1) && same(h3.getStanding(works3.key()), 0) && !(h3.nameplateNeed(works3) > 0);
+        boolean landed3 = land(g3, "Pelletising Plant", 3) & land(g3, "Convenience Store", 40) & land(g3, "Fabrication Shop", 3);
+        Sector[] growers = { heavy3, retail3, works3 };
+        double growth = 0;
+        boolean grows = true;
+        StringBuilder growLine = new StringBuilder();
+        for (Sector s : growers) {
+            double was = t3.standing.getOrDefault(s.key(), 0.0), asks = h3.nameplateNeed(s);
+            grows &= asks > was;
+            growth += asks - was;
+            growLine.append(String.format("%s %,.1f -> %,.1f t; ", s.key(), was, asks));
+        }
+        assertTrue("fixture: two sectors with plant standing grow, and a third that asked nothing at the last haul (dealt a whole 1) has its first works stand before this one: " + growLine,
+                landed3 && freshWorks && grows && t3.standing.containsKey(heavy3.key()) && t3.standing.containsKey(retail3.key()) && growth > 0);
+        double wanted = growth / 4;
+        strike(g3, trucksFor(t3.standingTotal + wanted));
+        double room = h3.getCapacityInForce() - t3.standingTotal, newest = h3.getNewestShare();
+        report("the growth over what the sectors were carried is served pro rata from the room left: the newest share is the room over the growth",
+                room > 0 && newest > 0 && newest < 1 && near(newest, room / growth, 1e-9) && near(newest, .25, 1e-6) && same(h3.getStandingShare(), 1),
+                String.format("%,.1f t of room over %,.1f t of growth -> %.6f", room, growth, newest));
+        boolean shareHolds = true;
+        StringBuilder shareLine = new StringBuilder();
+        for (Sector s : growers) {
+            double was = t3.standing.getOrDefault(s.key(), 0.0), asks = h3.nameplateNeed(s);
+            double want = (was + (asks - was) * newest) / asks;
+            shareHolds &= h3.getShare(s) < 1 && near(h3.getShare(s), want, 1e-12) && near(h3.getStanding(s.key()), h3.getShare(s) * asks, 1e-12);
+            shareLine.append(String.format("%s %.6f (want %.6f); ", s.key(), h3.getShare(s), want));
+        }
+        report("...and each growing sector's share is what it was carried plus the newest share of its growth, over what it now asks",
+                shareHolds, shareLine.toString());
+        report("...a sector new at the haul, carried nothing before, is dealt the newest share itself",
+                h3.sectorShares().containsKey(works3.key()) && near(h3.getShare(works3), newest, 1e-12) && works3.getHaulageRatio() < 1,
+                String.format("%s at %.6f against the newest %.6f", works3.key(), h3.getShare(works3), newest));
+        report("...and only no sector at all (null) reads the city's share, while two sectors' own shares are their own",
+                same(h3.getShare((Sector) null), h3.getShare()) && !same(h3.getShare(heavy3), h3.getShare(retail3)),
+                String.format("heavy %.6f, retail %.6f, city %.6f", h3.getShare(heavy3), h3.getShare(retail3), h3.getShare()));
+        // A SECTOR THAT ASKED NOTHING AT THE HAUL IS DEALT A WHOLE 1, and its first works standing after the haul waits for the next one,
+        // as every growth waits a haul (the share is struck on the plant standing then); the next haul deals its legs as growth.
+        Sector farms = g3.getSectors().agriculture();
+        boolean farmsAskedNothing = same(h3.getShare(farms), 1) && same(h3.shareOf(farms.key()), 1) && same(h3.getStanding(farms.key()), 0)
+                && !(h3.nameplateNeed(farms) > 0);
+        boolean farmsLanded = farmsAskedNothing && land(g3, "Grain Farm", 3);
+        report("a sector that asked nothing at the haul is dealt a whole 1, and its first works, standing after the haul, runs whole until the next",
+                farmsLanded && farms.hasBulkLegs() && h3.nameplateNeed(farms) > 0 && same(h3.getShare(farms), 1) && same(farms.getHaulageRatio(), 1),
+                String.format("%s reads %s with %,.1f t of legs standing, runs at %s", farms.key(), h3.getShare(farms), h3.nameplateNeed(farms), farms.getHaulageRatio()));
+        strike(g3, trucksFor(t3.standingTotal + wanted));
+        double newestNext = h3.getNewestShare();
+        report("...and the next haul deals those legs as the newest demand: the farms' share is the newest share, and they run on it",
+                h3.getShare(farms) < 1 && near(h3.getShare(farms), newestNext, 1e-12) && same(h3.getStanding(farms.key()), h3.getShare(farms) * h3.nameplateNeed(farms))
+                        && near(farms.getHaulageRatio(), Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * h3.getShare(farms), 1e-12),
+                String.format("%s at %.6f against the newest %.6f, runs at %.6f", farms.key(), h3.getShare(farms), newestNext, farms.getHaulageRatio()));
+
+        /* ---- d. standing demand the fleet cannot cover: the smallest first ---- */
+
+        System.out.println("\n--- ...a fleet that cannot cover what the sectors were carried cuts the largest and leaves the smaller whole ---");
+
+        Town t4 = new Town("haulagecheck-deal-short");
+        Game g4 = t4.game;
+        Haulage h4 = t4.h;
+        String biggest = null;
+        for (Map.Entry<String, Double> e : t4.standing.entrySet()) if (biggest == null || e.getValue() > t4.standing.get(biggest)) biggest = e.getKey();
+        double biggestStanding = t4.standing.get(biggest);
+        double shortBy = biggestStanding * .2;
+        assertTrue("fixture: the town has smaller standing demands than its largest, and the shortfall is smaller than that largest",
+                t4.standing.size() >= 3 && shortBy > 0 && shortBy < biggestStanding);
+        strike(g4, trucksFor(t4.standingTotal - shortBy));
+        double cover = h4.getCapacityInForce(), shortfall = t4.standingTotal - cover;
+        Sector bigSector = g4.getSectors().byKey(biggest);
+        report("a fleet short of what the sectors were carried is a standing shortfall: the standing share is the fleet over their standing demand",
+                h4.getStandingShare() < 1 && near(h4.getStandingShare(), cover / t4.standingTotal, 1e-9) && h4.getShare() < 1
+                        && near(shortfall, shortBy, 1e-6) && same(h4.getNewestShare(), 0),
+                String.format("%,.0f t of trucks over %,.0f t standing -> %.6f (the city's share %.6f)", cover, t4.standingTotal, h4.getStandingShare(), h4.getShare()));
+        boolean smallerWhole = true;
+        StringBuilder small = new StringBuilder();
+        for (String key : t4.standing.keySet()) {
+            if (key.equals(biggest)) continue;
+            Sector s = g4.getSectors().byKey(key);
+            smallerWhole &= same(h4.getShare(s), 1) && same(s.getHaulageRatio(), 1);
+            small.append(String.format("%s %s; ", key, h4.getShare(s)));
+        }
+        report("...the smallest standing demands are served first and whole: every sector but the largest keeps a literal 1 and runs at one",
+                smallerWhole && t4.standing.size() >= 3, small.toString());
+        double cut = (biggestStanding - shortfall) / h4.nameplateNeed(bigSector);
+        report("...and the largest is cut by the whole shortfall: its share is what it was carried less the shortfall, over what it asks",
+                h4.getShare(bigSector) < 1 && near(h4.getShare(bigSector), cut, 1e-9) && near(h4.getStanding(biggest), biggestStanding - shortfall, 1e-9)
+                        && near(bigSector.getHaulageRatio(), Sector.MIN_VAN_RATE + (1 - Sector.MIN_VAN_RATE) * h4.getShare(bigSector), 1e-12),
+                String.format("%s %.6f of a need of %,.0f t (%,.0f t carried less %,.0f t)", biggest, h4.getShare(bigSector), h4.nameplateNeed(bigSector), biggestStanding, shortfall));
     }
 }
