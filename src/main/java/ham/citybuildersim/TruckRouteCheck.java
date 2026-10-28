@@ -1,15 +1,22 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Freight;
+import ham.citybuildersim.sectors.Haulage;
 import ham.citybuildersim.sectors.Mining;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Proves the trucks' routes (0.8.8, batch FR5, slice B;
  * docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the
  * map lets a truck drive, CityMap.truckRoutes() along the highways from their
  * line to the world and CityMap.accessRoutesIn() along each drawn district's
- * access roads. Not part of the game.
+ * access roads - and, since FR9, the TRIPS they are joined into
+ * (CityMap.tripsDrawn()): a truck's whole way from the world line to a
+ * works' gate, and from one works' gate to another's. Not part of the game.
  *
  * WHY THIS EXISTS. Haulage's trucks (FR2) carry every bulk tonne's city leg,
  * and the highways and access roads (FR7) are drawn, but nothing said where a
@@ -46,10 +53,41 @@ import java.util.List;
  *   6. accessRoadCount() is the works that need an access road: the yards
  *      the runs draw, the shore's sea terminals, the Truck Depots - at
  *      least 1.
+ *   7. a trip is whole (FR9), on the access city and on a trips city built to
+ *      cause a road with a street leg as well as roads that end at a ramp:
+ *      the city has trips, world and home, and a road of each kind; every
+ *      world trip starts WORLD_PLOTS out along the highways' line, passes
+ *      the line's point, and from the arm's end on every quarter plot lies on
+ *      a highway plot or a street the plans draw, the highway part ends at a
+ *      ramp, the rest keeps to streets, and its last point is a gate with its
+ *      last leg on the access road; every home trip runs gate to gate on
+ *      streets alone, never on a highway plot that carries none, never back
+ *      on itself, from the gate of the nearest other road that comes to the
+ *      same ramp; no sample of any trip lies where no road is drawn;
+ *   8. only what is drawn: asking for trips plans nothing (the plans kept,
+ *      the links and changes() as they were); before a district is drawn it
+ *      has no trips and after it is drawn it has; a city whose highways have
+ *      no world line has no trip; the list is kept while nothing changes (the
+ *      same object) and made again once a plan or the runs change;
+ *   9. a district's trips in its tonnes' share: perBuilding() and sharesOf()
+ *      on numbers by hand (two districts holding a sector's buildings 3 : 1
+ *      take 3 : 1 of its tonnes; a district of no works takes 0; the shares
+ *      together are the share of the city's tonnes whose sectors stand on the
+ *      map, 1 when all do); on a played city truckedBy() over every sector
+ *      comes to Freight.truckedIn(), truckedOut() and truckedHome() to a
+ *      billionth; a district's schedule draws its shares' loads and keeps the
+ *      city's N; a home trip takes home loads alone;
+ *  10. the pace: Route.legSeconds() is the trains' rule at three lengths, any
+ *      truck's whole visit is inside the month on a route of 10 plots and on
+ *      one of 5,000, a truck is at its gate at its arrival and at its route's
+ *      start a leg before, and frame() finds exactly the trucks position()
+ *      puts in the box.
  *
- * They run in the order 1, 2, 5, 3, 4, 6: section 5, like 1 and 2, plays on
- * GatewayCheck's cities, and 3, 4 and 6 share one access city built after
- * them.
+ * They run in the order 1, 2, 5, 3, 4, 6, 8, 7, 9, 10: section 5, like 1 and
+ * 2, plays on GatewayCheck's cities, 3, 4 and 6 share one access city built
+ * after them, and 8 and 7 share a trips city built after that: 8 draws it a
+ * district at a time and then 7 reads it whole (and the access city 4
+ * drew), so 8's last part, which changes the city, comes after 7.
  */
 public class TruckRouteCheck {
 
@@ -61,6 +99,13 @@ public class TruckRouteCheck {
     /** The tolerance of a position in plots, well below anything the map measures. */
     static final double EPS = 1e-9;
 
+    /**
+     * Section 7's trips city: MapCheck's access city with 12 Truck Depots more and 60 Elevated Highways in place of its 200. FR9 found the
+     * access city itself (200 highways) lays every road to a ramp in its own frame, so no road has a street leg; with 60 the highways
+     * leave some frames no ramp, a road ends on an arterial and its trucks drive a street leg to a ramp across the district's box.
+     */
+    static final int TRIPS_MORE_DEPOTS = 12, TRIPS_HIGHWAYS = 60;
+
     static void check(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-78s %s%n", label, ok ? "ok" : "FAIL");
@@ -68,7 +113,7 @@ public class TruckRouteCheck {
 
     /** Whether two routes are the same, point for point (a record holds arrays by reference, so equals() would not say). */
     static boolean same(TruckSchedule.Route a, TruckSchedule.Route b) {
-        return a.world() == b.world() && Arrays.equals(a.xs(), b.xs()) && Arrays.equals(a.ys(), b.ys()) && Arrays.equals(a.along(), b.along())
+        return a.world() == b.world() && a.home() == b.home() && Arrays.equals(a.xs(), b.xs()) && Arrays.equals(a.ys(), b.ys()) && Arrays.equals(a.along(), b.along())
                 && a.fadeTo() == b.fadeTo();
     }
 
@@ -116,6 +161,16 @@ public class TruckRouteCheck {
      * 200 more highways and 3 Truck Depots added: MapCheck.accessCity() without the copies it takes a Squares for).
      */
     static CityMap accessCity(BuildingVisual.Type[] types) {
+        return accessCity(types, 0);
+    }
+
+    /** ...with `moreDepots` Truck Depots besides MapCheck's (section 7's trips city: a depot in a frame with no ramp ends its road on an arterial, and its trucks drive a street leg to a ramp). */
+    static CityMap accessCity(BuildingVisual.Type[] types, int moreDepots) {
+        return accessCity(types, moreDepots, MapCheck.ACCESS_HIGHWAYS_ADDED);
+    }
+
+    /** ...and `highways` Elevated Highways in place of MapCheck's. */
+    static CityMap accessCity(BuildingVisual.Type[] types, int moreDepots, int highways) {
         long seed = Founding.DEFAULT_WORLD_SEED;
         long[] iron = MapCheck.dryPlace(World.of(seed), MapCheck.x1Side(types));
         int capacity = (int) Math.round(MapCheck.JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
@@ -139,8 +194,8 @@ public class TruckRouteCheck {
         for (int t = 0; t < c.length; t++) if (types[t] != null && (types[t].track() || types[t].terminal())) { rail[t] = c[t]; c[t] = 0; }
         rail[yard] += MapCheck.YARDS_ADDED;
         rail[freight] += MapCheck.FREIGHT_ADDED;
-        c[hw] += MapCheck.ACCESS_HIGHWAYS_ADDED;
-        c[MapCheck.depotType(types)] += MapCheck.ACCESS_DEPOTS_ADDED;
+        c[hw] += highways;
+        c[MapCheck.depotType(types)] += MapCheck.ACCESS_DEPOTS_ADDED + moreDepots;
         wantMines = c[mine];
         c[mine] = 0;
         int side = MapCheck.x1Side(types);
@@ -474,6 +529,562 @@ public class TruckRouteCheck {
         check("a city with none of them still counts 1: a share is never over zero", bare.accessRoadCount() == 1);
     }
 
+    // ------------------------------------------------------------------ 7 to 10 (batch FR9)
+
+    /** A test of one plot. */
+    interface PlotTest { boolean at(long px, long py); }
+
+    /** How many plots, reading every STEP along each leg of r from the leg that starts at point `from`, the test says yes to. */
+    static int samplesWhere(TruckSchedule.Route r, int from, PlotTest test) {
+        int n = 0;
+        for (int i = from; i + 1 < r.xs().length; i++) {
+            double len = Math.hypot(r.xs()[i + 1] - r.xs()[i], r.ys()[i + 1] - r.ys()[i]);
+            int steps = (int) Math.ceil(len / STEP);
+            for (int k = 0; k <= steps; k++) {
+                double t = steps == 0 ? 0 : (double) k / steps;
+                long px = (long) Math.floor(r.xs()[i] + t * (r.xs()[i + 1] - r.xs()[i])), py = (long) Math.floor(r.ys()[i] + t * (r.ys()[i + 1] - r.ys()[i]));
+                if (test.at(px, py)) n++;
+            }
+        }
+        return n;
+    }
+
+    /** Whether the plans draw a street (a code of any kind but none) on world plot (px, py): the truth the painter reads. */
+    static boolean isStreet(CityMap m, long px, long py) {
+        return (m.streetAt(px, py) & TilePainter.S_KIND) != DistrictPlan.NONE;
+    }
+
+    /** Whether the runs mark a ramp on the plot under (x, y). */
+    static boolean isRamp(CityMap m, double x, double y) {
+        byte[] fixed = new byte[1], marks = new byte[1];
+        m.runs().fill((long) Math.floor(x), (long) Math.floor(y), 1, 1, fixed, marks, false);
+        return (marks[0] & CityRuns.M_RAMP) != 0;
+    }
+
+    /** A plot's middle packed with its plot, for a map key. */
+    static long pk(double x, double y) { return ((long) Math.floor(x) << 32) ^ ((long) Math.floor(y) & 0xffffffffL); }
+
+    /** Every work of every district of the map, each {x, y, w, h} in world plots. */
+    static List<int[]> worldWorks(CityMap m) {
+        List<int[]> out = new ArrayList<>();
+        for (CityMap.District d : m.districts()) {
+            long[] o = origin(m, d);
+            for (int[] w : worksOf(m, d, m.drawn(d))) out.add(new int[] { (int) (o[0] + w[0]), (int) (o[1] + w[1]), w[2], w[3] });
+        }
+        return out;
+    }
+
+    /** Whether (x, y) is a plot's middle beside the box of one of the works. */
+    static boolean atGate(List<int[]> works, double x, double y) {
+        if (Math.abs(x - Math.floor(x) - 0.5) > EPS || Math.abs(y - Math.floor(y) - 0.5) > EPS) return false;
+        for (int[] w : works) if (JunctionCheck.beside(w, (int) Math.floor(x), (int) Math.floor(y))) return true;
+        return false;
+    }
+
+    /** The index of the point a world trip leaves the highways at: the last ramp among the points the trip keeps on highway plots from the arm's end (point 2) on; -1 for none. */
+    static int rampIndex(CityMap m, TruckSchedule.Route r) {
+        CityRuns runs = m.runs();
+        int n = r.xs().length, last = 2;
+        TruckSchedule.Route leg;
+        while (last + 1 < n) {
+            leg = TruckSchedule.Route.through(true, new double[] { r.xs()[last], r.xs()[last + 1] }, new double[] { r.ys()[last], r.ys()[last + 1] }, 0);
+            if (samplesWhere(leg, 0, (px, py) -> !CityRuns.covered(runs.highways(), px, py)) > 0) break;
+            last++;
+        }
+        int ramp = -1;
+        for (int i = 2; i <= last && i < n; i++) if (isRamp(m, r.xs()[i], r.ys()[i])) ramp = i;
+        return ramp;
+    }
+
+    /** Whether a trip turns back on itself at a point: the leg out of it runs the way the leg into it came from. */
+    static boolean turnsBack(TruckSchedule.Route r) {
+        for (int i = 1; i + 1 < r.xs().length; i++) {
+            double ax = r.xs()[i] - r.xs()[i - 1], ay = r.ys()[i] - r.ys()[i - 1], bx = r.xs()[i + 1] - r.xs()[i], by = r.ys()[i + 1] - r.ys()[i];
+            if (Math.abs(ax * by - ay * bx) < EPS && ax * bx + ay * by < 0) return true;
+        }
+        return false;
+    }
+
+    /** Whether every trip of two lists is the same, district by district and point by point. */
+    static boolean sameTrips(List<CityMap.DistrictTrips> a, List<CityMap.DistrictTrips> b) {
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) if (a.get(i).key() != b.get(i).key() || !same(a.get(i).trips(), b.get(i).trips())) return false;
+        return true;
+    }
+
+    /** One road as the trips are checked against it: where it ends and the plot of the ramp its trip left the highways at. */
+    record RoadAt(long endX, long endY, long ramp) { }
+
+    /** What it costs a truck to enter world plot (px, py): 1 on an arterial, boulevard or access street, TRIP_STREET_COST on any other street, -1 where no street is drawn. */
+    static int plotCost(CityMap m, long px, long py) {
+        int code = m.streetAt(px, py) & 0xff, role = (code >> TilePainter.S_ROLE_SHIFT) & 3;
+        if ((code & TilePainter.S_KIND) == DistrictPlan.NONE) return -1;
+        return role == TilePainter.S_ARTERIAL || role == TilePainter.S_BOULEVARD || role == TilePainter.S_ACCESS ? 1 : CityMap.TRIP_STREET_COST;
+    }
+
+    /**
+     * The cheapest way to world plot (ex, ey) over the streets of the box about a district (its frame, with origin o, grown by
+     * CityMap.TRIP_REACH), from any ramp in the box that carries a street and has a way along the highways: a plain Dijkstra with a
+     * priority queue, nothing of CityMap's search but the costs. -1 for none.
+     */
+    static int cheapestLeg(CityMap m, CityMap.WorldLine line, long[] o, long ex, long ey) {
+        long bx0 = o[0] - CityMap.TRIP_REACH, by0 = o[1] - CityMap.TRIP_REACH;
+        int bw = CityMap.TRIP_BOX;
+        byte[] fixed = new byte[bw * bw], marks = new byte[bw * bw];
+        m.runs().fill(bx0, by0, bw, bw, fixed, marks, false);
+        Map<Long, Integer> dist = new HashMap<>();
+        java.util.PriorityQueue<long[]> queue = new java.util.PriorityQueue<>((a, b) -> Long.compare(a[0], b[0]));
+        for (int i = 0; i < bw * bw; i++) {
+            if ((marks[i] & CityRuns.M_RAMP) == 0) continue;
+            long x = bx0 + i % bw, y = by0 + i / bw;
+            if (plotCost(m, x, y) < 0 || m.runs().highwayWayTo(line.arm(), x, y) == null) continue;
+            dist.put(pk(x + 0.5, y + 0.5), 0);
+            queue.add(new long[] { 0, x, y });
+        }
+        int[][] around = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
+        while (!queue.isEmpty()) {
+            long[] top = queue.poll();
+            long key = pk(top[1] + 0.5, top[2] + 0.5);
+            if (dist.getOrDefault(key, Integer.MAX_VALUE) < top[0]) continue;
+            if (top[1] == ex && top[2] == ey) return (int) top[0];
+            for (int[] a : around) {
+                long x = top[1] + a[0], y = top[2] + a[1];
+                if (x < bx0 || y < by0 || x >= bx0 + bw || y >= by0 + bw) continue;
+                int c = plotCost(m, x, y);
+                if (c < 0) continue;
+                long next = top[0] + c;
+                long nk = pk(x + 0.5, y + 0.5);
+                if (next < dist.getOrDefault(nk, Integer.MAX_VALUE)) {
+                    dist.put(nk, (int) next);
+                    queue.add(new long[] { next, x, y });
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Section 7 on one drawn city: every trip is whole. A world trip runs from the world line along the highways to a ramp, along the
+     * streets and down its access road to a gate; a home trip from one gate to another by the streets. `mixed` is the city built to
+     * cause a road with a street leg and a road that ends at a ramp both.
+     */
+    static void tripsWhole(String name, CityMap m, boolean mixed) {
+        for (CityMap.District d : m.districts()) m.drawn(d);
+        boolean current = m.districts().size() <= CityMap.PLANS_KEPT;
+        for (CityMap.District d : m.districts()) current &= m.planned(d);
+        check(name + ": fixture: every district's plan is drawn and current, none let go of", current);
+        CityMap.WorldLine line = highwayLine(m);
+        check("...and the highways have a world line", line != null);
+        if (line == null) return;
+        long t0 = System.nanoTime();
+        List<CityMap.DistrictTrips> all = m.tripsDrawn();
+        double ms = (System.nanoTime() - t0) / 1e6;
+        int[] rc = m.tripRoadCounts();
+        int world = 0, home = 0;
+        for (CityMap.DistrictTrips dt : all) for (TruckSchedule.Route rt : dt.trips()) { if (rt.home()) home++; else world++; }
+        System.out.printf("      %s: %d roads (%d end at a ramp, %d have a street leg, %d no ramp reached), %d world trips and %d home trips in %d districts;"
+                + " %s, the search's scratch %,d bytes%n", name, rc[0], rc[1], rc[2], rc[3], world, home, all.size(),
+                ms >= 1 ? String.format("made in %.0f ms", ms) : "made as section 8 drew it", m.tripScratchBytes());
+        check("fixture: the city has trips, world ones and home ones", world > 0 && home > 0);
+        check("...a road whose end is a ramp (its street leg empty)" + (mixed ? " and a road with a street leg" : ""), rc[1] > 0 && (!mixed || rc[2] > 0));
+        check("...one world trip a road a ramp reached, no more home trips than such roads", world == rc[1] + rc[2] && home <= world);
+
+        double rad = Math.toRadians(line.way());
+        double fx = line.x() + Math.cos(rad) * TruckSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(rad) * TruckSchedule.WORLD_PLOTS;
+        CityRuns runs = m.runs();
+        List<int[]> works = worldWorks(m);
+        Map<Long, RoadAt> roads = new HashMap<>();
+        boolean worldKind = true, starts = true, passes = true, faded = true, ramps = true, leaves = true, gateEnds = true, accessLast = true, endsKept = true;
+        boolean fourWay = true, cheapest = true;
+        int wholeSamples = 0, nowhere = 0, legsChecked = 0;
+        for (CityMap.DistrictTrips dt : all) {
+            CityMap.District d = dt.district();
+            CityMap.Drawn dr = m.drawn(d);
+            long[] o = origin(m, d);
+            for (TruckSchedule.Route rt : dt.trips()) {
+                if (rt.home()) continue;
+                int n = rt.xs().length;
+                worldKind &= rt.world() && !rt.home();
+                starts &= n >= 4 && Math.abs(rt.xs()[0] - fx) < EPS && Math.abs(rt.ys()[0] - fy) < EPS;
+                passes &= n >= 4 && Math.abs(rt.xs()[1] - line.x()) < EPS && Math.abs(rt.ys()[1] - line.y()) < EPS;
+                faded &= Math.abs(rt.fadeTo() - TruckSchedule.WORLD_PLOTS) < EPS && n >= 2 && Math.abs(rt.along()[1] - rt.fadeTo()) < EPS;
+                // From the arm's end on: every sample on a highway plot or a street the plans draw.
+                int off = samplesWhere(rt, 2, (px, py) -> !CityRuns.covered(runs.highways(), px, py) && !isStreet(m, px, py));
+                nowhere += off;
+                wholeSamples += samplesWhere(rt, 2, (px, py) -> true);
+                int ramp = rampIndex(m, rt);
+                ramps &= ramp >= 2;
+                // ...and from the ramp on, on streets alone: a highway plot carrying none is no road for a truck there.
+                if (ramp >= 2) {
+                    TruckSchedule.Route after = TruckSchedule.Route.through(true, java.util.Arrays.copyOfRange(rt.xs(), ramp, n), java.util.Arrays.copyOfRange(rt.ys(), ramp, n), 0);
+                    leaves &= samplesWhere(after, 0, (px, py) -> !isStreet(m, px, py)) == 0;
+                }
+                double gx = rt.xs()[n - 1], gy = rt.ys()[n - 1];
+                gateEnds &= atGate(works, gx, gy);
+                // The last leg runs down the access road: access plots of the district's own plan.
+                accessLast &= n >= 2 && samplesWhere(rt, n - 2, (px, py) -> notAccess(dr, px - o[0], py - o[1])) == 0;
+                // The road: the way (Drawn.access) whose gate is the trip's last point, its end a point of the trip.
+                RoadAt road = null;
+                if (dr.access != null) {
+                    for (int[] way : dr.access) {
+                        int f = DistrictPlan.FRAME, g = way[way.length - 1], e = way[0];
+                        if (way.length < 2 || Math.abs(o[0] + g % f + 0.5 - gx) > EPS || Math.abs(o[1] + g / f + 0.5 - gy) > EPS) continue;
+                        double ex = o[0] + e % f + 0.5, ey = o[1] + e / f + 0.5;
+                        int at = -1;
+                        for (int i = ramp < 0 ? 0 : ramp; i < n && at < 0; i++) if (Math.abs(rt.xs()[i] - ex) < EPS && Math.abs(rt.ys()[i] - ey) < EPS) at = i;
+                        endsKept &= at >= 0;
+                        if (ramp >= 2) road = new RoadAt((long) Math.floor(ex), (long) Math.floor(ey), pk(rt.xs()[ramp], rt.ys()[ramp]));
+                        if (ramp >= 2 && at >= ramp) {
+                            // The street leg, from the ramp to the road's end: no dearer than a plain search of the same streets finds.
+                            int cost = 0;
+                            for (int i = ramp; i < at; i++) {
+                                long px = (long) Math.floor(rt.xs()[i]), py = (long) Math.floor(rt.ys()[i]);
+                                long qx = (long) Math.floor(rt.xs()[i + 1]), qy = (long) Math.floor(rt.ys()[i + 1]);
+                                for (int k = 1; k <= Math.max(Math.abs(qx - px), Math.abs(qy - py)); k++) {
+                                    cost += plotCost(m, px + Long.signum(qx - px) * k, py + Long.signum(qy - py) * k);
+                                }
+                            }
+                            if (at > ramp) {
+                                legsChecked++;
+                                cheapest &= cost == cheapestLeg(m, line, o, (long) Math.floor(ex), (long) Math.floor(ey));
+                            }
+                        }
+                        // From the ramp on, along rows and columns: a street leg and an access road are plots side by side.
+                        if (ramp >= 2) for (int i = ramp; i + 1 < n; i++) fourWay &= rt.xs()[i] == rt.xs()[i + 1] || rt.ys()[i] == rt.ys()[i + 1];
+                    }
+                }
+                endsKept &= road != null;
+                if (road != null) roads.put(pk(gx, gy), road);
+            }
+        }
+        System.out.printf("      the world trips read %,d samples from the arm's end on, %d of them where no road is drawn%n", wholeSamples, nowhere);
+        check("every world trip is a world trip (imports and exports), not a home trip", worldKind && world > 0);
+        check("...starts TruckSchedule.WORLD_PLOTS out along the line's way and passes the line's point, faded in over that world part", starts && passes && faded);
+        check("...from the arm's end on every quarter plot lies on a highway plot or a street the plans draw: none where no road is drawn", nowhere == 0 && wholeSamples > 0);
+        check("...the highway part ends at a ramp the runs mark, and from there on it keeps to streets the plans draw", ramps && leaves);
+        check("...its last point is a gate, beside the box of a work, a plot's middle", gateEnds);
+        check("...its last leg runs down the access road: every quarter plot an access street of the district's plan", accessLast);
+        check("...it passes the end of the access road whose gate it reaches, a point of the trip", endsKept && roads.size() == world);
+        check("...from the ramp on it runs along rows and columns: a street leg is plots side by side", fourWay);
+        check("...a street leg costs what a plain search of the same streets finds cheapest, from any ramp in the district's box (" + legsChecked
+                + " legs; 1 an arterial, boulevard or access plot, TRIP_STREET_COST any other)", cheapest && (!mixed || legsChecked > 0));
+
+        // The home trips: from a partner's gate by the streets to this road's gate.
+        boolean homeKind = true, fade = true, gates = true, differ = true, streets = true, noHighwayOnly = true, noTurnBack = true, partnered = true;
+        int homeSamples = 0;
+        for (CityMap.DistrictTrips dt : all) {
+            for (TruckSchedule.Route rt : dt.trips()) {
+                if (!rt.home()) continue;
+                int n = rt.xs().length;
+                homeKind &= !rt.world() && rt.home();
+                fade &= Math.abs(rt.fadeTo() - CityMap.TRUCK_ACCESS_FADE) < EPS;
+                gates &= atGate(works, rt.xs()[0], rt.ys()[0]) && atGate(works, rt.xs()[n - 1], rt.ys()[n - 1]);
+                differ &= pk(rt.xs()[0], rt.ys()[0]) != pk(rt.xs()[n - 1], rt.ys()[n - 1]);
+                streets &= samplesWhere(rt, 0, (px, py) -> !isStreet(m, px, py)) == 0;
+                noHighwayOnly &= samplesWhere(rt, 0, (px, py) -> CityRuns.covered(runs.highways(), px, py) && !isStreet(m, px, py)) == 0;
+                homeSamples += samplesWhere(rt, 0, (px, py) -> true);
+                noTurnBack &= !turnsBack(rt);
+                // The partner: the road whose gate it leaves from comes to the same ramp as this road, and is the nearest such road, end to end.
+                RoadAt a = roads.get(pk(rt.xs()[n - 1], rt.ys()[n - 1])), b = roads.get(pk(rt.xs()[0], rt.ys()[0]));
+                boolean ok = a != null && b != null && a != b && a.ramp() == b.ramp();
+                if (ok) {
+                    double nearest = Math.hypot(a.endX() - b.endX(), a.endY() - b.endY());
+                    for (RoadAt c : roads.values()) {
+                        if (c == a || c.ramp() != a.ramp()) continue;
+                        ok &= nearest <= Math.hypot(a.endX() - c.endX(), a.endY() - c.endY()) + EPS;
+                    }
+                }
+                partnered &= ok;
+            }
+        }
+        System.out.printf("      the home trips read %,d samples%n", homeSamples);
+        check("every home trip is a home trip: it takes the tonnes bought at home alone, and is faded in over TRUCK_ACCESS_FADE", homeKind && fade && home > 0);
+        check("...runs from one gate to another's, beside the boxes of two works", gates && differ);
+        check("...every quarter plot of it is a street the plans draw, none a highway plot that carries none", streets && noHighwayOnly && homeSamples > 0);
+        check("...the part the two roads' legs share is cut off: it never turns back on itself", noTurnBack);
+        check("...leaves the gate of the nearest other road that comes to the same ramp", partnered);
+    }
+
+    // ------------------------------------------------------------------ 8
+
+    /** Whether district d has trips in the list. */
+    static boolean hasTrips(List<CityMap.DistrictTrips> trips, CityMap.District d) {
+        for (CityMap.DistrictTrips dt : trips) if (dt.district() == d) return true;
+        return false;
+    }
+
+    /** Section 8's first half, on a city nothing of which is drawn: trips plan nothing, and a district drawn later gets its trips then. */
+    static void tripsOnlyDrawn(CityMap m) {
+        System.out.println("\n--- 8. only what is drawn: the trips plan nothing, and a district drawn later has its trips then ---");
+        boolean unplanned = true;
+        for (CityMap.District d : m.districts()) unplanned &= !m.planned(d);
+        long bytes = m.plansBytes(), changes = m.changes();
+        int links = m.linksKept();
+        List<CityMap.DistrictTrips> none = m.tripsDrawn();
+        boolean still = true;
+        for (CityMap.District d : m.districts()) still &= !m.planned(d);
+        check("fixture: no plan is drawn yet, and asking for the trips gives none and draws none (the plans kept, the links and changes() as they were)",
+                unplanned && none.isEmpty() && still && m.plansBytes() == bytes && m.linksKept() == links && m.changes() == changes);
+        boolean subset = true, plansNothing = true, notBefore = true;
+        int became = 0, steps = 0;
+        for (CityMap.District d : m.districts()) {
+            boolean was = hasTrips(m.tripsDrawn(), d), drawnBefore = m.planned(d);
+            m.drawn(d);
+            long bytesNow = m.plansBytes();
+            int linksNow = m.linksKept();
+            List<CityMap.DistrictTrips> got = m.tripsDrawn();
+            plansNothing &= m.plansBytes() == bytesNow && m.linksKept() == linksNow;
+            // A district's trips come from a plan that is drawn: every district with trips has its plan drawn and current.
+            for (CityMap.DistrictTrips dt : got) subset &= m.planned(dt.district());
+            if (!drawnBefore) notBefore &= !was;
+            if (!was && hasTrips(got, d)) became++;
+            steps++;
+        }
+        check("asking after each of " + steps + " districts is drawn plans nothing: the plans kept and the links are as they were", plansNothing);
+        check("...every district with trips has its plan drawn and current", subset);
+        check("...a district not drawn has no trips before it is, and one that had none has them once it is (" + became + " did)", notBefore && became > 0);
+    }
+
+    /** Section 8's second half, on a city drawn whole: the list is kept while nothing changes and made again once a plan or the runs change; no world line, no world trip. */
+    static void tripsKept(CityMap m, BuildingVisual.Type[] types) {
+        System.out.println("\n--- 8 (the rest). the trips are kept against the changes and the plans kept; no world line, no trip ---");
+        List<CityMap.DistrictTrips> first = m.tripsDrawn();
+        check("asked again with nothing changed: the same list", !first.isEmpty() && m.tripsDrawn() == first);
+        check("...and each district's trips are the same list under the same key", m.tripsDrawn().get(0).trips() == first.get(0).trips() && m.tripsDrawn().get(0).key() == first.get(0).key());
+        // The plans let go and drawn again before the trips are asked: the same plans, so the street legs are kept, not searched again.
+        int searches = m.tripSearches();
+        m.forgetPainted();
+        for (CityMap.District d : m.districts()) m.drawn(d);
+        List<CityMap.DistrictTrips> kept = m.tripsDrawn();
+        check("the plans let go and drawn again, then asked: a new list, equal to the first, and no street search made again (the legs kept against the plans' stamps)",
+                kept != first && sameTrips(first, kept) && m.tripSearches() == searches);
+        m.forgetPainted();
+        List<CityMap.DistrictTrips> gone = m.tripsDrawn();
+        check("the plans forgotten: the trips are made again, a new list, and a district whose plan is not drawn takes none", gone != first && gone.isEmpty());
+        for (CityMap.District d : m.districts()) m.drawn(d);
+        List<CityMap.DistrictTrips> back = m.tripsDrawn();
+        check("...drawn again they are made again once more, a new list, equal point for point to the first, the street legs searched again (let go with their plans)",
+                back != gone && sameTrips(first, back) && m.tripSearches() > searches);
+        int hw = GatewayCheck.highwayType(types);
+        long before = m.changes();
+        long[] grown = m.totals().clone();
+        grown[hw] += 100;
+        boolean moved = m.layRuns(grown);
+        List<CityMap.DistrictTrips> afterRuns = m.tripsDrawn();
+        check("a month's runs move changes() and the trips are made again: a new list", moved && m.changes() > before && afterRuns != back);
+        for (CityMap.District d : m.districts()) m.drawn(d);
+        List<CityMap.DistrictTrips> redrawn = m.tripsDrawn();
+        check("...the plans drawn again, the trips are made again and the city has them", redrawn != afterRuns && !redrawn.isEmpty() && m.tripsDrawn() == redrawn);
+
+        // No world line, no world trip: highways that reach a street and find no way out, and works with roads beside them.
+        int depot = MapCheck.depotType(types);
+        CityMap five = GatewayCheck.gatewayCity(types, 5, 0);
+        long[] c = five.totals().clone();
+        c[depot] += 6;
+        five.reconcile(c);
+        int roads = 0;
+        for (CityMap.District d : five.districts()) { CityMap.Drawn dr = five.drawn(d); if (dr.access != null) roads += dr.access.length; }
+        check("fixture: five highways reach a street and find no way out (no world line), and six Truck Depots have " + roads + " access roads drawn",
+                five.runs().highwaysReach() && !hasHighwayLine(five) && roads > 0);
+        check("...so there is no world trip, and no trip at all: a truck comes in from the world line or not at all", five.tripsDrawn().isEmpty() && five.truckRoutes().isEmpty());
+    }
+
+    // ------------------------------------------------------------------ 9
+
+    static boolean near(double a, double b) {
+        return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    static void shares(BuildingVisual.Type[] types, CityMap trips) {
+        System.out.println("\n--- 9. a district's trips in its tonnes' share ---");
+        // By hand: two sectors with buildings, a type of no sector.
+        int a = -1, b = -1, none = -1;
+        String sa = null, sb = null;
+        for (int t = 0; t < types.length; t++) {
+            if (types[t] == null) continue;
+            String s = types[t].sector();
+            if (s == null || s.isEmpty()) { if (none < 0) none = t; }
+            else if (sa == null) { sa = s; a = t; }
+            else if (sb == null && !s.equals(sa)) { sb = s; b = t; }
+        }
+        check("fixture: two sectors with a building type each, and a type of no sector", a >= 0 && b >= 0 && none >= 0 && !sa.equals(sb));
+        final String keyA = sa, keyB = sb;
+        java.util.function.Function<String, double[]> tonnes = s -> s.equals(keyA) ? new double[] { 100, 40, 8 } : s.equals(keyB) ? new double[] { 50, 10, 6 } : new double[3];
+        long[] totals = new long[types.length];
+        totals[a] = 4;
+        totals[b] = 2;
+        totals[none] = 7;
+        double[][] per = TruckSchedule.perBuilding(tonnes, types, totals);
+        double[] city = { 150, 50, 14 };
+        check("one standing building of a sector's type carries the sector's truck tonnes over its buildings standing: 100, 40 and 8 over 4",
+                near(per[a][0], 25) && near(per[a][1], 10) && near(per[a][2], 2));
+        check("...a type of no sector carries nothing", per[none][0] == 0 && per[none][1] == 0 && per[none][2] == 0);
+        CityMap.District d1 = new CityMap.District(0, 0, types.length, 0), d2 = new CityMap.District(1, 0, types.length, 1);
+        CityMap.District d3 = new CityMap.District(2, 0, types.length, 2), d4 = new CityMap.District(3, 0, types.length, 3);
+        d1.counts[a] = 3;
+        d2.counts[a] = 1;
+        d3.counts[none] = 7;
+        d4.counts[b] = 2;
+        double[] s1 = TruckSchedule.sharesOf(per, d1, city), s2 = TruckSchedule.sharesOf(per, d2, city), s3 = TruckSchedule.sharesOf(per, d3, city), s4 = TruckSchedule.sharesOf(per, d4, city);
+        check("two districts holding one sector's buildings 3 : 1 take its tonnes 3 : 1, a share of the city's by load",
+                near(s1[0], 0.5) && near(s1[1], 0.6) && near(s1[2], 6.0 / 14) && near(s1[0], 3 * s2[0]) && near(s1[1], 3 * s2[1]) && near(s1[2], 3 * s2[2]));
+        check("...a district of no works takes nothing", s3[0] == 0 && s3[1] == 0 && s3[2] == 0);
+        double[] total = new double[3];
+        for (double[] s : new double[][] { s1, s2, s3, s4 }) for (int l = 0; l < 3; l++) total[l] += s[l];
+        check("...and every district's share together is 1 of each load, where every sector's buildings stand", near(total[0], 1) && near(total[1], 1) && near(total[2], 1));
+        totals[b] = 0;
+        d4.counts[b] = 0;
+        double[][] perMissing = TruckSchedule.perBuilding(tonnes, types, totals);
+        double[] m1 = TruckSchedule.sharesOf(perMissing, d1, city), m2 = TruckSchedule.sharesOf(perMissing, d2, city);
+        check("a sector with no building standing carries nothing, and the rest come to the share of the city's tonnes whose sectors stand",
+                perMissing[b][0] == 0 && near(m1[0] + m2[0], 100.0 / 150) && near(m1[1] + m2[1], 40.0 / 50) && near(m1[2] + m2[2], 8.0 / 14));
+        double[] small = TruckSchedule.sharesOf(per, d1, new double[] { 1, 1, 1 }), zero = TruckSchedule.sharesOf(per, d1, new double[3]);
+        check("a share is at most 1 where the city's tonnes are fewer, and 0 where they are 0", small[0] == 1 && small[1] == 1 && small[2] == 1 && zero[0] == 0 && zero[1] == 0 && zero[2] == 0);
+
+        // On a played city, the model's own figure.
+        Game city2 = HaulageCheck.base(GameFiles.scratch("truckroutecheck-shares"));
+        Freight fr = city2.getSectors().freight();
+        Haulage h = fr.haulage();
+        int guard = 0;
+        while (!(h.getBill() > 0) && guard++ < 16) TruckCheck.quietly(city2::toggleNextMonth);
+        check("fixture: the city has played until Haulage has a fleet and a bill, so it carries tonnes", h.getBill() > 0 && h.getTonnes() > 0 && h.getCarried() > 0);
+        boolean sums = true, played = true;
+        double seen = 0;
+        for (int month = 0; month < 3; month++) {
+            TruckCheck.quietly(() -> HaulageCheck.haul(city2));
+            double[] by = new double[3];
+            for (Sector s : city2.getSectors().all()) {
+                double[] one = TruckSchedule.truckedBy(fr, s.key());
+                for (int l = 0; l < 3; l++) by[l] += one[l];
+            }
+            sums &= near(by[0], fr.truckedIn()) && near(by[1], fr.truckedOut()) && near(by[2], fr.truckedHome());
+            seen += by[0] + by[1] + by[2];
+            TruckCheck.quietly(city2::toggleNextMonth);
+            by = new double[3];
+            for (Sector s : city2.getSectors().all()) {
+                double[] one = TruckSchedule.truckedBy(fr, s.key());
+                for (int l = 0; l < 3; l++) by[l] += one[l];
+            }
+            played &= near(by[0], fr.truckedIn()) && near(by[1], fr.truckedOut()) && near(by[2], fr.truckedHome());
+        }
+        check("truckedBy() over every sector comes to Freight.truckedIn(), truckedOut() and truckedHome() to a billionth, six hauls running", sums && seen > 0);
+        check("...and so it does in the months the game played through itself", played);
+        check("a sector that moved nothing, no freight and no sector carry nothing",
+                TruckSchedule.truckedBy(fr, "nothing here")[0] == 0 && TruckSchedule.truckedBy(null, keyA)[1] == 0 && TruckSchedule.truckedBy(fr, null)[2] == 0);
+
+        // The trips city's districts over the played city's tonnes: the shares come to what its sectors carry.
+        double[] cityTonnes = { fr.truckedIn(), fr.truckedOut(), fr.truckedHome() };
+        long[] mapTotals = trips.totals();
+        double[][] perMap = TruckSchedule.perBuilding(s -> TruckSchedule.truckedBy(fr, s), trips.types(), mapTotals);
+        double[] sum = new double[3], expect = new double[3];
+        boolean unit = true;
+        for (CityMap.District d : trips.districts()) {
+            double[] sh = TruckSchedule.sharesOf(perMap, d, cityTonnes);
+            for (int l = 0; l < 3; l++) { sum[l] += sh[l]; unit &= sh[l] >= 0 && sh[l] <= 1; }
+        }
+        java.util.Set<String> standing = new java.util.HashSet<>();
+        for (int t = 0; t < trips.types().length; t++) if (mapTotals[t] > 0 && trips.types()[t] != null && !trips.types()[t].sector().isEmpty()) standing.add(trips.types()[t].sector());
+        for (String s : standing) { double[] one = TruckSchedule.truckedBy(fr, s); for (int l = 0; l < 3; l++) expect[l] += one[l] / Math.max(1e-300, cityTonnes[l]); }
+        check("the districts of a map, over a played city's tonnes, each take a share in [0, 1] and together the share of the city's tonnes whose sectors stand on the map",
+                unit && near(sum[0], expect[0]) && near(sum[1], expect[1]) && near(sum[2], expect[2]) && sum[0] + sum[1] + sum[2] > 0);
+
+        // A district's schedule draws its shares' loads and keeps the city's N.
+        TruckSchedule.Route world = TruckSchedule.Route.through(true, new double[] { -64, 0, 100 }, new double[] { 0, 0, 0 }, 64);
+        TruckSchedule.Route homeTrip = TruckSchedule.Route.home(new double[] { 10, 60, 60 }, new double[] { 10, 10, 40 }, CityMap.TRUCK_ACCESS_FADE);
+        List<TruckSchedule.Route> routes = List.of(world, homeTrip);
+        double[] share = { 0.5, 0.25, 0.125 };
+        TruckSchedule whole = TruckSchedule.of(7, fr, routes, 1.0, 5), part = TruckSchedule.of(7, fr, routes, share, 5);
+        check("fixture: the played city imported, exported and bought at home, so no share is vacuous",
+                whole.loads(TruckSchedule.Load.IMPORT) > 0 && whole.loads(TruckSchedule.Load.EXPORT) > 0 && whole.loads(TruckSchedule.Load.HOME) > 0);
+        boolean loadsOk = true;
+        for (TruckSchedule.Load l : TruckSchedule.Load.values()) loadsOk &= near(part.loads(l), whole.loads(l) * share[l.ordinal()]);
+        check("a district's schedule draws its shares' loads: the city's of each load times its share", loadsOk);
+        check("...and keeps the city's N, the legend's: stands() is what the whole city's is", part.stands() == whole.stands());
+        double sumLoads = part.loads(TruckSchedule.Load.IMPORT) + part.loads(TruckSchedule.Load.EXPORT) + part.loads(TruckSchedule.Load.HOME);
+        check("...its trucks, each for N loads, come to its loads within one a load group", Math.abs((double) part.callCount() * part.stands() - sumLoads) <= 3.0 * part.stands());
+        TruckSchedule nothing = TruckSchedule.of(7, fr, routes, new double[3], 5);
+        check("a district of no works (every share 0) draws no truck and keeps the city's N", nothing.callCount() == 0 && nothing.stands() == whole.stands());
+        TruckSchedule noHome = TruckSchedule.of(7, fr, routes, new double[] { 1, 1, 0 }, 5);
+        check("a share of 0 for the tonnes bought at home draws none of those, the imports and exports as they were",
+                noHome.callsOf(TruckSchedule.Load.HOME) == 0 && noHome.callsOf(TruckSchedule.Load.IMPORT) == whole.callsOf(TruckSchedule.Load.IMPORT));
+        check("a scalar share is the same share for every load", TruckSchedule.of(7, fr, routes, 0.5, 5).calls().equals(TruckSchedule.of(7, fr, routes, new double[] { 0.5, 0.5, 0.5 }, 5).calls()));
+
+        // A home trip takes home loads alone, and they go to no other route.
+        double[] quiet = new double[3];
+        quiet[0] = 300; quiet[1] = 200; quiet[2] = 400;
+        TruckSchedule both = TruckSchedule.of(3, quiet, routes, 1.0, 0), homeOnly = TruckSchedule.of(3, quiet, List.of(homeTrip), 1.0, 0), worldOnly = TruckSchedule.of(3, quiet, List.of(world), 1.0, 0);
+        boolean homeOnHome = true;
+        for (TruckSchedule.Call c : both.calls()) if (c.load() == TruckSchedule.Load.HOME) homeOnHome &= routes.get(c.route()).home();
+        check("a home trip is a home trip and a world trip is not: Route.home() and Route.through(true, ...)", homeTrip.home() && !homeTrip.world() && world.world() && !world.home());
+        check("a home trip takes the tonnes bought at home alone: a schedule of one draws no import and no export", homeOnly.callsOf(TruckSchedule.Load.HOME) > 0
+                && homeOnly.callsOf(TruckSchedule.Load.IMPORT) == 0 && homeOnly.callsOf(TruckSchedule.Load.EXPORT) == 0);
+        check("...and a world trip takes no home load, so every home load of a mix is on the home trip", worldOnly.callsOf(TruckSchedule.Load.HOME) == 0 && homeOnHome && both.callsOf(TruckSchedule.Load.HOME) > 0);
+    }
+
+    // ------------------------------------------------------------------ 10
+
+    static void pace() {
+        System.out.println("\n--- 10. the pace: the trains' legs, and any visit inside the month ---");
+        double[] lengths = { 100, 400, 5000 };
+        boolean trains = true, clamped = true;
+        double[] legs = new double[lengths.length];
+        for (int i = 0; i < lengths.length; i++) {
+            TruckSchedule.Route r = TruckSchedule.Route.through(true, new double[] { 0, lengths[i] }, new double[] { 0, 0 }, 0);
+            TrainSchedule.Route tr = TrainSchedule.Route.through(0, false, 0, new double[] { 0, lengths[i] }, new double[] { 0, 0 }, 0);
+            legs[i] = r.legSeconds();
+            trains &= Math.abs(r.legSeconds() - tr.legSeconds()) < EPS;
+            clamped &= Math.abs(r.legSeconds() - Math.max(TruckSchedule.LEG_SECONDS, Math.min(TruckSchedule.LEG_MOST, lengths[i] / TrainSchedule.TRAIN_PLOTS_A_SECOND))) < EPS;
+        }
+        check("a route of 100 plots takes LEG_SECONDS, one of 400 its length over TRAIN_PLOTS_A_SECOND, one of 5,000 LEG_MOST",
+                legs[0] == TruckSchedule.LEG_SECONDS && Math.abs(legs[1] - 400 / TrainSchedule.TRAIN_PLOTS_A_SECOND) < EPS && legs[1] > TruckSchedule.LEG_SECONDS
+                        && legs[1] < TruckSchedule.LEG_MOST && legs[2] == TruckSchedule.LEG_MOST);
+        check("...which is the trains' rule at each length: TrainSchedule.Route.legSeconds()", trains && clamped);
+        check("LEG_MOST is the trains'", TruckSchedule.LEG_MOST == TrainSchedule.LEG_MOST && TruckSchedule.LEG_MOST > TruckSchedule.LEG_SECONDS);
+
+        TruckSchedule.Route shortR = TruckSchedule.Route.through(true, new double[] { -10, 0 }, new double[] { 0, 0 }, 0);
+        TruckSchedule.Route longR = TruckSchedule.Route.through(true, new double[] { -64, 5000 }, new double[] { 0, 0 }, 64);
+        List<TruckSchedule.Route> routes = List.of(shortR, longR);
+        double[] loads = { 900, 700, 1200 };
+        TruckSchedule s = TruckSchedule.of(4, loads, routes, 1.0, 3);
+        double dwell = TruckSchedule.DWELL_SECONDS / TruckSchedule.MONTH_SECONDS;
+        boolean inside = true, gate = true, start = true, gone = true;
+        boolean onShort = false, onLong = false;
+        for (TruckSchedule.Call c : s.calls()) {
+            TruckSchedule.Route r = routes.get(c.route());
+            double leg = r.legSeconds() / TruckSchedule.MONTH_SECONDS;
+            inside &= c.arrives() - leg >= 0 && c.arrives() + dwell + leg <= 1;
+            onShort |= c.route() == 0;
+            onLong |= c.route() == 1;
+            TruckSchedule.Truck at = TruckSchedule.position(c, r, c.arrives()), from = TruckSchedule.position(c, r, c.arrives() - leg);
+            gate &= at != null && Math.abs(at.x() - r.xs()[r.xs().length - 1]) < 1e-6 && Math.abs(at.y() - r.ys()[r.ys().length - 1]) < 1e-6;
+            start &= from != null && Math.abs(from.x() - r.xs()[0]) < 1e-6 && Math.abs(from.y() - r.ys()[0]) < 1e-6;
+            gone &= TruckSchedule.position(c, r, c.arrives() - leg - 1e-6) == null && TruckSchedule.position(c, r, c.arrives() + dwell + leg + 1e-6) == null;
+        }
+        check("fixture: trucks run both a route of 10 plots and one of 5,000", onShort && onLong && s.callCount() > 0);
+        check("every truck's whole visit lies inside the month, on a route of 10 plots and on one of 5,000", inside);
+        check("...a truck is at its gate at its arrival and at its route's start a leg (its route's own) before", gate && start);
+        check("...and is on the road at no moment outside its visit, a leg before its arrival to a stand and a leg after", gone);
+
+        // frame() finds every truck position() puts in the box, whatever the legs, near the month's edges too.
+        boolean frames = true;
+        int found = 0;
+        long[][] boxes = { { -100, -20, 300, 20 }, { 2000, -20, 2400, 20 }, { 4900, -20, 5100, 20 }, { -2000, 500, -1000, 900 } };
+        for (double t : new double[] { 0.001, 0.05, 0.12, 0.4, 0.5, 0.77, 0.9, 0.95, 0.999 }) {
+            for (long[] bx : boxes) {
+                List<TruckSchedule.Truck> got = s.frame(bx[0], bx[1], bx[2], bx[3], t);
+                List<TruckSchedule.Truck> want = new ArrayList<>();
+                double w = TruckSchedule.TRUCK_PLOTS;
+                for (TruckSchedule.Call c : s.calls()) {
+                    TruckSchedule.Truck tr = TruckSchedule.position(c, routes.get(c.route()), t);
+                    if (tr != null && tr.x() + w >= bx[0] && tr.x() - w < bx[2] && tr.y() + w >= bx[1] && tr.y() - w < bx[3]) want.add(tr);
+                }
+                frames &= got.equals(want);
+                found += got.size();
+            }
+        }
+        check("frame() is exactly the trucks position() puts in the box, in four boxes at nine moments, a 5,000-plot route among the routes", frames && found > 0);
+    }
+
     public static void main(String[] args) {
         noLine();
         highwayRoutes();
@@ -482,8 +1093,18 @@ public class TruckRouteCheck {
         railwayUnchanged(access);
         accessRoutes(access);
         count(access);
+        // FR9: the trips city is built to cause a road with a street leg as well as roads that end at a ramp; 8 draws it a district at a
+        // time, so it runs before 7, which reads it whole (and the access city 4 drew), and 8's second half changes it last.
+        CityMap trips = accessCity(types(), TRIPS_MORE_DEPOTS, TRIPS_HIGHWAYS);
+        tripsOnlyDrawn(trips);
+        System.out.println("\n--- 7. a trip is whole: from the world to a gate, on a road all the way ---");
+        tripsWhole("the access city", access, false);
+        tripsWhole("the trips city", trips, true);
+        tripsKept(trips, types());
+        shares(types(), trips);
+        pace();
         System.out.println();
-        System.out.println(fails == 0 ? "The trucks' routes are found." : fails + " FAILED");
+        System.out.println(fails == 0 ? "The trucks' routes and trips are found." : fails + " FAILED");
         System.exit(fails);
     }
 }

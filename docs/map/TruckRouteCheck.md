@@ -1,4 +1,4 @@
-# TruckRouteCheck.java - 489 lines · 21 methods · 2 constants · harnesses
+# TruckRouteCheck.java - 1,110 lines · 42 methods · 3 constants · harnesses
 
 `ham/citybuildersim/TruckRouteCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
@@ -6,7 +6,9 @@
 > docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the
 > map lets a truck drive, CityMap.truckRoutes() along the highways from their
 > line to the world and CityMap.accessRoutesIn() along each drawn district's
-> access roads. Not part of the game.
+> access roads - and, since FR9, the TRIPS they are joined into
+> (CityMap.tripsDrawn()): a truck's whole way from the world line to a
+> works' gate, and from one works' gate to another's. Not part of the game.
 > 
 > WHY THIS EXISTS. Haulage's trucks (FR2) carry every bulk tonne's city leg,
 > and the highways and access roads (FR7) are drawn, but nothing said where a
@@ -43,50 +45,88 @@
 >   6. accessRoadCount() is the works that need an access road: the yards
 >      the runs draw, the shore's sea terminals, the Truck Depots - at
 >      least 1.
-> 
-> They run in the order 1, 2, 5, 3, 4, 6: section 5, like 1 and 2, plays on
-> GatewayCheck's cities, and 3, 4 and 6 share one access city built after
-> them.
+>   7. a trip is whole (FR9), on the access city and on a trips city built to
+>      cause a road with a street leg as well as roads that end at a ramp:
+>      the city has trips, world and home, and a road of each kind; every
+>      world trip starts WORLD_PLOTS out along the highways' line, passes
+>      the line's point, and from the arm's end on every quarter plot lies on
+>      a highway plot or a street the plans draw, the highway part ends at a
+>      ramp, the rest keeps to streets, and its last point is a gate with its
+>      last leg on the access road; every home trip runs gate to gate on
+>      streets alone, never on a highway plot that carries none, never back
+>      on itself, from the gate of the nearest other road that comes to the
+>      same ramp; no sample of any trip lies where no road is drawn;
+>   8. only what is drawn: asking for trips plans nothing (the plans kept,
+>      the links and changes() as they were); before a district is drawn it
+>      has no trips and after it is drawn it has; a city whose highways have
+>      no world line has no trip; the list is kept while nothing changes (the
+>      same object) and made again once a plan or the runs change;
+>   9. a district's trips in its tonnes' share: perBuilding() and sharesOf()
+> ... (18 more lines in the source)
 
-**Uses:** [CityMap](CityMap.md) (60), [TruckSchedule](TruckSchedule.md) (16), [MapCheck](MapCheck.md) (14), [CityRuns](CityRuns.md) (11), [GatewayCheck](GatewayCheck.md) (11), [BuildingVisual](BuildingVisual.md) (7), [World](World.md) (5), [DistrictPlan](DistrictPlan.md) (5), [TilePainter](TilePainter.md) (4), [TrainSchedule](TrainSchedule.md) (2), [BuildingType](BuildingType.md) (2), [Founding](Founding.md) (1), [Mining](Mining.md) (1), [JunctionCheck](JunctionCheck.md) (1), [CityShore](CityShore.md) (1)
+**Uses:** [CityMap](CityMap.md) (121), [TruckSchedule](TruckSchedule.md) (118), [CityRuns](CityRuns.md) (18), [MapCheck](MapCheck.md) (15), [GatewayCheck](GatewayCheck.md) (13), [BuildingVisual](BuildingVisual.md) (11), [TilePainter](TilePainter.md) (10), [DistrictPlan](DistrictPlan.md) (8), [TrainSchedule](TrainSchedule.md) (7), [World](World.md) (5), [TruckCheck](TruckCheck.md) (3), [BuildingType](BuildingType.md) (2), [JunctionCheck](JunctionCheck.md) (2), [HaulageCheck](HaulageCheck.md) (2), [Sector](Sector.md) (2), [Founding](Founding.md) (1), [Mining](Mining.md) (1), [CityShore](CityShore.md) (1), [Game](Game.md) (1), [GameFiles](GameFiles.md) (1), [Freight](Freight.md) (1), [Haulage](Haulage.md) (1)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 59 | `TruckRouteCheck.STEP` | `CityMap.WORLD_STEP` | How finely a leg is read, in plots: a quarter, as the world lines are (CityMap.WORLD_STEP). |
-| 62 | `TruckRouteCheck.EPS` | `1e-9` | The tolerance of a position in plots, well below anything the map measures. |
+| 97 | `TruckRouteCheck.STEP` | `CityMap.WORLD_STEP` | How finely a leg is read, in plots: a quarter, as the world lines are (CityMap.WORLD_STEP). |
+| 100 | `TruckRouteCheck.EPS` | `1e-9` | The tolerance of a position in plots, well below anything the map measures. |
+| 107 | `TruckRouteCheck.TRIPS_MORE_DEPOTS` | `12, TRIPS_HIGHWAYS = 60` | Section 7's trips city: MapCheck's access city with 12 Truck Depots more and 60 Elevated Highways in place of its 200. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 56 | `static int fails` |  |
+| 94 | `static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 436 | **type** `public class TruckRouteCheck` | Proves the trucks' routes (0.8.8, batch FR5, slice B; docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the map lets a truck drive, CityMap.truckRoutes() along the highways from their line to the wor... |
-| 64 | 4 | `static void check(String label, boolean ok)` |  |
-| 70 | 4 | `static boolean same(TruckSchedule.Route a, TruckSchedule.Route b)` | Whether two routes are the same, point for point (a record holds arrays by reference, so equals() would not say). |
-| 75 | 5 | `static boolean same(List<TruckSchedule.Route> a, List<TruckSchedule.Route> b)` |  |
-| 82 | 4 | `static boolean hasHighwayLine(CityMap m)` | Whether a map has a world line for the highways. |
-| 87 | 4 | `static CityMap.WorldLine highwayLine(CityMap m)` |  |
-| 93 | 13 | `static int offHighway(CityRuns runs, TruckSchedule.Route r, int from)` | The fewest plots a world route's points are read at, every STEP along each leg from `from` (the leg that starts at that point index): how many of them lie on no plot of the highways. |
-| 110 | 3 | `static BuildingVisual.Type[] types()` | The game's building templates, as the map draws them. |
-| 118 | 36 | `static CityMap accessCity(BuildingVisual.Type[] types)` | MapCheck's access city on its own (his city x 1 where its square holds iron, with Rail Terminals, a Freight Line, 200 more highways and 3 Truck Depots added: MapCheck.accessCity() without the copies it takes a Squares... |
-| 156 | 3 | `static long[] origin(CityMap m, CityMap.District d)` | The frame origin of district d, in world plots. |
-| 162 | 21 | `static void noLine()` | ------------------------------------------------------------------ 1 |
-| 186 | 57 | `static void highwayRoutes()` | ------------------------------------------------------------------ 2 |
-| 247 | 12 | `static long[] anchorOf(CityRuns runs, long[] y)` | The rail plot in a yard's box nearest its middle: CityRuns.anchorInYard(), as the harness reads it. |
-| 260 | 3 | `static boolean sameWay(double[][] a, double[][] b)` |  |
-| 264 | 31 | `static void railwayUnchanged(CityMap m)` |  |
-| 302 | 13 | `static int offAccess(TruckSchedule.Route r, CityMap.Drawn dr, long ox, long oy)` | How many plots, reading every STEP along each leg of route r, are not a street the plan draws as an access road (or a boulevard's, which keeps its role) in the Drawn dr whose frame starts at (ox, oy): the truth the pa... |
-| 317 | 5 | `static boolean notAccess(CityMap.Drawn dr, long px, long py)` | Whether frame plot (px, py) of the Drawn is not a street drawn as an access road's (or a boulevard's, which keeps its role). |
-| 324 | 13 | `static List<int[]> worksOf(CityMap m, CityMap.District d, CityMap.Drawn dr)` | The works of district d that stand where a road comes to: the yards and sea terminals the map gave its plan, and the Truck Depots among its buildings as the Drawn packs them, each {x, y, w, h} in the frame's plots. |
-| 338 | 89 | `static void accessRoutes(CityMap m)` |  |
-| 430 | 20 | `static void kept()` | ------------------------------------------------------------------ 5 |
-| 453 | 23 | `static void count(CityMap access)` | ------------------------------------------------------------------ 6 |
-| 477 | 12 | `public static void main(String[] args)` |  |
+| 92 | 1019 | **type** `public class TruckRouteCheck` | Proves the trucks' routes (0.8.8, batch FR5, slice B; docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the map lets a truck drive, CityMap.truckRoutes() along the highways from their line to the wor... |
+| 109 | 4 | `static void check(String label, boolean ok)` |  |
+| 115 | 4 | `static boolean same(TruckSchedule.Route a, TruckSchedule.Route b)` | Whether two routes are the same, point for point (a record holds arrays by reference, so equals() would not say). |
+| 120 | 5 | `static boolean same(List<TruckSchedule.Route> a, List<TruckSchedule.Route> b)` |  |
+| 127 | 4 | `static boolean hasHighwayLine(CityMap m)` | Whether a map has a world line for the highways. |
+| 132 | 4 | `static CityMap.WorldLine highwayLine(CityMap m)` |  |
+| 138 | 13 | `static int offHighway(CityRuns runs, TruckSchedule.Route r, int from)` | The fewest plots a world route's points are read at, every STEP along each leg from `from` (the leg that starts at that point index): how many of them lie on no plot of the highways. |
+| 155 | 3 | `static BuildingVisual.Type[] types()` | The game's building templates, as the map draws them. |
+| 163 | 3 | `static CityMap accessCity(BuildingVisual.Type[] types)` | MapCheck's access city on its own (his city x 1 where its square holds iron, with Rail Terminals, a Freight Line, 200 more highways and 3 Truck Depots added: MapCheck.accessCity() without the copies it takes a Squares... |
+| 168 | 3 | `static CityMap accessCity(BuildingVisual.Type[] types, int moreDepots)` | ...with `moreDepots` Truck Depots besides MapCheck's (section 7's trips city: a depot in a frame with no ramp ends its road on an arterial, and its trucks drive a street leg to a ramp). |
+| 173 | 36 | `static CityMap accessCity(BuildingVisual.Type[] types, int moreDepots, int highways)` | ...and `highways` Elevated Highways in place of MapCheck's. |
+| 211 | 3 | `static long[] origin(CityMap m, CityMap.District d)` | The frame origin of district d, in world plots. |
+| 217 | 21 | `static void noLine()` | ------------------------------------------------------------------ 1 |
+| 241 | 57 | `static void highwayRoutes()` | ------------------------------------------------------------------ 2 |
+| 302 | 12 | `static long[] anchorOf(CityRuns runs, long[] y)` | The rail plot in a yard's box nearest its middle: CityRuns.anchorInYard(), as the harness reads it. |
+| 315 | 3 | `static boolean sameWay(double[][] a, double[][] b)` |  |
+| 319 | 31 | `static void railwayUnchanged(CityMap m)` |  |
+| 357 | 13 | `static int offAccess(TruckSchedule.Route r, CityMap.Drawn dr, long ox, long oy)` | How many plots, reading every STEP along each leg of route r, are not a street the plan draws as an access road (or a boulevard's, which keeps its role) in the Drawn dr whose frame starts at (ox, oy): the truth the pa... |
+| 372 | 5 | `static boolean notAccess(CityMap.Drawn dr, long px, long py)` | Whether frame plot (px, py) of the Drawn is not a street drawn as an access road's (or a boulevard's, which keeps its role). |
+| 379 | 13 | `static List<int[]> worksOf(CityMap m, CityMap.District d, CityMap.Drawn dr)` | The works of district d that stand where a road comes to: the yards and sea terminals the map gave its plan, and the Truck Depots among its buildings as the Drawn packs them, each {x, y, w, h} in the frame's plots. |
+| 393 | 89 | `static void accessRoutes(CityMap m)` |  |
+| 485 | 20 | `static void kept()` | ------------------------------------------------------------------ 5 |
+| 508 | 23 | `static void count(CityMap access)` | ------------------------------------------------------------------ 6 |
+| 535 | 1 | **type** `interface PlotTest` | A test of one plot. |
+| 535 | 1 | `boolean at(long px, long py)` _(in TruckRouteCheck.PlotTest)_ |  |
+| 538 | 13 | `static int samplesWhere(TruckSchedule.Route r, int from, PlotTest test)` | How many plots, reading every STEP along each leg of r from the leg that starts at point `from`, the test says yes to. |
+| 553 | 3 | `static boolean isStreet(CityMap m, long px, long py)` | Whether the plans draw a street (a code of any kind but none) on world plot (px, py): the truth the painter reads. |
+| 558 | 5 | `static boolean isRamp(CityMap m, double x, double y)` | Whether the runs mark a ramp on the plot under (x, y). |
+| 565 | 1 | `static long pk(double x, double y)` | A plot's middle packed with its plot, for a map key. |
+| 568 | 8 | `static List<int[]> worldWorks(CityMap m)` | Every work of every district of the map, each {x, y, w, h} in world plots. |
+| 578 | 5 | `static boolean atGate(List<int[]> works, double x, double y)` | Whether (x, y) is a plot's middle beside the box of one of the works. |
+| 585 | 13 | `static int rampIndex(CityMap m, TruckSchedule.Route r)` | The index of the point a world trip leaves the highways at: the last ramp among the points the trip keeps on highway plots from the arm's end (point 2) on; -1 for none. |
+| 600 | 7 | `static boolean turnsBack(TruckSchedule.Route r)` | Whether a trip turns back on itself at a point: the leg out of it runs the way the leg into it came from. |
+| 609 | 5 | `static boolean sameTrips(List<CityMap.DistrictTrips> a, List<CityMap.DistrictTrips> b)` | Whether every trip of two lists is the same, district by district and point by point. |
+| 616 | 1 | **type** `record RoadAt(long endX, long endY, long ramp)` | One road as the trips are checked against it: where it ends and the plot of the ramp its trip left the highways at. |
+| 619 | 5 | `static int plotCost(CityMap m, long px, long py)` | What it costs a truck to enter world plot (px, py): 1 on an arterial, boulevard or access street, TRIP_STREET_COST on any other street, -1 where no street is drawn. |
+| 630 | 35 | `static int cheapestLeg(CityMap m, CityMap.WorldLine line, long[] o, long ex, long ey)` | The cheapest way to world plot (ex, ey) over the streets of the box about a district (its frame, with origin o, grown by CityMap.TRIP_REACH), from any ramp in the box that carries a street and has a way along the high... |
+| 671 | 136 | `static void tripsWhole(String name, CityMap m, boolean mixed)` | Section 7 on one drawn city: every trip is whole. |
+| 811 | 4 | `static boolean hasTrips(List<CityMap.DistrictTrips> trips, CityMap.District d)` | Whether district d has trips in the list. |
+| 817 | 30 | `static void tripsOnlyDrawn(CityMap m)` | Section 8's first half, on a city nothing of which is drawn: trips plan nothing, and a district drawn later gets its trips then. |
+| 849 | 42 | `static void tripsKept(CityMap m, BuildingVisual.Type[] types)` | Section 8's second half, on a city drawn whole: the list is kept while nothing changes and made again once a plan or the runs change; no world line, no world trip. |
+| 894 | 3 | `static boolean near(double a, double b)` | ------------------------------------------------------------------ 9 |
+| 898 | 125 | `static void shares(BuildingVisual.Type[] types, CityMap trips)` |  |
+| 1026 | 61 | `static void pace()` | ------------------------------------------------------------------ 10 |
+| 1088 | 22 | `public static void main(String[] args)` |  |
 

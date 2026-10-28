@@ -39,6 +39,8 @@
 
 **Uses:** [TruckSchedule](TruckSchedule.md) (65), [GamePrefs](GamePrefs.md) (11), [GameFiles](GameFiles.md) (6), [Game](Game.md) (5), [Freight](Freight.md) (5), [MapFrame](MapFrame.md) (5), [Good](Good.md) (4), [Haulage](Haulage.md) (3), [SectorState](SectorState.md) (3), [HaulageCheck](HaulageCheck.md) (2), [Sector](Sector.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [Traffic](Traffic.md) (1)
 
+**Used by (1):** [TruckRouteCheck](TruckRouteCheck.md)
+
 ## Sections
 
 | line | section |
