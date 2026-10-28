@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**149 harness files, 15,782 labelled assertions.** AllChecks runs 149 of them.
+**150 harness files, 15,792 labelled assertions.** AllChecks runs 150 of them.
 
 ## Which harnesses read which class
 
@@ -22,6 +22,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PortCheck, ReadPathCheck |
 | [BondMarket](map/BondMarket.md) | BondCheck, CurveCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BookDesk](map/BookDesk.md) | DeskCheck, ReadPathCheck |
+| [Branding](map/Branding.md) | BrandingCheck |
 | [BridgeGround](map/BridgeGround.md) | **none** |
 | [BridgeSurvey](map/BridgeSurvey.md) | BridgeCheck, ReadPathCheck |
 | [BridgeView](map/BridgeView.md) | BridgeCheck, ReadPathCheck |
@@ -1683,6 +1684,37 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L288 ...and nothing is left to expense
   - L291 ...nor expensed again the month after
   - L294 ...and the reloaded one expenses the same next month
+
+## BrandingCheck.java - 10 labelled assertions
+
+> The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it
+> should, and the store's title art is drawn to the start screen's proportions (BR1).
+> 
+> WHY THIS EXISTS. The window's icon (ui/Branding.dress) is loaded from the classpath and a size
+> that is missing is only a log line, never an error, so a regeneration by
+> tools/branding/make_icons.py that dropped a size, or a file left out of the jar, would go unseen
+> until someone looked at a taskbar. The .ico is read by jpackage alone (Build EXE.bat), which no
+> harness runs. And the title art is drawn twice, by the start screen in JavaFX (Branding.title)
+> and for the store pages by tools/branding/make_title.py, from proportions each keeps: a change
+> to one would leave the store's logo unlike the game's. No JavaFX is needed: files are read as
+> bytes and text.
+> 
+> ...
+
+- **L77 BrandingCheck: the icon at every size, the exe's .ico, and the store's title art drawn as the start screen's (BR1)**
+- **L88 the .ico carries its sizes**
+  - L94 it is an icon file (reserved 0, type 1)
+  - L103 entry
+  - L105 entry
+  - L110 it lists exactly Branding.ICO_SIZES
+- **L113 the exe is built with it, and the drawing is kept**
+  - L122 Build EXE.bat passes --icon
+  - L125 the file it passes exists
+  - L126 and is the classpath's icon.ico
+- **L134 the title art is the start screen's**
+  - L147 make_title.py's
+  - L151 make_title.py names the widths it writes
+  - L153 branding/title.svg is there, the font inside it
 
 ## BridgeCheck.java - 107 labelled assertions
 

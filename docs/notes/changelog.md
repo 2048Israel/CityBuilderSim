@@ -18,6 +18,12 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.62 — BR1, the name and the look: Civic Ledger, its icon and its title art — 2026-10-27, ready, see docs/queue/BR1-notes.md
+The game is Civic Ledger, Jerus's pick of a shortlist checked against Steam, itch.io and the US trademark register (Ledger City turned out a live mark for game software). The start screen and the window's title say so; the repository, the exe and the save folder keep CityBuilderSim, so no player's cities are left behind.
+It has an icon at last, "towers as a chart" (four towers rising like a bar chart, each lit in one of the palette's colours, the money line along their roofs), on the window, the taskbar and, through Build EXE.bat's new --icon, the exe; and title art, "the ledger's total" (the name over an account's closing double rule, its top line climbing like a chart), which the start screen draws itself and branding/ holds for the stores.
+tools/branding/ makes all of it from the title screen's palette and font with Edge headless and the standard library; BrandingCheck holds the files to ui/Branding's lists and the store's title art to the start screen's proportions.
+The itch.io page has a new cover, eight new screenshots from a San Francisco run, and Graphics ticked in its AI disclosure.
+
 ### 0.8.61 — MP1, The map fast again — 2026-10-27, ready, see docs/queue/MP1-notes.md
 On a quiet PC main missed one map timing line, the month's map work at 5B (58 ms): 66.4, 56.9, 59.1 ms in three
 hard rounds; every other line in MP1's table passed there, so what the gates saw on 2026-10-26 was mostly the PC's

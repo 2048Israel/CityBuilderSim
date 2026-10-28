@@ -1,4 +1,7 @@
-# CityBuilderSim
+# Civic Ledger
+
+The game's name is Civic Ledger since batch BR1 (2026-10-27); the repository,
+the exe and the save folder keep the old one, CityBuilderSim.
 
 A macroeconomic city simulator in Java 21 and JavaFX. You lay out a city; the
 economy underneath it is the game. An age pyramid decides the workforce, a
@@ -78,8 +81,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **148 harnesses plus the
-4,000-odd-month playtest**, which it counts as 148 run (145 where
+`AllChecks` runs the lot, one JVM each — **149 harnesses plus the
+4,000-odd-month playtest**, which it counts as 149 run (146 where
 JavaFX is not on the classpath, which skips `BuildMenuCheck`, `KeptCheck` and `ChartFitCheck`), in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
