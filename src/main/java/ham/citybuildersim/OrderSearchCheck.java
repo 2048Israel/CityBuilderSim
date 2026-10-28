@@ -77,12 +77,34 @@ public class OrderSearchCheck {
      * 40 refused, 21 past the counted slices; the twin 83 judged and none
      * trimmed at the policy rate its city holds, and at TWIN_RATE 90 judged,
      * 2 trimmed, both past the counted slices, the deepest by 172.
+     * At FR8 (2026-10-28: the trucks' share dealt per industry, which moved
+     * the playtest's path) the city is 3,096 people at month 400 and its
+     * copy refused nothing at the city's own rate (145 judged, none refused:
+     * the orders there earn more than their interest), and its twin trimmed
+     * nothing at TWIN_RATE: of 128 orders judged, three were of more than
+     * the counted slices, and the one whose till was part of its cost (a
+     * Construction Materials Plant, 98 slices on 49 slices of till) was built
+     * whole at 40%. The month is not moved: the conditions are caused, the
+     * copy's months held at COPY_RATE and the twin's largest order put to its
+     * search under tills the check sets (tillsAsTheLine()), so that they
+     * hold on any path: the copy 167 judged, 115 refused, 40 past the
+     * counted slices; the twin 130 judged, 2 trimmed (the plant built to 24
+     * and to 49 of its 98), the deepest by 74.
      */
     static final int COPY_MONTH = 400;
     /** ...how many times over it is copied... */
     static final long COPY_TIMES = 1000;
     /** ...and the months the copy plays. */
     static final int COPY_MONTHS = 24;
+
+    /**
+     * The policy rate the copy's months are held at (FR8, 2026-10-28): the long run's dear stretch's, DEAR_RATE. At the
+     * city's own rate a copy refuses an order when its earnings are under the interest on it, and whether a city's orders
+     * are depends on its path (at month 400 FR8's copy refused none of 145; FW9's refused 40 of 99); at a dear rate the
+     * test binds on the orders that earn little (a filling station, a plant with a thin margin), as section 1's dear
+     * stretch refuses 1,160 of 1,358.
+     */
+    static final double COPY_RATE = DEAR_RATE;
 
     /**
      * The policy rate the twin's months are held at (FW9, 2026-10-25). The
@@ -183,8 +205,14 @@ public class OrderSearchCheck {
         assertTrue("the copy loads", copy.getLoadFailure() == null && copy.getMonth() == COPY_MONTH);
         Watch wc = new Watch(copy);
         copy.watchOrders(wc);
-        quietly(() -> copy.simulateMonths(COPY_MONTHS));
-        out.printf("      month %d, %,d people%n", copy.getMonth(), copy.getPopulationManager().getPopulation());
+        quietly(() -> {
+            for (int i = 0; i < COPY_MONTHS; i++) {
+                copy.getDebtManager().takeTheDial(COPY_RATE);
+                copy.simulateMonths(1);
+            }
+        });
+        out.printf("      month %d, %,d people, at a %.0f%% policy rate%n", copy.getMonth(), copy.getPopulationManager().getPopulation(),
+                COPY_RATE * 100);
         wc.report("the copy");
         assertTrue("fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some"
                 + " below the counted slices, so the search found them", wc.largestInvested > Game.COUNTDOWN_SLICES && wc.searched > 0);
@@ -219,12 +247,41 @@ public class OrderSearchCheck {
         });
         out.printf("      the twin on the rule to 0.7.112, at a %.0f%% policy rate: month %d, %,d people%n", TWIN_RATE * 100,
                 twin.getMonth(), twin.getPopulationManager().getPopulation());
+        tillsAsTheLine(twin, wt);
         wt.report("the twin");
         assertTrue("fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest",
                 wt.largestInvested > Game.COUNTDOWN_SLICES && wt.trimmed > 0);
         assertTrue("fixture: ...some by more than the counted slices, so the search found them", wt.searched > 0 && wt.deepest >= Game.COUNTDOWN_SLICES);
         wt.verdicts("the twin");
         assertTrue("fixture: ...and the twin's too", Math.abs(Math.log(twin.getForeignAccounts().getRate() / cityRate)) < Math.log(10));
+    }
+
+    /** The shares of its whole cost the twin's till is put at under its largest order (tillsAsTheLine()). */
+    static final double[] TWIN_TILLS = { .25, .5 };
+
+    /**
+     * THE TWIN'S DEEP TRIMS, CAUSED (FR8, 2026-10-28). On the rule to 0.7.112 an order is trimmed where its till stops
+     * covering it, if what it earns does not carry the interest on the rest: a trim needs an order whose till is part of its
+     * cost. The twin's own orders are such an order only by their path - at 0.8.37 and FW9 it had some, at FR8 one in a
+     * month's twenty-four (a Construction Materials Plant on 49 slices of till), built whole at 40% - so the check puts the
+     * twin's largest order to the twin's own search (Game.sliceFor(), which books nothing) with a till of TWIN_TILLS of its
+     * whole cost and an order that earns nothing: the interest on whatever it borrows is then never carried, and the order is
+     * built as far as the till pays, a quarter or a half of it. Each is told to the watch as the game tells it, so it is
+     * counted, and asked of the countdown too.
+     */
+    static void tillsAsTheLine(Game twin, Watch w) {
+        BusinessInvestment.Decision d = w.biggest;
+        if (d == null) return;
+        double whole = twin.getBusinessInvestment().getCostOf(d.template, d.quantity);
+        StringBuilder built = new StringBuilder();
+        for (double share : TWIN_TILLS) {
+            double till = whole * share;
+            Game.Afford found = twin.sliceFor(d, till, 0);
+            w.invested(d, till, 0, found);
+            built.append(built.length() == 0 ? "" : ", ").append(String.format("%,d on %.0f%%", found.quantity(), share * 100));
+        }
+        out.printf("      ...and its largest order (%,d %s) put to its search with a till of a share of its cost and an order that"
+                + " earns nothing: built to %s%n", d.quantity, d.template.getName(), built);
     }
 
     /**
@@ -420,6 +477,8 @@ public class OrderSearchCheck {
         int mostDeskCalls, mostCountDeskCalls, overBound;
         int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused;
         String firstDiffer;
+        /** The largest order judged on its interest so far (FR8, tillsAsTheLine()). */
+        BusinessInvestment.Decision biggest;
 
         Watch(Game g) { this.g = g; }
 
@@ -439,6 +498,7 @@ public class OrderSearchCheck {
         public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found) {
             invested++;
             largestInvested = Math.max(largestInvested, d.quantity);
+            if (biggest == null || d.quantity > biggest.quantity) biggest = d;
             Game.Afford byCount = investedByCount(g, d, cash, perUnitProfit);
             if (byCount.quantity() > 0 && byCount.quantity() < d.quantity) {
                 trimmed++;

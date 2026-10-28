@@ -144,6 +144,47 @@ out by a second Sonnet slice; each fixture now does this:
   buys the largest standing offer through the office (`buyTheLargestOffer()`)
   and the level is read again. A new fixture line asserts the level is kept.
 
+The gate's full suite (2026-10-28 11:55) found **4 more NEW red lines** in
+harnesses the `--pick` did not run, all fixture lines (each asserts that its
+fixture caused the condition its section tests); the assertions are untouched:
+
+- **AutoBuildCheck 7, "fixture: at the reserve its pass holds an order for the
+  money, none ordered ahead of it"**: the played young city at month 60 is 1,659
+  people with every service ahead of its need and only the schools and the police
+  held, for their payback; scanned on to month 240 at every look it never held an
+  order for the money (debt 70% to 210% of a year's GDP, no unmet need). The pass
+  had nothing to refuse. The city's general care is now retired
+  (`retireServing()`, as `deficitTown()` does to a town), the pass has the Walk-in
+  Clinic to place ($3.0M for one) and refuses it for $0.28M as the section
+  always meant; its twin orders it a month on and has 2,329 people 24 months
+  later against 1,659. A new fixture line asserts the city is short of the care
+  (0 standing, a supply of 1,200 against a demand of 1,659). Nothing is a finding:
+  a stalled young city with nothing to build is the path's, not a rule the model
+  stopped applying.
+- **OrderSearchCheck 2, the copy** ("the copy judged orders of more than
+  COUNTDOWN_SLICES on their interest, and decided some below the counted slices"):
+  at month 400 FR8's copy judged 145 orders and refused none (FW9's: 40 of 99);
+  the orders earn more than their interest on this path. The copy's months are now
+  held at `COPY_RATE` = `DEAR_RATE`, 15%, as section 1's dear stretch is (the
+  interest test made to bind, as the twin's is): 167 judged, 115 refused, 40
+  decided below the counted slices. The month is not moved.
+- **OrderSearchCheck 2, the twin** ("the twin trimmed orders of more than
+  COUNTDOWN_SLICES on their interest" and "...some by more than the counted
+  slices"): of the twin's 128 orders only three were over the counted slices and
+  none was trimmed; the one with a till that was part of its cost, a Construction
+  Materials Plant of 98 on 49 slices of till, was built whole at 40% (it is
+  trimmed only at the dial's top, by 24, and only on this path: at month 300 no
+  order is, at 500 one is, by 71). The trim needs an order whose till is part of
+  its cost, which a path may or may not give, so `tillsAsTheLine()` causes it: it
+  puts the twin's largest order to the twin's own search (`Game.sliceFor()`,
+  which books nothing) with a till of a quarter and of a half of its cost and an
+  order that earns nothing, told to the watch as the game tells it and asked of
+  the countdown too: built to 24 and to 49 of 98, and the twin's verdict lines
+  (the search is the countdown's) hold over them.
+
+The full suite after these three mends (`./batch-check.sh`, 2026-10-28): 150
+harnesses, exit 0; MapCheck's one timing assertion is soft there and not counted.
+
 ## 7. Not built, and what is left
 
 - **Not this batch's**: the screens' per-sector shares (FR4 reads the city's;

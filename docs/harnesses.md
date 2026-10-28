@@ -747,30 +747,30 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1032 saved and loaded before the next month, the card carries the same line
   - L1036 switched off, it holds nothing back, and the card carries no line
   - L1048 a building automatic building builds carries no such line
-- **L1153 7. a young city refused for a small sum keeps building (FW4)**
-  - L1182 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
-  - L1374 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
-  - L1397 ...and its log says the first was more than the money would pay for
-  - L1433 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
-  - L1438 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
-  - L1471 fixture: the town short of a service, with no ground free
-  - L1486 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
-  - L1492 ...its log's order carries the ground: its square feet, price and places
-  - L1511 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
-  - L1512 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
-  - L1535 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
-  - L1569 over the limit it buys no ground and places nothing, and borrows nothing
-  - L1609 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
-  - L1611 it buys none of them - no field for its ore - and holds the order for want of ground
-  - L1614 ...and the inbox says so, naming the land office
-  - L1617 ...settled the month it is switched off
-  - L1685 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
-  - L1739 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
-  - L1764 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
-  - L1769 ...and the inbox says the city is over the limit, and names Build from cash anyway
-  - L1800 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
-- **L1817 8. care of every kind is essential, on a deficit (CC1-S)**
-  - L1858 a school is not an essential service: on the same sort of deficit it is held for the payback, not ordered
+- **L1174 7. a young city refused for a small sum keeps building (FW4)**
+  - L1211 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
+  - L1403 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
+  - L1426 ...and its log says the first was more than the money would pay for
+  - L1462 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
+  - L1467 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
+  - L1500 fixture: the town short of a service, with no ground free
+  - L1515 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
+  - L1521 ...its log's order carries the ground: its square feet, price and places
+  - L1540 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
+  - L1541 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
+  - L1564 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
+  - L1598 over the limit it buys no ground and places nothing, and borrows nothing
+  - L1638 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
+  - L1640 it buys none of them - no field for its ore - and holds the order for want of ground
+  - L1643 ...and the inbox says so, naming the land office
+  - L1646 ...settled the month it is switched off
+  - L1714 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
+  - L1768 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
+  - L1793 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
+  - L1798 ...and the inbox says the city is over the limit, and names Build from cash anyway
+  - L1829 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
+- **L1846 8. care of every kind is essential, on a deficit (CC1-S)**
+  - L1887 a school is not an essential service: on the same sort of deficit it is held for the payback, not ordered
 
 ## BankCheck.java - 515 labelled assertions
 
@@ -15144,37 +15144,37 @@ _(this harness does not label its checks through a helper - it prints its findin
 > doubles down and halves (Game, THE LARGEST SLICE, WITHOUT COUNTING TO IT).
 > ...
 
-- **L138 1. a long run, every order watched**
-  - L163 the long run
-  - L164 fixture: the run sized orders, and judged them on their interest, refusing some
-  - L166 fixture: ...and bought on a mortgage, trimmed and refused some
-  - L168 the long run
-- **L170 2. the same city, a thousand times over**
-  - L183 the copy loads
-  - L188 the copy
-  - L189 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
-  - L191 the copy
-  - L195 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
-  - L210 the twin loads, at the copy's month
-  - L222 the twin
-  - L223 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
-  - L225 fixture: ...some by more than the counted slices, so the search found them
-  - L226 the twin
-  - L227 fixture: ...and the twin's too
-- **L296 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
-  - L329 on a test that holds on a run from one, the search finds the countdown's slice every time
-  - L330 ...and never asks more than deskCallsMost() times
-  - L354 fixture: some were decided inside the counted slices, and some below them
-  - L356 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
-  - L357 ...and below them it finds a slice that passes with the next one up failing
-- **L363 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
-  - L406 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
-  - L408 every order on the grid is the count's: its size, what trimmed it and the facts for one
-  - L409 ...reading fewer costs than the count
-  - L487 every order's size in
-  - L488 every trim and refusal in
-  - L489 every mortgage in
-  - L490 no order in
+- **L160 1. a long run, every order watched**
+  - L185 the long run
+  - L186 fixture: the run sized orders, and judged them on their interest, refusing some
+  - L188 fixture: ...and bought on a mortgage, trimmed and refused some
+  - L190 the long run
+- **L192 2. the same city, a thousand times over**
+  - L205 the copy loads
+  - L216 the copy
+  - L217 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
+  - L219 the copy
+  - L223 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
+  - L238 the twin loads, at the copy's month
+  - L251 the twin
+  - L252 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
+  - L254 fixture: ...some by more than the counted slices, so the search found them
+  - L255 the twin
+  - L256 fixture: ...and the twin's too
+- **L353 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
+  - L386 on a test that holds on a run from one, the search finds the countdown's slice every time
+  - L387 ...and never asks more than deskCallsMost() times
+  - L411 fixture: some were decided inside the counted slices, and some below them
+  - L413 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
+  - L414 ...and below them it finds a slice that passes with the next one up failing
+- **L420 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
+  - L463 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
+  - L465 every order on the grid is the count's: its size, what trimmed it and the facts for one
+  - L466 ...reading fewer costs than the count
+  - L547 every order's size in
+  - L548 every trim and refusal in
+  - L549 every mortgage in
+  - L550 no order in
 
 ## OutsideCheck.java - 104 labelled assertions
 

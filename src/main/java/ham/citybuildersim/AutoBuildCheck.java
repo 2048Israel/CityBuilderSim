@@ -1107,6 +1107,19 @@ public class AutoBuildCheck {
         return g;
     }
 
+    /** Every building that serves a measure retired, and how many were: the city short of that service (deficitTown() does as much to a town). */
+    static int retireServing(Game g, BuildAdvice.Measure m) {
+        int retired = 0;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            int n = m.serves(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;
+            if (n > 0) {
+                g.getBuildingManager().retire(t, n);
+                retired += n;
+            }
+        }
+        return retired;
+    }
+
     /** The first step of a pass that was held for the money, none ordered ahead of it: the order the pass would place, were the money there. */
     static AutoBuilder.Step firstRefused(AutoBuilder ab) {
         for (AutoBuilder.Step s : ab.steps()) {
@@ -1148,6 +1161,14 @@ public class AutoBuildCheck {
      * founding settles ($195M to $90M by month 80; the debt is $136.6M throughout), so the pinned limit is passed within
      * a month and the pass is over it: "builds nothing and borrows nothing", whatever the cash. That is the limit's
      * design, not the refusal's; it is printed as an info line, and the twin is what the refusal alone does.
+     *
+     * WHY THE YOUNG CITY IS MADE SHORT OF GENERAL CARE (FR8, 2026-10-28). The refusal needs an order for the pass to
+     * refuse, and the played city has one only if its path leaves a need unmet. FR8 moved the path: the city at month 60 is
+     * 1,659 people with every service ahead of its need and only the schools and the police held, for their payback, not
+     * the money; played on to month 240 at every look, its pass held nothing for the money once (the debt over a year's
+     * GDP 70% to 210%, never an unmet need). So the city's general care is retired - the clinic it has - and the pass has
+     * an order to refuse whatever the path: the Walk-in Clinic, $2.98M for one, refused for $0.28M; the twin orders it a
+     * month on and has 2,329 people 24 months later against 1,659.
      */
     static void youngRefused(Path root) {
         out.println("\n--- 7. a young city refused for a small sum keeps building (FW4) ---");
@@ -1160,6 +1181,11 @@ public class AutoBuildCheck {
         try {
             Game g = youngCity(files);
             AutoBuilder ab = g.getAutoBuilder();
+            // The young city short of general care (FR8): see the note on the section.
+            BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+            quietly(() -> retireServing(g, care));
+            int standing = AutoBuilder.serving(g, care);
+            double[] supplyDemand = BuildAdvice.supplyDemand(g, care, new LinkedHashMap<>());
             // The limit pinned where no bond fits, and the city saved so, for the copies.
             double[] pinned = new double[1];
             quietly(() -> pinned[0] = nearTheLimit(g));
@@ -1178,6 +1204,9 @@ public class AutoBuildCheck {
                             + " debt %.1f%% of a year's GDP, the limit pinned at %.0f%% where no bond fits", g.getMonth(), people,
                             YOUNG_PEOPLE, AutoBuilder.ratio(g) * 100, limit * 100),
                     saved[0] && g.getMonth() >= YOUNG_MONTH && people < YOUNG_PEOPLE && ab.isOn() && ab.within(g));
+            assertTrue(String.format("fixture: the young city is short of general care - %d standing or on site, a supply of %,.0f against"
+                            + " a demand of %,.0f - so that its pass has an order to place", standing, supplyDemand[0], supplyDemand[1]),
+                    standing == 0 && supplyDemand[1] > supplyDemand[0]);
             if (target == null) {
                 assertTrue("fixture: at the reserve its pass holds an order for the money, none ordered ahead of it", false);
                 return;

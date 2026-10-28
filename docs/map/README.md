@@ -4,7 +4,7 @@ Generated 2026-10-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 436 files, 468,712 lines, 19,989 methods, 4,438 constants. `GameVersion.VERSION` is "0.8.63", `SAVE_FORMAT` 47.
+**The tree:** 436 files, 468,801 lines, 19,991 methods, 4,440 constants. `GameVersion.VERSION` is "0.8.63", `SAVE_FORMAT` 47.
 
 ## model (203 files)
 
@@ -297,7 +297,7 @@ Generated 2026-10-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AgricultureCheck.java](AgricultureCheck.md) | 413 | 7 | The ground under the loaf. | 0 |
 | [AllChecks.java](AllChecks.md) | 479 | 16 | Runs every harness, one JVM each, and says which failed. | 2 |
 | [AuctionCheck.java](AuctionCheck.md) | 1,654 | 42 | The city's paper sold at auction: one clearing yield, and what it costs. | 0 |
-| [AutoBuildCheck.java](AutoBuildCheck.md) | 1,893 | 43 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
+| [AutoBuildCheck.java](AutoBuildCheck.md) | 1,922 | 44 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 0 |
 | [BankCheck.java](BankCheck.md) | 4,325 | 22 | The commercial bank, and the families it discharges. | 1 |
 | [BondCheck.java](BondCheck.md) | 1,581 | 37 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
 | [BooksCheck.java](BooksCheck.md) | 299 | 3 | Verifies a sector's income statement and balance sheet, off the template. | 0 |
@@ -398,7 +398,7 @@ Generated 2026-10-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [OilCheck.java](OilCheck.md) | 2,232 | 44 | Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K; the project's spec-land.md 2.7 and section 3's K entry). | 1 |
 | [OilViewCheck.java](OilViewCheck.md) | 706 | 20 | The oil industry screen (0.7.96, batch O12; docs/studies/spec-oil.md 2.13): OilView's figures, words, chart and levers, held to the model's own rea... | 0 |
 | [OrderBookCheck.java](OrderBookCheck.md) | 297 | 16 | The limit-order book (0.7.12), on its own: the rules any instrument trades by, proved on a book that knows nothing about what it trades. | 0 |
-| [OrderSearchCheck.java](OrderSearchCheck.md) | 577 | 19 | The three order searches against the countdowns they replaced (0.7.54). | 1 |
+| [OrderSearchCheck.java](OrderSearchCheck.md) | 637 | 20 | The three order searches against the countdowns they replaced (0.7.54). | 1 |
 | [OutsideCheck.java](OutsideCheck.md) | 699 | 5 | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). | 0 |
 | [PassThroughCheck.java](PassThroughCheck.md) | 601 | 19 | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUG... | 0 |
 | [PlanCheck.java](PlanCheck.md) | 3,910 | 132 | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway... | 4 |
