@@ -1,7 +1,7 @@
 # FR8 - the trucks' share dealt per industry: notes ({next}, 2026-10-28)
 
 The brief is `docs/queue/FR8.md` (Jerus, 2026-10-20, on FR2's ★5: "pool per
-industry"). Built by the batch agent (Opus) with one Sonnet slice.
+industry"). Built by the batch agent (Opus) with two Sonnet slices.
 
 ## 1. What shipped
 
@@ -62,10 +62,11 @@ industry"). Built by the batch agent (Opus) with one Sonnet slice.
    share for the month by design (shares struck at the haul, FR2's ★9); whether a
    scrapped station should end the month's rail shares at once is left (§7).
 
-## 3. The slice, and what the review changed
+## 3. The slices, and what the review changed
 
-One Sonnet slice (xhigh): the deal, the readers, the save, LongPlaytest's count
-and HaulageCheck 11. The review changed: ★3 (a sector asking nothing read the
+Slice 1 (Sonnet, xhigh): the deal, the readers, the save, LongPlaytest's count
+and HaulageCheck 11. Slice 2 (Sonnet, xhigh): MapCheck's three fixtures (§6).
+The review of slice 1 changed: ★3 (a sector asking nothing read the
 newest share, 0 in a short month with no growth), which restored section 3's
 bitwise "the mine ... was billed nothing" (the slice had loosened it to a
 residue of 1e-12); 11b, 11c and 11e to the literal 1; HomeRailCheck (★4).
@@ -106,14 +107,42 @@ lowest seed doubled); ZERO_SLACK 159,060 against 171,863; 40,000 people in 16 of
 
 ## 6. The suite
 
-`./batch-check.sh --pick ReadPathCheck ScaleCheck` (21 picked, LongPlaytest in
-Sector.java's place): every harness green but MapCheck, after ★4. **MapCheck
-is a NEW red on FR8's path, 7 lines**, and main's recorded line passes. Its
-fixture city is smaller by month 122 (1,129 owned plots against main's 1,513),
-the highway hub it lays toward moves from (48,48) to (80,-16), and sixty months
-of Elevated Highways never cross the founding district ("0 plots, month -1");
-the picked-block fixture fails beside it. MapCheck is CC1-M's file this day, so
-FR8 leaves it untouched.
+`./batch-check.sh --pick ReadPathCheck ScaleCheck`, on main 0.8.63 merged in
+(CC1-M; its trace is main's, so the ensemble stands), LongPlaytest picked in
+Sector.java's place. HomeRailCheck went red on FR8's path and is mended (★4).
+**MapCheck went red on 7 lines**, all fixtures that caused their condition only
+on main's path: its played city reaches month 121 with 13 land purchases
+against 20. The orchestrator's ruling (a fixture must cause its condition on
+any path; assertions and budgets unchanged, section 8 left to FW11) was carried
+out by a second Sonnet slice; each fixture now does this:
+
+- **2d, "fixture: Elevated Highways are laid in the district and reach a street"
+  and "highways laid in a district's buildings move none of them"**: the
+  highways start at the dry crossing of their lattice nearest the site that the
+  city owns, and FR8's founding district owns none (the hub went to (80,-16) in
+  the district beside, and sixty months laid nothing in the district). The
+  fixture now hands the city the unowned blocks in a square round the dry
+  crossing nearest the site (`highwayCrossing()`, `handGroundRound()`, as 2c
+  hands blocks), runs a month on that ground, and lays the highways as before:
+  56 plots among 397 boxes, 38 within a plot, none moved. A new fixture line
+  says the square is the city's.
+- **11, "every month redraws the pictures of the districts whose plots moved"**:
+  the played city entered the window broke (cash -900 at m121; main's held
+  25,764) and its advisor built nothing for 120 months. The run now hands it
+  `PICTURE_CASH_MONTHS` (3) months of its GDP at each advisor look when it holds
+  less (`handCash()`): 102 district-months with counts moved, 101 pictures
+  redrawn. This is not a stall of FR8's: played on without the cash, main's city
+  sits on an empty treasury at about 2,200 people from m145 to m277 too, and
+  FR8's grows out of it by m361 (4,050 people against main's 3,819).
+- **14e, the four picked-block lines** ("the city's buying the offer over a
+  picked block drops the block it owns whole...", "fixture: one of its blocks may
+  be picked", "a draft bought through Game.buyLandParcel()...", "...and the offer
+  whose ground it bit left the shelf"): the city stood 16 plots under its next
+  block level, so every offer's purchase changed the blocks' size and the picks
+  dropped for that reason. The buyer is now an offer whose purchase, and a block
+  after it, keep the level (`ownBlocksKeepingLevel()`); with none, the city first
+  buys the largest standing offer through the office (`buyTheLargestOffer()`)
+  and the level is read again. A new fixture line asserts the level is kept.
 
 ## 7. Not built, and what is left
 
@@ -122,5 +151,4 @@ FR8 leaves it untouched.
   The manual's sentence "One share serves the whole city, so a giant works landing
   slows every bulk sector" is stale until its next edition.
 - **Left (FR8-C)**: a station scrapped after the haul leaves the month's home,
-  quay and boundary rail shares in force (★4); MapCheck's highway and picked-block
-  fixtures read the city's path (§6).
+  quay and boundary rail shares in force (★4).
