@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -107,12 +108,27 @@ import java.util.TreeSet;
  *      to the pixel, none shared; a part of no length, or none at all, has no
  *      label and does not disturb the others.
  *
+ *  21. THE COAST ACROSS A SAVE (CC1-M): section 16's coast city, saved at
+ *      COAST_SAVED_AT, when its railway's main line has run on past an arm
+ *      that waits at the sea, reads back the same map (same(), every arm's
+ *      stoppedBy, written again byte for byte); and read back and reconciled
+ *      beside the live map with the same counts and months - the month after
+ *      with the counts held, on to MapCheck.MONTHS as they rose, and
+ *      COAST_HELD months past it - the two maps and the sidecars they write
+ *      are the same every month. A sidecar of FORMAT 12, which has no
+ *      stoppedBy, read back and reconciled the month after has a shorter
+ *      railway (the fixture causes it: the main line taken back past the sea
+ *      and laid again).
+ *
  * WHY THIS EXISTS: batch FR0 finds the land's mirror of SeaRoutes' offing,
  * so the highway and railway know which way the world is. A fixture CAUSES
  * each condition rather than waiting for a map to. Batch FX2 sections 16 to
  * 19: Jerus's Halifax had the line to the world start on the harbour's open
  * water and every train run out over it, its label ran off the view, and the
- * first Elevated Highway stood alone in a block.
+ * first Elevated Highway stood alone in a block. Batch CC1-M section 21: a city read back
+ * from its save laid its railway's main line again shorter, for good, on a coast, because
+ * what had stopped each arm at the sea was not saved; the map after a load is the map
+ * before it.
  */
 public class GatewayCheck {
 
@@ -120,6 +136,12 @@ public class GatewayCheck {
 
     /** The coast fixture's railway: each track type's count times this, 10 - enough track that the railway's gate arm reaches the coast and waits at the sea (section 16). */
     static final int COAST_TRACK_TIMES = 10;
+
+    /** The month section 21 saves the coast city at: past the month its main line first runs on beyond an arm that waits at the sea, between 55 and 60 on this world (CC1-M's loads at every fifth month: the first to come back shorter was 60's). */
+    static final int COAST_SAVED_AT = 100;
+
+    /** The months section 21 plays past MapCheck.MONTHS with the counts held. */
+    static final int COAST_HELD = 10;
 
     /** Jerus's founding site, Halifax (section 17), in degrees. */
     static final double HALIFAX_LAT = 44.656780322078724, HALIFAX_LON = -63.613890005401984;
@@ -522,6 +544,7 @@ public class GatewayCheck {
         labelSection();
         undrawnSection();
         togetherSection();
+        coastAcrossASave();
 
         System.out.println();
         System.out.println(fails == 0 ? "The gateways are found." : fails + " FAILED");
@@ -1056,5 +1079,90 @@ public class GatewayCheck {
         drawnWhole("at " + n, at);
         CityMap big = gatewayCity(types, 100, 10);
         drawnWhole("at 100 Elevated Highways and 10 Freight Lines", big);
+    }
+
+    /** A map read back from a sidecar, on the live map's ground, as section 12 reads one. */
+    static CityMap readBack(CityMap m, byte[] sidecar, int month) {
+        return CityMap.readSidecar(sidecar, m.land(), res -> m.land().amountsInOrder(res), m.types(), month, CityMap.stampIn(sidecar));
+    }
+
+    /** Whether every arm of both nets in two runs was last stopped by the same thing (CityRuns.Arm.stoppedBy). */
+    static boolean sameStops(CityRuns a, CityRuns b) {
+        CityRuns.Net[] p = { a.highways(), a.rail() }, q = { b.highways(), b.rail() };
+        for (int k = 0; k < 2; k++) {
+            if (p[k].arms.size() != q[k].arms.size()) return false;
+            for (int i = 0; i < p[k].arms.size(); i++) if (p[k].arms.get(i).stoppedBy != q[k].arms.get(i).stoppedBy) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Section 21 (CC1-M): section 16's coast city built month by month to COAST_SAVED_AT, its sidecar written and read back, and the live map
+     * and the one read back reconciled together on to MapCheck.MONTHS and COAST_HELD months past it. Before CC1-M the sidecar did not keep
+     * what had stopped each arm (CityRuns.Arm.stoppedBy), so the first month after a load took the railway's main line back past its first sea
+     * turn and laid it again shorter. The FORMAT 12 copy of the same save shows the fixture causes that.
+     */
+    static void coastAcrossASave() {
+        System.out.println("\n--- the coast across a save: the map after a load is the map before it ---");
+        BuildingVisual.Type[] types = gatewayTypes();
+        World w = World.of(Founding.DEFAULT_WORLD_SEED);
+        long[] last = coastCounts(types), now = new long[last.length];
+        CityMap m = MapCheck.coastal(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, now);
+        for (int month = 1; month <= COAST_SAVED_AT; month++) {
+            for (int t = 0; t < last.length; t++) now[t] = last[t] * month / MapCheck.MONTHS;
+            m.reconcile(now, month);
+        }
+        CityRuns.Net rail = m.runs().rail();
+        int gate = CityRuns.gateArm(rail, m.gateway());
+        boolean waits = gate >= 0 && rail.arms.get(gate).stoppedBy == CityRuns.SEA;
+        int onPast = 0;
+        if (gate >= 0) {
+            List<Integer> order = CityRuns.spineOrder(rail, gate);
+            for (int k = 1; k < order.size(); k++) if (rail.arms.get(order.get(k)).steps > 0) onPast++;
+        }
+        System.out.printf("  at month %d: the railway has %,d plots, its gate arm %s the sea, %d arm(s) after it in the spine's order laid%n",
+                COAST_SAVED_AT, rail.plots(), waits ? "waits at" : "does not wait at", onPast);
+        check("fixture: at the month saved the railway's gate arm waits at the sea", waits);
+        check("...and the main line runs on past it: an arm after the gate arm in the spine's order is laid", onPast > 0);
+
+        // Both readings of the live map, FORMAT 13 and FORMAT 12, before anything is reconciled past the month saved.
+        byte[] saved = m.writeSidecar(COAST_SAVED_AT), saved12 = m.writeSidecar(COAST_SAVED_AT, 12, true);
+        CityMap read = readBack(m, saved, COAST_SAVED_AT), old = readBack(m, saved12, COAST_SAVED_AT);
+        check("the sidecar written then reads back", read != null);
+        check("...a FORMAT 12 sidecar of the same map reads back too", old != null);
+        if (read == null || old == null) return;
+        check("...the map read back is the live map: same()", read.same(m));
+        check("...every arm of both nets holds what last stopped it, as the live arm does", sameStops(m.runs(), read.runs()));
+        check("...written again at once, it is the same file as the live map's, byte for byte",
+                Arrays.equals(read.writeSidecar(COAST_SAVED_AT), m.writeSidecar(COAST_SAVED_AT)));
+
+        // The month after with the counts held, then the counts rising as before to MapCheck.MONTHS, then held for COAST_HELD months.
+        int expected = MapCheck.MONTHS - COAST_SAVED_AT + COAST_HELD;
+        int compared = 0, differ = 0, firstDiffer = -1;
+        long oldPlots = -1, livePlots = -1;
+        for (int month = COAST_SAVED_AT + 1; month <= MapCheck.MONTHS + COAST_HELD; month++) {
+            if (month > COAST_SAVED_AT + 1 && month <= MapCheck.MONTHS) for (int t = 0; t < last.length; t++) now[t] = last[t] * month / MapCheck.MONTHS;
+            m.reconcile(now, month);
+            read.reconcile(now, month);
+            if (month == COAST_SAVED_AT + 1) {
+                old.reconcile(now, month);
+                oldPlots = old.runs().rail().plots();
+                livePlots = m.runs().rail().plots();
+            }
+            compared++;
+            if (!m.same(read) || !Arrays.equals(m.writeSidecar(month), read.writeSidecar(month))) {
+                differ++;
+                if (firstDiffer < 0) firstDiffer = month;
+            }
+        }
+        System.out.printf("  %d months compared after the load (months %d to %d), %d differ%s; the railway at the end: %,d plots on the live map, %,d on the map read back%n",
+                compared, COAST_SAVED_AT + 1, MapCheck.MONTHS + COAST_HELD, differ, firstDiffer < 0 ? "" : " (the first, month " + firstDiffer + ")",
+                m.runs().rail().plots(), read.runs().rail().plots());
+        check("every month after the load is compared: " + expected, compared == expected && compared > 0);
+        check("...and in none the map read back, or the sidecar it writes, differs from the live map's", differ == 0);
+        System.out.printf("  the same save at FORMAT 12, reconciled the month after with the counts held: the railway has %,d plots, the live map's %,d%n",
+                oldPlots, livePlots);
+        check("fixture: read back from FORMAT 12 the railway is shorter the month after (the main line taken back past the sea and laid again)",
+                oldPlots >= 0 && oldPlots < livePlots);
     }
 }

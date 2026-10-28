@@ -1,8 +1,11 @@
-# gate of Merge batch/SC1: scaleCheck's "...and it builds" read on a city that needs homes: its fixture city has 6,768 places for 5,734 people, so neither it nor its copy builds (Jerus, 2026-10-20: "Queue a check fix"), 0.8.62
+# gate of Merge batch/CC1-M: the city map did not survive a save once: LongPlaytest -Dplaytest.childcare at m1,184 (slot 3), a run the map sidecar has not met before; not childcare's - nothing in the model reads the map; MapCheck's area (Jerus, 2026-10-18: its own batch), 0.8.63
 # date: 2026-10-28
 # earth-2.bin: named
-# suite: 150 harnesses run in 1170s: 149 passed, 1 failed
-# timing: 12 harnesses run in 393s: 11 passed, 1 failed
+# suite: 150 harnesses run in 572s: 149 passed, 1 failed
+# timing: 12 harnesses run in 445s: 10 passed, 2 failed; its red lines were judged side by side with main's, below
+# timing red not the batch's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 8.35 ms, batch 8.66 ms (+3.6%), budget 8 ms: within 15% of main's]
+# timing red not the batch's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.63 — CC1-M, the city map across a save — 2026-10-28, ready, see docs/queue/CC1-M-notes.md
+The map's failure of 2026-10-12 (CC1's childcare playtest, m1,184) was a reset railway net keeping its hub, so the map read back from a save was not the same; FR6 mended it on 2026-10-19 (64ab8773) without knowing it was this row, and CC1's own tree rebuilt here fails without that line and passes with it. Looking at the month after a load (FW6-C's ★1) found the one map that still moved: on a coast where the railway's main line runs on past the sea, the first month after a load took the line back past its sea turn and laid it again shorter, for good (293 plots against 297), because what had stopped each arm (`CityRuns.Arm.stoppedBy`) was not saved. The sidecar keeps it now, FORMAT 13 (a byte an arm; an older sidecar reads as before). GatewayCheck 21 causes it and holds the map and its sidecar byte for byte across a save and 30 months on; ReloadCheck compares `mapStamp` again. The map's alone: no save-format change, the trace is main's, no ensemble.
+
 ### BM1 — the batch manual split by reader, and one in, one out — 2026-10-28, ready, no tag (docs), see docs/queue/BM1-notes.md
 `docs/batch.md` was 499 lines and every batch session read all of it, though it needs about the 130 of "A batch session". It is now that checklist alone (10 steps, to a pushed branch with its ship file last), and the orchestrator's part (the day, the gate, the screen-check session, the PC, the Earth file, the other assistants, which model, the docs pass) is the new `docs/orchestrator.md`; `CLAUDE.md` names both and says who reads which.
 Every rule TM3, GP1, RL1 and SP1 added is kept, each with a one-line WHY naming its incident; the lessons (a)-(f) and the longer stories are `docs/notes/batch-history.md`. A batch's report is now "ready, see the ship file" plus its ★ calls with recommendations.

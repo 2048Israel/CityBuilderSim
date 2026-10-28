@@ -2,7 +2,7 @@
 
 Generated 2026-10-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**150 harness files, 15,821 labelled assertions.** AllChecks runs 150 of them.
+**150 harness files, 15,804 labelled assertions.** AllChecks runs 150 of them.
 
 ## Which harnesses read which class
 
@@ -8527,7 +8527,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L938 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
   - L940 ...and the rule's bid makes way for as much of the order as it would otherwise take
 
-## GatewayCheck.java - 122 labelled assertions
+## GatewayCheck.java - 132 labelled assertions
 
 > A city's gateway is the way the world is.
 > 
@@ -8543,149 +8543,160 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   3. TWO EQUAL ARMS, east and south, tie; the gateway is one of the two,
 > ...
 
-  - L226 with gateway
-  - L227 ...and only the
-  - L242 ...laid past the edge, the
-  - L245 ...and no highway plot lies outside the box
-  - L257 ...and taking back fewer plots takes from the
-- **L267 1. a strip of land east**
-  - L272 a strip east gives a gateway
-  - L273 ...whose bearing is east (0)
-  - L274 ...and whose bearing is a multiple of the step
-  - L277 ...and whose point lies on the city's edge on that bearing
-  - L280 ...and is the city's radius out
-- **L283 2. an island founding**
-  - L290 land only within a small disc round the site has no gateway
-- **L293 3. a tie**
-  - L300 equal arms east and south tie, and the gateway is one of the two lone tied bearings
-  - L302 ...and the tied bearing is a multiple of the step
-  - L305 ...and its point lies on the city's edge on that bearing
-  - L316 two founding sites in the same cell pick different tied bearings (the hash, not the smaller bearing)
-  - L317 ...one picks east
-  - L318 ...and the other picks south
-  - L320 no two offsets in the cell pick differently; the site's own pick is one of the two
-- **L323 4. a half-plane of land west**
-  - L327 every westward bearing runs to the cap, and the gateway is the middle of that arc (180)
-- **L330 5. the threshold**
-  - L334 a strip one cell short of the reach has no gateway
-  - L338 a strip that just reaches has one
-  - L339 ...on the east bearing
-- **L341 6. the default world**
-  - L347 the default world's gateway is deterministic
-  - L350 ...its point lies on the city's edge on that bearing
-  - L354 ...and the cell at its point is land
-  - L362 ...with none, its best land run is short of the reach
-- **L367 7. twelve real generated worlds**
-  - L376 at least one of the twelve worlds has a gateway
-- **L378 8. a full tie is not due east for everyone**
-  - L390 an all-land ground finds a gateway at each of 24 founding sites
-  - L391 ...and every full tie's bearing is a multiple of the step
-  - L392 ...with at least 6 distinct bearings among them
-- **L395 9. the Earth's rule**
-  - L399 one larger place due north wins the north bearing (270)
-  - L405 a nearer place whose way is sea is passed over for the farther clear one (east)
-  - L409 an empty Earth list falls back to the land rule's own answer
-  - L411 ...and a null list does too
-- **L413 10. the spine is laid toward the gateway**
-- **L418 11. no gateway lays as before**
-  - L433 with no gateway the row's two arms both grow first
-  - L434 ...and no column arm has grown yet
-- **L436 12. the sidecar keeps it**
-  - L445 the catalog has a highway type
-  - L449 a square city's runs have found a gateway (or found none)
-  - L452 FORMAT 8 writes the gateway and reads it back the same
-  - L455 a FORMAT 7 sidecar reads it back unknown
-  - L457 ...and the next layRuns finds the same gateway again
-- **L459 13. what finding one costs**
-- **L468 14. the world line**
-  - L472 the catalog has a highway and a track type
-  - L475 the fixture has a gateway
-  - L483 a world line's net is a highway or the railway
-  - L485 ...its bearing is the gateway
-  - L487 ...its point is ground the city does not own
-  - L492 ...and the plot one step back along the gate arm's heading is owned
-  - L495 worldLines() has one line for the highway, whose gate arm is laid
-  - L496 ...and one for the railway, whose gate arm is laid
-  - L499 with NO_GATEWAY set there are no world lines
-- **L501 15. the cache**
-  - L508 two calls with nothing changed return equal lists
-  - L514 a month's runs move changes()
-  - L516 after the runs move, the world lines are recomputed equal to a fresh map's
-  - L650 ...and on dry ground
-  - L651 ...at the end of a laid arm's track
-  - L652 ...within WORLD_GAP plots of it along its heading
-  - L653 ...every plot between the arm's end and the point owned and dry
-  - L654 ...its reach from TrainSchedule.WORLD_PLOTS to CityMap.WORLD_REACH
-  - L655 ...every point along its way, every WORLD_STEP, on dry ground
-  - L656 ...and it runs as far as the land does: the next point is not dry, or the reach is the most
-  - L681 ...every route's first point is WORLD_PLOTS out along the line's way
-  - L682 ...it passes the line's point, within the curve's radius (FX5: its turns are rounded)
-  - L683 ...and the main arm's end plot's middle, within the radius: the train meets the line where the track ends
-  - L684 ...no point of any leg on water off the track
-- **L700 the line to the world leaves on land, on a generated coast**
-  - L707 fixture: the coast city has a gateway and a railway whose gate arm is laid
-  - L713 fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water
-  - L715 the coast
-  - L718 the coast: the railway has a line, so the checks above are not vacuous
-  - L719 ...and its main arm is not the gate arm
-- **L730 the coast's months: the line on land as the city grows**
-  - L750 the coast's months: some months have a world line and trains' routes, so the run exercised the rule
-  - L751 ...and no month has a line's point or a train position on water off the track
-- **L756 Halifax on the Earth, when earth-2.bin is named**
-  - L760 the file -D
-  - L783 fixture: Halifax has a gateway and a railway whose gate arm is laid
-  - L789 fixture (ET6): Halifax's railway gate arm no longer waits at the harbour - it bridges the shallow water to the city's edge, so FR0's walk crosses none of the...
-  - L791 Halifax
-  - L794 Halifax: the railway has a line, so the checks above are not vacuous
-  - L796 the Earth's file opens:
-  - L824 ...the label is placed
-  - L827 ...its box lies inside the view by WORLD_LABEL_PAD on every side
-  - L828 ...its baseline's left end on the line's part
-  - L831 ...at the first place from FR0's spot that fits: a pixel nearer the far end does not
-- **L837 the label stays in view**
-  - L838 a line leaving the right edge
-  - L839 a line leaving the top edge
-  - L840 a line leaving the bottom edge
-  - L841 a line leaving the top right corner
-  - L844 a line ending well inside the view keeps FR0's spot, WORLD_LABEL_BACK from its far end
-  - L853 a part of
-  - L855 ...the label still lies inside the view
-  - L857 a part of no length has no label
-  - L858 a view smaller than the label and its pads has none either
-- **L875 two lines leaving together get labels apart, or one**
-  - L880 fixture: two parts three pixels apart on one bearing are both placed by worldLabelAt() alone
-  - L881 ...and, drawn so (as MapView did), their boxes overlap: the words print over each other
-  - L887 fixture: two parts of 100 px, three apart, fit no label anywhere on them, and worldLabelAt() puts both on one spot
-  - L892 worldLabels() gives each of two parts leaving together a label
-  - L896 ...the first keeps worldLabelAt()'s place to the pixel
-  - L897 ...the boxes are clear of each other by WORLD_LABEL_PAD
-  - L898 ...each lies inside the view by WORLD_LABEL_PAD, on its own part
-  - L900 ...and each names its own line: neither is shared
-  - L904 ...the five-argument form reads the shared words' width off the characters and places the same
-  - L909 two parts with no clear place anywhere have one label between them: the first names both, the second has none
-  - L915 ...and, the shared words being wider, it lies whole inside the view
-  - L923 lines on opposite sides of the view keep worldLabelAt()'s places to the pixel
-  - L926 ...and neither is shared
-  - L931 a part of no length has no label, nor has a line with no part
-  - L932 ...and the line after them keeps worldLabelAt()'s place
-  - L933 a call with no parts returns no labels
-  - L1026 ...the highways are drawn: there is a piece
-  - L1027 ...every highway plot drawn lies in a piece holding a ramp on a cell line
-  - L1028 ...the drawn plots and highwayUndrawn() are the model's highway plots
-  - L1029 ...none is undrawn but what the runs could not lay
-- **L1034 a highway that reaches no street is not drawn**
-  - L1038 fixture: with one Elevated Highway the runs laid it
-  - L1039 ...it reaches no arterial's ramp: highwaysReach() is false
-  - L1041 ...a fill over the city's whole box holds no highway plot
-  - L1042 ...highwayUndrawn() is the model's highway plots
-  - L1043 ...highwayShort() stays what the runs could not lay: none here
-  - L1044 ...fixture: the city has a gateway, so the line's absence is the rule's
-  - L1045 ...and the world lines hold no highway line
-  - L1050 some count of at most
-  - L1054 ...one fewer does not (
-  - L1055 ...and has no highway plot in a whole-box fill
-  - L1056 at
-  - L1058 at 100 Elevated Highways and 10 Freight Lines
+  - L248 with gateway
+  - L249 ...and only the
+  - L264 ...laid past the edge, the
+  - L267 ...and no highway plot lies outside the box
+  - L279 ...and taking back fewer plots takes from the
+- **L289 1. a strip of land east**
+  - L294 a strip east gives a gateway
+  - L295 ...whose bearing is east (0)
+  - L296 ...and whose bearing is a multiple of the step
+  - L299 ...and whose point lies on the city's edge on that bearing
+  - L302 ...and is the city's radius out
+- **L305 2. an island founding**
+  - L312 land only within a small disc round the site has no gateway
+- **L315 3. a tie**
+  - L322 equal arms east and south tie, and the gateway is one of the two lone tied bearings
+  - L324 ...and the tied bearing is a multiple of the step
+  - L327 ...and its point lies on the city's edge on that bearing
+  - L338 two founding sites in the same cell pick different tied bearings (the hash, not the smaller bearing)
+  - L339 ...one picks east
+  - L340 ...and the other picks south
+  - L342 no two offsets in the cell pick differently; the site's own pick is one of the two
+- **L345 4. a half-plane of land west**
+  - L349 every westward bearing runs to the cap, and the gateway is the middle of that arc (180)
+- **L352 5. the threshold**
+  - L356 a strip one cell short of the reach has no gateway
+  - L360 a strip that just reaches has one
+  - L361 ...on the east bearing
+- **L363 6. the default world**
+  - L369 the default world's gateway is deterministic
+  - L372 ...its point lies on the city's edge on that bearing
+  - L376 ...and the cell at its point is land
+  - L384 ...with none, its best land run is short of the reach
+- **L389 7. twelve real generated worlds**
+  - L398 at least one of the twelve worlds has a gateway
+- **L400 8. a full tie is not due east for everyone**
+  - L412 an all-land ground finds a gateway at each of 24 founding sites
+  - L413 ...and every full tie's bearing is a multiple of the step
+  - L414 ...with at least 6 distinct bearings among them
+- **L417 9. the Earth's rule**
+  - L421 one larger place due north wins the north bearing (270)
+  - L427 a nearer place whose way is sea is passed over for the farther clear one (east)
+  - L431 an empty Earth list falls back to the land rule's own answer
+  - L433 ...and a null list does too
+- **L435 10. the spine is laid toward the gateway**
+- **L440 11. no gateway lays as before**
+  - L455 with no gateway the row's two arms both grow first
+  - L456 ...and no column arm has grown yet
+- **L458 12. the sidecar keeps it**
+  - L467 the catalog has a highway type
+  - L471 a square city's runs have found a gateway (or found none)
+  - L474 FORMAT 8 writes the gateway and reads it back the same
+  - L477 a FORMAT 7 sidecar reads it back unknown
+  - L479 ...and the next layRuns finds the same gateway again
+- **L481 13. what finding one costs**
+- **L490 14. the world line**
+  - L494 the catalog has a highway and a track type
+  - L497 the fixture has a gateway
+  - L505 a world line's net is a highway or the railway
+  - L507 ...its bearing is the gateway
+  - L509 ...its point is ground the city does not own
+  - L514 ...and the plot one step back along the gate arm's heading is owned
+  - L517 worldLines() has one line for the highway, whose gate arm is laid
+  - L518 ...and one for the railway, whose gate arm is laid
+  - L521 with NO_GATEWAY set there are no world lines
+- **L523 15. the cache**
+  - L530 two calls with nothing changed return equal lists
+  - L536 a month's runs move changes()
+  - L538 after the runs move, the world lines are recomputed equal to a fresh map's
+  - L673 ...and on dry ground
+  - L674 ...at the end of a laid arm's track
+  - L675 ...within WORLD_GAP plots of it along its heading
+  - L676 ...every plot between the arm's end and the point owned and dry
+  - L677 ...its reach from TrainSchedule.WORLD_PLOTS to CityMap.WORLD_REACH
+  - L678 ...every point along its way, every WORLD_STEP, on dry ground
+  - L679 ...and it runs as far as the land does: the next point is not dry, or the reach is the most
+  - L704 ...every route's first point is WORLD_PLOTS out along the line's way
+  - L705 ...it passes the line's point, within the curve's radius (FX5: its turns are rounded)
+  - L706 ...and the main arm's end plot's middle, within the radius: the train meets the line where the track ends
+  - L707 ...no point of any leg on water off the track
+- **L723 the line to the world leaves on land, on a generated coast**
+  - L730 fixture: the coast city has a gateway and a railway whose gate arm is laid
+  - L736 fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water
+  - L738 the coast
+  - L741 the coast: the railway has a line, so the checks above are not vacuous
+  - L742 ...and its main arm is not the gate arm
+- **L753 the coast's months: the line on land as the city grows**
+  - L773 the coast's months: some months have a world line and trains' routes, so the run exercised the rule
+  - L774 ...and no month has a line's point or a train position on water off the track
+- **L779 Halifax on the Earth, when earth-2.bin is named**
+  - L783 the file -D
+  - L806 fixture: Halifax has a gateway and a railway whose gate arm is laid
+  - L812 fixture (ET6): Halifax's railway gate arm no longer waits at the harbour - it bridges the shallow water to the city's edge, so FR0's walk crosses none of the...
+  - L814 Halifax
+  - L817 Halifax: the railway has a line, so the checks above are not vacuous
+  - L819 the Earth's file opens:
+  - L847 ...the label is placed
+  - L850 ...its box lies inside the view by WORLD_LABEL_PAD on every side
+  - L851 ...its baseline's left end on the line's part
+  - L854 ...at the first place from FR0's spot that fits: a pixel nearer the far end does not
+- **L860 the label stays in view**
+  - L861 a line leaving the right edge
+  - L862 a line leaving the top edge
+  - L863 a line leaving the bottom edge
+  - L864 a line leaving the top right corner
+  - L867 a line ending well inside the view keeps FR0's spot, WORLD_LABEL_BACK from its far end
+  - L876 a part of
+  - L878 ...the label still lies inside the view
+  - L880 a part of no length has no label
+  - L881 a view smaller than the label and its pads has none either
+- **L898 two lines leaving together get labels apart, or one**
+  - L903 fixture: two parts three pixels apart on one bearing are both placed by worldLabelAt() alone
+  - L904 ...and, drawn so (as MapView did), their boxes overlap: the words print over each other
+  - L910 fixture: two parts of 100 px, three apart, fit no label anywhere on them, and worldLabelAt() puts both on one spot
+  - L915 worldLabels() gives each of two parts leaving together a label
+  - L919 ...the first keeps worldLabelAt()'s place to the pixel
+  - L920 ...the boxes are clear of each other by WORLD_LABEL_PAD
+  - L921 ...each lies inside the view by WORLD_LABEL_PAD, on its own part
+  - L923 ...and each names its own line: neither is shared
+  - L927 ...the five-argument form reads the shared words' width off the characters and places the same
+  - L932 two parts with no clear place anywhere have one label between them: the first names both, the second has none
+  - L938 ...and, the shared words being wider, it lies whole inside the view
+  - L946 lines on opposite sides of the view keep worldLabelAt()'s places to the pixel
+  - L949 ...and neither is shared
+  - L954 a part of no length has no label, nor has a line with no part
+  - L955 ...and the line after them keeps worldLabelAt()'s place
+  - L956 a call with no parts returns no labels
+  - L1049 ...the highways are drawn: there is a piece
+  - L1050 ...every highway plot drawn lies in a piece holding a ramp on a cell line
+  - L1051 ...the drawn plots and highwayUndrawn() are the model's highway plots
+  - L1052 ...none is undrawn but what the runs could not lay
+- **L1057 a highway that reaches no street is not drawn**
+  - L1061 fixture: with one Elevated Highway the runs laid it
+  - L1062 ...it reaches no arterial's ramp: highwaysReach() is false
+  - L1064 ...a fill over the city's whole box holds no highway plot
+  - L1065 ...highwayUndrawn() is the model's highway plots
+  - L1066 ...highwayShort() stays what the runs could not lay: none here
+  - L1067 ...fixture: the city has a gateway, so the line's absence is the rule's
+  - L1068 ...and the world lines hold no highway line
+  - L1073 some count of at most
+  - L1077 ...one fewer does not (
+  - L1078 ...and has no highway plot in a whole-box fill
+  - L1079 at
+  - L1081 at 100 Elevated Highways and 10 Freight Lines
+- **L1106 the coast across a save: the map after a load is the map before it**
+  - L1125 fixture: at the month saved the railway's gate arm waits at the sea
+  - L1126 ...and the main line runs on past it: an arm after the gate arm in the spine's order is laid
+  - L1131 the sidecar written then reads back
+  - L1132 ...a FORMAT 12 sidecar of the same map reads back too
+  - L1134 ...the map read back is the live map: same()
+  - L1135 ...every arm of both nets holds what last stopped it, as the live arm does
+  - L1136 ...written again at once, it is the same file as the live map's, byte for byte
+  - L1161 every month after the load is compared:
+  - L1162 ...and in none the map read back, or the sidecar it writes, differs from the live map's
+  - L1165 fixture: read back from FORMAT 12 the railway is shorter the month after (the main line taken back past the sea and laid again)
 
 ## GdpCheck.java - 140 labelled assertions
 
@@ -9113,7 +9124,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L450 fixture: every month of the year, half a dial would reach somebody in the twin without it
   - L452 just loaded, the households a voucher would reach are the live city's
 
-## HaulageCheck.java - 127 labelled assertions
+## HaulageCheck.java - 100 labelled assertions
 
 > Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is
 > billed once, by Haulage, at a quote the trucks' own books set, and the vans
@@ -9126,155 +9137,123 @@ _(this harness does not label its checks through a helper - it prints its findin
 > one agent from the brief and is held here by another, from the brief's rules
 > and the model's own getters and constants: no figure below is typed in that a
 > getter or a constant could give. Ten claims, numbered as FR2.md section 6
-> numbers them (its 11, a real run, is LongPlaytest's), and an eleventh that
+> numbers them (its 11, a real run, is LongPlaytest's):
 > ...
 
-- **L424 3. EACH LEG ONCE - and A RELOAD, on the same city**
-- **L428 3. each leg once: the city leg is billed to the buyer and the exporter, at its own share in force and the quote**
-  - L438 fixture: the first bill has been raised, so Haulage has a fleet, a quote and legs to bill
-  - L495 every sector's \"Haulage\" line is its legs x its own share in force x the quote, every month
-  - L499 ...and the months cover the trucks short and the trucks enough, so neither side is vacuous
-  - L501 the plant pays the ore it bought at home, the ore and coal it landed and the pellets it shipped, each a leg
-  - L505 the mine that sold its ore at home, and shipped none, was billed nothing for it
-  - L508 ...and a goods tonne that crossed, or was bought at home, has no truck leg, whatever the railway carries
-  - L510 Freight's \"Haulage billed\" is the shippers' lines to the cent, and the bill is in its other revenue
-  - L513 ...and the bill is what the trucks carried: the carried share of the legs, within the trucks' capacity
-- **L518 the reload**
-  - L535 the loaded city carries the month's units bought at home, landed and shipped: its legs are the live city's
-  - L548 the loaded city has the live city's leg price, which the shares the city struck at its last haul weigh
-  - L551 ...so the plant standing asks the same city leg of both before the first haul after the load
-  - L556 ...and it has dealt its sectors what the live city has, to the bit: each one's share and standing demand, the newest and the standing share
-  - L569 the next haul bills every sector the same \"Haulage\" line as the live city's, to the bit
-  - L587 ...and prices, carries and fleets alike: quote, tonnes, carried, capacity, allowed, need, share, trucks, and each sector's deal
-- **L614 1. the slot: Freight is key 12, and the registry is the keys**
-  - L618 the twelfth key (position 12, index
-  - L627 ...no key is called \"Rail\" any more, and none is twice in the list
-  - L631 the registry has as many sectors as there are keys, each in its key's place
-  - L633 the twelfth sector is the Freight, found by index, by key and by accessor
-  - L637 ...a Freight with a Haulage division of its own, and no fleet in a city that has not yet moved a tonne
-- **L647 2. TRUCKS: the world sells them and never buys, 15 t of tare, one plant makes them**
-  - L648 the world sells a truck at a price: it is importable, at a finite world import price
-  - L651 ...and never buys one: no world export price, and not exportable
-  - L654 a truck weighs 40 t gross less a full load: tonnesPerUnit() is 15
-  - L657 ...it drives in on its own wheels: the goods stream, a general cargo, a freight of 6.25% of its price
-  - L675 exactly one building in the catalogue makes trucks: the Heavy Truck Plant, Automotive's
-  - L679 ...and exactly one keeps them: the Truck Depot, Freight's, with room for trucks and posts for their drivers
-  - L686 ...and no building burns trucks as a feed: they are a fleet, bought by Freight alone
-- **L694 5. vans for goods: bulk keeps none, goods keep TONNES_PER_VAN**
-  - L698 a works whose tonnes are all bulk (Iron & Steel's pelletising plant) keeps no vans, to the bit
-  - L703 a mine's ore is bulk and its diesel is goods: it keeps vans for the diesel alone
-  - L708 a sector with goods keeps its goods' tonnes over TONNES_PER_VAN, and its bulk (the grain) is not among them
-  - L712 ...and Freight itself, the fleet's owner, moves no goods and keeps no vans: the trucks do not haul themselves
-- **L722 6. the freight factor: MIN_VAN_RATE + (1 - MIN_VAN_RATE) x the trucks' share, a literal 1 when they suffice**
-  - L726 fixture: the plant and the shop have bulk to move, the office has none
-  - L733 fixture: Haulage has a nameplate need to read the share against, and strikes the same one at every haul by hand
-  - L740 the share is the fleet held at the haul x TONNES_A_TRUCK_MONTH over the need (capacity / need), struck at that haul
-  - L746 a bulk sector's haulage ratio is MIN_VAN_RATE + (1 - MIN_VAN_RATE) x its own share, the one its industry was dealt
-  - L749 ...and its freight ratio is the lesser of its vans' ratio and that: the plant keeps no vans, so it is the trucks'
-  - L754 ...and it is the fifth factor of the operating rate
-  - L761 ...and holds for the month: the trucks moving between two hauls do not move the share or the sectors' ratio
-  - L767 with no trucks at all a bulk sector is slowed to the floor, not stopped
-  - L771 ...a tenth short of the need it runs just below one
-  - L776 ...trucks exactly at the need: the share is a literal 1 and so is the ratio, and the freight ratio
-  - L779 ...and the operating rate is then the other four factors times a literal one, to the bit
-  - L784 ...and trucks past the need earn no bonus: still a literal 1
-  - L789 a sector with no bulk legs reads a literal 1 whatever the share, and so does Freight itself
-  - L796 fixture: the shop keeps vans for its goods and its grain goes by truck
-  - L800 a shop short of vans and a little short of trucks runs at its vans' ratio, the lesser
-  - L811 ...with vans to spare and the trucks half short it runs at the trucks' ratio, the lesser
-- **L824 7. the fleet: the bid, the wear, the seeding once, the bill never past the trucks**
-  - L837 the need a haul strikes is the plant standing at nameplate: getNeed() is nameplateNeed(), the brief's weighted sum
-  - L840 ...and not last month's legs: the legs billed are what the plant ran, the need what it stands for
-  - L859 the bid is min(asked - have, asked / FLEET_DELIVERY_MONTHS) trucks, asked the need and the works on site's,
-  - L864 ...a fleet of none asks for an eighth of what it is asked, not all of it (a fleet is built up, not conjured)
-  - L867 ...and a fleet of exactly what it is asked asks for nothing, a literal zero
-  - L872 fixture: the city has legs to haul, so a haul runs its whole month
-  - L890 a month's wear is a truck's life's share of the trucks in the depots' room, and STREET_WEAR times that past it
-  - L896 ...past the room the wear exceeds a depot-kept fleet's by exactly the tenth on the trucks past it
-  - L907 when the legs exceed the trucks the bill is the trucks' capacity at the quote, not the legs'
-  - L917 ...and when the trucks have room to spare the bill is the legs' alone, below the capacity's
-  - L925 ...and with the trucks half the need, never past what they carry
-- **L931 8. THE PRICE**
-- **L935 8. the price: the quote walks REPRICE_SPEED toward allowed over what the trucks could carry, at the scarcity**
-  - L939 fixture: a quote is known and no depot stands, so every truck is on the street
-  - L948 with the trucks at half the need the tightness is .5 and the scarcity is 1 + .5 x (MAX_SCARCITY_MULTIPLE - 1)
-  - L953 ...and the quote is the old one plus REPRICE_SPEED of the way to allowed / capacity x scarcity
-  - L965 with trucks to spare the tightness is nought and the scarcity a plain one
-  - L968 ...the quote walks toward allowed over what the trucks COULD carry, not what they did
-  - L971 ...a fleet with idle trucks does not price its few tonnes at its whole cost
-  - L980 ...and trucks almost none are the dearest: tightness near one, the scarcity near MAX_SCARCITY_MULTIPLE
-  - L990 before any month there is no fleet and nothing to bid for
-  - L995 the first haul seeds the fleet at the need, for nothing (a city with a plant standing has a need from its first month)
-  - L1009 a fleet already known, with no trucks and no money, is not handed one: the seeding happens once
-- **L1019 4. the siding: a railed share of the imports relieves RAIL_ROAD_RELIEF of their truck tonnes; the sea relieves none**
-  - L1027 fixture: the railway carries a share of the bulk stream, strictly between nothing and all
-  - L1032 a railed share r of the landed ore takes RAIL_ROAD_RELIEF x r off its truck tonnes: they are (1 - RELIEF x r) of the tonnes
-  - L1037 ...a tonne bought at home is not railed at all: a full truck tonne whatever r is
-  - L1040 ...and a share of 1 relieves at most RELIEF: a quarter of a truck tonne is left
-  - L1048 the month's bill is at the railed share: the plant's \"Haulage\" line is its legs after the siding, at the share and the quote
-  - L1053 ...and the railway's own bill is a separate line, \"Rail freight\", so the two are not mistaken for each other
-  - L1066 fixture: the ore goes by sea and not by rail
-  - L1069 a share carried by sea alone relieves nothing: the landed ore is a full truck tonne from the quay to the door
-  - L1079 ...and the bill agrees: the plant pays its whole tonnage at the quote, the sea having shortened nothing inside the city
-- **L1089 9. the depot: ordered past the room by DEPOT_ORDER_MARGIN of one, not before; the drivers follow the trucks**
-  - L1098 fixture: the fleet is known, no depot stands or is being built, and the margin is a fraction of a depot's room
-  - L1104 trucks inside the margin of a depot's room: none is ordered
-  - L1108 ...and exactly at the margin still none (it has to be passed)
-  - L1112 trucks past it: the plan orders a Truck Depot - or says the staff or the ground are why not
-  - L1122 with a depot standing the margin is counted from its room: trucks short of room + margin order nothing
-  - L1127 ...and past it another is ordered, or the reason is the staff or the ground
-- **L1133 ...and the drivers follow the trucks: a depot keeping fewer than its room offers fewer posts**
-  - L1137 fixture: a depot stands, with driver posts at a wage, in a city that counts posts
-  - L1148 with the room full, every post is offered, in every tier
-  - L1160 a depot keeping fewer trucks than its room: the DIPLOMA posts offered are its posts less a driver for each empty place
-  - L1165 ...the mechanics and every other tier are offered whole
-  - L1168 ...the city's job count withholds the same number the sector does not offer
-  - L1173 ...and Freight's wage bill pays the posts offered and no more: its DIPLOMA wages are the wage a post times the posts offered
-  - L1182 ...and with no trucks at all the drivers are all laid off and not a post more: the mechanics' posts stand
-  - L1195 a reloaded city offers the posts the live one did (the drivers' share is saved)
-- **L1206 10. the weighing: a works is weighed with its legs at the quote and vans for its goods only**
-  - L1219 with a railway carrying, the need struck at a haul is the nameplate plant's legs less the siding's relief: nameplateNeed() = the brief's sum
-  - L1229 the Pelletising Plant keeps no vans and buys none: all its tonnes are bulk, vansFor() and fleetCapital() are zero
-  - L1246 legPrice(): a received tonne costs the quote less the siding's RELIEF x r x the import share; a made one the export share of it
-  - L1252 a railed share lowers p.in() for an imported good by exactly RAIL_ROAD_RELIEF x r x the import share (of the quote)
-  - L1255 ...and a GOODS tonne has no leg price at all
-  - L1261 cityLegs() is its bulk inputs' tonnes x p.in() plus its outputs' x p.out(), at the rate
-  - L1265 ...and the plant's freight is its legs and nothing else: freightRunning() = fleetRunning() + cityLegs(), vans being nought
-  - L1275 an Iron Mine whose ore all sells at home is weighed with vans for its diesel alone and no leg for its ore: its buyer pays it
-  - L1288 a mine that ships its ore abroad is billed for the tonnes it shipped, at the share in force and the quote: the exporter pays
-  - L1300 ...so an Iron Mine there is weighed with its ore's leg at the share the city exports, and its diesel's vans
-  - L1306 ...and the mining sector's own weighing agrees with the pure one, the leg in it and no truck in its capital
-- **L1367 11. the deal: the fleet's room dealt per sector, the newest demand last**
-  - L1386 fixture: with the fleet full every sector with legs is dealt a literal 1 and its whole need is its standing demand, and there are others than the giant's
-  - L1393 fixture: the landing at least doubles the giant's own need and leaves every other sector's as it was
-  - L1399 a giant works lands in a town whose fleet is full: the city's share is the fleet over the whole need, the one share the old rule gave every sector
-  - L1403 ...but the giant's own sector alone is short: its share is what it was carried over what it now asks
-  - L1413 ...every other sector's share is exactly what it was, a literal 1, and so is its haulage ratio: the one share would have slowed it
-  - L1416 ...and the giant's sector runs at MIN_VAN_RATE + (1 - MIN_VAN_RATE) x its own share
-  - L1420 ...the fleet covered what every sector was carried, so the whole shortfall is the newest demand's: the standing share is a literal 1
-- **L1426 ...and the deal is saved, and a reload deals the next haul as the live city does, to the bit**
-  - L1447 the deal is saved: a share for every sector but Freight, a dealt tonnage for every one dealt any, the newest share and the standing share
-  - L1454 ...and a fresh city restored from those keys has every sector's share and dealt tonnage, the newest and the standing share to the bit
-  - L1462 ...a save from before the deal has none of them: no sector dealt, and every sector reads the city's share it ran at
-  - L1473 a reloaded city has dealt every sector what the live city did: each one's share and standing demand, the newest and the standing share
-  - L1479 ...and the next haul on the reloaded city strikes the same shares and standing demands as on the live one, to the bit
-- **L1485 ...and a town whose fleet has room for the landing leaves every sector whole**
-  - L1494 fixture: the same landing at least doubles the giant's need, in a town that has a fleet for the whole of the new need
-  - L1505 with the fleet at the whole of the new need or more, every sector is dealt a literal 1 and its whole need is carried
-  - L1510 ...and none is slowed: every sector's haulage ratio is a literal 1, the giant's too
-- **L1516 ...the growth is served pro rata from what room is left, and a sector's first works is growth at the haul after it stands**
-  - L1534 fixture: two sectors with plant standing grow, and a third that asked nothing at the last haul (dealt a whole 1) has its first works stand before this one:
-  - L1539 the growth over what the sectors were carried is served pro rata from the room left: the newest share is the room over the growth
-  - L1550 ...and each growing sector's share is what it was carried plus the newest share of its growth, over what it now asks
-  - L1552 ...a sector new at the haul, carried nothing before, is dealt the newest share itself
-  - L1555 ...and only no sector at all (null) reads the city's share, while two sectors' own shares are their own
-  - L1564 a sector that asked nothing at the haul is dealt a whole 1, and its first works, standing after the haul, runs whole until the next
-  - L1569 ...and the next haul deals those legs as the newest demand: the farms' share is the newest share, and they run on it
-- **L1576 ...a fleet that cannot cover what the sectors were carried cuts the largest and leaves the smaller whole**
-  - L1585 fixture: the town has smaller standing demands than its largest, and the shortfall is smaller than that largest
-  - L1590 a fleet short of what the sectors were carried is a standing shortfall: the standing share is the fleet over their standing demand
-  - L1602 ...the smallest standing demands are served first and whole: every sector but the largest keeps a literal 1 and runs at one
-  - L1605 ...and the largest is cut by the whole shortfall: its share is what it was carried less the shortfall, over what it asks
+- **L369 3. EACH LEG ONCE - and A RELOAD, on the same city**
+- **L373 3. each leg once: the city leg is billed to the buyer and the exporter, at the share in force and the quote**
+  - L383 fixture: the first bill has been raised, so Haulage has a fleet, a quote and legs to bill
+  - L440 every sector's \"Haulage\" line is its legs x the share in force x the quote, every month
+  - L444 ...and the months cover the trucks short and the trucks enough, so neither side is vacuous
+  - L446 the plant pays the ore it bought at home, the ore and coal it landed and the pellets it shipped, each a leg
+  - L450 the mine that sold its ore at home, and shipped none, was billed nothing for it
+  - L453 ...and a goods tonne that crossed, or was bought at home, has no truck leg, whatever the railway carries
+  - L455 Freight's \"Haulage billed\" is the shippers' lines to the cent, and the bill is in its other revenue
+  - L458 ...and the bill is what the trucks carried: the carried share of the legs, within the trucks' capacity
+- **L463 the reload**
+  - L480 the loaded city carries the month's units bought at home, landed and shipped: its legs are the live city's
+  - L493 the loaded city has the live city's leg price, which the shares the city struck at its last haul weigh
+  - L496 ...so the plant standing asks the same city leg of both before the first haul after the load
+  - L509 the next haul bills every sector the same \"Haulage\" line as the live city's, to the bit
+  - L526 ...and prices, carries and fleets alike: quote, tonnes, carried, capacity, allowed, need, share, trucks
+- **L551 1. the slot: Freight is key 12, and the registry is the keys**
+  - L555 the twelfth key (position 12, index
+  - L564 ...no key is called \"Rail\" any more, and none is twice in the list
+  - L568 the registry has as many sectors as there are keys, each in its key's place
+  - L570 the twelfth sector is the Freight, found by index, by key and by accessor
+  - L574 ...a Freight with a Haulage division of its own, and no fleet in a city that has not yet moved a tonne
+- **L584 2. TRUCKS: the world sells them and never buys, 15 t of tare, one plant makes them**
+  - L585 the world sells a truck at a price: it is importable, at a finite world import price
+  - L588 ...and never buys one: no world export price, and not exportable
+  - L591 a truck weighs 40 t gross less a full load: tonnesPerUnit() is 15
+  - L594 ...it drives in on its own wheels: the goods stream, a general cargo, a freight of 6.25% of its price
+  - L612 exactly one building in the catalogue makes trucks: the Heavy Truck Plant, Automotive's
+  - L616 ...and exactly one keeps them: the Truck Depot, Freight's, with room for trucks and posts for their drivers
+  - L623 ...and no building burns trucks as a feed: they are a fleet, bought by Freight alone
+- **L631 5. vans for goods: bulk keeps none, goods keep TONNES_PER_VAN**
+  - L635 a works whose tonnes are all bulk (Iron & Steel's pelletising plant) keeps no vans, to the bit
+  - L640 a mine's ore is bulk and its diesel is goods: it keeps vans for the diesel alone
+  - L645 a sector with goods keeps its goods' tonnes over TONNES_PER_VAN, and its bulk (the grain) is not among them
+  - L649 ...and Freight itself, the fleet's owner, moves no goods and keeps no vans: the trucks do not haul themselves
+- **L659 6. the freight factor: MIN_VAN_RATE + (1 - MIN_VAN_RATE) x the trucks' share, a literal 1 when they suffice**
+  - L663 fixture: the plant and the shop have bulk to move, the office has none
+  - L670 fixture: Haulage has a nameplate need to read the share against, and strikes the same one at every haul by hand
+  - L677 the share is the fleet held at the haul x TONNES_A_TRUCK_MONTH over the need (capacity / need), struck at that haul
+  - L682 a bulk sector's haulage ratio is MIN_VAN_RATE + (1 - MIN_VAN_RATE) x that share
+  - L685 ...and its freight ratio is the lesser of its vans' ratio and that: the plant keeps no vans, so it is the trucks'
+  - L690 ...and it is the fifth factor of the operating rate
+  - L697 ...and holds for the month: the trucks moving between two hauls do not move the share or the sectors' ratio
+  - L702 with no trucks at all a bulk sector is slowed to the floor, not stopped
+  - L706 ...a tenth short of the need it runs just below one
+  - L711 ...trucks exactly at the need: the share is a literal 1 and so is the ratio, and the freight ratio
+  - L714 ...and the operating rate is then the other four factors times a literal one, to the bit
+  - L719 ...and trucks past the need earn no bonus: still a literal 1
+  - L724 a sector with no bulk legs reads a literal 1 whatever the share, and so does Freight itself
+  - L731 fixture: the shop keeps vans for its goods and its grain goes by truck
+  - L735 a shop short of vans and a little short of trucks runs at its vans' ratio, the lesser
+  - L742 ...with vans to spare and the trucks half short it runs at the trucks' ratio, the lesser
+- **L753 7. the fleet: the bid, the wear, the seeding once, the bill never past the trucks**
+  - L766 the need a haul strikes is the plant standing at nameplate: getNeed() is nameplateNeed(), the brief's weighted sum
+  - L769 ...and not last month's legs: the legs billed are what the plant ran, the need what it stands for
+  - L788 the bid is min(asked - have, asked / FLEET_DELIVERY_MONTHS) trucks, asked the need and the works on site's,
+  - L793 ...a fleet of none asks for an eighth of what it is asked, not all of it (a fleet is built up, not conjured)
+  - L796 ...and a fleet of exactly what it is asked asks for nothing, a literal zero
+  - L801 fixture: the city has legs to haul, so a haul runs its whole month
+  - L819 a month's wear is a truck's life's share of the trucks in the depots' room, and STREET_WEAR times that past it
+  - L825 ...past the room the wear exceeds a depot-kept fleet's by exactly the tenth on the trucks past it
+  - L836 when the legs exceed the trucks the bill is the trucks' capacity at the quote, not the legs'
+  - L846 ...and when the trucks have room to spare the bill is the legs' alone, below the capacity's
+  - L854 ...and with the trucks half the need, never past what they carry
+- **L860 8. THE PRICE**
+- **L864 8. the price: the quote walks REPRICE_SPEED toward allowed over what the trucks could carry, at the scarcity**
+  - L868 fixture: a quote is known and no depot stands, so every truck is on the street
+  - L877 with the trucks at half the need the tightness is .5 and the scarcity is 1 + .5 x (MAX_SCARCITY_MULTIPLE - 1)
+  - L882 ...and the quote is the old one plus REPRICE_SPEED of the way to allowed / capacity x scarcity
+  - L894 with trucks to spare the tightness is nought and the scarcity a plain one
+  - L897 ...the quote walks toward allowed over what the trucks COULD carry, not what they did
+  - L900 ...a fleet with idle trucks does not price its few tonnes at its whole cost
+  - L909 ...and trucks almost none are the dearest: tightness near one, the scarcity near MAX_SCARCITY_MULTIPLE
+  - L919 before any month there is no fleet and nothing to bid for
+  - L924 the first haul seeds the fleet at the need, for nothing (a city with a plant standing has a need from its first month)
+  - L938 a fleet already known, with no trucks and no money, is not handed one: the seeding happens once
+- **L948 4. the siding: a railed share of the imports relieves RAIL_ROAD_RELIEF of their truck tonnes; the sea relieves none**
+  - L956 fixture: the railway carries a share of the bulk stream, strictly between nothing and all
+  - L961 a railed share r of the landed ore takes RAIL_ROAD_RELIEF x r off its truck tonnes: they are (1 - RELIEF x r) of the tonnes
+  - L966 ...a tonne bought at home is not railed at all: a full truck tonne whatever r is
+  - L969 ...and a share of 1 relieves at most RELIEF: a quarter of a truck tonne is left
+  - L977 the month's bill is at the railed share: the plant's \"Haulage\" line is its legs after the siding, at the share and the quote
+  - L982 ...and the railway's own bill is a separate line, \"Rail freight\", so the two are not mistaken for each other
+  - L995 fixture: the ore goes by sea and not by rail
+  - L998 a share carried by sea alone relieves nothing: the landed ore is a full truck tonne from the quay to the door
+  - L1008 ...and the bill agrees: the plant pays its whole tonnage at the quote, the sea having shortened nothing inside the city
+- **L1018 9. the depot: ordered past the room by DEPOT_ORDER_MARGIN of one, not before; the drivers follow the trucks**
+  - L1027 fixture: the fleet is known, no depot stands or is being built, and the margin is a fraction of a depot's room
+  - L1033 trucks inside the margin of a depot's room: none is ordered
+  - L1037 ...and exactly at the margin still none (it has to be passed)
+  - L1041 trucks past it: the plan orders a Truck Depot - or says the staff or the ground are why not
+  - L1051 with a depot standing the margin is counted from its room: trucks short of room + margin order nothing
+  - L1056 ...and past it another is ordered, or the reason is the staff or the ground
+- **L1062 ...and the drivers follow the trucks: a depot keeping fewer than its room offers fewer posts**
+  - L1066 fixture: a depot stands, with driver posts at a wage, in a city that counts posts
+  - L1077 with the room full, every post is offered, in every tier
+  - L1089 a depot keeping fewer trucks than its room: the DIPLOMA posts offered are its posts less a driver for each empty place
+  - L1094 ...the mechanics and every other tier are offered whole
+  - L1097 ...the city's job count withholds the same number the sector does not offer
+  - L1102 ...and Freight's wage bill pays the posts offered and no more: its DIPLOMA wages are the wage a post times the posts offered
+  - L1111 ...and with no trucks at all the drivers are all laid off and not a post more: the mechanics' posts stand
+  - L1124 a reloaded city offers the posts the live one did (the drivers' share is saved)
+- **L1135 10. the weighing: a works is weighed with its legs at the quote and vans for its goods only**
+  - L1148 with a railway carrying, the need struck at a haul is the nameplate plant's legs less the siding's relief: nameplateNeed() = the brief's sum
+  - L1158 the Pelletising Plant keeps no vans and buys none: all its tonnes are bulk, vansFor() and fleetCapital() are zero
+  - L1175 legPrice(): a received tonne costs the quote less the siding's RELIEF x r x the import share; a made one the export share of it
+  - L1181 a railed share lowers p.in() for an imported good by exactly RAIL_ROAD_RELIEF x r x the import share (of the quote)
+  - L1184 ...and a GOODS tonne has no leg price at all
+  - L1190 cityLegs() is its bulk inputs' tonnes x p.in() plus its outputs' x p.out(), at the rate
+  - L1194 ...and the plant's freight is its legs and nothing else: freightRunning() = fleetRunning() + cityLegs(), vans being nought
+  - L1204 an Iron Mine whose ore all sells at home is weighed with vans for its diesel alone and no leg for its ore: its buyer pays it
+  - L1217 a mine that ships its ore abroad is billed for the tonnes it shipped, at the share in force and the quote: the exporter pays
+  - L1229 ...so an Iron Mine there is weighed with its ore's leg at the share the city exports, and its diesel's vans
+  - L1235 ...and the mining sector's own weighing agrees with the pure one, the leg in it and no truck in its capital
 
 ## HealthCheck.java - 235 labelled assertions
 
@@ -10097,9 +10076,9 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L774 the next haul bills the city's tonnes the same in the loaded city as in the live one, to the bit: every shipper's line
   - L778 ...and the shares they strike for the month after are the same too, as are the litres burned
 - **L789 9. a real run: LongPlaytest's city, played with its advisor, counted month by month**
-  - L879 the railway took some of the city's own bulk in at least one month of the run
-  - L882 ...and never without a station or a spur to take it, and the quay share was never above zero without a yard (at the haul that struck it or at the month's end)
-  - L889 the home share was above zero in the played fixture the run was too short to reach
+  - L871 the railway took some of the city's own bulk in at least one month of the run
+  - L874 ...and never without a station or a spur to take it, and the quay share was never above zero without a yard
+  - L881 the home share was above zero in the played fixture the run was too short to reach
 
 ## HouseholdCheck.java - 273 labelled assertions
 
@@ -13032,17 +13011,17 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 _(this harness does not label its checks through a helper - it prints its findings; read its header and its sections)_
 
-- **L1236 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L3015 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L3070 AND EVERYTHING THAT IS A PURCHASE.**
-- **L3416 AND THE BEST OF THEM WINS.**
-- **L5773 founding: a few months at a time, by hand**
-- **L5870 then the real rhythm**
-- **L6018 the report**
-- **L6041 ==**
-- **L6127 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7333 what the advisor tried, and what happened**
-- **L7339 findings**
+- **L1227 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
+- **L2997 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L3052 AND EVERYTHING THAT IS A PURCHASE.**
+- **L3398 AND THE BEST OF THEM WINS.**
+- **L5755 founding: a few months at a time, by hand**
+- **L5852 then the real rhythm**
+- **L6000 the report**
+- **L6023 ==**
+- **L6109 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7313 what the advisor tried, and what happened**
+- **L7319 findings**
 
 ## MainLineCheck.java - 151 labelled assertions
 
@@ -16855,35 +16834,35 @@ _(this harness does not label its checks through a helper - it prints its findin
 > JSON compared leaf by leaf. Every history series matched for 24 months; the
 > ...
 
-  - L285 saving
-  - L299 markets that imported
-  - L300 markets that exported
-  - L309 sectors with shares this month
-  - L310 sectors with shares last month
-  - L314 weights above zero
-  - L315 the price index: rent weight
-  - L316 the price index: food weight
-  - L346 sectors that counted a revaluation
-  - L347 ...of them one not zero
-  - L352 crews that drew materials
-  - L353 Construction: isDrawnKnown
-  - L354 Construction: drawn at home
-  - L355 Construction: drawn imported
-  - L358 investment notes the live city left
-  - L380 the report: outbreaks
-  - L381 the report: months in outbreak
-  - L382 the report: months sick
-  - L383 the report: worst work ratio
-  - L384 the report: peak unburied
-  - L430 fixture: the history holds more than a hundred series with the month's entry, at every checkpoint
-  - L448 fixture: the save holds over 10,000 numbers, at every checkpoint
-- **L459 3. the causes, one by one**
-  - L469 fixture 3f: time skips were run on both cities from the same month
-  - L474 3f.
-  - L482 fixture
-  - L497 the file -D
-- **L534 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
-- **L540 4. on the real Earth**
+  - L288 saving
+  - L302 markets that imported
+  - L303 markets that exported
+  - L312 sectors with shares this month
+  - L313 sectors with shares last month
+  - L317 weights above zero
+  - L318 the price index: rent weight
+  - L319 the price index: food weight
+  - L349 sectors that counted a revaluation
+  - L350 ...of them one not zero
+  - L355 crews that drew materials
+  - L356 Construction: isDrawnKnown
+  - L357 Construction: drawn at home
+  - L358 Construction: drawn imported
+  - L361 investment notes the live city left
+  - L383 the report: outbreaks
+  - L384 the report: months in outbreak
+  - L385 the report: months sick
+  - L386 the report: worst work ratio
+  - L387 the report: peak unburied
+  - L433 fixture: the history holds more than a hundred series with the month's entry, at every checkpoint
+  - L451 fixture: the save holds over 10,000 numbers, at every checkpoint
+- **L462 3. the causes, one by one**
+  - L472 fixture 3f: time skips were run on both cities from the same month
+  - L477 3f.
+  - L485 fixture
+  - L500 the file -D
+- **L537 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
+- **L543 4. on the real Earth**
 
 ## RestaurantsCheck.java - 36 labelled assertions
 
