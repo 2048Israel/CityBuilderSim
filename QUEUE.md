@@ -28,7 +28,6 @@ stuff".
 | batch | what | brief |
 |---|---|---|
 | MP1 | The map fast again: every map timing line main misses on a quiet PC (the far nodes, the FX-side map work, the kept chrome's month, the L0 screens) traced to the batch that slowed it and made fast at its cause, no budget moved; after TM3 and MS3 (Jerus, 2026-10-26: "map is slowing the game down lol"; "Both, TM3 then MP1") | [MP1](docs/queue/MP1.md) |
-| RL1 | A lane's next batch starts when its predecessor is ready, from its branch, not once it has shipped; `pick.sh`, the recorded reds and `ship.sh`'s ship-file stop made to fit (Jerus, 2026-10-27) | [RL1](docs/queue/RL1.md) |
 | SP1 | The suite three at a time, each harness JVM under a memory cap; the timing harnesses once per gate, not twice (Jerus, 2026-10-27) | [SP1](docs/queue/SP1.md) |
 | BM1 | `docs/batch.md` split by reader (a batch session's checklist, the orchestrator's manual), a one-line WHY per rule, and "one in, one out" for process batches as a standing rule (Jerus, 2026-10-27) | [BM1](docs/queue/BM1.md) |
 | CC1-M | The city map did not survive a save once: LongPlaytest -Dplaytest.childcare at m1,184 (slot 3), a run the map sidecar has not met before; not childcare's - nothing in the model reads the map; MapCheck's area (Jerus, 2026-10-18: its own batch) | `runs/fixCC1-notes.md` 7 |

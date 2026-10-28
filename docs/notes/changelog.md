@@ -18,6 +18,12 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### RL1 — a lane's next batch starts at its predecessor's ship file, not at its merge — 2026-10-27, ready, no tag (tooling), see docs/queue/RL1-notes.md
+The batch behind a gated one waited for its Queued row to leave `QUEUE.md`, so every minute from ship file to merge (a median of about 60) was paid again. Now the successor is cut from the predecessor's tip (`git checkout -b batch/<id> origin/batch/PRED`) when its ship file lands, builds on it, merges `origin/main` when the predecessor lands, or its fix when it is sent back, and pushes its own ship file last.
+`tools/carries.sh` is the one test of "built on an unmerged batch", asked by the five places that read a branch as cut from main: `pick.sh` diffs against the predecessor's tip, `ship.sh` stops a branch built on one main lacks, `day.sh` calls it waiting and `wait.sh --ship` leaves it out, `batch-check.sh` says under a NEW red that the predecessor's may not be recorded yet, and `wait.sh --row` also ends when the predecessor is ready again after a send-back.
+Out: `day.sh`'s old-style ready test, `ship.sh`'s old way (a batch with no ship file ships `--no-tag` or stops), BP1's "calls" section of `docs/batch.md` (folded into its rules). `pick-selftest.sh` 13 of 13, `wait-selftest.sh` 24 of 24, `ship-selftest.sh` 106 of 106.
+One in, one out: 261 lines of script and rules added, 182 removed (192 against 160 without the selftests).
+
 ### 0.8.60 — I13-L, the landlords' card asks the mortgage lender, and the Ore card covers every ore — 2026-10-27, ready, see docs/queue/I13-L-notes.md
 Two notes I13 carried (Jerus, 2026-10-18). A landlord's home was not asked the INTEREST gate - the mortgage lender's test decides it - so its build card showed no last gate though the model has one.
 `Game.lenderTest()` is now the card's door to that test, the call the order makes (`lenderReads()`, shared with `considerOnMortgage()`); `BuildCard` has a LENDER gate for a landlord's home, in the lender's words (what it lends, the payment against the rent, the cover against what it asks, or the down payment it lacks), and the Real Estate page's grid a "lender" column.

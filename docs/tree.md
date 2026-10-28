@@ -661,19 +661,25 @@ adds its line here, not in `CLAUDE.md`.
     tools/pick.sh                        the harnesses that read what a branch changed, picked from its diff against
                                          main through docs/harnesses.md's reverse index, with no JVM: one line, the
                                          names, ALL or NONE, for batch-check.sh --pick, and on stderr whether the
-                                         diff touches money, saves or threading (BP1, 2026-10-24)
+                                         diff touches money, saves or threading (BP1, 2026-10-24); against the tip of
+                                         the unmerged batch the branch is built on, when there is one (RL1)
+    tools/carries.sh                     the ids of the unmerged batch branches on origin that a branch is built on:
+                                         pick.sh's base, day.sh's "waiting", wait.sh --ship's "not ready", ship.sh's
+                                         stop and batch-check's note on a NEW red, one test for all (RL1, 2026-10-27)
     tools/day.sh                         the orchestrator's morning in one call: main's version against the last tag,
                                          main's recorded reds, the queue's next rows and Pending, and each unmerged
-                                         batch branch as ready, working, stuck or off-queue; --due only the ready
-                                         and the stuck, for the hourly check-in (BP1, 2026-10-24)
+                                         batch branch as ready, waiting, working, stuck or off-queue; --due only the
+                                         ready and the stuck, for the hourly check-in (BP1, 2026-10-24)
     tools/wait.sh                        waits inside one command, so a session need not end its turn: until a
                                          batch's row has left origin/main's queue (--row), a batch branch on
                                          origin has its ship file (--ship, the orchestrator's: GP1, 2026-10-27),
                                          or a line of a file matches (--line); --for MIN gives up after so long
-                                         (BP1, 2026-10-24)
+                                         (BP1, 2026-10-24); --row also ends on a predecessor sent back and mended,
+                                         for the batch built on it (RL1)
     tools/ship-selftest.sh               ship.sh run against a throwaway local origin with a stub batch-check.sh, so
                                          no JVM: its stops and its records in about two minutes; run it after any
                                          change to ship.sh (BP1's review, 2026-10-25)
-    tools/wait-selftest.sh               wait.sh --ship against a throwaway local origin, no JVM: a ship file pushed
-                                         ends it, other pushes, a merged or deleted branch and --skip do not, in
-                                         about 20 seconds; run it after any change to wait.sh (GP1, 2026-10-27)
+    tools/wait-selftest.sh               wait.sh against a throwaway local origin, no JVM: --ship ends on a ship file
+                                         pushed, not on other pushes, a merged or deleted branch, --skip or a branch
+                                         built on an unmerged one; --row on a predecessor mended; about 30 seconds;
+                                         run it after any change to wait.sh (GP1, 2026-10-27; RL1)

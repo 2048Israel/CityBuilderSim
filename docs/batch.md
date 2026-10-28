@@ -27,9 +27,9 @@ own check-in, then starts from the note, `sh tools/day.sh` and the top of
 `sh tools/day.sh` is the morning in one call, in about fifteen lines:
 main's `GameVersion.VERSION` against the last version tag, main's recorded
 reds (`docs/notes/gate.txt`), the next queued ids, the Pending ids, and
-each unmerged `batch/` branch on origin as ready (its ship file pushed, or
-an old-style branch's row out of its own `QUEUE.md`; with the conflicts a
-merge would meet), working, stuck (no commit for a day) or off-queue.
+each unmerged `batch/` branch on origin as ready (its ship file pushed; with
+the conflicts a merge would meet), waiting (its ship file pushed, but built on
+a batch main lacks), working, stuck (no commit for a day) or off-queue.
 
 **The hourly check-in** (lesson b). Each day the orchestrator creates a
 CronCreate job at minute 7 of every hour (`7 * * * *`) whose prompt is: run
@@ -53,7 +53,8 @@ sh tools/wait.sh --ship [--skip HELD...]
 
 It ends, in one line, when an unmerged `batch/` branch on origin has its
 `docs/queue/<id>-ship.md`: `wait      done - ready to ship: A B (...)`. A branch
-that already has it ends it at once. The orchestrator then gates each id named,
+that already has it ends it at once; one built on a batch main lacks does not
+count (waiting, `tools/carries.sh`). The orchestrator then gates each id named,
 one at a time (the gate, below), and **arms the wait again after each gate**,
 so a branch that landed during the gate is picked up the moment it ends.
 `--skip` names the ids it holds with the ship file on (a gate stopped for
@@ -64,15 +65,20 @@ stays**, as the fallback: a wait lost with its session, a lane stuck.
 `sh tools/wait-selftest.sh` tries it against a throwaway origin.
 
 **Two lanes, on files of their own**: the next two queued batches side by
-side, as sessions, and never more than two at once. A lane's next batch
-waits in the background for its predecessor's row to leave `QUEUE.md`
-(`sh tools/wait.sh --row PRED`, below), then takes `origin/main`.
+side, as sessions, and never more than two at once. **A lane's next batch
+starts at its predecessor's ship file, not at its merge** (RL1, Jerus
+2026-10-27: "do it as soon as humanly possible"): when `wait.sh --ship` names
+PRED, the orchestrator starts the lane's next batch, whose brief's first step
+is `git fetch origin && git checkout -b batch/<id> origin/batch/PRED`, and
+gates PRED. The successor builds on PRED's tip (A batch session, 7), and
+`day.sh` calls it waiting, not ready, until PRED is on main.
 
 **A blocked batch goes under Pending at once** (lesson a): its Queued row
 out and a Pending row in, saying why, in a queue commit pushed to `main`
 the same turn, so the next row in its lane can start. Who returns it to
-Queued when its block clears by itself is a call left to Jerus (the calls
-below, 2); until he says, only his review moves a Pending row, save one the
+Queued when its block clears by itself is a call left to Jerus (BP1's call
+2; recommended: the orchestrator, saying so in the queue commit; not
+built); until he says, only his review moves a Pending row, save one the
 orchestrator settles as the next paragraph says.
 
 **The orchestrator answers what it safely can** (BP1 item 9, Jerus
@@ -89,8 +95,8 @@ a premise, one that spends money, an eye check of his.
 ## A batch session
 
 Each batch runs in a worktree of the orchestrator's clone, on a branch of
-its own from `main` (`batch/<id>`), as it has since the git era began
-(2026-10-10). **Batches check side by side** (TM1, 2026-10-18): every
+its own (`batch/<id>`) from `main`, or, as a lane's next batch, from its
+predecessor's tip (rule 7). **Batches check side by side** (TM1, 2026-10-18): every
 `batch-check.sh` run but `--timing` times soft - a timing figure over its
 budget says SOFT and is not counted (`Timing`, `-Dcbs.timing=soft`, which
 the script sets by itself) - and timing is judged hard only by `--timing`
@@ -129,8 +135,9 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
    Exit 1 is anything else (the compile, the maps, Stale, line endings, a
    harness `AllChecks` does not register), and 2 a mistake in the options.
    A class most harnesses read (`Game.java` and the like) is left to the
-   gate's suite, with `LongPlaytest` picked in its place (the calls below,
-   1). A `*Check.java` in the diff, changed or added, also picks `TimingCheck`
+   gate's suite, with `LongPlaytest` picked in its place (more than
+   `CBS_PICK_FANOUT` readers; `=999` flips it, which reopens if more than one
+   of the first four batches bounces at the gate on a harness so left). A `*Check.java` in the diff, changed or added, also picks `TimingCheck`
    (TM3 item 8: ET6's new harness compared times against its budgets directly,
    and only the gate's full suite ran the rule that catches it); after a
    change to `tools/pick.sh`, `sh tools/pick-selftest.sh` (no JVM, seconds). Commit the sources, `buildings.json` and `docs/` together.
@@ -138,7 +145,7 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
    branch never edits `GameVersion.VERSION`, `QUEUE.md`,
    `docs/notes/changelog.md` or `docs/notes/gate.txt`, and writes no
    paragraph above `VERSION` in `GameVersion`'s javadoc: the changelog is
-   the one record (the calls below, 3). Where its version would go it
+   the one record. Where its version would go it
    writes `{next}`, and its notes' title says `({next}, date)`. Its records
    are one file, `docs/queue/<id>-ship.md`:
 
@@ -166,11 +173,11 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
    branch sent back from the gate first takes it off (`git rm
    docs/queue/<id>-ship.md`, pushed) and pushes it again last when mended;
    left on, `day.sh --due` calls the branch ready every hour. A branch with
-   no ship file still ships the old way during the change-over, its records
-   as it wrote them (BP1 itself ships so, `--no-tag`); `ship.sh` stops one
-   whose `VERSION` main has tagged already (merge main and bump it, or
-   write a ship file), `--no-tag` with a `VERSION` change, and any branch
-   carrying another id's ship file.
+   no ship file ships `--no-tag`, its records as it wrote them, as an
+   assistant's does (RL1: the old way, with its own version and row, is gone);
+   `ship.sh` stops one without `--no-tag`, `--no-tag` with a `VERSION` change,
+   any branch carrying another id's ship file, and one built on a batch main
+   lacks (7).
 6. **The ensemble only when the trace moves** (EN1, Jerus 2026-10-20): a
    batch whose default playtest's trace is byte-identical to main's but for
    its run-time line skips the 80-run ensemble and its notes say so; one
@@ -191,12 +198,21 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
    sh tools/wait.sh --line target/checks/run.txt '^exit [0-9]' --for 9                                                       # in the foreground, Bash timeout 600000
    ```
 
-   A wait of hours, for its lane's predecessor, is one background
-   `sh tools/wait.sh --row PRED`, which ends when PRED's row has left the
-   Queued table of origin's `QUEUE.md`. When it says done the session
-   takes main as it now is, before any work: `git merge -q --ff-only
-   origin/main` (nothing is committed yet, and the worktree was cut hours
-   before, so the predecessor's shared files would conflict at the gate).
+   **A lane's next batch is built on its predecessor** (RL1): `git fetch origin
+   && git checkout -b batch/<id> origin/batch/PRED`, once PRED's ship file is on
+   origin; that ship file stays as it is. `--pick` diffs against PRED's tip
+   (`tools/carries.sh` names the unmerged batch a tree is built on; `pick.sh`,
+   `day.sh`, `wait.sh`, `ship.sh` and `batch-check.sh` ask it). The session waits
+   in one background `sh tools/wait.sh --row PRED`, which ends when PRED's row has
+   left origin's `QUEUE.md` or PRED is ready again after a gate sent it back. PRED
+   landed: `git fetch -q origin && git merge origin/main` at once (a conflict in
+   the generated docs: main's side, `--pick` regenerates them). PRED mended: `git
+   merge origin/batch/PRED`, carry on and wait again; ask only if the fix removes
+   something this batch uses. **The ship file is pushed last, and only once PRED
+   is on main and merged in**: until then `day.sh` calls the branch waiting,
+   `wait.sh --ship` leaves it out and `ship.sh` stops it (it would ship PRED
+   ungated). A NEW red under `--pick` while PRED is unmerged may be one Jerus
+   approves at PRED's gate: merge main and run again before mending it.
 8. **The report is 15 lines**: what it did, the checks' exit and any red
    lines, its ★ calls each with a recommendation, and its branch pushed
    with the ship file last. The first batch after BP1 also reports its token
@@ -208,7 +224,10 @@ one JVM at a time under the shared lock (`batch-check.sh` takes it).
 
 ## The gate
 
-The orchestrator gates each ready branch (`sh tools/day.sh` names them).
+The orchestrator gates each ready branch (`sh tools/day.sh` names them; a
+waiting one goes after the batch it is built on). A batch sent back needs no
+message to its successor: the successor's `wait.sh --row` ends when it is
+ready again.
 
 1. It reads the diff's stat (`git diff --stat origin/main...origin/batch/<id>`),
    the notes, and the review line of
@@ -249,7 +268,7 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
      refused because `main` moved takes the merge and the tag back: run
      `ship.sh` again, and it takes the next number from the tags it
      fetches.
-5. **Reds** (the calls below, 4). Main's recorded reds pass, word for word,
+5. **Reds**. Main's recorded reds pass, word for word,
    and the body says `Gate: known red only: <harnesses>`. A NEW red
    line ships only with `--red-ok "his words"` and a `--red-line` for each
    line he approved, his words and the lines in the body. **His words pass
@@ -272,7 +291,7 @@ The orchestrator gates each ready branch (`sh tools/day.sh` names them).
    red goes back to the batch as its failing lines (`target/checks/reds.txt`
    in the gate's clone), and its ship file comes off first (A batch
    session, 5).
-6. **Timing** (lesson d; the calls below, 5; TM3, 2026-10-27). A timing red
+6. **Timing** (lesson d; TM3, 2026-10-27). A timing red
    at the gate is judged side by side with main, not by one run of the
    merge's: a wall-clock budget measured once on a PC that also runs Jerus's
    game measures the load as much as the code (HY1's gate stopped on three
@@ -441,34 +460,8 @@ in `docs/notes/gate.txt` and the merge's body), the maps are regenerated,
 the ensemble scored if the trace moved, the write-up exists, the docs pass
 has run, and the batch's row is out of `QUEUE.md` (`ship.sh` takes it out
 in the merge). A batch session calls itself ready when `--pick` exits 0 or
-3 and its ship file is pushed, last.
-
-## The calls BP1 left
-
-Each ★ but 2 with its recommendation already built; until Jerus says
-otherwise, the built way holds. Call 2 is his, since it moves the standing
-rule on Pending.
-
-1. A class most harnesses read (`Game.java` and the like, more than
-   `CBS_PICK_FANOUT` readers) is left to the gate's full suite, with
-   `LongPlaytest` run in its place, rather than the whole suite run in the
-   batch. Recommended: item 3's "one full suite per batch, at the gate".
-   `CBS_PICK_FANOUT=999` flips it; it reopens if more than one of the first
-   four batches bounces at the gate on a harness so left.
-2. Who returns a blocked batch to Queued when its block clears by itself.
-   Recommended: the orchestrator, saying so in the queue commit. Not built:
-   until he says, only his review moves a Pending row.
-3. No more paragraphs in `GameVersion`'s javadoc: the changelog is the one
-   record. Recommended.
-4. Main's recorded reds pass the gate by default, word for word, and a new
-   red only with `--red-ok`, his words and a `--red-line` naming it (TM3's
-   review: his words pass the lines he approved, no others). Recommended: his
-   own by-hand rule, made mechanical.
-5. A timing red that main shows too passes and is named in the merge's body
-   (lesson d). Since TM3 "shows too" is read side by side: the red harness
-   is timed again with main's classes and the merge's in turn, and the red
-   passes unless the merge's median is over main's by more than 15% (step 6
-   of the gate). Recommended.
+3 and its ship file is pushed, last (a successor: once its predecessor is on
+main and merged in).
 
 ## The lessons of 2026-10-23/24
 

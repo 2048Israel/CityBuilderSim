@@ -21,8 +21,8 @@
 #       the throwaway branches are written; main gets the ship.sh under test,
 #       the stub, and a fake Queued row for every throwaway id;
 #    2. the branches are written in work and pushed to origin.git: batches
-#       with ship files that are right and ones that break each rule, old-style
-#       branches, chatgpt/ and docs/ branches;
+#       with ship files that are right and ones that break each rule, one
+#       built on another, chatgpt/ and docs/ branches;
 #    3. the cases run, one line each, PASS or FAIL, then "selftest: N of M
 #       passed"; the area is deleted unless it is kept.
 #  The stub (batch-check.sh in main) answers by environment variables:
@@ -83,7 +83,7 @@ git clone -q origin.git main && git clone -q origin.git work
 for d in main work; do git -C $d config user.name selftest; git -C $d config user.email selftest@example.invalid; git -C $d config core.longpaths true; done
 P=${V0%.*}; Q=${V0##*.}
 V1=$P.$((Q + 1)); V2=$P.$((Q + 2)); V3=$P.$((Q + 3)); V4=$P.$((Q + 4)); V5=$P.$((Q + 5))
-VOLD=$P.$((Q + 50))   # a version nobody has tagged, above the last tag: an old-style branch's own
+VOLD=$P.$((Q + 50))   # a version nobody has tagged, above the last tag: a branch that moves VERSION
 
 # the stub: STUB_EXIT/STUB_REDS drive the suite run, STUB_TEXIT/STUB_TREDS/STUB_TTSV --timing; a --timing that names a harness is a paired round (TM3)
 cat > "$TA/main/batch-check.sh" <<'EOF'
@@ -128,8 +128,8 @@ if [ "$MODE" != timing ] && [ -n "$STUB_TOUCHMAPS" ]; then echo "// regenerated"
 exit "$EXIT"
 EOF
 cp "$SRC/ship.sh" "$TA/main/ship.sh"; chmod +x "$TA/main/ship.sh" "$TA/main/batch-check.sh"
-mkdir -p "$TA/main/tools"; cp "$SRC/tools/timing-pair.awk" "$TA/main/tools/timing-pair.awk"   # the gate's arithmetic (TM3), the file under test
-IDS="TST TS2 OLD OLD2 OLDT OLDV OLDL GV GG GN GX GH GQ GC GE GB DOC TM ER NC NC2 OS SH"; FAKE=""
+mkdir -p "$TA/main/tools"; cp "$SRC/tools/timing-pair.awk" "$SRC/tools/carries.sh" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
+IDS="TST TS2 NS GV GG GN GX GH GQ GC GE GB DOC TM ER NC NC2 OS SH PP PS PR PT"; FAKE=""
 for i in $IDS; do FAKE="$FAKE| $i | A fake queued batch $i | [x](y) |
 "; done
 printf '%s' "$FAKE" > "$TA/fake-rows.txt"
@@ -155,14 +155,10 @@ EOF
 notes() { printf '# %s notes ({next})\n' "$1" > "$TA/work/docs/queue/$1-notes.md"; }
 jv() { echo "// $1" >> "$TA/work/src/main/java/ham/citybuildersim/$2.java"; }
 setv() { sed -i "s/^\( *public static final String VERSION = \"\)[^\"]*\";/\1$1\";/" "$TA/work/$GVF"; }   # the branch's own VERSION
-rowout() { sed -i "/^| $1 |/d" "$TA/work/QUEUE.md"; }   # the old way: the branch deletes its own Queued row
 mk batch/TST; shipf TST; notes TST; echo "stray {next}" > "$TA/work/docs/queue/TSTX.md"; jv TST SimulationEngine
 printf '# Ensemble baseline: %s\n\non the model of **{next}**\n' "$V0" > "$TA/work/docs/ensemble/TST.md"; echo "TST dials" >> "$TA/work/docs/dials.md"; fin TST batch/TST
 mk batch/TS2; shipf TS2; notes TS2; jv TS2 Sector; echo "TS2 dials" >> "$TA/work/docs/dials.md"; echo "# TS2's" > "$TA/work/docs/map/ZzStub.md"; fin TS2 batch/TS2
-mk batch/OLD2; jv OLD2 Land; setv "$VOLD"; fin OLD2 batch/OLD2           # old-style, its row left in QUEUE.md
-mk batch/OLDT; jv OLDT Land; rowout OLDT; fin OLDT batch/OLDT           # old-style, VERSION as main has it (tagged)
-mk batch/OLDV; jv OLDV Land; setv "$VOLD"; rowout OLDV; fin OLDV batch/OLDV   # old-style, a VERSION of its own
-mk batch/OLDL; jv OLDL Land; setv 0.0.5; rowout OLDL; fin OLDL batch/OLDL     # old-style, a VERSION below the last tag
+mk batch/NS; jv NS Land; fin NS batch/NS                                 # a batch with no ship file
 mk batch/GV; shipf GV; setv 0.7.77; fin GV batch/GV
 mk batch/GG; shipf GG; mkdir -p "$TA/work/docs/notes"; echo "# mine" > "$TA/work/docs/notes/gate.txt"; fin GG batch/GG
 mk batch/GN; shipf GN; jv GN Markets; fin GN batch/GN
@@ -206,6 +202,13 @@ mk docs/pass-t; printf '## changelog\n### docs pass - a pass\n\np.\n' > "$TA/wor
 mk docs/pass-ok; printf '## changelog\n### docs pass - a pass\n\np.\n' > "$TA/work/docs/queue/docs-pass-ok-ship.md"; fin DPO docs/pass-ok   # and named by its branch
 mk chatgpt/vt; jv CGV Land; setv "$VOLD"; fin CGV chatgpt/vt           # a branch that moves VERSION
 mk chatgpt/ok; jv CGO Land; fin CGO chatgpt/ok                         # one that leaves it
+# RL1: PS is cut from PP's tip (ready), PT from PR's (sent back: no ship file on its tip); both have a ship file of their own
+mk batch/PP; printf '## changelog\n### PP - a predecessor - 2026-10-27, no tag\n\np.\n' > "$TA/work/docs/queue/PP-ship.md"; jv PP Markets; fin PP batch/PP
+mk batch/PR; jv PR Markets; fin PR batch/PR
+for pair in PP:PS PR:PT; do
+    W checkout -q -B "batch/${pair##*:}" "origin/batch/${pair%%:*}"; printf '## changelog\n### %s - a successor - 2026-10-27, no tag\n\np.\n' "${pair##*:}" > "$TA/work/docs/queue/${pair##*:}-ship.md"
+    jv "${pair##*:}" Zoning; fin "${pair##*:}" "batch/${pair##*:}"
+done
 W checkout -q -B scratch origin/main
 
 # --- the cases ---------------------------------------------------------------------------------------------------
@@ -213,7 +216,7 @@ export STUB_LOG="$TA/stub.log"; : > "$STUB_LOG"
 LABEL="usage: no branch exits 2";               run;                              ok rc_is 2
 LABEL="usage: unknown option exits 2";          run --bogus batch/TST;            ok rc_is 2
 for g in "GV:changes GameVersion's VERSION" "GG:changes docs/notes/gate.txt" "GH:heading ship.sh does not know" "GQ:edits QUEUE.md" "GC:edits docs/notes/changelog.md" \
-         "GE:adds docs/ensemble/9.9.9.md" "GX:no {next}" "OLD2:still queues OLD2" "GB:no {next} to name it by"; do
+         "GE:adds docs/ensemble/9.9.9.md" "GX:no {next}" "GB:no {next} to name it by"; do
     b=${g%%:*}; m=${g#*:}; LABEL="guard $b stops, '$m', tree clean"; run --dry-run batch/$b; ok sh -c "[ $RC = 1 ] && grep -q -F -- \"$m\" \"$TA/out.txt\" && grep -q STOPPED \"$TA/out.txt\""
     LABEL="guard $b leaves the tree clean"; ok clean
 done
@@ -231,12 +234,10 @@ LABEL="another id's ship file on a batch stops";                            run 
 LABEL="a docs pass's misnamed ship file stops";                             run --dry-run --no-tag docs/pass-t;  ok stopped "adds a ship file for another id: docs/queue/docs-pass-ship.md; this branch's is docs/queue/docs-pass-t-ship.md"
 LABEL="a docs pass's ship file named by its branch records, no tag";        run --dry-run --no-tag docs/pass-ok; ok sh -c "[ $RC = 0 ] && grep -q -F \"docs-pass-ok's block on top\" $TA/out.txt"
 
-# the old way: a version another batch took, and --no-tag with a version of its own
-LABEL="old-style batch, VERSION tagged already, stops";                     run --dry-run batch/OLDT; ok stopped "batch/OLDT's VERSION $V0 is tagged already: merge main and bump to $V1, or write a ship file"
-LABEL="old-style batch, VERSION below the last tag, stops";                 run --dry-run batch/OLDL; ok stopped "does not sort above the last version tag $V0"
-LABEL="old-style batch, a VERSION of its own, would tag it";                run --dry-run batch/OLDV; ok sh -c "[ $RC = 0 ] && grep -q -F \"tag $VOLD\" $TA/out.txt"
-LABEL="old-style batch, VERSION as main has it, ships --no-tag";            run --dry-run --no-tag batch/OLDT; ok sh -c "[ $RC = 0 ] && grep -q -F 'not tag it' $TA/out.txt"
-LABEL="--no-tag with a branch that changes VERSION stops (batch)";          run --dry-run --no-tag batch/OLDV; ok stopped "changes GameVersion's VERSION line and --no-tag was given"
+# no ship file: --no-tag, or a stop
+LABEL="a batch with no ship file stops, said";                              run --dry-run batch/NS;  ok stopped "batch/NS has no docs/queue/NS-ship.md"
+LABEL="...an assistant's branch too, unless --no-tag";                      run --dry-run chatgpt/ok;  ok stopped "chatgpt/ok has no docs/queue/chatgpt-ok-ship.md"
+LABEL="a batch with no ship file ships --no-tag";                           run --dry-run --no-tag batch/NS; ok sh -c "[ $RC = 0 ] && grep -q -F 'not tag it' $TA/out.txt"
 LABEL="--no-tag with a branch that changes VERSION stops (chatgpt/)";       run --dry-run --no-tag chatgpt/vt; ok stopped "changes GameVersion's VERSION line and --no-tag was given"
 LABEL="--no-tag with a branch that leaves VERSION ships (chatgpt/)";        run --dry-run --no-tag chatgpt/ok; ok sh -c "[ $RC = 0 ] && grep -q -F 'not tag it' $TA/out.txt"
 LABEL="...and the tree is clean";                                           ok clean
@@ -370,6 +371,14 @@ ok sh -c "[ $RC = 0 ] && grep -q -F 'batch/SH changes ship.sh: this run goes on 
 LABEL="ship.sh: ...and the tree is as it was"; ok clean
 LABEL="ship.sh: the copy keeps the arguments and the clone it was started in (a branch after options)"; run --dry-run --no-tag chatgpt/ok
 ok sh -c "[ $RC = 0 ] && grep -q -F 'not tag it' $TA/out.txt"
+# RL1: a lane's next batch is cut from its predecessor's tip, and ships only once the predecessor is on main
+LABEL="a successor (PS) cut from its predecessor's tip (PP) stops while PP is not on main";  run --dry-run --no-tag batch/PS;  ok stopped "batch/PS is built on PP, which is not on main yet"
+LABEL="...so does one whose predecessor was sent back (PR: no ship file on its tip)";        run --dry-run --no-tag batch/PT;  ok stopped "batch/PT is built on PR, which is not on main yet"
+LABEL="...the predecessor is not held back by its successor";                                run --dry-run --no-tag batch/PP;  ok rc_is 0
+LABEL="...and the tree is clean";                                                            ok clean
+LABEL="ship PP, the predecessor";                                                            run --no-tag batch/PP;            ok sh -c "[ $RC = 0 ] && git -C $TA/origin.git log -1 --format=%s main | grep -q -F 'Merge batch/PP'"
+LABEL="PP on main: PS ships, with no merge of main in it first, its own ship file the only one"; run --dry-run --no-tag batch/PS;  ok sh -c "[ $RC = 0 ] && grep -q -F \"PS's block on top\" $TA/out.txt"
+LABEL="PR is still not on main: PT is still stopped";                                        run --dry-run --no-tag batch/PT;  ok stopped "batch/PT is built on PR, which is not on main yet"
 echo "selftest: $((N - FAILS)) of $N passed"
 [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ] || { cd /; rm -rf "$TA"; }
 exit "$FAILS"

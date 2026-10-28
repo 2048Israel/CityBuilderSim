@@ -24,24 +24,23 @@
 #    1. main is brought up to origin/main and the tags fetched (fast-forward only);
 #    2. the branch, local or origin's, with something main does not have;
 #    3. the last version tag (the highest x.y.z) must be main's GameVersion.VERSION;
-#    4. the branch's ship file docs/queue/<id>-ship.md decides the way: with
-#       one, the new way (the version and the records are set here); without,
-#       the old way (the branch wrote its own: its version, its changelog
-#       block, its Queued row out), said in a line;
+#    4. the branch's ship file docs/queue/<id>-ship.md: the version and the
+#       records are set here from it; a branch without one (an assistant's, a
+#       docs pass's) ships --no-tag, its records as it wrote them, or stops;
 #    5. stops before any merge: "-- names" without --dry-run (a partial suite
-#       never ships); a branch that changes docs/notes/gate.txt, or adds a
-#       docs/queue/*-ship.md that is not its own; with --no-tag, one that
+#       never ships); a branch that changes docs/notes/gate.txt, adds a
+#       docs/queue/*-ship.md that is not its own, or is built on another batch
+#       that main lacks (tools/carries.sh, RL1: merging it would ship that one
+#       ungated, with no records); with --no-tag, one that
 #       changes GameVersion's VERSION line (main's VERSION would stay untagged
-#       and step 3 would stop every later ship); in the new way, one that
+#       and step 3 would stop every later ship); with a ship file, one that
 #       changes GameVersion's VERSION line, adds a docs/ensemble/<x.y.z>.md,
 #       edits QUEUE.md or the changelog, has a "## " heading in its ship file
 #       other than changelog, pending and queued, a pending or queued row with
 #       no first cell, asks for a version ({next}) with --no-tag or without a
 #       "## changelog" block whose first line starts "### {next} ", or is a
-#       batch/ branch with no {next} and no --no-tag; in the old way, a batch/
-#       branch (without --no-tag) whose VERSION is tagged already or does not
-#       sort above the last tag; a --version that is not x.y.z, does not
-#       sort above the last tag or is tagged here or on origin;
+#       batch/ branch with no {next} and no --no-tag; a --version that is
+#       not x.y.z, does not sort above the last tag or is tagged here or on origin;
 #    6. the version: NEXT is --version, or the last tag's patch + 1, when the
 #       ship file has {next}; the tag is NEXT unless --no-tag;
 #    7. the merge, uncommitted; a conflict only in the generated docs (docs/map/,
@@ -63,28 +62,22 @@
 #    9. the checks: batch-check.sh on the merge (compile, suite, maps, Stale,
 #       line endings), the suite timed soft so that timing is judged once;
 #       exit 0 and 3 (red only as main's record has it) pass, 4 (a new red
-#       line) passes only with --red-ok and a --red-line that names each of the
-#       new lines (a harness's own "exit N" and "N FAILED" lines pass with a line of
-#       its that does, when no other line of it is left unnamed), 1 and 2 stop. On a chatgpt/ or gemini/
-#       branch tools.Names too: said, never a gate. Then the timing harnesses
-#       alone and hard (batch-check.sh --timing), at once (GP1: no quiet minute, a
-#       red is judged against main's own run below); its exit is 0, 3 or 4 alike, and the record
-#       is no shortcut. Its red lines less the lines the suite step already
-#       judged (main's recorded reds, or reds passed with --red-ok) and less main's recorded
-#       lines are the timing's own: none, and it passes with no further run
-#       (a red passed with --red-ok in one of the timing harnesses comes back
-#       here and is not judged twice). Otherwise (TM3) each timing red - a line
-#       whose figure missed its budget, read from the run's target/checks/timing.tsv,
-#       never from the label - is judged side by side with main: the red harnesses
-#       are run again CBS_TIMING_ROUNDS times (3) with main's classes (target/main-timing,
-#       a worktree of main) and the merge's in turn, back to back, and the red
-#       passes, named with the paired medians, unless the batch's median is more
-#       than the margin (15%, tools/timing-pair.awk) over main's. A red that is
-#       no timing red, one over the margin and one with no pair to compare is the
-#       batch's and stops - unless --red-ok and a --red-line name it (the same rule as
-#       the suite's), said in the body; no timing red passed so is ever a recorded one;
-#       A merge that changes only .md files outside docs/ensemble/ runs
-#       batch-check.sh --fast alone;
+#       line) passes only with --red-ok and a --red-line naming each new line
+#       (a harness's own "exit N" and "N FAILED" lines pass with a line of it
+#       that does, when no other line of it is left unnamed), 1 and 2 stop. On a
+#       chatgpt/ or gemini/ branch tools.Names too: said, never a gate. Then the
+#       timing harnesses alone and hard (batch-check.sh --timing), at once (GP1);
+#       its red lines less those the suite step judged and main's recorded ones
+#       are the timing's own, and each timing red - a line whose figure missed its
+#       budget, read from target/checks/timing.tsv - is judged side by side with
+#       main (TM3; docs/batch.md, The gate 6; tools/timing-pair.awk): the red
+#       harnesses run again CBS_TIMING_ROUNDS times (3) with main's classes
+#       (target/main-timing) and the merge's in turn, and it passes, named with the
+#       medians, unless the batch's is over main's by more than 15%. A red that is
+#       no timing red, one over the margin and one with no pair to compare stops -
+#       unless --red-ok and a --red-line name it, said in the body; no timing red
+#       passed so is ever a recorded one. A merge that changes only .md files
+#       outside docs/ensemble/ runs batch-check.sh --fast alone;
 #   10. docs/notes/gate.txt written (every gate that ran the suite) and added:
 #       "#" lines (the merge's title, the date, whether earth-2.bin was named,
 #       the suite's and the timing's summary lines, each timing red that passed
@@ -99,8 +92,7 @@
 #       QUEUE.md's on main unless -m gives one, the body the -F file then
 #       "Gate: ..." lines (green, known red only, NEW red on his word, or
 #       docs only);
-#   13. tagged NEXT (or, the old way, the branch's VERSION unless tagged
-#       already);
+#   13. tagged NEXT;
 #   14. main and the tag pushed together (git push --atomic), a failed push
 #       tried four more times; when main moved on origin meanwhile, the
 #       merge and the tag are taken back here: run ship.sh again, the number
@@ -146,6 +138,12 @@
 #  lines in hand, and a broad --red-ok let a different flaky line go red in the rerun
 #  and pass under words given for another (CC1-S's gate). The script runs from a copy of itself: a batch that changes ship.sh
 #  (TM3 did) rewrote it under the shell that was reading it at the merge.
+#  WHY (RL1, 2026-10-27): a lane's next batch is cut from its predecessor's tip while
+#  that one is at the gate, so merging it before the predecessor would ship the
+#  predecessor ungated, with no records: the stop on a branch built on another batch
+#  main lacks. The old way (no ship file, the branch's own version and row) went with
+#  it: every batch has written a ship file since BP1, and one without stops, or ships
+#  --no-tag as an assistant's and a docs pass's do.
 # ---------------------------------------------------------------------------
 
 # TM3: run from a copy of this script, made before anything is merged. A shell reads its script as it goes, at the
@@ -278,13 +276,17 @@ if git cat-file -e "$REF:$SHIPF" 2>/dev/null; then
     git show "$REF:$SHIPF" | tr -d '\r' > "$T/ship-on-branch"
     grep -q -F '{next}' "$T/ship-on-branch" && WANT=1
     say "ship file $SHIPF: the version and the records are set here"
+elif [ "$NOTAG" = 1 ]; then
+    say "no $SHIPF - its records as it wrote them"
 else
-    say "old-style: no $SHIPF - its records as it wrote them"
+    die "$BRANCH has no $SHIPF: its records go there (docs/batch.md), or ship it --no-tag (a branch with no version of its own)"
 fi
 
 # 5. stops, before any merge
 [ "$#" -eq 0 ] || [ "$DRY" = 1 ] || die "a partial suite never ships: '-- harness names' only with --dry-run"
 printf '%s\n' "$CHANGED" | grep -q -x 'docs/notes/gate.txt' && die "$BRANCH changes docs/notes/gate.txt: only ship.sh writes the gate's record"
+CARRIED=$(sh tools/carries.sh "$REF" "$BRANCH" | tr '\n' ' ')   # RL1: a successor cut from its predecessor's tip, which main lacks; its ship file is the predecessor's too
+[ -z "$CARRIED" ] || die "$BRANCH is built on ${CARRIED% }, which is not on main yet: gate that first, then $BRANCH merges main (docs/batch.md, A batch session)"
 OTHERSHIP=$(git diff --name-only --diff-filter=A --no-renames "main...$REF" | grep -E '^docs/queue/.+-ship\.md$' | grep -v -x -F "$SHIPF" | head -3 | tr '\n' ' ')
 [ -z "$OTHERSHIP" ] || die "$BRANCH adds a ship file for another id: ${OTHERSHIP% }; this branch's is $SHIPF (the branch's name, each / a -: docs/batch.md)"
 VCHG=0
@@ -311,13 +313,8 @@ if [ "$NEW" = 1 ]; then
     elif [ "$ISBATCH" = 1 ] && [ "$NOTAG" = 0 ]; then
         die "$SHIPF has no {next}: write {next} in its changelog heading, or ship it --no-tag"
     fi
-elif [ "$NOTAG" = 1 ]; then   # a --no-tag merge carries main's version: one that moves it leaves main untagged and stops every later ship (step 3)
+else   # no ship file, --no-tag (step 4): the merge carries main's version, and one that moves it leaves main untagged and stops every later ship (step 3)
     [ "$VCHG" = 0 ] || die "$BRANCH changes GameVersion's VERSION line and --no-tag was given: main's VERSION would stay untagged and stop every later ship; leave VERSION as main has it"
-elif [ "$ISBATCH" = 1 ]; then   # the old way: a number another batch took is a stop, not a second copy of a version (lesson f)
-    BV=$(vof "$REF")
-    [ -n "$BV" ] || die "cannot read GameVersion's VERSION on $BRANCH"
-    ! tagged "$BV" || die "$BRANCH's VERSION $BV is tagged already: merge main and bump to $LASTPLUS, or write a ship file (--no-tag if no player sees the change)"
-    above_last "$BV" || die "$BRANCH's VERSION $BV does not sort above the last version tag $LAST: merge main and bump to $LASTPLUS, or write a ship file (--no-tag if no player sees the change)"
 fi
 if [ -n "$OVERRIDE" ]; then
     [ "$WANT" = 1 ] || die "--version names the number {next} takes, and $BRANCH has no {next}"
@@ -335,9 +332,6 @@ fi
 # the merge's title: QUEUE.md's row on main (before the records take it out), or -m
 [ -n "$TITLE" ] || TITLE=$(queued main | awk '{ print tolower(substr($0, 1, 1)) substr($0, 2) }')
 [ -n "$TITLE" ] || TITLE=$(git log -1 --format=%s "$REF")
-if [ "$NEW" = 0 ] && [ "$ISBATCH" = 1 ]; then   # the old way: the branch deleted its own row
-    [ -z "$(queued "$REF")" ] || die "QUEUE.md on $BRANCH still queues $ID: delete its row in the batch (what it left undone under Pending)"
-fi
 
 # 7. the merge, not yet committed
 if printf '%s
@@ -433,15 +427,11 @@ if [ "$NEW" = 1 ]; then
     say "records: $RECS"
 fi
 
-# the version this merge carries: NEXT, or what the tree reads (the old way: the branch's own)
+# the version this merge carries: NEXT, or what the tree reads
 if [ "$WANT" = 1 ]; then V=$NEXT; else V=$(sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p' "$GV" | head -1); fi
 [ "$NOTAG" = 0 ] || [ "$V" = "$LAST" ] \
     || die "--no-tag, and the merge reads VERSION ${V:-unreadable}, not the last version tag $LAST: a --no-tag merge carries main's version, or main's VERSION is left untagged"
-TAG=""
-if [ "$NOTAG" = 1 ]; then :
-elif [ "$NEW" = 1 ]; then [ "$WANT" = 0 ] || TAG=$NEXT
-else tagged "$V" || TAG=$V
-fi
+TAG=""; [ "$NOTAG" = 1 ] || [ "$WANT" = 0 ] || TAG=$NEXT
 MSG="Merge $BRANCH: $TITLE, $V"
 
 # 9. the checks on the merged tree
@@ -662,10 +652,8 @@ if [ -n "$TAG" ]; then
     say "tagged $TAG"
 elif [ "$NOTAG" = 1 ]; then
     say "not tagged (--no-tag)"
-elif [ "$NEW" = 1 ]; then
-    say "not tagged: the ship file has no {next}"
 else
-    say "not tagged: $V is tagged already (the batch did not bump the version)"
+    say "not tagged: the ship file has no {next}"
 fi
 
 # 14. push, main and the tag together
