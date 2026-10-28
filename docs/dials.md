@@ -888,7 +888,7 @@ Generated 2026-10-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 441 | `DistrictPlan.BLOCK_DEPTH` | `LATTICE - 1` | A building wider than this, in a homes cell, may merge blocks: 7, a block's depth. |
 | 444 | `DistrictPlan.JOIN_ROUNDS` | `40` | The most pieces the join joins, one at a time: 40, the prototype's. |
 | 447 | `DistrictPlan.JOIN_DX` | `{ 0, 0, 1, - 1 }, JOIN_DY = { 1, - 1, 0, 0 }` | The join's steps in the prototype's order: south, north, east, west - so of two ways as short it takes the prototype's. |
-| 450 | `DistrictPlan.WALL_MOST` | `0` | The most plots of buildings the way to a street piece they wall in may cross, to be kept clear of them (FW11): 16, two lattice blocks' depth; a piece that needs more is left apart, as it was before. |
+| 450 | `DistrictPlan.WALL_MOST` | `2 * LATTICE` | The most plots of buildings the way to a street piece they wall in may cross, to be kept clear of them (FW11): 16, two lattice blocks' depth; a piece that needs more is left apart, as it was before. |
 | 453 | `DistrictPlan.WALL_TRIES` | `3` | The most times a plan is made again with the ways to the pieces its buildings wall in kept clear (FW11): 3; a piece still walled in then is left apart, as before. |
 | 456 | `DistrictPlan.HALF` | `0.5` | A street's least surface, in plots of its right of way: a half, 15 m (spec 2.5). |
 | 459 | `DistrictPlan.FULL` | `1.0` | ...and its full width, a whole plot, 30 m. |
