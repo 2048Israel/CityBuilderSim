@@ -2,7 +2,7 @@
 
 Generated 2026-10-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**150 harness files, 15,794 labelled assertions.** AllChecks runs 150 of them.
+**150 harness files, 15,821 labelled assertions.** AllChecks runs 150 of them.
 
 ## Which harnesses read which class
 
@@ -9113,7 +9113,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L450 fixture: every month of the year, half a dial would reach somebody in the twin without it
   - L452 just loaded, the households a voucher would reach are the live city's
 
-## HaulageCheck.java - 100 labelled assertions
+## HaulageCheck.java - 127 labelled assertions
 
 > Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is
 > billed once, by Haulage, at a quote the trucks' own books set, and the vans
@@ -9126,123 +9126,155 @@ _(this harness does not label its checks through a helper - it prints its findin
 > one agent from the brief and is held here by another, from the brief's rules
 > and the model's own getters and constants: no figure below is typed in that a
 > getter or a constant could give. Ten claims, numbered as FR2.md section 6
-> numbers them (its 11, a real run, is LongPlaytest's):
+> numbers them (its 11, a real run, is LongPlaytest's), and an eleventh that
 > ...
 
-- **L369 3. EACH LEG ONCE - and A RELOAD, on the same city**
-- **L373 3. each leg once: the city leg is billed to the buyer and the exporter, at the share in force and the quote**
-  - L383 fixture: the first bill has been raised, so Haulage has a fleet, a quote and legs to bill
-  - L440 every sector's \"Haulage\" line is its legs x the share in force x the quote, every month
-  - L444 ...and the months cover the trucks short and the trucks enough, so neither side is vacuous
-  - L446 the plant pays the ore it bought at home, the ore and coal it landed and the pellets it shipped, each a leg
-  - L450 the mine that sold its ore at home, and shipped none, was billed nothing for it
-  - L453 ...and a goods tonne that crossed, or was bought at home, has no truck leg, whatever the railway carries
-  - L455 Freight's \"Haulage billed\" is the shippers' lines to the cent, and the bill is in its other revenue
-  - L458 ...and the bill is what the trucks carried: the carried share of the legs, within the trucks' capacity
-- **L463 the reload**
-  - L480 the loaded city carries the month's units bought at home, landed and shipped: its legs are the live city's
-  - L493 the loaded city has the live city's leg price, which the shares the city struck at its last haul weigh
-  - L496 ...so the plant standing asks the same city leg of both before the first haul after the load
-  - L509 the next haul bills every sector the same \"Haulage\" line as the live city's, to the bit
-  - L526 ...and prices, carries and fleets alike: quote, tonnes, carried, capacity, allowed, need, share, trucks
-- **L551 1. the slot: Freight is key 12, and the registry is the keys**
-  - L555 the twelfth key (position 12, index
-  - L564 ...no key is called \"Rail\" any more, and none is twice in the list
-  - L568 the registry has as many sectors as there are keys, each in its key's place
-  - L570 the twelfth sector is the Freight, found by index, by key and by accessor
-  - L574 ...a Freight with a Haulage division of its own, and no fleet in a city that has not yet moved a tonne
-- **L584 2. TRUCKS: the world sells them and never buys, 15 t of tare, one plant makes them**
-  - L585 the world sells a truck at a price: it is importable, at a finite world import price
-  - L588 ...and never buys one: no world export price, and not exportable
-  - L591 a truck weighs 40 t gross less a full load: tonnesPerUnit() is 15
-  - L594 ...it drives in on its own wheels: the goods stream, a general cargo, a freight of 6.25% of its price
-  - L612 exactly one building in the catalogue makes trucks: the Heavy Truck Plant, Automotive's
-  - L616 ...and exactly one keeps them: the Truck Depot, Freight's, with room for trucks and posts for their drivers
-  - L623 ...and no building burns trucks as a feed: they are a fleet, bought by Freight alone
-- **L631 5. vans for goods: bulk keeps none, goods keep TONNES_PER_VAN**
-  - L635 a works whose tonnes are all bulk (Iron & Steel's pelletising plant) keeps no vans, to the bit
-  - L640 a mine's ore is bulk and its diesel is goods: it keeps vans for the diesel alone
-  - L645 a sector with goods keeps its goods' tonnes over TONNES_PER_VAN, and its bulk (the grain) is not among them
-  - L649 ...and Freight itself, the fleet's owner, moves no goods and keeps no vans: the trucks do not haul themselves
-- **L659 6. the freight factor: MIN_VAN_RATE + (1 - MIN_VAN_RATE) x the trucks' share, a literal 1 when they suffice**
-  - L663 fixture: the plant and the shop have bulk to move, the office has none
-  - L670 fixture: Haulage has a nameplate need to read the share against, and strikes the same one at every haul by hand
-  - L677 the share is the fleet held at the haul x TONNES_A_TRUCK_MONTH over the need (capacity / need), struck at that haul
-  - L682 a bulk sector's haulage ratio is MIN_VAN_RATE + (1 - MIN_VAN_RATE) x that share
-  - L685 ...and its freight ratio is the lesser of its vans' ratio and that: the plant keeps no vans, so it is the trucks'
-  - L690 ...and it is the fifth factor of the operating rate
-  - L697 ...and holds for the month: the trucks moving between two hauls do not move the share or the sectors' ratio
-  - L702 with no trucks at all a bulk sector is slowed to the floor, not stopped
-  - L706 ...a tenth short of the need it runs just below one
-  - L711 ...trucks exactly at the need: the share is a literal 1 and so is the ratio, and the freight ratio
-  - L714 ...and the operating rate is then the other four factors times a literal one, to the bit
-  - L719 ...and trucks past the need earn no bonus: still a literal 1
-  - L724 a sector with no bulk legs reads a literal 1 whatever the share, and so does Freight itself
-  - L731 fixture: the shop keeps vans for its goods and its grain goes by truck
-  - L735 a shop short of vans and a little short of trucks runs at its vans' ratio, the lesser
-  - L742 ...with vans to spare and the trucks half short it runs at the trucks' ratio, the lesser
-- **L753 7. the fleet: the bid, the wear, the seeding once, the bill never past the trucks**
-  - L766 the need a haul strikes is the plant standing at nameplate: getNeed() is nameplateNeed(), the brief's weighted sum
-  - L769 ...and not last month's legs: the legs billed are what the plant ran, the need what it stands for
-  - L788 the bid is min(asked - have, asked / FLEET_DELIVERY_MONTHS) trucks, asked the need and the works on site's,
-  - L793 ...a fleet of none asks for an eighth of what it is asked, not all of it (a fleet is built up, not conjured)
-  - L796 ...and a fleet of exactly what it is asked asks for nothing, a literal zero
-  - L801 fixture: the city has legs to haul, so a haul runs its whole month
-  - L819 a month's wear is a truck's life's share of the trucks in the depots' room, and STREET_WEAR times that past it
-  - L825 ...past the room the wear exceeds a depot-kept fleet's by exactly the tenth on the trucks past it
-  - L836 when the legs exceed the trucks the bill is the trucks' capacity at the quote, not the legs'
-  - L846 ...and when the trucks have room to spare the bill is the legs' alone, below the capacity's
-  - L854 ...and with the trucks half the need, never past what they carry
-- **L860 8. THE PRICE**
-- **L864 8. the price: the quote walks REPRICE_SPEED toward allowed over what the trucks could carry, at the scarcity**
-  - L868 fixture: a quote is known and no depot stands, so every truck is on the street
-  - L877 with the trucks at half the need the tightness is .5 and the scarcity is 1 + .5 x (MAX_SCARCITY_MULTIPLE - 1)
-  - L882 ...and the quote is the old one plus REPRICE_SPEED of the way to allowed / capacity x scarcity
-  - L894 with trucks to spare the tightness is nought and the scarcity a plain one
-  - L897 ...the quote walks toward allowed over what the trucks COULD carry, not what they did
-  - L900 ...a fleet with idle trucks does not price its few tonnes at its whole cost
-  - L909 ...and trucks almost none are the dearest: tightness near one, the scarcity near MAX_SCARCITY_MULTIPLE
-  - L919 before any month there is no fleet and nothing to bid for
-  - L924 the first haul seeds the fleet at the need, for nothing (a city with a plant standing has a need from its first month)
-  - L938 a fleet already known, with no trucks and no money, is not handed one: the seeding happens once
-- **L948 4. the siding: a railed share of the imports relieves RAIL_ROAD_RELIEF of their truck tonnes; the sea relieves none**
-  - L956 fixture: the railway carries a share of the bulk stream, strictly between nothing and all
-  - L961 a railed share r of the landed ore takes RAIL_ROAD_RELIEF x r off its truck tonnes: they are (1 - RELIEF x r) of the tonnes
-  - L966 ...a tonne bought at home is not railed at all: a full truck tonne whatever r is
-  - L969 ...and a share of 1 relieves at most RELIEF: a quarter of a truck tonne is left
-  - L977 the month's bill is at the railed share: the plant's \"Haulage\" line is its legs after the siding, at the share and the quote
-  - L982 ...and the railway's own bill is a separate line, \"Rail freight\", so the two are not mistaken for each other
-  - L995 fixture: the ore goes by sea and not by rail
-  - L998 a share carried by sea alone relieves nothing: the landed ore is a full truck tonne from the quay to the door
-  - L1008 ...and the bill agrees: the plant pays its whole tonnage at the quote, the sea having shortened nothing inside the city
-- **L1018 9. the depot: ordered past the room by DEPOT_ORDER_MARGIN of one, not before; the drivers follow the trucks**
-  - L1027 fixture: the fleet is known, no depot stands or is being built, and the margin is a fraction of a depot's room
-  - L1033 trucks inside the margin of a depot's room: none is ordered
-  - L1037 ...and exactly at the margin still none (it has to be passed)
-  - L1041 trucks past it: the plan orders a Truck Depot - or says the staff or the ground are why not
-  - L1051 with a depot standing the margin is counted from its room: trucks short of room + margin order nothing
-  - L1056 ...and past it another is ordered, or the reason is the staff or the ground
-- **L1062 ...and the drivers follow the trucks: a depot keeping fewer than its room offers fewer posts**
-  - L1066 fixture: a depot stands, with driver posts at a wage, in a city that counts posts
-  - L1077 with the room full, every post is offered, in every tier
-  - L1089 a depot keeping fewer trucks than its room: the DIPLOMA posts offered are its posts less a driver for each empty place
-  - L1094 ...the mechanics and every other tier are offered whole
-  - L1097 ...the city's job count withholds the same number the sector does not offer
-  - L1102 ...and Freight's wage bill pays the posts offered and no more: its DIPLOMA wages are the wage a post times the posts offered
-  - L1111 ...and with no trucks at all the drivers are all laid off and not a post more: the mechanics' posts stand
-  - L1124 a reloaded city offers the posts the live one did (the drivers' share is saved)
-- **L1135 10. the weighing: a works is weighed with its legs at the quote and vans for its goods only**
-  - L1148 with a railway carrying, the need struck at a haul is the nameplate plant's legs less the siding's relief: nameplateNeed() = the brief's sum
-  - L1158 the Pelletising Plant keeps no vans and buys none: all its tonnes are bulk, vansFor() and fleetCapital() are zero
-  - L1175 legPrice(): a received tonne costs the quote less the siding's RELIEF x r x the import share; a made one the export share of it
-  - L1181 a railed share lowers p.in() for an imported good by exactly RAIL_ROAD_RELIEF x r x the import share (of the quote)
-  - L1184 ...and a GOODS tonne has no leg price at all
-  - L1190 cityLegs() is its bulk inputs' tonnes x p.in() plus its outputs' x p.out(), at the rate
-  - L1194 ...and the plant's freight is its legs and nothing else: freightRunning() = fleetRunning() + cityLegs(), vans being nought
-  - L1204 an Iron Mine whose ore all sells at home is weighed with vans for its diesel alone and no leg for its ore: its buyer pays it
-  - L1217 a mine that ships its ore abroad is billed for the tonnes it shipped, at the share in force and the quote: the exporter pays
-  - L1229 ...so an Iron Mine there is weighed with its ore's leg at the share the city exports, and its diesel's vans
-  - L1235 ...and the mining sector's own weighing agrees with the pure one, the leg in it and no truck in its capital
+- **L424 3. EACH LEG ONCE - and A RELOAD, on the same city**
+- **L428 3. each leg once: the city leg is billed to the buyer and the exporter, at its own share in force and the quote**
+  - L438 fixture: the first bill has been raised, so Haulage has a fleet, a quote and legs to bill
+  - L495 every sector's \"Haulage\" line is its legs x its own share in force x the quote, every month
+  - L499 ...and the months cover the trucks short and the trucks enough, so neither side is vacuous
+  - L501 the plant pays the ore it bought at home, the ore and coal it landed and the pellets it shipped, each a leg
+  - L505 the mine that sold its ore at home, and shipped none, was billed nothing for it
+  - L508 ...and a goods tonne that crossed, or was bought at home, has no truck leg, whatever the railway carries
+  - L510 Freight's \"Haulage billed\" is the shippers' lines to the cent, and the bill is in its other revenue
+  - L513 ...and the bill is what the trucks carried: the carried share of the legs, within the trucks' capacity
+- **L518 the reload**
+  - L535 the loaded city carries the month's units bought at home, landed and shipped: its legs are the live city's
+  - L548 the loaded city has the live city's leg price, which the shares the city struck at its last haul weigh
+  - L551 ...so the plant standing asks the same city leg of both before the first haul after the load
+  - L556 ...and it has dealt its sectors what the live city has, to the bit: each one's share and standing demand, the newest and the standing share
+  - L569 the next haul bills every sector the same \"Haulage\" line as the live city's, to the bit
+  - L587 ...and prices, carries and fleets alike: quote, tonnes, carried, capacity, allowed, need, share, trucks, and each sector's deal
+- **L614 1. the slot: Freight is key 12, and the registry is the keys**
+  - L618 the twelfth key (position 12, index
+  - L627 ...no key is called \"Rail\" any more, and none is twice in the list
+  - L631 the registry has as many sectors as there are keys, each in its key's place
+  - L633 the twelfth sector is the Freight, found by index, by key and by accessor
+  - L637 ...a Freight with a Haulage division of its own, and no fleet in a city that has not yet moved a tonne
+- **L647 2. TRUCKS: the world sells them and never buys, 15 t of tare, one plant makes them**
+  - L648 the world sells a truck at a price: it is importable, at a finite world import price
+  - L651 ...and never buys one: no world export price, and not exportable
+  - L654 a truck weighs 40 t gross less a full load: tonnesPerUnit() is 15
+  - L657 ...it drives in on its own wheels: the goods stream, a general cargo, a freight of 6.25% of its price
+  - L675 exactly one building in the catalogue makes trucks: the Heavy Truck Plant, Automotive's
+  - L679 ...and exactly one keeps them: the Truck Depot, Freight's, with room for trucks and posts for their drivers
+  - L686 ...and no building burns trucks as a feed: they are a fleet, bought by Freight alone
+- **L694 5. vans for goods: bulk keeps none, goods keep TONNES_PER_VAN**
+  - L698 a works whose tonnes are all bulk (Iron & Steel's pelletising plant) keeps no vans, to the bit
+  - L703 a mine's ore is bulk and its diesel is goods: it keeps vans for the diesel alone
+  - L708 a sector with goods keeps its goods' tonnes over TONNES_PER_VAN, and its bulk (the grain) is not among them
+  - L712 ...and Freight itself, the fleet's owner, moves no goods and keeps no vans: the trucks do not haul themselves
+- **L722 6. the freight factor: MIN_VAN_RATE + (1 - MIN_VAN_RATE) x the trucks' share, a literal 1 when they suffice**
+  - L726 fixture: the plant and the shop have bulk to move, the office has none
+  - L733 fixture: Haulage has a nameplate need to read the share against, and strikes the same one at every haul by hand
+  - L740 the share is the fleet held at the haul x TONNES_A_TRUCK_MONTH over the need (capacity / need), struck at that haul
+  - L746 a bulk sector's haulage ratio is MIN_VAN_RATE + (1 - MIN_VAN_RATE) x its own share, the one its industry was dealt
+  - L749 ...and its freight ratio is the lesser of its vans' ratio and that: the plant keeps no vans, so it is the trucks'
+  - L754 ...and it is the fifth factor of the operating rate
+  - L761 ...and holds for the month: the trucks moving between two hauls do not move the share or the sectors' ratio
+  - L767 with no trucks at all a bulk sector is slowed to the floor, not stopped
+  - L771 ...a tenth short of the need it runs just below one
+  - L776 ...trucks exactly at the need: the share is a literal 1 and so is the ratio, and the freight ratio
+  - L779 ...and the operating rate is then the other four factors times a literal one, to the bit
+  - L784 ...and trucks past the need earn no bonus: still a literal 1
+  - L789 a sector with no bulk legs reads a literal 1 whatever the share, and so does Freight itself
+  - L796 fixture: the shop keeps vans for its goods and its grain goes by truck
+  - L800 a shop short of vans and a little short of trucks runs at its vans' ratio, the lesser
+  - L811 ...with vans to spare and the trucks half short it runs at the trucks' ratio, the lesser
+- **L824 7. the fleet: the bid, the wear, the seeding once, the bill never past the trucks**
+  - L837 the need a haul strikes is the plant standing at nameplate: getNeed() is nameplateNeed(), the brief's weighted sum
+  - L840 ...and not last month's legs: the legs billed are what the plant ran, the need what it stands for
+  - L859 the bid is min(asked - have, asked / FLEET_DELIVERY_MONTHS) trucks, asked the need and the works on site's,
+  - L864 ...a fleet of none asks for an eighth of what it is asked, not all of it (a fleet is built up, not conjured)
+  - L867 ...and a fleet of exactly what it is asked asks for nothing, a literal zero
+  - L872 fixture: the city has legs to haul, so a haul runs its whole month
+  - L890 a month's wear is a truck's life's share of the trucks in the depots' room, and STREET_WEAR times that past it
+  - L896 ...past the room the wear exceeds a depot-kept fleet's by exactly the tenth on the trucks past it
+  - L907 when the legs exceed the trucks the bill is the trucks' capacity at the quote, not the legs'
+  - L917 ...and when the trucks have room to spare the bill is the legs' alone, below the capacity's
+  - L925 ...and with the trucks half the need, never past what they carry
+- **L931 8. THE PRICE**
+- **L935 8. the price: the quote walks REPRICE_SPEED toward allowed over what the trucks could carry, at the scarcity**
+  - L939 fixture: a quote is known and no depot stands, so every truck is on the street
+  - L948 with the trucks at half the need the tightness is .5 and the scarcity is 1 + .5 x (MAX_SCARCITY_MULTIPLE - 1)
+  - L953 ...and the quote is the old one plus REPRICE_SPEED of the way to allowed / capacity x scarcity
+  - L965 with trucks to spare the tightness is nought and the scarcity a plain one
+  - L968 ...the quote walks toward allowed over what the trucks COULD carry, not what they did
+  - L971 ...a fleet with idle trucks does not price its few tonnes at its whole cost
+  - L980 ...and trucks almost none are the dearest: tightness near one, the scarcity near MAX_SCARCITY_MULTIPLE
+  - L990 before any month there is no fleet and nothing to bid for
+  - L995 the first haul seeds the fleet at the need, for nothing (a city with a plant standing has a need from its first month)
+  - L1009 a fleet already known, with no trucks and no money, is not handed one: the seeding happens once
+- **L1019 4. the siding: a railed share of the imports relieves RAIL_ROAD_RELIEF of their truck tonnes; the sea relieves none**
+  - L1027 fixture: the railway carries a share of the bulk stream, strictly between nothing and all
+  - L1032 a railed share r of the landed ore takes RAIL_ROAD_RELIEF x r off its truck tonnes: they are (1 - RELIEF x r) of the tonnes
+  - L1037 ...a tonne bought at home is not railed at all: a full truck tonne whatever r is
+  - L1040 ...and a share of 1 relieves at most RELIEF: a quarter of a truck tonne is left
+  - L1048 the month's bill is at the railed share: the plant's \"Haulage\" line is its legs after the siding, at the share and the quote
+  - L1053 ...and the railway's own bill is a separate line, \"Rail freight\", so the two are not mistaken for each other
+  - L1066 fixture: the ore goes by sea and not by rail
+  - L1069 a share carried by sea alone relieves nothing: the landed ore is a full truck tonne from the quay to the door
+  - L1079 ...and the bill agrees: the plant pays its whole tonnage at the quote, the sea having shortened nothing inside the city
+- **L1089 9. the depot: ordered past the room by DEPOT_ORDER_MARGIN of one, not before; the drivers follow the trucks**
+  - L1098 fixture: the fleet is known, no depot stands or is being built, and the margin is a fraction of a depot's room
+  - L1104 trucks inside the margin of a depot's room: none is ordered
+  - L1108 ...and exactly at the margin still none (it has to be passed)
+  - L1112 trucks past it: the plan orders a Truck Depot - or says the staff or the ground are why not
+  - L1122 with a depot standing the margin is counted from its room: trucks short of room + margin order nothing
+  - L1127 ...and past it another is ordered, or the reason is the staff or the ground
+- **L1133 ...and the drivers follow the trucks: a depot keeping fewer than its room offers fewer posts**
+  - L1137 fixture: a depot stands, with driver posts at a wage, in a city that counts posts
+  - L1148 with the room full, every post is offered, in every tier
+  - L1160 a depot keeping fewer trucks than its room: the DIPLOMA posts offered are its posts less a driver for each empty place
+  - L1165 ...the mechanics and every other tier are offered whole
+  - L1168 ...the city's job count withholds the same number the sector does not offer
+  - L1173 ...and Freight's wage bill pays the posts offered and no more: its DIPLOMA wages are the wage a post times the posts offered
+  - L1182 ...and with no trucks at all the drivers are all laid off and not a post more: the mechanics' posts stand
+  - L1195 a reloaded city offers the posts the live one did (the drivers' share is saved)
+- **L1206 10. the weighing: a works is weighed with its legs at the quote and vans for its goods only**
+  - L1219 with a railway carrying, the need struck at a haul is the nameplate plant's legs less the siding's relief: nameplateNeed() = the brief's sum
+  - L1229 the Pelletising Plant keeps no vans and buys none: all its tonnes are bulk, vansFor() and fleetCapital() are zero
+  - L1246 legPrice(): a received tonne costs the quote less the siding's RELIEF x r x the import share; a made one the export share of it
+  - L1252 a railed share lowers p.in() for an imported good by exactly RAIL_ROAD_RELIEF x r x the import share (of the quote)
+  - L1255 ...and a GOODS tonne has no leg price at all
+  - L1261 cityLegs() is its bulk inputs' tonnes x p.in() plus its outputs' x p.out(), at the rate
+  - L1265 ...and the plant's freight is its legs and nothing else: freightRunning() = fleetRunning() + cityLegs(), vans being nought
+  - L1275 an Iron Mine whose ore all sells at home is weighed with vans for its diesel alone and no leg for its ore: its buyer pays it
+  - L1288 a mine that ships its ore abroad is billed for the tonnes it shipped, at the share in force and the quote: the exporter pays
+  - L1300 ...so an Iron Mine there is weighed with its ore's leg at the share the city exports, and its diesel's vans
+  - L1306 ...and the mining sector's own weighing agrees with the pure one, the leg in it and no truck in its capital
+- **L1367 11. the deal: the fleet's room dealt per sector, the newest demand last**
+  - L1386 fixture: with the fleet full every sector with legs is dealt a literal 1 and its whole need is its standing demand, and there are others than the giant's
+  - L1393 fixture: the landing at least doubles the giant's own need and leaves every other sector's as it was
+  - L1399 a giant works lands in a town whose fleet is full: the city's share is the fleet over the whole need, the one share the old rule gave every sector
+  - L1403 ...but the giant's own sector alone is short: its share is what it was carried over what it now asks
+  - L1413 ...every other sector's share is exactly what it was, a literal 1, and so is its haulage ratio: the one share would have slowed it
+  - L1416 ...and the giant's sector runs at MIN_VAN_RATE + (1 - MIN_VAN_RATE) x its own share
+  - L1420 ...the fleet covered what every sector was carried, so the whole shortfall is the newest demand's: the standing share is a literal 1
+- **L1426 ...and the deal is saved, and a reload deals the next haul as the live city does, to the bit**
+  - L1447 the deal is saved: a share for every sector but Freight, a dealt tonnage for every one dealt any, the newest share and the standing share
+  - L1454 ...and a fresh city restored from those keys has every sector's share and dealt tonnage, the newest and the standing share to the bit
+  - L1462 ...a save from before the deal has none of them: no sector dealt, and every sector reads the city's share it ran at
+  - L1473 a reloaded city has dealt every sector what the live city did: each one's share and standing demand, the newest and the standing share
+  - L1479 ...and the next haul on the reloaded city strikes the same shares and standing demands as on the live one, to the bit
+- **L1485 ...and a town whose fleet has room for the landing leaves every sector whole**
+  - L1494 fixture: the same landing at least doubles the giant's need, in a town that has a fleet for the whole of the new need
+  - L1505 with the fleet at the whole of the new need or more, every sector is dealt a literal 1 and its whole need is carried
+  - L1510 ...and none is slowed: every sector's haulage ratio is a literal 1, the giant's too
+- **L1516 ...the growth is served pro rata from what room is left, and a sector's first works is growth at the haul after it stands**
+  - L1534 fixture: two sectors with plant standing grow, and a third that asked nothing at the last haul (dealt a whole 1) has its first works stand before this one:
+  - L1539 the growth over what the sectors were carried is served pro rata from the room left: the newest share is the room over the growth
+  - L1550 ...and each growing sector's share is what it was carried plus the newest share of its growth, over what it now asks
+  - L1552 ...a sector new at the haul, carried nothing before, is dealt the newest share itself
+  - L1555 ...and only no sector at all (null) reads the city's share, while two sectors' own shares are their own
+  - L1564 a sector that asked nothing at the haul is dealt a whole 1, and its first works, standing after the haul, runs whole until the next
+  - L1569 ...and the next haul deals those legs as the newest demand: the farms' share is the newest share, and they run on it
+- **L1576 ...a fleet that cannot cover what the sectors were carried cuts the largest and leaves the smaller whole**
+  - L1585 fixture: the town has smaller standing demands than its largest, and the shortfall is smaller than that largest
+  - L1590 a fleet short of what the sectors were carried is a standing shortfall: the standing share is the fleet over their standing demand
+  - L1602 ...the smallest standing demands are served first and whole: every sector but the largest keeps a literal 1 and runs at one
+  - L1605 ...and the largest is cut by the whole shortfall: its share is what it was carried less the shortfall, over what it asks
 
 ## HealthCheck.java - 235 labelled assertions
 
@@ -13000,17 +13032,17 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 _(this harness does not label its checks through a helper - it prints its findings; read its header and its sections)_
 
-- **L1227 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L2997 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L3052 AND EVERYTHING THAT IS A PURCHASE.**
-- **L3398 AND THE BEST OF THEM WINS.**
-- **L5755 founding: a few months at a time, by hand**
-- **L5852 then the real rhythm**
-- **L6000 the report**
-- **L6023 ==**
-- **L6109 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7313 what the advisor tried, and what happened**
-- **L7319 findings**
+- **L1236 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
+- **L3015 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L3070 AND EVERYTHING THAT IS A PURCHASE.**
+- **L3416 AND THE BEST OF THEM WINS.**
+- **L5773 founding: a few months at a time, by hand**
+- **L5870 then the real rhythm**
+- **L6018 the report**
+- **L6041 ==**
+- **L6127 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7333 what the advisor tried, and what happened**
+- **L7339 findings**
 
 ## MainLineCheck.java - 151 labelled assertions
 
