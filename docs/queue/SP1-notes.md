@@ -61,6 +61,25 @@ at 75-86% before any suite of this batch's (Claude's processes 10.5 GB, Edge
 6. **`--timing` stays one at a time** (item 5): a hard run, `--timing` and
    plain mode (inherited output) run one at a time whatever N says; so do the
    gate's paired rounds, which are `--timing`.
+7. **Item 7, the paired judging** (Jerus, 2026-10-27 21:00: "Yes, add it to
+   SP1"). `tools/timing-pair.awk`'s judge mode: a timing red over main's by
+   more than 15% is still not the batch's when main's own paired median misses
+   the same budget too, or the batch's is within it (at most it; a budget that
+   is no number leaves the margin alone). Each pass says why after its figures
+   ("within 15% of main's", "the batch within the budget", "main over the
+   budget too"), so the Gate-timing line (now "not the batch's: ...") and
+   `gate.txt`'s `# timing red not the batch's (paired): ...` lines word each.
+   WHY: SC1, a printout in ScaleCheck, stopped twice under a shifting load:
+   MapCheck's month at 5B, main 1.81 ms against 2.35 (+30%), both within 5 ms;
+   KeptCheck's chrome, main 10.4 against 12.3 (+18.5%), both over 8 ms. And
+   the rounds alternate which side goes first (main, batch; then batch, main):
+   KeptCheck run 8 times, main and MP1 in ABBA order, was slower straight after
+   a switch of build (6.2-6.9 ms against 5.2-5.5). Self-tests: `ship-selftest.sh`
+   (the stub's budget 40 became 42, so the margin cases keep main within it
+   and the batch over it) passes main over the budget too (61 against 81),
+   the batch at its budget (42 against 21), stops main within and the batch a
+   hair over (31 against 43), and holds the alternating order; TimingCheck 9
+   holds both new passes against the awk directly.
 
 ## 3. Item 4 (★1): not taken - it does not hold
 
@@ -86,14 +105,16 @@ matter more than the step's stability.
 ## 4. One in, one out (item 6)
 
 `git diff --numstat` against RL1's tip, the generated maps and dials, this
-batch's notes and ship file left out. **Scripts and rules: 21 lines added, 36
-removed** - `batch-check.sh` +6/-27 (the "who else runs" look and its soft-run
-line, a PowerShell start per run, unread since BP1 made every run soft; jvms.ps1
-stays for `Batch check.bat` and `deepseek/agent.py`), `ship.sh` +1/-2 (the
-suite's `JDK_JAVA_OPTIONS=...-Dcbs.timing=soft`, which batch-check.sh has set
-itself since BP1), `docs/batch.md` +9/-2, `docs/tree.md` +4/-4, `jvms.ps1`
-+1/-1. **The runner's Java: 120 added, 17 removed** (`AllChecks` +112/-13, the
-pool, the guard, five dials and their WHY; `Timing` +8/-4). In all 141 and 53.
+batch's notes and ship file left out. **Scripts and rules: 77 lines added, 63
+removed** - `batch-check.sh` +7/-27 (out: the "who else runs" look and its
+soft-run line, a PowerShell start per run, unread since BP1 made every run
+soft; jvms.ps1 stays for `Batch check.bat` and `deepseek/agent.py`), `ship.sh`
++17/-14 (out: the suite's `JDK_JAVA_OPTIONS=...-Dcbs.timing=soft`, which
+batch-check.sh has set itself since BP1; in: item 7's wording and order),
+`tools/timing-pair.awk` +12/-3, `tools/ship-selftest.sh` +15/-6,
+`docs/batch.md` +21/-8, `docs/tree.md` +4/-4, `jvms.ps1` +1/-1. **The Java:
+138 added, 28 removed** (`AllChecks` +112/-13, the pool, the guard, five dials
+and their WHY; `Timing` +8/-4; `TimingCheck` +18/-11). In all 215 and 91.
 
 ## 5. Calls
 
@@ -110,16 +131,43 @@ pool, the guard, five dials and their WHY; `Timing` +8/-4). In all 141 and 53.
 
 ## 6. Checks
 
-CHECKS_PLACEHOLDER
+- `sh tools/ship-selftest.sh` 109 of 109 (106 before: item 7's three cases;
+  the alternating order is held in the turns case). `sh tools/wait-selftest.sh`
+  24 of 24 (`wait.sh` untouched).
+- `./batch-check.sh TimingCheck KnownRedsCheck` exit 0, two at once; a subset
+  of 8 harnesses 9 s at three at once against 16 s at `-Dcbs.parallel=1`,
+  printed in `HARNESSES` order both times; a run without soft timing one at a
+  time. The guard both ways on a subset: forced (`COMMIT_PCT` 0) the five ran
+  one after another and the last line said `memory: 4 start(s) held`; at 100
+  no line.
+- `./batch-check.sh TimingCheck` exit 0 after item 7 (section 9 all OK).
+- The measurement of section 2 (every harness, two at a time, a GC log each,
+  earth-2.bin named, under a 4 GB ceiling): 148 of 149 ran (KeptCheck's JVM
+  lost a class to a compile beside it and was stopped); MapCheck failed only
+  main's recorded red.
+- **The full suite at N=3 against N=1 on one tree: not done.** Three attempts
+  at three at once were stopped by the brief's 85% rule: 16:19 (85.6%, three
+  at once with `-Xmx` only), 16:48 (85.2%, one harness of mine beside two
+  other lanes' suites), 17:27 (85.9%, the first three started at 79.8% under
+  the guard's first 80%). From 17:30 to 22:40 the PC stayed at 80-96% with no
+  JVM of this batch's (at 19:40 Jerus's game, 2.3 GB, and NetBeans 1 GB; the
+  gates of MP1 and SC1; the limit grew from 41.6 to 46.6 GB at 96% and fell
+  back to 43.3), so neither run could start under it. `--pick` waits on the
+  same and on RL1's merge (section 7).
 
 ## 7. Left
 
-- **SP1-C, Jerus's PC**: the commit limit is 41.6 GB (54 GB on 2026-10-21),
-  and on 2026-10-27 the PC sat at 80-88% from 17:00 to 19:00, 82.4% at 17:50
-  with no JVM running at all (Claude's 40 processes 11.9 GB, Edge 2.9 GB, about
-  9 GB outside any process). Under the 85% rule no suite fits then, not even
-  one at a time; above 75% the guard runs a suite one at a time. A larger
-  pagefile (System Properties, Advanced, Performance, Virtual memory: say a
-  fixed 32 GB) is his setting to make, not a batch's, and gives the three at
-  once their room.
-- **SP1-D, item 4's redesign** (section 3), if wanted.
+- **SP1-C, the N=3 against N=1 suite**: both full suites back to back on one
+  tree, the same pass and fail lines, the two times and the peak commit
+  charge, when the PC is under about 78% for the length of both (about 45
+  minutes). The runner and the sampler are scripts of this session's; the
+  gate's own suite, three at once under the guard, is the first real run.
+- **SP1-E, Jerus's PC**: the commit limit is 41.6 GB (54 GB on 2026-10-21; it
+  grows only when nearly full), and on 2026-10-27 the PC sat at 80-96% from
+  17:00 to 22:40, 82.4% at 17:50 with no JVM running at all (Claude's 40
+  processes 11.9 GB, Edge 2.9 GB, about 9 GB outside any process). Under the
+  85% rule no suite fits then, not even one at a time; above 75% the guard runs
+  a suite one at a time. A larger fixed pagefile (System Properties, Advanced,
+  Performance, Virtual memory: say 32 GB) is his setting to make, not a
+  batch's, and gives three at once their room.
+- **SP1-D, item 4's redesign** (section 3), if wanted. Recommendation: not now.
