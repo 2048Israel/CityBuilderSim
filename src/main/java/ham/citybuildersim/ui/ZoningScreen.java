@@ -217,15 +217,13 @@ final class ZoningScreen {
     }
 
     /* =====================================================================
-       THE COLOURS: the zones in the business violet and then the other
-       categories (which, not how much), built ground grey, the ground free
-       for anyone the land office's pink, and the forest in three greens off
-       the map's own (TileRaster.GROUND's forest, the darkest: protected).
+       THE COLOURS: a zone in its sector's colour, the map's own (ZT1: it was
+       a ramp cycled by the zone's place in the list, so a colour changed when
+       an earlier zone came off, and never matched the map's tint), built
+       ground grey, the ground free for anyone the land office's pink, and the
+       forest in three greens off the map's own (TileRaster.GROUND's forest,
+       the darkest: protected).
        ===================================================================== */
-
-    /** The zones' colours, in the zones' order: the business ramp (a zone is a sector's), then the other categories. */
-    static final String[] ZONE_COLOURS = {Palette.BUSINESS, Palette.BUSINESS_LIGHT, Palette.BUSINESS_DARK,
-            Palette.MONEY, Palette.PEOPLE, Palette.ORE, Palette.MONEY_LIGHT, Palette.PEOPLE_LIGHT};
 
     /** Built ground: the rest's grey - ground nobody can have. */
     static final String BUILT_COLOUR = Palette.RAMP_REST;
@@ -236,13 +234,9 @@ final class ZoningScreen {
     /** The forest's three, open to protected: two lighter steps of the map's forest green, and the map's own. */
     static final String FOREST_OPEN = "#9cc48a", FOREST_WORKING = "#6f9a5e", FOREST_PROTECTED = "#527c45";
 
-    /** A zone's colour, by its place in the zones' order. */
+    /** A zone's colour: its sector's, LandMap's - the colour the map tints its districts in, whichever zones stand before it. */
     String zoneColour(String sector) {
-        List<Zoning.Zone> zones = ui.game.getZoning().zones();
-        for (int i = 0; i < zones.size(); i++) {
-            if (zones.get(i).sector().equals(sector)) return ZONE_COLOURS[i % ZONE_COLOURS.length];
-        }
-        return Palette.BUSINESS;
+        return LandMap.zoneColourHex(sector);
     }
 
     /** A bar part's name, as its key and its tooltip say it. */

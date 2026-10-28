@@ -1,11 +1,16 @@
-# gate of Merge batch/GP1: the gate starts at once: the quiet minute out, and the orchestrator picks up a ready branch when its ship file lands, not at the next hourly check-in (Jerus, 2026-10-27: "yes please, do it as soon as humanly possible"), 0.8.57
+# gate of Merge batch/RL1: a lane's next batch starts when its predecessor is ready, from its branch, not once it has shipped; `pick.sh`, the recorded reds and `ship.sh`'s ship-file stop made to fit (Jerus, 2026-10-27), 0.8.60
 # date: 2026-10-27
 # earth-2.bin: named
-# suite: 149 harnesses run in 1160s: 148 passed, 1 failed
-# timing: 12 harnesses run in 371s: 11 passed, 1 failed; its red lines were judged side by side with main's, below
-# timing red within 15% of main's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 3.79 ms, batch 4.27 ms (+12.7%), budget 5 ms]
-# timing red within 15% of main's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 58 ms of the wall clock, the median month FAIL   [main 57.7 ms, batch 57.4 ms (-0.4%), budget 58 ms]
-# timing red within 15% of main's (paired): MapCheck | 3 FAILED   [the harness's own count of the timing reds above]
+# suite: 149 harnesses run in 1371s: 148 passed, 1 failed
+# timing: 12 harnesses run in 721s: 10 passed, 2 failed; its red lines were judged side by side with main's, below
+# timing red within 15% of main's (paired): MapCheck | ...and is written and read back in no more than SIDECAR_MS (500 ms) each       FAIL   [main 281 ms, batch 272 ms (-3.2%), budget 500 ms]
+# timing red within 15% of main's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.11 ms, batch 4.08 ms (-0.6%), budget 5 ms]
+# timing red within 15% of main's (paired): MapCheck | on the full file, every stride's far node over Rotterdam is drawn in no more than SCREEN_MS FAIL   [main 56.2 ms, batch 55.9 ms (-0.5%), budget 80 ms]
+# timing red within 15% of main's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 58 ms of the wall clock, the median month FAIL   [main 54.1 ms, batch 53.5 ms (-1.0%), budget 58 ms]
+# timing red within 15% of main's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
+# timing red within 15% of main's (paired): KeptCheck | exit 1   [the harness's own count of the timing reds above]
+# timing red within 15% of main's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 5.18 ms, batch 5.28 ms (+2.0%), budget 8 ms]
+# timing red within 15% of main's (paired): KeptCheck | 1 FAILED   [the harness's own count of the timing reds above]
 MapCheck | exit 1
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | 1 FAILED

@@ -239,9 +239,19 @@ public class Mortgage extends BusinessDebt {
      * it. Unbounded with nothing to borrow.
      */
     public static double coverage(double netOperatingIncome, double shortfall, double annualRate) {
-        double principal = loanFor(shortfall) * (1 + premiumRate());
-        double a = payment(principal, annualRate, MORTGAGE_AMORTIZATION_MONTHS);
+        double a = paymentFor(shortfall, annualRate);
         return a > 0 ? netOperatingIncome / a : Double.POSITIVE_INFINITY;
+    }
+
+    /**
+     * The monthly payment the lender's test reads (coverage()): on the
+     * mortgage that covers this shortfall - loanFor(), the premium added -
+     * at this rate over MORTGAGE_AMORTIZATION_MONTHS. The build card shows
+     * it beside the rent (I13-L).
+     */
+    public static double paymentFor(double shortfall, double annualRate) {
+        double principal = loanFor(shortfall) * (1 + premiumRate());
+        return payment(principal, annualRate, MORTGAGE_AMORTIZATION_MONTHS);
     }
 
     /* --------------------------- the landlord's order --------------------------- */

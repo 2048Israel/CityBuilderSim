@@ -64,6 +64,19 @@ package ham.citybuildersim;
  * the hover are the plane's at those scales (legendTier(), planeHolds()).
  * planeDrawsKm() is as it was from the handoff wider.
  *
+ * THE GROUND PAST THE HAND-OVER, TRUE IN SHAPE (MS3, Jerus 2026-10-27: the
+ * near view of Goose Bay from a Singapore city is drawn in streaks along the
+ * line to the city, GlobeCheck 2d). The city's plane is Lambert's equal-area
+ * projection, whose shape distortion 2 / (1 + cos c) at an angle c from the
+ * city stretches the plane's noise into those streaks. Closer than the handoff
+ * the plane's own nodes are drawn where that distortion is no more than
+ * SHAPE_HANDOVER (handoverKm(), 5,908 km; ground(), drawsHold(), planeHolds());
+ * everywhere else on the planet, the world's square or not, a chart draws it:
+ * the north-up orthographic piece of the planet about the nearest anchor of a
+ * lattice fixed on it (chart(), chartFor(), CHART_DEG), its noise the planet's
+ * (EarthTerrain.chart()), cut into nodes as the plane's are (chartAt() says
+ * where a pixel lies on it). Nothing the model reads changes.
+ *
  * A zoom keeps the point under the pointer under it, and a drag the point
  * grabbed under the pointer, on the globe as on the plane (spec-globe 4's
  * E8 row): the view centre is solved from the point, its place on the
@@ -626,10 +639,11 @@ public final class GlobeFrame {
         return at(ll[0], ll[1]);
     }
 
-    /** Whether a screen point is drawn from the city's plane - within planeDrawsKm() of the city and the world's square, anywhere on the world's square at the plane's scales (MS2: planeDrawnPastReach()), or anywhere on the plane's own tier: the plane's answer is the one there (the hover's, a click's). */
+    /** Whether a screen point is drawn from the city's plane - within planeDrawsKm() of the city and the world's square, at the plane's scales (MS2: planeDrawnPastReach()) on the world's square within handoverKm() of the city (MS3: farther the charts draw it), or anywhere on the plane's own tier: the plane's answer is the one there (the hover's, a click's). */
     public boolean planeHolds(double sx, double sy) {
         double[] ll = latLonAt(sx, sy);
         if (ll == null || (tier() != PLANE && !planeDrawnPastReach() && cityKm(ll[0], ll[1]) > planeDrawsKm())) return false;
+        if (tier() != PLANE && planeDrawnPastReach() && !(cityUp(sx, sy) >= composed().cosDraws)) return false;
         double[] xy = new double[2];
         return plotAt(sx, sy, xy) && xy[0] >= 0 && xy[1] >= 0 && xy[0] < World.SIDE && xy[1] < World.SIDE;
     }
@@ -653,8 +667,8 @@ public final class GlobeFrame {
     private double drawsKm = Double.NaN;
 
     /**
-     * Whether the city's plane's own far nodes are drawn wherever the world's square holds the ground at a scale, the reach and
-     * planeDrawsKm() or not (MS2, Jerus 2026-10-26: "look at the wierd resolution by just panning a few more kms"): every scale closer
+     * Whether the city's plane's own far nodes are drawn wherever the world's square holds the ground within handoverKm() (MS3; the charts
+     * beyond) at a scale, the reach and planeDrawsKm() or not (MS2, Jerus 2026-10-26: "look at the wierd resolution by just panning a few more kms"): every scale closer
      * than the handoff, the plane's own - tierOf() says PLANE. There the GROUND tier past the reach draws the plane's ground at the
      * scale's own stride (MapFrame.nodePlotsAt(): 8, 4, 2 or 1 plots a pixel) through the camera, as the plane draws it inside the
      * reach, and the far rule (groundPiece()) only where the square does not hold the ground - the fifth of the planet farthest from
@@ -667,6 +681,73 @@ public final class GlobeFrame {
 
     /** A copy's planeDrawnPastReach(), its view's; null in a view of its own. */
     private Boolean pastReach;
+
+    /* ----- the charts: the near view far from the city, true in shape (MS3, Jerus 2026-10-27: Goose Bay from a Singapore city drawn in streaks) ----- */
+
+    /**
+     * The city's plane's shape distortion, k / h, past which the near view is drawn from the charts instead: 1.25 (MS3). The
+     * plane is Lambert's equal-area projection about the city, which at an angle c from it squashes the ground along the
+     * line to the city by h = cos(c / 2) and stretches it across by k = 1 / cos(c / 2), so the round patches of the plane's noise
+     * are ellipses k / h = 2 / (1 + cos c) to 1 on the planet, long along the line to the city (GlobeCheck 2d measures it:
+     * 4.5 to 1 at Goose Bay from Singapore). A quarter is under what the eye reads in irregular patches, and the plane's own
+     * ground, which the hover reads plot for plot, still reaches every neighbouring continent: 53.1 degrees, 5,908 km.
+     */
+    public static final double SHAPE_HANDOVER = 1.25;
+
+    /** The band past the hand-over over which the sphere's noise is blended in from the plane's, km along the ground: 100 (MS3) - the noise's widest octave is 480 m (the relief's 1.9 km), so over 100 km the pattern becomes the sphere's with no place to see it change. */
+    public static final double SHAPE_BAND_KM = 100;
+
+    /** The charts' anchors' lattice, degrees of latitude between rows (and about as many of longitude on the equator): 10 (MS3) - the view's chart is the anchor nearest its centre, within 1,300 km of every pixel at the plane's widest scale, so true in shape to 2%. */
+    public static final double CHART_DEG = 10;
+
+    /** The plane's shape distortion at an angle from the city whose cosine is `up`: 2 / (1 + up) - what ground()'s k^2 / R^2 is, Snyder's k / h. */
+    public static double distortion(double up) { return 2 / (1 + up); }
+
+    /** The cosine of the angle from the city at which the plane's shape distortion is SHAPE_HANDOVER: 2 / SHAPE_HANDOVER - 1, 0.6. */
+    public static double handoverUp() { return 2 / SHAPE_HANDOVER - 1; }
+
+    /** ...and the distance along the ground, km: 5,908. */
+    public static double handoverKm() { return EarthProj.RADIUS_M * StrictMath.acos(handoverUp()) / 1000; }
+
+    /** One chart's anchor: where its orthographic plane touches the planet (lat, lon, degrees), and the number it is kept under (a row and a column of the lattice packed: row << 8 | column). */
+    public record Chart(int id, double lat, double lon) {
+        /** The chart's projection: the globe about the anchor, north up. */
+        public EarthProj.Ortho ortho() { return EarthProj.ortho(lat, lon, 0); }
+    }
+
+    /** The anchors in row `r` of the lattice (rows run from -90 in steps of CHART_DEG): as many as the row's circle is long in CHART_DEG's, at least one. */
+    private static int chartsInRow(int r) {
+        return Math.max(1, (int) Math.round(360 * StrictMath.cos(StrictMath.toRadians(-90 + r * CHART_DEG)) / CHART_DEG));
+    }
+
+    /**
+     * The chart a point is drawn from: the nearest anchor of a lattice fixed on the planet - rows every CHART_DEG of
+     * latitude from -90 to 90, row i holding max(1, round(360 cos(lat_i) / CHART_DEG)) anchors evenly from longitude -180 -
+     * found among the two rows round the point, by great-circle distance. A function of the point alone, so a view that
+     * pans across into another anchor's cell changes chart (about once in 1,000 km of panning).
+     */
+    public static Chart chartFor(double lat, double lon) {
+        double l = EarthProj.normaliseLon(lon);
+        int rows = (int) Math.round(180 / CHART_DEG) + 1;
+        int r0 = Math.max(0, Math.min(rows - 1, (int) Math.floor((lat + 90) / CHART_DEG)));
+        Chart best = null;
+        double bestM = Double.POSITIVE_INFINITY;
+        for (int r = r0; r <= Math.min(rows - 1, r0 + 1); r++) {
+            int count = chartsInRow(r);
+            double across = 360.0 / count, anchorLat = -90 + r * CHART_DEG;
+            int col = Math.floorMod(Math.round((l + 180) / across), count);
+            double anchorLon = EarthProj.normaliseLon(-180 + col * across);
+            double m = EarthProj.distanceM(lat, l, anchorLat, anchorLon);
+            if (m < bestM) {
+                bestM = m;
+                best = new Chart(r << 8 | col, anchorLat, anchorLon);
+            }
+        }
+        return best;
+    }
+
+    /** The chart this view's ground is drawn from past the hand-over: its centre's (chartFor()). */
+    public Chart chart() { return chartFor(lat, lon); }
 
     /** The pixels of a far node of the city's plane, its colours (MapTiles.nodePixels()) - null where it is not drawn yet. */
     public interface NodePixels { int[] at(long nx, long ny); }
@@ -690,7 +771,8 @@ public final class GlobeFrame {
      * (outW a row), each pixel's centre through the globe to the city's
      * plane and, within planeDrawsKm() of the city - or, at the plane's
      * scales (planeDrawnPastReach(), MS2), wherever the world's square holds
-     * the pixel - the colour of the plane's far node pixel under it at
+     * the pixel and the plane's shape distortion is no more than SHAPE_HANDOVER
+     * (MS3) - the colour of the plane's far node pixel under it at
      * `plots` plots a pixel (MapFrame.nodePlots()'s level) - exactly the
      * plane's ground, its city and edge with it, so the swap shows only the
      * projections' parting; beyond it, off the square, and where a node is
@@ -701,14 +783,26 @@ public final class GlobeFrame {
      * pixels the plane draws found no node.
      */
     public int ground(long plots, NodePixels nodes, Beyond beyond, int space, int[] out, int outW, int i0, int i1, int j0, int j1) {
+        return ground(plots, nodes, null, beyond, space, out, outW, i0, i1, j0, j1);
+    }
+
+    /**
+     * ...and, at the plane's scales (MS3), where the plane does not draw (past handoverKm() of the city, or off the world's
+     * square) the view's chart (chart()): `charts` gives the chart node (nx, ny)'s pixels, `plots` plots a pixel and
+     * MapFrame.NODE_PX a side, as `nodes` gives the plane's - the node (floor(cx / NODE_PX), floor(cy / NODE_PX)) of the
+     * pixel's place (cx, cy) on the chart in chart pixels (chartAt()), the pixel within it. Where `charts` is null, or
+     * the node is not in, `beyond`'s colour; the pixels the chart drew found no node count in the return with the plane's.
+     */
+    public int ground(long plots, NodePixels nodes, NodePixels charts, Beyond beyond, int space, int[] out, int outW, int i0, int i1, int j0, int j1) {
         Composed c = composed();
         int n = MapFrame.NODE_PX;
         double span = (double) n * plots, perSpan = 1 / span;
         double half = World.SIDE / 2.0, rPlots = EarthProj.RADIUS_M / World.PLOT_M;
+        boolean drawCharts = charts != null && c.wholeSquare;
         // The camera's east and north on the unit sphere step by these a pixel across.
         double step = c.m / EarthProj.RADIUS_M, de = step * c.cosR, dn = step * c.sinR;
-        long lastNx = Long.MIN_VALUE, lastNy = Long.MIN_VALUE;
-        int[] node = null;
+        long lastNx = Long.MIN_VALUE, lastNy = Long.MIN_VALUE, lastCx = Long.MIN_VALUE, lastCy = Long.MIN_VALUE;
+        int[] node = null, chartNode = null;
         int missing = 0;
         for (int j = j0; j < j1; j++) {
             double y = (height / 2 - j - 0.5) * step, x0 = (i0 + 0.5 - width / 2) * step;
@@ -723,11 +817,13 @@ public final class GlobeFrame {
                 }
                 double a = Math.sqrt(1 - s2);
                 double up = c.ue * e + c.un * nn + c.ua * a;
+                boolean planeDraws = false;
                 if (up >= c.cosDraws && 1 + up > 0) {
                     double k = rPlots * Math.sqrt(2 / (1 + up));
                     double px = half + k * (c.ee * e + c.en * nn + c.ea * a), py = half - k * (c.ne * e + c.nn * nn + c.na * a);
                     // The world's square holds the pixel (MS2: where the plane is drawn past planeDrawsKm() the square is all there is to hold it).
                     if (px >= 0 && py >= 0 && px < World.SIDE && py < World.SIDE) {
+                        planeDraws = true;
                         double fx = px * perSpan, fy = py * perSpan;
                         long nx = (long) Math.floor(fx), ny = (long) Math.floor(fy);
                         if (nx != lastNx || ny != lastNy) {
@@ -742,6 +838,22 @@ public final class GlobeFrame {
                         }
                         missing++;
                     }
+                }
+                if (drawCharts && !planeDraws) {
+                    // The chart's pixel under this one: the anchor's east and north on the unit sphere, in chart pixels (north is up, rows run south).
+                    double fx = (c.xe * e + c.xn * nn + c.xa * a) * rPlots * perSpan, fy = -(c.ye * e + c.yn * nn + c.ya * a) * rPlots * perSpan;
+                    long nx = (long) Math.floor(fx), ny = (long) Math.floor(fy);
+                    if (nx != lastCx || ny != lastCy) {
+                        lastCx = nx;
+                        lastCy = ny;
+                        chartNode = charts.at(nx, ny);
+                    }
+                    if (chartNode != null) {
+                        int u = (int) ((fx - nx) * n), v = (int) ((fy - ny) * n);
+                        out[row + i] = chartNode[(v < n ? v : n - 1) * n + (u < n ? u : n - 1)];
+                        continue;
+                    }
+                    missing++;
                 }
                 out[row + i] = beyond.colour(i, j, a * c.cosL0 - nn * c.sinL0, e, a * c.sinL0 + nn * c.cosL0);
             }
@@ -775,8 +887,8 @@ public final class GlobeFrame {
     }
 
     /**
-     * ...and within planeDrawsKm() - or, at the plane's scales (planeDrawnPastReach(), MS2), anywhere the world's square holds it: where
-     * ground() draws the city's plane.
+     * ...and within planeDrawsKm() - or, at the plane's scales (planeDrawnPastReach(), MS2), anywhere the world's square holds it within
+     * handoverKm() of the city (MS3: past it the charts draw): where ground() draws the city's plane.
      */
     public boolean drawsHold(double sx, double sy) {
         Composed c = composed();
@@ -793,6 +905,33 @@ public final class GlobeFrame {
         return px >= 0 && py >= 0 && px < World.SIDE && py < World.SIDE;
     }
 
+    /** The cosine of the angle from the city of a screen point, by ground()'s matrix: NaN off the disc. */
+    private double cityUp(double sx, double sy) {
+        Composed c = composed();
+        double x = (sx - width / 2) * c.m, y = (height / 2 - sy) * c.m;
+        double e = (x * c.cosR - y * c.sinR) / EarthProj.RADIUS_M, nn = (x * c.sinR + y * c.cosR) / EarthProj.RADIUS_M;
+        double s2 = e * e + nn * nn;
+        return s2 > 1 ? Double.NaN : c.ue * e + c.un * nn + c.ua * Math.sqrt(1 - s2);
+    }
+
+    /** Whether a screen point is drawn from the view's chart (MS3): on the planet at the plane's scales, and not where drawsHold() has the plane draw it - past handoverKm() of the city, or off the world's square. Where ground() given charts draws the chart. */
+    public boolean chartHolds(double sx, double sy) {
+        return composed().wholeSquare && !Double.isNaN(cityUp(sx, sy)) && !drawsHold(sx, sy);
+    }
+
+    /** A screen point's place on the view's chart, into xy, in chart pixels at the view's plots (MapFrame.nodePlotsAt(planeScale())): the anchor's orthographic east over plots x PLOT_M and minus its north over it - what ground() reads the chart's node and pixel from, and the hover's. False off the disc. */
+    public boolean chartAt(double sx, double sy, double[] xy) {
+        Composed c = composed();
+        double x = (sx - width / 2) * c.m, y = (height / 2 - sy) * c.m;
+        double e = (x * c.cosR - y * c.sinR) / EarthProj.RADIUS_M, nn = (x * c.sinR + y * c.cosR) / EarthProj.RADIUS_M;
+        double s2 = e * e + nn * nn;
+        if (s2 > 1) return false;
+        double a = Math.sqrt(1 - s2), per = EarthProj.RADIUS_M / (MapFrame.nodePlotsAt(planeScale()) * World.PLOT_M);
+        xy[0] = (c.xe * e + c.xn * nn + c.xa * a) * per;
+        xy[1] = -(c.ye * e + c.yn * nn + c.ya * a) * per;
+        return true;
+    }
+
     /**
      * The view's two projections composed: the screen's metres turned by the
      * roll into the camera's east and north (e, n) on the unit sphere, its
@@ -803,10 +942,12 @@ public final class GlobeFrame {
      */
     private static final class Composed {
         final double lat, lon, kmPx, roll, reach, draws;
-        /** The plane's nodes are drawn wherever the world's square holds the pixel (planeDrawnPastReach()), so cosDraws is -1, every pixel within it. */
+        /** The plane's nodes are drawn wherever the world's square holds the pixel (planeDrawnPastReach()) within the hand-over, so cosDraws is handoverUp(): every pixel at least that near the city. */
         final boolean wholeSquare;
         final double m, cosR, sinR, cosL0, sinL0, cosReach, cosDraws;
         final double ee, en, ea, ne, nn, na, ue, un, ua;
+        /** The view's chart's east and north rows (MS3): the same matrix as the city's, about the chart's anchor. */
+        final double xe, xn, xa, ye, yn, ya;
 
         Composed(GlobeFrame f) {
             lat = f.lat;
@@ -836,7 +977,16 @@ public final class GlobeFrame {
             un = sinLc * cosL0 - cosLc * cosD * sinL0;
             ua = sinLc * sinL0 + cosLc * cosD * cosL0;
             cosReach = StrictMath.cos(Math.min(Math.PI, reach * 1000 / EarthProj.RADIUS_M));
-            cosDraws = wholeSquare ? -1 : StrictMath.cos(Math.min(Math.PI, draws * 1000 / EarthProj.RADIUS_M));
+            cosDraws = wholeSquare ? handoverUp() : StrictMath.cos(Math.min(Math.PI, draws * 1000 / EarthProj.RADIUS_M));
+            Chart chart = f.chart();
+            double lcc = StrictMath.toRadians(chart.lat()), dd = StrictMath.toRadians(lon - chart.lon());
+            double cosLcc = StrictMath.cos(lcc), sinLcc = StrictMath.sin(lcc), cosDd = StrictMath.cos(dd), sinDd = StrictMath.sin(dd);
+            xe = cosDd;
+            xn = -sinDd * sinL0;
+            xa = sinDd * cosL0;
+            ye = sinLcc * sinDd;
+            yn = cosLcc * cosL0 + sinLcc * cosDd * sinL0;
+            ya = cosLcc * sinL0 - sinLcc * cosDd * cosL0;
         }
 
         boolean of(GlobeFrame f) {

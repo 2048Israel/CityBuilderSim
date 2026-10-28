@@ -18,6 +18,37 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### RL1 — a lane's next batch starts at its predecessor's ship file, not at its merge — 2026-10-27, ready, no tag (tooling), see docs/queue/RL1-notes.md
+The batch behind a gated one waited for its Queued row to leave `QUEUE.md`, so every minute from ship file to merge (a median of about 60) was paid again. Now the successor is cut from the predecessor's tip (`git checkout -b batch/<id> origin/batch/PRED`) when its ship file lands, builds on it, merges `origin/main` when the predecessor lands, or its fix when it is sent back, and pushes its own ship file last.
+`tools/carries.sh` is the one test of "built on an unmerged batch", asked by the five places that read a branch as cut from main: `pick.sh` diffs against the predecessor's tip, `ship.sh` stops a branch built on one main lacks, `day.sh` calls it waiting and `wait.sh --ship` leaves it out, `batch-check.sh` says under a NEW red that the predecessor's may not be recorded yet, and `wait.sh --row` also ends when the predecessor is ready again after a send-back.
+Out: `day.sh`'s old-style ready test, `ship.sh`'s old way (a batch with no ship file ships `--no-tag` or stops), BP1's "calls" section of `docs/batch.md` (folded into its rules). `pick-selftest.sh` 13 of 13, `wait-selftest.sh` 24 of 24, `ship-selftest.sh` 106 of 106.
+One in, one out: 261 lines of script and rules added, 182 removed (192 against 160 without the selftests).
+
+### 0.8.60 — I13-L, the landlords' card asks the mortgage lender, and the Ore card covers every ore — 2026-10-27, ready, see docs/queue/I13-L-notes.md
+Two notes I13 carried (Jerus, 2026-10-18). A landlord's home was not asked the INTEREST gate - the mortgage lender's test decides it - so its build card showed no last gate though the model has one.
+`Game.lenderTest()` is now the card's door to that test, the call the order makes (`lenderReads()`, shared with `considerOnMortgage()`); `BuildCard` has a LENDER gate for a landlord's home, in the lender's words (what it lends, the payment against the rent, the cover against what it asks, or the down payment it lacks), and the Real Estate page's grid a "lender" column.
+In a city with little landlord cash a House card now says why the lender would refuse it. The land office's Ore card was iron's alone: `OreView` gives a row for every ore the city owns a site of (iron always), and the card a block for coal, stone, copper and uranium with its deposits, tonnes, the sites its mines take,
+"nothing is digging" where a deposit has no mine, and a click to the industry that digs it; iron's words are as they were.
+`BuildCardCheck` 14 and `LandCheck` 30 new; the default playtest's trace is byte-identical (no ensemble).
+
+### 0.8.59 — ZT1, one palette for zones — 2026-10-27, ready, see docs/queue/ZT1-notes.md
+Jerus's call (2026-10-18, "rec all"): a zone is one colour on the map and on Policy > Zoning. Zoning coloured a zone by its place in the list, eight colours cycled, so a sector's colour changed when an earlier zone came off and was never the map's.
+Now Zoning paints a zone in its sector's colour, the map's own (`LandMap.zoneColourHex`), and the old table is gone. Checked on Zoning's own ground (built grey, the land office's pink, the forest's three greens), two sector colours were lost against it:
+Luxury Retail's pink was the land office's pink and Forestry's green the open forest's; both moved in `LandMap.ZONE_COLOURS`, so the map's tint moves with them. `ZONE_GROUND_APART` (20, CIE76) is the least any sector's colour may differ from each of the five.
+`ZoningViewCheck` 10 holds it: every sector's colour on the screen is the map's, a later zone keeps its colour when an earlier one is removed, the map's legend and the screen agree, and none is within the dial of the ground.
+No save or model change; the default playtest cannot move.
+
+### 0.8.58 — MS3, The slanted ground — 2026-10-27, ready, see docs/queue/MS3-notes.md
+Far from the city, the expanded map at the near scales drew every patch of cover as a thin diagonal streak and sawed
+the shores (Goose Bay from a Singapore city). Measured first: the city's plane is an equal-area projection whose shape
+distortion, 2 / (1 + cos c) at an angle c out, stretches its noise-drawn patches along the line to the city, 4.5 to 1
+at Goose Bay; the node lookup and the turn to north were cleared. Past a distortion of 1.25 (5,908 km out) the near
+view is now drawn from charts: north-up pieces of the globe about anchors every 10 degrees, cached as the plane's
+nodes are, the Earth's cells read at each pixel's own point and the cover ranked through a noise on the sphere,
+blended in from the plane's over 100 km so no line shows. They also draw the ground off the world's square, where the
+far rule's speckle was. Far patches read 1.0 to 1 again (the plane's 2.4 at Goose Bay); the model and the trace are
+unchanged. GlobeCheck 2d measures the streak, the fix and the seam.
+
 ### GP1 — the gate starts at once: no quiet minute, a ready branch picked up when its ship file lands — 2026-10-27, ready, no tag (tooling), see docs/queue/GP1-notes.md
 From ship file to merge a gate took a median of about 60 minutes, of which `ship.sh` is 22-25: the rest was the hourly check-in, and TM2's quiet minute (up to 30 minutes for no other batch's JVM) when the other lane was running.
 The quiet minute is out, with all that served only it (`quiet_minute` and its hook, `jvms.ps1 -Quiet`, the `CBS_QUIET_*` dials, `Batch check.bat`'s wait, `quiet-selftest.sh`, `CBS_TIMING_PAIRED`): `--timing` runs at once, and a red under load is judged against main's own run in the same minutes (TM3).
