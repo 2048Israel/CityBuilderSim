@@ -10097,9 +10097,9 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L774 the next haul bills the city's tonnes the same in the loaded city as in the live one, to the bit: every shipper's line
   - L778 ...and the shares they strike for the month after are the same too, as are the litres burned
 - **L789 9. a real run: LongPlaytest's city, played with its advisor, counted month by month**
-  - L871 the railway took some of the city's own bulk in at least one month of the run
-  - L874 ...and never without a station or a spur to take it, and the quay share was never above zero without a yard
-  - L881 the home share was above zero in the played fixture the run was too short to reach
+  - L879 the railway took some of the city's own bulk in at least one month of the run
+  - L882 ...and never without a station or a spur to take it, and the quay share was never above zero without a yard (at the haul that struck it or at the month's end)
+  - L889 the home share was above zero in the played fixture the run was too short to reach
 
 ## HouseholdCheck.java - 273 labelled assertions
 

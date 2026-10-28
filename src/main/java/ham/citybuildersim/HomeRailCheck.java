@@ -825,6 +825,14 @@ public class HomeRailCheck {
                 stop++;
                 int skip = Math.min(skips[stop % 6], REAL_RUN_MONTHS - g.getMonth());
                 for (int i = 0; i < skip; i++) {
+                    /*
+                     * THE ROOM THE HAUL SAW (FR8, 2026-10-28). The shares are struck at the haul, early in the month, over the
+                     * stations and spurs standing then (the last month's end), and are in force for the month; the distress rule
+                     * (Game.runRetirement()) runs later in it. On FR8's path Freight's distress scrapped its one Rail Depot at m1160,
+                     * after the haul, and the month ended with the share struck over a depot that had gone. A share with no room is
+                     * one with none at the haul that struck it and none at the month's end.
+                     */
+                    boolean roomBefore = fr.stationTonnes() > 0 || fr.sidingTonnes() > 0, yardBefore = fr.hasPortYard();
                     LongPlaytest.run(g, 1);
                     boolean station = fr.stationTonnes() > 0, room = station || fr.sidingTonnes() > 0;
                     if (station) { stationMonths++; if (firstStation == 0) firstStation = g.getMonth(); }
@@ -835,11 +843,11 @@ public class HomeRailCheck {
                         if (firstHome == 0) firstHome = g.getMonth();
                         lastHomeMonth = g.getMonth();
                         lastShare = fr.getHomeShare();
-                        if (!room) homeWithoutRoom++;
+                        if (!room && !roomBefore) homeWithoutRoom++;
                     }
                     if (fr.getQuayShare() > 0) {
                         quayMonths++;
-                        if (!fr.hasPortYard()) quayWithoutYard++;
+                        if (!fr.hasPortYard() && !yardBefore) quayWithoutYard++;
                     }
                     homeTonnes += fr.getHomeRailed();
                     quayTonnes += fr.getQuayRailed();
@@ -871,7 +879,7 @@ public class HomeRailCheck {
             report("the railway took some of the city's own bulk in at least one month of the run",
                     homeMonths > 0 && homeTonnes > 0 && billed > 0 && litres > 0,
                     homeMonths + " month(s) with a home share, " + roomMonths + " with room");
-            report("...and never without a station or a spur to take it, and the quay share was never above zero without a yard",
+            report("...and never without a station or a spur to take it, and the quay share was never above zero without a yard (at the haul that struck it or at the month's end)",
                     homeWithoutRoom == 0 && quayWithoutYard == 0, homeWithoutRoom + " month(s) of a home share with no room, " + quayWithoutYard + " of a quay share with no yard");
         } else {
             // The run is too short for the advisor to have laid any railway: say why, and hold the mechanic to the dealt case in a played fixture instead.
