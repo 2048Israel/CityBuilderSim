@@ -51,12 +51,25 @@ import java.util.Map;
  *      coming month's need (the city legs of the plant standing, at
  *      nameplate: nameplateNeed()); and the reprice.
  *
- * The share is pushed to nobody, and it is not struck: every sector reads it
- * when it is asked for its operating rate (Sector.getHaulageRatio()), off the
- * trucks Freight holds then and the need the last haul set, as a sector's van
- * ratio reads its vans. Struck at the haul it read the trucks after a month's
- * wear and before the month's purchases, so a fleet bought to its need still
- * ran at 99% all month (a 600-month city, FR2's notes).
+ * The share is struck at the haul (closeMonth()), once, and every sector reads
+ * it when it is asked for its operating rate (Sector.getHaulageRatio()), as a
+ * sector's van ratio reads its vans. Read live it ran a fleet bought to its
+ * need at 99% all month, and over the fleet after its wear it read a fleet
+ * kept to its need short every month (a 600-month city, FR2's notes); so it
+ * is struck over the fleet held before the month's wear, which the month's
+ * order then replaces.
+ *
+ * THE DEAL (FR8). The city's share (getShare()) is one figure, the fleet over
+ * the whole need, and until FR8 it was every sector's: a giant works landing
+ * in one industry put its legs into the need and every bulk sector, mines,
+ * mills and farms alike, ran short together for the months its trucks took to
+ * arrive (FR2's notes, star 5; Jerus, 2026-10-20: "pool per industry"). Now,
+ * when the trucks do not suffice, the fleet's room is DEALT per sector at the
+ * haul (deal()): each sector keeps what it was carried at the last haul (its
+ * standing demand), the smallest standing demands served first; the growth
+ * over that, the newest demand, is served last and pro rata from what room is
+ * left. A giant works' arrival shortens its own sector, not the town's. Each
+ * sector's share and its standing demand are saved with the rest.
  */
 public final class Haulage {
 
@@ -157,6 +170,29 @@ public final class Haulage {
 
     /** ...and what the plant on site will ask when it stands, struck with it (nameplateNeedOnSite()): what the fleet is bought toward besides. */
     private double needOnSite;
+
+    /**
+     * THE DEAL (FR8; deal()): each sector's own share of its need, struck with
+     * the city's at the haul, by sector key, in the sectors' order: every
+     * sector but Freight, one whose plant asked nothing at the haul a literal 1.
+     * Only a save from before FR8 leaves a sector without one, and it reads
+     * newestShare, which such a save restores as the city's share. Saved
+     * (haul.share.&lt;sector key&gt;).
+     */
+    private final Map<String, Double> sectorShare = new LinkedHashMap<>();
+
+    /**
+     * ...and the tonnes a month of legs each was dealt at the haul (its share of
+     * its need): next haul's standing demand, in the need's own units - nameplate
+     * legs, not the month's. Saved (haul.standing.&lt;sector key&gt;).
+     */
+    private final Map<String, Double> standing = new LinkedHashMap<>();
+
+    /** The share of the growth over the standing demand that the room left served at the last haul (deal()), 1 with the trucks sufficing; what a sector with no entry reads, which only a save from before FR8 leaves. */
+    private double newestShare = 1;
+
+    /** The share of the standing demand the fleet covered at the last haul (deal()): below 1 only when it could not cover what the sectors were carried the month before. */
+    private double standingShare = 1;
 
     /**
      * Whether the fleet is a figure Haulage knows. FALSE UNTIL THE FIRST MONTH
@@ -308,22 +344,59 @@ public final class Haulage {
      * (inWeight(), outWeight()). VANS and TRUCKS drive themselves.
      */
     public double nameplateNeed(Sectors sectors) {
+        return nameplateNeed(sectors, null);
+    }
+
+    /**
+     * ...and one sector's share of it (FR8: the deal weighs each sector's
+     * legs): its BULK inputs and outputs at nameplate, as nameplateNeed()
+     * weighs them; 0 for Freight, which carries and is carried by nobody, and
+     * for no sector.
+     */
+    public double nameplateNeed(Sector s) {
+        if (s == null || s == freight) return 0;
+        return clean(legsAtNameplate(s, null));
+    }
+
+    /**
+     * The city's nameplate need, and, in `bySector` (when given), each sector's
+     * own legs in `sectors.all()` order. One loop fills both: the total adds each
+     * good's term as it always has (so it is to the bit what it was before FR8)
+     * and the sector's subtotal beside it.
+     */
+    private double nameplateNeed(Sectors sectors, Map<String, Double> bySector) {
         if (sectors == null) return 0;
-        double t = 0;
+        double[] t = new double[1];
         for (Sector s : sectors.all()) {
             if (s == freight) continue;
-            for (Good g : s.goodsUsed()) {
-                if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
-                double units = s.getInputAtCapacity(g) - (s.captive(g) ? Math.min(s.getCapacity(g), s.getInputAtCapacity(g)) : 0);
-                if (units > 0) t += units * g.tonnesPerUnit() * inWeight(g);
-            }
-            for (Good g : s.goodsMade()) {
-                if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
-                double units = s.getCapacity(g) - (s.captive(g) ? Math.min(s.getCapacity(g), s.getInputAtCapacity(g)) : 0);
-                if (units > 0) t += units * g.tonnesPerUnit() * outWeight(g);
+            double u = legsAtNameplate(s, t);
+            if (bySector != null) bySector.put(s.key(), clean(u));
+        }
+        return Double.isFinite(t[0]) ? Math.max(0, t[0]) : 0;
+    }
+
+    /** One sector's legs at nameplate, adding each good's term to `total[0]` as it is met when a total is given. */
+    private double legsAtNameplate(Sector s, double[] total) {
+        double u = 0;
+        for (Good g : s.goodsUsed()) {
+            if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
+            double units = s.getInputAtCapacity(g) - (s.captive(g) ? Math.min(s.getCapacity(g), s.getInputAtCapacity(g)) : 0);
+            if (units > 0) {
+                double term = units * g.tonnesPerUnit() * inWeight(g);
+                if (total != null) total[0] += term;
+                u += term;
             }
         }
-        return Double.isFinite(t) ? Math.max(0, t) : 0;
+        for (Good g : s.goodsMade()) {
+            if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
+            double units = s.getCapacity(g) - (s.captive(g) ? Math.min(s.getCapacity(g), s.getInputAtCapacity(g)) : 0);
+            if (units > 0) {
+                double term = units * g.tonnesPerUnit() * outWeight(g);
+                if (total != null) total[0] += term;
+                u += term;
+            }
+        }
+        return u;
     }
 
     /*
@@ -397,6 +470,10 @@ public final class Haulage {
      * (haul()); Haulage does not, because the sectors' operating rate already
      * says the carried share is the trucks' and a bill for carriage that did not
      * happen would be a bill for nothing. The overrun is next month's need.
+     * Since FR8 the share in force is each sector's own, the one its industry
+     * was dealt at the haul (getShare(Sector)): a sector's carried is its legs
+     * at its share, and if the sectors' carried together pass what the trucks
+     * could carry, every one is scaled by the same figure to fit.
      *
      * @param legs each sector's city-leg tonnes of the month, in the order of the loop that summed them
      */
@@ -405,16 +482,25 @@ public final class Haulage {
         // The fleet the month was carried by: held now, before the month's wear (closeMonth()).
         capacityInForce = trucks() * TONNES_A_TRUCK_MONTH;
         for (double t : legs.values()) tonnes += t;
-        if (!(tonnes > 0)) return;
+        if (!(tonnes > 0) || !(capacityInForce > 0)) return;
 
-        double f = getShare();
-        if (tonnes * f > capacityInForce) f = capacityInForce / tonnes;
-        if (!(f > 0)) return;
-        carried = tonnes * f;
+        // Each sector's carried is its legs at its own share (FR8), the sum never more than the trucks could carry.
+        double[] mine = new double[legs.size()];
+        double sum = 0;
+        int i = 0;
+        for (Map.Entry<Sector, Double> e : legs.entrySet()) {
+            double c = e.getValue() * getShare(e.getKey());
+            mine[i] = c > 0 && Double.isFinite(c) ? c : 0;
+            sum += mine[i++];
+        }
+        if (!(sum > 0)) return;
+        double fit = sum > capacityInForce ? capacityInForce / sum : 1;
+        carried = sum * fit;
 
         double price = getQuote();
+        i = 0;
         for (Map.Entry<Sector, Double> e : legs.entrySet()) {
-            double amount = e.getValue() * f * price;
+            double amount = mine[i++] * fit * price;
             if (!(amount > 0) || !Double.isFinite(amount)) continue;
             e.getKey().billForService(freight.key(), BILLED_AS, amount);
             bill += amount;
@@ -471,7 +557,8 @@ public final class Haulage {
          * the share the city exported. The bill is still the month's own legs.
          */
         strikeTrade(sectors);
-        need = nameplateNeed(sectors);
+        Map<String, Double> needBy = new LinkedHashMap<>();
+        need = nameplateNeed(sectors, needBy);
         needOnSite = nameplateNeedOnSite(sectors);
         if (!trucksKnown && need > 0) {
             freight.seedTrucks(need / TONNES_A_TRUCK_MONTH);
@@ -480,6 +567,8 @@ public final class Haulage {
         double capacity = Math.max(capacityInForce, trucks() * TONNES_A_TRUCK_MONTH);
         share = !(need > 0) || capacity >= need ? 1 : Math.max(0, capacity / need);
         tightness = need > 0 ? Math.max(0, Math.min(1, (need - capacity) / need)) : 0;
+        // ...and, with the city's share struck, the fleet's room dealt per sector (FR8).
+        deal(needBy, capacity);
 
         /* ---- the reprice: the railway's rule, on Haulage's books ---- */
 
@@ -539,6 +628,98 @@ public final class Haulage {
                 }
             }
         }
+    }
+
+    /**
+     * Deals the fleet's room per sector, struck with the city's share at the
+     * haul (closeMonth()): each sector's own share of its own need, the newest
+     * demand last (FR8).
+     *
+     * WHY. The city's one share (getShare()) was every sector's, so a giant
+     * works landing in one industry put its legs into the need and every bulk
+     * sector, mines, mills and farms that had not changed, ran short with it
+     * for the months its trucks took to arrive (FR2's notes, star 5; Jerus,
+     * 2026-10-20: "pool per industry"). The city's share stays what it was, the
+     * fleet over the need, for the screens; what each sector runs at is this.
+     *
+     * When the trucks suffice every sector with legs is dealt a literal 1 and
+     * its whole need is its standing demand. When they do not:
+     *
+     *   1. A sector's standing demand is what it was dealt at the last haul, no
+     *      more than it asks now. The fleet serves them smallest first (ties in
+     *      the sectors' order), so one that cannot cover them all cuts the
+     *      largest and leaves the rest whole (standingShare).
+     *   2. The growth over the standing demand, the newest demand, is served
+     *      last, pro rata, from the room that is left (newestShare).
+     *   3. A sector's share is what it was served over what it asks; a literal
+     *      1 when it was served its whole standing and has no growth (or its
+     *      growth was served whole), so Sector.getHaulageRatio() stands aside.
+     *      What it was dealt, its share of its need, is next haul's standing.
+     *
+     * A SECTOR THAT ASKS NOTHING IS DEALT A LITERAL 1, and has no standing
+     * demand. Its plant at the haul asked the trucks for nothing (a mine
+     * selling all its ore at home: the buyer's leg is the buyer's), and a works
+     * of its that stands after the haul waits for the next one, as every
+     * growth does, the share being struck on the plant standing at the haul.
+     * Dealt the newest share instead (the slice's first draft), a mine with
+     * nothing of its own to carry ran at the floor in any month the fleet was
+     * short and nothing grew (HaulageCheck 3, months 3-7).
+     *
+     * @param needBy each sector's legs at nameplate, by key in the sectors' order (nameplateNeed())
+     * @param capacity the tonnes a month the fleet can carry, which share was struck over
+     */
+    private void deal(Map<String, Double> needBy, double capacity) {
+        Map<String, Double> shares = new LinkedHashMap<>(), dealt = new LinkedHashMap<>();
+        if (!(share < 1)) {
+            for (Map.Entry<String, Double> e : needBy.entrySet()) {
+                shares.put(e.getKey(), 1.0);
+                if (e.getValue() > 0) dealt.put(e.getKey(), e.getValue());
+            }
+            newestShare = 1;
+            standingShare = 1;
+        } else {
+            // The standing demand of each sector that asks, in the sectors' order: what it was dealt, no more than it asks.
+            Map<String, Double> wants = new LinkedHashMap<>();
+            double standingTotal = 0, growth = 0;
+            for (Map.Entry<String, Double> e : needBy.entrySet()) {
+                double asks = e.getValue();
+                if (!(asks > 0)) continue;
+                double st = Math.min(asks, clean(standing.getOrDefault(e.getKey(), 0.0)));
+                wants.put(e.getKey(), st);
+                standingTotal += st;
+                growth += asks - st;
+            }
+            // ...served smallest first: a stable sort, so ties stay in the sectors' order.
+            List<String> bySize = new ArrayList<>(wants.keySet());
+            bySize.sort((a, b) -> Double.compare(wants.get(a), wants.get(b)));
+            Map<String, Double> served = new LinkedHashMap<>();
+            double room = capacity, servedTotal = 0;
+            boolean whole = true;
+            for (String key : bySize) {
+                double st = wants.get(key), got = Math.min(st, room);
+                if (got < st) whole = false;
+                served.put(key, got);
+                servedTotal += got;
+                room = Math.max(0, room - got);
+            }
+            standingShare = whole || !(standingTotal > 0) ? 1 : unit(servedTotal / standingTotal);
+            newestShare = growth > 0 ? unit(room / growth) : 0;
+            for (Map.Entry<String, Double> e : needBy.entrySet()) {
+                double asks = e.getValue();
+                if (!(asks > 0)) {
+                    shares.put(e.getKey(), 1.0);
+                    continue;
+                }
+                double st = wants.get(e.getKey()), got = served.get(e.getKey()), grows = asks - st;
+                double sh = got == st && (grows == 0 || newestShare >= 1) ? 1.0 : unit((got + grows * newestShare) / asks);
+                shares.put(e.getKey(), sh);
+                dealt.put(e.getKey(), sh * asks);
+            }
+        }
+        sectorShare.clear();
+        sectorShare.putAll(shares);
+        standing.clear();
+        standing.putAll(dealt);
     }
 
     /* ------------------------------------------------------------ the fleet */
@@ -701,12 +882,44 @@ public final class Haulage {
 
     /**
      * The share of the city-leg tonnes the trucks can carry: the trucks held
-     * now, at TONNES_A_TRUCK_MONTH each, over the need - a literal 1 when they
-     * suffice, and 1 with no need (a city that has never needed a truck runs
-     * at nameplate). Read live by every sector's operating rate
-     * (Sector.getHaulageRatio()) and by the bill.
+     * at the haul, at TONNES_A_TRUCK_MONTH each, over the need - a literal 1
+     * when they suffice, and 1 with no need (a city that has never needed a
+     * truck runs at nameplate). The CITY's share, for the screens and the
+     * harnesses; since FR8 a sector's operating rate and the bill read the
+     * share its own industry was dealt (getShare(Sector)).
      */
     public double getShare() { return share; }
+
+    /**
+     * The share of its own need that the sector's industry was dealt at the last
+     * haul (FR8; deal()): the one its operating rate and its bill read, a
+     * literal 1 for one that asked nothing. A sector with no entry, which only a
+     * save from before FR8 leaves, reads getNewestShare(), restored then as the
+     * city's share; only no sector (null) reads getShare().
+     */
+    public double getShare(Sector s) { return s == null ? share : shareOf(s.key()); }
+
+    /** The same by sector key: the share dealt it at the last haul, the newest demand's if it was dealt none (a save from before FR8), the city's for no key. */
+    public double shareOf(String key) {
+        if (key == null) return share;
+        Double dealt = sectorShare.get(key);
+        return dealt != null ? dealt : newestShare;
+    }
+
+    /** The share of the growth over the standing demand that the room left at the last haul served; 1 when the trucks sufficed. */
+    public double getNewestShare() { return newestShare; }
+
+    /** The share of the standing demand, what the sectors were carried the month before, that the fleet covered at the last haul; 1 when all of it. */
+    public double getStandingShare() { return standingShare; }
+
+    /** The tonnes a month of legs the sector was dealt at the last haul, its next standing demand; 0 for a sector with none. */
+    public double getStanding(String key) {
+        Double dealt = key == null ? null : standing.get(key);
+        return dealt != null ? dealt : 0;
+    }
+
+    /** Every sector's share dealt at the last haul, by key in the sectors' order: a view, not a copy. */
+    public Map<String, Double> sectorShares() { return java.util.Collections.unmodifiableMap(sectorShare); }
 
     /** The city-leg tonnes the share is read against, and the tonnes a month the trucks could carry when the month was billed. */
     public double getNeed()            { return need; }
@@ -816,6 +1029,12 @@ public final class Haulage {
     /** The save keys' prefix (Freight's extras); the figure names avoid the scaler's intensive words (ScaleCheck), so a scaled copy's tonnes are scaled. */
     private static final String MOVE_PREFIX = "haul.move.";
 
+    /** The save keys' prefix for a sector's dealt share (FR8, deal()), the sector's key after it; "share" in the name keeps the scaler's hands off a share (ScaleCheck). */
+    private static final String SHARE_PREFIX = "haul.share.";
+
+    /** ...and for the tonnes it was dealt, its next standing demand: tonnes, so scaled with the city, and so no intensive word in the name (ScaleCheck). */
+    private static final String STANDING_PREFIX = "haul.standing.";
+
     /** The month billed's moves: sector key, then "GOOD.WAY", then the seven figures. */
     private final Map<String, Map<String, double[]>> moves = new LinkedHashMap<>();
 
@@ -891,6 +1110,11 @@ public final class Haulage {
         extras.put("haul.steady.quote", steadyQuote);
         extras.put("haul.fleetOwed", fleetOwed);
         extras.put("haul.steadyKnown", steadyKnown ? 1.0 : 0.0);
+        // The deal (FR8), a figure a key: each sector's share (names with "share" in them, which the scaler leaves alone) and the tonnes it was dealt (which it scales with the city).
+        extras.put("haul.newestShare", newestShare);
+        extras.put("haul.standingShare", standingShare);
+        for (Map.Entry<String, Double> e : sectorShare.entrySet()) extras.put(SHARE_PREFIX + e.getKey(), e.getValue());
+        for (Map.Entry<String, Double> e : standing.entrySet()) extras.put(STANDING_PREFIX + e.getKey(), e.getValue());
         // The trade's shares, under names a scaler reads as intensive (ScaleCheck): only the goods struck from trade.
         for (Good g : Good.values()) {
             if (!traded[g.ordinal()]) continue;
@@ -929,6 +1153,17 @@ public final class Haulage {
         steadyQuote = extras.getOrDefault("haul.steady.quote", 0.0);
         fleetOwed = extras.getOrDefault("haul.fleetOwed", 0.0);
         steadyKnown = extras.getOrDefault("haul.steadyKnown", 0.0) > 0;
+        // The deal (FR8): a save from before it has none, and its first month is dealt as the one share it ran at.
+        newestShare = extras.getOrDefault("haul.newestShare", share);
+        standingShare = extras.getOrDefault("haul.standingShare", 1.0);
+        sectorShare.clear();
+        standing.clear();
+        for (Map.Entry<String, Double> e : extras.entrySet()) {
+            String k = e.getKey();
+            if (e.getValue() == null) continue;
+            if (k.startsWith(SHARE_PREFIX)) sectorShare.put(k.substring(SHARE_PREFIX.length()), e.getValue());
+            else if (k.startsWith(STANDING_PREFIX)) standing.put(k.substring(STANDING_PREFIX.length()), e.getValue());
+        }
         strikeTrade(null);
         for (Good g : Good.values()) {
             Double ex = extras.get("haul.exportShare." + g.name()), im = extras.get("haul.importShare." + g.name());
@@ -994,6 +1229,9 @@ public final class Haulage {
         fleetOwed = 0;
         capacityInForce = need = needOnSite = 0;
         share = 1;
+        newestShare = standingShare = 1;
+        sectorShare.clear();
+        standing.clear();
         strikeTrade(null);
         diplomaOffered = 1;
         trucksKnown = false;

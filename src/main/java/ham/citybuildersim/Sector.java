@@ -934,7 +934,10 @@ public abstract class Sector {
      * with bulk to move and a city whose trucks carry only a share of the
      * city's city-leg tonnes runs at MIN_VAN_RATE + (1 - MIN_VAN_RATE) x that
      * share: slower, since it collects what Haulage could not carry, and not
-     * stopped.
+     * stopped. Since FR8 the share is the one its own industry was dealt, not
+     * the city's: the trucks serve what each was carried the month before
+     * first, and the newest demand, a works just opened, runs slower for the
+     * rest (Haulage.deal()).
      *
      * ONE EXACTLY, as getVanRatio() is, and by the same early returns: Freight
      * itself (it is the carrier), no game to ask, no bulk to move, or a share
@@ -947,7 +950,7 @@ public abstract class Sector {
         Sectors all = game.getSectors();
         ham.citybuildersim.sectors.Freight freight = all == null ? null : all.freight();
         if (freight == null) return 1;
-        double share = freight.haulage().getShare();
+        double share = freight.haulage().getShare(this);
         if (!(share < 1)) return 1;
         if (!hasBulkLegs()) return 1;
         return MIN_VAN_RATE + (1 - MIN_VAN_RATE) * Math.max(0, share);
