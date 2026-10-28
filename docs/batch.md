@@ -308,7 +308,8 @@ ready again.
    status, part), never from the label's prose, and times the red harnesses
    again with main's classes (a worktree of `main`) and the merge's **in
    turn, back to back, three rounds** (`CBS_TIMING_ROUNDS`, at least two; the
-   rounds are to share one load). The red
+   rounds are to share one load), main first in odd rounds and the batch in
+   even ones (SP1: a run straight after a switch of build was the slower). The red
    counts against the batch only if its median figure is **more than 15%**
    over main's (`tools/timing-pair.awk` holds the arithmetic and the dial;
    `CBS_TIMING_MARGIN` moves it for a test), main's median within the budget

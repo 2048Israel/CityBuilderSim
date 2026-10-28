@@ -294,8 +294,8 @@ tm() { STUB_TEXIT=4 STUB_TREDS="$PR" STUB_TTSV="$PT" STUB_PAIR="$PP" "$@"; }   #
 LABEL="timing: a red where the batch is as fast as main passes, named with the paired medians"; : > "$STUB_LOG"
 STUB_FIGS_MAIN="44 45 46" STUB_FIGS_BATCH="46 45 44" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'judged side by side with main' $TA/out.txt && grep -q -F 'PlanCheck [main 45 ms, batch 45 ms' $TA/out.txt"
-LABEL="timing: ...main's classes and the merge's in turn, three rounds, in the same minutes"
-ok turns_are "main-timing main main-timing main main-timing main"
+LABEL="timing: ...main's classes and the merge's in turn, three rounds, in the same minutes, the first side alternating (SP1 item 7)"
+ok turns_are "main-timing main main main-timing main-timing main"
 LABEL="timing: a batch 10% slower than main is inside the margin and passes"
 STUB_FIGS_MAIN="40 40 40" STUB_FIGS_BATCH="44 44 44" tm run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'PlanCheck [main 40 ms, batch 44 ms (+10.0%)' $TA/out.txt"

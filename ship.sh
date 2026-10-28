@@ -551,11 +551,12 @@ else
             PH=$(tr '\n' ' ' < "$T/pair-harnesses"); PH=${PH% }
             rm -rf "$MT"; git worktree prune
             git worktree add -q --detach "$MT" HEAD >/dev/null 2>&1 || die "cannot make the worktree $MT of main for its paired timing runs"
-            say "timing red on the merge ($PH): $ROUNDS rounds with main's classes and the merge's in turn, back to back, in $MT and here..."
+            say "timing red on the merge ($PH): $ROUNDS rounds with main's classes and the merge's in turn, back to back, each round's first side the last one's second, in $MT and here..."
             r=1
             while [ "$r" -le "$ROUNDS" ]; do
                 RT=$(date +%s); LINE=""
-                for side in main batch; do
+                ORDER="main batch"; [ $((r % 2)) = 1 ] || ORDER="batch main"   # SP1 item 7: a run straight after a switch of build was the slower (KeptCheck 6.2-6.9 ms against 5.2-5.5), so neither side always goes first
+                for side in $ORDER; do
                     if [ "$side" = main ]; then DIR=$MT; else DIR=.; fi
                     rm -f "$DIR/target/checks/timing.tsv"
                     ( cd "$DIR" && ./batch-check.sh --timing $PH ) > "target/checks/pair-$side-$r.out" 2>&1
