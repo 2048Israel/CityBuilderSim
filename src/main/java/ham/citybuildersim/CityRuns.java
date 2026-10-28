@@ -392,7 +392,11 @@ public final class CityRuns {
         /** Steps known clear ahead along `head`, read at the ground's version knownAt; and the version it waits at (transient). */
         int known;
         long knownAt = Long.MIN_VALUE, waitAt = Long.MIN_VALUE;
-        /** What stopped it the last time it waited with no way along (transient): OPEN (nothing, or another reason), EDGE or SEA. The railway's main line goes on to the next arm only where this is SEA (growMainLine()). */
+        /**
+         * What stopped it the last time it waited with no way along: OPEN (nothing, or another reason), EDGE or SEA. The railway's main line goes on to
+         * the next arm only where this is SEA (growMainLine()). Saved in the sidecar since FORMAT 13 (batch CC1-M), because cleanSpine() reads it in the
+         * first re-lay after a load: a net read back without it took its main line back past the sea and laid it again shorter.
+         */
         int stoppedBy;
         /**
          * A link arm's way (CL5, openLink()): its legs as {heading, steps} each, the leg it is on and the step it is at in it, and the
@@ -2598,8 +2602,8 @@ public final class CityRuns {
      * the arms after it as far as the first that waits anywhere else
      * (spineOrder(), growMainLine()); the opposite and perpendicular arms a
      * net grown before FR7 has laid past that are dead ends no train ran to.
-     * An arm not known to wait at the sea (a net read back, or one still
-     * growing) ends the line. True when it took any back.
+     * An arm not known to wait at the sea (a net read back from a sidecar
+     * older than FORMAT 13, or one still growing) ends the line. True when it took any back.
      */
     private boolean cleanSpine() {
         boolean any = false, ended = false;
@@ -4390,6 +4394,7 @@ public final class CityRuns {
      * for, two ints (w, h) each - the size it was asked for, which a box laid long or short by the ground is not. An older format has none.
      * From FORMAT 12 (CL5) each net writes, after its plots, the hubs of its pieces after the home piece's (a count, then x and y each) and with each
      * corridor its piece (int) and role (byte): an older format has one piece, the spine the corridors 0 and 1.
+     * From FORMAT 13 (CC1-M) each arm's record ends with what last stopped it (stoppedBy, a byte); an older format has none and reads OPEN.
      */
     void write(DataOutputStream out, int format) throws IOException {
         for (Net n : new Net[] { highways, rail }) {
@@ -4423,6 +4428,7 @@ public final class CityRuns {
                 for (int s = 0; s < a.segs; s++) { out.writeByte(a.segHead[s]); out.writeInt(a.segSteps[s]); }
                 out.writeInt(a.crossings.size());
                 for (long[] c : a.crossings) { out.writeLong(c[0]); out.writeLong(c[1]); out.writeInt((int) c[2]); }
+                if (format >= 13) out.writeByte(a.stoppedBy);
             }
             out.writeInt(n.interchanges.size());
             for (Interchange c : n.interchanges) { out.writeLong(c.x()); out.writeLong(c.y()); out.writeInt(c.corridor()); }
@@ -4446,7 +4452,7 @@ public final class CityRuns {
         return read(in, CityMap.FORMAT);
     }
 
-    /** ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then; before FORMAT 12 the net is one piece (CL5). */
+    /** ...from a sidecar of the format given: before FORMAT 10 a yard's footprint is its box's own width and height, as it was laid then; before FORMAT 12 the net is one piece (CL5); before FORMAT 13 each arm reads as stopped by nothing (OPEN, CC1-M). */
     static CityRuns read(DataInputStream in, int format) throws IOException {
         CityRuns r = new CityRuns();
         for (Net n : new Net[] { r.highways, r.rail }) {
@@ -4504,6 +4510,11 @@ public final class CityRuns {
                 int nx = in.readInt();
                 if (nx < 0 || nx > 1 << 24) return null;
                 for (int k = 0; k < nx; k++) { long cx = in.readLong(), cy = in.readLong(); a.crossings.add(new long[] { cx, cy, in.readInt() }); }
+                if (format >= 13) {
+                    int stop = in.readByte();
+                    if (stop != OPEN && stop != EDGE && stop != SEA) return null;
+                    a.stoppedBy = stop;
+                }
                 n.arms.add(a);
             }
             int ni = in.readInt();

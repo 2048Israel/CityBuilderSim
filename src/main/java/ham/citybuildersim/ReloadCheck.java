@@ -44,7 +44,8 @@ import java.util.function.Function;
  *
  *   1. EVERY HISTORY SERIES of the reloaded city is the running city's, a
  *      month on and two months on.
- *   2. ...AND EVERY FIGURE IN ITS SAVE, to the cent, a month on and two on.
+ *   2. ...AND EVERY FIGURE IN ITS SAVE, to the cent, a month on and two on
+ *      (the map sidecar's stamp among them since CC1-M).
  *   3. THE CAUSES, ONE BY ONE, so a red section 2 says why: (a) every
  *      sector's stock revaluation is counted in the reload's first month and
  *      equals the live city's; (b) Construction's materials drawn at home and
@@ -94,10 +95,12 @@ public class ReloadCheck {
     static final double RELATIVE = 1e-9;
 
     /**
-     * The keys no two saves of one city share, whatever it did: the slot's name, the time it was written and the content
-     * hash of the map sidecar (the map is MapCheck's, and batch CC1-M's). Skipped wherever they stand in the tree.
+     * The keys no two saves of one city share, whatever it did: the slot's name and the time it was written. Skipped wherever
+     * they stand in the tree. The map sidecar's stamp (mapStamp) was exempt too until batch CC1-M, because the first month after a
+     * load re-laid the railway; it is compared since, like every figure: a map that moves after a load is a red line here (and in
+     * GatewayCheck 21, which causes it on a coast).
      */
-    static final Set<String> EXEMPT = Set.of("slotName", "savedAt", "mapStamp");
+    static final Set<String> EXEMPT = Set.of("slotName", "savedAt");
 
     /** How many differing paths a failing line lists, each with both values; the rest is counted. */
     static final int SHOWN = 12;

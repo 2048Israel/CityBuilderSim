@@ -2,7 +2,7 @@
 
 Generated 2026-10-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**150 harness files, 15,794 labelled assertions.** AllChecks runs 150 of them.
+**150 harness files, 15,804 labelled assertions.** AllChecks runs 150 of them.
 
 ## Which harnesses read which class
 
@@ -8527,7 +8527,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L938 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
   - L940 ...and the rule's bid makes way for as much of the order as it would otherwise take
 
-## GatewayCheck.java - 122 labelled assertions
+## GatewayCheck.java - 132 labelled assertions
 
 > A city's gateway is the way the world is.
 > 
@@ -8543,149 +8543,160 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   3. TWO EQUAL ARMS, east and south, tie; the gateway is one of the two,
 > ...
 
-  - L226 with gateway
-  - L227 ...and only the
-  - L242 ...laid past the edge, the
-  - L245 ...and no highway plot lies outside the box
-  - L257 ...and taking back fewer plots takes from the
-- **L267 1. a strip of land east**
-  - L272 a strip east gives a gateway
-  - L273 ...whose bearing is east (0)
-  - L274 ...and whose bearing is a multiple of the step
-  - L277 ...and whose point lies on the city's edge on that bearing
-  - L280 ...and is the city's radius out
-- **L283 2. an island founding**
-  - L290 land only within a small disc round the site has no gateway
-- **L293 3. a tie**
-  - L300 equal arms east and south tie, and the gateway is one of the two lone tied bearings
-  - L302 ...and the tied bearing is a multiple of the step
-  - L305 ...and its point lies on the city's edge on that bearing
-  - L316 two founding sites in the same cell pick different tied bearings (the hash, not the smaller bearing)
-  - L317 ...one picks east
-  - L318 ...and the other picks south
-  - L320 no two offsets in the cell pick differently; the site's own pick is one of the two
-- **L323 4. a half-plane of land west**
-  - L327 every westward bearing runs to the cap, and the gateway is the middle of that arc (180)
-- **L330 5. the threshold**
-  - L334 a strip one cell short of the reach has no gateway
-  - L338 a strip that just reaches has one
-  - L339 ...on the east bearing
-- **L341 6. the default world**
-  - L347 the default world's gateway is deterministic
-  - L350 ...its point lies on the city's edge on that bearing
-  - L354 ...and the cell at its point is land
-  - L362 ...with none, its best land run is short of the reach
-- **L367 7. twelve real generated worlds**
-  - L376 at least one of the twelve worlds has a gateway
-- **L378 8. a full tie is not due east for everyone**
-  - L390 an all-land ground finds a gateway at each of 24 founding sites
-  - L391 ...and every full tie's bearing is a multiple of the step
-  - L392 ...with at least 6 distinct bearings among them
-- **L395 9. the Earth's rule**
-  - L399 one larger place due north wins the north bearing (270)
-  - L405 a nearer place whose way is sea is passed over for the farther clear one (east)
-  - L409 an empty Earth list falls back to the land rule's own answer
-  - L411 ...and a null list does too
-- **L413 10. the spine is laid toward the gateway**
-- **L418 11. no gateway lays as before**
-  - L433 with no gateway the row's two arms both grow first
-  - L434 ...and no column arm has grown yet
-- **L436 12. the sidecar keeps it**
-  - L445 the catalog has a highway type
-  - L449 a square city's runs have found a gateway (or found none)
-  - L452 FORMAT 8 writes the gateway and reads it back the same
-  - L455 a FORMAT 7 sidecar reads it back unknown
-  - L457 ...and the next layRuns finds the same gateway again
-- **L459 13. what finding one costs**
-- **L468 14. the world line**
-  - L472 the catalog has a highway and a track type
-  - L475 the fixture has a gateway
-  - L483 a world line's net is a highway or the railway
-  - L485 ...its bearing is the gateway
-  - L487 ...its point is ground the city does not own
-  - L492 ...and the plot one step back along the gate arm's heading is owned
-  - L495 worldLines() has one line for the highway, whose gate arm is laid
-  - L496 ...and one for the railway, whose gate arm is laid
-  - L499 with NO_GATEWAY set there are no world lines
-- **L501 15. the cache**
-  - L508 two calls with nothing changed return equal lists
-  - L514 a month's runs move changes()
-  - L516 after the runs move, the world lines are recomputed equal to a fresh map's
-  - L650 ...and on dry ground
-  - L651 ...at the end of a laid arm's track
-  - L652 ...within WORLD_GAP plots of it along its heading
-  - L653 ...every plot between the arm's end and the point owned and dry
-  - L654 ...its reach from TrainSchedule.WORLD_PLOTS to CityMap.WORLD_REACH
-  - L655 ...every point along its way, every WORLD_STEP, on dry ground
-  - L656 ...and it runs as far as the land does: the next point is not dry, or the reach is the most
-  - L681 ...every route's first point is WORLD_PLOTS out along the line's way
-  - L682 ...it passes the line's point, within the curve's radius (FX5: its turns are rounded)
-  - L683 ...and the main arm's end plot's middle, within the radius: the train meets the line where the track ends
-  - L684 ...no point of any leg on water off the track
-- **L700 the line to the world leaves on land, on a generated coast**
-  - L707 fixture: the coast city has a gateway and a railway whose gate arm is laid
-  - L713 fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water
-  - L715 the coast
-  - L718 the coast: the railway has a line, so the checks above are not vacuous
-  - L719 ...and its main arm is not the gate arm
-- **L730 the coast's months: the line on land as the city grows**
-  - L750 the coast's months: some months have a world line and trains' routes, so the run exercised the rule
-  - L751 ...and no month has a line's point or a train position on water off the track
-- **L756 Halifax on the Earth, when earth-2.bin is named**
-  - L760 the file -D
-  - L783 fixture: Halifax has a gateway and a railway whose gate arm is laid
-  - L789 fixture (ET6): Halifax's railway gate arm no longer waits at the harbour - it bridges the shallow water to the city's edge, so FR0's walk crosses none of the...
-  - L791 Halifax
-  - L794 Halifax: the railway has a line, so the checks above are not vacuous
-  - L796 the Earth's file opens:
-  - L824 ...the label is placed
-  - L827 ...its box lies inside the view by WORLD_LABEL_PAD on every side
-  - L828 ...its baseline's left end on the line's part
-  - L831 ...at the first place from FR0's spot that fits: a pixel nearer the far end does not
-- **L837 the label stays in view**
-  - L838 a line leaving the right edge
-  - L839 a line leaving the top edge
-  - L840 a line leaving the bottom edge
-  - L841 a line leaving the top right corner
-  - L844 a line ending well inside the view keeps FR0's spot, WORLD_LABEL_BACK from its far end
-  - L853 a part of
-  - L855 ...the label still lies inside the view
-  - L857 a part of no length has no label
-  - L858 a view smaller than the label and its pads has none either
-- **L875 two lines leaving together get labels apart, or one**
-  - L880 fixture: two parts three pixels apart on one bearing are both placed by worldLabelAt() alone
-  - L881 ...and, drawn so (as MapView did), their boxes overlap: the words print over each other
-  - L887 fixture: two parts of 100 px, three apart, fit no label anywhere on them, and worldLabelAt() puts both on one spot
-  - L892 worldLabels() gives each of two parts leaving together a label
-  - L896 ...the first keeps worldLabelAt()'s place to the pixel
-  - L897 ...the boxes are clear of each other by WORLD_LABEL_PAD
-  - L898 ...each lies inside the view by WORLD_LABEL_PAD, on its own part
-  - L900 ...and each names its own line: neither is shared
-  - L904 ...the five-argument form reads the shared words' width off the characters and places the same
-  - L909 two parts with no clear place anywhere have one label between them: the first names both, the second has none
-  - L915 ...and, the shared words being wider, it lies whole inside the view
-  - L923 lines on opposite sides of the view keep worldLabelAt()'s places to the pixel
-  - L926 ...and neither is shared
-  - L931 a part of no length has no label, nor has a line with no part
-  - L932 ...and the line after them keeps worldLabelAt()'s place
-  - L933 a call with no parts returns no labels
-  - L1026 ...the highways are drawn: there is a piece
-  - L1027 ...every highway plot drawn lies in a piece holding a ramp on a cell line
-  - L1028 ...the drawn plots and highwayUndrawn() are the model's highway plots
-  - L1029 ...none is undrawn but what the runs could not lay
-- **L1034 a highway that reaches no street is not drawn**
-  - L1038 fixture: with one Elevated Highway the runs laid it
-  - L1039 ...it reaches no arterial's ramp: highwaysReach() is false
-  - L1041 ...a fill over the city's whole box holds no highway plot
-  - L1042 ...highwayUndrawn() is the model's highway plots
-  - L1043 ...highwayShort() stays what the runs could not lay: none here
-  - L1044 ...fixture: the city has a gateway, so the line's absence is the rule's
-  - L1045 ...and the world lines hold no highway line
-  - L1050 some count of at most
-  - L1054 ...one fewer does not (
-  - L1055 ...and has no highway plot in a whole-box fill
-  - L1056 at
-  - L1058 at 100 Elevated Highways and 10 Freight Lines
+  - L248 with gateway
+  - L249 ...and only the
+  - L264 ...laid past the edge, the
+  - L267 ...and no highway plot lies outside the box
+  - L279 ...and taking back fewer plots takes from the
+- **L289 1. a strip of land east**
+  - L294 a strip east gives a gateway
+  - L295 ...whose bearing is east (0)
+  - L296 ...and whose bearing is a multiple of the step
+  - L299 ...and whose point lies on the city's edge on that bearing
+  - L302 ...and is the city's radius out
+- **L305 2. an island founding**
+  - L312 land only within a small disc round the site has no gateway
+- **L315 3. a tie**
+  - L322 equal arms east and south tie, and the gateway is one of the two lone tied bearings
+  - L324 ...and the tied bearing is a multiple of the step
+  - L327 ...and its point lies on the city's edge on that bearing
+  - L338 two founding sites in the same cell pick different tied bearings (the hash, not the smaller bearing)
+  - L339 ...one picks east
+  - L340 ...and the other picks south
+  - L342 no two offsets in the cell pick differently; the site's own pick is one of the two
+- **L345 4. a half-plane of land west**
+  - L349 every westward bearing runs to the cap, and the gateway is the middle of that arc (180)
+- **L352 5. the threshold**
+  - L356 a strip one cell short of the reach has no gateway
+  - L360 a strip that just reaches has one
+  - L361 ...on the east bearing
+- **L363 6. the default world**
+  - L369 the default world's gateway is deterministic
+  - L372 ...its point lies on the city's edge on that bearing
+  - L376 ...and the cell at its point is land
+  - L384 ...with none, its best land run is short of the reach
+- **L389 7. twelve real generated worlds**
+  - L398 at least one of the twelve worlds has a gateway
+- **L400 8. a full tie is not due east for everyone**
+  - L412 an all-land ground finds a gateway at each of 24 founding sites
+  - L413 ...and every full tie's bearing is a multiple of the step
+  - L414 ...with at least 6 distinct bearings among them
+- **L417 9. the Earth's rule**
+  - L421 one larger place due north wins the north bearing (270)
+  - L427 a nearer place whose way is sea is passed over for the farther clear one (east)
+  - L431 an empty Earth list falls back to the land rule's own answer
+  - L433 ...and a null list does too
+- **L435 10. the spine is laid toward the gateway**
+- **L440 11. no gateway lays as before**
+  - L455 with no gateway the row's two arms both grow first
+  - L456 ...and no column arm has grown yet
+- **L458 12. the sidecar keeps it**
+  - L467 the catalog has a highway type
+  - L471 a square city's runs have found a gateway (or found none)
+  - L474 FORMAT 8 writes the gateway and reads it back the same
+  - L477 a FORMAT 7 sidecar reads it back unknown
+  - L479 ...and the next layRuns finds the same gateway again
+- **L481 13. what finding one costs**
+- **L490 14. the world line**
+  - L494 the catalog has a highway and a track type
+  - L497 the fixture has a gateway
+  - L505 a world line's net is a highway or the railway
+  - L507 ...its bearing is the gateway
+  - L509 ...its point is ground the city does not own
+  - L514 ...and the plot one step back along the gate arm's heading is owned
+  - L517 worldLines() has one line for the highway, whose gate arm is laid
+  - L518 ...and one for the railway, whose gate arm is laid
+  - L521 with NO_GATEWAY set there are no world lines
+- **L523 15. the cache**
+  - L530 two calls with nothing changed return equal lists
+  - L536 a month's runs move changes()
+  - L538 after the runs move, the world lines are recomputed equal to a fresh map's
+  - L673 ...and on dry ground
+  - L674 ...at the end of a laid arm's track
+  - L675 ...within WORLD_GAP plots of it along its heading
+  - L676 ...every plot between the arm's end and the point owned and dry
+  - L677 ...its reach from TrainSchedule.WORLD_PLOTS to CityMap.WORLD_REACH
+  - L678 ...every point along its way, every WORLD_STEP, on dry ground
+  - L679 ...and it runs as far as the land does: the next point is not dry, or the reach is the most
+  - L704 ...every route's first point is WORLD_PLOTS out along the line's way
+  - L705 ...it passes the line's point, within the curve's radius (FX5: its turns are rounded)
+  - L706 ...and the main arm's end plot's middle, within the radius: the train meets the line where the track ends
+  - L707 ...no point of any leg on water off the track
+- **L723 the line to the world leaves on land, on a generated coast**
+  - L730 fixture: the coast city has a gateway and a railway whose gate arm is laid
+  - L736 fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water
+  - L738 the coast
+  - L741 the coast: the railway has a line, so the checks above are not vacuous
+  - L742 ...and its main arm is not the gate arm
+- **L753 the coast's months: the line on land as the city grows**
+  - L773 the coast's months: some months have a world line and trains' routes, so the run exercised the rule
+  - L774 ...and no month has a line's point or a train position on water off the track
+- **L779 Halifax on the Earth, when earth-2.bin is named**
+  - L783 the file -D
+  - L806 fixture: Halifax has a gateway and a railway whose gate arm is laid
+  - L812 fixture (ET6): Halifax's railway gate arm no longer waits at the harbour - it bridges the shallow water to the city's edge, so FR0's walk crosses none of the...
+  - L814 Halifax
+  - L817 Halifax: the railway has a line, so the checks above are not vacuous
+  - L819 the Earth's file opens:
+  - L847 ...the label is placed
+  - L850 ...its box lies inside the view by WORLD_LABEL_PAD on every side
+  - L851 ...its baseline's left end on the line's part
+  - L854 ...at the first place from FR0's spot that fits: a pixel nearer the far end does not
+- **L860 the label stays in view**
+  - L861 a line leaving the right edge
+  - L862 a line leaving the top edge
+  - L863 a line leaving the bottom edge
+  - L864 a line leaving the top right corner
+  - L867 a line ending well inside the view keeps FR0's spot, WORLD_LABEL_BACK from its far end
+  - L876 a part of
+  - L878 ...the label still lies inside the view
+  - L880 a part of no length has no label
+  - L881 a view smaller than the label and its pads has none either
+- **L898 two lines leaving together get labels apart, or one**
+  - L903 fixture: two parts three pixels apart on one bearing are both placed by worldLabelAt() alone
+  - L904 ...and, drawn so (as MapView did), their boxes overlap: the words print over each other
+  - L910 fixture: two parts of 100 px, three apart, fit no label anywhere on them, and worldLabelAt() puts both on one spot
+  - L915 worldLabels() gives each of two parts leaving together a label
+  - L919 ...the first keeps worldLabelAt()'s place to the pixel
+  - L920 ...the boxes are clear of each other by WORLD_LABEL_PAD
+  - L921 ...each lies inside the view by WORLD_LABEL_PAD, on its own part
+  - L923 ...and each names its own line: neither is shared
+  - L927 ...the five-argument form reads the shared words' width off the characters and places the same
+  - L932 two parts with no clear place anywhere have one label between them: the first names both, the second has none
+  - L938 ...and, the shared words being wider, it lies whole inside the view
+  - L946 lines on opposite sides of the view keep worldLabelAt()'s places to the pixel
+  - L949 ...and neither is shared
+  - L954 a part of no length has no label, nor has a line with no part
+  - L955 ...and the line after them keeps worldLabelAt()'s place
+  - L956 a call with no parts returns no labels
+  - L1049 ...the highways are drawn: there is a piece
+  - L1050 ...every highway plot drawn lies in a piece holding a ramp on a cell line
+  - L1051 ...the drawn plots and highwayUndrawn() are the model's highway plots
+  - L1052 ...none is undrawn but what the runs could not lay
+- **L1057 a highway that reaches no street is not drawn**
+  - L1061 fixture: with one Elevated Highway the runs laid it
+  - L1062 ...it reaches no arterial's ramp: highwaysReach() is false
+  - L1064 ...a fill over the city's whole box holds no highway plot
+  - L1065 ...highwayUndrawn() is the model's highway plots
+  - L1066 ...highwayShort() stays what the runs could not lay: none here
+  - L1067 ...fixture: the city has a gateway, so the line's absence is the rule's
+  - L1068 ...and the world lines hold no highway line
+  - L1073 some count of at most
+  - L1077 ...one fewer does not (
+  - L1078 ...and has no highway plot in a whole-box fill
+  - L1079 at
+  - L1081 at 100 Elevated Highways and 10 Freight Lines
+- **L1106 the coast across a save: the map after a load is the map before it**
+  - L1125 fixture: at the month saved the railway's gate arm waits at the sea
+  - L1126 ...and the main line runs on past it: an arm after the gate arm in the spine's order is laid
+  - L1131 the sidecar written then reads back
+  - L1132 ...a FORMAT 12 sidecar of the same map reads back too
+  - L1134 ...the map read back is the live map: same()
+  - L1135 ...every arm of both nets holds what last stopped it, as the live arm does
+  - L1136 ...written again at once, it is the same file as the live map's, byte for byte
+  - L1161 every month after the load is compared:
+  - L1162 ...and in none the map read back, or the sidecar it writes, differs from the live map's
+  - L1165 fixture: read back from FORMAT 12 the railway is shorter the month after (the main line taken back past the sea and laid again)
 
 ## GdpCheck.java - 140 labelled assertions
 
@@ -16823,35 +16834,35 @@ _(this harness does not label its checks through a helper - it prints its findin
 > JSON compared leaf by leaf. Every history series matched for 24 months; the
 > ...
 
-  - L285 saving
-  - L299 markets that imported
-  - L300 markets that exported
-  - L309 sectors with shares this month
-  - L310 sectors with shares last month
-  - L314 weights above zero
-  - L315 the price index: rent weight
-  - L316 the price index: food weight
-  - L346 sectors that counted a revaluation
-  - L347 ...of them one not zero
-  - L352 crews that drew materials
-  - L353 Construction: isDrawnKnown
-  - L354 Construction: drawn at home
-  - L355 Construction: drawn imported
-  - L358 investment notes the live city left
-  - L380 the report: outbreaks
-  - L381 the report: months in outbreak
-  - L382 the report: months sick
-  - L383 the report: worst work ratio
-  - L384 the report: peak unburied
-  - L430 fixture: the history holds more than a hundred series with the month's entry, at every checkpoint
-  - L448 fixture: the save holds over 10,000 numbers, at every checkpoint
-- **L459 3. the causes, one by one**
-  - L469 fixture 3f: time skips were run on both cities from the same month
-  - L474 3f.
-  - L482 fixture
-  - L497 the file -D
-- **L534 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
-- **L540 4. on the real Earth**
+  - L288 saving
+  - L302 markets that imported
+  - L303 markets that exported
+  - L312 sectors with shares this month
+  - L313 sectors with shares last month
+  - L317 weights above zero
+  - L318 the price index: rent weight
+  - L319 the price index: food weight
+  - L349 sectors that counted a revaluation
+  - L350 ...of them one not zero
+  - L355 crews that drew materials
+  - L356 Construction: isDrawnKnown
+  - L357 Construction: drawn at home
+  - L358 Construction: drawn imported
+  - L361 investment notes the live city left
+  - L383 the report: outbreaks
+  - L384 the report: months in outbreak
+  - L385 the report: months sick
+  - L386 the report: worst work ratio
+  - L387 the report: peak unburied
+  - L433 fixture: the history holds more than a hundred series with the month's entry, at every checkpoint
+  - L451 fixture: the save holds over 10,000 numbers, at every checkpoint
+- **L462 3. the causes, one by one**
+  - L472 fixture 3f: time skips were run on both cities from the same month
+  - L477 3f.
+  - L485 fixture
+  - L500 the file -D
+- **L537 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
+- **L543 4. on the real Earth**
 
 ## RestaurantsCheck.java - 36 labelled assertions
 
