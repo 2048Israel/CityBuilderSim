@@ -54,6 +54,8 @@ import java.util.List;
  *   JOIN    the street pieces joined to the largest along the lattice, and
  *           (0.7.88, ACROSS DISTRICTS) to the streets of the districts
  *           before it in the map's order where they meet its frame's edge;
+ *           (FW11) a piece only buildings wall in is joined by the way over
+ *           the fewest of them, kept clear when the plan is made again;
  *   SURFACE the model's gravel and paved (and any highway plots given:
  *           none from the map since 0.7.89) as the streets' surface: every
  *           street half width, arterials first, then by its cell's rank,
@@ -443,6 +445,12 @@ public final class DistrictPlan {
 
     /** The join's steps in the prototype's order: south, north, east, west - so of two ways as short it takes the prototype's. */
     static final int[] JOIN_DX = { 0, 0, 1, -1 }, JOIN_DY = { 1, -1, 0, 0 };
+
+    /** The most plots of buildings the way to a street piece they wall in may cross, to be kept clear of them (FW11): 16, two lattice blocks' depth; a piece that needs more is left apart, as it was before. */
+    static final int WALL_MOST = 2 * LATTICE;
+
+    /** The most times a plan is made again with the ways to the pieces its buildings wall in kept clear (FW11): 3; a piece still walled in then is left apart, as before. */
+    static final int WALL_TRIES = 3;
 
     /** A street's least surface, in plots of its right of way: a half, 15 m (spec 2.5). */
     public static final double HALF = 0.5;
@@ -954,6 +962,9 @@ public final class DistrictPlan {
     /** Pieces the join joined; dead ends joined along a cut; street plots taken up as strays; merges refused for splitting the network; buildings placed on a field. */
     public int joins, shoreJoins, strays, mergesRefused, onFields;
 
+    /** How many times the plan was made again with the way to a piece the buildings wall in kept clear of them (FW11, A PIECE BUILDINGS WALL IN; 0 for nearly every district), and the plots so kept clear in the plan returned. */
+    public int wallTries, wallClear;
+
     /** Merges in a homes cell of a varied layout made and then undone (CL2): the stubs they left could not all be taken up, or a building near them would have lost its street within REACH. */
     public int mergesUndone;
 
@@ -1022,9 +1033,22 @@ public final class DistrictPlan {
             if (b == null || !b.busy) BUILDERS.set(new java.lang.ref.SoftReference<>(fresh));
             b = fresh;
         }
+        b.releaseClear();
         b.start(in);
         try {
-            return ladder(b);
+            DistrictPlan p = ladder(b);
+            // (FW11) A piece the buildings wall in has no way over free ground: the way over them is kept clear and the plan made again,
+            // the buildings on it finding other lots - a pure function still, of the input alone.
+            int again = 0;
+            while (b.nWallPend > 0 && again < WALL_TRIES) {
+                b.keepWallClear();
+                b.start(in);
+                p = ladder(b);
+                again++;
+            }
+            p.wallTries = again;
+            p.wallClear = b.nClear;
+            return p;
         } finally {
             b.finish();
         }
@@ -1387,6 +1411,8 @@ public final class DistrictPlan {
             // ...and its staircase's own plots: no building stands where an avenue is laid, or will be once the ground between
             // joins it (avAlone()); where it is laid they are streets, and where it never can be (water, a yard) no building's.
             for (int i = 0; i < nAvList; i++) blocked[avList[i]] = true;
+            // ...and the ways kept clear for the join of a piece the buildings wall in (FW11).
+            for (int i = 0; i < nClear; i++) blocked[clearAt[i]] = true;
             for (int y = 0; y < FRAME; y++) vergeWideRow(y);
             for (int y = 0; y < FRAME; y++) vergeRow(y);
             // Fresh water's runs along each row, and down each column read a row at a time (a column's run ends where its
@@ -2540,6 +2566,7 @@ public final class DistrictPlan {
             for (int[] u : bUnplaced) over[bandType[u[0]][u[1]]]++;
             out.overflowLog = overflowLog();
             // ONE NETWORK: the pieces joined along the lattice, and to the districts before it (spec 2.4, "Across districts").
+            nWallPend = 0;
             out.joins = join();
             partedOutCount = 0;
             out.joinsOut = joinOut();
@@ -4435,7 +4462,7 @@ public final class DistrictPlan {
                 boolean b = blocked[p] | verge != 0;
                 blocked[p] = b;
                 occStart[p] = (byte) (b ? -1 : 0);
-                boolean fo = field & rowIn & x % CELL != 0 & x < SIDE & site[p] == SITE_FIELD & dry[p] & fixed[p] == 0 & verge == 0 & !avOuter[p] & avMark[p] == 0;
+                boolean fo = field & rowIn & x % CELL != 0 & x < SIDE & site[p] == SITE_FIELD & dry[p] & fixed[p] == 0 & verge == 0 & !avOuter[p] & avMark[p] == 0 & !keepClear[p];
                 fieldOk[p] = fo;
                 if (!b) openBits[base + (x >>> 6)] |= bit;
                 if (fo) fieldBits[base + (x >>> 6)] |= bit;
@@ -5785,7 +5812,10 @@ public final class DistrictPlan {
          * lattice, then over the ground (H2) - from its own plots, which is
          * the same way back as the prototype's search from the largest and
          * walks only the piece's own side of whatever parts it; a piece no
-         * way leaves is parted by the ground and left. The pieces joined.
+         * way leaves is parted and left - after a way over the plots of
+         * buildings that wall it in is looked for, and kept clear for the
+         * plan made again (FW11, A PIECE BUILDINGS WALL IN). The pieces
+         * joined.
          */
         int joinFromSmall() {
             int[] lab = scratchLab, prev = scratchPrev, q = queue;
@@ -5811,7 +5841,12 @@ public final class DistrictPlan {
                         joinTail = seedPiece(pc, lab, prev, q, st);
                         while (qh < joinTail && hit < 0) hit = joinStep(q[qh++], way, pc, st, lab, prev);
                     }
-                    if (hit < 0) { markPartedPiece(rep[pc]); continue; }
+                    if (hit < 0) {
+                        // (FW11) No way over free ground: if buildings wall the piece in (the ground does not part it), the way over them is kept clear for the plan made again.
+                        wallRoute(pc, lab, prev);
+                        markPartedPiece(rep[pc]);
+                        continue;
+                    }
                     for (int p = prev[hit]; p >= 0 && !((str[p] || under[p]) && lab[p] == pc); p = prev[p]) layJoin(p);
                     joined++;
                     any = true;
@@ -5820,6 +5855,104 @@ public final class DistrictPlan {
                 if (!any) break;
             }
             return joined;
+        }
+
+        /*
+         * A PIECE BUILDINGS WALL IN (FW11). join() and joinFromSmall() walk the
+         * ground between pieces but never over a building, so a piece the
+         * buildings enclose - with ground the city does not own, a mine's site
+         * or the sea - had no way and was marked parted, though the ground
+         * itself does not part it (PlanCheck's rule, MapCheck 8's: "a piece
+         * buildings wall in is the plans' to join"). The piece was seen in W1's
+         * iron cluster (0.7.99) and, since PT1-M4, in MapCheck's played city:
+         * ground bought after its cell was planned (FX6) took houses and no
+         * street. Now a piece with no way over free ground looks for the way
+         * that crosses the fewest plots of buildings (wallJoin(), at most
+         * WALL_MOST), and that way - every plot of it - is kept clear of
+         * buildings (Builder.keepClear): make() plans the district again, the
+         * buildings that stood on it find other lots - in the district if it
+         * has room, else they go on to the next as any building a district has
+         * no place for - and the join lays the street over the free ground.
+         * At most WALL_TRIES times; a piece still walled in then, or that
+         * needs more than WALL_MOST plots, is parted as before. A building on
+         * a site (a mine, a well) is not the way's to cross.
+         */
+
+        /** The join's ground over a building (FW11): as groundJoinable(), on a plot a building stands on too - but not a building on a site. */
+        boolean wallJoinable(int a, boolean horizontal) {
+            if (!owns[a] || in.terrain[a] == World.SALT || unfit[a] || in.site[a] == SITE_MINED) return false;
+            if (occ[a] > 0 && in.site[a] != 0) return false;
+            boolean arterial = horizontal ? (a / FRAME) % CELL == 0 : (a % FRAME) % CELL == 0;
+            if (World.bridgeable(in.terrain[a]) && (horizontal ? hRun[a] : vRun[a]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
+            return fx[a] == 0 || (!works(fx[a]) && !along(fx, a, horizontal));
+        }
+
+        /**
+         * The walk of joinFromSmall()'s third way (FW11): from piece pc's plots, breadth first over the ground and the buildings' plots
+         * (wallJoinable()), the plots reached through the fewest buildings' plots first, to the first street of another piece. That plot,
+         * the way back in prev; -1 when none lies within WALL_MOST plots of buildings.
+         */
+        int wallJoin(int pc, int[] lab, int[] prev) {
+            int[] q = queue, next = pieceStack;
+            int st = ++joinStamp;
+            int qh = 0, qt = seedPiece(pc, lab, prev, q, st), nt = 0, level = 0, hit = -1;
+            while (hit < 0) {
+                while (qh < qt && hit < 0) {
+                    int u = q[qh++];
+                    int ux = u % FRAME, uy = u / FRAME;
+                    for (int d = 0; d < 4; d++) {
+                        int ax = ux + JOIN_DX[d], ay = uy + JOIN_DY[d];
+                        if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
+                        int a = ay * FRAME + ax;
+                        if (joinSeen[a] == st || !wallJoinable(a, JOIN_DY[d] == 0)) continue;
+                        joinSeen[a] = st;
+                        prev[a] = u;
+                        if ((str[a] || under[a]) && lab[a] != pc) { hit = a; break; }
+                        if (occ[a] > 0) next[nt++] = a; else q[qt++] = a;
+                    }
+                }
+                if (hit >= 0 || nt == 0 || ++level > WALL_MOST) break;
+                // The plots one more building's plot away are the walk's front now.
+                System.arraycopy(next, 0, q, 0, nt);
+                qh = 0;
+                qt = nt;
+                nt = 0;
+            }
+            return hit;
+        }
+
+        /** The way over the buildings from piece pc (wallJoin()), plot by plot, added to those make() keeps clear when it plans the district again (wallPend); none when the ground parts the piece. */
+        void wallRoute(int pc, int[] lab, int[] prev) {
+            int hit = wallJoin(pc, lab, prev);
+            if (hit < 0) return;
+            for (int p = prev[hit]; p >= 0 && !((str[p] || under[p]) && lab[p] == pc); p = prev[p]) {
+                if (nWallPend == wallPend.length) wallPend = Arrays.copyOf(wallPend, nWallPend * 2);
+                wallPend[nWallPend++] = p;
+            }
+        }
+
+        /** The ways found by the plan being made (complete() begins them afresh), and those kept clear of buildings in this make() (keepClear, clearAt): ground() bars them. */
+        int[] wallPend = new int[64], clearAt = new int[64];
+        int nWallPend, nClear;
+        final boolean[] keepClear = new boolean[AREA];
+
+        /** A make() begins with nothing kept clear. */
+        void releaseClear() {
+            for (int i = 0; i < nClear; i++) keepClear[clearAt[i]] = false;
+            nClear = 0;
+            nWallPend = 0;
+        }
+
+        /** The ways the last plan found, kept clear for the next. */
+        void keepWallClear() {
+            for (int i = 0; i < nWallPend; i++) {
+                int p = wallPend[i];
+                if (keepClear[p]) continue;
+                keepClear[p] = true;
+                if (nClear == clearAt.length) clearAt = Arrays.copyOf(clearAt, nClear * 2);
+                clearAt[nClear++] = p;
+            }
+            nWallPend = 0;
         }
 
         /**

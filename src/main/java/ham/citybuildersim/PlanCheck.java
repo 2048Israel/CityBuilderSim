@@ -130,6 +130,17 @@ import java.util.List;
  *      ground from the start; a run laid after the log's last month, or after
  *      the first batch of a log that is one batch, moves nothing and the plan
  *      is drawn on today's runs; and a pure function.
+ *  17. no street piece walled in by buildings (batch FW11; DistrictPlan's A
+ *      PIECE BUILDINGS WALL IN): MapCheck 1's city, every district as the map
+ *      draws it (the carry from the districts before it), keeps every check -
+ *      the played city's first district stood with a street piece only its
+ *      buildings and ground the city does not own enclosed, which the join,
+ *      walking free ground alone, left apart; now the way over the buildings
+ *      that close it is kept clear and the district planned again, so its
+ *      buildings find other lots and the join lays the street; the case
+ *      counted across this harness's cities and MapCheck's; a pure function;
+ *      and the same districts with no log (the plan with no events) keep every
+ *      check and every building, placed or left out.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -330,6 +341,7 @@ public class PlanCheck {
         curves(types);
         runsDated(types);
         farBank(types);
+        walledIn();
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -983,6 +995,8 @@ public class PlanCheck {
     /** Every district of a map planned: how many keep each check, what they draw, what has no place, and what a plan costs. */
     static final class Tally {
         int districts, held, network, apart, floor, reach, onStreet, surface, beside, estate, mines, minesBeyond;
+        /** Districts planned again with the way to a piece the buildings wall in kept clear (FW11), and the plots so kept clear in them. */
+        int walled, kept;
         long buildings, placed, overflow, overflowPlots, needPlots, streets, tracks, seams, under, surplusDistricts;
         double surplus, worstFill, worstLost;
         String worstWhere = "", firstFail = "";
@@ -1029,6 +1043,8 @@ public class PlanCheck {
                     f.gravel, f.paved, f.highway, in.gravel, in.paved, in.highway, f.besideHighway);
             if (f.pieces <= 1) network++;
             else if (f.groundParts) apart++;
+            if (p.wallTries > 0) walled++;
+            kept += p.wallClear;
             if (f.closestPlus >= DistrictPlan.LATTICE) floor++;
             if (f.outOfReach == 0) reach++;
             if (f.onStreet == 0) onStreet++;
@@ -1106,6 +1122,7 @@ public class PlanCheck {
                     pct(overflowPlots, needPlots), streets, tracks, seams, under, mines, minesBeyond);
             out.printf("      ...checks kept: all %d; one network %d (+%d the ground parts), + floor %d, reach %d, none on a street %d, surface %d, none beside a highway %d,"
                     + " T junctions only in an estate cell %d%n", held, network, apart, floor, reach, onStreet, surface, beside, estate);
+            if (walled > 0) out.printf("      ...pieces the buildings wall in (FW11): %d district(s) planned again with the way to them kept clear, %d plot(s) so kept%n", walled, kept);
             if (surplusDistricts > 0) out.printf("      ...road the ladder could not hold: %,.1f plots in %d district(s)%n", surplus, surplusDistricts);
             out.printf("      ...fullest district %s: buildings and road %.1f%% of its dry ground, %.2f%% of its buildings' ground with no place%n",
                     worstWhere, 100 * worstFill, 100 * worstLost);
@@ -1180,6 +1197,7 @@ public class PlanCheck {
         Tally t = new Tally();
         for (CityMap.District d : x1.districts()) t.add(x1, d, true);
         t.report("his city x 1");
+        count(t);
         check("every district of his city x 1 keeps every check", t.allHold());
         check("...in one network, each", t.network == t.districts);
         // The dense copy's screen (MapCheck 3 and 5): 18 x 11 tiles at its site, and the districts they show.
@@ -1200,6 +1218,7 @@ public class PlanCheck {
         Tally ts = new Tally();
         for (CityMap.District d : shown) ts.add(dense, d, true);
         ts.report("the dense screen's districts (x " + String.format("%,.0f", MapCheck.TIMES[MapCheck.DENSE]) + ")");
+        count(ts);
         double sum = 0;
         for (double v : ts.planMs) sum += v;
         out.printf("      ...the screen's %d districts: planned from nothing (inputs read from the world and plans, the JVM cold) in %.0f ms;"
@@ -1261,6 +1280,7 @@ public class PlanCheck {
             LongPlaytest.out = was;
         }
         t.report("month " + g.getMonth() + ", " + samples + " samples");
+        count(t);
         check("at every " + MapCheck.DRAWN_EVERY + "th month every district's plan keeps every check", t.allHold() && samples == MapCheck.MONTHS / MapCheck.DRAWN_EVERY);
         playedAvenues = t.av.clone();
         playedCurves = t.cv.clone();
@@ -3905,6 +3925,83 @@ public class PlanCheck {
         out.printf("      (b) %.1f plots of gravel: %.1f on the network (%.0f at full width), %.1f on the far bank%n", bb, wb[0], netCap, wb[1]);
         check("(b) the network takes its full width first, and the far bank only what is left (" + (bb - netCap) + ")",
                 Math.abs(wb[0] - netCap) < 1e-9 && Math.abs(wb[1] - (bb - netCap)) <= DistrictPlan.HALF && wb[2] == zero[2] && wb[3] == zero[3]);
+    }
+
+    /* ----- 17. a street piece buildings wall in (FW11) ----- */
+
+    /** The districts of this harness's cities (sections 5 and 6), those planned again to join a piece the buildings wall in, the plots so kept clear, and the districts still left with a piece the ground does not part (FW11). */
+    static int citiesDistricts, citiesWalled, citiesKept, citiesLeft;
+
+    /** A section's tally of one city added to the cities' (FW11). */
+    static void count(Tally t) {
+        citiesDistricts += t.districts;
+        citiesWalled += t.walled;
+        citiesKept += t.kept;
+        citiesLeft += t.districts - t.network - t.apart;
+    }
+
+    static void walledIn() throws Exception {
+        out.println("\n--- 17. no street piece walled in by buildings: MapCheck 1's city, every district as the map draws it, the carry from the districts before it (FW11) ---");
+        Path root = TempDirs.create("plancheck-walled");
+        PrintStream was = MapCheck.out;
+        MapCheck.out = QUIET;
+        Game g;
+        try {
+            g = MapCheck.playedCity(root);
+        } finally {
+            MapCheck.out = was;
+        }
+        CityMap map = g.getCityMap();
+        // The plans the map draws, each from its job's input - the ground, what the districts before it carried to it and what it reads of
+        // them - and not from planInput(d), which has no carry: the case stood in the drawn plan of the first district, where the
+        // second's carry was not yet.
+        map.forgetPainted();
+        Tally t = new Tally();
+        boolean pure = true, bounded = true;
+        List<DistrictPlan.Input> walledIns = new ArrayList<>();
+        for (CityMap.District d : map.districts()) {
+            for (CityMap.Job j : map.planJobs(d)) {
+                j.run();
+                map.adopt(j);
+                if (!(j instanceof CityMap.PlanJob pj)) continue;
+                DistrictPlan p = DistrictPlan.make(pj.in);
+                t.add(p, pj.in, "district (" + pj.d.dx + ", " + pj.d.dy + ")");
+                if (p.wallTries > 0) walledIns.add(pj.in);
+                DistrictPlan again = DistrictPlan.make(pj.in);
+                pure &= placedDigest(p) == placedDigest(again) && streetDigest(p) == streetDigest(again) && p.wallTries == again.wallTries && p.wallClear == again.wallClear;
+                bounded &= p.wallTries <= DistrictPlan.WALL_TRIES && (p.wallTries == 0) == (p.wallClear == 0);
+            }
+        }
+        t.report("MapCheck 1's city, month " + g.getMonth());
+        int left = t.districts - t.network - t.apart;
+        out.printf("      the case (a street piece only buildings, or buildings and ground the city does not own, enclose): in MapCheck's city %d of %d district(s) -"
+                + " planned again with the way kept clear in %d (%d plots), %d left (before the fix %d of %d)%n", t.walled + left, t.districts, t.walled, t.kept, left,
+                t.walled + left, t.districts);
+        out.printf("      ...in this harness's cities (sections 5 and 6): %d of %d district(s) - planned again in %d (%d plots), %d left%n",
+                citiesWalled + citiesLeft, citiesDistricts, citiesWalled, citiesKept, citiesLeft);
+        check("fixture: a district of the played city stood with a street piece the buildings enclose (planned again with the way kept clear in " + t.walled + " of " + t.districts + ")", t.walled > 0);
+        check("every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface", t.allHold());
+        check("...none left with a piece the ground does not part, in MapCheck's city or this harness's", left == 0 && citiesLeft == 0);
+        check("...planned again at most " + DistrictPlan.WALL_TRIES + " times, and plots kept clear only in a district planned again", bounded);
+        check("...and a pure function: the same district, the same plan, boxes and streets, the same ways kept clear", pure);
+        // The same districts with no log - their counts and their carry, the first batch alone, no events: the join's way kept clear and
+        // every building placed or sent on, once (placed and left out = counts + carry).
+        Tally n = new Tally();
+        boolean whole = true;
+        for (DistrictPlan.Input in : walledIns) {
+            int types = in.types.length;
+            long want = 0;
+            int[] carried = in.carry == null ? new int[types] : CityMap.countsOf(in.carry, types);
+            for (int k = 0; k < types; k++) want += Math.max(0, k < in.counts.length ? in.counts[k] : 0) + carried[k];
+            in.logMonth = null;
+            in.logType = null;
+            in.logChange = null;
+            DistrictPlan p = DistrictPlan.make(in);
+            n.add(p, in, "district with no log");
+            whole &= p.buildings + p.overflowCount() == want;
+        }
+        out.printf("      ...with no log: %d district(s) of them, %d planned again, %d plots kept clear%n", n.districts, n.walled, n.kept);
+        check("...the same districts planned with no log keep every check, and every building is placed or left out, once", n.allHold() && whole);
     }
 
 }
