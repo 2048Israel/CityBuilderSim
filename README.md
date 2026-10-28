@@ -376,7 +376,8 @@ published manual into the two files under `docs/` described above, and a
 fifth, `tools.Names`, lists the names a branch's new text uses that the tree
 does not declare (`ship.sh` runs it on ChatGPT's and Gemini's branches). `CLAUDE.md` at the root is the
 briefing an AI session reads first — the standing rules and where everything
-is; how a batch is done, checked and shipped is `docs/batch.md`.
+is; how a batch is done, checked and shipped is `docs/batch.md` (a batch
+session) and `docs/orchestrator.md` (the orchestrator).
 
 Beyond that, the code is the documentation. Class headers carry a `WHY` section
 explaining what the thing replaced and what went wrong with the previous

@@ -18,6 +18,11 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### BM1 — the batch manual split by reader, and one in, one out — 2026-10-28, ready, no tag (docs), see docs/queue/BM1-notes.md
+`docs/batch.md` was 499 lines and every batch session read all of it, though it needs about the 130 of "A batch session". It is now that checklist alone (10 steps, to a pushed branch with its ship file last), and the orchestrator's part (the day, the gate, the screen-check session, the PC, the Earth file, the other assistants, which model, the docs pass) is the new `docs/orchestrator.md`; `CLAUDE.md` names both and says who reads which.
+Every rule TM3, GP1, RL1 and SP1 added is kept, each with a one-line WHY naming its incident; the lessons (a)-(f) and the longer stories are `docs/notes/batch-history.md`. A batch's report is now "ready, see the ship file" plus its ★ calls with recommendations.
+One in, one out is a standing rule in `CLAUDE.md` (Jerus, 2026-10-27): a batch that changes the process removes about as many lines as it adds, and its notes give the count. BM1's own: a batch session reads 391 lines (`CLAUDE.md` and `docs/batch.md`) where it read 750, the orchestrator 657; 479 lines added, 511 removed.
+
 ### SC1 — ScaleCheck's "...and it builds" already green; its landlords in the log — 2026-10-27, ready, no tag (a check), see docs/queue/SC1-notes.md
 The red the batch was queued for (Jerus, 2026-10-20, "Queue a check fix"), the ten-billion copy's "...and it builds: more homes at the end than at the start", was FR7's finding at the fixture month 600; XR1 (622) and PT1-M4 (807, every assertion holding from 792 to 822) rescanned the month since, and on main it is green for both copies, so no scan and no fixture change was needed.
 What the batch added is the brief's third item: `ScaleCheck.Lender` counts the landlords' mortgage orders in the months read, the city's and each copy's - how many the lender passed, held for the down payment and declined on the rent - and prints them (6 of 6 passed at 807; the 10-billion copy ordered none), so a later model change that moves the lender's verdict shows in the log. Printed, not asserted; the fixture's household places are printed too.

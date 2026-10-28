@@ -42,7 +42,7 @@ there.
   - Freight's operations page draws Haulage's and the quay's figures twice: FR4's division strip, and below it the
     ITS OWN FIGURES grid of Freight.ownLines(), which still lists them under the railway - meant, or a leftover?
   - The suite ran in 800 and 917 s on the PC on 2026-10-22 (no other batch's JVM), against the "about nine minutes" README
-    and docs/batch.md give (CLAUDE.md gave it until BP1); a slower PC that day, or a suite grown by seven harnesses since?
+    and docs/orchestrator.md give (CLAUDE.md gave it until BP1); a slower PC that day, or a suite grown by seven harnesses since?
   - The 2026-10-19 pass's four flags (Freight.getKept(), MapView's legend rows, MapCheck's trackSurplus() labels,
     BuildingManager's RAIL example) are still open; the Rail build card's owner was FR4's, done.
 

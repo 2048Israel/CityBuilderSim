@@ -16,7 +16,8 @@ Your brief is `docs/docs-pass.md` at the repository root. Read it in full
 before doing anything, then follow it in order: regenerate the indexes, read
 every changed file's diff and the comments within reach of it, fix what is
 plainly wrong in the file's own voice and line endings, write the record, fix
-the counts in `README.md`, `CLAUDE.md` and `docs/batch.md`, and end with the
+the counts in `README.md`, `CLAUDE.md`, `docs/batch.md` and
+`docs/orchestrator.md`, and end with the
 report it asks for.
 
 Three rules from the brief bear repeating because a headless run has nobody
