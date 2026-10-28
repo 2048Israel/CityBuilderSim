@@ -4612,14 +4612,8 @@ public final class CityMap {
     private int tripStamp;
     private final int[][] tripQ = new int[TRIP_STREET_COST + 1][];
     private final int[] tripN = new int[TRIP_STREET_COST + 1];
-    /** The drawn plans the search box meets (at most 5 x 5 districts) by key, for streetCode(). */
-    private final long[] tripPlanKeys = new long[25];
-    private final Drawn[] tripPlanDrawn = new Drawn[25];
-    private int tripPlanN;
-    private final java.util.function.LongFunction<Drawn> tripPlans = dk -> {
-        for (int i = 0; i < tripPlanN; i++) if (tripPlanKeys[i] == dk) return tripPlanDrawn[i];
-        return null;
-    };
+    /** The drawn plans the search box meets by district key, read by streetAt() without planning (its `plan` false): a district missing here has none. */
+    private final Map<Long, Drawn> tripPlans = new HashMap<>();
 
     /** Forgets the street legs kept and the trips asked last, so the next tripsDrawn() makes them all again: a harness's, to time a warm remake. */
     void forgetTrips() {
@@ -4659,12 +4653,8 @@ public final class CityMap {
             tripMarks = new byte[area];
         }
         long bx0 = p.ox() - TRIP_REACH, by0 = p.oy() - TRIP_REACH;
-        tripPlanN = 0;
-        for (TripPlan q : plans) {
-            if (!meetsBox(q, bx0, by0) || tripPlanN >= tripPlanKeys.length) continue;
-            tripPlanKeys[tripPlanN] = q.d().key;
-            tripPlanDrawn[tripPlanN++] = q.dr();
-        }
+        tripPlans.clear();
+        for (TripPlan q : plans) if (meetsBox(q, bx0, by0)) tripPlans.put(q.d().key, q.dr());
         if (++tripStamp == Integer.MAX_VALUE) {
             Arrays.fill(tripSeen, 0);
             tripStamp = 1;
@@ -4741,7 +4731,7 @@ public final class CityMap {
             tripSeen[i] = tripStamp;
             tripDist[i] = Integer.MAX_VALUE;
             tripPrev[i] = -1;
-            int code = streetCode(bx0 + i % bw, by0 + i / bw, tripPlans) & 0xff, role = (code >> TilePainter.S_ROLE_SHIFT) & 3;
+            int code = streetAt(bx0 + i % bw, by0 + i / bw, tripPlans, false) & 0xff, role = (code >> TilePainter.S_ROLE_SHIFT) & 3;
             tripCost[i] = (byte) ((code & TilePainter.S_KIND) == DistrictPlan.NONE ? 0
                     : role == TilePainter.S_ARTERIAL || role == TilePainter.S_BOULEVARD || role == TilePainter.S_ACCESS ? 1 : TRIP_STREET_COST);
         }
@@ -6928,21 +6918,15 @@ public final class CityMap {
 
     /** ...the plans looked up through `seen`, by district key (null for none), which it fills. */
     private byte streetAt(long x, long y, Map<Long, Drawn> seen) {
-        return streetCode(x, y, dk -> {
-            if (seen.containsKey(dk)) return seen.get(dk);
-            District d = districtAt(dk);
-            Drawn dr = d == null ? null : drawnOf(d);
-            seen.put(dk, dr);
-            return dr;
-        });
+        return streetAt(x, y, seen, true);
     }
 
     /**
-     * ...the street code on world plot (x, y) read from the plans `plans` gives by district key (null for none): streetAt()'s rule
-     * with the lookup left to the caller - streetAt() draws a plan it is asked for (drawnOf()), the trips (FR9) pass the plans
-     * already drawn and plan nothing.
+     * ...and, `plan` false, from the plans in `seen` alone, a district missing there having none: the trips' way (FR9), which
+     * plans nothing. One method and no lookup object made a call (FR9's first cut passed a lambda a plot, and the far node over
+     * Rotterdam, which reads every plot of every tile through here, took twice main's time at the gate).
      */
-    private byte streetCode(long x, long y, java.util.function.LongFunction<Drawn> plans) {
+    private byte streetAt(long x, long y, Map<Long, Drawn> seen, boolean plan) {
         long dxl = Math.floorDiv(x, DISTRICT), dyl = Math.floorDiv(y, DISTRICT);
         int lx = (int) (x - dxl * DISTRICT), ly = (int) (y - dyl * DISTRICT);
         int ddx = (int) (dxl - baseDX), ddy = (int) (dyl - baseDY);
@@ -6951,7 +6935,15 @@ public final class CityMap {
         for (int c = 0; c < 4; c++) {
             int ox = c == 1 || c == 3 ? -1 : 0, oy = c >= 2 ? -1 : 0;
             if ((ox < 0 && lx != 0) || (oy < 0 && ly != 0)) continue;
-            Drawn dr = plans.apply(key(ddx + ox, ddy + oy));
+            long dk = key(ddx + ox, ddy + oy);
+            Drawn dr;
+            if (seen.containsKey(dk)) dr = seen.get(dk);
+            else if (!plan) dr = null;
+            else {
+                District d = districtAt(dk);
+                dr = d == null ? null : drawnOf(d);
+                seen.put(dk, dr);
+            }
             if (dr == null) continue;
             byte b;
             if (ox == 0 && oy == 0) b = dr.codeAt(lx, ly);
