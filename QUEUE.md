@@ -27,6 +27,7 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
+| SL1 | Fewer ports, and the sea lanes shared: a terminal carries what a real one does, so far fewer are built, and the ships share one lane out that branches only where their ways part; routes found once and cached, with timing checks; measured first in a late city (Jerus, 2026-10-28: "each port has its on lane, and also there are two billion ports ... one port can sustain alot ... its same lane that later diverages if needed"; "move it to the next batch"; "late cities thats probably the thing that slows down stuff the most") | [SL1](docs/queue/SL1.md) |
 | FR9 | One truck, one whole trip: in on the highway, off at a ramp, along the streets and down the access road to its works' gate, a district's trips by its tonnes (Jerus, 2026-10-20: "Queue it") | [FR9](docs/queue/FR9.md) |
 | WN0 | Nations: the world file - 196 nations, their borders, trade by pair and good, paths 2000-2100, sea distances; `tools/world/`, `WorldData`, its check (Jerus, 2026-10-20: "do rec"); Historical's real monthly exchange rates 2000-2025 for every money (XR3's table, Jerus 2026-10-21, ★11) | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
 | WN1 | Nations: each nation's year from the path (Historical or Random) and the seed, the founding screen's World step, saved; nothing reads them yet | [spec-nations §9](docs/studies/spec-nations.md#9-batches) |
