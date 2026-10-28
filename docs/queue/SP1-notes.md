@@ -152,8 +152,13 @@ and their WHY; `Timing` +8/-4; `TimingCheck` +18/-11). In all 215 and 91.
   the guard's first 80%). From 17:30 to 22:40 the PC stayed at 80-96% with no
   JVM of this batch's (at 19:40 Jerus's game, 2.3 GB, and NetBeans 1 GB; the
   gates of MP1 and SC1; the limit grew from 41.6 to 46.6 GB at 96% and fell
-  back to 43.3), so neither run could start under it. `--pick` waits on the
-  same and on RL1's merge (section 7).
+  back to 43.3), so neither run could start under it.
+- RL1 landed at 22:54 and `origin/main` is merged in (`c5b7042d`; conflicts
+  only in `docs/dials.md` and `docs/map/README.md`, main's side taken, for
+  the gate to regenerate; main touched none of SP1's files). **`./batch-check.sh
+  --pick` not run**: it waited from 22:55 to 23:25 for the PC to fall under 80%
+  (it stayed at 83%). Its 14 harnesses are the timing ones and TimingCheck, all
+  in the gate's suite, which is also the first full run of SP1's runner.
 
 ## 7. Left
 
