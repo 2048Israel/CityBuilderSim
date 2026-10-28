@@ -8,6 +8,12 @@ rem repository, so git leaves data\ out and the auto pull never brings it.
 rem It is the asset of the GitHub release "earth-2", and this fetches it from
 rem there when it is missing or does not match tools\earth\earth-2.sha256.
 rem
+rem "earth-1" or "world-1" as the second argument fetches that file instead:
+rem data\earth-1.bin (the bake's input, bake-earth-2.bat) or data\world-1.bin
+rem (the nations' world, WorldData.DATA_FILE, batch WN0; against
+rem tools\world\world-1.sha256). Nothing in the game reads world-1.bin yet, so
+rem Play CityBuilderSim.bat and Build EXE.bat do not ask for it.
+rem
 rem Play CityBuilderSim.bat and Build EXE.bat call it before they start; it
 rem can be double-clicked too. With nothing to fetch it only checks the
 rem file's SHA-256, which takes under a second. Exit code 0 when the file is
@@ -28,11 +34,23 @@ if not exist "tools\earth\get-earth.bat" (
 set "FILE=data\earth-2.bin"
 set "HASHFILE=tools\earth\earth-2.sha256"
 set "URL=https://github.com/2048Israel/CityBuilderSim/releases/download/earth-2/earth-2.bin"
+set "TAG=earth-2"
+set "SIZE=about 282 MB"
 rem "earth-1" as the second argument fetches earth-1.bin instead, the bake's input (bake-earth-2.bat).
 if /i "%~2"=="earth-1" (
     set "FILE=data\earth-1.bin"
     set "HASHFILE=tools\earth\earth-1.sha256"
     set "URL=https://github.com/2048Israel/CityBuilderSim/releases/download/earth-1/earth-1.bin"
+    set "TAG=earth-1"
+    set "SIZE=about 53 MB"
+)
+rem "world-1" as the second argument fetches world-1.bin, the nations' world (WN0), against tools\world\world-1.sha256.
+if /i "%~2"=="world-1" (
+    set "FILE=data\world-1.bin"
+    set "HASHFILE=tools\world\world-1.sha256"
+    set "URL=https://github.com/2048Israel/CityBuilderSim/releases/download/world-1/world-1.bin"
+    set "TAG=world-1"
+    set "SIZE=the nations' world"
 )
 set "PART=%FILE%.download"
 set "RC=1"
@@ -53,7 +71,7 @@ if /i "%GOT%"=="%WANT%" (
 echo Earth: %FILE% does not match %HASHFILE%, so it is fetched again.
 
 :fetch
-echo Earth: downloading %FILE% from GitHub (earth-2.bin is about 282 MB)...
+echo Earth: downloading %FILE% from GitHub (%SIZE%)...
 if not exist data md data
 if exist "%PART%" del /q "%PART%"
 set "GOTIT="
@@ -87,9 +105,9 @@ goto done
 
 :nodownload
 if exist "%PART%" del /q "%PART%"
-echo Earth: could not download it. Check the connection, or put earth-2.bin
+echo Earth: could not download it. Check the connection, or put %TAG%.bin
 echo in the data folder by hand from
-echo     https://github.com/2048Israel/CityBuilderSim/releases/tag/earth-2
+echo     https://github.com/2048Israel/CityBuilderSim/releases/tag/%TAG%
 
 :done
 popd

@@ -34,7 +34,8 @@ LAYERS
               money_history (CODE:yyyy-mm entries, comma-separated, ascending, the first at 2000-01: the money in use
               from that month), regime (float | peg:CODE | uses:CODE), node_name, node_lat, node_lon (its largest
               port city, its largest city where it has no coast), label_lat, label_lon (Natural Earth's LABEL_Y,
-              LABEL_X), landlocked (0 | 1)
+              LABEL_X), landlocked (0 | 1), region (the World Bank's seven, WDI's countries list; Taiwan East Asia
+              & Pacific; - for an area)
             Territories are not rows: their land is their sovereign's (Greenland's cells are Denmark's number).
   moneys    kind 2, binary: int M, int first month (0), int months (312); per money: UTF code, UTF name; then per
             money, 312 doubles: its average rate in the month, the money's units a US dollar (NaN in a month no
@@ -80,6 +81,11 @@ LAYERS
             whatever the earth file's coastline.
   lines     kind 2, binary: int L; per line: short left, short right (owner numbers, 0 when not known), int n,
             then n x (int lat x 100,000, int lon x 100,000): Natural Earth's admin-0 land boundary lines.
+  prices    kind 2, binary (added 2026-10-28, for WN1: each good's real price path, spec 7.1): int G, int first
+            year (2000), int years (26); per good (number order): UTF the Pink Sheet series it follows (its column
+            title; a proxy's too), then 26 doubles: the series' nominal annual price over the US CPI (the paths'
+            cpi of USA), as a ratio to 2025's (so 2025 is 1); then per good 26 bytes, the marks (3 the good's own
+            series, 1 a proxy's).
 
 THE FIXTURE (src/main/resources/world/world-1-fixture.bin, WorldDataCheck's) is the full file cut by
 tools/world/fixture.py: twelve nations renumbered 1..12 in iso3 order (AUS BEL CAN CHE CHN COL DEU FRA GBR JPN NLD
@@ -104,5 +110,7 @@ repr(), so Double.parseDouble gives the same double (nan for NaN).
   flow <good key> <seller> <buyer> <flow> <tonnes> <cost> <pref>   every good, 3 pairs, an own pair among them
   make <good key> <iso3> <make> <use>                        every good, 3 nations
   lines <count>, then line <i> <left> <right> <n> <first lat> <first lon>     the first 5 lines (i from 0)
+  price <good key> <year> <value> <mark>                     every good at 2000, 2010 and 2025 (the fixture's
+                                                             prices layer is the full file's, whole)
   baci <good key> <seller> <buyer> <value>                   fixture only: BACI's own sum (thousand US$) for a pair
                                                              of the twelve, from a second pass over its CSV

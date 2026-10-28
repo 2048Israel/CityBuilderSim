@@ -357,6 +357,29 @@ adds its line here, not in `CLAUDE.md`.
                                    DataSave its four fields (SAVE_FORMAT 38) - EarthFoundingCheck holds it;
                                    since 0.7.127 the card's ice is the site's plot's class, and an Earth
                                    save from before ice (format 39, ICE_FORMAT) is refused
+        WorldData.java             the nations' world as data (batch WN0, 2026-10-28; docs/studies/
+                                   spec-nations.md 3.3): the reader of world-1.bin, the earth file's
+                                   container under the magic "WORLD-1
+" and its own header and index -
+                                   the 196 nations (the 193 UN members, TWN, HKG, MAC) and the areas no
+                                   nation holds, their money histories and monthly rates, the paths
+                                   2000-2100 and each good's price path, the goods and the base year's
+                                   trade by pair with make and use and the kernel's cost and pref, the
+                                   freight table and the edges it is the closure of (closure()), the
+                                   owner raster a 15" cell (the 1-degree tiles inflated into a small
+                                   LRU) and Natural Earth's boundary lines, with the file's identity
+                                   (name:SHA-256) and numbers 1-based as in the file; the kind 2 layers
+                                   are read whole when it opens. locate() finds the file by -Dcbs.world
+                                   or data/world-1.bin, which is not in git - tools/earth/get-earth.bat
+                                   with "world-1" fetches it from the release world-1. Nothing in the
+                                   model calls it yet
+        WorldDataCheck.java        WorldData held to tools/world's worldread.py figure for figure on a
+                                   fixture (the twelve nations and the Rotterdam window, WN0) and, when
+                                   the file is named, on world-1.bin; and the file held to FORMAT.txt's
+                                   promises - the 196 against the UN's list, make and use closing, the
+                                   freight triangle rule, the kernel solved from a = b = 1 giving BACI's
+                                   flows, a nation for every land cell of the earth file inside a border
+                                   tile, the moneys and paths whole
         GlobeFrame.java, GlobePicture.java
                                    the Earth's map as a globe, its model half (0.7.132, batch E8;
                                    docs/studies/spec-globe.md 3): the view - its centre in latitude and
@@ -646,12 +669,21 @@ adds its line here, not in `CLAUDE.md`.
                                          tools/branding/make_icons.py
                                          earth/ EarthCheck's fixture, cut from earth-1.bin (0.7.111), which
                                          EarthTerrainCheck draws the Earth's ground on (0.7.115)
+                                         world/ WorldDataCheck's fixture, cut from world-1.bin by
+                                         tools/world/fixture.py, and the .expect file beside it (WN0)
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
                                          itself is not in the repository), its FORMAT.txt and ATTRIBUTION.txt, and
                                          fixture.py, which cuts EarthCheck's fixture from it; and since f99d62c
                                          get-earth.bat, which fetches the file into data/ from the GitHub release
                                          earth-1 and checks it against earth-1.sha256 (Play CityBuilderSim.bat
-                                         and Build EXE.bat call it first)
+                                         and Build EXE.bat call it first); since WN0 its second argument
+                                         "world-1" fetches data/world-1.bin from the release world-1
+    tools/world/                         WN0's pipeline that bakes world-1.bin, the nations' world (Python,
+                                         outside the game; the file is not in the repository): FORMAT.txt the
+                                         layout and the expect file's, worldread.py the reference reader
+                                         WorldData is ported from, common.py the shared ground (the 196, the
+                                         years, the freight dials), the stages that make each layer, bake.py
+                                         that joins them, and fixture.py, which cuts WorldDataCheck's fixture
     tools/deepseek/                      agent.py, the DeepSeek coding agent a batch's Claude session hands a slice
                                          to, and system.md, its standing instructions (Python, outside the game;
                                          2026-10-17, after the FR0 test in 6fd8dda); docs/deepseek.md is the how

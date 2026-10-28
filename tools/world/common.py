@@ -5,6 +5,13 @@ WHY: four stages (geo.py, econ_paths.py, econ_trade.py, bake.py) are written sid
 freight dial written twice would drift. Run every stage with python -I (the sources are downloads); a stage puts
 its own folder on sys.path itself to import this.
 """
+import argparse
+import hashlib
+import io
+import os
+import struct
+import time
+import zlib
 
 # The 196 (spec-nations 3.1, D1): the 193 UN members, Taiwan, Hong Kong and Macau, by ISO 3166 alpha-3, A to Z.
 # A nation's number is its place here plus one.
@@ -62,3 +69,163 @@ DIALS = [('SEA_USD_TKM', SEA_USD_TKM, "A tonne-km by sea, US$: between PortCheck
          ('LAND_PER_SEA', LAND_PER_SEA, "The land km a sea km is worth on the cheapest route: the two rates' ratio."),
          ('LAND_DETOUR', LAND_DETOUR, "A road's length over the great circle between two neighbours' nodes (est.)."),
          ('SEA_DETOUR', SEA_DETOUR, "A sea route's length over the great circle, for an island CERDI lacks (est.).")]
+
+
+# ===== the paths and the container (G, 2026-10-28) =====
+# Where the downloads are (read-only, bar the work folder) and where the pipeline's intermediates and result go.
+SOURCES = 'C:/Users/Jerus/Documents/world-sources'
+WORK = SOURCES + '/work'
+
+MAGIC = b'WORLD-1\n'
+FORMAT_VERSION = 1
+# A kind 0 layer's tiles: 180 x 360 one-degree tiles, numbered (lat0 + 90) * 360 + (lon0 + 180).
+TILES = 180 * 360
+# The zlib level every blob is compressed at: the smallest file; the reader is Inflater whatever the level.
+ZLIB_LEVEL = 9
+# The owner layer's cells a degree (15 arc-seconds, the earth file's finest grid).
+OWNER_CPD = 240
+# A boundary line's coordinates are stored as whole multiples of 1/LINE_SCALE of a degree (about a metre).
+LINE_SCALE = 100000
+
+
+def tile_id(lat0, lon0):
+    """The one-degree tile whose south-west corner is (lat0, lon0)."""
+    return (lat0 + 90) * 360 + (lon0 + 180)
+
+
+def tile_corner(tid):
+    """The south-west corner (lat0, lon0) of a tile."""
+    return tid // 360 - 90, tid % 360 - 180
+
+
+def parser(description):
+    """An argument parser every stage shares: --sources and --work, with their defaults."""
+    p = argparse.ArgumentParser(description=description)
+    p.add_argument('--sources', default=SOURCES, help='the downloads folder (read-only), default ' + SOURCES)
+    p.add_argument('--work', default=None, help='the intermediates folder, default <sources>/work')
+    return p
+
+
+def work_dir(args):
+    """The work folder an argument set names."""
+    return args.work if args.work else args.sources + '/work'
+
+
+_T0 = time.time()
+
+
+def log(*msg):
+    """A progress line with the seconds since the script started (the pipeline's only log)."""
+    print('[%5.0fs] %s' % (time.time() - _T0, ' '.join(str(m) for m in msg)), flush=True)
+
+
+def fnum(v):
+    """A number as a text table holds it: a float by repr() (so Double.parseDouble gives the same double), an int
+    by str(), None as '-'."""
+    if v is None:
+        return '-'
+    if isinstance(v, float):
+        return repr(v)
+    return str(v)
+
+
+def read_tsv(path):
+    """A text table: (the column names, the rows as lists of strings); blank lines are skipped."""
+    with open(path, encoding='utf-8', newline='') as f:
+        lines = [ln for ln in f.read().split('\n') if ln.strip() != '']
+    rows = [ln.rstrip('\r').split('\t') for ln in lines]
+    return rows[0], rows[1:]
+
+
+def write_tsv(path, header, rows):
+    """Writes a text table, LF line endings, the first line the column names."""
+    with open(path, 'w', encoding='utf-8', newline='\n') as f:
+        f.write('\t'.join(header) + '\n')
+        for r in rows:
+            assert len(r) == len(header), (path, header, r)
+            f.write('\t'.join(fnum(x) if not isinstance(x, str) else x for x in r) + '\n')
+
+
+def utf(s):
+    """java.io.DataOutputStream.writeUTF for text the pipeline writes (no NUL, no character beyond the BMP)."""
+    b = s.encode('utf-8')
+    assert len(b) < 65536 and '\0' not in s and all(ord(ch) < 0x10000 for ch in s), s
+    return struct.pack('>H', len(b)) + b
+
+
+class Layer:
+    """One layer of the container: kind 2 holds one payload (stored as one zlib stream), kind 0 holds the 64,800
+    tiles' entries and the blobs of the tiles that have one, in tile order (FORMAT.txt, HEADER and INDEX)."""
+
+    def __init__(self, name, kind, cpd=0, payload=None, entries=None, blobs=None):
+        self.name, self.kind, self.cpd = name, kind, cpd
+        self.payload = payload      # kind 2: the uncompressed bytes
+        self.entries = entries      # kind 0: 64,800 ints, e > 0 the blob's length, e <= 0 uniform at -e
+        self.blobs = blobs          # kind 0: the blobs, tile order
+        if kind == 0:
+            assert len(entries) == TILES
+            assert [e for e in entries if e > 0] == [len(b) for b in blobs]
+
+    def stored(self):
+        """(the index bytes, the data bytes) as written."""
+        if self.kind == 2:
+            return b'', zlib.compress(self.payload, ZLIB_LEVEL)
+        idx = zlib.compress(struct.pack('>%di' % TILES, *self.entries), ZLIB_LEVEL)
+        return idx, b''.join(self.blobs)
+
+
+def text_layer(name, text):
+    """A kind 2 layer holding UTF-8 text."""
+    return Layer(name, 2, payload=text.encode('utf-8'))
+
+
+def bytes_layer(name, payload):
+    """A kind 2 layer holding binary bytes."""
+    return Layer(name, 2, payload=payload)
+
+
+def tile_layer(name, cpd, entries, blobs):
+    """A kind 0 layer from its entries and blobs."""
+    return Layer(name, 0, cpd=cpd, entries=list(entries), blobs=list(blobs))
+
+
+def write_container(path, layers):
+    """Writes world-1.bin (or its fixture): the header, then each layer's index and data. Returns the file's
+    SHA-256 (hex) and {layer name: (index bytes, data bytes)}."""
+    stored = [(L, L.stored()) for L in layers]
+
+    def header(offsets):
+        h = io.BytesIO()
+        h.write(MAGIC)
+        h.write(struct.pack('>ii', FORMAT_VERSION, len(layers)))
+        for L, _ in stored:
+            h.write(utf(L.name))
+            io_, il, do, dl = offsets.get(L.name, (0, 0, 0, 0))
+            h.write(struct.pack('>biqiqq', L.kind, L.cpd, io_, il, do, dl))
+        return h.getvalue()
+
+    pos = len(header({}))
+    offsets = {}
+    for L, (idx, data) in stored:
+        io_ = pos
+        pos += len(idx)
+        do = pos
+        pos += len(data)
+        offsets[L.name] = (io_, len(idx), do, len(data))
+    sha = hashlib.sha256()
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    with open(path, 'wb') as f:
+        for part in [header(offsets)] + [p for _, (idx, data) in stored for p in (idx, data)]:
+            f.write(part)
+            sha.update(part)
+    assert os.path.getsize(path) == pos
+    return sha.hexdigest(), {L.name: (len(idx), len(data)) for L, (idx, data) in stored}
+
+
+def sha256_file(path):
+    """A file's SHA-256, hex."""
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 20), b''):
+            h.update(chunk)
+    return h.hexdigest()

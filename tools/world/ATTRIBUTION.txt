@@ -1,0 +1,18 @@
+world-1: the nations' world of CityBuilderSim (Civic Ledger)
+
+world-1.bin is derived from the data sets below. Their licences allow this use; their credits follow,
+each in the form its publisher asks for. The game shows the same text on its Credits page.
+
+Natural Earth 1:10m Cultural Vectors (5.1.2): Admin 0 - Countries, Admin 0 - Boundary Lines (land), Populated Places (simple), Ports
+  Credit:  Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com.
+  Licence: Public domain (naturalearthdata.com/about/terms-of-use)
+  Used for: whose land every 15" cell is (the owner layer: each country feature to the nation that holds it, a territory to its sovereign, the rest as areas), the land boundary lines with their two sides' owners, each nation's name for the geography, label point and node (its largest port city: a populated place within 25 km of a port), and the neighbours of a nation CERDI lacks (South Sudan)
+  Source:  https://github.com/nvkelso/natural-earth-vector (tag v5.1.2); https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
+
+CERDI-seadistance (1.1)
+  Credit:  Bertoli, S., Goujon, M. and Santoni, O. (2016) The CERDI-seadistance database. CERDI Working Paper 2016/7, version 1.1. https://zenodo.org/record/240493
+  Licence: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+  Used for: the freight layer: the sea distances between 195 nations' ports, the road distances from a landlocked nation's capital to its port, and the road distances between neighbouring capitals, closed into a table of the cheapest route between any two nations
+  Source:  https://zenodo.org/record/240493
+
+(The other sources of world-1.bin are added here by the orchestrator.)
