@@ -131,11 +131,12 @@ import static ham.citybuildersim.ui.Pieces.*;
  * THE TRUCKS (0.8.8, batch FR5; spec-freight 4.7): the same on the roads, at
  * the near view alone and while the player's setting is on (Settings,
  * "Trucks on the map", on by default) - the month's trucks
- * (TruckSchedule, from Haulage's loads) on the highways' routes from the
- * world line to the gateways (CityMap.truckRoutes()) and on the access roads
- * of the districts in view (CityMap.accessRoutesIn()), each one standing for
- * the schedule's N loads, which the legend gives (TRUCK_WORDS); the body and
- * colour are TruckShapes'.
+ * (TruckSchedule, from Haulage's loads) on the TRIPS of the districts drawn
+ * (CityMap.tripsDrawn(), FR9): a truck's whole way from the world line along
+ * the highways and the streets to a works' gate and back, each district's
+ * schedule taking its catchment's part of the city's loads, each truck standing
+ * for the schedule's N loads, which the legend gives (TRUCK_WORDS); the body
+ * and colour are TruckShapes'.
  *
  * THE GLOBE (0.7.135, batch E9; docs/studies/spec-globe.md 3, Jerus's
  * answers of 2026-10-11, "yes"): on an Earth world the expanded map is a
@@ -542,8 +543,7 @@ final class MapView {
         trainSchedule = null;
         trainRoutes = null;
         trainMonth = trainGameMonth = Integer.MIN_VALUE;
-        truckSchedule = null;
-        truckRoutes = null;
+        truckTrips = null;
         truckMonth = truckGameMonth = Integer.MIN_VALUE;
         districtTrucks.clear();
         trucksStand = 0;
@@ -1239,34 +1239,36 @@ final class MapView {
         }
     }
 
-    /* ----- the trucks (0.8.8, batch FR5; spec-freight 4.7, D21) ----- */
+    /* ----- the trucks (0.8.8, batch FR5; spec-freight 4.7, D21; whole trips since FR9) ----- */
 
-    /** The highways' schedule's salt: apart from every district's, which is its key (CityMap.DistrictRoutes.key()), so two schedules of one month do not hash alike. */
-    static final long HIGHWAYS_SALT = 0x7472_7563_6b73_0001L;
+    /** A district's trucks' schedule, with the trips it was made on: made again when its district's trips are another list. */
+    private record DistrictTrucks(List<TruckSchedule.Route> trips, TruckSchedule schedule) { }
 
-    /** The highways' trucks' schedule drawn from: its boat-month, the routes and the game month it was made on. */
-    private TruckSchedule truckSchedule;
-    private int truckMonth = Integer.MIN_VALUE, truckGameMonth = Integer.MIN_VALUE;
-    private List<TruckSchedule.Route> truckRoutes;
-
-    /** An access road's trucks' schedule, with the routes it was made on: made again when its district's routes are another list. */
-    private record DistrictTrucks(List<TruckSchedule.Route> routes, TruckSchedule schedule) { }
-
-    /** The districts' schedules by CityMap.DistrictRoutes.key(): thrown out with the highways' when the month, the game month or the map turns. */
+    /** The districts' schedules by CityMap.DistrictTrips.key(): thrown out with the shares when the month, the game month or the trips turn. */
     private final Map<Long, DistrictTrucks> districtTrucks = new HashMap<>();
 
-    /** Loads each truck drawn this frame stands for (the legend's N), or 0 when none is drawn: the highways' schedule's, else the largest of the districts' drawn. */
+    /** The boat-month and the game month the schedules were made on, and the trips (CityMap.tripsDrawn()) they were made against. */
+    private int truckMonth = Integer.MIN_VALUE, truckGameMonth = Integer.MIN_VALUE;
+    private List<CityMap.DistrictTrips> truckTrips;
+
+    /** What one building of each type carries in the month billed and the city's truck tonnes by load (TruckSchedule.perBuilding(), Freight.truckedIn() and the others): what a district's share is made of, kept with the schedules. */
+    private double[][] truckPerBuilding;
+    private double[] truckCityTonnes;
+    /** ...and each district with trips' catchment's shares of them by CityMap.DistrictTrips.key() (TruckSchedule.sharesByTrips()): its own works' tonnes and those of the districts about it that have no trips. */
+    private Map<Long, double[]> truckShares = new HashMap<>();
+
+    /** Loads each truck drawn this frame stands for (the legend's N), or 0 when none is drawn: the largest of the districts' drawn, which is the city's N. */
     private int trucksStand;
 
     /**
      * The trucks over the tiles, at the near view alone and while the setting
-     * is on (TruckSchedule.drawnAt()): the month's schedule on the highways
-     * (CityMap.truckRoutes()) and, for each district in view, on its access
-     * roads (CityMap.accessRoutesIn()), a district's schedule taking its
-     * routes' share of the city's access roads (CityMap.accessRoadCount()).
-     * Each truck is one body of TruckShapes in its colour; while any route
-     * crosses the view the frame goes on, as the trains'. Each schedule is
-     * made once a month and kept.
+     * is on (TruckSchedule.drawnAt()): each district's trips (CityMap.tripsDrawn(),
+     * a truck's whole way from the world line to a works' gate and back, FR9)
+     * with the month's schedule on them, taking its catchment's part of the
+     * city's loads by the works' tonnes (TruckSchedule.sharesByTrips()). Each truck
+     * is one body of TruckShapes in its colour; while any trip crosses the
+     * view the frame goes on, as the trains'. Each schedule is made once a
+     * month and kept.
      */
     private void trucks(GraphicsContext gc, MapFrame f, int level) {
         if (shownMap == null || !TruckSchedule.drawnAt(level, ui.prefs.isTrucksOnMap())) return;
@@ -1274,34 +1276,32 @@ final class MapView {
         int m = (int) Math.floor(clock);
         double t = clock - m;
         Game g = ui.game;
-        List<TruckSchedule.Route> routes = shownMap.truckRoutes();
-        if (truckMonth != m || truckGameMonth != g.getMonth() || truckRoutes != routes) {
-            truckSchedule = null;
+        List<CityMap.DistrictTrips> trips = shownMap.tripsDrawn();
+        if (truckMonth != m || truckGameMonth != g.getMonth() || truckTrips != trips) {
             districtTrucks.clear();
+            var freight = g.getSectors().freight();
+            truckPerBuilding = TruckSchedule.perBuilding(s -> TruckSchedule.truckedBy(freight, s), shownMap.types(), shownMap.totals());
+            truckCityTonnes = new double[] { freight.truckedIn(), freight.truckedOut(), freight.truckedHome() };
+            truckShares = TruckSchedule.sharesByTrips(trips, shownMap::district, truckPerBuilding, truckCityTonnes);
             truckMonth = m;
             truckGameMonth = g.getMonth();
-            truckRoutes = routes;
+            truckTrips = trips;
         }
         // A truck's length past the view's edge, as it is drawn (TruckShapes.MIN_PX), so none pops in at the edge.
         double margin = Math.max(TruckShapes.LENGTH, TruckShapes.MIN_PX / f.scale());
         long x0 = (long) Math.floor(f.plotX(0) - margin), y0 = (long) Math.floor(f.plotY(0) - margin);
         long x1 = (long) Math.ceil(f.plotX(f.width()) + margin), y1 = (long) Math.ceil(f.plotY(f.height()) + margin);
-        int highways = 0;
-        if (!routes.isEmpty()) {
-            if (truckSchedule == null) truckSchedule = TruckSchedule.of(m, g.getSectors().freight(), routes, 1, HIGHWAYS_SALT);
-            highways = fillTrucks(gc, f, truckSchedule, x0, y0, x1, y1, t);
-        }
-        int districts = 0;
-        for (CityMap.DistrictRoutes dr : shownMap.accessRoutesIn(x0, y0, x1, y1)) {
-            DistrictTrucks dt = districtTrucks.get(dr.key());
-            if (dt == null || dt.routes() != dr.routes()) {
-                double share = dr.routes().size() / (double) shownMap.accessRoadCount();
-                dt = new DistrictTrucks(dr.routes(), TruckSchedule.of(m, g.getSectors().freight(), dr.routes(), share, dr.key()));
-                districtTrucks.put(dr.key(), dt);
+        int stands = 0;
+        for (CityMap.DistrictTrips dt : trips) {
+            DistrictTrucks kept = districtTrucks.get(dt.key());
+            if (kept == null || kept.trips() != dt.trips()) {
+                double[] shares = truckShares.getOrDefault(dt.key(), new double[TruckSchedule.Load.values().length]);
+                kept = new DistrictTrucks(dt.trips(), TruckSchedule.of(m, g.getSectors().freight(), dt.trips(), shares, dt.key()));
+                districtTrucks.put(dt.key(), kept);
             }
-            districts = Math.max(districts, fillTrucks(gc, f, dt.schedule(), x0, y0, x1, y1, t));
+            stands = Math.max(stands, fillTrucks(gc, f, kept.schedule(), x0, y0, x1, y1, t));
         }
-        trucksStand = highways > 0 ? highways : districts;
+        trucksStand = stands;
         if (trucksStand > 0) {
             drawnClock = clock;
             boatsLive = true;

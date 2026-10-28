@@ -527,12 +527,20 @@ public final class CityMap {
     /** Whether its districts were measured on the ground (false for a harness's square city, whose capacities were given). */
     public boolean measured()              { return measured; }
 
-    /** Every type's count over all districts. */
+    /** Every type's count over all districts, a copy: kept against changes() (FR9: the screen reads it once a month), since a count never moves without one. */
     public long[] totals() {
-        long[] out = new long[types.length];
-        for (District d : districts) for (int t = 0; t < types.length; t++) out[t] += d.counts[t];
-        return out;
+        if (totalsCache == null || totalsAt != changes || totalsCache.length != types.length) {
+            long[] out = new long[types.length];
+            for (District d : districts) for (int t = 0; t < types.length; t++) out[t] += d.counts[t];
+            totalsCache = out;
+            totalsAt = changes;
+        }
+        return totalsCache.clone();
     }
+
+    /** totals()'s last answer, kept against the map's changes. */
+    private long[] totalsCache;
+    private long totalsAt = Long.MIN_VALUE;
 
     /** The land it was drawn on. */
     public CityLand land() { return land; }
@@ -2711,8 +2719,21 @@ public final class CityMap {
     }
 
     private final Map<District, Drawn> drawn = new LinkedHashMap<>(PLANS_KEPT * 2, 0.75f, true) {
-        @Override protected boolean removeEldestEntry(Map.Entry<District, Drawn> e) { return size() > PLANS_KEPT; }
+        @Override protected boolean removeEldestEntry(Map.Entry<District, Drawn> e) {
+            boolean over = size() > PLANS_KEPT;
+            if (over) drawnMoves++;
+            return over;
+        }
+        @Override public Drawn put(District k, Drawn v) { drawnMoves++; return super.put(k, v); }
+        @Override public Drawn remove(Object k) {
+            Drawn gone = super.remove(k);
+            if (gone != null) drawnMoves++;
+            return gone;
+        }
+        @Override public void clear() { drawnMoves++; super.clear(); }
     };
+    /** How many times the plans kept (the map above) were put, replaced, evicted, removed or cleared: what the trips (tripsDrawn()) are kept against besides changes(), since a plan is drawn in the background without the map taking a change. */
+    private long drawnMoves;
     private final Map<District, Link> links = new HashMap<>();
     private final Map<District, PlanJob> pending = new HashMap<>();
     /** Each band's packing at its edge, and the job making it. */
@@ -4228,6 +4249,16 @@ public final class CityMap {
        road's end on the street grid to the gate of the work it serves,
        traced when the plan is packed (accessWays(), Drawn.access) and never
        by drawing a plan here. Nothing in the model reads them.
+
+       Since FR9 the screen draws neither of those alone but the
+       TRIPS joined from them (tripsDrawn()): a truck's whole way from the
+       world to a works' gate, so none stands and turns back at a ramp
+       inside the city or comes out of the street grid from nowhere.
+       truckRoutes() and accessRoutesIn() stay, as the pieces a trip is
+       made of and what TruckRouteCheck 1 to 6 prove. Which tonnes a
+       district's trips carry is the screen's to say, not this map's: its
+       own works' and those of the districts about it that have no trips
+       (TruckSchedule.sharesByTrips(), by CityMap.district()).
        ===================================================================== */
 
 
@@ -4403,6 +4434,461 @@ public final class CityMap {
     /** accessRoadCount()'s last answer, kept against the map's changes. */
     private int accessRoadCountCache;
     private long accessRoadCountAt = Long.MIN_VALUE;
+
+    /* ----- the trips (batch FR9) ----- */
+
+    /*
+       A truck's WHOLE TRIP (FR9; Jerus, 2026-10-28: the trucks "disappear into the void... but still inside the city"). FR5 drew the
+       highways' trucks to each arm's end, a ramp, where they turned back, and the access roads' out of the street grid; a trip is the
+       two joined: from the world line along the highways to a ramp, along the streets to an access road's end, down it to its works'
+       gate - and, for the tonnes bought at home, from one works' gate to another's by the streets between them. The pieces are the
+       ones above (the highways' way, CityRuns.highwayWayTo(); the access ways, Drawn.access), the street leg between them found here
+       over the plans already drawn, and nothing is planned (the screen's thread: drawnOf() is never asked).
+    */
+
+    /** The plots about a district's frame, on every side, its trips look for a ramp over: DISTRICT (256), the three districts across about it. */
+    public static final int TRIP_REACH = DISTRICT;
+
+    /** What a truck pays to cross a street plot that is not an arterial's, boulevard's or access road's (those cost 1) in the trips' street search: 3, so a truck takes the arterials unless the other way is under a third as long. */
+    public static final int TRIP_STREET_COST = 3;
+
+    /** The side of the box a district's street search runs in, in plots: its frame grown by TRIP_REACH on every side. */
+    static final int TRIP_BOX = DistrictPlan.FRAME + 2 * TRIP_REACH;
+
+    /** A plot packed into a long (x high, y low), and none. */
+    private static long plot(long x, long y) { return (x << 32) | (y & 0xffffffffL); }
+    private static long plotX(long p) { return p >> 32; }
+    private static long plotY(long p) { return (int) p; }
+    private static final long NO_PLOT = Long.MIN_VALUE;
+
+    /** One district's trips (TruckSchedule.Route: each road's world trip, then its home trip, road by road) with the stable key it is told apart by, the district's own, and the district: the tonnes its trips carry are its catchment's, its own works' and those of the districts about it that have no trips (TruckSchedule.sharesByTrips()). */
+    public record DistrictTrips(long key, District district, List<TruckSchedule.Route> trips) { }
+
+    /** One access road as the trips see it: its way (Drawn.access, in its frame's plots, the end first and the gate last), where that frame starts, and, once the search settled it, the ramp its street leg comes from and the leg's plots (ramp first, the road's end last; packed). */
+    private static final class TripRoad {
+        final int[] way;
+        final long ox, oy, end, gate;
+        long ramp = NO_PLOT;
+        long[] leg;
+
+        TripRoad(int[] way, long ox, long oy) {
+            this.way = way;
+            this.ox = ox;
+            this.oy = oy;
+            int f = DistrictPlan.FRAME;
+            this.end = plot(ox + way[0] % f, oy + way[0] / f);
+            this.gate = plot(ox + way[way.length - 1] % f, oy + way[way.length - 1] / f);
+        }
+    }
+
+    /** A district's street legs as last made, and what they were made against: its plan's stamp, the stamps of the drawn plans its box meets, the runs over the box, and the arm the highways' line leaves from. */
+    private static final class TripLegs {
+        long stamp, met, hash;
+        int arm;
+        final List<TripRoad> roads = new ArrayList<>();
+    }
+
+    /** A drawn, current plan and where its frame starts, in world plots. */
+    private record TripPlan(District d, Drawn dr, long ox, long oy) { }
+
+    private final Map<Long, TripLegs> tripLegs = new HashMap<>();
+    /** tripsDrawn()'s last answer, kept against the map's changes and the plans kept (drawnMoves). */
+    private List<DistrictTrips> tripsCache;
+    private long tripsAt = Long.MIN_VALUE, tripsMoved = Long.MIN_VALUE;
+    /** Whether the highways have a way to a ramp plot, by the plot, for the pass being made. */
+    private final Map<Long, Boolean> tripReach = new HashMap<>();
+
+    /**
+     * The trucks' trips (FR9; TruckSchedule.Route) of the districts whose
+     * plan is drawn and current, by district key, those with a trip. Two
+     * kinds. A WORLD trip (world true), for each access road of the district
+     * the street search reached from a ramp: from TruckSchedule.WORLD_PLOTS
+     * out along the highways' world line, the line's point, in along the
+     * highways to the ramp (CityRuns.highwayWayTo()), along the streets to the
+     * road's end, down the road to its work's gate; fadeTo the world part's
+     * length. A HOME trip (Route.home()) for each of those roads that has a
+     * partner, the nearest other road (end to end, ties by key and order)
+     * whose street leg comes to the same ramp: out of the partner's gate,
+     * along its road to its end, along its leg toward the ramp until it
+     * meets this road's, down this road's leg, its end and its road to its
+     * gate; fadeTo TRUCK_ACCESS_FADE.
+     *
+     * THE STREET LEG, one search a district: a multi-source Dial's search
+     * (TRIP_STREET_COST) from the highways' ramps that carry a street and have
+     * a way along the highways, over the street plots of the plans drawn (a
+     * plot's code as streetAt() reads it; arterials, boulevards and access
+     * roads cost 1, any other street TRIP_STREET_COST) in the district's frame
+     * grown by TRIP_REACH, until every road end of the district is settled; a
+     * road's leg is the tree's way from its ramp to its end, a road that ends
+     * at a ramp having a leg of that plot alone. A road no ramp reached: no
+     * world trip for it. NO WAY IN YET: while the highways have no world
+     * line (a city before its highways leave it) there is no trip to follow
+     * whole, and each drawn road keeps FR5's access route instead (from its
+     * end on the streets to its gate, every load: accessRouteInto()).
+     *
+     * A plan is NEVER drawn here (the screen's thread): the plans kept are
+     * walked, not asked. Kept against changes() and the plans kept; when
+     * either moves a district's legs are kept while its plan's stamp, the
+     * stamps of the drawn plans its box meets and the runs over its box
+     * (CityRuns.frameHash()) are what they were made against, and the
+     * highways' parts and the home trips are made again (cheap). A district
+     * not drawn takes no trip, and gets its trips once it is. The map's
+     * alone: nothing in the model reads it.
+     */
+    public List<DistrictTrips> tripsDrawn() {
+        if (tripsCache != null && tripsAt == changes && tripsMoved == drawnMoves) return tripsCache;
+        // The plans drawn and current as accessRoutesOf() judges them, found by walking the kept plans (get() would put one
+        // last in the order they are let go in, and drawnOf() would plan): by district key.
+        List<TripPlan> plans = new ArrayList<>();
+        for (Map.Entry<District, Drawn> e : new ArrayList<>(drawn.entrySet())) {
+            District d = e.getKey();
+            Drawn got = e.getValue();
+            int b = band(d.index);
+            checkBand(b);
+            Link l = links.get(d);
+            if (d.index >= bandValidTo[b] || l == null || got == null || got.stamp != l.stamp()) continue;
+            plans.add(new TripPlan(d, got, (baseDX + d.dx) * DISTRICT, (baseDY + d.dy) * DISTRICT));
+        }
+        plans.sort(java.util.Comparator.comparingLong(p -> p.d().key));
+        WorldLine line = null;
+        for (WorldLine l : worldLines()) if (l.net() == CityRuns.HIGHWAYS) line = l;
+        List<DistrictTrips> out = new ArrayList<>();
+        Map<Long, TripLegs> kept = new HashMap<>();
+        if (line != null) {
+            tripReach.clear();
+            for (TripPlan p : plans) {
+                if (p.dr().access == null) continue;
+                long hash = runs.frameHash(p.ox() - TRIP_REACH, p.oy() - TRIP_REACH, TRIP_BOX, TRIP_BOX), met = metStamps(plans, p);
+                TripLegs legs = tripLegs.get(p.d().key);
+                if (legs == null || legs.stamp != p.dr().stamp || legs.met != met || legs.hash != hash || legs.arm != line.arm()) {
+                    legs = new TripLegs();
+                    legs.stamp = p.dr().stamp;
+                    legs.met = met;
+                    legs.hash = hash;
+                    legs.arm = line.arm();
+                    for (int[] way : p.dr().access) if (way.length >= 2) legs.roads.add(new TripRoad(way, p.ox(), p.oy()));
+                    if (!legs.roads.isEmpty()) tripSearch(p, plans, line, legs);
+                }
+                kept.put(p.d().key, legs);
+            }
+            tripReach.clear();
+            tripTrips(plans, kept, line, out);
+        } else {
+            // No way in from the world yet (a city before its highways leave it): each drawn road keeps FR5's access route, from its
+            // end on the streets to its gate, every load - what Jerus checked on such a city (FR5-C) - until a whole trip can be drawn.
+            for (TripPlan p : plans) {
+                if (p.dr().access == null) continue;
+                List<TruckSchedule.Route> routes = new ArrayList<>();
+                for (int[] way : p.dr().access) accessRouteInto(routes, way, p.ox(), p.oy());
+                if (!routes.isEmpty()) out.add(new DistrictTrips(p.d().key, p.d(), java.util.Collections.unmodifiableList(routes)));
+            }
+        }
+        tripLegs.clear();
+        tripLegs.putAll(kept);
+        tripsCache = java.util.Collections.unmodifiableList(out);
+        tripsAt = changes;
+        tripsMoved = drawnMoves;
+        return tripsCache;
+    }
+
+    /** A fold of the keys and stamps of the drawn plans whose frame meets p's search box, in key order: what its street legs were read from. */
+    private static long metStamps(List<TripPlan> plans, TripPlan p) {
+        long x0 = p.ox() - TRIP_REACH, y0 = p.oy() - TRIP_REACH, h = World.mix(0x4D455421L);
+        for (TripPlan q : plans) {
+            if (!meetsBox(q, x0, y0)) continue;
+            h = World.mix(h ^ q.d().key ^ q.dr().stamp * 0x9E3779B97F4A7C15L);
+        }
+        return h;
+    }
+
+    /** Whether plan q's frame meets the search box starting at world plot (x0, y0). */
+    private static boolean meetsBox(TripPlan q, long x0, long y0) {
+        return q.ox() < x0 + TRIP_BOX && q.ox() + DistrictPlan.FRAME > x0 && q.oy() < y0 + TRIP_BOX && q.oy() + DistrictPlan.FRAME > y0;
+    }
+
+    /* The street search's scratch, kept and stamped (as DistrictPlan's accSeen) so none is cleared or allocated per search: made on the first search, TRIP_BOX squared a plot. */
+    private int[] tripSeen, tripDist, tripPrev;
+    private byte[] tripCost, tripEnd, tripFixed, tripMarks;
+    private int tripStamp;
+    private final int[][] tripQ = new int[TRIP_STREET_COST + 1][];
+    private final int[] tripN = new int[TRIP_STREET_COST + 1];
+    /** The drawn plans the search box meets by district key, read by streetAt() without planning (its `plan` false): a district missing here has none. */
+    private final Map<Long, Drawn> tripPlans = new HashMap<>();
+
+    /** Forgets the street legs kept and the trips asked last, so the next tripsDrawn() makes them all again: a harness's, to time a warm remake. */
+    void forgetTrips() {
+        tripLegs.clear();
+        tripsCache = null;
+    }
+
+    /** How many street searches were made: a harness's, to tell legs kept from legs made again. */
+    private int tripSearches;
+
+    int tripSearches() { return tripSearches; }
+
+    /** The bytes the street search's scratch holds (0 before the first search). */
+    long tripScratchBytes() {
+        if (tripSeen == null) return 0;
+        long b = 0;
+        for (int[] a : new int[][] { tripSeen, tripDist, tripPrev }) b += 4L * a.length;
+        for (byte[] a : new byte[][] { tripCost, tripEnd, tripFixed, tripMarks }) b += a.length;
+        for (int[] q : tripQ) if (q != null) b += 4L * q.length;
+        return b;
+    }
+
+    /**
+     * The street legs of one district's roads (legs.roads), settled from the ramps in its search box by a Dial's search over the
+     * drawn plans' streets; each road's ramp and leg are set when a ramp reached its end.
+     */
+    private void tripSearch(TripPlan p, List<TripPlan> plans, WorldLine line, TripLegs legs) {
+        tripSearches++;
+        int area = TRIP_BOX * TRIP_BOX, bw = TRIP_BOX;
+        if (tripSeen == null) {
+            tripSeen = new int[area];
+            tripDist = new int[area];
+            tripPrev = new int[area];
+            tripCost = new byte[area];
+            tripEnd = new byte[area];
+            tripFixed = new byte[area];
+            tripMarks = new byte[area];
+        }
+        long bx0 = p.ox() - TRIP_REACH, by0 = p.oy() - TRIP_REACH;
+        tripPlans.clear();
+        for (TripPlan q : plans) if (meetsBox(q, bx0, by0)) tripPlans.put(q.d().key, q.dr());
+        if (++tripStamp == Integer.MAX_VALUE) {
+            Arrays.fill(tripSeen, 0);
+            tripStamp = 1;
+        }
+        Arrays.fill(tripN, 0);
+        // The road ends the search has to settle: a street plot each, flagged.
+        int left = 0;
+        for (TripRoad r : legs.roads) {
+            int i = (int) ((plotY(r.end) - by0) * bw + (plotX(r.end) - bx0));
+            if (tripCostOf(i, bx0, by0, bw) > 0 && tripEnd[i] == 0) { tripEnd[i] = 1; left++; }
+        }
+        // Its sources: the ramps in the box that carry a street and have a way along the highways.
+        int pending = 0;
+        if (left > 0) {
+            runs.fill(bx0, by0, bw, bw, tripFixed, tripMarks, false);
+            for (int i = 0; i < area; i++) {
+                if ((tripMarks[i] & CityRuns.M_RAMP) == 0 || tripCostOf(i, bx0, by0, bw) == 0) continue;
+                long rx = bx0 + i % bw, ry = by0 + i / bw, key = plot(rx, ry);
+                Boolean reach = tripReach.get(key);
+                if (reach == null) {
+                    reach = runs.highwayWayTo(line.arm(), rx, ry) != null;
+                    tripReach.put(key, reach);
+                }
+                if (!reach) continue;
+                tripDist[i] = 0;
+                tripPrev[i] = -1;
+                tripPush(0, i);
+                pending++;
+            }
+        }
+        for (int d = 0; pending > 0 && left > 0; d++) {
+            int q = d % tripQ.length;
+            for (int k = 0; k < tripN[q] && left > 0; k++) {
+                int a = tripQ[q][k];
+                pending--;
+                if (tripDist[a] != d) continue;
+                tripDist[a] = ~d;
+                if (tripEnd[a] != 0 && --left == 0) break;
+                int x = a % bw, y = a / bw;
+                for (int dir = 0; dir < 4; dir++) {
+                    if (dir == 0 && y == 0 || dir == 1 && x == bw - 1 || dir == 2 && y == bw - 1 || dir == 3 && x == 0) continue;
+                    int b = dir == 0 ? a - bw : dir == 1 ? a + 1 : dir == 2 ? a + bw : a - 1;
+                    int c = tripCostOf(b, bx0, by0, bw);
+                    if (c == 0 || tripDist[b] < 0 || d + c >= tripDist[b]) continue;
+                    tripDist[b] = d + c;
+                    tripPrev[b] = a;
+                    tripPush(d + c, b);
+                    pending++;
+                }
+            }
+            tripN[q] = 0;
+        }
+        // Each road's leg: the way back from its end along tripPrev to the ramp it came from, turned about.
+        for (TripRoad r : legs.roads) {
+            int i = (int) ((plotY(r.end) - by0) * bw + (plotX(r.end) - bx0));
+            if (tripSeen[i] != tripStamp || tripDist[i] >= 0) continue;
+            int n = 0;
+            for (int a = i; a >= 0; a = tripPrev[a]) n++;
+            long[] leg = new long[n];
+            int k = n;
+            for (int a = i; a >= 0; a = tripPrev[a]) leg[--k] = plot(bx0 + a % bw, by0 + a / bw);
+            r.ramp = leg[0];
+            r.leg = leg;
+        }
+        for (TripRoad r : legs.roads) tripEnd[(int) ((plotY(r.end) - by0) * bw + (plotX(r.end) - bx0))] = 0;
+    }
+
+    /**
+     * What it costs a truck to drive box plot i (the world plot (bx0 + i % bw, by0 + i / bw)): 1 on an arterial, a boulevard or an
+     * access road, TRIP_STREET_COST on any other street, 0 where no street is drawn. Read from the plans on the first touch of a search.
+     */
+    private int tripCostOf(int i, long bx0, long by0, int bw) {
+        if (tripSeen[i] != tripStamp) {
+            tripSeen[i] = tripStamp;
+            tripDist[i] = Integer.MAX_VALUE;
+            tripPrev[i] = -1;
+            int code = streetAt(bx0 + i % bw, by0 + i / bw, tripPlans, false) & 0xff, role = (code >> TilePainter.S_ROLE_SHIFT) & 3;
+            tripCost[i] = (byte) ((code & TilePainter.S_KIND) == DistrictPlan.NONE ? 0
+                    : role == TilePainter.S_ARTERIAL || role == TilePainter.S_BOULEVARD || role == TilePainter.S_ACCESS ? 1 : TRIP_STREET_COST);
+        }
+        return tripCost[i];
+    }
+
+    /** Queues plot a at distance d in its bucket (d modulo the buckets: an edge costs at most TRIP_STREET_COST, one more buckets than that are Dial's whole circle). */
+    private void tripPush(int d, int a) {
+        int q = d % tripQ.length;
+        if (tripQ[q] == null) tripQ[q] = new int[1024];
+        else if (tripN[q] == tripQ[q].length) tripQ[q] = Arrays.copyOf(tripQ[q], tripN[q] * 2);
+        tripQ[q][tripN[q]++] = a;
+    }
+
+    /**
+     * The trips of every district in `plans` whose street legs are in `kept`, into out: the world trips, and the home trips among the roads
+     * whose legs come to one ramp. Made whole each time (the highways' parts are cheap).
+     */
+    private void tripTrips(List<TripPlan> plans, Map<Long, TripLegs> kept, WorldLine line, List<DistrictTrips> out) {
+        // The roads by the ramp their leg comes from, in district and road order.
+        Map<Long, List<TripRoad>> byRamp = new HashMap<>();
+        for (TripPlan p : plans) {
+            TripLegs legs = kept.get(p.d().key);
+            if (legs != null) for (TripRoad r : legs.roads) if (r.leg != null) byRamp.computeIfAbsent(r.ramp, ramp -> new ArrayList<>()).add(r);
+        }
+        Map<Long, double[][]> highway = new HashMap<>();
+        double rad = Math.toRadians(line.way());
+        double fx = line.x() + Math.cos(rad) * TruckSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(rad) * TruckSchedule.WORLD_PLOTS;
+        for (TripPlan p : plans) {
+            TripLegs legs = kept.get(p.d().key);
+            if (legs == null) continue;
+            List<TruckSchedule.Route> trips = new ArrayList<>();
+            for (TripRoad r : legs.roads) {
+                if (r.leg == null) continue;
+                // The world trip.
+                double[][] way = highway.computeIfAbsent(r.ramp, ramp -> {
+                    double[][] w = runs.highwayWayTo(line.arm(), plotX(ramp), plotY(ramp));
+                    return w == null || w[0].length == 0 ? new double[0][] : w;
+                });
+                if (way.length > 0) {
+                    List<double[]> pts = new ArrayList<>();
+                    pts.add(new double[] { fx, fy });
+                    pts.add(new double[] { line.x(), line.y() });
+                    for (int k = 0; k < way[0].length; k++) addNew(pts, way[0][k], way[1][k]);
+                    // ...the street leg and the access road each straightened by itself, so the road's end stays a point of the trip.
+                    List<double[]> leg = new ArrayList<>(), road = new ArrayList<>();
+                    addLeg(leg, r.leg, 0, r.leg.length - 1, 1);
+                    addWay(road, r.way, r.ox, r.oy, false, 0);
+                    appendStraight(pts, leg);
+                    appendStraight(pts, road);
+                    trips.add(truckRoute(true, pts, Math.hypot(line.x() - fx, line.y() - fy)));
+                }
+                // The home trip: from the nearest other road's gate that comes to the same ramp.
+                TripRoad partner = null;
+                long best = Long.MAX_VALUE;
+                for (TripRoad o : byRamp.get(r.ramp)) {
+                    if (o == r) continue;
+                    long dx = plotX(o.end) - plotX(r.end), dy = plotY(o.end) - plotY(r.end), d2 = dx * dx + dy * dy;
+                    if (d2 < best) { best = d2; partner = o; }
+                }
+                if (partner == null) continue;
+                // Where the partner's way out to the ramp - its access road from its gate to its end, then its leg - first meets this road's
+                // way in from the ramp - its leg, then its access road: roads from one ramp share the street they leave it by, and a trip
+                // never goes out along the shared part and back. The first plot of the partner's, from its gate, that this road's has.
+                int legN = r.leg.length, f = DistrictPlan.FRAME, bw = partner.way.length, bl = partner.leg.length;
+                Map<Long, Integer> mine = new HashMap<>();
+                for (int j = 0; j < legN; j++) mine.put(r.leg[j], j);
+                for (int j = 1; j < r.way.length; j++) mine.putIfAbsent(plot(r.ox + r.way[j] % f, r.oy + r.way[j] / f), legN - 1 + j);
+                int meetAt = -1, mineAt = -1;
+                for (int i = 0; i < bw + bl - 1 && meetAt < 0; i++) {
+                    long at = i < bw ? plot(partner.ox + partner.way[bw - 1 - i] % f, partner.oy + partner.way[bw - 1 - i] / f) : partner.leg[bl - 2 - (i - bw)];
+                    Integer j = mine.get(at);
+                    if (j != null) { meetAt = i; mineAt = j; }
+                }
+                if (meetAt < 0) continue;
+                // Out of the partner's gate along its road, back along its leg to where it meets this road's way, down that way to its gate:
+                // each piece straightened by itself, so the roads' ends and the meeting stay points of the trip.
+                List<double[]> pts = new ArrayList<>(), piece = new ArrayList<>();
+                addWay(piece, partner.way, partner.ox, partner.oy, true, meetAt < bw ? bw - 1 - meetAt : 0);
+                appendStraight(pts, piece);
+                piece = new ArrayList<>();
+                if (meetAt >= bw) addLeg(piece, partner.leg, bl - 1, bl - 2 - (meetAt - bw), -1);
+                appendStraight(pts, piece);
+                piece = new ArrayList<>();
+                if (mineAt < legN) addLeg(piece, r.leg, mineAt, legN - 1, 1);
+                appendStraight(pts, piece);
+                piece = new ArrayList<>();
+                addWay(piece, r.way, r.ox, r.oy, false, Math.max(0, mineAt - legN + 1));
+                appendStraight(pts, piece);
+                if (pts.size() >= 2) trips.add(homeRoute(pts));
+            }
+            if (!trips.isEmpty()) out.add(new DistrictTrips(p.d().key, p.d(), java.util.Collections.unmodifiableList(trips)));
+        }
+    }
+
+    /** A home trip through points, TRUCK_ACCESS_FADE faded in. */
+    private static TruckSchedule.Route homeRoute(List<double[]> pts) {
+        double[] xs = new double[pts.size()], ys = new double[pts.size()];
+        for (int i = 0; i < pts.size(); i++) { xs[i] = pts.get(i)[0]; ys[i] = pts.get(i)[1]; }
+        return TruckSchedule.Route.home(xs, ys, TRUCK_ACCESS_FADE);
+    }
+
+    /** Adds the middles of leg plots from index `from` to `to` (inclusive) stepping `step`, no point twice running. */
+    private static void addLeg(List<double[]> pts, long[] leg, int from, int to, int step) {
+        for (int k = from; step > 0 ? k <= to : k >= to; k += step) addPoint(pts, plotX(leg[k]) + 0.5, plotY(leg[k]) + 0.5);
+    }
+
+    /** Adds the middles of an access way's plots (Drawn.access: frame indices, the end first) in the world from frame origin (ox, oy): from index `from` to the gate, or, when `reversed`, the gate to the end. */
+    private static void addWay(List<double[]> pts, int[] way, long ox, long oy, boolean reversed, int from) {
+        int f = DistrictPlan.FRAME;
+        if (reversed) for (int k = way.length - 1; k >= from; k--) addPoint(pts, ox + way[k] % f + 0.5, oy + way[k] / f + 0.5);
+        else for (int k = from; k < way.length; k++) addPoint(pts, ox + way[k] % f + 0.5, oy + way[k] / f + 0.5);
+    }
+
+    private static void addPoint(List<double[]> pts, double x, double y) {
+        if (!pts.isEmpty()) {
+            double[] last = pts.get(pts.size() - 1);
+            if (Math.abs(last[0] - x) < 1e-9 && Math.abs(last[1] - y) < 1e-9) return;
+        }
+        pts.add(new double[] { x, y });
+    }
+
+    /** Adds the points of `piece` straightened (straight()) to out, none twice running. */
+    private static void appendStraight(List<double[]> out, List<double[]> piece) {
+        for (double[] q : straight(piece)) addPoint(out, q[0], q[1]);
+    }
+
+    /** The points with those dropped that lie on the straight line between their neighbours, going on: a run along a row or a column is kept to its two ends. */
+    private static List<double[]> straight(List<double[]> pts) {
+        List<double[]> out = new ArrayList<>();
+        for (int i = 0; i < pts.size(); i++) {
+            if (i > 0 && i < pts.size() - 1) {
+                double[] a = out.get(out.size() - 1), b = pts.get(i), c = pts.get(i + 1);
+                double ux = b[0] - a[0], uy = b[1] - a[1], vx = c[0] - b[0], vy = c[1] - b[1];
+                if (Math.abs(ux * vy - uy * vx) < 1e-9 && ux * vx + uy * vy > 0) continue;
+            }
+            out.add(pts.get(i));
+        }
+        return out;
+    }
+
+    /**
+     * What the trips made of the roads of the districts last asked (tripsDrawn()): {roads, roads whose leg is a ramp alone (the road
+     * ends at one), roads with a street leg of more than a plot, roads no ramp reached}. For the harness and its figures.
+     */
+    int[] tripRoadCounts() {
+        int[] out = new int[4];
+        for (TripLegs legs : tripLegs.values()) {
+            for (TripRoad r : legs.roads) {
+                out[0]++;
+                if (r.leg == null) out[3]++;
+                else if (r.leg.length == 1) out[1]++;
+                else out[2]++;
+            }
+        }
+        return out;
+    }
 
     /** Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. */
     static final int RUN_LINES_KEPT = 4096;
@@ -6432,6 +6918,15 @@ public final class CityMap {
 
     /** ...the plans looked up through `seen`, by district key (null for none), which it fills. */
     private byte streetAt(long x, long y, Map<Long, Drawn> seen) {
+        return streetAt(x, y, seen, true);
+    }
+
+    /**
+     * ...and, `plan` false, from the plans in `seen` alone, a district missing there having none: the trips' way (FR9), which
+     * plans nothing. One method and no lookup object made a call (FR9's first cut passed a lambda a plot, and the far node over
+     * Rotterdam, which reads every plot of every tile through here, took twice main's time at the gate).
+     */
+    private byte streetAt(long x, long y, Map<Long, Drawn> seen, boolean plan) {
         long dxl = Math.floorDiv(x, DISTRICT), dyl = Math.floorDiv(y, DISTRICT);
         int lx = (int) (x - dxl * DISTRICT), ly = (int) (y - dyl * DISTRICT);
         int ddx = (int) (dxl - baseDX), ddy = (int) (dyl - baseDY);
@@ -6443,6 +6938,7 @@ public final class CityMap {
             long dk = key(ddx + ox, ddy + oy);
             Drawn dr;
             if (seen.containsKey(dk)) dr = seen.get(dk);
+            else if (!plan) dr = null;
             else {
                 District d = districtAt(dk);
                 dr = d == null ? null : drawnOf(d);

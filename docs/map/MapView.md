@@ -1,4 +1,4 @@
-# MapView.java - 3,968 lines · 167 methods · 46 constants · interface
+# MapView.java - 3,968 lines · 167 methods · 45 constants · interface
 
 `ham/citybuildersim/ui/MapView.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
 
@@ -62,9 +62,9 @@
 > again once they are kept. Nothing on WORKER touches a node of the scene.
 > 
 > THE OVERLAY ON THE BLOCK GRID (0.7.69, batch M5; the project's
-> ... (120 more lines in the source)
+> ... (121 more lines in the source)
 
-**Uses:** [MapFrame](MapFrame.md) (90), [Palette](Palette.md) (85), [LandMap](LandMap.md) (84), [GlobeFrame](GlobeFrame.md) (40), [World](World.md) (29), [Game](Game.md) (26), [CityLand](CityLand.md) (22), [LandParcel](LandParcel.md) (22), [CityMap](CityMap.md) (20), [MapTiles](MapTiles.md) (17), [GlobePicture](GlobePicture.md) (17), [ShipShapes](ShipShapes.md) (14), [LandMarket](LandMarket.md) (13), [TrainSchedule](TrainSchedule.md) (10), [TruckSchedule](TruckSchedule.md) (10), [BoatSchedule](BoatSchedule.md) (8), [TrainShapes](TrainShapes.md) (8), [TilePainter](TilePainter.md) (6), [Deposit](Deposit.md) (4), [TileRaster](TileRaster.md) (4), [TruckShapes](TruckShapes.md) (4), [UserInterface](UserInterface.md) (3), [HistoryScreen](HistoryScreen.md) (3), [Ports](Ports.md) (3), [LandGrid](LandGrid.md) (3), [Icons](Icons.md) (2), [Landmasses](Landmasses.md) (2), [Resource](Resource.md) (2), [LandScreen](LandScreen.md) (2), [MiniMapFrame](MiniMapFrame.md) (2)... and 7 more
+**Uses:** [MapFrame](MapFrame.md) (90), [Palette](Palette.md) (85), [LandMap](LandMap.md) (84), [GlobeFrame](GlobeFrame.md) (40), [World](World.md) (29), [Game](Game.md) (26), [CityMap](CityMap.md) (22), [CityLand](CityLand.md) (22), [LandParcel](LandParcel.md) (22), [MapTiles](MapTiles.md) (17), [GlobePicture](GlobePicture.md) (17), [ShipShapes](ShipShapes.md) (14), [LandMarket](LandMarket.md) (13), [TrainSchedule](TrainSchedule.md) (10), [TruckSchedule](TruckSchedule.md) (10), [BoatSchedule](BoatSchedule.md) (8), [TrainShapes](TrainShapes.md) (8), [TilePainter](TilePainter.md) (6), [Deposit](Deposit.md) (4), [TileRaster](TileRaster.md) (4), [TruckShapes](TruckShapes.md) (4), [UserInterface](UserInterface.md) (3), [HistoryScreen](HistoryScreen.md) (3), [Ports](Ports.md) (3), [LandGrid](LandGrid.md) (3), [Icons](Icons.md) (2), [Landmasses](Landmasses.md) (2), [Resource](Resource.md) (2), [LandScreen](LandScreen.md) (2), [MiniMapFrame](MiniMapFrame.md) (2)... and 7 more
 
 **Used by (3):** [LandScreen](LandScreen.md), [MiniMap](MiniMap.md), [UserInterface](UserInterface.md)
 
@@ -72,17 +72,17 @@
 
 | line | section |
 |---:|---|
-| 281 | · what it draws from |
-| 331 | · what the player is doing |
-| 344 | · buying from the map (0.7.137, batch M6) |
-| 372 | · the boats (0.7.97) |
-| 396 | · the globe (0.7.135, batch E9) |
+| 282 | · what it draws from |
+| 332 | · what the player is doing |
+| 345 | · buying from the map (0.7.137, batch M6) |
+| 373 | · the boats (0.7.97) |
+| 397 | · the globe (0.7.135, batch E9) |
 | 576 | A FRAME OF THE CLOCK (tick()) |
 | 968 | THE DRAWING |
 | 1012 | THE WORLD LINE (0.8.1, batch FR0; spec-freight 4.1, D13) |
 | 1097 | THE BOATS (0.7.97, batch O13) |
 | 1182 | THE TRAINS (0.8.2, batch FR1; spec-freight 4.4, D16) |
-| 1242 | · the trucks (0.8.8, batch FR5; spec-freight 4.7, D21) |
+| 1242 | · the trucks (0.8.8, batch FR5; spec-freight 4.7, D21; whole trips since FR9) |
 | 1535 | · the zones by district (0.8.0, batch I14; spec-zoning 4: "the map tints a zone's districts") |
 | 1562 | · the ground no port links (ET5, slice D; the ET5 design, section 5) |
 | 1946 | THE GLOBE (0.7.135, batch E9; docs/studies/spec-globe.md 3) |
@@ -95,25 +95,24 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 221 | `MapView.SMALL_W` | `600, SMALL_H = 400` | The land office's small map, in pixels (spec-land 2.8). |
-| 224 | `MapView.FRAME_MS` | `8` | The most a frame spends painting tiles, in ms (spec-land 2.6): about 40 tiles at the design's 0.19 ms each. |
-| 227 | `MapView.CLICK_SLOP` | `5` | A press that moves less than this many pixels is a click, not a drag: 5 (the mockup's). |
-| 230 | `MapView.FIELDS_MOST` | `4000` | The most deposits marked in the far views: 4,000 - far more than a city's land and offers hold (Jerus's: a few dozen fields)... |
-| 233 | `MapView.FIELD_CELLS_MOST` | `64` | ...and none once its land and offers span more than this many world cells (star): 64, a box about 490 km across - a city of billions spans a continent, where a dot a field would be the world's iron, not the city's. |
-| 236 | `MapView.PANE_TOP` | `14, PANE_SIDE = 22, PANE_BOTTOM = 12` | The expanded pane's padding, as City History's full screen lays it (top, right, bottom, left)... |
-| 239 | `MapView.PANE_HEAD` | `36` | ...and its head line's height with the gap under it. |
-| 242 | `MapView.DRAFTS_MOST` | `3` | Drafts a city may fail to keep before its map is drawn on the FX thread instead: 3. |
-| 248 | `MapView.BOAT_GAME_MONTHS` | `BoatSchedule.MONTH_SECONDS / UserInterface.SECONDS_PER_MONTH` | Game months a boat-month spans (0.7.97): BoatSchedule.MONTH_SECONDS over UserInterface.SECONDS_PER_MONTH, 12 - so at 1x a month of ships plays as the research's 60 s (Q8), at every speed in step with the game's clock,... |
-| 251 | `MapView.LANE_BAND_ALPHA` | `0.10, LANE_BAND_PX = 8` | A lane's band: the import blue at 10%, 8 px wide (mockup 3's trade lanes, quieter: the playtest's 23 lanes overlap)... |
-| 254 | `MapView.LANE_DASH_ALPHA` | `0.45` | ...and its dashes, the blue at 45%, 5 px on and 6 off (mockup 3's). |
-| 260 | `MapView.WORKER` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "city-map")...` | The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the minimap's (MiniMap), ... |
-| 425 | `MapView.MODE_PICTURE` | `0, MODE_GROUND = 1, MODE_FADE = 2` | How the globe's picture was drawn: the planet's picture, the GROUND tier, or the plane's nodes alone for the crossfade. |
-| 478 | `MapView.DRAWING` | `"Drawing the city's map…"` | The note while the map is drawn away from the screen. |
-| 481 | `MapView.EXPAND_TIP` | `"The map under the window's header: drag along the city's edge to pick the ex...` | The Expand button's tooltip (since MS1 it says the drag picks; since BL1 the ground it picks is the player's own: a drag along the city's edge picks the exact ground, one from elsewhere pans). |
-| 485 | `MapView.HINT` | `"drag along the city's edge to pick the exact ground · drag elsewhere to pan"` | The expanded map's hint, at the right of its head: since 0.7.137 how to buy (spec-earth 3.1, "its hint becomes"), since MS1 by a click or a drag, since BL1 of the exact ground - blocks of the city's grid, the offers i... |
-| 488 | `MapView.KEYS_TIP` | `"Click an offer to open its card beside it, or a free block along the city's ...` | ...the hint's tooltip: every key and gesture the expanded map takes - the panning and zooming the hint said until 0.7.137, and the buying since. |
-| 498 | `MapView.SELECT_EVERY` | `"Select every offer"` | The head's chip that picks every offer listed (B7). |
-| 1245 | `MapView.HIGHWAYS_SALT` | `0x7472_7563_6b73_0001L` | The highways' schedule's salt: apart from every district's, which is its key (CityMap.DistrictRoutes.key()), so two schedules of one month do not hash alike. |
+| 222 | `MapView.SMALL_W` | `600, SMALL_H = 400` | The land office's small map, in pixels (spec-land 2.8). |
+| 225 | `MapView.FRAME_MS` | `8` | The most a frame spends painting tiles, in ms (spec-land 2.6): about 40 tiles at the design's 0.19 ms each. |
+| 228 | `MapView.CLICK_SLOP` | `5` | A press that moves less than this many pixels is a click, not a drag: 5 (the mockup's). |
+| 231 | `MapView.FIELDS_MOST` | `4000` | The most deposits marked in the far views: 4,000 - far more than a city's land and offers hold (Jerus's: a few dozen fields)... |
+| 234 | `MapView.FIELD_CELLS_MOST` | `64` | ...and none once its land and offers span more than this many world cells (star): 64, a box about 490 km across - a city of billions spans a continent, where a dot a field would be the world's iron, not the city's. |
+| 237 | `MapView.PANE_TOP` | `14, PANE_SIDE = 22, PANE_BOTTOM = 12` | The expanded pane's padding, as City History's full screen lays it (top, right, bottom, left)... |
+| 240 | `MapView.PANE_HEAD` | `36` | ...and its head line's height with the gap under it. |
+| 243 | `MapView.DRAFTS_MOST` | `3` | Drafts a city may fail to keep before its map is drawn on the FX thread instead: 3. |
+| 249 | `MapView.BOAT_GAME_MONTHS` | `BoatSchedule.MONTH_SECONDS / UserInterface.SECONDS_PER_MONTH` | Game months a boat-month spans (0.7.97): BoatSchedule.MONTH_SECONDS over UserInterface.SECONDS_PER_MONTH, 12 - so at 1x a month of ships plays as the research's 60 s (Q8), at every speed in step with the game's clock,... |
+| 252 | `MapView.LANE_BAND_ALPHA` | `0.10, LANE_BAND_PX = 8` | A lane's band: the import blue at 10%, 8 px wide (mockup 3's trade lanes, quieter: the playtest's 23 lanes overlap)... |
+| 255 | `MapView.LANE_DASH_ALPHA` | `0.45` | ...and its dashes, the blue at 45%, 5 px on and 6 off (mockup 3's). |
+| 261 | `MapView.WORKER` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "city-map")...` | The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the minimap's (MiniMap), ... |
+| 426 | `MapView.MODE_PICTURE` | `0, MODE_GROUND = 1, MODE_FADE = 2` | How the globe's picture was drawn: the planet's picture, the GROUND tier, or the plane's nodes alone for the crossfade. |
+| 479 | `MapView.DRAWING` | `"Drawing the city's map…"` | The note while the map is drawn away from the screen. |
+| 482 | `MapView.EXPAND_TIP` | `"The map under the window's header: drag along the city's edge to pick the ex...` | The Expand button's tooltip (since MS1 it says the drag picks; since BL1 the ground it picks is the player's own: a drag along the city's edge picks the exact ground, one from elsewhere pans). |
+| 486 | `MapView.HINT` | `"drag along the city's edge to pick the exact ground · drag elsewhere to pan"` | The expanded map's hint, at the right of its head: since 0.7.137 how to buy (spec-earth 3.1, "its hint becomes"), since MS1 by a click or a drag, since BL1 of the exact ground - blocks of the city's grid, the offers i... |
+| 489 | `MapView.KEYS_TIP` | `"Click an offer to open its card beside it, or a free block along the city's ...` | ...the hint's tooltip: every key and gesture the expanded map takes - the panning and zooming the hint said until 0.7.137, and the buying since. |
+| 499 | `MapView.SELECT_EVERY` | `"Select every offer"` | The head's chip that picks every offer listed (B7). |
 | 1410 | `MapView.OFFER_EDGE` | `"#f6a6c9"` | The offers' pink: the mockup's band edge (rgba(246, 166, 201)). |
 | 1413 | `MapView.BLOCK_LINE_ALPHA` | `0.08` | The block lines' white, its alpha: 0.08 (0.7.69, star) - faint, so the ground under them reads first; at 0.08 a line shows on the dimmed world and on the city's own ground alike (the M5 renders). |
 | 1416 | `MapView.EDGE_ALPHA` | `MapTiles.EDGE_ALPHA` | The city's edge's white, its alpha: 0.55, as since 0.7.61 - the far nodes' too (MapTiles.EDGE_ALPHA, 0.7.128). |
@@ -146,107 +145,109 @@
 
 | line | field | says |
 |---:|---|---|
-| 245 | `static Game.MapDraft drafting` | The draft of the city's map on WORKER, this view's or the minimap's (0.7.134), until it comes back: the other waits for it rather than draw the same map aside twice. |
-| 267 | `private final UserInterface ui` |  |
-| 268 | `private final Picker picker` |  |
-| 269 | `private final Runnable onClose` |  |
-| 270 | `private final Canvas canvas` |  |
-| 271 | `private final StackPane smallBox` |  |
-| 272 | `private final Label readout` |  |
-| 273 | `private final MapFrame small` |  |
-| 274 | `private MapFrame big` |  |
-| 275 | `private boolean expanded` |  |
-| 277 | `private VBox bigPane` |  |
-| 278 | `private StackPane bigBox` |  |
-| 279 | `private VBox card` |  |
-| 283 | `private CityMap shownMap` |  |
-| 284 | `private MapTiles tiles` |  |
-| 285 | `private Game.MapDraft draft` |  |
-| 286 | `private int draftsFailed` |  |
-| 287 | `private long version` |  |
-| 288 | `private long fittedFor` |  |
-| 290 | `private long farRecoloured` | How many far nodes have been coloured (batch UP3): a node whose version moved but whose key did not (MapTiles.nodeKey()) is not counted. |
-| 291 | `private final TilePainter.Input in` |  |
-| 292 | `private int[] buffer` |  |
-| 296 | `WritableImage image` |  |
-| 297 | `long stamp, version` |  |
-| 298 | `byte[] ground` |  |
-| 300 | `byte[] relief` | The node's relief beside its ground (ET1 slice D): null on a generated world, whose ground is all flat. |
-| 301 | `boolean partial` |  |
-| 302 | `long pictures` |  |
-| 304 | `int[] pixels` | A far node's colours as drawn (0.7.135): what the globe reprojects near the city. |
-| 309 | `long most` |  |
-| 314 | `private final Pictures l0small` |  |
-| 316 | `private final Set<Long> nodesAsked` |  |
-| 322 | `private final Pictures charts` | The globe's chart nodes (MS3; GlobeFrame.chart()) kept as the plane's far nodes are - their colours (Img.pixels), classes and relief (for the hover) - and those asked of WORKER and not back. |
-| 323 | `private final Set<Long> chartsAsked` |  |
-| 325 | `private final Set<CityMap.District> picturesAsked` | The districts whose pictures' jobs are on WORKER (0.7.128), and those the far nodes drawn this frame lacked. |
-| 328 | `private List<Deposit> fields` | The deposits the far views mark, and the land they were found for. |
-| 329 | `private long fieldsFor` |  |
-| 333 | `private int side` | the side the office shows, and the offer picked |
-| 334 | `private int litSide` | the side the office shows, and the offer picked |
-| 335 | `private int overSide` | a row hovered in the office |
-| 336 | `private double pressX, pressY, lastX, lastY, moved` | the offer under the pointer |
-| 337 | `private boolean pressed` |  |
-| 339 | `private javafx.scene.input.MouseButton pressButton` | The button the press was made with (MS1): only the primary clicks or draws a box; the others pan. |
-| 340 | `private double[] hoverAt` |  |
-| 342 | `private boolean hoverShift` | Whether Shift was held when the pointer last moved over the map: the cursor says a press would box from anywhere (MS1). |
-| 347 | `private final LandMap.Picks picks` | The offers picked on the expanded map, in the order picked (LandMap.Picks): the view's alone, dropped on a load and a collapse - and, since MS1, not on a month: each is keyed to its ground and lost only when the city ... |
-| 349 | `private VBox buyBox` | The card in the pane (the land office's: LandScreen.mapCardNode(), mapReceiptNode()) and what it was drawn for - null for a receipt. |
-| 350 | `private String cardFor` |  |
-| 352 | `private List<double[]> rings` | The sites of the fields the card's offers hold, each its square of plots and its resource's colour, {x0, y0, x1, y1, argb}: ringed wherever they lie (board 7). |
-| 354 | `private double[] cardAt` | The box of plots the card stands beside: the offer clicked, what a box took, the shelf's first for Ctrl+A, the ground just bought. |
-| 356 | `private Bought bought` | A purchase from the card and its receipt: what is being bought - ids, places, the ground - shown by the ground once it is the city's. |
-| 357 | `private boolean receiptShown` |  |
-| 359 | `private boolean backFromFunding` | The card sent to the funding page (B5): the map comes back over the window at the view it left when the page is done. |
-| 361 | `private boolean boxing` | A drag that boxes (B7; since MS1 a plain drag from an offer's free ground, or Shift and a drag from anywhere - LandMap.pressBoxes()): a box drawn from the press to (boxX, boxY), in the screen's pixels. |
-| 362 | `private double boxX, boxY` |  |
-| 364 | `private Label headMoney` | The head's money and its pay toggle (land's own, in the money the toggle pays in: the window's header, kept in view over this pane since MS1, says neither), what they were drawn for, and the note of what the picks los... |
-| 365 | `private HBox headPay` |  |
-| 366 | `private String headFor` |  |
-| 367 | `private Label headNote` |  |
-| 368 | `private javafx.scene.control.Tooltip headNoteTip` |  |
-| 370 | `private boolean running, dirty` |  |
-| 375 | `private CityMap.RoutesJob routesAsked` | The routes being found on WORKER, or null. |
-| 377 | `private BoatSchedule schedule` | The schedule drawn from: its boat-month, the routes and the game month it was made on. |
-| 378 | `private int scheduleMonth` |  |
-| 379 | `private List<BoatSchedule.Route> scheduleRoutes` |  |
-| 381 | `private TrainSchedule trainSchedule` | The trains' schedule drawn from (0.8.2, batch FR1): its boat-month, the routes and the game month it was made on. |
-| 382 | `private int trainMonth` |  |
-| 383 | `private List<TrainSchedule.Route> trainRoutes` |  |
-| 385 | `private boolean boatsLive` | Whether boats - or since 0.8.2 trains, and since 0.8.8 trucks - are in view (the frame goes on), and the clock they were last drawn at. |
-| 386 | `private double drawnClock` |  |
-| 387 | `private final AnimationTimer pump` |  |
-| 391 | `private final ImagePattern hatch` |  |
-| 394 | `private final ImagePattern islandHatch` | The amber hatch over the city's ground that no port links (ET5): the offers' hatch drawn in the warning colour. |
-| 399 | `private GlobeFrame globe` | The expanded map's view on an Earth world, and the world and data it is of; null on a generated world. |
-| 400 | `private World.Key globeKey` |  |
-| 401 | `private EarthData globeData` |  |
-| 403 | `private long reachFor` | The land and offers its reach was found for. |
-| 406 | `private WritableImage globeImg` | The globe's picture of the view: its pixels, the view it was drawn for (a copy, its size the picture's), how, and what moved since. |
-| 407 | `private int[] globePx` |  |
-| 408 | `private GlobeFrame globeDrawn` |  |
-| 409 | `private int globeMode` |  |
-| 410 | `private long globeInputs` |  |
-| 412 | `private long inputs` | Bumped when a far node is coloured or the planet's picture kept: a still view is drawn again from them. |
-| 414 | `private double[] patch` | The screen's box a still picture is to be drawn again over (a piece in, a node coloured), or null. |
-| 417 | `private byte[] pieceCls` | The GROUND tier's pieces past the plane, for one view at rest: its codes - class and relief (GlobePicture.code()) - a pixel (-1 not in yet), the view and its number. |
-| 418 | `private GlobeFrame pieceView` |  |
-| 419 | `private volatile int pieceGen` |  |
-| 421 | `private int[] carryPx` | The last whole picture at rest, carried pixel by pixel while the next is drawn. |
-| 422 | `private GlobeFrame carryView` |  |
-| 428 | `private boolean keyW, keyA, keyS, keyD` | W, A, S and D held, and when the keys last moved the view (0 when none is held). |
-| 429 | `private long keyNanos` |  |
-| 432 | `private int legendTier` | The tier the legend was laid out for, and whether with the relief's entries (LandMap.reliefDrawn()). |
-| 433 | `private boolean legendRelief` |  |
+| 246 | `static Game.MapDraft drafting` | The draft of the city's map on WORKER, this view's or the minimap's (0.7.134), until it comes back: the other waits for it rather than draw the same map aside twice. |
+| 268 | `private final UserInterface ui` |  |
+| 269 | `private final Picker picker` |  |
+| 270 | `private final Runnable onClose` |  |
+| 271 | `private final Canvas canvas` |  |
+| 272 | `private final StackPane smallBox` |  |
+| 273 | `private final Label readout` |  |
+| 274 | `private final MapFrame small` |  |
+| 275 | `private MapFrame big` |  |
+| 276 | `private boolean expanded` |  |
+| 278 | `private VBox bigPane` |  |
+| 279 | `private StackPane bigBox` |  |
+| 280 | `private VBox card` |  |
+| 284 | `private CityMap shownMap` |  |
+| 285 | `private MapTiles tiles` |  |
+| 286 | `private Game.MapDraft draft` |  |
+| 287 | `private int draftsFailed` |  |
+| 288 | `private long version` |  |
+| 289 | `private long fittedFor` |  |
+| 291 | `private long farRecoloured` | How many far nodes have been coloured (batch UP3): a node whose version moved but whose key did not (MapTiles.nodeKey()) is not counted. |
+| 292 | `private final TilePainter.Input in` |  |
+| 293 | `private int[] buffer` |  |
+| 297 | `WritableImage image` |  |
+| 298 | `long stamp, version` |  |
+| 299 | `byte[] ground` |  |
+| 301 | `byte[] relief` | The node's relief beside its ground (ET1 slice D): null on a generated world, whose ground is all flat. |
+| 302 | `boolean partial` |  |
+| 303 | `long pictures` |  |
+| 305 | `int[] pixels` | A far node's colours as drawn (0.7.135): what the globe reprojects near the city. |
+| 310 | `long most` |  |
+| 315 | `private final Pictures l0small` |  |
+| 317 | `private final Set<Long> nodesAsked` |  |
+| 323 | `private final Pictures charts` | The globe's chart nodes (MS3; GlobeFrame.chart()) kept as the plane's far nodes are - their colours (Img.pixels), classes and relief (for the hover) - and those asked of WORKER and not back. |
+| 324 | `private final Set<Long> chartsAsked` |  |
+| 326 | `private final Set<CityMap.District> picturesAsked` | The districts whose pictures' jobs are on WORKER (0.7.128), and those the far nodes drawn this frame lacked. |
+| 329 | `private List<Deposit> fields` | The deposits the far views mark, and the land they were found for. |
+| 330 | `private long fieldsFor` |  |
+| 334 | `private int side` | the side the office shows, and the offer picked |
+| 335 | `private int litSide` | the side the office shows, and the offer picked |
+| 336 | `private int overSide` | a row hovered in the office |
+| 337 | `private double pressX, pressY, lastX, lastY, moved` | the offer under the pointer |
+| 338 | `private boolean pressed` |  |
+| 340 | `private javafx.scene.input.MouseButton pressButton` | The button the press was made with (MS1): only the primary clicks or draws a box; the others pan. |
+| 341 | `private double[] hoverAt` |  |
+| 343 | `private boolean hoverShift` | Whether Shift was held when the pointer last moved over the map: the cursor says a press would box from anywhere (MS1). |
+| 348 | `private final LandMap.Picks picks` | The offers picked on the expanded map, in the order picked (LandMap.Picks): the view's alone, dropped on a load and a collapse - and, since MS1, not on a month: each is keyed to its ground and lost only when the city ... |
+| 350 | `private VBox buyBox` | The card in the pane (the land office's: LandScreen.mapCardNode(), mapReceiptNode()) and what it was drawn for - null for a receipt. |
+| 351 | `private String cardFor` |  |
+| 353 | `private List<double[]> rings` | The sites of the fields the card's offers hold, each its square of plots and its resource's colour, {x0, y0, x1, y1, argb}: ringed wherever they lie (board 7). |
+| 355 | `private double[] cardAt` | The box of plots the card stands beside: the offer clicked, what a box took, the shelf's first for Ctrl+A, the ground just bought. |
+| 357 | `private Bought bought` | A purchase from the card and its receipt: what is being bought - ids, places, the ground - shown by the ground once it is the city's. |
+| 358 | `private boolean receiptShown` |  |
+| 360 | `private boolean backFromFunding` | The card sent to the funding page (B5): the map comes back over the window at the view it left when the page is done. |
+| 362 | `private boolean boxing` | A drag that boxes (B7; since MS1 a plain drag from an offer's free ground, or Shift and a drag from anywhere - LandMap.pressBoxes()): a box drawn from the press to (boxX, boxY), in the screen's pixels. |
+| 363 | `private double boxX, boxY` |  |
+| 365 | `private Label headMoney` | The head's money and its pay toggle (land's own, in the money the toggle pays in: the window's header, kept in view over this pane since MS1, says neither), what they were drawn for, and the note of what the picks los... |
+| 366 | `private HBox headPay` |  |
+| 367 | `private String headFor` |  |
+| 368 | `private Label headNote` |  |
+| 369 | `private javafx.scene.control.Tooltip headNoteTip` |  |
+| 371 | `private boolean running, dirty` |  |
+| 376 | `private CityMap.RoutesJob routesAsked` | The routes being found on WORKER, or null. |
+| 378 | `private BoatSchedule schedule` | The schedule drawn from: its boat-month, the routes and the game month it was made on. |
+| 379 | `private int scheduleMonth` |  |
+| 380 | `private List<BoatSchedule.Route> scheduleRoutes` |  |
+| 382 | `private TrainSchedule trainSchedule` | The trains' schedule drawn from (0.8.2, batch FR1): its boat-month, the routes and the game month it was made on. |
+| 383 | `private int trainMonth` |  |
+| 384 | `private List<TrainSchedule.Route> trainRoutes` |  |
+| 386 | `private boolean boatsLive` | Whether boats - or since 0.8.2 trains, and since 0.8.8 trucks - are in view (the frame goes on), and the clock they were last drawn at. |
+| 387 | `private double drawnClock` |  |
+| 388 | `private final AnimationTimer pump` |  |
+| 392 | `private final ImagePattern hatch` |  |
+| 395 | `private final ImagePattern islandHatch` | The amber hatch over the city's ground that no port links (ET5): the offers' hatch drawn in the warning colour. |
+| 400 | `private GlobeFrame globe` | The expanded map's view on an Earth world, and the world and data it is of; null on a generated world. |
+| 401 | `private World.Key globeKey` |  |
+| 402 | `private EarthData globeData` |  |
+| 404 | `private long reachFor` | The land and offers its reach was found for. |
+| 407 | `private WritableImage globeImg` | The globe's picture of the view: its pixels, the view it was drawn for (a copy, its size the picture's), how, and what moved since. |
+| 408 | `private int[] globePx` |  |
+| 409 | `private GlobeFrame globeDrawn` |  |
+| 410 | `private int globeMode` |  |
+| 411 | `private long globeInputs` |  |
+| 413 | `private long inputs` | Bumped when a far node is coloured or the planet's picture kept: a still view is drawn again from them. |
+| 415 | `private double[] patch` | The screen's box a still picture is to be drawn again over (a piece in, a node coloured), or null. |
+| 418 | `private byte[] pieceCls` | The GROUND tier's pieces past the plane, for one view at rest: its codes - class and relief (GlobePicture.code()) - a pixel (-1 not in yet), the view and its number. |
+| 419 | `private GlobeFrame pieceView` |  |
+| 420 | `private volatile int pieceGen` |  |
+| 422 | `private int[] carryPx` | The last whole picture at rest, carried pixel by pixel while the next is drawn. |
+| 423 | `private GlobeFrame carryView` |  |
+| 429 | `private boolean keyW, keyA, keyS, keyD` | W, A, S and D held, and when the keys last moved the view (0 when none is held). |
+| 430 | `private long keyNanos` |  |
+| 433 | `private int legendTier` | The tier the legend was laid out for, and whether with the relief's entries (LandMap.reliefDrawn()). |
+| 434 | `private boolean legendRelief` |  |
 | 924 | `private volatile long[] nodesWanted` | The far nodes the view being painted wants - {plots a pixel, nx0, nx1, ny0, ny1} - which WORKER's queue reads from its own thread (MS2). |
 | 1017 | `private javafx.scene.text.Font worldLabelFont` | The world line's label as measured: its font, its width (and the shared label's) and its height above the baseline, kept until the font changes (FX2, FX5). |
 | 1018 | `private double worldLabelW, worldLabelBothW, worldLabelH` |  |
-| 1248 | `private TruckSchedule truckSchedule` | The highways' trucks' schedule drawn from: its boat-month, the routes and the game month it was made on. |
-| 1249 | `private int truckMonth` |  |
-| 1250 | `private List<TruckSchedule.Route> truckRoutes` |  |
-| 1256 | `private final Map<Long, DistrictTrucks> districtTrucks` | The districts' schedules by CityMap.DistrictRoutes.key(): thrown out with the highways' when the month, the game month or the map turns. |
-| 1259 | `private int trucksStand` | Loads each truck drawn this frame stands for (the legend's N), or 0 when none is drawn: the highways' schedule's, else the largest of the districts' drawn. |
+| 1248 | `private final Map<Long, DistrictTrucks> districtTrucks` | The districts' schedules by CityMap.DistrictTrips.key(): thrown out with the shares when the month, the game month or the trips turn. |
+| 1251 | `private int truckMonth` | The boat-month and the game month the schedules were made on, and the trips (CityMap.tripsDrawn()) they were made against. |
+| 1252 | `private List<CityMap.DistrictTrips> truckTrips` |  |
+| 1255 | `private double[][] truckPerBuilding` | What one building of each type carries in the month billed and the city's truck tonnes by load (TruckSchedule.perBuilding(), Freight.truckedIn() and the others): what a district's share is made of, kept with the sched... |
+| 1256 | `private double[] truckCityTonnes` |  |
+| 1258 | `private Map<Long, double[]> truckShares` | ...and each district with trips' catchment's shares of them by CityMap.DistrictTrips.key() (TruckSchedule.sharesByTrips()): its own works' tonnes and those of the districts about it that have no trips. |
+| 1261 | `private int trucksStand` | Loads each truck drawn this frame stands for (the legend's N), or 0 when none is drawn: the largest of the districts' drawn, which is the city's N. |
 | 1526 | `private double[][] edge` | The city's edge and each offer's own ground cut out of its rectangle (by offer id), for the land and listing below: found once each time either moves, not every frame... |
 | 1527 | `private final Map<Integer, List<double[]>> ownedIn` |  |
 | 1528 | `private long shapesFor` |  |
@@ -290,34 +291,34 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 218 | 3751 | **type** `final class MapView` | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, th... |
-| 257 | 1 | **type** `interface Picker` | Who hears a click: a side, and an offer's place on it or -1. |
-| 257 | 1 | `void picked(int side, int place)` _(in MapView.Picker)_ |  |
+| 219 | 3750 | **type** `final class MapView` | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, th... |
+| 258 | 1 | **type** `interface Picker` | Who hears a click: a side, and an offer's place on it or -1. |
+| 258 | 1 | `void picked(int side, int place)` _(in MapView.Picker)_ |  |
 
-### what it draws from (lines 281-330)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 295 | 11 | **type** `private static final class Img` | A picture: its image, the stamp it was painted at, the map's version it is current against, and a far node's ground - and (0.7.128) whether it was drawn without a district picture it would sample, and the map's count ... |
-| 308 | 5 | **type** `private static final class Pictures extends LinkedHashMap<Long, Img>` | A level's pictures, the most recently drawn kept: `most` of them. |
-| 310 | 1 | `Pictures()` _(in MapView.Pictures)_ |  |
-| 311 | 1 | `protected boolean removeEldestEntry(Map.Entry<Long, Img> e)` _(in MapView.Pictures)_ |  |
-
-### what the player is doing (lines 331-343)
-
-### buying from the map (0.7.137, batch M6) (lines 344-371)
-
-### the boats (0.7.97) (lines 372-395)
-
-### the globe (0.7.135, batch E9) (lines 396-575)
+### what it draws from (lines 282-331)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 435 | 41 | `MapView(UserInterface ui, Picker picker, Runnable onClose)` |  |
-| 501 | 1 | `Region smallNode()` | The small map, its Expand button and its readout: what the land office lays in its hero row. |
-| 504 | 1 | `private MapFrame frame()` | The map's frame on screen now: the expanded one while expanded. |
-| 507 | 14 | `void forget()` | A new city or a load: everything drawn is another city's. |
-| 522 | 30 | `private void reset()` |  |
+| 296 | 11 | **type** `private static final class Img` | A picture: its image, the stamp it was painted at, the map's version it is current against, and a far node's ground - and (0.7.128) whether it was drawn without a district picture it would sample, and the map's count ... |
+| 309 | 5 | **type** `private static final class Pictures extends LinkedHashMap<Long, Img>` | A level's pictures, the most recently drawn kept: `most` of them. |
+| 311 | 1 | `Pictures()` _(in MapView.Pictures)_ |  |
+| 312 | 1 | `protected boolean removeEldestEntry(Map.Entry<Long, Img> e)` _(in MapView.Pictures)_ |  |
+
+### what the player is doing (lines 332-344)
+
+### buying from the map (0.7.137, batch M6) (lines 345-372)
+
+### the boats (0.7.97) (lines 373-396)
+
+### the globe (0.7.135, batch E9) (lines 397-575)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 436 | 41 | `MapView(UserInterface ui, Picker picker, Runnable onClose)` |  |
+| 502 | 1 | `Region smallNode()` | The small map, its Expand button and its readout: what the land office lays in its hero row. |
+| 505 | 1 | `private MapFrame frame()` | The map's frame on screen now: the expanded one while expanded. |
+| 508 | 14 | `void forget()` | A new city or a load: everything drawn is another city's. |
+| 523 | 29 | `private void reset()` |  |
 | 554 | 5 | `void refresh(int side, int place)` | The office drawn again: the side it shows and the offer picked, and whatever moved since - a month, a purchase. |
 | 561 | 6 | `void light(int side, int place)` | An offer lit from its row in the office (-1 for none). |
 | 568 | 7 | `private void requestDraw()` |  |
@@ -368,12 +369,12 @@
 |---:|---:|---|---|
 | 1195 | 46 | `private void trains(GraphicsContext gc, MapFrame f, int level)` | The trains over the tiles, from L1 in, as the boats: the month's schedule (TrainSchedule, from the railway's tonnes by kind) on the map's routes (CityMap.trainRoutes()) at the boats' clock. |
 
-### the trucks (0.8.8, batch FR5; spec-freight 4.7, D21) (lines 1242-1534)
+### the trucks (0.8.8, batch FR5; spec-freight 4.7, D21; whole trips since FR9) (lines 1242-1534)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1253 | 1 | **type** `private record DistrictTrucks(List<TruckSchedule.Route> routes, TruckSchedule schedule)` | An access road's trucks' schedule, with the routes it was made on: made again when its district's routes are another list. |
-| 1271 | 39 | `private void trucks(GraphicsContext gc, MapFrame f, int level)` | The trucks over the tiles, at the near view alone and while the setting is on (TruckSchedule.drawnAt()): the month's schedule on the highways (CityMap.truckRoutes()) and, for each district in view, on its access roads... |
+| 1245 | 1 | **type** `private record DistrictTrucks(List<TruckSchedule.Route> trips, TruckSchedule schedule)` | A district's trucks' schedule, with the trips it was made on: made again when its district's trips are another list. |
+| 1273 | 37 | `private void trucks(GraphicsContext gc, MapFrame f, int level)` | The trucks over the tiles, at the near view alone and while the setting is on (TruckSchedule.drawnAt()): each district's trips (CityMap.tripsDrawn(), a truck's whole way from the world line to a works' gate and back, ... |
 | 1312 | 7 | `private int fillTrucks(GraphicsContext gc, MapFrame f, TruckSchedule schedule, long x0, long y0, long x1, long y1, double t)` | One schedule's trucks in the box filled in their colours, or nothing when it has none or no route of it crosses the view; the loads a truck of it stands for, or 0 when none was drawn. |
 | 1321 | 4 | `private static void fillShape(GraphicsContext gc, MapFrame f, double[][] pts, Color c)` | A shape in plots filled on the screen. |
 | 1326 | 5 | `private static double[] screenXs(MapFrame f, double[] xs)` |  |

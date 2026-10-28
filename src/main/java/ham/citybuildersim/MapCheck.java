@@ -188,6 +188,10 @@ import java.util.Map;
  *      train pure in (call, t), a frame finding every train on screen; at
  *      10B a frame's trains in no more than TRAIN_FRAME_MS; and the played
  *      city's station no container yard, its railway having moved no boxes.
+ *      Since FR9 the trucks' trips beside them (trucksAtTenBillion()): at
+ *      10B, PLANS_KEPT districts of 20 roads each - a world trip and a home
+ *      trip a road, every one through the hub - a frame of an L0 screen about
+ *      the hub finds their trucks in no more than TRUCK_FRAME_MS.
  *      Since FX5 (0.8.18) the trains on the curves (trainsOnTheCurves()): no
  *      two neighbouring vehicles of a train differ in heading by more than
  *      MOST_TURN_DEG, and every vehicle shown whole is on the rail the tiles
@@ -4799,6 +4803,9 @@ public class MapCheck {
         check("...at 10 billion a frame's trains take no more than TRAIN_FRAME_MS (0.5 ms): an L0 screen and an L1 one",
                 Timing.within(best[0], TRAIN_FRAME_MS) && Timing.within(best[1], TRAIN_FRAME_MS) && ten.callCount() <= TrainSchedule.MOST_A_MONTH + 2 * kinds);
 
+        // ---- THE TRUCKS' TRIPS (FR9): a frame of the trucks at 10 billion, beside the trains'.
+        trucksAtTenBillion(sx, sy);
+
         // ---- THE WAGONS STANDING IN THE YARDS (FX5, slice T): the routes skip the sidings they stand on.
         trainsAndTheWagons(m, kinds);
 
@@ -5178,6 +5185,75 @@ public class MapCheck {
             }
         }
         return false;
+    }
+
+    /** The design's bound on a frame's trucks at 10 billion, in ms: the trains' (FR9: the trips run the trains' pace, and a frame is the same structure). */
+    static final double TRUCK_FRAME_MS = TRAIN_FRAME_MS;
+
+    /** Roads a district of the synthetic city has at 10 billion: 20, each with a world trip and a home trip, so a district's schedule holds 40 routes. */
+    static final int TRUCK_ROADS = 20;
+
+    /**
+     * Section 9's trucks at 10 billion (FR9): CityMap.PLANS_KEPT districts' trips, the most the map draws, each district's schedule at its
+     * 1/PLANS_KEPT of the prototype's tonnes scaled by people (PROTO_TONNES over PROTO_PEOPLE at 10 billion) in loads, a third each of
+     * imports, exports and tonnes bought at home. Every trip passes the hub (cx, cy), the ramp: the world trips along a long highway from
+     * a gateway, the home trips from one road's gate by the hub to the next's. A frame of an L0 screen about the hub finds the trucks of
+     * every schedule, and takes no more than TRUCK_FRAME_MS (Timing.within, as the trains').
+     */
+    static void trucksAtTenBillion(long cx, long cy) {
+        int districts = CityMap.PLANS_KEPT;
+        double gx = cx - 1500 - TruckSchedule.WORLD_PLOTS, gy = cy + 0.5, hx = cx + 0.5, hy = cy + 0.5;
+        List<List<TruckSchedule.Route>> trips = new ArrayList<>();
+        for (int i = 0; i < districts; i++) {
+            double px = cx + (i % 8 - 3.5) * 4 * World.TILE, py = cy + (i / 8 - 3.5) * 4 * World.TILE;
+            double[] ex = new double[TRUCK_ROADS], ey = new double[TRUCK_ROADS];
+            for (int j = 0; j < TRUCK_ROADS; j++) { ex[j] = Math.floor(px) + (j % 5) * 6 + 0.5; ey[j] = Math.floor(py) + (j / 5) * 6 + 0.5; }
+            List<TruckSchedule.Route> mine = new ArrayList<>();
+            for (int j = 0; j < TRUCK_ROADS; j++) {
+                mine.add(TruckSchedule.Route.through(true, new double[] { gx, gx + TruckSchedule.WORLD_PLOTS, hx, hx, ex[j], ex[j] },
+                        new double[] { gy, gy, hy, ey[j], ey[j], ey[j] + 3 }, TruckSchedule.WORLD_PLOTS));
+            }
+            for (int j = 0; j < TRUCK_ROADS; j++) {
+                int b = (j + 1) % TRUCK_ROADS;
+                mine.add(TruckSchedule.Route.home(new double[] { ex[b], ex[b], hx, hx, hx, ex[j], ex[j] },
+                        new double[] { ey[b] + 3, ey[b], ey[b], hy, ey[j], ey[j], ey[j] + 3 }, CityMap.TRUCK_ACCESS_FADE));
+            }
+            trips.add(mine);
+        }
+        double tonnes10B = PROTO_TONNES * 1e10 / PROTO_PEOPLE;
+        double[] loads = new double[TruckSchedule.Load.values().length];
+        java.util.Arrays.fill(loads, tonnes10B / ham.citybuildersim.sectors.Haulage.TONNES_A_LOAD / loads.length);
+        double[] share = new double[loads.length];
+        java.util.Arrays.fill(share, 1.0 / districts);
+        List<TruckSchedule> schedules = new ArrayList<>();
+        int total = 0, routes = 0;
+        for (int i = 0; i < districts; i++) {
+            TruckSchedule s = TruckSchedule.of(7, loads, trips.get(i), share, i + 1);
+            s.frame(cx, cy, cx + 1, cy + 1, .5);
+            schedules.add(s);
+            total += s.callCount();
+            routes += s.routes().size();
+        }
+        long[][] views = {
+                { Math.round(SCREEN_W_PX / MapFrame.L0_FROM), Math.round(SCREEN_H_PX / MapFrame.L0_FROM) } };
+        double best = Double.MAX_VALUE;
+        int seen = 0;
+        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+            long ax = cx - views[0][0] / 2, ay = cy - views[0][1] / 2, bx = ax + views[0][0], by = ay + views[0][1];
+            long f0 = System.nanoTime();
+            int n = 0;
+            for (int k = 0; k < BOAT_FRAMES; k++) {
+                double t = (k + 0.5) / BOAT_FRAMES;
+                for (TruckSchedule s : schedules) if (s.crosses(ax, ay, bx, by)) n += s.frame(ax, ay, bx, by, t).size();
+            }
+            double ms = (System.nanoTime() - f0) / 1e6 / BOAT_FRAMES;
+            if (round >= WARM_ROUNDS) best = Math.min(best, ms);
+            seen = n / BOAT_FRAMES;
+        }
+        out.printf("      the trucks at 10B (%,.0f t a month, %d trucks drawn each standing for %,d loads, on %,d routes of %d districts): a frame of an L0 screen"
+                + " %.3f ms (%d trucks)%n", tonnes10B, total, schedules.get(0).stands(), routes, districts, best, seen);
+        check("...at 10 billion a frame's trucks take no more than TRUCK_FRAME_MS (0.5 ms): an L0 screen where every trip passes",
+                Timing.within(best, TRUCK_FRAME_MS) && seen > 0 && total <= TruckSchedule.MOST_A_MONTH + 3 * districts);
     }
 
     /**
