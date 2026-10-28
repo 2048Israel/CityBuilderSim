@@ -460,7 +460,24 @@ public final class CityMap {
     private Function<Resource, double[]> remaining;
 
     private final List<District> districts = new ArrayList<>();
+    /**
+     * The districts by key(dx, dy), stored under spread(key): a Long's hash is its halves xor-ed (dx ^ dy), which only a few hundred values of a city
+     * round the origin share, so the HashMap's bins grew into trees and every lookup walked one. Only get, put and remove touch it (districtAt(),
+     * indexDistrict(), unindexDistrict()), never iterated, so the spread is one-to-one and invisible.
+     */
     private final Map<Long, District> byKey = new HashMap<>();
+
+    /** A key() spread over all 64 bits: multiplied by an odd constant, which is one-to-one on 64 bits, so equal keys stay equal and different ones different. */
+    private static long spread(long k) { return k * 0x9E3779B97F4A7C15L; }
+
+    /** The district under a key() (null for none): byKey, through spread(). */
+    private District districtAt(long k) { return byKey.get(spread(k)); }
+
+    /** Files a district in byKey under its key. */
+    private void indexDistrict(District d) { byKey.put(spread(d.key), d); }
+
+    /** Takes a district out of byKey. */
+    private void unindexDistrict(District d) { byKey.remove(spread(d.key)); }
     private final long[] have;
     private final int[] lo, hi;
     private int innerCursor, outerCursor;
@@ -502,7 +519,7 @@ public final class CityMap {
     public List<District> districts()      { return java.util.Collections.unmodifiableList(districts); }
 
     /** The district at (dx, dy) from the founding site's, or null. */
-    public District district(int dx, int dy) { return byKey.get(key(dx, dy)); }
+    public District district(int dx, int dy) { return districtAt(key(dx, dy)); }
 
     /** The pyramid. */
     public Pyramid pyramid()               { return pyramid; }
@@ -639,7 +656,7 @@ public final class CityMap {
         District d = new District(dx, dy, types.length, ox * ox + oy * oy);
         districts.add(d);
         d.index = districts.size() - 1;
-        byKey.put(d.key, d);
+        indexDistrict(d);
         return d;
     }
 
@@ -695,7 +712,7 @@ public final class CityMap {
                 measureNew(dx, dy, own);
             }
         }
-        if (byKey.get(key(0, 0)) == null) {
+        if (districtAt(key(0, 0)) == null) {
             District d = newDistrict(0, 0);
             measure(d, ownership(0, 0));
         }
@@ -863,7 +880,7 @@ public final class CityMap {
         // ET5: a district holding owned ground the island rule masks stays, with no room, so the shore reaches it (a terminal for the island stands there: CL5's case J, an island holding only its port, whose count is in a linked district).
         if (landmasses != null && holdsMasked(dx, dy)) return d;
         districts.remove(districts.size() - 1);
-        byKey.remove(d.key);
+        unindexDistrict(d);
         return null;
     }
 
@@ -915,7 +932,7 @@ public final class CityMap {
         for (long k : touched) {
             int dx = (int) (k >> 32), dy = (int) k;
             int own = ownership(dx, dy);
-            District d = byKey.get(k);
+            District d = districtAt(k);
             if (d == null) {
                 if (own != NONE) measureNew(dx, dy, own);
                 continue;
@@ -1721,7 +1738,7 @@ public final class CityMap {
                     double sx = fx + at[0], sy = fy + at[1];
                     int ddx = (int) (Math.floorDiv(siteX + (long) Math.floor(sx), DISTRICT) - baseDX);
                     int ddy = (int) (Math.floorDiv(siteY + (long) Math.floor(sy), DISTRICT) - baseDY);
-                    District d = byKey.get(key(ddx, ddy));
+                    District d = districtAt(key(ddx, ddy));
                     if (d == null) {
                         d = newDistrict(ddx, ddy);
                         d.tileFree = new short[TILES];
@@ -2124,7 +2141,7 @@ public final class CityMap {
     }
 
     private District home() {
-        District d = byKey.get(key(0, 0));
+        District d = districtAt(key(0, 0));
         if (d == null) {
             d = newDistrict(0, 0);
             d.tileFree = new short[TILES];
@@ -2594,7 +2611,7 @@ public final class CityMap {
     District[] earlierOf(District d) {
         District[] out = new District[AROUND.length];
         for (int k = 0; k < AROUND.length; k++) {
-            District od = byKey.get(key(d.dx + AROUND[k][0], d.dy + AROUND[k][1]));
+            District od = districtAt(key(d.dx + AROUND[k][0], d.dy + AROUND[k][1]));
             if (od != null && DISTRICT_ORDER.compare(od, d) < 0 && band(od.index) == band(d.index)) out[k] = od;
         }
         return out;
@@ -2744,7 +2761,7 @@ public final class CityMap {
 
     /** Whether district d is at the city's edge: a neighbour of its eight is not on the map - where what the city has no room for is packed (R7). */
     boolean isEdge(District d) {
-        for (int b = -1; b <= 1; b++) for (int a = -1; a <= 1; a++) if ((a != 0 || b != 0) && byKey.get(key(d.dx + a, d.dy + b)) == null) return true;
+        for (int b = -1; b <= 1; b++) for (int a = -1; a <= 1; a++) if ((a != 0 || b != 0) && districtAt(key(d.dx + a, d.dy + b)) == null) return true;
         return false;
     }
 
@@ -2775,7 +2792,7 @@ public final class CityMap {
         long fx1 = x0 + DistrictPlan.FRAME - 1, fy1 = y0 + DistrictPlan.FRAME - 1;
         for (int b = -1; b <= 1; b++) {
             for (int a = -1; a <= 1; a++) {
-                boolean on = byKey.get(key(d.dx + a, d.dy + b)) != null;
+                boolean on = districtAt(key(d.dx + a, d.dy + b)) != null;
                 h = World.mix(h ^ (on ? 0x0A + 3 * a + b : 0x0FF));
                 if (!on) continue;
                 for (DrawnSite s : siteList(d.dx + a, d.dy + b)) {
@@ -3608,12 +3625,26 @@ public final class CityMap {
         return r;
     }
 
+    /**
+     * The mined sites reserveBlocked() reads, and the `changes` they were taken at (Long.MIN_VALUE for none): every L0 tile's reserve region and every
+     * candidate reserve's fits() asks it again after each month, and each ask walked all of the districts (minedSites()). The sites move only with the
+     * map's `changes` - every write to a district's site runs goes through add(), which moves it, as do a purchase and rebind() - and the guard already
+     * reports `changes` as its version, so the one list stands until `changes` moves.
+     */
+    private List<long[]> guardSites;
+    private long guardSitesAt = Long.MIN_VALUE;
+
     /** Whether a mine on its site or a work on the shore stands in the box (x0, y0) to (x1, y1), inclusive: ground an interchange's reserve may not take. */
     private boolean reserveBlocked(long x0, long y0, long x1, long y1) {
         for (CityShore.Work w : shore.works()) {
             if (w.x0() <= x1 && w.y0() <= y1 && w.x0() + w.w() > x0 && w.y0() + w.h() > y0) return true;
         }
-        for (long[] s : minedSites()) if (s[0] <= x1 && s[1] <= y1 && s[2] >= x0 && s[3] >= y0) return true;
+        if (guardSites == null || guardSitesAt != changes) {
+            guardSites = minedSites();
+            // ...taken after the call: its first one can place the sites (sitedNow()), which moves `changes` through add(). While they are not placed (no district yet) nothing is kept.
+            guardSitesAt = sitedPlaced ? changes : Long.MIN_VALUE;
+        }
+        for (long[] s : guardSites) if (s[0] <= x1 && s[1] <= y1 && s[2] >= x0 && s[3] >= y0) return true;
         return false;
     }
 
@@ -3729,20 +3760,33 @@ public final class CityMap {
                 : p.arm() != q.arm() ? Integer.compare(p.arm(), q.arm()) : Integer.compare(p.which(), q.which()));
         for (WayOut o : offers) {
             double x = o.ex() + 0.5, y = o.ey() + 0.5;
-            if (dryRun(w, x, y, o.way(), TrainSchedule.WORLD_PLOTS) < TrainSchedule.WORLD_PLOTS) continue;
-            WorldLine line = new WorldLine(n.kind, x, y, gateway, o.arm(), o.way(), dryRun(w, x, y, o.way(), WORLD_REACH));
+            if (dryRun(w, x, y, o.way(), TrainSchedule.WORLD_PLOTS, 0) < TrainSchedule.WORLD_PLOTS) continue;
+            // ...the run on goes from the last step of that check (it is known dry up to there, and when the check ended on its last step's plot the run must meet it again), not from the start.
+            WorldLine line = new WorldLine(n.kind, x, y, gateway, o.arm(), o.way(), dryRun(w, x, y, o.way(), WORLD_REACH, (int) Math.floor(TrainSchedule.WORLD_PLOTS / WORLD_STEP)));
             out.add(line);
             return line;
         }
         return null;
     }
 
-    /** How far from (x, y) the way out along deg degrees runs over dry ground, in plots: the distance to the first point, read every WORLD_STEP, that lies on a plot that is not World.dry(); `most` where none does. */
-    private static double dryRun(World w, double x, double y, int deg, double most) {
+    /**
+     * How far from (x, y) the way out along deg degrees runs over dry ground, in plots: the distance to the first point, read every WORLD_STEP, that lies on a plot that is not World.dry(); `most` where none does.
+     * The steps are counted from fromStep (a caller that knows the steps before it are dry starts there); a plot is read once, however many steps in a row land on it.
+     */
+    private static double dryRun(World w, double x, double y, int deg, double most, int fromStep) {
         double c = Math.cos(Math.toRadians(deg)), s = Math.sin(Math.toRadians(deg));
-        for (int i = 0; i * WORLD_STEP <= most; i++) {
+        long lastX = 0, lastY = 0;
+        boolean read = false, dry = true;
+        for (int i = fromStep; i * WORLD_STEP <= most; i++) {
             double t = i * WORLD_STEP;
-            if (!World.dry(w.terrainAt((long) Math.floor(x + c * t), (long) Math.floor(y + s * t)))) return t;
+            long px = (long) Math.floor(x + c * t), py = (long) Math.floor(y + s * t);
+            if (!read || px != lastX || py != lastY) {
+                dry = World.dry(w.terrainAt(px, py));
+                lastX = px;
+                lastY = py;
+                read = true;
+            }
+            if (!dry) return t;
         }
         return most;
     }
@@ -4285,7 +4329,7 @@ public final class CityMap {
         if ((cx1 - cx0 + 1) * (cy1 - cy0 + 1) <= districts.size()) {
             for (long dy = cy0; dy <= cy1; dy++) {
                 for (long dx = cx0; dx <= cx1; dx++) {
-                    District d = byKey.get(key((int) dx, (int) dy));
+                    District d = districtAt(key((int) dx, (int) dy));
                     if (d != null) accessRoutesOf(d, out);
                 }
             }
@@ -6295,7 +6339,7 @@ public final class CityMap {
 
     /** The district holding tile (tx, ty), or null. */
     public District districtOfTile(long tx, long ty) {
-        return byKey.get(key((int) (Math.floorDiv(tx, TILES_A_SIDE) - baseDX), (int) (Math.floorDiv(ty, TILES_A_SIDE) - baseDY)));
+        return districtAt(key((int) (Math.floorDiv(tx, TILES_A_SIDE) - baseDX), (int) (Math.floorDiv(ty, TILES_A_SIDE) - baseDY)));
     }
 
     /** The tile in district d at its column and row of tiles (tile = row x 8 + column), from world tile (tx, ty). */
@@ -6400,7 +6444,7 @@ public final class CityMap {
             Drawn dr;
             if (seen.containsKey(dk)) dr = seen.get(dk);
             else {
-                District d = byKey.get(dk);
+                District d = districtAt(dk);
                 dr = d == null ? null : drawnOf(d);
                 seen.put(dk, dr);
             }
@@ -6440,7 +6484,7 @@ public final class CityMap {
                 Drawn dr;
                 if (seen.containsKey(dk)) dr = seen.get(dk);
                 else {
-                    District d = byKey.get(dk);
+                    District d = districtAt(dk);
                     dr = d == null ? null : drawnOf(d);
                     seen.put(dk, dr);
                 }
@@ -6493,7 +6537,7 @@ public final class CityMap {
                 Drawn dr;
                 if (seen.containsKey(dk)) dr = seen.get(dk);
                 else {
-                    District d = byKey.get(dk);
+                    District d = districtAt(dk);
                     dr = d == null ? null : drawnOf(d);
                     seen.put(dk, dr);
                 }
@@ -6720,7 +6764,7 @@ public final class CityMap {
      */
     List<DrawnSite> siteList(int dx, int dy) {
         long k = key(dx, dy);
-        District d = byKey.get(k);
+        District d = districtAt(k);
         long version = d == null ? -1 : d.version;
         List<DrawnSite> got = siteLists.get(k);
         Long seen = siteListVersion.get(k);
@@ -6889,7 +6933,7 @@ public final class CityMap {
         if (k == lastWitnessed) return;
         lastWitnessed = k;
         if (journalWas.containsKey(k)) return;
-        District d = byKey.get(k);
+        District d = districtAt(k);
         if (d == null) return;
         journalWas.put(k, kindsOf(d, reachAtStart));
     }
@@ -6913,7 +6957,7 @@ public final class CityMap {
         boolean reach = runs.highwaysReach();
         if (reach != reachAtStart) for (long[] hd : runs.highwayDistricts()) witnessed(hd[0], hd[1]);
         for (Map.Entry<Long, byte[]> e : journalWas.entrySet()) {
-            District d = byKey.get(e.getKey());
+            District d = districtAt(e.getKey());
             byte[] was = e.getValue(), now = kindsOf(d, reach);
             // A month's first records need no look for a plot's own among the month's.
             boolean fresh = d.jN == 0 || d.jMonth[d.jN - 1] < month;
@@ -6931,7 +6975,7 @@ public final class CityMap {
     /** `h` with district d's journal over its frame folded in (ownStamp()): its own, and its east neighbour's first column, its south neighbour's first row and its south-east neighbour's first plot - nothing where there is none. */
     private long journalStamp(District d, long h) {
         long j = d.jHash;
-        District east = byKey.get(key(d.dx + 1, d.dy)), south = byKey.get(key(d.dx, d.dy + 1)), corner = byKey.get(key(d.dx + 1, d.dy + 1));
+        District east = districtAt(key(d.dx + 1, d.dy)), south = districtAt(key(d.dx, d.dy + 1)), corner = districtAt(key(d.dx + 1, d.dy + 1));
         if (east != null && east.jHashCol != 0) j = World.mix(j ^ east.jHashCol ^ 0x45L);
         if (south != null && south.jHashRow != 0) j = World.mix(j ^ south.jHashRow ^ 0x53L);
         if (corner != null && corner.jHashCorner != 0) j = World.mix(j ^ corner.jHashCorner ^ 0x43L);
@@ -6948,7 +6992,7 @@ public final class CityMap {
      * after) is left without any, and counted (journalDropped()). Left null for none. Called with in.fixed filled.
      */
     private void fixedLogInto(District d, DistrictPlan.Input in) {
-        District[] src = { d, byKey.get(key(d.dx + 1, d.dy)), byKey.get(key(d.dx, d.dy + 1)), byKey.get(key(d.dx + 1, d.dy + 1)) };
+        District[] src = { d, districtAt(key(d.dx + 1, d.dy)), districtAt(key(d.dx, d.dy + 1)), districtAt(key(d.dx + 1, d.dy + 1)) };
         int total = 0;
         for (District s : src) if (s != null) total += s.jN;
         if (total == 0) return;
@@ -7143,7 +7187,7 @@ public final class CityMap {
         // The resource sites over the frame: a mine's or well's its own, the rest fields; the district's own mines reached.
         for (int b = -1; b <= 1; b++) {
             for (int a = -1; a <= 1; a++) {
-                if (byKey.get(key(d.dx + a, d.dy + b)) == null) continue;
+                if (districtAt(key(d.dx + a, d.dy + b)) == null) continue;
                 for (DrawnSite s : siteList(d.dx + a, d.dy + b)) {
                     long sx0 = Math.max(s.x0(), x0), sy0 = Math.max(s.y0(), y0), sx1 = Math.min(s.x1(), x0 + f - 1), sy1 = Math.min(s.y1(), y0 + f - 1);
                     if (sx0 > sx1 || sy0 > sy1) continue;
@@ -7165,7 +7209,7 @@ public final class CityMap {
         for (int k = 0; k < others.length; k++) {
             boolean first = true;
             for (int[] o : others[k]) {
-                District od = byKey.get(key(d.dx + o[0], d.dy + o[1]));
+                District od = districtAt(key(d.dx + o[0], d.dy + o[1]));
                 if (od != null && DISTRICT_ORDER.compare(od, d) < 0) first = false;
             }
             in.surfaces[k] = first;

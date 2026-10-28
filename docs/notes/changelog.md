@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.61 — MP1, The map fast again — 2026-10-27, ready, see docs/queue/MP1-notes.md
+On a quiet PC main missed one map timing line, the month's map work at 5B (58 ms): 66.4, 56.9, 59.1 ms in three
+hard rounds; every other line in MP1's table passed there, so what the gates saw on 2026-10-26 was mostly the PC's
+load. Profiled, the 5B month was three wastes, all there since UP3 set the line (no later batch slowed it): the
+interchanges' reserve guard walked all 14,661 districts' mined sites on every call (FR7), now once a change of the
+map; the world line read each plot four times, now once; and the district index's keys all collided (a Long's hash
+of dx << 32 | dy is dx ^ dy), now spread. The far node over Medellin parsed every tile's rivers and sorted their
+widths on each call (E5); each tile's drawable runs are now kept, and that line's time is judged on a line of its
+own (the gate's paired rounds can read it). Quiet, in turn with main: the 5B month 21.3 ms, Medellin's far node
+54.5 -> 31.4, every line passing three rounds in a row. Same pixels and trace; at 50x a five-billion city's map now
+follows the clock month by month, and at his city's size it never slowed the game.
+
 ### RL1 — a lane's next batch starts at its predecessor's ship file, not at its merge — 2026-10-27, ready, no tag (tooling), see docs/queue/RL1-notes.md
 The batch behind a gated one waited for its Queued row to leave `QUEUE.md`, so every minute from ship file to merge (a median of about 60) was paid again. Now the successor is cut from the predecessor's tip (`git checkout -b batch/<id> origin/batch/PRED`) when its ship file lands, builds on it, merges `origin/main` when the predecessor lands, or its fix when it is sent back, and pushes its own ship file last.
 `tools/carries.sh` is the one test of "built on an unmerged batch", asked by the five places that read a branch as cut from main: `pick.sh` diffs against the predecessor's tip, `ship.sh` stops a branch built on one main lacks, `day.sh` calls it waiting and `wait.sh --ship` leaves it out, `batch-check.sh` says under a NEW red that the predecessor's may not be recorded yet, and `wait.sh --row` also ends when the predecessor is ready again after a send-back.

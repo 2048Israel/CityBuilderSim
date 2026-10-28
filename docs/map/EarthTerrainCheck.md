@@ -1,4 +1,4 @@
-# EarthTerrainCheck.java - 2,521 lines · 60 methods · 50 constants · harnesses
+# EarthTerrainCheck.java - 2,524 lines · 60 methods · 50 constants · harnesses
 
 `ham/citybuildersim/EarthTerrainCheck.java` - generated 2026-10-27 by CodeMap; line numbers are as of that run.
 
@@ -140,7 +140,7 @@
 | 1801 | `EarthTerrainCheck.HILL_NAMES` | `{ "Medellin", "Everest", "the Upper Engadin", "Hong Kong", "La Paz", "Kathman...` |  |
 | 1804 | `EarthTerrainCheck.FLOOR_REACH` | `5, FLOOR_WIDE = 17` | How far round the floor's spot the plots are all held FLAT, in plots: 5 (150 m); and the share of the plots within FLOOR_WIDE (17: 510 m) that are flat, at least. |
 | 1805 | `EarthTerrainCheck.FLOOR_FLAT` | `0.95` |  |
-| 2347 | `EarthTerrainCheck.SHELVES` | `{ { 52.0, 3.0 }, { - 32.0, 115.4 }, { 28.5, - 94.0 }, { 27.0, 50.5 } }` | Four coasts of the full file, {lat, lon}, each a 61 km window with sea of both depths: the North Sea at the Flemish banks, the shelf off Perth, the Texas shelf off Galveston and the Gulf off Ras Tanura. |
+| 2350 | `EarthTerrainCheck.SHELVES` | `{ { 52.0, 3.0 }, { - 32.0, 115.4 }, { 28.5, - 94.0 }, { 27.0, 50.5 } }` | Four coasts of the full file, {lat, lon}, each a 61 km window with sea of both depths: the North Sea at the Flemish banks, the shelf off Perth, the Texas shelf off Galveston and the Gulf off Ras Tanura. |
 
 ## Fields (state)
 
@@ -168,15 +168,15 @@
 | 1819 | `final double[] want` |  |
 | 1820 | `long dry, lost` |  |
 | 1822 | `final long[] sloped` | Dry plots of each cover with a relief above FLAT, by cover class. |
-| 2488 | `final EarthData d` |  |
-| 2489 | `final int cpd` |  |
-| 2490 | `final Map<Integer, byte[]> grids` |  |
+| 2491 | `final EarthData d` |  |
+| 2492 | `final int cpd` |  |
+| 2493 | `final Map<Integer, byte[]> grids` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 190 | 2332 | **type** `public class EarthTerrainCheck` | The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key h... |
+| 190 | 2335 | **type** `public class EarthTerrainCheck` | The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three windows of EarthCheck's fixture and Fiji's date line, a world's key h... |
 | 235 | 4 | `static void check(String label, boolean ok)` |  |
 | 240 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 246 | 1 | **type** `record Spot(String name, double lat, double lon)` | The fixture's windows: name, latitude, longitude. |
@@ -282,7 +282,7 @@
 |---:|---:|---|---|
 | 1609 | 166 | `static void shallowSea(EarthData file, Map<String, Window> windows, EarthData fixture, String id) throws Exception` |  |
 
-### 17. THE RELIEF PLANE (ET1, spec-earth2-terrain 3.1, D4, D5 and D19) (lines 1776-2521)
+### 17. THE RELIEF PLANE (ET1, spec-earth2-terrain 3.1, D4, D5 and D19) (lines 1776-2524)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -299,17 +299,17 @@
 | 1906 | 132 | `static void reliefPlane(EarthData file, Map<String, Spot> spots, EarthData fixture, String id) throws Exception` |  |
 | 2040 | 27 | `static void reliefWindows(String where, List<String> names, List<ReliefWindow> ws, boolean fixtureWindows)` | The share check on each window, the checks that hold of all of them, and which hold slope. |
 | 2069 | 134 | `static void reliefRule(EarthData fixture, EarthData file, String id) throws Exception` | The rule's own: the cover untouched, the readers one another's, the classes nested within the data, the point rule the tile's, a tile's time. |
-| 2205 | 140 | `static void reliefFar(EarthData file) throws Exception` | The far views' relief: a far node at a stride, the globe's camera, the picture's, their cost against SCREEN_MS and FRAME_MS. |
-| 2350 | 1 | `static int luma(int c)` | A colour's luma, the plain sum of its channels. |
-| 2353 | 5 | `static long[] only(byte cls, long n)` | A count of n plots of one class, World.CLASSES long. |
-| 2360 | 3 | `static boolean adds(EarthSite.Card c)` | A card's plots add up: dry, fresh, sea and ice. |
-| 2365 | 5 | `static int westOf(DistrictPlan p)` | How many of a plan's buildings stand west of its district's middle. |
-| 2372 | 16 | `static long[] tileOf(World w, CityLand land, byte cls)` | The nearest whole tile to a city's founding site, ring by ring of tiles out to 48 (46 km), that the city owns no plot of and whose every plot is of one class: its north-west plot, or null. |
-| 2390 | 16 | `static boolean far(World.Key key, byte cls, String[] words)` | Whether the far nodes about a world's spot draw a class: every pixel of it at WATER_STRIDE and FAR_STRIDE / 4 (61 and 246 km a node), and at FAR_STRIDE (983 km, which reaches past the sheet's coast) more of it than of... |
-| 2417 | 68 | `static void cover(EarthData d, boolean ice, int lat0, int lon0)` | One kind's 1-degree cell on the full file, on a world centred there: every plot whose centre lies in the cell drawn, and among those the kind could take (ice any ground not water; the desert grass or desert, which for... |
-| 2487 | 34 | **type** `static final class Cover` | Land cover's 2' cells read from the file's grids, kept by tile: a cell's value, and a bit's share between the cells' centres as EarthTerrain reads it. |
-| 2492 | 4 | `Cover(EarthData d)` _(in EarthTerrainCheck.Cover)_ |  |
-| 2498 | 7 | `int cell(long r, long c)` _(in EarthTerrainCheck.Cover)_ | The value of the cell in global row r (from 90 N) and column c (from 180 W). |
-| 2507 | 3 | `int at(double lat, double lon)` _(in EarthTerrainCheck.Cover)_ | The value of the cell a point lies in. |
-| 2512 | 8 | `double share(double lat, double lon, int bit)` _(in EarthTerrainCheck.Cover)_ | A bit read 0 or 1 at each cell and interpolated between the four cells' centres about a point. |
+| 2205 | 143 | `static void reliefFar(EarthData file) throws Exception` | The far views' relief: a far node at a stride, the globe's camera, the picture's, their cost against SCREEN_MS and FRAME_MS. |
+| 2353 | 1 | `static int luma(int c)` | A colour's luma, the plain sum of its channels. |
+| 2356 | 5 | `static long[] only(byte cls, long n)` | A count of n plots of one class, World.CLASSES long. |
+| 2363 | 3 | `static boolean adds(EarthSite.Card c)` | A card's plots add up: dry, fresh, sea and ice. |
+| 2368 | 5 | `static int westOf(DistrictPlan p)` | How many of a plan's buildings stand west of its district's middle. |
+| 2375 | 16 | `static long[] tileOf(World w, CityLand land, byte cls)` | The nearest whole tile to a city's founding site, ring by ring of tiles out to 48 (46 km), that the city owns no plot of and whose every plot is of one class: its north-west plot, or null. |
+| 2393 | 16 | `static boolean far(World.Key key, byte cls, String[] words)` | Whether the far nodes about a world's spot draw a class: every pixel of it at WATER_STRIDE and FAR_STRIDE / 4 (61 and 246 km a node), and at FAR_STRIDE (983 km, which reaches past the sheet's coast) more of it than of... |
+| 2420 | 68 | `static void cover(EarthData d, boolean ice, int lat0, int lon0)` | One kind's 1-degree cell on the full file, on a world centred there: every plot whose centre lies in the cell drawn, and among those the kind could take (ice any ground not water; the desert grass or desert, which for... |
+| 2490 | 34 | **type** `static final class Cover` | Land cover's 2' cells read from the file's grids, kept by tile: a cell's value, and a bit's share between the cells' centres as EarthTerrain reads it. |
+| 2495 | 4 | `Cover(EarthData d)` _(in EarthTerrainCheck.Cover)_ |  |
+| 2501 | 7 | `int cell(long r, long c)` _(in EarthTerrainCheck.Cover)_ | The value of the cell in global row r (from 90 N) and column c (from 180 W). |
+| 2510 | 3 | `int at(double lat, double lon)` _(in EarthTerrainCheck.Cover)_ | The value of the cell a point lies in. |
+| 2515 | 8 | `double share(double lat, double lon, int bit)` _(in EarthTerrainCheck.Cover)_ | A bit read 0 or 1 at each cell and interpolated between the four cells' centres about a point. |
 

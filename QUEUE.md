@@ -27,7 +27,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| MP1 | The map fast again: every map timing line main misses on a quiet PC (the far nodes, the FX-side map work, the kept chrome's month, the L0 screens) traced to the batch that slowed it and made fast at its cause, no budget moved; after TM3 and MS3 (Jerus, 2026-10-26: "map is slowing the game down lol"; "Both, TM3 then MP1") | [MP1](docs/queue/MP1.md) |
 | SP1 | The suite three at a time, each harness JVM under a memory cap; the timing harnesses once per gate, not twice (Jerus, 2026-10-27) | [SP1](docs/queue/SP1.md) |
 | BM1 | `docs/batch.md` split by reader (a batch session's checklist, the orchestrator's manual), a one-line WHY per rule, and "one in, one out" for process batches as a standing rule (Jerus, 2026-10-27) | [BM1](docs/queue/BM1.md) |
 | CC1-M | The city map did not survive a save once: LongPlaytest -Dplaytest.childcare at m1,184 (slot 3), a run the map sidecar has not met before; not childcare's - nothing in the model reads the map; MapCheck's area (Jerus, 2026-10-18: its own batch) | `runs/fixCC1-notes.md` 7 |
@@ -78,6 +77,7 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
+| MP1-C | MP1 (0.8.61): x 80's chain, 25 ms a month on the screen's thread - each moved district's plan input (its frame's runs and reserves) gathered as its job is handed out; the reserves could stay kept across months if the guard's version moved only with the mines and shore works it reads; recommended as a small batch with a harness counting how often the reserves are found again. Also `EarthData.CACHE_BYTES` (10 MB): raising it would speed Rotterdam's far node (54 of 80 ms) for memory, not needed for any line | his call on both: no budgeted line waits on them | [MP1 notes](docs/queue/MP1-notes.md) |
 | I13-L-C | I13-L (0.8.60): look at it on the PC at 1,389 x 868: the land office with two ores, one dug and one not, the Ore card's blocks and the amber line; Build > Homes, a House card's "this one:" lender line in a city short of landlord cash; Sectors > Real Estate > Investors, the grid's "lender" column | his check | [I13-L notes](docs/queue/I13-L-notes.md) |
 | ZT1-C | ZT1 (0.8.59): look at it on the PC: set two zones on Policy > Zoning, see the same colour on the ground bar and rows and in the map's tint and legend, remove the first and see the second keep its colour; and that a zone's part reads apart from the forest's greens and built ground's grey | his check | [ZT1 notes](docs/queue/ZT1-notes.md) |
 | MS3-C | MS3 (0.8.58): the eye check on the PC, a Singapore city at the 2 km scale - Goose Bay (42 km north of Happy Valley) with round patches and lakes in their shapes, as MS3-normal.webp; Lake Baikal panned from Irkutsk to Severobaykalsk, the hand-over's circle crossing it near 54 N with no line; Tokyo (the plane's) and Quito (off the square, once speckle); a pan past the hand-over as smooth as near the city | his eyes | [MS3 notes](docs/queue/MS3-notes.md) |
