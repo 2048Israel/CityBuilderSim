@@ -106,7 +106,21 @@ it, and the playtest's trace is unchanged (§4).
 
 ## 4. Checks
 
-PLACEHOLDER-CHECKS
+- `./batch-check.sh --pick`, earth-2.bin named: 18 harnesses (the map's family, TruckCheck,
+  TruckRouteCheck, LongPlaytest, TimingCheck, the save readers) in 254 s, **exit 0**. Three
+  timing lines went SOFT beside other runs, none in what FR9 touches: MapCheck's month's
+  change at 5 and 10 billion (5.9 and 6.5 ms against 5, on the wall clock; `reconcile()`,
+  which FR9 leaves alone, and main's own paired red in `gate.txt`) and the far node over
+  Rotterdam (108 ms against 80; the tiles). Maps regenerated, Stale 0 firm.
+- **TruckRouteCheck** 148 assertions (sections 7-10 new, 8's last line on the no-highway
+  city), **TruckCheck** unchanged and green (FR5's premises: an access route still takes
+  every load, a short route keeps `LEG_SECONDS`), **MapCheck 9**: the trucks at 10 billion,
+  2,560 trips of 64 districts, 759 trucks each for 1,000,000 loads, a frame of an L0 screen
+  where every trip passes 0.027 ms (66 trucks) against `TRUCK_FRAME_MS` (0.5, the trains').
+- **The trace**: the default playtest (`-Dplaytest.trace`) on main's classes (26cb6088) and
+  the branch's, each built apart: the eight trace files byte-identical, the report the same
+  but for its run time and the layout watch's seconds. The model is untouched, so **no
+  ensemble** (EN1). No save, sidecar or format change.
 
 ## 5. To check by eye (FR9-C)
 
