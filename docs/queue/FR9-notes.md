@@ -101,6 +101,18 @@ it, and the playtest's trace is unchanged (§4).
   are made again only when a drawn plan, the plans about it or the runs move; at a month's
   turn with no plan moved, only the highway parts and the home trips. The frame itself:
   MapCheck 9's trucks at 10 billion, see §4.
+- **The gate sent it back for the far node** (2026-10-28, 15:45): paired with main's classes,
+  MapCheck's far node over Rotterdam read 115 ms against main's 52.4 (budget 80), and
+  EarthTerrainCheck's Earth screen at Rotterdam 106.6 hard. The first slice had made
+  `streetAt()` share its rule with the trips by handing it a lambda, one made for every
+  plot the painter reads - every plot of every tile, and the far node reads them all. Now
+  one method with a `plan` flag, the trips passing their plans as a map: the same codes,
+  no object a call. This batch's `--pick` had called that line SOFT and load; it was not.
+  Timed after the fix, hard, in turn with main's classes (26cb6088; ABBA, one JVM at a
+  time): the far node at stride 1024, main 100.6 / FR9 53.8 / FR9 55.3 / main 53.4 ms
+  (budget 80; main's first round was slow on the PC's load, its month's change failing
+  too); EarthTerrainCheck's Earth screen at Rotterdam, main 53.6 / FR9 53.8 / FR9 55.6 /
+  main 87.3 ms. FR9's every round passed; TruckRouteCheck and TruckCheck green again.
 - **At the game's size a truck is 4.4 by 1.8 px at 8 px a plot**: the renders draw the
   followed truck four times larger and carry insets.
 
