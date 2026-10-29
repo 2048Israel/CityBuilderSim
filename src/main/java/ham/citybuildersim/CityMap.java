@@ -2275,6 +2275,16 @@ public final class CityMap {
         long bytes() { return 56 + 16 + 8L * geom.length + 16 + 4L * plots.length; }
     }
 
+    /**
+     * The fewest plots a siding must have to be drawn: those of a unit train of hoppers (TrainSchedule.Kind.HOPPER.length(), 41.4, so 42), the only
+     * train that runs to a works' siding. A shorter siding holds no train the map has (TrainSchedule.routesFor() keeps a route whose siding holds the
+     * whole train), so none would ever stand on it: a stub (MF1, 2026-10-28; Jerus, 2026-10-23: the railway "has stubs that end nowhere"; his rule
+     * of 2026-10-18, "no track is laid on no train's way"). A method, not a constant, so this class does not start TrainSchedule's with its own.
+     */
+    public static int sidingLeast() {
+        return (int) Math.ceil(TrainSchedule.Kind.HOPPER.length() - 1e-9);
+    }
+
     /** Where a Drawn box's type id starts: above the box's 20 bits and PACKED_BIT, eleven bits for ids under 2,048 (buildings.json's ids are under 128). */
     public static final int BOX_TYPE_SHIFT = 21;
 
@@ -2290,6 +2300,10 @@ public final class CityMap {
         final int[][] boxes = new int[TILES][];
         /** The plots its plan's sidings run over (batch FR7 slice 5, D14), each a plot of its frame (y x FRAME + x) with SIDING_END_BIT set on the first of a siding, the loading shed's; null for none. */
         int[] siding;
+        /** Its plan's sidings' ways as corners (MF1; DistrictPlan.sidingWays), each {the railway plot it meets, then the frame plots of its first plot beside the railway, its corners and its shed}; null for none: what the trains' routes and the arcs are made from. */
+        int[][] sidingWays;
+        /** How many sidings its plan laid that are not drawn, as no unit train fits on them (MF1, sidingLeast()): the stubs. */
+        int sidingsStub;
         /** The plots its plan's avenues run over (batch CL4, DistrictPlan.avenue), each a plot of its frame (y x FRAME + x) with the avenue's mark - CityRuns' M_DIAG, the arm's heading and M_CORNER - above it at AVENUE_MARK_SHIFT, in the order of the plots; null for none. A plot is under 2^17, a mark a byte. */
         int[] avenue;
         /** Its plan's curves (batch CL4, slice D; DistrictPlan.curves) as the painter reads them, in the order the plan has them; null for none. */
@@ -2320,6 +2334,10 @@ public final class CityMap {
             for (byte[] t : tiles) if (t != null) b += 16 + t.length;
             for (int[] x : boxes) if (x != null) b += 16 + 4L * x.length;
             if (siding != null) b += 16 + 4L * siding.length;
+            if (sidingWays != null) {
+                b += 16;
+                for (int[] w : sidingWays) b += 16 + 4L * w.length;
+            }
             if (avenue != null) b += 16 + 4L * avenue.length;
             if (curves != null) {
                 b += 16 + 4L * curves.length;
@@ -2449,11 +2467,32 @@ public final class CityMap {
             out.boxes[k][n[k]++] = box(p.bx[b] % World.TILE, p.by[b] % World.TILE, p.bw[b], p.bh[b], false) | (p.btype[b] << BOX_TYPE_SHIFT);
         }
         if (p.siding != null) {
+            // A siding is drawn only if a unit train fits on it (MF1, sidingLeast()): the plan lays every siding its spurs pay for, and one shorter than
+            // the train is a stub no train will ever stand on - left undrawn ("no track is laid on no train's way", Jerus, 2026-10-18; a stub with
+            // no traffic is not drawn, MF1). Nothing of the plan moves for it: its plots stay its own, only the map does not draw them.
+            boolean[] stub = null;
+            List<int[]> live = new ArrayList<>();
+            for (int k = 0; k < p.sidings.size() && k < p.sidingWays.size(); k++) {
+                if (p.sidings.get(k)[10] >= sidingLeast()) { live.add(p.sidingWays.get(k)); continue; }
+                out.sidingsStub++;
+                if (stub == null) stub = new boolean[p.siding.length];
+                int[] way = p.sidingWays.get(k);
+                for (int v = 1; v < way.length; v++) {
+                    int ax = way[v - 1] % f, ay = way[v - 1] / f, cx = way[v] % f, cy = way[v] / f;
+                    int steps = Math.abs(cx - ax) + Math.abs(cy - ay), sx = Integer.signum(cx - ax), sy = Integer.signum(cy - ay);
+                    for (int s = 1; s <= steps; s++) stub[(ay + sy * s) * f + ax + sx * s] = true;
+                }
+            }
             int count = 0;
-            for (byte s : p.siding) if (s != 0) count++;
-            out.siding = new int[count];
-            count = 0;
-            for (int q = 0; q < p.siding.length; q++) if (p.siding[q] != 0) out.siding[count++] = q | (p.siding[q] == DistrictPlan.SIDING_END ? SIDING_END_BIT : 0);
+            for (int q = 0; q < p.siding.length; q++) if (p.siding[q] != 0 && (stub == null || !stub[q])) count++;
+            if (count > 0) {
+                out.siding = new int[count];
+                count = 0;
+                for (int q = 0; q < p.siding.length; q++) {
+                    if (p.siding[q] != 0 && (stub == null || !stub[q])) out.siding[count++] = q | (p.siding[q] == DistrictPlan.SIDING_END ? SIDING_END_BIT : 0);
+                }
+            }
+            if (!live.isEmpty()) out.sidingWays = live.toArray(new int[0][]);
         }
         // The avenues it laid (batch CL4): each plot with its mark above it, in the order of the plots.
         if (p.avenue != null) {
@@ -3235,6 +3274,15 @@ public final class CityMap {
             l.picture = p.pictureStamp;
             links.put(p.d, l);
             drawn.put(p.d, p.result);
+            // Its plan's sidings' ways, for the trains' routes (MF1): kept against its link's stamp, the version moved when they change.
+            PlanSidings had = planSidings.get(p.d.key);
+            if (p.result.sidingWays != null) {
+                if (had == null || had.stamp() != l.stamp()) planSidingsVersion++;
+                planSidings.put(p.d.key, new PlanSidings(l.stamp(), p.result.sidingWays));
+            } else if (had != null) {
+                planSidings.remove(p.d.key);
+                planSidingsVersion++;
+            }
             if (p.picture != null) {
                 pictures.put(p.d, p.picture);
                 picturesKept++;
@@ -3950,8 +3998,11 @@ public final class CityMap {
        spurs the runs' sidings left are dealt (sidingsOf()) to the districts
        the main line crosses that hold bulk works, and each plan lays a
        siding to its largest, after its buildings stand (DistrictPlan
-       sidings()); the trains of those sidings are not drawn (trainRoutes()
-       needs the plans' geometry, which it does not draw).
+       sidings()). Their trains (MF1, 2026-10-28): a plan's sidings' ways are
+       kept as its corners when it is adopted (Drawn.sidingWays, planSidings),
+       and trainRoutes() runs a route to each (planSidingRoutes()), rounded
+       with the rest, so the drawn arcs are the trains' way; only a siding a
+       unit train fits on is drawn (sidingLeast()), the rest are stubs.
        ===================================================================== */
 
     /** Bumped whenever free ground is measured again (a purchase): what a run waiting on the ground is tried again on. */
@@ -4145,6 +4196,13 @@ public final class CityMap {
     private List<TrainSchedule.Route> trainRoutesCache;
     private long trainRoutesAt = Long.MIN_VALUE;
     private int trainRoutesWagons = -1;
+    private long trainRoutesSidings = -1;
+
+    /** A district's plan's sidings' ways (Drawn.sidingWays) with the stamp of the link they came with (MF1): kept when its plan is adopted, so the trains' routes do not wait on a plan being kept drawn (PLANS_KEPT); valid while that link is. */
+    private record PlanSidings(long stamp, int[][] ways) { }
+    private final Map<Long, PlanSidings> planSidings = new HashMap<>();
+    /** Moved whenever a plan adopted has other sidings than the ones kept: trainRoutes() is made again. */
+    private long planSidingsVersion;
 
     /** A bend of the routes the tiles draw (FX5), with whether it lies on double track (its corner plot's M_DOUBLE). */
     private record DrawnBend(TrackCurves.Bend bend, boolean doubled) { }
@@ -4190,9 +4248,11 @@ public final class CityMap {
      */
     public List<TrainSchedule.Route> trainRoutes() {
         int wagons = wagonTracksOf(railPicture.wagonShare());
-        if (trainRoutesCache != null && trainRoutesAt == changes && trainRoutesWagons == wagons) return trainRoutesCache;
+        if (trainRoutesCache != null && trainRoutesAt == changes && trainRoutesWagons == wagons && trainRoutesSidings == planSidingsVersion) return trainRoutesCache;
+        long sidingsNow = planSidingsVersion;
         List<TrainSchedule.Route> out = new ArrayList<>();
         List<TrackCurves.Bend> found = new ArrayList<>();
+        java.util.Set<Long> sidingPlots = new java.util.HashSet<>();
         WorldLine line = null;
         for (WorldLine l : worldLines()) if (l.net() == CityRuns.RAILWAY) line = l;
         if (line != null) {
@@ -4222,11 +4282,15 @@ public final class CityMap {
                 // The siding holds what it is long, from where it leaves the main line to its end (siding[5] plots, FX5 slice T).
                 out.add(routeToWorks(pts, found, siding[5]));
             }
+            // ...and into each works' siding a district's plan laid (MF1): the same way, the main line to the railway plot the siding meets, then the
+            // siding's corners to its shed, rounded as every route is, so a train rides the arcs the tiles draw.
+            planSidingRoutes(out, found, sidingPlots, fx, fy, line.x(), line.y());
         }
-        trainBends = drawnBends(found);
+        trainBends = drawnBends(found, sidingPlots);
         trainRoutesCache = out;
         trainRoutesAt = changes;
         trainRoutesWagons = wagons;
+        trainRoutesSidings = sidingsNow;
         return out;
     }
 
@@ -4239,7 +4303,7 @@ public final class CityMap {
      * track. The turn at the world line's join, out beyond the city's track,
      * is the routes' alone: no track is drawn there.
      */
-    private Map<Long, List<DrawnBend>> drawnBends(List<TrackCurves.Bend> found) {
+    private Map<Long, List<DrawnBend>> drawnBends(List<TrackCurves.Bend> found, java.util.Set<Long> sidingPlots) {
         Map<Long, List<DrawnBend>> byTile = new HashMap<>();
         java.util.Set<List<Long>> seen = new java.util.HashSet<>();
         List<long[]> yards = runs.yards();
@@ -4247,9 +4311,9 @@ public final class CityMap {
         for (TrackCurves.Bend b : found) {
             if (!seen.add(java.util.Arrays.asList(Math.round(b.x() * 1e6), Math.round(b.y() * 1e6), Math.round(b.ux() * 1e6), Math.round(b.uy() * 1e6),
                     Math.round(b.vx() * 1e6), Math.round(b.vy() * 1e6), Math.round(b.r() * 1e6)))) continue;
-            if (!railPlot(yards, yardRails, (long) Math.floor(b.x()), (long) Math.floor(b.y()))
-                    || !railPlot(yards, yardRails, (long) Math.floor(b.startX()), (long) Math.floor(b.startY()))
-                    || !railPlot(yards, yardRails, (long) Math.floor(b.endX()), (long) Math.floor(b.endY()))) continue;
+            if (!railPlot(yards, yardRails, sidingPlots, (long) Math.floor(b.x()), (long) Math.floor(b.y()))
+                    || !railPlot(yards, yardRails, sidingPlots, (long) Math.floor(b.startX()), (long) Math.floor(b.startY()))
+                    || !railPlot(yards, yardRails, sidingPlots, (long) Math.floor(b.endX()), (long) Math.floor(b.endY()))) continue;
             byte[] f = new byte[1], mk = new byte[1];
             runs.fill((long) Math.floor(b.x()), (long) Math.floor(b.y()), 1, 1, f, mk, false);
             DrawnBend d = new DrawnBend(b, (mk[0] & TilePainter.M_DOUBLE) != 0);
@@ -4317,10 +4381,11 @@ public final class CityMap {
         return f == CityRuns.F_HIGHWAY || f == CityRuns.F_RAIL_OVER;
     }
 
-    /** Whether the runs lay track on plot (x, y): track, track bridging a highway, or the track in a yard's box (yardRails caches each yard's, by index). */
-    private boolean railPlot(List<long[]> yards, boolean[][] yardRails, long x, long y) {
+    /** Whether the runs lay track on plot (x, y): track, track bridging a highway, a plot of a district plan's siding (MF1; sidingPlots), or the track in a yard's box (yardRails caches each yard's, by index). */
+    private boolean railPlot(List<long[]> yards, boolean[][] yardRails, java.util.Set<Long> sidingPlots, long x, long y) {
         byte f = runs.at(x, y);
         if (f == CityRuns.F_RAIL || f == CityRuns.F_RAIL_OVER) return true;
+        if (sidingPlots.contains((x << 32) ^ (y & 0xffffffffL))) return true;
         if (f != CityRuns.F_YARD) return false;
         for (int i = 0; i < yards.size(); i++) {
             long[] yd = yards.get(i);
@@ -4560,6 +4625,51 @@ public final class CityMap {
     private static TrainSchedule.Route routeToWorks(List<double[]> pts, List<TrackCurves.Bend> bendsOut, double holds) {
         Rounded r = rounded(pts, bendsOut);
         return TrainSchedule.Route.toWorks(r.xs(), r.ys(), r.fadeTo(), holds);
+    }
+
+    /* ----- the plans' sidings' trains (MF1, 2026-10-28) ----- */
+
+    /**
+     * Adds a route to every siding a district's plan laid (DistrictPlan.sidings(), kept at adopt() against its link): from the world line along the
+     * main line to the railway plot the siding meets, then through its corners to its shed, each turn rounded by TrackCurves as the yards' and the
+     * runs' sidings' routes are (rounded()), so the arcs the tiles draw (the bends go to `found`, the siding's plots to `sidingPlots`) are the
+     * trains' own way. Until MF1 these sidings had no route - no train ever stood on them, "no track on no train's way" (Jerus, 2026-10-18) - and
+     * their corners were the plots' square L (Jerus, 2026-10-23: "the railway still turns at right angles along the streets ... stubs that end
+     * nowhere"). In the districts' order and each plan's ways in its own, so the routes keep their indices from the same plans; a district whose
+     * link no longer holds (the runs moved, its plan was made again) has none until it is drawn again. Each holds the siding's plots, from the
+     * railway plot to the shed: a unit train takes it only if it is as long as the train, which the plan lays no siding shorter than (sidingLeast()).
+     */
+    private void planSidingRoutes(List<TrainSchedule.Route> out, List<TrackCurves.Bend> found, java.util.Set<Long> sidingPlots, double fx, double fy, double lx, double ly) {
+        if (planSidings.isEmpty()) return;
+        int f = DistrictPlan.FRAME;
+        for (District d : districts) {
+            PlanSidings ps = planSidings.get(d.key);
+            Link l = links.get(d);
+            if (ps == null || l == null || l.stamp() != ps.stamp()) continue;
+            int b = band(d.index);
+            checkBand(b);
+            if (d.index >= bandValidTo[b]) continue;
+            long ox = (baseDX + d.dx) * DISTRICT, oy = (baseDY + d.dy) * DISTRICT;
+            for (int[] way : ps.ways()) {
+                if (way.length < 2) continue;
+                double[][] to = runs.wayToPlot(ox + way[0] % f, oy + way[0] / f);
+                if (to == null) continue;
+                List<double[]> pts = new ArrayList<>();
+                pts.add(new double[] { fx, fy });
+                pts.add(new double[] { lx, ly });
+                for (int k = 0; k < to[0].length; k++) addNew(pts, to[0][k], to[1][k]);
+                double holds = 0;
+                for (int k = 1; k < way.length; k++) {
+                    int ax = way[k - 1] % f, ay = way[k - 1] / f, cx = way[k] % f, cy = way[k] / f;
+                    int n = Math.abs(cx - ax) + Math.abs(cy - ay), sx = Integer.signum(cx - ax), sy = Integer.signum(cy - ay);
+                    holds += n;
+                    addNew(pts, ox + cx + 0.5, oy + cy + 0.5);
+                    // Its plots, for the bends the tiles draw (drawnBends(): a corner and its tangent points lie on track).
+                    for (int s = 1; s <= n; s++) sidingPlots.add(((ox + ax + (long) sx * s) << 32) ^ ((oy + ay + (long) sy * s) & 0xffffffffL));
+                }
+                out.add(routeToWorks(pts, found, holds));
+            }
+        }
     }
 
     /* =====================================================================

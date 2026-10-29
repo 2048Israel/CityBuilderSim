@@ -548,6 +548,7 @@ public final class DistrictPlan {
 
     /** The room a siding's plots keep from the frame's edge, in plots: 2, so no siding plot lies on the edge row or column the districts share or beside it, and the tile beside a district's never needs the siding of the district over the edge (CityMap.fillInput()). */
     static final int SIDING_EDGE = 2;
+
     /** A bridge over bridgeable water (fresh, or since ET6 the shallow sea), bit 8. */
     public static final int BRIDGE = 1 << 8;
     /** A level crossing of a railway, bit 9. */
@@ -864,6 +865,15 @@ public final class DistrictPlan {
      * railX, railY, plots}, in the frame's plots.
      */
     public final List<int[]> sidings = new ArrayList<>();
+
+    /**
+     * Each siding's way as its corners (MF1, 2026-10-28), in the order of `sidings`: {the railway plot it meets, then the frame plots
+     * (y x FRAME + x) of the siding's first plot beside the railway, of each plot where its heading changes, and of its last, the shed
+     * beside the works' box}. A train goes from the railway plot through them in that order, straight between them; the map rounds the
+     * turns (TrackCurves) and the painter draws the arcs, so a siding turning a corner is no square L (Jerus, 2026-10-23: the railway
+     * "still turns at right angles along the streets").
+     */
+    public final List<int[]> sidingWays = new ArrayList<>();
 
     /** The plots the sidings run over, by plot: SIDING_PLOT, SIDING_END at each shed's; null when none was laid. A street under a siding keeps its code (a level crossing). */
     public byte[] siding;
@@ -5418,6 +5428,8 @@ public final class DistrictPlan {
         static final int SD_BUCKETS = 16;
         /** The siding being laid, a byte a plot as DistrictPlan.siding. */
         byte[] sdLaid;
+        /** The way being laid, plot by plot from the railway's end to the shed (sidings()'s scratch). */
+        int[] sdWay = new int[128];
         /** A search's end: the last plot of the way before the railway, the state it was entered in, and the railway plot it meets. */
         int sdLast, sdState, sdRail;
 
@@ -5448,6 +5460,15 @@ public final class DistrictPlan {
          * holds no plot of the railway gets none, however near the line lies in
          * the next district; the map deals the share to the districts the line
          * crosses (CityMap.sidingsOf()).
+         *
+         * ITS CORNERS AND ITS NEIGHBOURS (MF1, 2026-10-28). Each siding's way is kept
+         * as its corners (sidingWays: the railway plot, the plot each turn is at,
+         * the shed), for the map to run a train's route through and round the turns
+         * with TrackCurves; and a siding keeps a plot clear of another's, where
+         * two side by side drew as one ladder, a rung to each plot, and a corner
+         * beside a track is none to round (Jerus, 2026-10-23, the "thin double
+         * lines" along the streets). The map draws only the sidings a unit train
+         * fits on (CityMap.sidingLeast()); the plan lays them all.
          */
         void sidings(DistrictPlan out, int placed) {
             if (proto || in.sidings <= 0) return;
@@ -5499,15 +5520,25 @@ public final class DistrictPlan {
                 if (door) { out.sidingsAtDoor++; continue; }
                 if (n == 0) { out.sidingsNoGate++; continue; }
                 if (!sidingSearch(gates, heads, n)) { out.sidingsNoWay++; continue; }
-                // Laid from the line back to the works: the state chain ends at a gate (its own sdPrev -1).
-                int plots = 0, first = sdLast;
+                // The way, from the line back to the works: the state chain ends at a gate (its own sdPrev -1).
+                int plots = 0;
                 for (int s = sdState; s >= 0; s = sdPrev[s]) {
-                    int p = s >> 2;
-                    out.siding[p] = SIDING_PLOT;
-                    first = p;
-                    plots++;
+                    if (plots == sdWay.length) sdWay = Arrays.copyOf(sdWay, plots * 2);
+                    sdWay[plots++] = s >> 2;
                 }
+                int first = sdWay[plots - 1];
+                for (int k = 0; k < plots; k++) out.siding[sdWay[k]] = SIDING_PLOT;
                 out.siding[first] = SIDING_END;
+                // Its corners (MF1): the railway plot it meets, each plot the heading changes at (the heading in from the railway plot for the
+                // first), the shed. No plot on a straight: a turn's tangent is limited by the legs beside it, so a point on the leg would shorten it.
+                int[] way = new int[plots + 1];
+                int corners = 0;
+                way[corners++] = sdRail;
+                for (int k = 0; k < plots; k++) {
+                    int before = sdWay[k] - (k == 0 ? sdRail : sdWay[k - 1]);
+                    if (k == plots - 1 || sdWay[k + 1] - sdWay[k] != before) way[corners++] = sdWay[k];
+                }
+                out.sidingWays.add(Arrays.copyOf(way, corners));
                 out.sidings.add(new int[] { bx, by, bw, bh, first % FRAME, first / FRAME, sdLast % FRAME, sdLast / FRAME, sdRail % FRAME, sdRail / FRAME, plots });
                 laid++;
             }
@@ -5541,13 +5572,17 @@ public final class DistrictPlan {
         /**
          * Whether a siding may take plot a: SIDING_EDGE inside the frame's
          * edge, dry owned ground, no building's, no runs' plot (track, yard,
-         * reserve, highway), no mine's site, no other siding's, and no plot
-         * beside a highway (its verge). A street's plot may be crossed.
+         * reserve, highway), no mine's site, no other siding's nor one beside
+         * another's (MF1), and no plot beside a highway (its verge). A street's
+         * plot may be crossed.
          */
         boolean sidingOpen(int a) {
             int x = a % FRAME, y = a / FRAME;
             if (x < SIDING_EDGE || y < SIDING_EDGE || x > SIDE - SIDING_EDGE || y > SIDE - SIDING_EDGE) return false;
             if (!dry[a] || occ[a] > 0 || fx[a] != 0 || in.site[a] == SITE_MINED || sdLaid[a] != 0) return false;
+            // MF1: nor a plot beside another siding's - two tracks side by side are drawn as one ladder, each plot's arm to the other's (the "thin
+            // double lines" with rungs, Jerus's shot 7), and the corner of one is no corner to round. A siding keeps a plot clear of the others'.
+            if (sdLaid[a - 1] != 0 || sdLaid[a + 1] != 0 || sdLaid[a - FRAME] != 0 || sdLaid[a + FRAME] != 0) return false;
             for (int dy = -1; dy <= 1; dy++) {
                 for (int dx = -1; dx <= 1; dx++) if (fx[a + dy * FRAME + dx] == FIXED_HIGHWAY) return false;
             }

@@ -509,7 +509,8 @@ public final class TilePainter {
                 for (int[] at : hw ? TrackCurves.replacedHighway(b, highway) : TrackCurves.replaced(b, rail)) {
                     if (at[0] < 0 || at[1] < 0 || at[0] >= TILE || at[1] >= TILE) continue;
                     int i = at[1] * TILE + at[0];
-                    if (fixed[i] == (hw ? BuildingVisual.HIGHWAY : RAIL)) curved[i] = true;
+                    // The railway's plots, and (MF1) the plans' sidings' (a siding plot is track the runs did not lay: fixed 0).
+                    if (fixed[i] == (hw ? BuildingVisual.HIGHWAY : RAIL) || !hw && fixed[i] == 0 && siding[i] != 0) curved[i] = true;
                 }
             }
         }

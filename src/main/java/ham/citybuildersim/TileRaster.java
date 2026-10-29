@@ -1401,6 +1401,14 @@ public final class TileRaster {
     private static int armsOf(TilePainter.Input in, TilePainter.Painted p, int i) {
         int arms = 0;
         for (int d = 0; d < 4; d++) if (railAt(in, p, i, d) || yardLineAt(in, p, i, d)) arms |= 1 << d;
+        // A turnout's corner (MF1): the line runs on through it and the branch's arc leaves it a few plots out, so no arm toward the branch's first plot.
+        for (int k = 0; k < in.bends && !in.curved[i]; k++) {
+            TrackCurves.Bend b = in.bendAt(k);
+            int bx = (int) Math.floor(b.x()), by = (int) Math.floor(b.y());
+            if (b.net() != TrackCurves.RAILWAY || bx < 0 || by < 0 || bx >= TilePainter.TILE || by >= TilePainter.TILE || by * TilePainter.TILE + bx != i) continue;
+            int branch = TrackCurves.branchArm(b, arms);
+            if (branch >= 0) arms &= ~(1 << branch);
+        }
         return arms;
     }
 
@@ -3736,9 +3744,11 @@ public final class TileRaster {
                 // A plot of straight track draws itself: the arc of a bend on the plot grid and its straights lie on the plots they replace and on ground, not over a plot that runs on. (A 45-degree turn's arc is drawn over its staircase.)
                 if (grid && !in.curved[i] && (p.use[i] == TilePainter.RAIL || p.run[i] == TilePainter.RAIL || p.run[i] == TilePainter.RAIL_OVER)) continue;
                 if (crossingsOnly) {
-                    // Only the rails, and only on a replaced plot a street crosses at level (railCrossings()).
+                    // Only the rails, and only on a replaced plot a street crosses at level (railCrossings()) - or (MF1) on a plot of a street the arc itself
+                    // crosses, where it cuts the corner of a siding that turns beside the street: the street's surface is drawn after the arc, over it.
                     int kind = p.road[i];
-                    if (!in.curved[i] || p.use[i] != TilePainter.RAIL || (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED)) continue;
+                    boolean overStreet = p.use[i] == TilePainter.ROAD && !p.bridge[i] && p.role[i] != 0 && (kind == BuildingVisual.GRAVEL || kind == BuildingVisual.PAVED);
+                    if (!overStreet && (!in.curved[i] || p.use[i] != TilePainter.RAIL || (kind != BuildingVisual.GRAVEL && kind != BuildingVisual.PAVED))) continue;
                     boolean arterial = p.role[i] == TilePainter.ARTERIAL || p.role[i] == TilePainter.BOULEVARD || p.role[i] == TilePainter.ACCESS;
                     if ((in.marks[i] & TilePainter.M_MAIN) != 0 && arterial) continue;
                 }

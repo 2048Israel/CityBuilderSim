@@ -166,6 +166,21 @@ public final class TrackCurves {
         pts.add(new double[] { x, y });
     }
 
+    /**
+     * The direction (0 north, 1 east, 2 south, 3 west) of the branch the bend leaves a line by, when its corner is a T - `arms` the corner's
+     * track as bits per direction: a line that runs on through it along one leg and the other leg the branch (replaced() keeps the line's
+     * plots) - else -1: a plain corner, a crossing, or a bend not on the plot grid. The tile draws no arm from the corner toward it (MF1): the
+     * branch begins at the arc's end, a few plots out.
+     */
+    public static int branchArm(Bend b, int arms) {
+        if (!onGrid(b)) return -1;
+        int in = dir(b.ux(), b.uy()), outDir = dir(b.vx(), b.vy());
+        int back = (in + 2) % 4, toCorner = (outDir + 2) % 4, corner = (1 << back) | (1 << outDir);
+        if (arms == (corner | 1 << in)) return outDir;
+        if (arms == (corner | 1 << toCorner)) return back;
+        return -1;
+    }
+
     /** Whether plot (x, y) holds track: how a bend asks the map, or a fixture, about the plots round it. */
     public interface Rail {
         boolean at(int x, int y);
@@ -190,17 +205,33 @@ public final class TrackCurves {
      * replaces none: the arc is drawn over the staircase. A plot with a
      * third arm (a T, a crossing) is not replaced either: it keeps its
      * straights and the arc is drawn over it.
+     *
+     * A TURNOUT (MF1, 2026-10-28): where the corner is a T - a line that runs
+     * on through it, a branch leaving it - the bend is the branch's curve off
+     * the line, and the line's own plots stay: only the branch's plots are
+     * replaced (the leg that is not the line's, j plots out from the corner),
+     * where until MF1 the line's plots before the corner went to the arc as
+     * well and left the line broken for the arc's length (a gap, then a stub
+     * of line at the T plot: the rail "with stubs that end nowhere", Jerus's
+     * shots 7 and 12). A crossing, with the line running on in both
+     * directions, replaces none.
      */
     public static List<int[]> replaced(Bend b, Rail rail) {
         List<int[]> out = new ArrayList<>();
         if (!onGrid(b)) return out;
         int in = dir(b.ux(), b.uy()), outDir = dir(b.vx(), b.vy());
         int back = (in + 2) % 4, toCorner = (outDir + 2) % 4;
+        // The corner's arms: the way it came by and the way it goes on, and what else the plot has of track.
+        int cx = (int) Math.floor(b.x()), cy = (int) Math.floor(b.y()), arms = 0;
+        for (int d = 0; d < 4; d++) if (rail.at(cx + DX[d], cy + DY[d])) arms |= 1 << d;
+        int corner = (1 << back) | (1 << outDir);
+        boolean lineIn = arms == (corner | 1 << in), lineOut = arms == (corner | 1 << toCorner);
+        if (arms == (corner | 1 << in | 1 << toCorner)) return out;
         for (int j = 0; j < b.t() - 1e-9; j++) {
             // Along the incoming leg, j plots back from the corner: the corner's arms are the way it came by and the way it goes on.
-            int mask = j == 0 ? (1 << back) | (1 << outDir) : (1 << in) | (1 << back);
-            addIf(out, rail, (int) Math.floor(b.x() - b.ux() * j), (int) Math.floor(b.y() - b.uy() * j), mask);
-            if (j > 0) {
+            int mask = j == 0 ? corner : (1 << in) | (1 << back);
+            if (!lineIn) addIf(out, rail, (int) Math.floor(b.x() - b.ux() * j), (int) Math.floor(b.y() - b.uy() * j), mask);
+            if (j > 0 && !lineOut) {
                 // ...and j plots on along the outgoing one.
                 int m2 = (1 << outDir) | (1 << toCorner);
                 addIf(out, rail, (int) Math.floor(b.x() + b.vx() * j), (int) Math.floor(b.y() + b.vy() * j), m2);
