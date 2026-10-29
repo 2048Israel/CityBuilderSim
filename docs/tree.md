@@ -395,6 +395,23 @@ adds its line here, not in `CLAUDE.md`.
                                    file to 2025, Random's swings and crises against their dials over a
                                    thousand seeded years, goods' swings, pegs held, output never negative,
                                    the ease past 2100 and a missing figure filled (WN1)
+        WorldMarket.java           the world market (batch WN3; docs/studies/spec-nations.md 4): each traded
+                                   good's mill price in each of the 196 nations on a smooth spatial
+                                   equilibrium (a CES gravity model on the base year's flows, exact hat
+                                   algebra), solved every January from the nations' growth and the good's
+                                   real price path (Anderson-accelerated, warm), and the city's band in it
+                                   - the import ceiling it pays, the export floor it nets - from its site's
+                                   freight to the nations, the fill from the best-netting buyers and the
+                                   cheapest landed sellers, and the world's answer to its tonnes. Base is
+                                   the file's, once a process (pairs, freight, the calibration that keeps
+                                   the literals the prices at Halifax in 2025); WorldMarket is one city's.
+                                   Nothing in the month reads it yet
+        WorldMarketCheck.java      WorldMarket held to its equations: every maker clears and the level
+                                   meets the path (recomputed from the file's pairs), the reference city
+                                   sees Good's literals to 1e-9, the floor never above the ceiling in every
+                                   good, year, path and site, a small city a price-taker and a big one not,
+                                   the month's step against a re-solve with the city's tonnes in, seeds
+                                   repeat to the bit, the save round trip, the stand-in, the timings (WN3)
         TradeLanes.java            the city's trade as routes on the map, without the toolkit (batch WN3,
                                    slice C; docs/studies/spec-nations.md 8, board 1): the partners over
                                    MIN_LANE as a tree of great-circle lanes from the city, a partner joining
