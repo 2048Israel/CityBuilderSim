@@ -8137,7 +8137,13 @@ public class MapCheck {
         if (counted != null) counted[code] += w * h;
     }
 
-    /** Which pixels of a far node at (x0, y0), `plots` a pixel, hold a plot of the city's highways or track: every plot of every stretch walked, each 45-degree step's corner with it (CityRuns.onStretch()). */
+    /**
+     * Which pixels of a far node at (x0, y0), `plots` a pixel, hold a plot of the city's highways or track: every plot of every stretch
+     * walked, each 45-degree step's corner with it (CityRuns.onStretch()); and the 2 x 2 dot at the middle of each yard's and each sea
+     * terminal's box, which MapTiles has drawn in the same layer since 0.8.1 (MapTiles.java, "its yards' and sea terminals' dots", and
+     * dot(): spec-freight 4.8). The reference left the dots out until EM1 (2026-10-29), whose played city had a quay by month 242 where
+     * main's had none - the orchestrator's call, on the batch's recommendation.
+     */
     static boolean[] runPixelsOf(CityMap m, long x0, long y0, long plots) {
         int n = MapFrame.NODE_PX;
         boolean[] out = new boolean[n * n];
@@ -8151,7 +8157,15 @@ public class MapCheck {
                 }
             }
         }
+        for (long[] yard : m.runs().yards()) markDot(out, yard[0] + yard[2] / 2.0, yard[1] + yard[3] / 2.0, x0, y0, plots);
+        for (CityShore.Work work : m.shore().works()) if (work.quay() > 0) markDot(out, work.x0() + work.w() / 2.0, work.y0() + work.h() / 2.0, x0, y0, plots);
         return out;
+    }
+
+    /** The 2 x 2 pixels from the one holding (x, y). */
+    private static void markDot(boolean[] out, double x, double y, long x0, long y0, long plots) {
+        long px = (long) Math.floor(x - x0) + x0, py = (long) Math.floor(y - y0) + y0;
+        for (int j = 0; j < 2; j++) for (int i = 0; i < 2; i++) markPixel(out, px + i * plots, py + j * plots, x0, y0, plots);
     }
 
     private static void markPixel(boolean[] out, long x, long y, long x0, long y0, long plots) {

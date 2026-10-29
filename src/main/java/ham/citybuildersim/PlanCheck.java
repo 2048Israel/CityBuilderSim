@@ -734,13 +734,23 @@ public class PlanCheck {
      * no wider along the way than its line may bridge (an arterial's on an
      * arterial's line, a street's off it), beneath a highway or across a
      * railway, never along one, never over a mine's site. Its buildings are
-     * no part of the ground: a piece they wall in is the plan's to join.
+     * no part of the ground: a piece they wall in is the plan's to join -
+     * but for a building on a site (a farm on its field, a mine, a well),
+     * which the join does not cross (DistrictPlan.wallJoinable(), FW11's
+     * "a building on a site ... is not the way's to cross"). Parted there
+     * since EM1 (2026-10-29), the orchestrator's call on the batch's
+     * recommendation: its played city walled a piece in behind a farm's
+     * building on its field in district (0, 0) at months 91 and 121, where
+     * this said the ground did not part it.
      */
     static boolean groundParts(DistrictPlan p, DistrictPlan.Input in, int[] lab, List<Integer> sizes) {
         int n = DistrictPlan.FRAME, area = DistrictPlan.AREA;
         int main = 0;
         for (int i = 1; i < sizes.size(); i++) if (sizes.get(i) > sizes.get(main)) main = i;
-        boolean[] seen = new boolean[area];
+        boolean[] seen = new boolean[area], onSite = new boolean[area];
+        for (int i = 0; i < p.buildings; i++)
+            for (int y = p.by[i]; y < p.by[i] + p.bh[i]; y++) for (int x = p.bx[i]; x < p.bx[i] + p.bw[i]; x++)
+                if (x >= 0 && y >= 0 && x < n && y < n && in.site[y * n + x] != 0) onSite[y * n + x] = true;
         int[] q = new int[area];
         int qh = 0, qt = 0;
         for (int i = 0; i < area; i++) if (lab[i] == main) { seen[i] = true; q[qt++] = i; }
@@ -752,7 +762,7 @@ public class PlanCheck {
                 int a = ay * n + ax;
                 if (seen[a]) continue;
                 if (lab[a] >= 0) return false;
-                if (!in.owned[a] || in.terrain[a] == World.SALT || in.site[a] == DistrictPlan.SITE_MINED) continue;
+                if (!in.owned[a] || in.terrain[a] == World.SALT || in.site[a] == DistrictPlan.SITE_MINED || onSite[a]) continue;
                 boolean horizontal = TilePainter.DY[d] == 0, arterial = horizontal ? ay % DistrictPlan.CELL == 0 : ax % DistrictPlan.CELL == 0;
                 if (in.terrain[a] == World.FRESH && waterRun(in, a, d) > (arterial ? DistrictPlan.ARTERIAL_BRIDGE : DistrictPlan.STREET_BRIDGE)) continue;
                 if (in.fixed[a] != 0 && DistrictPlan.along(in.fixed, a, horizontal)) continue;
