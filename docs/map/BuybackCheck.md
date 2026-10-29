@@ -1,6 +1,6 @@
 # BuybackCheck.java - 845 lines · 31 methods · 3 constants · harnesses
 
-`ham/citybuildersim/BuybackCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuybackCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The city's paper bought back in a reverse auction (CD4, spec-city-debt.md
 > section 6.2-6.3; D12, D17-D19, D26, D34): every holder but the central bank

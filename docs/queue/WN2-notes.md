@@ -1,4 +1,4 @@
-# WN2 - the nations on the map: borders, dots, labels and the card ({next}, 2026-10-28)
+# WN2 - the nations on the map: borders, dots, labels and the card (0.8.69, 2026-10-28)
 
 The batch's record. Jerus took the nations study on 2026-10-20 ("do rec"), and the night's line on 2026-10-28
 ("you are to continue all night until 7am"). The brief is `docs/studies/spec-nations.md` §9's WN2 row, §6.1 (the

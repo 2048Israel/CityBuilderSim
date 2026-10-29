@@ -1,6 +1,6 @@
 # IslandNetCheck.java - 834 lines · 32 methods · 1 constants · harnesses
 
-`ham/citybuildersim/IslandNetCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/IslandNetCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5).
 > 

@@ -53,6 +53,38 @@ import java.util.PriorityQueue;
  * line (spec 4.1) - where the fan of those lines keeps to the sea; else none.
  * A berth with no sea within reach, or no way found, has the straight lane on
  * its bearing (BoatSchedule.lane() with no sea at all).
+ *
+ * SHARED LANES (SL1, 2026-10-28; Jerus: "if lots of ship lanes, its not
+ * different lanes, its same lane that later diverages if needed"; "late
+ * cities thats probably the thing that slows down stuff the most"). Every
+ * terminal used to find its own way from scratch - the 72 bearings, an A* of
+ * up to EXPANSIONS_MOST cells - and every berth laid found them all again, so
+ * a late city's routes were its slowest thing, and its map drew a lane for
+ * each terminal side by side. The berths are routed now in the order the
+ * shore laid them, each against the routes before it:
+ *   JOIN        a Dijkstra over the sea's cells from the berth's start (eight
+ *               ways, a shore cell SHORE_COST times an open one, as the way
+ *               out of a bay), no cell farther than JOIN_CELLS from it, stops
+ *               at the first cell a joinable lane covers - a leg of a route
+ *               from its berth up to its offing, sampled three times a cell
+ *               (Lanes). A lane is joinable when it was found by a search or
+ *               itself joined, and its offing lies at least (reach - 1) cells
+ *               from this berth's start, so every route's offing stays the
+ *               city's radius plus OFFING_M out from its berth;
+ *   THE ROUTE   then the berth, the way to the lane pulled straight, the join
+ *               point (the point on the covering leg nearest the cell's
+ *               middle) and the lane's own points after that leg, the same
+ *               doubles (BoatSchedule's boats ride them), its offing, pivot and
+ *               spread the lane's (a join on the lane's last leg makes the join
+ *               point the pivot, and the spread is looked at again from it);
+ *   ELSE        the berth is searched, as above, and is a lane for those after.
+ * A route depends on the routes before it alone, so those found already for
+ * the first berths are kept when berths are added (extend()). The map finds
+ * them at the radius rounded up to a multiple of REFIND_M (band()). And a
+ * search whose straight line from the berth's cell to the offing keeps to the
+ * sea takes the two points as THE WAY, which is what pull() would make of any
+ * way the A* found between them: the A* of a way off the bearings that are
+ * multiples of 45 degrees took 50 ms and tens of thousands of cells for it.
  */
 public final class SeaRoutes {
 
@@ -91,16 +123,79 @@ public final class SeaRoutes {
     /** The most cells a route's A* looks at before it takes the straight lane: 250,000 - a way of about 1,000 km through open sea. */
     public static final int EXPANSIONS_MOST = 250_000;
 
+    /** How far by water a terminal looks for a lane to join, in metres: OFFING_M, the offing's own margin (SL1, 2026-10-28). */
+    public static final double JOIN_M = OFFING_M;
+
+    /** ...in cells of CELL plots, rounded up: 21 (no cell of a join's search is farther from the berth's start in a straight line). */
+    public static final int JOIN_CELLS = (int) Math.ceil(JOIN_M / World.PLOT_M / CELL);
+
+    /** How much the city's radius may grow before the routes are found again, in metres: OFFING_M / 2, 5 km - they are found at the radius rounded up to a multiple of it (band(); SL1, 2026-10-28). */
+    public static final double REFIND_M = OFFING_M / 2;
+
     /** Cells a side of a block of the grid read at once: 64, 1,024 plots (a block a World.regionTerrain() call). */
     static final int BLOCK = 64;
 
-    /** Each terminal's route, in the berths' order (pure in the world, the berths, the site and the radius). */
+    /** Each terminal's route, in the berths' order, each against those before it (pure in the world, the berths, the site and the radius). */
     public static List<BoatSchedule.Route> of(World world, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius) {
-        List<BoatSchedule.Route> out = new ArrayList<>();
-        if (berths == null || berths.isEmpty()) return out;
-        Grid g = new Grid(world);
-        for (BoatSchedule.Berth b : berths) out.add(route(g, b, siteX, siteY, radius));
-        return out;
+        return find(world, berths, siteX, siteY, radius).routes();
+    }
+
+    /**
+     * The routes found, and how: how many berths were searched (route(): the 72 bearings and an A*, a straight lane
+     * where the sea gave no way) and how many joined a lane (join()), of the berths this call routed; for each of
+     * the routes, `joinAt`: the index among its points of the join point it was joined at (the lane's own points
+     * follow it), or -1 for a route searched or kept.
+     */
+    public record Found(List<BoatSchedule.Route> routes, int searched, int joined, int[] joinAt) { }
+
+    /** ...every berth's route, with how each was found. */
+    public static Found find(World world, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius) {
+        return extend(world, List.of(), berths, siteX, siteY, radius);
+    }
+
+    /**
+     * The routes of `berths` given those already found for its first berths (`kept`, the same routes of() or an
+     * earlier extend() made, for the same world, site and radius): the rest routed onto them, equal point for point to
+     * of() on the whole list. The kept routes are in the result as they are, the same objects.
+     */
+    public static Found extend(World world, List<BoatSchedule.Route> kept, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius) {
+        if (berths == null) berths = List.of();
+        if (berths.isEmpty() && kept.isEmpty()) return new Found(List.of(), 0, 0, new int[0]);
+        return extend(new Grid(world), kept, berths, siteX, siteY, radius);
+    }
+
+    /** ...on a grid given (a harness's, from a mask of the sea). */
+    static Found find(Grid g, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius) {
+        return extend(g, List.of(), berths, siteX, siteY, radius);
+    }
+
+    /** ...on a grid given. */
+    static Found extend(Grid g, List<BoatSchedule.Route> kept, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius) {
+        if (kept.size() > berths.size()) throw new IllegalArgumentException("more routes kept than berths: " + kept.size() + " > " + berths.size());
+        Router r = new Router(g, siteX, siteY, radius, berths.size());
+        for (int i = 0; i < kept.size(); i++) {
+            if (!kept.get(i).berth().equals(berths.get(i))) throw new IllegalArgumentException("kept route " + i + " is not of berth " + i);
+            r.keep(kept.get(i));
+        }
+        for (int i = kept.size(); i < berths.size(); i++) r.next(berths.get(i));
+        return new Found(java.util.Collections.unmodifiableList(r.lanes.routes), r.searched, r.joined, r.joinAt);
+    }
+
+    /** The radius the routes are found at, in plots: `radius` rounded up to a multiple of REFIND_M, never below it (so the offing stays at least the radius plus OFFING_M out from the berth). */
+    public static double band(double radius) {
+        double q = REFIND_M / World.PLOT_M, b = Math.ceil(radius / q) * q;
+        return b < radius ? b + q : b;
+    }
+
+    /** The cells of the sea as a fixture says them (a harness's way to cause each condition): true where the cell is sea. */
+    @FunctionalInterface
+    interface Sea {
+        boolean at(long ci, long cj);
+    }
+
+    /** A grid over a mask of the sea: what `sea` answers, nothing read from the world (off the mask is whatever it answers). */
+    static Grid grid(Sea sea) {
+        return new Grid(sea);
     }
 
     /* =====================================================================
@@ -110,16 +205,21 @@ public final class SeaRoutes {
     /** The sea's cells, read a block at a time as asked. */
     static final class Grid {
         final World world;
+        /** A fixture's mask of the sea (SL1), or null: the world's ground is read. */
+        final Sea mask;
         final Map<Long, boolean[]> blocks = new HashMap<>();
         /** Each block's cells' openness as worked out: 0 not yet, 1 the shore's, 2 open water. */
         final Map<Long, byte[]> opens = new HashMap<>();
-        final byte[] buf = new byte[(BLOCK * CELL / SAMPLE) * (BLOCK * CELL / SAMPLE)];
+        final byte[] buf;
         int read;
 
-        Grid(World world) { this.world = world; }
+        Grid(World world) { this.world = world; this.mask = null; this.buf = new byte[(BLOCK * CELL / SAMPLE) * (BLOCK * CELL / SAMPLE)]; }
+
+        Grid(Sea mask) { this.world = null; this.mask = mask; this.buf = null; }
 
         /** Whether cell (ci, cj) is sea: at least SALT_LEAST of its samples salt; off the world, sea. */
         boolean sea(long ci, long cj) {
+            if (mask != null) return mask.at(ci, cj);
             long cells = World.SIDE / CELL;
             if (ci < 0 || cj < 0 || ci >= cells || cj >= cells) return true;
             long bi = Math.floorDiv(ci, BLOCK), bj = Math.floorDiv(cj, BLOCK);
@@ -170,10 +270,20 @@ public final class SeaRoutes {
        A ROUTE
        ===================================================================== */
 
-    /** A berth's route (SeaRoutes' rule). */
+    /** How far out the offing lies from a berth's start cell for a city of this radius, in cells: the radius plus OFFING_M, at least 1, at most RAY_CELLS. */
+    static int reachOf(double radius) {
+        double want = (radius + OFFING_M / World.PLOT_M) / CELL;
+        return (int) Math.max(1, Math.min(Math.ceil(want), RAY_CELLS));
+    }
+
+    /** A berth's route, searched (SeaRoutes' rule). */
     static BoatSchedule.Route route(Grid g, BoatSchedule.Berth b, long siteX, long siteY, double radius) {
+        return route(g, b, nearestSea(g, Math.floorDiv(b.x(), CELL), Math.floorDiv(b.y(), CELL)), siteX, siteY, radius);
+    }
+
+    /** ...from its start cell, which nearestSea() found (null for none: the straight lane). */
+    static BoatSchedule.Route route(Grid g, BoatSchedule.Berth b, long[] start, long siteX, long siteY, double radius) {
         double bx = b.x() + 0.5, by = b.y() + 0.5;
-        long[] start = nearestSea(g, Math.floorDiv(b.x(), CELL), Math.floorDiv(b.y(), CELL));
         if (start == null) return BoatSchedule.lane(b, siteX, siteY);
         // THE OFFING: the bearing with the longest run of sea, the way away from the founding site on a tie.
         double away = Math.atan2(by - siteY, bx - siteX);
@@ -184,8 +294,7 @@ public final class SeaRoutes {
             double off = Math.abs(Math.IEEEremainder(Math.toRadians(deg) - away, 2 * Math.PI));
             if (run > bestRun || (run == bestRun && off < bestOff)) { bestRun = run; bestDeg = deg; bestOff = off; }
         }
-        double want = (radius + OFFING_M / World.PLOT_M) / CELL;
-        int reach = (int) Math.max(1, Math.min(Math.ceil(want), RAY_CELLS));
+        int reach = reachOf(radius);
         double r = Math.toRadians(bestDeg);
         long oi, oj;
         List<long[]> path;
@@ -193,7 +302,12 @@ public final class SeaRoutes {
             // Open water ahead: the offing on its bearing; THE WAY: A* over the sea's cells to it.
             oi = Math.round(start[0] + Math.cos(r) * reach);
             oj = Math.round(start[1] + Math.sin(r) * reach);
-            path = astar(g, start, new long[] { oi, oj });
+            // SL1: when the straight line from the start to the offing keeps to the sea, pull() would take whatever way the A*
+            // found for those two points alone (its first test is that very line), and a way of 400 cells off the bearings
+            // that are a multiple of 45 degrees takes the A* tens of thousands of cells and 50 ms: so the two points are the way.
+            long[] goal = { oi, oj };
+            boolean straight = (oi != start[0] || oj != start[1]) && g.clear(start[0], start[1], oi, oj);
+            path = straight ? List.of(start, goal) : astar(g, start, goal);
         } else {
             // ...IN A BAY: the reachable sea flooded out to the offing's distance, the offing the farthest out with the most sea
             // beyond; the flood's own cheapest way to it.
@@ -476,5 +590,309 @@ public final class SeaRoutes {
             ay = by;
         }
         return true;
+    }
+
+    /* =====================================================================
+       SHARED LANES (SL1, 2026-10-28)
+       ===================================================================== */
+
+    /** The routes of one call, in the berths' order: each joins a lane of those before it (join()) or is searched (route()). */
+    private static final class Router {
+        /** A join's scratch window: JOIN_CELLS either way of the berth's start cell. */
+        static final int SIDE = 2 * JOIN_CELLS + 1;
+
+        final Grid g;
+        final long siteX, siteY;
+        final double radius;
+        final int reach;
+        final Lanes lanes = new Lanes();
+        final int[] joinAt;
+        int searched, joined;
+
+        /** The window's cells: the cost reached, the cell it was reached from, and the join they were last reached in (a stamp, so nothing is cleared). */
+        private final double[] cost = new double[SIDE * SIDE];
+        private final int[] prev = new int[SIDE * SIDE], mark = new int[SIDE * SIDE];
+        private int gen;
+        /** The cells reached and not yet looked at, a binary heap by cost, then by cell. */
+        private double[] heapCost = new double[256];
+        private int[] heapAt = new int[256];
+        private int heapN;
+
+        Router(Grid g, long siteX, long siteY, double radius, int berths) {
+            this.g = g;
+            this.siteX = siteX;
+            this.siteY = siteY;
+            this.radius = radius;
+            this.reach = reachOf(radius);
+            this.joinAt = new int[berths];
+            java.util.Arrays.fill(joinAt, -1);
+        }
+
+        /** A route found already, for the next berth: it is a lane for those after. */
+        void keep(BoatSchedule.Route r) {
+            lanes.add(r);
+        }
+
+        /** The next berth's route: joined to a lane when one is in reach, else searched. */
+        void next(BoatSchedule.Berth b) {
+            long[] start = nearestSea(g, Math.floorDiv(b.x(), CELL), Math.floorDiv(b.y(), CELL));
+            int at = lanes.routes.size();
+            BoatSchedule.Route r = start == null || lanes.count == 0 ? null : join(at, b, start);
+            if (r == null) {
+                searched++;
+                r = route(g, b, start, siteX, siteY, radius);
+            } else {
+                joined++;
+            }
+            lanes.add(r);
+        }
+
+        /**
+         * The berth's route by a lane (SL1): a Dijkstra over the sea's cells from `start` (eight ways, a shore cell
+         * SHORE_COST times an open one, as outOfTheBay() costs them), no cell farther than JOIN_CELLS from it in a
+         * straight line, at most EXPANSIONS_MOST looked at, stopping at the first one looked at that a lane the berth
+         * may join covers (Lanes.covering()); then assemble(). Null when no lane is reached.
+         */
+        private BoatSchedule.Route join(int at, BoatSchedule.Berth b, long[] start) {
+            gen++;
+            heapN = 0;
+            int centre = JOIN_CELLS * SIDE + JOIN_CELLS;
+            cost[centre] = 0;
+            prev[centre] = -1;
+            mark[centre] = gen;
+            push(0, centre);
+            int hit = -1, looked = 0;
+            int[] cover = null;
+            while (heapN > 0 && looked < EXPANSIONS_MOST) {
+                double c = heapCost[0];
+                int idx = heapAt[0];
+                pop();
+                if (c > cost[idx] + 1e-9) continue;
+                looked++;
+                int li = idx % SIDE, lj = idx / SIDE;
+                cover = lanes.covering(start[0] + li - JOIN_CELLS, start[1] + lj - JOIN_CELLS, start, reach);
+                if (cover != null) { hit = idx; break; }
+                for (int dj = -1; dj <= 1; dj++) {
+                    for (int di = -1; di <= 1; di++) {
+                        if (di == 0 && dj == 0) continue;
+                        int ni = li + di, nj = lj + dj;
+                        if (ni < 0 || nj < 0 || ni >= SIDE || nj >= SIDE) continue;
+                        int ox = ni - JOIN_CELLS, oy = nj - JOIN_CELLS;
+                        if (ox * ox + oy * oy > JOIN_CELLS * JOIN_CELLS) continue;
+                        long gi = start[0] + ox, gj = start[1] + oy;
+                        if (!g.sea(gi, gj)) continue;
+                        double nc = c + (di != 0 && dj != 0 ? Math.sqrt(2) : 1) * (g.open(gi, gj) ? 1 : SHORE_COST);
+                        int nidx = nj * SIDE + ni;
+                        if (mark[nidx] == gen && nc >= cost[nidx]) continue;
+                        mark[nidx] = gen;
+                        cost[nidx] = nc;
+                        prev[nidx] = idx;
+                        push(nc, nidx);
+                    }
+                }
+            }
+            if (hit < 0) return null;
+            List<long[]> path = new ArrayList<>();
+            for (int k = hit; k >= 0; k = prev[k]) path.add(new long[] { start[0] + k % SIDE - JOIN_CELLS, start[1] + k / SIDE - JOIN_CELLS });
+            java.util.Collections.reverse(path);
+            return assemble(at, b, start, path, cover);
+        }
+
+        /**
+         * The joined route: the berth, the way to the covering cell pulled straight (pull(), with route()'s rule for the
+         * berth's own cell and its FR3 check of the berth's first leg), the join point, then the lane's own points after
+         * the covering leg, copied. Its offing and pivot are the lane's, shifted; its spread the lane's, looked at again
+         * (tailClear()) when the join point is the pivot, a join on the lane's last leg.
+         */
+        private BoatSchedule.Route assemble(int at, BoatSchedule.Berth b, long[] start, List<long[]> path, int[] cover) {
+            BoatSchedule.Route q = lanes.routes.get(cover[0]);
+            int leg = cover[1];
+            double[] qx = q.xs(), qy = q.ys();
+            double bx = b.x() + 0.5, by = b.y() + 0.5;
+            long[] hitCell = path.get(path.size() - 1);
+            double[] jp = joinPoint(g, q, leg, hitCell[0], hitCell[1]);
+            List<double[]> pts = new ArrayList<>();
+            pts.add(new double[] { bx, by });
+            List<long[]> pulled = pull(g, path);
+            for (int k = 0; k < pulled.size(); k++) {
+                long[] c = pulled.get(k);
+                double cx = c[0] * CELL + CELL / 2.0, cy = c[1] * CELL + CELL / 2.0;
+                if (pts.size() == 1 && c[0] == start[0] && c[1] == start[1]) {
+                    double nx = jp[0], ny = jp[1];
+                    if (k + 1 < pulled.size()) { nx = pulled.get(k + 1)[0] * CELL + CELL / 2.0; ny = pulled.get(k + 1)[1] * CELL + CELL / 2.0; }
+                    if (Math.hypot(cx - bx, cy - by) < CELL / 2.0 && legOnSea(g, bx, by, nx, ny)) continue;
+                }
+                pts.add(new double[] { cx, cy });
+            }
+            // The join point, once: it may be where the way ends already, or the lane's next point.
+            double[] last = pts.get(pts.size() - 1);
+            int joinIdx;
+            if (last[0] == jp[0] && last[1] == jp[1]) {
+                joinIdx = pts.size() - 1;
+            } else if (qx[leg + 1] == jp[0] && qy[leg + 1] == jp[1]) {
+                joinIdx = pts.size();
+            } else {
+                joinIdx = pts.size();
+                pts.add(jp);
+            }
+            last = pts.get(pts.size() - 1);
+            int first = leg + 1;
+            if (last[0] == qx[first] && last[1] == qy[first]) first++;
+            int base = pts.size();
+            for (int m = first; m < qx.length; m++) pts.add(new double[] { qx[m], qy[m] });
+            // The lane's points keep their order and their doubles: a point m of it is at base + m - first, and the one before the first copied (the lane's own next point after the covering leg, the way's last) at base - 1.
+            int offing = (q.offing() >= first ? base + q.offing() - first : base - 1);
+            boolean pivotMoves = q.pivot() < leg + 1;
+            int pivot = pivotMoves ? joinIdx : (q.pivot() >= first ? base + q.pivot() - first : base - 1);
+            int n = pts.size();
+            double[] xs = new double[n], ys = new double[n];
+            for (int i = 0; i < n; i++) { xs[i] = pts.get(i)[0]; ys[i] = pts.get(i)[1]; }
+            double spread = q.spread();
+            if (pivotMoves && spread > 0) {
+                for (double turn : new double[] { -spread, -spread / 2, spread / 2, spread }) {
+                    if (!tailClear(g, xs, ys, pivot, turn)) { spread = 0; break; }
+                }
+            }
+            joinAt[at] = joinIdx;
+            return BoatSchedule.Route.through(b, xs, ys, offing, pivot, spread);
+        }
+
+        private boolean before(int a, int b) {
+            return heapCost[a] < heapCost[b] || (heapCost[a] == heapCost[b] && heapAt[a] < heapAt[b]);
+        }
+
+        private void push(double c, int at) {
+            if (heapN == heapAt.length) {
+                heapCost = java.util.Arrays.copyOf(heapCost, heapN * 2);
+                heapAt = java.util.Arrays.copyOf(heapAt, heapN * 2);
+            }
+            int i = heapN++;
+            heapCost[i] = c;
+            heapAt[i] = at;
+            while (i > 0) {
+                int p = (i - 1) >>> 1;
+                if (!before(i, p)) break;
+                swap(i, p);
+                i = p;
+            }
+        }
+
+        /** Takes the heap's first away. */
+        private void pop() {
+            heapN--;
+            if (heapN == 0) return;
+            heapCost[0] = heapCost[heapN];
+            heapAt[0] = heapAt[heapN];
+            int i = 0;
+            while (true) {
+                int l = 2 * i + 1, r = l + 1, m = i;
+                if (l < heapN && before(l, m)) m = l;
+                if (r < heapN && before(r, m)) m = r;
+                if (m == i) break;
+                swap(i, m);
+                i = m;
+            }
+        }
+
+        private void swap(int a, int b) {
+            double c = heapCost[a];
+            heapCost[a] = heapCost[b];
+            heapCost[b] = c;
+            int t = heapAt[a];
+            heapAt[a] = heapAt[b];
+            heapAt[b] = t;
+        }
+    }
+
+    /**
+     * The lanes a berth may join: the legs of the routes found by a search or joined (a straight lane, two points, is
+     * never one), each from its berth up to its offing and never the abyss's, indexed by the sea cell each passes
+     * through, sampled three times a cell as legOnSea() looks. A leg is indexed once however many routes share it - the
+     * same four doubles, or a part of one that ends where it does, as a joiner has - under the first route that has it.
+     */
+    private static final class Lanes {
+        /** The routes taken in, in order (all of them, whether they are lanes or not). */
+        final List<BoatSchedule.Route> routes = new ArrayList<>();
+        /** How many of them are lanes. */
+        int count;
+        /** Each cell's legs: route << 24 | leg, in the order taken in. */
+        private final Map<Long, long[]> cells = new HashMap<>();
+        /** The legs indexed, each once (SeaLanes.Legs: a leg kept already, or lying on one that ends where it does, is not indexed again). */
+        private final SeaLanes.Legs kept = new SeaLanes.Legs();
+
+        /** The next route taken in: indexed when it is a lane. */
+        void add(BoatSchedule.Route r) {
+            int ri = routes.size();
+            routes.add(r);
+            if (r.xs().length < 3) return;
+            count++;
+            double[] xs = r.xs(), ys = r.ys();
+            for (int i = 0; i < r.offing(); i++) {
+                if (!kept.add(xs[i], ys[i], xs[i + 1], ys[i + 1])) continue;
+                long entry = ((long) ri << 24) | i;
+                int n = samples(xs[i], ys[i], xs[i + 1], ys[i + 1]);
+                long lastI = Long.MIN_VALUE, lastJ = Long.MIN_VALUE;
+                for (int k = 0; k <= n; k++) {
+                    long ci = cellOf(xs[i] + (xs[i + 1] - xs[i]) * k / n), cj = cellOf(ys[i] + (ys[i + 1] - ys[i]) * k / n);
+                    if (ci == lastI && cj == lastJ) continue;
+                    lastI = ci;
+                    lastJ = cj;
+                    long[] now = cells.get(key(ci, cj));
+                    if (now == null) {
+                        cells.put(key(ci, cj), new long[] { entry });
+                    } else if (now[now.length - 1] != entry) {
+                        long[] more = java.util.Arrays.copyOf(now, now.length + 1);
+                        more[now.length] = entry;
+                        cells.put(key(ci, cj), more);
+                    }
+                }
+            }
+        }
+
+        /** The samples along a leg, three a cell as legOnSea() takes them (the last index; there is one more). */
+        static int samples(double ax, double ay, double bx, double by) {
+            return (int) Math.ceil(Math.hypot(bx - ax, by - ay) / CELL * 3) + 1;
+        }
+
+        static long cellOf(double v) {
+            return Math.floorDiv((long) Math.floor(v), CELL);
+        }
+
+        /**
+         * The lane covering cell (ci, cj) that a berth whose start cell is `start` may join, as {route, leg}, or null:
+         * the first in the order taken in whose offing lies at least (reach - 1) cells from the start.
+         */
+        int[] covering(long ci, long cj, long[] start, int reach) {
+            long[] es = cells.get(key(ci, cj));
+            if (es == null) return null;
+            for (long e : es) {
+                int ri = (int) (e >>> 24);
+                BoatSchedule.Route q = routes.get(ri);
+                double ox = q.xs()[q.offing()] / CELL - 0.5, oy = q.ys()[q.offing()] / CELL - 0.5;
+                if (Math.hypot(ox - start[0], oy - start[1]) >= reach - 1) return new int[] { ri, (int) (e & 0xFFFFFF) };
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Where a berth's way meets leg `leg` of lane q, which covers cell (ci, cj): the point on the leg nearest the
+     * cell's middle; or, where the straight way from the middle to it would leave the sea (the point lies in the
+     * next cell over), the leg's own sample in the cell nearest the middle.
+     */
+    private static double[] joinPoint(Grid g, BoatSchedule.Route q, int leg, long ci, long cj) {
+        double ax = q.xs()[leg], ay = q.ys()[leg], bx = q.xs()[leg + 1], by = q.ys()[leg + 1];
+        double mx = ci * CELL + CELL / 2.0, my = cj * CELL + CELL / 2.0;
+        double dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+        double t = l2 > 0 ? Math.max(0, Math.min(1, ((mx - ax) * dx + (my - ay) * dy) / l2)) : 0;
+        double jx = ax + dx * t, jy = ay + dy * t;
+        if (legOnSea(g, mx, my, jx, jy)) return new double[] { jx, jy };
+        int n = Lanes.samples(ax, ay, bx, by);
+        double best = Double.MAX_VALUE;
+        for (int k = 0; k <= n; k++) {
+            double x = ax + dx * k / n, y = ay + dy * k / n, d = Math.hypot(x - mx, y - my);
+            if (Lanes.cellOf(x) == ci && Lanes.cellOf(y) == cj && d < best) { best = d; jx = x; jy = y; }
+        }
+        return new double[] { jx, jy };
     }
 }

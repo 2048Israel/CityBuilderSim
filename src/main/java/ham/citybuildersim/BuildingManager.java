@@ -2410,7 +2410,8 @@ public class BuildingManager {
         /* ---------------------------- THE PORTS (0.7.86) ----------------------------
            Batch O9 (docs/studies/spec-oil.md 2.9; the research's 4.1 and Q9).
            Four sea terminals, the city's (no sector), each one berth of one
-           kind of cargo on owned coast (Game.hasCoastFor()), its tonnes a year
+           kind of cargo (as O9 made it; SL1, below, gave each several) on
+           owned coast (Game.hasCoastFor()), its tonnes a year
            (Ports): a Tanker Terminal 3.25 Mt [P1][P2], D$96M [P11], 7 posts
            [P13][P28], 4 ha (est.); a Bulk Terminal 27.5 Mt [P3][P5], D$2,310M
            (US$84 a tonne-year [P3]), 234 posts [P22], 22 ha [P14]; a
@@ -2427,53 +2428,87 @@ public class BuildingManager {
            Handysize and Supramax only; the Bulk Terminal takes Panamax and
            Capesize ("ships" in its port line), and the dry bulk calls are
            made in the classes of the largest berth standing.
+           SL1 (2026-10-28; Jerus: "there are two billion ports, basically im
+           asking that not that many ports are needed, aka one port can sustain
+           alot"): the four terminals above are now one large modern real
+           terminal each, of several berths, not one berth - the default
+           playtest stood 35 General Cargo Terminals at 544,000 people, all full
+           (450,000 t a year against a city's break-bulk trade of about 2.5 t a
+           person a month), and a 10-billion city would have wanted ~680,000.
+           Ids stay; the tonnes a year and every cost line move by one ratio
+           (new tonnes over old, each rounded to the whole number, a job line at
+           least 1; O9's split kept exactly - material a sixtieth of the new
+           cash, points a half - so the General Cargo Terminal's odd 311,111 is
+           311,112 and the Container Terminal's material 27,660), so the price
+           and the port dues a tonne stay as they were and only the step grows:
+             - Tanker Terminal 3.25 -> 30 Mt: Westridge Marine Terminal (Trans
+               Mountain; 3 Aframax berths, 630,000 bbl a day = 31 Mt a year;
+               Kinder Morgan Canada 10-K, FY2017), Maasvlakte Olie Terminal
+               (Rotterdam; ~30 Mt), BTC Ceyhan (2 VLCC berths, 50 Mt design,
+               ~30 Mt in 2022);
+             - Bulk Terminal 27.5 -> 50 Mt: Abbot Point / NQXT (2 Capesize
+               berths, 50 Mt a year nameplate), against NCIG Newcastle (66 Mt
+               on 3 berths) and Richards Bay Coal Terminal (91 Mt on 6 berths);
+             - Container Terminal 0.75M -> 2.7M TEU (24.3 Mt at 9 t): APM
+               Terminals Maasvlakte II (opened 2015; 86 ha, a 1,000 m
+               deep-sea quay, 8 STS cranes, 2.7 Mteu);
+             - General Cargo Terminal 0.45 -> 2 Mt: PSA Breakbulk Antwerp
+               (1,319 m of quay, 25.9 ha, ~2 Mt a year of steel and metals),
+               against BLG Neustaedter Hafen, Bremen (~1.4 Mt on 2.1 km).
+           The Bulk Berth stays as it is: dry bulk's small terminal for the
+           young city. The test player and the advice order the COUNT the
+           uncovered tonnes pay back (Ports.payingCount()), not one at a time,
+           of the largest terminal the kind's whole sea trade pays back
+           (Ports.payingTerminal(): once the uncovered tonnes pay back some
+           terminal at all), so a trade past a Bulk Terminal's break-even is
+           met by Bulk Terminals and not by Bulk Berths for ever.
            ------------------------------------------------------------------------------ */
         templates.add(new BuildingsTemplate("Tanker Terminal", BuildingType.PORTS)
-                .setCashCost(96000)
-                .setConstructionPoints(48000)
-                .setConstructionMaterials(1600)
+                .setCashCost(886154)
+                .setConstructionPoints(443077)
+                .setConstructionMaterials(14769)
                 .setElectricityConsumption(0)
                 .setWaterConsumption(0)
-                .setLandSqFt(430556)
-                .setJobs(JobType.NO_DIPLOMA, 5)
-                .setJobs(JobType.DIPLOMA, 2)
-                .setBerth(Ports.Cargo.LIQUID, 3250000)
+                .setLandSqFt(3974363)
+                .setJobs(JobType.NO_DIPLOMA, 46)
+                .setJobs(JobType.DIPLOMA, 18)
+                .setBerth(Ports.Cargo.LIQUID, 30000000)
                 .setId(94));
         templates.add(new BuildingsTemplate("Bulk Terminal", BuildingType.PORTS)
-                .setCashCost(2310000)
-                .setConstructionPoints(1155000)
-                .setConstructionMaterials(38500)
+                .setCashCost(4200000)
+                .setConstructionPoints(2100000)
+                .setConstructionMaterials(70000)
                 .setElectricityConsumption(0)
                 .setWaterConsumption(0)
-                .setLandSqFt(2368060)
-                .setJobs(JobType.NO_DIPLOMA, 161)
-                .setJobs(JobType.DIPLOMA, 62)
-                .setJobs(JobType.COLLEGE_ENGINEERING, 11)
-                .setBerth(Ports.Cargo.DRY_BULK, 27500000)
+                .setLandSqFt(4305564)
+                .setJobs(JobType.NO_DIPLOMA, 293)
+                .setJobs(JobType.DIPLOMA, 113)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 20)
+                .setBerth(Ports.Cargo.DRY_BULK, 50000000)
                 .setBerthShips(Ports.BULK_TERMINAL_SHIPS)
                 .setId(95));
         templates.add(new BuildingsTemplate("Container Terminal", BuildingType.PORTS)
-                .setCashCost(461000)
-                .setConstructionPoints(230500)
-                .setConstructionMaterials(7683)
+                .setCashCost(1659600)
+                .setConstructionPoints(829800)
+                .setConstructionMaterials(27660)
                 .setElectricityConsumption(0)
                 .setWaterConsumption(0)
-                .setLandSqFt(2152782)
-                .setJobs(JobType.NO_DIPLOMA, 403)
-                .setJobs(JobType.DIPLOMA, 154)
-                .setJobs(JobType.COLLEGE_ENGINEERING, 28)
-                .setBerth(Ports.Cargo.CONTAINER, 6750000)
+                .setLandSqFt(7750015)
+                .setJobs(JobType.NO_DIPLOMA, 1451)
+                .setJobs(JobType.DIPLOMA, 554)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 101)
+                .setBerth(Ports.Cargo.CONTAINER, 24300000)
                 .setId(96));
         templates.add(new BuildingsTemplate("General Cargo Terminal", BuildingType.PORTS)
-                .setCashCost(70000)
-                .setConstructionPoints(35000)
-                .setConstructionMaterials(1167)
+                .setCashCost(311112)
+                .setConstructionPoints(155556)
+                .setConstructionMaterials(5185)
                 .setElectricityConsumption(0)
                 .setWaterConsumption(0)
-                .setLandSqFt(107639)
-                .setJobs(JobType.NO_DIPLOMA, 8)
-                .setJobs(JobType.DIPLOMA, 3)
-                .setBerth(Ports.Cargo.GENERAL, 450000)
+                .setLandSqFt(478396)
+                .setJobs(JobType.NO_DIPLOMA, 36)
+                .setJobs(JobType.DIPLOMA, 13)
+                .setBerth(Ports.Cargo.GENERAL, 2000000)
                 .setId(97));
         templates.add(new BuildingsTemplate("Bulk Berth", BuildingType.PORTS)
                 .setCashCost(60000)

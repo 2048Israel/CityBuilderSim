@@ -1416,6 +1416,37 @@ public class BuildAdviceCheck {
         dues.setPortDues(TaxPolicy.DEFAULT_PORT_DUES);
         s = ask(g, m);
         assertTrue("...and back at the default the same tonnes advise the Bulk Terminal", s != null && s.template() == terminal);
+
+        // SL1 (2026-10-28): the card offers the COUNT the tonnes pay back (Ports.payingCount()), its price, ground and figures the count's.
+        causeDryBulk(g, 2.7 * terminalMonth);
+        s = ask(g, m);
+        assertTrue("fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial",
+                Ports.payingCount(2.7 * terminalMonth, terminalMonth, dues.getPortDues()) == 3);
+        assertTrue("SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order", s != null && s.template() == terminal && s.count() == 3);
+        if (s != null) {
+            bits("...at the price the Build button charges for the three", s.price(), g.quoteBuildOn(terminal, 3, Landmasses.RULE).total);
+            bits("...the tonnes left with the three standing, none", s.after(), 0);
+            assertTrue("...the order closes the measure and its ground is the three terminals'",
+                    s.closes() && s.landSqFt() == 3 * terminal.getLandSqFt());
+        }
+
+        // SL1: the size follows the kind's whole trade, not what is left uncovered of it.
+        double few = 3.5 * berthMonth;
+        quietly(() -> g.getBuildingManager().addStack(berth, 2, true));
+        causeDryBulk(g, few + 2 * berthMonth);
+        assertTrue("fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered",
+                Ports.berths(g.getBuildingManager())[kind.ordinal()] == 2 * berthMonth && g.getPorts().carriable(kind) < atTerminal
+                        && Math.abs(g.getPorts().uncovered(kind, Ports.berths(g.getBuildingManager()), null) - few) < 1e-6);
+        s = ask(g, m);
+        assertTrue("SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three", s != null && s.template() == berth && s.count() == 3);
+        quietly(() -> g.getBuildingManager().addStack(berth, 10, true));
+        causeDryBulk(g, few + 12 * berthMonth);
+        assertTrue("fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered",
+                g.getPorts().carriable(kind) >= atTerminal && Ports.berthPaysBack(g.getPorts().uncovered(kind, Ports.berths(g.getBuildingManager()), null), berthMonth, 1)
+                        && !Ports.berthPaysBack(g.getPorts().uncovered(kind, Ports.berths(g.getBuildingManager()), null), terminalMonth, 1));
+        s = ask(g, m);
+        assertTrue("SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever",
+                s != null && s.template() == terminal && s.count() == 1);
     }
 
     /** Begins the city's Ports month and tells it `tonnes` of iron ore (dry bulk) crossed the boundary inbound, none by sea. */

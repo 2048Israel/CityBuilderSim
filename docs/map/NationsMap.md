@@ -1,6 +1,6 @@
 # NationsMap.java - 974 lines · 58 methods · 35 constants · model
 
-`ham/citybuildersim/NationsMap.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NationsMap.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > The nations on the map, without the toolkit: the borders simplified and cut to a view, each nation's dot and the name written on its land, what lies
 > under a point, and the card a click opens - everything ui/MapView draws the nations by, as arithmetic a harness can hold (GlobeCheck 9 to 12 and

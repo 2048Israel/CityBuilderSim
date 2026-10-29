@@ -79,7 +79,7 @@
   "STRATEGIC RESERVE is the same tanks owned by the city, holding crude oil only: the",
   "city fills it and releases it in the month's crude market (StrategicReserve).",
   "A PORTS building is one of the city's sea terminals: \"port\": {\"cargo\": \"LIQUID\",",
-  "\"tonnes\": 3250000} is the kind of cargo its berth handles - LIQUID, DRY_BULK,",
+  "\"tonnes\": 30000000} is the kind of cargo its berth handles - LIQUID, DRY_BULK,",
   "CONTAINER or GENERAL - and the tonnes a year. It needs the city to own some sea, and",
   "the kind's goods go by sea in the share its berths cover (Ports).",
   "THE OIL AT SEA: \"offshore\": {\"kind\": \"PLATFORM\", \"slots\": 12} is an Offshore",
@@ -2297,39 +2297,39 @@
    "id": 94,
    "name": "Tanker Terminal",
    "category": "PORTS",
-   "cashCost": 96000,
-   "constructionPoints": 48000,
-   "constructionMaterials": 1600,
+   "cashCost": 886154,
+   "constructionPoints": 443077,
+   "constructionMaterials": 14769,
    "electricity": 0,
    "water": 0,
    "jobs": {
-    "NO_DIPLOMA": 5,
-    "DIPLOMA": 2
+    "NO_DIPLOMA": 46,
+    "DIPLOMA": 18
    },
-   "land": 430556,
+   "land": 3974363,
    "port": {
     "cargo": "LIQUID",
-    "tonnes": 3250000
+    "tonnes": 30000000
    }
   },
   {
    "id": 95,
    "name": "Bulk Terminal",
    "category": "PORTS",
-   "cashCost": 2310000,
-   "constructionPoints": 1155000,
-   "constructionMaterials": 38500,
+   "cashCost": 4200000,
+   "constructionPoints": 2100000,
+   "constructionMaterials": 70000,
    "electricity": 0,
    "water": 0,
    "jobs": {
-    "NO_DIPLOMA": 161,
-    "DIPLOMA": 62,
-    "COLLEGE_ENGINEERING": 11
+    "NO_DIPLOMA": 293,
+    "DIPLOMA": 113,
+    "COLLEGE_ENGINEERING": 20
    },
-   "land": 2368060,
+   "land": 4305564,
    "port": {
     "cargo": "DRY_BULK",
-    "tonnes": 27500000,
+    "tonnes": 50000000,
     "ships": ["PANAMAX", "CAPESIZE"]
    }
   },
@@ -2337,39 +2337,39 @@
    "id": 96,
    "name": "Container Terminal",
    "category": "PORTS",
-   "cashCost": 461000,
-   "constructionPoints": 230500,
-   "constructionMaterials": 7683,
+   "cashCost": 1659600,
+   "constructionPoints": 829800,
+   "constructionMaterials": 27660,
    "electricity": 0,
    "water": 0,
    "jobs": {
-    "NO_DIPLOMA": 403,
-    "DIPLOMA": 154,
-    "COLLEGE_ENGINEERING": 28
+    "NO_DIPLOMA": 1451,
+    "DIPLOMA": 554,
+    "COLLEGE_ENGINEERING": 101
    },
-   "land": 2152782,
+   "land": 7750015,
    "port": {
     "cargo": "CONTAINER",
-    "tonnes": 6750000
+    "tonnes": 24300000
    }
   },
   {
    "id": 97,
    "name": "General Cargo Terminal",
    "category": "PORTS",
-   "cashCost": 70000,
-   "constructionPoints": 35000,
-   "constructionMaterials": 1167,
+   "cashCost": 311112,
+   "constructionPoints": 155556,
+   "constructionMaterials": 5185,
    "electricity": 0,
    "water": 0,
    "jobs": {
-    "NO_DIPLOMA": 8,
-    "DIPLOMA": 3
+    "NO_DIPLOMA": 36,
+    "DIPLOMA": 13
    },
-   "land": 107639,
+   "land": 478396,
    "port": {
     "cargo": "GENERAL",
-    "tonnes": 450000
+    "tonnes": 2000000
    }
   },
   {

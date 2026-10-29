@@ -26,7 +26,13 @@ import java.util.List;
  *      berths, the city's, on the coast. And (FR3, docs/queue/FR3.md 2) the
  *      Bulk Berth, id 142, and the Handysize and Supramax it takes: the
  *      month's dry bulk calls in the classes of the largest dry bulk berth
- *      standing, the Bulk Terminal's Panamax and Capesize as before.
+ *      standing, the Bulk Terminal's Panamax and Capesize as before. And
+ *      (SL1, 2026-10-28, section 2c) the four terminals as large modern real
+ *      ones, of several berths, their cost lines moved by their tonnes'
+ *      ratio; Ports.payingCount(), the terminals the uncovered tonnes pay
+ *      back, each counted after the ones before it, at its edges and the
+ *      dial, agreeing with berthPaysBack(); and main's 35 General Cargo
+ *      Terminals' trade (m3996) carried by the catalogue's 8.
  *
  *   3. THE FACTOR equals its formula exactly, and with nothing at sea it is
  *      the railway's own 1 - rail, the railway's share its own, to the bit.
@@ -198,6 +204,7 @@ public class PortCheck {
         theRule();
         cargoShipsAndTerminals();
         theBulkBerth();
+        terminalsOfSeveralBerths();
         theFactor();
         theShares();
         noPortTheSameBand();
@@ -331,9 +338,10 @@ public class PortCheck {
         List<BuildingsTemplate> file = new BuildingCatalog().load();
         String[] names = { "Tanker Terminal", "Bulk Terminal", "Container Terminal", "General Cargo Terminal" };
         Ports.Cargo[] cargo = { Ports.Cargo.LIQUID, Ports.Cargo.DRY_BULK, Ports.Cargo.CONTAINER, Ports.Cargo.GENERAL };
-        double[] tonnes = { 3_250_000, 27_500_000, 750_000 * Ports.TONNES_A_TEU, 450_000 };
-        double[] capital = { 96_000, 2_310_000, 461_000, 70_000 };
-        int[] posts = { 7, 234, 585, 11 };
+        // SL1 (2026-10-28): each terminal one large modern real one, of several berths - see the PORTS block of BuildingManager for the cited terminals.
+        double[] tonnes = { 30_000_000, 50_000_000, 2_700_000 * Ports.TONNES_A_TEU, 2_000_000 };
+        double[] capital = { 886_154, 4_200_000, 1_659_600, 311_112 };
+        int[] posts = { 46 + 18, 293 + 113 + 20, 1451 + 554 + 101, 36 + 13 };
         boolean terminals = true;
         for (int i = 0; i < names.length; i++) {
             BuildingsTemplate t = bm.getTemplateByName(names[i]), d = null;
@@ -344,9 +352,9 @@ public class PortCheck {
                         && x.getCashCost() == capital[i] && x.getTotalJobs() == posts[i] && x.needsCoast();
             }
         }
-        assertTrue("four terminals, ids 94-97, the city's, a berth each - liquid 3.25 Mt, dry bulk 27.5 Mt, boxes 0.75M TEU,"
-                + " general 0.45 Mt a year - at D$96M, 2,310M, 461M and 70M, 7, 234, 585 and 11 posts, on the coast", terminals);
-        assertTrue("...a berth's month is its year over twelve", Ports.berthMonth(bm.getTemplateByName("Tanker Terminal")) == 3_250_000 / 12.0);
+        assertTrue("four terminals, ids 94-97, the city's, large and modern (SL1) - liquid 30 Mt, dry bulk 50 Mt, boxes 2.7M TEU,"
+                + " general 2 Mt a year - at D$886M, 4,200M, 1,660M and 311M, 64, 426, 2,106 and 49 posts, on the coast", terminals);
+        assertTrue("...a terminal's month is its year over twelve", Ports.berthMonth(bm.getTemplateByName("Tanker Terminal")) == 30_000_000 / 12.0);
         assertTrue("WORTH_A_BERTH, the test player's line, is the railway's own MIN_LINE_UTILISATION",
                 Ports.WORTH_A_BERTH == ham.citybuildersim.sectors.Freight.MIN_LINE_UTILISATION);
     }
@@ -402,9 +410,9 @@ public class PortCheck {
         assertTrue("ONE BULK BERTH STANDING ADDS 2,500,000 / 12 TONNES A MONTH to the dry bulk berths and nothing to any other kind",
                 standing[Ports.Cargo.DRY_BULK.ordinal()] == 2_500_000 / 12.0 && Ports.berthMonth(one.getTemplateByName("Bulk Berth")) == 2_500_000 / 12.0
                         && others && Ports.berths(none)[Ports.Cargo.DRY_BULK.ordinal()] == 0);
-        assertTrue("...two add twice that, and the same beside a Bulk Terminal's 27,500,000 / 12",
+        assertTrue("...two add twice that, and the same beside a Bulk Terminal's 50,000,000 / 12",
                 Ports.berths(two)[Ports.Cargo.DRY_BULK.ordinal()] == 2 * (2_500_000 / 12.0)
-                        && Ports.berths(both)[Ports.Cargo.DRY_BULK.ordinal()] == 27_500_000 / 12.0 + 2_500_000 / 12.0);
+                        && Ports.berths(both)[Ports.Cargo.DRY_BULK.ordinal()] == 50_000_000 / 12.0 + 2_500_000 / 12.0);
 
         // The month's boats in those classes: 3 Supramaxes' tonnes call in three Supramaxes, and in a Bulk Terminal's classes in Capesizes.
         Ports month = new Ports();
@@ -420,6 +428,177 @@ public class PortCheck {
                 + " in a Supramax each, and in the Bulk Terminal's classes Capesizes", supramaxes && capes);
         assertTrue("...a schedule given no classes is the Bulk Terminal's, as before FR3", before.calls().equals(inTerminal.calls())
                 && BoatSchedule.of(4000, month, quay.stream().map(q -> BoatSchedule.lane(q, 0, 0)).toList()).calls().equals(inTerminal.calls()));
+    }
+
+    /* ============================ 2c. A TERMINAL OF SEVERAL BERTHS, ORDERED BY THE COUNT (SL1) ============================ */
+
+    /** Tonnes a year of a General Cargo Terminal on main at 0.8.66, before SL1: the berth the default playtest stood full 35 of at m3996 (544,000 people). */
+    static final double MAIN_GENERAL_BERTH_TONNES_A_YEAR = 450_000;
+    /** ...and how many it stood, all full, at m3996. */
+    static final int MAIN_GENERAL_BERTHS_AT_M3996 = 35;
+    /**
+     * How far a terminal's cash, points or materials may sit from its ratio's rounding: 2. The O9 split (BuildingDataCheck: material
+     * round(cash / 60), points cash / 2) is kept exactly, so an odd cash is made even (the General Cargo Terminal's 311,111 is 311,112)
+     * and a sixtieth is taken of the new cash, not scaled from the old rounded one (the Container Terminal's 27,659 is 27,660).
+     */
+    static final double SPLIT_ROUNDING = 2;
+
+    static void terminalsOfSeveralBerths() {
+        out.println("\n--- 2c. a terminal of several berths (SL1): its cost moved with its tonnes, and the count the tonnes pay back ---");
+        BuildingManager bm = new BuildingManager();
+        bm.initializeBuiltInTemplates();
+        List<BuildingsTemplate> file = new BuildingCatalog().load();
+        String[] names = { "Tanker Terminal", "Bulk Terminal", "Container Terminal", "General Cargo Terminal" };
+        // Main's 0.8.66 terminals: tonnes a year; cash (thousands), construction points, materials, ground; the three job lines.
+        double[] was = { 3_250_000, 27_500_000, 750_000 * Ports.TONNES_A_TEU, MAIN_GENERAL_BERTH_TONNES_A_YEAR };
+        double[][] lines = { { 96_000, 48_000, 1_600, 430_556, 5, 2, 0 }, { 2_310_000, 1_155_000, 38_500, 2_368_060, 161, 62, 11 },
+                { 461_000, 230_500, 7_683, 2_152_782, 403, 154, 28 }, { 70_000, 35_000, 1_167, 107_639, 8, 3, 0 } };
+        boolean scaled = true, dearer = true;
+        StringBuilder bad = new StringBuilder();
+        for (int i = 0; i < names.length; i++) {
+            BuildingsTemplate t = bm.getTemplateByName(names[i]), d = null;
+            for (BuildingsTemplate x : file) if (x.getName().equals(names[i])) d = x;
+            for (BuildingsTemplate x : new BuildingsTemplate[] { t, d }) {
+                if (x == null) { scaled = false; continue; }
+                double r = x.berthTonnesAYear() / was[i];
+                double[] now = { x.getCashCost(), x.getConstructionPoints(), x.getConstructionMaterials(), x.getLandSqFt(),
+                        x.getJobs(JobType.NO_DIPLOMA), x.getJobs(JobType.DIPLOMA), x.getJobs(JobType.COLLEGE_ENGINEERING) };
+                for (int k = 0; k < now.length; k++) {
+                    double want = Math.round(lines[i][k] * r);
+                    if (k >= 4 && lines[i][k] > 0) want = Math.max(1, want);
+                    if (Math.abs(now[k] - want) > (k < 3 ? SPLIT_ROUNDING : 0)) { scaled = false; bad.append(names[i]).append(" line ").append(k).append(": ").append(now[k]).append(" want ").append(want).append("; "); }
+                }
+                dearer &= Math.abs(x.getCashCost() / x.berthTonnesAYear() - lines[i][0] / was[i]) <= 1e-5 * lines[i][0] / was[i];
+            }
+        }
+        report("EACH TERMINAL'S COST LINES MOVED BY ITS TONNES' RATIO, in the code and in the file: the ground and every job line are main's times"
+                + " new tonnes over old, to the whole number, the cash, the points and the materials within SPLIT_ROUNDING of it", scaled, bad.toString());
+        assertTrue("...so a tonne a year costs what it did, to the rounding (the port dues a tonne are the price over the tonnes)", dearer);
+        BuildingsTemplate berth = bm.getTemplateByName("Bulk Berth");
+        assertTrue("...and the Bulk Berth, dry bulk's small terminal for the young city, is as it was: 2.5 Mt a year, D$60M", berth.berthTonnesAYear() == 2_500_000
+                && berth.getCashCost() == 60_000);
+
+        /* --- payingCount() at its edges: a round berth month, the fixtures' arithmetic proved before it is used --- */
+        double month = 100_000, w = Ports.WORTH_A_BERTH;
+        double line = w * month, line2 = w / 2 * month;
+        assertTrue("fixture: the default dial is 1, so the break-even is WORTH_A_BERTH of a month; 2.6 months leave the line after two"
+                        + " and fall under it after three, 3.3 months at the dial 2 leave its line after three",
+                TaxPolicy.DEFAULT_PORT_DUES == 1 && w / TaxPolicy.DEFAULT_PORT_DUES * month == line && w == .60
+                        && 2.6 * month - 2 * month >= line && 2.6 * month - 3 * month < line
+                        && 3.3 * month - 3 * month >= line2 && 3.3 * month - 4 * month < line2);
+        assertTrue("JUST UNDER THE BREAK-EVEN: no terminal pays back", Ports.payingCount(Math.nextDown(line), month, 1) == 0);
+        assertTrue("AT THE BREAK-EVEN: one", Ports.payingCount(line, month, 1) == 1);
+        assertTrue("...one still a hair under the second's break-even (a month more), two at it",
+                Ports.payingCount(Math.nextDown(line + month), month, 1) == 1 && Ports.payingCount(line + month, month, 1) == 2);
+        assertTrue("2.6 MONTHS OF A TERMINAL'S TONNES: three, each counted after the ones before it (the third faces .60 of a month left)",
+                Ports.payingCount(2.6 * month, month, 1) == 3 && Ports.payingCount(Math.nextUp(2.6 * month), month, 1) == 3
+                        && Ports.payingCount(3.5 * month, month, 1) == 3 && Ports.payingCount(3.7 * month, month, 1) == 4);
+        assertTrue("THE DIAL AT 2 HALVES THE THRESHOLD: none a hair under half a month's .60, one at it, where the default dial pays none",
+                Ports.payingCount(Math.nextDown(line2), month, 2) == 0 && Ports.payingCount(line2, month, 2) == 1
+                        && Ports.payingCount(line2, month, 1) == 0);
+        assertTrue("...2.6 months at the dial 2 are three and 3.3 months four, the dial 3 a third of the line",
+                Ports.payingCount(2.6 * month, month, 2) == 3 && Ports.payingCount(3.3 * month, month, 2) == 4
+                        && Ports.payingCount(w / 3 * month, month, 3) == 1 && Ports.payingCount(Math.nextDown(w / 3 * month), month, 3) == 0);
+        assertTrue("NO DUES, NO BERTH, NO TONNES: none - the dial at 0 or under it or NaN, a terminal of no month or NaN, the tonnes NaN or negative",
+                Ports.payingCount(1e12, month, 0) == 0 && Ports.payingCount(1e12, month, -1) == 0 && Ports.payingCount(1e12, month, Double.NaN) == 0
+                        && Ports.payingCount(1e12, 0, 1) == 0 && Ports.payingCount(1e12, Double.NaN, 1) == 0
+                        && Ports.payingCount(Double.NaN, month, 1) == 0 && Ports.payingCount(-5, month, 1) == 0 && Ports.payingCount(0, month, 1) == 0);
+
+        /* --- agreeing with berthPaysBack() on a sweep, and with the inequality it is defined by --- */
+        double[] dials = { .5, 1, 1.7, 2, 3, 0, -1 };
+        double[] months = { 1, 37.5, 2_000_000 / 12.0, 50_000_000 / 12.0, 2_500_000 / 12.0 };
+        int cases = 0;
+        boolean agrees = true, definition = true, monotone = true;
+        for (double dial : dials) {
+            for (double m : months) {
+                java.util.TreeSet<Double> tonnes = new java.util.TreeSet<>();
+                for (int k = 0; k <= 400; k++) tonnes.add(k * .05 * m);
+                if (dial > 0) for (int j = 0; j <= 6; j++) {
+                    double edge = (w / dial + j) * m;
+                    tonnes.add(Math.nextDown(edge));
+                    tonnes.add(edge);
+                    tonnes.add(Math.nextUp(edge));
+                }
+                int last = 0;
+                for (double u : tonnes) {
+                    int n = Ports.payingCount(u, m, dial);
+                    boolean old = dial > 0 && m > 0 && u >= w / dial * m;
+                    double lineHere = w / dial * m;
+                    agrees &= Ports.berthPaysBack(u, m, dial) == old && (n >= 1) == old;
+                    definition &= n == 0 ? !(old) : (u - (n - 1) * m >= lineHere && !(u - n * m >= lineHere));
+                    monotone &= n >= last;
+                    last = n;
+                    cases++;
+                }
+            }
+        }
+        report("berthPaysBack() IS payingCount() >= 1 and is the old line, to the bit, on a sweep of dials, terminals and tonnes, edges a hair either side",
+                agrees, cases + " cases");
+        report("...and payingCount() is the largest n with the tonnes less the n - 1 before it at the line - n pays, n + 1 does not - and never falls as the tonnes rise",
+                definition && monotone, cases + " cases");
+
+        /* --- the same trade carried by fewer terminals: main's playtest's general cargo at m3996 --- */
+        BuildingsTemplate general = bm.getTemplateByName("General Cargo Terminal");
+        double mainMonth = MAIN_GENERAL_BERTH_TONNES_A_YEAR / 12, trade = MAIN_GENERAL_BERTHS_AT_M3996 * mainMonth;
+        double terminalMonth = Ports.berthMonth(general);
+        assertTrue("fixture: main's 35 berths' worth of general cargo, 35 x 450,000 / 12 t a month, is between 7 and 8 of the catalogue's General Cargo Terminal's month,"
+                        + " the seven whole ones and .875 of an eighth, over the line",
+                trade == MAIN_GENERAL_BERTHS_AT_M3996 * MAIN_GENERAL_BERTH_TONNES_A_YEAR / 12 && trade / terminalMonth > 7 && trade / terminalMonth < 8
+                        && trade / terminalMonth - 7 >= w);
+        int count = Ports.payingCount(trade, terminalMonth, TaxPolicy.DEFAULT_PORT_DUES);
+        assertTrue("THE SAME TRADE TAKES 8 GENERAL CARGO TERMINALS, not main's 35: under a quarter of them, enough to carry it, and not one more than the tonnes pay for",
+                count == 8 && count * 4 < MAIN_GENERAL_BERTHS_AT_M3996 && count * terminalMonth >= trade && (count - 1) * terminalMonth < trade);
+        assertTrue("...payingTerminal() picks the General Cargo Terminal for it, the kind's only terminal, and orderCount() orders those 8",
+                Ports.payingTerminal(Ports.Cargo.GENERAL, bm.getTemplates(), trade, trade, TaxPolicy.DEFAULT_PORT_DUES, null) == general
+                        && Ports.orderCount(general, trade, TaxPolicy.DEFAULT_PORT_DUES) == count);
+        assertTrue("...and the first waits for .60 of its month, 100,000 t a month: two of main's berths' worth (75,000) is none yet",
+                Ports.payingCount(w * terminalMonth, terminalMonth, 1) == 1 && Ports.payingCount(trade / 35 * 2, terminalMonth, 1) == 0
+                        && Ports.payingTerminal(Ports.Cargo.GENERAL, bm.getTemplates(), trade / 35 * 2, trade / 35 * 2, 1, null) == null);
+
+        /* --- the size by the kind's whole trade (SL1): the Bulk Terminal for a trade past its break-even, Bulk Berths under it --- */
+        BuildingsTemplate bulkBerth = bm.getTemplateByName("Bulk Berth"), bulkTerminal = bm.getTemplateByName("Bulk Terminal");
+        double berthMonth = Ports.berthMonth(bulkBerth), bigMonth = Ports.berthMonth(bulkTerminal);
+        double bigLine = w * bigMonth;                        // the Bulk Terminal's break-even, t a month
+        double fewBerths = 3.5 * berthMonth;                  // a few Bulk Berths' month uncovered
+        double pastIt = bigLine + berthMonth;                 // a trade past the Bulk Terminal's break-even
+        Ports.Cargo dry = Ports.Cargo.DRY_BULK;
+        java.util.List<BuildingsTemplate> catalogue = bm.getTemplates();
+        assertTrue("fixture: 3.5 Bulk Berths' month uncovered pays a Bulk Berth back (three, each after the ones before it) and not a Bulk Terminal;"
+                        + " a trade of the Bulk Terminal's break-even and a Bulk Berth's month is past the Terminal's break-even and more than the uncovered",
+                Ports.berthPaysBack(fewBerths, berthMonth, 1) && Ports.payingCount(fewBerths, berthMonth, 1) == 3
+                        && !Ports.berthPaysBack(fewBerths, bigMonth, 1) && Ports.berthPaysBack(pastIt, bigMonth, 1) && pastIt > fewBerths
+                        && bulkBerth.berthCargo() == dry && bulkTerminal.berthCargo() == dry && bigMonth > berthMonth);
+        BuildingsTemplate pick = Ports.payingTerminal(dry, catalogue, fewBerths, pastIt, 1, null);
+        assertTrue("A TRADE PAST THE BULK TERMINAL'S BREAK-EVEN WITH A FEW BULK BERTHS' MONTH UNCOVERED: the Bulk Terminal, and ONE of it - the uncovered"
+                        + " tonnes do not reach its own break-even, but the whole trade does",
+                pick == bulkTerminal && Ports.orderCount(pick, fewBerths, 1) == 1 && Ports.payingCount(fewBerths, bigMonth, 1) == 0);
+        pick = Ports.payingTerminal(dry, catalogue, fewBerths, fewBerths, 1, null);
+        assertTrue("THE SAME UNCOVERED WITH THE TRADE UNDER IT (all of the trade uncovered): the Bulk Berth, and as many of it as Ports.payingCount()"
+                        + " says, three",
+                pick == bulkBerth && Ports.orderCount(pick, fewBerths, 1) == Ports.payingCount(fewBerths, berthMonth, 1) && Ports.orderCount(pick, fewBerths, 1) == 3);
+        assertTrue("...the trade a hair under the Bulk Terminal's break-even is Bulk Berths still, at it the Bulk Terminal",
+                Ports.payingTerminal(dry, catalogue, fewBerths, Math.nextDown(bigLine), 1, null) == bulkBerth
+                        && Ports.payingTerminal(dry, catalogue, fewBerths, bigLine, 1, null) == bulkTerminal);
+        assertTrue("NO NEED, NOTHING: the uncovered a hair under a Bulk Berth's break-even is none, however large the trade (its berths stand), and no tonnes or no dues the same",
+                Ports.payingTerminal(dry, catalogue, Math.nextDown(w * berthMonth), 100 * bigMonth, 1, null) == null
+                        && Ports.payingTerminal(dry, catalogue, 0, 100 * bigMonth, 1, null) == null
+                        && Ports.payingTerminal(dry, catalogue, fewBerths, pastIt, 0, null) == null
+                        && Ports.payingTerminal(dry, catalogue, Double.NaN, pastIt, 1, null) == null);
+        assertTrue("...at a Bulk Berth's break-even exactly there is a need, and a trade past the Terminal's has it a Bulk Terminal",
+                Ports.payingTerminal(dry, catalogue, w * berthMonth, pastIt, 1, null) == bulkTerminal
+                        && Ports.payingTerminal(dry, catalogue, w * berthMonth, w * berthMonth, 1, null) == bulkBerth);
+        assertTrue("A TERMINAL PASSED OVER (skip) LEAVES THE OTHER: the Bulk Terminal skipped is the Bulk Berth, both skipped none, and a Bulk Berth skipped has the need"
+                        + " met by the Bulk Terminal alone only where the trade reaches it",
+                Ports.payingTerminal(dry, catalogue, fewBerths, pastIt, 1, java.util.Set.of(bulkTerminal)) == bulkBerth
+                        && Ports.payingTerminal(dry, catalogue, fewBerths, pastIt, 1, java.util.Set.of(bulkTerminal, bulkBerth)) == null
+                        && Ports.payingTerminal(dry, catalogue, bigLine, pastIt, 1, java.util.Set.of(bulkBerth)) == bulkTerminal
+                        && Ports.payingTerminal(dry, catalogue, fewBerths, fewBerths, 1, java.util.Set.of(bulkBerth)) == null);
+        assertTrue("THE DIAL AT 2 HALVES BOTH LINES: the trade at half the Bulk Terminal's break-even is Bulk Berths at the default dial, the Bulk Terminal at 2",
+                Ports.payingTerminal(dry, catalogue, fewBerths, bigLine / 2, 1, null) == bulkBerth
+                        && Ports.payingTerminal(dry, catalogue, fewBerths, bigLine / 2, 2, null) == bulkTerminal);
+        assertTrue("...a trade is never taken for less than what is left uncovered of it (a caller's lower figure is held to it), and the order is one at least",
+                Ports.payingTerminal(dry, catalogue, pastIt, 0, 1, null) == bulkTerminal && Ports.orderCount(bulkTerminal, 0, 1) == 1
+                        && Ports.orderCount(bulkTerminal, 2.7 * bigMonth, 1) == 3);
     }
 
     /* ============================ 3. THE FACTOR ============================ */

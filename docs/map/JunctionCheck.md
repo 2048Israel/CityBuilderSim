@@ -1,6 +1,6 @@
 # JunctionCheck.java - 1,768 lines · 76 methods · 8 constants · harnesses
 
-`ham/citybuildersim/JunctionCheck.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/JunctionCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > Proves that the junctions and interchanges of spec-freight 4.6 are drawn
 > by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19).

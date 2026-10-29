@@ -91,7 +91,7 @@ import java.util.function.Predicate;
  *      landmass does not print. The mode `--probe <folder>` (not a section) reads the newest save under a folder with no Game and
  *      prints what the city owns off its home landmass; it runs only when asked.
  *  12. GROWN ACROSS LANDMASSES. A city that owns the island for 24 months, then the two terminals by the card's path,
- *      then 96 months: every month the books are consistent (the linked free ground fits, the unlinked terminals' ground
+ *      then 480 months (96 until SL1, 2026-10-28: a terminal is 4.4 times the construction points): every month the books are consistent (the linked free ground fits, the unlinked terminals' ground
  *      is the placements', the placements are the buildings' counts, and no works stands on a field across the water: getSites() is
  *      the pieces on linked ground, counted apart, and the works standing fit them) - the 24 months of a city that grows, and of a
  *      city on the island itself that owns the mainland's field of iron across the water. The map of each is asked every twelve months what it
@@ -1506,6 +1506,21 @@ public class LandmassCheck {
         return s == null ? 0 : s.getUnderConstruction();
     }
 
+    /**
+     * Months a General Cargo Terminal is given to stand on a city's builders: 400. It was 80 for a terminal of 35,000 construction points;
+     * SL1 (2026-10-28) made it one of 155,556, 4.4 times as many, so the same fixture is given a longer run, not a looser assertion.
+     */
+    static final int TERMINAL_MONTHS = 400;
+
+    /**
+     * Shore plots the square of home's open coast must hold in section 10: 90. It was 60 for terminals of 3 x 4 plots; SL1 (2026-10-28) made the
+     * General Cargo Terminal 7 x 7, and two of them with their clear plot and quays did not find a spot on a coast of 72 shore plots (one did).
+     */
+    static final long HOME_COAST_SHORE = 90;
+
+    /** Months section 12 runs after its two terminals are ordered: 480 (it was 96, for terminals of 35,000 points; see TERMINAL_MONTHS). */
+    static final int GROWN_MONTHS = 480;
+
     /** Months played quietly until `done` holds, at most `most`; whether it does. */
     static boolean until(City c, java.util.function.BooleanSupplier done, int most) {
         for (int m = 0; m < most && !done.getAsBoolean(); m++) quietly(() -> c.g.simulateMonths(1));
@@ -1591,7 +1606,7 @@ public class LandmassCheck {
                 String.format("room %,.0f -> %,.0f; allocated %,.0f -> %,.0f; linked free %,.1f", room, lms.portRoomSqFt(648), alloc0, lm.getAllocatedSqFt(), lm.getAvailableSqFt()));
         check("it is on site, not standing, and a terminal on site links nothing: the island holds none of the city's standing terminals",
                 standing(c, gc) == 0 && onSite(c, gc) == 1 && !lms.linked(648) && lms.portsOn(648)[general] == 0 && lms.hasPlacements());
-        boolean built = until(c, () -> standing(c, gc) >= 1, 80);
+        boolean built = until(c, () -> standing(c, gc) >= 1, TERMINAL_MONTHS);
         report("the terminal stands after some months", built, "month " + g.getMonth());
         check("standing alone on the island it links nothing: one port makes no sea route, and it is counted on the island", built && !lms.linked(648) && lms.anyUnlinked()
                 && lms.portsOn(648)[general] == 1 && lms.portsOn(home)[general] == 0 && near(lms.unlinkedPortsSqFt(), land));
@@ -1604,7 +1619,7 @@ public class LandmassCheck {
                 && onSite(c, gc) == 1 && standing(c, gc) == 1 && !lms.linked(648) && lms.portsOn(home)[general] == 0);
         boolean early = false;
         int months = 0;
-        while (standing(c, gc) < 2 && months < 80) {
+        while (standing(c, gc) < 2 && months < TERMINAL_MONTHS) {
             quietly(() -> g.simulateMonths(1));
             months++;
             early |= lms.linked(648) && standing(c, gc) < 2;
@@ -1648,7 +1663,7 @@ public class LandmassCheck {
                 stateOf(s));
         check("the shell restarted is on site for the island again, oldest first, and the island is still unlinked", s.g.restartShell(id) && onSite(s, gc) == 1 && !ls.linked(648)
                 && s.g.getBuildingManager().getControl().shellOf(id) == null);
-        boolean standsAgain = until(s, () -> standing(s, gc) >= 2, 80);
+        boolean standsAgain = until(s, () -> standing(s, gc) >= 2, TERMINAL_MONTHS);
         check("...and when it stands the island is linked", standsAgain && ls.linked(648) && ls.portsOn(648)[general] == 1);
 
         // The third landmass.
@@ -1696,8 +1711,13 @@ public class LandmassCheck {
                 a * bulk.getLandSqFt() <= roomR && b * box.getLandSqFt() <= roomR && a * bulk.getLandSqFt() + b * box.getLandSqFt() > roomR,
                 String.format("%d bulk (%,.0f) and %d container (%,.0f) on %,.0f", a, a * bulk.getLandSqFt(), b, b * box.getLandSqFt(), roomR));
         check("runAhead() counts both against the island's room: the first order passes (the pool could not hold it), the second is NO_LAND", r.g.buildRunAhead(run) == 1 && r.g.buildRunStop(run) == Game.BuildResult.NO_LAND);
-        run.put(bulk, a - 1);
+        // As many bulk terminals fewer as the container terminal's ground takes (one, while a bulk terminal was the larger; SL1 made the container terminal the larger).
+        int fewer = (int) Math.ceil(box.getLandSqFt() / bulk.getLandSqFt());
+        run.put(bulk, a - fewer);
         run.put(box, 1);
+        report("premise: " + fewer + " bulk terminals fewer and one container terminal fit the island's room",
+                a - fewer >= 1 && (a - fewer) * bulk.getLandSqFt() + box.getLandSqFt() <= roomR,
+                String.format("%d bulk (%,.0f) and 1 container (%,.0f) on %,.0f", a - fewer, (a - fewer) * bulk.getLandSqFt(), box.getLandSqFt(), roomR));
         check("...a run that fits the island passes whole", r.g.buildRunAhead(run) == 2 && r.g.buildRunStop(run) == Game.BuildResult.SUCCESS);
         // The linked pool full, the island's room intact: a terminal for the island still goes, a house at home does not.
         quietly(() -> r.lm.setAllocatedSqFt(r.lm.getLinkedOwnedSqFt() + r.books().unlinkedPortsSqFt()));
@@ -1757,7 +1777,7 @@ public class LandmassCheck {
                 back.getLoadFailure() == null && stateOf(c).equals(GSON.toJson(back.getLandManager().landmassState())) && near(back.getLandManager().getLandmasses().portRoomSqFt(648), room0)
                         && back.getLandManager().getLandmasses().linked(648),
                 back.getLoadFailure() == null ? stateOf(c) : back.getLoadFailure());
-        boolean done = until(c, () -> g.getBuildingManager().getControl().demolitions().isEmpty(), 120);
+        boolean done = until(c, () -> g.getBuildingManager().getControl().demolitions().isEmpty(), TERMINAL_MONTHS);
         check("the demolition finishes: the ground is released and the island's room returns by exactly one terminal's land; nothing is leaving", done
                 && near(lms.portRoomSqFt(648), room0 + land) && lm.landmassState() != null && lm.landmassState().leaving.isEmpty() && lms.portsOn(648)[general] == 1);
         // A lone terminal on an island no port links: demolished, it keeps the island's unlinked ground until the demolition is done.
@@ -1769,7 +1789,7 @@ public class LandmassCheck {
         check("it may be demolished (it links nothing)", u.g.demolishable(gcU) == 1 && u.g.demolish(gcU, 1));
         check("...the ground it holds is the island's still while the demolition is on site: the unlinked sums, the linked allocated ground and the room are as they were",
                 near(lu.unlinkedPortsSqFt(), land) && near(u.lm.getLinkedAllocatedSqFt(), linkedAlloc) && near(lu.portRoomSqFt(648), roomU) && near(u.lm.getAllocatedSqFt(), alloc));
-        boolean doneU = until(u, () -> u.g.getBuildingManager().getControl().demolitions().isEmpty(), 120);
+        boolean doneU = until(u, () -> u.g.getBuildingManager().getControl().demolitions().isEmpty(), TERMINAL_MONTHS);
         report("...when it is done the terminal's ground is released from the island: the unlinked terminals hold none, the built ground the linked view takes off is none, the room is whole again and"
                         + " the whole island is unbuilt (the investors built on at home meanwhile, so the allocated ground itself is not the terminal's to read)",
                 doneU && lu.unlinkedPortsSqFt() == 0 && near(u.lm.getAllocatedSqFt(), u.lm.getLinkedAllocatedSqFt()) && near(lu.portRoomSqFt(648), roomU + land)
@@ -1789,7 +1809,7 @@ public class LandmassCheck {
         report("demolishing the shell keeps its units leaving by the demolition's id, holding the island's ground until it is done", shellDown && dh != null && sh != null && sh.leaving.size() == 1
                 && sh.leaving.get(0).demolition == dh.id && sh.leaving.get(0).landmasses.length == 1 && sh.leaving.get(0).landmasses[0] == 648 && near(lh.portRoomSqFt(648), roomH)
                 && h.g.getBuildingManager().getControl().shellOf(id) == null, stateOf(h));
-        boolean doneH = until(h, () -> h.g.getBuildingManager().getControl().demolitions().isEmpty(), 120);
+        boolean doneH = until(h, () -> h.g.getBuildingManager().getControl().demolitions().isEmpty(), TERMINAL_MONTHS);
         check("...and when it is done the room is whole again and nothing is placed", doneH && near(lh.portRoomSqFt(648), roomH + land) && !lh.hasPlacements());
     }
 
@@ -2212,7 +2232,7 @@ public class LandmassCheck {
         if (!f.ok) { check("fixtures were found", false); return; }
         // The home ground the terminals stand on: a square of the delta's open coast (Hoek van Holland), found by search with the model's reader - the fixture's river square (f.homeSalt) has shore but no water that opens to the sea.
         long[] seaAt = plotOf(World.of(f.key), 51.93, 4.20);
-        Square homeSea = squareWith(World.of(f.key), 1, seaAt[0], seaAt[1], 12, q -> q.pure() && q.onId() >= 1000 && q.shore() >= 60);
+        Square homeSea = squareWith(World.of(f.key), 1, seaAt[0], seaAt[1], 12, q -> q.pure() && q.onId() >= 1000 && q.shore() >= HOME_COAST_SHORE);
         report("fixture: a square of home's open coast with shore beside salt water, pure", homeSea != null, homeSea == null ? "none" : String.format("at (%d, %d): %d dry plots of home, %d shore plots, %d salt", homeSea.x0, homeSea.y0, homeSea.onId, homeSea.shore, homeSea.salt));
         if (homeSea == null) return;
         City c = portCity(f, "landmass-map", false);
@@ -2998,7 +3018,7 @@ public class LandmassCheck {
     }
 
     static void grown(Fixtures f) {
-        out.println("\n--- 12. grown across landmasses: 24 months with the island owned and unlinked, the two terminals by the card's path, then 96 months, the books audited every month ---");
+        out.println("\n--- 12. grown across landmasses: 24 months with the island owned and unlinked, the two terminals by the card's path, then 480 months, the books audited every month ---");
         if (!f.ok) { check("fixtures were found", false); return; }
         City c = portCity(f, "landmass-grown", true);
         Game g = c.g;
@@ -3051,7 +3071,7 @@ public class LandmassCheck {
         boolean island = orderOn(c, gc, 1, false, 648) == Game.BuildResult.SUCCESS;
         boolean atHome = order(c, gc, 1, false, Landmasses.RULE) == Game.BuildResult.SUCCESS;
         look.run();
-        for (int m = 0; m < 96; m++) {
+        for (int m = 0; m < GROWN_MONTHS; m++) {
             quietly(() -> g.simulateMonths(1));
             look.run();
             if (month648 < 0 && lms.linked(648)) month648 = g.getMonth();
@@ -3060,9 +3080,9 @@ public class LandmassCheck {
         report("24 months with the island owned and no terminal: it stays unlinked, owned and counted, and no investor's refusal hides it", stillUnlinked && unlinkedFree > 0, clause);
         report("the two terminals by the card's path (the island's, then home's) are placed, and the island is linked once both stand", island && atHome && month648 > 0 && !lms.anyUnlinked(),
                 "linked in month " + month648);
-        report(audits[0] + " looks, every month of the 120: the books are consistent - linked free ground fits, the unlinked terminals' ground is the placements', the placements are the buildings' counts, no works stands on an unlinked field",
-                audits[1] == 0 && audits[0] >= 120, first[0] == null ? unlinkedMonths + " months with ground unlinked" : first[0]);
-        report(mapLooks[0] + " looks of the map, every twelve months of the 120: no building box, street, run or siding is drawn on the island while no port links it, and the map kept up every month",
+        report(audits[0] + " looks, every month of the run (24 and then 480): the books are consistent - linked free ground fits, the unlinked terminals' ground is the placements', the placements are the buildings' counts, no works stands on an unlinked field",
+                audits[1] == 0 && audits[0] >= 24 + GROWN_MONTHS, first[0] == null ? unlinkedMonths + " months with ground unlinked" : first[0]);
+        report(mapLooks[0] + " looks of the map, every twelve months of the run (24 and then 480): no building box, street, run or siding is drawn on the island while no port links it, and the map kept up every month",
                 mapLooks[1] == 0 && mapLooks[0] >= 10 && g.getMapFailures() == 0, mapFirst[0] == null ? g.getMapFailures() + " months the map could not keep up" : mapFirst[0]);
         boolean grownSites = true;
         for (Resource sr : CityMap.SITED) grownSites &= g.getCityMap().ownedSites(sr) == c.lm.getSites(sr);

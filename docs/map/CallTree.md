@@ -1,6 +1,6 @@
 # CallTree.java - 330 lines · 18 methods · 11 constants · model
 
-`ham/citybuildersim/CallTree.java` - generated 2026-10-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CallTree.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
 > What a callable bond is worth, and what the right to call it costs: a Ho-Lee
 > short-rate tree on monthly steps, fitted to the city's curve (CD4,
