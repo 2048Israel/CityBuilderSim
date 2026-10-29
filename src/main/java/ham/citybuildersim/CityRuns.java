@@ -4452,6 +4452,17 @@ public final class CityRuns {
         return out;
     }
 
+    /** Whether a highway stretch is filed under world district (wx, wy) or one of the eight beside it (batch UP5, THE RESERVES DATED): where an interchange's reserve can lie. */
+    public boolean highwaysNear(long wx, long wy) {
+        for (long dy = -1; dy <= 1; dy++) {
+            for (long dx = -1; dx <= 1; dx++) {
+                Integer n = highways.bucketN.get(((wx + dx) << 32) ^ ((wy + dy) & 0xffffffffL));
+                if (n != null && n > 0) return true;
+            }
+        }
+        return false;
+    }
+
     /* =====================================================================
        THE SIDECAR
        ===================================================================== */

@@ -504,6 +504,7 @@ public class MapCheck {
         outerRim();
         districtJoinsTheChain();
         runsLaidAcross(city);
+        reservesDated(city);
         idleYards(city);
         idleYardsOnRuns();
         Squares sq = new Squares();
@@ -1945,13 +1946,18 @@ public class MapCheck {
      * (a row of them side by side one parcel, bought as 2c's blocks are, dated `month`): the ground the highways' hub and their first arms stand on. The plots handed.
      */
     static long handGroundRound(CityLand land, DistrictPlan.Input frame, long[] at, int month) {
+        return handGroundRound(land, frame, at, month, null);
+    }
+
+    /** ...leaving out the block that holds plot `skip` ({x, y}; none for null): ground to be bought in a month of its own (2h). */
+    static long handGroundRound(CityLand land, DistrictPlan.Input frame, long[] at, int month, long[] skip) {
         long b = 1L << land.level(), r = CityRuns.CELL;
         long x0 = Math.floorDiv(at[0] - r, b) * b, y0 = Math.floorDiv(at[1] - r, b) * b, x1 = Math.floorDiv(at[0] + r, b) * b + b, y1 = Math.floorDiv(at[1] + r, b) * b + b;
         long handed = 0;
         for (long y = y0; y < y1; y += b) {
             long start = -1;
             for (long x = x0; x <= x1; x += b) {
-                boolean free = x < x1 && land.grid().owned(x, y, x + b, y + b) == 0;
+                boolean free = x < x1 && land.grid().owned(x, y, x + b, y + b) == 0 && !(skip != null && skip[0] >= x && skip[0] < x + b && skip[1] >= y && skip[1] < y + b);
                 if (free && start < 0) start = x;
                 if (!free && start >= 0) {
                     land.extend(new LandParcel(-5, 1, 0, land.level(), start, y, x, y + b, null, null, null, 0, 0), month, 0);
@@ -2185,6 +2191,229 @@ public class MapCheck {
         check("the sidecar read back carries the same journal: the district's records and its plan's input frame's records are the written map's (" + frameRecords + " of them)", journalRead);
         check("the sidecar written after them and read back plans the district box for box as the map it was written from (" + s6.boxes.size() + " boxes, " + readDiffer + " differ)",
                 back != null && same != null && readDiffer == 0 && s6.boxes.size() > 0);
+    }
+
+    /* =====================================================================
+       2h. AN INTERCHANGE'S RESERVE DATED (batch UP5, FX7's star 2)
+       ===================================================================== */
+
+    /*
+     * An interchange's reserve (the cloverleaf's 19 x 19 plots, DistrictPlan.FIXED_RESERVE) is derived from the runs, the ground and the works about it, and
+     * FX7 left it undated: the frame's records read as if it were laid wherever the runs leave a plot at 0, so a reserve that appeared in a district already
+     * built (the highways first reaching a street, the city buying the last of the ground the box needs, a mine on the box closing) dealt that district's plan
+     * again from its first batch and moved the boxes it had placed. UP5 dates it (CityMap's THE RESERVES DATED): the map keeps the reserves laid as each
+     * month ends and finds the month's changes to them directly, in the regions the month could have moved one in, and journals the reserve's plots (0 to
+     * FIXED_RESERVE) like the runs'. 2h is that on the real map and land, as 2d is for the runs: the founding district given houses and a few buildings of
+     * several sizes a month until it uses half its room, the ground round the highways' crossing handed to the city, the Elevated Highways laid until the
+     * crossing is a site - twice: once with all the ground handed, so the reserve appears in the month the highways reach a street (the witness is told), once with
+     * one block of the reserve's box left out, so the crossing is a stack until the block is bought in a month the runs do not change at all (the witness is told
+     * of nothing, the map finds the reserve from the purchase). Each time the plan drawn before the month against the plan drawn after it, every box of the one
+     * against the other, and the district's journal; the plan the map made before UP5 (the reserve's plots without a record) for the fault.
+     */
+
+    /**
+     * The block of the plots the crossing's reserve box would hold that the crossing is not in: a plot {x, y} in it, a block of its own to be handed the city last;
+     * null where the box lies in the crossing's block.
+     */
+    static long[] reserveHole(CityLand land, long[] crossing) {
+        long b = 1L << land.level(), side = InterchangeGround.CLOVERLEAF_SIDE / 2;
+        for (int k = 0; k < 4; k++) {
+            long x = crossing[0] + (k % 2 == 0 ? side : -side), y = crossing[1] + (k / 2 == 0 ? side : -side);
+            if (Math.floorDiv(x, b) != Math.floorDiv(crossing[0], b) || Math.floorDiv(y, b) != Math.floorDiv(crossing[1], b)) return new long[] { x, y, land.level() };
+        }
+        return null;
+    }
+
+    /** Hands the city the one block that holds plot `at` ({x, y, the block level it was found at}: the level moves as the city's ground grows, the block is the one handGroundRound() left out), between months, as 2c's blocks are, dated `month`: the plots handed. */
+    static long handBlock(CityLand land, long[] at, int month) {
+        long b = 1L << at[2], x = Math.floorDiv(at[0], b) * b, y = Math.floorDiv(at[1], b) * b;
+        if (land.grid().owned(x, y, x + b, y + b) != 0) return 0;
+        land.extend(new LandParcel(-5, 1, 0, (int) at[2], x, y, x + b, y + b, null, null, null, 0, 0), month, 0);
+        return b * b;
+    }
+
+    /** How many of a district's journal records at `month` take a plot from nothing to an interchange's reserve (`toReserve`), or the other way. */
+    static int reserveRecords(CityMap.District d, int month, boolean toReserve) {
+        int n = 0;
+        for (int k = 0; k < d.jN; k++) {
+            if (d.jMonth[k] != month) continue;
+            int before = (d.jRec[k] >> 4) & 15, after = d.jRec[k] & 15;
+            if (toReserve ? before == 0 && after == DistrictPlan.FIXED_RESERVE : before == DistrictPlan.FIXED_RESERVE && after == 0) n++;
+        }
+        return n;
+    }
+
+    /** The plan of d's input with every record of a plot that lies in an interchange's reserve left out: the journal as it was before UP5, which did not know the reserves. */
+    static DistrictPlan undatedReserve(CityMap m, CityMap.District d) {
+        DistrictPlan.Input in = m.planInput(d);
+        if (in.fixedLog == null) return DistrictPlan.make(in);
+        int n = 0;
+        int[] month = new int[in.fixedLog.length], rec = new int[in.fixedLog.length];
+        for (int i = 0; i < in.fixedLog.length; i++) {
+            if (in.fixed[in.fixedLog[i] >>> 8] == DistrictPlan.FIXED_RESERVE) continue;
+            month[n] = in.fixedLogMonth[i];
+            rec[n++] = in.fixedLog[i];
+        }
+        in.fixedLogMonth = n == 0 ? null : Arrays.copyOf(month, n);
+        in.fixedLog = n == 0 ? null : Arrays.copyOf(rec, n);
+        return DistrictPlan.make(in);
+    }
+
+    static void reservesDated(Game g) {
+        out.println("\n--- 2h. an interchange's reserve is dated: one that appears in a district already built is laid in its plan that month and moves off it the buildings it lies across, and no others (UP5) ---");
+        reserveScenario(g, false);
+        reserveScenario(g, true);
+        guardLocal(g.getCityMap());
+    }
+
+    /**
+     * The guard an interchange's reserve asks (reserveBlocked(): a mine on its site or a work on the shore in the box) reads the districts the box lies in and a margin about it, not the list of every mined site: for boxes of a reserve's size at several offsets from each mined site of the played city (and from each shore work), the two answers are one.
+     */
+    static void guardLocal(CityMap m) {
+        List<long[]> mined = m.minedSites();
+        int asked = 0, differ = 0, blocked = 0;
+        int side = InterchangeGround.CLOVERLEAF_SIDE;
+        int[] offsets = { -3 * DistrictPlan.CELL, -DistrictPlan.CELL, -side - 8, -side, -side / 2, 0, side / 2, side, side + 8, DistrictPlan.CELL, 3 * DistrictPlan.CELL };
+        for (long[] s : mined) {
+            for (int oy : offsets) {
+                for (int ox : offsets) {
+                    long x0 = s[0] + ox, y0 = s[1] + oy, x1 = x0 + side - 1, y1 = y0 + side - 1;
+                    boolean list = false;
+                    for (long[] t : mined) list |= t[0] <= x1 && t[1] <= y1 && t[2] >= x0 && t[3] >= y0;
+                    for (CityShore.Work w : m.shore().works()) list |= w.x0() <= x1 && w.y0() <= y1 && w.x0() + w.w() > x0 && w.y0() + w.h() > y0;
+                    boolean local = m.reserveBlocked(x0, y0, x1, y1);
+                    asked++;
+                    if (list) blocked++;
+                    if (list != local) differ++;
+                }
+            }
+        }
+        out.printf("      the guard of the reserves: %,d boxes of a reserve's size about %d mined sites, %,d blocked by a mine or a work, %d answered otherwise by the districts' sites than by the list of all%n", asked, mined.size(), blocked, differ);
+        check("the guard an interchange's reserve asks reads the districts about its box and agrees with the list of every mined site and shore work (" + asked + " boxes about " + mined.size() + " mines, " + blocked + " blocked, " + differ + " differ)", differ == 0);
+        check("...and the played city has mines to ask about", asked > 0 && blocked > 0);
+    }
+
+    /** 2h's one scenario: with one block of the reserve's box left out of the ground handed (`blockLeft`), bought later, or with all of it handed. */
+    static void reserveScenario(Game g, boolean blockLeft) {
+        String name = blockLeft ? "a block of the box bought in a month the runs do not change" : "the highways reaching a street";
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), highway = idOf(g, "Elevated Highway");
+        int[] mix = new int[MIX.length];
+        for (int i = 0; i < mix.length; i++) mix[i] = idOf(g, MIX[i]);
+        CityLand land = g.getCityLand().copy();
+        long[] model = new long[types.length];
+        CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
+        Months h = new Months(m, model, house, g.getMonth() + 1);
+        CityMap.District d = null;
+        DistrictPlan.Input frame = null;
+        for (CityMap.District e : m.districts()) {
+            DistrictPlan.Input in = m.planInput(e);
+            if (land.siteX() >= in.x0 && land.siteX() < in.x0 + DistrictPlan.SIDE && land.siteY() >= in.y0 && land.siteY() < in.y0 + DistrictPlan.SIDE) {
+                d = e;
+                frame = in;
+            }
+        }
+        int each = BuildingVisual.cells(types[house]), step = Math.max(2, (int) (d.room() / each / 24));
+        Arrivals in = new Arrivals(h, mix, step);
+        int guard = 400;
+        while (d.usedCells() < d.room() * USED_SHARE && guard-- > 0) in.month();
+        // ----- the ground round the crossing handed (a block of the reserve's box left out), the highways until the crossing is a site -----
+        long[] crossing = highwayCrossing(land, frame);
+        long[] hole = crossing == null ? null : reserveHole(land, crossing);
+        long handed = crossing == null ? 0 : handGroundRound(land, frame, crossing, h.last(), blockLeft ? hole : null);
+        int handedAt = h.last();
+        Snap before = quietMonth(h, d), after = null;
+        InterchangeGround.Site site = null;
+        int months = 0;
+        boolean stack = false;
+        for (int i = 0; i < HIGHWAY_MONTHS && crossing != null; i++) {
+            model[highway] += HIGHWAY_STEP;
+            Snap now = quietMonth(h, d);
+            months++;
+            long[] hub = m.runs().highways().hub();
+            site = null;
+            if (hub != null) for (InterchangeGround.Site s : m.runs().reserves()) if (s.x() == hub[0] && s.y() == hub[1] && s.kind() == InterchangeGround.CLOVERLEAF) site = s;
+            if (blockLeft) {
+                // the crossing is a stack: a site with no reserve, the block of its box not the city's
+                if (site != null && !site.got()) {
+                    stack = true;
+                    before = now;
+                    break;
+                }
+            } else if (site != null && site.got()) {
+                after = now;
+                break;
+            }
+            before = now;
+        }
+        long boughtPlots = 0;
+        if (blockLeft && stack) {
+            boughtPlots = handBlock(land, hole, h.last());
+            after = quietMonth(h, d);
+            site = null;
+            long[] hub = m.runs().highways().hub();
+            for (InterchangeGround.Site s : m.runs().reserves()) if (hub != null && s.x() == hub[0] && s.y() == hub[1] && s.kind() == InterchangeGround.CLOVERLEAF) site = s;
+        }
+        int reserveMonth = after == null ? -1 : after.month;
+        int reservePlots = after == null ? 0 : after.plots(DistrictPlan.FIXED_RESERVE), before0 = before.plots(DistrictPlan.FIXED_RESERVE);
+        int datedIn = after == null ? 0 : reserveRecords(d, reserveMonth, true);
+        int lying = after == null ? 0 : before.lying(after), moved = after == null ? -1 : movedOf(before.boxes, after.boxes);
+        int control = after == null ? -1 : movedOf(before.boxes, boxesOf(undatedReserve(m, d)));
+        int boxesBefore = before.boxes.size();
+        int others = 0;
+        for (int k = 0; after != null && k < d.jN; k++) if (d.jMonth[k] == reserveMonth && !(((d.jRec[k] >> 4) & 15) == 0 && (d.jRec[k] & 15) == DistrictPlan.FIXED_RESERVE)) others++;
+        // ----- four months on: the arrivals stand on none of the reserve and nothing else moves -----
+        in.months(MONTHS_BETWEEN);
+        Snap later = new Snap(m, d);
+        int movedLater = after == null ? -1 : movedOf(after.boxes, later.boxes), onReserve = 0;
+        for (PlanBox b : later.boxes) if (anyPlot(b, 0, p -> later.fixed[p] == DistrictPlan.FIXED_RESERVE)) onReserve++;
+        DistrictPlan.Input lastIn = m.planInput(d);
+        int differ = after == null ? -1 : exactJournalDiffers(lastIn, before) + exactJournalDiffers(lastIn, after);
+        // ----- the sidecar: the journal with the reserve in it written and read back -----
+        byte[] side = m.writeSidecar(h.last(), CityMap.FORMAT);
+        CityMap back = CityMap.readSidecar(side, land, r -> land.amountsInOrder(r), types, h.last(), CityMap.stampIn(side));
+        CityMap.District same = null;
+        if (back != null) for (CityMap.District e : back.districts()) if (e.dx == d.dx && e.dy == d.dy) same = e;
+        DistrictPlan.Input writtenIn = m.planInputHere(d), readIn = same == null ? null : back.planInputHere(same);
+        boolean journalRead = readIn != null && writtenIn.fixedLog != null && Arrays.equals(readIn.fixedLogMonth, writtenIn.fixedLogMonth) && Arrays.equals(readIn.fixedLog, writtenIn.fixedLog)
+                && same.journalSize() == d.journalSize();
+        // ...and a reserve found in the map read back is one it knows: nothing is dated again by the month after it
+        boolean quiet = true;
+        if (back != null) {
+            int beforeRead = same.journalSize();
+            long[] model2 = model.clone();
+            Months h2 = new Months(back, model2, house, h.month);
+            h2.run(0);
+            h2.run(0);
+            quiet = same.journalSize() == beforeRead;
+        }
+        out.printf("      %s: the crossing at %s, the ground round it (%,d plots) handed in month %d; the highways %d months; %,d boxes stand in month %d; the reserve of %,d plots is laid in month %d,"
+                + " %,d boxes lie across it or beside the highways, %,d moved off (%,d with the reserve undated); %d plots dated in the journal; %,d boxes four months on stand on it, %d moved since;"
+                + " %d plots differ when the journal is worked back, %d plots' records left out%n", name, crossing == null ? "none" : (crossing[0] - frame.x0) + "," + (crossing[1] - frame.y0), handed, handedAt, months,
+                boxesBefore, before.month, reservePlots, reserveMonth, lying, moved, control, datedIn, onReserve, movedLater, differ, m.journalDropped());
+        check(name + ": the fixture - the crossing is a cloverleaf site and its reserve is laid in a month (" + reserveMonth + "), none the month before (" + before0 + " plots), the highways among buildings that stand ("
+                + lying + " of " + boxesBefore + " boxes lie across the reserve or beside the highways)", crossing != null && (!blockLeft || (hole != null && stack)) && site != null && site.got() && reservePlots > 0 && before0 == 0 && lying > 0);
+        if (blockLeft) check(name + ": the fixture - the month the block is bought the runs change not at all: the highways and the railway of the month before are the month's, the witness told of nothing", boughtPlots > 0 && after != null && before.plots(DistrictPlan.FIXED_HIGHWAY) == after.plots(DistrictPlan.FIXED_HIGHWAY) && others == 0);
+        check(name + ": the reserve is journalled in the month it appears - every one of its " + reservePlots + " plots has a record from nothing to the reserve in month " + reserveMonth + " (" + datedIn + ")", datedIn == reservePlots && datedIn > 0);
+        check(name + ": a reserve that appears in a district already built moves off it the boxes it lies across or beside the highways laid with it and no others: " + lying + " of the plan before's " + boxesBefore
+                + " boxes lie across, " + moved + " are not in the plan after", moved == lying && lying > 0);
+        check("...where the reserve is undated (the journal as it was before UP5: the plots without a record) the plan moves more (" + control + " against " + lying + "), the fault this section stands against", control > lying);
+        check("...none of the boxes of the month the reserve came stands on it four months on, the arrivals included (" + onReserve + "), and none of those boxes has moved (" + movedLater + ")", onReserve == 0 && movedLater == 0);
+        check("...the journal worked back from today's reserve is the fixed ground the plan's input held in the months before and in the month it came (" + differ + " plots differ), and no plot's records were left out (" + m.journalDropped() + ")",
+                differ == 0 && m.journalDropped() == 0);
+        check("the sidecar written after it and read back carries the journal with the reserve in it: the written map's records, the same plan (FORMAT " + CityMap.FORMAT + ")", back != null && journalRead);
+        check("...and the map read back finds the reserves it was written with as its own: two months more date nothing (" + (back == null ? -1 : back.districts().size()) + " districts)", back != null && quiet);
+    }
+
+    /** How many plots of `later`'s fixed ground worked back through its records dated after the snapshot's month differ from the fixed ground the snapshot's input held: journalDiffers() with the reserves counted, as the journal now dates them. */
+    static int exactJournalDiffers(DistrictPlan.Input later, Snap s) {
+        byte[] back = later.fixed.clone();
+        if (later.fixedLog != null) {
+            for (int i = later.fixedLog.length - 1; i >= 0 && later.fixedLogMonth[i] > s.month; i--) back[later.fixedLog[i] >>> 8] = (byte) ((later.fixedLog[i] >> 4) & 15);
+        }
+        int n = 0;
+        for (int p = 0; p < back.length; p++) if (back[p] != s.fixed[p]) n++;
+        return n;
     }
 
     /* =====================================================================

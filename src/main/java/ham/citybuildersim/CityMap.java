@@ -213,8 +213,8 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 14 since MF1, the runs' yards that stand idle after the runs' last numbers (CityRuns.yardIdleSince(): a count and the month each went idle; a sidecar of FORMAT 13 or older has none, all its yards the model's); 13 since CC1-M, each arm of the runs followed by what last stopped it (CityRuns.Arm.stoppedBy: OPEN, EDGE or SEA), which the first re-lay after a load reads to know how far the main line runs on past the sea (a sidecar of FORMAT 12 or older reads OPEN, and the month after it is read takes the main line back past its first arm that waits at the sea and lays it again); 12 since CL5, each net of the runs' pieces of ground after the home piece's (CityRuns.Net.pieceHubs: a count and each hub) and each corridor's piece and role (a SPINE, a CROSSING or a LINK; a sidecar of FORMAT 11 or older reads one piece, the spine corridors 0 and 1, every other corridor a CROSSING); 11 since FX7 (0.8.24), each district's journal of its runs after the logs (THE RUNS DATED: a record for each plot of its own box whose kind of fixed ground a month changed, its month, plot and the kind before and after; a sidecar of FORMAT 10 or older has none, and its plans draw today's runs throughout, as before); 10 since FX5 (0.8.18, its slice Y1), each railway yard's box in the runs followed by the footprint it was laid for (CityRuns.yardAsked(): a yard is laid YARD_LONG along its line or shorter where the ground allows, so its box is no longer the size it was asked for; a sidecar of FORMAT 9 or older reads each yard's footprint as its box's own width and height, as it was laid then); 9 since CL3 (0.8.14), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
-    static final int FORMAT = 14;
+    /** The sidecar's format: 15 since UP5, each district's journal of the runs holding the interchanges' reserves too, as a kind of its own (THE RESERVES DATED: a record 0 to FIXED_RESERVE for a plot a reserve came to, the other way for one that went; no new field is written, a sidecar of FORMAT 14 or older is read as it was written, and its plans draw today's reserves throughout, as before - a plot of today's reserve whose records do not end on it is read so, fixedLogInto() rule (a)); 14 since MF1, the runs' yards that stand idle after the runs' last numbers (CityRuns.yardIdleSince(): a count and the month each went idle; a sidecar of FORMAT 13 or older has none, all its yards the model's); 13 since CC1-M, each arm of the runs followed by what last stopped it (CityRuns.Arm.stoppedBy: OPEN, EDGE or SEA), which the first re-lay after a load reads to know how far the main line runs on past the sea (a sidecar of FORMAT 12 or older reads OPEN, and the month after it is read takes the main line back past its first arm that waits at the sea and lays it again); 12 since CL5, each net of the runs' pieces of ground after the home piece's (CityRuns.Net.pieceHubs: a count and each hub) and each corridor's piece and role (a SPINE, a CROSSING or a LINK; a sidecar of FORMAT 11 or older reads one piece, the spine corridors 0 and 1, every other corridor a CROSSING); 11 since FX7 (0.8.24), each district's journal of its runs after the logs (THE RUNS DATED: a record for each plot of its own box whose kind of fixed ground a month changed, its month, plot and the kind before and after; a sidecar of FORMAT 10 or older has none, and its plans draw today's runs throughout, as before); 10 since FX5 (0.8.18, its slice Y1), each railway yard's box in the runs followed by the footprint it was laid for (CityRuns.yardAsked(): a yard is laid YARD_LONG along its line or shorter where the ground allows, so its box is no longer the size it was asked for; a sidecar of FORMAT 9 or older reads each yard's footprint as its box's own width and height, as it was laid then); 9 since CL3 (0.8.14), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 15;
 
     /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
     static final int OLDEST_READ = 4;
@@ -288,7 +288,7 @@ public final class CityMap {
         /**
          * ITS JOURNAL OF THE RUNS (batch FX7, THE RUNS DATED): a record {month, plot, before, after} for each plot of its own
          * DISTRICT x DISTRICT box whose kind of fixed ground a month changed - the plot's index in the box, row by row; the kinds 0,
-         * FIXED_HIGHWAY, FIXED_RAIL and FIXED_YARD (runs' or the shore's) - in months ascending, one record to a plot and month, in
+         * FIXED_HIGHWAY, FIXED_RAIL, FIXED_YARD (runs' or the shore's) and, since UP5, FIXED_RESERVE (an interchange's reserve laid over what the runs leave at 0) - in months ascending, one record to a plot and month, in
          * plot order within a month. jRec holds `plot << 8 | before << 4 | after`. Saved in the sidecar (FORMAT 11).
          */
         int[] jMonth = NO_LOG, jRec = NO_LOG;
@@ -1970,7 +1970,14 @@ public final class CityMap {
         Resource r = SITED[k];
         int first = slotOf(r, r.typesOf().get(0)), n = r.typesOf().size();
         Lay old = lays[k];
-        if (old != null) for (Walk w : old.walks) for (int e = 0; e < w.length; e++) w.at[e].siteRuns[w.slot] = null;
+        if (old != null) {
+            for (Walk w : old.walks) {
+                for (int e = 0; e < w.length; e++) {
+                    w.at[e].siteRuns[w.slot] = null;
+                    minedTouched.add((baseDX + w.at[e].dx) << 32 ^ ((baseDY + w.at[e].dy) & 0xffffffffL));
+                }
+            }
+        }
         for (int t : cl) clearType(t);
         Lay lay = new Lay();
         lay.ix = ix;
@@ -2137,6 +2144,7 @@ public final class CityMap {
         d.siteRuns[slot] = runs;
         d.version++;
         changes++;
+        minedTouched.add((baseDX + d.dx) << 32 ^ ((baseDY + d.dy) & 0xffffffffL));
     }
 
     /** q more (or fewer) works of type t counted on sites in a district. */
@@ -4389,25 +4397,29 @@ public final class CityMap {
     }
 
     /**
-     * The mined sites reserveBlocked() reads, and the `changes` they were taken at (Long.MIN_VALUE for none): every L0 tile's reserve region and every
-     * candidate reserve's fits() asks it again after each month, and each ask walked all of the districts (minedSites()). The sites move only with the
-     * map's `changes` - every write to a district's site runs goes through add(), which moves it, as do a purchase and rebind() - and the guard already
-     * reports `changes` as its version, so the one list stands until `changes` moves.
+     * Whether a mine on its site or a work on the shore stands in the box (x0, y0) to (x1, y1), inclusive: ground an interchange's reserve may not take.
+     * The mines are asked of the districts the box lies in and a margin about it (a site stands in the district its centre lies in, and reaches half its
+     * width, 17 plots at the most, beyond): every L0 tile's reserve region and every candidate reserve's fits() ask it after each month, and the whole
+     * list of the mined sites, walked afresh each time the map moved (minedSites()), cost a city of billions tens of milliseconds a month - the journal of
+     * the reserves (THE RESERVES DATED) asks it inside reconcile(). A district's sites are its siteList(), kept against its version.
      */
-    private List<long[]> guardSites;
-    private long guardSitesAt = Long.MIN_VALUE;
-
-    /** Whether a mine on its site or a work on the shore stands in the box (x0, y0) to (x1, y1), inclusive: ground an interchange's reserve may not take. */
-    private boolean reserveBlocked(long x0, long y0, long x1, long y1) {
+    boolean reserveBlocked(long x0, long y0, long x1, long y1) {
         for (CityShore.Work w : shore.works()) {
             if (w.x0() <= x1 && w.y0() <= y1 && w.x0() + w.w() > x0 && w.y0() + w.h() > y0) return true;
         }
-        if (guardSites == null || guardSitesAt != changes) {
-            guardSites = minedSites();
-            // ...taken after the call: its first one can place the sites (sitedNow()), which moves `changes` through add(). While they are not placed (no district yet) nothing is kept.
-            guardSitesAt = sitedPlaced ? changes : Long.MIN_VALUE;
+        sitedNow();
+        for (long wy = Math.floorDiv(y0 - SITE_MARGIN, DISTRICT); wy <= Math.floorDiv(y1 + SITE_MARGIN, DISTRICT); wy++) {
+            for (long wx = Math.floorDiv(x0 - SITE_MARGIN, DISTRICT); wx <= Math.floorDiv(x1 + SITE_MARGIN, DISTRICT); wx++) {
+                long dx = wx - baseDX, dy = wy - baseDY;
+                if (dx != (int) dx || dy != (int) dy) continue;
+                District d = districtAt(key((int) dx, (int) dy));
+                if (d == null) continue;
+                boolean any = false;
+                for (int[] rs : d.siteRuns) any |= rs != null;
+                if (!any) continue;
+                for (DrawnSite s : siteList(d.dx, d.dy)) if (s.mine() >= 0 && s.x0() <= x1 && s.y0() <= y1 && s.x1() >= x0 && s.y1() >= y0) return true;
+            }
         }
-        for (long[] s : guardSites) if (s[0] <= x1 && s[1] <= y1 && s[2] >= x0 && s[3] >= y0) return true;
         return false;
     }
 
@@ -8969,21 +8981,51 @@ public final class CityMap {
        change reads nothing and costs nothing; a month that changes them
        costs two fills of a district's box for each district it reaches.
 
-       WHAT IS NOT DATED. An interchange's reserve (FIXED_RESERVE) is derived
-       from the runs, the ground and the works about it and found when asked
-       (CityRuns.reservesIn()): it is neither read nor journalled, and the
-       frame's records read as if it were laid wherever the runs leave a plot
-       at 0, as the plan's input has it today. A district the map does not
-       hold is not journalled: the runs lie on the city's ground. A journal
-       that does not end on the runs as they stand (a month the runs changed
-       outside reconcile(): the canonical deal, a sidecar older than FORMAT
-       11 read, a square city) gives its plan no record for that plot, and is
-       counted in journalDropped(): MapCheck holds it at none.
+       THE RESERVES (batch UP5, FX7's star 2). An interchange's reserve
+       (FIXED_RESERVE) is derived from the runs, the ground and the works about
+       it and found when asked (CityRuns.reservesIn()), so the witness is not
+       told when one appears: a mine on its box closing, a shore work taken
+       up, the city buying the last of its ground and the highways first
+       reaching a street move it and the runs not at all. FX7 left it undated,
+       the frame's records read as if it were laid wherever the runs leave a
+       plot at 0, so a reserve that appeared in a district already built dealt
+       that district's plan again from its first batch. Now the map keeps the
+       reserves that were laid as the last journalled month ended
+       (reserveLaid, found from the runs when it is first asked) and finds the
+       month's changes to them directly, in the regions the month could have
+       moved them in: a margin about the plots the runs changed (the box about
+       the plots of a witnessed district whose kind differs), the districts a
+       mine came to or left (minedTouched), the districts under the land bought,
+       and everywhere when the highways first reach a street or cease to. The
+       reserves as the month ended are those found afresh in those regions and
+       the rest as they were; the boxes that differ are the month's changes.
+       The works a reserve may not take are asked of the districts about its
+       box (reserveBlocked()), not of the list of every mined site, which a
+       city of billions walks afresh in tens of milliseconds each month.
+       Every held district a changed box overlaps is read as the witnessed
+       are, and a record made of each plot of its own box whose kind differs
+       with the reserves laid over what the runs leave at 0, as the month
+       began and as it ended (a reserve is the kind FIXED_RESERVE in a record).
+       A reserve that appears at month M is laid in a plan at M and, since MF1,
+       the boxes it lies across move off it, as for a yard.
+
+       WHAT IS NOT DATED. A reserve laid before a journal that did not know of
+       them (a sidecar of FORMAT 14 or older read, a reserve laid outside
+       reconcile()) has no record for its plots: a plot of today's reserve
+       whose records do not end on the reserve is read as the plan always read
+       it, laid wherever the runs leave 0 throughout (fixedLogInto(), rule
+       (a)), so such a plan draws today's reserves from its first batch, as
+       before. A district the map does not hold is not journalled: the runs
+       lie on the city's ground. A journal that does not end on the runs as
+       they stand (a month the runs changed outside reconcile(): the canonical
+       deal, a sidecar older than FORMAT 11 read, a square city) gives its plan
+       no record for that plot, and is counted in journalDropped(): MapCheck
+       holds it at none.
        ===================================================================== */
 
-    /** The kinds a journal's record holds: 0, a highway's, the railway's and a yard's. */
+    /** The kinds a journal's record holds: 0, a highway's, the railway's, a yard's and (since UP5, FORMAT 15) an interchange's reserve. */
     private static boolean journalKind(int k) {
-        return k == 0 || k == DistrictPlan.FIXED_HIGHWAY || k == DistrictPlan.FIXED_RAIL || k == DistrictPlan.FIXED_YARD;
+        return k == 0 || k == DistrictPlan.FIXED_HIGHWAY || k == DistrictPlan.FIXED_RAIL || k == DistrictPlan.FIXED_YARD || k == DistrictPlan.FIXED_RESERVE;
     }
 
     /** Whether the month's runs are being journalled: only inside reconcile()'s layRuns() and layShore(), never the canonical deal, a square city, a sidecar's read or a harness's own laying. */
@@ -9007,11 +9049,18 @@ public final class CityMap {
     /** How many plots' records the plans' inputs have left out because the journal did not end on the runs as they stand: 0. */
     public long journalDropped() { return journalDropped; }
 
-    /** Starts a month's journalling: the witness set on the runs, the highways' reach noted. */
+    /** Starts a month's journalling: the witness set on the runs, the highways' reach noted, the reserves as the month begins found if they are not known. */
     private void beginJournal() {
         journalWas.clear();
+        journalTouched.clear();
         lastWitnessed = Long.MIN_VALUE;
         reachAtStart = runs.highwaysReach();
+        if (reserveLaid == null || reserveRuns != runs || reserveRunsAt != runs.version) {
+            // First asked (a map new or read from a sidecar), or the runs changed outside a journalled month: the reserves as they stand.
+            reserveLaid = reachAtStart ? laidReserves() : new ArrayList<>();
+            reservePurchasesSeen = land.purchases().size();
+            minedTouched.clear();
+        }
         journalling = true;
         runs.setWitness(witness);
     }
@@ -9025,7 +9074,11 @@ public final class CityMap {
         lastWitnessed = k;
         if (journalWas.containsKey(k)) return;
         District d = districtAt(k);
-        if (d == null) return;
+        if (d == null) {
+            // Not journalled, but it may lie beside a held district an interchange's reserve reaches into (THE RESERVES DATED).
+            journalTouched.add(wx << 32 ^ (wy & 0xffffffffL));
+            return;
+        }
         journalWas.put(k, kindsOf(d, reachAtStart));
     }
 
@@ -9043,13 +9096,45 @@ public final class CityMap {
         return fixed;
     }
 
-    /** Ends a month's journalling, the runs and the shore laid: each district read is read again, and a record made of every plot whose kind differs, at the map's month. */
+    /**
+     * Ends a month's journalling, the runs and the shore laid: each district read is read again, and a record made of every plot whose kind differs, at
+     * the map's month - the interchanges' reserves laid over what the runs leave at 0, as the month began and as it ended (THE RESERVES DATED): so a
+     * district a reserve came or went in is read too, though the witness was not told of it.
+     */
     private void endJournal() {
         boolean reach = runs.highwaysReach();
         if (reach != reachAtStart) for (long[] hd : runs.highwayDistricts()) witnessed(hd[0], hd[1]);
+        // The districts the runs changed, as they are now, and the box about the plots that differ: where the month could have moved a reserve.
+        Map<Long, byte[]> nowBase = new HashMap<>();
+        List<long[]> changed = new ArrayList<>();
         for (Map.Entry<Long, byte[]> e : journalWas.entrySet()) {
             District d = districtAt(e.getKey());
-            byte[] was = e.getValue(), now = kindsOf(d, reach);
+            byte[] now = kindsOf(d, reach);
+            nowBase.put(e.getKey(), now);
+            long[] box = changedBox(e.getValue(), now, d);
+            if (box != null) changed.add(box);
+        }
+        List<long[]> began = reserveLaid, ended = reservesEnded(reach, changed);
+        reserveLaid = ended;
+        java.util.Set<Long> read = new java.util.LinkedHashSet<>(journalWas.keySet());
+        for (long[] box : reservesMoved(began, ended)) {
+            for (long wy = Math.floorDiv(box[1], DISTRICT); wy <= Math.floorDiv(box[1] + box[3] - 1, DISTRICT); wy++) {
+                for (long wx = Math.floorDiv(box[0], DISTRICT); wx <= Math.floorDiv(box[0] + box[2] - 1, DISTRICT); wx++) {
+                    long dx = wx - baseDX, dy = wy - baseDY;
+                    if (dx != (int) dx || dy != (int) dy) continue;
+                    long k = key((int) dx, (int) dy);
+                    if (districtAt(k) != null) read.add(k);
+                }
+            }
+        }
+        for (long k : read) {
+            District d = districtAt(k);
+            byte[] now = nowBase.get(k), was = journalWas.get(k);
+            // A district only a reserve moved in: its runs are as they were.
+            if (now == null) now = kindsOf(d, reach);
+            if (was == null) was = now.clone();
+            laidOver(was, d, began);
+            laidOver(now, d, ended);
             // A month's first records need no look for a plot's own among the month's.
             boolean fresh = d.jN == 0 || d.jMonth[d.jN - 1] < month;
             int from = 0, i;
@@ -9061,6 +9146,178 @@ public final class CityMap {
             }
         }
         journalWas.clear();
+        journalTouched.clear();
+    }
+
+    /* ----- THE RESERVES DATED (batch UP5, FX7's star 2) ----- */
+
+    /** The world districts the witness was told of this month that the map does not hold, as column << 32 ^ row: not journalled, but a reserve beside a district it holds may have moved. */
+    private final java.util.Set<Long> journalTouched = new java.util.HashSet<>();
+
+    /**
+     * The interchanges' reserves that were laid (Site.got()) as the last journalled month ended, each {x0, y0, w, h} in world plots, over the districts
+     * the highways lie in and the margin about them; null until first asked (a new map, one read from a sidecar), then kept a month at a time by endJournal().
+     * Not saved: the runs, the ground and the works the map keeps are saved, and the reserves are found from them (CityRuns.reservesIn()).
+     */
+    private List<long[]> reserveLaid;
+
+    /** The runs (and their version) the reserves were last found against, and the purchases then: what the next month's changes are found against. */
+    private CityRuns reserveRuns;
+    private long reserveRunsAt = Long.MIN_VALUE;
+    private int reservePurchasesSeen;
+
+    /**
+     * The world districts a mine or well came to or left since the last journalled month, as column << 32 ^ row (markRun(), relay()): where a mined site's box
+     * may have moved, which a reserve may not take (reserveBlocked()). Followed here rather than found by walking the districts' sites each month, which a city of
+     * billions pays for in milliseconds.
+     */
+    private final java.util.Set<Long> minedTouched = new java.util.HashSet<>();
+
+    /** How far a mine's site (a few plots across, centred in its district) can reach beyond its district's box: 32 plots. */
+    private static final int SITE_MARGIN = 32;
+
+    /** How far a reserve's box can be from a plot that moves it: the longest reach of a box from its junction plot, and one for the highway beside the junction. */
+    private static final int RESERVE_PAD = InterchangeGround.REACH + 1;
+
+    /** The key of a reserve's box, for comparing sets of them. */
+    private static List<Long> boxKey(long[] b) {
+        return List.of(b[0], b[1], b[2], b[3]);
+    }
+
+    /** Whether the world plot box b = {x0, y0, w, h} meets the box r. */
+    private static boolean meets(long[] b, long[] r) {
+        return b[0] < r[0] + r[2] && b[1] < r[1] + r[3] && b[0] + b[2] > r[0] && b[1] + b[3] > r[1];
+    }
+
+    /** The sites that got their reserve, as boxes, into out unless already in `have`. */
+    private static void addLaid(List<InterchangeGround.Site> sites, List<long[]> out, java.util.Set<List<Long>> have) {
+        for (InterchangeGround.Site s : sites) {
+            if (!s.got()) continue;
+            long[] box = { s.x0(), s.y0(), s.w(), s.h() };
+            if (have.add(boxKey(box))) out.add(box);
+        }
+    }
+
+    /** The box {x0, y0, w, h}, in world plots, about the plots of district d whose kind differs between `was` and `now` (kindsOf()); null where none does. */
+    private long[] changedBox(byte[] was, byte[] now, District d) {
+        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, maxX = -1, maxY = -1, from = 0, i;
+        while ((i = Arrays.mismatch(was, from, was.length, now, from, now.length)) >= 0) {
+            int p = from + i, px = p & (DISTRICT - 1), py = p / DISTRICT;
+            minX = Math.min(minX, px);
+            maxX = Math.max(maxX, px);
+            minY = Math.min(minY, py);
+            maxY = Math.max(maxY, py);
+            from = p + 1;
+        }
+        if (maxX < 0) return null;
+        return new long[] { (baseDX + d.dx) * DISTRICT + minX, (baseDY + d.dy) * DISTRICT + minY, maxX - minX + 1, maxY - minY + 1 };
+    }
+
+    /** Whether a district the map holds lies beside world district (wx, wy). */
+    private boolean heldBeside(long wx, long wy) {
+        for (long dy = -1; dy <= 1; dy++) {
+            for (long dx = -1; dx <= 1; dx++) {
+                long ax = wx + dx - baseDX, ay = wy + dy - baseDY;
+                if ((dx != 0 || dy != 0) && ax == (int) ax && ay == (int) ay && districtAt(key((int) ax, (int) ay)) != null) return true;
+            }
+        }
+        return false;
+    }
+
+    /** The region of world district (wx, wy) and a margin about it, {x0, y0, w, h}: where a change in it can move a reserve. */
+    private static long[] districtRegion(long wx, long wy) {
+        return new long[] { wx * DISTRICT - RESERVE_PAD, wy * DISTRICT - RESERVE_PAD, DISTRICT + 2L * RESERVE_PAD, DISTRICT + 2L * RESERVE_PAD };
+    }
+
+    /** The reserves that are laid now, found over every district the highways lie in and the margin about it (while the highways reach a street: none before). */
+    private List<long[]> laidReserves() {
+        List<long[]> out = new ArrayList<>();
+        if (!runs.highwaysReach()) return out;
+        java.util.Set<List<Long>> have = new java.util.HashSet<>();
+        for (long[] hd : runs.highwayDistricts()) {
+            long[] r = districtRegion(hd[0], hd[1]);
+            addLaid(runs.reservesIn(r[0], r[1], (int) r[2], (int) r[3]), out, have);
+        }
+        return out;
+    }
+
+    /**
+     * The reserves as the month ended: those found afresh in the regions the month could have moved one in - a margin about the plots the runs
+     * changed, the districts a mine came to or left, the districts under the land bought - and the rest as the month began; found
+     * again whole when the highways first reach a street or cease to, or the land was drawn again. Where no region lies, nothing has moved one: no
+     * run changed there, no mine, no purchase.
+     */
+    private List<long[]> reservesEnded(boolean reach, List<long[]> changed) {
+        List<long[]> began = reserveLaid, ended;
+        List<CityLand.Purchase> bought = land.purchases();
+        if (!reach) {
+            ended = new ArrayList<>();
+        } else if (!reachAtStart || bought.size() < reservePurchasesSeen) {
+            ended = laidReserves();
+        } else {
+            List<long[]> regions = new ArrayList<>();
+            // The plots the runs changed in the districts the map holds, and a margin about them.
+            for (long[] c : changed) regions.add(new long[] { c[0] - RESERVE_PAD, c[1] - RESERVE_PAD, c[2] + 2L * RESERVE_PAD, c[3] + 2L * RESERVE_PAD });
+            // The districts the witness was told of that the map does not hold, beside one it does, near a highway.
+            for (long wd : journalTouched) if (heldBeside(wd >> 32, (int) wd) && runs.highwaysNear(wd >> 32, (int) wd)) regions.add(districtRegion(wd >> 32, (int) wd));
+            // The districts a mine came to or left, near a highway: the site's box and a margin about it.
+            for (long wd : minedTouched) {
+                if (!runs.highwaysNear(wd >> 32, (int) wd)) continue;
+                long[] r = districtRegion(wd >> 32, (int) wd);
+                regions.add(new long[] { r[0] - SITE_MARGIN, r[1] - SITE_MARGIN, r[2] + 2L * SITE_MARGIN, r[3] + 2L * SITE_MARGIN });
+            }
+            // The districts the highways lie in that the land bought lies under.
+            for (int k = reservePurchasesSeen; k < bought.size(); k++) {
+                LandParcel o = bought.get(k).offer();
+                for (long[] hd : runs.highwayDistricts()) {
+                    long[] r = districtRegion(hd[0], hd[1]);
+                    if (o.getX0() < r[0] + r[2] && o.getX1() > r[0] && o.getY0() < r[1] + r[3] && o.getY1() > r[1]) regions.add(r);
+                }
+            }
+            if (regions.isEmpty()) {
+                ended = began;
+            } else {
+                ended = new ArrayList<>();
+                java.util.Set<List<Long>> have = new java.util.HashSet<>();
+                for (long[] b : began) {
+                    boolean in = false;
+                    for (long[] r : regions) in |= meets(b, r);
+                    if (!in && have.add(boxKey(b))) ended.add(b);
+                }
+                for (long[] r : regions) addLaid(runs.reservesIn(r[0], r[1], (int) r[2], (int) r[3]), ended, have);
+            }
+        }
+        reserveRuns = runs;
+        reserveRunsAt = runs.version;
+        reservePurchasesSeen = bought.size();
+        minedTouched.clear();
+        return ended;
+    }
+
+    /** The boxes in one of two sets of reserves and not the other: the reserves that came or went. */
+    private static List<long[]> reservesMoved(List<long[]> a, List<long[]> b) {
+        java.util.Set<List<Long>> ka = new java.util.HashSet<>(), kb = new java.util.HashSet<>();
+        for (long[] x : a) ka.add(boxKey(x));
+        for (long[] x : b) kb.add(boxKey(x));
+        List<long[]> out = new ArrayList<>();
+        for (long[] x : a) if (!kb.contains(boxKey(x))) out.add(x);
+        for (long[] x : b) if (!ka.contains(boxKey(x))) out.add(x);
+        return out;
+    }
+
+    /** `kinds` (district d's own plots, as kindsOf() has them) with every reserve of the set that meets d laid over the plots the runs leave at 0. */
+    private void laidOver(byte[] kinds, District d, List<long[]> reserves) {
+        long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
+        long[] box = { x0, y0, DISTRICT, DISTRICT };
+        for (long[] r : reserves) {
+            if (!meets(r, box)) continue;
+            for (long py = Math.max(r[1], y0); py < Math.min(r[1] + r[3], y0 + DISTRICT); py++) {
+                for (long px = Math.max(r[0], x0); px < Math.min(r[0] + r[2], x0 + DISTRICT); px++) {
+                    int i = (int) ((py - y0) * DISTRICT + (px - x0));
+                    if (kinds[i] == 0) kinds[i] = DistrictPlan.FIXED_RESERVE;
+                }
+            }
+        }
     }
 
     /** `h` with district d's journal over its frame folded in (ownStamp()): its own, and its east neighbour's first column, its south neighbour's first row and its south-east neighbour's first plot - nothing where there is none. */
@@ -9077,8 +9334,10 @@ public final class CityMap {
      * District d's frame's records for its plan's input (Input.fixedLogMonth and fixedLog): its own journal's, and its east
      * neighbour's records on its first column (the frame's last), its south neighbour's on its first row and its south-east
      * neighbour's on its first plot, merged by month (a month's own district's first), each `framePlot << 8 | before << 4 | after`.
-     * Two rules. (a) Where in.fixed holds an interchange's reserve the plot's records read 0 as FIXED_RESERVE (a reserve is
-     * laid wherever the runs leave a plot at 0), and a record whose kinds are then the same is dropped. (b) A plot whose records,
+     * Two rules. (a) Where in.fixed holds an interchange's reserve and the plot's records do not end on it (a journal from before
+     * the reserves were dated, FORMAT 14 or older, or a reserve laid outside reconcile()), they read 0 as FIXED_RESERVE (a reserve
+     * is laid wherever the runs leave a plot at 0, throughout, as before UP5), and a record whose kinds are then the same is
+     * dropped; a plot whose records end on the reserve is dated, and read as it is. (b) A plot whose records,
      * replayed forward from its first record's before, do not end on in.fixed (nor chain: each record's before the one before's
      * after) is left without any, and counted (journalDropped()). Left null for none. Called with in.fixed filled.
      */
@@ -9113,10 +9372,13 @@ public final class CityMap {
             n++;
         }
         byte[] fixed = in.fixed;
-        // (a) a reserve is laid where the runs leave 0.
+        // (a) a reserve the plot's records do not end on is laid where the runs leave 0, throughout.
+        byte[] last = new byte[area];
+        Arrays.fill(last, (byte) -1);
+        for (int i = 0; i < n; i++) last[rec[i] >>> 8] = (byte) (rec[i] & 15);
         for (int i = 0; i < n; i++) {
             int fp = rec[i] >>> 8, b = (rec[i] >> 4) & 15, a = rec[i] & 15;
-            if (fixed[fp] != DistrictPlan.FIXED_RESERVE) continue;
+            if (fixed[fp] != DistrictPlan.FIXED_RESERVE || last[fp] == DistrictPlan.FIXED_RESERVE) continue;
             if (b == 0) b = DistrictPlan.FIXED_RESERVE;
             if (a == 0) a = DistrictPlan.FIXED_RESERVE;
             rec[i] = a == b ? -1 : fp << 8 | b << 4 | a;

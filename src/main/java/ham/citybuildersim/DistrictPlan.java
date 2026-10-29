@@ -606,8 +606,9 @@ public final class DistrictPlan {
          * forward from each plot's first record's `before` it ends on `fixed` as it stands; a plot with no record has its `fixed` throughout.
          * With it the plan's ground of runs grows month by month, as its ground bought does with `boughtAt`: what a plan placed stands, a run
          * laid later takes only ground nothing stands on, and ground a run leaves is room again (THE RUNS DATED: CityMap keeps the journal
-         * and hands each plan its frame's records, the plan replays its history on them). An interchange's reserve (FIXED_RESERVE) is today's and undated: where `fixed` holds one, its plot's records read 0 as
-         * the reserve, a reserve being laid wherever the runs leave a plot at 0.
+         * and hands each plan its frame's records, the plan replays its history on them). An interchange's reserve (FIXED_RESERVE) is dated since UP5 (CityMap's THE RESERVES DATED): a plot it lies on has a record from 0 to the
+         * reserve, and from it to 0 where it went. Where `fixed` holds a reserve and a plot's records do not end on it (a journal from before, a sidecar of FORMAT 14 or older),
+         * the map reads 0 in its records as the reserve, a reserve being laid wherever the runs leave a plot at 0: the plan draws it from its first batch, as before.
          */
         public int[] fixedLogMonth, fixedLog;
         /** The city's highway and railway plots: FIXED_HIGHWAY, FIXED_RAIL or a yard's FIXED_YARD, and (batch FR7) an interchange's reserve FIXED_RESERVE, laid before the plan (the city's runs since 0.7.89, CityRuns; CityMap's network's plan's until 0.7.88). */
@@ -1238,6 +1239,23 @@ public final class DistrictPlan {
         return dst;
     }
 
+    /* ----- THE GROUND KEPT: its switches (batch UP5; Builder.groundNear()) ----- */
+
+    /** Whether a plan works its ground out again only where the records it lays and the land it adds touch (Builder.groundNear(), THE GROUND KEPT): true in play; a harness sets it false to make the plan with the whole ground worked out each time, the reference the kept ground is held equal to, plot for plot. */
+    static volatile boolean keepGround = true;
+
+    /** Whether each limited pass of the ground is followed by the whole ground worked out, every array it writes compared with what the pass left, the plots that differ counted in groundDiffers: false in play (a harness's check, PlanCheck 15c). */
+    static volatile boolean verifyGround;
+
+    /** How many entries of the arrays ground() writes differed between a limited pass and the whole ground worked out after it (verifyGround): 0, or the kept ground is wrong. */
+    static final java.util.concurrent.atomic.AtomicLong groundDiffers = new java.util.concurrent.atomic.AtomicLong();
+
+    /** How many passes of the ground were limited to the plots a record or a purchase touches, and how many were worked whole because they touched too many (GROUND_NEAR_MOST): a harness's figures. */
+    static final java.util.concurrent.atomic.AtomicLong groundLimited = new java.util.concurrent.atomic.AtomicLong(), groundWhole = new java.util.concurrent.atomic.AtomicLong();
+
+    /** The most plots a pass may work again before it works the whole ground out instead: 6,400 (a tenth of the frame) - past it the whole is the cheaper, a plot worked alone costing a few times what one plot of a whole pass does. */
+    static final int GROUND_NEAR_MOST = AREA / 10;
+
     /* =====================================================================
        THE BUILDER: ONE PLAN AT A LADDER'S STEP
        ===================================================================== */
@@ -1447,7 +1465,304 @@ public final class DistrictPlan {
             Arrays.fill(fieldBits, 0L);
             for (int y = 0; y < FRAME; y++) fieldRow(y);
             for (int c = 0; c < CELLS; c++) cellRows(c);
+            roomCounts();
         }
+
+        /** Each cell's room - its interior plots that are dry, off the highways and the works' ground and not a mine's site - and the foothill among them, and which plots count: what growthOrder() ranks the cells by (worked out by ground(), kept by groundKept()). */
+        final int[] cellRoom = new int[CELLS], cellFoot = new int[CELLS];
+        final boolean[] roomy = new boolean[AREA];
+
+        /** Whether plot p counts as its cell's room (growthOrder()'s rule). */
+        boolean roomAt(int p) {
+            byte f = fx[p];
+            return dry[p] && f != FIXED_HIGHWAY && !works(f) && in.site[p] != SITE_MINED;
+        }
+
+        /** Every cell's room and foothill counted afresh, and the plots that count noted (roomy). */
+        void roomCounts() {
+            for (int c = 0; c < CELLS; c++) {
+                int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1, room = 0, foothill = 0;
+                for (int y = y0; y < y0 + INTERIOR; y++) {
+                    for (int x = x0, p = y * FRAME + x0; x < x0 + INTERIOR; x++, p++) {
+                        boolean r = roomAt(p);
+                        roomy[p] = r;
+                        if (r) {
+                            room++;
+                            if (in.relief[p] == World.FOOTHILL) foothill++;
+                        }
+                    }
+                }
+                cellRoom[c] = room;
+                cellFoot[c] = foothill;
+            }
+        }
+
+        /* ----- THE GROUND KEPT (batch UP5, FX7's star 3) ----- */
+
+        /*
+         * THE GROUND KEPT (batch UP5). growGround() worked the whole frame's ground out again (ground(), about 0.95 ms) each time records were
+         * laid or land added, so a plan that replays a district's history paid one whole pass for every month with records due: the playtest's
+         * founding district at month 4,000 (about 1,400 records) 12 ms a plan after FX7, 42-52 after MF1 laid the records month by month
+         * (MF1-notes, section 4). A plot's ground is its own state - owned or not, the kind of fixed ground on it, the terrain - and the state
+         * of the few plots about it, so the ground is kept between the passes and a pass works again only the plots whose state moved (dirty):
+         *   - the plot a record or a purchase names, and its four neighbours (fixedCodes() reads the run along a plot: along());
+         *   - for a record that makes or unmakes a highway's plot, the three by three about it (the verge, H5, VERGES);
+         *   - groundPlot() and fieldPlot() for each of them, with the fresh water's bits (freshBits()) and the barred plots of the avenues and
+         *     of the ways kept clear (avOuter, avMark, keepClear) as ground() lays them - the same code, a plot at a time;
+         *   - the highways' bits (hwRows), their rows spread along (vergeWide) and a row either side of them (vergeRows) for the rows a highway
+         *     plot moved on, and the plots of the runs and the highways in plot order (fixedList, hwList), merged;
+         *   - cellRows() for the cells with a dirty plot in their interior.
+         * Left as the first pass of the plan (start()) made them: the fresh water's runs (terrain alone), paRows and anyAnchor (the input's
+         * alone), the avenues' lists, the ways kept clear (set before start()). A pass that would work more than GROUND_NEAR_MOST plots is
+         * worked whole, as before. Exactness is held by verifyGround (every array compared with the whole ground worked out after each
+         * limited pass: groundDiffers) and by PlanCheck 15c (the plans of both ways equal).
+         */
+
+        /** The plots the records of this pass named, their kind of fixed ground before the pass (touchWas) and the marks to find them by (touched); cleared by groundKept(). */
+        int[] touchAt = new int[64];
+        byte[] touchWas = new byte[64];
+        int nTouch;
+        final boolean[] touched = new boolean[AREA];
+
+        /** The plots of the pass to be worked again (dirty, isDirty), and the occStart and fieldOk each had before it, in the same order: what runsLaid() compares the ground with. */
+        int[] dirty = new int[256];
+        byte[] dirtyOcc = new byte[256];
+        boolean[] dirtyField = new boolean[256];
+        int nDirty;
+        final boolean[] isDirty = new boolean[AREA];
+
+        /** Whether the last pass was worked whole (so occWas and fieldWas hold what runsLaid() compares the ground with) rather than limited (dirty does). */
+        boolean wholePass = true;
+
+        /** The rows of the highways' bits the pass moved on, and the rows of vergeRows that follow; the cells with a dirty plot in the interior. */
+        int[] hwMoved = new int[16];
+        int nHwMoved;
+        final boolean[] verged = new boolean[FRAME], cellDirty = new boolean[CELLS];
+
+        /** Plot p, whose kind of fixed ground the records of this pass are about to change, noted with the kind it has now. */
+        void noteTouch(int p) {
+            touched[p] = true;
+            if (nTouch == touchAt.length) {
+                touchAt = Arrays.copyOf(touchAt, 2 * nTouch);
+                touchWas = Arrays.copyOf(touchWas, 2 * nTouch);
+            }
+            touchAt[nTouch] = p;
+            touchWas[nTouch++] = fx[p];
+        }
+
+        /** Plot p added to the pass's plots to be worked again, once. */
+        void addDirty(int p) {
+            if (isDirty[p]) return;
+            isDirty[p] = true;
+            if (nDirty == dirty.length) {
+                dirty = Arrays.copyOf(dirty, 2 * nDirty);
+                dirtyOcc = Arrays.copyOf(dirtyOcc, 2 * nDirty);
+                dirtyField = Arrays.copyOf(dirtyField, 2 * nDirty);
+            }
+            dirty[nDirty++] = p;
+        }
+
+        /** The plot p and every plot of the three by three about it that lies in the frame, to be worked again. */
+        void addAround(int p) {
+            int x = p % FRAME, y = p / FRAME;
+            for (int yy = Math.max(0, y - 1); yy <= Math.min(FRAME - 1, y + 1); yy++) for (int xx = Math.max(0, x - 1); xx <= Math.min(FRAME - 1, x + 1); xx++) addDirty(yy * FRAME + xx);
+        }
+
+        /** The lay-code bits fresh water's runs give plot p (freshRow(), columnRun()): from the run lengths hRun and vRun ground() left, which stand for the plan; none for a prototype's. */
+        int freshBits(int p) {
+            if (proto) return 0;
+            int h = hRun[p], v = vRun[p];
+            return (h > STREET_BRIDGE ? H_STREET : 0) | (h > ARTERIAL_BRIDGE ? H_ARTERIAL : 0) | (v > STREET_BRIDGE ? V_STREET : 0) | (v > ARTERIAL_BRIDGE ? V_ARTERIAL : 0);
+        }
+
+        /**
+         * The ground after the plots noted by noteTouch() had their kind of fixed ground changed (fx now holds the new) and the `nGrown` plots
+         * of grown[] were added to owns: ground() for the plots they move, as THE GROUND KEPT says - or, past GROUND_NEAR_MOST plots, ground()
+         * itself. Leaves dirty and dirtyOcc/dirtyField for runsLaid() when it worked the plots alone, else wholePass true with occWas and fieldWas.
+         */
+        void groundKept(int nGrown) {
+            for (int k = 0; k < nDirty; k++) isDirty[dirty[k]] = false;
+            nDirty = 0;
+            // The plots to be worked again: those a record changed and the four about each, the three by three about a highway's, and the land added;
+            // past GROUND_NEAR_MOST of them the whole ground is the cheaper.
+            boolean most = false;
+            for (int k = 0; k < nTouch && !most; k++) {
+                int p = touchAt[k];
+                byte was = touchWas[k], now = fx[p];
+                if (was == now) continue;
+                int x = p % FRAME, y = p / FRAME;
+                addDirty(p);
+                if (x > 0) addDirty(p - 1);
+                if (x + 1 < FRAME) addDirty(p + 1);
+                if (y > 0) addDirty(p - FRAME);
+                if (y + 1 < FRAME) addDirty(p + FRAME);
+                if (was == FIXED_HIGHWAY || now == FIXED_HIGHWAY) addAround(p);
+                most = nDirty > GROUND_NEAR_MOST;
+            }
+            for (int k = 0; k < nGrown && !most; k++) {
+                addDirty(grown[k]);
+                most = nDirty > GROUND_NEAR_MOST;
+            }
+            for (int k = 0; k < nTouch; k++) touched[touchAt[k]] = false;
+            if (most) {
+                nTouch = 0;
+                for (int k = 0; k < nDirty; k++) isDirty[dirty[k]] = false;
+                nDirty = 0;
+                System.arraycopy(occStart, 0, occWas, 0, AREA);
+                System.arraycopy(fieldOk, 0, fieldWas, 0, AREA);
+                wholePass = true;
+                groundWhole.incrementAndGet();
+                ground();
+                return;
+            }
+            wholePass = false;
+            groundLimited.incrementAndGet();
+            // The lists of the runs' plots and of the highways' that change, and the highways' bits.
+            int[] addFixed = null, addHw = null;
+            int nAddFixed = 0, nAddHw = 0;
+            boolean dropFixed = false, dropHw = false;
+            nHwMoved = 0;
+            for (int k = 0; k < nTouch; k++) {
+                int p = touchAt[k];
+                byte was = touchWas[k], now = fx[p];
+                if (was == now) continue;
+                if (was == 0) {
+                    if (addFixed == null) addFixed = new int[nTouch];
+                    addFixed[nAddFixed++] = p;
+                } else if (now == 0) {
+                    dropFixed = true;
+                }
+                if (was != FIXED_HIGHWAY && now != FIXED_HIGHWAY) continue;
+                // A highway's plot made or unmade: its bit and the plot in the list; the verge about it is worked below.
+                int x = p % FRAME, y = p / FRAME;
+                long bit = 1L << (x & 63);
+                if (now == FIXED_HIGHWAY) {
+                    hwRows[y * WORDS + (x >>> 6)] |= bit;
+                    if (addHw == null) addHw = new int[nTouch];
+                    addHw[nAddHw++] = p;
+                } else {
+                    hwRows[y * WORDS + (x >>> 6)] &= ~bit;
+                    dropHw = true;
+                }
+                if (nHwMoved == hwMoved.length) hwMoved = Arrays.copyOf(hwMoved, 2 * nHwMoved);
+                hwMoved[nHwMoved++] = y;
+            }
+            nTouch = 0;
+            // The room each had before, for runsLaid() to find what the pass changed by.
+            for (int k = 0; k < nDirty; k++) {
+                dirtyOcc[k] = occStart[dirty[k]];
+                dirtyField[k] = fieldOk[dirty[k]];
+            }
+            // The lists of plots, in plot order: the plots now at 0 (or not a highway's) dropped, the new merged in.
+            if (dropFixed || nAddFixed > 0) {
+                int m = 0;
+                for (int k = 0; k < nFixed; k++) if (fx[fixedList[k]] != 0) fixedList[m++] = fixedList[k];
+                nFixed = m;
+                nFixed = mergeInto(fixedList, nFixed, addFixed, nAddFixed, false);
+            }
+            if (dropHw || nAddHw > 0) {
+                int m = 0;
+                for (int k = 0; k < nHighway; k++) if (fx[hwList[k]] == FIXED_HIGHWAY) hwList[m++] = hwList[k];
+                nHighway = m;
+                nHighway = mergeInto(hwList, nHighway, addHw, nAddHw, true);
+            }
+            // The verges: the rows the highways' bits moved on spread along, and the row either side of them taken in.
+            for (int k = 0; k < nHwMoved; k++) {
+                int y = hwMoved[k];
+                vergeWideRow(y);
+                for (int yy = Math.max(0, y - 1); yy <= Math.min(FRAME - 1, y + 1); yy++) verged[yy] = true;
+            }
+            for (int k = 0; k < nHwMoved; k++) {
+                int y = hwMoved[k];
+                for (int yy = Math.max(0, y - 1); yy <= Math.min(FRAME - 1, y + 1); yy++) {
+                    if (!verged[yy]) continue;
+                    verged[yy] = false;
+                    vergeRow(yy);
+                }
+            }
+            // Each plot again, as ground() lays it: its own ground, the fresh water's bits, what the avenues and the ways kept clear bar, the run along it, its field.
+            boolean anyCell = false;
+            for (int k = 0; k < nDirty; k++) {
+                int p = dirty[k], x = p % FRAME, y = p / FRAME;
+                groundPlot(p);
+                layCode[p] |= freshBits(p);
+                if (avOuter[p] | avMark[p] != 0 | keepClear[p]) blocked[p] = true;
+                if (fx[p] != 0 && !proto) fixedCode(p);
+                fieldPlot(p, x, y * WORDS, y % CELL != 0 & y < SIDE);
+                int c = cellOfPlot(x, y);
+                if (c >= 0 && (x - 1) % CELL < INTERIOR && (y - 1) % CELL < INTERIOR) {
+                    cellDirty[c] = true;
+                    anyCell = true;
+                    // The cell's room, for the growth order.
+                    boolean r = roomAt(p);
+                    if (r != roomy[p]) {
+                        roomy[p] = r;
+                        int d = r ? 1 : -1;
+                        cellRoom[c] += d;
+                        if (in.relief[p] == World.FOOTHILL) cellFoot[c] += d;
+                    }
+                }
+            }
+            if (anyCell) {
+                for (int c = 0; c < CELLS; c++) {
+                    if (!cellDirty[c]) continue;
+                    cellDirty[c] = false;
+                    cellRows(c);
+                }
+            }
+            if (verifyGround) verifyWhole();
+        }
+
+        /** list[0 .. n) and the sorted-here `adds` (nAdd of them, none when null) merged in ascending order, in place (the list grown if need be, which is why `hw` says which list: fixedList or hwList); the new count. */
+        int mergeInto(int[] list, int n, int[] adds, int nAdd, boolean hw) {
+            if (nAdd == 0) return n;
+            Arrays.sort(adds, 0, nAdd);
+            int total = n + nAdd;
+            if (total > list.length) {
+                list = Arrays.copyOf(list, Math.max(total, 2 * list.length));
+                if (hw) hwList = list; else fixedList = list;
+            }
+            int i = n - 1, j = nAdd - 1, k = total - 1;
+            while (j >= 0) list[k--] = i >= 0 && list[i] > adds[j] ? list[i--] : adds[j--];
+            return total;
+        }
+
+        /**
+         * verifyGround's check: every array ground() writes, copied, the whole ground worked out, and the entries that differ counted in
+         * groundDiffers - the limited pass left what the whole would have, or not. The whole ground stands after it, equal if the count is 0.
+         */
+        void verifyWhole() {
+            boolean[] cf = cellField.clone(), dr = dry.clone(), uf = unfit.clone(), bl = blocked.clone(), fo = fieldOk.clone();
+            long[] hw = hwRows.clone(), pa = paRows.clone(), vw = vergeWide.clone(), vr = vergeRows.clone(), ob = openBits.clone(), fb = fieldBits.clone();
+            byte[] lc = layCode.clone(), os = occStart.clone();
+            short[] hr = hRun.clone(), vru = vRun.clone();
+            int[][] orows = new int[CELLS][], frows = new int[CELLS][];
+            for (int c = 0; c < CELLS; c++) {
+                orows[c] = openRows[c].clone();
+                frows[c] = fieldRows[c].clone();
+            }
+            int nf = nFixed, nh = nHighway;
+            int[] fl = Arrays.copyOf(fixedList, nf), hl = Arrays.copyOf(hwList, nh);
+            int[] cr = cellRoom.clone(), cfo = cellFoot.clone();
+            boolean[] ry = roomy.clone();
+            boolean aa = anyAnchor;
+            ground();
+            long d = 0;
+            d += differ(cf, cellField) + differ(dr, dry) + differ(uf, unfit) + differ(bl, blocked) + differ(fo, fieldOk);
+            d += differ(hw, hwRows) + differ(pa, paRows) + differ(vw, vergeWide) + differ(vr, vergeRows) + differ(ob, openBits) + differ(fb, fieldBits);
+            d += differ(lc, layCode) + differ(os, occStart) + differ(hr, hRun) + differ(vru, vRun);
+            for (int c = 0; c < CELLS; c++) d += differ(orows[c], openRows[c]) + differ(frows[c], fieldRows[c]);
+            d += Math.abs(nf - nFixed) + Math.abs(nh - nHighway) + (aa != anyAnchor ? 1 : 0);
+            d += differ(fl, Arrays.copyOf(fixedList, nf)) + differ(hl, Arrays.copyOf(hwList, nh));
+            d += differ(cr, cellRoom) + differ(cfo, cellFoot) + differ(ry, roomy);
+            if (d != 0) groundDiffers.addAndGet(d);
+        }
+
+        static long differ(boolean[] a, boolean[] b) { long n = 0; for (int i = 0; i < a.length; i++) if (a[i] != b[i]) n++; return n; }
+        static long differ(byte[] a, byte[] b) { long n = 0; for (int i = 0; i < a.length; i++) if (a[i] != b[i]) n++; return n; }
+        static long differ(short[] a, short[] b) { long n = 0; for (int i = 0; i < a.length; i++) if (a[i] != b[i]) n++; return n; }
+        static long differ(int[] a, int[] b) { long n = 0; for (int i = 0; i < a.length; i++) if (a[i] != b[i]) n++; return n; }
+        static long differ(long[] a, long[] b) { long n = 0; for (int i = 0; i < a.length; i++) if (a[i] != b[i]) n++; return n; }
 
         /** The plan made: what it held of its input let go (KEPT). */
         void finish() {
@@ -2183,17 +2498,27 @@ public final class DistrictPlan {
             }
             // The records due laid on the runs' ground, the room as it was kept to find what they changed by.
             int laid = 0;
+            boolean keeping = keepGround;
             if (runs) {
-                System.arraycopy(occStart, 0, occWas, 0, AREA);
-                System.arraycopy(fieldOk, 0, fieldWas, 0, AREA);
+                if (!keeping) {
+                    System.arraycopy(occStart, 0, occWas, 0, AREA);
+                    System.arraycopy(fieldOk, 0, fieldWas, 0, AREA);
+                }
                 while (fxNext < fxN && in.fixedLogMonth[fxNext] <= month) {
                     int r = in.fixedLog[fxNext++];
+                    if (keeping && !touched[r >>> 8]) noteTouch(r >>> 8);
                     fx[r >>> 8] = (byte) (r & 15);
                     laid++;
                 }
             }
             if (n == 0 && laid == 0) return;
-            ground();
+            // The ground worked out again: only where the records and the land touch it (THE GROUND KEPT), else the whole.
+            if (keeping) {
+                groundKept(n);
+            } else {
+                wholePass = true;
+                ground();
+            }
             // Each new plot is as a build begins; in the interior of a cell that is open it is room (freshCell()'s rule, less
             // streets: a plot just bought holds none), and that cell looks again.
             boolean[] roomed = new boolean[CELLS], refree = new boolean[CELLS];
@@ -2301,18 +2626,26 @@ public final class DistrictPlan {
          * where only a field's plot changed (fieldOk) the cell is flagged too, since its free rows with fields read it.
          */
         void runsLaid(boolean[] roomed, boolean[] refree) {
-            for (int p = 0; p < AREA; p++) {
-                boolean room = occStart[p] != occWas[p];
-                if (!room && fieldOk[p] == fieldWas[p]) continue;
-                if (room && occ[p] != 1 && !str[p] && !under[p] && !cvKeep[p]) occ[p] = occStart[p];
-                int x = p % FRAME, y = p / FRAME;
-                if (x < 1 || y < 1 || x > SIDE || y > SIDE) continue;
-                if ((x - 1) % CELL >= INTERIOR || (y - 1) % CELL >= INTERIOR) continue;
-                int c = cellOfPlot(x, y);
-                if (bOut.cellKind[c] == CLOSED) continue;
-                roomed[c] = true;
-                refree[c] = true;
+            // The plots the pass worked again alone are the only ones whose room can have changed (THE GROUND KEPT); a whole pass looks at them all.
+            if (wholePass) {
+                for (int p = 0; p < AREA; p++) runsLaidAt(p, occWas[p], fieldWas[p], roomed, refree);
+            } else {
+                for (int k = 0; k < nDirty; k++) runsLaidAt(dirty[k], dirtyOcc[k], dirtyField[k], roomed, refree);
             }
+        }
+
+        /** runsLaid() for plot p, whose occStart and fieldOk were `occBefore` and `fieldBefore` before the records were laid. */
+        void runsLaidAt(int p, byte occBefore, boolean fieldBefore, boolean[] roomed, boolean[] refree) {
+            boolean room = occStart[p] != occBefore;
+            if (!room && fieldOk[p] == fieldBefore) return;
+            if (room && occ[p] != 1 && !str[p] && !under[p] && !cvKeep[p]) occ[p] = occStart[p];
+            int x = p % FRAME, y = p / FRAME;
+            if (x < 1 || y < 1 || x > SIDE || y > SIDE) return;
+            if ((x - 1) % CELL >= INTERIOR || (y - 1) % CELL >= INTERIOR) return;
+            int c = cellOfPlot(x, y);
+            if (bOut.cellKind[c] == CLOSED) return;
+            roomed[c] = true;
+            refree[c] = true;
         }
 
         /* ------------------------------------------------ buildings move off a run (batch MF1) */
@@ -2453,16 +2786,8 @@ public final class DistrictPlan {
             for (int cj = 0; cj < CELLS_A_SIDE; cj++) {
                 for (int ci = 0; ci < CELLS_A_SIDE; ci++) {
                     int c = ci + cj * CELLS_A_SIDE;
-                    int x0 = CELL * ci + 1, y0 = CELL * cj + 1, room = 0, foothill = 0;
-                    for (int y = y0; y < y0 + INTERIOR; y++) {
-                        for (int x = x0; x < x0 + INTERIOR; x++) {
-                            int p = y * FRAME + x;
-                            if (dry[p] && fx[p] != FIXED_HIGHWAY && !works(fx[p]) && in.site[p] != SITE_MINED) {
-                                room++;
-                                if (in.relief[p] == World.FOOTHILL) foothill++;
-                            }
-                        }
-                    }
+                    // The cell's room and foothill: counted by ground() and kept by groundKept() (THE GROUND KEPT), not counted here again.
+                    int x0 = CELL * ci + 1, y0 = CELL * cj + 1, room = cellRoom[c], foothill = cellFoot[c];
                     usable[c] = room >= CELL_ROOM_LEAST;
                     // The box's middle, as the prototype's (x0 + x1) / 2 with x1 its end.
                     double mx = x0 + INTERIOR / 2.0, my = y0 + INTERIOR / 2.0;
@@ -4578,26 +4903,33 @@ public final class DistrictPlan {
 
         /** Row y of the ground (THE GROUND, A ROW AT A TIME): dry, barred, its lay code from the ground, the runs' plots, the highways' and the parted streets' bits, an anchor. */
         void groundRow(int y) {
-            byte[] terrain = in.terrain, relief = in.relief, fixed = fx, site = in.site;
-            boolean[] owned = owns, partedAnchor = in.partedAnchor, anchor = in.anchor;
+            boolean[] partedAnchor = in.partedAnchor, anchor = in.anchor;
+            byte[] fixed = fx;
             int base = y * WORDS;
             boolean anchors = false;
             for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
-                byte t = terrain[p];
-                boolean fit = World.buildable(t, relief[p]);
-                boolean d = owned[p] & fit;
-                dry[p] = d;
-                unfit[p] = !fit & !World.salt(t) & t != World.FRESH;
+                groundPlot(p);
                 byte f = fixed[p];
-                blocked[p] = !d | f != 0 | site[p] != 0;
-                // Its lay code from the ground (LAY CODES; bridgeable water's runs and the runs' plots added after).
-                layCode[p] = (byte) (!owned[p] | t == World.SALT | unfit[p] ? LAY_REFUSED : proto ? (f == FIXED_HIGHWAY ? LAY_REFUSED : 0)
-                        : site[p] == SITE_MINED ? LAY_REFUSED : 0);
                 if (f != 0) fixedPlot(p, x, base, f);
                 if (partedAnchor[p]) paRows[base + (x >>> 6)] |= 1L << (x & 63);
                 anchors |= anchor[p];
             }
             anyAnchor |= anchors;
+        }
+
+        /** Plot p's own ground (THE GROUND, A ROW AT A TIME; one plot, so THE GROUND KEPT works it again alone): dry, unfit, barred by the ground and the runs and a site, and its lay code from the ground (LAY CODES; bridgeable water's runs and the runs' plots added after). */
+        void groundPlot(int p) {
+            byte t = in.terrain[p];
+            boolean fit = World.buildable(t, in.relief[p]);
+            boolean d = owns[p] & fit;
+            dry[p] = d;
+            boolean u = !fit & !World.salt(t) & t != World.FRESH;
+            unfit[p] = u;
+            byte f = fx[p];
+            byte site = in.site[p];
+            blocked[p] = !d | f != 0 | site != 0;
+            layCode[p] = (byte) (!owns[p] | t == World.SALT | u ? LAY_REFUSED : proto ? (f == FIXED_HIGHWAY ? LAY_REFUSED : 0)
+                    : site == SITE_MINED ? LAY_REFUSED : 0);
         }
 
         /** A plot of the city's runs: listed, and a highway's in its row's bits and listed too. */
@@ -4652,19 +4984,21 @@ public final class DistrictPlan {
 
         /** Row y's fields (spec 2.6) and the rest (THE GROUND, A ROW AT A TIME): barred with the verges, occ as a build begins, the field plots, both as bits. */
         void fieldRow(int y) {
-            byte[] fixed = fx, site = in.site;
             int base = y * WORDS;
-            boolean rowIn = y % CELL != 0 & y < SIDE, field = !proto;
-            for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
-                long bit = 1L << (x & 63), verge = vergeRows[base + (x >>> 6)] & bit;
-                boolean b = blocked[p] | verge != 0;
-                blocked[p] = b;
-                occStart[p] = (byte) (b ? -1 : 0);
-                boolean fo = field & rowIn & x % CELL != 0 & x < SIDE & site[p] == SITE_FIELD & dry[p] & fixed[p] == 0 & verge == 0 & !avOuter[p] & avMark[p] == 0 & !keepClear[p];
-                fieldOk[p] = fo;
-                if (!b) openBits[base + (x >>> 6)] |= bit;
-                if (fo) fieldBits[base + (x >>> 6)] |= bit;
-            }
+            boolean rowIn = y % CELL != 0 & y < SIDE;
+            for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) fieldPlot(p, x, base, rowIn);
+        }
+
+        /** Plot p's (column x, row of word `base`, `rowIn` its row inside a cell's interior or not) share of fieldRow(): barred with the verge, occ as a build begins, a field plot, both as bits - set where it holds, and cleared where it does not, for THE GROUND KEPT works a plot again. */
+        void fieldPlot(int p, int x, int base, boolean rowIn) {
+            long bit = 1L << (x & 63), verge = vergeRows[base + (x >>> 6)] & bit;
+            boolean b = blocked[p] | verge != 0;
+            blocked[p] = b;
+            occStart[p] = (byte) (b ? -1 : 0);
+            boolean fo = !proto & rowIn & x % CELL != 0 & x < SIDE & in.site[p] == SITE_FIELD & dry[p] & fx[p] == 0 & verge == 0 & !avOuter[p] & avMark[p] == 0 & !keepClear[p];
+            fieldOk[p] = fo;
+            if (b) openBits[base + (x >>> 6)] &= ~bit; else openBits[base + (x >>> 6)] |= bit;
+            if (fo) fieldBits[base + (x >>> 6)] |= bit; else fieldBits[base + (x >>> 6)] &= ~bit;
         }
 
         /** Cell c's interior rows of free ground and of fields, from the rows' bits, and whether it has a field. */
@@ -4729,17 +5063,19 @@ public final class DistrictPlan {
         /** Each plot of a run's lay code (LAY CODES): a run along a line refuses it that way, a highway crossed is laid beneath - worked out for those plots alone, after start() gave them the ground's. */
         void fixedCodes() {
             if (proto) return;
-            for (int k = 0; k < nFixed; k++) {
-                int p = fixedList[k];
-                int code = layCode[p];
-                if (code == LAY_REFUSED) continue;
-                byte f = fx[p];
-                if (works(f)) { layCode[p] = LAY_REFUSED; continue; }
-                if (along(fx, p, true)) code |= H_STREET | H_ARTERIAL;
-                if (along(fx, p, false)) code |= V_STREET | V_ARTERIAL;
-                if (f == FIXED_HIGHWAY) code |= LAY_UNDER;
-                layCode[p] = (byte) code;
-            }
+            for (int k = 0; k < nFixed; k++) fixedCode(fixedList[k]);
+        }
+
+        /** fixedCodes() for plot p of the runs (fx not 0): its lay code from the ground's, the run along it and what it is. */
+        void fixedCode(int p) {
+            int code = layCode[p];
+            if (code == LAY_REFUSED) return;
+            byte f = fx[p];
+            if (works(f)) { layCode[p] = LAY_REFUSED; return; }
+            if (along(fx, p, true)) code |= H_STREET | H_ARTERIAL;
+            if (along(fx, p, false)) code |= V_STREET | V_ARTERIAL;
+            if (f == FIXED_HIGHWAY) code |= LAY_UNDER;
+            layCode[p] = (byte) code;
         }
 
         /** occ as a build begins: -1 where blocked, else 0 (start()). */
