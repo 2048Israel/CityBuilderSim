@@ -209,6 +209,9 @@ On the branch's tip (018f7761: main 0.8.71 merged, (2a), THE ORDER, the mends), 
 - **The full suite** (`./batch-check.sh`): **exit 4, two NEW reds, both model faults** left for Jerus's word (5 items
   9 and 10): SlopeCheck (a works making a flow good runs at a loss: negative GDP m834-m1837 on its city) and
   SectorStatementCheck (the bank's equity after a deep reopening, 2,444 at m284). Every other harness green.
+  **Rechecked after BK1 (main 0.8.72) was merged:** SectorStatementCheck is still red on the same two lines, but its
+  miss is far smaller: BK1's re-strike clears the reopening's 2,444; 223 of 479 bank months are still off by more than
+  a cent, the worst 5.40 at m263 (5 item 9).
   **LongPlaytest finds nothing** (on Random before THE ORDER it had one layout finding, m2010; Historical's two are
   that path's, 5 item 1). 4 timing lines soft (SaveSlotCheck, MapCheck 2, KeptCheck), Stale no firm finding.
 - **The mends.** Last night 32 harnesses were mended to cause their conditions on Historical's band (M1-M4); on
@@ -290,6 +293,11 @@ On the branch's tip (018f7761: main 0.8.71 merged, (2a), THE ORDER, the mends), 
    59,100 of face at 24%; the bank took 40% of the new part against 78.8% of the old; its unearned discount read 8,952
    against about 6,550, and paid-in + retained + preferred misses equity by 2,444 at m284. It needs the discount kept
    per tranche or per holder: a finance batch. Not new in kind; the band's deeper discounts make it show.
+   **BK1 (0.8.72) found the same cause and booked the re-blend to retained earnings as a named cause**
+   (`Game.restrikeBankDiscount()`, at the settle and the central bank's add-on). Merged here, it clears the 2,444, but
+   the harness stays red on its two lines: 223 of 479 bank months off by more than a cent, the worst 5.40 at m263
+   (234 months and -2,444.78 at m284 before). What moves the rest is not traced: perhaps an event that grows a line's
+   pool besides BK1's two. SectorStatementCheck is green on main, so it is reached only on the band.
 10. **A works making a flow good runs at a loss** (SlopeCheck, red; a model fault, left): THE ORDER holds a works'
    order for what it makes of a *stockable* good; a Rod Mill makes rod, a flow good, made at the rate whatever it
    fetches. On SlopeCheck's city from m834 Copper Refining imports 163,302 t of cathode at 347.18 and exports 160,728 t

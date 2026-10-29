@@ -1,4 +1,4 @@
-# ReadPathCheck.java - 2,212 lines · 17 methods · 0 constants · harnesses
+# ReadPathCheck.java - 2,215 lines · 17 methods · 0 constants · harnesses
 
 `ham/citybuildersim/ReadPathCheck.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -44,13 +44,13 @@
 
 | line | section |
 |---:|---|
-| 1514 | · a city with money moving in every sector |
-| 1617 | · the FIRST read, which is the hard one |
-| 1694 | · read it, and read it again |
-| 1723 | · and the specific one item 7 was about |
-| 1791 | · the tax the city takes is the tax it shows |
-| 1808 | · a rate change reaches the treasury at once |
-| 1841 | · the build advice's reads, after a load (0.7.51) |
+| 1517 | · a city with money moving in every sector |
+| 1620 | · the FIRST read, which is the hard one |
+| 1697 | · read it, and read it again |
+| 1726 | · and the specific one item 7 was about |
+| 1794 | · the tax the city takes is the tax it shows |
+| 1811 | · a rate change reaches the treasury at once |
+| 1844 | · the build advice's reads, after a load (0.7.51) |
 
 ## Fields (state)
 
@@ -64,22 +64,22 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 2165 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
+| 48 | 2168 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
 | 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 71 | 181 | `static void bankPrint(Game g, Map<String, Double> into)` | The bank's own fields beside NewGameCheck's (0.7.7): its price is now struck from records it keeps, and a read that struck it again would move the price and nothing in the shared snapshot. |
 | 254 | 5 | `static int restingOrders(BondMarket bm)` | What rests on every bond's book. |
-| 268 | 1237 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
-| 1506 | 347 | `public static void main(String[] args) throws Exception` |  |
-| 1855 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
-| 1893 | 3 | `static long shallowOffers(LandMarket market)` | How many of a land office's offers standing hold shallow sea (ET1). |
-| 1898 | 3 | `static double[] handRelief(double dry)` | A ground by relief given by hand (ET1): of `dry` km2 of dry ground, half flat, three tenths foothill, 15% steep and 5% very steep, and 0.004 km2 of shallow sea (a fiat figure: the fixture's world has no sea) - RELIEF_... |
-| 1910 | 94 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
-| 2013 | 64 | `static void onEarth(GameFiles files) throws Exception` | A CITY ON THE REAL EARTH (0.7.121, batch E4): reading its world - the founding card of its own spot, the hover's place and province, the sea's depth (the coast's distance, kept by plot), the founding's problem and rec... |
-| 2085 | 50 | `static void onTheWorldMarket(Path root) throws Exception` | THE WORLD MARKET AND THE TRADE BY PARTNER (WN3): a city on the twelve-nation fixture world file (written beside the saves and named for the length of this section), played through a January, read fifty times over thro... |
-| 2137 | 3 | `static boolean sameFigure(double a, double b)` | Two readings of one figure agree: equal, or both not a number. |
-| 2142 | 22 | `static void readTheWorld(Game g)` | Everything a screen reads of the market, the trade by partner and the band the markets stand at. |
-| 2166 | 36 | `static void worldPrint(Game g, Map<String, Double> into)` | The world's own fingerprint: the solved year, the prices and scales, the trade by partner's totals, every market's band. |
-| 2203 | 1 | `private static double finiteOrMinusOne(double v)` |  |
-| 2205 | 7 | `static void cleanUp(Path root)` |  |
+| 268 | 1240 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
+| 1509 | 347 | `public static void main(String[] args) throws Exception` |  |
+| 1858 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
+| 1896 | 3 | `static long shallowOffers(LandMarket market)` | How many of a land office's offers standing hold shallow sea (ET1). |
+| 1901 | 3 | `static double[] handRelief(double dry)` | A ground by relief given by hand (ET1): of `dry` km2 of dry ground, half flat, three tenths foothill, 15% steep and 5% very steep, and 0.004 km2 of shallow sea (a fiat figure: the fixture's world has no sea) - RELIEF_... |
+| 1913 | 94 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
+| 2016 | 64 | `static void onEarth(GameFiles files) throws Exception` | A CITY ON THE REAL EARTH (0.7.121, batch E4): reading its world - the founding card of its own spot, the hover's place and province, the sea's depth (the coast's distance, kept by plot), the founding's problem and rec... |
+| 2088 | 50 | `static void onTheWorldMarket(Path root) throws Exception` | THE WORLD MARKET AND THE TRADE BY PARTNER (WN3): a city on the twelve-nation fixture world file (written beside the saves and named for the length of this section), played through a January, read fifty times over thro... |
+| 2140 | 3 | `static boolean sameFigure(double a, double b)` | Two readings of one figure agree: equal, or both not a number. |
+| 2145 | 22 | `static void readTheWorld(Game g)` | Everything a screen reads of the market, the trade by partner and the band the markets stand at. |
+| 2169 | 36 | `static void worldPrint(Game g, Map<String, Double> into)` | The world's own fingerprint: the solved year, the prices and scales, the trade by partner's totals, every market's band. |
+| 2206 | 1 | `private static double finiteOrMinusOne(double v)` |  |
+| 2208 | 7 | `static void cleanUp(Path root)` |  |
 

@@ -573,6 +573,8 @@ public class ReadPathCheck {
         bk.returnOnEquityOverYear();
         bk.provisionRateOverYear();
         bk.netInterestMarginOverYear();
+        bk.earningAssets();
+        bk.averageEarningAssetsOverYear();
         bk.costShareOverYear();
         bk.statementYearToSave();
         for (Bank.WeightRow row : bk.weightTable()) row.weighted();
@@ -581,6 +583,7 @@ public class ReadPathCheck {
         bk.getInterestFromHouseholds();
         bk.getDiscountAccreted();
         bk.getTreasuryBuybackGain();
+        bk.getDiscountRestruck();
         bk.getAllowanceOpened();
         bk.getBailoutsLifetime();
         bk.isMonthKnown();
