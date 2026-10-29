@@ -91,7 +91,28 @@ The default playtest (`-Dplaytest.trace`) on main's classes (MF1's tip, 3243c79e
 files byte-identical. The report differs in its run time and the windows' (5.9 s of 85 against 2.9 of 48, the first on
 a loaded PC); the layout watch compares the same 210,061 boxes, 0 moved. No ensemble.
 
-## 5. Left for later (Pending)
+## 5. The 10B month's change (the orchestrator's ask, 2026-10-29)
+
+MapCheck's "at 10 billion a month's change takes no more than 5 ms" is red on main at the gates (MF1's: main 6.0 ms;
+WN2's: 6.6). Asked what grew since MP1 and to make it fast at its cause, with no budget moved:
+
+- **Nothing grew.** MapCheck 5's first year on fresh 10B copies (a probe that runs only `reconcile()`), each tag built
+  and run alone in turn: the worst bounded month 5.76 / 4.12 / 3.21 / 3.17 / 4.64 ms at 0.8.61 / 0.8.64 / 0.8.66 /
+  0.8.68 / 0.8.70, the median month 1.4-1.8 on each. Quiet it passes; a gate's load takes its one worst month over.
+- **The worst month is the first +0.01% month after the +0.05% one**, on every copy: 3.4-3.9 ms against 1.3-1.6 for the
+  rest (7 ms on a cold JIT). On main, phase by phase: the placing 0.7-1.0, `advanceCursors()` 0.1-0.6, the runs and
+  shore 1.1-1.8, `logChanges()` 1.6-1.8; no collector pause falls inside a timed month.
+- **Tried and taken out (slice D):** a list of the districts `logChanges()` must log, in place of its walk of all
+  29,255. ABBA against main (four JVMs a side, three fresh copies each), the worst bounded month round by round: main
+  7.17 / 3.91 / 3.38, the list 7.12 / 3.94 / 3.31 ms. The walk was not the cost; the dirty districts' work is. Reverted.
+- **UP5 against main, the same runs:** the worst month equal (above); the median month 2.60 / 1.92 / 1.41 against 2.55 /
+  1.63 / 1.34 (the reserves' journal and the own stamps' keys: +2% to +18% a month, the worst month untouched).
+- **A step every tag shares:** from about the third year of +0.01% months the copies are full and the 10B month costs
+  12-15 ms every month (5B: 6), 70% `place()`'s walk to the end and 18% `roomiest()`. MapCheck's year never reaches it.
+- Both are queued as **UP8** (`docs/queue/UP8.md`): the month after a big month at its dirty districts' work, and the
+  walk once the copies are full, with a fixture that fills them. No budget moved.
+
+## 6. Left for later (Pending)
 
 - **UP5-B, the lazy try's backoff.** At x 80 a grown month's carry nearly always moves, so the lazy try fails and the
   band is handed out again with its inputs: the chain's FX side stays 26 ms and the far screen is coloured once more.
