@@ -6739,13 +6739,34 @@ public final class CityMap {
 
        Each terminal's route out to the world, found on the sea's grid and
        pulled straight (SeaRoutes) from its quay's end: kept, not saved, and
-       found again when the shore's works or the city's ground move - away
-       from the screen's thread (RoutesJob), as a district's plan is.
+       found away from the screen's thread (RoutesJob), as a district's plan
+       is.
+
+       FOUND ONCE (SL1, 2026-10-28; Jerus: "late cities thats probably the
+       thing that slows down stuff the most"). A terminal's route joins a lane
+       of those before it (SeaRoutes' shared lanes), so the routes are found
+       at the city's radius rounded up to a multiple of SeaRoutes.REFIND_M
+       (SeaRoutes.band(): never below the radius) and kept while that band
+       holds and the berths they were found for are still the shore's first
+       ones: a terminal laid is routed alone, onto the routes kept
+       (SeaRoutes.extend()), one taken drops its own and those after it, a new
+       band finds them all again. Whether they are still the city's is a
+       stamp - the shore, its version and the band - and no berth is read or
+       hashed, so the screen's thread asks it every frame (seaRoutesIfFound())
+       at no cost in them; the berths are compared once, by routesJob(). The
+       lanes the screen draws (SeaLanes) are made with the routes and kept
+       with them.
        ===================================================================== */
 
-    /** The routes found, and the key of what they were found from. */
+    /** The routes found, the lanes drawn of them, and the berths they were found for (the shore's, in the order laid). */
     private List<BoatSchedule.Route> routes;
+    private SeaLanes lanes;
+    private List<BoatSchedule.Berth> routesBerths;
+    /** What they were found at: the world, the site and the radius's band (routesKeyNow()). */
     private long routesKey = Long.MIN_VALUE;
+    /** The shore and its version the berths were read from: while both hold, the berths are the same. */
+    private CityShore routesShore;
+    private long routesShoreVersion;
 
     /** The city's radius for the offing, in plots: the farthest corner of its owned box from the founding site. */
     double cityRadius() {
@@ -6755,67 +6776,119 @@ public final class CityMap {
         return most;
     }
 
-    /** The key the routes are found against: the berths, the founding site and the city's radius. */
+    /** What the routes are found at: the world, the founding site and the city's radius's band (SeaRoutes.band()). No berth is read. */
     private long routesKeyNow() {
-        long h = World.mix(seed ^ siteX * 31 ^ siteY);
-        for (BoatSchedule.Berth b : shore.berths(types)) h = World.mix(h ^ b.x() * 0x9E3779B97F4A7C15L ^ b.y() ^ ((long) b.cargo().ordinal() << 56));
-        return World.mix(h ^ Double.doubleToLongBits(cityRadius()));
+        return World.mix(World.mix(seed ^ siteX * 31 ^ siteY) ^ Double.doubleToLongBits(SeaRoutes.band(cityRadius())));
+    }
+
+    /** Whether the routes kept are the city's: found, the shore and its version those they were read from, the band the same. O(1). */
+    private boolean routesCurrent() {
+        return routes != null && routesShore == shore && routesShoreVersion == shore.version() && routesKey == routesKeyNow();
     }
 
     /** The routes now, found here when they are not (a harness's way; the view hands a RoutesJob to its worker). */
     public List<BoatSchedule.Route> seaRoutes() {
-        long k = routesKeyNow();
-        if (routes == null || routesKey != k) {
-            routes = SeaRoutes.of(World.of(worldKey), shore.berths(types), siteX, siteY, cityRadius());
-            routesKey = k;
+        RoutesJob j = routesJob();
+        if (j != null) {
+            j.run();
+            adoptRoutes(j);
         }
         return routes;
     }
 
     /** The routes when they are found and current, else null: the screen's thread, which never finds them itself. */
     public List<BoatSchedule.Route> seaRoutesIfFound() {
-        return routes != null && routesKey == routesKeyNow() ? routes : null;
+        return routesCurrent() ? routes : null;
     }
 
-    /** The berths' routes found away from the screen's thread: what they are found from, copied here. */
+    /** The lanes of the routes now (SeaLanes), found here when they are not. */
+    public SeaLanes seaLanes() {
+        seaRoutes();
+        return lanes;
+    }
+
+    /** The lanes when the routes are found and current, else null: the screen's thread. */
+    public SeaLanes seaLanesIfFound() {
+        return routesCurrent() ? lanes : null;
+    }
+
+    /** The berths' routes found away from the screen's thread: what they are found from, copied here, and the routes already found for the berths' first ones. */
     public static final class RoutesJob implements Runnable {
         final long key, seed, siteX, siteY;
         /** The world the routes are found on (0.7.115). */
         final World.Key world;
+        /** The shore and its version the berths were read from: the routes are the city's only while they hold. */
+        final CityShore shore;
+        final long shoreVersion;
         final List<BoatSchedule.Berth> berths;
+        /** The routes of the berths' first ones that are kept (SeaRoutes.extend()). */
+        final List<BoatSchedule.Route> kept;
         final double radius;
-        private volatile List<BoatSchedule.Route> found;
+        private volatile SeaRoutes.Found found;
+        private volatile SeaLanes lanes;
 
-        RoutesJob(long key, World.Key world, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius) {
+        RoutesJob(long key, World.Key world, CityShore shore, long shoreVersion, List<BoatSchedule.Berth> berths,
+                  List<BoatSchedule.Route> kept, long siteX, long siteY, double radius) {
             this.key = key;
             this.seed = world.seed();
             this.world = world;
+            this.shore = shore;
+            this.shoreVersion = shoreVersion;
             this.berths = List.copyOf(berths);
+            this.kept = List.copyOf(kept);
             this.siteX = siteX;
             this.siteY = siteY;
             this.radius = radius;
         }
 
         @Override public void run() {
-            if (found == null) found = SeaRoutes.of(World.of(world), berths, siteX, siteY, radius);
+            if (found != null) return;
+            SeaRoutes.Found f = SeaRoutes.extend(World.of(world), kept, berths, siteX, siteY, radius);
+            lanes = SeaLanes.of(f.routes());
+            found = f;
         }
 
         /** Whether it has run. */
         public boolean done() { return found != null; }
+
+        /** What it found, with how many berths it searched and how many joined a lane; null before it has run. */
+        public SeaRoutes.Found found() { return found; }
+
+        /** How many routes it was handed, those kept. */
+        public int kept() { return kept.size(); }
     }
 
-    /** The job that finds the routes now, or null when they are current. */
+    /**
+     * The job that finds the routes now, or null when they are current. The berths now are read and compared with
+     * those the routes were found for: the routes of their common prefix are kept for the job to route the rest onto.
+     * When the berths are the same only the shore's other works moved (a tank farm), and the stamp is taken again.
+     */
     public RoutesJob routesJob() {
         long k = routesKeyNow();
-        if (routes != null && routesKey == k) return null;
-        return new RoutesJob(k, worldKey, shore.berths(types), siteX, siteY, cityRadius());
+        List<BoatSchedule.Berth> now = shore.berths(types);
+        int keep = 0;
+        if (routes != null && routesKey == k) {
+            int most = Math.min(routesBerths.size(), now.size());
+            while (keep < most && routesBerths.get(keep).equals(now.get(keep))) keep++;
+            if (keep == now.size() && keep == routesBerths.size()) {
+                routesShore = shore;
+                routesShoreVersion = shore.version();
+                return null;
+            }
+        }
+        return new RoutesJob(k, worldKey, shore, shore.version(), now, keep > 0 ? routes.subList(0, keep) : List.of(), siteX, siteY,
+                SeaRoutes.band(cityRadius()));
     }
 
     /** A job run: its routes kept when they are still the city's. True when kept. */
     public boolean adoptRoutes(RoutesJob j) {
-        if (j == null || !j.done() || j.key != routesKeyNow()) return false;
-        routes = j.found;
+        if (j == null || !j.done() || j.key != routesKeyNow() || j.shore != shore || j.shoreVersion != shore.version()) return false;
+        routes = j.found.routes();
+        lanes = j.lanes;
+        routesBerths = j.berths;
         routesKey = j.key;
+        routesShore = shore;
+        routesShoreVersion = j.shoreVersion;
         return true;
     }
 

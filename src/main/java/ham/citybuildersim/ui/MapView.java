@@ -1104,17 +1104,23 @@ final class MapView {
     }
 
     /**
-     * The lanes and the boats over the tiles: each route on screen as a
-     * band and dashes (from L2 in), and from L1 in the boats the month's
+     * The lanes and the boats over the tiles: the lanes on screen as a band
+     * and dashes (from L2 in), and from L1 in the boats the month's
      * schedule puts on them at the clock - each one's hull, deck and bridge
      * (ShipShapes), a dart of its colour when it is small, fading in the
-     * abyss. The routes are found on WORKER the first time; nothing is drawn
-     * until they are.
+     * abyss. The routes are found on WORKER the first time, and again as
+     * terminals are laid, only the new ones; nothing is drawn until they are.
+     * Since SL1 (2026-10-28) the lanes are SeaLanes', each leg of all the
+     * routes once - terminals share a lane (SeaRoutes) - and only the legs
+     * on screen are asked for and stroked, as one path: a lane many routes
+     * ride is one band, not many laid over one another. The boats are the
+     * schedule's, one route a berth, riding the lane's legs.
      */
     private void boats(GraphicsContext gc, MapFrame f, int level) {
         if (shownMap == null || shownMap.shore().isEmpty()) return;
         List<BoatSchedule.Route> routes = shownMap.seaRoutesIfFound();
-        if (routes == null) {
+        SeaLanes lanes = shownMap.seaLanesIfFound();
+        if (routes == null || lanes == null) {
             askRoutes();
             return;
         }
@@ -1132,23 +1138,26 @@ final class MapView {
         double margin = ShipShapes.lengthM(Ports.Ship.VLCC) / World.PLOT_M * ShipShapes.BOOST;
         long x0 = (long) Math.floor(f.plotX(0) - margin), y0 = (long) Math.floor(f.plotY(0) - margin);
         long x1 = (long) Math.ceil(f.plotX(f.width()) + margin), y1 = (long) Math.ceil(f.plotY(f.height()) + margin);
-        int crossing = 0;
-        gc.setLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
-        gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
-        for (BoatSchedule.Route r : routes) {
-            if (!BoatSchedule.crosses(r, x0, y0, x1, y1)) continue;
-            crossing++;
-            int n = r.xs().length;
-            double[] sx = new double[n], sy = new double[n];
-            for (int i = 0; i < n; i++) { sx[i] = f.screenX(r.xs()[i]); sy[i] = f.screenY(r.ys()[i]); }
+        // The legs of the lanes on screen, once each, stroked as one path: the band, then the dashes.
+        double[] legs = lanes.crossing(x0, y0, x1, y1);
+        int crossing = legs.length / 4;
+        if (crossing > 0) {
+            gc.setLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
+            gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+            gc.beginPath();
+            for (int i = 0; i < legs.length; i += 4) {
+                gc.moveTo(f.screenX(legs[i]), f.screenY(legs[i + 1]));
+                gc.lineTo(f.screenX(legs[i + 2]), f.screenY(legs[i + 3]));
+            }
             gc.setStroke(colour(ShipShapes.IMPORT, LANE_BAND_ALPHA));
             gc.setLineWidth(LANE_BAND_PX);
             gc.setLineDashes((double[]) null);
-            gc.strokePolyline(sx, sy, n);
+            gc.stroke();
             gc.setStroke(colour(ShipShapes.IMPORT, LANE_DASH_ALPHA));
             gc.setLineWidth(1);
             gc.setLineDashes(5, 6);
-            gc.strokePolyline(sx, sy, n);
+            gc.stroke();
+            gc.beginPath();
         }
         gc.setLineDashes((double[]) null);
         gc.setLineCap(javafx.scene.shape.StrokeLineCap.SQUARE);
@@ -1344,7 +1353,11 @@ final class MapView {
     private void askRoutes() {
         if (routesAsked != null || shownMap == null) return;
         CityMap.RoutesJob j = shownMap.routesJob();
-        if (j == null) return;
+        if (j == null) {
+            // The berths are the ones the routes were found for (only a tank farm moved the shore): they stand, and the view is drawn with them.
+            if (shownMap.seaRoutesIfFound() != null) requestDraw();
+            return;
+        }
         routesAsked = j;
         final CityMap map = shownMap;
         WORKER.submit(() -> {
