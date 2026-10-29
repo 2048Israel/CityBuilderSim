@@ -1216,6 +1216,25 @@ public class Game {
     /** Whether the market has been looked for in this city, so a file that will not open is said once and not every month. */
     private transient boolean worldMarketTried;
 
+    /** Whether this city plays on the goods' literals whatever world file is there (playOnLiterals()). */
+    private transient boolean onLiterals;
+
+    /**
+     * This city plays on the goods' literals, as a city with no world file does, whatever file is there: no market is built or restored, and the
+     * markets keep the literal band (WN3). For a harness whose premise is a fixed world price - a figure it reckons from Good's literals, a scale
+     * the world's fill would break - and only there: every other harness city trades at the world's band where the file is named. Call it before
+     * the first month or the load; it holds for the rest of the city's life (a new founding too).
+     */
+    public void playOnLiterals() {
+        onLiterals = true;
+        worldMarket = null;
+        partnerTrade = null;
+        getMarkets().clearWorldPrices();
+    }
+
+    /** Whether playOnLiterals() was called. */
+    public boolean isOnLiterals() { return onLiterals; }
+
     /** The city's trade by partner, built with the market; null with none. */
     private transient volatile PartnerTrade partnerTrade;
 
@@ -1249,6 +1268,7 @@ public class Game {
      * literals, where there is no file, and (with one line) where it would not open.
      */
     private WorldMarket ensureWorldMarket() {
+        if (onLiterals) return null;
         if (worldMarketTried) return worldMarket;
         worldMarketTried = true;
         Path file = WorldData.locate();
