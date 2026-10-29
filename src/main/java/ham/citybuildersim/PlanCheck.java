@@ -120,16 +120,26 @@ import java.util.List;
  *      starts and ends on its plots, turns at no corner tighter than its
  *      radius allows and keeps its band's ground free; a pure function, every
  *      crescent standing as its district grows, and the counts in a real run;
- *  15. the runs dated (batch FX7; DistrictPlan's THE RUNS DATED): a yard laid
- *      across built ground, or a highway beside it (its verge barring the
- *      plots about it), moves none of the boxes standing - those under it
- *      stay and the arrivals after it stand on none of its plots - where the
- *      same run there from the start, with no dates, moves boxes; a yard
- *      lifted again moves none and its ground is room again for the arrivals
- *      after it; records dated at or before the first batch's month are the
- *      ground from the start; a run laid after the log's last month, or after
- *      the first batch of a log that is one batch, moves nothing and the plan
- *      is drawn on today's runs; and a pure function.
+ *  15. the runs dated (batch FX7; DistrictPlan's THE RUNS DATED, and since MF1
+ *      BUILDINGS MOVE OFF A RUN): a yard laid across built ground, or a
+ *      highway beside it (its verge barring the plots about it), moves off it
+ *      the boxes under it and only those - every other box stands where it
+ *      stood, none stands on the run or its verge after it and the arrivals
+ *      after it stand on none of its plots - where the same run there from the
+ *      start, with no dates, moves boxes; a yard lifted again moves none and
+ *      its ground is room again for the arrivals after it; records dated at
+ *      or before the first batch's month are the ground from the start; a run
+ *      laid after the log's last month, or after the first batch of a log that
+ *      is one batch, moves off it only the boxes it lies across and the plan
+ *      is drawn on today's runs; and a pure function;
+ *  15b. buildings move off a run (batch MF1, 2026-10-28): a highway and a yard
+ *      laid across standing boxes at one month leave none on them or on the
+ *      highway's verge, every type kept (placed or without a place), the boxes
+ *      off the runs where they stood, the moved ones placed again in the
+ *      district when it has room and gone on to the next district through the
+ *      overflow log, in the order of its months, when it has none; and a plan
+ *      made a month or more later moves the same buildings to the same places,
+ *      a run laid in a month of departures alone included.
  *  17. no street piece walled in by buildings (batch FW11; DistrictPlan's A
  *      PIECE BUILDINGS WALL IN): MapCheck 1's city, every district as the map
  *      draws it (the carry from the districts before it), keeps every check -
@@ -343,6 +353,7 @@ public class PlanCheck {
         avenues(types);
         curves(types);
         runsDated(types);
+        movedOffRuns(types);
         farBank(types);
         walledIn(types);
         for (String s : saves) save(Path.of(s));
@@ -1982,6 +1993,23 @@ public class PlanCheck {
         int n = 0;
         for (int i = 0; i < a.buildings; i++) if (!in.contains(boxKey(a, i))) n++;
         return n;
+    }
+
+    /** How many of a's boxes with no plot in the w x h rectangle from (x, y) b does not have: those off the rectangle that moved or went. */
+    static int missingOff(DistrictPlan a, DistrictPlan b, int x, int y, int w, int h) {
+        java.util.Set<Long> in = boxes(b);
+        int n = 0;
+        for (int i = 0; i < a.buildings; i++) if (!boxIn(a, i, x, y, w, h) && !in.contains(boxKey(a, i))) n++;
+        return n;
+    }
+
+    /** Whether two plans hold as many of each type, those placed and those without a place together (MF1: a building moved off a run is placed again or goes on, it is never lost). */
+    static boolean sameCounts(DistrictPlan a, DistrictPlan b) {
+        int[] ca = a.overflow.clone(), cb = b.overflow.clone();
+        if (ca.length != cb.length) return false;
+        for (int i = 0; i < a.buildings; i++) ca[a.btype[i]]++;
+        for (int i = 0; i < b.buildings; i++) cb[b.btype[i]]++;
+        return Arrays.equals(ca, cb);
     }
 
     /** A plan's box total: its buildings' plots. */
@@ -3763,7 +3791,7 @@ public class PlanCheck {
     }
 
     static void runsDated(BuildingVisual.Type[] types) {
-        out.println("\n--- 15. the runs dated: a run laid across built ground, or lifted, moves none of its buildings (batch FX7) ---");
+        out.println("\n--- 15. the runs dated: a run laid across built ground moves off it the buildings it lies across and no others; one lifted moves none (batches FX7, MF1) ---");
         final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
         final int shop = pick(types, 1, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
         final int works = pick(types, 9, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
@@ -3776,6 +3804,8 @@ public class PlanCheck {
         final int laid = 3, last = 6;
         Log log = runsLog(house, shop, works, farm, paved, last);
         DistrictPlan before = DistrictPlan.make(log.until(laid - 1).into(flat(types)));
+        // The log with no runs at all: what the plans with runs are counted against.
+        DistrictPlan control = DistrictPlan.make(log.into(flat(types)));
         out.printf("      the district to month %d: %,d buildings placed in %d cells, %d without a place%n", laid - 1, before.buildings, cellsOpened(before), before.overflowCount());
 
         // ---- (a) a yard laid across built ground
@@ -3786,19 +3816,22 @@ public class PlanCheck {
         DistrictPlan.Input datedIn = yardRuns.into(log.into(flat(types)), Integer.MAX_VALUE, true);
         DistrictPlan after = DistrictPlan.make(datedIn);
         DistrictPlan moved = DistrictPlan.make(yardRuns.into(log.into(flat(types)), Integer.MAX_VALUE, false));
-        out.printf("      (a) a yard of %d x %d plots laid in month %d at (%d, %d), across %d of the %,d boxes standing: with the month it was laid %,d placed, %d of month %d's boxes moved,"
-                + " %d box(es) under the yard and %d arrived on it; with no dates, the yard there from the start: %,d placed, %d of them moved%n", yw, yh, laid, yx, yy, under, before.buildings,
-                after.buildings, missing(before, after), laid - 1, boxesIn(after, null, yx, yy, yw, yh), boxesIn(after, before, yx, yy, yw, yh), moved.buildings, missing(before, moved));
+        out.printf("      (a) a yard of %d x %d plots laid in month %d at (%d, %d), across %d of the %,d boxes standing: with the month it was laid %,d placed, %d of month %d's boxes not where they stood"
+                + " (%d moved off the yard: %d built again in the district, %d gone on), %d box(es) on the yard afterwards and %d arrived on it; with no dates, the yard there from the start:"
+                + " %,d placed, %d of them moved%n", yw, yh, laid, yx, yy, under, before.buildings, after.buildings, missing(before, after), laid - 1, after.movedOff + after.movedOver,
+                after.movedOff, after.movedOver, boxesIn(after, null, yx, yy, yw, yh), boxesIn(after, before, yx, yy, yw, yh), moved.buildings, missing(before, moved));
         check("(a) the fixture: the yard lies across boxes the plan of the months before it has built, and the months after it bring buildings", under >= 3 && after.buildings > before.buildings);
-        check("(a) a yard laid across built ground moves none of the boxes standing: each of month " + (laid - 1) + "'s " + before.buildings + " stands in the plan of the log through month " + last,
-                missing(before, after) == 0);
-        check("(a) ...the boxes under the yard stay where they are", boxesIn(after, null, yx, yy, yw, yh) >= under);
+        check("(a) a yard laid across built ground moves off it the boxes under it (" + under + ") and no others: the plan moved " + (after.movedOff + after.movedOver) + ", and each of month "
+                + (laid - 1) + "'s " + before.buildings + " off the yard stands in the plan of the log through month " + last,
+                after.movedOff + after.movedOver == under && missingOff(before, after, yx, yy, yw, yh) == 0);
+        check("(a) ...no box stands on the yard afterwards: those under it are built again in the district (movedOff " + after.movedOff + ", gone on " + after.movedOver + ")",
+                boxesIn(after, null, yx, yy, yw, yh) == 0 && after.movedOff > 0 && after.movedOver == 0);
+        check("(a) ...and every type is kept: the plan has as many of each, placed and without a place, as the plan with no run", sameCounts(after, control));
         check("(b) the arrivals after the yard stand on none of its plots: a free plot a run is laid on is barred", boxesIn(after, before, yx, yy, yw, yh) == 0);
         check("(a) where the same yard is there from the start, with no dates, the plan moves boxes (the fault this section stands against)", missing(before, moved) > 0);
 
         // ---- (c) a yard laid where a later arrival would stand, and lifted again before it comes
         final int lifted = laid + 2;
-        DistrictPlan control = DistrictPlan.make(log.into(flat(types)));
         DistrictPlan until = DistrictPlan.make(log.until(lifted - 1).into(flat(types)));
         java.util.Set<Long> standingBefore = boxes(until);
         int[] spot = null;
@@ -3832,12 +3865,17 @@ public class PlanCheck {
         DistrictPlan.Input highwayIn = highwayRuns.into(log.into(flat(types)), Integer.MAX_VALUE, true);
         DistrictPlan highwayAfter = DistrictPlan.make(highwayIn);
         DistrictPlan highwayMoved = DistrictPlan.make(highwayRuns.into(log.into(flat(types)), Integer.MAX_VALUE, false));
-        out.printf("      (d) a highway of %d plots along row %d from column %d laid in month %d, %d of the %,d boxes on it or beside it: with the month it was laid %,d placed, %d moved, %d arrived beside it;"
-                + " with no dates %,d placed, %d moved%n", hw, hy, hx, laid, beside, before.buildings, highwayAfter.buildings, missing(before, highwayAfter),
+        out.printf("      (d) a highway of %d plots along row %d from column %d laid in month %d, %d of the %,d boxes on it or beside it: with the month it was laid %,d placed, %d moved off it"
+                + " (%d built again in the district, %d gone on), %d box(es) on it or beside it afterwards, %d arrived there; with no dates %,d placed, %d moved%n", hw, hy, hx, laid, beside, before.buildings,
+                highwayAfter.buildings, highwayAfter.movedOff + highwayAfter.movedOver, highwayAfter.movedOff, highwayAfter.movedOver, boxesIn(highwayAfter, null, hx - 1, hy - 1, hw + 2, 3),
                 boxesIn(highwayAfter, before, hx - 1, hy - 1, hw + 2, 3), highwayMoved.buildings, missing(before, highwayMoved));
         check("(d) the fixture: boxes stand on the highway's row or in its verge, and the months after it bring buildings", beside > 0 && highwayAfter.buildings > before.buildings);
-        check("(d) a highway laid beside built ground moves none of the boxes standing, those on it and in its verge included", missing(before, highwayAfter) == 0);
-        check("(d) ...the arrivals after it stand on none of its plots nor beside it: its verge (H5) bars the plots about it", boxesIn(highwayAfter, before, hx - 1, hy - 1, hw + 2, 3) == 0);
+        check("(d) a highway laid beside built ground moves off it the boxes on it and in its verge (" + beside + ") and no others: the plan moved " + (highwayAfter.movedOff + highwayAfter.movedOver)
+                + ", and each box off the highway's ring stands in the plan of the log through month " + last,
+                highwayAfter.movedOff + highwayAfter.movedOver == beside && missingOff(before, highwayAfter, hx - 1, hy - 1, hw + 2, 3) == 0);
+        check("(d) ...none stands on the highway or beside it afterwards, the arrivals after it included: its verge (H5) bars the plots about it, and those it moved are built again elsewhere",
+                boxesIn(highwayAfter, null, hx - 1, hy - 1, hw + 2, 3) == 0 && highwayAfter.movedOff > 0 && highwayAfter.movedOver == 0);
+        check("(d) ...and every type is kept: the plan has as many of each, placed and without a place, as the plan with no run", sameCounts(highwayAfter, control));
         check("(d) where the same highway is there from the start, with no dates, the plan moves boxes", missing(before, highwayMoved) > 0);
 
         // ---- (e) records at or before the first batch's month change nothing
@@ -3853,22 +3891,272 @@ public class PlanCheck {
         // ---- (f) a run laid after the log's last month, and after the first batch of a log that is one batch
         final int rx = 4 * DistrictPlan.CELL + 3;
         Runs railway = new Runs().lay(last + 3, rx, 1, 1, side - 1, DistrictPlan.FIXED_RAIL);
-        DistrictPlan stood = DistrictPlan.make(log.into(flat(types)));
+        DistrictPlan stood = control;
         DistrictPlan laterRun = DistrictPlan.make(railway.into(log.into(flat(types)), Integer.MAX_VALUE, true));
         Log one = new Log();
         one.add(0, house, 150).add(0, shop, 20).add(0, works, 2).add(0, paved, 3).batch();
         DistrictPlan oneBefore = DistrictPlan.make(one.into(flat(types)));
         DistrictPlan oneAfter = DistrictPlan.make(railway.into(one.into(flat(types)), Integer.MAX_VALUE, true));
         int crossings = crossingsOn(laterRun, rx), crossingsOne = crossingsOn(oneAfter, rx);
-        out.printf("      (f) a railway down column %d laid in month %d, after the log's last month (%d): %,d boxes stand, %d moved, %d of its plots a street crosses (CROSSING); on a log of a first batch alone:"
-                + " %,d boxes, %d moved, %d crossings%n", rx, last + 3, last, laterRun.buildings, missing(stood, laterRun), crossings, oneAfter.buildings, missing(oneBefore, oneAfter), crossingsOne);
-        check("(f) a run laid after the log's last month moves nothing, and the plan is drawn on today's runs: its streets cross the railway",
-                missing(stood, laterRun) == 0 && laterRun.buildings == stood.buildings && crossings > 0);
-        check("(f) ...so does one laid after the first batch of a log that is one batch and no more", missing(oneBefore, oneAfter) == 0 && oneAfter.buildings == oneBefore.buildings && crossingsOne > 0);
+        int onRail = boxesIn(stood, null, rx, 1, 1, side - 1), onRailOne = boxesIn(oneBefore, null, rx, 1, 1, side - 1);
+        out.printf("      (f) a railway down column %d laid in month %d, after the log's last month (%d), across %d of the %,d boxes: %,d boxes stand, %d moved off it (%d built again, %d gone on),"
+                + " %d of its plots a street crosses (CROSSING); on a log of a first batch alone, across %d of %,d: %,d boxes, %d moved off it, %d crossings%n", rx, last + 3, last, onRail,
+                stood.buildings, laterRun.buildings, laterRun.movedOff + laterRun.movedOver, laterRun.movedOff, laterRun.movedOver, crossings, onRailOne, oneBefore.buildings, oneAfter.buildings,
+                oneAfter.movedOff + oneAfter.movedOver, crossingsOne);
+        check("(f) the fixture: the railway lies across boxes the plan stood on, with the log and with its first batch alone", onRail > 0 && onRailOne > 0);
+        check("(f) a run laid after the log's last month moves off it the boxes it lies across (" + onRail + ") and no others, none stands on it afterwards, every type is kept, and the plan is drawn"
+                + " on today's runs: its streets cross the railway",
+                laterRun.movedOff + laterRun.movedOver == onRail && missingOff(stood, laterRun, rx, 1, 1, side - 1) == 0 && boxesIn(laterRun, null, rx, 1, 1, side - 1) == 0
+                        && sameCounts(laterRun, stood) && crossings > 0);
+        check("(f) ...so does one laid after the first batch of a log that is one batch and no more (" + onRailOne + " boxes)",
+                oneAfter.movedOff + oneAfter.movedOver == onRailOne && missingOff(oneBefore, oneAfter, rx, 1, 1, side - 1) == 0 && boxesIn(oneAfter, null, rx, 1, 1, side - 1) == 0
+                        && sameCounts(oneAfter, oneBefore) && crossingsOne > 0);
 
         // ---- (g) a pure function
         check("(g) a plan is a pure function of its input: the plans with the yard and with the highway laid, each made twice, are the same plan box for box and street for street",
                 samePlan(after, DistrictPlan.make(datedIn)) && samePlan(highwayAfter, DistrictPlan.make(highwayIn)));
+    }
+
+    /* =====================================================================
+       15b. BUILDINGS MOVE OFF A RUN (batch MF1, 2026-10-28)
+       ===================================================================== */
+
+    /** A yard and a highway laid in one month across the boxes of a plan: the runs, where they lie, and how many boxes lie across the yard, beside or on the highway (its verge, H5), and across either. */
+    static final class Across {
+        static final int YW = 8, YH = 7, HW = 40;
+        final Runs runs = new Runs();
+        int yx, yy, hx, hy, underYard, besideHw, hit;
+        boolean decoyed;
+
+        Across(DistrictPlan before, int month) {
+            this(before, month, -1, false);
+        }
+
+        /** ...with a decoy laid in month `decoyMonth` (none for a negative one). */
+        Across(DistrictPlan before, int month, int decoyMonth) {
+            this(before, month, decoyMonth, false);
+        }
+
+        /** ...across the boxes placed last when `late` (those in the cells opened last), not those a third and two thirds through. */
+        Across(DistrictPlan before, int month, int decoyMonth, boolean late) {
+            int side = DistrictPlan.SIDE;
+            int pickA = late ? before.buildings * 5 / 6 : before.buildings / 3;
+            yx = Math.max(2, Math.min(before.bx[pickA], side - 1 - YW));
+            yy = Math.max(2, Math.min(before.by[pickA], side - 1 - YH));
+            // The highway along the row of a box further on, from ten plots west of it, with its verge clear of the yard.
+            for (int pick = late ? before.buildings * 11 / 12 : before.buildings * 2 / 3; pick < before.buildings; pick++) {
+                hx = Math.max(2, Math.min(before.bx[pick] - 10, side - 1 - HW));
+                hy = Math.max(2, Math.min(before.by[pick], side - 2));
+                if (apart()) break;
+            }
+            runs.lay(month, yx, yy, YW, YH, DistrictPlan.FIXED_YARD).lay(month, hx, hy, HW, 1, DistrictPlan.FIXED_HIGHWAY);
+            // A decoy: three plots of rail laid in an earlier month where nothing stands, so the month's records that lie across boxes are not the first the plan has to lay.
+            for (int x = side - 4; x > 2 && decoyMonth >= 0 && !decoyed; x--) {
+                for (int y = 2; y < side - 6 && !decoyed; y++) {
+                    boolean free = true;
+                    for (int i = 0; i < before.buildings && free; i++) free = !boxIn(before, i, x - 1, y - 1, 3, 5);
+                    boolean clear = !(x + 2 > yx && x - 1 < yx + YW && y + 4 > yy && y - 1 < yy + YH) && !(x + 2 > hx - 1 && x - 1 < hx + HW + 1 && y + 4 > hy - 1 && y - 1 < hy + 2);
+                    if (free && clear) {
+                        runs.lay(decoyMonth, x, y, 1, 3, DistrictPlan.FIXED_RAIL);
+                        decoyed = true;
+                    }
+                }
+            }
+            for (int i = 0; i < before.buildings; i++) {
+                boolean u = onYard(before, i), b = onHighway(before, i);
+                if (u) underYard++;
+                if (b) besideHw++;
+                if (u || b) hit++;
+            }
+        }
+
+        /** Whether box i of p has a plot on the yard. */
+        boolean onYard(DistrictPlan p, int i) { return boxIn(p, i, yx, yy, YW, YH); }
+
+        /** ...or on the highway or in its verge (the ring of plots about it, corners included). */
+        boolean onHighway(DistrictPlan p, int i) { return boxIn(p, i, hx - 1, hy - 1, HW + 2, 3); }
+
+        /** Whether the yard and the highway's ring share no plot. */
+        boolean apart() { return hx - 1 >= yx + YW || hx + HW + 1 <= yx || hy - 1 >= yy + YH || hy + 2 <= yy; }
+
+        /** How many boxes of p lie on the yard, on the highway or in its verge. */
+        int standing(DistrictPlan p) {
+            int n = 0;
+            for (int i = 0; i < p.buildings; i++) if (onYard(p, i) || onHighway(p, i)) n++;
+            return n;
+        }
+
+        /** How many of a's boxes off the yard and off the highway's ring b does not have. */
+        int missingOff(DistrictPlan a, DistrictPlan b) {
+            java.util.Set<Long> in = boxes(b);
+            int n = 0;
+            for (int i = 0; i < a.buildings; i++) if (!onYard(a, i) && !onHighway(a, i) && !in.contains(boxKey(a, i))) n++;
+            return n;
+        }
+    }
+
+    /** What became of the boxes a run lies across, the runs laid after the plan before's last month so the moved boxes are the only change: {boxes of before the runs lie across, boxes after has that before has not, of those how many stand in a cell and are of a type a lying box stood in}. */
+    static int[] whereMoved(DistrictPlan before, DistrictPlan after, Across run) {
+        java.util.Set<Long> stood = boxes(before);
+        java.util.Map<Long, Integer> had = new java.util.HashMap<>();
+        int gone = 0, fresh = 0, sameCell = 0;
+        for (int i = 0; i < before.buildings; i++) {
+            if (!run.onYard(before, i) && !run.onHighway(before, i)) continue;
+            gone++;
+            had.merge((long) before.btype[i] * DistrictPlan.CELLS + cellOfBox(before, i), 1, Integer::sum);
+        }
+        for (int i = 0; i < after.buildings; i++) {
+            if (stood.contains(boxKey(after, i))) continue;
+            fresh++;
+            long key = (long) after.btype[i] * DistrictPlan.CELLS + cellOfBox(after, i);
+            Integer c = had.get(key);
+            if (c != null && c > 0) {
+                sameCell++;
+                had.put(key, c - 1);
+            }
+        }
+        return new int[] { gone, fresh, sameCell };
+    }
+
+    /** The input of a district that owns two cells only, either side of the hub: a district that fills at once. */
+    static DistrictPlan.Input tightInput(BuildingVisual.Type[] types, Log log) {
+        DistrictPlan.Input in = log.into(flat(types));
+        Arrays.fill(in.owned, false);
+        for (int y = 3 * DistrictPlan.CELL; y <= 4 * DistrictPlan.CELL; y++) for (int x = 3 * DistrictPlan.CELL; x <= 5 * DistrictPlan.CELL; x++) in.owned[y * DistrictPlan.FRAME + x] = true;
+        return in;
+    }
+
+    /** Whether an overflow log's months never fall (it is append-only, in the order of the events). */
+    static boolean monthsNeverFall(int[] log) {
+        for (int i = 2; log != null && i + 1 < log.length; i += 2) if (log[i] < log[i - 2]) return false;
+        return true;
+    }
+
+    /** An overflow log's pairs of the months before `month`. */
+    static int[] pairsBefore(int[] log, int month) {
+        int n = 0;
+        while (log != null && 2 * n < log.length && log[2 * n] < month) n++;
+        return log == null ? new int[0] : Arrays.copyOf(log, 2 * n);
+    }
+
+    /** ...and how many of its pairs are arrivals at `month`. */
+    static int pairsAt(int[] log, int month) {
+        int n = 0;
+        for (int i = 0; log != null && i + 1 < log.length; i += 2) if (log[i] == month && log[i + 1] >= 0) n++;
+        return n;
+    }
+
+    static void movedOffRuns(BuildingVisual.Type[] types) {
+        out.println("\n--- 15b. buildings move off a run: a highway and a yard laid across standing boxes leave none on them or on the highway's verge, every type kept, and a plan made later moves the same ones to the same places (batch MF1) ---");
+        final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        final int shop = pick(types, 1, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        final int works = pick(types, 9, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
+        final int farm = pick(types, 1, t -> t.category() == BuildingType.AGRICULTURE && t.outer() && t.site() == null);
+        final int paved = pavedRoad(types);
+        // The runs are laid in month 3, between the second month's arrivals and the third's; the log goes on to month 7.
+        final int laid = 3, last = 7;
+        Log log = runsLog(house, shop, works, farm, paved, last);
+        DistrictPlan before = DistrictPlan.make(log.until(laid - 1).into(flat(types)));
+        DistrictPlan control = DistrictPlan.make(log.into(flat(types)));
+        Across run = new Across(before, laid);
+        DistrictPlan after = DistrictPlan.make(run.runs.into(log.into(flat(types)), Integer.MAX_VALUE, true));
+        out.printf("      the district to month %d: %,d boxes in %d cells, %d without a place; a yard of %d x %d at (%d, %d) and a highway of %d plots along row %d from column %d laid in month %d lie across %d of them"
+                + " (%d on the yard, %d on the highway or in its verge)%n", laid - 1, before.buildings, cellsOpened(before), before.overflowCount(), Across.YW, Across.YH, run.yx, run.yy, Across.HW, run.hy, run.hx,
+                laid, run.hit, run.underYard, run.besideHw);
+
+        // ---- (1) the district has room
+        out.printf("      (1) the log through month %d with the runs: %,d boxes, %d moved off the runs (%d built again in the district, %d gone on), %d on them or in the verge afterwards; the log with no runs: %,d boxes, %d without a place%n",
+                last, after.buildings, after.movedOff + after.movedOver, after.movedOff, after.movedOver, run.standing(after), control.buildings, control.overflowCount());
+        check("(1) the fixture: the yard and the highway's verge share no plot, each lies across boxes the plan of the months before has built, and the district has room (nothing without a place)",
+                run.apart() && run.underYard >= 3 && run.besideHw >= 3 && before.overflowCount() == 0 && control.overflowCount() == 0);
+        check("(1) a highway and a yard laid across standing boxes leave none on them or on the highway's verge: not one of the " + after.buildings + " boxes of the log through month " + last
+                + ", the arrivals after the runs included", run.standing(after) == 0);
+        check("(1) ...exactly the boxes they lie across moved (" + run.hit + "), built again in the district (" + after.movedOff + " of them), and every box off the runs stands where it stood",
+                after.movedOff + after.movedOver == run.hit && after.movedOff == run.hit && after.movedOver == 0 && run.missingOff(before, after) == 0);
+        check("(1) ...every type is kept, placed and without a place together, as in the plan with no runs", sameCounts(after, control));
+
+        // ---- (2) built again nearby: the runs laid after the log's last month, so the moved boxes are the only change
+        DistrictPlan moved = DistrictPlan.make(run.runs.into(log.until(laid - 1).into(flat(types)), Integer.MAX_VALUE, true));
+        int[] where = whereMoved(before, moved, run);
+        out.printf("      (2) the same runs laid in month %d, after the log's last month (%d): %d boxes moved, %d placed again, %d in a cell and of a type they stood in (a hit box is tried first in its own cell)%n",
+                laid, laid - 1, moved.movedOff + moved.movedOver, moved.movedOff, where[2]);
+        check("(2) a run laid after the log's last month moves the boxes it lies across and no others: " + run.hit + " boxes leave, " + where[1] + " are placed again, every other box stands, none is on the runs",
+                moved.movedOff + moved.movedOver == run.hit && where[0] == run.hit && where[1] == moved.movedOff && run.missingOff(before, moved) == 0 && run.standing(moved) == 0 && sameCounts(moved, before));
+        // ...and nearby where an earlier cell has room: the larger homes of the first batch, in the first cell, leave in month 2 (no arrivals that month), and a house the runs lie across is built again in the cell it stood in,
+        // not in the hole they left (the first place that fits, as any arrival is placed)
+        final int bigHome = pick(types, 4, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        Log hole = new Log();
+        hole.add(0, house, 150).add(0, shop, 20).add(0, works, 2).add(0, paved, 3).add(0, bigHome, 60).batch();
+        hole.add(1, house, RUN_HOUSES).add(1, shop, 15).add(1, works, 1).add(1, paved, 2).add(1, farm, 1);
+        hole.add(2, bigHome, -60);
+        DistrictPlan holeBefore = DistrictPlan.make(hole.into(flat(types)));
+        Across holeRun = new Across(holeBefore, laid, -1, true);
+        DistrictPlan holeMoved = DistrictPlan.make(holeRun.runs.into(hole.into(flat(types)), Integer.MAX_VALUE, true));
+        DistrictPlan.Input anywhere = holeRun.runs.into(hole.into(flat(types)), Integer.MAX_VALUE, true);
+        anywhere.moveFirstFit = true;
+        DistrictPlan holeAnywhere = DistrictPlan.make(anywhere);
+        int[] near = whereMoved(holeBefore, holeMoved, holeRun), far = whereMoved(holeBefore, holeAnywhere, holeRun);
+        out.printf("      (2) with a hole in the first cell (%d larger homes left in month 2) the %d boxes the runs lie across: %d built again in the cell they stood in, against %d when a moved box is placed as any arrival%n",
+                60, holeRun.hit, near[2], far[2]);
+        check("(2) ...built again nearby: of the " + holeRun.hit + " boxes the runs lie across " + near[2] + " stand in the cell they stood in (the cell a box left is tried first), against " + far[2]
+                + " with the first place that fits in any cell, where the larger homes' hole in the first cell takes them", holeRun.hit > 0 && holeMoved.movedOff == holeRun.hit && near[2] > far[2] && near[2] * 2 >= holeRun.hit);
+        // The month's records that lie across boxes come after an earlier month's that lie across none, both laid after the log's last event.
+        DistrictPlan one = DistrictPlan.make(log.until(1).into(flat(types)));
+        Across late = new Across(one, laid, laid - 1);
+        DistrictPlan lateAfter = DistrictPlan.make(late.runs.into(log.until(1).into(flat(types)), Integer.MAX_VALUE, true));
+        out.printf("      (2) with a rail laid in month %d where nothing stands (%b) and the runs in month %d, both after the log's last month (1): %d of the %d boxes lie across the runs, %d moved off them%n",
+                laid - 1, late.decoyed, laid, late.hit, one.buildings, lateAfter.movedOff + lateAfter.movedOver);
+        check("(2) ...records of an earlier month that lie across no box do not hide the month's that do: the " + late.hit + " boxes the runs lie across leave, none stands on them, every other stands, every type is kept",
+                late.decoyed && late.hit > 0 && lateAfter.movedOff + lateAfter.movedOver == late.hit && late.standing(lateAfter) == 0 && late.missingOff(one, lateAfter) == 0 && sameCounts(lateAfter, one));
+
+        // ---- (3) a plan made later moves the same buildings to the same places
+        DistrictPlan[] later = new DistrictPlan[3];
+        int[] months = { laid, laid + 1, last };
+        for (int k = 0; k < later.length; k++) later[k] = DistrictPlan.make(run.runs.into(log.until(months[k]).into(flat(types)), Integer.MAX_VALUE, true));
+        check("(3) the plan of the month the runs are laid (" + later[0].buildings + " boxes) stands in the plan of month " + months[1] + " and of month " + months[2] + ", the moved boxes where they were put",
+                missing(later[0], later[1]) == 0 && missing(later[0], later[2]) == 0 && missing(later[1], later[2]) == 0 && later[0].movedOff == run.hit);
+        // The same in a log with no arrivals in the month of the runs: the plan then lays them after its last event, the plan after before its first.
+        Log gap = new Log();
+        for (int[] r : log.rec) if (r[0] != laid) gap.rec.add(r);
+        gap.firstBatch = log.firstBatch;
+        DistrictPlan atGap = DistrictPlan.make(run.runs.into(gap.until(laid).into(flat(types)), Integer.MAX_VALUE, true));
+        DistrictPlan pastGap = DistrictPlan.make(run.runs.into(gap.until(laid + 1).into(flat(types)), Integer.MAX_VALUE, true));
+        check("(3) ...a run laid in a month with no arrivals: the plan of that month (" + atGap.buildings + " boxes, the runs laid after its last event) stands in the plan of the month after (" + pastGap.buildings
+                + ", laid before its first)", missing(atGap, pastGap) == 0 && atGap.movedOff == run.hit && pastGap.movedOff == run.hit && run.standing(pastGap) == 0);
+        // ...and in a month of departures alone: the runs are laid before the departures, in the plan of the month and in every plan after it.
+        Log dep = new Log();
+        dep.add(0, house, 150).add(0, shop, 20).add(0, works, 2).add(0, paved, 3).batch();
+        for (int m = 1; m <= 2; m++) dep.add(m, house, RUN_HOUSES).add(m, shop, 15).add(m, works, 1 + m % 2).add(m, paved, 2).add(m, farm, 1);
+        dep.add(laid + 1, house, -40);
+        for (int m = laid + 2; m <= laid + 3; m++) dep.add(m, house, RUN_HOUSES).add(m, shop, 15).add(m, works, 1 + m % 2).add(m, paved, 2).add(m, farm, 1);
+        Across byDeparture = new Across(DistrictPlan.make(dep.until(laid - 1).into(flat(types))), laid);
+        DistrictPlan d3 = DistrictPlan.make(byDeparture.runs.into(dep.until(laid).into(flat(types)), Integer.MAX_VALUE, true));
+        DistrictPlan d4 = DistrictPlan.make(byDeparture.runs.into(dep.until(laid + 1).into(flat(types)), Integer.MAX_VALUE, true));
+        DistrictPlan d6 = DistrictPlan.make(byDeparture.runs.into(dep.until(laid + 3).into(flat(types)), Integer.MAX_VALUE, true));
+        out.printf("      (3) departures: 40 houses leave in month %d, the runs laid in month %d (no event that month) across %d boxes: of the plan of month %d (%d boxes) %d are not in the plan of month %d and of that %d not in month %d's%n",
+                laid + 1, laid, byDeparture.hit, laid, d3.buildings, missing(d3, d4), laid + 1, missing(d4, d6), laid + 3);
+        check("(3) ...and in a month before a departure: the 40 houses that leave in month " + (laid + 1) + " are the only boxes of the plan of month " + laid + " missing from the plan of month " + (laid + 1) + ", the boxes moved off the runs among the others where they were put, and the plans after it keep that plan's boxes",
+                byDeparture.hit > 0 && d3.movedOff == byDeparture.hit && missing(d3, d4) == 40 && missing(d4, d6) == 0);
+        // ---- (4) the district has no room: the moved boxes go on to the next district (the same runs in a district of two cells, full by month 2)
+        final int laidFull = laid;
+        DistrictPlan tightBefore = DistrictPlan.make(tightInput(types, log.until(laidFull - 1)));
+        DistrictPlan tightControl = DistrictPlan.make(tightInput(types, log));
+        Across full = new Across(tightBefore, laidFull);
+        DistrictPlan tightAfter = DistrictPlan.make(full.runs.into(tightInput(types, log), Integer.MAX_VALUE, true));
+        out.printf("      (4) a district of two cells, %d boxes and %d without a place by month %d, the runs across %d of them: %d moved off, %d built again, %d gone on to the next district;"
+                + " %d on the runs afterwards; its overflow log has %d pairs (%d at month %d) against %d with no runs%n", tightBefore.buildings, tightBefore.overflowCount(), laidFull - 1, full.hit,
+                tightAfter.movedOff + tightAfter.movedOver, tightAfter.movedOff, tightAfter.movedOver, full.standing(tightAfter), tightAfter.overflowLog == null ? 0 : tightAfter.overflowLog.length / 2,
+                pairsAt(tightAfter.overflowLog, laidFull), laidFull, tightControl.overflowLog == null ? 0 : tightControl.overflowLog.length / 2);
+        check("(4) the fixture: the district is too small for its log (" + tightControl.overflowCount() + " without a place by month " + last + " with no runs) and the runs lie across its boxes", tightControl.overflowCount() > 0 && full.apart() && full.hit > 0);
+        check("(4) a moved box the district cannot hold goes on to the next district (" + tightAfter.movedOver + " of " + full.hit + "), none stands on the runs or in the verge, and every type is kept, placed and without a place together",
+                tightAfter.movedOver > 0 && tightAfter.movedOff + tightAfter.movedOver == full.hit && full.standing(tightAfter) == 0 && sameCounts(tightAfter, tightControl));
+        check("(4) ...through the overflow log, append-only in the order of its months: the pairs of the months before the runs are the plan's with no runs, the moved boxes' are at the runs' month (" + laidFull
+                + ") and not at the month they arrived, and no month falls",
+                monthsNeverFall(tightAfter.overflowLog) && Arrays.equals(pairsBefore(tightAfter.overflowLog, laidFull), pairsBefore(tightControl.overflowLog, laidFull))
+                        && pairsAt(tightAfter.overflowLog, laidFull) >= tightAfter.movedOver);
+        // ---- (5) a pure function
+        check("(5) a plan is a pure function of its input: the plans with the runs across, each made twice, are the same plan box for box and street for street",
+                samePlan(after, DistrictPlan.make(run.runs.into(log.into(flat(types)), Integer.MAX_VALUE, true))) && samePlan(tightAfter, DistrictPlan.make(full.runs.into(tightInput(types, log), Integer.MAX_VALUE, true))));
     }
 
     /** How many plots of column x a plan's streets cross a railway on (the surface's CROSSING flag). */

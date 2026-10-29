@@ -61,11 +61,13 @@ import java.util.Map;
  *      leaves, and when the first's log gains a later month's arrivals that
  *      overflow too, the second's carry keeps its earlier pairs as they were
  *      and every box the second had placed stands where it stood; and (2d,
- *      FX7) a run laid across a district's buildings - a Rail Depot's yard and
- *      main line at the hub, the yard gone and laid again, Elevated Highways
- *      drawn across them - moves none of them, every box of the plan before
- *      standing in the plan after, and the arrivals after a run stand on none
- *      of its plots; and (2e, MF1) a yard whose building left stays laid, idle,
+ *      FX7, MF1) a run laid across a district's buildings - a Rail Depot's yard
+ *      and main line at the hub, the yard gone and laid again, Elevated Highways
+ *      drawn across them - moves off it the boxes under it, or beside a highway
+ *      (its verge), and only those: every other box of the plan before stands in
+ *      the plan after, none stands on a run or a highway's verge after the
+ *      month, and the arrivals after a run stand on none of its plots;
+ *      and (2e, MF1) a yard whose building left stays laid, idle,
  *      for CityRuns.YARD_IDLE_MONTHS - the depot ordered again takes the same
  *      yard back, nothing taken up and laid anew, the net held, no record in
  *      the journal - and is taken up when its time is up; and
@@ -1803,6 +1805,22 @@ public class MapCheck {
             return n;
         }
 
+        /** How many of this plan's boxes stand on a plot its input fixes (a highway, the railway, a yard, a reserve) or beside a highway plot of it, the highway's verge (H5): the buildings a run lies across (MF1). */
+        int onRuns() {
+            int n = 0;
+            for (PlanBox b : boxes) if (anyPlot(b, 0, p -> fixed[p] != 0) || anyPlot(b, 1, p -> fixed[p] == DistrictPlan.FIXED_HIGHWAY)) n++;
+            return n;
+        }
+
+        /** How many of this plan's boxes `later`'s runs lie across or beside (MF1): a plot of the box is a plot the runs hold in `later` and did not hold here, or lies within a plot of a highway they hold there and did not here. */
+        int lying(Snap later) {
+            int n = 0;
+            for (PlanBox b : boxes) {
+                if (anyPlot(b, 0, p -> later.runs[p] != 0 && runs[p] == 0) || anyPlot(b, 1, p -> later.runs[p] == DistrictPlan.FIXED_HIGHWAY && runs[p] != DistrictPlan.FIXED_HIGHWAY)) n++;
+            }
+            return n;
+        }
+
         /** The plots of kind `kind` in the runs. */
         int plots(byte kind) {
             int n = 0;
@@ -1929,7 +1947,8 @@ public class MapCheck {
     }
 
     /**
-     * Whether a run laid across a district's buildings moves none of them (batch FX7): on the played city's ground the district holding the founding
+     * Whether a run laid across a district's buildings moves off it the buildings it lies across or beside and no others (batch FX7: moved none; MF1, 2026-10-28:
+     * "Buildings move off", the boxes under a new run, or beside a highway in its verge, are built again in the district or go on to the next): on the played city's ground the district holding the founding
      * site is given houses and BUILDINGS_A_MONTH buildings of the mix a month until half its room is used; a Rail Depot is added and a month run (the runs' yard and main
      * line), four months of arrivals, the depot taken away, four months, the depot again, four months, then Elevated Highways a month until they lie in the
      * district. The district's plan is not kept: it is drawn from the map at each moment.
@@ -1942,7 +1961,7 @@ public class MapCheck {
      * is the highways' alone), and then lays the highways as before.
      */
     static void runsLaidAcross(Game g) {
-        out.println("\n--- 2d. a run laid across a district's buildings moves none of them (FX7) ---");
+        out.println("\n--- 2d. a run laid across a district's buildings moves off it the buildings it lies across or beside, and no others (FX7, MF1) ---");
         BuildingVisual.Type[] types = g.getMapTypes();
         int house = idOf(g, "House"), depot = idOf(g, "Rail Depot"), highway = idOf(g, "Elevated Highway");
         int[] mix = new int[MIX.length];
@@ -1971,6 +1990,9 @@ public class MapCheck {
         while (d.usedCells() < d.room() * USED_SHARE && guard-- > 0) in.month();
         int month1 = h.last();
         Snap s1 = new Snap(m, d);
+        // The layout watch's snapshot of every district as the map draws it (LongPlaytest, THE LAYOUT, WATCHED), before the yard and after it (MF1).
+        java.util.Map<Long, LongPlaytest.LayoutSnap> watch1 = LongPlaytest.layoutSnapshot(m);
+        LongPlaytest.layoutKeepOldWorks(m, month1, watch1);
         int placed1 = d.count(house);
         boolean allKinds1 = d.count(house) > 0;
         for (int t : mix) {
@@ -1983,6 +2005,10 @@ public class MapCheck {
         model[depot] = 1;
         Snap s2 = quietMonth(h, d);
         int yardMonth = h.last();
+        java.util.Map<Long, LongPlaytest.LayoutSnap> watch2 = LongPlaytest.layoutSnapshot(m);
+        long watchMoved0 = LongPlaytest.layoutMoved + LongPlaytest.layoutMovedInSpill, watchOff0 = LongPlaytest.layoutMovedOffRun;
+        LongPlaytest.layoutCompare(g, m, yardMonth, watch1, watch2);
+        long watchMoved = LongPlaytest.layoutMoved + LongPlaytest.layoutMovedInSpill - watchMoved0, watchOff = LongPlaytest.layoutMovedOffRun - watchOff0;
         int under12 = s1.under(s2, 0), moved12 = movedOf(s1.boxes, s2.boxes), yardPlots = s2.plots(DistrictPlan.FIXED_YARD), railPlots = s2.plots(DistrictPlan.FIXED_RAIL);
         int control12 = s1.movedWithTheseRuns(m, d);
         List<long[]> yards = new ArrayList<>(m.runs().yards());
@@ -2025,7 +2051,7 @@ public class MapCheck {
 
         // ----- the highways: Elevated Highways a month until some lie in the district, the plan of that month against the month before -----
         Snap before = sGround, hwBefore = null, s5 = null;
-        int hwMonth = -1, hwNew = 0, hwNear = 0, hwMoved = 0, hwControl = 0, hwUnder = 0, hwOnRuns = s4b.arrivalsOnRuns(sGround), hwMonths = 0;
+        int hwMonth = -1, hwNew = 0, hwNear = 0, hwHit = 0, hwMoved = 0, hwControl = 0, hwUnder = 0, hwOnRuns = s4b.arrivalsOnRuns(sGround), hwMonths = 0;
         boolean reached = false;
         for (int i = 0; i < HIGHWAY_MONTHS && s5 == null; i++) {
             model[highway] += HIGHWAY_STEP;
@@ -2039,6 +2065,7 @@ public class MapCheck {
                 hwMonth = h.last();
                 hwUnder = before.under(after, 0);
                 hwNear = before.under(after, HIGHWAY_CLEAR);
+                hwHit = before.lying(after);
                 hwMoved = movedOf(before.boxes, after.boxes);
                 hwControl = before.movedWithTheseRuns(m, d);
                 reached = m.runs().highwaysReach();
@@ -2052,6 +2079,11 @@ public class MapCheck {
             s6 = new Snap(m, d);
         }
         long[] highwayHub = m.runs().highways().hub();
+        // The oldest works kept at S1, found again at the end: those a run laid since lies across or beside moved off it (MF1) and are no finding.
+        long oldOff0 = LongPlaytest.layoutOldMovedOff;
+        LongPlaytest.layoutFinish(g, m, h.last(), LongPlaytest.layoutSnapshot(m));
+        long oldOff = LongPlaytest.layoutOldMovedOff - oldOff0, oldKept = LongPlaytest.layoutOldN;
+        boolean oldFlagged = LongPlaytest.findings.containsKey("an old works moved");
 
         // ----- the arrivals after each run stand on none of its plots; every log adds up; the sidecar -----
         int onRuns = s1.arrivalsOnRuns(s2) + s2.arrivalsOnRuns(s2b) + s2b.arrivalsOnRuns(s3) + s3.arrivalsOnRuns(s3b) + s3b.arrivalsOnRuns(s4) + s4.arrivalsOnRuns(s4b) + hwOnRuns
@@ -2069,7 +2101,8 @@ public class MapCheck {
         List<Snap> stages = new ArrayList<>(List.of(s1, s2, s2b, s3, s3b, s4, s4b, sGround));
         if (s5 != null) stages.add(s5);
         stages.add(s6);
-        int plotsDiffer = 0, stagesDiffer = 0;
+        int plotsDiffer = 0, stagesDiffer = 0, standingOnRuns = 0;
+        for (Snap sn : stages) standingOnRuns += sn.onRuns();
         StringBuilder counts = new StringBuilder();
         for (Snap sn : stages) {
             int diff = journalDiffers(lastIn, sn);
@@ -2106,21 +2139,26 @@ public class MapCheck {
         check("fixture: the Rail Depot's month lays a yard in the district (" + yardPlots + " plots) and a main line (" + railPlots + " plots of rail), and the model has one depot",
                 yardPlots > 0 && railPlots > 0 && !yards.isEmpty() && model[depot] == 1);
         check("fixture: the yard's month lays plots under buildings that stand: " + under12 + " of S1's " + s1.boxes.size() + " boxes have a plot the runs hold now and did not before", under12 > 0);
-        check("a yard laid across a district's buildings moves none of them: every box of the plan before stands in the plan after (" + s1.boxes.size() + " of them, " + moved12 + " moved)",
-                moved12 == 0 && s1.boxes.size() > 0);
+        check("a yard laid across a district's buildings moves off it the boxes under it and no others: " + under12 + " of the plan before's " + s1.boxes.size() + " boxes lie under the yard and the railway, and"
+                + " " + moved12 + " are not in the plan after (each of the rest stands where it stood)", moved12 == under12 && s1.boxes.size() > 0);
         check("...and the arrivals after it go on with the yard's ground left as it is: every box stands four months on (" + s2.boxes.size() + " of them, " + moved2b + " moved)", moved2b == 0);
+        check("...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: " + watchOff + " boxes left a district in the yard's month because a run laid in it lies across them, "
+                + watchMoved + " are counted as moved", watchOff > 0 && watchMoved == 0);
+        check("...and so does its oldest works check: of the " + oldKept + " industry boxes kept at month " + month1 + ", " + oldOff + " are not where they stood because a run laid since lies across them or beside a highway, and "
+                + (oldFlagged ? "an old works moved is flagged" : "none is flagged"), !oldFlagged);
         check("fixture: the depot taken away, the yard is gone from the district's frame (" + freed + " plots freed)", yardGone && yardLeft == 0 && freed > 0);
         check("a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (" + s2b.boxes.size() + " of them, " + moved3 + " moved)", moved3 == 0 && s2b.boxes.size() > 0);
         check("fixture: the depot again, a yard is laid in the frame (" + yardBack + " plots, " + sameSpot + " on the first yard's ground) and lies under " + under34 + " boxes of the plan before",
                 yardBack > 0 && under34 > 0);
-        check("a yard laid again across the buildings that stand moves none of them: every box of the plan before stands in the plan after (" + s3b.boxes.size() + " of them, " + moved4 + " moved)",
-                moved4 == 0 && s3b.boxes.size() > 0);
+        check("a yard laid again across the buildings that stand moves off it the boxes under it and no others: " + under34 + " of the plan before's " + s3b.boxes.size() + " boxes lie under the yard and the railway,"
+                + " " + moved4 + " are not in the plan after", moved4 == under34 && s3b.boxes.size() > 0);
         check("fixture: the ground round the dry crossing of the highways' lattice nearest the founding site is the city's (" + handed + " plots handed it between months, a square of " + (2 * CityRuns.CELL + 1)
                 + " plots a side), so the highways start in the district", groundOwn && crossing != null);
-        check("fixture: Elevated Highways are laid in the district and reach a street (" + hwNew + " plots, month " + hwMonth + "), among buildings that stand: " + hwNear + " of the " + hwBoxes
-                + " boxes within " + HIGHWAY_CLEAR + " plot of them", hwNew > 0 && reached && hwNear > 0);
-        check("highways laid in a district's buildings move none of them: every box of the plan before the month stands in the plan after (" + hwBoxes + " of them, " + hwMoved + " moved)",
-                hwMoved == 0 && hwBoxes > 0);
+        check("fixture: Elevated Highways are laid in the district and reach a street (" + hwNew + " plots, month " + hwMonth + "), among buildings that stand: " + hwHit + " of the " + hwBoxes
+                + " boxes on them or within " + HIGHWAY_CLEAR + " plot of them (" + hwUnder + " under)", hwNew > 0 && reached && hwHit > 0);
+        check("highways laid in a district's buildings move off them the boxes on them and in their verge and no others: " + hwHit + " of the plan before the month's " + hwBoxes + " boxes lie on them or beside them,"
+                + " " + hwMoved + " are not in the plan after (each of the rest stands where it stood)", hwMoved == hwHit && hwBoxes > 0);
+        check("no box stands on a run or beside a highway in the plan of any month after the runs came (" + stages.size() + " plans: " + standingOnRuns + " boxes)", standingOnRuns == 0);
         check("the arrivals after a run stand on none of its plots: " + onRuns + " of the boxes the later plans hold that the earlier did not lie on a plot fixed in the input or among the runs", onRuns == 0);
         check("...every district's log still sums to its counts after the runs came and went", adds);
         check("the journal dates the runs: the frame's fixed ground worked back from today's to each stage's month is what the plan's input held that month ("

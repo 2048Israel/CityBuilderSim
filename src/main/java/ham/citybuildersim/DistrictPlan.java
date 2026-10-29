@@ -150,10 +150,13 @@ import java.util.List;
  * of the month the first batch stands on and each month's arrivals find the
  * records of that month and the months before it laid on it (Builder.growGround(),
  * with the land), so a yard laid across built ground, a highway arm, a yard gone,
- * re-places nothing that stands: a box under a run laid later stays and both are
- * drawn, a free plot the run bars is barred, and the ground a run leaves is
- * room again. The last growth is today's runs, for the streets, the access roads
- * and the surface.
+ * re-places nothing that stands but what the run lies across: a free plot the run
+ * bars is barred, and the ground a run leaves is room again. A box under a run, or
+ * beside a highway (its verge), moves off it (batch MF1, Jerus, 2026-10-23:
+ * "Buildings move off"): it is placed again in that month as an arrival of its own
+ * type, in its own cell if it fits there, and goes on to the next district if the
+ * district has no place for it; a street under the run stays. The last growth is
+ * today's runs, for the streets, the access roads and the surface.
  *
  * AVENUES (batch CL4; Jerus, 2026-10-20: "having some slanted roads and curves"). The city read as a rigid grid at the far
  * view. Now four avenues run out from the founding site at 45 degrees - south-east, south-west, north-west, north-east,
@@ -643,6 +646,8 @@ public final class DistrictPlan {
         public boolean bandsApart;
         /** Every homes cell laid as 0.8.11 laid them all, the comb or the whole square (CL2, a homes cell's layout): PlanCheck's comparison. */
         public boolean combOnly;
+        /** A building moved off a run placed as any arrival, at the first place in its band's cells, and not tried first in the cell it stood in (MF1, BUILDINGS MOVE OFF A RUN): PlanCheck's comparison. */
+        public boolean moveFirstFit;
         /** No avenue, no crescent and no curve along a cut (no building kept off the plots their bands reach): every street on the lattice as 0.8.18 laid it (CL4); asPrototype implies it. PlanCheck's comparison, and the fixtures that pin a plan from before the avenues. */
         public boolean latticeOnly;
         /** The hashes, or null for the world's. */
@@ -830,6 +835,9 @@ public final class DistrictPlan {
 
     /** What the plan could not place, by type id (R7: the map carries it to the next district with room since 0.7.88, and packs what none holds at the city's edge). */
     public int[] overflow = new int[0];
+
+    /** Buildings a run laid after them lay across or beside moved off it and were placed again in the district, and those of them that found no place and went on to the next district (MF1, BUILDINGS MOVE OFF A RUN). */
+    public int movedOff, movedOver;
 
     /**
      * ...and what leaves this district for the next as {month, code} pairs (batch CL3): what the map carries on
@@ -1459,6 +1467,8 @@ public final class DistrictPlan {
             batchAt = null;
             placedGone = null;
             live = null;
+            mineB = null;
+            nB = combined = null;
         }
 
         /* ------------------------------------------------ the order of arrival (batch CL3) */
@@ -1937,6 +1947,57 @@ public final class DistrictPlan {
             iAt[id] = -2;
         }
 
+        /** The band's cells the events place in, apart from the first batch's as it left them (buildArrivals()): each band's, the outer kinds' with industry's before them (SHARED ESTATES). */
+        int[][] mineB;
+        int[] nB, combined;
+
+        /**
+         * Instance id, its band slot (iG, iI) set, placed as an arrival at the first place it fits in its band's cells (a cell opened in the
+         * growth order when none holds it); with no place it goes on to the next district, its pair appended to the overflow log at
+         * `overMonth`. An arrival's is its own month, a building moved off a run's (BUILDINGS MOVE OFF A RUN) the month of the run's record.
+         */
+        void placeInst(int id, int overMonth) {
+            int t = iType[id], g = iG[id], i = iI[id];
+            int n1 = 0;
+            if (g == 2 && bShare) {
+                n1 = nB[1];
+                System.arraycopy(mineB[1], 0, combined, 0, n1);
+                System.arraycopy(mineB[2], 0, combined, n1, nB[2]);
+                bMine = combined;
+                bNShared = n1;
+                bNMine = n1 + nB[2];
+            } else {
+                bMine = mineB[g];
+                bNShared = 0;
+                bNMine = nB[g];
+            }
+            Arrays.fill(skipFrom, 0);
+            int before = bPlaced;
+            // A move can place more boxes than the bands held slots for: the placed arrays have room for one more.
+            if (bPlaced == placedX.length) growPlaced();
+            placeOne(g, i, false);
+            if (g == 2 && bShare) {
+                for (int m = n1 + nB[2]; m < bNMine; m++) mineB[2][nB[2]++] = combined[m];
+            } else {
+                nB[g] = bNMine;
+            }
+            if (bPlaced > before) {
+                iAt[id] = before;
+                if (in.types[t].site() != null) mineAt[cellOfPlot(placedX[before], placedY[before])] = true;
+            } else {
+                // No place: it goes on to the next district, the pair added at the end of the log.
+                iOver[id] = appendOverflow(overMonth, t);
+            }
+        }
+
+        /** The placed arrays (and the gone flags, while the events are placed) given room for more boxes. */
+        void growPlaced() {
+            int n = Math.max(64, 2 * placedX.length);
+            placedX = Arrays.copyOf(placedX, n); placedY = Arrays.copyOf(placedY, n); placedW = Arrays.copyOf(placedW, n);
+            placedH = Arrays.copyOf(placedH, n); placedT = Arrays.copyOf(placedT, n);
+            if (placedGone != null) placedGone = Arrays.copyOf(placedGone, n);
+        }
+
         /**
          * The plan with its events placed (batch CL3): the first batch at the ladder's step (nSquare, nBlvd), built
          * again but not finished, then each event in its order - a building at the first place it fits in its band's
@@ -1976,8 +2037,8 @@ public final class DistrictPlan {
             }
             placedGone = new boolean[placedX.length];
             // Each band's cells apart, as the first batch left them; the outer kinds' with industry's before them (SHARED ESTATES).
-            int[][] mineB = { new int[CELLS], new int[CELLS], new int[CELLS] };
-            int[] nB = new int[3];
+            mineB = new int[][] { new int[CELLS], new int[CELLS], new int[CELLS] };
+            nB = new int[3];
             System.arraycopy(keepMine[0], 0, mineB[0], 0, keepN[0]);
             nB[0] = keepN[0];
             System.arraycopy(keepMine[1], 0, mineB[1], 0, keepN[1]);
@@ -1985,12 +2046,19 @@ public final class DistrictPlan {
             int own0 = bShare ? keepShared[2] : 0;
             System.arraycopy(keepMine[2], own0, mineB[2], 0, keepN[2] - own0);
             nB[2] = keepN[2] - own0;
-            int[] combined = new int[2 * CELLS];
+            combined = new int[2 * CELLS];
             markMines();
             ev = true;
             bFar = order.length - 1;
             int[] bandN = base.clone();
+            movePrefer = -1;
+            movedOff = movedOver = 0;
+            // The road a move before the first event is placed on is the first batch's.
+            evRoadNow = batchG + batchP + batchH;
             for (int e = 0; e < nEv; e++) {
+                // The runs this event's month has laid, and the buildings they lie across or beside moved off them (BUILDINGS MOVE OFF A RUN): before a
+                // departure too, so a plan made at a later month moves the same buildings to the same places.
+                growRuns(evMonth[e]);
                 int id = evInst[e];
                 if (evGone[e]) { leave(id, evMonth[e]); continue; }
                 if (iExcl[id]) continue;
@@ -2004,35 +2072,10 @@ public final class DistrictPlan {
                 iG[id] = g;
                 iI[id] = i;
                 evRoadNow = evRoad[e];
-                int n1 = 0;
-                if (g == 2 && bShare) {
-                    n1 = nB[1];
-                    System.arraycopy(mineB[1], 0, combined, 0, n1);
-                    System.arraycopy(mineB[2], 0, combined, n1, nB[2]);
-                    bMine = combined;
-                    bNShared = n1;
-                    bNMine = n1 + nB[2];
-                } else {
-                    bMine = mineB[g];
-                    bNShared = 0;
-                    bNMine = nB[g];
-                }
-                Arrays.fill(skipFrom, 0);
-                int before = bPlaced;
-                placeOne(g, i, false);
-                if (g == 2 && bShare) {
-                    for (int m = n1 + nB[2]; m < bNMine; m++) mineB[2][nB[2]++] = combined[m];
-                } else {
-                    nB[g] = bNMine;
-                }
-                if (bPlaced > before) {
-                    iAt[id] = before;
-                    if (types[t].site() != null) mineAt[cellOfPlot(placedX[before], placedY[before])] = true;
-                } else {
-                    // No place: it goes on to the next district, the pair added at the end of the log.
-                    iOver[id] = appendOverflow(iMonth[id], t);
-                }
+                placeInst(id, iMonth[id]);
             }
+            // The runs laid since the last event: the buildings they lie across move off them too, still among the events (one with no place goes on).
+            growRuns(Integer.MAX_VALUE);
             ev = false;
             // Today's whole ground, for the streets to be joined on (THE GROUND BOUGHT).
             growGround(Integer.MAX_VALUE);
@@ -2052,6 +2095,8 @@ public final class DistrictPlan {
                 if (out.cellKind[c] == HOMES && out.cellSquare[c]) squares++;
                 if (out.cellBoulevard[c]) boulevards++;
             }
+            out.movedOff = movedOff;
+            out.movedOver = movedOver;
             return complete(out, squares, boulevards);
         }
 
@@ -2113,7 +2158,12 @@ public final class DistrictPlan {
          * due: the events are thousands a plan.
          */
         void growGround(int month) {
-            boolean land = month > dueMonth, runs = fxNext < fxN && in.fixedLogMonth[fxNext] <= month;
+            growGround(month, true);
+        }
+
+        /** growGround(), the land bought left out when `withLand` is false: the runs' records alone (growRuns()). */
+        void growGround(int month, boolean withLand) {
+            boolean land = withLand && month > dueMonth, runs = fxNext < fxN && in.fixedLogMonth[fxNext] <= month;
             if (!land && !runs) return;
             if (grown == null) grown = new int[AREA];
             int n = 0;
@@ -2204,15 +2254,17 @@ public final class DistrictPlan {
          * land is (Input.fixedLogMonth and fixedLog: a record for each change of a plot's kind of fixed ground, at the month it
          * was made): fx is the runs' ground the plan has so far, Input.fixed less the records dated later than the month the
          * first batch stands on (fixedAtStart()), and the events of each month find the records of that month and the months
-         * before it laid on it (growGround(), with the land bought: one pass of the ground a call), so what stands never moves.
-         * The records of a month are laid before its arrivals, not after as the land is: the runs are laid inside the month,
-         * the land between the months. The last growth, after the events, is today's runs, for the streets to be joined on, the
+         * before it laid on it (growGround(), with the land bought: one pass of the ground a call), so what stands moves only for a run laid across it (below).
+         * The records of a month are laid before its first event, a departure too (growRuns(), BUILDINGS MOVE OFF A RUN), when they
+         * lie across a box, and with the next arrival with the land bought when they lie across none: the runs are laid inside
+         * the month, the land between the months. The last growth, after the events, is today's runs, for the streets to be joined on, the
          * access roads and the sidings to be laid and the surface drawn.
          *
-         * WHAT A RUN LAID LATER DOES TO WHAT STANDS: nothing. A box on a plot a record makes a highway's, a track's or a yard's
-         * stays where it is and both are drawn; a street laid there stays. Only ground nothing stands on is taken: a free
-         * plot the new runs bar, or their verge does, is barred (it leaves its open cell's free rows), and a cell not opened yet
-         * is opened on the runs of the month it opens in. WHAT A RUN THAT LEAVES DOES: its ground is room again, as land bought
+         * WHAT A RUN LAID LATER DOES TO WHAT STANDS (FX7: nothing; MF1: the buildings it lies across or beside move off it,
+         * BUILDINGS MOVE OFF A RUN below). A street laid on a plot a record makes a highway's, a track's or a yard's stays
+         * (FX7's UNDER). Ground nothing stands on is taken: a free plot the new runs bar, or their verge does, is barred
+         * (it leaves its open cell's free rows), and a cell not opened yet is opened on the runs of the month it opens in.
+         * WHAT A RUN THAT LEAVES DOES: its ground is room again, as land bought
          * is - a plot no longer barred that holds no street, no box and no curve's band is free and joins its open cell's free
          * rows - and a box that stood on it and leaves frees it. The cells no pointer has taken are ranked again in the new
          * ground's growth order, the taken ones keeping their places, as for the land bought.
@@ -2260,6 +2312,135 @@ public final class DistrictPlan {
                 if (bOut.cellKind[c] == CLOSED) continue;
                 roomed[c] = true;
                 refree[c] = true;
+            }
+        }
+
+        /* ------------------------------------------------ buildings move off a run (batch MF1) */
+
+        /*
+         * BUILDINGS MOVE OFF A RUN (batch MF1, 2026-10-28). FX7 left the buildings under a run laid after them standing, both drawn: a
+         * highway's deck over a Blast Furnace's block, industry on a freight yard's tracks (his shots 2, 8, 12 and 13), and a box beside
+         * a highway laid after it, which the check "none beside a highway" (PlanCheck <save>, section 9) found 146 times on the
+         * playtest's city. Jerus, 2026-10-23, "Buildings move off": the buildings under a new run leave and are built again on free
+         * ground nearby in the district, the same business, and the run gets clean ground; and of a yard, "the same call: what
+         * stands on a yard's ground moves off it". The H5 rule's verge is the run's ground too (FW4-C): a box beside a highway moves
+         * with the ones under it.
+         *
+         * HOW. The records of each month are laid on their own (growRuns(), before the month's first event, a departure too, so a
+         * plan made at any later month has made the same moves); the boxes with a plot a record makes a run's, or with a plot beside
+         * a highway plot it makes, leave (vacate()) and are placed again in that month, in the order they were placed, each as an
+         * arrival of its own type: the instance is the same (its type, its month, its place in the type's live list, so the departure
+         * rule picks the same building as before), the cell it stood in is tried first (nearby), then the first place it fits in its
+         * band's cells, then a cell opened for it, and with none it goes on to the next district through the overflow log at the
+         * record's month, as any building the district cannot hold. A street under the run stays (FX7's UNDER); only boxes move. No box
+         * stood on a run or its verge before (they bar the plots), so every box found is the records' of the month; a plan whose
+         * records lie across no box is laid as before, all of the due records in one pass.
+         */
+
+        /** The plots a month's records put a run on (a highway's, a track's, a yard's) or, for a highway, beside it - its verge (H5): marked while that month's boxes are found; runHitAt lists them to clear. */
+        boolean[] runHit;
+        int[] runHitAt = new int[64];
+        int nRunHit;
+        /** The cell the building being moved off a run stood in, tried first for its new place; -1 for none (placeOne()). */
+        int movePrefer = -1;
+        /** The boxes the plan moved off a run and placed again, and those among them with no place, gone on to the next district (DistrictPlan.movedOff, movedOver). */
+        int movedOff, movedOver;
+
+        /**
+         * The runs' records due by `month`, laid up to the first month whose records lie across or beside a box, in one pass, and the
+         * boxes that month's records lie across moved off (then the next such month the same way: each month's alone, so a plan made
+         * a month later has made the same moves). The records after the last such month are left for the next growGround(), laid
+         * with the land as ever; with none the plan is as it was.
+         */
+        void growRuns(int month) {
+            while (fxNext < fxN && in.fixedLogMonth[fxNext] <= month) {
+                int m = firstHitMonth(month);
+                if (m == Integer.MIN_VALUE) return;
+                markRunHits(m);
+                growGround(m, false);
+                moveOff(m);
+            }
+        }
+
+        /** The month of the first record due by `month` that makes a run of a plot a box stands on, or a highway beside one; Integer.MIN_VALUE for none. */
+        int firstHitMonth(int month) {
+            for (int q = fxNext; q < fxN && in.fixedLogMonth[q] <= month; q++) {
+                int r = in.fixedLog[q], p = r >>> 8;
+                if ((r & 15) == 0) continue;
+                if (occ[p] == 1) return in.fixedLogMonth[q];
+                if ((r & 15) != FIXED_HIGHWAY) continue;
+                int x = p % FRAME, y = p / FRAME;
+                for (int yy = Math.max(0, y - 1); yy <= Math.min(FRAME - 1, y + 1); yy++) for (int xx = Math.max(0, x - 1); xx <= Math.min(FRAME - 1, x + 1); xx++) if (occ[yy * FRAME + xx] == 1) return in.fixedLogMonth[q];
+            }
+            return Integer.MIN_VALUE;
+        }
+
+        /** Marks the plots the records of month m put a run on, and the ring of plots about a highway's (runHit). */
+        void markRunHits(int m) {
+            if (runHit == null) runHit = new boolean[AREA];
+            for (int q = fxNext; q < fxN && in.fixedLogMonth[q] <= m; q++) {
+                if (in.fixedLogMonth[q] != m) continue;
+                int r = in.fixedLog[q], p = r >>> 8;
+                if ((r & 15) == 0) continue;
+                markRun(p);
+                if ((r & 15) != FIXED_HIGHWAY) continue;
+                int x = p % FRAME, y = p / FRAME;
+                for (int yy = Math.max(0, y - 1); yy <= Math.min(FRAME - 1, y + 1); yy++) for (int xx = Math.max(0, x - 1); xx <= Math.min(FRAME - 1, x + 1); xx++) markRun(yy * FRAME + xx);
+            }
+        }
+
+        void markRun(int p) {
+            if (runHit[p]) return;
+            runHit[p] = true;
+            if (nRunHit == runHitAt.length) runHitAt = Arrays.copyOf(runHitAt, 2 * nRunHit);
+            runHitAt[nRunHit++] = p;
+        }
+
+        /** Whether placed box k has a plot marked by markRunHits(). */
+        boolean boxHit(int k) {
+            for (int yy = placedY[k]; yy < placedY[k] + placedH[k]; yy++) for (int xx = placedX[k]; xx < placedX[k] + placedW[k]; xx++) if (runHit[yy * FRAME + xx]) return true;
+            return false;
+        }
+
+        /**
+         * The boxes the records just laid (month `month`) lie across or beside, taken away and placed again as arrivals of the same
+         * instances, in the order they were placed: the cell each stood in first (movePrefer), then as any arrival; with no place a
+         * building goes on to the next district, its pair appended to the overflow log at `month`, the record's (an older month after
+         * newer pairs would break the log's order).
+         */
+        void moveOff(int month) {
+            int n = 0;
+            int[] hit = new int[16];
+            for (int k = 0; k < bPlaced; k++) {
+                if (placedGone[k] || !boxHit(k)) continue;
+                if (n == hit.length) hit = Arrays.copyOf(hit, 2 * n);
+                hit[n++] = k;
+            }
+            for (int q = 0; q < nRunHit; q++) runHit[runHitAt[q]] = false;
+            nRunHit = 0;
+            if (n == 0) return;
+            // The instance of each box.
+            int[] who = new int[n];
+            Arrays.fill(who, -1);
+            for (int id = 0; id < nInst; id++) {
+                if (iAt[id] < 0) continue;
+                int j = Arrays.binarySearch(hit, 0, n, iAt[id]);
+                if (j >= 0) who[j] = id;
+            }
+            int[] cell = new int[n];
+            for (int j = 0; j < n; j++) {
+                if (who[j] < 0) continue;
+                cell[j] = cellOfPlot(placedX[hit[j]], placedY[hit[j]]);
+                vacate(hit[j]);
+                iAt[who[j]] = -1;
+            }
+            for (int j = 0; j < n; j++) {
+                if (who[j] < 0) continue;
+                movePrefer = cell[j];
+                placeInst(who[j], month);
+                movePrefer = -1;
+                if (iAt[who[j]] >= 0) movedOff++;
+                else movedOver++;
             }
         }
 
@@ -2665,6 +2846,13 @@ public final class DistrictPlan {
             int group = in.types[bandType[g][i]] == null ? BuildingVisual.NO_GROUP : in.types[bandType[g][i]].campusGroup();
             boolean campus = group != BuildingVisual.NO_GROUP;
             boolean gathered = campus && campusStands(group);
+            // A building moved off a run (MF1) is tried first in the cell it stood in: built again nearby.
+            if (movePrefer >= 0 && !in.moveFirstFit && !looked && !(gathered && !nearCampus(movePrefer))) {
+                best = tryPlace(movePrefer, w, h, false);
+                if (best < 0 && wide && mergeFor(out, movePrefer, w, h)) best = tryPlace(movePrefer, w, h, false);
+                if (best < 0 && whole && closeSpine(out, movePrefer)) best = tryPlace(movePrefer, w, h, false);
+                if (best >= 0) cellAt = movePrefer;
+            }
             for (int m = m0; m < bNMine && best < 0 && !looked; m++) {
                 int c = mine[m];
                 if (gathered && !nearCampus(c)) continue;
