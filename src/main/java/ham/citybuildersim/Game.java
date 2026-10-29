@@ -3120,7 +3120,7 @@ public class Game {
                     : sectorBooks.get(Equity.COMPANIES[c]).equity();
         }
         exchange.takeMonth(equity, householdBalance, bank, exchangeCompanies, book,
-                DebtManager.WORLD_BASE_RATE, bank.depositRate(), month, fundBondsValue());
+                DebtManager.WORLD_BASE_RATE, bank.depositRate(), month, fundBondsValue(), debtManager.householdBookYield());
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double k = exchange.getSplit(c);
             if (k > 1) GameLog.note(String.format("%s split its shares %,.0f for one.", Equity.COMPANIES[c], k));
@@ -3166,6 +3166,18 @@ public class Game {
             @Override public double monthlyDebtService(int company) {
                 SectorBooks.SectorMonth m = sectorBooks.get(Equity.COMPANIES[company]);
                 return Math.max(0, m.interest()) + Math.max(0, m.repaid()) + Math.max(0, m.bondsRepaid());
+            }
+            // ...and its money, at face, and what it earns a year (EM1): the closed
+            // month's sheet, whose till, dollars abroad and bonds a share's fair value
+            // counts past the cushion, and whose deposit interest, foreign interest
+            // and bond coupons - off its statement - the month's twelve times.
+            @Override public double money(int company) {
+                SectorBooks.SectorMonth m = sectorBooks.get(Equity.COMPANIES[company]);
+                return m.cash() + m.foreignAssets() + m.bondAssets();
+            }
+            @Override public double moneyIncome(int company) {
+                SectorBooks.SectorMonth m = sectorBooks.get(Equity.COMPANIES[company]);
+                return 12 * (m.depositInterest() + m.foreignInterest() + m.bondCoupons());
             }
             // Whether the bank buys its own shares back or issues them is its
             // capital policy since 0.7.8, which the exchange reads off the bank

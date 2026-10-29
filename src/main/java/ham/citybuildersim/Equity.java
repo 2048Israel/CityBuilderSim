@@ -200,6 +200,19 @@ public class Equity {
         return (Math.max(0, worldRate) + FOREIGN_PREMIUM) / PAYOUT;
     }
 
+    /**
+     * What a share's business has to earn its owners a year for them to hold
+     * it (EM1, 2026-10-29): the world's rate plus FOREIGN_PREMIUM, the return
+     * the world asks of a share here. fairValue() capitalises a company's net
+     * income at it, and Exchange reads the shares' expected returns against
+     * it. requiredYield() above is the same rate read the other way up, on the
+     * dividend the old value was struck on; the bank's capital charge still
+     * reads that one.
+     */
+    public static double requiredReturn(double worldRate) {
+        return Math.max(0, worldRate) + FOREIGN_PREMIUM;
+    }
+
     public enum Regime { NEW, GOOD, NORMAL, BAD }
 
     /* ------------------------------- a company ------------------------------- */
@@ -929,12 +942,50 @@ public class Equity {
     public boolean isPaidInDerived(int company)    { return listings[company].paidInDerived; }
 
     /**
-     * What a share is worth on the register's own reckoning: book or
-     * capitalised earnings, whichever is more, over the shares in issue. The
-     * exchange quotes around this; an offering with no market sells at it.
+     * What a share is worth on the register's own reckoning (EM1,
+     * 2026-10-29): the company's money past its working cushion at face (the
+     * spare, which the exchange strikes from its till, its dollars abroad and
+     * the bonds it holds), plus its business - the net income of the last
+     * twelve months - capitalised at the return a share is asked to earn
+     * (requiredReturn()), over the shares in issue. The exchange quotes
+     * around this; an offering with no market sells at it. A company with no
+     * shares is worth the founding price, and one with under RECORD_MONTHS
+     * months on the record is still held on prospects (priceOf()), as the
+     * world already holds it. A value no more than a share at the market's
+     * floor is no value, and the last price stands (the floor priceOf() ends
+     * with).
+     *
+     * WHY IT REPLACED BOOK-OR-DIVIDENDS. priceOf() takes the more of a
+     * company's book and its dividends capitalised, and a book is 95% cash and
+     * dollars abroad: every share traded at about 1.1 times book with a P/E of
+     * 100 to 250, a dividend yield of 0.14% to 0.41% and a return on equity
+     * under 1.1% - boxes of cash, priced as boxes of cash, earning less than
+     * the 2% their cash would earn abroad. Two shares priced at 1.5 and 1.2
+     * times book with the same earnings had one value each and no reason to
+     * move (Jerus, 2026-10-28: "why hold something that is 1.5 book value,
+     * when it can get something else that is 1.2 book value and has same P/E
+     * ... perhaps make it an actual efficient market"). The money is valued at
+     * face and the business on what it earns, with no double count: a
+     * business's net income leaves out what its money earns (deposit
+     * interest, the coupon on its dollars abroad, its bonds' coupons are
+     * cash-flow lines off its statement). No growth term: the business is
+     * capitalised at the required return alone, since the model has no
+     * honest forecast to put there.
+     *
+     * @param spare the company's money past its cushion, total (Exchange.spareOf())
      */
-    public double fairValue(int company, double bookEquity, double worldRate) {
-        return priceOf(listings[company], bookEquity, worldRate);
+    public double fairValue(int company, double bookEquity, double spare, double worldRate) {
+        Listing l = listings[company];
+        if (l.shares <= 0) return foundingPrice;
+        if (l.months < RECORD_MONTHS) return priceOf(l, bookEquity, worldRate);
+        double value = Math.max(0, spare) + Math.max(0, l.trailingIncome()) / requiredReturn(worldRate);
+        return value > noValue() * l.shares ? value / l.shares : l.lastPrice;
+    }
+
+    /** True when fairValue() prices the company on its record: it has shares and a full year on the record (EM1); before that it is held on prospects. */
+    public boolean valuedOnRecord(int company) {
+        Listing l = listings[company];
+        return l.shares > 0 && l.months >= RECORD_MONTHS;
     }
 
     /** The dividend a share paid over the last twelve months - the ordinary dividend actually paid, since 0.7.12 round 2 (it was PAYOUT of the income before the principal, which nobody was paid). What the exchange's participants value a share on (Exchange.yieldAt()). */

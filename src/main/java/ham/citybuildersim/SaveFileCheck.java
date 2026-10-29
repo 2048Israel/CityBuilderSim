@@ -2504,7 +2504,11 @@ public class SaveFileCheck {
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             if (c == Equity.BANK || !(fundCity.getEquity().getForeignShares(c) > 1) || !(fundCity.getExchange().fair(c) > 0)) continue;
             Exchange ex = fundCity.getExchange();
-            if (!(ex.bookOf(c).bestBid() >= ex.fair(c) * (1 - TreasuryFund.RULE_PREMIUM))) continue;
+            // EM1: no book was found with a bid standing at the desk's bid under the new value (a share is a business's earnings capitalised, and the
+            // desk's capacity moved with it), so the fixture stands one: the world's, at what the withdrawal below will ask, for the share it holds.
+            double bidAt = ex.fair(c) * (1 - TreasuryFund.RULE_PREMIUM);
+            if (!(ex.bookOf(c).bestBid() >= bidAt)) ex.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.BUY, bidAt, 1);
+            if (!(ex.bookOf(c).bestBid() >= bidAt)) continue;
             double p = ex.price(c), q = Math.min(1, fundCity.getFund().getCash() / Math.max(1e-9, 2 * p));
             ex.bookOf(c).withdrawAll();
             ex.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.SELL, p, q);

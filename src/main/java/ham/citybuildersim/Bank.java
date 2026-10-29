@@ -1376,6 +1376,7 @@ public class Bank {
         markChange = 0;
         paperGains = 0;
         paperBoughtFromHouseholds = 0;
+        paperBoughtFromFirms = 0;
         paperSoldToCentralBank = paperBoughtFromCentralBank = 0;
         accountFees = loanFeesPaid = loanFeesOwed = 0;
         operatingCost = 0;
@@ -2873,6 +2874,13 @@ public class Bank {
     /** What the desk paid households for their paper this month: money leaving the pools for a household, which MoneyAudit declares. */
     private double paperBoughtFromHouseholds;
 
+    /**
+     * ...and what it paid the businesses for theirs (EM1): a company asks its till for the cushion and the buyback it bids for, and what its dollars
+     * abroad cannot cover it raises by selling the city's paper to the desk (OutwardInvestment.recall()). Cash from the bank's pool to a sector's
+     * till, so MoneyAudit declares nothing; a month's figure, not saved, for BankCheck's reckoning of the bank's cash.
+     */
+    private double paperBoughtFromFirms;
+
     /** What the central bank paid it for paper this month, and what it paid the central bank. */
     private double paperSoldToCentralBank, paperBoughtFromCentralBank;
 
@@ -2894,6 +2902,7 @@ public class Bank {
     public double getUnearnedDiscount()            { return unearnedDiscount; }
     public double getPaperGains()                  { return paperGains; }
     public double getPaperBoughtFromHouseholds()   { return paperBoughtFromHouseholds; }
+    public double getPaperBoughtFromFirms()        { return paperBoughtFromFirms; }
 
     private void addToCityBook(double face) {
         double before = cityBook;
@@ -2918,6 +2927,7 @@ public class Bank {
      */
     public double buyPaperFromFirms(double price, double face, double unearned) {
         if (!(price > 0) || !(face > 0)) return 0;
+        paperBoughtFromFirms += price;
         return takePaperOntoTheBook(price, face, unearned);
     }
 
@@ -5575,7 +5585,7 @@ public class Bank {
         householdWeighted  *= scale;
         unearnedDiscount   *= scale;
         paperGains         *= scale;
-        paperBoughtFromHouseholds *= scale;
+        paperBoughtFromHouseholds *= scale; paperBoughtFromFirms *= scale;
         paperSoldToCentralBank *= scale;
         paperBoughtFromCentralBank *= scale;
         // The carry book is re-derived from the stock by refreshBank(), so this

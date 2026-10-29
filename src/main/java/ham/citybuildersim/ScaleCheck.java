@@ -1640,15 +1640,17 @@ public class ScaleCheck {
         for (String f : new String[] { "postedBuy", "postedSell", "filledBuy", "filledSell", "volume", "turnover", "sellQuantityWaited", "dust" }) scalar(b, f, k);
     }
 
-    /** The exchange: every book, the leavers' shares and the buyback budgets, and the record's money and volumes; the fair values and split factors are per share. */
+    /** The exchange: every book, the leavers' shares and the buyback budgets, the money fair value was struck on (EM1), and the record's money and volumes; the fair values and split factors are per share. */
     static void exchange(JsonObject d, long k) {
         if (!d.has("exchangeState")) return;
         JsonObject e = d.getAsJsonObject("exchangeState");
         for (JsonElement b : e.getAsJsonArray("books")) book(b.getAsJsonObject(), k);
         whole(e, "emigrantShares", k);
         whole(e, "buybackBudget", k);
+        // ...what each company's spare money, its net income and its money's income came to: totals, K times (EM1).
+        for (String field : new String[] { "spare", "earnings", "moneyIncome" }) whole(e, field, k);
         // life: the volume and the values (0 to 4), the leavers (9, 10), the sellers (11 to 18), the rebalance and the excess
-        // (23 to 27) scale; the counts of sells and trades (5 to 8) and the desk-bound counts (19 to 22) stay.
+        // (23 to 27) and what the cells sold on a share's value (28, EM1) scale; the counts of sells and trades (5 to 8) and the desk-bound counts (19 to 22) stay.
         allBut(e, "life", k, 5, 6, 7, 8, 19, 20, 21, 22);
         // last month's posted and filled values (0, 1); the counts stay.
         slots(e, "last", k, 0, 1);

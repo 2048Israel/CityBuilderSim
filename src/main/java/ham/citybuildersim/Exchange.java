@@ -141,8 +141,18 @@ public class Exchange {
     /** ...and it holds still while the yield is within this of the hurdle. */
     public static final double FOREIGN_TOLERANCE = .10;
 
-    /** ...into a yield at least this far over the deposit rate, annual. */
+    /** ...into a return at least this far over the best of the deposit rate, the dollars abroad and the city's paper, annual. */
     public static final double HOUSEHOLD_PREMIUM = .01;
+
+    /**
+     * A holder trades on a share's value only past this either side of it
+     * (EM1, 2026-10-29): it sells when the bid is over value by more, or its
+     * expected return is under the best alternative by more, and it buys when
+     * the ask and the return are the other side of the same band - so a quiet
+     * market, every price within it, does not churn. Under BUYBACK_TOLERANCE,
+     * so a company's bid for its own shares is past it and finds its sellers.
+     */
+    public static final double BAND = .05;
 
     /**
      * A company keeps this many months of its costs before it buys back:
@@ -339,6 +349,14 @@ public class Exchange {
     private final int n = Equity.COMPANIES.length;
     private OrderBook[] books = new OrderBook[n];
     private final double[] fair = new double[n];     // the register's reckoning, per share, struck at the step
+    /**
+     * What fair value was struck on, per company, at the step and saved (EM1):
+     * its money past the cushion (total, never under nothing), its net income
+     * over the last year (total) and what its money earns it a year (total).
+     * They are the inputs the holders read their return from (expectedReturn()),
+     * so a step is not a function of the state it ends in without them.
+     */
+    private final double[] spare = new double[n], earnings = new double[n], moneyIncome = new double[n];
     /** This month's leavers' shares still offered: held abroad by the register, sold by EMIGRANTS. */
     private final double[] emigrantShares = new double[n];
     /** What each company's buyback bid may still spend, money; the rest of its month's programme. */
@@ -452,8 +470,34 @@ public class Exchange {
         return hasTraded(c) && month - books[c].lastTradeMonth() > STALE_MARK_MONTHS;
     }
 
-    /** The register's reckoning of a share, struck at the step: book, or the dividend it pays capitalised (Equity.fairValue()). */
+    /** The register's reckoning of a share, struck at the step: its money past the cushion at face and its earnings capitalised (Equity.fairValue(), EM1). */
     public double fair(int c)        { return fair[c]; }
+
+    /** A company's money past its cushion at the last step, total: its till, its dollars abroad and its bonds, less six months of its costs, never under nothing (EM1). */
+    public double spareOf(int c)       { return spare[c]; }
+    /** ...its net income over the last year, total: what its business earned, after tax (EM1). */
+    public double earningsOf(int c)    { return earnings[c]; }
+    /** ...and what its money earned it over the last year, total: deposit interest, the coupon on its dollars abroad and its bonds' coupons, the month's twelve times (EM1). */
+    public double moneyIncomeOf(int c) { return moneyIncome[c]; }
+
+    /** The money past the cushion a share carries in its fair value: the spare over the shares in issue; none until the company is valued on its record (EM1). */
+    public double fairSpare(int c) {
+        if (register == null || !register.valuedOnRecord(c)) return 0;
+        double shares = register.getShares(c);
+        return shares > 0 ? spare[c] / shares : 0;
+    }
+
+    /**
+     * A share's expected return at a price, annual: its earnings plus what its
+     * money earns, over its price (EM1) - the yardstick every holder reads,
+     * against the other shares, the deposit rate, the dollars abroad and the
+     * city's paper. Nothing with no price or no shares.
+     */
+    public double expectedReturn(int c, double price) {
+        if (register == null || !(price > 0)) return 0;
+        double shares = register.getShares(c);
+        return shares > 0 ? (earnings[c] + moneyIncome[c]) / (price * shares) : 0;
+    }
 
     /** The best bid resting, or NaN with none. */
     public double bestBid(int c)     { return books[c].bestBid(); }
@@ -530,6 +574,21 @@ public class Exchange {
          * money out of the till as surely as a wage.
          */
         double monthlyDebtService(int company);
+        /**
+         * ...and the money it holds, at face (EM1): its till, its dollars
+         * abroad and the other sectors' bonds. A share's fair value counts
+         * what is past the cushion of it as it is. Nothing in a fixture that
+         * says nothing, so that fixture's companies hold no money to value.
+         */
+        default double money(int company) { return 0; }
+        /** ...and what that money earns it a year at the month's rates: deposit interest, the coupon on its dollars abroad and its bonds' coupons - off its statement, so not in the earnings the business is valued on (EM1). */
+        default double moneyIncome(int company) { return 0; }
+    }
+
+    /** What a company keeps in its till before it buys back or counts its money spare: BUYBACK_CUSHION_MONTHS of its operating cost and its debt service (0.7.11, round 2). */
+    private double cushion(int c) {
+        return BUYBACK_CUSHION_MONTHS * (Math.max(0, companies.monthlyOperatingCost(c))
+                + Math.max(0, companies.monthlyDebtService(c)));
     }
 
     /**
@@ -544,17 +603,26 @@ public class Exchange {
     public void takeMonth(Equity register, HouseholdBalance households, Bank bank,
                           Companies companies, double[] book, double worldRate,
                           double depositRate, int month) {
-        takeMonth(register, households, bank, companies, book, worldRate, depositRate, month, 0);
+        takeMonth(register, households, bank, companies, book, worldRate, depositRate, month, 0, 0);
+    }
+
+    /** ...with what the city's fund's bonds are worth this month (0.7.14); no yield on the city's paper (a fixture with none). */
+    public void takeMonth(Equity register, HouseholdBalance households, Bank bank,
+                          Companies companies, double[] book, double worldRate,
+                          double depositRate, int month, double fundBondsValue) {
+        takeMonth(register, households, bank, companies, book, worldRate, depositRate, month, fundBondsValue, 0);
     }
 
     /**
      * ...with what the city's fund's bonds are worth this month (0.7.14), for
      * its mix: its orders are posted last, after the households', by its rule
-     * and then its hand (postFund()).
+     * and then its hand (postFund()); and what the city's paper the
+     * households hold yields, annual (EM1), one of the alternatives a share's
+     * expected return is read against.
      */
     public void takeMonth(Equity register, HouseholdBalance households, Bank bank,
                           Companies companies, double[] book, double worldRate,
-                          double depositRate, int month, double fundBondsValue) {
+                          double depositRate, int month, double fundBondsValue, double paperYield) {
         this.fundBondsValue = Math.max(0, fundBondsValue);
         attach(register, households, bank, companies, month);
 
@@ -572,10 +640,19 @@ public class Exchange {
             buybackBudget[c] = 0;
         }
 
-        /* ---- every share valued ---- */
+        /* ---- every share valued, on the inputs struck here and saved (EM1) ---- */
         for (int c = 0; c < n; c++) {
-            if (register.getShares(c) <= 0) { fair[c] = register.foundingPrice(); emigrantShares[c] = 0; continue; }
-            fair[c] = Math.max(minFair, register.fairValue(c, book[c], worldRate));
+            if (register.getShares(c) <= 0) {
+                fair[c] = register.foundingPrice(); emigrantShares[c] = 0;
+                spare[c] = earnings[c] = moneyIncome[c] = 0;
+                continue;
+            }
+            // ...the bank's money is its business and a fixture with no companies holds none: nothing past a cushion.
+            boolean holdsMoney = this.companies != null && c != Equity.BANK;
+            spare[c] = holdsMoney ? Math.max(0, this.companies.money(c) - cushion(c)) : 0;
+            earnings[c] = register.getTrailingIncome(c);
+            moneyIncome[c] = holdsMoney ? this.companies.moneyIncome(c) : 0;
+            fair[c] = Math.max(minFair, register.fairValue(c, book[c], spare[c], worldRate));
             emigrantShares[c] = households == null ? 0
                     : Math.max(0, Math.min(households.getSharesTakenAway(c), register.getForeignShares(c)));
         }
@@ -586,7 +663,8 @@ public class Exchange {
         postEmigrants();
         postWorld(worldRate);
         postCompanies();
-        postHouseholds(depositRate);
+        postWorldPrice();
+        postHouseholds(depositRate, worldRate, paperYield);
         postFund();
 
         splitWhatNeedsIt();
@@ -801,12 +879,15 @@ public class Exchange {
     /* ---------------------------------- the world ---------------------------------- */
 
     /**
-     * The world, on yield against its rate plus the premium: a bid up to the
-     * price that yields the hurdle plus the tolerance, for FOREIGN_SPEED of
-     * the gap at the best ask; an ask down to the price that yields the
-     * hurdle less the tolerance and never under fair value less it, for
-     * FOREIGN_SPEED of the gap at the best bid. A company with no record is
-     * held on prospects for its first year.
+     * The world, on a share's expected return against its rate plus the
+     * premium (EM1: it read the dividend's yield before): a bid up to the
+     * price that returns the hurdle plus the tolerance - and never over fair
+     * value plus half the spread - for FOREIGN_SPEED of the gap at the best
+     * ask; an ask down to the price that returns the hurdle less the tolerance
+     * and never under fair value less it, for FOREIGN_SPEED of the gap at the
+     * best bid. A company with no record is held on prospects for its first
+     * year. What the world asks of a share over a price that is too high is
+     * postWorldPrice(), after the companies have posted.
      */
     private void postWorld(double worldRate) {
         double hurdle = Math.max(0, worldRate) + Equity.FOREIGN_PREMIUM;
@@ -814,19 +895,41 @@ public class Exchange {
         for (int c = 0; c < n; c++) {
             if (register.getShares(c) <= 0 || fair[c] <= minFair) continue;
             if (register.getMonthsRecorded(c) < Equity.RECORD_MONTHS) continue;
-            double d = register.dividendPerShareAnnual(c);
+            // ...what a share's business and its money earn it a year (EM1), where the dividend was.
+            double inc = (earnings[c] + moneyIncome[c]) / register.getShares(c);
             double askRef = Double.isNaN(bestAsk(c)) ? price(c) : bestAsk(c);
             double bidRef = Double.isNaN(bestBid(c)) ? price(c) : bestBid(c);
-            double yAsk = askRef > 0 ? d / askRef : 0, yBid = bidRef > 0 ? d / bidRef : 0;
-            if (d > 0 && yAsk > hurdle * (1 + FOREIGN_TOLERANCE)) {
+            double yAsk = expectedReturn(c, askRef), yBid = expectedReturn(c, bidRef);
+            if (inc > 0 && yAsk > hurdle * (1 + FOREIGN_TOLERANCE)) {
                 double want = FOREIGN_SPEED * (yAsk / hurdle - 1) * register.getOutstanding(c);
-                post(c, WORLD, OrderBook.Side.BUY, d / (hurdle * (1 + FOREIGN_TOLERANCE)), want);
+                post(c, WORLD, OrderBook.Side.BUY,
+                        Math.min(inc / (hurdle * (1 + FOREIGN_TOLERANCE)), fair[c] * (1 + SPREAD / 2)), want);
             } else if (yBid < hurdle * (1 - FOREIGN_TOLERANCE) && bidRef >= fair[c] * (1 - FOREIGN_TOLERANCE)) {
                 double held = worldHolding(c);
                 double want = FOREIGN_SPEED * (1 - yBid / hurdle) * held;
                 double floor = fair[c] * (1 - FOREIGN_TOLERANCE);
-                double limit = d > 0 ? Math.max(floor, d / (hurdle * (1 - FOREIGN_TOLERANCE))) : floor;
+                double limit = inc > 0 ? Math.max(floor, inc / (hurdle * (1 - FOREIGN_TOLERANCE))) : floor;
                 post(c, WORLD, OrderBook.Side.SELL, limit, want);
+            }
+        }
+    }
+
+    /**
+     * THE WORLD SELLS INTO A BID OVER VALUE (EM1, 2026-10-29): where a bid
+     * rests more than BAND over a share's fair value and the world holds
+     * some, it sells OutwardInvestment.HOME_SPEED of what it holds at fair
+     * value plus BAND, a price-taker, whoever bids. It runs after the
+     * companies post because their bid for their own shares is the one that
+     * stands that far over value, and the world posts before them: looked for
+     * in postWorld() the bid is never there to be seen. Only a company valued
+     * on its record, as the world's other rules.
+     */
+    private void postWorldPrice() {
+        for (int c = 0; c < n; c++) {
+            if (!register.valuedOnRecord(c) || fair[c] <= minFair) continue;
+            double held = worldHolding(c);
+            if (held > OrderBook.DUST && bestBid(c) > fair[c] * (1 + BAND)) {
+                post(c, WORLD, OrderBook.Side.SELL, fair[c] * (1 + BAND), OutwardInvestment.HOME_SPEED * held);
             }
         }
     }
@@ -881,9 +984,8 @@ public class Exchange {
             if (assets <= 0) continue;
             double excess = equity - (register.getTargetEquityShare(c) + OVER_TARGET) * assets;
             if (excess <= assets * MIN_EXCESS) continue;
-            // ...its debt service counted with its costs (0.7.11, round 2).
-            double cushion = BUYBACK_CUSHION_MONTHS * (Math.max(0, companies.monthlyOperatingCost(c))
-                    + Math.max(0, companies.monthlyDebtService(c)));
+            // ...its debt service counted with its costs (0.7.11, round 2); the same cushion its spare money is struck over (EM1).
+            double cushion = cushion(c);
             double worth = register.getOutstanding(c) * fair[c];
             double cap = Math.min(excess, BUYBACK_PACE / 12 * worth);
             double cash = companies.cashAvailable(c, cap + cushion) - cushion;
@@ -916,6 +1018,10 @@ public class Exchange {
     /** What the cells asked to rebalance over the city's life, at the price: for the playtest (round 3). */
     private double lifeRebalanceSold;
     public double getLifeRebalanceSold() { return lifeRebalanceSold; }
+
+    /** What the cells asked to sell on a share's value over the city's life, at the price (EM1): a bid over value, or a return under the alternatives. For the playtest. */
+    private double lifeValueSold;
+    public double getLifeValueSold() { return lifeValueSold; }
 
     /** What a cell has past its cushion, in all: savings past SHARE_CUSHION_MONTHS of its take-home, every household of it. */
     static double spareOf(Household c) {
@@ -953,12 +1059,38 @@ public class Exchange {
      * are - its neighbours', where the desk asks over fair value. It replaced
      * MONTHLY_SHARE_OF_EXCESS (a twentieth of the excess a month) with
      * OUT_SPEED (a twenty-fifth), the bonds' speed.
+     *
+     * A CELL SELLS A SHARE ON ITS VALUE (EM1, 2026-10-29; Jerus: "why hold
+     * something that is 1.5 book value, when it can get something else that is
+     * 1.2 book value"). They bought on the best dividend yield and sold only
+     * under the cushion or short of money, so a company's buyback, bid 10%
+     * over value, filled almost nothing: 6.6M of the 3.2B resting at m2400. A
+     * cell not under its cushion now sells OutwardInvestment.HOME_SPEED of a
+     * holding a month when a bid rests more than BAND over its value (at value
+     * plus BAND) or when its expected return at the bid is under the best
+     * alternative by more than BAND (at value less BAND), and buys by the
+     * same return, ranked at the ask: expectedReturn() is one yardstick for
+     * every share and the deposit rate, the dollars abroad and the city's
+     * paper.
      */
-    private void postHouseholds(double depositRate) {
+    private void postHouseholds(double depositRate, double worldRate, double paperYield) {
         if (households == null) return;
-        double floor = Math.max(0, depositRate) + HOUSEHOLD_PREMIUM;
-        double[] divs = new double[n];
-        for (int c = 0; c < n; c++) divs[c] = register.getShares(c) > 0 ? register.dividendPerShareAnnual(c) : 0;
+        /*
+         * THE BEST OF THE ALTERNATIVES, AND A BAND EITHER SIDE (EM1): the
+         * deposit, the dollars abroad and the city's paper, plus the premium.
+         * A share is bought when what it earns at its ask is over the floor
+         * and sold when what it earns at its bid is under the other side of the
+         * band, so a cell does not trade a share it holds for another that is
+         * within a band of it.
+         */
+        double alt = Math.max(Math.max(0, depositRate), Math.max(Math.max(0, worldRate), Math.max(0, paperYield)))
+                + HOUSEHOLD_PREMIUM;
+        double floor = alt * (1 + BAND);
+        // ...what a share's business and its money earn it a year, where the dividend was; none until the company is valued on its record.
+        double[] inc = new double[n];
+        for (int c = 0; c < n; c++) {
+            if (register.valuedOnRecord(c) && fair[c] > minFair) inc[c] = (earnings[c] + moneyIncome[c]) / register.getShares(c);
+        }
 
         /* ---- the cells over their target: HOME_SPEED of the cushion's shortfall, pro rata, at the market ---- */
         for (Household cell : households.cellsForMarket()) {
@@ -979,7 +1111,27 @@ public class Exchange {
             }
         }
 
-        /* ---- ...and the cells under it: OUT_SPEED of what is past the cushion, the best yield first ---- */
+        /* ---- the cells not under it sell a share on its value: a bid over it, or a return under the alternatives (EM1) ---- */
+        for (Household cell : households.cellsForMarket()) {
+            if (shortOfCushion(cell) > 1e-12) continue;
+            String who = CELL + cell.key();
+            for (int c = 0; c < n; c++) {
+                if (!(cell.shares[c] > 0) || !register.valuedOnRecord(c) || fair[c] <= minFair) continue;
+                double bid = bestBid(c);
+                double quantity = OutwardInvestment.HOME_SPEED * cell.shares[c] * cell.households();
+                if (bid > fair[c] * (1 + BAND)) {
+                    lifeValueSold += quantity * price(c);
+                    post(c, who, OrderBook.Side.SELL, fair[c] * (1 + BAND), quantity);
+                } else if (expectedReturn(c, Double.isNaN(bid) ? price(c) : bid) < alt * (1 - BAND)) {
+                    lifeValueSold += quantity * price(c);
+                    post(c, who, OrderBook.Side.SELL, fair[c] * (1 - BAND), quantity);
+                }
+            }
+        }
+
+        /* ---- ...and the cells under it: OUT_SPEED of what is past the cushion, the best return first ---- */
+        double[] limits = new double[n];
+        for (int c = 0; c < n; c++) limits[c] = inc[c] > 0 ? Math.min(inc[c] / floor, fair[c] * (1 + SPREAD / 2)) : 0;
         for (Household cell : households.cellsForMarket()) {
             double budget = spareOf(cell) * OutwardInvestment.OUT_SPEED;
             if (!(budget > 1e-12)) continue;
@@ -990,19 +1142,18 @@ public class Exchange {
                 // Take what is on offer, best first.
                 boolean[] tried = new boolean[n];
                 while (buyingBudget > 1e-12) {
-                    int best = bestBuy(divs, floor, tried, true);
+                    int best = bestBuy(inc, limits, floor, tried, true);
                     if (best < 0) break;
                     tried[best] = true;
                     double ask = bestAsk(best);
-                    double limit = divs[best] / floor;
-                    books[best].submit(who, OrderBook.Side.BUY, limit, buyingBudget / ask, month, clearing(best), false);
+                    books[best].submit(who, OrderBook.Side.BUY, limits[best], buyingBudget / ask, month, clearing(best), false);
                 }
                 // ...and what is left waits on the best, at the market or its
                 // limit, whichever is lower.
                 if (buyingBudget > 1e-12) {
-                    int best = bestBuy(divs, floor, new boolean[n], false);
+                    int best = bestBuy(inc, limits, floor, new boolean[n], false);
                     if (best >= 0) {
-                        double limit = Math.min(divs[best] / floor, price(best));
+                        double limit = Math.min(limits[best], price(best));
                         submit(best, who, OrderBook.Side.BUY, limit, buyingBudget / limit);
                     }
                 }
@@ -1017,20 +1168,24 @@ public class Exchange {
     private double buyingBudget;
 
     /**
-     * The company a buyer would put the next dollar in: the highest yield
-     * over the floor, at the best ask when `offered` (only a company with an
-     * ask it would take), at the price otherwise; ties, within TIED_YIELD, to
-     * the deepest name. -1 with none.
+     * The company a buyer would put the next dollar in: the highest expected
+     * return over the floor (EM1; the dividend's yield before), at the best
+     * ask when `offered` (only a company with an ask it would take, under its
+     * limit), at the price otherwise; ties, within TIED_YIELD, to the deepest
+     * name. -1 with none.
+     *
+     * @param inc    what a share's business and money earn it a year; none for a company not valued on its record
+     * @param limits the most a buyer pays a share of it
      */
-    private int bestBuy(double[] divs, double floor, boolean[] tried, boolean offered) {
+    private int bestBuy(double[] inc, double[] limits, double floor, boolean[] tried, boolean offered) {
         int best = -1;
         double bestYield = 0;
         for (int c = 0; c < n; c++) {
-            if (tried[c] || !(divs[c] > 0) || register.getShares(c) <= 0) continue;
+            if (tried[c] || !(inc[c] > 0) || register.getShares(c) <= 0) continue;
             double p = offered ? bestAsk(c) : price(c);
             if (!(p > 0)) continue;
-            if (offered && p > divs[c] / floor) continue;
-            double y = divs[c] / p;
+            if (offered && p > limits[c]) continue;
+            double y = inc[c] / p;
             if (!(y > floor)) continue;
             if (best < 0 || y > bestYield * (1 + TIED_YIELD)) {
                 best = c;
@@ -1113,11 +1268,17 @@ public class Exchange {
                 double rebalance = excess > 0 && held > 0 ? mine * excess / held : 0;
                 // ...and its part of what the withdrawal must raise (C1): the market book pro rata.
                 double raise = toRaise > 0 && held > 0 ? mine * toRaise * held / (held + fundBondsValue) / held : 0;
-                double q = Math.min(mine, Math.max(over, Math.max(rebalance, raise)));
+                // ...and, since EM1, a fourth: HOME_SPEED of what it holds when a bid rests more than BAND over the
+                // share's value (a company's buyback is one), asked at value plus BAND, the households' rule.
+                double priceSale = register.valuedOnRecord(c) && bestBid(c) > fair[c] * (1 + BAND)
+                        ? OutwardInvestment.HOME_SPEED * mine : 0;
+                double others = Math.max(over, Math.max(rebalance, raise));
+                double q = Math.min(mine, Math.max(others, priceSale));
                 // ...asked at the desk's bid when the withdrawal is what sells it (0.7.102, Jerus's A21): at fair
                 // value nobody bid, and a sale the dial forces has to meet the price somebody stands ready to pay
                 // - C3's mirror, the rule buying at the desk's ask. Over the limit or over its weight, fair value.
-                double ask = raise > Math.max(over, rebalance) ? fair[c] * (1 - TreasuryFund.RULE_PREMIUM) : fair[c];
+                double ask = priceSale > others ? fair[c] * (1 + BAND)
+                        : raise > Math.max(over, rebalance) ? fair[c] * (1 - TreasuryFund.RULE_PREMIUM) : fair[c];
                 if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.SELL, ask, q);
             }
             if (!(excess > 0) && cash > 0 && !fund.sellsToPay()) {
@@ -1701,6 +1862,8 @@ public class Exchange {
         String[] keys;
         List<OrderBook> books;
         double[] fair, splitFactor, emigrantShares, buybackBudget;
+        /** What fair value was struck on (EM1): each company's spare money, its net income over the last year and what its money earns it, totals. Null in a save from before them: the next step strikes them. */
+        double[] spare, earnings, moneyIncome;
         double[] life;
         double[] last;
 
@@ -1720,6 +1883,9 @@ public class Exchange {
                 c.splitFactor = splitFactor == null ? null : splitFactor.clone();
                 c.emigrantShares = emigrantShares == null ? null : emigrantShares.clone();
                 c.buybackBudget = buybackBudget == null ? null : buybackBudget.clone();
+                c.spare = spare == null ? null : spare.clone();
+                c.earnings = earnings == null ? null : earnings.clone();
+                c.moneyIncome = moneyIncome == null ? null : moneyIncome.clone();
                 c.life = life == null ? null : life.clone();
                 c.last = last == null ? null : last.clone();
                 return c;
@@ -1737,6 +1903,9 @@ public class Exchange {
         s.splitFactor = splitFactor.clone();
         s.emigrantShares = emigrantShares.clone();
         s.buybackBudget = buybackBudget.clone();
+        s.spare = spare.clone();
+        s.earnings = earnings.clone();
+        s.moneyIncome = moneyIncome.clone();
         s.life = new double[] { lifetimeVolume, lifePostedSellValue, lifeFilledValue, lifeBetweenHouseholds, lifeTurnover,
                 lifeSellsPosted, lifeSellsWaited, lifeTrades, lifeBetweenHouseholdsTrades,
                 lifeEmigrantsOffered, lifeEmigrantsPaid,
@@ -1745,7 +1914,9 @@ public class Exchange {
                 lifeDeskBound[0], lifeDeskBound[1], lifeDeskBound[2], lifeDeskBound[3], lifeRebalanceSold,
                 lifeExcessOffered, lifeExcessSold,
                 // ...and the city's fund as a seller (0.7.14).
-                lifePostedSellBy[BY_FUND], lifeFilledSellBy[BY_FUND] };
+                lifePostedSellBy[BY_FUND], lifeFilledSellBy[BY_FUND],
+                // ...and what the cells sold on a share's value (EM1).
+                lifeValueSold };
         s.last = new double[] { lastPostedSellValue, lastFilledValue, lastSellsPosted, lastSellsWaited, lastTrades,
                 lastDeskBound[0], lastDeskBound[1], lastDeskBound[2], lastDeskBound[3] };
         return s;
@@ -1766,6 +1937,9 @@ public class Exchange {
             splitFactor[c] = Math.max(1e-12, s.splitFactor[i]);
             if (s.emigrantShares != null && i < s.emigrantShares.length) emigrantShares[c] = s.emigrantShares[i];
             if (s.buybackBudget != null && i < s.buybackBudget.length) buybackBudget[c] = s.buybackBudget[i];
+            if (s.spare != null && i < s.spare.length) spare[c] = s.spare[i];
+            if (s.earnings != null && i < s.earnings.length) earnings[c] = s.earnings[i];
+            if (s.moneyIncome != null && i < s.moneyIncome.length) moneyIncome[c] = s.moneyIncome[i];
         }
         if (s.life != null && s.life.length >= 9) {
             lifetimeVolume = s.life[0]; lifePostedSellValue = s.life[1]; lifeFilledValue = s.life[2];
@@ -1782,6 +1956,7 @@ public class Exchange {
             if (s.life.length >= 24) lifeRebalanceSold = s.life[23];
             if (s.life.length >= 26) { lifeExcessOffered = s.life[24]; lifeExcessSold = s.life[25]; }
             if (s.life.length >= 28) { lifePostedSellBy[BY_FUND] = s.life[26]; lifeFilledSellBy[BY_FUND] = s.life[27]; }
+            if (s.life.length >= 29) lifeValueSold = s.life[28];
         }
         if (s.last != null && s.last.length >= 5) {
             lastPostedSellValue = s.last[0]; lastFilledValue = s.last[1];
@@ -1831,13 +2006,16 @@ public class Exchange {
         java.util.Arrays.fill(splitFactor, 1);
         java.util.Arrays.fill(emigrantShares, 0);
         java.util.Arrays.fill(buybackBudget, 0);
+        java.util.Arrays.fill(spare, 0);
+        java.util.Arrays.fill(earnings, 0);
+        java.util.Arrays.fill(moneyIncome, 0);
         lifetimeVolume = lifePostedSellValue = lifeFilledValue = lifeBetweenHouseholds = lifeTurnover = 0;
         lifeEmigrantsOffered = lifeEmigrantsPaid = 0;
         java.util.Arrays.fill(lifePostedSellBy, 0);
         java.util.Arrays.fill(lifeFilledSellBy, 0);
         java.util.Arrays.fill(lastDeskBound, 0);
         java.util.Arrays.fill(lifeDeskBound, 0);
-        lifeRebalanceSold = 0;
+        lifeRebalanceSold = lifeValueSold = 0;
         lifeExcessOffered = lifeExcessSold = 0;
         java.util.Arrays.fill(lastExcessOffered, 0);
         lifeSellsPosted = lifeSellsWaited = lifeTrades = lifeBetweenHouseholdsTrades = 0;
@@ -1855,6 +2033,7 @@ public class Exchange {
             books[c].redenominate(scale, false);
             fair[c] *= scale;
             buybackBudget[c] *= scale;
+            spare[c] *= scale; earnings[c] *= scale; moneyIncome[c] *= scale;
             soldToHouseholds[c] *= scale; boughtFromHouseholds[c] *= scale;
             soldAbroad[c] *= scale; boughtFromAbroad[c] *= scale; emigrantsPaid[c] *= scale;
             buybackToHouseholds[c] *= scale; buybackToDesk[c] *= scale; buybackAbroad[c] *= scale;
@@ -1867,7 +2046,7 @@ public class Exchange {
         lifePostedSellValue *= scale; lifeFilledValue *= scale; lifeBetweenHouseholds *= scale; lifeTurnover *= scale;
         lifeEmigrantsOffered *= scale; lifeEmigrantsPaid *= scale;
         for (int k = 0; k < lifePostedSellBy.length; k++) { lifePostedSellBy[k] *= scale; lifeFilledSellBy[k] *= scale; }
-        lifeRebalanceSold *= scale;
+        lifeRebalanceSold *= scale; lifeValueSold *= scale;
         lifeExcessOffered *= scale; lifeExcessSold *= scale;
         if (buying != null) buyingBudget *= scale;
     }
