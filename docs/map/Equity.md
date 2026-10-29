@@ -1,4 +1,4 @@
-# Equity.java - 1,170 lines · 97 methods · 20 constants · model
+# Equity.java - 1,172 lines · 98 methods · 20 constants · model
 
 `ham/citybuildersim/Equity.java` - generated 2026-10-29 by CodeMap; line numbers are as of that run.
 
@@ -80,7 +80,7 @@
 | 605 | THE DIVIDEND |
 | 753 | THE HOLDERS |
 | 964 | · reading |
-| 1012 | · saving |
+| 1014 | · saving |
 
 ## Enum constants
 
@@ -109,12 +109,12 @@
 | 181 | `Equity.HORIZON_YEARS` | `3` | In good times, the years of expansion a company raises for ahead. |
 | 184 | `Equity.UNDER_TARGET` | `.10` | Under target by this much before a normal year raises instead of borrows. |
 | 187 | `Equity.FOREIGN_PREMIUM` | `.03` | What the world wants over its own rate to buy a share here, annual. |
-| 1020 | `Equity.SLOTS_BEFORE_DESK` | `RECORD_MONTHS * 2 + 10` | Slots a company before the desk (2026-09-10, night). |
-| 1023 | `Equity.SLOTS_BEFORE_PAID` | `SLOTS_BEFORE_DESK + 2` | ...and before the dividends actually paid (0.7.12 round 2). |
-| 1026 | `Equity.SLOTS_BEFORE_CITY` | `SLOTS_BEFORE_PAID + RECORD_MONTHS + 1` | ...and before the city's fund (0.7.14): the ring of dividends paid and its count, appended. |
-| 1029 | `Equity.SLOTS_BEFORE_PAID_IN` | `SLOTS_BEFORE_CITY + 3` | ...and before its paid-in capital (0.7.75): the city's shares, its rescue book and what it has been paid, appended (0.7.14). |
-| 1032 | `Equity.SLOTS` | `SLOTS_BEFORE_PAID_IN + 3` | Its founders' book, what its buybacks paid and whether the two were derived, appended (0.7.75, R3; SAVE_FORMAT 33). |
-| 1035 | `Equity.PAID_IN_FORMAT` | `33` | The first save format that keeps a company's paid-in capital (0.7.75, R3): an older save's is derived at the load (restore(), SectorBooks.derivePaidIn()). |
+| 1022 | `Equity.SLOTS_BEFORE_DESK` | `RECORD_MONTHS * 2 + 10` | Slots a company before the desk (2026-09-10, night). |
+| 1025 | `Equity.SLOTS_BEFORE_PAID` | `SLOTS_BEFORE_DESK + 2` | ...and before the dividends actually paid (0.7.12 round 2). |
+| 1028 | `Equity.SLOTS_BEFORE_CITY` | `SLOTS_BEFORE_PAID + RECORD_MONTHS + 1` | ...and before the city's fund (0.7.14): the ring of dividends paid and its count, appended. |
+| 1031 | `Equity.SLOTS_BEFORE_PAID_IN` | `SLOTS_BEFORE_CITY + 3` | ...and before its paid-in capital (0.7.75): the city's shares, its rescue book and what it has been paid, appended (0.7.14). |
+| 1034 | `Equity.SLOTS` | `SLOTS_BEFORE_PAID_IN + 3` | Its founders' book, what its buybacks paid and whether the two were derived, appended (0.7.75, R3; SAVE_FORMAT 33). |
+| 1037 | `Equity.PAID_IN_FORMAT` | `33` | The first save format that keeps a company's paid-in capital (0.7.75, R3): an older save's is derived at the load (restore(), SectorBooks.derivePaidIn()). |
 
 ## Fields (state)
 
@@ -152,7 +152,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 105 | 1066 | **type** `public class Equity` | The share register: who owns the city's companies, what they paid for them, and what the companies pay them back. |
+| 105 | 1068 | **type** `public class Equity` | The share register: who owns the city's companies, what they paid for them, and what the companies pay them back. |
 | 110 | 7 | `static { ... }` |  |
 | 118 | 4 | `public static int indexOf(String company)` |  |
 
@@ -254,7 +254,7 @@
 | 959 | 1 | `public double getOrdinaryDividendsLastClose()` |  |
 | 962 | 1 | `public double getDividendsPaidOverYear(int company)` | The ordinary dividends paid over the last twelve months, the company's whole (0.7.12 round 2). |
 
-### reading (lines 964-1011)
+### reading (lines 964-1013)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -265,37 +265,38 @@
 | 970 | 1 | `public Regime getRegime(int company)` |  |
 | 971 | 1 | `public double getTargetEquityShare(int company)` |  |
 | 972 | 1 | `public int getMonthsRecorded(int company)` |  |
-| 973 | 1 | `public int getOfferings(int company)` |  |
-| 976 | 4 | `public double foreignShare(int company)` | Share of the company held abroad, 0-1. |
-| 982 | 4 | `public double deskShare(int company)` | Share of the company on the bank's trading desk, 0-1: what the desk is long over what is in issue - nothing while it is short. |
-| 987 | 1 | `public double getOfferedThisMonth(int company)` |  |
-| 988 | 1 | `public double getRaisedHomeThisMonth(int company)` |  |
-| 989 | 1 | `public double getRaisedAbroadThisMonth(int company)` |  |
-| 990 | 1 | `public double getDividendHomeThisMonth(int company)` |  |
-| 991 | 1 | `public double getDividendAbroadThisMonth(int company)` |  |
-| 992 | 1 | `public double getRaisedThisMonth(int company)` |  |
-| 993 | 1 | `public double getDividendThisMonth(int company)` |  |
-| 995 | 1 | `public double getLifetimeRaisedHome(int company)` |  |
-| 996 | 1 | `public double getLifetimeRaisedAbroad(int company)` |  |
-| 997 | 1 | `public double getLifetimeDividendsHome(int company)` |  |
-| 998 | 1 | `public double getLifetimeDividendsAbroad(int company)` |  |
-| 1002 | 1 | `public double getRaisedHomeThisMonth()` | ---- the city, for MoneyAudit and the summary ---- |
-| 1003 | 1 | `public double getRaisedAbroadThisMonth()` |  |
-| 1004 | 1 | `public double getDividendHomeThisMonth()` |  |
-| 1005 | 1 | `public double getDividendAbroadThisMonth()` |  |
-| 1006 | 1 | `public double getLifetimeRaisedHome()` |  |
-| 1007 | 1 | `public double getLifetimeRaisedAbroad()` |  |
-| 1008 | 1 | `public double getLifetimeDividendsHome()` |  |
-| 1009 | 1 | `public double getLifetimeDividendsAbroad()` |  |
-| 1010 | 1 | `public int getOfferings()` |  |
+| 974 | 1 | `public double getTrailingIncome(int company)` | Its net income over the last twelve months on the record (fewer while it has fewer): what its business earned, after tax (EM1). |
+| 975 | 1 | `public int getOfferings(int company)` |  |
+| 978 | 4 | `public double foreignShare(int company)` | Share of the company held abroad, 0-1. |
+| 984 | 4 | `public double deskShare(int company)` | Share of the company on the bank's trading desk, 0-1: what the desk is long over what is in issue - nothing while it is short. |
+| 989 | 1 | `public double getOfferedThisMonth(int company)` |  |
+| 990 | 1 | `public double getRaisedHomeThisMonth(int company)` |  |
+| 991 | 1 | `public double getRaisedAbroadThisMonth(int company)` |  |
+| 992 | 1 | `public double getDividendHomeThisMonth(int company)` |  |
+| 993 | 1 | `public double getDividendAbroadThisMonth(int company)` |  |
+| 994 | 1 | `public double getRaisedThisMonth(int company)` |  |
+| 995 | 1 | `public double getDividendThisMonth(int company)` |  |
+| 997 | 1 | `public double getLifetimeRaisedHome(int company)` |  |
+| 998 | 1 | `public double getLifetimeRaisedAbroad(int company)` |  |
+| 999 | 1 | `public double getLifetimeDividendsHome(int company)` |  |
+| 1000 | 1 | `public double getLifetimeDividendsAbroad(int company)` |  |
+| 1004 | 1 | `public double getRaisedHomeThisMonth()` | ---- the city, for MoneyAudit and the summary ---- |
+| 1005 | 1 | `public double getRaisedAbroadThisMonth()` |  |
+| 1006 | 1 | `public double getDividendHomeThisMonth()` |  |
+| 1007 | 1 | `public double getDividendAbroadThisMonth()` |  |
+| 1008 | 1 | `public double getLifetimeRaisedHome()` |  |
+| 1009 | 1 | `public double getLifetimeRaisedAbroad()` |  |
+| 1010 | 1 | `public double getLifetimeDividendsHome()` |  |
+| 1011 | 1 | `public double getLifetimeDividendsAbroad()` |  |
+| 1012 | 1 | `public int getOfferings()` |  |
 
-### saving (lines 1012-1170)
+### saving (lines 1014-1172)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1037 | 1 | `public String[] keys()` |  |
-| 1039 | 29 | `public double[] toSaveArray()` |  |
-| 1070 | 77 | `public boolean restore(String[] keys, double[] saved)` |  |
-| 1148 | 3 | `public void reset()` |  |
-| 1156 | 14 | `public void redenominate(double scale)` | Everything in money, in the new unit. |
+| 1039 | 1 | `public String[] keys()` |  |
+| 1041 | 29 | `public double[] toSaveArray()` |  |
+| 1072 | 77 | `public boolean restore(String[] keys, double[] saved)` |  |
+| 1150 | 3 | `public void reset()` |  |
+| 1158 | 14 | `public void redenominate(double scale)` | Everything in money, in the new unit. |
 

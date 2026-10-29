@@ -970,6 +970,8 @@ public class Equity {
     public Regime getRegime(int company)         { return listings[company].regime; }
     public double getTargetEquityShare(int company) { return listings[company].targetShare; }
     public int getMonthsRecorded(int company)    { return listings[company].months; }
+    /** Its net income over the last twelve months on the record (fewer while it has fewer): what its business earned, after tax (EM1). */
+    public double getTrailingIncome(int company) { return listings[company].trailingIncome(); }
     public int getOfferings(int company)         { return listings[company].offerings; }
 
     /** Share of the company held abroad, 0-1. */

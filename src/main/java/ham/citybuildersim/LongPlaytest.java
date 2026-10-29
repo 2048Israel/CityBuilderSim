@@ -960,6 +960,60 @@ public class LongPlaytest {
         for (int c = 0; c < Equity.COMPANIES.length; c++) if (c != Equity.BANK) buybackRestingRun += ex.getBuybackBudget(c);
     }
 
+    /* ---- EM1: the companies' money against GDP, the buybacks, the spread of P/B and P/E, the turnover ---- */
+    /** The months the MARKET line prints: EM1's before-and-after (its brief), and the run's last. */
+    static final int[] MARKET_MONTHS = {600, 1200, 2400};
+    /** Over the run, month by month: the companies' buybacks filled (their statements), the bids left resting at the month's end, the book's turnover. */
+    static double buybackFilledRun, buybackLeftRun;
+    static final java.util.Map<Integer, double[]> marketCum = new java.util.HashMap<>();
+
+    static void countMarket(Game g) {
+        Exchange ex = g.getExchange();
+        Equity reg = g.getEquity();
+        int month = g.getMonth();
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (c == Equity.BANK) continue;
+            buybackFilledRun += g.getSectorBooks().get(Equity.COMPANIES[c]).sharesBoughtBack();
+            buybackLeftRun += ex.getBuybackBudget(c);
+        }
+        marketCum.put(month, new double[] {buybackFilledRun, buybackLeftRun, ex.getLifeTurnover()});
+        marketCum.remove(month - 13);
+        boolean print = month == TARGET_MONTHS;
+        for (int m : MARKET_MONTHS) print |= month == m;
+        if (!print) return;
+        double[] now = marketCum.get(month), before = marketCum.get(month - 12);
+        if (before == null) before = new double[3];
+        EconomyManager em = g.getEconomyManager();
+        double gdp = em.getNationalAccounts().getAnnualGdp();
+        double tills = 0;
+        for (String s : Sectors.KEYS) tills += Math.max(0, em.getSectorCash(s));
+        double abroad = g.getOutwardInvestment().totalLocalValue();
+        java.util.List<Double> pb = new java.util.ArrayList<>(), pe = new java.util.ArrayList<>();
+        double cap = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (reg.getShares(c) <= 0) continue;
+            double mcap = ex.price(c) * reg.getShares(c);
+            cap += mcap;
+            if (c == Equity.BANK) continue;
+            double book = g.getSectorBooks().get(Equity.COMPANIES[c]).equity();
+            if (book > 0) pb.add(mcap / book);
+            double e = reg.getTrailingIncome(c);
+            if (e > 0) pe.add(mcap / e);
+        }
+        java.util.Collections.sort(pb);
+        java.util.Collections.sort(pe);
+        out.printf("MARKET m%-4d tills %.2fx GDP abroad %.2fx | buybacks a year filled %,.0f left resting %,.0f | P/B %s | P/E %s | turnover %.1f%% of cap a year%n",
+                month, gdp > 0 ? tills / gdp : Double.NaN, gdp > 0 ? abroad / gdp : Double.NaN,
+                now[0] - before[0], now[1] - before[1], spread(pb), spread(pe),
+                cap > 0 ? (now[2] - before[2]) / cap * 100 : Double.NaN);
+    }
+
+    /** Lowest, median and highest of a sorted list, or "none". */
+    static String spread(java.util.List<Double> v) {
+        if (v.isEmpty()) return "none";
+        return String.format("%.2f/%.2f/%.2f (%d)", v.get(0), v.get(v.size() / 2), v.get(v.size() - 1), v.size());
+    }
+
     /** Every overdraft forgiven over the run: the backstop's, the one path left that forgives (round 4's cash-flow test forgave too; since round 5 it lends the rest as interim financing). */
     static double forgivenTotal(EconomyManager em) {
         double t = 0;
@@ -1001,6 +1055,7 @@ public class LongPlaytest {
         }
         countDefaults(g);
         countRound4(g);
+        countMarket(g);
         countRound6(g);
         countRound7(g);
         countPriceAndPlant(g);
