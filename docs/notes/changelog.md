@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.8.71 — UP5, the map's month, the rest — 2026-10-29, ready, see docs/queue/UP5-notes.md
+The map's month at his size and at 5B, at its causes. A month in one district no longer re-plans every district after
+it: a plan read by another keeps only its edges' hash, and a district whose carry and edges hold takes its old plan
+(x 80: 11 plans against 134, the worker 1.9 s to 0.3, every picture current after the month). The close-up reads a
+tile again only when its key moves (5B's L0 6.0 to 1.6 ms); a far node's runs key is its own, so a month that lays a
+highway re-colours the nodes it crosses (6 of 40 at 5B, not all). FX7's two: a plan replays the runs on a kept ground
+(96.9 to 6.5 ms on the plan with most records), and an interchange's reserve is dated, so one that appears moves only
+the boxes under it. MAP_MONTH_MS 58 to 19 (5B month in turn: main 21.3, UP5 17.2). The 10B month's red line measured:
+nothing grew since MP1, its worst month is the one after a big month (UP8 queued). The map's alone: the trace is
+main's, no ensemble; the map's sidecar FORMAT 15.
+
 ### 0.8.70 — MF1, the map's faults in his For Claude city — 2026-10-29, ready, see docs/queue/MF1-notes.md
 Jerus's eight map faults from 13 shots of his city (the save no longer loads; reproduced on copies of slots 7 and 8 and
 the playtest's city). Buildings under or beside a highway, track or yard laid after them move off it and are rebuilt

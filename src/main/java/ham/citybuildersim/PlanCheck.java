@@ -140,6 +140,15 @@ import java.util.List;
  *      overflow log, in the order of its months, when it has none; and a plan
  *      made a month or more later moves the same buildings to the same places,
  *      a run laid in a month of departures alone included.
+ *  15c. the ground kept (batch UP5; DistrictPlan's THE GROUND KEPT): a plan
+ *      that lays a district's records month by month (arms grown a plot a
+ *      month, yards laid and lifted, a railway, a highway unmade) with land
+ *      bought between works out again only the ground they touch, and every
+ *      array of the ground (plot for plot, the lists in plot order) is what the
+ *      whole ground worked out gives - Builder.verifyGround counts the entries
+ *      that differ, none - and the plan is the plan the whole ground each time
+ *      makes, in every field of it; a pass that would touch more than
+ *      GROUND_NEAR_MOST plots is worked whole; the time a plan takes both ways.
  *  17. no street piece walled in by buildings (batch FW11; DistrictPlan's A
  *      PIECE BUILDINGS WALL IN): MapCheck 1's city, every district as the map
  *      draws it (the carry from the districts before it), keeps every check -
@@ -354,6 +363,7 @@ public class PlanCheck {
         curves(types);
         runsDated(types);
         movedOffRuns(types);
+        groundKept(types);
         farBank(types);
         walledIn(types);
         for (String s : saves) save(Path.of(s));
@@ -4176,6 +4186,221 @@ public class PlanCheck {
             if (p.kindAt(q) != DistrictPlan.NONE && (p.street[q] & DistrictPlan.CROSSING) != 0) n++;
         }
         return n;
+    }
+
+    /* =====================================================================
+       15c. THE GROUND KEPT (batch UP5; FX7's star 3)
+       ===================================================================== */
+
+    /** Whether two values are the same all the way down: arrays by their elements, lists by theirs, the rest by equals(). */
+    static boolean deepSame(Object a, Object b) {
+        if (a == null || b == null) return a == b;
+        if (a.getClass().isArray()) return b.getClass().isArray() && java.util.Objects.deepEquals(a, b);
+        if (a instanceof List<?> la && b instanceof List<?> lb) {
+            if (la.size() != lb.size()) return false;
+            for (int i = 0; i < la.size(); i++) if (!deepSame(la.get(i), lb.get(i))) return false;
+            return true;
+        }
+        // A class of the game with no equals() of its own (a curve): its fields, one by one.
+        Class<?> k = a.getClass();
+        if (k != b.getClass() || !k.getName().startsWith("ham.citybuildersim") || k.isEnum() || k.isRecord()) return a.equals(b);
+        try {
+            if (k.getMethod("equals", Object.class).getDeclaringClass() != Object.class) return a.equals(b);
+            for (java.lang.reflect.Field f : k.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                f.setAccessible(true);
+                if (!deepSame(f.get(a), f.get(b))) return false;
+            }
+            return true;
+        } catch (ReflectiveOperationException e) {
+            return false;
+        }
+    }
+
+    /** The names of the fields of DistrictPlan, every one of them, on which plans a and b differ: none when they are the same plan in all they hold (boxes, streets, cells, curves, avenues, the overflow, the moves). */
+    static List<String> fieldsDiffering(DistrictPlan a, DistrictPlan b) {
+        List<String> names = new ArrayList<>();
+        for (java.lang.reflect.Field f : DistrictPlan.class.getDeclaredFields()) {
+            if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+            f.setAccessible(true);
+            try {
+                if (!deepSame(f.get(a), f.get(b))) names.add(f.getName());
+            } catch (IllegalAccessException e) {
+                names.add(f.getName() + "?");
+            }
+        }
+        return names;
+    }
+
+    /** The plan of `in` made with the ground kept between passes (`keep`) or worked whole each time, and with each limited pass checked against the whole ground (`verify`); the switches back to play's after. */
+    static DistrictPlan makeGround(DistrictPlan.Input in, boolean keep, boolean verify) {
+        DistrictPlan.keepGround = keep;
+        DistrictPlan.verifyGround = verify;
+        try {
+            return DistrictPlan.make(in);
+        } finally {
+            DistrictPlan.keepGround = true;
+            DistrictPlan.verifyGround = false;
+        }
+    }
+
+    /** The median of the time, in ms, `reps` plans of `in` take made one way, after two to warm it. */
+    static double planMs(DistrictPlan.Input in, boolean keep, int reps) {
+        makeGround(in, keep, false);
+        makeGround(in, keep, false);
+        double[] ms = new double[reps];
+        for (int r = 0; r < reps; r++) {
+            long t0 = System.nanoTime();
+            makeGround(in, keep, false);
+            ms[r] = (System.nanoTime() - t0) / 1e6;
+        }
+        Arrays.sort(ms);
+        return ms[reps / 2];
+    }
+
+    /**
+     * A district for THE GROUND KEPT: flat, with a river eight plots wide down column 100, a lake, a salt corner with a shallows, steep
+     * ground, a field's sites and a mine's, a reserve fixed from the start; its runs, dated, in `runs`; and, when `bought`, the ground
+     * round the core (cells 2 to 5 each way) bought in months 10 and 22.
+     */
+    static DistrictPlan.Input keptInput(BuildingVisual.Type[] types, Log log, Runs runs, boolean bought) {
+        DistrictPlan.Input in = flat(types);
+        int n = DistrictPlan.FRAME, cell = DistrictPlan.CELL;
+        for (int y = 0; y < n; y++) {
+            for (int x = 0; x < n; x++) {
+                int p = y * n + x;
+                if (x >= 100 && x < 108) in.terrain[p] = World.FRESH;
+                if (y >= 150 && y < 154 && x >= 20 && x < 60) in.terrain[p] = World.FRESH;
+                if (x > 232 && y < 30) in.terrain[p] = World.SALT;
+                else if (x > 226 && y < 36) in.terrain[p] = World.SHALLOW;
+                if (x >= 180 && x < 200 && y >= 60 && y < 80) in.relief[p] = World.STEEP;
+                if (x >= 140 && x < 200 && y >= 90 && y < 140) in.site[p] = DistrictPlan.SITE_FIELD;
+                if (x >= 150 && x < 156 && y >= 100 && y < 106) in.site[p] = DistrictPlan.SITE_MINED;
+            }
+        }
+        runs.lay(0, 170, 170, 19, 19, DistrictPlan.FIXED_RESERVE);
+        runs.into(log.into(in), Integer.MAX_VALUE, true);
+        if (bought) {
+            // The core is the city's from the start; each cell about it is bought in a month of its own, a cell or two at a time (months 6 to 32).
+            in.boughtAt = new int[DistrictPlan.AREA];
+            for (int y = 0; y < n; y++) {
+                for (int x = 0; x < n; x++) {
+                    boolean core = x >= 2 * cell && x <= 6 * cell && y >= 2 * cell && y <= 6 * cell;
+                    int cx = Math.min(x / cell, DistrictPlan.CELLS_A_SIDE - 1), cy = Math.min(y / cell, DistrictPlan.CELLS_A_SIDE - 1);
+                    in.boughtAt[y * n + x] = core ? 0 : 6 + 2 * ((cx + 3 * cy) % 14);
+                }
+            }
+        }
+        return in;
+    }
+
+    /** `runs` given the arms of THE GROUND KEPT's districts: two highway arms and a staircase one growing a plot a month for `months` months, a railway a few plots a month, the last arm's end taken up again, yards laid and lifted, and an interchange's reserve laid in month 24 and lifted. */
+    static Runs keptRuns(int months) {
+        Runs r = new Runs();
+        for (int m = 1; m <= months; m++) {
+            r.lay(m, 72 + m - 1, 90, 1, 1, DistrictPlan.FIXED_HIGHWAY);
+            r.lay(m, 120, 30 + m - 1, 1, 1, DistrictPlan.FIXED_HIGHWAY);
+            // a staircase: a plot east, a plot south, a month
+            r.lay(m, 40 + m, 110 + m, 1, 1, DistrictPlan.FIXED_HIGHWAY);
+            if (m <= 70) for (int k = 0; k < 3; k++) r.lay(m, 150, 20 + 3 * (m - 1) + k, 1, 1, DistrictPlan.FIXED_RAIL);
+        }
+        // the first arm's last five plots unmade near the end, a highway lifted
+        for (int k = 0; k < 5; k++) r.lift(months - 1, 72 + months - 1 - k, 90, 1, 1, DistrictPlan.FIXED_HIGHWAY);
+        // yards laid and taken up, one place twice
+        r.lay(8, 70, 80, 9, 7, DistrictPlan.FIXED_YARD).lift(13, 70, 80, 9, 7, DistrictPlan.FIXED_YARD);
+        r.lay(16, 90, 100, 9, 7, DistrictPlan.FIXED_YARD).lift(22, 90, 100, 9, 7, DistrictPlan.FIXED_YARD);
+        r.lay(30, 70, 80, 9, 7, DistrictPlan.FIXED_YARD).lift(months - 2, 70, 80, 9, 7, DistrictPlan.FIXED_YARD);
+        // an interchange's reserve laid in month 24 (UP5: dated, a kind of its own in a record) and gone again before the end
+        r.lay(24, 125, 140, 19, 19, DistrictPlan.FIXED_RESERVE).lift(months - 4, 125, 140, 19, 19, DistrictPlan.FIXED_RESERVE);
+        return r;
+    }
+
+    /** A district's log for THE GROUND KEPT: a first batch in month 0, then a few dozen boxes a month to month `months`, some of them leaving. */
+    static Log keptLog(int house, int shop, int works, int farm, int paved, int months, int housesAMonth) {
+        Log log = new Log();
+        log.add(0, house, 150).add(0, shop, 20).add(0, works, 2).add(0, paved, 3).batch();
+        for (int m = 1; m <= months; m++) {
+            log.add(m, house, housesAMonth).add(m, shop, 4).add(m, paved, 1);
+            if (m % 3 == 0) log.add(m, works, 1);
+            if (m % 4 == 0) log.add(m, farm, 1);
+            if (m % 5 == 0) log.add(m, house, -6);
+        }
+        return log;
+    }
+
+    /** How many of a plan's boxes have a plot outside keptInput()'s core (cells 2 to 5 each way): on the ground bought later. */
+    static int boxesOutsideCore(DistrictPlan p) {
+        int lo = 2 * DistrictPlan.CELL, hi = 6 * DistrictPlan.CELL, n = 0;
+        for (int i = 0; i < p.buildings; i++) if (p.bx[i] < lo || p.by[i] < lo || p.bx[i] + p.bw[i] > hi + 1 || p.by[i] + p.bh[i] > hi + 1) n++;
+        return n;
+    }
+
+    static void groundKept(BuildingVisual.Type[] types) {
+        out.println("\n--- 15c. the ground kept: a plan that lays the runs' records and adds the land bought works out again only the ground they touch, and is the plan the whole ground makes, plot for plot (batch UP5; FX7's star 3) ---");
+        final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        final int shop = pick(types, 1, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        final int works = pick(types, 9, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
+        final int farm = pick(types, 1, t -> t.category() == BuildingType.AGRICULTURE && t.outer() && t.site() == null);
+        final int paved = pavedRoad(types);
+        final int months = 38;
+        Log log = keptLog(house, shop, works, farm, paved, months, 140);
+        Runs runs = keptRuns(months);
+        DistrictPlan.Input dry = keptInput(types, log, runs, false), bought = keptInput(types, log, keptRuns(months), true);
+        DistrictPlan.Input landOnly = keptInput(types, log, new Runs(), true);
+        Runs big = keptRuns(months).lay(18, 20, 20, 90, 90, DistrictPlan.FIXED_YARD).lift(28, 20, 20, 90, 90, DistrictPlan.FIXED_YARD);
+        DistrictPlan.Input wide = keptInput(types, log, big, true);
+        String[] names = { "the district with its arms, yards and railway", "...and the land about its core bought a cell or two a month", "...the land bought alone, no run laid",
+                "...and a yard of 90 x 90 plots laid in month 18 and lifted in month 28" };
+        DistrictPlan.Input[] fixtures = { dry, bought, landOnly, wide };
+        int[] fewest = { 200, 200, 0, 200 };
+        long[] limited = new long[fixtures.length], whole = new long[fixtures.length];
+        for (int i = 0; i < fixtures.length; i++) {
+            DistrictPlan.Input in = fixtures[i];
+            long l0 = DistrictPlan.groundLimited.get(), w0 = DistrictPlan.groundWhole.get();
+            DistrictPlan kept = makeGround(in, true, false);
+            limited[i] = DistrictPlan.groundLimited.get() - l0;
+            whole[i] = DistrictPlan.groundWhole.get() - w0;
+            DistrictPlan reference = makeGround(in, false, false);
+            long d0 = DistrictPlan.groundDiffers.get(), v0 = DistrictPlan.groundLimited.get();
+            DistrictPlan checked = makeGround(in, true, true);
+            long differ = DistrictPlan.groundDiffers.get() - d0, verified = DistrictPlan.groundLimited.get() - v0;
+            List<String> fields = fieldsDiffering(kept, reference);
+            int records = in.fixedLog == null ? 0 : in.fixedLog.length;
+            out.printf("      %s (%,d records, %,d boxes placed, %d moved off the runs): %d passes of the ground limited to the plots they touch, %d worked whole; the plan with the ground kept against the plan with the whole ground each"
+                    + " time: %d field(s) of the plan differ%s; %,d passes checked plot for plot against the whole ground, %d entries differ%n", names[i], records, kept.buildings, kept.movedOff + kept.movedOver,
+                    limited[i], whole[i], fields.size(), fields.isEmpty() ? "" : " " + fields, verified, differ);
+            check(names[i] + ": the fixture - the plan lays " + (fewest[i] > 0 ? "its records month by month" : "the land bought month by month") + " with the ground kept (" + limited[i] + " limited passes)"
+                    + (fewest[i] > 0 ? ", across built ground (" + (kept.movedOff + kept.movedOver) + " boxes moved off the runs)" : ""),
+                    limited[i] >= (fewest[i] > 0 ? 20 : 6) && records >= fewest[i] && (fewest[i] == 0 || kept.movedOff + kept.movedOver > 0));
+            if (in.boughtAt != null) check(names[i] + ": ...and boxes stand on the land bought (" + boxesOutsideCore(kept) + "), so the land added matters to the plan", boxesOutsideCore(kept) > 0);
+            check(names[i] + ": every array of the ground a limited pass leaves is the whole ground's, entry for entry: " + differ + " entries differ over " + verified + " passes checked", verified >= limited[i] && differ == 0);
+            check(names[i] + ": the plan made with the ground kept is the plan made with the whole ground each time, in every field it holds (boxes, streets, cells, curves, avenues, the overflow log, the moves): "
+                    + fields.size() + " differ", fields.isEmpty() && samePlan(kept, reference) && samePlan(checked, reference));
+            check(names[i] + ": and a plan is a pure function of its input: made again, the same", fieldsDiffering(kept, makeGround(in, true, false)).isEmpty());
+        }
+        check("a pass that would work more than " + DistrictPlan.GROUND_NEAR_MOST + " plots again works the whole ground out instead (the yard of 90 x 90: " + whole[3] + " pass(es)), and the plan is the same; none of the smaller fixtures' does",
+                whole[3] >= 1 && whole[0] == 0 && whole[2] == 0);
+        // ---- the time: a district with records in many months, the plan with the ground kept against the whole each time
+        final int long_ = 90;
+        Log longLog = keptLog(house, shop, works, farm, paved, long_, 25);
+        Runs many = keptRuns(long_);
+        for (int k = 0; k < 12; k++) {
+            int m0 = 4 + 7 * k, ox = 30 + 8 * (k % 6), oy = 60 + 9 * (k % 5);
+            many.lay(m0, ox, oy, 8, 7, DistrictPlan.FIXED_YARD).lift(m0 + 4, ox, oy, 8, 7, DistrictPlan.FIXED_YARD);
+        }
+        DistrictPlan.Input timed = keptInput(types, longLog, many, true);
+        DistrictPlan a = makeGround(timed, true, false), b = makeGround(timed, false, false);
+        double keptMs, wholeMs;
+        // in turn: the whole ground, the kept, the whole, the kept; and the same log with no run laid after the first batch, the floor
+        wholeMs = planMs(timed, false, 5);
+        keptMs = planMs(timed, true, 5);
+        wholeMs = Math.min(wholeMs, planMs(timed, false, 5));
+        keptMs = Math.min(keptMs, planMs(timed, true, 5));
+        double floorMs = planMs(keptInput(types, longLog, new Runs(), true), true, 5);
+        out.printf("      the district with the most records (%,d in %d months, %,d boxes placed, %d moved off the runs): a plan takes %.1f ms with the whole ground worked out each time, %.1f ms with it kept (%.1fx);"
+                + " the same log with no run laid after the first batch, %.1f ms%n", timed.fixedLog.length, long_, a.buildings, a.movedOff + a.movedOver, wholeMs, keptMs, wholeMs / keptMs, floorMs);
+        check("...the same plan both ways: " + fieldsDiffering(a, b).size() + " field(s) differ", fieldsDiffering(a, b).isEmpty() && a.movedOff + a.movedOver > 0);
+        check("...and the kept ground costs no more than the whole ground worked out each time", Timing.within(keptMs, wholeMs));
     }
 
     /* ----- 16. the far bank (FW3) ----- */
